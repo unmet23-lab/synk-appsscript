@@ -1133,6 +1133,47 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   return {
     server, db, handler, startMounted: initialize, disconnectRevoked,
+    taskOptionsForCompanyUser(companyUserId) {
+      assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      const options = directTasks.options(member.id);
+      return {...options, channels: options.channels.map(channel => ({...channel,
+        companyUserIds: channel.memberIds.map(id => bridge.companyUserId(id) || null),
+        taskAssignees: channel.taskAssignees.map(person => ({...person, companyUserId: bridge.companyUserId(person.id) || null})),
+      }))};
+    },
+    createTaskForCompanyUser(companyUserId, input) {
+      assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      return directTasks.create(member.id, input);
+    },
+    findTaskForCompanyUser(companyUserId, {requestId: registrationId}) {
+      assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      const receipt = one('SELECT state,message_id FROM message_send_requests WHERE user_id=? AND request_id=?', member.id, 'direct-task:' + requestId(registrationId, '업무 등록'));
+      if(!receipt)return null;
+      assert(receipt.state === 'sent' && receipt.message_id, 409, '업무 등록 결과를 확인하고 있습니다.');
+      const message = requireMessage(String(receipt.message_id), member.id);
+      const task = collaboration.productivity.getTask(String(message.id), member.id);
+      assert(task, 404, '후속 업무를 찾을 수 없습니다.');
+      return {task: {...task, assignee: task.assignee ? {...task.assignee, companyUserId: bridge.companyUserId(task.assignee.id) || null} : null}, message: {id: String(message.id), channelId: message.channel_id}, created: false};
+    },
+    taskForCompanyUser(companyUserId, {messageId}) {
+      assert(bridge, 403, '회사 작업실에서 확인해 주세요.');
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      assert(member, 403, '현재 회사 계정의 업무를 확인할 수 없습니다.');
+      const message = requireMessage(String(messageId), member.id);
+      const task = collaboration.productivity.getTask(String(message.id), member.id);
+      assert(task, 404, '후속 업무를 찾을 수 없습니다.');
+      return {task: {...task, assignee: task.assignee ? {...task.assignee, companyUserId: bridge.companyUserId(task.assignee.id) || null} : null}, message: {id: String(message.id), channelId: message.channel_id}};
+    },
     notificationsForCompanyUser(companyUserId) {
       if (!bridge) return [];
       syncDirectory();

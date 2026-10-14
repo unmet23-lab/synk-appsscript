@@ -24,6 +24,16 @@ test('no target, waiting and disabled states do not manufacture alerts',t=>{
   const f=fixture(t);for(const status of ['idle','ready','scheduled','running','paused']){f.set([],{status});assert.equal(f.service.scan().created,0);assert.deepEqual(f.service.list(f.owner),{notifications:[],unreadCount:0});}assert.equal(f.events.length,0);
 });
 
+test('users without saved notification receipts skip source projection while scans still discover new issues',t=>{
+  const f=fixture(t);f.set([issue()],{user:f.other});f.service.scan();
+  const before=f.reads;
+  assert.deepEqual(f.service.list(f.owner),{notifications:[],unreadCount:0});
+  assert.deepEqual(f.service.readAll(f.owner),{ok:true,count:0,unreadCount:0});
+  assert.throws(()=>f.service.read(f.owner,'missing'),{status:404});assert.equal(f.reads,before);
+  f.set([issue()]);assert.equal(f.service.list(f.owner).notifications.length,0);assert.equal(f.reads,before);
+  assert.equal(f.service.scan().created,1);assert.equal(f.service.list(f.owner).notifications.length,1);assert.ok(f.reads>before);
+});
+
 test('one durable metadata record and one event per stable issue, even across restart',t=>{
   const f=fixture(t);f.set([issue(),issue()]);assert.equal(f.service.list(f.owner).notifications.length,0);assert.equal(f.service.scan().created,1);
   const first=f.service.list(f.owner).notifications[0];assert.match(first.id,/^automation:[0-9a-f]{64}:1$/);assert.equal(first.title,'자동화 확인 필요');assert.equal(first.href,'/?tab=workroom&section=tools&tool=automation');assert.equal(first.message,null);

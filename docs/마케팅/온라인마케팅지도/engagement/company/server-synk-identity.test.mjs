@@ -159,13 +159,33 @@ test('temporary identity outage denies access without deleting the company sessi
   unavailable=false;assert.equal((await c.request('/api/me')).data.user.id,f.staff.id);assert.equal((await c.request('/messenger/api/bootstrap')).status,200);
 });
 
-async function supportNotification(f,staff,text){
-  const project=await staff.request('/api/client-projects',{body:{title:'합성 신원 검증 업무',customerName:'합성 고객',summary:'Synthetic identity recovery fixture'}});assert.equal(project.status,201);
-  const invited=await staff.request('/api/client-projects/'+project.data.project.id+'/invite',{body:{revision:project.data.project.revision}});assert.equal(invited.status,200);
-  const customer=f.client(),opened=await customer.request('/pulse/api/open',{body:{invite:invited.data.invite}});assert.equal(opened.status,200);
-  const response=await fetch(f.base+'/pulse/api/action',{method:'POST',headers:{Cookie:[...customer.jar].map(([key,value])=>key+'='+value).join('; '),Origin:f.app.origin,'Content-Type':'application/json','X-Pulse-CSRF':opened.data.csrf},body:JSON.stringify({revision:opened.data.project.revision,action:'support',text})});
-  assert.equal(response.status,200);await response.json();
+async function supportNotification(f,staff,text,{deferPush=true,beforeAction=()=>{}}={}){
+  // These recovery fixtures need an undelivered source at the outage boundary.
+  // Production also drains on change, before this HTTP response arrives; pause
+  // only that scheduler entry, then exercise the real tick after the boundary.
+  const tick=f.app.deviceNotifications.tick;
+  if(deferPush)f.app.deviceNotifications.tick=async()=>{};
+  try{
+    const project=await staff.request('/api/client-projects',{body:{title:'합성 신원 검증 업무',customerName:'합성 고객',summary:'Synthetic identity recovery fixture'}});assert.equal(project.status,201);
+    const invited=await staff.request('/api/client-projects/'+project.data.project.id+'/invite',{body:{revision:project.data.project.revision}});assert.equal(invited.status,200);
+    const customer=f.client(),opened=await customer.request('/pulse/api/open',{body:{invite:invited.data.invite}});assert.equal(opened.status,200);
+    await beforeAction();
+    const response=await fetch(f.base+'/pulse/api/action',{method:'POST',headers:{Cookie:[...customer.jar].map(([key,value])=>key+'='+value).join('; '),Origin:f.app.origin,'Content-Type':'application/json','X-Pulse-CSRF':opened.data.csrf},body:JSON.stringify({revision:opened.data.project.revision,action:'support',text})});
+    assert.equal(response.status,200);await response.json();
+  }finally{if(deferPush)f.app.deviceNotifications.tick=tick;}
 }
+
+test('immediate customer event revalidates an unavailable identity before reaching the push provider',async t=>{
+  let unavailable=false,failedChecks=0;
+  const f=await fixture(t,{webPushEnabled:true,verify:async()=>{if(unavailable){failedChecks++;throw Object.assign(Error('busy'),{status:503});}return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();
+  assert.equal((await c.link()).status,200);
+  const registered=await c.request('/api/device-notifications',{body:{subscription:{endpoint:'https://fcm.googleapis.com/fcm/send/SYNTHETIC-IMMEDIATE-OUTAGE'}}});assert.equal(registered.status,201);
+  await supportNotification(f,c,'PRIVATE immediate outage source',{deferPush:false,beforeAction(){unavailable=true;f.advance(31_000);}});
+  assert.ok(failedChecks>0,'the immediate change path must ask the identity verifier before a manual tick');assert.equal(f.sent.length,0,'immediate delivery cannot bypass the identity outage');
+  await f.app.deviceNotifications.tick();assert.equal(f.sent.length,0,'manual delivery cannot bypass the identity outage');
+  assert.equal(f.app.store.db.prepare('SELECT enabled FROM web_push_subscriptions WHERE id=?').get(registered.data.subscription.id).enabled,1);
+  unavailable=false;await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1);
+});
 
 test('temporary SYNK verification outage preserves device subscription and resumes push with the same subscription',async t=>{
   let unavailable=false;

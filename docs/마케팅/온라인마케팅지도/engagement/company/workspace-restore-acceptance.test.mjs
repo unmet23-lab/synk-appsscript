@@ -158,3 +158,22 @@ test('CLI rejects stale restoration with exit 2 and only sanitized JSON, while p
   let failed;try{await run(process.execPath,['--no-warnings',fileURLToPath(new URL('./workspace-restore-acceptance.mjs',import.meta.url)),f.old,f.latest,evidence]);}catch(error){failed=error;}
   assert.equal(failed?.code,2);assert.equal(failed.stderr,'');const report=JSON.parse(failed.stdout);assert.equal(report.candidateMatchesDeclaredBaseline,false);assert.deepEqual(await hashes(f.root),before);noSecrets(f,report);
 });
+
+test('cloud-volume restore uses portable data layout and retains identity links without a host messenger path',async t=>{
+  const f=await fixture(t),before=await hashes(f.root),destination=join(f.root,'cloud-volume');
+  const report=await f.accept(f.latestCandidate,{destination,layout:'cloud-volume'});
+  assert.equal(report.candidateMatchesDeclaredBaseline,true,JSON.stringify(report));assert.equal(report.preparedLayout,'cloud-volume');assert.equal(report.productionTrafficAllowed,false);
+  for(const name of ['company.sqlite','encryption.key'])assert.deepEqual(await readFile(join(destination,name)),await readFile(join(f.latest,'company',name)));
+  assert.deepEqual(await readFile(join(destination,'messenger','messenger.sqlite')),await readFile(join(f.latest,'messenger','messenger.sqlite')));
+  const config=JSON.parse(await readFile(join(destination,'workspace-integration.json'),'utf8'));assert.equal(Object.hasOwn(config,'messengerDataDir'),false);assert.equal(config.identityLinks[0].companyUserId,f.active.id);
+  assert.equal(JSON.stringify(config).includes(f.root),false);await access(join(destination,'PREPARATION_INCOMPLETE'));
+  const after=await hashes(f.root);for(const [path,digest] of Object.entries(before))assert.equal(after[path],digest);noSecrets(f,report);
+  for(const directory of [f.latest,destination])for(const file of Object.keys(await hashes(directory)))assert.equal((await readFile(file)).includes(Buffer.from(f.root)),false,'backup and cloud payload must not embed original host paths');
+});
+
+test('restore CLI explicitly selects cloud volume layout and refuses unknown layout switches',async t=>{
+  const f=await fixture(t),evidence=join(f.root,'cloud-evidence.json'),destination=join(f.root,'cloud-cli');await writeFile(evidence,JSON.stringify(await f.evidence()));
+  const args=['--no-warnings',fileURLToPath(new URL('./workspace-restore-acceptance.mjs',import.meta.url)),f.latestCandidate,f.latest,evidence,destination];
+  const result=await run(process.execPath,[...args,'--cloud-volume']),report=JSON.parse(result.stdout);assert.equal(report.preparedLayout,'cloud-volume');await access(join(destination,'company.sqlite'));noSecrets(f,report);
+  let failure;try{await run(process.execPath,[...args.slice(0,-1),destination+'-wrong','--cloud-volume-typo']);}catch(error){failure=error;}assert.equal(failure?.code,2);assert.deepEqual(JSON.parse(failure.stdout).issues,['RESTORE_LAYOUT_INVALID']);await assert.rejects(access(destination+'-wrong'),{code:'ENOENT'});
+});

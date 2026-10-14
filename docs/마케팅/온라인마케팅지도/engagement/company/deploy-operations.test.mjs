@@ -11,6 +11,34 @@ const deploy = fileURLToPath(new URL('./deploy/', import.meta.url));
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
 const unix = value => value.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, letter) => '/' + letter.toLowerCase());
 const skip = !existsSync(bash) ? 'Bash is unavailable; Linux runtime checks still required' : false;
+const caddy = process.env.SYNK_QA_CADDY;
+
+test('Caddy adapter advertises only reachable TCP protocols and clears cached alternatives', {
+  skip: caddy ? false : 'Set SYNK_QA_CADDY to an existing Caddy binary; no download is performed.',
+}, () => {
+  const result = spawnSync(caddy, ['adapt', '--config', join(deploy, 'Caddyfile'), '--adapter', 'caddyfile'], {
+    env: { ...process.env, SYNK_COMPANY_DOMAIN: 'workspace.example.test', SYNK_TLS_EMAIL: 'ops@example.test' },
+    encoding: 'utf8', timeout: 10000,
+  });
+  assert.equal(result.status, 0, result.error?.message || result.stderr);
+  const servers = Object.values(JSON.parse(result.stdout).apps.http.servers);
+  assert.equal(servers.length, 1);
+  assert.deepEqual(servers[0].protocols, ['h1', 'h2']);
+  const handlers = [];
+  const visit = value => {
+    if (!value || typeof value !== 'object') return;
+    if (value.handler) handlers.push(value);
+    for (const child of Object.values(value)) visit(child);
+  };
+  visit(servers[0].routes);
+  const clear = handlers.filter(value => value.handler === 'headers' && value.response?.set?.['Alt-Svc']);
+  assert.equal(clear.length, 1);
+  assert.deepEqual(clear[0].response.set['Alt-Svc'], ['clear']);
+  assert.equal(clear[0].response.deferred, true, 'clear must be applied when response headers are written');
+  assert.deepEqual(handlers.filter(value => value.handler === 'reverse_proxy').flatMap(value => value.upstreams.map(upstream => upstream.dial)).sort(),
+    ['company:4191', 'synk-spaceship:4318']);
+});
+
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'synk-deploy-ops-'));
   t.after(async () => { assert.ok(resolve(root).startsWith(resolve(tmpdir()) + sep)); await rm(root, { recursive: true, force: true }); });
@@ -19,7 +47,8 @@ async function fixture(t) {
   await writeFile(join(root, 'runtime.env'), 'SYNTHETIC_SECRET=do-not-print-fixture-secret\n', { mode: 0o600 });
   const commands = {
     mountpoint: '[[ "${MOCK_MOUNTED:-1}" = 1 ]]',
-    flock: '[[ "${MOCK_LOCK_BUSY:-0}" = 0 ]]',
+    flock: `printf 'flock %s\n' "$*" >> "$MOCK_LOCK_CALLS"
+[[ "\${MOCK_LOCK_BUSY:-0}" = 0 ]]`,
     stat: `if [[ "$2" = '%u:%a' ]]; then
   if [[ "$4" = "$COMPANY_ARCHIVE_DIR" ]]; then printf '%s\\n' "\${MOCK_ARCHIVE_META:-0:700}"; else printf '%s\\n' "\${MOCK_PARENT_META:-0:755}"; fi
 else printf '%s\\n' "\${MOCK_ENV_MODE:-600}"; fi`,
@@ -71,10 +100,11 @@ printf '%s' "\${MOCK_HTTP_STATUS:-200}"`,
     CADDY_DATA_DIR: unix(join(root, 'disk/caddy-data')), CADDY_CONFIG_DIR: unix(join(root, 'disk/caddy-config')),
     SYNK_OPS_STATE_DIR: unix(join(root, 'state')), SYNK_COMPANY_DOMAIN: 'workspace.example.test',
     SYNK_COMPANY_IMAGE: 'synk-company:fixture', SYNK_TLS_EMAIL: 'ops@example.test',
-    SYNK_BACKUP_UPLOAD_ENABLED: '1', SYNK_BACKUP_GCS_DESTINATION: 'gs://synthetic-fixture/backups', MOCK_CALLS: unix(join(root, 'calls.log')) };
+    SYNK_BACKUP_UPLOAD_ENABLED: '1', SYNK_BACKUP_GCS_DESTINATION: 'gs://synthetic-fixture/backups', MOCK_CALLS: unix(join(root, 'calls.log')), MOCK_LOCK_CALLS: unix(join(root, 'lock-calls.log')) };
   const run = (name, values = {}, args = []) => spawnSync(bash, ['-c', 'export PATH="$OPS_TEST_BIN:/usr/bin:/bin"; exec bash "$@"', 'fixture', unix(join(deploy, name + '.sh')), ...args], { env: { ...env, ...values }, encoding: 'utf8', timeout: 15000 });
   const calls = async () => existsSync(join(root, 'calls.log')) ? await readFile(join(root, 'calls.log'), 'utf8') : '';
-  return { root, env, run, calls };
+  const lockCalls = async () => existsSync(join(root, 'lock-calls.log')) ? await readFile(join(root, 'lock-calls.log'), 'utf8') : '';
+  return { root, env, run, calls, lockCalls };
 }
 
 test('cloud shell scripts parse and stack refuses a missing disk or unfinished restore', { skip }, async t => {
@@ -120,11 +150,101 @@ test('failed restart consumes its attempt, busy backup lock skips recovery, corr
   const f = await fixture(t);
   const locked = f.run('company-health', { MOCK_LOCK_BUSY: '1' });
   assert.equal(locked.status, 0); assert.match(locked.stdout, /OPERATION_ALREADY_RUNNING/); assert.equal(await f.calls(), '');
+  assert.equal(await f.lockCalls(), 'flock --nonblock 9\n');
   for (let i = 0; i < 3; i++) f.run('company-health', { MOCK_RESTART_FAIL: '1' });
   assert.match(await readFile(join(f.root, 'state/health.state'), 'utf8'), /^0 [0-9]+ 1\n$/);
   await writeFile(join(f.root, 'state/health.state'), 'bad state\n');
   assert.match(f.run('company-health').stderr, /HEALTH_STATE_INVALID/);
   assert.equal(((await f.calls()).match(/restart --timeout 60 company/g) || []).length, 1);
+});
+
+
+test('backup lock timeout fails visibly before snapshot, archive or upload', { skip }, async t => {
+  const f = await fixture(t), result = f.run('company-backup', { MOCK_LOCK_BUSY: '1' });
+  assert.equal(result.status, 1, 'a busy backup lock must not be reported as successful');
+  assert.equal(result.stderr, 'SYNK_COMPANY_OPS BACKUP_FAILED\n');
+  assert.equal(result.stdout, '');
+  assert.equal(await f.lockCalls(), 'flock --wait 120 9\n');
+  assert.equal(await f.calls(), '');
+  assert.deepEqual(await readdir(join(f.root, 'disk/backups')), []);
+  assert.deepEqual(await readdir(join(f.root, 'disk/archives')), []);
+});
+
+test('backup selects bounded lock waiting and starts one snapshot and upload after acquisition', { skip }, async t => {
+  const f = await fixture(t), result = f.run('company-backup');
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(await f.lockCalls(), 'flock --wait 120 9\n');
+  assert.match(result.stdout, /OFFSITE_BACKUP_COMPLETE/);
+  const calls = await f.calls();
+  assert.equal((calls.match(/workspace-backup\.mjs \/backups/g) || []).length, 1);
+  assert.equal((calls.match(/^curl /gm) || []).length, 1);
+});
+
+const realFlockSkip = process.platform !== 'linux' || !existsSync('/usr/bin/flock')
+  ? 'Actual util-linux flock requires the isolated Linux container' : false;
+async function useRealFlock(f) {
+  await writeFile(join(f.root, 'bin/flock'), '#!/usr/bin/env bash\nprintf \'flock %s\\n\' "$*" >> "$MOCK_LOCK_CALLS"\nexec /usr/bin/flock "$@"\n', { mode: 0o755 });
+}
+function runLockController(f, script, timeout = 15000) {
+  return spawnSync(bash, ['-c', 'export PATH="$OPS_TEST_BIN:/usr/bin:/bin"; ' + script,
+    'fixture', unix(join(deploy, 'company-backup.sh'))], { env: f.env, encoding: 'utf8', timeout });
+}
+
+test('real Linux flock lets the waiting backup proceed once a competing operation releases', { skip: realFlockSkip }, async t => {
+  const f = await fixture(t); await useRealFlock(f);
+  const result = runLockController(f, `
+set -euo pipefail
+exec 8>"$SYNK_OPS_STATE_DIR/operations.lock"
+/usr/bin/flock 8
+backup_pid=''
+trap 'saved=$?; /usr/bin/flock -u 8; if [[ -n "$backup_pid" ]]; then wait "$backup_pid" || true; fi; exit "$saved"' EXIT
+bash "$1" 8>&- >"$SYNK_OPS_STATE_DIR/backup.stdout" 2>"$SYNK_OPS_STATE_DIR/backup.stderr" &
+backup_pid=$!
+for ((i=0;i<100;i++)); do [[ -s "$MOCK_LOCK_CALLS" ]] && break; sleep 0.02; done
+[[ -s "$MOCK_LOCK_CALLS" ]]
+sleep 0.2
+kill -0 "$backup_pid"
+[[ ! -s "$MOCK_CALLS" ]]
+printf 'BACKUP_BLOCKED_UNTIL_LOCK_RELEASE\\n'
+/usr/bin/flock -u 8
+exec 8>&-
+wait "$backup_pid"
+backup_pid=''
+trap - EXIT
+cat "$SYNK_OPS_STATE_DIR/backup.stdout"
+cat "$SYNK_OPS_STATE_DIR/backup.stderr" >&2
+`);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(await f.lockCalls(), 'flock --wait 120 9\n');
+  assert.match(result.stdout, /BACKUP_BLOCKED_UNTIL_LOCK_RELEASE/);
+  assert.match(result.stdout, /OFFSITE_BACKUP_COMPLETE/);
+  assert.equal(result.stderr, '');
+  const calls = await f.calls();
+  assert.equal((calls.match(/workspace-backup\.mjs \/backups/g) || []).length, 1);
+  assert.equal((calls.match(/^curl /gm) || []).length, 1);
+  assert.equal((await readdir(join(f.root, 'disk/archives'))).filter(n => n.endsWith('.uploaded')).length, 1);
+});
+
+test('real Linux flock times out at the fixed 120 seconds without starting backup work', {
+  skip: realFlockSkip || (process.env.SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT !== '1'
+    ? 'Opt in only inside the isolated Linux container for the real 120-second timeout' : false), timeout: 150000,
+}, async t => {
+  const f = await fixture(t); await useRealFlock(f);
+  const started = Date.now(), result = runLockController(f, `
+set -uo pipefail
+exec 8>"$SYNK_OPS_STATE_DIR/operations.lock"
+/usr/bin/flock 8 || exit 2
+bash "$1" 8>&-
+`, 140000);
+  const elapsed = Date.now() - started;
+  assert.equal(result.status, 1, result.stderr);
+  assert.ok(elapsed >= 119000 && elapsed < 140000, 'actual bounded wait: ' + elapsed + 'ms');
+  assert.equal(result.stderr, 'SYNK_COMPANY_OPS BACKUP_FAILED\n');
+  assert.equal(result.stdout, '');
+  assert.equal(await f.lockCalls(), 'flock --wait 120 9\n');
+  assert.equal(await f.calls(), '');
+  assert.deepEqual(await readdir(join(f.root, 'disk/backups')), []);
+  assert.deepEqual(await readdir(join(f.root, 'disk/archives')), []);
 });
 
 test('backup transfers only completed snapshots and retains its local archive after upload failure', { skip }, async t => {

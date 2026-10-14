@@ -5,14 +5,14 @@ const marinSessionKey=userId=>`synk-marin:session:${userId}`;
 function safeMarinAction(value){
   if(!value||typeof value!=='object'||typeof value.label!=='string'||!value.label.trim())return null;
   const label=value.label.trim().slice(0,100),validId=id=>typeof id==='string'&&/^[a-zA-Z0-9_. -]{1,100}$/.test(id);
-  if(value.type==='weekly-summary')return{type:'weekly-summary',label};
-  if(value.type==='automation-health')return{type:'automation-health',label};
   if(value.type==='profile'){
     const draft={};for(const key of ['skills','preferredTasks'])if(Array.isArray(value.draft?.[key]))draft[key]=[...new Set(value.draft[key].filter(id=>typeof id==='string'&&/^[a-z-]{1,40}$/.test(id)))].slice(0,12);
     const hours=value.draft?.availableHours;if(typeof hours==='number'&&Number.isFinite(hours)&&hours>=0&&hours<=80&&Number.isInteger(hours*2))draft.availableHours=hours;
     return{type:'profile',label,...(Object.keys(draft).length?{draft}:{})};
   }
   if(value.type==='team-builder')return{type:'team-builder',label};
+  if(value.type==='weekly-summary')return{type:'weekly-summary',label};
+  if(value.type==='automation-health')return{type:'automation-health',label};
   if(value.type==='marketing'){
     if(!['overview','analysis','history','content','channels'].includes(value.view))return null;
     const section=value.section||'';
@@ -87,14 +87,18 @@ async function submitMarinMessage(retry=false){
 }
 async function dispatchMarinAction(entryIndex,actionIndex){
   const action=safeMarinAction(marinHome.entries[Number(entryIndex)]?.actions?.[Number(actionIndex)]);if(!action||marinHome.userId!==state.user?.id)return false;
-  if(action.type==='weekly-summary'){location.href=new URL('/?tab=workroom&section=tools&tool=weekly',location.origin).href;return true;}
-  if(action.type==='automation-health'){location.href=new URL('/?tab=workroom&section=tools&tool=automation',location.origin).href;return true;}
   if(action.type==='profile'){if(typeof openMarinProfile==='function'){await openMarinProfile(action.draft);return true;}notify('업무 카드를 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='team-builder'){if(typeof openMarinTeamBuilder==='function'){await openMarinTeamBuilder();return true;}notify('팀 구성 화면을 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='messenger')return openWorkspaceDestination(action);
+  if(action.type==='weekly-summary'){location.href=new URL('/?tab=workroom&section=tools&tool=weekly',location.origin).href;return true;}
+  if(action.type==='automation-health'){location.href=new URL('/?tab=workroom&section=tools&tool=automation',location.origin).href;return true;}
   selectWorkspaceView(action.view,action.section,action.teamId);state.error='';state.report=null;render();window.scrollTo(0,0);if(reportTabs())await loadReport();if(state.tab==='content')await loadContentWorkspace();return true;
 }
-function marinAccountDialog(){modal('내 워크스페이스',escape(state.user?.name||''),`<div class="marin-account-actions">${workspaceUtilityTabs().map(([id,label,glyph])=>button(label,'command-tab',glyph,'',`data-tab="${id}"`)).join('')}${button('SYNK ID 연결','synk-id-account','link')}${button('로그아웃','logout','logout','quiet')}</div>`);}
+function marinAccountDialog(){
+  const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 · 상담',members:'크루와 팀 관리',settings:'회사 정보와 수집 설정'};
+  const entry=(label,description,action,view)=>`<button type="button" class="workspace-settings-link" data-action="${action}" ${action==='command-tab'?`data-tab="${view}"`:''}>${workspaceFeltIcon(view)}<span><strong>${escape(label)}</strong><small>${escape(description)}</small></span>${icon('right')}</button>`;
+  modal('설정',escape(state.user?.name||''),`<nav class="workspace-settings-list" aria-label="워크스페이스 설정">${workspaceUtilityTabs().map(([id,label])=>entry(id==='settings'?'워크스페이스 관리':label,descriptions[id],'command-tab',id)).join('')}${entry('SYNK ID','계정 연결과 로그인 관리','synk-id-account','settings')}</nav><div class="workspace-settings-footer">${button('로그아웃','logout','logout','quiet')}</div>`);
+}
 document.addEventListener('input',event=>{if(event.target.id!=='marin-input')return;marinHome.draft=event.target.value;saveMarinSession();resizeMarinInput(event.target);const send=document.getElementById('marin-send');if(send)send.disabled=marinHome.pending||!marinHome.draft.trim();});
 window.addEventListener('resize',()=>{if(typeof state!=='undefined'&&state.tab==='home')resizeMarinInput();});
 document.addEventListener('compositionstart',event=>{if(event.target.id==='marin-input')marinHome.composing=true;});

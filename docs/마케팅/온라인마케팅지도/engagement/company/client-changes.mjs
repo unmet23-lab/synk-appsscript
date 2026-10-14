@@ -1,5 +1,5 @@
 import {createHash,randomUUID} from 'node:crypto';
-import {strategyView,strategyReadiness} from './pulse-strategy.mjs';
+import {strategyView,strategyReadiness,CUSTOMER_STRATEGY_LABELS} from './pulse-strategy.mjs';
 import {clientKickoffSources} from './client-kickoff.mjs';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
 
@@ -72,7 +72,7 @@ export function customerClientChanges(row){
   const report=buildClientChanges(row),sourceChanges=report.changes.filter(change=>change.kind==='source');
   // Removed or newly-private originals must not remain discoverable through a
   // historical diff. Material changes are deliberately summarized without ids.
-  const changes=report.changes.filter(change=>change.kind!=='source');if(sourceChanges.length)changes.push({id:'shared-materials',kind:'source',label:'공유 자료 변경',before:'이전 제작 기준의 공유 자료',after:'고객 화면의 공유 자료를 다시 봐 주세요.'});
+  const changes=report.changes.filter(change=>change.kind!=='source').map(change=>({...change,label:change.kind==='strategy'?CUSTOMER_STRATEGY_LABELS[change.id.slice('strategy:'.length)]||change.label:change.label}));if(sourceChanges.length)changes.push({id:'shared-materials',kind:'source',label:'공유 자료 변경',before:'이전 제작 기준의 공유 자료',after:'공유된 자료를 다시 살펴봐 주세요.'});
   return {enabled:report.enabled,status:report.status,statusLabel:report.statusLabel,baseline:report.baseline,currentStrategyRevision:report.currentStrategyRevision,currentStrategyConfirmed:report.currentStrategyConfirmed,changes};
 }
 

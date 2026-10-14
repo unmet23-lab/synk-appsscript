@@ -3,26 +3,28 @@
 // A persistent same-origin module keeps conversations and drafts alive across tabs.
 const workspaceModule={userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
-const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['handbook','회사 안내','info'],['marketing','마케팅','grid'],['messenger','메신저','chat']];
+const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['social','SNS·마케팅','calendar'],['messenger','메신저','chat']];
 // One application frame for every workspace; only its contextual menu changes.
-function workspaceHasContextMenu(){return typeof state!=='undefined'&&['workroom','handbook','marketing'].includes(workspacePrimaryView());}
+function workspaceHasContextMenu(){return typeof state!=='undefined'&&['workroom','social'].includes(workspacePrimaryView());}
 function workspaceSidebarExpanded(){if(!workspaceHasContextMenu())return false;return window.matchMedia('(max-width:700px)').matches?Boolean(state.workspaceSidebarOpen):!state.workspaceSidebarCollapsed;}
 function workspaceGlyph(kind){return kind==='search'?'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>':'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';}
 function workspaceContextMenu(){
   const view=workspacePrimaryView(),link=(id,label,glyph,action='tab',attrs='',active=false)=>`<button type="button" class="nav-item ${active?'active':''}" data-action="${action}" ${attrs||`data-tab="${id}"`} aria-current="${active?'page':'false'}" ${typeof isDemoMode==='function'&&isDemoMode()&&action==='marketing-section'&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요"':''}>${icon(glyph)}<span>${escape(label)}</span>${id==='messenger'?'<b class="messenger-unread nav-count" hidden></b>':''}</button>`;
   let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'팀·크루',settings:'설정'}[view]||'워크스페이스',items='',extra='';
   if(view==='workroom'){
-    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['practice','AI 업무 연습','bookmark'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)).join('');
+    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)).join('');
     extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+link('mine','내 성과','chart');
   }else if(view==='handbook'){
     const categories=typeof cg!=='undefined'?cg.data?.categories||[]:[];
     items=[{id:'all',label:'한눈에'},...categories].map(row=>link(row.id,row.label,'info','company-guide-category',`data-id="${escape(row.id)}"`,typeof cg!=='undefined'&&!cg.selected&&cg.category===row.id)).join('');
-  }else if(view==='marketing'){
+  }else if(view==='social'){
     const selected=state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab;
-    items=workspaceMarketingTabs.map(([id,label,glyph])=>link(id,label,glyph,'marketing-section','',selected===id)).join('');
+    title='SNS·마케팅';
+    items=[['overview','운영 현황','grid'],['compose','게시물 작성','plus'],['calendar','게시 달력','calendar'],['queue','발행 대기열','clock'],['bulk','대량 편성','copy'],['accounts','계정 관리','users'],['results','캠페인·성과','chart'],['inbox','댓글·문의','chat'],['settings','연결·자동화','settings']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id)).join('');
+    extra=workspaceMarketingTabs.map(([id,label,glyph])=>link(id,label,glyph,'marketing-section','',state.tab!=='social'&&selected===id)).join('');
 
   }
-  return `<div class="context-menu-scroll"><nav class="nav-list" aria-label="${title} 세부 메뉴">${items}</nav>${extra?`<p class="context-section-label">개인 업무</p><nav class="nav-list" aria-label="${title} 바로가기">${extra}</nav>`:''}</div>`;
+  return `<div class="context-menu-scroll"><nav class="nav-list" aria-label="${title} 세부 메뉴">${items}</nav>${extra?`<p class="context-section-label">${view==='social'?'상세 분석·기획':'개인 업무'}</p><nav class="nav-list" aria-label="${title} 바로가기">${extra}</nav>`:''}</div>`;
 }
 function workspaceFeltIcon(view){
   const file={home:'sticker-check.webp',workroom:'laptop-felt.webp',teaching:'sticker-book.webp',handbook:'sticker-book.webp',marketing:'sticker-search.webp',messenger:'sticker-envelope.webp',members:'sticker-person.webp',settings:'sticker-adapt.webp'}[view]||'sticker-search.webp';
@@ -30,7 +32,7 @@ function workspaceFeltIcon(view){
 }
 function workspaceChrome(){
   const view=workspacePrimaryView(),open=workspaceSidebarExpanded(),hasSidebar=workspaceHasContextMenu();
-  return `<header class="workspace-appbar"><a class="workspace-wordmark" href="/?tab=home" data-action="tab" data-tab="home" aria-label="싱크 워크스페이스 홈" title="SYNK Workspace" aria-current="${state.tab==='home'?'page':'false'}"><img src="/wordmark.svg" alt="싱ㅋ"></a>${!hasSidebar?'':`<button type="button" class="workspace-sidebar-toggle" id="workspace-sidebar-toggle" data-action="workspace-sidebar-toggle" aria-controls="workspace-sidebar-content" aria-expanded="${open}" aria-label="${open?'공통 메뉴 접기':'공통 메뉴 열기'}">${workspaceGlyph('menu')}</button>`}${state.data?.companyName&&state.data.companyName!=='SYNK'?`<span class="appbar-company">${escape(state.data.companyName)}</span>`:''}<button type="button" class="workspace-global-search" data-action="command" aria-label="채널과 메뉴 검색">${workspaceGlyph('search')}<span>검색하거나 메뉴로 이동</span><kbd>Ctrl K</kbd></button>${state.platformUrl?`<a class="workspace-platform-entry" href="${escape(state.platformUrl)}" rel="noreferrer" referrerpolicy="no-referrer" aria-label="SYNK 플랫폼으로 이동">플랫폼</a>`:''}<button type="button" class="appbar-account" data-action="marin-account" aria-label="${escape(state.user?.name||'내')} 계정과 워크스페이스 관리"><span>${escape(state.user?.name||'내 계정')}</span>${icon('settings')}</button></header><nav class="workspace-rail" aria-label="주요 공간">${workspacePrimaryTabs.map(([id,label,glyph])=>`<button type="button" class="rail-item ${view===id?'active':''}" data-action="tab" data-tab="${id}" aria-label="${label}" ${id==='messenger'&&typeof isDemoMode==='function'&&isDemoMode()?'aria-description="데모를 나가 실제 계정의 메신저를 엽니다."':''} aria-current="${view===id?'page':'false'}">${workspaceFeltIcon(id)}<span>${label}</span>${id==='messenger'?'<b class="messenger-unread rail-unread" hidden></b>':''}</button>`).join('')}</nav>${!hasSidebar?'':`<aside class="sidebar" id="workspace-sidebar" aria-label="공통 메뉴"><div class="workspace-sidebar-content" id="workspace-sidebar-content" ${open?'':'hidden inert aria-hidden="true"'}>${workspaceContextMenu()}</div></aside><button type="button" class="workspace-sidebar-scrim" id="workspace-sidebar-scrim" data-action="workspace-sidebar-close" aria-label="공통 메뉴 닫기" hidden></button>`}`;
+  return `<header class="workspace-appbar"><a class="workspace-wordmark" href="/?tab=home" data-action="tab" data-tab="home" aria-label="싱크 워크스페이스 홈" title="SYNK Workspace" aria-current="${state.tab==='home'?'page':'false'}"><img src="/wordmark.svg" alt="싱ㅋ"></a>${!hasSidebar?'':`<button type="button" class="workspace-sidebar-toggle" id="workspace-sidebar-toggle" data-action="workspace-sidebar-toggle" aria-controls="workspace-sidebar-content" aria-expanded="${open}" aria-label="${open?'공통 메뉴 접기':'공통 메뉴 열기'}">${workspaceGlyph('menu')}</button>`}${state.data?.companyName&&state.data.companyName!=='SYNK'?`<span class="appbar-company">${escape(state.data.companyName)}</span>`:''}<button type="button" class="workspace-global-search" data-action="command" aria-label="프로젝트 내용과 메뉴 검색">${workspaceGlyph('search')}<span>프로젝트·자료·메뉴 검색</span><kbd>Ctrl K</kbd></button>${state.platformUrl?`<a class="workspace-platform-entry" href="${escape(state.platformUrl)}" rel="noreferrer" referrerpolicy="no-referrer" aria-label="SYNK 플랫폼으로 이동">플랫폼</a>`:''}<button type="button" class="appbar-account" data-action="marin-account" aria-label="${escape(state.user?.name||'내')} 계정과 워크스페이스 관리"><i class="appbar-avatar" aria-hidden="true">${escape(Array.from((state.user?.name||'나').trim())[0]||'나')}</i><span>${escape(state.user?.name||'내 계정')}</span>${icon('settings')}</button></header><nav class="workspace-rail" aria-label="주요 공간">${workspacePrimaryTabs.map(([id,label,glyph])=>`<button type="button" class="rail-item ${view===id?'active':''}" data-action="tab" data-tab="${id}" aria-label="${label}" ${id==='messenger'&&typeof isDemoMode==='function'&&isDemoMode()?'aria-description="데모를 나가 실제 계정의 메신저를 엽니다."':''} aria-current="${view===id?'page':'false'}">${icon(glyph)}<span>${label}</span>${id==='messenger'?'<b class="messenger-unread rail-unread" hidden></b>':''}</button>`).join('')}</nav>${!hasSidebar?'':`<aside class="sidebar" id="workspace-sidebar" aria-label="공통 메뉴"><div class="workspace-sidebar-content" id="workspace-sidebar-content" ${open?'':'hidden inert aria-hidden="true"'}>${workspaceContextMenu()}</div></aside><button type="button" class="workspace-sidebar-scrim" id="workspace-sidebar-scrim" data-action="workspace-sidebar-close" aria-label="공통 메뉴 닫기" hidden></button>`}`;
 }
 function workspaceAppShell(content,{entering=false,title=''}={}){
   const share=isMarketingWorkspace()&&typeof isDemoMode==='function'&&!isDemoMode()&&typeof workspaceShareButton==='function'?workspaceShareButton():'';
@@ -69,8 +71,8 @@ document.addEventListener('keydown',event=>{
 window.addEventListener('resize',syncWorkspaceSidebar);
 const workspaceMarketingTabs=[['mine','내 현황','grid'],['team','팀 현황','users'],['all','전체 현황','grid'],['content','콘텐츠 기획','bookmark'],['channels','채널·수집','link']];
 function isMarketingWorkspace(){return ['overview','analysis','history','content'].includes(state.tab);}
-function workspacePrimaryView(){return isMarketingWorkspace()?'marketing':state.tab;}
-function workspaceUtilityTabs(){return [...(canManageTeam()?[['members','팀·크루','users']]:[]),...(isAdmin()?[['settings','설정','settings']]:[])];}
+function workspacePrimaryView(){return isMarketingWorkspace()?'social':state.tab;}
+function workspaceUtilityTabs(){return [['handbook','회사 안내','info'],...(canManageTeam()?[['members','팀·크루','users']]:[]),...(isAdmin()?[['settings','설정','settings']]:[])];}
 function marketingScope(){return state.scope==='mine'?'mine':state.scope==='team'||state.scope==='all'&&state.teamId?'team':state.scope==='all'?'all':'mine';}
 function marketingScopeTitle(){return {mine:'내 현황',team:'팀 현황',all:'전체 현황'}[marketingScope()];}
 function resetGrowthHistoryRange(){state.historyRange='all';state.historyStart='';state.historyEnd='';state.historyDate='';}
@@ -98,6 +100,7 @@ function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined)
   if(!view)view='home';
   if(view!=='messenger'){workspaceModule.open=null;}
   if(view==='home'){state.tab='home';state.workspaceSidebarOpen=false;state.reportRequest=(Number(state.reportRequest)||0)+1;state.loading=false;return;}
+  if(view==='social'){state.tab='social';state.workspaceSidebarOpen=false;if(typeof socialWorkspaceSetView==='function')socialWorkspaceSetView(section||'overview');return;}
   if(view==='marketing'){
     if(['mine','team','all','overview','analysis','history','content','channels'].includes(section))return selectWorkspaceView(section,'',teamId);
     state.tab=['overview','analysis','history','content'].includes(state.lastMarketingTab)?state.lastMarketingTab:'overview';
@@ -121,15 +124,18 @@ function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined)
       state.scope=scope;state.teamId=scope==='team'?(teamId===undefined?state.teamId||state.lastMarketingTeamId||'':teamId):'';
       normalizeMarketingScope();invalidateMarketingReport();
     }else normalizeMarketingScope();
-  }else if([...workspacePrimaryTabs,...workspaceMarketingTabs,['members'],['settings']].some(row=>row[0]===view)){
+  }else if([...workspacePrimaryTabs,...workspaceMarketingTabs,...workspaceUtilityTabs()].some(row=>row[0]===view)){
     state.tab=view;
-    if(view==='workroom'&&typeof wr!=='undefined'&&['desk','trends','tools','practice','pages','clients'].includes(section))wr.view=section;
+    if(view==='workroom'&&typeof wr!=='undefined'){
+      if(['desk','trends','tools','pages','clients'].includes(section))wr.view=section;
+      else if(section==='practice')wr.view='desk';
+    }
     if(view==='content'&&['library','plan','examples'].includes(section))cp.view=section;
     if(view==='content'&&draftId!==undefined){cp.detailRequest=(Number(cp.detailRequest)||0)+1;cp.draftId=String(draftId);cp.pendingDraftId=String(draftId);cp.activeDraft=null;cp.ideaId='';cp.view='plan';}
   }
   if(isMarketingWorkspace()||['messenger','workroom','handbook'].includes(state.tab)||workspaceSidebarBlocksContent())state.workspaceSidebarOpen=false;
 }
-function workspaceSection(){return state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab==='content'?cp.view:state.tab==='workroom'&&typeof wr!=='undefined'?wr.view:'';}
+function workspaceSection(){if(state.tab==='social')return typeof socialWorkspaceSection==='function'?socialWorkspaceSection():'overview';return state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab==='content'?cp.view:state.tab==='workroom'&&typeof wr!=='undefined'?wr.view:'';}
 function syncWorkspaceLocation(){
   if(!state.user)return;
   const url=new URL(location.href),hash=new URLSearchParams(url.hash.slice(1));
@@ -137,10 +143,10 @@ function syncWorkspaceLocation(){
   url.searchParams.set('tab',state.tab);
   const section=workspaceSection();if(section)url.searchParams.set('section',section);else url.searchParams.delete('section');
   if(state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined')url.searchParams.set('tool',makerTools.view);else url.searchParams.delete('tool');
+  if(url.searchParams.has('publicationAction')&&!(state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='publication'))for(const key of ['publicationAction','inboxId','productionId','versionId','packageId','publicationFormat','entryId','checkpoint'])url.searchParams.delete(key);
   if(['overview','analysis','history'].includes(state.tab)&&section==='team'&&state.teamId)url.searchParams.set('teamId',state.teamId);else url.searchParams.delete('teamId');
   if(state.tab==='content'&&section==='plan'&&cp.draftId)url.searchParams.set('draftId',cp.draftId);else url.searchParams.delete('draftId');
   if(hash.has('view'))url.hash='';
-  if(url.searchParams.has('publicationAction')&&!(state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='publication'))for(const key of ['publicationAction','inboxId','productionId','versionId','packageId','publicationFormat','entryId','checkpoint'])url.searchParams.delete(key);
   if(url.href!==location.href)history.replaceState(null,'',url.pathname+url.search+url.hash);
 }
 function marketingNavigation(){
@@ -167,9 +173,11 @@ function mountWorkspaceModule(){
   const shown=state.tab==='messenger';
   if(shown){
     const url=new URL(location.href);
-    if(url.searchParams.get('panel')==='notifications'){
-      workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),panel:'notifications'};
-      url.searchParams.delete('panel');history.replaceState(null,'',url.pathname+url.search+url.hash);
+    const panel=url.searchParams.get('panel'),channelId=url.searchParams.get('channelId'),messageId=url.searchParams.get('messageId');
+    const linkedTask=panel==='tasks'&&typeof safeMarinAction==='function'?safeMarinAction({type:'messenger',label:'업무 원문',panel,channelId,messageId}):null;
+    if(panel==='notifications'||linkedTask&&channelId&&messageId){
+      workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),panel,...(linkedTask?{channelId:linkedTask.channelId,messageId:linkedTask.messageId}:{})};
+      for(const key of ['panel','channelId','messageId'])url.searchParams.delete(key);history.replaceState(null,'',url.pathname+url.search+url.hash);
       if(workspaceModule.ready)sendWorkspaceMessage(workspaceModule.open);
     }
   }
@@ -247,6 +255,8 @@ function shareWorkspaceView(){
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==workspaceModule.frame?.contentWindow||!event.data||typeof event.data!=='object')return;
   const type=event.data.type;
+  if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
+  if(type==='messenger:social-open'){if(state.user&&state.tab==='messenger'&&typeof openSocialWorkspace==='function')openSocialWorkspace('queue');return;}
   if(type==='messenger:automation-open'){
     if(state.user&&state.tab==='messenger'){makerTools.view='automation';selectWorkspaceView('workroom','tools');render();makerToolsEnsure();}
     return;
@@ -256,12 +266,8 @@ window.addEventListener('message',event=>{
     return;
   }
   if(type==='messenger:publication-open'){
+    try{const target=new URL(event.data.url,location.origin);if(state.user&&target.origin===location.origin&&target.pathname==='/'&&!target.hash&&!target.username&&!target.password&&target.searchParams.get('tab')==='social'&&['queue','compose'].includes(target.searchParams.get('section'))&&[...target.searchParams.keys()].every(key=>['tab','section'].includes(key)&&target.searchParams.getAll(key).length===1)){openSocialWorkspace(target.searchParams.get('section'));return;}}catch{}
     if(state.user&&typeof openPublicationWorkflowLink==='function')void Promise.resolve(openPublicationWorkflowLink(event.data.url)).catch(error=>notify(error.message));
-    return;
-  }
-  if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
-  if(type==='messenger:client-open'){
-    if(state.user&&typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(event.data.url)).catch(error=>notify(error.message));
     return;
   }
   if(type==='messenger:navigate'){void navigateWorkspaceLink(event.data.url).catch(error=>notify(error.message));return;}

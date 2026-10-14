@@ -22,7 +22,7 @@ try{
   try{media=workspaceMediaNames(snapshot);}finally{snapshot.close();}
   if(media.length)await mkdir(join(target,'studio-media'),{recursive:true,mode:0o700});
   for(const diskName of media){
-    if(!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|intake)$/i.test(diskName))throw new Error('검토 파일 이름을 확인해 주세요. 백업이 완료되지 않았습니다.');
+    if(!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(diskName))throw new Error('검토 파일 이름을 확인해 주세요. 백업이 완료되지 않았습니다.');
     await copyFile(join(directory,'studio-media',diskName),join(target,'studio-media',diskName));
   }
   await writeFile(join(target,'RESTORE.txt'),'SYNK 회사 데이터 백업 (메신저 제외)\n메신저까지 함께 옮길 때는 workspace-backup.mjs를 사용하세요.\n서버를 중지한 뒤 이 백업의 company.sqlite, encryption.key, studio-media 폴더(있는 경우)를 함께 새 데이터 폴더로 복사합니다.\nSYNK_COMPANY_DATA를 새 폴더로 지정하고 서버를 시작합니다. 기존 데이터는 덮어쓰지 않습니다.\n암호화 키와 검토용 비공개 파일이 포함되어 있으므로 관리자만 접근할 수 있는 위치에 보관하세요.\n검토 파일 '+media.length+'개가 데이터베이스와 함께 백업되었습니다.\n');

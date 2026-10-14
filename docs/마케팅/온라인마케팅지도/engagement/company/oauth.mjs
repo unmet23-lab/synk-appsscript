@@ -76,8 +76,10 @@ function checkedRedirect(platform, value) {
   return url.href;
 }
 
-export function createAuthorization(platform, { clientId, redirectUri, state, challenge, apiVersion } = {}) {
+export function createAuthorization(platform, { clientId, redirectUri, state, challenge, apiVersion, comments = false, existingGrantedScopes = [] } = {}) {
   const provider = definition(platform);
+  const commentScopes=platform==='instagram'?['instagram_business_basic','instagram_business_manage_comments']:['pages_show_list','pages_read_engagement','pages_read_user_content','pages_manage_engagement'];
+  const scopes=comments===true&&['instagram','facebook'].includes(platform)?[...new Set([...commentScopes,...(Array.isArray(existingGrantedScopes)?existingGrantedScopes.filter(scope=>provider.scopes.includes(scope)):[])])]:provider.scopes;
   required(clientId, 'provider_not_configured', '관리자가 먼저 플랫폼 앱 연결을 설정해야 합니다.');
   required(state, 'invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
   if (state.length < 16) throw new OAuthError('invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
@@ -92,12 +94,12 @@ export function createAuthorization(platform, { clientId, redirectUri, state, ch
     params.set('include_granted_scopes', 'true');
   } else if (platform === 'instagram') {
     endpoint = 'https://www.instagram.com/oauth/authorize';
-    params.set('scope', provider.scopes.join(','));
+    params.set('scope', scopes.join(','));
     params.set('enable_fb_login', '0');
     params.set('force_authentication', '1');
   } else if (platform === 'facebook') {
     endpoint = `https://www.facebook.com/${version(apiVersion)}/dialog/oauth`;
-    params.set('scope', provider.scopes.join(','));
+    params.set('scope', scopes.join(','));
     params.set('auth_type', 'rerequest');
   } else {
     endpoint = 'https://www.tiktok.com/v2/auth/authorize/';
@@ -238,6 +240,9 @@ export async function refreshCredentials(platform, current, clientConfig = {}, {
   }
   if (platform === 'instagram') {
     if (Number.isFinite(expiration) && expiration <= now) throw new OAuthError('reconnect_required', 'Instagram 연결이 만료됐습니다. 다시 연결해 주세요.', 401);
+    // A manually verified token has no invented issue date or expiry. The IG
+    // refresh endpoint is only valid for proven long-lived Instagram Login tokens.
+    if(current.refreshMode==='external-manual'||current.authType&&current.authType!=='instagram-login'||current.metaIdentityVersion===1&&current.longLived!==true)return {...current};
     const issued = Date.parse(current.issuedAt || '');
     if (Number.isFinite(issued) && now - issued < DAY) return { ...current };
     const data = await requestToken(platform, 'https://graph.instagram.com/refresh_access_token', { grant_type: 'ig_refresh_token', access_token: current.accessToken }, { fetchImpl, method: 'GET' });

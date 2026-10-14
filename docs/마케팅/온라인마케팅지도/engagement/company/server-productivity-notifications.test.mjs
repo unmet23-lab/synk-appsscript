@@ -6,8 +6,9 @@ import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
 
 async function fixture(t){
+  const fixtureAt=new Date().toISOString(),clock=()=>fixtureAt;
   const directory=await mkdtemp(join(tmpdir(),'synk-productivity-notifications-'));
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,backgroundJobsEnabled:false});
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,backgroundJobsEnabled:false,clock});
   const address=await app.start(),base='http://127.0.0.1:'+address.port,users={},tokens={};
   for(const [name,role,teamId]of [['owner','member','team-a'],['next','member','team-a'],['reviewer','member','team-a'],['other','member','team-b'],['admin','admin',null]]){users[name]=app.store.createUser({name,email:name+'@notifications.example.test',role,teamId});tokens[name]=app.store.mint('session',users[name].id,{csrfToken:'test-csrf'},10);}
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});

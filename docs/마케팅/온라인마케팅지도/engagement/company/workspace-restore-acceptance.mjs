@@ -95,7 +95,7 @@ async function snapshot(directory){
     const media=workspaceMediaNames(company.db);
     const attachments=messenger.db.prepare("SELECT disk_name FROM files WHERE storage_provider='local'").all().map(row=>row.disk_name);
     if(manifest.mediaCount!==media.length||manifest.attachmentCount!==attachments.length)throw issue('ATTACHMENT_MANIFEST_INVALID');
-    for(const name of media){if(typeof name!=='string'||!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|intake)$/i.test(name)||!before.has(join('company','studio-media',name)))throw issue('REFERENCED_MEDIA_MISSING');}
+    for(const name of media){if(typeof name!=='string'||!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(name)||!before.has(join('company','studio-media',name)))throw issue('REFERENCED_MEDIA_MISSING');}
     for(const name of attachments){if(typeof name!=='string'||!/^[a-f0-9-]{36}\.bin$/.test(name)||!before.has(join('messenger','uploads',name)))throw issue('REFERENCED_ATTACHMENT_MISSING');}
     return {root,before,manifest,key,company,messenger,practices};
   }catch(error){company?.db.close();messenger?.db.close();throw error;}

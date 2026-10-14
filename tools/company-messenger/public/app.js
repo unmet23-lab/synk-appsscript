@@ -1158,7 +1158,7 @@ function installProductivityUI(){
   $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
 }
 async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
-const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 메시지에 답글',message:'대화방 새 메시지',reminder:'다시 볼 시간',task:'할 일 업데이트',client_workflow:'고객 업무',automation_health:'자동화 상태',due_digest:'오늘의 마감 알림'};
+const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 메시지에 답글',message:'대화방 새 메시지',reminder:'다시 볼 시간',task:'할 일 업데이트',client_workflow:'고객 업무',automation_health:'자동화 상태',social_publishing:'SNS 게시',due_digest:'오늘의 마감 알림'};
 function taskStatusLabel(value){return{todo:'할 일',requested:'수락 대기',accepted:'수락함',doing:'진행 중',review:'검토 요청',changes:'수정 요청',done:'완료'}[value]||'할 일';}
 function taskStage(task){return task?.stage||({todo:'requested',doing:'doing',done:'done'}[task?.status])||'requested';}
 function workdayRefreshActive(){return Boolean(state.user&&state.drawer==='personal'&&state.personalTab==='workday'&&!document.hidden&&moduleVisible);}
@@ -1199,7 +1199,7 @@ async function loadPersonalPanel({append=false,background=false}={}){
   }catch(error){if(seq===state.personalSeq&&state.drawer==='personal'){body.innerHTML=`<div class="drawer-empty">${esc(error.message)}<button class="button" id="personal-retry">다시 불러오기</button></div>`;$('#personal-retry').onclick=()=>loadPersonalPanel();}}
 }
 function personalItemHtml(item,index,tab){
-  if(tab==='notifications'&&['client_workflow','automation_health','due_digest'].includes(item.kind))return workflowNotificationHtml(item,index);
+  if(tab==='notifications'&&['client_workflow','automation_health','social_publishing','due_digest'].includes(item.kind))return workflowNotificationHtml(item,index);
   const task=tab==='tasks'?item:null,message=task?null:item.message||item,channel=state.channels.find(room=>room.id===(task?.channelId||message?.channelId));
   return `<article class="personal-item${tab==='notifications'&&!item.readAt?' is-unread':''}"><button type="button" class="personal-item-main" data-personal-index="${index}" data-personal-action="${task?'task':'open'}"><span class="personal-item-meta">${esc(task?taskStatusLabel(taskStage(task)):tab==='notifications'?notificationLabels[item.kind]||'알림':message?.user?.name||'저장한 메시지')}<time>${esc(shortDate(item.createdAt||message?.createdAt))}</time></span><strong>${esc(task?.title||message?.body||message?.workspaceLink?.title||'첨부 파일')}</strong><small>${esc(channel?.name||'대화방')}${task?` · ${esc(task.dueDate||'기한 없음')}`:message?.reminder?` · ${esc(new Date(message.reminder.remindAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))} ${reminderStatusHtml(message.reminder)}`:''}</small>${task?'<span class="notification-open-label">할 일 상세 보기 '+icon('arrow')+'</span>':''}</button><div class="personal-item-actions">${task?`<button type="button" class="text-button" data-personal-index="${index}" data-personal-action="open">원문 대화 열기</button>`:tab==='saved'?`<button class="icon-button" data-personal-index="${index}" data-personal-action="remind" aria-label="다시 볼 시간 설정">${icon('clock')}</button><button class="text-button" data-personal-index="${index}" data-personal-action="save">${message.saved?'저장 해제':'저장'}</button>`:''}</div></article>`;
 }
@@ -1208,6 +1208,7 @@ function taskSelectionHtml(){
   return `<details class="task-selection"><summary>이 목록은 어떤 기준인가요?</summary><p>대화 메시지에서 사람이 ‘할 일로 만들기’를 누르고 담당자와 기한을 정한 업무예요. AI가 자동으로 선정하거나 배정하지 않아요.</p><p>${scope} ‘전체 상태’에는 완료된 일도 포함돼요.</p><p>기한이 있는 일부터 가까운 기한 순으로, 같은 기한이면 최근에 만든 일부터 보여요. 기한이 없는 일은 그 뒤에 최근 생성 순으로 보여요.</p></details>`;
 }
 function workflowNotificationHtml(item,index){
+  if(item.kind==='social_publishing')return `<article class="personal-item workflow-notification${!item.readAt?' is-unread':''}"><button type="button" class="personal-item-main" data-personal-index="${index}" data-personal-action="open"><span class="personal-item-meta">SNS 게시<time>${esc(shortDate(item.createdAt))}</time></span><strong>${esc(item.title||'SNS 발행 확인')}</strong><p>${esc(item.text||'발행 상태를 확인해 주세요.')}</p><span class="notification-open-label">SNS 대기열 열기 ${icon('arrow')}</span></button></article>`;
   if(item.kind==='automation_health')return `<article class="personal-item workflow-notification${!item.readAt?' is-unread':''}"><button type="button" class="personal-item-main" data-personal-index="${index}" data-personal-action="open"><span class="personal-item-meta">자동화 상태<time>${esc(shortDate(item.createdAt))}</time></span><strong>${esc(item.title||'자동화 확인 필요')}</strong><p>${esc(item.text||'현재 자동화의 처리 상태를 확인해 주세요.')}</p><small>작업실 안에서만 표시 · 읽음은 문제 해결과 별개</small><span class="notification-open-label">자동화 상태 열기 ${icon('arrow')}</span></button></article>`;
   const due=item.kind==='due_digest',digest=item.digest||{},tasks=digest.tasks||[],title=due?`${digest.date||'오늘'} 마감 업무 ${Number(digest.taskCount??tasks.length)}개`:item.title||'고객 업무가 바뀌었어요';
   const text=due?`${Number(digest.overdueCount)||0}개 기한 지남 · 현재 남아 있는 업무를 확인하세요.`:item.text||item.body||'',detail=due?'마감 업무·원문 보기':`${item.projectTitle||'고객 프로젝트'}${Number.isFinite(item.seconds)?' · '+Math.floor(item.seconds/60)+':'+String(Math.floor(item.seconds%60)).padStart(2,'0')+' 장면':''}`;
@@ -1217,12 +1218,14 @@ async function openPersonalNotification(item){
   const navigation=state.navigationSeq,seq=state.notificationOpenSeq=(state.notificationOpenSeq||0)+1,userId=state.user?.id;
   const current=()=>navigation===state.navigationSeq&&seq===state.notificationOpenSeq&&userId===state.user?.id&&state.drawer==='personal'&&state.personalTab==='notifications';
   try{
-    const customer=item.kind==='client_workflow',due=item.kind==='due_digest',automation=item.kind==='automation_health',href=customer?safeClientWorkflowHref(item.href):null;
+    const customer=item.kind==='client_workflow',due=item.kind==='due_digest',automation=item.kind==='automation_health',social=item.kind==='social_publishing',href=customer?safeClientWorkflowHref(item.href):null;
     if(customer&&!href)throw new Error('이 고객 업무의 연결을 확인할 수 없어요. 목록을 새로 불러와 주세요.');
     if(automation&&!moduleBase)throw new Error('자동화 상태는 기존 작업실에서 확인해 주세요.');
-    if(!customer&&!due&&!automation&&(!item.message?.id||!item.message?.channelId))throw new Error('원래 대화에 접근할 수 없어요. 목록을 새로 불러와 주세요.');
+    if(social&&!moduleBase)throw new Error('SNS 게시는 회사 워크스페이스에서 확인해 주세요.');
+    if(!customer&&!due&&!automation&&!social&&(!item.message?.id||!item.message?.channelId))throw new Error('원래 대화에 접근할 수 없어요. 목록을 새로 불러와 주세요.');
     if(!item.readAt){await api(`/api/notifications/${id(item.id)}/read`,{method:'POST',body:{}});item.readAt=new Date().toISOString();refreshNotificationCount();}
     if(!current())return;
+    if(social){if(moduleVisible)parentMessage('messenger:social-open');return;}
     if(automation){if(moduleVisible)parentMessage('messenger:automation-open');return;}
     if(customer){if(moduleBase)parentMessage('messenger:client-open',{url:href});else location.assign(href);return;}
     if(due){showDeadlineDigest(item);return;}
@@ -1355,6 +1358,7 @@ function safePublicationWorkflowHref(value){
   try{
     if(typeof value!=='string'||!value)return null;
     const url=new URL(value,location.origin),params=url.searchParams,action=params.get('publicationAction'),fields=action==='prepare'?(params.has('inboxId')?['inboxId']:['productionId','versionId']):action==='review'?['packageId']:action==='publish'?['packageId',...(params.has('publicationFormat')?['publicationFormat']:[])]:action==='performance'?['entryId','checkpoint']:action==='link'?(params.has('packageId')&&!params.has('entryId')?['packageId']:params.has('entryId')&&!params.has('packageId')?['entryId']:null):null;
+    if(params.get('tab')==='social'){const allowed=new Set(['tab','section']);if(url.origin!==location.origin||url.username||url.password||url.hash||url.pathname!=='/'||!['queue','compose'].includes(params.get('section'))||[...params.keys()].some(key=>!allowed.has(key)||params.getAll(key).length!==1))return null;return url.href;}
     if(!fields||url.origin!==location.origin||url.username||url.password||url.hash||url.pathname!=='/'||params.get('tab')!=='workroom'||params.get('section')!=='tools'||params.get('tool')!=='publication')return null;
     const allowed=new Set(['tab','section','tool','publicationAction',...fields]);for(const key of params.keys())if(!allowed.has(key)||params.getAll(key).length!==1)return null;
     for(const key of fields){const field=params.get(key);if(key==='checkpoint'?!['24h','72h'].includes(field):key==='publicationFormat'?!['youtube-shorts','youtube-video','instagram-reels'].includes(field):key==='entryId'?!/^[0-9a-f]{64}$/i.test(field||''):!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(field||''))return null;}
@@ -1370,7 +1374,7 @@ async function publicationWorkflowApi(){
   if(!Array.isArray(data.items)||!data.items.every(isPublicationWorkflowItem))throw new Error('게시 업무 목록을 확인하지 못했어요. 다시 불러와 주세요.');
   return data;
 }
-function isPublicationWorkflowItem(item){return Boolean(item&&typeof item.id==='string'&&item.id&&['publication_prepare','publication_review','publication_publish','publication_performance','publication_link'].includes(item.kind)&&['next','reply'].includes(item.group));}
+function isPublicationWorkflowItem(item){return Boolean(item&&typeof item.id==='string'&&item.id&&['publication_prepare','publication_review','publication_publish','publication_performance','publication_link','publication_social'].includes(item.kind)&&['next','reply'].includes(item.group));}
 function publicationWorkflowItems(items){return [...new Map((Array.isArray(items)?items:[]).filter(isPublicationWorkflowItem).map(item=>[item.id,item])).values()];}
 function publicationWorkHtml(items,error){
   if(!publicationWorkflowAvailable())return '';

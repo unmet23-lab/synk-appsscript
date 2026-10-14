@@ -1,5 +1,5 @@
 import {createHash,randomUUID} from 'node:crypto';
-import {strategyOf,strategyReadiness} from './pulse-strategy.mjs';
+import {strategyOf,strategyReadiness,CUSTOMER_STRATEGY_LABELS} from './pulse-strategy.mjs';
 
 const records=value=>Array.isArray(value)?value:[];
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -58,7 +58,16 @@ export function buildClientKickoff(row,{now=new Date().toISOString(),canEdit=fal
 
 export function customerClientKickoff(row,{now=new Date().toISOString()}={}){
   const report=buildClientKickoff(row,{now}),sources=clientKickoffSources(row,{customer:true}),visible=new Set(sources.map(source=>source.key));
-  return {enabled:report.enabled,dueDate:report.dueDate,status:report.status,statusLabel:report.statusLabel,overdue:report.overdue,requirements:report.requirements.map(({waiverReason,sourceFingerprint,...item})=>visible.has(item.sourceKey)?item:{...item,sourceKey:'',sourceLabel:''}),sources:sources.map(sourceFields),checks:report.checks,missingCount:report.missingCount,confirmedDeadline:report.confirmedDeadline,requestedDeadline:row.studio?.strategy?.data?.proposedDeadline||''};
+  const strategy=strategyOf(row.studio?.strategy),readiness=strategyReadiness(strategy.data),requested=strategy.request?.strategyRevision===strategy.revision&&strategy.revision>0;
+  const checks=report.checks.map(check=>{
+    if(check.id==='strategy')return {...check,label:'제작 설계의 기본 내용',text:check.status==='ready'?'메시지·근거·행동을 정리했어요.':'제작 설계에서 함께 정할 내용: '+readiness.missing.map(key=>CUSTOMER_STRATEGY_LABELS[key]||key).join(', ')};
+    if(check.id==='confirmation')return {...check,label:'제작 설계 확인',text:check.status==='ready'?'지금 제작 설계를 확인했어요.':requested?'현재 제작 설계를 살펴보고 확인해 주세요.':'담당자가 현재 제작 설계의 확인을 요청하면 확인할 수 있어요.'};
+    if(check.id==='deadline')return {...check,text:check.status==='ready'?'함께 정한 전달일: '+report.confirmedDeadline:'전달일을 담당자와 협의 중이에요. 함께 정한 날짜가 여기에 표시돼요.'};
+    if(check.id==='terms')return {...check,text:check.status==='ready'?'함께 정한 범위와 조건이 기록돼 있어요.':'제작 범위와 조건을 담당자와 협의 중이에요.'};
+    return check;
+  });
+  const statusLabel={disabled:'준비 항목 없음',waiting:'준비 확인 중',ready:'제작 준비 완료',archived:'보관된 준비 기록'}[report.status];
+  return {enabled:report.enabled,dueDate:report.dueDate,status:report.status,statusLabel,overdue:report.overdue,requirements:report.requirements.map(({waiverReason,sourceFingerprint,...item})=>visible.has(item.sourceKey)?item:{...item,sourceKey:'',sourceLabel:''}),sources:sources.map(sourceFields),checks,missingCount:report.missingCount,confirmedDeadline:report.confirmedDeadline,requestedDeadline:row.studio?.strategy?.data?.proposedDeadline||''};
 }
 
 // Returns a new plan; caller owns ACL, latest project revision, transaction,

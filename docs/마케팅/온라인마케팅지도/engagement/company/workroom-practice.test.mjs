@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,sep} from 'node:path';
+import {createHash} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 
-test('workroom serves shared practice modules without exposing the source directory or a new customer service',async t=>{
+test('archived practice modules remain available without loading them in the workspace',async t=>{
   const directory=await mkdtemp(join(tmpdir(),'synk-practice-route-'));
   const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false});
   t.after(async()=>{await app.stop();const target=resolve(directory);assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.split(sep).at(-1).startsWith('synk-practice-route-'));await rm(target,{recursive:true,force:true});});
@@ -26,8 +27,11 @@ test('workroom serves shared practice modules without exposing the source direct
     const head=await fetch(base+route,{method:'HEAD'});assert.equal(head.status,200);assert.equal(await head.text(),'');
   }
   for(const route of ['/workroom-practice/server.mjs','/workroom-practice/data/company.sqlite','/workroom-practice/unknown.js'])assert.equal((await fetch(base+route)).status,404,route);
-  const felt=await fetch(base+'/messenger/assets/felt-ui/slab-cream-long.webp');assert.equal(felt.status,200);assert.deepEqual(Buffer.from(await felt.arrayBuffer()),await readFile(new URL('../../../../디자인/펠트부품/assets/ui/slab-cream-long.webp',import.meta.url)));
+  const felt=await fetch(base+'/messenger/assets/felt-ui/slab-cream-long.webp');assert.equal(felt.status,200);
+  // The public route serves the approved web-optimized copy, not its larger design original.
+  const actual=Buffer.from(await felt.arrayBuffer()),expected=await readFile(new URL('../../../../../tools/company-messenger/public/assets/felt-ui/slab-cream-long.webp',import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+  assert.equal(actual.length,expected.length);assert.equal(sha(actual),sha(expected));
   // Synthetic module contents are public, but existing company records still require a session.
   for(const route of ['/api/workroom-guide','/api/content-workspace','/api/studio-workspace'])assert.equal((await fetch(base+route)).status,401,route);
-  const home=await(await fetch(base+'/')).text();assert.match(home,/\/workroom-practice\.js/);assert.match(home,/\/workroom-practice\.css/);
+  const home=await(await fetch(base+'/')).text();assert.doesNotMatch(home,/\/workroom-practice(?:[/.\-])/);
 });

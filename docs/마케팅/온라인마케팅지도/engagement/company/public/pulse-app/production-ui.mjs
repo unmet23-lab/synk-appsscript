@@ -21,7 +21,7 @@ export function feedbackDraftChanged(project,entry){
 
 export function addProductionDraftReset(form){
   if(!form||form.querySelector('[data-action="reset-production-draft"]'))return;
-  const button=document.createElement('button');button.type='button';button.className='button quiet small-button';button.dataset.action='reset-production-draft';button.textContent='작성 내용 지우고 새 내용 보기';button.title='이 양식에 작성 중인 내용만 지우고 저장된 최신 내용을 다시 표시합니다.';form.append(button);
+  const button=document.createElement('button');button.type='button';button.className='button quiet small-button';button.dataset.action='reset-production-draft';button.textContent='작성 내용 지우고 새 내용 보기';button.title='이 양식에 쓰던 내용만 지우고 저장된 최신 내용을 다시 보여 줘요.';form.append(button);
 }
 
 // Keeps all production additions on the existing project, revision and draft lifecycle.

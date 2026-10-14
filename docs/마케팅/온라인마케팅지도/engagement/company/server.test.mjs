@@ -8,9 +8,9 @@ import { today } from './store.mjs';
 import { shiftDate } from '../analytics.mjs';
 import { request as httpRequest } from 'node:http';
 
-async function fixture(t,collector){
+async function fixture(t,collector,extra={}){
  const dir=await mkdtemp(join(tmpdir(),'synk-company-test-'));
- const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false,collector});
+ const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false,collector,...extra});
  const address=await app.start(),base=`http://127.0.0.1:${address.port}`;
  t.after(async()=>{await app.stop();await rm(dir,{recursive:true,force:true});});
  const admin=app.store.createUser({name:'Test Admin',email:'admin@example.test',password:'a-valid-test-password',role:'admin'});
@@ -58,8 +58,8 @@ test('collector stores real zero/null, no first-observation growth, day drilldow
  assert.equal((await a('/api/state')).data.channels[0].status,'success');
 });
 test('no secrets in state/database text; failed collection preserves last observation and reveals failure',async t=>{
- const {app,client,dir}=await fixture(t,async()=>{throw new Error('연결 권한이 만료됐습니다.');});const a=await client();const c=(await a('/api/channels',{urls:'https://instagram.com/company/'})).data.added[0];
- await a(`/api/channels/${c.id}/connection`,{accessToken:'super-secret-access-token',accountId:'123'});
+ const {app,client,dir}=await fixture(t,async()=>{throw new Error('연결 권한이 만료됐습니다.');},{metaConnectionFetch:async raw=>{const path=new URL(raw).pathname;return new Response(JSON.stringify(path.endsWith('/me')?{id:'456',user_id:'123',username:'company'}:path.endsWith('/123/media')?{data:[{id:'789'}]}:path.endsWith('/789')?{id:'789',owner:{id:'456'}}:{data:[]}));}});const a=await client();const c=(await a('/api/channels',{urls:'https://instagram.com/company/'})).data.added[0];
+ assert.equal((await a(`/api/channels/${c.id}/connection`,{accessToken:'super-secret-access-token',authType:'instagram-login',accountId:'123'})).status,200);
  const state=await a('/api/state');assert.ok(!JSON.stringify(state.data).includes('super-secret'));assert.ok(!JSON.stringify(app.store.all('users').map(u=>u.name)).includes('password'));
  const cipher=app.store.db.prepare('SELECT ciphertext FROM credentials').get().ciphertext;assert.ok(!cipher.includes('super-secret'));assert.equal(app.store.secret('channel:'+c.id).accessToken,'super-secret-access-token');
  await a(`/api/channels/${c.id}/collect`,{});await app.waitForIdle();assert.equal((await a('/api/state')).data.channels[0].status,'error');assert.equal(app.store.all('snapshots').length,0);

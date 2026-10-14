@@ -74,16 +74,30 @@ test('explicit channel navigation clears a stale status filter while in-page nav
 });
 
 test('only daily work is in primary navigation; management remains role scoped',()=>{
-  for(const [role,count] of [['admin',2],['manager',1],['member',0],['viewer',0]]){
-    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspacePrimaryTabs.map(row=>row[0])')),['workroom','handbook','marketing','messenger']);
+  for(const [role,count] of [['admin',3],['manager',2],['member',1],['viewer',1]]){
+    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspacePrimaryTabs.map(row=>row[0])')),['workroom','teaching','social','messenger']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
   }
 });
 
-test('company guidance is an independent primary destination with a stable direct URL and a closed sidebar',()=>{
+test('teaching has a canonical direct entry without leaking marketing filters into classroom links',()=>{
+  const f=fixture('member');f.location.search='?tab=workroom&section=tools&tool=subtitles&draftId=old';
+  f.run("selectWorkspaceView('teaching');syncWorkspaceLocation()");
+  assert.equal(f.state.tab,'teaching');assert.equal(f.location.searchParams.get('tab'),'teaching');
+  for(const key of ['section','tool','draftId'])assert.equal(f.location.searchParams.has(key),false);
+  f.run("selectWorkspaceView('messenger');selectWorkspaceView('teaching');syncWorkspaceLocation()");
+  assert.equal(f.location.searchParams.get('tab'),'teaching');
+});
+
+test('company guidance is accessible through settings for every role and retains its direct URL without a sidebar',()=>{
   const f=fixture('viewer');f.state.workspaceSidebarOpen=true;f.run("selectWorkspaceView('handbook');syncWorkspaceLocation()");
   assert.equal(f.state.tab,'handbook');assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.location.searchParams.get('tab'),'handbook');assert.equal(f.location.searchParams.has('section'),false);
   assert.equal(f.run('workspacePrimaryView()'),'handbook');
+  assert.equal(f.run('workspaceHasContextMenu()'),false);
+  for(const role of ['admin','manager','member','viewer']){
+    const crew=fixture(role);assert.ok(crew.run("workspaceUtilityTabs().some(row=>row[0]==='handbook')"));
+    crew.run("selectWorkspaceView('handbook')");assert.equal(crew.state.tab,'handbook');
+  }
 });
 
 test('nested screen survives reload and share links retain the chosen section',()=>{
@@ -116,9 +130,9 @@ test('OAuth result cleanup preserves the channel-management destination for relo
 
 test('marketing owns analysis, history and planning while messenger navigation remembers the current work',()=>{
   const f=fixture();
-  f.run("selectWorkspaceView('analysis')");assert.equal(f.run('workspacePrimaryView()'),'marketing');
+  f.run("selectWorkspaceView('analysis')");assert.equal(f.run('workspacePrimaryView()'),'social');
   f.run("selectWorkspaceView('messenger');selectWorkspaceView('marketing')");assert.equal(f.state.tab,'analysis');
-  f.run("selectWorkspaceView('history')");assert.equal(f.run('workspacePrimaryView()'),'marketing');
+  f.run("selectWorkspaceView('history')");assert.equal(f.run('workspacePrimaryView()'),'social');
   f.run("selectWorkspaceView('messenger');selectWorkspaceView('marketing')");assert.equal(f.state.tab,'history');
   f.run("selectWorkspaceView('content','examples');selectWorkspaceView('messenger');selectWorkspaceView('marketing')");assert.equal(f.state.tab,'content');assert.equal(f.cp.view,'examples');
   f.run("selectWorkspaceView('marketing','channels')");assert.equal(f.state.tab,'overview');assert.equal(f.state.marketingView,'channels');
@@ -193,7 +207,7 @@ test('history reloads from canonical URLs and shared hashes without losing scope
     if(shared)f.location.hash=params.toString();else f.location.search=params.toString();
     let reports=0;Object.assign(f.context,{api:async()=>({user:f.state.user,csrfToken:'test-csrf'}),loadState:async()=>f.run('normalizeMarketingScope();syncWorkspaceLocation()'),loadReport:async()=>{reports++;},startPolling(){},notify(){}});
     f.run(appSource.split('\n').find(line=>line.startsWith('function reportTabs('))+'\n'+initialize);await f.run('initialize()');
-    assert.equal(f.state.initialized,true);assert.equal(reports,1);assert.equal(f.state.tab,'history');assert.equal(f.run('workspacePrimaryView()'),'marketing');assert.equal(f.run('marketingScope()'),scope);assert.equal(f.state.teamId,scope==='team'?'team one':'');
+    assert.equal(f.state.initialized,true);assert.equal(reports,1);assert.equal(f.state.tab,'history');assert.equal(f.run('workspacePrimaryView()'),'social');assert.equal(f.run('marketingScope()'),scope);assert.equal(f.state.teamId,scope==='team'?'team one':'');
     assert.equal(f.location.searchParams.get('tab'),'history');assert.equal(f.location.searchParams.get('section'),scope);assert.equal(f.location.searchParams.get('teamId'),scope==='team'?'team one':null);assert.equal(f.location.hash,'');
     assert.match(f.run('marketingNavigation()'),new RegExp(`data-tab="${scope}" class="active" aria-current="page"`));
   }
@@ -236,4 +250,12 @@ test('changing report scope clears detail filters and prevents an older request 
   f.run("selectWorkspaceView('all')");assert.ok(f.state.reportRequest>request);
   assert.equal(f.state.ownerId,'');assert.equal(f.state.platform,'');assert.equal(f.state.channel,'');assert.equal(f.state.analysisView,'daily');assert.equal(f.state.report,null);assert.equal(f.state.loading,false);
   finish({fromOldScope:true});await pending;assert.equal(f.state.report,null);assert.equal(f.state.scope,'all');assert.equal(f.state.loading,false);
+});
+
+
+test('social sections use one canonical workspace entry and preserve legacy analytics routes',()=>{
+  const f=fixture();let section='overview';
+  f.context.socialWorkspaceSection=()=>section;f.context.socialWorkspaceSetView=value=>{if(['overview','calendar','compose','queue','bulk','accounts','results','inbox','settings'].includes(value))section=value;};
+  for(const view of ['overview','calendar','compose','queue','bulk','accounts','results','inbox','settings']){f.context.socialSection=view;f.run("selectWorkspaceView('social',socialSection);syncWorkspaceLocation()");assert.equal(f.state.tab,'social');assert.equal(f.location.searchParams.get('tab'),'social');assert.equal(f.location.searchParams.get('section'),view);assert.equal(f.run('workspacePrimaryView()'),'social');}
+  f.run("selectWorkspaceView('analysis')");assert.equal(f.state.tab,'analysis');assert.equal(f.run('workspacePrimaryView()'),'social');
 });

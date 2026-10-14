@@ -40,7 +40,10 @@ test('leaving a selected project removes only the requester and retains the othe
   await f.json('peer',`/messenger/api/channels/${room.id}/leave`,'POST',{});
   const members=(await f.json('owner',`/messenger/api/channels/${room.id}/members`)).channel.memberIds;
   assert.deepEqual(new Set(members),new Set(membersBefore.filter(id=>id!==f.states.peer.user.id)));
-  assert.deepEqual((await f.json('owner',`/messenger/api/messages/${message.id}`)).message,before);
+  const after=(await f.json('owner',`/messenger/api/messages/${message.id}`)).message;
+  assert.equal(before.task.assigneeUnavailable,false);
+  assert.equal(after.task.assigneeUnavailable,true,'A departed assignee is no longer a current project participant');
+  assert.deepEqual(after,{...before,task:{...before.task,assigneeUnavailable:true}},'Original message, files and task data stay exact; only current access availability changes');
   assert.deepEqual(Buffer.from(await(await f.request('manager',file.url)).arrayBuffer()),bytes);
   assert.ok(!(await f.json('peer','/messenger/api/bootstrap')).channels.some(row=>row.id===room.id));
   for(const path of [`/messenger/api/channels/${room.id}/members`,`/messenger/api/channels/${room.id}/messages`,`/messenger/api/messages/${message.id}`,file.url,`/messenger/api/files?channelId=${room.id}`])assert.equal((await f.request('peer',path)).status,404,path);

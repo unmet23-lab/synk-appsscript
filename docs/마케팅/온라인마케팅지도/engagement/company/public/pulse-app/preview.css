@@ -1,1 +1,50 @@
-.preview-sample-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:20px;margin-top:22px}.preview-sample{min-width:0;border:1px solid var(--line,#e0d9d2);border-radius:18px;padding:20px;background:var(--paper,#fffcf8)}.preview-sample h4{font-size:1.15rem;margin:12px 0}.preview-sample-image{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:12px;background:#272323}.preview-sample audio{width:100%}.preview-aspects{margin:18px 0;display:flex;flex-wrap:wrap;gap:8px}.preview-aspects div{padding:6px 9px;background:#f3eeea;border-radius:8px}.preview-aspects dt{font-size:.7rem;color:#665e5a}.preview-aspects dd{margin:3px 0 0;font-size:.85rem}.preview-choice-table{display:grid;border:1px solid #ddd5cf;border-radius:10px;overflow:hidden;margin:12px 0}.preview-choice-heading,.preview-choice-row{display:grid;grid-template-columns:minmax(0,1fr) 58px 66px;align-items:center;gap:5px;padding:10px}.preview-choice-heading{font-size:.75rem;background:#f0eae5}.preview-choice-row+.preview-choice-row{border-top:1px solid #e7dfda}.preview-choice-row small{display:block;font-size:.75rem;color:#675e5b;margin-top:3px}.preview-choice-row label{min-height:44px;display:flex;align-items:center;justify-content:center}.preview-choice-row input{width:20px;height:20px;accent-color:#754959}.preview-history-item{border-top:1px solid #e0d9d2;margin-top:12px;padding-top:12px}.preview-choice-history{margin:16px 0}.preview-upload{margin-top:18px}.preview-check{display:flex;align-items:flex-start;gap:10px;margin:12px 0;line-height:1.5}.preview-check input{width:20px;height:20px;flex:none}.preview-confirmation{margin-top:16px;padding-top:8px}.preview-test-section{border-top:1px solid #dfd8d2;margin-top:28px;padding-top:24px}.preview-test-section video{width:100%;max-height:440px;background:#221c1d;border-radius:14px}.preview-player-screen{position:relative;min-height:240px;aspect-ratio:16/9;background:#252021;border-radius:16px;overflow:hidden;display:grid;place-items:center;color:white}.preview-player-screen img{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.preview-player-placeholder{position:relative;padding:24px;text-align:center;max-width:600px;white-space:pre-wrap}.preview-player-caption{position:absolute;bottom:12px;left:12px;right:12px;text-align:center;white-space:pre-wrap;font-size:clamp(.85rem,2.5vw,1.2rem);padding:10px 14px;background:rgba(15,12,12,.8);border-radius:10px;max-height:45%;overflow:auto}.preview-player-caption[hidden]{display:none}.preview-player-scene{margin:12px 0 8px;font-weight:600}.preview-player-narration{margin:8px 0;white-space:pre-wrap;font-size:.9rem;min-height:1.6em}.preview-player-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}.preview-player-controls .button{min-height:44px}.preview-player-range{display:block;width:100%;height:36px;accent-color:#754959}.preview-player-timeline{display:flex;gap:5px;margin-top:10px;overflow-x:auto;padding-bottom:8px}.preview-player-timeline button{flex:1;min-width:64px;min-height:44px;background:#f1eae5;border:1px solid #d8cec8;border-radius:8px;padding:8px;color:#4f4144;font:inherit;font-size:.75rem}.preview-player-timeline button[aria-current=true]{background:#744556;color:#fff;border-color:#744556}.preview-player-status{font-size:.85rem;color:#7c3535;margin:8px 0}.preview-animatic .sr-only,.preview-samples .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:600px){.preview-sample{padding:15px}.preview-player-screen{min-height:190px;aspect-ratio:4/3}.preview-player-controls .button{padding:8px 10px}.preview-choice-heading,.preview-choice-row{grid-template-columns:minmax(0,1fr) 55px 62px}.preview-animatic .panel-card{padding:16px}}
+/* PULSE 표현 예시 비교·움직이는 콘티 — 싱ㅋ 시그널(2026-10-13, 같은 날 글자 2판). 토큰·글자 단계는 app.css. */
+.preview-samples h3,.preview-animatic h3{font-size:20px;margin:10px 0 8px}
+.preview-samples>p,.preview-animatic>p{max-width:44em;color:var(--ink-2);font-size:15.5px}
+.preview-sample-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-top:18px}
+.preview-sample{min-width:0;padding:18px;border-radius:18px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.preview-sample h4{font-size:var(--t-title-s);margin:10px 0}
+.preview-sample-image{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:12px;background:#000}
+.preview-sample audio{width:100%}
+.preview-aspects{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.preview-aspects div{padding:6px 10px;border-radius:10px;background:var(--surface-3)}
+.preview-aspects dt{font-size:var(--t-label);font-weight:var(--w-label);color:var(--ink-3)}
+.preview-aspects dd{margin:2px 0 0;font-size:14px;font-weight:var(--w-strong)}
+.preview-choice-table{display:grid;margin:12px 0;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line-2)}
+.preview-choice-heading,.preview-choice-row{display:grid;grid-template-columns:minmax(0,1fr) 62px 70px;align-items:center;gap:6px;padding:8px 12px}
+.preview-choice-heading{font-size:var(--t-label);font-weight:var(--w-label);color:var(--ink-3);background:var(--surface-3)}
+.preview-choice-row+.preview-choice-row{border-top:1px solid var(--line)}
+.preview-choice-row>span{font-size:14px;font-weight:var(--w-strong)}
+.preview-choice-row small{display:block;margin-top:2px;font-size:var(--t-label);font-weight:var(--w-body);color:var(--ink-3)}
+.preview-choice-row label{display:flex;align-items:center;justify-content:center;min-height:44px}
+.preview-history-item{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.preview-choice-history{margin:12px 0}
+.preview-upload{margin-top:16px}
+.preview-confirmation{margin-top:16px}
+.preview-confirmation>.tag{margin-bottom:10px}
+.preview-confirmation-snapshot ol{padding-left:20px;font-size:14px;color:var(--ink-2)}
+.preview-test-section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+.preview-test-section h4{font-size:var(--t-title-s)}
+.preview-test-section video{width:100%;max-height:460px;border-radius:14px;background:#000}
+/* 움직이는 콘티 재생기 */
+.preview-player-screen{position:relative;display:grid;place-items:center;min-height:240px;max-height:min(58vh,520px);aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;color:#fff}
+.preview-player-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.preview-player-placeholder{position:relative;max-width:600px;padding:24px;text-align:center;white-space:pre-wrap}
+.preview-player-caption{position:absolute;left:12px;right:12px;bottom:12px;max-height:45%;overflow:auto;padding:10px 14px;border-radius:12px;background:rgba(8,9,12,.72);text-align:center;white-space:pre-wrap;font-size:clamp(.85rem,2.5vw,1.15rem);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.preview-player-caption[hidden]{display:none}
+.preview-player-scene{margin:12px 0 6px;font-size:17px;font-weight:var(--w-strong);letter-spacing:-.015em}
+.preview-player-narration{min-height:1.6em;margin:6px 0;font-size:15.5px;color:var(--ink-2);white-space:pre-wrap}
+.preview-player-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.preview-player-controls .button{min-height:42px}
+.preview-player-range{display:block;width:100%;height:32px;padding:0;border:0;background:transparent;accent-color:var(--glow)}
+.preview-player-timeline{display:flex;gap:4px;margin-top:10px;overflow-x:auto;padding-bottom:6px}
+.preview-player-timeline button{flex:1;min-width:64px;min-height:42px;padding:8px;border:0;border-radius:10px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-2);font:inherit;font-size:var(--t-label);font-weight:var(--w-label)}
+.preview-player-timeline button[aria-current=true]{background:var(--ink);color:var(--on-ink);box-shadow:none}
+.preview-player-status{margin:8px 0;font-size:14px;color:var(--alert-text)}
+.preview-player-status:empty{display:none}
+@media (max-width:640px){
+  .preview-sample{padding:14px}
+  .preview-player-screen{min-height:190px;aspect-ratio:4/3}
+  .preview-player-controls .button{padding:0 12px}
+  .preview-choice-heading,.preview-choice-row{grid-template-columns:minmax(0,1fr) 54px 62px}
+}

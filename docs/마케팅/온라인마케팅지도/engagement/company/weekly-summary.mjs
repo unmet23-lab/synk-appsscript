@@ -29,7 +29,7 @@ function periodAt(now,requested){
 
 // Only generation metadata is persisted. Every displayed item is rebuilt from
 // its authoritative source and current permissions, including old weeks.
-export function createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,contentService,taskSummary,clock=()=>new Date().toISOString()}={}){
+export function createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow,publicationLearning,socialPublishing,clientProjects,clientWorkflow,contentService,taskSummary,clock=()=>new Date().toISOString()}={}){
   if(!store)throw new Error('Weekly summaries require a store.');
   function current(user){const live=user?.id&&store.get('users',user.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return live;}
   function stamp(){const now=instant(clock());if(now===null)throw fail('서버 시각을 확인해 주세요.',500);return now;}
@@ -91,6 +91,12 @@ export function createWeeklySummaryService({store,studio,postPerformance,publica
         add('performance',{id:'performance:'+row.id,kind:'post_performance',title:row.title||row.channelName,text:row.active===false?'성과 추적이 중지된 기록입니다.':facts.length?facts.join(' · ')+(outside?' · 관측 시각이 불완전하거나 관측 창을 벗어난 수치는 비교에서 제외됩니다.':''):waiting?'아직 72시간 확인 시각이 되지 않았습니다.':'확인된 72시간 수치가 없습니다. 미확인은 0이 아닙니다.',statusLabel:row.active===false?'추적 중지':facts.length?outside?'관측 조건 확인':'확인된 기록':waiting?'72시간 관측 대기':'수치 미확인',occurredAt:row.publishedAt,href});
       }
       for(const row of read(['attention'],()=>publicationWorkflow?publicationWorkflow.workspace(user).items:[],[]))add('attention',{...row,text:'게시 준비·점검·성과의 현재 원문을 확인해 주세요.'});
+      for(const job of read(['upcoming'],()=>socialPublishing?socialPublishing.workspace(user).jobs:[],[])){
+        const channel=store.get('channels',job.channelId),at=instant(job.scheduledAt);
+        if(at===null||!['scheduled','manual'].includes(job.status)||!(job.publisherId===user.id||channel?.ownerIds?.includes(user.id)))continue;
+        const dueDate=date(at+KST);if(!nextDate(dueDate,period))continue;
+        add('upcoming',{id:'social:schedule:'+job.id,kind:'social_schedule',title:job.contentSummary?.title||channel?.displayName||'SNS 게시 예약',text:`${channel?.displayName||channel?.platform||'SNS'} · ${new Date(at+KST).toISOString().slice(11,16)} 한국 시간. ${job.status==='manual'?'앱에서 수동 마무리가 필요합니다.':job.paused?'현재 중단된 예약입니다.':'현재 저장된 게시 일정입니다.'}`,statusLabel:job.status==='manual'?'수동 마무리':job.paused?'예약 중단':'게시 예약',dueDate,href:'/?tab=social&section=queue&post='+encodeURIComponent(job.postId)});
+      }
       const projects=read(['completed','upcoming'],()=>clientProjects?clientProjects.workspace(user).projects:[],[]).filter(row=>row.ownerId===user.id||row.reviewerId===user.id);
       for(const row of projects){
         const href=clientWorkflowHref(row.id);

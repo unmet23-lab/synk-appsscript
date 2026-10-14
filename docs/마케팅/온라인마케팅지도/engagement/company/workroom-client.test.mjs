@@ -31,6 +31,18 @@ function fixture({url='http://localhost:4191/?tab=workroom'}={}){
   return{context,requests,storage,handlers,notifications,navigation,timers,evaluate,wr,get renders(){return renders;}};
 }
 
+test('a disabled legacy collector never advertises a next run and explains the separate Gemini guide feed',()=>{
+  const f=fixture();
+  f.wr.daily={today:'2026-10-11',date:'2026-10-11',settings:{enabled:true},schedulerEnabled:false,nextRunAt:'2026-10-11T20:00:00.000Z',snapshot:null};
+  const html=f.evaluate('wrTrends()');
+  assert.match(html,/출처별 일일 트렌드/);
+  assert.match(html,/이 출처 수집의 자동 실행은 꺼져 있습니다/);
+  assert.match(html,/문서 자동 반영은 별도로 동작/);
+  assert.doesNotMatch(html,/다음 수집|다음 수집을 기다려/);
+  f.wr.daily.schedulerEnabled=true;
+  assert.match(f.evaluate('wrTrends()'),/다음 수집/);
+});
+
 test('fresh workroom identities restore the requested production tool from the current URL',()=>{
   for(const tool of ['publish','subtitles','sources']){
     const f=fixture({url:`http://localhost:4191/?tab=workroom&section=tools&tool=${tool}`});
@@ -41,7 +53,8 @@ test('fresh workroom identities restore the requested production tool from the c
 });
 
 test('workroom URL parsing accepts known sections and rejects unknown sections or tools',()=>{
-  for(const section of ['desk','trends','tools','practice','pages']){const f=fixture({url:`http://localhost:4191/?tab=workroom&section=${section}`});assert.equal(f.wr.view,section);}
+  for(const section of ['desk','trends','tools','pages']){const f=fixture({url:`http://localhost:4191/?tab=workroom&section=${section}`});assert.equal(f.wr.view,section);}
+  const retiredSection=fixture({url:'http://localhost:4191/?tab=workroom&section=practice'});assert.equal(retiredSection.wr.view,'desk');
   const unknownSection=fixture({url:'http://localhost:4191/?tab=workroom&section=unknown&tool=subtitles'});assert.equal(unknownSection.wr.view,'desk');assert.equal(unknownSection.context.makerTools.view,'publish');
   const unknownTool=fixture({url:'http://localhost:4191/?tab=workroom&section=tools&tool=unknown'});assert.equal(unknownTool.wr.view,'tools');assert.equal(unknownTool.context.makerTools.view,'publish');
 });
@@ -106,6 +119,54 @@ test('a chosen template opens a fresh existing plan without generating or saving
   assert.equal(f.context.cp.input.seriesId,'story');assert.equal(f.context.cp.draftId,'');assert.equal(f.context.cp.activeDraft,null);assert.equal(f.context.cp.results,null);
   assert.deepEqual(f.navigation,['plan']);assert.equal(f.requests.length,0);
   f.context.cp.error='최신 기획함을 다시 확인해 주세요';await assert.rejects(f.evaluate('wrOpenContent("plan")'),/최신 기획함/);assert.equal(f.navigation.length,1);
+});
+
+test('desk resumes only current-user non-archived plans in newest order and escapes saved titles',()=>{
+  const f=fixture();f.context.cp.userId='A';f.context.cp.data={drafts:[
+    {id:'old',ownerId:'A',status:'draft',title:'older',updatedAt:'2026-10-07T00:00:00Z'},
+    {id:'foreign',ownerId:'B',status:'ready',title:'other account private plan',updatedAt:'2026-10-09T00:00:00Z'},
+    {id:'archived',ownerId:'A',status:'archived',title:'archived plan',updatedAt:'2026-10-09T00:00:00Z'},
+    {id:'new',ownerId:'A',status:'review',title:'<img onerror=boom>',updatedAt:'2026-10-08T00:00:00Z'}
+  ]};f.wr.guide={...JSON.parse(readFileSync(new URL('./workroom-guide.json',import.meta.url),'utf8')),series:[{id:'synkbrief-use',name:'활용',format:'영상',concept:'실제 결과 보여주기',audience:'제작자',materials:[],guardrails:[],angles:[]}]};
+  assert.deepEqual(Array.from(f.evaluate('wrDeskDrafts().map(row=>row.id)')),['new','old']);
+  const html=f.evaluate('wrDesk()');assert.ok(html.includes('&lt;img onerror=boom&gt;'));assert.ok(!html.includes('other account private plan'));assert.ok(!html.includes('archived plan'));
+});
+
+test('desk new-plan choice preserves unsaved input and stale confirmation cannot replace another account',async()=>{
+  const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:'',audience:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'story',topic:'내가 쓰던 이야기',audience:'시청자'}});f.wr.guide={series:[{id:'story'}]};let modal;
+  f.context.modal=(title,description,html)=>{f.context.state.modalRequest++;modal={title,description,html};};f.context.closeModal=()=>{};
+  await f.evaluate('wrOpenContent("plan","story")');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.equal(f.navigation.length,0);assert.match(modal.html,/아직 저장하지 않은 입력/);
+  await f.evaluate('wrResumePlan()');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.deepEqual(f.navigation,['plan']);
+  f.context.state.user={id:'B',role:'member'};await f.evaluate('wrReplacePlan()');assert.equal(f.context.cp.input.topic,'내가 쓰던 이야기');assert.equal(f.navigation.length,1);
+});
+
+test('desk publish action selects the named check without retaining another production tool',()=>{
+  const f=fixture();f.context.makerTools.view='quality';f.evaluate('wrOpenPublish()');assert.equal(f.wr.view,'tools');assert.equal(f.context.makerTools.view,'publish');
+});
+
+test('reference search results are not a working plan and an old selected title does not hide current input',()=>{
+  const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:'',audience:''});Object.assign(f.context.cp,{userId:'A',draftId:'',input:{seriesId:'default',topic:'',audience:''},results:{items:[{title:'검색 결과'}]},activeDraft:{id:'old',title:'이전 기획 제목'}});
+  assert.equal(f.evaluate('wrWorkingPlan()'),false);f.context.cp.input.topic='지금 작성 중인 이야기';
+  f.wr.guide={...JSON.parse(readFileSync(new URL('./workroom-guide.json',import.meta.url),'utf8')),series:[{id:'default',name:'활용',format:'영상',concept:'실제 결과',audience:'제작자',materials:[],guardrails:[],angles:[]}]};
+  const html=f.evaluate('wrDesk()');assert.match(html,/지금 작성 중인 이야기/);assert.doesNotMatch(html,/이전 기획 제목/);
+});
+
+test('changed input dismisses its confirmation without replacing the newer work',async()=>{
+  const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'default',topic:'처음 내용'}});let closed=0;
+  f.context.modal=()=>{f.context.state.modalRequest++;};f.context.closeModal=()=>{closed++;f.context.state.modalRequest++;};
+  f.evaluate('wrConfirmPlanChoice({seriesId:"default"})');f.context.cp.input.topic='새로 고친 내용';await f.evaluate('wrReplacePlan()');
+  assert.equal(closed,1);assert.equal(f.wr.planChoice,null);assert.equal(f.context.cp.input.topic,'새로 고친 내용');assert.equal(f.navigation.length,0);assert.match(f.notifications[0],/다시 선택/);
+});
+
+test('viewer may confirm navigation to an existing own plan while new planning stays restricted',async()=>{
+  const f=fixture();f.context.state.user.role='viewer';f.context.cpBlank=()=>({seriesId:'default',topic:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'default',topic:'창에 적은 내용'},data:{drafts:[{id:'own',ownerId:'A',status:'draft'}]}});const links=[];
+  f.context.modal=()=>{f.context.state.modalRequest++;};f.context.closeModal=()=>{f.context.state.modalRequest++;};f.context.navigateWorkspaceLink=async value=>links.push(value);
+  await f.evaluate('wrOpenDeskDraft("own")');await f.evaluate('wrReplacePlan()');assert.deepEqual(links,['/#view=content&section=plan&draftId=own']);
+});
+
+test('resuming reports a failed content load while preserving the current input',async()=>{
+  const f=fixture();f.context.cpBlank=()=>({seriesId:'default',topic:''});Object.assign(f.context.cp,{userId:'A',draftId:'',results:null,input:{seriesId:'default',topic:'계속 쓸 내용'},data:null});f.context.loadContentWorkspace=async()=>{f.context.cp.error='기획함 연결을 다시 확인해 주세요';};
+  await assert.rejects(f.evaluate('wrResumePlan()'),/기획함 연결/);assert.equal(f.context.cp.input.topic,'계속 쓸 내용');assert.equal(f.navigation.length,0);
 });
 
 test('workroom observation dates keep KST and unknown reactions do not become zero',()=>{
@@ -187,7 +248,7 @@ test('switching date while a trend plan is loading cannot navigate with the old 
 
 test('daily feed remains readable when company guide is missing and never presents fallback data as today',()=>{
   const f=fixture();f.wr.view='trends';f.wr.guide=null;f.wr.daily=dailyData('2026-10-01');f.wr.dailyDate='2026-10-02';f.wr.dailyError='오늘 수집에 실패했어요.';
-  const html=f.evaluate('contentWorkroomPage()');assert.ok(html.includes('매일 수집한 트렌드'));assert.ok(html.includes('이전 자료'));assert.ok(html.includes('선택한 날짜의 최신 결과가 아닙니다.'));assert.ok(html.includes('2026-10-01'));assert.ok(html.includes('오늘 수집에 실패했어요.'));assert.ok(!html.includes('제작 자료를 꺼내고'));
+  const html=f.evaluate('contentWorkroomPage()');assert.ok(html.includes('출처별 일일 트렌드'));assert.ok(html.includes('이전 자료'));assert.ok(html.includes('선택한 날짜의 최신 결과가 아닙니다.'));assert.ok(html.includes('2026-10-01'));assert.ok(html.includes('오늘 수집에 실패했어요.'));assert.ok(!html.includes('제작 자료를 꺼내고'));
 });
 
 test('a long source shows ten rows once and exposes one twenty-more control with truthful totals',()=>{

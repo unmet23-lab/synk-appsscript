@@ -123,12 +123,22 @@ test('notification click destination passes the company allowlist and queues a f
   assert.equal(f.requests.length,0);assert.equal(f.run("safeMarinAction({type:'messenger',label:'관리',panel:'admin'})"),null);
 });
 
-test('a home refresh preserves the focused prompt and caret with workroom and company guidance before marketing and messenger',()=>{
+test('weekly summary action is fixed and exact task deep links survive a fresh workspace mount',async()=>{
+  const f=fixture({url:'http://localhost:4191/?tab=messenger&panel=tasks&channelId=room-a&messageId=27'});
+  f.state.tab='messenger';f.run('mountWorkspaceModule()');
+  assert.equal(f.run('workspaceModule.open.channelId'),'room-a');assert.equal(f.run('workspaceModule.open.messageId'),'27');assert.equal(f.run('workspaceModule.open.panel'),'tasks');
+  assert.equal(f.location.searchParams.has('messageId'),false);
+  const invalid=fixture({url:'http://localhost:4191/?tab=messenger&panel=tasks&channelId=..%2Fadmin&messageId=27'});invalid.state.tab='messenger';invalid.run('mountWorkspaceModule()');assert.equal(invalid.run('workspaceModule.open'),null);
+  const home=fixture();home.run("ensureMarinSession();marinHome.entries=[{role:'assistant',text:'주간 정리',actions:[{type:'weekly-summary',label:'주간 정리 열기',url:'https://evil.example'}]}]");
+  assert.equal(await home.run('dispatchMarinAction(0,0)'),true);assert.equal(home.location.href,'http://localhost:4191/?tab=workroom&section=tools&tool=weekly');assert.equal(home.requests.length,0);
+});
+
+test('a home refresh preserves the focused prompt and caret with teaching in the rail and guidance in settings',()=>{
   const f=fixture();f.run("ensureMarinSession();marinHome.draft='성과를 확인하고 싶어요'");const input=f.nodes.get('marin-input');input.value=f.home.draft;input.selectionStart=3;input.selectionEnd=5;input.focus();
   let markup='';const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;const replacement=f.element('textarea');replacement.id='marin-input';f.nodes.set('marin-input',replacement);f.document.activeElement=null;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>null};
   Object.assign(f.context,{app,renderedTab:'home'});f.run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));f.run('shell(marinHomePage())');
   assert.equal(f.document.activeElement,f.nodes.get('marin-input'));assert.equal(f.nodes.get('marin-input').value,f.home.draft);assert.equal(f.nodes.get('marin-input').selectionStart,3);assert.equal(f.nodes.get('marin-input').selectionEnd,5);
   const rail=markup.match(/<nav class="workspace-rail"[\s\S]*?<\/nav>/)?.[0]||'';
-  assert.equal((rail.match(/<button[^>]*data-action="tab"/g)||[]).length,4);assert.match(rail,/data-tab="workroom"[\s\S]*data-tab="handbook"[\s\S]*data-tab="marketing"[\s\S]*data-tab="messenger"/);assert.doesNotMatch(markup,/id="workspace-sidebar(?:-toggle)?"|class="home-workspaces"|class="home-resume"|class="rail-account"/);assert.equal((markup.match(/data-action="marin-account"/g)||[]).length,1);assert.doesNotMatch(markup,/data-tab="settings"/);assert.equal(f.requests.length,0);
+  assert.equal((rail.match(/<button[^>]*data-action="tab"/g)||[]).length,4);assert.match(rail,/data-tab="workroom"[\s\S]*data-tab="teaching"[\s\S]*data-tab="marketing"[\s\S]*data-tab="messenger"/);assert.doesNotMatch(rail,/data-tab="handbook"/);assert.doesNotMatch(markup,/id="workspace-sidebar(?:-toggle)?"|class="home-workspaces"|class="home-resume"|class="rail-account"/);assert.equal((markup.match(/data-action="marin-account"/g)||[]).length,1);assert.doesNotMatch(markup,/data-tab="settings"/);assert.equal(f.requests.length,0);
   const composing=f.nodes.get('marin-input');f.dispatch('compositionstart',composing);f.run('shell(marinHomePage())');assert.equal(f.nodes.get('marin-input'),composing,'an ongoing IME composition cannot be replaced by a background refresh');assert.equal(f.document.activeElement,composing);
 });

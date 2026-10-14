@@ -40,7 +40,7 @@ export function buildSceneRequests(row,{userId=null,canEdit=false,canReview=fals
 
 export function customerSceneRequests(row,options={}){
   const report=buildSceneRequests(row,options),publicScenes=new Set(rows(row.studio?.scenes).filter(scene=>scene.visibility==='customer').map(scene=>scene.id));
-  const items=report.items.filter(item=>publicScenes.has(item.sceneId)).map(({canSubmit,actions,note,history,...item})=>({...item,reason:item.status==='review'?'담당자가 고친 장면을 보고 있어요.':item.status==='stale'?'담당자가 장면을 다시 연결하면 봐 주세요.':item.status==='unavailable'?'담당자가 장면 자료를 보고 있어요.':item.reason}));
+  const items=report.items.filter(item=>publicScenes.has(item.sceneId)).map(({canSubmit,actions,note,history,...item})=>({...item,statusLabel:({open:'수정 요청',in_progress:'수정 중',review:'제작팀 확인 중',changes_requested:'다시 수정 중',waiting_customer:'수정된 장면 확인',done:'확인 완료',stale:'제작팀 확인 중',unavailable:'자료 준비 중',archived:'보관된 요청'})[item.status],reason:({open:'남긴 수정 요청을 제작팀에 전달했어요.',in_progress:'요청한 내용을 반영하고 있어요.',review:'제작팀이 수정된 장면을 확인하고 있어요.',changes_requested:'추가 의견을 반영하고 있어요.',waiting_customer:'요청한 수정이 반영됐는지 살펴보고 장면 확인을 남겨 주세요.',done:'수정된 장면을 확인했어요.',stale:'제작팀이 현재 장면과 수정 요청을 다시 확인하고 있어요.',unavailable:'제작팀이 장면 자료를 준비하고 있어요.',archived:'보관된 프로젝트의 기록이에요.'})[item.status]||'제작팀이 수정 요청을 확인하고 있어요.'}));
   return {items,pendingCount:items.filter(item=>item.status!=='done').length,doneCount:items.filter(item=>item.status==='done').length};
 }
 

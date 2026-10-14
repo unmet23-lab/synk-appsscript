@@ -8,9 +8,89 @@ import {createClientProjectsService} from './client-projects.mjs';
 import {createClientWorkflowService} from './client-workflow.mjs';
 import {createClientNotificationsService} from './client-notifications.mjs';
 import {createPulseStudioService} from './pulse-studio.mjs';
+import {createPulseLiveService} from './pulse-live.mjs';
 const rejects=(run,status)=>assert.throws(run,error=>error.status===status);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const draft={title:'알림 왕복 합성 프로젝트',customerName:'합성 고객',summary:'고객 시안 검토',internalNotes:'PRIVATE-PROJECT'};
+const customerNews=f=>createPulseLiveService({store:f.store,clientProjects:f.projects,clientNotifications:f.notifications}).customerState(f.customer.session);
+const customerEvent=(f,type)=>customerNews(f).notifications.filter(item=>item.type===type);
+const deliveryItem={label:'PRIVATE-DELIVERABLE',kind:'video',platform:'instagram',placement:'릴스',durationSeconds:15,aspectRatio:'9:16',language:'한국어',subtitles:'burned',fileFormat:'MP4',quantity:1,notes:''};
+
+test('customer gets one new approval-ready alert only after every previous correction is reviewed for the existing preview',async t=>{
+  const f=await fixture(t),v1=f.version('v1');assert.equal(customerEvent(f,'preview_review_ready').length,0,'the initial upload already has preview_ready');
+  f.customerAction('feedback',{versionId:v1.id,text:'PRIVATE-FIRST'});f.customerAction('feedback',{versionId:v1.id,text:'PRIVATE-SECOND'});
+  const requests=f.row().messages.filter(message=>message.action==='feedback'),v2=f.version('v2');assert.equal(customerEvent(f,'preview_review_ready').length,0);
+  const live=createPulseLiveService({store:f.store,clientProjects:f.projects,clientNotifications:f.notifications});live.customerRead(f.customer.session,f.customer.csrf,{all:true});
+  for(const message of requests)f.update('owner',message.id,'submit_review',{versionId:v2.id,note:'PRIVATE-SUBMIT'});
+  f.update('reviewer',requests[0].id,'accept',{note:'PRIVATE-REVIEW'});assert.equal(customerEvent(f,'preview_review_ready').length,0);
+  f.update('reviewer',requests[1].id,'accept');let alerts=customerEvent(f,'preview_review_ready');assert.equal(alerts.length,1);assert.equal(alerts[0].unread,true);assert.equal(alerts[0].versionId,v2.id);assert.equal(alerts[0].tab,'review');assert.equal(alerts[0].target,'approval');assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE|audiences|workflow|resultVersion/);
+  assert.equal(f.notifications.list(f.users.owner).notifications.filter(item=>item.type==='review_accepted').length,2,'the existing owner notifications remain intact');
+  const firstId=alerts[0].id,source=f.row();f.projects.commitWorkflow(source);assert.equal(f.row().notificationEvents.filter(event=>event.id===firstId).length,1);
+  f.update('owner',requests[0].id,'reopen');assert.equal(customerEvent(f,'preview_review_ready').length,0);
+  f.update('owner',requests[0].id,'submit_review',{versionId:v2.id});f.update('reviewer',requests[0].id,'accept');alerts=customerEvent(f,'preview_review_ready');assert.equal(alerts.length,1);assert.notEqual(alerts[0].id,firstId,'a renewed review never revives the older identical alert');
+  const ready=f.row();f.customerAction('feedback',{versionId:v2.id,text:'PRIVATE-NEW-REQUEST'});assert.equal(customerEvent(f,'preview_review_ready').length,0);
+  f.store.put('clientProjects',ready.id,ready);f.version('v3');assert.equal(customerEvent(f,'preview_review_ready').length,0,'a newer file invalidates the old approval destination');
+  f.store.put('clientProjects',ready.id,ready);f.customerAction('approve',{versionId:v2.id});assert.equal(customerEvent(f,'preview_review_ready').length,0);
+});
+
+test('delivery review alerts follow committed production actions and disappear when confirmed or edited',async t=>{
+  const f=await fixture(t),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  const change=(action,extra={},staff=true)=>staff?studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,deliverableRevision:f.row().studio?.deliverables?.revision||0,action,...extra}):studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,deliverableRevision:f.row().studio.deliverables.revision,action,...extra});
+  change('save_deliverables',{items:[deliveryItem],notes:'PRIVATE-NOTES'});assert.equal(customerEvent(f,'deliverables_ready').length,0);
+  change('request_deliverable_review');let alerts=customerEvent(f,'deliverables_ready');assert.equal(alerts.length,1);assert.equal(alerts[0].tab,'strategy');assert.equal(alerts[0].target,'deliverables');assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE|authorId|audiences|deliverableRevision/);
+  const id=alerts[0].id,source=f.row();f.projects.commitWorkflow(source);assert.equal(f.row().notificationEvents.filter(event=>event.id===id).length,1);assert.equal(customerEvent(f,'deliverables_ready').length,1);
+  await f.restart();assert.equal(customerEvent(f,'deliverables_ready')[0].id,id);
+  const afterRestart=createPulseStudioService({store:f.store,clientProjects:f.projects});afterRestart.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'confirm_deliverables',deliverableRevision:1});assert.equal(customerEvent(f,'deliverables_ready').length,0);
+  afterRestart.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,action:'save_deliverables',deliverableRevision:1,items:[deliveryItem],notes:''});
+  afterRestart.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,action:'request_deliverable_review',deliverableRevision:2});assert.equal(customerEvent(f,'deliverables_ready').length,1);
+  afterRestart.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'save_deliverables',deliverableRevision:2,items:[deliveryItem],notes:'고쳐서 저장'});assert.equal(customerEvent(f,'deliverables_ready').length,0);
+});
+
+test('classification alerts point to the submitted item, replace older classifications, and require the public source',async t=>{
+  const f=await fixture(t),version=f.version('v1'),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  const customer=input=>studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,...input});
+  customer({action:'save_feedback_draft',versionId:version.id,text:'PRIVATE-OPINION',seconds:3});
+  customer({action:'submit_feedback_round',draftId:f.row().studio.feedbackRounds.drafts[0].id,versionId:version.id,representativeName:'PRIVATE-NAME',confirmed:true});
+  const round=f.row().studio.feedbackRounds.rounds[0],item=round.items[0],classify=classification=>studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,action:'classify_feedback_round',roundId:round.id,itemId:item.id,classification,scopeNote:'PRIVATE-SCOPE',scheduleNote:'PRIVATE-SCHEDULE'});
+  assert.equal(customerEvent(f,'feedback_classified').length,0);classify('included');let alerts=customerEvent(f,'feedback_classified');assert.equal(alerts.length,1);assert.equal(alerts[0].tab,'review');assert.equal(alerts[0].feedbackRoundId,round.id);assert.equal(alerts[0].feedbackItemId,item.id);assert.equal(alerts[0].messageId,item.messageId);assert.equal(alerts[0].versionId,version.id);assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE|classificationCount|authorId/);
+  const firstId=alerts[0].id;classify('correction');alerts=customerEvent(f,'feedback_classified');assert.equal(alerts.length,1);assert.notEqual(alerts[0].id,firstId);
+  const source=f.row();f.store.put('clientProjects',source.id,{...source,messages:source.messages.map(message=>({...message,visibility:'internal'}))});assert.equal(customerEvent(f,'feedback_classified').length,0);
+  f.store.put('clientProjects',source.id,{...source,studio:{...source.studio,feedbackRounds:{...source.studio.feedbackRounds,rounds:[]}}});assert.equal(customerEvent(f,'feedback_classified').length,0);
+});
+
+test('preparation updates notify only customer-visible changes and hide obsolete or disabled lists',async t=>{
+  const f=await fixture(t),configure=extra=>f.projects.kickoff(f.users.owner,f.row().id,{revision:f.row().revision,action:'configure',enabled:true,dueDate:'2026-10-20',requirements:[{label:'PRIVATE-LOGO',required:true,sourceKey:''}],...extra});
+  configure();let alerts=customerEvent(f,'kickoff_updated');assert.equal(alerts.length,1);assert.equal(alerts[0].tab,'strategy');assert.equal(alerts[0].target,'kickoff');assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE|kickoffKey/);
+  const firstId=alerts[0].id,requirement=f.row().kickoffPlan.requirements[0];f.projects.message(f.users.owner,f.row().id,{revision:f.row().revision,visibility:'internal',text:'PRIVATE-NOTE'});assert.equal(customerEvent(f,'kickoff_updated')[0].id,firstId);
+  f.projects.kickoff(f.users.owner,f.row().id,{revision:f.row().revision,action:'waive',requirementId:requirement.id,reason:'PRIVATE-WAIVER'});alerts=customerEvent(f,'kickoff_updated');assert.equal(alerts.length,1);assert.notEqual(alerts[0].id,firstId);assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE/);
+  configure({enabled:false,requirements:[{id:requirement.id,label:requirement.label,required:true,sourceKey:''}]});assert.equal(customerEvent(f,'kickoff_updated').length,0);
+  configure({requirements:[{id:requirement.id,label:requirement.label,required:true,sourceKey:''}]});assert.equal(customerEvent(f,'kickoff_updated').length,1,'re-enabling the same list must not revive an older identical alert');
+});
+
+test('corrected-scene alerts wait for reviewer acceptance and expire on scene or reviewer changes',async t=>{
+  const f=await fixture(t),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  const sceneInput={action:'save_scene',title:'PRIVATE-SCENE',description:'원본',duration:3,visibility:'customer'};
+  studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,...sceneInput});let scene=f.row().studio.scenes[0];
+  studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'review_scene',sceneId:scene.id,sceneRevision:scene.revision,status:'changes',text:'PRIVATE-CHANGE'});
+  const request=f.row().studio.sceneReviews[0];studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,...sceneInput,id:scene.id,description:'고침'});scene=f.row().studio.scenes[0];
+  const act=(action,user=f.users.owner,extra={})=>f.projects.sceneRequests(user,f.row().id,{revision:f.row().revision,action,requestId:request.id,confirmed:true,...extra});
+  act('submit',f.users.owner,{sceneRevision:scene.revision,note:'PRIVATE-SUBMIT'});assert.equal(customerEvent(f,'scene_review_ready').length,0);
+  act('accept',f.users.reviewer,{note:'PRIVATE-REVIEW'});let alerts=customerEvent(f,'scene_review_ready');assert.equal(alerts.length,1);assert.equal(alerts[0].tab,'storyboard');assert.equal(alerts[0].sceneId,scene.id);assert.equal(alerts[0].requestId,request.id);assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE|workflowAt|sceneRevision|resultFingerprint/);
+  f.store.put('users',f.users.reviewer.id,{...f.users.reviewer,active:false});assert.equal(customerEvent(f,'scene_review_ready').length,0);f.store.put('users',f.users.reviewer.id,f.users.reviewer);
+  studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,...sceneInput,id:scene.id,description:'다시 고침'});assert.equal(customerEvent(f,'scene_review_ready').length,0);
+  act('submit',f.users.owner,{sceneRevision:f.row().studio.scenes[0].revision});act('accept',f.users.reviewer);assert.equal(customerEvent(f,'scene_review_ready').length,1);
+  studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'review_scene',sceneId:scene.id,sceneRevision:f.row().studio.scenes[0].revision,status:'confirmed',text:''});assert.equal(customerEvent(f,'scene_review_ready').length,0);
+});
+
+test('staff replies open the conversation while scene comments retain their visible scene target',async t=>{
+  const f=await fixture(t),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  f.projects.message(f.users.owner,f.row().id,{revision:f.row().revision,text:'PRIVATE-REPLY'});let reply=customerEvent(f,'staff_reply')[0];assert.equal(reply.tab,'review');assert.equal(reply.messageId,f.row().messages.at(-1).id);
+  const source=f.row();f.store.put('clientProjects',source.id,{...source,notificationEvents:source.notificationEvents.map(event=>event.id===reply.id?{...event,tab:'history'}:event)});assert.equal(customerEvent(f,'staff_reply')[0].tab,'review','existing event pointers also migrate their destination without changing identity');
+  studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,action:'comment',targetType:'project',text:'PRIVATE-PROJECT-REPLY'});reply=customerEvent(f,'staff_reply').find(item=>item.commentId);assert.equal(reply.tab,'review');assert.equal(reply.commentId,f.row().studio.comments.at(-1).id);
+  const sceneInput={action:'save_scene',title:'PRIVATE-SCENE',duration:3,visibility:'customer'};studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,...sceneInput});const scene=f.row().studio.scenes[0];
+  studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,action:'comment',targetType:'scene',targetId:scene.id,targetRevision:scene.revision,text:'PRIVATE-SCENE-REPLY'});reply=customerEvent(f,'staff_reply').find(item=>item.sceneId);assert.equal(reply.tab,'storyboard');assert.equal(reply.sceneId,scene.id);
+  studio.staffMutate(f.users.owner,f.row().id,{revision:f.row().revision,...sceneInput,id:scene.id,visibility:'internal'});assert.equal(customerEvent(f,'staff_reply').some(item=>item.id===reply.id),false);assert.doesNotMatch(JSON.stringify(customerNews(f)),/PRIVATE/);
+});
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-client-notifications-'));let store=new Store(directory),projects,workflow,notifications;
   t.after(async()=>{notifications.close();await tick();store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});

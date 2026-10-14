@@ -21,13 +21,13 @@ test('request section follows its original scene and only appears on the storybo
 });
 
 test('customer sees original request, request and submitted revisions while internal fields remain hidden',()=>{
-  const s=state(),html=sceneRequestView(s,scene)+sceneRequestsSummary(s);assert.match(html,/화면 문구를 크게/);assert.match(html,/요청한 장면/);assert.match(html,/v1/);assert.match(html,/반영 제출한 장면/);assert.match(html,/수정된 장면 v3 확인/);assert.match(html,/data-project-revision="9"/);assert.doesNotMatch(html,/PRIVATE|내부 표시|requests=1/);
+  const s=state(),html=sceneRequestView(s,scene)+sceneRequestsSummary(s);assert.match(html,/화면 문구를 크게/);assert.match(html,/요청한 장면/);assert.match(html,/v1/);assert.match(html,/반영 제출한 장면/);assert.match(html,/위의 장면 확인 단추/);assert.doesNotMatch(html,/data-action="confirm-scene-request"/);assert.match(projectView(s),/수정된 장면 v3 확인/);assert.match(projectView(s),/data-project-revision="9"/);assert.doesNotMatch(html,/PRIVATE|내부 표시|requests=1/);
   s.project.sceneRequests.items.push({...request,id:'private',sceneId:'private-scene',text:'PRIVATE-SCENE'});assert.doesNotMatch(sceneRequestsSummary(s),/PRIVATE-SCENE|내 차례 2개/);
 });
 
 test('a new scene save or stale, unsubmitted and completed request does not fabricate completion or a confirmation action',()=>{
-  for(const status of ['open','in_progress','review','changes_requested','stale','unavailable','archived']){const s=state();s.project.sceneRequests.items[0].status=status;s.project.sceneRequests.items[0].resultRevision=null;const html=sceneRequestView(s,scene);assert.match(html,/아직 제출 전/);assert.doesNotMatch(html,/data-action="confirm-scene-request"|고객이 반영된 장면을 확인했습니다/);}
-  const s=state();s.project.sceneRequests.items[0].status='done';const html=sceneRequestView(s,scene);assert.match(html,/고객이 반영된 장면을 확인했습니다/);assert.doesNotMatch(html,/data-action="confirm-scene-request"/);
+  for(const status of ['open','in_progress','review','changes_requested','stale','unavailable','archived']){const s=state();s.project.sceneRequests.items[0].status=status;s.project.sceneRequests.items[0].resultRevision=null;const html=sceneRequestView(s,scene);assert.match(html,/아직 제출 전/);assert.doesNotMatch(html,/data-action="confirm-scene-request"|수정된 장면을 확인했어요/);}
+  const s=state();s.project.sceneRequests.items[0].status='done';s.project.sceneRequests.items[0].reason='수정된 장면을 확인했어요';const html=sceneRequestView(s,scene);assert.match(html,/수정된 장면을 확인했어요/);assert.doesNotMatch(html,/data-action="confirm-scene-request"/);
   const changed=state();changed.project.sceneRequests.items[0].resultRevision=2;assert.doesNotMatch(sceneRequestView(changed,scene),/data-action="confirm-scene-request"/);
 });
 

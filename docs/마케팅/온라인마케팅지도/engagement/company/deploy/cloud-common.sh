@@ -67,7 +67,12 @@ check_storage() {
 lock_operations() {
   existing_absolute_directory "$SYNK_OPS_STATE_DIR"
   exec 9>"$SYNK_OPS_STATE_DIR/operations.lock"
-  flock --nonblock 9 || { event OPERATION_ALREADY_RUNNING; exit 0; }
+  if [[ "${1:-}" = backup ]]; then
+    # A daily backup must wait for a short health/recovery operation or fail visibly.
+    flock --wait 120 9 || fail BACKUP_FAILED
+  else
+    flock --nonblock 9 || { event OPERATION_ALREADY_RUNNING; exit 0; }
+  fi
 }
 
 check_runtime_configuration() {

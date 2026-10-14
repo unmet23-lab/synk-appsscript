@@ -40,6 +40,14 @@ function fixture(t,overrides={}){
 }
 const section=(result,id)=>result.sections.find(row=>row.id===id);
 
+test('next-week social reservations use current permission and personal assignment, with KST boundaries',t=>{
+  let rows=[];const f=fixture(t,{socialPublishing:{workspace:user=>({jobs:user.id===f.users.owner.id?rows:[]})}});
+  rows=[{id:'next-social',postId:'source-post',channelId:'youtube',publisherId:f.users.owner.id,scheduledAt:'2026-10-11T15:30:00Z',status:'scheduled',contentSummary:{title:'다음 주 SNS 예약'}},{id:'last-social',postId:'source-post',channelId:'youtube',publisherId:f.users.owner.id,scheduledAt:'2026-10-11T14:59:59Z',status:'scheduled',contentSummary:{title:'지난 주'}}];
+  let items=section(f.service.get(f.users.owner),'upcoming').items;assert.equal(items.filter(row=>row.kind==='social_schedule').length,1);assert.equal(items.find(row=>row.kind==='social_schedule').dueDate,'2026-10-12');assert.match(items.find(row=>row.kind==='social_schedule').text,/00:30 한국 시간/);
+  assert.equal(section(f.service.get(f.users.viewer),'upcoming').items.length,0);assert.equal(section(f.service.get(f.users.other),'upcoming').items.length,0);
+  rows=[];assert.equal(section(f.service.get(f.users.owner),'upcoming').items.filter(row=>row.kind==='social_schedule').length,0);
+});
+
 test('KST Monday rollover, exclusive boundaries and only 52 completed weeks',t=>{
   const f=fixture(t);f.setTime('2026-10-11T14:59:59.999Z');let result=f.service.get(f.users.owner);
   assert.equal(result.period.startDate,'2026-09-28');

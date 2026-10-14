@@ -26,8 +26,8 @@ export function createBrandQualityService({store,clock=()=>new Date().toISOStrin
   function forEdit(user,kind,id,input){const row=store.get(kind,text(id,100,'기록 ID',true));if(!row||!canRead(user,row))throw fail('기록을 찾을 수 없습니다.',404);if(!canEdit(user,row))throw fail('이 기록을 수정할 권한이 없습니다.',403);if(input.revision!==row.revision)throw fail('다른 창에서 변경된 기록입니다. 새로 읽은 뒤 다시 수정해 주세요.',409);return row;}
   function scope(user,input,old){const visibility=input.visibility??old?.visibility??'private';if(!['private','team','company'].includes(visibility))throw fail('공유 범위를 확인해 주세요.');if(visibility==='company'&&!(user.role==='admin'||user.role==='manager'))throw fail('팀장 또는 관리자만 회사 전체에 공유할 수 있습니다.',403);const teamId=visibility==='team'?(old?.teamId||user.teamId):null;if(visibility==='team'&&(!teamId||!store.get('teams',teamId)?.active||user.role!=='admin'&&teamId!==user.teamId))throw fail('활성 팀에 속한 기록만 팀에 공유할 수 있습니다.',403);return {visibility,teamId};}
   function base(user,input,old){const at=clock();return {...(old||{id:randomUUID(),ownerId:user.id,createdAt:at}),...scope(user,input,old),title:text(input.title??old?.title,160,'제목',true),revision:(old?.revision||0)+1,updatedAt:at,updatedById:user.id};}
-  function recipeView(user,row){return {...row,ownerName:name(row.ownerId),canEdit:canEdit(user,row),canApprove:canApprove(user,row),approvedByName:row.approvedById?name(row.approvedById):null};}
-  function operationView(user,row){const list=Object.values(row.checks);return {...row,ownerName:name(row.ownerId),canEdit:canEdit(user,row),counts:{pass:list.filter(item=>item.status==='pass').length,issue:list.filter(item=>item.status==='issue').length,unverified:list.filter(item=>item.status==='unverified').length,notApplicable:list.filter(item=>item.status==='not-applicable').length}};}
+  function recipeView(user,row,displayName=name){return {...row,ownerName:displayName(row.ownerId),canEdit:canEdit(user,row),canApprove:canApprove(user,row),approvedByName:row.approvedById?displayName(row.approvedById):null};}
+  function operationView(user,row,displayName=name){const list=Object.values(row.checks);return {...row,ownerName:displayName(row.ownerId),canEdit:canEdit(user,row),counts:{pass:list.filter(item=>item.status==='pass').length,issue:list.filter(item=>item.status==='issue').length,unverified:list.filter(item=>item.status==='unverified').length,notApplicable:list.filter(item=>item.status==='not-applicable').length}};}
   function saveRecipe(user,input,id=null){
     user=current(user,true);object(input);
     return store.transaction(()=>{
@@ -76,6 +76,13 @@ export function createBrandQualityService({store,clock=()=>new Date().toISOStrin
       store.put('brandOperations',row.id,row);return {operation:operationView(user,row)};
     });
   }
-  function workspace(user){user=current(user);return {recipes:store.all('brandRecipes').filter(row=>canRead(user,row)).map(row=>recipeView(user,row)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)),operations:store.all('brandOperations').filter(row=>canRead(user,row)).map(row=>operationView(user,row)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)),sources:assets.map(({id,title,category,usage,sourcePath})=>({id,title,category,usage,sourcePath})),checks:OPERATION_CHECKS,canWrite:user.role!=='viewer',canShareCompany:['admin','manager'].includes(user.role),canShareTeam:!!user.teamId&&!!store.get('teams',user.teamId)?.active,notice:'직접 확인한 환경과 근거를 기록합니다. 저장만으로 자동 검사·공개 운영·실제 고객 성과가 확인되지는 않습니다.'};}
+  function workspace(user){
+    user=current(user);
+    // Display names are reused only within this response; live authorization and
+    // later requests still read current user records.
+    const names=new Map([[user.id,user.name||'이전 담당자']]);
+    const displayName=id=>{if(!names.has(id))names.set(id,name(id));return names.get(id);};
+    return {recipes:store.all('brandRecipes').filter(row=>canRead(user,row)).map(row=>recipeView(user,row,displayName)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)),operations:store.all('brandOperations').filter(row=>canRead(user,row)).map(row=>operationView(user,row,displayName)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)),sources:assets.map(({id,title,category,usage,sourcePath})=>({id,title,category,usage,sourcePath})),checks:OPERATION_CHECKS,canWrite:user.role!=='viewer',canShareCompany:['admin','manager'].includes(user.role),canShareTeam:!!user.teamId&&!!store.get('teams',user.teamId)?.active,notice:'직접 확인한 환경과 근거를 기록합니다. 저장만으로 자동 검사·공개 운영·실제 고객 성과가 확인되지는 않습니다.'};
+  }
   return {workspace,saveRecipe,saveOperation};
 }

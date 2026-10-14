@@ -31,3 +31,5 @@
 최신 부품 규칙은 `docs/디자인/펠트부품/README.md`를 따른다. 작은 조작부는 실제 `felt-ui/` 판·칩·배지 사진을 쓰며, 오래 읽는 메시지와 입력 면은 흰 바탕으로 둔다. CSS 점선·납작한 테이프·흩어진 색점은 추가하지 않는다.
 
 - 2026-10-02 작업실 AI 업무 연습: `felt-ui/slab-cream-long.webp`는 `docs/디자인/펠트부품/assets/ui/slab-cream-long.webp` 원본 복사본이다. 선택 전 업무 타일에 쓴다.
+
+- 2026-10-14 SNS·마케팅 12판 포스터: `sns-felt-{overview,compose,calendar,queue,bulk,accounts,results,inbox,settings}.webp` 9장. 화면마다 그 일을 설명하는 펠트 물건(폰과 하트 · 연필과 메모 카드 · 탁상 달력 · 자명종 · 펼친 사진 카드 · 사원증 · 오르는 막대 · 하트와 답장 화살표 · 플러그와 콘센트)을 GPT 이미지 2.5(ChatGPT 구독 Codex CLI)로 흰 바탕 한 판에 굽고 `Documents/synk-vendor/sns-felt/custom_cut.py`로 오렸다(원판·지시문·스크립트는 같은 폴더). `company/public/social-workspace.js`의 포스터가 `/messenger/assets/sns-felt-<화면>.webp`로 읽는다. [설계](../../../../docs/디자인/워크스페이스_시그널/README.md#signal-v12-sns-20261013)

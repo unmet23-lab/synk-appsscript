@@ -47,7 +47,7 @@ test('pending feedback still blocks final approval while allowing the customer t
 test('a draft tied to an old preview remains blocked after the mobile rearrangement',()=>{
   const html=projectView(state({versionId:'old',feedbackDraftVersion:'old',feedbackDraftAction:'feedback'}));
   assert.match(html,/이 글은 이전 시안에 작성한 의견이에요/);
-  assert.match(html,/<button type="submit" class="button primary" data-mutate disabled>이 의견 보내기/);
+  assert.match(html,/<button type="submit" class="button primary" data-mutate disabled>문의 보내기/);
 });
 
 test('staff review has neither customer quick action and retains the reply form',()=>{

@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto';
+import {setImmediate as yieldToRequests} from 'node:timers/promises';
 import {checkPublicLink} from './publication-link-probe.mjs';
 
 const KIND='publicationLinkChecks',HOUR=3600000,COOLDOWN=60000;
@@ -22,7 +23,7 @@ export function createPublicationLinkCheckService({store,studio,publicationPacka
       const production=write?studio.assertEditable(user,pack.productionId):studio.production(user,pack.productionId).production;
       canCheck=user.role!=='viewer'&&production.stage!=='archived'&&(write||production.canEdit===true);url=pack.link||'';
     }else{
-      const entry=postPerformance.list(user).entries.find(row=>row.id===target.id&&row.active!==false);if(!entry)throw fail('현재 확인할 수 있는 게시 기록이 없습니다.',404);
+      const entry=postPerformance.linkSource(user,target.id);
       url=entry.url;canCheck=user.role!=='viewer'&&entry.canEdit===true;
     }
     if(write&&!canCheck)throw fail('이 링크를 확인할 현재 담당 권한이 없습니다.',403);
@@ -74,8 +75,12 @@ export function createPublicationLinkCheckService({store,studio,publicationPacka
     return list;
   }
   async function scanWork({signal}={}){
-    const result={checked:0,skipped:0,failed:0};
+    const result={checked:0,skipped:0,failed:0};let visited=0;
     for(const candidate of candidates()){
+      // Fresh checks are usually skipped without network I/O. Give requests and
+      // cancellation a turn even when the entire scan follows that path.
+      if(visited>0&&visited%25===0)await yieldToRequests();
+      visited++;
       if(stopping||signal?.aborted||result.checked+result.failed>=10)break;
       let owner=null,state=null;for(const id of candidate.owners){try{const user=store.get('users',id);if(!user?.active||user.role==='viewer')continue;const selected=source(user,candidate.target,true);state=view(selected).check;if(state?.canCheck){owner=user;break;}}catch(error){if(![400,401,403,404,409,422].includes(error.status))throw error;}}
       if(!owner||!state||state.nextCheckAt&&Date.parse(state.nextCheckAt)>instant()){result.skipped++;continue;}

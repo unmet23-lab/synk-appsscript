@@ -1,3 +1,5 @@
+import {instagramIdentity} from './meta-connection.mjs';
+
 /**
  * Read-only SNS collectors. Only fixed official API origins are fetched.
  * Values are lifetime snapshots taken now, not historical daily analytics.
@@ -384,10 +386,11 @@ async function instagram(channel, credentials, request, recent) {
   const cap = recent || limits(credentials);
   const api = (path, params) => request(endpoint(config.origin, `/${config.apiVersion}/${path}`, params), { headers: { Authorization: `Bearer ${accessToken}` } });
   const accountId = direct ? 'me' : graphId(required(credentials, 'accountId', '연결할 Instagram 프로페셔널 계정 ID가 필요합니다.'));
-  const user = await api(accountId, { fields: 'id,username,name,followers_count,media_count' });
+  const user = await api(accountId, { fields: (direct?'id,user_id':'id')+',username,name,followers_count,media_count' });
   if (!user?.id || !user?.username) throw new CollectorError('AUTH_REQUIRED', 'Instagram 프로페셔널 계정 정보를 확인할 수 없습니다. 조회 권한을 확인해 주세요.');
-  if (user.username.toLowerCase() !== channel.handle?.toLowerCase() || (credentials.accountId && credentials.accountId !== String(user.id))) throw mismatch();
-  const resolvedId = graphId(String(user.id));
+  const identity=direct?instagramIdentity(user,{requireUserId:credentials.metaIdentityVersion===1}):{id:String(user.id),appScopedId:null};
+  if (user.username.toLowerCase() !== channel.handle?.toLowerCase() || (credentials.accountId && credentials.accountId !== identity.id && credentials.accountId !== identity.appScopedId)) throw mismatch();
+  const resolvedId = graphId(identity.id);
   const list = await graphList(`${resolvedId}/media`, { fields: 'id,caption,media_type,media_product_type,permalink,timestamp,thumbnail_url,like_count,comments_count' }, api, cap, recent, media => media.timestamp);
   const warnings = [...list.warnings, 'Instagram 인사이트는 프로페셔널 계정 전환 시점·콘텐츠 종류·플랫폼 보존 기간에 따라 일부 수치가 제공되지 않을 수 있습니다.', '콘텐츠별 도달은 중복 사용자를 포함하므로 전체 채널의 고유 도달 수로 합산할 수 없습니다.'];
   let missingInsights = 0;

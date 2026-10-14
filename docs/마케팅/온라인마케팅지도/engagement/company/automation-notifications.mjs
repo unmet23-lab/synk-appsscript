@@ -93,6 +93,10 @@ export function createAutomationNotificationsService({store,automationHealth,clo
   }
   function projected(user){
     if(!eligible(user))return [];
+    // Reads cannot create alerts. With no saved receipt for this user, there is
+    // nothing to project; existing (including suppressed) receipts still get
+    // live source/permission validation and retain their error behavior.
+    if(!store.all(KIND).some(row=>row.ownerId===user.id))return [];
     const view=snapshot(user),items=[];
     for(const [key,issue]of view.issues){
       const row=store.get(KIND,key);

@@ -19,5 +19,9 @@ export function safeUrl(value,{media=false}={}){
   try{const url=new URL(value,location.origin);if(url.username||url.password)return '';if(url.origin===location.origin&&['http:','https:'].includes(url.protocol))return url.href;if(!media&&url.protocol==='https:')return url.href;return '';}catch{return '';}
 }
 export const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-export const stamp=value=>{const date=new Date(value);return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'short'}).format(date):'';};
+// 날짜는 「10월 13일 오전 8:54」처럼 읽는 말로 쓴다. 올해가 아니면 연도를 붙인다(2026-10-13 글자 2판).
+export const stamp=value=>{const date=new Date(value);if(!Number.isFinite(date.getTime()))return '';const year=date.getFullYear()!==new Date().getFullYear();return new Intl.DateTimeFormat('ko-KR',{...(year?{year:'numeric'}:{}),month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}).format(date);};
+// 날짜만 있는 값(YYYY-MM-DD)은 「10월 31일 (금)」. 형식이 다르면 받은 글자를 그대로 둔다.
+export const day=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));if(!m)return String(value||'');const date=new Date(+m[1],+m[2]-1,+m[3]);if(date.getMonth()!==+m[2]-1)return String(value);const week='일월화수목금토'[date.getDay()];return (date.getFullYear()!==new Date().getFullYear()?date.getFullYear()+'년 ':'')+(date.getMonth()+1)+'월 '+date.getDate()+'일 ('+week+')';};
+export const keepDots=html=>String(html).replace(/([^\s<>]+·[^\s<>]+)/g,'<span class="nw">$1</span>');
 export const clock=value=>{const time=Math.max(0,Number(value)||0);return Math.floor(time/60)+':'+String(Math.floor(time%60)).padStart(2,'0');};

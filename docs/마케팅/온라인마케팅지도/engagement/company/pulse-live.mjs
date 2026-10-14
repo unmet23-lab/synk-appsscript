@@ -1,5 +1,7 @@
 import {createHash} from 'node:crypto';
-import {clientNotificationTitle} from './client-notifications.mjs';
+import {clientNotificationTitle,customerKickoffNotificationKey} from './client-notifications.mjs';
+import {customerSceneRequests} from './client-scene-requests.mjs';
+import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const stamp=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -17,13 +19,46 @@ export function createPulseLiveService({store,clientProjects,clientNotifications
   const customerReceipt=(row,eventId)=>`${row.id}|${row.inviteRevision}|${eventId}`;
   function customerProjection(row,{all=false}={}){
     const notifications=[];
+    let sceneRequests,kickoffKey,previewApproval;
     for(const event of row.notificationEvents||[]){
       if(!event.audiences?.includes('customer')||event.actorId==='customer')continue;
       if(event.versionId&&!row.versions.some(version=>version.id===event.versionId))continue;
       if(event.messageId&&!row.messages.some(message=>message.id===event.messageId&&message.visibility==='customer'))continue;
+      if(event.sceneId&&!row.studio?.scenes?.some(scene=>scene.id===event.sceneId&&scene.visibility==='customer'))continue;
+      if(event.conceptId&&!row.studio?.concepts?.some(concept=>concept.id===event.conceptId&&concept.visibility==='customer'))continue;
+      if(event.type==='preview_review_ready'){
+        previewApproval??=buildCustomerPreviewApproval(row);
+        if(!previewApproval.canApprove||previewApproval.versionId!==event.versionId||row.notificationEvents.findLast(item=>item.type==='preview_review_ready'&&item.versionId===event.versionId)?.id!==event.id)continue;
+      }
       if(event.commentId){const comment=row.studio?.comments?.find(item=>item.id===event.commentId);if(!comment||comment.visibility!=='customer')continue;const target=comment.targetType==='concept'?row.studio?.concepts:comment.targetType==='scene'?row.studio?.scenes:null;if(target&&!target.some(item=>item.id===comment.targetId&&item.visibility==='customer'))continue;}
+      if(event.type==='strategy_ready'){
+        const strategy=row.studio?.strategy;
+        if(!strategy?.request||strategy.request.strategyRevision!==strategy.revision||strategy.confirmation?.strategyRevision===strategy.revision||event.strategyRevision!==undefined&&event.strategyRevision!==strategy.revision)continue;
+      }
+      if(event.type==='deliverables_ready'){
+        const deliverables=row.studio?.deliverables;
+        if(deliverables?.revision!==event.deliverableRevision||deliverables.request?.deliverableRevision!==event.deliverableRevision||deliverables.confirmation?.deliverableRevision===event.deliverableRevision)continue;
+      }
+      if(event.type==='feedback_classified'){
+        const round=row.studio?.feedbackRounds?.rounds?.find(item=>item.id===event.feedbackRoundId),item=round?.items?.find(value=>value.id===event.feedbackItemId&&value.messageId===event.messageId);
+        if(!item||item.classifications?.length!==event.classificationCount)continue;
+      }
+      if(event.type==='kickoff_updated'){
+        if(!row.kickoffPlan?.enabled)continue;
+        kickoffKey??=customerKickoffNotificationKey(row);
+        if(event.kickoffKey!==kickoffKey||row.notificationEvents.findLast(item=>item.type==='kickoff_updated')?.id!==event.id)continue;
+      }
+      if(event.type==='scene_review_ready'){
+        sceneRequests??=customerSceneRequests(row,clientProjects.sceneRequestContext(row)).items;
+        const item=sceneRequests.find(item=>item.id===event.requestId&&item.sceneId===event.sceneId),workflow=row.sceneRequestWorkflows?.[event.requestId];
+        if(item?.status!=='waiting_customer'||item.resultRevision!==event.sceneRevision||workflow?.waitingAt!==event.workflowAt)continue;
+      }
       const readAt=store.get('pulseCustomerNotificationReads',customerReceipt(row,event.id))?.readAt||null;
-      notifications.push({id:event.id,type:event.type,title:clientNotificationTitle(event.type),body:genericBody,createdAt:event.createdAt,readAt,unread:!readAt,projectId:row.id,versionId:event.versionId||null,messageId:event.messageId||null,tab:event.tab||'history'});
+      // Existing durable reply pointers also land in the conversation after the
+      // customer tabs changed; their stored receipts and identities stay intact.
+      const tab=event.type==='staff_reply'&&(!event.tab||event.tab==='history')?'review':event.tab||'history';
+      const target=Object.fromEntries(['target','commentId','conceptId','sceneId','requestId','feedbackRoundId','feedbackItemId'].filter(key=>event[key]).map(key=>[key,event[key]]));
+      notifications.push({id:event.id,type:event.type,title:clientNotificationTitle(event.type),body:genericBody,createdAt:event.createdAt,readAt,unread:!readAt,projectId:row.id,versionId:event.versionId||null,messageId:event.messageId||null,tab,...target});
     }
     notifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
     return {revision:stamp([row.id,row.inviteRevision,row.revision,notifications.map(item=>[item.id,item.readAt])]),projectId:row.id,projectRevision:row.revision,notifications:all?notifications:notifications.slice(0,1000),unreadCount:notifications.filter(item=>item.unread).length};

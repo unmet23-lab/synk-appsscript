@@ -7,6 +7,7 @@ import {buildClientSchedule} from './client-schedule.mjs';
 import {deliverableActions,applyDeliverableAction,deliverableView} from './pulse-deliverables.mjs';
 import {feedbackRoundActions,applyFeedbackRoundAction,feedbackRoundsView} from './pulse-feedback-rounds.mjs';
 import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} from './pulse-previews.mjs';
+import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -128,14 +129,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     return store.transaction(()=>{
       const {row}=customerWrite(token,csrf);
       if(input?.action==='approve'){
-        const latest=row.versions.filter(value=>value.kind==='preview').at(-1);
-        if(latest&&(row.studio?.feedbackRounds?.drafts||[]).some(draft=>draft.versionId===latest.id&&draft.items?.length))throw fail('모은 수정 의견을 먼저 제출하거나 초안에서 지운 뒤 승인해 주세요.',409);
-        const unresolved=row.messages.filter(message=>message.author==='customer'&&message.action==='feedback'&&!message.resolved);
-        if(latest&&unresolved.some(message=>message.versionId===latest.id))throw fail('이 시안에 남긴 수정 의견이 있습니다. 수정본을 받은 뒤 승인해 주세요.',409);
-        // Uploading a revision exposes it immediately. Approval must wait until
-        // every earlier request is linked and reviewed for this exact revision;
-        // otherwise it can no longer enter the correction workflow or delivery.
-        if(latest&&unresolved.some(message=>message.workflow?.status!=='waiting_customer'||message.workflow.resultVersionId!==latest.id))throw fail('이전 시안의 수정 의견을 담당자가 최신 수정본에 연결하고 검토를 마친 뒤 승인할 수 있습니다. 담당자 확인을 기다려 주세요.',409);
+        const approval=buildCustomerPreviewApproval(row);
+        if(!approval.canApprove)throw fail(approval.reason,409);
       }
       clientProjects.customerAction(token,csrf,input);return customerState(token);
     });

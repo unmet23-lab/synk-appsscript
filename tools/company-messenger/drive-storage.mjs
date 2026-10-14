@@ -14,6 +14,11 @@ export class DriveStorageError extends Error{
 }
 const fail=(condition,status,message)=>{if(!condition)throw new DriveStorageError(status,message);};
 const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{5,200}$/.test(id);
+async function withSignal(pending,signal){
+  if(!signal)return pending;let onAbort;
+  try{return await Promise.race([pending,new Promise((_,reject)=>{onAbort=()=>reject(signal.reason||new DOMException('Aborted','AbortError'));if(signal.aborted)return onAbort();signal.addEventListener('abort',onAbort,{once:true});})]);}
+  finally{if(onAbort)signal.removeEventListener('abort',onAbort);}
+}
 
 export function createDriveStorage({dataDir,fetchImpl=fetch}){
   const registryPath=path.join(path.resolve(dataDir),'drive-storage.json');
@@ -61,15 +66,19 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     refreshing.set(key,pending);
     try{return await pending;}finally{refreshing.delete(key);}
   }
-  async function request(c,url,{bodyFactory,timeoutMs=30000,...options}={}){
+  async function request(c,url,{bodyFactory,timeoutMs=30000,signal,...options}={}){
     for(let attempt=0;attempt<2;attempt++){
       let response,body;
-      const accessToken=await token(c);
+      signal?.throwIfAborted();
+      // Refresh is shared across readers; cancelling one consumer must not
+      // revoke another reader's in-flight authentication request.
+      const accessToken=await withSignal(token(c),signal);signal?.throwIfAborted();
       try{
         body=bodyFactory?bodyFactory():options.body;
-        response=await fetchImpl(url,{...options,body,headers:{...options.headers,Authorization:`Bearer ${accessToken}`},redirect:'error',signal:AbortSignal.timeout(timeoutMs),...(bodyFactory?{duplex:'half'}:{})});
-      }catch{throw new DriveStorageError(503,'Google Drive 요청의 완료 여부를 확인하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.');}
+        response=await fetchImpl(url,{...options,body,headers:{...options.headers,Authorization:`Bearer ${accessToken}`},redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(timeoutMs)]):AbortSignal.timeout(timeoutMs),...(bodyFactory?{duplex:'half'}:{})});
+      }catch{signal?.throwIfAborted();throw new DriveStorageError(503,'Google Drive 요청의 완료 여부를 확인하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.');}
       finally{if(bodyFactory&&body?.destroy)body.destroy();}
+      signal?.throwIfAborted();
       if(response.status===401&&attempt===0){await response.arrayBuffer().catch(()=>{});tokens.delete(keyFor(c));continue;}
       return response;
     }
@@ -84,10 +93,11 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     if(response.status===401||response.status===403)throw new DriveStorageError(503,'Google Drive 접근 권한을 확인할 수 없습니다. 연결 계정을 확인해 주세요.');
     throw new DriveStorageError(503,'Google Drive가 요청을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.');
   }
-  async function account(c,{fresh=false}={}){
+  async function account(c,{fresh=false,timeoutMs,signal}={}){
+    signal?.throwIfAborted();
     const key=keyFor(c),cached=verified.get(key);
     if(!fresh&&cached&&cached.until>Date.now())return cached.result;
-    const body=await checkedJson(await request(c,`${API}/about?fields=user(emailAddress,displayName),storageQuota`));
+    const body=await checkedJson(await request(c,`${API}/about?fields=user(emailAddress,displayName),storageQuota`,{timeoutMs,signal}));signal?.throwIfAborted();
     fail(body.user?.emailAddress?.toLowerCase()===c.email.toLowerCase(),409,'Google 인증 계정이 저장된 연결 계정과 다릅니다. 계정 연결을 다시 확인해 주세요.');
     const result={email:body.user.emailAddress,name:body.user.displayName||body.user.emailAddress,limitBytes:numeric(body.storageQuota?.limit),usedBytes:numeric(body.storageQuota?.usage),driveBytes:numeric(body.storageQuota?.usageInDrive),trashBytes:numeric(body.storageQuota?.usageInDriveTrash)};
     verified.set(key,{until:Date.now()+60000,result});
@@ -162,6 +172,45 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     if(!response.ok)await checkedJson(response);
     return Readable.fromWeb(response.body);
   }
+  async function readCreativeResearchDocument({documentId,connectionId,ifModifiedTime,signal}){
+    signal?.throwIfAborted();
+    fail(validId(documentId)&&typeof connectionId==='string'&&connectionId.length>0,400,'전용 조사 문서와 저장 계정 식별자를 확인해 주세요.');
+    fail(ifModifiedTime===undefined||typeof ifModifiedTime==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(ifModifiedTime)&&Number.isFinite(Date.parse(ifModifiedTime)),400,'이전 전용 조사 문서의 수정 시각을 확인해 주세요.');
+    const reg=await registry(),c=find(reg,connectionId);await account(c,{fresh:true,timeoutMs:15000,signal});
+    const meta=await checkedJson(await request(c,`${API}/files/${encodeURIComponent(documentId)}?fields=id,mimeType,trashed,appProperties,modifiedTime`,{timeoutMs:15000,signal}));signal?.throwIfAborted();
+    fail(meta.id===documentId&&!meta.trashed&&meta.mimeType==='application/vnd.google-apps.document'&&meta.appProperties?.synkCreativeResearchInbox==='v1',409,'지정한 파일이 전용 조사 문서인지 확인되지 않아 읽기를 중단했습니다.');
+    fail(typeof meta.modifiedTime==='string'&&Number.isFinite(Date.parse(meta.modifiedTime)),409,'전용 조사 문서의 수정 시각을 확인하지 못했습니다.');
+    async function assertCurrentConnection(){
+      signal?.throwIfAborted();
+      const currentReg=await registry(),current=find(currentReg,connectionId);
+      const sameIdentity=value=>currentReg.installationId===reg.installationId&&value.id===c.id&&value.folderId===c.folderId&&typeof value.email==='string'&&value.email.toLowerCase()===c.email.toLowerCase()&&value.credentials&&['client_id','client_secret','refresh_token'].every(key=>typeof value.credentials[key]==='string'&&value.credentials[key].length>0)&&value.credentials.client_id===c.credentials.client_id&&value.credentials.client_secret===c.credentials.client_secret;
+      fail(sameIdentity(current),409,'전용 조사 문서를 읽는 동안 저장 계정 연결이 변경되었습니다. 현재 연결로 다시 확인해 주세요.');
+      signal?.throwIfAborted();if(keyFor(current)===keyFor(c))return;
+      // A refresh-token rotation can keep the same account and document grant.
+      // Verify those current credentials, then close the async verification gap
+      // with a second registry read before allowing either result to escape.
+      await account(current,{fresh:true,timeoutMs:15000,signal});
+      const currentMeta=await checkedJson(await request(current,`${API}/files/${encodeURIComponent(documentId)}?fields=id,mimeType,trashed,appProperties,modifiedTime`,{timeoutMs:15000,signal}));signal?.throwIfAborted();
+      fail(currentMeta.id===documentId&&!currentMeta.trashed&&currentMeta.mimeType==='application/vnd.google-apps.document'&&currentMeta.appProperties?.synkCreativeResearchInbox==='v1'&&typeof currentMeta.modifiedTime==='string'&&Number.isFinite(Date.parse(currentMeta.modifiedTime))&&Date.parse(currentMeta.modifiedTime)===Date.parse(meta.modifiedTime),409,'현재 저장 계정의 전용 조사 문서 권한이나 내용이 변경되었습니다. 다시 확인해 주세요.');
+      const finalReg=await registry(),finalConnection=find(finalReg,connectionId);
+      signal?.throwIfAborted();
+      fail(finalReg.installationId===reg.installationId&&sameIdentity(finalConnection)&&keyFor(finalConnection)===keyFor(current),409,'전용 조사 문서를 확인하는 동안 저장 계정 연결이 다시 변경되었습니다. 현재 연결로 다시 확인해 주세요.');
+    }
+    if(ifModifiedTime!==undefined&&Date.parse(ifModifiedTime)===Date.parse(meta.modifiedTime)){await assertCurrentConnection();return {notModified:true,modifiedTime:meta.modifiedTime};}
+    const response=await request(c,`${API}/files/${encodeURIComponent(documentId)}/export?mimeType=text%2Fplain`,{timeoutMs:15000,signal});
+    if(!response.ok)await checkedJson(response);
+    const limit=2*1024*1024;
+    if(!/^text\/plain\b/i.test(response.headers.get('content-type')||'')||Number(response.headers.get('content-length'))>limit){await response.body?.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서는 2MiB 이하의 텍스트로 읽을 수 있어야 합니다.');}
+    let reader;
+    try{
+      const parts=[];let size=0;
+      if(response.body?.getReader){reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel().catch(()=>{});throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘습니다.');}parts.push(Buffer.from(value));}}
+      else{const text=await response.text();size=Buffer.byteLength(text);if(size>limit)throw new DriveStorageError(422,'전용 조사 문서가 2MiB를 넘습니다.');parts.push(Buffer.from(text));}
+      await assertCurrentConnection();
+      return {text:Buffer.concat(parts).toString('utf8'),modifiedTime:meta.modifiedTime};
+    }catch(error){signal?.throwIfAborted();if(error instanceof DriveStorageError)throw error;throw new DriveStorageError(503,'전용 조사 문서를 끝까지 읽지 못했습니다. 다음 읽기에서 다시 확인해 주세요.');}
+    finally{reader?.releaseLock();}
+  }
   async function setActive(connectionId,{beforeCommit}={}){
     await exclusive(async()=>{
       const reg=await registry();
@@ -203,5 +252,5 @@ export function createDriveStorage({dataDir,fetchImpl=fetch}){
     });
     return status({fresh:true});
   }
-  return {active,status,upload,download,trash,setActive,connectFromFile};
+  return {active,status,upload,download,readCreativeResearchDocument,trash,setActive,connectFromFile};
 }

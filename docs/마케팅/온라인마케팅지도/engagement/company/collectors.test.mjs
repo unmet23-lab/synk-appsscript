@@ -229,6 +229,11 @@ test('Instagram direct login uses fixed graph host, binds identity, and retains 
   assert.equal(result.coverage.ownerAuthorized, true);
 });
 
+test('Instagram direct login distinguishes canonical user_id from the app-scoped id',async()=>{
+  const calls=[],result=await collectChannel('https://instagram.com/synk',{accessToken:'synthetic',authType:'instagram-login',accountId:'100',appScopedId:'900',metaIdentityVersion:1},{fetchImpl:async raw=>{const url=new URL(raw);calls.push(url.pathname);return url.pathname.endsWith('/me')?ok({id:'900',user_id:'100',username:'synk'}):ok({data:[]});}});
+  assert.equal(result.channel.externalId,'100');assert.ok(calls.includes('/v26.0/100/media'));
+});
+
 test('Instagram unsupported combined insights falls back by metric, without guessing zero', async () => {
   const requestedMetrics = [];
   const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { fetchImpl: async raw => {

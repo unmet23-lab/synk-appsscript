@@ -39,6 +39,12 @@ test('the messenger destination preserves the app path and removes every demo/fi
   }
 });
 
+test('teaching leaves demo before any classroom or company request and removes demo identity fragments',()=>{
+  const f=fixture(),target=f.target();target.dataset.tab='teaching';
+  const event=f.dispatch(target);assert.equal(event.defaultPrevented,true);assert.equal(event.stopped,true);assert.equal(f.ordinaryActions(),0);
+  assert.equal(f.location.href,'http://localhost:4191/?tab=teaching');assert.equal(f.requests.length,0);
+});
+
 test('demo menu and quick-search messenger actions perform full navigation before ordinary app handlers',()=>{
   for(const action of ['tab','command-tab']){
     const f=fixture(),beforeUser=f.state.user,beforeData=f.state.data;f.context.clicked=f.target(action);

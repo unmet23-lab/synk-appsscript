@@ -54,6 +54,6 @@ test('notification text and identifiers are escaped rather than interpreted as m
 });
 test('an older video draft cannot silently become a support message when a new preview arrives',()=>{
   const state={mode:'customer',tab:'review',versionId:'old',feedbackDraftVersion:'old',feedbackDraftAction:'feedback',project:{id:'p',title:'Test',stage:'review',versions:[{id:'old',kind:'preview',label:'v1'},{id:'new',kind:'preview',label:'v2'}],messages:[],studio:{preferences:{},references:[],concepts:[],scenes:[],comments:[]}}};
-  assert.match(projectView(state),/<button type="submit" class="button primary" data-mutate disabled>이 의견 보내기/);
-  state.feedbackDraftAction='support';assert.doesNotMatch(projectView(state),/<button type="submit" class="button primary" data-mutate disabled>이 의견 보내기/);
+  assert.match(projectView(state),/<button type="submit" class="button primary" data-mutate disabled>문의 보내기/);
+  state.feedbackDraftAction='support';assert.doesNotMatch(projectView(state),/<button type="submit" class="button primary" data-mutate disabled>문의 보내기/);
 });

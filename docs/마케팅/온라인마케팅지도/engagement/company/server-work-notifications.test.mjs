@@ -39,7 +39,7 @@ async function fixture(t) {
     calls, users, get app() { return app; },
     async start(options = {}) {
       app = createCompanyApp({ dataDir: directory, port: 0, allowTestHost: true, synkIdentityConfig: null, synkCustomerIdentityConfig: null,
-        webPushEnabled: false,
+        webPushEnabled: false, socialSchedule: false, // This fixture isolates the work-notification timer.
         collector: async channel => { calls.channel++; return { channel: { externalId: channel.handle }, posts: [], warnings: [], coverage: { status: 'complete' } }; },
         dailyTrendsCollector: async () => { calls.trends++; return { items: [], sources: [] }; },
         messengerDriveStorage: { active: async () => null, status: async () => ({ provider: 'local' }), trash: async () => { calls.trash++; } }, ...options });

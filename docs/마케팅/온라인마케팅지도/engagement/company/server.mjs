@@ -10,14 +10,17 @@ import { createClientAddress, createAttemptLimiter, reserveAttempts, createConcu
 import { normalizeChannelUrl, collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { analyze, companyOverview, analyticsCsv, shiftDate, dateRange, METRICS, metricPoint, compareMetric, metricIndex } from '../analytics.mjs';
 import { providers, createAuthorization, exchangeCode, refreshCredentials } from './oauth.mjs';
+import {createMetaConnectionService,verifyMetaConnection} from './meta-connection.mjs';
 import { canReadChannel,canWriteChannel,canManageOwners,visibleMembers,seedOwnership,recordOwnershipChange,ownerAt } from './organization.mjs';
 import { planFailure,shouldCollect,collectionHealth,recentPolicyChannel,recentNextCheckAt,shouldCollectRecent,RECENT_INTERVAL_MINUTES } from './collection-policy.mjs';
 import { recordsForOwner } from './ownership-report.mjs';
 import { buildHypeFeed } from './hype.mjs';
 import { createContentService } from './content-service.mjs';
 import { createDailyTrendsService } from './daily-trends-service.mjs';
-import { createCreativeResearchService } from './creative-research.mjs';
+import { createCreativeResearchService,creativeResearchTime } from './creative-research.mjs';
 import {createCreativeResearchEvents} from './creative-research-events.mjs';
+import { createCreativeResearchSyncService } from './creative-research-sync.mjs';
+import { createDriveStorage } from '../../../../../tools/company-messenger/drive-storage.mjs';
 import { createCreatorReviewsService } from './creator-reviews.mjs';
 import { createCreatorSourcesService } from './creator-sources.mjs';
 import { createClientProjectsService } from './client-projects.mjs';
@@ -50,6 +53,22 @@ import { createPublicationWorkflowService } from './publication-workflow.mjs';
 import { createPublicationLearningService } from './publication-learning.mjs';
 import { createPublicationReviewService } from './publication-review.mjs';
 import { createPublicationLinkCheckService } from './publication-link-check.mjs';
+import { createSocialPublishingService } from './social-publishing.mjs';
+import { createSocialProvider } from './social-provider.mjs';
+import { createSocialMarketingService } from './social-marketing.mjs';
+import { createSocialRoutes } from './social-routes.mjs';
+import { createSocialSourceDistribution } from './social-source-distribution.mjs';
+import { createSocialInboxProvider } from './social-inbox-provider.mjs';
+import { createSocialAiCopy } from './social-ai-copy.mjs';
+import { createSocialRecovery } from './social-recovery.mjs';
+import { createSocialTracking } from './social-tracking.mjs';
+import { createSocialWorkflowsService } from './social-workflows.mjs';
+import { createSocialReview } from './social-review.mjs';
+import { createSocialPublicRoutes } from './social-public-routes.mjs';
+import { createSocialCapacity } from './social-capacity.mjs';
+import { createSocialReplies } from './social-replies.mjs';
+import { createSocialVariantPerformanceService } from './social-variant-performance.mjs';
+import { createSocialFollowups } from './social-followups.mjs';
 import { createWeeklySummaryService } from './weekly-summary.mjs';
 import { createAutomationHealthService } from './automation-health.mjs';
 import { createAutomationNotificationsService } from './automation-notifications.mjs';
@@ -125,17 +144,17 @@ export function createCompanyApp(options={}) {
     try{integrationConfig=JSON.parse(readFileSync(integrationFile,'utf8'));}catch{throw new Error('사내 앱 통합 설정을 읽을 수 없습니다.');}
   }
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
-  let messenger,clientNotifications,automationNotifications;
+  let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
-  const customerIdentity=createCustomerIdentity({origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
+  const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
   messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
-      list:companyUserId=>[...(clientNotifications?.list(store.get('users',companyUserId)).notifications||[]),...(automationNotifications?.list(store.get('users',companyUserId)).notifications||[])],
-      read:(companyUserId,id)=>id.startsWith('automation:')?automationNotifications.read(store.get('users',companyUserId),id):clientNotifications.read(store.get('users',companyUserId),id),
-      readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);},
+      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(clientNotifications?.list(user).notifications||[]),...(automationNotifications?.list(user).notifications||[]),...(socialMarketing?.notifications(user,socialPublishing.workspace(user))||[])];},
+      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.workspace(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
+      readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);socialMarketing?.readNotifications(user,socialPublishing.workspace(user));},
     },
     authenticate(req){const auth=session(req);if(!auth)return null;return {companyUserId:auth.user.id,role:auth.user.role,canWrite:auth.user.role!=='viewer',canManage:auth.user.role==='admin',csrfToken:auth.body.csrfToken,token:auth.hash,parentOrigin:origin};},
     resolveWorkspaceLink({companyUserId,recipientCompanyUserIds,workspaceLink,purpose}){
@@ -153,7 +172,7 @@ export function createCompanyApp(options={}) {
     res.writeHead(302,{'Location':origin+'/?tab=messenger','Cache-Control':'no-store'});res.end();
   });
   const collector=options.collector??collectChannel;
-  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer,publicationTimer,publicationInboxTimer,publicationLinkTimer,weeklySummaryTimer,automationHealthTimer,deliveryCheckTimer;
+  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer,researchSyncTimer,publicationTimer,publicationInboxTimer,publicationLinkTimer,weeklySummaryTimer,automationHealthTimer,deliveryCheckTimer,socialTimer;
   let ready=false,startTask=null,shutdownTask=null,stopRequested=false;
   const loginNow=options.loginNow??(()=>Date.now()),loginWork=createConcurrencyGuard(4);
   const loginPair=createAttemptLimiter({limit:8,windowMs:15*60000,now:loginNow});
@@ -164,7 +183,12 @@ export function createCompanyApp(options={}) {
   const clock=()=>options.clock?.()||now();
   const content=createContentService({store,clock,fetchImpl:options.contentFetch,isConnected:hasConnection});
   const dailyTrends=createDailyTrendsService({store,clock,collector:options.dailyTrendsCollector,fetchImpl:options.dailyTrendsFetch});
-  const creativeResearch=createCreativeResearchService({store,clock,fetchImpl:options.creativeResearchFetch});
+  let creativeResearchEvents;
+  const researchEventAuth=new WeakMap();
+  const creativeResearch=createCreativeResearchService({store,clock,fetchImpl:options.creativeResearchFetch,onChanged:()=>creativeResearchEvents?.changed()});
+  const researchDrive=options.creativeResearchDrive??createDriveStorage({dataDir:messengerDataDir,fetchImpl:options.creativeResearchDriveFetch});
+  const creativeResearchSync=createCreativeResearchSyncService({store,research:creativeResearch,clock,reader:options.creativeResearchReader??(async input=>{const connectionId=input.connectionId??(await researchDrive.active())?.id;const result=await researchDrive.readCreativeResearchDocument({...input,connectionId});if(input.connectionId==null&&(await researchDrive.active())?.id!==connectionId)throw Object.assign(httpError('문서를 읽는 동안 저장 계정이 변경되었습니다.',409),{code:'SYNC_AUTHORITY_CHANGED'});return result;})});
+  creativeResearchEvents=createCreativeResearchEvents({resolveAccess(req){const original=researchEventAuth.get(req),latest=session(req);if(stopRequested||!original||!latest||latest.hash!==original.hash||latest.user.id!==original.userId||!['admin','manager','member','viewer'].includes(latest.user.role))return null;return {revision:creativeResearch.revision(latest.user)};},heartbeatMs:options.creativeResearchHeartbeatMs??15000,maxConnections:options.creativeResearchMaxConnections??128});
   const creatorReviews=createCreatorReviewsService({store,clock});
   const creatorSources=createCreatorSourcesService({store});
   const automationReadScope=createSynchronousReadScope();
@@ -246,17 +270,90 @@ export function createCompanyApp(options={}) {
     return publicationInboxTick;
   }
   const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list']);
+  socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
+  const socialProvider=options.socialProvider??createSocialProvider({store,clock,resolveMedia:socialMarketing.resolveMedia,authorizePublish:input=>socialPublishing.assertExecution(input),allowedBaseUrls:(process.env.SYNK_SOCIAL_PROVIDER_ALLOWED_URLS||'').split(',').map(x=>x.trim()).filter(Boolean),...options.socialProviderOptions});
+  let socialReview;
+  socialPublishing=createSocialPublishingService({store,clock,provider:socialProvider,validateSource:socialMarketing.validateSource,onApproved:args=>socialReview?.recordApproval(args),validateReview:args=>socialReview?.validateReview(args),onPublished({post,variant,job,channel,actor}){
+    const registered=postPerformance.register(actor,{channelId:channel.id,url:job.publicationUrl,publishedAt:job.publishedAt,title:variant.title||post.title,publicationPackageId:post.source?.packageId||null,...(post.source?.packageId&&variant.publicationFormat?{publicationFormat:variant.publicationFormat}:{})});
+    return {performanceEntryId:registered.entry.id};
+  }});
+  const socialSchedule=options.socialSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  if(typeof socialSchedule!=='boolean')throw httpError('SNS 예약 실행 설정을 확인해 주세요.');
+  const socialRuntime=runtimeJob('social',socialSchedule,15000),socialAbort=new AbortController();
+  const socialSourceRuntime=runtimeJob('socialSources',socialSchedule,60000);
+  const socialInboxRuntime=runtimeJob('socialInbox',socialSchedule,900000);
+  const metaConnections=createMetaConnectionService({store,clock,getProviderConfig:providerConfig,fetchImpl:options.metaConnectionFetch});
+  const socialHealthRuntime=runtimeJob('socialHealth',socialSchedule,3600000);
+  const socialDistribution=createSocialSourceDistribution({store,studio,publicationPackages,marketing:socialMarketing,publishing:socialPublishing,clock});
+  const socialInboxProvider=createSocialInboxProvider({store,clock,getCredentials:credentialsFor,...options.socialInboxOptions});
+  const socialReplies=createSocialReplies({store,clock,getCredentials:credentialsFor,...options.socialInboxOptions,...options.socialReplyOptions});
+  const socialAi=createSocialAiCopy({store,clock,...options.socialAiOptions});
+  const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
+  const socialTracking=createSocialTracking({store,publishing:socialPublishing,clock,origin,...options.socialTrackingOptions});
+  const socialCapacity=createSocialCapacity({store,publishing:socialPublishing,provider:socialProvider,clock});
+  const socialCopyInsights=createSocialVariantPerformanceService({store,publishing:socialPublishing,performance:postPerformance,tracking:socialTracking,validatePostInput:socialMarketing.validatePostInput,clock});
+  const socialFollowups=createSocialFollowups({store,clock,origin,tasks:{options:user=>messenger.taskOptionsForCompanyUser(user.id),create:(user,input)=>messenger.createTaskForCompanyUser(user.id,input),get:(user,input)=>messenger.taskForCompanyUser(user.id,input),find:(user,input)=>messenger.findTaskForCompanyUser(user.id,input)}});
+  async function prepareSocialPost(user,row,{authorize=()=>user,signal}={}){
+    if(signal?.aborted)throw httpError('요청이 중단됐습니다.',409);
+    const normalized=socialMarketing.validatePostInput(authorize(),row),refs=[...(normalized.media||[]),...(normalized.variants||[]).flatMap(v=>v.media||[])],assetIds=[...new Set(refs.map(ref=>ref.assetId||ref.id).filter(Boolean))];
+    if(assetIds.length)await socialMarketing.prepareMedia(authorize(),assetIds,{authorize,signal});
+    if(signal?.aborted)throw httpError('요청이 중단됐습니다.',409);
+    return socialMarketing.validatePostInput(authorize(),normalized);
+  }
+  const socialWorkflows=createSocialWorkflowsService({store,publishing:socialPublishing,clock,preparePost:prepareSocialPost,validatePostInput:socialMarketing.validatePostInput});
+  socialReview=createSocialReview({store,publishing:socialPublishing,resolveMedia:socialMarketing.resolveMedia,validateSource:socialMarketing.validateSource,clock,origin});
+  let socialTick=Promise.resolve(),socialExtras=Promise.resolve();let socialExtrasRunning=false;
+  function notifySocialChanges(){
+    if(stopRequested)return;
+    // SSE only invalidates the notification view; its contents are re-read with
+    // each user's current permissions, including after role changes.
+    messenger.notifyCompanyUsers(store.all('users').filter(user=>user.active).map(user=>user.id));
+  }
+  function scanSocialPublishing(){
+    if(stopRequested||socialRuntime.running)return socialTick;
+    beginRuntime(socialRuntime);
+    const before=store.all('socialPublishJobs').map(job=>job.id+':'+job.updatedAt+':'+job.status).join('|');
+    socialTick=Promise.resolve().then(async()=>{
+      const result=await socialPublishing.tick({signal:socialAbort.signal});
+      const after=store.all('socialPublishJobs').map(job=>job.id+':'+job.updatedAt+':'+job.status).join('|');
+      if(before!==after)notifySocialChanges();return result;
+    }).then(result=>{finishRuntime(socialRuntime,true);void scanSocialExtras();return result;},()=>{finishRuntime(socialRuntime,false);void scanSocialExtras();});
+    return socialTick;
+  }
+  function scanSocialExtras(){
+    if(stopRequested||socialExtrasRunning)return socialExtras;
+    socialExtrasRunning=true;
+    socialExtras=Promise.resolve().then(async()=>{
+      socialAi.prune();
+      socialCapacity.prune();
+      const jobs=[];
+      if(!socialSourceRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialSourceRuntime.lastAttemptAt)>=60000){
+        beginRuntime(socialSourceRuntime);jobs.push(socialDistribution.scan({signal:socialAbort.signal}).then(result=>{finishRuntime(socialSourceRuntime,!result.failed);if(result.created)notifySocialChanges();},()=>finishRuntime(socialSourceRuntime,false)));
+      }
+      if(!socialInboxRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialInboxRuntime.lastAttemptAt)>=900000){
+        beginRuntime(socialInboxRuntime);jobs.push(socialInboxProvider.scanDue({signal:socialAbort.signal}).then(result=>{finishRuntime(socialInboxRuntime,!result.failed);if(result.imported||result.updated)notifySocialChanges();},()=>finishRuntime(socialInboxRuntime,false)));
+      }
+      if(!socialHealthRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialHealthRuntime.lastAttemptAt)>=3600000){
+        beginRuntime(socialHealthRuntime);jobs.push(Promise.all([socialProvider.scanHealthDue?.({signal:socialAbort.signal}),socialReplies.scanHealthDue({signal:socialAbort.signal})]).then(results=>{finishRuntime(socialHealthRuntime,!results.some(result=>result?.failed));notifySocialChanges();},()=>finishRuntime(socialHealthRuntime,false)));
+      }
+      await Promise.all(jobs);
+    }).catch(()=>{}).finally(()=>{socialExtrasRunning=false;});
+    return socialExtras;
+  }
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
+  const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
+  const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   const publicationPerformanceSchedule=backgroundJobsEnabled&&options.schedule!==false;
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
   const publicationReview=createPublicationReviewService({store,studio,publicationPackages,publicationLinks,clock});
   const publicationWorkflow=automationReadScope.service(createPublicationWorkflowService({store,studio,publicationInbox,publicationPackages,publicationReview,postPerformance,publicationLinks,clock}),['workspace']);
+  function readPublicationWorkday(user){const data=publicationWorkflow.workspace(user);return {...data,items:[...data.items,...socialMarketing.workday(user,socialPublishing.workspace(user))]};}
   const publicationLearning=automationReadScope.service(createPublicationLearningService({store,studio,publicationPackages,postPerformance,clock}),['workspace']);
   const weeklySummarySchedule=options.weeklySummarySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   if(typeof weeklySummarySchedule!=='boolean')throw httpError('주간 정리 자동 실행 설정을 확인해 주세요.');
   const weeklyRuntime=runtimeJob('weekly',weeklySummarySchedule,60000);
-  const weeklySummary=createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,contentService:content,clock,taskSummary:(user,period)=>messenger.weeklySummaryForCompanyUser(user.id,{...period,today:new Date(Date.parse(clock())+9*3600000).toISOString().slice(0,10)})});
+  const weeklySummary=createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow:{workspace:readPublicationWorkday},publicationLearning,socialPublishing,clientProjects,clientWorkflow,contentService:content,clock,taskSummary:(user,period)=>messenger.weeklySummaryForCompanyUser(user.id,{...period,today:new Date(Date.parse(clock())+9*3600000).toISOString().slice(0,10)})});
   let weeklySummaryError=false;
   function scanWeeklySummary(){if(stopRequested)return;beginRuntime(weeklyRuntime);try{const result=weeklySummary.scanDue();weeklySummaryError=false;finishRuntime(weeklyRuntime,true);return result;}catch{weeklySummaryError=true;finishRuntime(weeklyRuntime,false);}}
   function readWeeklySummary(user,options={}){const result=weeklySummary.get(user,options);return {...result,schedule:{...result.schedule,enabled:weeklySummarySchedule,serverMustStayRunning:true,status:weeklySummaryError?'error':weeklySummarySchedule?'enabled':'disabled'}};}
@@ -295,7 +392,7 @@ export function createCompanyApp(options={}) {
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
-  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>publicationWorkflow.workspace(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
+  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>readPublicationWorkday(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
   for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 시작됐습니다. 수집을 다시 실행해 주세요.'});
@@ -555,6 +652,7 @@ export function createCompanyApp(options={}) {
   const server=createServer(async(req,res)=>{try{
     if(req.headers.host!==originUrl.host&&!(options.allowTestHost&&req.headers.host?.startsWith('127.0.0.1:')))throw httpError('등록된 회사 주소로 접속해 주세요.',403);
     const url=new URL(req.url,origin),path=url.pathname,method=req.method;
+    if(method==='GET'&&path==='/api/creative-research/time'){if(url.search)throw httpError('현재 시각 주소를 확인해 주세요.');return writeResponse(res,200,creativeResearchTime(clock()));}
     // WORLD teaching is a separate capability. Its cookie never creates or
     // substitutes the employee cookie used by the company APIs below.
     if(path.startsWith('/api/teaching/')){
@@ -657,6 +755,7 @@ export function createCompanyApp(options={}) {
     }
     const demoRequest=path==='/api/demo'||path.startsWith('/api/demo/')||req.headers['x-synk-demo']==='1'||url.searchParams.get('demo')==='1';
     if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 조회만 가능합니다. 실제 화면으로 돌아가 변경해 주세요.',403);
+    if(await socialPublicRoutes(req,res,{url}))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
@@ -671,6 +770,7 @@ export function createCompanyApp(options={}) {
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
+    if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
       if(demoRequest||url.search)throw httpError('프로젝트 검색 주소를 확인해 주세요.');
@@ -927,7 +1027,7 @@ export function createCompanyApp(options={}) {
           upload=null;audit(latest.user,'studio-media-uploaded',studioUpload[1]);return send(res,201,result);
         }catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
-      const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:path==='/api/publication-packages'?{maxBytes:1048576,maxChars:1048576}:undefined);
+      const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:['/api/creative-research/import-report','/api/publication-packages'].includes(path)?{maxBytes:1048576,maxChars:1048576}:undefined);
       // Receiving a request body yields control. Revalidate revoked sessions and current roles afterward.
       if(!unauth.includes(path)){auth=identityControl?rawSession(req):session(req);user=auth?.user;if(!user||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);}
       if(path==='/api/publication-inbox/settings'||path==='/api/publication-inbox/scan'){
@@ -1096,11 +1196,30 @@ export function createCompanyApp(options={}) {
       const creatorReviewRoute=path.match(/^\/api\/creator-reviews\/([^/]+)(?:\/(archive))?$/);
       if(creatorReviewRoute){if(demoRequest)throw httpError('개인 점검은 실제 작업실에서 저장해 주세요.');const result=creatorReviewRoute[2]?creatorReviews.archive(user,creatorReviewRoute[1],input):creatorReviews.save(user,input,creatorReviewRoute[1]);audit(user,creatorReviewRoute[2]?'creator-review-archived':'creator-review-updated',result.record.id);return send(res,200,result);}
       if(path==='/api/creative-research'){const result=creativeResearch.add(user,input);audit(user,'creative-research-created',result.entry.id);return send(res,201,result);}
+      if(path==='/api/creative-research/import-report'){
+        if(stopRequested)throw httpError('서버가 종료 중입니다.',503);
+        const result=creativeResearch.importReport(user,input);
+        if(!result.existing)audit(user,'creative-research-report-imported',result.report.id);
+        return send(res,result.existing?200:201,{report:result.report,existing:result.existing});
+      }
+      if(path==='/api/creative-research/sync-settings'){
+        admin(user);const result=creativeResearchSync.configure(user,input);
+        audit(user,'creative-research-sync-configured','creative-research-sync');
+        return send(res,200,result);
+      }
+      if(path==='/api/creative-research/sync-check'){
+        admin(user);if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw httpError('완료 결과 확인 요청을 확인해 주세요.');
+        const originalHash=auth.hash;await creativeResearchSync.tick(clock(),{force:true});
+        const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        admin(latest.user);return send(res,200,creativeResearchSync.state(latest.user));
+      }
       if(['/api/creative-research/import','/api/creative-research/import-top-ad'].includes(path)){
         if(stopRequested)throw httpError('서버가 종료 중입니다.',503);
         const originalHash=auth.hash,result=await creativeResearch.importTopAd(user,input,{assertSession(){const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);}});
         audit(user,'creative-research-imported',result.entry.id);return send(res,201,result);
       }
+      const creativeUsage=path.match(/^\/api\/creative-research\/([^/]+)\/(claim|release)$/);
+      if(creativeUsage){const result=creativeResearch[creativeUsage[2]](user,creativeUsage[1],input);audit(user,'creative-research-'+creativeUsage[2],result.entry.id);return send(res,200,result);}
       const creativeItem=path.match(/^\/api\/creative-research\/([^/]+)(?:\/(archive))?$/);
       if(creativeItem){const result=creativeItem[2]?creativeResearch.archive(user,creativeItem[1],input):creativeResearch.update(user,creativeItem[1],input);audit(user,creativeItem[2]?'creative-research-archived':'creative-research-updated',result.entry.id);return send(res,200,result);}
       if(path==='/api/studio-materials'){const result=studio.saveMaterial(user,input);audit(user,'studio-material-created',result.material.id);return send(res,201,result);}
@@ -1162,7 +1281,11 @@ export function createCompanyApp(options={}) {
         if(cm[2]==='owners')return send(res,200,changeOwners(user,c,input));
         if(cm[2]==='details'){const updated={...c};for(const key of ['displayName','brand','country','language'])if(input[key]!==undefined)updated[key]=text(input[key],key==='displayName'?160:80);if(!updated.displayName)throw httpError('채널 이름을 입력해 주세요.');if(input.teamId!==undefined&&(input.teamId||null)!==(c.teamId||null)){admin(user);if(pending(c))throw httpError('진행 중인 인계를 먼저 완료해 주세요.');teamFor(input.teamId);updated.teamId=input.teamId||null;updated.connectionVersion=(c.connectionVersion||0)+1;if(c.status==='collecting'){updated.status=hasConnection(c)?'ready':'not-connected';updated.lastAttemptAt=null;}}store.transaction(()=>{recordOwnershipChange(store,c,updated,{actorId:user.id,at:clock(),reason:'채널 소속 팀 변경'});store.put('channels',c.id,updated);});}
         if(cm[2]==='archive'){store.put('channels',c.id,{...c,active:input.active===true});}
-        if(cm[2]==='connection'){admin(user);const allowed=['apiKey','accessToken','accountId','apiVersion','refreshToken','authType'];const creds=Object.fromEntries(allowed.filter(k=>input[k]).map(k=>[k,text(input[k],16000)]));if(!creds.accessToken&&!creds.apiKey)throw httpError('연결 정보를 입력해 주세요.');store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:now()});store.put('channels',c.id,{...c,status:'ready',lastError:null,collectionDisabled:false,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,...recentFields({status:'ready',failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,lastError:null}),connectionVersion:(c.connectionVersion||0)+1});}
+        if(cm[2]==='connection'){
+          admin(user);
+          if(['instagram','facebook'].includes(c.platform))await metaConnections.connect(user,c.id,input,{signal:socialAbort.signal,authorize:()=>{const current=session(req);if(!current||current.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return current.user;}});
+          else{const allowed=['apiKey','accessToken','accountId','apiVersion','refreshToken','authType'];const creds=Object.fromEntries(allowed.filter(k=>input[k]).map(k=>[k,text(input[k],16000)]));if(!creds.accessToken&&!creds.apiKey)throw httpError('연결 정보를 입력해 주세요.');store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:now()});store.put('channels',c.id,{...c,status:'ready',lastError:null,collectionDisabled:false,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,...recentFields({status:'ready',failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,lastError:null}),connectionVersion:(c.connectionVersion||0)+1});}
+        }
         if(cm[2]==='disconnect')disconnectChannel(c);
         audit(user,cm[2],c.id);return send(res,200,{ok:true});
       }
@@ -1177,31 +1300,36 @@ export function createCompanyApp(options={}) {
     }
     const oauth=path.match(/^\/api\/oauth\/(youtube|instagram|facebook|tiktok)\/(start|callback)$/);
     if(method==='GET'&&oauth){if(!auth)throw httpError('로그인 후 계정을 연결해 주세요.',401);const platform=oauth[1];
-      if(oauth[2]==='start'){const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널 플랫폼이 다릅니다.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 앱을 먼저 설정해야 합니다.');const state=store.mint('oauth',user.id,{channelId:c.id,sessionHash:hash(auth.raw),platform},10);const dest=createAuthorization(platform,{...cfg,state});res.writeHead(302,{Location:dest,'Referrer-Policy':'no-referrer'});return res.end();}
+      if(oauth[2]==='start'){const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널 플랫폼이 다릅니다.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 앱을 먼저 설정해야 합니다.');const comments=['instagram','facebook'].includes(platform)&&url.searchParams.get('comments')==='1';const previous=connection(c),existingGrantedScopes=previous?.permissionsVerifiedAt&&typeof previous.scope==='string'?previous.scope.split(/[ ,]+/):[];const state=store.mint('oauth',user.id,{channelId:c.id,sessionHash:hash(auth.raw),platform,comments},10);const dest=createAuthorization(platform,{...cfg,state,comments,existingGrantedScopes});res.writeHead(302,{Location:dest,'Referrer-Policy':'no-referrer'});return res.end();}
       const state=store.consume(url.searchParams.get('state'),'oauth');if(!state||state.userId!==user.id||state.body.platform!==platform||state.body.sessionHash!==hash(auth.raw))throw httpError('연결 확인이 만료됐습니다. 다시 계정 연결을 눌러 주세요.',403);
       try{
         if(url.searchParams.has('error'))throw httpError('계정 연결이 취소됐습니다.');
         const c=channelFor(user,state.body.channelId,'connect');
-        const creds=await exchangeCode(platform,{...providerConfig(platform),code:url.searchParams.get('code')});
-        const result=await collector(c,{...providerConfig(platform),...creds});
+        const cfg=providerConfig(platform),cfgPin=JSON.stringify(cfg),comments=state.body.comments===true;
+        const assertCurrent=()=>{const latest=session(req);if(!latest?.user?.active||latest.hash!==auth.hash)throw httpError('크루 로그인이 해제됐습니다.',401);const live=channelFor(latest.user,c.id,'connect');if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0)||JSON.stringify(providerConfig(platform))!==cfgPin)throw httpError('계정 또는 앱 연결이 변경됐습니다. 다시 연결해 주세요.',409);if(stopRequested)throw httpError('서버가 종료 중입니다.',503);};
+        let creds=await exchangeCode(platform,{...cfg,code:url.searchParams.get('code')},{fetchImpl:options.oauthFetch});assertCurrent();
+        let verified;
+        if(['instagram','facebook'].includes(platform)){verified=await verifyMetaConnection({channel:c,credentials:creds,provider:cfg,purpose:comments?'comments':'statistics',fetchImpl:options.metaConnectionFetch,clock,signal:socialAbort.signal,authorize:assertCurrent,trustedExpiry:true,trustedGrant:true});creds=verified.credentials;}
+        const result=comments?null:await collector(c,{...cfg,...creds});assertCurrent();
+        const externalId=verified?.identity.id||result.channel.externalId;
         const currentAuth=session(req),currentUser=currentAuth?.user;
         if(!currentUser?.active||currentAuth.raw!==auth.raw||currentUser.id!==user.id)throw httpError('크루 로그인이 해제됐습니다.');
         channelFor(currentUser,c.id,'connect');let live=store.get('channels',c.id);
         if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('채널이 변경됐습니다. 다시 연결해 주세요.');
-        if(store.all('channels').some(x=>x.id!==c.id&&x.platform===c.platform&&x.externalId&&x.externalId===result.channel.externalId))throw httpError('이 계정은 이미 회사에 등록되어 있습니다. 기존 채널에 담당자를 추가해 주세요.');
+        if(store.all('channels').some(x=>x.id!==c.id&&x.platform===c.platform&&x.externalId&&x.externalId===externalId))throw httpError('이 계정은 이미 회사에 등록되어 있습니다. 기존 채널에 담당자를 추가해 주세요.');
         const h=pending(live);
         if(h&&h.toOwnerIds.includes(user.id)){
           teamFor(h.toTeamId);if(h.toOwnerIds.some(id=>{const target=store.get('users',id);return !target?.active||target.role==='viewer';}))throw httpError('인계받을 담당자를 다시 확인해 주세요.');
         }
         const runId=randomUUID();
         store.transaction(()=>{
-          store.put('runs',runId,{id:runId,channelId:c.id,channelName:c.displayName,status:'running',startedAt:clock(),requestedBy:user.id});
+          if(result)store.put('runs',runId,{id:runId,channelId:c.id,channelName:c.displayName,status:'running',startedAt:clock(),requestedBy:user.id});
           if(h&&h.toOwnerIds.includes(user.id))live=completeHandoff(live,currentUser);
-          saveCollection(live,result,runId,true);
+          if(result)saveCollection(live,result,runId,true);
           store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:clock()});
-          store.put('channels',c.id,{...store.get('channels',c.id),collectionDisabled:false,connectionVersion:(live.connectionVersion||0)+1});
+          store.put('channels',c.id,{...store.get('channels',c.id),externalId,collectionDisabled:false,...(comments?{status:'ready',lastError:null,requiresReconnect:false,failureKind:null,failureCode:null}:{}),connectionVersion:(live.connectionVersion||0)+1});
           audit(user,'oauth-connected',c.id);
-        });res.writeHead(302,{Location:'/?connected='+encodeURIComponent(c.id)});return res.end();
+        });res.writeHead(302,{Location:'/?connected='+encodeURIComponent(c.id)+(comments?'&connectionPurpose=comments':'')});return res.end();
       }catch(error){const failure=publicRequestError(error,{production});res.writeHead(302,{Location:'/?connectionError='+encodeURIComponent(safeError(failure.message))});return res.end();}
     }
     const creatorAssetRoute=path.match(/^\/api\/creator-sources\/assets\/([a-z0-9-]+)$/);
@@ -1284,7 +1412,7 @@ export function createCompanyApp(options={}) {
       const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
       if(pulseStudioRoute)return send(res,200,pulseStudio.staffState(user,pulseStudioRoute[1]));
       if(path==='/api/client-workflow')return send(res,200,clientWorkflow.workspace(user));
-      if(path==='/api/publication-workflow'){if(demoRequest)throw httpError('게시 할 일은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationWorkflow.workspace(user));}
+      if(path==='/api/publication-workflow'){if(demoRequest)throw httpError('게시 할 일은 실제 작업실에서 확인해 주세요.');return send(res,200,readPublicationWorkday(user));}
       if(path==='/api/client-intake'){admin(user);const result=await clientIntake.list(),latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);return send(res,200,result);}
       if(path==='/api/brand-quality')return send(res,200,brandQuality.workspace(user));
       if(path==='/api/workroom-practice/state'){
@@ -1312,8 +1440,11 @@ export function createCompanyApp(options={}) {
       if(path==='/api/workroom-guide')return send(res,200,workroomGuide(clock()));
       if(path==='/api/creator-reviews'){if(demoRequest)throw httpError('개인 점검은 실제 작업실에서 확인해 주세요.');return send(res,200,creatorReviews.workspace(user));}
       if(path==='/api/creator-sources')return send(res,200,await creatorSources.workspace(user));
-      if(path==='/api/daily-trends'){if(demoRequest)throw httpError('일일 트렌드는 실제 작업실에서 확인해 주세요.',400);return send(res,200,dailyTrends.state({date:url.searchParams.has('date')?url.searchParams.get('date'):undefined}));}
-      if(path==='/api/creative-research'){if(demoRequest)throw httpError('제작 참고 자료는 실제 작업실에서 확인해 주세요.',400);const archived=url.searchParams.get('includeArchived')??url.searchParams.get('archived');if(archived!==null&&!['0','1'].includes(archived))throw httpError('보관 자료 조회 여부를 확인해 주세요.');return send(res,200,creativeResearch.workspace(user,{includeArchived:archived==='1'}));}
+      if(path==='/api/daily-trends'){if(demoRequest)throw httpError('일일 트렌드는 실제 작업실에서 확인해 주세요.',400);return send(res,200,{...dailyTrends.state({date:url.searchParams.has('date')?url.searchParams.get('date'):undefined}),schedulerEnabled:backgroundJobsEnabled&&options.schedule!==false&&!stopRequested});}
+      if(path==='/api/creative-research/sync-status'){if(demoRequest||url.search)throw httpError('실제 작업실의 자동 반영 상태 주소를 확인해 주세요.');creativeResearch.revision(user);return send(res,200,creativeResearchSync.state(user));}
+      if(path==='/api/creative-research/revision'){if(demoRequest||url.search)throw httpError('실제 작업실의 자료 변경 주소를 확인해 주세요.');return send(res,200,{revision:creativeResearch.revision(user)});}
+      if(path==='/api/creative-research/events'){if(demoRequest||url.search)throw httpError('실제 작업실의 자료 변경 주소를 확인해 주세요.');researchEventAuth.set(req,{hash:auth.hash,userId:user.id});return creativeResearchEvents.connect(req,res);}
+      if(path==='/api/creative-research'){if(demoRequest)throw httpError('제작 참고 자료는 실제 작업실에서 확인해 주세요.',400);const archived=url.searchParams.get('includeArchived')??url.searchParams.get('archived');if(archived!==null&&!['0','1'].includes(archived))throw httpError('보관 자료 조회 여부를 확인해 주세요.');const result=creativeResearch.workspace(user,{includeArchived:archived==='1'});result.automation.sync=creativeResearchSync.state(user);return send(res,200,result);}
       if(path==='/api/company-guide')return send(res,200,companyGuide());
       const workroomDocument=path.match(/^\/api\/workroom-source\/([a-z0-9-]+)$/);
       if(workroomDocument)return send(res,200,workroomSource(workroomDocument[1]));
@@ -1358,11 +1489,11 @@ export function createCompanyApp(options={}) {
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
     const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
-    Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
+    Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/signal.css':['public/signal.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
     if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}
     files['/teacher-world/']=['../../../../../experiences/teacher-world/index.html','text/html; charset=utf-8'];
-    for(const file of ['app.mjs','personalization-ui.mjs','style.css','personalization.css','workspace-overview.css','workspace-overview.mjs','sharing-fence.mjs'])files['/teacher-world/'+file]=['../../../../../experiences/teacher-world/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['app.mjs','personalization-ui.mjs','style.css','personalization.css','signal.css','workspace-overview.css','workspace-overview.mjs','sharing-fence.mjs'])files['/teacher-world/'+file]=['../../../../../experiences/teacher-world/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     const teacherAssets=['app-world.png','synk-logo.svg','sticker-book.webp','sticker-person.webp','SUIT-Variable.woff2','InterTight-700.woff2','DMMono-Medium.ttf','slab-cream-long.webp','slab-coral-long.webp','chip-blush-long.webp','thread-shift.webp','badge-cream.webp','badge-check.webp','wide-coral.webp','wide-butter.webp'];
     for(const file of teacherAssets){const type=file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':'image/webp';files['/teacher-world/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,type];}
     // Existing teacher CSS has these fixed absolute image paths. No directory
@@ -1401,7 +1532,8 @@ export function createCompanyApp(options={}) {
     for(const file of ['library.js','library.css'])files['/pulse-app/production-library/'+file]=['public/pulse-app/production-library/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     for(const file of ['01-harin-coffee-v3.webp','02-yuna-perfume.webp','03-taejun-tailoring.webp','04-runway-comparison-v2.webp','04-runway-comparison-proportion-v1.webp'])files['/pulse-app/assets/production/'+file]=['public/pulse-app/assets/production/'+file,'image/webp'];
     files['/pulse-app/manifest.webmanifest']=['public/pulse-app/manifest.webmanifest','application/manifest+json; charset=utf-8'];
-    for(const file of ['scrapbook.css','brand-pulse.webp','thread-pulse.webp','SUIT.woff2','InterTight.woff2','DMMono.ttf','studio-camera.webp','sticker-check.webp'])files['/pulse-app/assets/'+file]=['public/pulse-app/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':'image/webp'];
+    for(const file of ['scrapbook.css','brand-pulse.webp','thread-pulse.webp','SUIT.woff2','InterTight.woff2','SYNKLatin-Regular.woff2','SYNKLatin-SemiBold.woff2','SYNKLatin-Bold.woff2','DMMono.ttf','studio-camera.webp','sticker-check.webp'])files['/pulse-app/assets/'+file]=['public/pulse-app/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':'image/webp'];
+    for(const file of ['hero-camera','stage-strategy','stage-direction','stage-concepts','stage-storyboard','stage-review','stage-history'])files['/pulse-app/assets/stage/'+file+'.webp']=['public/pulse-app/assets/stage/'+file+'.webp','image/webp'];
     for(const file of ['icon-192.png','icon-512.png','synk.svg'])files['/pulse-app/icons/'+file]=['public/pulse-app/icons/'+file,file.endsWith('.svg')?'image/svg+xml':'image/png'];
     // Exact browser dependencies only: server model adapter, fixtures and data
     // directories are intentionally absent from this public asset map.
@@ -1422,6 +1554,8 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/marin-home.js':['public/marin-home.js','text/javascript; charset=utf-8'],'/marin-home.css':['public/marin-home.css','text/css; charset=utf-8'],'/marin.webp':['public/marin.webp','image/webp']});
     Object.assign(files,{'/marin-work.js':['public/marin-work.js','text/javascript; charset=utf-8'],'/marin-work.css':['public/marin-work.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workroom.js':['public/workroom.js','text/javascript; charset=utf-8'],'/workroom.css':['public/workroom.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/social-workspace.js':['public/social-workspace.js','text/javascript; charset=utf-8'],'/social-workspace.css':['public/social-workspace.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/social-tracking.js':['public/social-tracking.js','text/javascript; charset=utf-8'],'/social-review':['public/social-review.html','text/html; charset=utf-8'],'/social-review.js':['public/social-review.js','text/javascript; charset=utf-8'],'/social-review.css':['public/social-review.css','text/css; charset=utf-8']});
     Object.assign(files,{'/publication-flow.js':['public/publication-flow.js','text/javascript; charset=utf-8'],'/publication-flow.css':['public/publication-flow.css','text/css; charset=utf-8']});
     files['/publication-learning-plan.js']=['public/publication-learning-plan.js','text/javascript; charset=utf-8'];
     // Fictional practice assets are public. Account records use the authenticated
@@ -1445,7 +1579,7 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
-    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
+    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
   }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
@@ -1456,12 +1590,12 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);publicationAbort.abort();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),teachingStopped=teaching.close();customerIdentity.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
-      try{await messenger.close();}finally{synkIdentity.dispose();teaching.dispose();store.close();}
+      try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();
     return shutdownTask;
   }
@@ -1475,6 +1609,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>creativeResearchSync.tick(clock())).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation makes external SNS requests, so automatic runs
         // follow the background pause setting; explicit collection remains available.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
@@ -1483,6 +1618,7 @@ export function createCompanyApp(options={}) {
         if(weeklySummarySchedule&&!stopRequested){weeklySummaryTimer=setInterval(scanWeeklySummary,60000);weeklySummaryTimer.unref();scanWeeklySummary();}
         if(automationHealthSchedule&&!stopRequested){automationHealthTimer=setInterval(scanAutomationHealthScheduled,60000);automationHealthTimer.unref();void scanAutomationHealthScheduled();}
         if(deliveryCheckSchedule&&!stopRequested){deliveryCheckTimer=setInterval(scanDeliveryChecks,60000);deliveryCheckTimer.unref();void scanDeliveryChecks();}
+        if(socialSchedule&&!stopRequested){socialTimer=setInterval(scanSocialPublishing,15000);socialTimer.unref();void scanSocialPublishing();}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
         return server.address();
@@ -1490,8 +1626,8 @@ export function createCompanyApp(options={}) {
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([socialExtras,socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

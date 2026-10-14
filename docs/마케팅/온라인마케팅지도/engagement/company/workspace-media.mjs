@@ -1,7 +1,7 @@
 // Enumerate every persisted owner of studio-media files from the same DB snapshot.
 // Customer project files share storage, but never share studio access grants.
 export function workspaceMediaNames(database){
-  const names=database.prepare("SELECT body FROM documents WHERE kind='studioMedia'").all().map(row=>JSON.parse(row.body).diskName);
+  const names=database.prepare("SELECT body FROM documents WHERE kind IN ('studioMedia','socialMedia')").all().map(row=>JSON.parse(row.body).diskName);
   for(const row of database.prepare("SELECT body FROM documents WHERE kind='studioPublicationPackages'").all()){
     const bundle=JSON.parse(row.body);
     if(!Array.isArray(bundle.outputs))throw new Error('게시 묶음의 출력 파일 기록을 확인해 주세요.');

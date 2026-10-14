@@ -74,9 +74,9 @@ test('late responses cannot restore the departed user guide and identity changes
   }
 });
 
-test('overview shows three concise sections without document cards and filtered search preserves reading context',()=>{
+test('overview includes all four guidance categories and filtered search preserves reading context',()=>{
   const f=client();f.context.guide=companyGuide();f.cg.data=f.context.guide;
-  const overview=f.run('cgDirectory(guide)');assert.match(overview,/복지와 수업 한눈에/);assert.doesNotMatch(overview,/cg-topic|cg-document-group|분야별 전체 문서|자주 찾는 안내|운영과 공간|회사와 브랜드/);assert.equal((overview.match(/<dt>/g)||[]).length,6);
+  const overview=f.run('cgDirectory(guide)');assert.match(overview,/회사 안내 한눈에/);assert.match(overview,/안내 분류/);assert.equal((overview.match(/class="cg-overview-link"/g)||[]).length,4);assert.doesNotMatch(overview,/cg-topic|cg-document-group|분야별 전체 문서|자주 찾는 안내|운영과 공간|회사와 브랜드/);assert.equal((overview.match(/<dt>/g)||[]).length,6);
   f.run("cg.query='6개월 이상';cg.category='student'");const search=f.run('cgDirectory(guide)');assert.match(search,/<mark>6개월 이상<\/mark>/);assert.match(search,/학생 복지 프로그램/);assert.doesNotMatch(search,/급여와 인센티브/);
   const click=f.handlers.get('click');click({target:{closest:()=>({dataset:{action:'company-guide-open',id:'student-welfare'}})}});assert.equal(f.cg.selected,'student-welfare');
   click({target:{closest:()=>({dataset:{action:'company-guide-back'}})}});assert.equal(f.cg.selected,'');assert.equal(f.cg.category,'student');assert.equal(f.cg.query,'6개월 이상');

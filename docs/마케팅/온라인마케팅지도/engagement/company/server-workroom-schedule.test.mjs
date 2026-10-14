@@ -25,12 +25,13 @@ async function fixture(t,options={}){
 }
 const card=(report,id)=>report.cards.find(row=>row.id===id);
 
-test('workroom opt-in starts three scheduled checks while external collections stay off',async t=>{
+test('workroom opt-in starts local scheduled checks and SNS runtime while unconnected collectors stay off',async t=>{
   environment(t,'1');const f=await fixture(t);const report=await f.get('/api/automation-health');
   assert.equal(report.monitor.enabled,true);assert.ok(report.monitor.lastScanAt);
   for(const id of ['links','weekly']){assert.notEqual(card(report,id).status,'paused');assert.ok(card(report,id).lastSuccessAt,id);}
   assert.equal(card(report,'performance').status,'paused');
   const weekly=await f.get('/api/weekly-summary');assert.equal(weekly.schedule.enabled,true);assert.ok(f.app.store.all('weeklyWorkSummaries').length);
+  const social=await f.get('/api/social/workspace');assert.equal(social.runtime.enabled,true);assert.ok(social.runtime.lastAttemptAt);assert.equal(social.provider.configured,false);assert.equal(social.ai.canUse,false);
   await f.app.scheduledTick();assert.equal(f.calls(),0);
 });
 test('unset or explicit disabled workroom flag preserves stopped background defaults',async t=>{
@@ -38,6 +39,7 @@ test('unset or explicit disabled workroom flag preserves stopped background defa
     environment(t,value);const f=await fixture(t);const report=await f.get('/api/automation-health');
     assert.equal(report.monitor.enabled,false);for(const id of ['links','weekly','performance'])assert.equal(card(report,id).status,'paused');
     assert.equal((await f.get('/api/weekly-summary')).schedule.enabled,false);assert.equal(f.calls(),0);
+    assert.equal((await f.get('/api/social/workspace')).runtime.enabled,false);
   });
 });
 test('schedule false suppresses environment defaults and explicit job options still take precedence',async t=>{

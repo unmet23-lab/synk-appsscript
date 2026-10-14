@@ -1,5 +1,39 @@
 # 검증 기록 · 2026-09-27
 
+## 로그인 복구 대기 중 첨부 재시도 · 2026-10-09
+
+**07:55 KST 공개 반영·기존 세션/자료 인수 완료.** 새 로그인 복구 연결에서 첨부를 키보드로 재시도한 뒤 저장 결과404와 로그인 복구 실패가 이어지면 버튼 초점이 사라지는 P2를 재현했다. 실제 Chromium의 수정 전 결과는 활성 재시도 버튼이 있어도 초점이 BODY에 남았다. 수정 전 운영 메신저 v6에는 이 신규 경로가 없어 해당 영향은 없었다. [수정 전 브라우저](../../.tmp/messenger-continuation-20261009/keyboard-before/report.json).
+
+배포 담당이 실패 처리에 기존 초점 복원과 토큰 해제를 적용하고 실제 함수 회귀44/44를 통과했다. 협동 게임 HTTPS 경로를 보존한 통합 후보 v3 `3a2f537a…`에서 독립 Chromium으로 다시 확인했다. 실패 뒤 활성 재시도 버튼으로 초점이 돌아오며, 대기 중 사용자가 입력창으로 옮겨 쓴 초안과 초점은 유지한다. 두 흐름 모두 추가 업로드POST0·오류0·외부 요청0이고 후보444파일과 manifest의 전후 SHA가 동일하다. 임시 SQLite·합성 사용자만 사용했으며 공개 자료·기기 등록·푸시·유료AI 호출은 없다. [초점 복원](../../.tmp/messenger-continuation-20261009/keyboard-after/report.json)·[입력창 이동 보존](../../.tmp/messenger-continuation-20261009/keyboard-moved-after/report.json)·[후보 대조](../../.tmp/messenger-continuation-20261009/candidate-source-after-v3.json).
+
+앞선 통합 후보 v1에서는 기존 전송 복구 브라우저35/35를 통과했다. 이 결과와 수정 v3의 두 흐름은 후보를 구분해 기록한다. [v1 전체 흐름](../../.tmp/messenger-continuation-20261009/browser/report.json)·[후보 v1 대조](../../.tmp/messenger-continuation-20261009/candidate-source-after-v1.json). 사용 안내의 개인용 시험 단계·운영 로그인 미적용·범위 없는 월0원 설명도 공개 서버와 독립 로컬 환경에 맞춰 정정했다. [사용 안내 정정](../../.tmp/messenger-continuation-20261009/readme-currentization.json). 실물 iPhone·Android 시험 보류는 유지한다.
+
+정확v3 공개17파일 SHA/MIME·health ready, 직원5/고객1의 기존 session/CSRF/만료와 업무/키/첨부를 보존했다. 기존 직원·고객 탭을 새로고침해 로그인 클릭0으로 메모·111B첨부·저장초안을 확인했다. 이번 공식 보완검수는 세션 한도로 미완료이며 직접 사용자의 검수 후행 지시에 따라 반영했다. 06:42 전체클라우드 검수 완료와 이번 정확후보 보완검수 미완료를 구분한다. [최종 인수](../../.tmp/company-final-review-fixes-20261009/FINAL-ACCEPTANCE.json)·[독립 공개 검사](../../.tmp/messenger-continuation-20261009/independent-public-acceptance.json).
+
+## 메시지·첨부 전송 복구 · 2026-10-09
+
+**06:38 KST 공개 반영·기존 세션/자료 인수 완료.** 메시지 전송이 끊기면 **전송 확인 / 같은 내용 다시 보내기 / 전송 취소**로 이어간다. 같은 요청을 다시 보내도 메시지·첨부·알림을 중복 생성하지 않고, 확인하는 동안 고친 본문·답글·멘션·새 첨부를 보존한다. 실패한 첨부는 같은 창에서 원래 고른 파일로 재시도하며, 재접속·새로고침 뒤 자동으로 보내지 않는다.
+
+공개 SSO 부모e696b9ef 위444파일·메신저11변경 v6 1fa6475e97eb…를 반영했다. Windows816중814통과·실패0·심볼릭링크2skip, Linux816/816·skip0, 정확 후보 실제 Chromium35/35·수동액션20개초점·1440/390/320px6화면 통과. 부모 회사199파일과 후보444개 해시/파일 수가 전후 동일하다. [전체 검사](../../.tmp/messenger-send-recovery-20261009/release-v6/verification.json)·[Linux](../../.tmp/messenger-send-recovery-20261009/linux-v6/linux-result.json)·[브라우저](../../.tmp/messenger-send-recovery-20261009/release-v6/browser-report.json)·[증거 대조](../../.tmp/messenger-send-recovery-20261009/release-v6/evidence-audit.json).
+
+실제 Chromium XHR를60KiB/s로 제한한8MiB 합성 파일은 v5에서 진행 중120,015ms에 실패했으나 v6는136,813ms에201·파일1·POST1로 완료하고 원본 바이트 SHA가 일치했다. 2분 총시간 제한을 전송 진전 기반 무진행 감시로 바꿨으며 서버의 기존5분 요청 제한은 유지했다. 불확실한 업로드는 취소 기록으로 늦은 저장을 막고 첨부 칸을 비우되 Drive 정리 대기 기록을 보존한다. 다른 탭에서 소비한 첨부는 대화에 남기고 현재 칩만 지운다. [느린 업로드3/3](../../.tmp/messenger-send-recovery-20261009/release-v6/slow-report.json).
+
+공식 Claude Code Opus5.5/max v5 검수에서 발견한 P2세 건(느린 업로드·첨부 칩 잔류·버튼 실행 후 초점 소실)을 고쳤고,06:23:55 공식 보완 검수에서 세 건해결·새P0/P1/P2없음을 확인했다. 실제모델·completedtrue 및 후보 불변을 확인했다. 검수자가 일부 결과 작성 전 읽어 남긴 '증거 없음' 설명은 원시결과에 보존하고, 완료후 대조를 따로 남겼다. [공식 검수](../../.tmp/messenger-send-recovery-20261009/release-v6/claude-amendment-summary.json)·[시간차와 최종 증거](../../.tmp/messenger-send-recovery-20261009/release-v6/review-evidence-reconciliation.json). v1~v5는 배포하지 않았으며 실패 재현과 원시 검증을 보존한다.
+
+합성 업그레이드398항목·정상종료6회에서 기존 자료/키 보존·중복0을 확인했다. 운영은 백업/업로드 기록 확인 뒤 기존 담당이 단독 반영했고, 정지 사본 대조로 기존 두DB 자료·문서·첨부·키를 보존했다. 새 빈 전송기록3표만 추가했으며 동일평문의 직원세션 재암호화2건과 부팅 전 이미 만료된 토큰1건 삭제는 허용된 기존동작으로 구분했다. 직원7·고객1의 기존세션/CSRF/만료가 동일하고 기존 메모·첨부·고객 저장안내가 실제 화면에 보였다. [합성 업그레이드](../../.tmp/messenger-send-recovery-20261009/linux-v6/lifecycle-kit/lifecycle-result.json)·[운영 자료 대조](../../.tmp/messenger-send-recovery-20261009/linux-v6/operator-compare-1791495446489.json)·[세션/키 인수](../../.tmp/messenger-send-recovery-20261009/linux-v6/operator-proof-after-1791495496617.json).
+
+독립 공개 검사06:34:18KST에서 health200/ready 및14정적파일 SHA/MIME가 같은 후보와 일치했다. 전환 중06:33:52 첫 프로브의 연결실패도 보존했다. 실제 화면은 [직원](../../.tmp/messenger-send-recovery-20261009/linux-v6/staff-after.png)·[고객](../../.tmp/messenger-send-recovery-20261009/linux-v6/customer-after.png), [공개 대조](../../.tmp/messenger-send-recovery-20261009/public-probes/2026-10-08T21-34-18-884Z.json)·[최종 인수](../../.tmp/messenger-send-recovery-20261009/FINAL-ACCEPTANCE-V6.json). 운영 임의 메시지·기기등록/푸시 시험·유료AI호출0. 실물 iPhone/Android 푸시·PC 종료 시험은 사용자 요청대로 보류하며 화면낭독기는 미검증이다.
+
+## 재시작 후 SYNK ID 로그인 유지 · 2026-10-09
+
+**03:56 KST 공개 서버 반영·실계정 재시작 인수 완료.** 최신 고객 수정 fb5c71 부모를 보존한 437파일 v2 `295a596d…`를 03:19 반영했다. 정기 백업·GCS 독립 다운로드 SHA 일치·업로드 후 자연 감시의 정상 판정을 확인한 뒤 서비스 정상 재시작을 한 번 수행했다. SIGTERM 뒤 exit0·새 시작 시각, 같은 이미지·환경·볼륨·타이머 보존을 확인했다. 기존 직원 브라우저에서 **재로그인 없이** 유호·메신저·원래 자기 메모·첨부가 표시됐고, 비공개 기준 대조로 동일 세션·CSRF·만료·원키·VAPID·업무 문서·설정 불변을 확인했다. 공개 health200/ready와 13파일 SHA/MIME도 재시작 뒤 일치했다. [운영 재시작](../../.tmp/messenger-session-restart-20261009/live-restart-result.json)·[동일 세션 대조](../../.tmp/messenger-session-restart-20261009/live-session-after-result.json)·[실제 화면](../../.tmp/messenger-session-restart-20261009/live-staff-after-restart-v2.jpg)·[공개 대조](../../.tmp/messenger-session-restart-20261009/public-probes/2026-10-08T18-56-04-148Z.json).
+
+원래 암호화 키로 access/refresh/검증 대기 후보를 보존하며, 재시작 뒤 중앙 재확인을 통과해야 회사 자료·기기 알림을 허용한다. 일시 장애503은 접근·발송을 보류하면서 기존 동의/주소를 보존한다. 확정 철회·만료·비활성·로그아웃·연결 해제는 폐기하고, 회사 토큰 삭제는 암호문도 FK로 삭제한다. 최초 업그레이드만 기존 메모리 세션의 1회 재로그인이 필요하며 회사 세션의 7일 만료를 연장하지 않는다.
+
+최종 v2 Windows704중702통과/0실패/2symlinkskip, Linux704/704/skip0, 실제 합성 컨테이너의 링크·교체·장애·복구·철회127항목 및 정상 종료4회 통과. 공식 Claude Opus5.5/max 보완 검수는03:12 완료, 실제 모델·완료와437파일 해시 불변을 확인했다. 이전P2해결·새P0/P1/P2없음. 검토자는 코드를 읽었고 시험 실행 결과는 별도로 대조했다. [Windows](../../.tmp/messenger-session-restart-20261009/release-v2/verification.json)·[Linux](../../.tmp/messenger-session-restart-20261009/linux-result-v2.json)·[합성 컨테이너](../../.tmp/messenger-session-restart-20261009/auth-result-v2.json)·[공식 검수](../../.tmp/messenger-session-restart-20261009/release-v2/claude-review-summary.json).
+
+이전 v1 `462cc0e0…`는 종료 중 느린 본문 로그아웃 P2와 운영 부모 변경으로 배포하지 않았다. 실제 실패 재현 뒤 close(검증 drain)와 dispose(리스너 종료 후 DB 직전)를 분리해 수정했으며 v1 원시 검수·검사 결과는 보존한다. 운영 기기 구독/푸시 큐는0이므로 기기 연결 유지의 합성 검증을 실물 수신으로 표현하지 않는다. 실물폰·PC 종료 시험은 사용자 요청으로 보류. 고객 상담은 별도 인증으로 재로그인 뒤 기존23:33 저장 글을 불러왔으며, 고객의 세션 지속까지 완료로 주장하지 않는다. 기존 단발 후속 synk-2는 완료 뒤 PAUSED 처리해 반복하지 않는다. [최종 운영 인수](../../.tmp/messenger-session-restart-20261009/FINAL-ACCEPTANCE-V2.json). [최종 전달문](../../.tmp/messenger-session-restart-20261009/DEPLOYMENT-HANDOFF-V2.md).
+
 ## 예약·마감 알림 독립 실행 · 2026-10-09
 
 01:25 KST 실제 계정 인수 완료: WORK1/BACKGROUND0/WEB_PUSH1/paidAIoff로 v2 가동, 배포 전후 두DB 전체행/스키마·원래키/설정파일 대조가 차이 없이 통과했다. 실제 직원 SYNK ID 재로그인 후 기존 본인 메모에01:22예약1개를 만들고 창을 닫았다. 알림API 조회 없이 서버 읽기 전용 확인에서01:22:01.172 전달·알림1개·미읽음을 확인했고, 다시 열어 알림함 표시→직접 읽음→배지0을 확인했다. 반복 점검 후 중복0, 기존 메모/첨부·고객 로그인/원래 상담 초안과 저장시각 보존. 마감 설정은 실행 중을 표시하고 개인 설정은 바꾸지 않았다. 운영09시 마감 도착은 미관측이며 실제 이미지 합성 시간 검증과 구분한다. 푸시 구독/큐/실물 수신0, 실물폰·PC종료 시험 보류 유지. [운영 데이터 대조](../../.tmp/company-cloud-20261008/work-v5-logical-comparison-result.json)·[실계정 인수](../../.tmp/company-cloud-20261008/work-v5-live-browser-result.json)·[창을 다시 열기 전 도착](../../.tmp/company-cloud-20261008/work-v5-reminder-delivered-before-reopen.json)·[실제 알림함](../../.tmp/company-cloud-20261008/work-v5-notification-inbox.png)·[마감 실행 화면](../../.tmp/company-cloud-20261008/work-v5-deadline-scheduler-enabled.png)·[최종 운영](../../.tmp/company-cloud-20261008/work-v5-final-runtime-snapshot.json). 시험 예약/알림 정리는 브라우저 도구 초기화 오류(`failed to write kernel assets`, os error3)로 실행하지 못했다. 재초기화와 대체 도구도 같은 오류여서 운영쓰기/직접SQL삭제는0이며, 확인된 상태는 전달1회·직접읽음·배지0이다. 원메모/첨부는 유지하고 브라우저 복구 뒤 같은 시험예약인지 재확인해 정상취소한다. [잔여 항목](../../.tmp/messenger-work-notifications-20261009/test-reminder-cleanup-status.json).
@@ -192,16 +226,14 @@ node --test docs/마케팅/온라인마케팅지도/engagement/company/server-sy
 
 ## 실제 Google Drive
 
-개인 계정 식별자와 비공개 폴더 주소는 생략했으며, 아래 이메일은 명령 형식을 설명하는 예시다.
-
 다음 명령으로 **실제 6MiB 파일**의 업로드·원본 다운로드를 확인했다.
 
 ```powershell
-node qa/live-drive.mjs --confirm-live --email operator@example.com --large
+node qa/live-drive.mjs --confirm-live --email unmet23@gmail.com --large
 ```
 
-- 계정 `operator@example.com`, 한도 5,497,558,138,880바이트(화면 표시 5TB)
-- 메신저 전용 비공개 폴더에 저장(폴더 주소는 운영자 설정에 보관)
+- 계정 `unmet23@gmail.com`, 한도 5,497,558,138,880바이트(화면 표시 5TB)
+- [메신저 전용 비공개 폴더](https://drive.google.com/drive/folders/1t9EzZO-JJLTDkOamtKhd0xUbvHqUEraL)에 저장
 - 브라우저 업로드·다운로드 6,291,456바이트 일치, SHA-256 및 Drive MD5 원본 검증 통과
 - 관리자 설정의 실제 이메일·계정 전체 용량 표시, 데스크톱과 모바일 화면 확인
 - 검사용 파일만 앱에서 삭제해 Drive 휴지통 이동 확인, 삭제 대기 0건
@@ -213,7 +245,7 @@ node qa/live-drive.mjs --confirm-live --email operator@example.com --large
 
 Windows 시작·종료 런처를 실제 실행했다. 기본 주소 `http://127.0.0.1:4197`에서 최초 계정 설정 화면을 확인했다. 실제 바탕화면에 `SYNK 팀 메신저.lnk`를 만들었다. 사용 데이터 폴더와 검수 출력은 Git 제외를 확인했다.
 
-최종 서버 재시작 후에는 사용자가 만든 관리자 계정과 기존 브라우저 세션이 유지되는 것을 확인했다. 실제 사용 데이터는 구성원 1명, 메시지 0개, 첨부파일 0개이며 테스트 계정을 주입하지 않았다. 실제 설정 화면에서 `operator@example.com`, 사용량 421.32GB / 한도 5TB, Drive 연결됨 표시를 확인했다. 사용량은 이 확인 시점의 계정 전체 값이며 이후 달라질 수 있다.
+최종 서버 재시작 후에는 사용자가 만든 관리자 계정과 기존 브라우저 세션이 유지되는 것을 확인했다. 실제 사용 데이터는 구성원 1명, 메시지 0개, 첨부파일 0개이며 테스트 계정을 주입하지 않았다. 실제 설정 화면에서 `unmet23@gmail.com`, 사용량 421.32GB / 한도 5TB, Drive 연결됨 표시를 확인했다. 사용량은 이 확인 시점의 계정 전체 값이며 이후 달라질 수 있다.
 
 개인 사용용 로컬 서버와 실제 Drive 파일 저장까지 검증했다. 외부 서버 배포, Supabase 연동, 자동삭제, 모바일 푸시, 수십 명 장기 부하, 백업 복원 실전 운영은 이번 검증 범위가 아니다. 대화·계정 DB는 PC에 남으며, Drive 연결이 앱 서버의 원격 접속을 제공하지는 않는다. 앱은 사진·문서 등의 파일을 내려받는 방식이며 브라우저 내 문서 편집·영상 통화 기능은 없다.
 

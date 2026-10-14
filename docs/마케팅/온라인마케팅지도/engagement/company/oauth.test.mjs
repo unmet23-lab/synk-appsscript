@@ -7,6 +7,15 @@ const config = { clientId: 'fixture-client', clientSecret: 'fixture-secret', red
 const flow = { ...config, code: 'fixture-code', state: 'fixture-state-01234567890123456789' };
 const date = offset => new Date(Date.now() + offset).toISOString();
 const failNetwork = async () => { assert.fail('This path must not call the provider'); };
+
+test('comment OAuth is an explicit addition and verified unknown-expiry IG tokens do not refresh on first read',async()=>{
+  const ig=new URL(createAuthorization('instagram',{...flow,comments:true})),fb=new URL(createAuthorization('facebook',{...flow,comments:true}));
+  assert.ok(ig.searchParams.get('scope').includes('instagram_business_manage_comments'));assert.ok(fb.searchParams.get('scope').includes('pages_manage_engagement'));
+  assert.ok(!ig.searchParams.get('scope').includes('manage_insights'));assert.ok(!fb.searchParams.get('scope').includes('read_insights'));
+  assert.ok(new URL(createAuthorization('instagram',{...flow,comments:true,existingGrantedScopes:['instagram_business_manage_insights','forged']})).searchParams.get('scope').includes('manage_insights'));
+  const token={accessToken:'synthetic-existing',authType:'instagram-login',metaIdentityVersion:1,expiresAt:null,expiryStatus:'not-provided'};
+  assert.deepEqual(await refreshCredentials('instagram',token,{}, {fetchImpl:failNetwork}),token);
+});
 function fakeProvider(responses) {
   const calls = [];
   const fetchImpl = async (url, options) => {

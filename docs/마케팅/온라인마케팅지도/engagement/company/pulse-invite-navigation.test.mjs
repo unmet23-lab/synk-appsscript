@@ -100,7 +100,7 @@ test('an invalid invitation is removed from the address without changing the act
 });
 
 test('all current loading completions and busy completion retry queued navigation',()=>{
-  assert.equal((source.match(/finally\{loading=false;scheduleInviteNavigation\(\);\}/g)||[]).length,4);
+  assert.equal((source.match(/finally\{(?:if\(moveEpoch===epoch\)\{)?loading=false;scheduleInviteNavigation\(\);/g)||[]).length,4);
   assert.match(source,/if\(!value\)\{scheduleApply\(\);scheduleInviteNavigation\(\);\}/);
   assert.match(source,/window\.addEventListener\('hashchange',queueInviteNavigation\)/);
   assert.match(source,/document\.addEventListener\('compositionend',scheduleInviteNavigation\)/);

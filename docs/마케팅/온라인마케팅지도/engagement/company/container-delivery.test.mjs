@@ -140,6 +140,7 @@ test('Docker COPY payload starts the company host and delivers SHIFT, messenger 
     const {copied,docker,dockerignore}=await stageCopy(payload);
     assert.ok(copied.length>50);assert.ok(copied.every(path=>!unsafe(path)));
     assert.ok(copied.every(path=>posix.dirname(path)!==companyPath||!/^preview-[^/]+\.mjs$/.test(posix.basename(path))),'Company-root local preview launchers must not enter the runtime image');
+    assert.ok(copied.includes(companyPath+'/public/pulse-app/preview-view.mjs'),'The PULSE preview view is a runtime browser module, not a local launcher');
     const runner=join(directory,'verify.mjs');
     await writeFile(runner,`
 import assert from 'node:assert/strict';

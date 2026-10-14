@@ -61,9 +61,13 @@ test('round routes enforce customer versus staff roles, current project revision
 });
 
 test('batch submission reuses the existing correction workflow through reviewer acceptance and customer approval',async t=>{
-  const f=await fixture(t);let {row,customer}=await f.setup({reviewer:true});row=await f.save(customer,row,'제품 이름을 더 크게', {seconds:0});row=await f.save(customer,row,'마지막 행동 안내를 오래', {seconds:8.4});
+  const f=await fixture(t);let {row,customer}=await f.setup({reviewer:true});
+  assert.equal(row.previewApproval.canApprove,true);assert.equal(row.previewApproval.status,'ready');
+  row=await f.save(customer,row,'제품 이름을 더 크게', {seconds:0});row=await f.save(customer,row,'마지막 행동 안내를 오래', {seconds:8.4});
+  assert.equal(row.previewApproval.canApprove,false);assert.equal(row.previewApproval.status,'draft_pending');assert.equal(row.previewApproval.waitingFor,'customer');
   assert.equal((await f.approve(customer,row)).status,409,'saved unsubmitted drafts block approval');
   const submit=await f.customerStudio(customer,row,f.submission(row));assert.equal(submit.status,200,submit.text);row=submit.data.project;
+  assert.equal(row.previewApproval.canApprove,false);assert.equal(row.previewApproval.status,'feedback_pending');assert.equal(row.previewApproval.waitingFor,'team');
   const round=row.studio.feedbackRounds.rounds[0];assert.equal(round.items.length,2);assert.equal(round.number,1);assert.equal(row.messages.filter(value=>value.action==='feedback').length,2);
   assert.equal((await f.approve(customer,row)).status,409,'submitted requests block the reviewed version');
   const work=(await f.request('/api/client-workflow')).data.items.filter(value=>value.kind==='feedback');assert.equal(work.length,2);assert.deepEqual(new Set(work.map(value=>value.messageId)),new Set(round.items.map(value=>value.messageId)));
@@ -71,6 +75,11 @@ test('batch submission reuses the existing correction workflow through reviewer 
   async function blockedUntilAllReviewsReady(){
     const before=f.app.store.get('clientProjects',row.id),result=await f.approve(customer,row);
     assert.equal(result.status,409,result.text);assert.match(result.data.error,/최신 수정본에 연결하고 검토/);
+    const current=await f.request('/pulse/api/project',{customer}),approval=current.data.project.previewApproval;
+    assert.equal(approval.versionId,corrected.id);assert.equal(approval.canApprove,false);assert.equal(approval.status,'team_review');assert.equal(approval.waitingFor,'team');
+    assert.equal(approval.reason,result.data.error,'the disabled action explains the same authoritative reason as the API');
+    assert.deepEqual(Object.keys(approval).sort(),['canApprove','reason','status','versionId','waitingFor']);
+    assert.doesNotMatch(current.text,/"workflow"|reviewerId|PRIVATE-WORKFLOW-NOTE|SYNTHETIC-PRIVATE-STAFF|SYNTHETIC-PRIVATE-CONTACT/);
     assert.deepEqual(f.app.store.get('clientProjects',row.id),before,'approval guard is read-only and never resolves submitted feedback');
   }
   await blockedUntilAllReviewsReady();
@@ -78,11 +87,14 @@ test('batch submission reuses the existing correction workflow through reviewer 
     const sent=await f.request('/api/client-workflow',{body:{projectId:row.id,revision:row.revision,messageId:item.messageId,action:'submit_review',versionId:corrected.id}});assert.equal(sent.status,200,sent.text);row=sent.data.project;
     assert.equal(row.messages.find(value=>value.id===item.messageId).workflow.status,'review');
     await blockedUntilAllReviewsReady();
-    const accepted=await f.request('/api/client-workflow',{user:'reviewer',body:{projectId:row.id,revision:row.revision,messageId:item.messageId,action:'accept',note:'수정본 확인 완료'}});assert.equal(accepted.status,200,accepted.text);row=accepted.data.project;
+    const accepted=await f.request('/api/client-workflow',{user:'reviewer',body:{projectId:row.id,revision:row.revision,messageId:item.messageId,action:'accept',note:'PRIVATE-WORKFLOW-NOTE'}});assert.equal(accepted.status,200,accepted.text);row=accepted.data.project;
     assert.equal(row.messages.find(value=>value.id===item.messageId).workflow.status,'waiting_customer');
     if(item!==round.items.at(-1))await blockedUntilAllReviewsReady();
   }
+  const ready=(await f.request('/pulse/api/project',{customer})).data.project.previewApproval;
+  assert.equal(ready.canApprove,true);assert.equal(ready.status,'ready');assert.equal(ready.waitingFor,'customer');
   const approved=await f.approve(customer,row);assert.equal(approved.status,200,approved.text);row=approved.data.project;
+  assert.equal(row.previewApproval.canApprove,false);assert.equal(row.previewApproval.status,'approved');assert.equal(row.previewApproval.waitingFor,null);
   assert.ok(row.versions.at(-1).approvedAt);assert.ok(row.studio.feedbackRounds.rounds[0].items.every(value=>value.resolved));
   for(const item of round.items){const message=row.messages.find(value=>value.id===item.messageId);assert.equal(message.resolved,true);assert.equal(message.workflow,undefined);}
   assert.equal(row.terms,draft.terms);assert.equal(row.dueDate,draft.dueDate);
@@ -101,6 +113,8 @@ test('customer approval requires the exact latest correction link while resolved
   row=await f.addPreview(row,'수정본 3');
   const before=f.app.store.get('clientProjects',row.id),blocked=await f.approve(customer,row);
   assert.equal(blocked.status,409,blocked.text);assert.match(blocked.data.error,/최신 수정본에 연결/);assert.deepEqual(f.app.store.get('clientProjects',row.id),before);
+  const current=(await f.request('/pulse/api/project',{customer})).data.project;
+  assert.equal(current.previewApproval.versionId,row.versions.at(-1).id);assert.equal(current.previewApproval.canApprove,false);assert.equal(current.previewApproval.reason,blocked.data.error);
   result=await f.request('/api/client-workflow',{body:{projectId:row.id,revision:row.revision,messageId:feedbackId,action:'reopen'}});assert.equal(result.status,200,result.text);row=result.data.project;
   result=await f.request('/api/client-workflow',{body:{projectId:row.id,revision:row.revision,messageId:feedbackId,action:'submit_review',versionId:row.versions.at(-1).id}});assert.equal(result.status,200,result.text);row=result.data.project;
   result=await f.request('/pulse/api/action',{customer,body:{action:'support',revision:row.revision,text:'승인과 별도로 남기는 일정 문의'}});assert.equal(result.status,200,result.text);row=result.data.project;

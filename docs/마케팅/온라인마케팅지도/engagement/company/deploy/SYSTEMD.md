@@ -1,6 +1,6 @@
-# Linux 운영 구성 준비
+# Linux 운영 구성
 
-이 디렉터리는 승인한 **단일 Linux VM**에 설치할 구성이다. 작성·합성 시험만 끝났으며 Docker 이미지 실행, HTTPS 인증서 발급, systemd 설치, 외부 백업 전송은 아직 하지 않았다. 프로젝트·과금·데이터 이전·공개 배포의 현재 상태와 환경변수 목록은 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)를 따른다.
+이 디렉터리는 승인한 **단일 Linux VM**의 운영 구성이다. 실제 설치·Docker 이미지 실행·HTTPS·systemd·외부 백업 및 인수 이력은 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)를 따른다. 이 문서는 실행 계약과 설치 절차를 설명하며, 프로젝트·과금·데이터 이전·공개 배포의 최신 상태와 환경변수 목록도 해당 운영 원문에서 확인한다.
 
 ## 경로와 사전 조건
 
@@ -15,7 +15,7 @@
 
 ## 승인 후 설치 순서
 
-아래 명령은 **대상 Linux 서버에서 인수 조건을 충족한 뒤** 실행한다. 이 문서 작성 중 실행하지 않았다. 실제 환경값이 렌더링되는 `docker compose config` 출력은 공유하지 않고 `--quiet`를 사용한다.
+아래 명령은 승인된 신규 설치·재설치 때 **대상 Linux 서버에서 인수 조건을 충족한 뒤** 실행한다. 기존 운영의 릴리스 교체와 검증은 최신 운영 기록의 절차를 따른다. 실제 환경값이 렌더링되는 `docker compose config` 출력은 공유하지 않고 `--quiet`를 사용한다.
 
 ```sh
 cd /opt/synk/current
@@ -39,13 +39,13 @@ sudo systemctl status synk-company.service synk-company-health.timer synk-compan
 - 백업은 실행 컨테이너의 기존 `workspace-backup.mjs /backups`를 사용한다. `COMPLETE` 확인 뒤 호스트 전용 `COMPANY_ARCHIVE_DIR`에 tar와 SHA256을 만들고, 기존 GCS 객체를 덮어쓰지 않는 업로드를 수행한다. archive·중간 파일·해시·성공 표시가 이미 있거나 끊어진 링크이면 쓰기를 거절한다. 성공 뒤 호스트 전용 위치에 `.uploaded` 표시를 남기며 성공·실패 모두 로컬 사본은 유지한다. 컨테이너 침해 시 원본 스냅샷을 변조할 수 있다는 한계는 남으므로, 호스트의 성공 표시만으로 백업 내용의 신뢰성까지 보장하지 않는다. **온라인 두 DB는 순차 스냅샷이므로 하나의 동일 시점이 아니다. 최종 이전 백업은 모든 writer를 멈춘 상태로 수행해야 한다.**
 - 업로드는 GCS JSON API `objects.insert`의 `uploadType=media`·`ifGenerationMatch=0`으로 archive를 스트리밍한다. 읽기·목록 권한이 없는 `storage.objects.create` 전용 계정으로 실행할 수 있으며 재시도·덮어쓰기·리다이렉트 추적을 하지 않는다. 공식 gcloud 인증 경로에서 얻은 토큰은 메모리 형식 검사 뒤 curl 표준입력으로만 전달한다. 토큰·응답 본문·대상 경로를 사건 로그에 남기지 않는다.
 - 백업 성공 감시는 서비스 시작 2분 뒤부터 30분마다 실행한다. 정상 마운트 안의 실제 archive와 해당 업로드 성공 표시가 모두 **27시간 이내**이고, 표시의 객체 주소가 현재 백업 대상과 일치해야 `BACKUP_FRESH`를 남긴다. 누락·오래된 사본·미마운트·심볼릭 링크·미래 시각·업로드 후 archive 수정은 `BACKUP_STALE`로 실패한다. 최신 archive 없이 표시만 갱신해도 통과하지 않는다. 첫 운영 기동 전 실제 백업을 한 번 완료해야 하며, 원격 객체 존재·무결성·복구 가능성은 별도 검증한다.
-- 상태 검사와 백업은 같은 `flock`으로 겹치지 않게 한다. 백업 도중 상태 검사는 건너뛰고, 외부 uptime 감시는 별도로 계속해야 한다. 백업 작업의 최대 실행 시간은 45분이다.
+- 상태 검사와 백업은 같은 `flock`으로 겹치지 않게 한다. **백업만 `flock --wait 120`으로 잠금을 최대 120초 기다린다.** 그 안에 잠금을 얻으면 스냅샷·archive·업로드를 진행한다. 시간 초과나 잠금 실패는 기존 경보 사건 `BACKUP_FAILED`를 남기고 exit 1로 끝나며, 스냅샷·archive·업로드를 시작하지 않는다. 성공으로 건너뛰거나 자동 재시도하지 않는다. 상태 검사와 스택 기동은 기존 nonblocking 계약을 유지하고, 다른 작업이 잠금을 잡았으면 `OPERATION_ALREADY_RUNNING`과 exit 0으로 건너뛴다. 외부 uptime 감시는 별도로 계속해야 한다. 백업 작업의 최대 실행 시간은 잠금 대기를 포함해 45분이다.
 - stdout/stderr는 journald에 고정 사건명만 남긴다. 배포 스크립트의 **모든 `fail` 사건과 `HEALTH_FAILED`·`RECOVERY_RESTART`·`RECOVERY_RESTART_FAILED`·`RESTART_LIMIT_REACHED`**를 수집·경보한다. 권한·마운트·설정·archive 생성 실패도 빠뜨리지 않는다. `HEALTH_READY`, `STACK_STARTED`, `STACK_STOPPED`, `OFFSITE_BACKUP_COMPLETE`, `BACKUP_FRESH`, `OPERATION_ALREADY_RUNNING`은 실패 경보에서 제외한다. 스크립트가 시작되지 않는 경우도 잡기 위해 PID 1의 systemd가 회사의 7개 service/timer에 남긴 공식 실패 MESSAGE_ID(`be02cf6855d2428ba40df7e9d022f03d`, `d9b373ed55a64feb8242e02dbe79a49c`)만 별도 수집·경보한다. 일반 stderr·임의 오류 본문은 수집하지 않는다. `synk-company-backup-watch.timer`는 회사 서비스의 `Wants`로 함께 기동되고 수동 중지 때 함께 멈춘다. 외부 HTTPS 가용성·TLS 만료·VM 디스크 부족과 호스트 감시 자체 중단은 클라우드 모니터링에서 별도로 확인해야 한다. 이 파일들은 알림 채널을 만들거나 메시지를 전송하지 않는다.
 
-로컬 백업 자동 삭제·GCS 보관 기간·삭제 정책은 아직 이 구성에 없다. 디스크 용량 감시와 승인된 보관 정책을 마련한 뒤 상시 운영한다. GCS 비공개/IAM·암호화·저장 후 복구 가능성도 업로드 명령 자체로 증명되지 않는다.
+로컬 백업 자동 삭제·GCS 보관 기간·삭제 정책은 이 스크립트가 설정하지 않는다. 디스크 용량 감시와 보관 정책의 실제 적용 상태는 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)의 운영 기록에서 확인한다. GCS 비공개/IAM·암호화·저장 후 복구 가능성도 업로드 명령 자체로 증명되지 않는다.
 
-## 실제 서버에서 남은 검증
+## 검증 범위와 운영 현황
 
-`deploy-operations.test.mjs`는 실제 Bash 문법·분기와 가짜 Docker/gcloud 명령으로 실패 시나리오를 확인한다. `deploy-backup-watch.test.mjs`는 합성 archive·업로드 표시로 27시간 경계, 실패 차단과 경로·로그를 확인한다. Linux Docker, 실제 영구 디스크 권한, `flock`, systemd, Caddy TLS, GCS 전송, VM 재부팅·지속 장애·휴대폰 접속 검증을 대신하지 않는다. 해당 증거를 갖추기 전에는 운영 완료로 표시하지 않는다.
+`deploy-operations.test.mjs`는 실제 Bash 문법·분기와 가짜 Docker/gcloud 명령으로 실패 시나리오를 확인한다. 백업의 120초 대기 선택·실패 사건과 상태 검사의 기존 skip 계약을 검사하며, 격리 Linux에서는 실제 util-linux `flock` 경합 후 잠금 해제에 따라 백업이 진행되는지도 검사한다. 실제 120초 시간 초과 검사는 격리 Linux 컨테이너에서만 `SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT=1`로 선택 실행한다. 이 검사에서 Docker·GCS 전송은 합성 명령으로 대체한다. `deploy-backup-watch.test.mjs`는 합성 archive·업로드 표시로 27시간 경계, 실패 차단과 경로·로그를 확인한다. 실제 영구 디스크 권한·systemd·Caddy TLS·GCS 전송·VM 재부팅·휴대폰 접속은 별도 운영 인수이며, 이미 확인한 결과와 남은 범위는 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)에서 구분한다.
 
 공식 참고: [Compose 서비스](https://docs.docker.com/reference/compose-file/services/), [Docker HEALTHCHECK](https://docs.docker.com/reference/dockerfile/#healthcheck), [Caddy HTTPS](https://caddyserver.com/docs/automatic-https), [GCS objects.insert](https://cloud.google.com/storage/docs/json_api/v1/objects/insert).

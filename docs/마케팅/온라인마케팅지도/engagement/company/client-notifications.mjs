@@ -1,3 +1,7 @@
+import {createHash} from 'node:crypto';
+import {customerClientKickoff} from './client-kickoff.mjs';
+import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
+
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
 const unique=values=>[...new Set(values.filter(Boolean))];
@@ -5,6 +9,14 @@ titles.customer_delivery_receipt='고객이 최종본을 받았대요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
 const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
+Object.assign(titles,{deliverables_ready:'납품 규격을 확인해 주세요',feedback_classified:'보낸 의견의 수정 범위와 일정이 정리됐어요',kickoff_updated:'준비할 자료에 새 소식이 있어요',scene_review_ready:'고친 장면을 확인해 주세요',preview_review_ready:'수정본 검토가 끝났어요. 시안을 확인해 주세요'});
+
+// Hash only the customer-visible preparation state. Private waiver notes and
+// source metadata must neither appear in an event nor create redundant alerts.
+export function customerKickoffNotificationKey(row){
+  const {enabled,dueDate,requirements}=customerClientKickoff(row);
+  return createHash('sha256').update(JSON.stringify({enabled,dueDate,requirements})).digest('hex');
+}
 
 // Immutable, content-free event pointers live in the same SQLite document as the
 // project mutation. There is no independent write that can commit only half of it.
@@ -23,7 +35,7 @@ export function appendClientNotificationEvents(previous,row){
   const submittedRounds=new Set();
   for(const message of row.messages||[]){
     const old=older.get(message.id);
-    if(message.author==='staff'&&!old&&message.visibility==='customer')add('staff_reply',message.id,['customer'],{messageId:message.id,tab:'history'});
+    if(message.author==='staff'&&!old&&message.visibility==='customer')add('staff_reply',message.id,['customer'],{messageId:message.id,tab:'review'});
     if(message.author==='customer'&&!old){
       const round=message.action==='feedback'&&message.feedbackRoundId&&feedbackRounds.get(message.feedbackRoundId);
       const anchor=round&&row.messages.find(item=>item.id===round.items?.[0]?.messageId&&item.author==='customer'&&item.action==='feedback'&&item.feedbackRoundId===round.id&&item.versionId===round.versionId);
@@ -52,23 +64,43 @@ export function appendClientNotificationEvents(previous,row){
   for(const version of row.versions||[])if(!oldVersions.has(version.id))add(version.kind==='final'?'final_ready':'preview_ready',version.id,['customer'],{versionId:version.id,tab:version.kind==='final'?'history':'review'});
   const oldReceipts=new Set((previous?.deliveryReceipts||[]).map(receipt=>receipt.id));
   for(const receipt of row.deliveryReceipts||[])if(!oldReceipts.has(receipt.id))add('customer_delivery_receipt',receipt.id,['owner','reviewer'],{deliveryReceiptId:receipt.id,deliveryKey:receipt.deliveryKey,actorId:'customer'});
-  const history=row.history?.at(-1),action=history?.action?.replace(/^PULSE 기획 /,'');
+  const history=row.history?.at(-1),action=history?.action?.replace(/^PULSE (?:기획|제작) /,'');
+  const committed=history?.id&&history.id!==previous?.history?.at(-1)?.id;
+  if(committed&&actorId!=='customer'){
+    const approval=buildCustomerPreviewApproval(row),beforeApproval=buildCustomerPreviewApproval(previous||{});
+    // Uploads already create preview_ready. Announce the later point at which
+    // every previous correction is connected and reviewed for that same file.
+    if(beforeApproval.status==='team_review'&&approval.canApprove&&beforeApproval.versionId===approval.versionId&&oldVersions.has(approval.versionId))add('preview_review_ready',approval.versionId,['customer'],{tab:'review',target:'approval',versionId:approval.versionId});
+    if(row.kickoffPlan?.enabled&&customerKickoffNotificationKey(row)!==customerKickoffNotificationKey(previous||{}))add('kickoff_updated',String(row.revision),['customer'],{tab:'strategy',target:'kickoff',kickoffKey:customerKickoffNotificationKey(row)});
+    for(const [requestId,workflow]of Object.entries(row.sceneRequestWorkflows||{})){
+      const old=previous?.sceneRequestWorkflows?.[requestId],request=row.studio?.sceneReviews?.find(item=>item.id===requestId&&item.author==='customer'&&item.status==='changes');
+      if(request&&workflow.status==='waiting_customer'&&(old?.status!=='waiting_customer'||old?.resultSceneRevision!==workflow.resultSceneRevision||old?.waitingAt!==workflow.waitingAt))add('scene_review_ready',requestId,['customer'],{tab:'storyboard',sceneId:request.sceneId,requestId,sceneRevision:workflow.resultSceneRevision,workflowAt:workflow.waitingAt});
+    }
+  }
   // Only the committed studio action creates its alert; reading or importing
   // an unchanged document must not replay old notifications.
-  if(history?.id&&history.id!==previous?.history?.at(-1)?.id&&history.action?.startsWith('PULSE 기획 ')){
+  if(committed&&/^PULSE (?:기획|제작) /.test(history.action||'')){
     const studio=row.studio||{},before=previous?.studio||{};
     const customerActions={save_preferences:['customer_preferences','direction'],save_reference:['customer_reference','direction'],remove_reference:['customer_reference','direction'],save_strategy:['customer_strategy','strategy'],confirm_strategy:['customer_strategy_confirmed','strategy'],select_concept:['customer_concept','concepts'],review_scene:['customer_scene','storyboard'],comment:['customer_comment','history']};
     if(actorId==='customer'&&customerActions[action]){const [type,tab]=customerActions[action];add(type,String(row.revision),['owner','reviewer'],{tab});}
     if(actorId!=='customer'){
-      if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy'});
+      if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy',strategyRevision:studio.strategy?.revision});
+      if(action==='request_deliverable_review')add('deliverables_ready',String(studio.deliverables?.revision),['customer'],{tab:'strategy',target:'deliverables',deliverableRevision:studio.deliverables?.revision});
+      if(action==='classify_feedback_round'){
+        const oldRounds=new Map((before.feedbackRounds?.rounds||[]).map(round=>[round.id,round]));
+        for(const round of studio.feedbackRounds?.rounds||[])for(const item of round.items||[]){
+          const oldItem=oldRounds.get(round.id)?.items?.find(value=>value.id===item.id);
+          if((item.classifications?.length||0)>(oldItem?.classifications?.length||0))add('feedback_classified',item.id,['customer'],{tab:'review',feedbackRoundId:round.id,feedbackItemId:item.id,messageId:item.messageId,versionId:round.versionId,classificationCount:item.classifications.length});
+        }
+      }
       if(action==='save_concept'||action==='save_scene'){
         const key=action==='save_concept'?'concepts':'scenes',old=new Map((before[key]||[]).map(card=>[card.id,card]));
-        for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard'});
+        for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard',...(key==='concepts'?{conceptId:card.id}:{sceneId:card.id})});
       }
       if(action==='save_reference')add('reference_ready',String(row.revision),['customer'],{tab:'direction'});
       if(action==='comment'){
         const comment=studio.comments?.at(-1);
-        if(comment?.visibility==='customer')add('staff_reply',comment.id,['customer'],{tab:comment.targetType==='scene'?'storyboard':comment.targetType==='concept'?'concepts':'history',commentId:comment.id});
+        if(comment?.visibility==='customer')add('staff_reply',comment.id,['customer'],{tab:comment.targetType==='scene'?'storyboard':comment.targetType==='concept'?'concepts':'review',commentId:comment.id,...(comment.targetType==='scene'?{sceneId:comment.targetId}:comment.targetType==='concept'?{conceptId:comment.targetId}:{})});
       }
     }
   }
