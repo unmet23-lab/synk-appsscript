@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T10:05:00Z",
+  "sourceHash": "c9ee58f4124ae84dc26256b95727ce3e40c69201cc6a1b50b3b07da470d9f102",
+  "runs": [
+    {"command": "node --test desktop/tests/platform-update.test.cjs desktop/tests/update-view.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs", "where": "appsscript 작업본", "pass": 92, "fail": 0},
+    {"command": "node --test desktop/tests/member-benefit-preview.test.cjs", "where": "동결 원문 src·renderer·assets + HEAD 시험·atlas 사본", "pass": 7, "fail": 0},
+    {"command": "node --test desktop/tests/renderer-auth.test.cjs", "where": "동결 원문 src·renderer·assets + HEAD 시험·atlas 사본", "pass": 86, "fail": 0}
+  ],
+  "note": "작업본의 renderer-auth 시험은 다른 세션이 작업 중인 launcher.mjs(member-activity-controller.mjs 가져오기) 때문에 실패해서, 동결 원문 사본으로 따로 돌렸다."
+}

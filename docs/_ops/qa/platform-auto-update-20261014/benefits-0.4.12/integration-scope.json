@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "baselineVersion": "0.4.11",
+  "baselineSourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "overlay": [
+    {
+      "path": "renderer/benefits.mjs",
+      "before": "677e0083f833a1e6b4ab1ca828c00e939b97d1f1c09acfd5582f33e2470dac0d",
+      "after": "604d2e8c098053a5b4db82f933bd14b1ae042d1a504ade09d9a613cc86b45bf0",
+      "changedLines": [
+        26,
+        27,
+        34,
+        35,
+        36,
+        38,
+        44,
+        45,
+        52,
+        53,
+        54,
+        56,
+        62,
+        63,
+        70,
+        71,
+        72,
+        74,
+        80,
+        81,
+        87,
+        88,
+        89
+      ]
+    }
+  ],
+  "preservedFiles": 130,
+  "childScope": "WORLD·워크스페이스 0.4.11 설치파일을 0.4.11 기준 설치파일에서 그대로 가져온다",
+  "installedAppTouched": false
+}

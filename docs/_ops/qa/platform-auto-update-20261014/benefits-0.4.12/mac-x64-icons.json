@@ -1,0 +1,84 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T10:14:10.598Z",
+  "arch": "x64",
+  "version": "0.4.12",
+  "ciRun": "38547503384",
+  "scope": "Delivered DMG icon bytes plus actual Finder/Dock rendering; SYNK apps are not executed.",
+  "appLaunches": 0,
+  "userDataOperations": 0,
+  "applicationsFolderOperations": 0,
+  "products": [
+    {
+      "client": "platform",
+      "version": "0.4.12",
+      "app": "SYNKPlatformPreview.app",
+      "iconSHA256": "02cde0bb0aa6dd5a51b25fe418e7ab6583f74279d3bf797b3b61e657d6c605c2",
+      "appIconMatches": true,
+      "volumeIconMatches": true,
+      "dmgSHA256": "4f3be29c6da8aecb18624b31c579c2ce39004453b60906147b259548679ab40c"
+    },
+    {
+      "client": "world",
+      "version": "0.4.11",
+      "app": "SYNKWorldPreview.app",
+      "iconSHA256": "cd55940b97aaf0ac1e98bef90d3b5dcf1de8f53ee7f5ff4ce1b4aca1e611fa4a",
+      "appIconMatches": true,
+      "volumeIconMatches": true,
+      "dmgSHA256": "294febfdd9d5880d44f72f91e9088074595dd1fbb710bf18d209f8f82daf1e08"
+    },
+    {
+      "client": "messenger",
+      "version": "0.4.11",
+      "app": "SYNKMessengerPreview.app",
+      "iconSHA256": "2efa7631af442761cc97745a99ee342aff03857c5cb22c5702ef94064eaf0d08",
+      "appIconMatches": true,
+      "volumeIconMatches": true,
+      "dmgSHA256": "e21686cb8d4d764e04111c2112c8dae13c1d62e6b1cf68654c7ee852b3416601"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "finder-dock-light.png",
+      "bytes": 152633,
+      "sha256": "957db58b29ee1e650a0f3cc07f24c6462bd637af1f03f46b0ea4551e5fe2c01e"
+    },
+    {
+      "file": "dmg-platform-light.png",
+      "bytes": 520365,
+      "sha256": "9e544e12bd7ab3162af9fa775e9a65f64083a176446c0ce9367ab838859d3c31"
+    },
+    {
+      "file": "dmg-world-light.png",
+      "bytes": 522222,
+      "sha256": "824d826a7da2a5580210e92cf9b209f9d634d9c52a63777618dc9b51b36e2ff4"
+    },
+    {
+      "file": "dmg-messenger-light.png",
+      "bytes": 474890,
+      "sha256": "d5f09c68c78d558e737e3206aaf476d3f39213cceb214917c30c52e9ee15b8cf"
+    },
+    {
+      "file": "finder-dock-dark.png",
+      "bytes": 176202,
+      "sha256": "673d131a2d2c7221f54857876579bedc9c70c49d29d3bf8c797c487791610c5f"
+    },
+    {
+      "file": "dmg-platform-dark.png",
+      "bytes": 519039,
+      "sha256": "444a61cb7c03315bc205c7ef00c8ca7b2ec4434b6940d39ea56e801124d060b0"
+    },
+    {
+      "file": "dmg-world-dark.png",
+      "bytes": 522196,
+      "sha256": "9e70458446bd28657d0398b021be341d6e672082bb5744dd2e1cce6b3e8bc901"
+    },
+    {
+      "file": "dmg-messenger-dark.png",
+      "bytes": 471974,
+      "sha256": "3b4561c7ca350d0ec1b9a2c571af21d5a4f908cff3f03336b4187d60ef5746c3"
+    }
+  ],
+  "preferenceRestore": true,
+  "cleanupErrors": []
+}
