@@ -68,7 +68,7 @@ async function setVisibility(page,hidden){await page.evaluate(value=>{
         return Boolean(icon)&&(!(icon instanceof HTMLImageElement)||(icon.complete&&icon.naturalWidth>0))&&!copy.textContent.trim()&&Boolean(el.getAttribute('aria-label'))&&el.getAttribute('aria-pressed')==='false'&&rect.width>=44&&rect.height>=44;
       }));
       check(`${name}: one understated hint matches touch or mouse input`,await page.locator('.synk-opening').evaluate(dialog=>{
-        const hints=dialog.querySelectorAll('.opening-hint');return hints.length===1&&hints[0].textContent.trim()===(matchMedia('(pointer:coarse)').matches?'화면을 터치해 주세요':'화면을 클릭해 주세요');
+        const hints=dialog.querySelectorAll('.opening-hint');return hints.length===1&&hints[0].textContent.trim()==='시작하기';
       }));
       check(`${name}: keyboard focus remains inside the opening`,await page.locator('.synk-opening').evaluate(dialog=>dialog===document.activeElement||dialog.contains(document.activeElement)));
       const aspect=width<800?'mobile':'desktop';

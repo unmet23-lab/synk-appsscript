@@ -1,4 +1,5 @@
 import {CAFE_COMPOSE_ID,CAFE_LESSON_IDS,isCafeLesson,isCafeCheckpoint,isCafeOrder,isCafeListen} from './cafe-activity.mjs';
+import {readWorldLearningProfile,updateWorldLearningProfile,clearWorldLearningProfile,worldLearningProfileValues} from './world-learning-profile.mjs';
 // One bounded record owns the life-Korean curriculum. The official PlayHost can
 // supply its storage port; guest/device records remain in their owner's namespace.
 export const LIFE_PROGRESS_KEY='synk.life-korean.progress.v1';
@@ -200,10 +201,11 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   return {id,completed:true,duplicate,completedAt:next.lessons[id].completedAt,totalCompleted:Object.values(state.lessons).filter(v=>v.completedAt!==null).length};
  }
  function dueReviews(limit=100){check();return Object.values(state.reviews).filter(v=>v.dueAt<=now()).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
- function startReview(limit=6,preferredId=null){
+ function startReview(limit=6,preferredId=null,allowedIds=null){
   check();const existing=state.activeReview;
   if(existing&&existing.ids.some(id=>!existing.answers[id]))return clone(existing);
-  const due=dueReviews(100);if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
+  if(allowedIds!==null&&(!Array.isArray(allowedIds)||allowedIds.length>100||new Set(allowedIds).size!==allowedIds.length||allowedIds.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
+  const due=dueReviews(100).filter(row=>allowedIds===null||allowedIds.includes(row.id));if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
   const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
@@ -249,6 +251,19 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state);next.tutor={version:1,selected:tutor};commit(next,{preserveDaily:true});
   return {tutor,duplicate:false,status:status()};
  }
+ function learningProfile(){check();if(readError)throw readError;return readWorldLearningProfile(state.learningProfile,{owner,at:now()});}
+ function learningProfileValues(){check();if(readError)throw readError;return worldLearningProfileValues(state.learningProfile,{owner,at:now()});}
+ function updateLearningProfile(options={}){
+  checkDailyWrite();const next=clone(state);
+  next.learningProfile=updateWorldLearningProfile(state.learningProfile,{...options,owner,at:now()});
+  // Settings share the existing CAS/outbox record and must not trim learning facts.
+  commit(next,{preserveDaily:true});return {...learningProfile(),status:status()};
+ }
+ function clearLearningProfile(options={}){
+  checkDailyWrite();const next=clone(state);
+  next.learningProfile=clearWorldLearningProfile(state.learningProfile,{...options,owner,at:now()});
+  commit(next,{preserveDaily:true});return {...learningProfile(),status:status()};
+ }
  function summary(packs=[],flat=[]){
   check();catalog(packs,flat);const ordered=packs.flatMap(pack=>(pack.lessons||[]).map(value=>typeof value==='string'?lessons.get(value):lessons.get(value.id)).filter(Boolean));
   if(!ordered.length)ordered.push(...flat);
@@ -269,7 +284,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,flush,
+ const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

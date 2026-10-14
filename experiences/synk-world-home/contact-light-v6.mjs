@@ -1,6 +1,7 @@
 import * as THREE from './scene-assets/three.module.js';
 import { SSAOPass } from './scene-assets/rendering/SSAOPass.js';
 import { OutputPass } from './scene-assets/rendering/OutputPass.js';
+import { waitForShaderPrograms, yieldForShaderPreparation, runShaderPreparationTasks } from './shader-preparation.mjs';
 
 // Optional contact AO. The beauty buffer remains full resolution; normals/AO
 // are half resolution and capped. Mobile balanced/light allocate no buffers.
@@ -13,8 +14,10 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
   let frameCalls = 0, frameTriangles = 0, width = 1, height = 1, aw = 1, ah = 1;
   let lastMs = 0, allocations = 0, releases = 0;
   let currentQuality = quality, isMobile = Boolean(mobile);
+  const preparations = new Set();
   const wantsAO = () => currentQuality === 'detail' || currentQuality === 'balanced' && !isMobile;
   const release = () => {
+    for (const preparation of preparations) preparation.abort();
     if (!beauty) return;
     beauty.dispose(); ao.dispose(); output.dispose(); beauty = ao = output = null; releases++;
   };
@@ -87,6 +90,87 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
     if (!wantsAO()) release();
     return currentQuality;
   }
+  /** Queue the same shader variants as render(), without drawing a frame. */
+  async function prepare({ signal } = {}) {
+    if (disposed) throw new Error('CONTACT_DISPOSED');
+    if (signal?.aborted) throw signal.reason instanceof Error ? signal.reason : new DOMException('Contact preparation cancelled', 'AbortError');
+    if (renderer.getContext().isContextLost()) throw new Error('CONTACT_CONTEXT_LOST');
+    const preparation = new AbortController(), abort = () => preparation.abort(signal?.reason);
+    preparations.add(preparation); signal?.addEventListener('abort', abort, { once: true });
+    const previousTarget = renderer.getRenderTarget();
+    const proxies = [], normals = [], textures = new Set();
+    const quadGeometry = new THREE.BufferGeometry();
+    quadGeometry.setAttribute('position', new THREE.Float32BufferAttribute([-1, 3, 0, -1, -1, 0, 3, -1, 0], 3));
+    quadGeometry.setAttribute('uv', new THREE.Float32BufferAttribute([0, 2, 0, 0, 2, 0], 2));
+    const quad = new THREE.Mesh(quadGeometry, null), quadCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    function checkActive() {
+      if (preparation.signal.aborted) throw preparation.signal.reason instanceof Error ? preparation.signal.reason : new DOMException('Contact preparation cancelled', 'AbortError');
+      if (disposed) throw new Error('CONTACT_DISPOSED');
+      if (renderer.getContext().isContextLost()) throw new Error('CONTACT_CONTEXT_LOST');
+    }
+    function addTexture(texture) {
+      if (texture?.isTexture && !texture.isRenderTargetTexture && !texture.isDepthTexture) textures.add(texture);
+    }
+    function compile(object, view, target, targetScene = null) {
+      checkActive();
+      const restoreTarget = renderer.getRenderTarget(), restoreFace = renderer.getActiveCubeFace(), restoreLevel = renderer.getActiveMipmapLevel();
+      try { renderer.setRenderTarget(target); renderer.compile(object, view, targetScene); }
+      finally { renderer.setRenderTarget(restoreTarget, restoreFace, restoreLevel); }
+    }
+    try {
+      const enabled = wantsAO();
+      if (enabled) { allocate(); resizeTargets(); }
+      // compile() visits invisible descendants and ignores overrideMaterial.
+      // A shallow visible-only proxy retains instancing/skinning/geometry flags
+      // while sharing the original materials and their compiled programs.
+      scene.traverseVisible(object => {
+        if (!(object.isMesh || object.isPoints || object.isLine || object.isSprite) || !object.layers.test(camera.layers)) return;
+        const proxy = object.clone(false); proxy.material = scene.overrideMaterial || object.material; proxies.push(proxy);
+        for (const material of Array.isArray(proxy.material) ? proxy.material : [proxy.material]) {
+          for (const value of Object.values(material || {})) addTexture(value);
+          for (const uniform of Object.values(material?.uniforms || {})) {
+            for (const value of Array.isArray(uniform.value) ? uniform.value : [uniform.value]) addTexture(value);
+          }
+        }
+        if (enabled && object.isMesh && !object.customDepthMaterial) {
+          const normal = object.clone(false); normal.material = ao.normalMaterial; normals.push(normal);
+        }
+      });
+      addTexture(scene.environment); addTexture(scene.background);
+      if (enabled) addTexture(ao.noiseTexture);
+      // Upload only the visible look, one texture per task. Render-target/depth
+      // textures belong to their passes and must not be uploaded as image data.
+      for (const texture of textures) {
+        checkActive(); renderer.initTexture(texture);
+        await yieldForShaderPreparation({ signal: preparation.signal });
+      }
+      checkActive();
+      const tasks = proxies.map(proxy => () => compile(proxy, camera, enabled ? beauty : previousTarget, scene));
+      if (enabled) {
+        tasks.push(...normals.map(normal => () => compile(normal, camera, ao.normalRenderTarget, scene)));
+        for (const [material, target] of [[ao.ssaoMaterial, ao.ssaoRenderTarget], [ao.blurMaterial, ao.blurRenderTarget], [ao.copyMaterial, beauty]]) {
+          tasks.push(() => { quad.material = material; compile(quad, quadCamera, target); });
+        }
+        // Match OutputPass.render() before its first draw. Its subsequent
+        // needsUpdate reuses this identical program cache key.
+        const defines = {};
+        if (THREE.ColorManagement.getTransfer(renderer.outputColorSpace) === THREE.SRGBTransfer) defines.SRGB_TRANSFER = '';
+        const toneMaps = [[THREE.LinearToneMapping, 'LINEAR_TONE_MAPPING'], [THREE.ReinhardToneMapping, 'REINHARD_TONE_MAPPING'], [THREE.CineonToneMapping, 'CINEON_TONE_MAPPING'], [THREE.ACESFilmicToneMapping, 'ACES_FILMIC_TONE_MAPPING'], [THREE.AgXToneMapping, 'AGX_TONE_MAPPING'], [THREE.NeutralToneMapping, 'NEUTRAL_TONE_MAPPING'], [THREE.CustomToneMapping, 'CUSTOM_TONE_MAPPING']];
+        const tone = toneMaps.find(([value]) => value === renderer.toneMapping);
+        if (tone) defines[tone[1]] = '';
+        output.material.defines = defines; output.material.needsUpdate = true;
+        tasks.push(() => { quad.material = output.material; compile(quad, quadCamera, null); });
+      }
+      await runShaderPreparationTasks(tasks, { signal: preparation.signal });
+      checkActive();
+      return await waitForShaderPrograms(renderer, { signal: preparation.signal });
+    } finally {
+      signal?.removeEventListener('abort', abort); preparations.delete(preparation);
+      // Abort/context loss may already have disposed the owning renderer.
+      // Every compile restores its target synchronously before yielding.
+      quadGeometry.dispose();
+    }
+  }
   function render() {
     if (disposed) throw new Error('CONTACT_DISPOSED');
     if (renderer.getContext().isContextLost()) throw new Error('CONTACT_CONTEXT_LOST');
@@ -131,5 +215,5 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
   }
   function dispose() { if (disposed) return; release(); disposed = true; }
   setQuality(quality, { mobile });
-  return { setSize, setQuality, render, dispose, metrics };
+  return { setSize, setQuality, prepare, render, dispose, metrics };
 }

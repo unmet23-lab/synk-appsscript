@@ -12,6 +12,9 @@ import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clock = (s) => `${Math.floor(Math.max(0, s) / 60)}:${String(Math.floor(Math.max(0, s) % 60)).padStart(2, '0')}`;
@@ -165,6 +168,7 @@ async function start() {
     collectionRoundId = globalThis.SynkPlayCollection?.roundId('rhythm') || null;
     stage.reset(); startTiming(); tip(null); setMongle('smile');
     music.start(buffer, round.beat);
+    recordTrialStarted();
     tutorEvent('playing');
     lastFrame = performance.now(); lastUi = 0;
     cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
@@ -630,3 +634,4 @@ if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-openi
  gameTutor=connectGameTutor('rhythm',{onHelp:()=>pause(),onPracticeComplete:()=>{if(state.screen==='game'&&state.round)void resume();else void start();},onResumeAfterHelp:()=>{if(state.screen==='game'&&state.round)void resume();}});
  tutorEvent(state.screen==='game'?(state.paused?'paused':'playing'):state.screen==='results'?'finish':'lobby');
 }).catch(()=>{});
+import { recordTrialStarted } from '../social-conversion.mjs';

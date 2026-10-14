@@ -83,7 +83,7 @@ function actor(parent, id, m, shared) {
   // Front-row guests' overhead labels would cover the actual cups behind them.
   if (id === 'book-guest' || id === 'companion') { label.position.set(0, .10, .67); label.userData.labelWidth = 1.20; }
   const shadow = mesh(group, shared.shadow, m.shadow, [0, .012, 0]); shadow.rotation.x = -Math.PI / 2; shadow.castShadow = shadow.receiveShadow = false;
-  return { group, body, resident, height, headHeight, label, target: new THREE.Vector3(), from: new THREE.Vector3(), changedAt: 0, pose: 'resting', facing: 0,
+  return { group, body, resident, height, headHeight, label, shadow, floorY: .12, surfaceOffset: 0, gaitBob: 0, groundX: NaN, groundZ: NaN, target: new THREE.Vector3(), from: new THREE.Vector3(), changedAt: 0, pose: 'resting', facing: 0,
     visualFacing: null, stepPosition: new THREE.Vector3(), stepPlaced: false, walkPhase: 0, gaitBlend: 0 };
 }
 function mug(parent, m, p, scale = 1) {
@@ -138,7 +138,7 @@ function pictureMenu(parent, m, p) {
 }
 function bench(parent, m, p, width = 1.6) {
   const g = new THREE.Group(); parent.add(g); g.position.set(...p);
-  for (let i = 0; i < 3; i++) box(g, m.wood, [width, .08, .19], [0, .46, -.18 + i * .20], .025);
+  for (let i = 0; i < 3; i++) { const seat = box(g, m.wood, [width, .08, .19], [0, .46, -.18 + i * .20], .025); seat.userData.townSupportSurface = true; }
   for (let i = 0; i < 2; i++) box(g, m.wood, [width, .16, .075], [0, .71 + i * .20, -.32], .025);
   for (const x of [-width * .38, width * .38]) { box(g, m.darkWood, [.09, .43, .09], [x, .22, .17], .018); box(g, m.darkWood, [.09, .9, .09], [x, .46, -.32], .018); } return g;
 }
@@ -148,15 +148,54 @@ function plant(parent, m, p, scale = 1) {
   const leafGeo = new THREE.SphereGeometry(1, 10, 6);
   for (let i = 0; i < 5; i++) { const a = i / 5 * TAU, height = .62 + (i % 3) * .13; const leaf = mesh(g, leafGeo, i % 2 ? m.leaf : m.leafLight, [Math.sin(a) * .14, height, Math.cos(a) * .14], [.12, .29, .046]); leaf.rotation.set(Math.cos(a) * .7, a, Math.sin(a) * .7); } return g;
 }
+function townOcclusionVolume(root, structure) {
+  const bounds = new THREE.Box3().setFromObject(root).expandByScalar(.025), entries = [];
+  if (structure) root.traverse(object => {
+    if (!object.isMesh || !object.visible) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    if (materials.every(material => material.transparent && material.opacity < .99)) return;
+    const bounds = new THREE.Box3().setFromObject(object);
+    // Walking floors have their own low batches. Glazing and open gaps do not
+    // hide an entire room, garden, or the floor under the player's feet.
+    if (bounds.max.y > .25) entries.push({ mesh: object, bounds });
+  });
+  return { root, bounds, structure, entries };
+}
+function townFadeMesh(object, faded, mode, fadedMaterials) {
+  let entry = fadedMaterials.get(object);
+  if (!entry && !faded) return;
+  if (!entry) {
+    const original = object.material, list = Array.isArray(original) ? original : [original];
+    const roof = list.some(material => material.userData.townSurface === 'roof');
+    const variants = roof ? [] : list.map(material => { const copy = material.clone(); copy.transparent = true; copy.opacity = material.opacity * .14; copy.depthWrite = false; return copy; });
+    entry = { original, roof, variants, fadedMaterial: Array.isArray(original) ? variants : variants[0], castShadow: object.castShadow, receiveShadow: object.receiveShadow, visible: object.visible };
+    fadedMaterials.set(object, entry);
+  }
+  if (entry.active === faded && entry.mode === mode) return;
+  const hidden = faded && (mode === 'close' || entry.roof);
+  object.material = faded && !hidden ? entry.fadedMaterial : entry.original;
+  object.castShadow = faded ? false : entry.castShadow; object.receiveShadow = faded ? false : entry.receiveShadow;
+  object.visible = hidden ? false : entry.visible; entry.active = faded; entry.mode = mode;
+}
+function shadowFocus(x, z, extent, mapSize) {
+  const length = Math.sqrt(251), horizontal = Math.sqrt(130), rx = 7 / horizontal, rz = 9 / horizontal,
+    ux = 99 / (horizontal * length), uz = -77 / (horizontal * length), step = 2 * extent / mapSize;
+  const r = Math.round((x * rx + z * rz) / step) * step, u = Math.round((x * ux + z * uz) / step) * step, determinant = rx * uz - rz * ux;
+  return { x: (r * uz - rz * u) / determinant, z: (rx * u - r * ux) / determinant, step };
+}
 function quantile(list, fraction) { if (!list.length) return null; const sorted = [...list].sort((a, b) => a - b); return +sorted[Math.floor((sorted.length - 1) * fraction)].toFixed(2); }
 
 /** Scene state is presentation input only. No reward, clock, or fact is committed here. */
-export function createDayScene(canvas, { onDestination = () => {}, onError = () => {}, getInterfaceBounds = () => null } = {}) {
+export function createDayScene(canvas, { onDestination = () => {}, onError = () => {}, getInterfaceBounds = () => null, deferInitialRender = false } = {}) {
   if (!canvas || canvas.tagName !== 'CANVAS') throw new TypeError('A canvas is required.');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'default' });
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.02; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.VSMShadowMap;
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#bcddec'); scene.fog = new THREE.Fog('#c6dadd', 30, 100);
   const camera = new THREE.PerspectiveCamera(36, 1, .1, 100), world = new THREE.Group(); scene.add(world);
+  // These two containers never move. Keep descendant world updates enabled:
+  // actors, lights and sprites still update their own changing transforms.
+  scene.updateMatrix(); scene.matrixAutoUpdate = false;
+  world.updateMatrix(); world.matrixAutoUpdate = false;
   const maps = surfaces(), felt = color => new THREE.MeshPhysicalMaterial({ color, roughness: .96, sheen: .78, sheenRoughness: 1, sheenColor: new THREE.Color(color).lerp(new THREE.Color('#fff1dc'), .35), bumpMap: maps.felt, bumpScale: .019 });
   const m = {
     felt: felt('#de7564'), sage: felt('#718567'), linen: felt('#e3d8be'), denim: felt('#647e90'), thread: felt('#c6927d'), scarf: new THREE.MeshPhysicalMaterial({color:'#fff8e6',map:maps.knit,bumpMap:maps.knit,bumpScale:.009,roughness:.98,sheen:.6,side:THREE.DoubleSide}),
@@ -181,7 +220,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const environmentArt = buildTownEnvironment(THREE, world, m, { mesh, box, tube, textLabel });
   const { buildings, hitTargets } = environmentArt;
   world.updateMatrixWorld(true);
-  const occlusionVolumes = (environmentArt.occlusionRoots || buildings).map(root => ({ root, bounds: new THREE.Box3().setFromObject(root).expandByScalar(.025) }));
+  const fixedSupports = []; for (const building of buildings) building.traverse(object => { if (object.isMesh && object.userData.townSupportSurface) fixedSupports.push(object); });
+  const occlusionVolumes = (environmentArt.occlusionRoots || buildings).map(root => townOcclusionVolume(root, buildings.includes(root) || root.userData.neighbourhoodHouse === true));
   for (const building of buildings) {
     const id = building.userData.placeId;
     const label = textLabel(building, LABELS[id], [0, 3.35, -1.05], 1.65); label.userData.placeId = id;
@@ -189,7 +229,12 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const floors = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const shared = { shadow: new THREE.PlaneGeometry(1.45, 1.15) };
   const actors = new Map(Object.keys(ROLE_LABELS).map(id => [id, actor(world, id, m, shared)])); for (const id of VISITORS) actors.get(id).group.visible = false;
+  const labelSprites = [...actors.values()].map(a => a.label);
+  for (const building of buildings) for (const child of building.children) if (child.isSprite && child.userData.labelWidth) labelSprites.push(child);
+  const labelPosition = new THREE.Vector3();
   const propRoot = new THREE.Group(); world.add(propRoot); let propSignature = '', propCount = 0;
+  let propSupports = [], propContacts = [], lifeContact = null, legacyContact = null;
+  const supportRay = new THREE.Raycaster(), supportOrigin = new THREE.Vector3(), supportDown = new THREE.Vector3(0, -1, 0), supportHits = [];
   const memoryRoot = new THREE.Group(); memoryRoot.name = 'town-lived-memories'; world.add(memoryRoot);
   let memorySignature = '', memoryMarkers = [];
   const legacy = new THREE.Group(); world.add(legacy); legacy.visible = false;
@@ -208,54 +253,60 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const walkingCameraOffset = new THREE.Vector3(0, 10.8, 15);
   const walkingCameraNormal = walkingCameraOffset.clone().normalize();
   const walkingCameraUp = new THREE.Vector3(0, walkingCameraNormal.z, -walkingCameraNormal.y);
-  const occlusionRay = new THREE.Raycaster(), sight = new THREE.Vector3(), obscuredBuildings = new Set(), fadedMaterials = new Map();
+  const occlusionRay = new THREE.Raycaster(), sight = new THREE.Vector3(), occlusionHitPoint = new THREE.Vector3(), occlusionHits = [], obscuredBuildings = new Set(), fadedMaterials = new Map(), fadedMeshes = new Set();
+  let occlusionQueries = 0, occlusionReused = 0, previousOcclusion = null, shadowDiagnostics = null;
   const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
-  function fadeBuilding(group, faded) {
-    if (group.userData.faded === faded && group.userData.fadedMode === cameraMode) return;
-    group.userData.faded = faded; group.userData.fadedMode = cameraMode;
-    group.traverse(object => {
-      if (!object.isMesh) return;
-      let entry = fadedMaterials.get(object);
-      if (!entry) {
-        const original = object.material, originalList = Array.isArray(original) ? original : [original];
-        const variants = originalList.map(material => { const copy = material.clone(); copy.transparent = true; copy.opacity = material.opacity * .14; copy.depthWrite = false; return copy; });
-        entry = { original, faded: Array.isArray(original) ? variants : variants[0], variants, castShadow: object.castShadow, receiveShadow: object.receiveShadow, visible: object.visible };
-        fadedMaterials.set(object, entry);
-      }
-      object.material = faded ? entry.faded : entry.original; object.castShadow = faded ? false : entry.castShadow;
-      object.receiveShadow = faded ? false : entry.receiveShadow;
-      // Close inspection must have no ghost geometry or VSM receiver shadow over the eyes or clothes.
-      object.visible = faded && cameraMode === 'close' ? false : entry.visible;
-    });
-  }
   function updateOcclusion() {
-    const next = new Set();
+    const player = actors.get('player'), p = player.group.position, floorY = p.y + player.surfaceOffset;
+    const old = previousOcclusion;
+    if (old && old.walk === freeWalk && old.mode === cameraMode && old.x === p.x && old.y === floorY && old.z === p.z
+      && old.cx === camera.position.x && old.cy === camera.position.y && old.cz === camera.position.z) { occlusionReused++; return; }
+    previousOcclusion = { walk: freeWalk, mode: cameraMode, x: p.x, y: floorY, z: p.z, cx: camera.position.x, cy: camera.position.y, cz: camera.position.z }; occlusionQueries++;
+    const next = new Set(), nextMeshes = new Set();
     if (freeWalk && cameraMode !== 'wide') {
-      const p = actors.get('player').group.position;
-      // Static bounding volumes deliberately include gaps between bench slats and leaves.
-      // The full character silhouette must stay visible, not only the centre of its face.
-      const hitPoint = new THREE.Vector3();
       for (const x of [-.44, 0, .44]) for (const y of [.12, .38, .68, .98]) {
-        sight.set(p.x + x, p.y + y, p.z + .12);
+        sight.set(p.x + x, floorY + y, p.z + .12);
         const distance = camera.position.distanceTo(sight);
-        occlusionRay.set(camera.position, sight.sub(camera.position).normalize());
-        for (const { root, bounds } of occlusionVolumes) {
-          if (occlusionRay.ray.intersectBox(bounds, hitPoint) && camera.position.distanceTo(hitPoint) < distance - .12) next.add(root);
+        occlusionRay.set(camera.position, sight.sub(camera.position).normalize()); occlusionRay.far = distance - .12;
+        for (const volume of occlusionVolumes) {
+          if (!occlusionRay.ray.intersectBox(volume.bounds, occlusionHitPoint) || camera.position.distanceTo(occlusionHitPoint) >= distance - .12) continue;
+          if (!volume.structure) { next.add(volume.root); continue; }
+          // The box is only a cheap rejection. Actual architecture must cross
+          // the silhouette before it fades; windows and open aisles stay clear.
+          for (const entry of volume.entries) {
+            if (!occlusionRay.ray.intersectBox(entry.bounds, occlusionHitPoint) || camera.position.distanceTo(occlusionHitPoint) >= distance - .12) continue;
+            occlusionHits.length = 0; occlusionRay.intersectObject(entry.mesh, false, occlusionHits);
+            for (const hit of occlusionHits) {
+              const original = fadedMaterials.get(hit.object)?.original || hit.object.material;
+              const material = Array.isArray(original) ? original[hit.face?.materialIndex || 0] : original;
+              if (!material || material.transparent && material.opacity < .99) continue;
+              next.add(volume.root); nextMeshes.add(hit.object);
+            }
+          }
         }
       }
     }
-    for (const group of obscuredBuildings) if (!next.has(group)) fadeBuilding(group, false);
-    for (const group of next) fadeBuilding(group, true);
+    for (const volume of occlusionVolumes) if (!volume.structure && next.has(volume.root)) volume.root.traverse(object => { if (object.isMesh) nextMeshes.add(object); });
+    for (const object of fadedMeshes) if (!nextMeshes.has(object)) townFadeMesh(object, false, cameraMode, fadedMaterials);
+    for (const object of nextMeshes) townFadeMesh(object, true, cameraMode, fadedMaterials);
+    for (const group of obscuredBuildings) if (!next.has(group)) { group.userData.faded = false; group.userData.fadedMode = cameraMode; }
+    for (const group of next) { group.userData.faded = true; group.userData.fadedMode = cameraMode; }
+    fadedMeshes.clear(); for (const object of nextMeshes) fadedMeshes.add(object);
     obscuredBuildings.clear(); for (const group of next) obscuredBuildings.add(group);
   }
   function focusShadow() {
-    const close = freeWalk && cameraMode === 'close', p = actors.get('player').target;
-    const x = close ? p.x : 0, z = close ? p.z : -2, extent = close ? 5.2 : 14;
-    light.position.set(x - 9, 11, z + 7); light.target.position.set(x, 0, z);
-    if (light.shadow.camera.right !== extent) {
-      Object.assign(light.shadow.camera, { left: -extent, right: extent, top: extent, bottom: -extent });
+    const close = freeWalk && cameraMode === 'close', overview = freeWalk && cameraMode === 'wide', p = actors.get('player').target;
+    const extent = close ? 5.2 : overview ? Math.max(WALK_BOUNDS.maxX - WALK_BOUNDS.minX, WALK_BOUNDS.maxZ - WALK_BOUNDS.minZ) / 2 + 6 : 14,
+      x = overview ? (WALK_BOUNDS.minX + WALK_BOUNDS.maxX) / 2 : freeWalk ? p.x : 0,
+      z = overview ? (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2 : freeWalk ? p.z : -2,
+      snapped = shadowFocus(x, z, extent, light.shadow.mapSize.x), scale = overview ? 3 : 1, far = overview ? 95 : 45;
+    light.position.set(snapped.x - 9 * scale, 11 * scale, snapped.z + 7 * scale); light.target.position.set(snapped.x, 0, snapped.z);
+    light.shadow.bias = -.0089 / (far - .5);
+    if (light.shadow.camera.right !== extent || light.shadow.camera.far !== far) {
+      Object.assign(light.shadow.camera, { left: -extent, right: extent, top: extent, bottom: -extent, far });
       light.shadow.camera.updateProjectionMatrix(); light.shadow.needsUpdate = true;
     }
+    shadowDiagnostics = { x: snapped.x, z: snapped.z, texelStep: snapped.step, extent, far, mapSize: light.shadow.mapSize.x, direction: 'unchanged-sun-axis', tracking: freeWalk && !overview ? 'player' : overview ? 'whole-world' : 'classic' };
   }
   function followTarget() {
     const p = actors.get('player').target;
@@ -339,31 +390,55 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     if (immediate || !a.group.userData.placed || reducedMotion || motionQuery.matches) { a.group.position.copy(a.target); a.from.copy(a.target); a.changedAt = now - 260; }
     a.group.userData.placed = true; a.pose = value.pose || 'resting'; a.group.visible = true;
   }
+  function supportHeight(x, z) {
+    const floorY = environmentArt.floorHeight?.(x, z); let height = Number.isFinite(floorY) ? floorY : .12;
+    const surfaces = [...fixedSupports, ...propSupports];
+    if (legacy.visible && legacyChair.visible) legacyChair.traverse(object => { if (object.isMesh && object.userData.townSupportSurface) surfaces.push(object); });
+    supportOrigin.set(x, 4, z); supportRay.set(supportOrigin, supportDown); supportRay.far = 8; supportHits.length = 0;
+    for (const object of surfaces) { object.updateWorldMatrix(true, false); supportRay.intersectObject(object, false, supportHits); }
+    for (const hit of supportHits) height = Math.max(height, hit.point.y);
+    return height;
+  }
+  function restOn(object, supportY) {
+    object.updateWorldMatrix(true, true);
+    const bounds = new THREE.Box3().setFromObject(object);
+    if (Number.isFinite(bounds.min.y)) object.position.y += supportY - bounds.min.y;
+    object.updateWorldMatrix(true, true); return new THREE.Box3().setFromObject(object);
+  }
   function releaseObjects(root) { const geometries = new Set(), materials = new Set(); root.traverse(o => { if (o.geometry) geometries.add(o.geometry); for (const material of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) if (!Object.values(m).includes(material)) materials.add(material); }); geometries.forEach(g => g.dispose()); materials.forEach(material => { if (material.userData.ownsMap) material.map?.dispose(); material.dispose(); }); root.clear(); }
   function updateProps(props) {
     const signature = JSON.stringify(props || []); if (signature === propSignature) return; propSignature = signature; releaseObjects(propRoot); propCount = 0;
-    for (const p of (props || []).slice(0, 30)) {
+    propSupports = []; propContacts = [];
+    const rows = (props || []).slice(0, 30), arranged = [...rows.filter(p => p.kind === 'bazaar-table'), ...rows.filter(p => p.kind !== 'bazaar-table')];
+    for (const p of arranged) {
       const g = new THREE.Group(); propRoot.add(g); g.position.set(clamp(finite(p.x), -10, 10), .13, clamp(finite(p.z), -10, 6));
-      const material = p.preview ? m.linen : m.wood;
+      const material = p.preview ? m.linen : m.wood, pendingSupports = [];
+      let plate = null, drink = null;
       if (p.kind === 'cushion') {
         mesh(g, new THREE.SphereGeometry(1, 20, 12), m.cotton, [0, .15, 0], [.38, .12, .3]);
         const rim = Array.from({ length: 20 }, (_, i) => { const a = i / 20 * TAU; return [Math.sin(a) * .355, .15, Math.cos(a) * .28]; });
         tube(g, rim, .008, m.lapis, true, 40);
         mesh(g, new THREE.SphereGeometry(1, 10, 6), m.lapis, [0, .265, 0], [.027, .010, .027]);
       }
-      else if (p.kind === 'tray') { box(g, material, [.71, .06, .47], [0, .15, 0], .05); mug(g, m, [.09, .2, -.02], .9); }
+      else if (p.kind === 'tray') { plate = box(g, material, [.71, .06, .47], [0, .15, 0], .05); drink = mug(g, m, [.09, .2, -.02], .9); }
       else if (p.kind === 'tea-cup') {
-        mesh(g, new THREE.CylinderGeometry(.26, .23, .025, 24), m.ceramic, [0, .66, 0]); mug(g, m, [0, .68, 0], 1.3);
-        if (p.sweetener === 'sweet') { box(g, m.paper, [.08, .075, .08], [-.21, .714, .11], .012); box(g, m.paper, [.075, .075, .075], [-.22, .714, .02], .012); }
+        const supportY = supportHeight(g.position.x, g.position.z);
+        plate = mesh(g, new THREE.CylinderGeometry(.26, .23, .025, 24), m.ceramic, [0, .66, 0]); drink = mug(g, m, [0, .68, 0], 1.3);
+        const top = restOn(plate, supportY).max.y; restOn(drink, top);
+        if (p.sweetener === 'sweet') { restOn(box(g, m.paper, [.08, .075, .08], [-.21, .714, .11], .012), top); restOn(box(g, m.paper, [.075, .075, .075], [-.22, .714, .02], .012), top); }
       }
-      else if (p.kind === 'water-glass') { mesh(g, new THREE.CylinderGeometry(.20, .20, .018, 22), m.wood, [0, .66, 0]); waterGlass(g, m, [0, .68, 0], 1.3); }
+      else if (p.kind === 'water-glass') {
+        const supportY = supportHeight(g.position.x, g.position.z);
+        plate = mesh(g, new THREE.CylinderGeometry(.20, .20, .018, 22), m.wood, [0, .66, 0]); drink = waterGlass(g, m, [0, .68, 0], 1.3);
+        restOn(drink, restOn(plate, supportY).max.y);
+      }
       else if (p.kind === 'request-card') requestCard(g, m, p);
       else if (p.kind === 'picture-menu') pictureMenu(g, m, p);
       else if (p.kind === 'bazaar-table') {
-        box(g, m.wood, [2.65, .10, 1.20], [0, .60, 0], .045);
+        pendingSupports.push(box(g, m.wood, [2.65, .10, 1.20], [0, .60, 0], .045));
         for (const xx of [-1.11, 1.11]) for (const zz of [-.43, .43]) box(g, m.darkWood, [.09, .57, .09], [xx, .29, zz], .02);
-        box(g, m.cotton, [1.24, .016, 1.17], [0, .665, 0], .006);
-        box(g, m.cotton, [1.24, .23, .018], [0, .55, .599], .007);
+        pendingSupports.push(box(g, m.cotton, [1.24, .0015, 1.17], [0, .6735, 0], .0005));
+        box(g, m.cotton, [1.24, .23, .002], [0, .55925, .586], .0005);
         for (let i = 0; i < 14; i++) tube(g, [[-.53 + i * .081, .476, .615], [-.51 + i * .081, .480, .618]], .003, m.lapis, false, 3);
       }
       else if (p.kind === 'board') {
@@ -376,6 +451,17 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       else if (p.kind === 'chair') bench(g, m, [0, 0, 0], .83);
       else { box(g, material, [.84, .13, .43], [0, .23, 0]); for (const sign of [-1, 1]) box(g, m.darkWood, [.1, .2, .38], [sign * .28, .1, 0]); }
       if (['garden', 'outward', 'clear'].includes(p.orientation)) g.rotation.y = Math.PI / 2;
+      const floorY = environmentArt.floorHeight?.(g.position.x, g.position.z), supportY = p.kind === 'bazaar-table' ? (Number.isFinite(floorY) ? floorY : .12) : supportHeight(g.position.x, g.position.z);
+      const bounds = ['tea-cup', 'water-glass'].includes(p.kind) ? (g.updateWorldMatrix(true, true), new THREE.Box3().setFromObject(g)) : restOn(g, supportY);
+      // Each row retains its original X/Z and meaning. Only visual Y follows
+      // the actual supporting floor/table/seat, including bevelled geometry.
+      const contact = { id: p.id || null, kind: p.kind, x: g.position.x, z: g.position.z, bottomY: bounds.min.y, supportY, gap: bounds.min.y - supportY };
+      if (plate && drink) {
+        if (p.kind === 'tray') restOn(drink, new THREE.Box3().setFromObject(plate).max.y);
+        const plateBounds = new THREE.Box3().setFromObject(plate), drinkBounds = new THREE.Box3().setFromObject(drink);
+        contact.plateTopY = plateBounds.max.y; contact.drinkBottomY = drinkBounds.min.y; contact.drinkGap = drinkBounds.min.y - plateBounds.max.y;
+      }
+      propContacts.push(contact); for (const object of pendingSupports) { object.userData.townSupportSurface = true; propSupports.push(object); }
       if (p.preview) g.traverse(object => { if (!object.isMesh) return; object.material = object.material.clone(); object.material.transparent = true; object.material.opacity = .40; object.material.depthWrite = false; object.castShadow = false; });
       propCount++;
     }
@@ -424,6 +510,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     else if (!data.npcs?.some(n => n.id === 'cafe-owner') && !data.lifeRoutine?.owner) setActor('cafe-owner', cafePoint({ x: 42, y: 60, pose: 'standing' }), now, true);
     legacyCup.visible = !!data.legacy.teaPlaced || (!!source.tea && source.tea.pose !== 'hidden');
     const cup = source.tea ? cafePoint(source.tea) : pos; legacyCup.position.set(cup.x + .4, .62, cup.z + .18);
+    if (legacyCup.visible) { const supportY = supportHeight(legacyCup.position.x, legacyCup.position.z), bounds = restOn(legacyCup, supportY); legacyContact = { id: 'legacy-cup', kind: 'legacy-cup', bottomY: bounds.min.y, supportY, gap: bounds.min.y - supportY }; }
   }
   function render(data = {}, options = {}) {
     if (disposed) return; requestedSerial++; const now = performance.now();
@@ -443,7 +530,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     updateProps(data.legacy?.active ? data.props?.filter(p => p.id !== 'ft-seat') : data.props); updateMemories(data.memories); updateLegacy(data, now);
     lifeCup.visible = !!data.lifeRoutine?.prop && data.lifeRoutine.prop.pose !== 'hidden';
     if (data.lifeRoutine?.owner) setActor('cafe-owner', cafePoint(data.lifeRoutine.owner), now, true);
-    if (lifeCup.visible) { const p = cafePoint(data.lifeRoutine.prop); lifeCup.position.set(p.x, .53, p.z); }
+    if (lifeCup.visible) { const p = cafePoint(data.lifeRoutine.prop); lifeCup.position.set(p.x, .53, p.z); const supportY = supportHeight(p.x, p.z), bounds = restOn(lifeCup, supportY); lifeContact = { id: 'life-cup', kind: 'life-cup', x: p.x, z: p.z, bottomY: bounds.min.y, supportY, gap: bounds.min.y - supportY }; }
     // A deliberate view change uses a cut rather than flying through buildings.
     if (layoutChanged) layoutCamera(cameraChanged); dirty = true; schedule(); return requestedSerial;
   }
@@ -470,7 +557,19 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       a.gaitBlend += (gaitTarget - a.gaitBlend) * (1 - Math.exp(-dt * (gaitTarget ? 22 : 28)));
       if (!motion || a.gaitBlend < .001) a.gaitBlend = 0;
       const gait = a.gaitBlend, sway = Math.sin(a.walkPhase), idle = 1 - gait;
-      a.body.position.y = motion ? Math.abs(sway) * gait * (a.resident ? .008 : .020) + idle * (holding ? 0 : working || talking ? Math.sin(now * .0032) * .012 : Math.sin(now * .0018) * .003) : 0;
+      if (a.groundX !== a.group.position.x || a.groundZ !== a.group.position.z) {
+        const floorY = environmentArt.floorHeight?.(a.group.position.x, a.group.position.z);
+        a.floorY = Number.isFinite(floorY) ? floorY : .12; a.groundX = a.group.position.x; a.groundZ = a.group.position.z;
+      }
+      a.gaitBob = motion ? Math.abs(sway) * gait * (a.resident ? .008 : .020) + idle * (holding ? 0 : working || talking ? Math.sin(now * .0032) * .012 : Math.sin(now * .0018) * .003) : 0;
+      // The visual feet follow the surface. The input anchor, gait travel and
+      // direct camera remain level; a seated resident keeps its chair pose.
+      a.surfaceOffset = ['sit', 'sitting', 'seated'].includes(a.pose) ? 0 : a.floorY - a.group.position.y;
+      a.body.position.y = a.surfaceOffset + a.gaitBob;
+      a.shadow.position.y = a.floorY - a.group.position.y + .004;
+      // High steps/porches use the real sun shadow, avoiding a floating contact
+      // disc spilling outside a narrow elevated platform.
+      a.shadow.visible = a.floorY < .2;
       a.body.rotation.z = motion ? sway * gait * (a.resident ? .007 : .023) + idle * (showing ? .045 + Math.sin(now * .0026) * .025 : working ? Math.sin(now * .0032) * .020 : 0) : 0;
       a.body.rotation.x = a.resident ? 0 : working ? .10 : showing ? -.05 : 0;
       const squash = a.resident ? 0 : Math.cos(a.walkPhase * 2) * gait * .008;
@@ -480,17 +579,19 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       else a.visualFacing += Math.atan2(Math.sin(heading - a.visualFacing), Math.cos(heading - a.visualFacing)) * (1 - Math.exp(-dt * 18));
       a.body.rotation.y = a.visualFacing;
       a.resident?.update({ now, deltaSeconds: dt, walkPhase: a.walkPhase, gaitBlend: gait, motion, walking, working, showing, holding, talking, seated: ['sit', 'sitting', 'seated'].includes(a.pose) });
-      a.label.visible = !freeWalk || id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? 2.0 : 3.0);
+      a.label.visible = !freeWalk || cameraMode !== 'wide' && id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? 2.0 : 3.0);
       const fibers = a.body.getObjectByName('close-view-felt-fibers'); if (fibers) fibers.visible = cameraMode === 'close';
     }
-    const labelPosition = new THREE.Vector3();
-    scene.traverse(o => { if (!o.isSprite || !o.userData.labelWidth) return; o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode === 'wide' || Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); });
+    for (const o of labelSprites) { o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode !== 'wide' && Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); }
     updateOcclusion(); focusShadow();
     rendering.render(cameraMode === 'wide'); frameCount++; renderedSerial = requestedSerial; ready = true; dirty = false;
     const cpu = performance.now() - start; cpuTimes.push(cpu); if (lastMetricsAt && now - lastMetricsAt < 250) intervals.push(now - lastMetricsAt); lastMetricsAt = now; if (cpuTimes.length > 360) cpuTimes.shift(); if (intervals.length > 360) intervals.shift();
     if (motion || freeWalk && playerMoving) schedule();
   }
-  function schedule() { if (!raf && !disposed && visible && !document.hidden && !contextLost) raf = requestAnimationFrame(frame); }
+  // An account iframe waits for its first authoritative scene input. Rendering
+  // the unused placeholder here can block the account response during shader
+  // compilation, then immediately repeat that work for the actual town view.
+  function schedule() { if ((!deferInitialRender || requestedSerial > 0) && !raf && !disposed && visible && !document.hidden && !contextLost) raf = requestAnimationFrame(frame); }
   function pointerDown(e) { if (e.button && e.pointerType === 'mouse') return; pointerStart = { id: e.pointerId, x: e.clientX, y: e.clientY }; }
   function pointerUp(e) {
     const start = pointerStart; pointerStart = null; if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > 9 || contextLost) return;
@@ -516,7 +617,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     const avatar=actors.get('player').avatar;avatar?.setOutfit(playerOutfit);avatar?.setDyes(playerDyes);dirty = true; schedule();
   }
   function cameraDiagnostics() {
-    const player = actors.get('player'), feet = player.group.position.clone().project(camera), top = player.group.position.clone().add(new THREE.Vector3(0, player.height, 0)).project(camera);
+    const player = actors.get('player'), feet = player.group.position.clone().add(new THREE.Vector3(0, player.surfaceOffset, 0)).project(camera), top = player.group.position.clone().add(new THREE.Vector3(0, player.height + player.surfaceOffset, 0)).project(camera);
     return {
       cameraRevision: 4,
       cameraFov: camera.fov,
@@ -531,7 +632,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       }
     };
   }
-  function stats() { const player = actors.get('player'); const projected = player.group.position.clone().add(new THREE.Vector3(0, .55, 0)).project(camera); const head = player.group.position.clone().add(new THREE.Vector3(0, .83, 0)).project(camera); return { ready, ...cameraDiagnostics(), playerHeadScreen: {x:(head.x+1)*canvas.clientWidth/2,y:(1-head.y)*canvas.clientHeight/2,inFrustum:Math.abs(head.x)<1&&Math.abs(head.y)<1&&Math.abs(head.z)<1}, graphicsVersion: 18, brandArt: { revision: 11, palette: TOWN_BRAND, materialVersion: surfaceArt.version, memoryMarkers: memoryMarkers.map(h => ({ ...h })) }, rendering: rendering.stats(), conversationHeads: framingActorIds.map(id=>{const a=actors.get(id), point=(a.resident?.head ? a.resident.head.getWorldPosition(new THREE.Vector3()) : a.group.position.clone().add(new THREE.Vector3(0,a.headHeight,0))).project(camera);return {id,x:(point.x+1)*canvas.clientWidth/2,y:(1-point.y)*canvas.clientHeight/2};}), residents: [...actors.entries()].filter(([,a])=>a.resident).map(([id,a])=>({id,visible:a.group.visible,identity:a.resident.identity,height:a.height,headHeight:a.headHeight,pose:a.pose})), assetsReady, assetFailures: [...assetFailures], environment: environmentArt.stats, playerAvatar: player.avatar?.metrics() || {avatarVersion:'town-role-v2',outfit:playerOutfit}, appearanceVerified, playerScreen: { x: (projected.x + 1) * canvas.clientWidth / 2, y: (1 - projected.y) * canvas.clientHeight / 2, inFrustum: Math.abs(projected.x) < 1 && Math.abs(projected.y) < 1 && Math.abs(projected.z) < 1 }, cameraNear: camera.near, cameraDistance: camera.position.distanceTo(player.group.position), requestedSerial, renderedSerial, renderer: `Three.js r${THREE.REVISION}`, webgl: renderer.capabilities.isWebGL2 ? 'WebGL2' : 'WebGL', contextLost, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, dpr: renderer.getPixelRatio(), drawingBuffer: { width: canvas.width, height: canvas.height }, frameCount, samples: cpuTimes.length, cpuRenderMs: { p50: quantile(cpuTimes, .5), p95: quantile(cpuTimes, .95) }, frameIntervalMs: { p50: quantile(intervals, .5), p95: quantile(intervals, .95) }, frameCap: 60, quality, camera: cameraMode, location: currentLocation, freeWalk, locomotion: { revision: 6, requestedHeading: player.facing, displayedHeading: player.visualFacing, gaitBlend: player.gaitBlend, phase: player.walkPhase, bob: player.body.position.y, roll: player.body.rotation.z, positionResidual: player.group.position.distanceTo(player.target), headingResponse: 'shortest-angle-body-only', gaitClock: 'travel-distance' }, playerPose: { x: player.group.position.x, y: player.group.position.y, z: player.group.position.z, heading: player.body.rotation.y, moving: playerMoving }, cameraPosition: camera.position.toArray(), cameraTarget: cameraTarget.toArray(), obscuredBuildingCount: [...obscuredBuildings].filter(g => buildings.includes(g)).length, obscuredPropCount: [...obscuredBuildings].filter(g => !buildings.includes(g)).length, paused: disposed || !visible || document.hidden || contextLost, reducedMotion: reducedMotion || motionQuery.matches, actorCount: [...actors.values()].filter(a => a.group.visible).length, propCount, productionAsset: false, physicalDeviceVerified: false }; }
+  function stats() { const player = actors.get('player'); const projected = player.group.position.clone().add(new THREE.Vector3(0, .55 + player.surfaceOffset, 0)).project(camera); const head = player.group.position.clone().add(new THREE.Vector3(0, .83 + player.surfaceOffset, 0)).project(camera); return { ready, ...cameraDiagnostics(), playerHeadScreen: {x:(head.x+1)*canvas.clientWidth/2,y:(1-head.y)*canvas.clientHeight/2,inFrustum:Math.abs(head.x)<1&&Math.abs(head.y)<1&&Math.abs(head.z)<1}, graphicsVersion: 20, brandArt: { revision: 13, palette: TOWN_BRAND, materialVersion: surfaceArt.version, memoryMarkers: memoryMarkers.map(h => ({ ...h })) }, rendering: rendering.stats(), conversationHeads: framingActorIds.map(id=>{const a=actors.get(id), point=(a.resident?.head ? a.resident.head.getWorldPosition(new THREE.Vector3()) : a.group.position.clone().add(new THREE.Vector3(0,a.headHeight,0))).project(camera);return {id,x:(point.x+1)*canvas.clientWidth/2,y:(1-point.y)*canvas.clientHeight/2};}), residents: [...actors.entries()].filter(([,a])=>a.resident).map(([id,a])=>({id,visible:a.group.visible,identity:a.resident.identity,height:a.height,headHeight:a.headHeight,pose:a.pose})), assetsReady, assetFailures: [...assetFailures], environment: environmentArt.stats, surfaceAlignment: { revision: 20, floorY: player.floorY, surfaceOffset: player.surfaceOffset, footWorldY: player.group.position.y + player.body.position.y, nominalFootWorldY: player.group.position.y + player.surfaceOffset, bob: player.gaitBob, shadowWorldY: player.group.position.y + player.shadow.position.y, contactShadowVisible: player.shadow.visible, anchorY: player.group.position.y, gameplayYChanged: false }, propContacts: [...propContacts, ...(lifeCup.visible && lifeContact ? [lifeContact] : []), ...(legacy.visible && legacyCup.visible && legacyContact ? [legacyContact] : [])], occlusionReuse: { queries: occlusionQueries, reusedFrames: occlusionReused, fadedMeshCount: fadedMeshes.size, roofCutaways: [...fadedMeshes].filter(object => fadedMaterials.get(object)?.roof && !object.visible).length }, shadowFocus: shadowDiagnostics, playerAvatar: player.avatar?.metrics() || {avatarVersion:'town-role-v2',outfit:playerOutfit}, appearanceVerified, playerScreen: { x: (projected.x + 1) * canvas.clientWidth / 2, y: (1 - projected.y) * canvas.clientHeight / 2, inFrustum: Math.abs(projected.x) < 1 && Math.abs(projected.y) < 1 && Math.abs(projected.z) < 1 }, cameraNear: camera.near, cameraDistance: camera.position.distanceTo(player.group.position), requestedSerial, renderedSerial, renderer: `Three.js r${THREE.REVISION}`, webgl: renderer.capabilities.isWebGL2 ? 'WebGL2' : 'WebGL', contextLost, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, dpr: renderer.getPixelRatio(), drawingBuffer: { width: canvas.width, height: canvas.height }, frameCount, samples: cpuTimes.length, cpuRenderMs: { p50: quantile(cpuTimes, .5), p95: quantile(cpuTimes, .95) }, frameIntervalMs: { p50: quantile(intervals, .5), p95: quantile(intervals, .95) }, frameCap: 60, quality, camera: cameraMode, location: currentLocation, freeWalk, locomotion: { revision: 6, requestedHeading: player.facing, displayedHeading: player.visualFacing, gaitBlend: player.gaitBlend, phase: player.walkPhase, bob: player.gaitBob, roll: player.body.rotation.z, positionResidual: player.group.position.distanceTo(player.target), headingResponse: 'shortest-angle-body-only', gaitClock: 'travel-distance' }, playerPose: { x: player.group.position.x, y: player.group.position.y, z: player.group.position.z, heading: player.body.rotation.y, moving: playerMoving }, cameraPosition: camera.position.toArray(), cameraTarget: cameraTarget.toArray(), obscuredBuildingCount: [...obscuredBuildings].filter(g => buildings.includes(g)).length, obscuredPropCount: [...obscuredBuildings].filter(g => !buildings.includes(g)).length, paused: disposed || !visible || document.hidden || contextLost, reducedMotion: reducedMotion || motionQuery.matches, actorCount: [...actors.values()].filter(a => a.group.visible).length, propCount, productionAsset: false, physicalDeviceVerified: false }; }
   function dispose() {
     if (disposed) return; disposed = true; cancelAnimationFrame(raf); resizeObserver.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', visibilityChange); motionQuery.removeEventListener?.('change', motionChange);
     for (const [type, fn] of [['pointerdown', pointerDown], ['pointerup', pointerUp], ['pointercancel', pointerCancel], ['webglcontextlost', lost]]) canvas.removeEventListener(type, fn);
@@ -541,6 +642,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     for (const entry of fadedMaterials.values()) { for (const material of entry.variants) materials.add(material); for (const material of Array.isArray(entry.original) ? entry.original : [entry.original]) materials.add(material); }
     environmentArt.dispose?.();
     geometries.forEach(g => g.dispose()); materials.forEach(mat => mat.dispose()); textures.forEach(t => t.dispose()); envTarget.dispose(); skyTarget?.dispose(); light.shadow.dispose(); rendering.dispose(); renderer.dispose(); renderer.forceContextLoss();
+    fadedMeshes.clear(); fadedMaterials.clear(); obscuredBuildings.clear(); occlusionVolumes.length = 0; occlusionHits.length = 0;
+    fixedSupports.length = 0; propSupports = []; propContacts = []; supportHits.length = 0; lifeContact = legacyContact = previousOcclusion = null;
   }
   const loader = new THREE.TextureLoader();
   async function loadSurface(name, apply) {
@@ -561,7 +664,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       player.group.add(body); player.body = body; player.avatar = avatar; dirty = true; schedule();
     } catch { assetFailures.push('avatar-v3'); }
   }
-  Promise.all([
+  const initialAssets = Promise.all([
     loadPlayerAvatar(),
     loadSurface(`azure-sky-v3${canvas.clientWidth < 600 ? '-mobile' : ''}.jpg`, map => {
       skyTexture = map; map.colorSpace = THREE.SRGBColorSpace; map.mapping = THREE.EquirectangularReflectionMapping;
@@ -581,5 +684,14 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       environmentArt.setCliffNormal?.(map);
     }),
   ]).finally(() => { pmrem.dispose(); assetsReady = true; if (!disposed) { dirty = true; schedule(); } });
-  resize(); render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setAppearance, resize, stats, dispose };
+  async function prepareInitialAssets() {
+    if (disposed || assetsReady) return;
+    let timer;
+    // Start the account handshake after initial material variants settle so a
+    // late map cannot trigger another shader compilation during that request.
+    // A stalled image still permits the existing procedural fallback to draw.
+    try { await Promise.race([initialAssets.catch(() => {}), new Promise(resolve => { timer = setTimeout(resolve, 5000); })]); }
+    finally { clearTimeout(timer); }
+  }
+  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setAppearance, prepareInitialAssets, resize, stats, dispose };
 }

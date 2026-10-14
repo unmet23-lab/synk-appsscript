@@ -39,3 +39,40 @@ export function tutorSelectionStatus({owner,progress,ready}){
  const message=blocked?'저장 확인에서 사용할 기록을 골라 주세요.':!value.scoped?'계정 연결을 다시 확인한 뒤 선택을 저장해요.':value.phase==='synced'?'선택은 SYNK 계정에 기억해요. 다른 기기에서도 함께해요.':value.phase==='saving'?'선택과 학습 기록을 계정에 저장하고 있어요.':'선택을 아직 계정에 저장하지 못했어요. 연결되면 다시 시도해요.';
  return {phase:value.phase,mode:'account',blocked,message};
 }
+
+// A title can finish before account restoration. Never make the first choice
+// against that temporary guest, or let an old owner's chooser open their home.
+export function createWorldEntryGate({restore,prepare,read,choose,onState=()=>{},onEnter=()=>{},onError=()=>{}}){
+ let revision=0,phase='idle',selectedOwner=null;
+ const identity=value=>`${value.owner}:${value.generation}`;
+ const state=(next,extra={})=>{phase=next;onState({phase:next,...extra});};
+ function invalidate(next='restoring'){revision++;selectedOwner=null;state(next);}
+ async function start(){
+  const ticket=++revision;state('restoring');
+  try{
+   await restore();if(ticket!==revision)return false;
+   let value;
+   for(;;){
+    const before=read(),ready=await prepare();if(ticket!==revision)return false;
+    value=read();if(identity(before)!==identity(value))continue;
+    if(!ready){state('error',{message:'계정의 튜터 기록을 확인한 뒤 이어갈 수 있어요.'});return false;}
+    break;
+   }
+   selectedOwner=identity(value);
+   const enter=()=>{
+    if(ticket!==revision)return false;
+    if(phase==='ready')return true;
+    const latest=read();
+    if(identity(latest)!==selectedOwner){void start();return false;}
+    if(!latest.tutor)return false;
+    state('ready');onEnter(latest);return true;
+   };
+   if(value.tutor)return enter();
+   state('choosing');await choose(enter);return phase==='ready';
+  }catch(error){
+   if(ticket!==revision)return false;
+   state('error',{message:'계정 연결을 확인하지 못했어요. 다시 연결해 주세요.'});onError(error);return false;
+  }
+ }
+ return Object.freeze({start,invalidate,cancel:()=>invalidate('idle'),state:()=>({phase,identity:selectedOwner})});
+}

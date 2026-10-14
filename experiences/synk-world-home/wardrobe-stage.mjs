@@ -2,13 +2,14 @@ import * as THREE from './scene-assets/three.module.js';
 import {createMongleAvatar} from './avatar-v3.mjs';
 import {slotsForOutfit} from './wardrobe-catalog.mjs';
 import {createContactLight} from './contact-light-v6.mjs';
+import {loadWardrobeEnvironment} from './wardrobe-environment.mjs';
 import {wardrobeDyeDefaults} from './avatar-wardrobe.mjs';
 import {STAGE_DEFAULT_VIEW,STAGE_POSES,STAGE_BACKGROUNDS,normalizeStageView,stagePointerDistance} from './wardrobe-stage-state.mjs';
 
 const LIGHTS={
   daylight:{background:'#eef2f1',key:'#fff4e1',fill:'#d9e9f3',intensity:2.85,exposure:1.09},
   sunset:{background:'#ece5e4',key:'#ffd1ad',fill:'#c1cbed',intensity:3.05,exposure:1.05},
-  studio:{background:'#edf0f5',key:'#fffaf1',fill:'#e3e9ff',intensity:3.0,exposure:1.07},
+  studio:{background:'#edf0f2',key:'#ffffff',fill:'#edf1f7',intensity:2.8,exposure:1.03},
 };
 function mesh(parent,geometry,material,position=[0,0,0]){const m=new THREE.Mesh(geometry,material);m.position.set(...position);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
 function woodMap(){
@@ -22,6 +23,8 @@ function contactMap(){
 
 /** One owned WebGL context, demand rendering, deterministic capture and bounded DPR. */
 export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=false,onError=()=>{},onAngle=()=>{},onView=()=>{},signal}={}){
+  signal?.throwIfAborted();
+  const startupAt=performance.now(),preparation=new AbortController();
   const canvas=document.createElement('canvas');canvas.className='atelier-canvas';canvas.tabIndex=0;canvas.style.touchAction='none';canvas.setAttribute('aria-label','3D 몽글 피팅룸. 좌우 화살표나 드래그로 회전, 위아래 화살표·휠·두 손가락으로 확대, Home으로 정면을 볼 수 있어요.');host.replaceChildren(canvas);
   const mobile=matchMedia('(max-width:799px)').matches;
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'low-power'});
@@ -76,32 +79,35 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
     }
     g.visible=false;return g;
   }
-  const envScene=new THREE.Scene();envScene.background=new THREE.Color('#dfe7e7');const envWhite=new THREE.MeshBasicMaterial({color:'#ffffff'});
-  mesh(envScene,new THREE.PlaneGeometry(5,4),envWhite,[-3,3,4]).lookAt(0,1,0);mesh(envScene,new THREE.PlaneGeometry(4,3),envWhite,[3,2,-3]).lookAt(0,1,0);
-  const pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(envScene,.08);scene.environment=environment.texture;scene.environmentIntensity=.42;pmrem.dispose();envScene.traverse(o=>o.geometry?.dispose());envWhite.dispose();
   const contactLight=createContactLight({renderer,scene,camera,quality:'balanced',mobile});
-  let cancelled=Boolean(signal?.aborted),disposeReady=null,backdropDisposed=false;
+  let cancelled=Boolean(signal?.aborted),disposeReady=null,backdropDisposed=false,environment=null;
   function releaseBackdrop(){
-    if(backdropDisposed)return;backdropDisposed=true;contactLight.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());oakTexture.dispose();contactTexture.dispose();environment.dispose();key.shadow.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
+    if(backdropDisposed)return;backdropDisposed=true;canvas.removeEventListener('webglcontextlost',preparationLost);contactLight.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());oakTexture.dispose();contactTexture.dispose();environment?.dispose();key.shadow.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
   }
-  const abort=()=>{cancelled=true;if(disposeReady)disposeReady();else releaseBackdrop();};
+  const abort=()=>{cancelled=true;preparation.abort();if(disposeReady)disposeReady();else releaseBackdrop();};
+  function preparationLost(event){event.preventDefault();preparation.abort(new Error('WARDROBE_CONTEXT_LOST'));}
+  canvas.addEventListener('webglcontextlost',preparationLost);
   signal?.addEventListener('abort',abort,{once:true});
   if(cancelled){signal?.removeEventListener('abort',abort);releaseBackdrop();throw new DOMException('Wardrobe closed','AbortError');}
   let avatar;
-  try{avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true});}
+  try{
+    environment=await loadWardrobeEnvironment(renderer,{signal:preparation.signal});
+    preparation.signal.throwIfAborted();scene.environment=environment.texture;scene.environmentIntensity=.42;
+    avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true,initialSlots:slots,signal:preparation.signal});
+  }
   catch(error){signal?.removeEventListener('abort',abort);releaseBackdrop();throw error;}
   if(cancelled){avatar.dispose();signal?.removeEventListener('abort',abort);throw new DOMException('Wardrobe closed','AbortError');}
   scene.add(avatar.group);avatar.group.position.y=.083;avatar.setEquipment(slots);avatar.setDyes(dyes);
-  let disposed=false,lost=false,active=true,inView=true,frame=0,frameCount=0,lastFrame=0;
+  let disposed=false,lost=false,active=true,inView=true,frame=0,frameCount=0,lastFrame=0,preparing=true,startupSized=false,startupMs=0;
   let light='daylight',angle=-.17,targetAngle=-.17,detail=false,zoom=0,pose='neutral',background='room',drag=null,pinch=null,currentSlots=slotsForOutfit(slots),size={width:1,height:1},renderMs=0;
   const pointers=new Map();
   const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
   renderer.debug.onShaderError=()=>{lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 표현을 준비하지 못했어요. 다시 열어 주세요.');};
   function fit(width=size.width,height=size.height){camera.aspect=width/height;camera.fov=36;const scale=1/(1+zoom*.75);target.set(0,detail?.73:.91,0);camera.position.set(0,target.y+(detail?.27:.42)*scale,(detail?2.33:4.03)*scale);if(camera.aspect<.8)camera.position.z*=.8/camera.aspect;camera.lookAt(target);camera.updateProjectionMatrix();}
-  function render(){if(disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
-  function schedule(){if(!frame&&!disposed&&!lost&&active&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
+  function render(){if(preparing||disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
+  function schedule(){if(!preparing&&!frame&&!disposed&&!lost&&active&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
   function tick(now){frame=0;if(disposed||lost||!active||!inView||document.hidden)return;const dt=Math.min(.05,lastFrame?(now-lastFrame)/1000:.016);lastFrame=now;const reduced=reducedMotion||motionQuery.matches;angle=reduced?targetAngle:angle+(targetAngle-angle)*(1-Math.exp(-dt*16));if(Math.abs(targetAngle-angle)<.0005)angle=targetAngle;render();if(angle!==targetAngle)schedule();}
-  function resize(){if(disposed)return;const phone=matchMedia('(max-width:799px)').matches,shadowSize=phone?512:1024,rect=host.getBoundingClientRect();size={width:Math.max(1,Math.round(rect.width)),height:Math.max(1,Math.round(rect.height))};renderer.setPixelRatio(Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.sqrt(1200000/(size.width*size.height))));renderer.setSize(size.width,size.height,false);if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);key.shadow.map?.dispose();key.shadow.mapPass?.dispose();key.shadow.map=null;key.shadow.mapPass=null;key.shadow.needsUpdate=true;}contactLight.setQuality('balanced',{mobile:phone});fit();schedule();}
+  function resize(){if(disposed||preparing&&startupSized)return;startupSized=true;const phone=matchMedia('(max-width:799px)').matches,shadowSize=phone?512:1024,rect=host.getBoundingClientRect();size={width:Math.max(1,Math.round(rect.width)),height:Math.max(1,Math.round(rect.height))};renderer.setPixelRatio(Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.sqrt(1200000/(size.width*size.height))));renderer.setSize(size.width,size.height,false);if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);key.shadow.map?.dispose();key.shadow.mapPass?.dispose();key.shadow.map=null;key.shadow.mapPass=null;key.shadow.needsUpdate=true;}contactLight.setQuality('balanced',{mobile:phone});fit();schedule();}
   function getView(){return {angle:targetAngle,zoom,detail};}
   function notifyView(){onView(getView());}
   function setAngle(value){if(!Number.isFinite(value))return;targetAngle=value;onAngle(value);notifyView();schedule();}
@@ -121,34 +127,40 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   for(const [event,handler]of events)canvas.addEventListener(event,handler);
   canvas.addEventListener('wheel',wheel,{passive:false});
   document.addEventListener('visibilitychange',visibility);resize();
-  function setLight(value){light=LIGHTS[value]?value:'daylight';const preset=LIGHTS[light];scene.background=new THREE.Color(preset.background).lerp(new THREE.Color(background==='warm'?'#f0e6da':background==='garden'?'#e0ebe2':preset.background),.50);key.color.set(preset.key);key.intensity=preset.intensity;fill.color.set(preset.fill);renderer.toneMappingExposure=preset.exposure;schedule();}
+  function setLight(value){light=LIGHTS[value]?value:'daylight';const preset=LIGHTS[light];scene.background=new THREE.Color(preset.background).lerp(new THREE.Color(background==='warm'?'#f0e6da':background==='garden'?'#e0ebe2':preset.background),.50);key.color.set(preset.key);key.intensity=preset.intensity;fill.color.set(preset.fill);const neutral=light==='studio';key.position.set(...(neutral?[-3.8,3.6,3.3]:[-3.4,4.8,4.6]));fill.intensity=neutral?.42:.65;hemi.intensity=neutral?.88:1.15;scene.environmentIntensity=neutral?.48:.42;renderer.toneMappingExposure=preset.exposure;schedule();}
   function setPose(value){pose=STAGE_POSES.includes(value)?value:'neutral';avatar.setPose(pose);schedule();return pose;}
   function setBackground(value){background=STAGE_BACKGROUNDS.includes(value)?value:'room';props.visible=background==='room';for(const g of backgrounds.values())g.visible=false;if(background!=='room')backdrop(background).visible=true;plaster.color.set(background==='warm'?'#efe6d9':background==='garden'?'#edf1e8':'#f2f3f0');setLight(light);schedule();return background;}
   function setDyes(value={}){const normalized=avatar.setDyes(value);schedule();return normalized;}
   function getState(){return {slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),light,pose,background};}
   setLight(light);
-  function capture({width=1200,height=1500,slots:photoSlots,dyes:photoDyes,thumbnail=false}={}){
+  function capture({width=1200,height=1500,slots:photoSlots,dyes:photoDyes,thumbnail=false,restoreImmediately=true}={}){
     if(disposed||lost||renderer.getContext().isContextLost())throw Error('STAGE_UNAVAILABLE');
     width=Math.max(1,Math.min(2400,Math.round(Number(width)||1200)));height=Math.max(1,Math.min(2400,Math.round(Number(height)||1500)));
     const dpr=renderer.getPixelRatio(),previous=getState(),previousAngle=angle,previousTargetAngle=targetAngle;
     try{
       renderer.setPixelRatio(1);renderer.setSize(width,height,false);
       if(thumbnail){angle=-.11;detail=false;zoom=0;setPose('neutral');setBackground('room');setLight('studio');}
-      fit(width,height);if(photoSlots)avatar.setEquipment(slotsForOutfit(photoSlots));if(photoDyes!==undefined)avatar.setDyes(photoDyes);avatar.group.rotation.y=angle;contactLight.render();
+      fit(width,height);if(photoSlots)avatar.setEquipment(slotsForOutfit(photoSlots));if(photoDyes!==undefined)avatar.setDyes(photoDyes);avatar.group.rotation.y=thumbnail?angle:targetAngle;contactLight.render();
       return canvas.toDataURL('image/png');
-    }finally{angle=previousAngle;targetAngle=previousTargetAngle;detail=previous.view.detail;zoom=previous.view.zoom;avatar.setEquipment(previous.slots);avatar.setDyes(previous.dyes);avatar.group.rotation.y=angle;setPose(previous.pose);setBackground(previous.background);setLight(previous.light);renderer.setPixelRatio(dpr);renderer.setSize(size.width,size.height,false);fit();render();schedule();}
+    }finally{angle=previousAngle;targetAngle=previousTargetAngle;detail=previous.view.detail;zoom=previous.view.zoom;avatar.setEquipment(previous.slots);avatar.setDyes(previous.dyes);avatar.group.rotation.y=angle;setPose(previous.pose);setBackground(previous.background);setLight(previous.light);renderer.setPixelRatio(dpr);renderer.setSize(size.width,size.height,false);fit();if(restoreImmediately)render();schedule();}
   }
   function dispose(){
-    if(disposed)return;disposed=true;cancelAnimationFrame(frame);resizeObserver.disconnect();intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
+    if(disposed)return;disposed=true;preparation.abort();cancelAnimationFrame(frame);resizeObserver.disconnect();intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
     for(const [event,handler]of events)canvas.removeEventListener(event,handler);canvas.removeEventListener('wheel',wheel);pointers.clear();drag=pinch=null;
     signal?.removeEventListener('abort',abort);avatar.dispose();releaseBackdrop();
   }
   disposeReady=dispose;
+  try{
+    await contactLight.prepare({signal:preparation.signal});
+    preparation.signal.throwIfAborted();if(lost)throw Error('WARDROBE_SHADER_FAILED');
+    canvas.removeEventListener('webglcontextlost',preparationLost);
+    preparing=false;resize();render();if(lost)throw Error('WARDROBE_SHADER_FAILED');startupMs=performance.now()-startupAt;
+  }catch(error){dispose();throw error;}
   return {
-    canvas,setAngle,setLight,setZoom,getView,setView,resetView,setDyes,getDyes:()=>avatar.getDyes(),getDyeDefaults:()=>wardrobeDyeDefaults(currentSlots),setPose,setBackground,getState,capture,dispose,
-    setSlots(value){currentSlots=slotsForOutfit(value);avatar.setEquipment(currentSlots);schedule();},
+    canvas,setAngle,setLight,setZoom,getView,setView,resetView,setDyes,getDyes:()=>avatar.getDyes(),getDyeDefaults:(slots=currentSlots)=>wardrobeDyeDefaults(slots),setPose,setBackground,getState,capture,dispose,
+    setSlots(value){const next=slotsForOutfit(value);if(next.body===currentSlots.body&&next.neck===currentSlots.neck)return;currentSlots=next;avatar.setEquipment(currentSlots);schedule();},
     setDetail(value){detail=Boolean(value);fit();notifyView();schedule();},
     setActive(value){active=Boolean(value);if(!active){cancelAnimationFrame(frame);frame=0;}else schedule();},
-    metrics:()=>({stageRevision:3,avatar:avatar.metrics(),contactLight:contactLight.metrics(),shadowMapSize:key.shadow.mapSize.x,shadowTechnique:'VSM',slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),angle,targetAngle,detail,zoom,light,pose,background,disposed,lost,active,inView,paused:!active||!inView||document.hidden||lost,frames:frameCount,dpr:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,renderSubmissionMs:renderMs,drawingBuffer:{width:canvas.width,height:canvas.height}}),
+    metrics:()=>({stageRevision:4,startupMs,environmentSource:environment.source,avatar:avatar.metrics(),contactLight:contactLight.metrics(),shadowMapSize:key.shadow.mapSize.x,shadowTechnique:'VSM',slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),angle,targetAngle,detail,zoom,light,pose,background,disposed,lost,active,inView,paused:!active||!inView||document.hidden||lost,frames:frameCount,dpr:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,renderSubmissionMs:renderMs,drawingBuffer:{width:canvas.width,height:canvas.height}}),
   };
 }

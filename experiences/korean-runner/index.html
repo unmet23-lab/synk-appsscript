@@ -6,10 +6,12 @@
 <meta name="theme-color" content="#f96859">
 <title>바람길 · SYNK LAB PLAY</title>
 <meta name="description" content="바람이 한국어로 길을 알려 주면 들은 대로 몸을 움직이는 듣기 액션 게임. 방향·동작·하지 말라는 말·순서를 듣고 90초 동안 달려요. TOPIK I 듣기의 짧은 지시 이해를 연습합니다.">
+<script src="./world-host.js"></script>
 <link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
 <link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="kit/lab.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="world-skin.css">
 <script src="./atlas-learning.js"></script>
 <script type="module" src="./app.mjs"></script>
 </head>
@@ -59,7 +61,8 @@
         <li><b class="num">2</b><strong>들은 대로 움직이기</strong><span>왼쪽·오른쪽으로 길을 바꾸고, 울타리는 뛰어넘고, 표지판 아래에서는 몸을 숙여요. ‘하지 말라’는 말과 두 동작의 순서도 잘 들어요.</span></li>
         <li><b class="num">3</b><strong>끝까지 달리기</strong><span>해낸 부탁마다 등불이 켜져요. 세 번 연속이면 바람막이 한 번 지켜 줘요. 90초를 다 달리면 도착!</span></li>
       </ol>
-      <p class="fine">휴대폰에서는 아래 펠트 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.</p>
+      <p class="fine lab-only">휴대폰에서는 아래 펠트 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.</p>
+      <p class="fine world-only" hidden>휴대폰에서는 아래 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.</p>
     </section>
   </section>
 

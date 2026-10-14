@@ -8,7 +8,8 @@ const random = seed => () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 429
 
 export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   const rand = random(81026), roots = [], buildings = [], hitTargets = [], occlusionMeshes = [], occlusionRoots = [];
-  const plantingMasks=[],soilPatchData={positions:[],uv:[],indices:[],colors:[]},districtFloorRecords=[];
+  const plantingMasks=[],soilPatchData={positions:[],uv:[],indices:[],colors:[]},districtFloorRecords=[],floorRegions=[],stoneFloorRegions=[];
+  const baseFloorY=TOWN_LAYOUT.ground.rootY+TOWN_LAYOUT.ground.localY;
   const ownedMaterials = new Set(), ownedGeometries = new Set(), ownedTextures = new Set(), batches = new Map(), curvedBatches = new Map();
   const cube = geometry(new THREE.BoxGeometry(1, 1, 1));
   const eased = geometry(easedBoxGeometry(.035));
@@ -76,6 +77,31 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
       if(inside)return false;
     }
     return true;
+  }
+  function recordFloor(points,height,id='floor-'+floorRegions.length){
+    const xs=points.map(p=>p[0]),zs=points.map(p=>p[1]);floorRegions.push({id,points,height,minX:Math.min(...xs),maxX:Math.max(...xs),minZ:Math.min(...zs),maxZ:Math.max(...zs)});
+  }
+  function insideFloorPolygon(x,z,points){
+    let inside=false;
+    for(let i=0,j=points.length-1;i<points.length;j=i++){
+      const a=points[j],b=points[i],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));
+      if((x-a[0]-dx*t)**2+(z-a[1]-dz*t)**2<1e-10)return true;
+      if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+    }
+    return inside;
+  }
+  function recordStoneFloor(geo,p,scale,rotation){
+    const object=new THREE.Object3D();object.position.set(p[0],p[1]+ground.position.y,p[2]);object.scale.set(...scale);object.rotation.set(...rotation);object.updateMatrix();
+    const position=geo.attributes.position,index=geo.index,points=[];for(let i=0;i<position.count;i++)points.push(new THREE.Vector3().fromBufferAttribute(position,i).applyMatrix4(object.matrix));
+    const triangles=[];for(let i=0;i<index.count;i+=3){const a=points[index.getX(i)],b=points[index.getX(i+1)],c=points[index.getX(i+2)],area=(b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);if(Math.abs(area)>1e-10)triangles.push({a:a.toArray(),b:b.toArray(),c:c.toArray(),inverseArea:1/area});}
+    stoneFloorRegions.push({minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minZ:Math.min(...points.map(p=>p.z)),maxZ:Math.max(...points.map(p=>p.z)),triangles});
+  }
+  function floorHeight(x,z){
+    if(disposed||!Number.isFinite(x)||!Number.isFinite(z))return baseFloorY;
+    let height=baseFloorY;
+    for(const region of floorRegions){if(x<region.minX-1e-5||x>region.maxX+1e-5||z<region.minZ-1e-5||z>region.maxZ+1e-5)continue;if(insideFloorPolygon(x,z,region.points))height=Math.max(height,region.height);}
+    for(const region of stoneFloorRegions){if(x<region.minX||x>region.maxX||z<region.minZ||z>region.maxZ)continue;for(const t of region.triangles){const u=((t.b[2]-t.c[2])*(x-t.c[0])+(t.c[0]-t.b[0])*(z-t.c[2]))*t.inverseArea,v=((t.c[2]-t.a[2])*(x-t.c[0])+(t.a[0]-t.c[0])*(z-t.c[2]))*t.inverseArea,w=1-u-v;if(u>=-1e-6&&v>=-1e-6&&w>=-1e-6)height=Math.max(height,u*t.a[1]+v*t.b[1]+w*t.c[1]);}}
+    return height;
   }
   function geometry(value) { ownedGeometries.add(value); return value; }
   function material(options) { const value = new THREE.MeshStandardMaterial(options); ownedMaterials.add(value); return value; }
@@ -375,19 +401,21 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
 
   function facade(id) {
     const [x,z]=PLACES[id],g=root(`town-${id}`,[x,0,z]);g.userData.placeId=id;buildings.push(g);
-    const deck=part(g,cube,mortar,[0,-.036,-.85],[4.6,.20,4.2]);deck.userData.destination=id;hitTargets.push(deck);
+    const floorGroup=new THREE.Group();floorGroup.name='town-'+id+'-floor';floorGroup.userData.townSurface='floor';g.add(floorGroup);
+    const deck=part(floorGroup,cube,mortar,[0,-.036,-.85],[4.6,.20,4.2]);deck.userData.destination=id;hitTargets.push(deck);
+    recordFloor([[x-2.275,z-2.871],[x+2.275,z-2.871],[x+2.275,z+1.227],[x-2.275,z+1.227]],.1295,'maru-'+id);
     // The flush visual maru surface keeps the established .12 m movement
     // height. A thick dark apron reaches the ground, never a floating platform.
     for(let iz=0;iz<15;iz++) {
       const tint=id==='cafe'?new THREE.Color('#ffffff').lerp(new THREE.Color('#dad5c7'),rand()*.16).getHex():new THREE.Color('#f0ede4').lerp(new THREE.Color('#d4d5ca'),rand()*.15).getHex();
       if(id==='cafe'){
         const joint=iz%2?.43:-.36,left=joint+2.275,right=2.275-joint;
-        batch(g,eased,m.wood,[-2.275+left/2,.102,-2.74+iz*.274],[left-.005,.055,.262],undefined,tint,false);
-        batch(g,eased,m.wood,[joint+right/2,.102,-2.74+iz*.274],[right-.005,.055,.262],undefined,tint,false);
-      }else batch(g,eased,paving,[0,.102,-2.74+iz*.274],[4.55,.055,.262],undefined,tint,false);
+        batch(floorGroup,eased,m.wood,[-2.275+left/2,.102,-2.74+iz*.274],[left-.005,.055,.262],undefined,tint,false);
+        batch(floorGroup,eased,m.wood,[joint+right/2,.102,-2.74+iz*.274],[right-.005,.055,.262],undefined,tint,false);
+      }else batch(floorGroup,eased,paving,[0,.102,-2.74+iz*.274],[4.55,.055,.262],undefined,tint,false);
     }
-    for(const sx of [-2.25,2.25]) timber(g,[sx,.102,-.82],[.075,.055,4.12],undefined,m.darkWood);
-    timber(g,[0,.006,1.20],[4.54,.24,.075],undefined,id==='cafe'?m.darkWood:stone);
+    for(const sx of [-2.25,2.25]) timber(floorGroup,[sx,.102,-.82],[.075,.055,4.12],undefined,m.darkWood);
+    timber(floorGroup,[0,.006,1.20],[4.54,.24,.075],undefined,id==='cafe'?m.darkWood:stone);
     if(id==='greenhouse'){greenhouse(g);historyHanger(g,id);return g;}
     const plaster=id==='home'?homePlaster:id==='cafe'?cafePlaster:workshopPlaster;
     const wallShape=new THREE.Shape();wallShape.moveTo(-1.925,0);wallShape.lineTo(1.925,0);wallShape.lineTo(1.925,2.2);wallShape.lineTo(-1.925,2.2);wallShape.closePath();
@@ -447,7 +475,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
     }else if(id==='cafe'){
       awning(g);teaRoomShelves(g);
       const topProfile=[[0,-.045],[.52,-.045],[.558,-.033],[.567,-.012],[.565,.018],[.551,.040],[.522,.046],[0,.046]];
-      part(g,geometry(new THREE.LatheGeometry(topProfile.map(v=>new THREE.Vector2(...v)),32)),m.ceramic,[1.05,.68,-.3]);
+      const teaTableTop=part(g,geometry(new THREE.LatheGeometry(topProfile.map(v=>new THREE.Vector2(...v)),32)),m.ceramic,[1.05,.68,-.3]);teaTableTop.userData.townSupportSurface=true;
       part(g,geometry(new THREE.CylinderGeometry(.115,.21,.55,12)),metal,[1.05,.37,-.3]);
       for(const a of [0,TAU/3,TAU*2/3]) timber(g,[1.05+Math.sin(a)*.16,.15,-.3+Math.cos(a)*.16],[.055,.08,.42],[0,a,0],metal);
       teaSet(g,[1.14,.732,-.33]);tableTeapot(g,[.85,.740,-.34]);
@@ -796,6 +824,13 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
     tp.setXYZ(i, x, y, z);terrainUv.setXY(i,x/100+.5,.5-(z+7)/90); const c = terrainColor(x, z); tc.push(c.r, c.g, c.b);
   }
   terrain.setAttribute('color', new THREE.Float32BufferAttribute(tc, 3)); terrain.computeVertexNormals(); part(ground, terrain, terrainMaterial, undefined, undefined, undefined, false);
+  // Far overview sees continuous land below the detailed walking terrain.
+  // This is a visual underlay, not an extension of the authoritative bounds.
+  const underlay=geometry(new THREE.PlaneGeometry(200,200,1,1));underlay.rotateX(-Math.PI/2);
+  const up=underlay.attributes.position,uu=underlay.attributes.uv,uc=[],underlayColour=new THREE.Color('#93a174');
+  for(let i=0;i<up.count;i++){uu.setXY(i,up.getX(i)/100+.5,.5-(up.getZ(i)+7)/90);uc.push(underlayColour.r,underlayColour.g,underlayColour.b);}
+  underlay.setAttribute('color',new THREE.Float32BufferAttribute(uc,3));
+  part(ground,underlay,terrainMaterial,[0,-1.2,0],undefined,undefined,false);
   // One broad, curved limestone court replaces the rectangular tile grid.
   // These are flush material boundaries; all walking heights remain unchanged.
   const court = new THREE.Shape();
@@ -808,7 +843,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   const ci=courtGeo.index;
   for(let i=0;i<ci.count;i+=3){const a=ci.getX(i+1);ci.setX(i+1,ci.getX(i+2));ci.setX(i+2,a);}
   courtGeo.computeVertexNormals();part(ground,courtGeo,paving,[0,-.097,0],undefined,undefined,false);
-  plantingMask(court.getPoints(24).map(p=>[p.x,p.y]));
+  plantingMask(court.getPoints(24).map(p=>[p.x,p.y]));recordFloor(court.getPoints(24).map(p=>[p.x,p.y]),ground.position.y-.097,'shared-court');
   // Broad curved stone courses are sparse enough to keep the foreground calm.
   // Long arc joints connect the fronts instead of emphasizing a checkerboard.
   for(const points of [
@@ -821,7 +856,8 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   groundRibbon([[0,1.5],[.04,-.6],[-.11,-2.6],[.04,-4.5],[0,-6.85]],3.54,gravel,.014);
   for(let iz=0;iz<8;iz++) for(const side of [-1,1]) {
     const x=side*(.59+(iz%2)*.11),z=-6.71+iz*.96;
-    batch(ground,pebble,paving,[x,-.101,z],[.67,.035,.46],[0,(iz%2?.13:-.10)*side,0],iz%3?'#e4e8dd':'#d4dccc',false);
+    const turn=[0,(iz%2?.13:-.10)*side,0];
+    batch(ground,pebble,paving,[x,-.101,z],[.67,.035,.46],turn,iz%3?'#e4e8dd':'#d4dccc',false);recordStoneFloor(pebble,[x,-.101,z],[.67,.035,.46],turn);
   }
   // A slim continuous curved edging connects the path to cultivated lawn.
   const courtBorder=[[-9.39,1.10],[-9.05,.62],[-6.20,.52],[-3.20,.70],[0,.62],[3.25,.58],[6.20,.54],[9.10,.79],[9.43,1.34]];
@@ -982,7 +1018,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
     }
     const geo = geometry(new THREE.BufferGeometry()); geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(indices); geo.computeVertexNormals();
     if (planted) geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    if(mat===paving||mat===gravel){const left=[],right=[];for(let i=0;i<=48;i++){const a=i*stride*3,b=a+(stride-1)*3;left.push([positions[a],positions[a+2]]);right.push([positions[b],positions[b+2]]);}plantingMask([...left,...right.reverse()]);}
+    if(mat===paving||mat===gravel||mat===stone){const left=[],right=[];for(let i=0;i<=48;i++){const a=i*stride*3,b=a+(stride-1)*3;left.push([positions[a],positions[a+2]]);right.push([positions[b],positions[b+2]]);}plantingMask([...left,...right.reverse()]);recordFloor([...left,...right],baseFloorY+lift);}
     part(ground,geo,mat,undefined,undefined,undefined,false);return curve;
   }
   function gardenShrub(x,z,size,shade) {
@@ -1013,6 +1049,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
       else {const inner=1+(ring-2)*segments+i,outer=1+(ring-1)*segments+i,next=(i+1)%segments;
         ind.push(inner,1+(ring-1)*segments+next,outer,inner,1+(ring-2)*segments+next,1+(ring-1)*segments+next);}
     }
+    const outer=[];for(let i=0;i<segments;i++){const k=(1+(rings-1)*segments+i)*3;outer.push([p[k],p[k+2]]);}recordFloor(outer,ground.position.y+terrainHeight(x,z)+.006);
     const offset=soilPatchData.positions.length/3;soilPatchData.positions.push(...p);soilPatchData.uv.push(...uv);soilPatchData.colors.push(...colors);soilPatchData.indices.push(...ind.map(i=>i+offset));
   }
   for(let n=0;n<gardenCurves.length;n++) {
@@ -1152,7 +1189,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
       const dummyPart=new THREE.Object3D(),houseMatrix=new THREE.Matrix4().makeRotationY(angle);houseMatrix.setPosition(g.position);
       function addFloor(p,s){
         const points=[[-s[0]/2,-s[2]/2],[s[0]/2,-s[2]/2],[s[0]/2,s[2]/2],[-s[0]/2,s[2]/2]].map(([x,z])=>{const v=new THREE.Vector3(x+p[0],p[1]+s[1]/2,z+p[2]).applyMatrix4(houseMatrix);return[v.x,v.z];});
-        districtFloorRecords.push({id:house.id+'-floor-'+districtFloorRecords.length,polygon:points,worldY:g.position.y+p[1]+s[1]/2});plantingMask(points);
+        const id=house.id+'-floor-'+districtFloorRecords.length,height=g.position.y+p[1]+s[1]/2;districtFloorRecords.push({id,polygon:points,worldY:height});plantingMask(points);recordFloor(points,height,id);
       }
       function b(geo,mat,p,s,r=[0,0,0],tint,floor=false,partId){
         dummyPart.position.set(...p);dummyPart.scale.set(...s);dummyPart.rotation.set(...r);dummyPart.updateMatrix();
@@ -1262,8 +1299,8 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   let disposed = false;
   return {
     buildings,hitTargets,occlusionMeshes,occlusionRoots:[...buildings,...occlusionRoots],
-    districtFloorRecords,
-    stats: { artRevision: 18, environmentMeshes: meshCount, environmentInstances: instanceCount, environmentGeometries: ownedGeometries.size, environmentMaterials: ownedMaterials.size,
+    districtFloorRecords,floorHeight,
+    stats: { artRevision: 20, environmentMeshes: meshCount, environmentInstances: instanceCount, environmentGeometries: ownedGeometries.size, environmentMaterials: ownedMaterials.size,
       environmentTriangles: triangleCount, environmentVertices: vertexCount, gardenBorders: gardenCurves.length, neighbouringHouses: TOWN_LAYOUT.houses.length, walkableNeighbourhood: true, neighbourMaterialCategories: 4, botanicalTrees: 6, treeLeaves: 3072, largeBranchCrowns: 6, mergedSoilPockets: 16, soilPocketMeshes: 1, prunedLowerBranches: true, distantBranchClusters: 175, distantLeaves: 2800, floweringTrees: 2, layeredFlowerGardens: 6, meadowIslands: 16, landscapePigmentFields: 4, facadeOpeningStyles: 3,
       levelWalkingMeadow: { ...TOWN_LAYOUT.ground.flatBounds, worldY: .075 }, linkedLeisureCircuits: 2, generousFrontCourt: true, artLanguage: 'sculpted-future-korean-village', heroBuildingSilhouettes: 3, wideRoundedHomeWindows: 1, domesticReadingBayRoof: true, homeWindowWidth: 2.04, roofConnectedHomeColumns: true, closedReadingBooks: 4, asymmetricWorkshopRoofs: 1, communalPavilionRoofs: 1, sharedTimberMaru: 1, signatureWaveAwnings: 1, embroideredLapisGuides: 1, coralMailboxes: 1, historyHangers: 4, neutralRoofFamily: 1, frozenStaticTransforms: true, warmRecessedWindowLayers: 3, staggeredMaruJoints: 15, ceramicWallAndRims: true },
     setCliffNormal(map) { cliffMaterial.normalMap = map; cliffMaterial.normalScale.set(.45, .45); cliffMaterial.needsUpdate = true; },
@@ -1283,7 +1320,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
       for (const geo of ownedGeometries) geo.dispose();
       for (const mat of ownedMaterials) mat.dispose();
       for (const map of ownedTextures) map.dispose();
-      batches.clear();
+      batches.clear();floorRegions.length=0;stoneFloorRegions.length=0;
     },
   };
 }

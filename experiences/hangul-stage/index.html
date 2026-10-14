@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>한글 단계 · SYNK WORLD</title>
 <meta name="description" content="가나다부터 혼자 배우는 한글 단계. 소리를 듣고, 글자를 보고, 음절을 만들며 익힌다.">
-<meta name="theme-color" content="#f96859">
+<meta name="theme-color" content="#0c0d10">
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="assets/brand/mongle-smile.webp" type="image/webp">
 <link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
@@ -14,15 +15,16 @@
 </head>
 <body>
 <div id="app">
-  <!-- 입구: 한글 길 -->
+  <!-- 입구: 코랄 포스터(붓·벼루 인화지 + 큰 한글 + 흰 알약 하나) → 노래 · 한글 길 · 글자 상자 · 간판 · 명패 -->
   <main id="home" hidden>
-    <header class="hero field-coral">
+    <header class="hero">
       <div class="topbar">
-        <span class="name-tag">한글 단계</span>
+        <span class="name-tag" aria-hidden="true">HANGUL STAGE</span>
         <button id="effects" class="round-btn sound" type="button" aria-pressed="true" aria-label="효과음 켜고 끄기"></button>
       </div>
+      <!-- 흰 인화지: 붓·종이·벼루 펠트 사진(brand-opening/assets/world-felt/hangul.webp의 사본) -->
+      <div class="hero-print" aria-hidden="true"><img src="assets/world/hangul.webp" alt="" width="640" height="640" decoding="async"></div>
       <div class="hero-body">
-        <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
         <div class="hero-copy">
           <h1 id="hero-title">가나다부터</h1>
           <p class="lede" id="hero-lede">소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.</p>
@@ -37,36 +39,37 @@
       <p id="voice-note" class="voice-note" role="status" hidden></p>
     </header>
 
-    <section class="paper block" aria-labelledby="songs-title">
-      <div class="block-head"><h2 id="songs-title">노래로 배우기</h2><span class="fine">노래에 맞춰 글자가 켜져요</span></div>
+    <section class="block" aria-labelledby="songs-title">
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">SONGS</p><h2 id="songs-title">노래로 배우기</h2><span class="fine">노래에 맞춰 글자가 켜져요</span></div>
       <div id="songs" class="songs"></div>
     </section>
 
-    <section class="paper block" aria-labelledby="road-title">
-      <div class="block-head"><h2 id="road-title">한글 길</h2><span class="fine" id="road-now"></span></div>
+    <section class="block" aria-labelledby="road-title">
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">ROAD</p><h2 id="road-title">한글 길</h2><span class="fine" id="road-now"></span></div>
       <ol id="road" class="road"></ol>
     </section>
 
-    <section class="paper block" aria-labelledby="box-title">
-      <div class="block-head"><h2 id="box-title">글자 상자</h2><span class="fine">누르면 소리가 나요</span></div>
+    <section class="block" aria-labelledby="box-title">
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">LETTERS</p><h2 id="box-title">글자 상자</h2><span class="fine">누르면 소리가 나요</span></div>
       <div id="box" class="box-groups"></div>
       <ul class="legend" aria-label="글자 상태">
         <li><span class="dot met"></span>만남</li><li><span class="dot learning"></span>익히는 중</li><li><span class="dot mastered"></span>익힘</li>
       </ul>
     </section>
 
-    <section class="paper block" aria-labelledby="signs-title">
-      <div class="block-head"><h2 id="signs-title">마을 간판</h2><span class="fine">글자를 다 익히면 읽혀요</span></div>
+    <section class="block" aria-labelledby="signs-title">
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">SIGNS</p><h2 id="signs-title">마을 간판</h2><span class="fine">글자를 다 익히면 읽혀요</span></div>
       <div id="signs" class="signs"></div>
     </section>
 
-    <section class="paper block" aria-labelledby="plate-title">
-      <div class="block-head"><h2 id="plate-title">내 명패</h2><span class="fine">익힌 글자가 채워져요</span></div>
+    <section class="block" aria-labelledby="plate-title">
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">NAME PLATE</p><h2 id="plate-title">내 명패</h2><span class="fine">익힌 글자가 채워져요</span></div>
       <div id="plate" class="plate"></div>
     </section>
 
     <section class="block settings" aria-labelledby="settings-title">
       <div id="amounts-block" class="amounts-block">
+        <p class="eyebrow" aria-hidden="true">SESSION</p>
         <h2 id="settings-title" class="small-title">한 번에 풀 문제</h2>
         <div id="amounts" class="amounts" role="radiogroup" aria-labelledby="settings-title"></div>
       </div>
@@ -81,20 +84,23 @@
     <div class="session-top">
       <button id="quit" class="round-btn close" type="button" aria-label="그만하기"></button>
       <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      <span id="count" class="count" aria-hidden="true"></span>
     </div>
     <section id="stage" class="stage" aria-live="polite"></section>
     <div id="dock" class="dock"></div>
   </main>
 
-  <!-- 마무리 -->
+  <!-- 마무리: 요약 포스터 한 장 + 1px 선 줄 -->
   <main id="finish" hidden>
-    <section class="finish-card paper">
-      <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
-      <h1 id="finish-title">오늘 만난 글자예요</h1>
-      <div id="finish-letters" class="finish-letters"></div>
+    <section class="finish-card">
+      <div class="finish-poster">
+        <p class="eyebrow" aria-hidden="true">TODAY</p>
+        <h1 id="finish-title">오늘 만난 글자예요</h1>
+        <div id="finish-letters" class="finish-letters"></div>
+      </div>
       <div id="finish-extra" class="finish-extra"></div>
       <div class="tomorrow" id="tomorrow"></div>
-      <button id="finish-song" class="song-review" type="button"><span class="note-mark" aria-hidden="true">♪</span><span id="finish-song-label">노래로 복습</span></button>
+      <button id="finish-song" class="song-review" type="button"><span class="note-mark" aria-hidden="true"></span><span id="finish-song-label">노래로 복습</span></button>
     </section>
     <div class="dock">
       <button id="again" class="felt-cta cream" type="button"><span class="cta-text"><b>한 번 더</b></span><span class="disc play" aria-hidden="true"></span></button>
@@ -122,10 +128,12 @@
 
   <!-- 졸업 -->
   <main id="graduation" hidden>
-    <section class="graduation-card paper">
-      <img class="mongle" src="assets/brand/mongle-smile.webp" alt="" width="280" height="277">
-      <h1>한글 단계를 졸업했어요</h1>
-      <p class="grad-line">이제 받침이 있는 낱말도 읽을 수 있어요.</p>
+    <section class="graduation-card">
+      <div class="finish-poster grad-poster">
+        <p class="eyebrow" aria-hidden="true">GRADUATION</p>
+        <h1>한글 단계를 졸업했어요</h1>
+        <p class="grad-line">이제 받침이 있는 낱말도 읽을 수 있어요.</p>
+      </div>
       <div id="grad-plate" class="plate"></div>
       <div id="grad-words" class="grad-words"></div>
       <p class="fine">헷갈리기 쉬운 글자는 가끔 짧은 몸풀기로 다시 만나요. 글자 상자는 그대로 남아요.</p>

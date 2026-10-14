@@ -35,6 +35,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   });
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)assets.push({url:r.url(),status:r.status()});});
   const key='synk.life-korean.progress.v1',entry=base+'/world/mobile.html?opening=off&cafe=1';
+  const cafe=async()=>{await page.locator('.world-nav [data-view=play]').click();await page.locator('#world-panel [data-view=packs]').click();await page.locator('[data-life-pack=cafe]').click();};
   const open=async()=>{await page.locator('.cafe-pack-preview [data-life-lesson=cafe-apply]').click();};
   const next=async()=>{if(await page.locator('.cafe-welcome [data-life-cafe-mode=read]').count())await page.locator('[data-life-cafe-mode=read]').click();await page.locator('[data-life-cafe-next]').click();},choose=id=>page.locator(`[data-life-cafe-choice=${id}]`).click();
   const synced=()=>page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
@@ -52,7 +53,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   for(const id of ['cafe-visit-taste','cafe-visit-soldout','cafe-visit-change']){
    // The new compose visit can be the completion CTA. Visit cards remain the
    // deliberate entry for testing a particular story independent of ordering.
-   await page.locator('[data-life-home]').click();await page.locator('[data-view=cafe]').click();
+   await page.locator('[data-life-home]').click();await cafe();
    await page.locator(`.cafe-visit-list [data-life-lesson="${id}"]`).click();await next();
    const l=lessonById(id),wrong=l.questions[0].choices.find(c=>c.id!==l.questions[0].answerId).id;await choose(wrong);await synced();
    let visit=JSON.parse(state.records[key]).lessons[id];const attemptId=visit.attemptId;
@@ -67,7 +68,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   }
   check('four visit records are completed independently in the frozen account app',Object.values(JSON.parse(state.records[key]).lessons).filter(l=>l.completedAt!==null).length===4);
   check('the frozen app includes the complete local staff-question bank',await page.evaluate(()=>window.__synkWorld.life().speech.available));
-  await page.locator('.life-actions [data-life-lesson=cafe-compose]').click();await next();
+  await page.locator('[data-life-home]').click();await cafe();await page.locator('.cafe-visit-list [data-life-lesson=cafe-compose]').click();await next();
   const word=(field,value)=>page.locator(`[data-life-cafe-word="${field}"][data-cafe-value="${value}"]`).click();
   await word('drink','tea');await word('temperature','cold');await word('count',3);await page.locator('[data-life-cafe-submit]').click();await synced();let composed=JSON.parse(state.records[key]).lessons['cafe-compose'];
   check('assembled components and repair checkpoint share one official account write',composed.stage.cafe.phase==='repair'&&composed.answers['cafe-compose-order'].order.temperature==='cold'&&composed.answers['cafe-compose-order'].order.count===3);

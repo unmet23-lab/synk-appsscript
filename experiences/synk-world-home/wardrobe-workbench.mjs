@@ -13,6 +13,16 @@ const fontScale=value=>[1,1.15,1.3].reduce((best,scale)=>Math.abs(scale-number(v
 const list=(value,limit=64,validate=id=>ids.has(id))=>[...new Set((Array.isArray(value)?value:[]).filter(id=>typeof id==='string'&&validate(id)))].slice(0,limit);
 const lookId=id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(id);
 const timestamp=value=>number(value,0,8640000000000000);
+/** Server acquisition dates are timestamps, never a guess based on when the wardrobe was opened. */
+export function normalizeAcquiredAt(value){
+  if(typeof value==='number')return Number.isFinite(value)&&value>=0&&value<=8640000000000000?value:0;
+  if(typeof value!=='string')return 0;
+  const parts=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/i.exec(value);
+  if(!parts)return 0;
+  const [,year,month,day,hour,minute,second]=parts.map(Number);
+  if(year<1970||month<1||month>12||day<1||day>new Date(Date.UTC(year,month,0)).getUTCDate()||hour>23||minute>59||second>59)return 0;
+  const parsed=Date.parse(value);return Number.isFinite(parsed)&&parsed>=0&&parsed<=8640000000000000?parsed:0;
+}
 const timeMap=value=>Object.fromEntries(Object.entries(plain(value)).filter(([id])=>ids.has(id)).map(([id,time])=>[id,timestamp(time)]));
 const clone=value=>JSON.parse(JSON.stringify(value));
 
@@ -49,8 +59,14 @@ export const WARDROBE_TAGS=Object.freeze({
   'mongle-scarf-first-steps':{aliases:['scarf','cream','white','목도리','머플러','크림','흰색','베이지','뜨개'],colors:['cream','beige'],materials:['knit'],styles:['warm','walk']},
   'mongle-scarf-lapis':{aliases:['scarf','lapis','blue','목도리','머플러','파랑','청','뜨개'],colors:['blue'],materials:['knit'],styles:['warm','daily']},
   'mongle-bandana-meadow':{aliases:['bandana','scarf','green','초록','녹색','삼각','스카프','면'],colors:['green'],materials:['cotton'],styles:['walk','daily']},
+  'mongle-linen-overshirt':{aliases:['linen','shirt','overshirt','oatmeal','beige','린넨','리넨','마','셔츠','오버셔츠','오트밀','베이지'],colors:['beige','cream'],materials:['linen'],styles:['daily','walk']},
+  'mongle-corduroy-overall':{aliases:['corduroy','overall','overalls','brown','코듀로이','코르덴','골덴','멜빵','갈색','밤색'],colors:['brown'],materials:['corduroy'],styles:['workshop','daily']},
+  'mongle-quilted-vest':{aliases:['quilted','quilt','quilting','padded','vest','lapis','blue','퀼팅','누빔','패딩','베스트','조끼','청금석','파랑'],colors:['blue'],materials:['quilted'],styles:['warm','walk']},
+  'mongle-velvet-capelet':{aliases:['velvet','cape','capelet','rose','pink','벨벳','케이프','장미','장밋빛','분홍'],colors:['pink'],materials:['velvet'],styles:['warm','formal']},
+  'mongle-silk-neckerchief':{aliases:['silk','tie','neckerchief','scarf','peach','apricot','실크','비단','타이','스카프','살구'],colors:['peach'],materials:['silk'],styles:['daily','formal']},
+  'mongle-wool-muffler':{aliases:['wool-felt','wool','felt','muffler','scarf','meadow','green','울','양모','펠트','머플러','목도리','메도우','초록','녹색'],colors:['green'],materials:['wool-felt'],styles:['warm','walk']},
 });
-const tagLabels={green:'초록 녹색',yellow:'노랑 버터',beige:'베이지',blue:'파랑 청',mint:'민트 청록',purple:'보라',cream:'크림 흰색',cotton:'면 코튼',knit:'니트 뜨개',denim:'데님 청',woven:'직물',workshop:'공방 작업',daily:'일상',warm:'포근 따뜻',walk:'산책',rain:'비',traditional:'한복 전통'};
+const tagLabels={green:'초록 녹색',yellow:'노랑 버터',beige:'베이지',blue:'파랑 청',mint:'민트 청록',purple:'보라',cream:'크림 흰색',brown:'갈색 밤색',pink:'분홍 장미',peach:'살구',cotton:'면 코튼',knit:'니트 뜨개',denim:'데님 청',woven:'직물',linen:'린넨 리넨 마',corduroy:'코듀로이 코르덴 골덴',quilted:'퀼팅 누빔',velvet:'벨벳',silk:'실크 비단','wool-felt':'울 양모 펠트',workshop:'공방 작업',daily:'일상',warm:'포근 따뜻',walk:'산책',rain:'비',traditional:'한복 전통',formal:'격식 차려입는'};
 const initials=['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
 const chosung=value=>[...value].map(char=>{const code=char.charCodeAt(0)-44032;return code>=0&&code<11172?initials[Math.floor(code/588)]:char;}).join('');
 const folded=value=>String(value||'').normalize('NFC').toLocaleLowerCase().replace(/\s+/g,' ').trim();
@@ -79,7 +95,7 @@ export function createWorkbenchStorage({accountId,storage,now=Date.now}={}){
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}
   function load(){let raw=storageSessions.get(key);try{const saved=storage?.getItem(key);if(saved){const disk=JSON.parse(saved);if(!raw||timestamp(disk?.updatedAt)>timestamp(raw?.updatedAt))raw=disk;}}catch(error){status={mode:'session',message:'기기 저장을 읽지 못해 이번 화면에서만 이어가요.',error:String(error?.name||'STORAGE_READ')};}return normalizeWorkbenchState(raw);}
   function save(value){const state=normalizeWorkbenchState({...value,updatedAt:now()});storageSessions.set(key,state);try{if(!storage)throw new Error('STORAGE_UNAVAILABLE');storage.setItem(key,JSON.stringify(state));status={mode:'device',message:'이 기기에 편집 설정을 저장했어요.'};return {ok:true,...status};}catch(error){status={mode:'session',message:'기기 저장 공간을 사용할 수 없어 이번 실행에서만 설정을 유지해요.',error:String(error?.name||'STORAGE_WRITE')};return {ok:false,...status};}}
-  function reconcileInventory(owned,{acquiredAt={}}={}){const state=load(),current=list(owned),previous=state.knownOwned===null?null:new Set(state.knownOwned),currentSet=new Set(current);state.unseen=state.unseen.filter(id=>currentSet.has(id));for(const id of current){if(previous&&!previous.has(id)&&!state.unseen.includes(id))state.unseen.push(id);if(!state.acquiredAt[id])state.acquiredAt[id]=timestamp(acquiredAt[id]||now());}state.knownOwned=current;save(state);return state;}
+  function reconcileInventory(owned,options={}){const state=load(),current=list(owned),previous=state.knownOwned===null?null:new Set(state.knownOwned),currentSet=new Set(current),hasServerTimes=own(options,'acquiredAt'),serverTimes=plain(options?.acquiredAt);state.unseen=state.unseen.filter(id=>currentSet.has(id));for(const id of current){if(previous&&!previous.has(id)&&!state.unseen.includes(id))state.unseen.push(id);if(hasServerTimes)state.acquiredAt[id]=normalizeAcquiredAt(serverTimes[id]);else if(!own(state.acquiredAt,id))state.acquiredAt[id]=timestamp(now());}state.knownOwned=current;save(state);return state;}
   return {key,load,save,reconcileInventory,get status(){return {...status};}};
 }
 
@@ -89,8 +105,8 @@ export function filterItems(items,state={},context={}){
   return sortItems(items.filter(item=>{const tags=itemTags(item);if(normalized.category!=='all'&&item.slot!==normalized.category)return false;if(normalized.ownedOnly&&!owned.has(item.id))return false;if(normalized.viewFilter==='owned'&&!owned.has(item.id))return false;if(normalized.viewFilter==='favorites'&&!favorites.has(item.id))return false;if(normalized.viewFilter==='recent'&&!normalized.recent[item.id])return false;if(normalized.viewFilter==='new'&&!normalized.unseen.includes(item.id))return false;if(!normalized.showHidden&&normalized.hidden.includes(item.id))return false;if(group&&!group.itemIds.includes(item.id))return false;if(context.favoritesOnly&&!favorites.has(item.id))return false;for(const kind of ['colors','materials','styles'])if(normalized.filter[kind].length&&!normalized.filter[kind].some(tag=>tags[kind].includes(tag)))return false;const haystack=folded([item.name,item.material,item.collection,item.detail,...tags.aliases,...['colors','materials','styles'].flatMap(kind=>tags[kind].map(tag=>tagLabels[tag]))].join(' '));return terms.every(term=>haystack.includes(term)||(/^[ㄱ-ㅎ]+$/.test(term)&&chosung(haystack).includes(term)));}),normalized,context);
 }
 export function sortItems(items,state={},context={}){
-  const sort=state.sort||'equipped',owned=new Set(context.owned||[]),equipped=new Set(Object.values(context.equipped||{})),favorites=new Set(state.favorites||[]),unseen=new Set(state.unseen||[]),catalog=new Map(WARDROBE_ITEMS.map((item,index)=>[item.id,index]));
-  const score=item=>sort==='favorite'?Number(favorites.has(item.id)):sort==='recent'?Number(state.recent?.[item.id]||0):sort==='new'?Number(unseen.has(item.id))*1e16+Number(state.acquiredAt?.[item.id]||0):sort==='equipped'?Number(equipped.has(item.id)):0;
+  const sort=state.sort||'equipped',owned=new Set(context.owned||[]),equipped=new Set(Object.values(context.equipped||{})),favorites=new Set(state.favorites||[]),catalog=new Map(WARDROBE_ITEMS.map((item,index)=>[item.id,index]));
+  const score=item=>sort==='favorite'?Number(favorites.has(item.id)):sort==='recent'?Number(state.recent?.[item.id]||0):sort==='new'?Number(state.acquiredAt?.[item.id]||0):sort==='equipped'?Number(equipped.has(item.id)):0;
   return [...items].sort((a,b)=>Number(owned.has(b.id))-Number(owned.has(a.id))||score(b)-score(a)||(sort==='name'?a.name.localeCompare(b.name,'ko'):0)||(catalog.get(a.id)??999)-(catalog.get(b.id)??999));
 }
 /** Picks only owned pieces; locked slots and their dyes are kept. Empty inventories stay empty. */

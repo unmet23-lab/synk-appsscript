@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {homeTutorRecommendation,homeTutorLine} from '../home-tutor-lines.mjs';
+import {homeTutorRecommendation,homeTutorPracticeRecommendation,homeTutorLine} from '../home-tutor-lines.mjs';
 import {LESSONS,PACKS} from '../../synk-world-app/life-content.mjs';
 import {createLifeProgress} from '../../synk-world-app/life-progress.mjs';
 
@@ -53,6 +53,26 @@ test('a first visit offers its real first lesson and an interrupted lesson keeps
  const before=f.progress.exportSnapshot();
  assert.deepEqual(f.recommend(),{kind:'resume',title:lesson.title,command:'learn',label:'하던 학습 이어 하기'});
  assert.deepEqual(f.progress.exportSnapshot(),before);
+});
+
+test('a selected activity keeps its main action while actual difficulties remain available as guided help',()=>{
+ const f=fixture(),q=answer(f,greeting,0),input=f.input();
+ input.summary.education={selected:{label:'듣기 게임',route:'game'},reason:'다시 들어 볼 표현이 있어요.'};
+ const before=structuredClone(input.snapshot),main=homeTutorRecommendation(input),practice=homeTutorPracticeRecommendation(input);
+ assert.equal(main.title,'듣기 게임');assert.equal(main.command,'learn');assert.equal(main.reason,input.summary.education.reason);
+ assert.equal(practice.id,q.id);assert.equal(practice.command,'practice');
+ assert.deepEqual(input.snapshot,before,'offering guided help must not change the first answer or review schedule');
+ assert.equal(homeTutorPracticeRecommendation({...input,owner:'another-account'}),null);
+ assert.equal(homeTutorPracticeRecommendation({...input,summary:{...input.summary,status:{phase:'unreadable'}}}),null);
+ assert.equal(homeTutorPracticeRecommendation({...input,practised:new Map([[q.id,practice.lastAt]])}),null);
+});
+
+test('an unavailable activity plan offers conditions instead of carrying a previous lesson forward',()=>{
+ const f=fixture(),input=f.input();input.summary.education={status:'unavailable',selected:null};
+ const result=homeTutorRecommendation(input);
+ assert.equal(result.kind,'conditions');assert.equal(result.command,'study');assert.equal(result.label,'학습 조건 바꾸기');
+ for(const id of ['marin','kkamong','mongle'])assert.match(homeTutorLine(id,result),/조건/);
+ assert.deepEqual(homeTutorRecommendation({...input,summary:{...input.summary,status:{phase:'loading'}}}),{kind:'loading'});
 });
 
 test('scheduled expressions take precedence over another lesson without being called a mistake',()=>{

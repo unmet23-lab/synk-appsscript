@@ -1,249 +1,317 @@
+@import url('world-ui.css');
 @import url('tutor-onboarding.css');
 @import url('game-tutor.css');
 @import url('tutor-practice.css');
 @import url('tutor-review.css');
 @import url('life-tutor.css');
-@font-face{font-family:HomeSUIT;src:url(assets/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
-@font-face{font-family:HomeInter;src:url(assets/InterTight.woff2) format('woff2');font-weight:100 900;font-display:swap}
-@font-face{font-family:HomeMono;src:url(assets/home/DMMono.woff2) format('woff2');font-weight:500;font-display:swap}
-:root{--ink:#383c36;--muted:#74786f;--sans:HomeInter,HomeSUIT,sans-serif;--shell-width:min(100vw,480px);--shell-height:100dvh;--safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px);--life-paper-button:url(assets/home/button-white-ui.webp);--life-coral-button:url(assets/home/button-coral-ui.webp);--life-cream:url(assets/home/quality-cream-ui.webp);--life-blush:url(assets/home/quality-blush-ui.webp);color-scheme:light}
+/* SYNK WORLD 홈 · 시그널 게임판 (2026-10-14)
+ * 3D 방이 화면 전체를 채우고, 그 위에는 어두운 유리 캡슐(위 막대·오늘 카드·탭 막대)만 띄운다.
+ * 창은 근사 검정 판 하나(시트). 주 행동은 흰 알약 하나. 펠트 판 그림은 단추·탭 바탕에 깔지 않는다. */
+:root{--sans:var(--w-sans);--ink:var(--w-ink);--muted:var(--w-ink-3);--shell-width:min(100vw,480px);--shell-height:100dvh;--safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px);--dock-gap:12px}
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
-body{font-family:var(--sans);color:var(--ink);background:#242b28;display:grid;place-items:center;word-break:keep-all;-webkit-tap-highlight-color:transparent}
-button,a,input{touch-action:manipulation}
+body{font-family:var(--w-sans);font-weight:var(--wt-body);color:var(--w-ink);background:radial-gradient(120% 80% at 50% 0%,#15171c 0%,var(--w-bg) 62%);display:grid;place-items:center;word-break:keep-all;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-synthesis:none;text-rendering:optimizeLegibility}
+button,a,input,select,summary{touch-action:manipulation}
 button{font:inherit;color:inherit;border:0;cursor:pointer;background:none;padding:0}
 a{color:inherit;text-decoration:none}
-button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #245cb3;outline-offset:3px}
-h1,h2,p{margin:0}
+:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+h1,h2,h3,h4,p{margin:0}
 svg{width:24px;height:24px;flex-shrink:0}
-.skip-link{position:fixed;top:-80px;left:16px;padding:12px;background:white;z-index:100}
+.skip-link{position:fixed;top:-80px;left:16px;padding:10px 16px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-weight:var(--wt-strong);z-index:100}
 .skip-link:focus{top:16px}
-.world-shell{position:relative;width:var(--shell-width);height:var(--shell-height);overflow:hidden;isolation:isolate;background:#635f42}
+.world-shell{position:relative;width:var(--shell-width);height:var(--shell-height);overflow:hidden;isolation:isolate;background:#e9e3d8}
 #home-main{position:absolute;inset:0;outline:none}
-.maru-scene,.scene-poster,.scene-video,.scene-shade{position:absolute;inset:0;width:100%;height:100%}
-.scene-poster,.scene-video{object-fit:cover;object-position:50% 50%}
-.scene-video{opacity:0;transition:opacity .45s}
-.maru-scene.is-playing .scene-video{opacity:1}
-.scene-shade{background:linear-gradient(180deg,#1b29202e 0%,transparent 26%,transparent 68%,#1b271b55 81%,#14231ecc 100%);pointer-events:none}
-.world-topbar{position:absolute;z-index:2;top:calc(16px + var(--safe-top));left:18px;right:18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.profile-control{display:flex;align-items:center;gap:7px;height:55px;min-width:150px;text-align:left;padding:4px 21px 8px 10px;background:url(assets/home/button-white-ui.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 5px #1f251b26)}
-.profile-portrait{display:grid;place-items:center;width:37px;height:39px}
-.profile-portrait img{width:33px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 2px #30291d38)}
-.profile-control small{display:block;font-size:11px;line-height:1.5;color:#6e7166;font-weight:550}
-.profile-control strong{display:block;font-size:15px;font-weight:800;letter-spacing:-.035em;line-height:1.3}
-.icon-button,.close-button{display:grid;place-items:center;width:48px;height:48px;flex-shrink:0;padding-bottom:4px;background:url(assets/home/quality-cream-ui.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 5px #1f251b26)}
-.icon-button svg{width:22px;height:22px;color:#626a5b}
-.place-heading{position:absolute;top:calc(13.6% + var(--safe-top));left:16px;right:16px;text-align:center;color:#fffef7;text-shadow:0 2px 9px #28423370;pointer-events:none}
-.place-kicker{font-family:HomeMono,monospace;font-size:11px;font-weight:500;letter-spacing:.18em;line-height:1.7;color:#fffef2eb}
-.place-heading h1{font-size:34px;line-height:1.28;letter-spacing:-.055em;font-weight:850;margin-top:4px}
-.place-heading>p:last-child{font-size:13px;font-weight:550;margin-top:9px;letter-spacing:-.02em;color:#fffffff0}
-.lobby-action{position:absolute;left:28px;right:28px;bottom:calc(104px + var(--safe-bottom));display:flex;justify-content:center}
-.adventure-button{position:relative;width:100%;max-width:340px;min-height:72px;display:flex;align-items:center;justify-content:center;gap:23px;padding:5px 24px 12px;background:url(assets/home/button-coral-ui.webp) center/100% 100% no-repeat;color:#fffefa;font-size:22px;letter-spacing:-.04em;font-weight:850;text-shadow:0 1px 2px #8b372f;filter:drop-shadow(0 6px 7px #161b1f4d)}
-.adventure-button svg{width:22px;height:22px}
-.adventure-button:active,.felt-button:active,.profile-control:active,.icon-button:active,.close-button:active,.play-list button:active{transform:translateY(2px)}
-.world-nav{position:absolute;left:16px;right:16px;bottom:calc(12px + var(--safe-bottom));height:77px;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;z-index:3}
-.world-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;line-height:1.4;font-weight:650;min-width:44px;color:#f7f6e8;text-shadow:0 1px 4px #142118}
-.nav-object{display:grid;place-items:center;width:57px;height:48px;background:url(assets/home/quality-cream-ui.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 3px #1b251b59);padding:3px 10px 8px;transition:filter .15s}
-.nav-object img{width:33px;height:33px;object-fit:contain;filter:drop-shadow(0 1px 1px #483f3240)}
-.world-nav button:nth-child(3) img{width:38px;height:34px}
-.world-nav button:nth-child(4) svg{width:24px;height:24px;color:#6d7569}
-.world-nav button[aria-current=page] .nav-object{background-image:url(assets/home/quality-blush-ui.webp)}
-.world-nav button[aria-current=page]{color:#ffdfba;font-weight:850}
-.world-nav button:active .nav-object{transform:translateY(2px)}
-.world-panel{position:fixed;inset:auto 0 max(0px,calc((100dvh - var(--shell-height))/2));margin:0 auto;border:0;width:var(--shell-width);max-width:none;max-height:calc(var(--shell-height) - 70px - var(--safe-top));padding:12px 24px calc(26px + var(--safe-bottom));border-radius:28px 28px 0 0;background:#fffef9;color:var(--ink);box-shadow:0 -12px 60px #15231e30;overflow:auto;overscroll-behavior:contain;font-family:var(--sans)}
-.world-panel[open]{animation:sheet-enter .24s cubic-bezier(.2,.8,.2,1)}
-.world-panel::backdrop{background:#11201c6e;backdrop-filter:blur(4px)}
-.sheet-handle{width:32px;height:4px;border-radius:4px;background:#dcded4;margin:0 auto 21px}
-.panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px}
-.eyebrow{font-family:HomeMono,monospace;font-size:11px;font-weight:500;letter-spacing:.1em;line-height:1.4;color:var(--muted)}
-.panel-header h2{font-size:25px;font-weight:800;line-height:1.25;letter-spacing:-.055em;margin-top:6px}
-.close-button{width:44px;height:44px;filter:none}
-.close-button svg{width:21px;height:21px}
-.panel-description{font-size:14px;line-height:1.8;color:#606758;text-align:center}
-.panel-art{display:block;width:165px;height:158px;object-fit:contain;margin:10px auto 22px}
-.panel-actions{display:grid;gap:10px;margin-top:25px}
-.felt-button{min-height:62px;padding:10px 25px 15px;display:flex;align-items:center;justify-content:center;gap:18px;background:url(assets/home/button-white-ui.webp) center/100% 100% no-repeat;font-size:15px;font-weight:800;text-align:center}
-.quiet-button{min-height:44px;font-size:13px;color:#68705f}
-.panel-note{font-size:11px;line-height:1.7;color:var(--muted);margin-top:18px;text-align:center}
-.plain-button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 19px 15px;background:url(assets/home/button-white-ui.webp) center/100% 100% no-repeat;font-size:13px;font-weight:700;text-align:center;line-height:1.5}
-.dialog-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:18px}
-.profile-view{text-align:center;padding:0 10px 20px}
-.profile-view>img{display:block;width:110px;margin:auto}
-.profile-view h3{font-size:23px;margin:10px 0}
-.profile-view p{font-size:13px;line-height:1.7;color:var(--muted)}
-.status-dot{display:inline-block;flex-shrink:0;width:5px;height:5px;border-radius:50%;background:#547865}
-.connected-destinations{display:grid;grid-template-columns:1fr;gap:7px;padding-top:15px;margin-top:15px;border-top:1px solid #e6e4da}
+
+/* ── 위 막대: 나의 방 캡슐 + 설정 ── */
+.world-topbar{position:absolute;z-index:4;top:calc(14px + var(--safe-top));left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.profile-control{display:flex;align-items:center;gap:10px;min-width:0;max-width:calc(100% - 60px);height:52px;padding:5px 18px 5px 5px;border-radius:999px;text-align:left;background:rgba(14,15,19,.72);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:transform .12s var(--w-ease)}
+.profile-control:active{transform:scale(.975)}
+.profile-portrait{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#16171b);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
+.profile-portrait img{width:38px;height:38px;object-fit:contain;transform:translateY(3px)}
+.profile-copy{display:grid;gap:1px;min-width:0}
+.profile-copy small{display:flex;align-items:center;gap:6px;font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-copy small::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
+.profile-control[data-state=ready] small::before,.profile-control[data-state=connected] small::before,.profile-control[data-state=saved] small::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.profile-control[data-state=offline] small::before,.profile-control[data-state=conflict] small::before,.profile-control[data-state=pending] small::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.profile-control[data-state=offline] small,.profile-control[data-state=conflict] small{color:var(--w-check-text)}
+.profile-copy strong{display:block;font-size:15.5px;font-weight:var(--wt-title);letter-spacing:var(--track-title);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-button,.close-button{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:50%;background:rgba(14,15,19,.72);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:transform .12s var(--w-ease),background .18s var(--w-ease)}
+.icon-button svg,.close-button svg{width:20px;height:20px}
+.icon-button:active,.close-button:active{transform:scale(.94)}
+
+/* ── 방 제목: 밝은 벽 위에 먹색 잡지 제목(넓은 화면). 휴대폰 세로에서는 방이 제목이다. ── */
+.place-heading{position:absolute;z-index:2;top:calc(84px + var(--safe-top));left:20px;right:20px;color:#121317;pointer-events:none}
+.place-kicker{display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);line-height:1.4;color:rgba(18,19,23,.56)}
+.place-kicker::after{content:'';width:28px;height:1px;background:rgba(18,19,23,.22)}
+.place-heading h1{margin-top:8px;font-size:28px;line-height:1.15;font-weight:var(--wt-display);letter-spacing:var(--track-display)}
+.place-heading>p:last-child{margin-top:6px;font-size:14px;line-height:1.5;font-weight:var(--wt-label);color:rgba(18,19,23,.62)}
+:root:not([data-layout=landscape]) .place-heading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ── 오늘 카드: 튜터 한마디 + 흰 알약 하나 + 작은 줄(마무리·목표) ── */
+.lobby-action{position:absolute;z-index:3;left:12px;right:12px;bottom:calc(88px + var(--safe-bottom))}
+.life-home-board{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-height:calc(var(--shell-height) - 230px - var(--safe-top) - var(--safe-bottom));overflow-y:auto;scrollbar-width:none;padding:14px 14px 6px;border-radius:var(--w-r-xl);background:rgba(12,13,16,.9);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.28);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);color:var(--w-ink)}
+.life-home-board::-webkit-scrollbar{display:none}
+.adventure-button{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:60px;padding:8px 10px 8px 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);text-align:left;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .12s var(--w-ease)}
+.adventure-button svg{width:40px;height:40px;padding:10px;border-radius:50%;background:var(--w-on-ink);color:var(--w-ink);stroke-width:2.2}
+.adventure-button:active{transform:scale(.98)}
+.adventure-button:disabled{opacity:.6}
+.life-next-copy{min-width:0;display:grid;gap:1px}
+.life-next-copy small{font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:rgba(8,9,12,.58)}
+.life-next-copy strong{display:block;font-size:17px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);overflow-wrap:anywhere}
+#life-progress-caption{flex-basis:100%;font-size:13px;line-height:1.5;color:var(--w-ink-3);text-align:center;font-weight:var(--wt-label)}
+/* 이유 문장은 튜터 카드가 이미 말한다. 홈 줄에는 목표·도움 바로가기만 둔다. */
+.study-home-note{display:flex;align-items:center;margin-left:auto}
+.study-home-note p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.quiet-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 6px;font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px}
+.quiet-button:hover{color:var(--w-ink)}
+.life-home-shortcuts{flex-basis:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.life-home-shortcuts button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:0 8px;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink)}
+.life-home-shortcuts small{font-family:var(--w-sans);font-size:13px;font-weight:var(--wt-label);color:var(--w-face-text)}
+
+/* 튜터 카드(홈) — game-tutor 부품을 홈 카드 안에 펼친다 */
+#home-tutor{display:contents;color:var(--w-ink);text-align:left}
+#home-tutor .home-tutor-companion{flex-basis:100%;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#home-tutor .game-tutor-portrait{grid-row:1;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
+#home-tutor .game-tutor-portrait img{transform:translateY(4px) scale(.94)}
+#home-tutor .game-tutor-message{grid-column:2;display:block;min-width:0;margin:0;padding:0;background:none;border:0;box-shadow:none}
+#home-tutor .game-tutor-message::before,#home-tutor .game-tutor-message::after{display:none}
+#home-tutor .game-tutor-message small{display:block;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+#home-tutor .game-tutor-message small b{font-weight:var(--wt-strong);color:var(--w-ink-2)}
+#home-tutor .game-tutor-line{margin:3px 0 0;min-height:0;max-height:none;font-size:15px;line-height:1.5;font-weight:var(--wt-body);color:var(--w-ink);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#home-tutor .home-tutor-context,#home-tutor .game-tutor-sound,#home-tutor .game-tutor-name{display:none}
+#home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
+#home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+#home-tutor .home-tutor-action:active,.home-tutor-choose:active{transform:scale(.98)}
+#home-tutor .game-tutor-help:disabled{opacity:.55;cursor:wait}
+.home-tutor-choose{flex-basis:100%}
+.home-tutor-choose span{display:none}
+.home-tutor-invitation{flex-basis:100%;font-size:13.5px;text-align:center;color:var(--w-ink-3)}
+.home-tutor-practice,.home-tutor-day{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px;background:transparent;color:var(--w-ink);font-size:13.5px;font-weight:var(--wt-strong);text-align:left}
+.home-tutor-practice::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.home-tutor-day::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.home-tutor-practice[hidden],.home-tutor-day[hidden]{display:none}
+/* 하루 마무리 창 */
+.home-day-header small{font-size:13px;color:var(--w-ink-3)}.home-day-header h3{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-title);margin:6px 0 16px}
+.home-day-tutor .life-tutor{margin-bottom:12px}.home-day-tutor .game-tutor-help[hidden]{display:none}
+.home-day-overview{font-size:15px;line-height:1.6;color:var(--w-ink-2);padding:10px 0}
+.home-day-group{padding:16px 0;border-top:1px solid var(--w-line)}
+.home-day-group h4{margin:0 0 8px;font-size:16px;font-weight:var(--wt-title)}.home-day-group h4 span{font-size:13px;margin-left:6px;color:var(--w-ink-3);font-weight:var(--wt-label)}
+.home-day-group ul{margin:0;padding:0 0 0 18px;font-size:15px;line-height:1.75;color:var(--w-ink-2)}.home-day-group p{font-size:13px;line-height:1.6;color:var(--w-ink-3);margin-top:8px}
+.home-day-save{font-size:13px;line-height:1.6;margin:14px 0!important;color:var(--w-ink-3)}.home-day-empty{padding:18px 0;color:var(--w-ink-3)}
+.home-day-finish:disabled{opacity:.6;cursor:default}.life-expression-save{font-size:13px;margin-top:8px!important;color:var(--w-ink-3)}
+.home-day-recap[open]{display:block}.home-day-recap button{min-width:44px;min-height:44px}.home-day-group li{display:list-item}
+
+/* ── 아래 탭 막대: 떠 있는 유리 알약, 고른 탭은 바탕을 뒤집는다 ── */
+.world-nav{position:absolute;z-index:5;left:12px;right:12px;bottom:calc(12px + var(--safe-bottom));height:66px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:5px;border-radius:999px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 18px 40px rgba(0,0,0,.28);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.world-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;border-radius:999px;color:var(--w-ink-3);font-size:13px;line-height:1.2;font-weight:var(--wt-label);transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.nav-object{display:grid;place-items:center;width:24px;height:24px}
+.nav-object svg{width:22px;height:22px}
+.world-nav button:hover{color:var(--w-ink)}
+.world-nav button[aria-current=page]{background:var(--w-ink);color:var(--w-on-ink);font-weight:var(--wt-strong)}
+.world-nav button:active{transform:scale(.96)}
+
+/* ── 시트: 근사 검정 판 하나 ── */
+.world-panel{position:fixed;inset:auto 0 max(0px,calc((100dvh - var(--shell-height))/2));margin:0 auto;border:0;width:var(--shell-width);max-width:none;max-height:calc(var(--shell-height) - 56px - var(--safe-top));padding:10px 20px calc(28px + var(--safe-bottom));border-radius:var(--w-r-xl) var(--w-r-xl) 0 0;background:var(--w-panel);color:var(--w-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -20px 60px rgba(0,0,0,.45);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;font-family:var(--w-sans)}
+.world-panel[open]{animation:sheet-enter .26s var(--w-ease)}
+.world-panel::backdrop{background:rgba(4,5,7,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sheet-handle{width:36px;height:4px;border-radius:4px;background:var(--w-ink-4);margin:0 auto 14px}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.panel-header>div{min-width:0;padding-top:4px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;line-height:1.4;color:var(--w-ink-3)}
+.eyebrow::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+.panel-header h2{margin-top:8px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
+.close-button{width:44px;height:44px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);-webkit-backdrop-filter:none;backdrop-filter:none}
+.close-button:hover{background:var(--w-s3)}
+.close-button svg{width:18px;height:18px}
+
+/* 시트 안 공통 글·단추 */
+.panel-description{font-size:15.5px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
+.panel-art{display:block;width:150px;height:150px;object-fit:contain;margin:4px auto 18px;filter:var(--w-cut-shadow)}
+.panel-actions{display:grid;gap:10px;margin-top:24px}
+.felt-button,.plain-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;font-size:15.5px;font-weight:var(--wt-strong);letter-spacing:-.01em;line-height:1.3;text-align:center;transition:transform .12s var(--w-ease),background .18s var(--w-ease),box-shadow .2s var(--w-ease)}
+.felt-button{min-height:56px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.felt-button:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 30%,transparent)}
+.plain-button{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.plain-button:hover{background:var(--w-s2)}
+.felt-button:active,.plain-button:active{transform:scale(.98)}
+.felt-button:disabled,.plain-button:disabled{opacity:.45;cursor:default;transform:none}
+.felt-button span[aria-hidden],.plain-button span[aria-hidden]{font-weight:400}
+.panel-note,.dialog-note{font-size:13px;line-height:1.65;color:var(--w-ink-3);margin-top:16px;text-wrap:pretty}
+.panel-note{text-align:center}
+.profile-view{text-align:center;padding:0 8px 18px}
+.profile-view>img{display:block;width:104px;margin:0 auto;filter:var(--w-cut-shadow)}
+.profile-view h3{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-title);margin:12px 0 8px}
+.profile-view p{font-size:15px;line-height:1.7;color:var(--w-ink-2)}
+.status-dot{display:inline-block;flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.connected-destinations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:18px;margin-top:18px;border-top:1px solid var(--w-line)}
+.connected-destinations .plain-button{min-height:48px;padding:0 10px;font-size:14px}
 .profile-copy{min-width:0}
-.profile-control[data-state=offline] small,.profile-control[data-state=conflict] small{color:#8f493b}
-.home-toast{position:fixed;z-index:100;left:50%;bottom:calc(26px + var(--safe-bottom));transform:translateX(-50%);width:max-content;max-width:min(420px,calc(100vw - 34px));padding:14px 20px;border-radius:18px;background:#253d34f2;color:#fffef7;font-size:13px;line-height:1.6;box-shadow:0 5px 25px #10241c38;text-align:center;pointer-events:none}
+.home-toast{position:fixed;z-index:100;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%);width:max-content;max-width:min(420px,calc(100vw - 32px));padding:12px 18px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:14px;font-weight:var(--wt-label);line-height:1.5;box-shadow:0 14px 36px rgba(0,0,0,.35);text-align:center;pointer-events:none}
+dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:16px auto 0;display:block}
 .home-toast[hidden]{display:none}
-.song-video{display:block;width:100%;max-height:62dvh;background:#000;border-radius:14px}
+.song-video{display:block;width:100%;max-height:62dvh;background:#000;border-radius:var(--w-r-md)}
 .audio-player{width:100%;margin-top:16px}
-.video-description{font-size:12px;line-height:1.7;color:var(--muted);margin-top:15px}
-/* The real fitting room owns its interior. Only its enclosing dialog is adapted. */
-#world-panel.wardrobe-dialog{inset:0;margin:auto;width:min(1140px,calc(100vw - 40px));height:fit-content;max-height:94dvh;border-radius:26px;padding:22px 28px 0;overflow:auto;background:#fff}
-#world-panel.wardrobe-dialog .sheet-handle{display:none}
-#world-panel.wardrobe-dialog .panel-header{margin-bottom:12px}
-#world-panel.wardrobe-dialog .panel-header h2{font-size:25px}
-#world-panel.wardrobe-dialog #panel-content{min-width:0}
-@media(max-width:799px){
- #world-panel.wardrobe-dialog{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:calc(16px + var(--safe-top)) 18px 0}
- #world-panel.wardrobe-dialog .panel-header h2{font-size:22px}
-}
-.play-list{display:grid;gap:12px}
-.play-list button{position:relative;display:flex;align-items:center;text-align:left;gap:15px;min-height:107px;padding:16px 23px 23px;background:url(assets/home/button-white-ui.webp) center/100% 100% no-repeat}
-.play-list button:first-child{background-image:url(assets/home/button-coral-ui.webp);color:#fffefa}
-.play-list img{width:51px;height:62px;object-fit:contain;filter:drop-shadow(0 3px 3px #47332d2b)}
-.play-list strong{display:block;font-size:21px;font-weight:850;letter-spacing:-.045em}
-.play-list small{display:block;font-size:13px;line-height:1.5;color:#646b5c;margin-top:5px;letter-spacing:-.02em}
-.play-list button:first-child small{color:#fff8ef}
-.play-list .arrow{margin-left:auto;font-size:24px}
-.settings-row{display:flex;gap:18px;align-items:center;justify-content:space-between;padding:15px 0;min-height:70px}
-.settings-row strong{display:block;font-size:16px;font-weight:750}
-.settings-row small{display:block;font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
-.settings-row input{width:26px;height:26px;flex-shrink:0;accent-color:#bc5141;cursor:pointer}
-.game-panel{inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-height:none;border-radius:0;padding:calc(7px + var(--safe-top)) 0 0;overflow:hidden;animation:none!important}
-.game-panel .sheet-handle{display:none}
-.game-panel .panel-header{height:48px;margin:0 0 8px;padding:0 15px}
-.game-panel .panel-header .eyebrow{display:none}
-.game-panel .panel-header h2{font-size:17px;margin:0}
-.game-panel #panel-content{position:relative;height:calc(100% - 56px);background:#fff}
-.game-frame{display:block;border:0;width:100%;height:100%;background:#fff}
-.frame-loader{position:absolute;inset:0;z-index:2;background:#fffef9;display:grid;place-content:center;text-align:center;gap:14px;padding:25px;font-size:14px;line-height:1.6}
-.frame-loader a{text-decoration:underline;font-size:13px}
-noscript{position:fixed;inset:auto 20px 100px;background:white;padding:20px;z-index:10}
-@keyframes sheet-enter{from{transform:translateY(32px);opacity:.5}to{transform:none;opacity:1}}
-@media(min-width:600px) and (min-height:600px) and (pointer:fine){
- :root{--shell-width:min(430px,calc((100dvh - 48px)*.5));--shell-height:min(932px,calc(100dvh - 48px));--safe-top:0px;--safe-bottom:0px}
- .world-shell{border-radius:30px;box-shadow:0 0 0 7px #101a1699,0 24px 80px #070e0b70}
- .world-panel{border-radius:28px 28px 25px 25px}
- .game-panel{border-radius:26px}
-}
-@media(max-width:359px){
- .world-topbar{left:13px;right:13px;top:calc(12px + var(--safe-top))}
- .profile-control{min-width:142px;height:52px;padding-left:8px}
- .place-heading h1{font-size:30px}
- .place-heading>p:last-child{font-size:12px;margin-top:7px}
- .lobby-action{left:22px;right:22px;bottom:calc(98px + var(--safe-bottom))}
- .adventure-button{min-height:65px;font-size:21px}
- .world-nav{left:13px;right:13px;gap:4px;bottom:calc(8px + var(--safe-bottom))}
- .world-panel{padding-left:18px;padding-right:18px}
- .panel-header h2{font-size:22px}
- .play-list button{gap:11px;padding-left:17px;padding-right:17px;min-height:100px}
- .play-list strong{font-size:19px}
- .play-list small{font-size:12px}
- .play-list img{width:43px;height:52px}
-}
-/* The effective layout follows the viewport on phones and the chosen frame on PC. */
-:root[data-layout=landscape]{--shell-width:100vw;--shell-height:100dvh}
-[data-layout=landscape] .scene-poster,[data-layout=landscape] .scene-video{object-position:50% 65%}
-[data-layout=landscape] .world-topbar{top:calc(12px + var(--safe-top));left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right))}
-[data-layout=landscape] .place-heading{top:22px;left:185px;right:80px}
-[data-layout=landscape] .place-heading h1{font-size:25px;margin-top:0}
-[data-layout=landscape] .place-heading>p:last-child{display:none}
-[data-layout=landscape] .place-kicker{font-size:11px}
-[data-layout=landscape] .lobby-action{left:max(24px,env(safe-area-inset-left));right:auto;bottom:calc(97px + var(--safe-bottom));width:225px}
-[data-layout=landscape] .adventure-button{min-height:57px;font-size:20px}
-[data-layout=landscape] .world-nav{left:max(20px,env(safe-area-inset-left));right:auto;bottom:calc(12px + var(--safe-bottom));width:234px;height:72px;gap:0}
-[data-layout=landscape] .nav-object{width:48px;height:42px;padding-left:8px;padding-right:8px}
-[data-layout=landscape] .nav-object img{width:30px;height:29px}
-[data-layout=landscape] .world-nav button:nth-child(3) img{width:32px;height:30px}
-[data-layout=landscape] .world-panel{width:min(480px,100vw);max-height:calc(var(--shell-height) - 16px)}
-[data-layout=landscape] .game-panel{width:var(--shell-width);max-height:none}
-[data-layout=landscape] .sheet-handle{margin-bottom:12px}
-[data-layout=landscape] .panel-header{margin-bottom:15px}
-[data-layout=landscape] .game-panel .panel-header{margin-bottom:8px}
-@media(min-width:600px) and (min-height:600px) and (pointer:fine){
- :root[data-layout=landscape]{--shell-width:min(1280px,calc(100vw - 48px),calc((100dvh - 48px)*16/9));--shell-height:min(720px,calc(100dvh - 48px),calc((100vw - 48px)*9/16))}
- [data-layout=landscape] .place-heading{top:9%;left:20%;right:20%}
- [data-layout=landscape] .place-heading h1{font-size:34px;margin-top:4px}
- [data-layout=landscape] .place-heading>p:last-child{display:block}
- [data-layout=landscape] .world-topbar{top:22px;left:25px;right:25px}
- [data-layout=landscape] .lobby-action{left:4%;bottom:118px;width:280px}
- [data-layout=landscape] .adventure-button{min-height:67px;font-size:23px}
- [data-layout=landscape] .world-nav{left:calc(4% - 5px);bottom:26px;width:290px}
- [data-layout=landscape] .nav-object{width:57px;height:48px}
-}
-.orientation-settings{border:0;padding:0;margin:0 0 17px;min-width:0}
-.orientation-settings legend{font-size:16px;font-weight:750;margin-bottom:12px}
-.orientation-options{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.video-description{font-size:13px;line-height:1.7;color:var(--w-ink-3);margin-top:14px}
+
+/* 놀이 시트: 게임마다 코랄 포스터(그 게임을 설명하는 펠트 사진 한 장 + 큰 한글), 그 밖은 1px 선 목록 */
+.play-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.play-list button{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;min-height:206px;padding:16px;border-radius:var(--w-r-lg);text-align:left;background:var(--w-face);color:var(--w-on-face);transition:transform .14s var(--w-ease),box-shadow .2s var(--w-ease)}
+.play-list button::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-studio)}
+.play-list button::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.play-list button:hover{box-shadow:0 0 0 4px color-mix(in srgb,var(--w-glow) 28%,transparent)}
+.play-list button:active{transform:scale(.98)}
+.play-list button:first-child{grid-column:1/-1;min-height:220px}
+.play-art{position:absolute;z-index:-1;top:12px;right:12px;width:76px}
+.play-list button:first-child .play-art{top:18px;right:20px;width:142px}
+.play-copy{position:relative;display:grid;gap:4px;max-width:100%}
+.play-label{font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;color:rgba(30,14,10,.62)}
+.play-copy strong{display:block;font-size:27px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.06em;word-break:keep-all}
+.play-list button:first-child .play-copy strong{font-size:52px;letter-spacing:-.065em}
+.play-copy small:last-child{font-size:13.5px;line-height:1.45;font-weight:var(--wt-label);color:rgba(30,14,10,.74);text-wrap:balance}
+.play-list .arrow{position:absolute;top:14px;left:14px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:0;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.16)}
+.play-list .arrow::before{content:'';width:13px;height:13px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
+.play-more{display:grid;margin-top:22px}
+.play-more .eyebrow{margin-bottom:6px}
+.play-more button{display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink)}
+.play-more button:first-of-type{border-top:1px solid var(--w-line)}
+.play-more img{width:48px;height:48px;flex-shrink:0;border-radius:10px;background:#fff;object-fit:cover;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.play-more span{display:grid;gap:2px;min-width:0;flex:1}
+.play-more strong{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.play-more small{font-size:13.5px;color:var(--w-ink-3)}
+.play-more button::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.play-more button:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.life-menu-entry{display:none}
+
+/* 설정: 단추를 목록 줄로(흰 알약 없음) */
+.settings-panel .panel-actions{gap:0;margin-top:6px;border-top:1px solid var(--w-line)}
+.settings-panel .panel-actions>.felt-button,.settings-panel .panel-actions>.plain-button,.settings-panel .panel-actions>a{justify-content:space-between;min-height:62px;padding:0 4px;border-radius:0;background:none;color:var(--w-ink);box-shadow:none;border-bottom:1px solid var(--w-line);font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title);text-align:left}
+.settings-panel .panel-actions>.felt-button::after,.settings-panel .panel-actions>.plain-button::after,.settings-panel .panel-actions>a::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.settings-panel .panel-actions>[data-replay-opening]::after{-webkit-mask-image:var(--w-arrow-up-right);mask-image:var(--w-arrow-up-right)}
+.settings-panel .panel-actions span[aria-hidden]{display:none}
+.settings-panel .panel-actions>.felt-button:hover,.settings-panel .panel-actions>.plain-button:hover{background:none;box-shadow:none;color:var(--w-ink)}
+.settings-panel .panel-actions>.quiet-button{justify-content:flex-start;margin-top:10px;padding:0 4px}
+/* 설정 */
+.settings-row{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px 0;min-height:72px;border-top:1px solid var(--w-line)}
+.settings-row strong{display:block;font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.settings-row small{display:block;font-size:13.5px;color:var(--w-ink-3);margin-top:4px;line-height:1.5}
+.settings-row input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;flex-shrink:0;width:50px;height:30px;margin:0;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:pointer;transition:background .18s var(--w-ease)}
+.settings-row input[type=checkbox]::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.settings-row input[type=checkbox]:checked{background:var(--w-ink)}
+.settings-row input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
+.settings-row input[type=checkbox]:disabled{opacity:.5;cursor:default}
+.orientation-settings{border:0;padding:0;margin:0 0 18px;min-width:0}
+.orientation-settings legend{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title);margin-bottom:12px;padding:0}
+.orientation-options{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
 .orientation-options label{position:relative;cursor:pointer}
 .orientation-options input{position:absolute;width:1px;height:1px;opacity:0}
-.orientation-options span{display:grid;place-items:center;min-height:58px;padding:5px 8px 11px;background:url(assets/home/quality-cream-ui.webp) center/100% 100% no-repeat;font-size:15px;font-weight:750}
-.orientation-options input:checked+span{background-image:url(assets/home/quality-blush-ui.webp);color:#713f36}
-.orientation-options input:focus-visible+span{outline:3px solid #245cb3;outline-offset:2px;border-radius:10px}
-.orientation-help{font-size:12px;line-height:1.6;color:#6a7163;margin-top:12px;min-height:39px}
-.orientation-notice{position:absolute;z-index:3;top:calc(88px + var(--safe-top));left:18px;right:18px;max-width:355px;margin:auto;padding:15px 15px 21px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between;background:url(assets/home/button-white-ui.webp) center/100% 100% no-repeat;filter:drop-shadow(0 4px 10px #1b2b2040)}
-.orientation-notice[hidden]{display:none}
-.orientation-notice strong{font-size:14px;letter-spacing:-.025em;display:block}
-.orientation-notice small{font-size:11px;line-height:1.5;color:#676d5e;display:block;margin-top:4px}
-.orientation-notice button{font-size:11px;font-weight:750;line-height:1.5;min-width:48px;min-height:48px;flex-shrink:0;background:url(assets/home/quality-blush-ui.webp) center/100% 100% no-repeat;padding:3px 5px 7px}
-:root:has(.orientation-notice:not([hidden])) .place-heading{visibility:hidden}
-.life-home-board.lobby-action{display:flex;flex-direction:column;align-items:stretch;gap:5px;max-width:360px;margin:0 auto;bottom:calc(104px + var(--safe-bottom))}
-.life-home-board .life-next-button{max-width:none;min-height:68px;gap:15px;padding:8px 26px 15px;text-align:left;justify-content:space-between}
-.life-next-copy{min-width:0;display:grid;gap:3px}
-.life-next-copy small{font-size:11px;line-height:1.35;font-weight:650;letter-spacing:.025em;color:#fff8ee}
-.life-next-copy strong{display:block;font-size:20px;line-height:1.3;letter-spacing:-.04em;font-weight:850;overflow-wrap:anywhere}
-#life-progress-caption{font-size:11px;line-height:1.5;color:#fffef6;text-align:center;text-shadow:0 1px 5px #17271be6;padding:0 4px;min-height:17px}
-.life-home-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
-.life-home-shortcuts button{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px 6px 9px;background:var(--life-paper-button) center/100% 100% no-repeat;font-size:12px;line-height:1.35;color:#40473a;font-weight:800;filter:drop-shadow(0 3px 4px #17271b38)}
-.life-home-shortcuts small{font-size:11px;font-weight:600;color:#73796b}
-.life-home-shortcuts button:active{transform:translateY(2px)}
-[data-layout=landscape] .life-home-board.lobby-action{left:max(24px,env(safe-area-inset-left));right:auto;width:min(390px,47vw);max-width:none;margin:0;bottom:calc(94px + var(--safe-bottom))}
-[data-layout=landscape] .life-home-board .life-next-button{min-height:60px}
-[data-layout=landscape] .life-next-copy strong{font-size:19px}
-[data-layout=landscape] .life-home-shortcuts{gap:8px}
-@media(max-width:359px){
- .life-home-board.lobby-action{left:18px;right:18px;bottom:calc(100px + var(--safe-bottom));gap:4px}
- .life-home-board .life-next-button{padding-left:22px;padding-right:22px;min-height:66px}
- .life-next-copy strong{font-size:18px}
- .life-home-shortcuts{gap:5px}
- .life-home-shortcuts button{font-size:11px}
-}
-@media(max-height:369px){
- [data-layout=landscape] .life-home-board.lobby-action{gap:3px;bottom:calc(89px + var(--safe-bottom))}
- [data-layout=landscape] .life-home-board .life-next-button{min-height:58px;padding-top:6px;padding-bottom:12px}
- [data-layout=landscape] .life-next-copy{gap:1px}
- [data-layout=landscape] .life-next-copy strong{font-size:18px}
-}
-@media(min-width:600px) and (min-height:600px) and (pointer:fine){
- [data-layout=landscape] .life-home-board.lobby-action{left:4%;bottom:118px;width:min(390px,35%)}
- [data-layout=landscape] .life-home-board .life-next-button{min-height:68px}
- [data-layout=landscape] .life-next-copy strong{font-size:22px}
-}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}button:active{transform:none}}
+.orientation-options span{display:grid;place-items:center;min-height:44px;border-radius:999px;font-size:15px;font-weight:var(--wt-strong);color:var(--w-ink-2);transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.orientation-options input:checked+span{background:var(--w-ink);color:var(--w-on-ink)}
+.orientation-options input:focus-visible+span{outline:2px solid var(--w-ink);outline-offset:2px}
+.orientation-help{font-size:13px;line-height:1.6;color:var(--w-ink-3);margin-top:10px;min-height:21px}
 
-/* The tutor shares the learning board; the landscape view keeps the scenery open. */
-#home-tutor{background:#fffffff5;border-radius:20px;padding:12px 14px;margin-bottom:7px;box-shadow:0 5px 18px #18251926;text-align:left;color:#1a2021}
-#home-tutor .home-tutor-companion{display:grid;grid-template-columns:62px minmax(0,1fr);column-gap:8px;row-gap:7px;margin:0;padding:0;border:0;background:transparent}
-#home-tutor .game-tutor-portrait{width:62px;height:70px;align-self:start}
-#home-tutor .game-tutor-message{display:block;padding:3px 0 0}
-#home-tutor .game-tutor-message small{font-size:10px}
-#home-tutor .game-tutor-line{font-size:13px;line-height:1.5;margin:5px 0}
-#home-tutor .home-tutor-context{font-size:10px;line-height:1.5;color:#606958;margin-top:5px}
-#home-tutor .game-tutor-help,.home-tutor-choose{grid-column:1/-1;width:100%;min-height:44px;margin:0;font-size:13px;font-weight:750;padding:8px 14px 12px;background:var(--life-paper-button) center/100% 100% no-repeat}
-#home-tutor .game-tutor-help:disabled{opacity:.65;cursor:wait}
-.home-tutor-invitation{font-size:12px;text-align:center;margin-bottom:5px;color:#606958}
-.home-tutor-day{display:block;min-width:44px;min-height:44px;width:100%;margin-top:5px;font-size:12px;color:#394c42;text-align:center}
-.home-tutor-day[hidden]{display:none}
-.home-day-header small{font-size:11px;color:#606958}.home-day-header h3{font-size:23px;margin:5px 0 16px}
-.home-day-tutor .life-tutor{margin-bottom:12px}.home-day-tutor .game-tutor-help[hidden]{display:none}
-.home-day-overview{font-size:14px;padding:10px 0}.home-day-group{padding:14px 0;border-top:1px solid #e8ece8}
-.home-day-group h4{margin:0 0 8px;font-size:15px}.home-day-group h4 span{font-size:12px;margin-left:5px;color:#697269}
-.home-day-group ul{margin:0;padding:0 0 0 20px;font-size:14px;line-height:1.7}.home-day-group p{font-size:12px;line-height:1.6;color:#586358;margin-top:7px}
-.home-day-save{font-size:12px;line-height:1.6;margin:14px 0!important;color:#586358}.home-day-empty{padding:18px 0}
-.home-day-finish:disabled{opacity:.65;cursor:default}.life-expression-save{font-size:12px;margin-top:8px!important;color:#586358}
-.home-day-recap[open]{display:block}.home-day-recap button{min-width:44px;min-height:44px}.home-day-group li{display:list-item}
-.life-home-board.lobby-action{max-height:calc(var(--shell-height) - 260px - var(--safe-bottom));overflow-y:auto;scrollbar-width:thin;padding:2px 3px 4px}
-@media(max-height:720px){
- :root:not([data-layout=landscape]) .place-heading{top:calc(83px + var(--safe-top))}
- :root:not([data-layout=landscape]) .place-heading h1{font-size:23px;margin-top:0}
- :root:not([data-layout=landscape]) .place-heading>p:last-child{display:none}
- :root:not([data-layout=landscape]) .life-home-board.lobby-action{max-height:calc(var(--shell-height) - 245px - var(--safe-bottom))}
-}
-[data-layout=landscape] .life-home-board.lobby-action{overflow:visible;max-height:none;padding:0}
-[data-layout=landscape] #home-tutor{position:absolute;left:calc(100% + 20px);bottom:0;width:min(340px,calc(100vw - 100% - 66px));max-height:calc(var(--shell-height) - 95px);overflow-y:auto;margin:0}
-@media(max-height:500px){[data-layout=landscape] #home-tutor{max-height:calc(var(--shell-height) - 164px)}}
+/* 놀이 화면(게임 iframe) */
+.game-panel{inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-height:none;border-radius:0;padding:calc(6px + var(--safe-top)) 0 0;overflow:hidden;animation:none!important;background:var(--w-panel)}
+.game-panel .sheet-handle{display:none}
+.game-panel .panel-header{align-items:center;height:52px;margin:0 0 6px;padding:0 12px 0 18px}
+.game-panel .panel-header>div{padding:0}
+.game-panel .panel-header .eyebrow{display:none}
+.game-panel .panel-header h2{font-size:17px;font-weight:var(--wt-title);letter-spacing:var(--track-title);margin:0}
+.game-panel #panel-content{position:relative;height:calc(100% - 58px);background:var(--w-bg)}
+.game-frame{display:block;border:0;width:100%;height:100%;background:var(--w-bg)}
+.frame-loader{position:absolute;inset:0;z-index:2;background:var(--w-panel);display:grid;place-content:center;text-align:center;gap:14px;padding:24px;font-size:15px;line-height:1.6;color:var(--w-ink-2)}
+.frame-loader a{text-decoration:underline;text-underline-offset:5px;font-size:14px;color:var(--w-ink)}
+noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:var(--w-ink);padding:20px;border-radius:var(--w-r-md);z-index:10}
+@keyframes sheet-enter{from{transform:translateY(28px);opacity:.6}to{transform:none;opacity:1}}
+
+/* 옷장: 실제 피팅룸이 안쪽을 맡고, 둘레 창만 맞춘다 */
+#world-panel.wardrobe-dialog{inset:0;margin:auto;width:min(1140px,calc(100vw - 40px));height:fit-content;max-height:94dvh;border-radius:var(--w-r-xl);padding:20px 26px 0;overflow:auto}
+#world-panel.wardrobe-dialog .sheet-handle{display:none}
+#world-panel.wardrobe-dialog .panel-header{margin-bottom:12px}
+#world-panel.wardrobe-dialog #panel-content{min-width:0}
+@media(max-width:799px){#world-panel.wardrobe-dialog{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:calc(14px + var(--safe-top)) 16px 0}}
+
+/* 방향 안내 */
+.orientation-notice{position:absolute;z-index:6;top:calc(80px + var(--safe-top));left:16px;right:16px;max-width:380px;margin:auto;padding:14px 14px 14px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between;border-radius:var(--w-r-lg);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.orientation-notice[hidden]{display:none}
+.orientation-notice strong{font-size:15px;font-weight:var(--wt-title);display:block}
+.orientation-notice small{font-size:13px;line-height:1.5;color:var(--w-ink-3);display:block;margin-top:3px}
+.orientation-notice button{flex-shrink:0;min-width:64px;min-height:48px;padding:0 14px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:13px;font-weight:var(--wt-strong);line-height:1.25}
+:root:has(.orientation-notice:not([hidden])) .place-heading{visibility:hidden}
+
+/* ── PC: 휴대폰 틀 또는 넓은 틀 ── */
 @media(min-width:600px) and (min-height:600px) and (pointer:fine){
- [data-layout=landscape] #home-tutor{left:calc(100% + 28px);width:min(350px,calc(var(--shell-width) * .45));bottom:0}
+ :root{--shell-width:min(430px,calc((100dvh - 48px)*.5));--shell-height:min(932px,calc(100dvh - 48px));--safe-top:0px;--safe-bottom:0px}
+ .world-shell{border-radius:34px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 0 8px #0d0e11,0 0 0 9px rgba(255,255,255,.06),0 40px 100px rgba(0,0,0,.6)}
+ .world-panel{border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
+ .game-panel{border-radius:30px}
 }
+@media(max-width:359px){
+ .world-topbar{left:10px;right:10px}
+ .profile-control{height:48px;padding-right:14px}.profile-portrait{width:38px;height:38px}
+ .place-heading{left:16px}.place-heading h1{font-size:24px}
+ .lobby-action{left:8px;right:8px}
+ .world-nav{left:8px;right:8px;height:62px}
+ .world-panel{padding-left:16px;padding-right:16px}
+ .panel-header h2{font-size:21px}
+ .play-list button:first-child .play-copy strong{font-size:44px}.play-copy strong{font-size:26px}
+ .play-art{width:80px}.play-list button:first-child .play-art{width:116px}
+}
+@media(max-height:700px){
+ :root:not([data-layout=landscape]) .place-heading{top:calc(74px + var(--safe-top))}
+ :root:not([data-layout=landscape]) .place-heading h1{font-size:23px;margin-top:4px}
+ :root:not([data-layout=landscape]) .place-heading>p:last-child{display:none}
+ #home-tutor .game-tutor-line{font-size:14px}
+}
+
+/* ── 가로: 왼쪽 아래에 오늘 카드와 탭 막대를 모으고, 오른쪽 방을 비워 둔다 ── */
+:root[data-layout=landscape]{--shell-width:100vw;--shell-height:100dvh}
+[data-layout=landscape] .world-topbar{top:calc(12px + var(--safe-top));left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right))}
+[data-layout=landscape] .place-heading{top:calc(76px + var(--safe-top));left:max(22px,env(safe-area-inset-left))}
+[data-layout=landscape] .place-heading h1{font-size:26px}
+[data-layout=landscape] .lobby-action{left:max(12px,env(safe-area-inset-left));right:auto;width:min(380px,44vw);bottom:calc(84px + var(--safe-bottom))}
+[data-layout=landscape] .world-nav{left:max(12px,env(safe-area-inset-left));right:auto;width:min(380px,44vw);height:62px}
+[data-layout=landscape] .world-panel{width:min(520px,100vw);max-height:calc(var(--shell-height) - 16px)}
+[data-layout=landscape] .game-panel{width:var(--shell-width);max-height:none}
+[data-layout=landscape] .sheet-handle{margin-bottom:10px}
+[data-layout=landscape] .panel-header{margin-bottom:14px}
+@media(max-height:500px){
+ [data-layout=landscape] .place-heading{display:none}
+ [data-layout=landscape] .lobby-action{width:min(340px,42vw);bottom:calc(74px + var(--safe-bottom))}
+ [data-layout=landscape] .life-home-board{max-height:calc(var(--shell-height) - 150px)}
+ [data-layout=landscape] #home-tutor .game-tutor-line{-webkit-line-clamp:2}
+ [data-layout=landscape] .home-tutor-day,[data-layout=landscape] .home-tutor-practice,[data-layout=landscape] .study-home-note .quiet-button{min-height:44px;font-size:13px}
+ [data-layout=landscape] .world-nav{width:min(340px,42vw);height:56px;bottom:calc(10px + var(--safe-bottom))}
+ [data-layout=landscape] .world-nav button{font-size:13px}
+ [data-layout=landscape] .nav-object svg{width:20px;height:20px}
+ [data-layout=landscape] .life-home-board{padding:10px 10px 4px}
+ [data-layout=landscape] #home-tutor .game-tutor-line{font-size:13.5px}
+ [data-layout=landscape] #home-tutor .home-tutor-action{min-height:46px}
+}
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+ :root[data-layout=landscape]{--shell-width:min(1280px,calc(100vw - 48px),calc((100dvh - 48px)*16/9));--shell-height:min(720px,calc(100dvh - 48px),calc((100vw - 48px)*9/16))}
+ [data-layout=landscape] .world-topbar{top:20px;left:22px;right:22px}
+ [data-layout=landscape] .place-heading{top:92px;left:30px}
+ [data-layout=landscape] .place-heading h1{font-size:34px}
+ [data-layout=landscape] .lobby-action{left:20px;bottom:98px;width:380px}
+ [data-layout=landscape] .world-nav{left:20px;bottom:20px;width:380px}
+ [data-layout=landscape] .world-panel{bottom:max(0px,calc((100dvh - var(--shell-height))/2));border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}button:active{transform:none!important}}
+
+/* 내 반 연결(SYNK ID 학생 연결 코드) — 판 위의 카드 하나. 확인 전에는 흰 알약 하나, 확인 뒤 연결 단추가 주 행동이 된다. */
+.classroom-enrollment{display:grid;gap:12px;margin-top:20px;padding:18px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:left}
+.classroom-enrollment h3{font-size:var(--t-title);font-weight:var(--wt-title);letter-spacing:var(--track-title);line-height:1.3}
+.classroom-enrollment .help{font-size:14px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.classroom-enrollment form{display:grid;gap:10px}
+.classroom-enrollment label{display:grid;gap:8px;font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-2)}
+.classroom-enrollment input{width:100%;min-height:50px;padding:0 16px;border:0;border-radius:var(--w-r-md);background:var(--w-panel);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) 16px/1.2 var(--w-mono);letter-spacing:.06em}
+.classroom-enrollment input:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--w-ink)}
+.classroom-enrollment input:disabled{opacity:.5}
+.classroom-enrollment form .felt-button{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);min-height:50px}
+.classroom-enrollment form .felt-button:hover{background:var(--w-s2)}
+.classroom-enrollment>div:not(:empty){padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s2);font-size:15.5px;font-weight:var(--wt-strong)}
+.classroom-enrollment .felt-button.primary{width:100%}
+.classroom-enrollment [role=status]:empty{display:none}
+.classroom-enrollment [role=status]{font-size:14px;line-height:1.6;color:var(--w-ink-2)}
+.classroom-enrollment .error{display:flex;gap:8px;align-items:baseline;color:var(--w-alert-text)}
+.classroom-enrollment .error::before{content:'';flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-alert);transform:translateY(-1px)}

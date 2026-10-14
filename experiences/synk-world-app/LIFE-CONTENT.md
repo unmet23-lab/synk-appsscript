@@ -128,6 +128,29 @@ Atlas 재사용 지점은 기존 `skillId`·`expressionId`·복습 가족 ID와 
 
 기존 비교의 사용자 원문 표본을 이어 사용하고, 2026-10-11에 [Speak의 수업 종료 Takeaways](https://help.speak.com/en/articles/11565779-what-are-made-for-you-custom-lessons)와 [Duolingo의 실수·추천 단어 복습](https://blog.duolingo.com/guide-to-duolingo-practice-hub/)을 추가 확인했다. 채택한 장점은 **실제 결과를 돌아보고 다음의 구체적인 연습으로 연결하기**다. SYNK에서는 도움받은 성과를 독립 성공과 구분하고, 고른 튜터의 기억과 다음 방문 인사로 연결한다. 강제 자동 진도 이동이나 새로운 평가 점수는 추가하지 않는다. [하루 기록·계정·화면 검증](qa/daily-tutor-20261011/README.md). 이 활동은 TOPIK I의 짧은 상황·응답 읽기에 관련된 연습이며 실제 학생 효과는 미측정이다.
 
+## 목표·관심과 학습 기록을 잇는 맞춤 흐름 · 2026-10-13 비교 근거
+
+이번 목적은 학생이 고른 생활 목표·관심·도움 선호와 실제 학습 기록으로 **홈에서 할 일 선택 → 활동 → 틀리거나 도움받은 표현의 복습 → 다음 방문**을 이어 주는 것이다. 선호를 능력이나 성격으로 단정하지 않고, 하던 위치·첫 응답·계정 소유권을 보존한다. 아래는 구현 판단의 근거이며 기능 완료나 학생 효과를 뜻하지 않는다.
+
+10월 11일의 Speak·Memrise·Duolingo 비교를 이어 쓰고, 2026-10-13에 Busuu·Babbel까지 다섯 서비스를 대조했다. 규모는 미국 App Store에서 열람한 **누적 평점/평가 수**이며 다운로드·활성 사용자·시장 순위가 아니다. 공식 기능과 실제 작성자의 후기 11건(앱 리뷰 5건, Reddit 게시글 5건과 댓글 1건)을 목적에 맞게 선별했다. 최근 반응은 2026년 9월 게시글, 장기 반응은 2025년 리뷰와 2026년 5월 게시글을 구분했다. 스토어의 연도 없는 날짜와 Reddit의 상대 날짜는 그대로 적었다. 전수 분석·직접 앱 플레이·한국어 코스 전체 비교는 하지 않았으며 Speak의 새 관심 맞춤 기능 일부는 베타·선택 코스 범위다.
+
+| 후보 · 누적 평가 | 확인한 공식 기능 | 선별한 사용자 반응과 적용 판단 |
+|---|---|---|
+| [Duolingo · 4.7/550만](https://apps.apple.com/us/app/duolingo-learn-languages/id570060128?see-all=reviews) | [Practice 탭](https://blog.duolingo.com/guide-to-duolingo-practice-hub/)에서 실수·단어·말하기·듣기를 직접 고른다. | 스토어 2025-12-09 리뷰는 이전 대화를 기억한 다음 연습과 사후 설명을 좋아하면서 필요할 때만 열 수 있는 힌트를 요청했다. [2026-09-21 전환 후기](https://www.reddit.com/r/duolingo/comments/1wmdq3v/i_finally_made_the_switch/)는 과도한 중간 보상 화면에 불만을 보였다. 추천은 짧게 이유를 붙이고, 학습과 상관없는 추가 통과 화면을 만들지 않는다. |
+| [Speak · 4.8/6.4만](https://apps.apple.com/us/app/speak-language-learning/id1286609883?see-all=reviews) | [관심·목표 맞춤](https://help.speak.com/en/articles/11727854-how-to-create-your-own-lessons-course-custom-lessons)은 선택 사항이며 입력 확인·변경·삭제를 지원한다. [Made For You](https://help.speak.com/en/articles/11565779-what-are-made-for-you-custom-lessons)는 관심과 오류 기반 연습을 구분한다. | 2025-11-30 리뷰는 실제 사용할 문장 저장과 직접 만든 수업을 호평했고, 2025-12-12 리뷰는 맞춤 복습을 반기면서 잘못 넘어간 곳으로 돌아갈 수 없음을 지적했다. 관심은 본인이 바꾸고, 새 추천이 미완료 수업이나 복습을 지우지 않게 한다. |
+| [Busuu · 4.7/10.1만](https://apps.apple.com/us/app/busuu-language-learning-app/id379968583?see-all=reviews) | [Study Plan](https://help.busuu.com/hc/en-us/articles/16097312171153-What-s-a-Study-Plan-How-do-I-make-one)은 학습 이유·목표 수준·요일·하루 시간을 받고 수정·삭제할 수 있다. | 스토어 May 27(연도 미표시) 리뷰는 문법 복습과 이유 설명을 호평했다. [7mo ago로 표시된 장기 이용 후기](https://www.reddit.com/r/Busuu/comments/1rp1cxf/busuu_is_great_but_two_improvements_could_make_it/)는 구조적 진도를 좋아하지만 뒤섞인 복습 대신 교통·음식 같은 주제별 선택을 원했다. 생활 목표를 실제 팩과 연결하고 추천 근거를 학생에게 보여 준다. |
+| [Babbel · 4.7/75.6만](https://apps.apple.com/us/app/babbel-language-learning/id829587759?see-all=reviews) | [복습 기능](https://support.babbel.com/hc/en-gb/articles/360037496932-Memorising-vocabulary)은 배운 어휘를 저장하고 정오답에 따라 간격을 바꾼다. | 스토어 2025-03-13 리뷰는 관심 카테고리·복습 형식을 직접 고르는 것을 호평했다. [2026-05-02 후기](https://www.reddit.com/r/babbel/comments/1t1knt4/babbel_is_difficult_to_use/)는 본수업 뒤 어떤 추가 연습을 해야 할지 안내가 부족하다고 했다. 콘텐츠 목록만 늘리지 않고 완료한 활동에서 필요한 다음 행동으로 연결한다. |
+| [Memrise · 4.8/21.7만](https://apps.apple.com/us/app/memrise-language-learning-app/id635966718?see-all=reviews) | [제품 흐름](https://www.memrise.com/)은 실제 화자 영상으로 만나기 → 기억 연습 → 사용하기로 이어진다. | [2026-09-15 후기](https://www.reddit.com/r/memrise/comments/1wgojt6/suggestions_for_memrise_app/)는 콘텐츠를 좋아하면서 다음 길과 누적 진도가 잘 보이길 원했다. [2026-09-06 게시글과 반대 의견 댓글](https://www.reddit.com/r/memrise/comments/1w8hzu1/purchasing_a_lifetime_membership_was_a_mistake/)은 복습 선택의 불편과 원어민 영상의 장점을 각각 말했다. 안내 경로와 자유 선택을 함께 두고 기존에 한 학습을 잃은 것처럼 보여 주지 않는다. |
+
+위 반응에서 채택할 경험은 다음 네 가지다. 이는 SYNK에 맞춘 설계 판단이며 서비스별 학습 효과의 우열을 뜻하지 않는다.
+
+1. **본인이 고르고 바꾸는 목표·관심·도움:** 짧은 선택으로 시작하고 건너뛰거나 나중에 바꿀 수 있게 한다. 선호가 바뀌어도 정오답·복습 날짜·숙련 기록은 다시 쓰지 않는다.
+2. **이유가 있는 다음 한 가지와 다른 선택:** 관심 있는 생활 장면을 추천하되 실제 미해결 표현·예정 복습을 숨기지 않는다. 학생이 원하는 팩·게임을 직접 여는 길도 유지한다.
+3. **하던 자리와 활동 사이의 연결:** 새 추천 때문에 중단한 수업·주문·복습을 교체하지 않는다. 완료 뒤에는 같은 목표와 관련된 다음 활동 또는 실제 돌아온 복습으로 연결한다.
+4. **배운 표현을 새 상황에서 확인:** 기존 표현 계열·변형 원고와 Atlas의 첫 시도/도움/음성 전달 구분을 재사용한다. 튜터와 함께 맞힌 결과를 독립 이해로 올리지 않으며, 한 번의 오답으로 성향이나 급수를 정하지 않는다.
+
+구현 검증에서는 서로 다른 목표/선호의 실제 추천 차이, 미해결 표현과 예정 복습의 보존, 중단 위치 복원, 첫 답/도움 유지, 계정 전환·저장 실패·기존 기록 복원을 확인한다. 학생의 선택 부담·지속 이용·한국어 향상은 실제 학습자 검증으로 남긴다. 현재 콘텐츠의 TOPIK 관련 범위는 짧은 생활 문장과 응답·세부 정보 이해의 기초 연습이며, 목표를 TOPIK으로 골랐다는 이유만으로 공식 급수 진단이나 시험 전체 대비를 제공한다고 표시하지 않는다.
+
 ## 검수
 
 기존 108문항과 새 24문항(본문항 12·변형 복습 12)을 대조해 정답이 하나인지, 상황이 충분한지, 정답·해설이 일치하는지 확인했다. 다른 보기에도 자연스러운 한국어 문장을 써서 문법 오류만으로 정답을 알아맞히지 않도록 마감했다. 학습 표현은 일상적인 정중 표현을 쓰고 친구끼리의 캐릭터 말투와 구분한다. 이름 소개 예시는 받침 있는 이름에 `이에요`를 사용한다.

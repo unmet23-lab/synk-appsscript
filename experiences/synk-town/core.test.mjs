@@ -118,6 +118,9 @@ test('failed storage never publishes a result and a retry remains exactly once',
   const command = g.command('CHOOSE', { branch: 'outside' });
   assert.throws(() => g.store.execute(command), /저장하지 못/); assert.equal(g.read().state.revision, 0);
   fail = false; g.store.execute(command); g.store.execute(command);
+  assert.deepEqual(saved.inventory, { wood: 0, cloth: 0, canopy: 0 });
+  assert.equal(saved.materialsGranted, false);
+  g.send('NEXT');
   assert.deepEqual(saved.inventory, { wood: 2, cloth: 1, canopy: 0 });
 });
 test('server restart restores owned canopy and pending delivery; corrupt save is preserved and blocked', () => {

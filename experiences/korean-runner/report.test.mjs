@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { RunnerModel, driveDemo } from './core.mjs';
 import { INSTRUCTIONS } from './instructions.mjs';
 import { LISTENING_CHECKS, createListeningCheck } from './listening-check.mjs';
-import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs';
+const { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } = await import(process.env.SYNK_RUNNER_REPORT || new URL('./report.mjs', import.meta.url));
 import { instructionMetadata, actionEvidence } from './learning.mjs';
 
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
@@ -52,4 +52,20 @@ test('듣기 능력 기록은 듣기 확인(보기 고르기)의 응답만 읽�
   const after = skillReport(coach.summary()), neg = after.find((r) => r.id === 'ko.listening.negation');
   assert.notEqual(neg.status, 'unseen'); assert.equal(neg.n, 1); assert.equal(neg.correct, 1);
   assert.deepEqual(after.filter((r) => r.id !== 'ko.listening.negation').map((r) => r.status), ['unseen', 'unseen']);
+});
+
+test('도움받은 듣기 확인과 혼자 답한 기록을 구분하고 도움 오답을 기록 없음으로 뭉뚱그리지 않는다', () => {
+  for (const correct of [false, true]) {
+    const rows = new Map(), coach = createGame({ gameId: 'korean-runner', map, storage: { getItem: k => rows.get(k) ?? null, setItem: (k, v) => rows.set(k, v) } });
+    const check = createListeningCheck(coach), item = LISTENING_CHECKS.find(x => x.id === 'check-not-middle'), token = check.begin(item);
+    check.delivery(token, 'completed'); check.replay();
+    const result = check.answer(correct ? item.correct : (item.correct + 1) % item.choices.length);
+    assert.equal(result.assisted, true); assert.equal(result.independent, false);
+    const after = skillReport(coach.summary()), row = after.find(x => x.id === 'ko.listening.negation');
+    assert.equal(row.n, 0); assert.equal(row.correct, 0);
+    assert.equal(row.status, correct ? 'supported' : 'unseen');
+    assert.equal(row.text, correct ? '도움을 받아 해냈어요' : '혼자 답한 듣기 확인 기록이 아직 없어요');
+    assert.ok(after.filter(x => x.id !== row.id).every(x => x.text === '혼자 답한 듣기 확인 기록이 아직 없어요'));
+    assert.equal(coach.summary().independent, 0);
+  }
 });

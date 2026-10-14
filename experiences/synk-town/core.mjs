@@ -6,6 +6,11 @@
 import Trail from '../../atlas/trail-life.js';
 import Vellum from '../../atlas/vellum-life.js';
 import Loom from '../../tools/lib/loom-life.js';
+import { initialLife, assertLife, advanceLife, commandLife, viewLife, LifeError } from './life.mjs';
+import { initialDay, assertDay, advanceDay, commandDay, viewDay, DayError } from './day.mjs';
+import { initialBazaar, assertBazaar, advanceBazaar, commandBazaar, viewBazaar, BazaarError } from './bazaar.mjs';
+import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError } from './support.mjs';
+import { nearbyPlace } from './walk.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 export const SEATS = Object.freeze({
@@ -24,20 +29,28 @@ export class TownError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status; }
 }
 const ensure = (condition, code, message, status) => { if (!condition) throw new TownError(code, message, status); };
-export function initialState({ scope = SCOPE } = {}) {
+export function initialState({ scope = SCOPE, lifeEnabled = false } = {}) {
   return { schema: 1, scope: { ...scope }, revision: 0, worldRevision: 0, visit: 1,
     phase: 'choose', branch: null, inventory: { wood: 0, cloth: 0, canopy: 0 },
     canopyOwned: false, color: null, placement: null, previewSlot: null,
     materialsGranted: false, served: false, delivered: false, currentUseId: null,
     achievements: [], goals: { inside: null, outside: null }, resumePhase: null,
-    events: [], commands: [], resting: false, activity: 'seat', sign: newSign() };
+    events: [], commands: [], resting: false, activity: 'seat', sign: newSign(),
+    ...(lifeEnabled ? { life: initialLife(), lifeFactIds: {}, lifeSeatRevision: 0, day: initialDay(), bazaar: initialBazaar(), support: initialSupport() } : {}) };
 }
 // Existing FT10 saves gain only the new optional activity, preserving their log.
-export function restoreState(saved) {
+export function restoreState(saved, { lifeEnabled = false } = {}) {
   const state = copy(saved);
   if (state?.schema === 1 && !Object.hasOwn(state, 'activity') && !Object.hasOwn(state, 'sign')) {
     state.activity = 'seat'; state.sign = newSign();
   }
+  if (lifeEnabled && !Object.hasOwn(state, 'life')) {
+    state.life = initialLife(); state.lifeFactIds = {};
+  }
+  if (state.life && !Object.hasOwn(state, 'lifeSeatRevision')) state.lifeSeatRevision = state.worldRevision;
+  if (lifeEnabled && !Object.hasOwn(state, 'day')) state.day = initialDay();
+  if (lifeEnabled && !Object.hasOwn(state, 'bazaar')) state.bazaar = initialBazaar();
+  if (lifeEnabled && !Object.hasOwn(state, 'support')) state.support = initialSupport();
   return assertState(state);
 }
 export function assertState(state) {
@@ -76,7 +89,112 @@ export function assertState(state) {
   'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
   ensure(!state.currentUseId || trail.facts.some(f => f.id === state.currentUseId && f.factType === 'tea.served'),
     'invalid-save', '체험 기록을 확인할 수 없어요.', 503);
+  if (Object.hasOwn(state, 'life')) {
+    ensure(!!state.life, 'invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503);
+    ensure(state.scope.subject === 'preview-local' && state.lifeFactIds && typeof state.lifeFactIds === 'object'
+      && !Array.isArray(state.lifeFactIds) && Object.values(state.lifeFactIds).every(id => trail.facts.some(f => f.id === id)),
+    'invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503);
+    try { assertLife(state.life); } catch { throw new TownError('invalid-save', '이웃의 생활 기록을 확인할 수 없어요.', 503); }
+    ensure(Number.isSafeInteger(state.lifeSeatRevision) && state.lifeSeatRevision >= 0,
+      'invalid-save', '생활 자리 기록을 확인할 수 없어요.', 503);
+    ensure(!state.lifeHost || (state.lifeHost.lastForegroundAt === null || Number.isSafeInteger(state.lifeHost.lastForegroundAt) && state.lifeHost.lastForegroundAt >= 0)
+      && Number.isSafeInteger(state.lifeHost.fence) && state.lifeHost.fence >= 0,
+      'invalid-save', '생활 방문 기록을 확인할 수 없어요.', 503);
+  }
+  if (Object.hasOwn(state, 'day')) {
+    ensure(state.scope.subject === 'preview-local' && !!state.life, 'invalid-save', '생활의 주인을 확인할 수 없어요.', 503);
+    try { assertDay(state.day); } catch { throw new TownError('invalid-save', '첫 하루 기록을 확인할 수 없어요.', 503); }
+  }
+  for (const [key, validate] of [['bazaar', assertBazaar], ['support', assertSupport]]) {
+    if (!Object.hasOwn(state, key)) continue;
+    ensure(state.scope.subject === 'preview-local' && !!state.day, 'invalid-save', '생활 기록의 주인을 확인해 주세요.', 503);
+    try { validate(state[key]); } catch { throw new TownError('invalid-save', '생활 지원 기록을 확인할 수 없어요.', 503); }
+  }
+  const pending = state.pendingUse;
+  if (pending) ensure(['tea', 'sign'].includes(pending.kind) && pending.worldRevision === state.worldRevision
+    && pending.placement === state.placement && Number.isSafeInteger(pending.elapsedMs) && pending.elapsedMs >= 0
+    && trail.facts.some(row => row.id === pending.cause), 'invalid-save', '주민 이용 계획을 확인할 수 없어요.', 503);
   return state;
+}
+
+const atDayPlace = (state, place) => state.day?.location === place && (!state.day.walk?.enabled || nearbyPlace(state.day.walk) === place);
+export function dayContext(state, host = {}) {
+  const c1 = state.life?.episode;
+  return { elapsedMs: host.elapsedMs || 0, nowMs: host.nowMs ?? state.lifeHost?.lastForegroundAt ?? 0,
+    walkElapsedMs: host.walkElapsedMs || 0,
+    canRun: host.canRun !== false && host.surface === 'day',
+    placement: state.placement, seatRevision: state.lifeSeatRevision ?? state.worldRevision,
+    languageSupport: state.support ? snapshotSupport(state.support).mode : 'plain',
+    languageSupportBasis: state.support ? snapshotSupport(state.support) : undefined,
+    workshopBusy: bazaarOwns(state) && state.bazaar.episode.kind === 'pictureMenu',
+    resumeBlocked: !!state.bazaar?.episode?.open && state.day?.episode?.location === 'cafe',
+    ftReady: !!state.placement && !!state.goals[SEATS[state.placement].branch],
+    signReady: !!state.sign.target,
+    cafeBusy: bazaarOwns(state) || !!state.pendingUse || state.phase !== 'ready' || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
+      || !!c1 && (c1.stage === 'executing' || c1.open && !['result', 'invalid'].includes(c1.stage)) };
+}
+function bazaarOwns(state) { return !!state.bazaar?.episode?.open && state.day?.location === 'cafe'; }
+function bazaarContext(state, host = {}, requestedKind) {
+  const episode = state.day?.episode, life = state.life?.episode;
+  return { elapsedMs: host.elapsedMs || 0, canRun: host.canRun !== false && host.surface === 'day' && !state.day?.rest && atDayPlace(state, 'cafe'),
+    location: state.day?.location || 'home', support: state.day?.support || 'demo',
+    languageSupport: state.support ? snapshotSupport(state.support).mode : 'plain',
+    languageSupportBasis: state.support ? snapshotSupport(state.support) : undefined,
+    cafeBusy: !!state.pendingUse || state.phase !== 'ready' || !state.placement
+      || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
+      || !bazaarOwns(state) && state.day?.routine.returnMs < 2000
+      || (requestedKind || state.bazaar?.episode?.kind) === 'pictureMenu' && state.day?.job?.status === 'preparing'
+      || !!episode?.open && episode.location === 'cafe' && episode.stage !== 'invalid'
+      || !!life && (life.stage === 'executing' || life.open && life.stage !== 'invalid') };
+}
+function supportContext(state, host = {}) {
+  return { nowMs: Math.max(host.nowMs ?? state.lifeHost?.lastForegroundAt ?? 0,
+      state.support?.presentations.at(-1)?.atMs || 0, state.support?.attempts.at(-1)?.atMs || 0),
+    kind: state.day?.location === 'workshop' ? 'help' : 'tea' };
+}
+
+// Only the local host may supply execution time and a delivery fence. The
+// linked teacher fixture deliberately has no capability for this slice yet.
+export function livingContext(state, host = {}) {
+  const ready = !state.pendingUse && state.phase === 'ready' && !!state.placement
+    && (state.activity === 'sign' ? state.sign.delivered : state.delivered);
+  const episode = state.day?.episode;
+  const dayEpisodeOwns = !!episode && episode.location === state.day.location
+    && episode.open && episode.stage !== 'invalid' && episode.kind === 'tea';
+  const dayOwns = bazaarOwns(state) || dayEpisodeOwns || host.surface === 'day' && (!atDayPlace(state, 'cafe')
+    || state.day?.routine.returnMs < 2000);
+  return { surfaceId: state.life?.authority.surfaceId ?? null, fence: state.life?.authority.fence ?? 0,
+    ...host, canRun: ready && host.canRun !== false && !dayOwns,
+    canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true,
+    worldRevision: state.lifeSeatRevision ?? state.worldRevision, placement: state.placement };
+}
+function projectLifeFacts(state, facts) {
+  for (const item of facts) {
+    if (item.sourceKey && Object.hasOwn(state.lifeFactIds, item.sourceKey)) continue;
+    const causes = (item.causes || []).map(key => state.lifeFactIds[key]).filter(Boolean);
+    const id = fact(state, item.factType, causes, item.knownBy || ['cafe-owner']);
+    if (item.sourceKey) state.lifeFactIds[item.sourceKey] = id;
+  }
+}
+function runLife(state, operation) {
+  try { projectLifeFacts(state, operation()); }
+  catch (error) {
+    if (error instanceof LifeError || error instanceof DayError || error instanceof BazaarError || error instanceof SupportError) throw new TownError(error.code, error.message, error.status);
+    throw error;
+  }
+}
+export function advanceLivingState(previous, host) {
+  assertState(previous);
+  ensure(previous.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
+  const state = copy(previous);
+  advanceUse(state, host);
+  runLife(state, () => advanceLife(state.life, livingContext(state, host)));
+  if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
+  if (state.bazaar) runLife(state, () => advanceBazaar(state.bazaar, bazaarContext(state, host)));
+  const changed = canonical(state) !== canonical(previous);
+  if (changed) state.revision++;
+  assertState(state);
+  return { state, changed };
 }
 function append(state, type, fields) {
   const seq = (state.events.at(-1)?.seq || 0) + 1;
@@ -96,6 +214,38 @@ function useSeat(state, cause) {
   const seated = fact(state, 'seat.used', [arrival]);
   state.currentUseId = fact(state, 'tea.served', [seated]);
   state.served = true; state.delivered = false; state.resting = false;
+}
+function completeSeat(state, cause) {
+  useSeat(state, cause);
+  const branch = SEATS[state.placement].branch;
+  if (!state.goals[branch]) state.goals[branch] = fact(state, `FT10.${branch}.completed`, [state.currentUseId]);
+  const note = branch === 'outside' ? '작은 지붕을 만들었어요.' : '의자를 옮겼어요.';
+  if (!state.achievements.includes(note)) state.achievements.push(note);
+}
+function queueUse(state, kind, cause) {
+  state.pendingUse = { kind, cause, placement: state.placement, worldRevision: state.worldRevision, elapsedMs: 0 };
+  state.resting = false;
+  if (kind === 'tea') { state.served = false; state.delivered = false; state.currentUseId = null; state.activity = 'seat'; }
+  else { state.sign.delivered = false; state.sign.currentUseId = null; state.activity = 'sign'; }
+}
+function executionFor(state) {
+  const pending = state.pendingUse;
+  if (!pending) return null;
+  const id = `use:${pending.kind}:${pending.worldRevision}:${state.visit}`;
+  const plan = pending.kind === 'tea' ? planFor(state, { id }) : signPlan(state, { id });
+  return { id, kind: pending.kind, plan, elapsedMs: pending.elapsedMs, durationMs: plan.totalMs };
+}
+function advanceUse(state, host) {
+  const pending = state.pendingUse;
+  if (!pending || host.canRun === false || state.phase !== 'ready') return;
+  if (host.surface === 'day' && !atDayPlace(state, 'cafe')) return;
+  pending.elapsedMs += host.elapsedMs || 0;
+  if (pending.elapsedMs < executionFor(state).durationMs) return;
+  state.pendingUse = null;
+  if (pending.kind === 'tea') {
+    completeSeat(state, pending.cause);
+    if (state.sign.slot && state.sign.target === state.placement) queueUse(state, 'sign', state.sign.placedId);
+  } else followSign(state);
 }
 function currentPlacementFact(state) {
   return [...state.events].reverse().find(e => e.type === 'life.fact' && e.factType === 'seat.placed')?.id;
@@ -217,11 +367,24 @@ export function viewFor(state) {
       }
     }
   }
+  if (state.life) {
+    view.life = viewLife(state.life, livingContext(state));
+    view.notebook.push(...(view.life.memory || []));
+  }
+  if (state.pendingUse) {
+    view.execution = executionFor(state);
+    view.plan = null; view.reaction = null; view.committedStepIds = [];
+    view.line = state.pendingUse.kind === 'tea' ? '손님이 자리를 확인하고 있어요.' : '손님이 안내판을 따라가요.';
+    view.actions = view.actions.filter(a => ['SIT', 'REARRANGE', 'REMOVE', 'LEAVE'].includes(a.type));
+  }
+  if (state.day) view.day = viewDay(state.day, dayContext(state, { surface: 'day' }));
+  if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, bazaarContext(state, { surface: 'day' }));
+  if (state.support) view.support = viewSupport(state.support, supportContext(state));
   return view;
 }
 export function snapshot(state) { assertState(state); return { state: copy(state), view: viewFor(state) }; }
 
-export function reduceCommand(previous, command) {
+export function reduceCommand(previous, command, host = {}) {
   assertState(previous);
   ensure(command && typeof command.id === 'string' && /^[a-zA-Z0-9_.:-]{1,100}$/.test(command.id)
     && typeof command.type === 'string' && command.payload && typeof command.payload === 'object'
@@ -235,18 +398,28 @@ export function reduceCommand(previous, command) {
   ensure(command.expectedRevision === previous.revision, 'stale-command', '다른 창에서 자리가 바뀌었어요. 다시 확인해 주세요.', 409);
   let state = copy(previous);
   const p = command.payload;
+  const ftMutation = ['CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'REARRANGE', 'REMOVE', 'SIT',
+    'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL', 'SIGN_REMOVE'].includes(command.type);
+  if (ftMutation && (host.surface === 'day' || state.day?.walk?.enabled)) ensure(atDayPlace(state, 'cafe'),
+    'day-place-conflict', '찻집에서 현재 자리를 확인해 주세요.', 409);
+  if (ftMutation) ensure(!bazaarOwns(state), 'bazaar-cafe-busy', '손님 응대를 닫은 뒤 자리를 바꿔 주세요.', 409);
+  const dayEpisode = state.day?.episode;
+  if (ftMutation && dayEpisode?.open && dayEpisode.location === state.day.location && dayEpisode.kind === 'tea' && dayEpisode.stage !== 'invalid')
+    ensure(false, 'day-cafe-busy', '함께 하던 생활을 닫은 뒤 자리를 바꿔 주세요.', 409);
+  if (state.pendingUse && ['SIGN_START', 'SIGN_REMOVE'].includes(command.type))
+    ensure(false, 'use-in-progress', '손님이 자리를 확인한 뒤 안내판을 바꿔 주세요.', 409);
   const inPhase = (...phases) => ensure(phases.includes(state.phase), 'wrong-phase', '지금 할 수 있는 일을 골라요.');
   switch (command.type) {
     case 'CHOOSE':
       inPhase('choose'); ensure(['inside', 'outside'].includes(p.branch), 'invalid-choice', '안이나 밖을 골라요.');
       state.branch = p.branch; state.phase = `${p.branch}-preview`;
-      if (p.branch === 'outside' && !state.materialsGranted) {
-        state.inventory.wood += 2; state.inventory.cloth += 1; state.materialsGranted = true;
-        fact(state, 'materials.granted', [], ['workshop-owner']);
-      }
       break;
     case 'NEXT':
       inPhase('outside-preview', 'inside-preview');
+      if (state.branch === 'outside' && !state.materialsGranted) {
+        state.inventory.wood += 2; state.inventory.cloth += 1; state.materialsGranted = true;
+        fact(state, 'materials.granted', [], ['workshop-owner']);
+      }
       state.phase = state.branch === 'outside' && !state.canopyOwned ? 'color' : 'place';
       state.previewSlot = state.branch === 'outside' ? 'garden' : 'eaves-left'; break;
     case 'COLOR':
@@ -266,15 +439,13 @@ export function reduceCommand(previous, command) {
       ensure(state.branch !== 'outside' || state.canopyOwned, 'missing-canopy', '먼저 지붕을 만들어요.');
       state.placement = p.slot; state.previewSlot = null; state.worldRevision++;
       state.inventory.canopy = state.canopyOwned && state.branch !== 'outside' ? 1 : 0;
-      const placed = fact(state, 'seat.placed'); useSeat(state, placed); state.phase = 'ready';
+      const placed = fact(state, 'seat.placed'); state.phase = 'ready';
       state.activity = 'seat';
-      if (!state.goals[state.branch]) state.goals[state.branch] = fact(state, `FT10.${state.branch}.completed`, [state.currentUseId]);
-      const note = state.branch === 'outside' ? '작은 지붕을 만들었어요.' : '의자를 옮겼어요.';
-      if (!state.achievements.includes(note)) state.achievements.push(note);
+      if (host.surface === 'day') queueUse(state, 'tea', placed); else completeSeat(state, placed);
       if (state.sign.slot) {
         state.sign.target = state.placement;
         state.sign.placedId = fact(state, 'sign.retargeted', [placed, state.sign.placedId], ['cafe-owner']);
-        followSign(state);
+        if (host.surface !== 'day') followSign(state);
       }
       break;
     }
@@ -294,8 +465,12 @@ export function reduceCommand(previous, command) {
       inPhase('away'); state.phase = state.resumePhase || 'choose'; state.resumePhase = null;
       state.visit++; state.resting = false;
       if (state.placement && state.phase === 'ready') {
-        if (state.activity === 'sign') { if (state.sign.delivered) followSign(state); }
-        else if (state.delivered) useSeat(state, currentPlacementFact(state));
+        if (state.activity === 'sign') { if (state.sign.delivered) {
+          if (host.surface === 'day') queueUse(state, 'sign', state.sign.placedId); else followSign(state);
+        } }
+        else if (state.delivered) {
+          if (host.surface === 'day') queueUse(state, 'tea', currentPlacementFact(state)); else useSeat(state, currentPlacementFact(state));
+        }
       }
       break;
     case 'LEAVE':
@@ -322,7 +497,7 @@ export function reduceCommand(previous, command) {
       if (changed) {
         state.worldRevision++;
         state.sign.placedId = fact(state, 'sign.placed', [currentPlacementFact(state)], ['cafe-owner']);
-        followSign(state);
+        if (host.surface === 'day') queueUse(state, 'sign', state.sign.placedId); else followSign(state);
       }
       break;
     }
@@ -334,6 +509,7 @@ export function reduceCommand(previous, command) {
       state.worldRevision++; fact(state, 'sign.removed', [state.sign.placedId], ['cafe-owner']);
       state.sign = { ...newSign(), goalId: state.sign.goalId }; state.activity = 'seat'; break;
     case 'ACK': {
+      if (state.day?.walk?.enabled) ensure(atDayPlace(state, 'cafe'), 'day-walk-too-far', '찻집 가까이에서 실제 모습을 확인해 주세요.', 409);
       inPhase('ready'); const view = viewFor(state); const reaction = view.reaction;
       ensure(reaction && p.reactionId === reaction.id && p.semanticKey === reaction.semanticKey
         && p.worldRevision === state.worldRevision && (p.activity || 'seat') === state.activity && ['motion', 'static', 'text'].includes(p.mode),
@@ -349,11 +525,54 @@ export function reduceCommand(previous, command) {
       if (state.activity === 'sign') state.sign.delivered = true; else state.delivered = true; break;
     }
     case 'RESET': {
-      const old = state; state = initialState({ scope: old.scope }); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
+      const old = state; state = initialState({ scope: old.scope, lifeEnabled: !!old.life }); state.revision = old.revision; state.worldRevision = old.worldRevision + 1;
       state.commands = old.commands; break;
     }
-    default: throw new TownError('unknown-command', '지금 할 수 있는 일을 골라요.');
+    default:
+      if (command.type.startsWith('SUPPORT_')) {
+        ensure(state.support && host.enabled === true && host.surface === 'day', 'support-unavailable', '첫 하루에서 읽기 도움을 확인해 주세요.', 403);
+        runLife(state, () => { commandSupport(state.support, command.type, p, supportContext(state, host)); return []; });
+        break;
+      }
+      if (command.type.startsWith('BAZAAR_')) {
+        ensure(state.bazaar && host.enabled === true && host.surface === 'day', 'bazaar-unavailable', '첫 하루에서 손님의 요청을 확인해 주세요.', 403);
+        if (state.day?.walk?.enabled && !['BAZAAR_CLOSE', 'BAZAAR_CANCEL'].includes(command.type))
+          ensure(atDayPlace(state, 'cafe'), 'day-walk-too-far', '찻집 가까이 걸어가서 손님을 맞아 주세요.', 409);
+        if (['BAZAAR_START', 'BAZAAR_RESUME'].includes(command.type)) state.day.rest = false;
+        runLife(state, () => commandBazaar(state.bazaar, command.type, p, bazaarContext(state, host, p.kind)));
+        break;
+      }
+      if (command.type.startsWith('DAY_')) {
+        ensure(state.day && host.enabled === true && host.surface === 'day',
+          'day-unavailable', '첫 하루 화면에서 현재 생활을 확인해 주세요.', 403);
+        if (command.type.startsWith('DAY_WALK') || command.type === 'DAY_INTERACT') ensure(host.canRun && host.surfaceId
+          && host.ownerSurfaceId === host.surfaceId, 'walk-not-owner', '지금 조작 중인 마을 창에서 걸어 주세요.', 409);
+        if (['DAY_START', 'DAY_RESUME', 'DAY_RETRY'].includes(command.type)) ensure(!bazaarOwns(state)
+          && !(command.type === 'DAY_RESUME' && state.bazaar?.episode?.open && state.day.episode?.location === 'cafe'),
+          'bazaar-cafe-busy', '손님과 하던 생활을 닫은 뒤 이어가 주세요.', 409);
+        if (command.type === 'DAY_JOB_START') ensure(!(bazaarOwns(state) && state.bazaar.episode.kind === 'pictureMenu'),
+          'day-workshop-busy', '공방 주인이 메뉴판 준비를 마친 뒤 부탁해 주세요.', 409);
+        runLife(state, () => commandDay(state.day, command.type, p, dayContext(state, host)));
+        break;
+      }
+      ensure(command.type.startsWith('LIFE_') && state.life && host.enabled === true,
+        'unknown-command', '지금 할 수 있는 일을 골라요.');
+      if (state.day?.walk?.enabled && !['LIFE_CLOSE', 'LIFE_PREFERENCE'].includes(command.type))
+        ensure(atDayPlace(state, 'cafe'), 'day-walk-too-far', '찻집 가까이 걸어가서 이웃과 이야기해 주세요.', 409);
+      if (['LIFE_OPEN', 'LIFE_RESUME'].includes(command.type)) state.resting = false;
+      runLife(state, () => commandLife(state.life, command.type, p, livingContext(state, host)));
+      break;
   }
+  if (state.pendingUse && (state.pendingUse.worldRevision !== state.worldRevision || state.pendingUse.placement !== state.placement)) state.pendingUse = null;
+  if (state.life && command.type !== 'RESET' && previous.placement !== state.placement) state.lifeSeatRevision++;
+  if (state.life && command.type !== 'RESET') runLife(state, () => advanceLife(state.life,
+    livingContext(state, { ...host,
+      surfaceId: Object.hasOwn(host, 'ownerSurfaceId') ? host.ownerSurfaceId : host.surfaceId ?? state.life.authority.surfaceId,
+      elapsedMs: 0, canContact: false, visitEnded: command.type === 'LEAVE' })));
+  if (state.day && command.type !== 'RESET') runLife(state, () => advanceDay(state.day,
+    dayContext(state, { ...host, elapsedMs: 0 })));
+  if (state.bazaar && command.type !== 'RESET') runLife(state, () => advanceBazaar(state.bazaar,
+    bazaarContext(state, { ...host, elapsedMs: 0 })));
   state.revision++;
   state.commands.push({ id: command.id, signature, revision: state.revision });
   assertState(state);

@@ -13,12 +13,13 @@ const core=value=>JSON.stringify({owner:value.owner,version:value.version,lesson
 
 test('frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout',{timeout:120000},async()=>{
  const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-home-tutor-20261011/world');
+ const standaloneHtml=path.resolve(process.env.SYNK_HOME_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const out=path.resolve('experiences/synk-world-app/qa/home-tutor-20261011',process.env.SYNK_HOME_TUTOR_STATIC_RUN||'account');fs.mkdirSync(out,{recursive:true});
  const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.mp3':'audio/mpeg','.mp4':'video/mp4','.wav':'audio/wav','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};
  const server=http.createServer((req,res)=>{
   const u=new URL(req.url,'http://localhost'),name=decodeURIComponent(u.pathname.slice(7))||'index.html',standalone=name==='brand-opening/home.html';
-  const file=standalone?path.resolve('experiences/brand-opening/home.html'):path.resolve(payload,name),rel=path.relative(payload,file);
+  const file=standalone?standaloneHtml:path.resolve(payload,name),rel=path.relative(payload,file);
   if(!u.pathname.startsWith('/world/')||!standalone&&(rel.startsWith('..')||path.isAbsolute(rel))||!fs.existsSync(file)||!fs.statSync(file).isFile())return res.writeHead(404).end();
   res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res);
  });
@@ -65,19 +66,23 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   await page.waitForFunction(()=>window.__synkHome?.homeTutor()?.recommendation.kind==='start');
   check('account choice overrides the different guest tutor on the home itself',(await home()).tutor==='kkamong');
   check('first visit suggests a real first lesson without inventing a previous confusion',!(await home()).recommendation.id&&(await home()).recommendation.title===lessonById('greetings-expressions').title);
-  await page.locator('#home-tutor .home-tutor-action').click();await page.locator('[data-life-begin]').click();
+  await page.locator('#home-tutor .home-tutor-action').click();
+  if(await page.locator('[data-study-skip]').count())await page.locator('[data-study-skip]').click();
+  await page.locator('[data-life-begin]').click();
   while(await page.locator('[data-life-scene-next]').count())await page.locator('[data-life-scene-next]').click();
   const q=lessonById('greetings-expressions').questions[0],wrong=q.choices.find(c=>c.id!==q.answerId).id;
   await page.locator(`[data-life-choice="${wrong}"]`).click();
   await page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
   await page.locator('#panel-close').click();
-  check('an actual first wrong answer becomes today\'s matching expression recommendation',(await home()).recommendation.id===q.id&&(await home()).recommendation.kind==='difficult'&&(await read()).progress.lessons['greetings-expressions'].answers[q.id].correct===false);
+  check('an actual first wrong answer keeps guided help beside the selected next activity',(await home()).practiceRecommendation?.id===q.id&&(await home()).recommendation.command==='learn'&&await page.locator('#home-tutor .home-tutor-practice').isVisible()&&(await read()).progress.lessons['greetings-expressions'].answers[q.id].correct===false);
+  await page.setViewportSize({width:320,height:740});
+  check('the guided-help button stays visible and tappable above navigation at 320 pixels',await page.locator('#home-tutor .home-tutor-practice').evaluate(button=>{const box=button.getBoundingClientRect(),nav=document.querySelector('.world-nav').getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);return box.width>=44&&box.height>=44&&box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=nav.top&&button.contains(hit);}));
   await page.screenshot({path:path.join(out,'account-home-memory.png')});
   const checkpoint=(await read()).progress,writeCount=calls.filter(c=>c.action).length;
-  await page.reload();await page.waitForFunction(id=>window.__synkHome?.homeTutor()?.recommendation.id===id,q.id);
+  await page.reload();await page.waitForFunction(id=>window.__synkHome?.homeTutor()?.practiceRecommendation?.id===id,q.id);
   check('reload restores the chosen tutor and the same remembered expression from account progress',(await home()).tutor==='kkamong'&&JSON.stringify((await read()).progress)===JSON.stringify(checkpoint));
-  await page.locator('#home-tutor .home-tutor-action').click();
-  check('home action opens the canonical transfer directly without opening the lesson panel',await page.locator('.life-expression-question h4').textContent()===q.review.prompt&&!await page.locator('#world-panel').evaluate(el=>el.open));
+  await page.locator('#home-tutor .home-tutor-practice').click();
+  check('home guided-help action opens the canonical transfer directly without opening the lesson panel',await page.locator('.life-expression-question h4').textContent()===q.review.prompt&&!await page.locator('#world-panel').evaluate(el=>el.open));
   await page.locator(`[data-expression-choice="${q.review.choices.find(c=>c.id!==q.review.answerId).id}"]`).click();
   check('wrong guided response keeps the practice available with the chosen tutor reaction',await page.locator('.life-expression-practice').getAttribute('data-correct')==='false'&&await page.locator('.life-expression-return').isDisabled());
   await page.locator(`[data-expression-choice="${q.review.answerId}"]`).click();await page.waitForFunction(()=>window.__synkLife.summary().status.phase==='synced');
@@ -85,6 +90,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   check('guided success is account-saved at the successful choice before leaving practice',day?.tutorId==='kkamong'&&day.lessonId==='greetings-expressions'&&day.outcome==='retry'&&JSON.stringify(stored)===JSON.stringify(guided)&&await page.locator('.life-expression-practice[open]').count()===1);
   await page.locator('.life-expression-return').click();
   check('guided success returns to a celebrating home without replacing the original first response',(await home()).completed===q.id&&(await home()).companion.kind==='practiceSuccess'&&core((await read()).progress)===core(checkpoint)&&core(stored)===core(checkpoint));
+  check('saved guided help retires its secondary button while preserving the selected activity',(await home()).practiceRecommendation===null&&await page.locator('#home-tutor .home-tutor-practice').isHidden()&&(await home()).recommendation.command==='learn');
   check('guided completion adds one life progress write without any mastery or wallet mutation',calls.filter(c=>c.action).length===writeCount+1&&JSON.stringify(state.wallet)===wallet&&calls.filter(c=>c.action).every(c=>c.action==='progress'));
   await page.screenshot({path:path.join(out,'account-home-success.png')});
   await page.locator('[data-view=me]').first().click();await page.locator('[data-world=logout]').click();await page.waitForFunction(()=>window.__synkWorld.life()?.owner==='guest');
@@ -103,7 +109,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   check('home modules, tutor images, bundle and fonts resolve beneath the frozen /world mount',!errors.length&&!assets.length&&!outside.length);
  }catch(error){failure=error;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});throw error;}
  finally{
-  releaseRead();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
+  releaseRead();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_HOME_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
   await closeContext();await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));
  }
 });

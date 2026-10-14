@@ -27,11 +27,11 @@
     "scarf-apron": {"body": "mongle-apron-starter", "neck": "mongle-scarf-first-steps"}
   },
   "webWardrobe": {
-    "revision": 6,
+    "revision": 8,
     "catalogModule": "wardrobe-catalog.mjs",
     "garmentModule": "avatar-wardrobe.mjs",
-    "itemCount": 8,
-    "combinationCountIncludingEmptySlots": 24,
+    "itemCount": 14,
+    "combinationCountIncludingEmptySlots": 60,
     "nativeStaticAssetUpdated": false
   },
   "notes": "Shared rendering contract only. Ownership and rewards are verified by the WORLD server. This is not a production-approved model or a native performance result."

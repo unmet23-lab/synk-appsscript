@@ -1,0 +1,417 @@
+/* 바람길 — WORLD 안의 모습(시그널 게임판, 2026-10-14).
+ * WORLD 앱이 이 게임을 .game-frame iframe으로 열면 world-host.js가 <html data-host="world">를 붙이고, 이 파일의 규칙이 그때만 걸린다.
+ * 따로 연 LAB 화면은 kit/lab.css + style.css 그대로다(모든 규칙이 :root[data-host=world] 아래).
+ * 기준: docs/디자인/월드_시그널/README.md, 토큰은 experiences/brand-opening/world-ui.css에서 필요한 것만 옮겼다(게임 폴더는 혼자 선다).
+ * 문법: 코랄 포스터 머리(펠트 사진은 흰 인화지 한 장) → 근사 검정 판, 주 행동은 흰 알약 하나, 보조는 1px 선 알약.
+ *       놀이 중에는 3D 길 위에 어두운 유리 캡슐(지시 한 줄 · 숫자 · 일시정지 원)만, 움직이기 단추는 어두운 큰 키.
+ * id·data-*·클래스는 그대로 두고 겉모습만 바꾼다. 게임 흐름(app.mjs)은 건드리지 않는다. */
+
+/* 라틴·숫자는 Inter Tight, 영문 라벨은 DM Mono(띄어쓰기 뺀 범위) — 둘 다 키트 글꼴 파일을 쓴다. 이 이름은 WORLD 규칙에서만 불러서 LAB 화면은 받지 않는다. */
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Medium.woff2) format('woff2');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Bold.woff2) format('woff2');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Mono';src:url(kit/fonts/DMMono-Medium.woff2) format('woff2');font-weight:100 1000;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+
+/* ── 토큰(world-ui.css의 밤 값) + 키트 변수를 같은 값으로 돌려 남은 규칙도 어두운 판에 맞춘다 ── */
+:root[data-host=world]{
+  --w-sans:'World Game Latin',SUIT,system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Game Mono',SUIT,ui-monospace,monospace;
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-blur:blur(22px) saturate(1.7);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-r-xl:28px;--w-r-lg:22px;--w-r-md:16px;
+  --w-ease:cubic-bezier(.2,.75,.2,1);
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-glow:#F96859;
+  --w-face-ink-2:rgba(30,14,10,.74);--w-face-ink-3:rgba(30,14,10,.6);--w-face-line:rgba(30,14,10,.16);
+  --w-led-ok:#7DB45A;--w-led-info:#5B86DB;--w-led-check:#F5C445;--w-led-alert:#F96859;--w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --w-studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.17),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(0,0,0,.13));
+  --w-print-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);
+  --w-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h10.5M9 3.8 13.2 8 9 12.2' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 3.5v9M10.5 3.5v9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-minus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-plus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v9M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.36L12 17.36l-5.7 3.01 1.09-6.36-4.62-4.5 6.38-.93z' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 키트 변수: 종이·크림·잉크를 밤 판 값으로(펠트 그림은 아래에서 하나씩 걷어 낸다) */
+  --ink:var(--w-ink);--ink-2:var(--w-ink-2);--muted:var(--w-ink-3);--line:var(--w-line);
+  --paper:var(--w-s1);--cream:var(--w-panel);--sand:var(--w-s2);
+  --coral:var(--w-face);--coral-deep:var(--w-face-text);--coral-wash:rgba(249,104,89,.16);--blush:var(--w-s3);--marker:transparent;
+  --focus:var(--w-ink);--sans:var(--w-sans);--mono:var(--w-mono);
+  --shadow-paper:none;--shadow-felt:none;--ease:var(--w-ease);
+  color-scheme:dark;
+}
+:root[data-host=world] body{background:var(--w-panel);color:var(--w-ink);font-family:var(--w-sans);font-weight:450;letter-spacing:-.006em}
+:root[data-host=world] :is(button,a):focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+:root[data-host=world] [tabindex="-1"]:focus{outline:none}
+:root[data-host=world] :is(h1,h2,h3){text-wrap:balance}
+:root[data-host=world] p{text-wrap:pretty}
+
+/* ── 공통 부품 ── */
+:root[data-host=world] .paper{background:none;border-radius:0;box-shadow:none}
+:root[data-host=world] .lab-only{display:none}   /* LAB 화면에만 맞는 안내(예: ‘펠트 단추’) → WORLD에서는 .world-only 문장으로 바꿔 보인다 */
+:root[data-host=world] .world-only[hidden]{display:block!important}
+:root[data-host=world] .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .kicker.ko{font:550 13px/1.4 var(--w-sans);letter-spacing:0;text-transform:none}
+:root[data-host=world] .tag{display:inline-flex;align-items:center;gap:10px;min-height:0;padding:0;background:none;font:550 13px/1.4 var(--w-sans);letter-spacing:0;color:var(--w-ink-3)}
+:root[data-host=world] :is(.start-card,.card-head,.how,.res-grid .paper)>.tag::after,:root[data-host=world] dialog.lab-dialog>.kicker::after,:root[data-host=world] .check-top>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .fine{font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .reason{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+:root[data-host=world] .text-link{font-size:13.5px;font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] .w-led,:root[data-host=world] .fine.warn::before{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+
+/* 주 행동: 흰 알약 하나(화살표는 마스크) */
+:root[data-host=world] .felt-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:0 28px;border:0;border-radius:999px;
+  background:var(--w-ink);color:var(--w-on-ink);text-shadow:none;filter:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);
+  font:600 16.5px/1.2 var(--w-sans);letter-spacing:-.01em;transition:box-shadow .2s var(--w-ease),transform .12s var(--w-ease),opacity .18s var(--w-ease)}
+:root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
+:root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+:root[data-host=world] .felt-cta .disc::after{content:none}
+:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+:root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
+:root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
+/* 보조: 1px 선 알약 */
+:root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
+  font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+:root[data-host=world] .chip-btn:active{transform:scale(.97)}
+:root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
+:root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}
+:root[data-host=world] .chip-btn.wide{width:100%;min-height:52px;background:transparent;filter:none;font-size:15px}
+:root[data-host=world] .disc-btn{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:var(--w-s2);box-shadow:var(--w-card-edge);color:var(--w-ink)}
+
+/* 공통 코인 줄: 조용한 글 + 밑줄 링크 */
+:root[data-host=world] .synk-collection-line{gap:6px 14px;font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .synk-collection-line a{font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] [data-collection-garage]{display:none}   /* WORLD 앱에는 레이싱 차고(/korean-racing/)가 없어 이 링크는 빈 화면으로 간다 — 잔액만 남긴다 */
+
+/* 계정 띠: WORLD가 위에서 계정을 보여 주므로 안내만 하는 상태는 숨기고, 손볼 일이 있을 때(연결 끊김·진도 충돌·종료)만 어두운 띠로 */
+:root[data-host=world] .synk-play-account:is([data-phase=guest],[data-phase=synced],[data-phase=saving],[data-phase=loading]){display:none}
+:root[data-host=world] .synk-play-account{gap:4px 14px;padding:10px 16px;background:var(--w-s1);color:var(--w-ink-2);border-bottom:1px solid var(--w-line);font:450 13px/1.5 var(--w-sans)}
+:root[data-host=world] .synk-play-account>span::before{content:'';display:inline-block;width:7px;height:7px;margin:0 8px 1px 0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+:root[data-host=world] .synk-play-account[data-phase=stopped]>span::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+:root[data-host=world] .synk-play-account a{color:var(--w-ink);font-weight:600;text-decoration-color:var(--w-ink-4)}
+
+/* 알림: 흰 알약 */
+:root[data-host=world] .toast{border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 36px rgba(0,0,0,.35);font:550 14px/1.45 var(--w-sans);padding:12px 18px}
+
+/* 창(멈춤·목소리 문제·듣기 확인): 어두운 판 */
+:root[data-host=world] dialog.lab-dialog{padding:24px 22px 22px;border-radius:var(--w-r-xl);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge),var(--w-shadow)}
+:root[data-host=world] dialog.lab-dialog::backdrop{background:rgba(4,5,7,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+:root[data-host=world] dialog.lab-dialog h2{margin:10px 0 8px;font:680 24px/1.25 var(--w-sans);letter-spacing:-.024em;color:var(--w-ink)}
+:root[data-host=world] dialog.lab-dialog p{color:var(--w-ink-2);font-size:15.5px;line-height:1.6}
+:root[data-host=world] .dialog-actions{gap:12px}
+/* 켜고 끄는 칩은 설정 줄 + 50×30 스위치(글은 그대로 ‘소리 켜짐/꺼짐’) */
+:root[data-host=world] .dialog-toggles{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .dialog-toggles .chip-btn{justify-content:space-between;width:100%;min-height:58px;padding:0 2px;border-radius:0;box-shadow:none;border-bottom:1px solid var(--w-line);
+  background:none;font:600 15.5px/1.3 var(--w-sans);text-align:left;white-space:normal}
+:root[data-host=world] .dialog-toggles .chip-btn::after{content:'';flex:none;width:50px;height:30px;margin-left:16px;border-radius:999px;
+  background:radial-gradient(circle at 15px 50%,var(--w-ink-2) 0 12px,transparent 12.5px),var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .dialog-toggles .chip-btn[aria-pressed=true]::after{background:radial-gradient(circle at 35px 50%,var(--w-on-ink) 0 12px,transparent 12.5px),var(--w-ink);box-shadow:none}
+:root[data-host=world] .dialog-toggles .chip-btn:is(:hover,:active){background:none;transform:none}
+
+/* ── 입구: 코랄 포스터 머리 + 밤 판 ── */
+:root[data-host=world] .lobby{position:relative;min-height:100svh;padding:12px 12px 28px;background:var(--w-panel)}
+:root[data-host=world] .lobby>.topbar{position:absolute;z-index:3;top:28px;left:28px;padding:0;gap:0;background:none}
+:root[data-host=world] .lobby>.topbar>:is(.logo-tag,.kicker){display:none}
+:root[data-host=world] .sound-toggle{width:44px;height:44px;margin:0;border-radius:50%;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.18);transition:background .18s var(--w-ease)}
+:root[data-host=world] .sound-toggle:hover{background:rgba(30,14,10,.16)}
+:root[data-host=world] .sound-toggle::before{width:20px;height:20px;background:var(--w-on-face)}
+:root[data-host=world] .sound-toggle[aria-pressed=false]::before{opacity:.4}
+:root[data-host=world] .lobby>.hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);align-content:end;gap:0;min-height:332px;margin:0;padding:84px 20px 22px;overflow:hidden;
+  border-radius:var(--w-r-lg);background:var(--w-studio),var(--w-face);color:var(--w-on-face)}
+:root[data-host=world] .lobby>.hero::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+:root[data-host=world] .hero-copy{position:relative;z-index:1;min-width:0}
+:root[data-host=world] .hero-copy>.kicker{color:var(--w-face-ink-3)}
+:root[data-host=world] .hero-copy>.kicker::after{content:'';width:28px;height:1px;background:rgba(30,14,10,.28)}
+:root[data-host=world] .hero h1{margin:10px 0 0;font:900 clamp(60px,18vw,112px)/.92 var(--w-sans);letter-spacing:-.055em;color:var(--w-on-face);text-shadow:none}
+:root[data-host=world] .hero .lede{margin:12px 0 0;font:600 17px/1.45 var(--w-sans);letter-spacing:-.012em;color:var(--w-face-ink-2)}
+:root[data-host=world] .hero .lede .crayon-under{background:none;padding:0}
+:root[data-host=world] .hero .sub{max-width:34em;margin:10px 0 0;font-size:15.5px;line-height:1.6;color:var(--w-face-ink-2)}
+/* 펠트 물건 한 장: 흰 인화지(−4°). 입구 그림(펠트 길·말풍선·몽글)은 WORLD에서 이 사진이 맡는다 */
+:root[data-host=world] .lobby .hero-art{display:block;position:absolute;z-index:1;top:18px;right:18px;width:clamp(108px,34%,210px);height:auto;aspect-ratio:1;margin:0;
+  border:5px solid #fff;border-radius:11px;background:#fff url(assets/world/runner.webp) center/cover no-repeat;box-shadow:var(--w-print-shadow);transform:rotate(-4deg)}
+:root[data-host=world] .lobby .hero-art>*{display:none}
+
+:root[data-host=world] .plan{margin:0;padding:0;gap:0}
+:root[data-host=world] .start-card{display:grid;gap:12px;padding:24px 6px 6px}
+:root[data-host=world] .start-card h2{margin:0;font:680 24px/1.25 var(--w-sans);letter-spacing:-.024em}
+:root[data-host=world] .start-card h2 b{color:inherit;font-weight:inherit}
+:root[data-host=world] .start-card>.felt-cta{margin-top:6px}
+:root[data-host=world] .start-options{gap:10px 14px}
+:root[data-host=world] .start-options .chip-btn{min-height:48px;padding:0 20px}
+:root[data-host=world] .fine.warn{display:flex;align-items:center;gap:8px;color:var(--w-alert-text);font-weight:550}
+:root[data-host=world] .fine.warn::before{content:'';background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+:root[data-host=world] .start-card>.synk-collection-line{margin:4px 0 0;padding-top:14px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how{display:grid;gap:4px;margin:20px 6px 0;padding:24px 0 6px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps{gap:0;margin-top:8px}
+:root[data-host=world] .how-steps li{grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;align-items:start;padding:14px 0;border-radius:0;background:none;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps li:first-child{border-top:0}
+:root[data-host=world] .how-steps .num{width:28px;height:28px;margin-top:-2px;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);border-radius:50%;color:var(--w-ink-2);text-shadow:none;font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .how-steps strong{font:650 16px/1.4 var(--w-sans);letter-spacing:-.02em}
+:root[data-host=world] .how-steps span{font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] .how>.fine{margin-top:6px}
+:root[data-host=world] .lobby-foot{gap:8px;padding:20px 6px 0;font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+
+/* ── 놀이: 3D 길 위에 유리 캡슐만 ── */
+:root[data-host=world] .game{position:relative;background:var(--w-panel)}
+:root[data-host=world] .game-bar{position:absolute;z-index:6;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:10px 12px 0;background:none;border:0;pointer-events:none}
+:root[data-host=world] .game-bar>*{pointer-events:auto}
+:root[data-host=world] .game-bar>:is(.logo-mini,.game-title){display:none}
+:root[data-host=world] .game-bar .hud{flex:none;display:flex;align-items:center;gap:0;height:44px;margin:0;padding:0 6px;border-radius:999px;background:rgba(12,13,16,.86);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .game-bar .pill{display:flex;align-items:baseline;gap:6px;min-width:0;padding:0 10px;background:none;animation:none}
+:root[data-host=world] .game-bar .pill+.pill{box-shadow:inset 1px 0 0 var(--w-line-2)}
+:root[data-host=world] .game-bar .pill small{font:550 13px/1 var(--w-sans);letter-spacing:0;color:var(--w-ink-3);white-space:nowrap}
+:root[data-host=world] .game-bar .pill b{font:650 17px/1 var(--w-sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--w-ink);background:none}
+:root[data-host=world] .game-bar .pill.combo{display:none}
+:root[data-host=world] .game-bar .pill.guard{align-items:center}
+:root[data-host=world] .hearts{gap:5px;height:auto;margin:0}
+:root[data-host=world] .hearts i{width:8px;height:8px;border-radius:50%;background:var(--w-ink)}
+:root[data-host=world] .hearts i.off{background:var(--w-ink-4)}
+:root[data-host=world] .pill.guard.shield::after{right:3px;top:-3px;width:7px;height:7px;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.6)}
+:root[data-host=world] #pause-button{margin-left:auto;width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;background:rgba(12,13,16,.86);box-shadow:var(--w-glass-edge);
+  -webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);color:var(--w-ink);font-size:0;transition:transform .12s var(--w-ease)}
+:root[data-host=world] #pause-button>span{display:none}
+:root[data-host=world] #pause-button::before{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-pause) center/contain no-repeat;mask:var(--w-pause) center/contain no-repeat}
+:root[data-host=world] #pause-button:active{transform:scale(.94)}
+
+/* 바람의 말: 어두운 유리 캡슐, 지시 한 줄을 크게. 상태는 이름 앞 LED(듣는 중 청금석 · 움직일 때 버터 · 해냄 메도우 · 놓침 코랄) */
+:root[data-host=world] .say{top:64px;width:min(540px,calc(100% - 24px));padding:13px 16px 18px;gap:6px;border-radius:20px;background:rgba(12,13,16,.88);color:var(--w-ink);
+  box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .say[data-phase=missed]{background:rgba(12,13,16,.9)}
+:root[data-host=world] .say[data-phase=done]::after{content:none}
+:root[data-host=world] .say-head{gap:10px;min-height:40px}
+:root[data-host=world] .say .tag{gap:8px;color:var(--w-ink-2);font-weight:600}
+:root[data-host=world] .say .tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.6)}
+:root[data-host=world] .say[data-phase=move] .tag::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
+:root[data-host=world] .say[data-phase=done] .tag::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+:root[data-host=world] .say[data-phase=missed] .tag::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+:root[data-host=world] .say .say-ear{display:none}
+:root[data-host=world] .say-steps{gap:5px}
+:root[data-host=world] .say-steps i{position:relative;width:22px;height:22px;padding:0;border-radius:50%;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:500 11px/1 var(--w-mono)}
+:root[data-host=world] .say-steps i.now{background:var(--w-ink);box-shadow:none;color:var(--w-on-ink)}
+:root[data-host=world] .say-steps i.done{background:var(--w-led-ok);box-shadow:none;color:transparent}
+:root[data-host=world] .say-steps i.done::after{content:'';position:absolute;inset:5px;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .say-steps b{font:500 11px/1 var(--w-mono);color:var(--w-ink-4)}
+:root[data-host=world] #say-text{min-height:44px;margin-left:auto;padding:0 15px;font-size:13.5px}
+:root[data-host=world] .say-line{font:650 22px/1.35 var(--w-sans);letter-spacing:-.022em;color:var(--w-ink)}
+:root[data-host=world] .say:is(.texted,[data-phase=missed]) .say-line{font-size:22px}   /* 문장(학습 표현)은 22px */
+:root[data-host=world] .say[data-phase=done] .say-line{color:var(--w-ok-text)}
+:root[data-host=world] .say-hint{font:450 14px/1.5 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .say-hint b{color:var(--w-ink);font-weight:600}
+:root[data-host=world] .say-near{left:16px;right:16px;bottom:8px;height:3px;border-radius:999px;background:var(--w-line-2)}
+:root[data-host=world] .say-near i{border-radius:999px;background:var(--w-ink)}
+:root[data-host=world] .say.soon .say-near i{background:var(--w-face)}
+:root[data-host=world] .game .tip{top:max(64px,var(--tip-top,12px));border-radius:16px;background:rgba(12,13,16,.88);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);font:550 14px/1.45 var(--w-sans);padding:11px 16px}
+:root[data-host=world] .game .pop{font-weight:680;color:#FAFAF9;text-shadow:0 2px 14px rgba(8,9,12,.5),0 1px 2px rgba(8,9,12,.45)}
+:root[data-host=world] .game .pop[data-kind=shield]{color:var(--w-check-text)}
+:root[data-host=world] .game .pop[data-kind=bump]{color:rgba(250,250,249,.9)}
+:root[data-host=world] .game .pop:is([data-tier="2"],[data-tier="3"]){color:#FAFAF9}
+:root[data-host=world] .stage .spark{display:none}
+
+/* 움직이기: 밤 판 위 큰 키 넷(선 화살표 · 13px 글). 누르면 흰 바탕으로 뒤집힌다 */
+:root[data-host=world] .moves{gap:8px;padding:10px max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right));background:var(--w-panel);box-shadow:inset 0 1px 0 var(--w-line)}
+:root[data-host=world] .move{width:100%;height:64px;aspect-ratio:auto;gap:4px;padding:0;border-radius:18px;background:var(--w-s2);box-shadow:var(--w-glass-edge);filter:none;color:var(--w-ink);
+  transition:transform .07s var(--w-ease),background .07s var(--w-ease),color .07s var(--w-ease)}
+:root[data-host=world] .move:is(:active,.on){transform:scale(.96);background:var(--w-ink);color:var(--w-on-ink);filter:none}
+:root[data-host=world] .move .ico{width:22px;height:22px;background:currentColor}
+:root[data-host=world] .move span{font:600 13px/1.2 var(--w-sans);letter-spacing:-.01em}
+:root[data-host=world] .move[data-action=left]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12H5M11 5l-7 7 7 7'/%3E%3C/svg%3E")}
+:root[data-host=world] .move[data-action=right]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 5l7 7-7 7'/%3E%3C/svg%3E")}
+:root[data-host=world] .move[data-action=jump]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17V4M6 10l6-6 6 6M5 21h14'/%3E%3C/svg%3E")}
+:root[data-host=world] .move[data-action=slide]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 3h16M12 7v13M6 14l6 6 6-6'/%3E%3C/svg%3E")}
+
+/* ── 듣기 확인: 어두운 판 · 밝은 한 단계 듣기 칸 · 큰 선택 줄(고르면 흰 바탕) · 판정 띠 하나 ── */
+:root[data-host=world] dialog.check{padding:18px 20px 20px}
+:root[data-host=world] .check-top{gap:12px;min-height:40px}
+:root[data-host=world] .check-top>:is(.kicker,.check-count){white-space:nowrap}
+:root[data-host=world] .check-count{font:500 12px/1 var(--w-mono);letter-spacing:.06em;color:var(--w-ink-2)}
+:root[data-host=world] #check-close{display:grid;place-items:center;width:40px;min-width:40px;height:40px;min-height:40px;margin-left:auto;padding:0;border-radius:50%;background:var(--w-s2);box-shadow:none;font-size:0}
+:root[data-host=world] #check-close::before{content:'';width:16px;height:16px;background:var(--w-ink);-webkit-mask:var(--w-close) center/contain no-repeat;mask:var(--w-close) center/contain no-repeat}
+:root[data-host=world] #check-close:hover{background:var(--w-s3)}
+:root[data-host=world] dialog.check h2{margin:12px 0 6px;font-size:24px}
+:root[data-host=world] .check-intro{font-size:15px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .check-plan{font:550 13.5px/1.5 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .check-q{gap:6px;margin:0 0 12px;padding:12px 14px 14px;border-radius:18px;background:var(--w-s2)}
+:root[data-host=world] .check-q-head{gap:10px;min-height:44px}
+:root[data-host=world] .check-q .tag{gap:8px;color:var(--w-ink-2);font-weight:600}
+:root[data-host=world] .check-q .tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+:root[data-host=world] .check-q[data-phase=listening] .tag::before,:root[data-host=world] .check-q[data-phase=reviewing] .tag::before{background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.6)}
+:root[data-host=world] .check-q[data-phase=ready] .tag::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
+:root[data-host=world] .check-q[data-phase=stopped] .tag::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+:root[data-host=world] .check-q .say-ear{display:none}
+:root[data-host=world] .check-q-head .chip-btn{min-height:40px;margin-left:auto;padding:0 15px;font-size:13.5px}
+:root[data-host=world] .check-status{font:550 14px/1.5 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .check-choices{grid-template-columns:minmax(0,1fr);gap:8px;margin:0 0 12px;padding-top:0}
+:root[data-host=world] .choice{display:flex;align-items:center;gap:14px;width:100%;min-width:0;min-height:60px;aspect-ratio:auto;padding:10px 16px;border-radius:16px;
+  background:var(--w-s2);box-shadow:var(--w-card-edge);filter:none;color:var(--w-ink);text-shadow:none;text-align:left;font:600 16.5px/1.35 var(--w-sans);letter-spacing:-.012em;
+  transition:background .18s var(--w-ease),color .18s var(--w-ease),opacity .2s var(--w-ease),transform .12s var(--w-ease)}
+:root[data-host=world] .choice .no{position:static;flex:none;display:grid;place-items:center;width:28px;height:28px;padding:0;border-radius:50%;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);
+  color:var(--w-ink-2);filter:none;font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .choice .lbl{min-width:0;text-wrap:pretty}
+:root[data-host=world] .choice:not(:disabled):hover{background:var(--w-s3)}
+:root[data-host=world] .choice:not(:disabled):active{transform:scale(.985)}
+:root[data-host=world] .check-choices.waiting .choice .lbl{opacity:.5}
+:root[data-host=world] .choice.chosen{transform:none;filter:none;background:var(--w-ink);color:var(--w-on-ink)}
+:root[data-host=world] .choice.chosen .no{box-shadow:inset 0 0 0 1px rgba(8,9,12,.22);color:rgba(8,9,12,.62)}
+:root[data-host=world] .choice.right::after{content:'';position:static;flex:none;width:20px;height:20px;margin-left:auto;background:var(--w-led-ok);filter:none;-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .choice.chosen.right::after{background:#3F6B2E}
+:root[data-host=world] .choice.dim{opacity:.42}
+:root[data-host=world] .check-feedback{position:relative;margin:0;padding:14px 16px 15px 36px;border-radius:16px;background:var(--w-s2);font:600 15px/1.55 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .check-feedback::before{content:'';position:absolute;left:16px;top:22px;width:8px;height:8px;border-radius:50%;background:var(--w-led-idle)}
+:root[data-host=world] .check:has(.choice.chosen.right) .check-feedback::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+:root[data-host=world] .check:has(.choice.chosen:not(.right)) .check-feedback::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+:root[data-host=world] .check-feedback q{display:block;margin:6px 0 2px;font:650 22px/1.4 var(--w-sans);letter-spacing:-.022em;text-wrap:pretty}   /* 들은 지시(학습 표현)는 22px */
+:root[data-host=world] .check-feedback .selection{font:550 14px/1.5 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .check-feedback .explanation{font:450 14px/1.6 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .check-feedback .correction{font:550 14px/1.55 var(--w-sans);color:var(--w-alert-text)}
+:root[data-host=world] .check-feedback .record{font:450 13px/1.5 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .check-feedback .sum{color:var(--w-ink);font-weight:600}
+:root[data-host=world] #check-next{margin-top:12px}
+
+/* ── 결과: 포스터 한 장(큰 숫자) → 다음 행동 → 부탁 목록 · 듣기 기록 ── */
+:root[data-host=world] .results{position:relative;min-height:100svh;padding:12px 12px 28px;background:var(--w-panel)}
+:root[data-host=world] .results>.topbar{position:absolute;z-index:3;top:30px;left:32px;padding:0;background:none}
+:root[data-host=world] .results>.topbar .logo-tag{display:none}
+:root[data-host=world] .results>.topbar .kicker{color:var(--w-face-ink-3)}
+:root[data-host=world] .results>.topbar .kicker::after{content:'';width:28px;height:1px;background:rgba(30,14,10,.28)}
+:root[data-host=world] .res-hero{position:relative;isolation:isolate;grid-template-columns:minmax(0,1fr);align-items:end;margin:0;padding:72px 20px 20px;overflow:hidden;
+  border-radius:var(--w-r-lg);background:var(--w-studio),var(--w-face);color:var(--w-on-face)}
+:root[data-host=world] .res-hero::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+:root[data-host=world] .res-hero::before{content:'';position:absolute;z-index:0;top:18px;right:18px;width:clamp(96px,28%,176px);aspect-ratio:1;border:5px solid #fff;border-radius:11px;
+  background:#fff url(assets/world/runner.webp) center/cover no-repeat;box-shadow:var(--w-print-shadow);transform:rotate(-4deg)}
+:root[data-host=world] .res-hero>div{position:relative;z-index:1;min-width:0}
+:root[data-host=world] .res-hero .res-mongle{display:none}
+:root[data-host=world] .res-hero .kicker.ko{color:var(--w-face-ink-3)}
+:root[data-host=world] .res-hero h1{margin:8px 0 0;font:900 clamp(40px,12vw,64px)/1 var(--w-sans);letter-spacing:-.06em;color:var(--w-on-face)}
+:root[data-host=world] .res-hero .big{margin:14px 0 0;gap:10px}
+:root[data-host=world] .res-hero .big b{font:900 clamp(84px,26vw,148px)/.86 var(--w-sans);letter-spacing:-.06em;color:var(--w-on-face);font-variant-numeric:tabular-nums}
+:root[data-host=world] .res-hero .big span{font:500 22px/1 var(--w-mono);color:var(--w-face-ink-3)}
+:root[data-host=world] .res-hero .r-label{margin:10px 0 0;font:600 15.5px/1.4 var(--w-sans);color:var(--w-face-ink-2)}
+:root[data-host=world] .res-hero .stars{gap:6px;margin:14px 0 0}
+:root[data-host=world] .res-hero .stars i{width:24px;height:24px;background:rgba(30,14,10,.2);-webkit-mask:var(--w-star) center/contain no-repeat;mask:var(--w-star) center/contain no-repeat;animation:none}
+:root[data-host=world] .res-hero .stars i.on{background:var(--w-on-face)}
+:root[data-host=world] .res-hero .r-note{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--w-face-line);font:450 14px/1.6 var(--w-sans);color:var(--w-face-ink-2)}
+:root[data-host=world] .res-hero .synk-collection-line{margin:8px 0 0;color:var(--w-face-ink-2)}
+:root[data-host=world] .res-hero .synk-collection-line a{color:var(--w-on-face);text-decoration-color:rgba(30,14,10,.32)}
+:root[data-host=world] .res-grid{margin:0;padding:0;gap:0}
+:root[data-host=world] .res-grid .paper{margin:0 6px;padding:24px 0 22px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .res-grid .next{order:-1;gap:12px;border-top:0}
+:root[data-host=world] .r-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+:root[data-host=world] .r-actions .chip-btn{min-height:48px}
+:root[data-host=world] .log ol{gap:0;margin:8px 0 0}
+:root[data-host=world] .log li{grid-template-columns:28px minmax(0,1fr) auto;gap:12px;padding:14px 0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .log li:first-child{border-top:0}
+:root[data-host=world] .log li :is(.mark){position:relative;display:grid;place-items:center;width:28px;height:28px;margin-top:1px;padding:0;border-radius:50%;background:none;
+  box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .log li.ok .mark{background:var(--w-s2);box-shadow:none;color:transparent}
+:root[data-host=world] .log li.ok .mark::after{content:'';position:absolute;inset:7px;background:var(--w-led-ok);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .log .line{font:650 16px/1.45 var(--w-sans);letter-spacing:-.016em}
+:root[data-host=world] .log .acts{margin-top:4px;font:550 14px/1.6 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .log .acts b{padding:1px 7px;border-radius:7px;background:var(--w-s3);color:var(--w-ink);font-weight:600}
+:root[data-host=world] .log small{margin-top:4px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .log .why{margin-top:4px;font-size:13.5px;line-height:1.55;color:var(--w-ink-2)}
+:root[data-host=world] .log li.empty{color:var(--w-ink-2);font-size:14px}
+:root[data-host=world] .say-again{min-height:40px;padding:0 14px;font-size:13.5px;align-self:center}
+:root[data-host=world] .skills ul{gap:0;margin:8px 0 12px}
+:root[data-host=world] .skills li{grid-template-columns:1fr auto;gap:3px 12px;padding:14px 0;border-radius:0;background:none;border-top:1px solid var(--w-line);box-shadow:none}
+:root[data-host=world] .skills li:first-child{border-top:0}
+:root[data-host=world] .skills li b{display:inline-flex;align-items:center;gap:8px;font:650 15.5px/1.35 var(--w-sans)}
+:root[data-host=world] .skills li:is(.focus,.good) b::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+:root[data-host=world] .skills li.good b::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.55)}
+:root[data-host=world] .skills li span{font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .skills li em{font:550 13px/1.2 var(--w-sans);font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
+:root[data-host=world] .next-tag{padding:2px 9px 3px;border-radius:999px;background:var(--w-face);color:var(--w-on-face);font:600 13px/1.3 var(--w-sans)}
+
+/* ── 큰 화면(가로 PC 틀·태블릿 가로): 포스터를 왼쪽에 세우고 오른쪽 열에서 시작·결과를 읽는다 ── */
+@media (min-width:760px) and (min-height:501px) and (orientation:landscape){
+  :root[data-host=world] .lobby,:root[data-host=world] .results{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);align-items:start;column-gap:28px;padding:16px 20px 32px}
+  :root[data-host=world] .lobby>.topbar{top:32px;left:36px}
+  :root[data-host=world] .results>.topbar{top:34px;left:40px}
+  :root[data-host=world] .lobby>.hero,:root[data-host=world] .res-hero{grid-column:1;grid-row:1 / span 3;position:sticky;top:16px;min-height:min(560px,calc(100svh - 32px));padding:88px 28px 28px}
+  :root[data-host=world] .lobby>.plan,:root[data-host=world] .lobby>.lobby-foot,:root[data-host=world] .results>.res-grid{grid-column:2}
+  :root[data-host=world] .lobby .hero-art{top:24px;right:24px;width:clamp(150px,36%,230px)}
+  :root[data-host=world] .hero h1{font-size:clamp(72px,8.4vw,120px)}
+  :root[data-host=world] .hero .sub{display:block}
+  :root[data-host=world] .plan{grid-template-columns:minmax(0,1fr);margin:0}
+  :root[data-host=world] .start-card{padding-top:6px}
+  :root[data-host=world] .how-steps{grid-template-columns:minmax(0,1fr)}
+  :root[data-host=world] .how-steps li{grid-template-columns:auto 1fr;row-gap:3px;align-items:start}
+  :root[data-host=world] .how-steps span{grid-column:2}
+  :root[data-host=world] .res-hero::before{top:24px;right:24px;width:clamp(120px,30%,200px)}
+  :root[data-host=world] .res-hero{padding:76px 28px 24px}
+  :root[data-host=world] .res-hero h1{font-size:56px}
+  :root[data-host=world] .res-hero .big b{font-size:clamp(84px,8.4vw,120px)}
+  :root[data-host=world] .res-grid{grid-template-columns:minmax(0,1fr);align-items:start}
+  :root[data-host=world] .res-grid .next{padding-top:6px}
+  :root[data-host=world] .moves{grid-template-columns:repeat(4,minmax(0,112px));justify-content:center;gap:12px;padding:10px 24px 14px}
+  :root[data-host=world] .move{width:100%;height:64px}
+  :root[data-host=world] .say{top:66px}
+  :root[data-host=world] .say-line{font-size:24px}
+  :root[data-host=world] .say:is(.texted,[data-phase=missed]) .say-line{font-size:24px}
+}
+/* 넓은 세로 화면(태블릿): 가운데 한 열 */
+@media (min-width:700px) and (orientation:portrait){
+  :root[data-host=world] .lobby>*,:root[data-host=world] .results>:not(.topbar){max-width:680px;margin-left:auto;margin-right:auto}
+  :root[data-host=world] .plan{grid-template-columns:minmax(0,1fr)}
+  :root[data-host=world] .how-steps{grid-template-columns:minmax(0,1fr)}
+  :root[data-host=world] .how-steps li{grid-template-columns:auto 1fr}
+  :root[data-host=world] .how-steps span{grid-column:2}
+  :root[data-host=world] .res-grid{grid-template-columns:minmax(0,1fr)}
+}
+/* 가로 휴대폰(키 낮음): 포스터는 짧게 왼쪽, 놀이 중 표시는 왼쪽 위에 모은다(오른쪽은 움직이기 키) */
+@media (min-width:560px) and (max-height:500px){
+  :root[data-host=world] .lobby,:root[data-host=world] .results{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:start;column-gap:20px;padding:10px 12px 24px}
+  :root[data-host=world] .lobby>.topbar{top:22px;left:24px}
+  :root[data-host=world] .results>.topbar{top:24px;left:28px}
+  :root[data-host=world] .lobby>.hero,:root[data-host=world] .res-hero{grid-column:1;grid-row:1 / span 3;position:sticky;top:10px;min-height:calc(100svh - 20px);padding:70px 18px 18px}
+  :root[data-host=world] .lobby>.plan,:root[data-host=world] .lobby>.lobby-foot,:root[data-host=world] .results>.res-grid{grid-column:2}
+  :root[data-host=world] .lobby .hero-art{top:14px;right:14px;width:clamp(84px,30%,132px)}
+  :root[data-host=world] .hero h1{font-size:clamp(48px,9vw,76px)}
+  :root[data-host=world] .hero .lede{font-size:15.5px}
+  :root[data-host=world] .hero .sub{display:none}
+  :root[data-host=world] .start-card{padding-top:4px}
+  :root[data-host=world] .res-hero::before{top:14px;right:14px;width:clamp(80px,26%,120px)}
+  :root[data-host=world] .res-hero{position:relative;top:auto;min-height:0}
+  :root[data-host=world] .res-hero h1{font-size:40px}
+  :root[data-host=world] .res-hero .big b{font-size:84px}
+  :root[data-host=world] .res-grid .next{padding-top:4px}
+  :root[data-host=world] .game-bar{right:auto;padding:8px 10px 0}
+  :root[data-host=world] .game-bar .hud{height:40px}
+  :root[data-host=world] #pause-button{margin-left:0}
+  :root[data-host=world] .say{left:10px;top:58px;width:min(250px,calc(100% - 20px));max-height:calc(100% - 66px);padding:9px 12px 14px;gap:3px}
+  :root[data-host=world] .say-head{min-height:44px}
+  :root[data-host=world] #say-text{min-height:44px;padding:0 12px;font-size:13px}   /* 가로에서도 손가락 크기(44px) */
+  :root[data-host=world] .say-line{font-size:17px}
+  :root[data-host=world] .say:is(.texted,[data-phase=missed]) .say-line{font-size:22px}
+  :root[data-host=world] .say-hint{font-size:13px}
+  :root[data-host=world] .game .tip{top:8px;font-size:13px;padding:9px 12px}
+  :root[data-host=world] .moves{width:164px;grid-template-rows:repeat(2,auto);align-content:center;gap:8px;padding:8px}
+  :root[data-host=world] .move{width:100%;height:auto;min-height:56px;aspect-ratio:1 / .92;border-radius:16px}
+}
+@media (max-width:359px){
+  :root[data-host=world] .lobby,:root[data-host=world] .results{padding:10px 10px 24px}
+  :root[data-host=world] .lobby>.topbar{top:24px;left:24px}
+  :root[data-host=world] .results>.topbar{top:26px;left:28px}
+  :root[data-host=world] .lobby>.hero{min-height:300px;padding:76px 16px 18px}
+  :root[data-host=world] .game-bar .pill{padding:0 8px}
+  :root[data-host=world] .game-bar .pill.guard small{display:none}   /* 좁은 폭: 보호는 점 셋만(이름은 aria-label에 있다) */
+  :root[data-host=world] .check-top>.kicker::after{display:none}
+  :root[data-host=world] .moves{gap:6px}
+  :root[data-host=world] .say-line{font-size:20px}
+}
+@media (max-height:640px) and (max-width:559px){
+  :root[data-host=world] .move{height:56px}
+  :root[data-host=world] .say{padding:11px 14px 16px}
+  :root[data-host=world] .say-line{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.move,.choice,#pause-button){transition:none}
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.move,.choice,#pause-button):active{transform:none}
+}

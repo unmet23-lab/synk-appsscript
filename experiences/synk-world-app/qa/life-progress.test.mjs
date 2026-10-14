@@ -153,3 +153,50 @@ test('logout beats a delayed life save; old port cannot read, save or apply its 
  progress.startLesson(lessons[0]);const pending=progress.flush();await new Promise(r=>setImmediate(r));await f.account.logout();release();
  await assert.rejects(pending,{code:'ACCOUNT_CHANGED'});assert.throws(()=>port.storage.getItem(LIFE_PROGRESS_KEY),{code:'ACCOUNT_CHANGED'});assert.throws(()=>progress.summary(packs),{code:'ACCOUNT_CHANGED'});
 });
+
+test('a requested subset opens only those due reviews, with the requested first item',()=>{
+ const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});
+ for(const lesson of lessons.slice(0,2)){p.startLesson(lesson);answerAll(p,lesson,{correct:false});}
+ clock.advance(60000);assert.equal(p.dueReviews().length,6);
+ const requested=[lessons[1].questions[0].review.id,lessons[1].questions[2].review.id],preferred=requested[1];
+ const before=p.exportSnapshot(),run=p.startReview(6,preferred,requested);
+ assert.deepEqual(run.ids,[preferred,requested[0]]);assert.equal(run.ids.length,2);
+ assert.deepEqual(p.exportSnapshot().reviews,before.reviews,'selection does not change due times or results');
+ assert.deepEqual(p.exportSnapshot().lessons,before.lessons);
+});
+
+test('requesting known future reviews does not start a run or move their schedules',()=>{
+ const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});
+ p.startLesson(lessons[0]);answerAll(p,lessons[0],{correct:true});
+ p.startLesson(lessons[1]);answerAll(p,lessons[1],{correct:false});clock.advance(60000);
+ const future=lessons[0].questions.map(q=>q.review.id),before=p.exportSnapshot();
+ assert.equal(p.dueReviews().length,3);assert.equal(p.startReview(6,future[0],future),null);
+ assert.deepEqual(p.exportSnapshot(),before);
+ const mixed=p.startReview(6,future[0],[future[0],lessons[1].questions[1].review.id]);
+ assert.deepEqual(mixed.ids,[lessons[1].questions[1].review.id]);
+ assert.deepEqual(p.exportSnapshot().reviews,before.reviews);
+});
+
+test('an in-progress mixed review batch keeps its original order, answers and help after a narrower request and reload',()=>{
+ const cache=storage(),clock=options(),p=createLifeProgress({storage:cache,now:clock.now});
+ for(const lesson of lessons.slice(0,2)){p.startLesson(lesson);answerAll(p,lesson,{correct:false});}
+ clock.advance(60000);const original=p.startReview(6);
+ assert.equal(new Set(original.ids.map(id=>p.exportSnapshot().reviews[id].lessonId)).size,2);
+ p.answerReview({id:original.ids[0],correct:true});p.markReviewHelp(original.ids[1]);
+ const before=p.exportSnapshot(),resumed=createLifeProgress({storage:cache,now:clock.now});
+ const narrower=original.ids.filter(id=>before.reviews[id].lessonId===lessons[1].id);
+ const result=resumed.startReview(1,narrower.at(-1),narrower);
+ assert.deepEqual(result,before.activeReview);assert.deepEqual(resumed.exportSnapshot(),before);
+ assert.equal(result.answers[original.ids[0]].correct,true);assert.equal(result.pendingHelp[original.ids[1]],true);
+});
+
+test('invalid review selections are rejected without creating a run or modifying records',()=>{
+ const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});
+ p.startLesson(lessons[0]);answerAll(p,lessons[0],{correct:false});clock.advance(60000);
+ const known=lessons[0].questions[0].review.id,before=p.exportSnapshot();
+ for(const selection of ['all',{},[null],['bad id'],['unknown-review'],[known,known],Array.from({length:101},(_,i)=>`review-${i}`)]){
+  assert.throws(()=>p.startReview(6,null,selection),/Invalid review selection/);
+  assert.deepEqual(p.exportSnapshot(),before);
+ }
+ assert.equal(p.startReview(6,null,[]),null);assert.deepEqual(p.exportSnapshot(),before);
+});

@@ -1,18 +1,10 @@
 {
-  "ok": true,
-  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-life-tutor-20261011-r3\\world",
-  "at": "2026-10-11T10:49:45.333Z",
+  "ok": false,
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-life-tutor-20261011-r2\\world",
+  "standaloneHtml": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\home.html",
+  "at": "2026-10-13T21:30:36.734Z",
   "checks": [
-    "account choice overrides the different guest tutor",
-    "guided answer performs no account mutation and keeps first error",
-    "frozen account page restores selected tutor and the actual repair checkpoint",
-    "story keeps its three distinct actors beside the selected mentor",
-    "logout restores guest tutor and does not leak account difficulties",
-    "owner change released account guide and draft view",
-    "bundled standalone home uses the same guest tutor",
-    "standalone bundle offers the canonical transfer exercise",
-    "only life progress was written and no wallet mutation occurred",
-    "all new modules, art and fonts resolve under the mounted public path"
+    "account choice overrides the different guest tutor"
   ],
   "calls": [
     {
@@ -54,55 +46,12 @@
     {
       "path": "/functions/v1/synk-play",
       "action": "progress"
-    },
-    {
-      "path": "/functions/v1/synk-account",
-      "action": null
-    },
-    {
-      "path": "/functions/v1/synk-world-v1/bootstrap",
-      "action": null
-    },
-    {
-      "path": "/functions/v1/synk-account",
-      "action": null
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": null
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": null
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": "progress"
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": "progress"
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": "progress"
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": "progress"
-    },
-    {
-      "path": "/functions/v1/synk-play",
-      "action": "progress"
-    },
-    {
-      "path": "/auth/v1/logout",
-      "action": null
     }
   ],
   "errors": [],
   "assets": [],
   "outside": [],
+  "failure": "AssertionError [ERR_ASSERTION]: guided answer adds one account life record at success while keeping first error and repair checkpoint\n    at check (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/synk-world-app/qa/life-tutor-static.test.mjs:20:36)\n    at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/synk-world-app/qa/life-tutor-static.test.mjs:48:3)\n    at async Test.run (node:internal/test_runner/test:1332:7)\n    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)",
   "scope": {
     "frozenStatic": true,
     "standaloneHtml": "source",

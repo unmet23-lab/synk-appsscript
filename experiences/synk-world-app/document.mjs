@@ -9,6 +9,7 @@ export function renderWorldDocument(source, config) {
     .replace(/<script type="module" src="home\.mjs"><\/script>/, '')
     .replace(/((?:src|href)=")assets\//g, `$1${base}brand-opening/assets/`)
     .replace('href="home.css"', `href="${base}brand-opening/home.css"`)
+    .replace('href="home-scene.css"', `href="${base}brand-opening/home-scene.css"`)
     .replace('href="../korean-runner/"', `href="${base}korean-runner/"`)
     .replace('</head>', `<link rel="stylesheet" href="${base}app-shell.css"><link rel="stylesheet" href="${base}brand-opening/opening.css"><script type="module" src="${base}app-shell.mjs"></script></head>`)
     .replace('<body>', '<body>' + cover);

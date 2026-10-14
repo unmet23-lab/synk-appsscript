@@ -34,7 +34,7 @@ export function scoreRun(answers, { completed = false } = {}) {
 }
 
 const STATUS = {
-  unseen: { text: '듣기 확인 기록이 아직 없어요', tone: 'quiet' },
+  unseen: { text: '혼자 답한 듣기 확인 기록이 아직 없어요', tone: 'quiet' },
   checking: { text: '확인하는 중이에요', tone: 'quiet' },
   practice: { text: '조금 더 연습하면 좋아요', tone: 'focus' },
   supported: { text: '도움을 받아 해냈어요', tone: 'quiet' },

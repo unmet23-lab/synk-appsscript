@@ -10,13 +10,17 @@ import { KeyboardInput, KEY_ACTIONS } from './controls.mjs';
 import { InstructionAudio } from './audio.mjs';
 import { instructionMetadata, chooseInstruction, actionEvidence, FLOW_RUN, TIRED_RUN, FLOW_WORDS, paceOf, runObservation } from './learning.mjs';
 import { mountListeningCheck } from './listening-check-ui.mjs';
-import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs';
+import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs?v=runner-listening-scope-20261014';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
 import {runnerSupport,obstacleSupport,runnerCheckSupport} from '../brand-opening/game-tutor-support.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
+
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+const progressStorage = globalThis.SynkPlayAccount.storage();
 
 const byId = (id) => document.getElementById(id);
 const QA = /[?&]qa(?:[=&]|$)/.test(location.search);
@@ -30,8 +34,8 @@ if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.
 
 /* ── 저장: 최고 거리만(이 브라우저의 synk.windrun.*). 학습 기록은 아틀라스가 따로 맡는다 ── */
 let storageAvailable = true;
-function stored(key, fallback) { try { return localStorage.getItem('synk.windrun.' + key) ?? fallback; } catch { storageAvailable = false; return fallback; } }
-function store(key, value) { try { localStorage.setItem('synk.windrun.' + key, String(value)); } catch { storageAvailable = false; } }
+function stored(key, fallback) { try { return progressStorage.getItem('synk.windrun.' + key) ?? fallback; } catch { storageAvailable = false; return fallback; } }
+function store(key, value) { try { progressStorage.setItem('synk.windrun.' + key, String(value)); } catch { storageAvailable = false; } }
 let best = Number(stored('best', '0')) || 0;
 
 /* ── 아틀라스: 다음 부탁 고르기 · 기록 · 순간 맞춤(달리기 속도만) ── */
@@ -184,6 +188,7 @@ async function start() {
   announce('한국어 부탁을 듣고 바람길을 달려요. 왼쪽·오른쪽 화살표로 길을 바꾸고, 위는 점프, 아래는 숙이기예요.');
   starting = false;
   tutorEvent('playing');
+  recordTrialStarted();
 }
 
 function resetRunUI() {
@@ -438,7 +443,7 @@ function renderResults({ completed, distance, newBest }) {
   // 공통 코인: 끝까지 마친 판에 완주 15 + 해낸 비율 × 10(다른 게임과 같은 규칙). 부딪혀 멈춘 판·그만둔 판은 받지 않는다.
   const coinRound = collectionRoundId; collectionRoundId = null;
   const coins = byId('r-coins'); coins.textContent = '공통 코인을 계산하고 있어요.';
-  const award = globalThis.SynkPlayCollection?.award({ game: 'runner', total: s.total, correct: s.correct, completed, automatic: false, roundId: coinRound });
+  const award = globalThis.SynkPlayCollection?.award({ game: 'runner', total: s.total, correct: s.correct, completed, automatic: false, roundId: coinRound, metrics: { bestCombo: model.maxCombo } });
   if (award) award.then((result) => { coins.textContent = globalThis.SynkPlayCollection.rewardText(result); });
   else coins.textContent = '';
   // 이번 달리기의 부탁(지난 순서). 해낸 것은 펠트 체크, 다시 들을 것은 크림 원에 번호. 다시 듣기는 MP3 그대로
@@ -457,6 +462,11 @@ function renderResults({ completed, distance, newBest }) {
   });
   byId('r-log-note').textContent = s.timing ? `동작은 맞았지만 표시선에서 조금 이르거나 늦은 곳 ${s.timing}개는 ‘타이밍 놓침’으로 남겼어요.` : '';
   byId('r-log-note').hidden = !s.timing;
+  renderResultLearning(s);
+}
+// Listening checks can add evidence after this run ended. Refresh only the
+// learning report and next plan; the run's score, replay list and award stay put.
+function renderResultLearning(s) {
   renderSkills(s);
   byId('r-next-reason').textContent = learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
     : `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
@@ -526,7 +536,14 @@ byId('learning-reset').addEventListener('click', () => {
   catch (error) { if (error?.code !== 'ACCOUNT_RESET_REQUIRED') learningFailed = true; }
   renderLobby();
 });
-const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:()=>tutorEvent('lobby') });
+function closeListeningCheck() {
+  if (screen === 'results' && model?.finished) {
+    refreshRecommendation();
+    renderResultLearning(scoreRun(model.answers, { completed: model.reason === 'tour' }));
+  }
+  tutorEvent('lobby');
+}
+const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });
 
 let resizeT = 0;
 window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });
@@ -588,8 +605,9 @@ if (QA) {
   };
 }
 
-// Install after the game's pause/check state exists.
+// Install only after account restoration and the game's pause/check state exist.
 if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
  gameTutor=connectGameTutor('runner',{onHelp:()=>{pause();if(listeningCheck.open){listeningCheck.interrupt();tutorEvent('paused');}},onPracticeComplete:()=>{if(listeningCheck.open)return;if(screen==='game'&&running&&!model?.finished)void resume();else void start();},onResumeAfterHelp:()=>{if(screen==='game'&&running&&!model?.finished)void resume();}});
  if(screen==='game'&&running&&!model?.finished)tutorEvent(paused?'paused':'playing');else if(screen==='results')tutorEvent('finish',{completed:model?.reason==='tour'});else tutorEvent('lobby');
 }).catch(()=>{});
+import { recordTrialStarted } from '../social-conversion.mjs';

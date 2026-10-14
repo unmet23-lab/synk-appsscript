@@ -1,82 +1,583 @@
-/* Paper for reading; supplied felt pieces for every button and selectable tile. */
-.panel-dialog.wardrobe-dialog{width:min(1140px,calc(100vw - 56px));max-width:none;max-height:94dvh;padding:28px 32px 0;border-radius:28px;overflow:auto;background:#fff;scrollbar-width:thin}
-.wardrobe-dialog .dialog-top{margin-bottom:8px}.wardrobe-dialog .dialog-top h2{font-size:29px;letter-spacing:-1px}.wardrobe-dialog #panel-eyebrow{font-size:11px;letter-spacing:.13em}.wardrobe-dialog .dialog-close{width:44px;height:44px;flex-shrink:0}
-.atelier{color:#202732;font-family:SUIT,InterTight,sans-serif;min-width:0}.atelier button{font:inherit;touch-action:manipulation}.atelier svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.atelier-intro{display:flex;justify-content:space-between;gap:12px;color:#6b727a;font-size:12px;margin:0 0 18px}.atelier-counter{font:11px DMMono,monospace;white-space:nowrap}
-.atelier-tabs{display:flex;gap:6px;border-bottom:1px solid #e8eaf0;padding-bottom:12px;margin-bottom:22px}.atelier-tabs button{display:flex;align-items:center;gap:8px;min-height:46px;min-width:130px;padding:10px 21px;background:url('assets/button-white.webp') center/100% 100% no-repeat;color:#6b717b;font-size:13px;font-weight:650}.atelier-tabs button[aria-selected=true]{background-image:url('assets/button-coral.webp');color:#622821}.atelier-tabs svg{width:18px;height:18px}
-.atelier-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:28px}.atelier-fitting{min-width:0}.atelier-scene-wrap{position:relative;background:#eef2f1;border-radius:18px;overflow:hidden}.atelier-scene{height:370px;width:100%;position:relative;overflow:hidden}.atelier-scene canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab;outline-offset:-5px}.atelier-scene canvas.is-dragging{cursor:grabbing}.atelier-scene-label{position:absolute;left:19px;top:17px;pointer-events:none;font:10px DMMono,monospace;letter-spacing:.11em;color:#5d6667}.atelier-comparing{position:absolute;top:40px;left:18px;font-size:11px;background:#ffffffd9;padding:6px 10px;border-radius:7px}.atelier-compare{position:absolute;bottom:13px;right:13px;min-height:44px;padding:10px 17px;background:url('assets/button-white.webp') center/100% 100% no-repeat;color:#526060;font-size:11px!important;font-weight:600!important}.atelier-compare[aria-pressed=true]{background-image:url('assets/button-coral.webp');color:#5a2822}.atelier-loading{height:100%;display:grid;place-items:center;font-size:12px;color:#66716f;background:linear-gradient(#ffffff9c,#ffffff9c),url('assets/felt-blue.webp') center/600px}.atelier-stage-error{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;background:#ffffffee;padding:30px;text-align:center;font-size:13px;line-height:1.8;z-index:3}
-.atelier-view-controls{display:grid;grid-template-columns:.8fr .8fr .8fr 1.3fr;gap:5px;margin:12px 0 8px}.atelier-view-controls button,.atelier-filters button,.atelier-search button,.atelier-light-options button{min-height:44px;padding:9px 12px;background:url('assets/button-white.webp') center/100% 100% no-repeat;color:#58626e;font-size:12px;font-weight:600;white-space:nowrap}.atelier-view-controls button[aria-pressed=true],.atelier-filters button[aria-pressed=true],.atelier-search button[aria-pressed=true],.atelier-light-options button[aria-pressed=true]{background-image:url('assets/button-coral.webp');color:#612921}.atelier-drag-hint{display:flex;gap:6px;align-items:center;justify-content:center;font-size:11px;line-height:1.6;color:#717981}.atelier-drag-hint svg{width:14px;height:14px}
-.atelier-selected{padding:21px 4px 16px;min-height:130px}.atelier-material{font-size:11px;color:#8f6756;letter-spacing:.035em}.atelier-selected h3{margin:8px 0 7px;font-size:23px;font-weight:740;letter-spacing:-.65px;word-break:keep-all}.atelier-story{font-size:13px;color:#647076;line-height:1.7}.atelier-craft{font-size:11px;color:#747c85;margin-top:7px;line-height:1.7}.atelier-slots{display:grid;gap:5px;margin-bottom:14px}.atelier-slot{display:flex;align-items:center;gap:13px;min-height:40px;font-size:12px;padding:0 4px;border-top:1px solid #edf0f1}.atelier-slot>span{color:#8a9198;width:43px;flex-shrink:0}.atelier-slot strong{font-weight:600}.atelier-slot button{width:44px;height:40px;margin-left:auto;display:grid;place-items:center;background:url('assets/button-white.webp') center/100% 100% no-repeat}.atelier-slot svg{width:13px;height:13px}
-.atelier-browse{min-width:0}.atelier-pane-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:5px 0 20px}.atelier-pane-heading p{font:10px DMMono,monospace;letter-spacing:.08em;color:#79818a;margin-bottom:8px}.atelier-pane-heading h3{font-size:21px;letter-spacing:-.7px}.atelier-pane-heading>span{font:11px DMMono,monospace;color:#77818a;white-space:nowrap}.atelier-pane-heading>svg{width:30px;height:30px;color:#a47568}.atelier-filters{display:flex;gap:4px;margin-bottom:12px}.atelier-filters button{flex:1}.atelier-search{display:flex;align-items:center;gap:8px;margin-bottom:14px}.atelier-search input,.atelier-name{width:100%;min-width:0;min-height:44px;border:1px solid #e4e8eb;border-radius:9px;background:#fff;padding:10px 13px;color:#303944;font:12px SUIT,sans-serif;outline-offset:2px}.atelier-search button{min-width:81px;flex-shrink:0}.atelier-search input::placeholder,.atelier-name::placeholder{color:#79818b}
-.atelier-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:496px;overflow:auto;padding:3px 5px 10px 2px;scrollbar-width:thin;scrollbar-color:#d5dce2 transparent}.atelier-item{position:relative;display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:11px 12px 15px;background:url('assets/quality-cream.webp') center/100% 100% no-repeat;text-align:left;isolation:isolate}.atelier-item.is-chosen{background:linear-gradient(#fff4ef28,#fff4ef28),url('assets/quality-blush.webp') center/100% 100% no-repeat;filter:drop-shadow(0 3px 4px #b270541a)}.atelier-item-number{position:absolute;left:15px;top:14px;z-index:1;color:#777d83;font:10px DMMono,monospace}.atelier-item-art{height:127px;position:relative;display:grid;place-items:center;overflow:hidden;margin:0 -3px 9px;border-radius:9px}.atelier-item-art img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}.atelier-item-check{position:absolute;right:4px;bottom:3px;display:grid;place-items:center;background:url('assets/badge.webp') center/contain no-repeat;width:26px;height:26px;color:#826247}.atelier-item-check svg{width:14px;height:14px;stroke-width:2}.atelier-item strong{font-size:13px;font-weight:680;letter-spacing:-.2px;line-height:1.5;word-break:keep-all}.atelier-item-material{margin-top:5px;color:#667176;font-size:11px;line-height:1.6}.atelier-collection-note{font-size:11px;color:#7b838b;line-height:1.7;padding:12px 2px 6px}.atelier-empty{grid-column:1/-1;padding:35px 16px;text-align:center;color:#737b86;font-size:13px;line-height:1.8}
-.atelier-pane-copy{font-size:13px;line-height:1.8;color:#6b7580;word-break:keep-all;margin-bottom:24px}.atelier-name-label,.atelier-field-label{display:block;font-size:12px;font-weight:650;margin:20px 0 10px}.atelier-name{font-size:13px}.atelier-look-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0 20px}.atelier-soft,.atelier-primary{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:47px;padding:11px 24px;background:url('assets/button-white.webp') center/100% 100% no-repeat;font-size:12px!important;font-weight:700!important;text-align:center;color:#4b5965}.atelier-primary{background-image:url('assets/button-coral.webp');color:#62261e;min-width:194px;min-height:54px;padding:14px 25px}.atelier-text{min-height:44px;padding:10px 11px;font-size:12px!important;color:#66727d;text-decoration:underline;text-underline-offset:4px}.atelier button:disabled{cursor:default;opacity:.57}.atelier button:focus-visible,.atelier a:focus-visible,.atelier input:focus-visible{outline:3px solid #516ea3;outline-offset:3px}.atelier-looks{display:grid;gap:12px;max-height:400px;overflow:auto;padding:2px 4px 12px 2px;scrollbar-width:thin}.atelier-look{position:relative;border-bottom:1px solid #e9edf0;padding:0 0 13px}.atelier-look>button:first-child{display:flex;align-items:center;gap:12px;width:100%;padding:4px 31px 4px 4px;text-align:left;background:url('assets/button-white.webp') center/100% 100% no-repeat;min-height:106px}.atelier-look-art{height:88px;width:83px;flex-shrink:0;overflow:hidden;border-radius:9px}.atelier-look-art img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}.atelier-look strong,.atelier-look small,.atelier-look button>span>span{display:block;word-break:keep-all}.atelier-look strong{font-size:13px;font-weight:700;line-height:1.6}.atelier-look small{font-size:11px;color:#707b82;line-height:1.7;margin:4px 0}.atelier-look button>span>span{font-size:11px;color:#977564}.atelier-look-delete{position:absolute;right:0;top:5px;width:44px;height:44px;display:grid;place-items:center;background:url('assets/button-white.webp') center/100% 100% no-repeat}.atelier-look-delete svg{width:14px;height:14px}.atelier-empty-look{padding:25px 18px 36px;text-align:center;background:linear-gradient(#ffffffb8,#ffffffb8),url('assets/felt-blue.webp') center/400px;border-radius:12px}.atelier-empty-look svg{width:33px;height:33px;color:#798fa1;margin-bottom:15px}.atelier-empty-look h4{font-size:15px;margin:0 0 10px}.atelier-empty-look p{font-size:12px;line-height:1.8;color:#6d7b88}
-.atelier-light-options{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:26px}.atelier-shutter{width:100%;margin-top:15px;min-height:53px}.atelier-photo-result{margin-top:22px;text-align:center}.atelier-photo-result>img{width:100%;max-height:270px;object-fit:contain;border-radius:9px;background:#f1f3f3}.atelier-photo-caption{font-size:11px;line-height:1.8;color:#707983;margin:9px 0}.atelier-download{width:100%}.atelier-photo-note{font-size:11px;line-height:1.8;color:#7b8590;margin-top:16px;word-break:keep-all}
-.atelier-feedback{font-size:12px;color:#567160;line-height:1.8;padding:3px 4px;min-height:27px}.atelier-pending{padding:15px 17px;background:linear-gradient(#ffffffa8,#ffffffa8),url('assets/felt-butter.webp') center/440px;margin:9px 0 14px;border-radius:10px;font-size:12px;line-height:1.8}.atelier-pending>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.atelier-footer{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:1px solid #e5e9ed;background:#fffffff7;backdrop-filter:blur(14px);padding:17px 0 20px}.atelier-footer strong{font-size:13px;font-weight:700}.atelier-sync-note{font-size:11px;color:#7e8790;line-height:1.7;margin-top:5px;max-width:430px}.atelier-footer-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
-@media(min-width:1100px){.atelier-scene{height:410px}.atelier-items{max-height:547px}}
-@media(max-width:799px){html[data-layout=mobile] .panel-dialog.wardrobe-dialog,.panel-dialog.wardrobe-dialog{width:100vw;height:100dvh;max-height:100dvh;max-width:none;margin:0;border-radius:0;padding:19px 20px 0}.wardrobe-dialog .dialog-top{position:relative;gap:9px}.wardrobe-dialog .dialog-top h2,html[data-layout=mobile] .wardrobe-dialog .dialog-top h2{font-size:25px}.wardrobe-dialog #panel-eyebrow{font-size:10px}.atelier-intro{font-size:11px;margin-bottom:13px;align-items:center}.atelier-counter{font-size:10px}.atelier-tabs{gap:3px;margin-bottom:16px;padding-bottom:11px}.atelier-tabs button{flex:1;justify-content:center;padding:10px 9px;min-width:0;font-size:12px;gap:6px}.atelier-tabs svg{width:16px;height:16px}.atelier-layout{display:block}.atelier-scene{height:290px}.atelier-scene-label{font-size:9px;left:14px;top:14px}.atelier-compare{font-size:11px!important;bottom:10px;right:9px;padding:10px 14px}.atelier-view-controls{margin-top:10px;gap:3px}.atelier-view-controls button{font-size:11px;padding:10px 8px}.atelier-drag-hint{font-size:10px}.atelier-selected{padding:18px 1px 12px;min-height:0}.atelier-selected h3{font-size:22px}.atelier-story{font-size:12px}.atelier-craft{font-size:11px}.atelier-slots{margin:3px 0 21px}.atelier-slot{font-size:12px}.atelier-pane-heading{margin:0 0 16px}.atelier-pane-heading h3{font-size:20px}.atelier-items{max-height:none;overflow:visible;gap:10px;padding-right:2px}.atelier-item-art{height:128px}.atelier-item strong{font-size:12px}.atelier-item-material{font-size:10px}.atelier-filters button{font-size:11px;min-height:44px;padding:10px 8px}.atelier-search input{font-size:12px}.atelier-looks{max-height:none}.atelier-footer{padding:12px 0 calc(13px + env(safe-area-inset-bottom));gap:11px;display:block}.atelier-footer>div:first-child{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:9px}.atelier-footer strong{font-size:11px}.atelier-sync-note{font-size:10px;max-width:205px;margin:0;line-height:1.5}.atelier-footer-actions{display:grid;grid-template-columns:.75fr 1.3fr;gap:6px}.atelier-footer-actions button{min-height:52px;min-width:0;padding:13px 12px;font-size:12px!important}.atelier-feedback{font-size:11px;min-height:23px;padding-top:6px}.atelier-photo-result>img{max-height:340px}.atelier-pane-copy{font-size:12px}.atelier-light-options button{font-size:11px;padding:10px 8px}.atelier-photo-note{margin-bottom:18px}.atelier[data-tab=photo] .atelier-selected,.atelier[data-tab=photo] .atelier-slots{display:none}.atelier[data-tab=photo] .atelier-drag-hint{margin-bottom:22px}}
-@media(max-width:355px){html[data-layout=mobile] .panel-dialog.wardrobe-dialog,.panel-dialog.wardrobe-dialog{padding:15px 15px 0}.atelier-intro p{max-width:160px;line-height:1.5}.atelier-tabs button{font-size:11px;padding:10px 6px}.atelier-scene{height:264px}.atelier-view-controls button{font-size:10px;padding:10px 5px}.atelier-item{padding:10px 10px 13px}.atelier-item-art{height:110px}.atelier-selected h3{font-size:20px}.atelier-footer>div:first-child{align-items:flex-start}.atelier-sync-note{max-width:176px}}
-@media(prefers-reduced-motion:reduce){.atelier *{scroll-behavior:auto;transition:none!important;animation:none!important}}
-.atelier-item-art{display:flex;align-items:center;justify-content:center}.atelier-item-art img{min-height:0;max-height:100%;mix-blend-mode:normal}
-.atelier-search-toggle{display:none}
-@media(max-width:799px){
- .atelier-scene{height:230px}.atelier-scene-label{font-size:9px}.atelier-drag-hint{display:none}.atelier-selected{padding:11px 2px 9px}.atelier-selected h3{font-size:17px;margin:0;line-height:1.5}.atelier-selected .atelier-material,.atelier-selected .atelier-story,.atelier-selected .atelier-craft{display:none}.atelier[data-detail=true] .atelier-selected .atelier-craft{display:block;font-size:11px;line-height:1.7;margin-top:5px}
- .atelier-slots{grid-template-columns:1fr 1fr;gap:7px;margin:0 0 12px}.atelier-slot{min-width:0;gap:5px;font-size:10px;min-height:35px}.atelier-slot>span{width:auto;font-size:10px;white-space:nowrap}.atelier-slot strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.atelier-slot button{width:36px;height:36px;min-width:36px}.atelier-slot svg{width:12px;height:12px}
- .atelier[data-tab=fitting] .atelier-pane-heading{display:none}.atelier[data-tab=fitting] .atelier-search{display:none}.atelier[data-tab=fitting][data-search-open=true] .atelier-search{display:flex}.atelier[data-tab=fitting] .atelier-filters{margin-bottom:7px;gap:3px}.atelier-search-toggle{display:block;flex:0 0 46px!important;min-width:46px}.atelier[data-tab=fitting] .atelier-filters button{min-height:40px}
- .atelier-items{display:grid;grid-auto-flow:column;grid-auto-columns:135px;grid-template-columns:none;grid-template-rows:minmax(0,1fr);overflow-x:auto;overflow-y:hidden;padding:3px 4px 7px 2px;gap:8px;scroll-snap-type:x proximity;scrollbar-width:thin;max-height:188px}.atelier-item{padding:10px 11px 12px;scroll-snap-align:start}.atelier-item-art{height:94px;margin-bottom:6px}.atelier-item-number{left:13px;top:13px;font-size:9px}.atelier-item strong{font-size:11px;line-height:1.5}.atelier-item-material{font-size:10px;margin-top:4px}.atelier-collection-note{display:none}.atelier-feedback{min-height:19px;padding-top:0}.atelier-footer{padding-top:9px;padding-bottom:calc(11px + env(safe-area-inset-bottom))}.atelier-footer>div:first-child{margin-bottom:6px}.atelier-sync-note{font-size:9px;max-width:188px}.atelier-footer-actions button{min-height:47px}.atelier-outfit-state{white-space:nowrap}.atelier-view-controls{margin-bottom:0}
- .atelier[data-tab=photo] .atelier-view-controls{margin-bottom:17px}.atelier[data-tab=looks] .atelier-pane-heading{margin-top:7px}
+/* SYNK WORLD 옷장 · 시그널 게임판 (2026-10-14)
+ * 3D 무대(몽글)가 주인공이고, 둘레 조작은 무채색으로 물러난다. 둘레 창(#world-panel.wardrobe-dialog)은 home.css가 맡는다.
+ * 3D 무대는 밝은 회색 스튜디오를 그리므로 무대 틀과 옷 그림 칸도 같은 중성 회색(크림 아님). 펠트 판 그림은 쓰지 않는다.
+ * 고르기는 바탕을 뒤집는 알약 묶음, 주 행동은 흰 알약 「이 차림 입기」 하나 — 촬영실에서는 셔터 하나만 흰 알약.
+ * 조작 높이는 44px 이상(작은 알약은 안쪽 그림만 줄이고 누르는 자리는 44px로 둔다). 글자 크기는 사용자의 글자 크기 설정을 따른다. */
+.atelier{
+  --fs:var(--atelier-font-scale,1);
+  --f13:calc(13px*var(--fs));--f135:calc(13.5px*var(--fs));--f14:calc(14px*var(--fs));--f15:calc(15px*var(--fs));--f155:calc(15.5px*var(--fs));
+  --f16:calc(16px*var(--fs));--f17:calc(17px*var(--fs));--f20:calc(20px*var(--fs));
+  /* 3D 무대가 그리는 밝은 회색(위 #E5E5E2 → 아래 #ECECEB)과 옷 그림 바탕(#E1E2E1)에 맞춘 면 */
+  --stage-bg:linear-gradient(180deg,#E5E5E2,#ECECEB);
+  --tile-bg:linear-gradient(180deg,#E1E2E1,#E7E8E8 55%,#DFE0E0);
+  --stage-ink:#121317;--stage-ink-3:rgba(18,19,23,.56);--stage-line:rgba(18,19,23,.2);
+  --bleed:16px;
+  --i-undo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8.6 4.6 4.2 9l4.4 4.4'/%3E%3Cpath d='M4.6 9H14a5.2 5.2 0 0 1 0 10.4h-3.2'/%3E%3C/svg%3E");
+  --i-redo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.4 4.6 19.8 9l-4.4 4.4'/%3E%3Cpath d='M19.4 9H10a5.2 5.2 0 0 0 0 10.4h3.2'/%3E%3C/svg%3E");
+  --i-restore:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.6 5.2v4.3h4.3'/%3E%3Cpath d='M5 9.3a7.6 7.6 0 1 1-.4 4.6'/%3E%3Cpath d='M12 8.4V12l2.6 1.6'/%3E%3C/svg%3E");
+  --i-shuffle:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7h2.6c2 0 3.3.9 4.3 2.6l3.2 5.3c1 1.6 2.3 2.4 4.2 2.4h2.7'/%3E%3Cpath d='M3.5 17.3h2.6c1.4 0 2.5-.5 3.4-1.4'/%3E%3Cpath d='M14.1 8.4c.9-.9 2-1.4 3.4-1.4h3'/%3E%3Cpath d='m18.3 4.6 2.4 2.4-2.4 2.4'/%3E%3Cpath d='m18.3 14.9 2.4 2.4-2.4 2.4'/%3E%3C/svg%3E");
+  --i-stack:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.2' y='8.2' width='12' height='12' rx='2.4'/%3E%3Cpath d='M15.8 5.4V5.2a1.6 1.6 0 0 0-1.6-1.6H5.2a1.6 1.6 0 0 0-1.6 1.6v9a1.6 1.6 0 0 0 1.6 1.6h.2'/%3E%3Cpath d='M14.2 11.4v5.6M11.4 14.2H17'/%3E%3C/svg%3E");
+  --i-search:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.8' cy='10.8' r='6.3'/%3E%3Cpath d='m15.6 15.6 4.6 4.6'/%3E%3C/svg%3E");
+  --i-zoomin:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.8' cy='10.8' r='6.3'/%3E%3Cpath d='m15.6 15.6 4.6 4.6'/%3E%3Cpath d='M10.8 8.3v5M8.3 10.8h5'/%3E%3C/svg%3E");
+  --i-lock:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.4' width='14' height='9.8' rx='2.6'/%3E%3Cpath d='M8.3 10.4V8a3.7 3.7 0 0 1 7.4 0v2.4'/%3E%3C/svg%3E");
+  --i-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3.9 2.45 4.98 5.5.8-3.98 3.87.94 5.47L12 16.44l-4.91 2.58.94-5.47-3.98-3.87 5.5-.8z'/%3E%3C/svg%3E");
+  --i-starfill:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3.9 2.45 4.98 5.5.8-3.98 3.87.94 5.47L12 16.44l-4.91 2.58.94-5.47-3.98-3.87 5.5-.8z' fill='black' stroke='black' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --i-more:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='5.8' cy='12' r='1.6'/%3E%3Ccircle cx='12' cy='12' r='1.6'/%3E%3Ccircle cx='18.2' cy='12' r='1.6'/%3E%3C/svg%3E");
+  --i-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E");
+  --i-compare:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='7.6' fill='none' stroke='black' stroke-width='1.8'/%3E%3Cpath d='M12 4.4a7.6 7.6 0 0 0 0 15.2z'/%3E%3C/svg%3E");
+  --i-camera:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8.7A1.7 1.7 0 0 1 5.7 7h2.1l1.5-2.2h5.4L16.2 7h2.1A1.7 1.7 0 0 1 20 8.7v8.8a1.7 1.7 0 0 1-1.7 1.7H5.7A1.7 1.7 0 0 1 4 17.5z'/%3E%3Ccircle cx='12' cy='12.9' r='3.4'/%3E%3C/svg%3E");
+  --i-download:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4.2v10.6'/%3E%3Cpath d='m7.6 10.6 4.4 4.4 4.4-4.4'/%3E%3Cpath d='M5 19.6h14'/%3E%3C/svg%3E");
+  --i-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.6 6.6 10.8 10.8M17.4 6.6 6.6 17.4'/%3E%3C/svg%3E");
+  --i-sliders:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7.5h9M17 7.5h3M4 16.5h3M11 16.5h9'/%3E%3Ccircle cx='15' cy='7.5' r='2'/%3E%3Ccircle cx='9' cy='16.5' r='2'/%3E%3C/svg%3E");
+  --i-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.6 4.4 4.4L19 7.4'/%3E%3C/svg%3E");
+  min-width:0;color:var(--w-ink);font-family:var(--w-sans);font-size:var(--f155);font-weight:var(--wt-body);line-height:1.5;word-break:keep-all;-webkit-font-smoothing:antialiased
 }
+/* 바탕 규칙은 :where()로 낮춰 아래 부품 규칙이 늘 이긴다 */
+:where(.atelier) *{box-sizing:border-box}
+.atelier [hidden]{display:none!important}
+:where(.atelier) :is(h3,h4,p){margin:0}
+:where(.atelier) :is(button,input,select,summary,a){font:inherit;color:inherit;letter-spacing:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:where(.atelier) button{cursor:pointer;background:none;border:0;padding:0}
+:where(.atelier) button:disabled{opacity:.4;cursor:default}
+:where(.atelier) a{text-decoration:none}
+:where(.atelier) svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+:where(.atelier) :focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
 
+/* ── 공통 단추 ── 보조는 1px 선 알약, 주 행동은 흰 알약 */
+.atelier-soft{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font-size:var(--f14);font-weight:var(--wt-strong);line-height:1.25;letter-spacing:-.01em;text-align:center;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.atelier-soft:hover:not(:disabled){background:var(--w-s2)}
+.atelier-soft:active:not(:disabled){transform:scale(.97)}
+.atelier-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 26px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:var(--f16);font-weight:var(--wt-strong);line-height:1.25;letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
+@media(hover:hover){.atelier-primary:hover:not(:disabled){box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 0 0 5px color-mix(in srgb,var(--w-glow) 30%,transparent)}}
+.atelier-primary:active:not(:disabled){transform:scale(.98)}
+.atelier-primary svg{width:18px;height:18px;stroke-width:2.1}
+.atelier-primary:disabled{opacity:.38}
+/* 조용한 글자 단추(밑줄) */
+.atelier-camera-bar [data-studio=reset-view],.atelier-undo-save .atelier-soft,.atelier-undo-photo .atelier-soft,[data-studio=new-look],[data-studio=cancel-batch],[data-studio=clear-filters],[data-studio=show-all],[data-remove-candidate]{min-height:44px;padding:0 6px;box-shadow:none;background:none!important;color:var(--w-ink-2);font-size:var(--f135);font-weight:var(--wt-strong);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px}
+.atelier-camera-bar [data-studio=reset-view]:hover,.atelier-undo-save .atelier-soft:hover,.atelier-undo-photo .atelier-soft:hover{color:var(--w-ink)}
+/* 작은 선 알약: 누르는 자리는 44px, 보이는 알약은 안쪽 34px */
+.atelier-modes button,.atelier-tag-options button,.atelier-search [data-studio=owned],.atelier-slot [data-lock],.atelier-hanger>button:last-child,.atelier-look-tools [data-wear-look],.atelier-candidates [data-candidate],.atelier-album-photo>button:not(:first-child),.atelier-group-row [data-delete-group]{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;background:none;box-shadow:none;color:var(--w-ink-2);font-size:var(--f135);font-weight:var(--wt-strong);line-height:1.2;white-space:nowrap;transition:color .18s var(--w-ease)}
+.atelier-modes button::before,.atelier-tag-options button::before,.atelier-search [data-studio=owned]::before,.atelier-slot [data-lock]::before,.atelier-hanger>button:last-child::before,.atelier-look-tools [data-wear-look]::before,.atelier-candidates [data-candidate]::before,.atelier-album-photo>button:not(:first-child)::before,.atelier-group-row [data-delete-group]::before{content:'';position:absolute;inset:5px 0;z-index:-1;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);transition:background .18s var(--w-ease),box-shadow .18s var(--w-ease)}
+.atelier-modes button:hover:not(:disabled),.atelier-tag-options button:hover:not(:disabled),.atelier-search [data-studio=owned]:hover,.atelier-slot [data-lock]:hover,.atelier-hanger>button:last-child:hover:not(:disabled),.atelier-look-tools [data-wear-look]:hover:not(:disabled),.atelier-candidates [data-candidate]:hover,.atelier-album-photo>button:not(:first-child):hover{color:var(--w-ink)}
+.atelier-modes button[aria-pressed=true],.atelier-tag-options button[aria-pressed=true],.atelier-search [data-studio=owned][aria-pressed=true],.atelier-slot [data-lock][aria-pressed=true]{color:var(--w-on-ink)}
+.atelier-modes button[aria-pressed=true]::before,.atelier-tag-options button[aria-pressed=true]::before,.atelier-search [data-studio=owned][aria-pressed=true]::before,.atelier-slot [data-lock][aria-pressed=true]::before{background:var(--w-ink);box-shadow:none}
+/* 고르기 알약 묶음: 판(s1) 안에서 고른 것만 흰 바탕 */
+.atelier-tabs,.atelier-filters,.atelier-light-options{display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-tabs button,.atelier-filters button,.atelier-light-options button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:44px;padding:0 12px;border-radius:999px;color:var(--w-ink-2);font-size:var(--f14);font-weight:var(--wt-strong);letter-spacing:-.01em;line-height:1.2;white-space:nowrap;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.atelier-tabs button:hover,.atelier-filters button:hover,.atelier-light-options button:hover{color:var(--w-ink)}
+.atelier-tabs button[aria-selected=true],.atelier-filters button[aria-pressed=true],.atelier-light-options button[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
+.atelier-tabs svg{width:18px;height:18px}
+.atelier-tabs span{overflow:hidden;text-overflow:ellipsis}
 
+/* ── 위: 차림 편집 단추(원 아이콘) · 옷 수 ── */
+.atelier-intro{display:flex;align-items:center;gap:12px;min-width:0}
+.atelier-intro p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.atelier-counter{font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.atelier-workbar{display:flex;align-items:center;gap:2px;min-width:0}
+.atelier-workbar .atelier-soft{position:relative;display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;box-shadow:none;background:none!important;font-size:0;color:var(--w-ink)}
+.atelier-workbar .atelier-soft::before{content:'';position:absolute;inset:2px;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease)}
+.atelier-workbar .atelier-soft::after{content:'';position:relative;width:20px;height:20px;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+.atelier-workbar .atelier-soft:hover:not(:disabled)::before{background:var(--w-s3)}
+.atelier-workbar .atelier-soft:disabled{opacity:.4}
+.atelier-workbar [data-studio=undo]{--icon:var(--i-undo)}
+.atelier-workbar [data-studio=redo]{--icon:var(--i-redo)}
+.atelier-workbar [data-studio=restore]{--icon:var(--i-restore);margin-left:10px}
+.atelier-workbar [data-studio=random]{--icon:var(--i-shuffle)}
+.atelier-workbar [data-studio=add-candidate]{--icon:var(--i-stack)}
 
+/* ── 무대: 3D 스튜디오(밝은 중성 회색) ── */
+.atelier-scene-wrap{position:relative;isolation:isolate;border-radius:var(--w-r-lg);overflow:hidden;background:var(--stage-bg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.atelier-scene{position:relative;width:100%;height:380px;overflow:hidden}
+.atelier-scene canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab;outline-offset:-4px}
+.atelier-scene canvas:focus-visible{outline:2px solid var(--stage-ink);outline-offset:-4px}
+.atelier-scene canvas.is-dragging{cursor:grabbing}
+.atelier-loading{height:100%;display:grid;place-items:center;font-size:var(--f13);font-weight:var(--wt-label);color:var(--stage-ink-3);background:var(--stage-bg)}
+.atelier-scene[aria-busy=true]::after{content:'옷감과 빛을 준비하고 있어요';position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:var(--stage-bg);color:var(--stage-ink-3);font-size:var(--f13);font-weight:var(--wt-label);pointer-events:none}
+.atelier-scene-label{position:absolute;left:16px;top:14px;z-index:2;display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-ink-3);pointer-events:none}
+.atelier-scene-label::after{content:'';width:28px;height:1px;background:var(--stage-line)}
+.atelier-comparing{position:absolute;left:14px;top:40px;z-index:2;display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.72);color:#FAFAF9;font-size:var(--f13);font-weight:var(--wt-label);white-space:nowrap;pointer-events:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.atelier-comparing::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+/* 무대 위 선 알약: 밝은 무대 위라 먹색 선과 글자, 누르면 먹색으로 뒤집힌다 */
+.atelier-compare{position:absolute;right:12px;bottom:12px;z-index:2;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px 0 13px;border-radius:999px;background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(8,9,12,.16);color:var(--stage-ink);font-size:var(--f135);font-weight:var(--wt-strong);white-space:nowrap;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.atelier-compare::before{content:'';width:17px;height:17px;flex-shrink:0;background:currentColor;-webkit-mask:var(--i-compare) center/contain no-repeat;mask:var(--i-compare) center/contain no-repeat}
+.atelier-compare:hover{background:rgba(255,255,255,.82)}
+.atelier-compare[aria-pressed=true]{background:#121317;color:#FAFAF9;box-shadow:none}
+.atelier-compare:focus-visible{outline-color:#121317}
+.atelier-stage-error{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px;text-align:center;background:rgba(12,13,16,.92);color:rgba(250,250,249,.82);font-size:var(--f14);line-height:1.65;text-wrap:pretty}
+.atelier-stage-error .atelier-soft{min-height:48px;background:#FAFAF9;color:#08090C;box-shadow:none}
 
+/* 시점: 정면·옆·뒤는 한 묶음(고른 시점만 흰 바탕), 옷감 가까이는 따로 켜고 끄는 선 알약 */
+.atelier-view-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:center}
+.atelier-view-controls::before{content:'';grid-row:1;grid-column:1/4;align-self:stretch;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-view-controls>button{grid-row:1;position:relative;z-index:1;min-width:0;min-height:44px;padding:0 6px;border:4px solid transparent;border-radius:999px;background-clip:padding-box;color:var(--w-ink-2);font-size:var(--f14);font-weight:var(--wt-strong);white-space:nowrap;transition:background-color .18s var(--w-ease),color .18s var(--w-ease)}
+.atelier-view-controls>button:hover{color:var(--w-ink)}
+.atelier-view-controls>button:nth-child(1){grid-column:1}.atelier-view-controls>button:nth-child(2){grid-column:2}.atelier-view-controls>button:nth-child(3){grid-column:3}
+.atelier-view-controls>[data-angle][aria-pressed=true]{background-color:var(--w-ink);color:var(--w-on-ink)}
+.atelier-view-controls>[data-studio=detail]{grid-column:4;display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:0 15px 0 12px;border:0;box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.atelier-view-controls>[data-studio=detail]::before{content:'';width:17px;height:17px;flex-shrink:0;background:currentColor;-webkit-mask:var(--i-zoomin) center/contain no-repeat;mask:var(--i-zoomin) center/contain no-repeat}
+.atelier-view-controls>[data-studio=detail][aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+/* 확대: 1px 선 위 흰 손잡이 */
+.atelier-camera-bar{display:flex;align-items:center;gap:8px;min-width:0}
+.atelier-camera-bar label{flex:1;display:flex;align-items:center;gap:12px;min-width:0;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap}
+.atelier input[type=range]{flex:1;min-width:64px;height:44px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer}
+.atelier input[type=range]::-webkit-slider-runnable-track{height:1px;border-radius:1px;background:var(--w-line-2)}
+.atelier input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-8.5px;border:0;border-radius:50%;background:var(--w-ink);box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.atelier input[type=range]::-moz-range-track{height:1px;border-radius:1px;background:var(--w-line-2)}
+.atelier input[type=range]::-moz-range-progress{height:1px;background:var(--w-ink-3)}
+.atelier input[type=range]::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:var(--w-ink);box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.atelier input[type=range]:focus-visible{outline:none}
+.atelier input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px color-mix(in srgb,var(--w-ink) 28%,transparent)}
+.atelier input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px color-mix(in srgb,var(--w-ink) 28%,transparent)}
+.atelier-drag-hint{display:flex;align-items:center;gap:8px;font-size:var(--f13);color:var(--w-ink-3)}
+.atelier-drag-hint svg{width:17px;height:17px}
 
+/* ── 고른 옷 · 입은 조합(고정) ── */
+.atelier-selected{display:grid;gap:4px;min-width:0}
+.atelier-material{font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier-selected h3{font-size:var(--f20);font-weight:var(--wt-title);line-height:1.3;letter-spacing:-.024em;text-wrap:balance}
+.atelier-story{font-size:var(--f15);line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.atelier-craft{font-size:var(--f13);line-height:1.6;color:var(--w-ink-3)}
+.atelier-slots{display:grid;min-width:0}
+.atelier-slot{display:flex;align-items:center;gap:10px;min-width:0;min-height:52px;border-top:1px solid var(--w-line)}
+.atelier-slot:last-child{border-bottom:1px solid var(--w-line)}
+.atelier-slot>span{flex:0 0 auto;min-width:46px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier-slot strong{flex:1;min-width:0;overflow:hidden;font-size:var(--f15);font-weight:var(--wt-strong);text-overflow:ellipsis;white-space:nowrap}
+.atelier-slot [data-lock]{padding:0 13px 0 32px;font-size:var(--f13)}
+.atelier-slot [data-lock]::after{content:'';position:absolute;left:12px;top:50%;width:15px;height:15px;margin-top:-7.5px;background:currentColor;-webkit-mask:var(--i-lock) center/contain no-repeat;mask:var(--i-lock) center/contain no-repeat}
+.atelier-slot [data-clear-slot]{position:relative;display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;color:var(--w-ink-2)}
+.atelier-slot [data-clear-slot]::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
+.atelier-slot [data-clear-slot] svg{position:relative;width:15px;height:15px}
+.atelier-slot [data-clear-slot]:hover{color:var(--w-ink)}
 
+/* ── 접는 묶음(색 바꾸기·필터·설정) ── */
+.atelier-advanced{min-width:0;border-top:1px solid var(--w-line)}
+.atelier-advanced>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;cursor:pointer;list-style:none;font-size:var(--f15);font-weight:var(--wt-strong);color:var(--w-ink)}
+.atelier-advanced>summary::-webkit-details-marker{display:none}
+.atelier-advanced>summary::after{content:'';width:18px;height:18px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--i-chevron) center/contain no-repeat;mask:var(--i-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.atelier-advanced[open]>summary::after{transform:rotate(180deg)}
+.atelier-advanced[open]{padding-bottom:14px}
+.atelier-advanced fieldset{min-width:0;margin:0;padding:6px 0;border:0}
+.atelier-advanced legend{padding:0;margin-bottom:4px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier-hint{margin:6px 0 10px;font-size:var(--f13);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.atelier-tag-options{display:flex;flex-wrap:wrap;gap:0 6px}
+.atelier-tag-options button{padding:0 13px}
+.atelier-advanced label,.atelier-photo-selects label,.atelier-pane>label,.atelier-group-select label{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;min-height:44px;margin:6px 0;font-size:var(--f14);font-weight:var(--wt-label);color:var(--w-ink-2)}
+.atelier-advanced>.atelier-soft{margin-top:6px}
+/* 입력 칸: 근사 검정 판 위 한 단계 밝은 면 + 1px 선 */
+.atelier select,.atelier input[type=search],.atelier input:not([type]),.atelier input[type=text],.atelier-name{flex:1;min-width:0;min-height:46px;max-width:100%;margin:0;padding:0 14px;border:0;border-radius:var(--w-r-sm);background-color:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font-size:16px;font-weight:var(--wt-body);outline-offset:2px;transition:box-shadow .18s var(--w-ease)}
+.atelier select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:var(--w-chevron);background-repeat:no-repeat;background-position:right 13px center;background-size:16px;cursor:pointer}
+.atelier input::placeholder{color:var(--w-ink-q)}
+.atelier select:hover,.atelier input:not([type=checkbox]):not([type=range]):not([type=color]):hover{box-shadow:inset 0 0 0 1px var(--w-ink-4)}
+.atelier input[type=checkbox]{-webkit-appearance:none;appearance:none;display:inline-grid;place-items:center;flex-shrink:0;width:22px;height:22px;margin:0;border-radius:7px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--w-ink-4);cursor:pointer;transition:background .18s var(--w-ease)}
+.atelier input[type=checkbox]:checked{background:var(--w-ink);box-shadow:none}
+.atelier input[type=checkbox]:checked::after{content:'';width:14px;height:14px;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+.atelier-dyes fieldset{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+.atelier-dyes legend{width:100%;color:var(--w-ink-2);font-weight:var(--wt-strong)}
+.atelier-dyes label{margin:2px 0}
+.atelier input[type=color]{-webkit-appearance:none;appearance:none;width:58px;height:44px;padding:4px;border:0;border-radius:var(--w-r-sm);background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:pointer}
+.atelier input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.atelier input[type=color]::-webkit-color-swatch{border:0;border-radius:8px}
+.atelier input[type=color]::-moz-color-swatch{border:0;border-radius:8px}
+.atelier input[type=color]:disabled{opacity:.4;cursor:default}
 
-/* Workbench controls keep the supplied felt, with quiet paper around long labels. */
-.atelier-workbar{display:flex;flex-wrap:wrap;gap:6px;margin:-8px 0 18px}.atelier-workbar .atelier-soft{padding:10px 15px;min-height:44px}
-.atelier-camera-bar{display:flex;align-items:center;gap:10px;margin:8px 0 12px}.atelier-camera-bar label{flex:1;display:flex;align-items:center;gap:10px;font-size:12px}.atelier-camera-bar input{width:100%;min-width:70px;min-height:44px}
-.atelier-advanced{margin:14px 0;padding:0 0 10px;border-bottom:1px solid #e5e9ed}.atelier-advanced>summary{font-weight:650;font-size:13px;min-height:44px;display:flex;align-items:center;cursor:pointer;list-style:revert}.atelier-advanced>summary::before{content:"+";margin-right:9px;color:#855f48}.atelier-advanced[open]>summary::before{content:"−"}.atelier-advanced fieldset{border:0;padding:9px 0;margin:0}.atelier-advanced legend{font-size:12px;font-weight:650}.atelier-advanced label,.atelier-photo-selects label,.atelier-pane>label,.atelier-group-select label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;margin:8px 0;min-height:44px}.atelier select,.atelier-advanced input:not([type=checkbox]),.atelier-group-row input{font:inherit;min-width:0;min-height:44px;background:#fff;border:1px solid #cdd6d9;border-radius:8px;padding:8px 10px;color:#26333e}.atelier select{max-width:100%;flex:1}.atelier-hint{font-size:12px;color:#68777c;line-height:1.8;margin:8px 0}
-.atelier-tag-options,.atelier-modes{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.atelier-tag-options button,.atelier-modes button,.atelier-group-row button,.atelier-candidates button,.atelier-look-tools button,.atelier-look-tools summary,.atelier-item-tools button,.atelier-item-tools summary,.atelier-album button:not(:first-child),.atelier-hanger>button:last-child{min-height:44px;min-width:44px;padding:8px 12px;background:url('assets/button-white.webp') center/100% 100% no-repeat;font:600 12px SUIT,sans-serif;color:#4b5965}.atelier-tag-options button[aria-pressed=true],.atelier-modes button[aria-pressed=true],.atelier-item-tools button[aria-pressed=true],.atelier-look-tools button[aria-pressed=true],.atelier-slot button[aria-pressed=true]{background-image:url('assets/button-coral.webp');color:#622821}
-.atelier-modes button{flex:1 0 auto}.atelier-item-card{position:relative;min-width:0;background:url('assets/quality-cream.webp') center/100% 100% no-repeat;padding-bottom:5px}.atelier-item-card .atelier-item{width:100%;background:none}.atelier-item-card:has(.is-chosen){background-image:url('assets/quality-blush.webp')}.atelier-item-card .atelier-item.is-chosen{background:none;filter:none}.atelier-item-tools{display:flex;gap:4px;justify-content:space-between;padding:0 11px}.atelier-item-tools details{flex:1;text-align:right}.atelier-item-tools summary,.atelier-look-tools summary{display:flex;align-items:center;justify-content:center;list-style:none;cursor:pointer}
-.atelier-item-tools details[open]{position:absolute;left:8px;right:8px;top:120px;z-index:4;padding:7px;background:#fff;border:1px solid #dae1e4;border-radius:10px}.atelier-item-tools details[open] button{display:block;width:100%;text-align:left;margin:4px 0}
-.atelier-quick-looks>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:15px}.atelier-hanger{min-width:0;display:flex;flex-direction:column;background:url('assets/quality-cream.webp') center/100% 100% no-repeat;padding:7px}.atelier-hanger>button:first-child{background:none;min-width:0;display:grid;gap:4px;text-align:center}.atelier-hanger img{width:100%;height:76px;object-fit:contain}.atelier-hanger strong{font-size:12px;line-height:1.5;word-break:keep-all}.atelier-hanger>button:last-child{margin-top:auto}
-.atelier-look{padding-bottom:12px}.atelier-look>button:first-child{padding-right:4px}.atelier-look-tools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:6px}.atelier-look-tools label{min-height:44px;display:flex;align-items:center;gap:5px;font-size:12px}.atelier-look-tools details{position:relative;margin-left:auto}.atelier-look-tools details[open]{width:100%}.atelier-look-tools details[open]>button{margin:3px}
-.atelier-group-row{display:grid;grid-template-columns:minmax(80px,1fr) 65px 44px 44px 55px;align-items:center;gap:4px;padding:7px 0}.atelier-group-row label{display:block;margin:0;font-size:11px}.atelier-group-row input,.atelier-group-row select{display:block;width:100%;margin-top:4px}.atelier-group-row button{padding:8px}
-.atelier-dyes fieldset{display:flex;gap:12px;flex-wrap:wrap}.atelier-dyes legend{width:100%;margin-bottom:7px}.atelier-dyes input[type=color]{width:60px;height:44px;padding:4px;border:1px solid #cbd3d8}.atelier-slot{min-height:44px}.atelier-slot button{min-height:44px;min-width:44px;margin-left:0;font-size:11px}.atelier-slot strong{flex:1;min-width:0}.atelier-slot>span{width:auto}
-.atelier-acquisition-card{padding:12px;background:linear-gradient(#ffffffb8,#ffffffb8),url('assets/felt-butter.webp') center/400px;border-radius:10px;margin:10px 0;font-size:12px;line-height:1.8}.atelier-acquisition-card .atelier-soft{margin-top:8px}
-.atelier-candidates>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.atelier-candidates article{min-width:0}.atelier-candidates img{width:100%;height:140px;object-fit:contain;background:#eef2f1;border-radius:10px}.atelier-candidates p{font-size:11px;line-height:1.5;word-break:keep-all}.atelier-candidates button{width:100%;margin-top:5px;padding:8px}.atelier-candidates h4,.atelier-album-heading h4{font-size:14px;margin:15px 0 8px}
-.atelier-photo-selects{display:grid;grid-template-columns:1fr 1fr;gap:10px}.atelier-album-heading{display:flex;justify-content:space-between;align-items:center;margin-top:25px}.atelier-album-count,.atelier-album-status{font-size:12px;color:#68777c;line-height:1.8}.atelier-album{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.atelier-album-photo{min-width:0;background:url('assets/quality-cream.webp') center/100% 100% no-repeat;padding:9px}.atelier-album-photo>button:first-child{display:grid;width:100%;background:none;text-align:left}.atelier-album-photo img{width:100%;height:120px;object-fit:contain;background:#eef1f2}.atelier-album-photo strong,.atelier-album-photo span{font-size:11px;line-height:1.7;margin-top:5px}.atelier-album-photo>button:not(:first-child){width:calc(50% - 2px);padding:8px 3px}.atelier-album-status{margin:6px 0}
-.atelier-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.atelier-shortcuts input{width:52px}.atelier-settings{margin-top:20px}.atelier-replace,.atelier-batch-confirm{padding:15px;background:#f7f9f8;border-radius:9px;font-size:12px;line-height:1.8;margin:12px 0}.atelier-replace p,.atelier-batch-confirm p{margin:0 0 9px}.atelier-undo-save,.atelier-undo-photo{margin:7px 0}
-.atelier button,.atelier input,.atelier select,.atelier summary,.atelier a{font-size:calc(12px * var(--atelier-font-scale,1))!important;white-space:normal;word-break:keep-all}.atelier-item strong,.atelier-look strong,.atelier-hanger strong{font-size:calc(13px * var(--atelier-font-scale,1))}.atelier p,.atelier label,.atelier small,.atelier-item-material{font-size:calc(12px * var(--atelier-font-scale,1));line-height:1.7}.atelier input[type=checkbox]{width:19px;height:19px;accent-color:#915444}.atelier[data-contrast=true]{color:#101820}.atelier[data-contrast=true] p,.atelier[data-contrast=true] small,.atelier[data-contrast=true] .atelier-item-material{color:#24343f}.atelier[data-contrast=true] button{color:#112c3b;outline:1px solid #71828b;outline-offset:-4px}.atelier[data-reduced=true] *{animation:none!important;transition:none!important;scroll-behavior:auto}
-.atelier button:focus-visible,.atelier summary:focus-visible,.atelier select:focus-visible{outline:3px solid #365d93;outline-offset:2px}
-@media(max-width:799px){
- .atelier-workbar{gap:4px;margin:-5px 0 12px}.atelier-workbar .atelier-soft{flex:1 1 30%;padding:8px 9px}.atelier-camera-bar .atelier-soft{padding:9px 12px;min-height:44px}.atelier-camera-bar label{font-size:11px}
- .atelier-slots{grid-template-columns:1fr;gap:4px}.atelier-slot{gap:6px;min-height:44px}.atelier-slot strong{font-size:12px}.atelier-slot button{width:auto;height:44px;flex-shrink:0}.atelier[data-tab=photo] .atelier-slots{display:grid}
- .atelier-items{grid-auto-columns:146px;max-height:260px;align-items:start;overflow-y:visible;padding-bottom:10px}.atelier-item-card{min-height:231px}.atelier-item-card .atelier-item-art{height:91px}.atelier-item-card .atelier-item{padding:10px 11px 5px}.atelier-item-tools{padding:0 7px;gap:3px}.atelier-item-tools details[open]{top:92px}
- .atelier[data-tab=fitting] .atelier-filters button{min-height:44px}.atelier-modes{gap:3px}.atelier-modes button{flex:1 1 28%;padding:8px 7px}.atelier-advanced{margin:10px 0}.atelier-tag-options{gap:4px}.atelier-tag-options button{padding:8px 9px}
- .atelier-group-row{grid-template-columns:minmax(78px,1fr) 56px 44px 44px 48px;gap:3px}.atelier-group-row button{padding:7px 4px}.atelier-group-row input,.atelier-group-row select{padding:8px 5px}
- .atelier-photo-selects{grid-template-columns:1fr}.atelier-album-photo img{height:115px}.atelier-candidates img{height:108px}.atelier-candidates>div{gap:5px}.atelier-quick-looks>div{gap:5px}.atelier-hanger{padding:5px}.atelier-hanger img{height:65px}.atelier-hanger strong{font-size:11px}
- .atelier-look-tools{gap:4px}.atelier-look-tools button{padding:8px 10px}.atelier-shortcuts{grid-template-columns:1fr}
-}
+/* 아직 없는 옷·후보 비교 */
+.atelier-acquisition:empty,.atelier-candidates:empty,.atelier-group-select:empty,.atelier-quick-looks:empty{display:none}
+.atelier-acquisition-card{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:4px 12px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:var(--f14);line-height:1.6;color:var(--w-ink-2)}
+.atelier-acquisition-card::before{content:'';grid-row:1;width:7px;height:7px;margin-top:8px;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.atelier-acquisition-card strong{grid-column:2;font-size:var(--f15);font-weight:var(--wt-strong);color:var(--w-ink)}
+.atelier-acquisition-card p{grid-column:2;font-size:var(--f13);color:var(--w-ink-3)}
+.atelier-acquisition-card .atelier-soft{grid-column:2;justify-self:start;margin-top:8px}
+.atelier-candidates h4,.atelier-album-heading h4{font-size:var(--f15);font-weight:var(--wt-title);letter-spacing:-.01em}
+.atelier-candidates>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.atelier-candidates article{display:grid;align-content:start;gap:6px;min-width:0;padding:6px 6px 4px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-candidates img{display:block;width:100%;aspect-ratio:4/5;height:auto;object-fit:cover;border-radius:11px;background:var(--tile-bg)}
+.atelier-candidates p{padding:0 4px;font-size:var(--f13);line-height:1.45;color:var(--w-ink-2);overflow-wrap:anywhere}
+.atelier-candidates [data-candidate]{width:100%;padding:0 8px}
+.atelier-candidates [data-remove-candidate]{justify-self:center}
 
-@media(max-width:355px){.atelier-scene{height:202px}.atelier-selected h3{font-size:16px}.atelier-items{grid-auto-columns:128px}.atelier-item-art{height:86px}.atelier-tabs{margin-bottom:11px}.atelier-intro{margin-bottom:10px}.atelier-footer-actions button{font-size:11px!important}.atelier-sync-note{max-width:172px}}
-@media(max-width:799px){.atelier-slot button{width:44px;height:44px;min-width:44px}.atelier-slot{min-height:44px}.atelier[data-tab=fitting] .atelier-filters button{min-height:44px}}
-@media(max-width:799px){.atelier-item-material,.atelier-slot,.atelier-slot>span,.atelier-slot strong,.atelier-sync-note{font-size:11px}.atelier-sync-note{max-width:184px;line-height:1.6}.atelier-counter{font-size:11px}.atelier-footer>div:first-child{align-items:center}.atelier-outfit-state{white-space:normal;max-width:150px}}
+/* ── 옷 고르기: 분류 묶음 + 목록 범위 칩 + 여러 줄 격자 ── */
+.atelier-browse{min-width:0}
+.atelier-pane{min-width:0}
+.atelier-pane-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.atelier-pane-heading>div{min-width:0}
+.atelier-pane-heading p{display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+.atelier-pane-heading p::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+.atelier-pane-heading h3{margin-top:8px;font-size:var(--f20);font-weight:var(--wt-display);line-height:1.25;letter-spacing:-.03em;text-wrap:balance}
+.atelier-pane-heading>span{padding-bottom:3px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.atelier-pane-heading>svg{width:22px;height:22px;margin-bottom:3px;color:var(--w-ink-3)}
+.atelier-pane[id$="-pane-fitting"]{display:flex;flex-direction:column;gap:10px}
+.atelier-pane[id$="-pane-fitting"]>*{min-width:0}
+.atelier-pane[id$="-pane-fitting"]>.atelier-pane-heading{order:0;margin-bottom:4px}
+.atelier-pane[id$="-pane-fitting"]>.atelier-quick-looks{order:1}
+.atelier-pane[id$="-pane-fitting"]>.atelier-filters{order:2}
+.atelier-pane[id$="-pane-fitting"]>.atelier-modes{order:3}
+.atelier-pane[id$="-pane-fitting"]>.atelier-search{order:4}
+.atelier-pane[id$="-pane-fitting"]>.atelier-advanced:not(:last-child){order:5}
+.atelier-pane[id$="-pane-fitting"]>.atelier-group-select{order:6}
+.atelier-pane[id$="-pane-fitting"]>.atelier-items{order:7;margin-top:4px}
+.atelier-pane[id$="-pane-fitting"]>.atelier-collection-note{order:8}
+.atelier-pane[id$="-pane-fitting"]>.atelier-advanced:last-child{order:9}
+.atelier-pane[id$="-pane-fitting"]>.atelier-advanced{margin:0}
+.atelier-modes{display:flex;flex-wrap:wrap;gap:0 6px}
+.atelier-filters .atelier-search-toggle{display:none}
+.atelier-search{position:relative;display:flex;align-items:center;gap:6px}
+.atelier-search::before{content:'';position:absolute;left:15px;top:50%;width:17px;height:17px;margin-top:-8.5px;background:var(--w-ink-3);-webkit-mask:var(--i-search) center/contain no-repeat;mask:var(--i-search) center/contain no-repeat;pointer-events:none}
+.atelier-search input[type=search]{min-height:46px;padding-left:42px;border-radius:999px}
+.atelier-search input[type=search]::-webkit-search-cancel-button{filter:invert(1) opacity(.6)}
+.atelier-search [data-studio=owned]{flex-shrink:0}
+.atelier-group-select label{margin:0}
+.atelier-collection-note{font-size:var(--f13);line-height:1.6;color:var(--w-ink-3)}
+/* 코디 행거(바로 입기) */
+.atelier-quick-looks>.atelier-field-label{margin:0 0 8px}
+.atelier-quick-looks>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.atelier-hanger{display:grid;align-content:start;gap:2px;min-width:0;padding:6px 6px 0;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-hanger>button:first-child{display:grid;gap:6px;min-width:0;text-align:left}
+.atelier-hanger img{display:block;width:100%;aspect-ratio:1;height:auto;object-fit:cover;border-radius:11px;background:var(--tile-bg)}
+.atelier-hanger strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:0 4px;font-size:var(--f13);font-weight:var(--wt-strong);line-height:1.4;overflow-wrap:anywhere}
+.atelier-hanger>button:last-child{width:100%;padding:0 8px}
+
+/* 옷 카드: s1 판 + 밝은 회색 그림 칸, 이름 14/600, 입고 있는 옷은 흰 테 + 체크 */
+.atelier-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;align-items:start;min-width:0}
+.atelier-item-card{position:relative;min-width:0;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);transition:box-shadow .18s var(--w-ease)}
+.atelier-item-card:has(.is-chosen){box-shadow:0 0 0 2px var(--w-ink),0 14px 30px rgba(0,0,0,.32)}
+.atelier-item{display:flex;flex-direction:column;align-items:stretch;width:100%;min-width:0;padding:6px 6px 14px;border-radius:inherit;text-align:left;transition:transform .12s var(--w-ease)}
+.atelier-item:active{transform:scale(.985)}
+.atelier-item-card .atelier-item:focus-visible{outline-offset:4px}
+.atelier-item-art{position:relative;display:block;aspect-ratio:1;margin-bottom:10px;overflow:hidden;border-radius:15px;background:var(--tile-bg)}
+.atelier-item-art img{display:block;width:100%;height:100%;object-fit:cover}
+.atelier-item-check{position:absolute;right:8px;top:8px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.atelier-item-check svg{width:15px;height:15px;stroke-width:2.4}
+.atelier-item strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:0 30px 0 6px;font-size:var(--f14);font-weight:var(--wt-strong);line-height:1.4;letter-spacing:-.01em;color:var(--w-ink);overflow-wrap:anywhere}
+.atelier-item-material{display:flex;align-items:center;gap:6px;min-width:0;margin-top:3px;padding:0 30px 0 6px;font-size:var(--f13);line-height:1.45;color:var(--w-ink-3)}
+.atelier-item-card[data-state=worn] .atelier-item-material::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.atelier-item-card[data-state=locked] .atelier-item-material::before{content:'';width:13px;height:13px;flex-shrink:0;background:currentColor;-webkit-mask:var(--i-lock) center/contain no-repeat;mask:var(--i-lock) center/contain no-repeat}
+.atelier-item-card[data-state=locked] .atelier-item-art img{opacity:.5;filter:saturate(.5)}
+.atelier-item-card[data-state=locked] .atelier-item strong{color:var(--w-ink-2)}
+/* 즐겨찾기 별(그림 칸 왼쪽 위 유리 원) · 관리(⋯) */
+.atelier-item-tools{display:contents}
+.atelier-item-tools [data-favorite]{position:absolute;left:6px;top:6px;z-index:1;display:grid;place-items:center;width:44px;height:44px;font-size:0;color:#FAFAF9}
+.atelier-item-tools [data-favorite]::before{content:'';position:absolute;inset:6px;border-radius:50%;background:rgba(14,15,19,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;transition:opacity .18s var(--w-ease)}
+.atelier-item-tools [data-favorite]::after{content:'';position:relative;width:17px;height:17px;background:rgba(18,19,23,.42);-webkit-mask:var(--i-star) center/contain no-repeat;mask:var(--i-star) center/contain no-repeat}
+.atelier-item-card:hover [data-favorite]::before,.atelier-item-tools [data-favorite]:focus-visible::before,.atelier-item-tools [data-favorite][aria-pressed=true]::before{opacity:1}
+.atelier-item-card:hover [data-favorite]::after,.atelier-item-tools [data-favorite]:focus-visible::after{background:#FAFAF9}
+.atelier-item-tools [data-favorite][aria-pressed=true]::after{background:#FAFAF9;-webkit-mask-image:var(--i-starfill);mask-image:var(--i-starfill)}
+.atelier-item-tools details{position:absolute;right:2px;bottom:4px;z-index:1}
+.atelier-item-tools summary{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;cursor:pointer;list-style:none;font-size:0;color:var(--w-ink-3)}
+.atelier-item-tools summary::-webkit-details-marker{display:none}
+.atelier-item-tools summary::after{content:'';width:20px;height:20px;background:currentColor;-webkit-mask:var(--i-more) center/contain no-repeat;mask:var(--i-more) center/contain no-repeat}
+.atelier-item-tools summary:hover{color:var(--w-ink)}
+.atelier-item-tools details[open]{left:6px;right:6px;bottom:6px;z-index:3;display:grid;padding:4px;border-radius:var(--w-r-md);background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2),0 18px 40px rgba(0,0,0,.45)}
+.atelier-item-tools details[open] summary{justify-self:end;width:40px;height:40px;color:var(--w-ink-2)}
+.atelier-item-tools details[open] summary::after{width:16px;height:16px;-webkit-mask-image:var(--i-close);mask-image:var(--i-close)}
+.atelier-item-tools details[open] button{display:flex;align-items:center;width:100%;min-height:44px;padding:0 12px;border-radius:12px;text-align:left;font-size:var(--f14);font-weight:var(--wt-label);color:var(--w-ink);line-height:1.3}
+.atelier-item-tools details[open] button:hover{background:var(--w-s2)}
+.atelier-item-tools details[open] button[aria-pressed=true]{color:var(--w-ink-3)}
+.atelier-empty{grid-column:1/-1;display:grid;justify-items:center;gap:6px;padding:28px 16px;border-radius:var(--w-r-lg);text-align:center;font-size:var(--f14);line-height:1.6;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line)}
+/* 나만의 옷 모음 관리 */
+.atelier-group-manager{display:grid}
+.atelier-group-row{display:grid;grid-template-columns:minmax(80px,1fr) 76px 44px 44px auto;align-items:end;gap:6px;padding:8px 0;border-top:1px solid var(--w-line)}
+.atelier-group-row label{display:grid;gap:6px;margin:0;min-height:0;font-size:var(--f13);color:var(--w-ink-3)}
+.atelier-group-row input,.atelier-group-row select{width:100%}
+.atelier-group-row [data-move-group]{position:relative;display:grid;place-items:center;width:44px;height:46px;font-size:0;color:var(--w-ink-2)}
+.atelier-group-row [data-move-group]::after{content:'';width:18px;height:18px;background:currentColor;-webkit-mask:var(--i-chevron) center/contain no-repeat;mask:var(--i-chevron) center/contain no-repeat}
+.atelier-group-row [data-direction="-1"]::after{transform:rotate(180deg)}
+
+/* ── 룩북 ── */
+.atelier-look-editor{border-top:0;margin-bottom:6px}
+.atelier-look-editor>summary{min-height:48px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.atelier-look-editor[open]>summary{margin-bottom:14px}
+.atelier-pane-copy{margin-bottom:14px;font-size:var(--f14);line-height:1.65;color:var(--w-ink-3);text-wrap:pretty}
+.atelier-name-label,.atelier-field-label{display:block;margin:18px 0 8px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier .atelier-name-label{display:block;min-height:0;margin:0 0 8px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier-name{width:100%}
+.atelier-look-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.atelier-replace,.atelier-batch-confirm{display:grid;gap:10px;margin:12px 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:var(--f14);line-height:1.6;color:var(--w-ink-2)}
+.atelier-batch-confirm .atelier-soft{justify-self:start}
+.atelier-looks{display:grid;gap:10px;margin-top:6px}
+.atelier-look{position:relative;display:grid;gap:4px;min-width:0;padding:8px 8px 4px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-look>button:first-child{display:flex;align-items:center;gap:14px;width:100%;min-width:0;text-align:left}
+.atelier-look-art{display:block;width:84px;height:84px;flex-shrink:0;overflow:hidden;border-radius:14px;background:var(--tile-bg)}
+.atelier-look-art img{display:block;width:100%;height:100%;object-fit:cover}
+.atelier-look>button:first-child>span:last-child{display:grid;gap:2px;min-width:0}
+.atelier-look strong{font-size:var(--f16);font-weight:var(--wt-title);line-height:1.35;letter-spacing:-.015em;overflow-wrap:anywhere}
+.atelier-look small{font-size:var(--f13);line-height:1.45;color:var(--w-ink-2)}
+.atelier-look button>span>span{font-size:var(--f13);color:var(--w-ink-3)}
+.atelier-look-tools{display:flex;align-items:center;flex-wrap:wrap;gap:0 4px}
+.atelier-look-tools [data-wear-look]{padding:0 16px}
+.atelier-look-tools [data-look-favorite]{position:relative;display:grid;place-items:center;width:44px;height:44px;font-size:0;color:var(--w-ink-3)}
+.atelier-look-tools [data-look-favorite]::after{content:'';width:18px;height:18px;background:currentColor;-webkit-mask:var(--i-star) center/contain no-repeat;mask:var(--i-star) center/contain no-repeat}
+.atelier-look-tools [data-look-favorite][aria-pressed=true]{color:var(--w-ink)}
+.atelier-look-tools [data-look-favorite][aria-pressed=true]::after{-webkit-mask-image:var(--i-starfill);mask-image:var(--i-starfill)}
+.atelier-look-tools label{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-2);cursor:pointer}
+.atelier-look-tools details{margin-left:auto}
+.atelier-look-tools details[open]{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px;margin:0;padding:4px 0 8px}
+.atelier-look-tools summary{display:grid;place-items:center;width:44px;height:44px;margin-left:auto;cursor:pointer;list-style:none;font-size:0;color:var(--w-ink-3)}
+.atelier-look-tools summary::-webkit-details-marker{display:none}
+.atelier-look-tools summary::after{content:'';width:20px;height:20px;background:currentColor;-webkit-mask:var(--i-more) center/contain no-repeat;mask:var(--i-more) center/contain no-repeat}
+.atelier-look-tools details[open] summary{flex-basis:100%;width:auto;justify-items:end;padding-right:12px}
+.atelier-look-tools details[open] summary::after{width:16px;height:16px;-webkit-mask-image:var(--i-close);mask-image:var(--i-close)}
+.atelier-look-tools details[open]>button{min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--f135);font-weight:var(--wt-strong);color:var(--w-ink)}
+.atelier-look-tools details[open]>[data-delete-look]{color:var(--w-alert-text)}
+.atelier-empty-look{display:grid;justify-items:center;gap:8px;padding:30px 18px;border-radius:var(--w-r-lg);text-align:center;box-shadow:inset 0 0 0 1px var(--w-line);background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(255,255,255,.015) 10px 20px)}
+.atelier-empty-look svg{width:28px;height:28px;margin-bottom:4px;color:var(--w-ink-3)}
+.atelier-empty-look h4{font-size:var(--f17);font-weight:var(--wt-title);letter-spacing:-.015em}
+.atelier-empty-look p{font-size:var(--f14);line-height:1.6;color:var(--w-ink-3)}
+.atelier-pane[id$="-pane-looks"]>.atelier-advanced:last-child{margin-top:14px}
+
+/* ── 촬영실: 셔터 하나만 흰 알약 ── */
+.atelier-pane>label{display:grid;gap:8px;margin:0 0 4px;font-size:var(--f13);font-weight:var(--wt-label);color:var(--w-ink-3)}
+.atelier-pane>label select{width:100%}
+.atelier-photo-selects{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.atelier-photo-selects label{display:grid;gap:8px;margin:0;font-size:var(--f13);color:var(--w-ink-3)}
+.atelier-photo-selects select{width:100%}
+/* 셔터 두 단추는 아래 줄(footer)에 있다: 촬영실에서는 「사진 찍기」만 흰 알약 */
+.atelier .atelier-soft[data-studio=capture],.atelier .atelier-soft[data-studio=capture]:hover:not(:disabled){min-height:56px;padding:0 24px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);font-size:var(--f16)}
+.atelier [data-studio=capture]::before,.atelier [data-studio=capture-save]::before,.atelier .atelier-download::before{content:'';width:19px;height:19px;flex-shrink:0;background:currentColor;-webkit-mask:var(--i-camera) center/contain no-repeat;mask:var(--i-camera) center/contain no-repeat}
+.atelier [data-studio=capture-save]{min-height:56px}
+.atelier [data-studio=capture-save]::before,.atelier .atelier-download::before{width:17px;height:17px;-webkit-mask-image:var(--i-download);mask-image:var(--i-download)}
+.atelier-photo-result{display:grid;justify-items:center;gap:8px;margin-top:16px;padding:8px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:center}
+.atelier-photo-result>img{display:block;width:100%;max-height:340px;object-fit:contain;border-radius:15px;background:var(--tile-bg)}
+.atelier-photo-caption{font-size:var(--f13);line-height:1.6;color:var(--w-ink-3)}
+.atelier-photo-result .atelier-soft{width:100%}
+.atelier-photo-note{margin-top:14px;font-size:var(--f13);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.atelier-album-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:24px;padding-top:18px;border-top:1px solid var(--w-line)}
+.atelier-album-count,.atelier-album-status{font-size:var(--f13);line-height:1.6;color:var(--w-ink-3)}
+.atelier-album-status{margin-top:2px}
+.atelier-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:12px 0}
+.atelier-album>.atelier-empty{padding:22px 16px}
+.atelier-album-photo{display:grid;grid-template-columns:1fr 1fr;align-content:start;min-width:0;padding:6px 6px 2px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.atelier-album-photo>button:first-child{grid-column:1/-1;display:grid;gap:2px;min-width:0;text-align:left}
+.atelier-album-photo img{display:block;width:100%;aspect-ratio:4/5;height:auto;object-fit:cover;border-radius:13px;background:var(--tile-bg);margin-bottom:6px}
+.atelier-album-photo strong{padding:0 4px;font-size:var(--f14);font-weight:var(--wt-strong)}
+.atelier-album-photo span{padding:0 4px;font-size:var(--f13);line-height:1.45;color:var(--w-ink-3);overflow-wrap:anywhere}
+.atelier-album-photo>button:not(:first-child){padding:0 6px}
+.atelier-album-photo>[data-photo-delete]{color:var(--w-ink-3)}
+.atelier [data-studio=more-photos]{width:100%}
+
+/* ── 설정: 켜고 끄기는 50×30 스위치 ── */
+.atelier-settings{margin-top:18px}
+.atelier-settings>label{justify-content:space-between}
+.atelier-settings>label:has(input[type=checkbox]){flex-direction:row-reverse;justify-content:space-between;min-height:52px;margin:0;border-top:1px solid var(--w-line);font-size:var(--f15);color:var(--w-ink)}
+.atelier-settings input[type=checkbox]{position:relative;width:50px;height:30px;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.atelier-settings input[type=checkbox]::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);-webkit-mask:none;mask:none;transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.atelier-settings input[type=checkbox]:checked{background:var(--w-ink)}
+.atelier-settings input[type=checkbox]:checked::after{width:24px;height:24px;transform:translateX(20px);background:var(--w-on-ink);-webkit-mask:none;mask:none}
+.atelier-settings>label select{flex:0 1 180px}
+.atelier-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:6px}
+.atelier-shortcuts label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;font-size:var(--f13)}
+.atelier-shortcuts input{flex:0 0 52px;width:52px;padding:0;text-align:center}
+
+/* ── 알림 띠 ── */
+/* 알림 묶음은 아래 줄 안에 있다: 휴대폰은 단추 위 한 줄, 넓은 화면·가로는 아래 줄 위에 떠 있는 띠 */
+.atelier-notices{display:grid;gap:6px;min-width:0}
+.atelier-notices:not(:has(>.atelier-feedback:not(:empty),>.atelier-undo-save:not([hidden]),>.atelier-undo-photo:not([hidden]),>.atelier-pending:not([hidden]))){display:none}
+.atelier-feedback{display:flex;align-items:flex-start;gap:10px;margin:0;padding:11px 14px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--f14);line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.atelier-feedback::before{content:'';width:7px;height:7px;flex-shrink:0;margin-top:8px;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 8px rgba(91,134,219,.55)}
 .atelier-feedback:empty{display:none}
-@media(max-width:799px){.atelier-scene{height:215px}.atelier-selected{padding-top:6px;padding-bottom:6px}.atelier-slots{margin-bottom:6px}}
-@media(max-width:355px){
- .wardrobe-dialog #panel-eyebrow,.atelier-intro{display:none}.wardrobe-dialog .dialog-top{margin-bottom:8px}.atelier-tabs{padding-bottom:7px;margin-bottom:8px}.atelier-tabs button{min-height:44px}.atelier-scene{height:190px}.atelier-selected{padding-top:5px;padding-bottom:5px}.atelier-slots{margin-bottom:4px}.atelier[data-tab=fitting] .atelier-filters{margin-bottom:4px}.atelier-items{max-height:168px}.atelier-item-art{height:74px}.atelier-sync-note{max-width:172px}
+.atelier-undo-save,.atelier-undo-photo{margin:0;justify-self:start}
+.atelier-pending{margin:0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--f14);line-height:1.6;color:var(--w-ink-2)}
+.atelier-pending>p{display:flex;gap:10px}
+.atelier-pending>p::before{content:'';width:7px;height:7px;flex-shrink:0;margin-top:8px;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.atelier-pending>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-left:17px}
+
+/* ── 아래 고정: 상태 한 줄 + 선 알약 「조합 저장」 + 흰 알약 「이 차림 입기」 ── */
+.atelier-footer{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 calc(var(--bleed)*-1);padding:18px var(--bleed) calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,transparent,var(--w-panel) 20px)}
+.atelier-footer-state{display:grid;gap:2px;min-width:0}
+.atelier-outfit-state{display:flex;align-items:center;gap:8px;min-width:0;font-size:var(--f14);font-weight:var(--wt-strong);line-height:1.4;color:var(--w-ink)}
+.atelier-outfit-state::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
+.atelier[data-outfit=worn] .atelier-outfit-state::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.atelier[data-outfit=draft] .atelier-outfit-state::before,.atelier[data-outfit=compare] .atelier-outfit-state::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.atelier[data-outfit=locked] .atelier-outfit-state::before{background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.6)}
+.atelier-sync-note{padding-left:15px;font-size:var(--f13);line-height:1.5;color:var(--w-ink-3)}
+.atelier-footer-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.atelier-footer-actions .atelier-soft{min-height:56px;padding:0 22px;font-size:var(--f15)}
+/* 아직 없는 옷을 시착하면 「놀이하고 목도리 받기」가 흰 알약을 맡는다 */
+.atelier-footer-actions:has([data-studio=earn]:not([hidden])) [data-studio=apply]{display:none}
+/* 탭마다 아래 줄의 단추: 피팅룸·룩북은 「조합 저장」+「이 차림 입기」, 촬영실은 「사진 찍기」+「찍고 PNG 저장」 */
+.atelier:not([data-tab=photo]) .atelier-footer-actions [data-studio^=capture],.atelier[data-tab=photo] .atelier-footer-actions :is([data-studio=to-looks],[data-studio=apply],[data-studio=earn]),.atelier[data-tab=photo] .atelier-footer-state{display:none}
+
+/* ── 촬영실: 무대 둘레의 다른 조작은 숨긴다 ── */
+.atelier[data-tab=photo] .atelier-workbar,.atelier[data-tab=photo] .atelier-intro,.atelier[data-tab=photo] .atelier-scene-label,.atelier[data-tab=photo] .atelier-compare,.atelier[data-tab=photo] .atelier-comparing,.atelier[data-tab=photo] .atelier-selected,.atelier[data-tab=photo] .atelier-slots,.atelier[data-tab=photo] .atelier-fitting>.atelier-advanced,.atelier[data-tab=photo] .atelier-acquisition,.atelier[data-tab=photo] .atelier-candidates,.atelier[data-tab=photo] .atelier-drag-hint,.atelier[data-tab=photo] .atelier-settings{display:none}
+
+/* ════ 휴대폰(세로): 무대가 위에 붙어 있고, 그 아래로 옷 격자가 흐른다 ════
+ * 가로 휴대폰(앱 안 가로 틀)은 아래 따로 둔 두 열 배치를 쓰므로 여기서 뺀다. */
+@media(max-width:799px) and (not ((orientation:landscape) and (min-width:560px) and (max-height:500px))){
+ /* 내용이 짧아도 아래 줄이 화면 바닥에 붙도록 창 높이만큼 채우고, 남는 자리는 설정 줄 아래(4번째 줄)에 둔다 */
+ .atelier{--bleed:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto minmax(0,1fr);column-gap:10px;align-items:center;min-height:calc(100dvh - 86px - env(safe-area-inset-top,0px))}
+ .atelier>.atelier-settings{align-self:start}
+ .atelier>*{grid-column:1/-1;min-width:0}
+ .atelier>.atelier-tabs{grid-row:1;margin-bottom:10px}
+ .atelier>.atelier-workbar{grid-row:2;grid-column:1;margin-bottom:12px}
+ .atelier>.atelier-intro{grid-row:2;grid-column:2;margin-bottom:12px}
+ .atelier>.atelier-layout{grid-row:3}
+ .atelier>.atelier-settings{grid-row:4}.atelier>.atelier-footer{grid-row:5}
+ .atelier-tabs button{padding:0 8px;gap:6px}
+ .atelier-layout{display:flex;flex-direction:column;gap:12px}
+ .atelier-fitting{display:contents}
+ /* 옷을 고르는 동안 무대가 화면 위에 붙어 바뀐 차림을 바로 보여 준다. 둥근 모서리 뒤는 판 색 테두리로 가린다. */
+ .atelier-scene-wrap{order:1;position:sticky;top:-4px;z-index:6;outline:10px solid var(--w-panel)}
+ .atelier-scene{height:clamp(220px,40dvh,380px)}
+ .atelier-view-controls{order:2}
+ .atelier-camera-bar{order:3;margin-top:-4px}
+ .atelier-drag-hint{display:none}
+ .atelier-selected{order:4;gap:2px;padding-top:2px}
+ .atelier-selected h3{font-size:var(--f17)}
+ .atelier-story,.atelier-craft{display:none}
+ .atelier[data-detail=true] .atelier-selected .atelier-craft{display:block}
+ .atelier-slots{order:5}
+ .atelier-acquisition{order:6}
+ .atelier-browse{order:7;margin-top:8px}
+ .atelier-fitting>.atelier-advanced{order:8}
+ .atelier-candidates{order:9}
+ .atelier[data-tab=fitting] .atelier-pane-heading{display:none}
+ .atelier-modes{flex-wrap:nowrap;margin:0 calc(var(--bleed)*-1);padding:0 var(--bleed);overflow-x:auto;scrollbar-width:none;scroll-padding:0 var(--bleed)}
+ .atelier-modes::-webkit-scrollbar{display:none}
+ .atelier-modes button{flex:0 0 auto}
+ .atelier-filters .atelier-search-toggle{position:relative;display:grid;place-items:center;flex:0 0 44px;width:44px;padding:0;font-size:0;color:var(--w-ink-2)}
+ .atelier-filters .atelier-search-toggle::after{content:'';width:19px;height:19px;background:currentColor;-webkit-mask:var(--i-search) center/contain no-repeat;mask:var(--i-search) center/contain no-repeat}
+ .atelier-filters .atelier-search-toggle[aria-expanded=true]{background:var(--w-s3);color:var(--w-ink)}
+ .atelier[data-tab=fitting] .atelier-search{display:none}
+ .atelier[data-tab=fitting][data-search-open=true] .atelier-search{display:flex}
+ .atelier-footer{z-index:7;flex-direction:column;align-items:stretch;gap:10px;padding-top:16px}
+ .atelier-notices{order:-1}
+ .atelier-footer-state{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
+ .atelier-outfit-state{flex-shrink:0}
+ .atelier-sync-note{min-width:0;padding-left:0}
+ /* 글자를 크게 해도 흰 알약 글자는 한 줄: 자리가 모자라면 흰 알약이 다음 줄 전체로 내려간다 */
+ .atelier-footer-actions{flex-wrap:wrap;margin-left:0}
+ .atelier-footer-actions .atelier-soft{flex:0 0 auto;padding:0 20px}
+ .atelier-footer-actions .atelier-primary,.atelier-footer-actions [data-studio=capture]{flex:1 1 auto;min-width:max-content;white-space:nowrap}
+ /* 룩북: 무대 대신 목록 */
+ .atelier[data-tab=looks] .atelier-fitting>*,.atelier[data-tab=looks] .atelier-workbar,.atelier[data-tab=looks] .atelier-intro{display:none}
+ .atelier[data-tab=looks] .atelier-browse{margin-top:0}
+ /* 촬영실: 무대 + 시점·확대만 남기고, 셔터는 아래에 붙인다 */
+ .atelier[data-tab=photo] .atelier-pane-heading{display:none}
+ .atelier[data-tab=photo] .atelier-browse{margin-top:4px}
+ .atelier-photo-result>img{max-height:300px}
+}
+@media(max-width:380px){
+ .atelier-workbar [data-studio=restore]{margin-left:4px}
+ .atelier-tabs svg{display:none}
+ .atelier-view-controls>[data-studio=detail]{padding:0 12px}
+ .atelier-view-controls>[data-studio=detail]::before{display:none}
+ .atelier-footer-actions .atelier-soft{padding:0 16px}
+}
+@media(max-width:340px){
+ .atelier-counter{display:none}
+ .atelier-scene{height:clamp(200px,38dvh,320px)}
+ .atelier-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .atelier-item{padding:5px 5px 12px}
+ .atelier-item strong,.atelier-item-material{padding-left:4px}
 }
 
-.atelier-camera-bar label{display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0;white-space:nowrap}.atelier-camera-bar input{min-width:0;width:100%}
-.atelier-advanced>label input:not([type=checkbox]),.atelier-shortcuts label{max-width:100%}
-@media(max-width:799px){
- .atelier[data-tab=looks] .atelier-fitting{display:none}
- .atelier[data-tab=looks] .atelier-intro,.atelier[data-tab=photo] .atelier-intro{display:none}
- .atelier[data-tab=looks] [data-studio=random],.atelier[data-tab=looks] [data-studio=add-candidate],.atelier[data-tab=photo] [data-studio=random],.atelier[data-tab=photo] [data-studio=add-candidate]{display:none}
- .atelier[data-tab=photo] .atelier-selected,.atelier[data-tab=photo] .atelier-slots,.atelier[data-tab=photo] .atelier-fitting>.atelier-advanced,.atelier[data-tab=photo] .atelier-acquisition,.atelier[data-tab=photo] .atelier-candidates,.atelier[data-tab=photo] .atelier-view-controls{display:none}
- .atelier[data-tab=photo] .atelier-scene{height:210px}
- .atelier[data-tab=photo] .atelier-camera-bar{margin-bottom:12px}
- .atelier[data-tab=photo] .atelier-pane-heading{margin-bottom:8px}
- .atelier[data-tab=looks] .atelier-pane-copy{margin-bottom:12px}
+/* ════ 넓은 화면: 왼쪽 무대 열 · 오른쪽 옷 열, 두 열이 따로 넘긴다 ════ */
+@media(min-width:800px){
+ .atelier{--bleed:26px;--layout-h:clamp(400px,calc(94dvh - 256px),660px);position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;column-gap:14px;align-items:center}
+ .atelier>*{grid-column:1/-1;min-width:0}
+ .atelier>.atelier-tabs{grid-row:1;grid-column:1;width:max-content;min-width:420px}
+ .atelier>.atelier-intro{grid-row:1;grid-column:2;justify-self:end}
+ .atelier>.atelier-workbar{grid-row:1;grid-column:3}
+ .atelier>.atelier-layout{grid-row:2;margin-top:16px}
+ .atelier>.atelier-settings{grid-row:1;grid-column:4}.atelier>.atelier-footer{grid-row:3}
+ /* 알림은 아래 줄 위 오른쪽(옷 열 아래쪽)에 떠 있어 창 높이를 바꾸지 않는다 */
+ .atelier-notices{position:absolute;right:var(--bleed);bottom:calc(100% + 2px);z-index:8;width:min(480px,calc(50% - 20px));justify-items:end}
+ .atelier-notices>*{box-shadow:inset 0 0 0 1px var(--w-line-2),0 18px 40px rgba(0,0,0,.5)}
+ .atelier-undo-save,.atelier-undo-photo{justify-self:end;padding:0 10px;border-radius:999px;background:var(--w-s2)}
+ /* 알림이 떠 있는 동안 옷 열 끝을 그 높이만큼 더 넘길 수 있게 한다(마지막 줄이 가려지지 않게) */
+ .atelier:has(.atelier-feedback:not(:empty),.atelier-undo-save:not([hidden]),.atelier-undo-photo:not([hidden])) .atelier-browse{padding-bottom:72px}
+ .atelier:has(.atelier-pending:not([hidden])) .atelier-browse{padding-bottom:150px}
+ .atelier-layout{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);gap:28px;height:var(--layout-h)}
+ .atelier-fitting,.atelier-browse{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent}
+ .atelier-fitting{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:repeat(8,max-content);column-gap:14px;row-gap:12px;align-content:start;grid-template-areas:"stage stage" "view zoom" "slots slots" "acq acq" "selected selected" "dyes dyes" "cand cand" "hint hint"}
+ .atelier-scene-wrap{grid-area:stage}
+ .atelier-scene{height:calc(var(--layout-h) - 180px);min-height:300px}
+ .atelier-view-controls{grid-area:view;min-width:300px}
+ .atelier-camera-bar{grid-area:zoom}
+ .atelier-slots{grid-area:slots}
+ .atelier-acquisition{grid-area:acq}
+ .atelier-selected{grid-area:selected;padding-top:6px}
+ .atelier-fitting>.atelier-advanced{grid-area:dyes}
+ .atelier-candidates{grid-area:cand}
+ .atelier-drag-hint{grid-area:hint;padding-bottom:8px}
+ .atelier-browse{padding-right:6px}
+ .atelier-items{grid-template-columns:repeat(auto-fill,minmax(148px,1fr))}
+ .atelier-footer{margin-top:4px}
+ /* 낮은 창: 옷 격자를 먼저, 색·옷감 필터는 격자 뒤로 */
+ @media(max-height:800px){
+  .atelier-pane[id$="-pane-fitting"]>.atelier-advanced:not(:last-child){order:8}
+  .atelier[data-tab=fitting] .atelier-pane-heading p{display:none}
+  .atelier[data-tab=fitting] .atelier-pane-heading h3{margin-top:0}
+ }
 }
 
+/* 넓은 화면·가로 휴대폰: 설정은 위 줄의 조절 아이콘 하나, 열면 그 자리에서 판이 내려온다 */
+@media(min-width:800px),(orientation:landscape) and (min-width:560px) and (max-height:500px){
+ .atelier>.atelier-settings{position:relative;align-self:start;margin:0;padding:0;border:0}
+ .atelier-settings>summary{position:relative;width:44px;height:44px;min-height:44px;justify-content:center;font-size:0}
+ .atelier-settings>summary::before{content:'';position:absolute;inset:2px;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease)}
+ .atelier-settings>summary::after{position:relative;width:20px;height:20px;background:var(--w-ink);-webkit-mask-image:var(--i-sliders);mask-image:var(--i-sliders);transition:none}
+ .atelier-settings>summary:hover::before{background:var(--w-s3)}
+ .atelier-settings[open]{position:absolute;top:0;right:0;z-index:30;width:min(380px,calc(100vw - 48px));max-height:min(560px,calc(100dvh - 40px));overflow:auto;overscroll-behavior:contain;padding:0 16px 14px;border-radius:var(--w-r-lg);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2),0 24px 60px rgba(0,0,0,.5);scrollbar-width:thin}
+ .atelier-settings[open]>summary{width:auto;margin:0 -16px 4px 0;justify-content:space-between;padding-left:2px;font-size:var(--f15)}
+ .atelier-settings[open]>summary::before{inset:2px 2px 2px auto;width:40px}
+ .atelier-settings[open]>summary::after{width:16px;height:16px;margin-right:12px;-webkit-mask-image:var(--i-close);mask-image:var(--i-close);transform:none}
+}
+
+/* ════ 가로 휴대폰(앱 안 가로 틀): 제목 줄에 탭, 오른쪽 열 위에 편집 단추 ════
+ * app-shell.css의 같은 조건 규칙보다 구체적으로 써서 이 화면의 문법(13px 이상, 44px 조작)을 지킨다. */
+@media(orientation:landscape) and (min-width:560px) and (max-height:500px){
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier{--bleed:14px;--lc:calc((100vw - 44px)*.46);--layout-h:calc(100dvh - 136px - env(safe-area-inset-bottom,0px));position:static;display:block}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-intro{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier>.atelier-settings{position:absolute;top:8px;right:62px;z-index:30}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier>.atelier-settings[open]{top:8px;right:62px;max-height:calc(100dvh - 16px)}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-tabs{position:absolute;top:8px;left:176px;right:auto;width:auto;min-width:0;height:auto;margin:0;padding:4px;gap:2px;border:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-tabs button{flex:0 0 auto;min-height:36px;padding:0 14px;font-size:var(--f14);gap:6px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-tabs svg{display:block;width:16px;height:16px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-workbar{position:absolute;top:58px;left:calc(14px + var(--lc) + 16px);z-index:2;display:flex;flex-wrap:nowrap;gap:2px;margin:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-workbar .atelier-soft{flex:0 0 44px;width:44px;min-width:44px;min-height:44px;padding:0;font-size:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-layout{display:grid;grid-template-columns:var(--lc) minmax(0,1fr);gap:16px;height:var(--layout-h);min-height:140px;margin:0;overflow:hidden}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-fitting{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-drag-hint{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-scene-wrap{position:relative;top:auto;flex:none;outline:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-scene{height:calc(var(--layout-h) - 56px);min-height:120px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-scene-label{left:14px;top:12px;font-size:11px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-compare{right:10px;bottom:10px;min-height:40px;padding:0 14px 0 11px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-browse{display:block;min-width:0;min-height:0;margin:52px 0 0;padding:0 4px 0 0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-pane-heading{margin-bottom:8px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-pane-heading h3{font-size:var(--f17);margin-top:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-pane-heading p{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=fitting] .atelier-pane-heading{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-items{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));grid-template-rows:none;grid-auto-columns:auto;max-height:none;overflow:visible}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-modes{flex-wrap:nowrap;margin:0;padding:0;overflow-x:auto;scrollbar-width:none}
+ /* 낮은 가로 화면에서는 옷 격자를 먼저 보이고, 색·옷감 필터는 격자 뒤로 */
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-pane[id$="-pane-fitting"]>.atelier-advanced:not(:last-child){order:8}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=fitting] .atelier-search{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=fitting][data-search-open=true] .atelier-search{display:flex}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-filters .atelier-search-toggle{position:relative;display:grid;place-items:center;flex:0 0 44px;width:44px;padding:0;font-size:0;color:var(--w-ink-2)}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-filters .atelier-search-toggle::after{content:'';width:19px;height:19px;background:currentColor;-webkit-mask:var(--i-search) center/contain no-repeat;mask:var(--i-search) center/contain no-repeat}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer{display:flex;flex-direction:row;align-items:center;gap:12px;min-height:0;margin:0 -14px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer>div:first-child{display:grid;flex:1 1 auto;gap:0;margin:0;min-width:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=photo] .atelier-footer>div:first-child{display:none}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer strong{font-size:var(--f14)}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-sync-note{max-width:none;margin:0;font-size:var(--f13);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer-actions{display:flex;flex:0 0 auto;min-width:0;gap:8px}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer-actions button{flex:0 0 auto;min-width:0;min-height:48px;padding:0 20px;font-size:var(--f14)!important}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-footer-actions .atelier-primary{padding:0 24px;font-size:var(--f15)!important}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=photo] .atelier-browse{margin-top:0}
+ /* 촬영실: app-shell.css의 가로 규칙이 다시 보이게 하는 편집 줄은 여기서 숨긴다(셔터만 흰 알약) */
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=photo] .atelier-workbar{display:none}
+ /* 알림은 아래 줄 왼쪽(상태 글 자리) 위에 겹쳐 떠서 창 높이를 바꾸지 않는다 */
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-notices{position:absolute;left:14px;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:8;width:calc(100% - 28px - 330px);align-content:end;justify-items:stretch}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier[data-tab=photo] .atelier-notices{width:calc(100% - 28px - 360px)}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-notices>*{box-shadow:inset 0 0 0 1px var(--w-line-2),0 -10px 30px rgba(0,0,0,.4)}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-feedback{min-height:52px;align-items:center}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-feedback::before{margin-top:0}
+ html[data-connected=true] #world-panel.wardrobe-dialog .atelier-undo-save,html[data-connected=true] #world-panel.wardrobe-dialog .atelier-undo-photo{padding:0 10px;border-radius:999px;background:var(--w-s2)}
+}
+
+/* 대비 높이기 · 움직임 줄이기(옷장 설정과 기기 설정) */
+.atelier[data-contrast=true]{--w-ink-2:rgba(250,250,249,.92);--w-ink-3:rgba(250,250,249,.82);--w-ink-q:rgba(250,250,249,.7);--w-line:rgba(255,255,255,.2);--w-line-2:rgba(255,255,255,.36);--stage-ink-3:rgba(18,19,23,.82)}
+:root[data-world-theme=day] .atelier[data-contrast=true]{--w-ink-2:rgba(8,9,12,.9);--w-ink-3:rgba(8,9,12,.8);--w-line:rgba(8,9,12,.2);--w-line-2:rgba(8,9,12,.36)}
+.atelier[data-reduced=true] *,.atelier[data-reduced=true] *::before,.atelier[data-reduced=true] *::after{animation:none!important;transition:none!important;scroll-behavior:auto}
+.atelier[data-reduced=true] :active{transform:none!important}
+@media(prefers-reduced-motion:reduce){.atelier *,.atelier *::before,.atelier *::after{animation:none!important;transition:none!important;scroll-behavior:auto}.atelier :active{transform:none!important}}

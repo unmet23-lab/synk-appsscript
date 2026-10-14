@@ -2,13 +2,14 @@ const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-run
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const results=[],errors=[],failures=[];const base=process.env.SYNK_WORLD_QA_URL||'http://127.0.0.1:4296';
 const check=(name,condition)=>{assert.ok(condition,name);results.push(name);};
+async function enterOpening(page){await page.waitForFunction(()=>window.__synkOpening);if(await page.locator('.synk-opening').count())await page.locator('.opening-start').click();}
 async function profile(page,button='login-a'){await page.locator('[data-action="profile"]').click();await page.locator(`[data-world="${button}"]`).click();await page.waitForFunction(()=>window.__synkWorld.client.snapshot!==null);await page.waitForFunction(()=>!document.querySelector('#panel').open);}
 (async()=>{
  const browser=await chromium.launch({channel:'msedge',headless:true});
  try{
  const mobile=await browser.newContext({viewport:{width:390,height:844}}),page=await mobile.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&!r.url().includes('/api/'))failures.push({url:r.url(),status:r.status()});});
  await page.goto(base+'/mobile.html',{waitUntil:'networkidle'});await page.waitForFunction(()=>window.__synkWorld&&window.__synkHome.sceneMetrics()?.graphicsVersion===3,null,{timeout:60000});
- check('default home uses graphics v3 without a query parameter',true);
+ check('default home uses graphics v3 without a query parameter',true);await enterOpening(page);await page.locator('.welcome-art').waitFor();
  check('first launch shows welcome',await page.locator('.welcome-art').isVisible());await page.screenshot({path:path.join(__dirname,'mobile-welcome.png')});
  await page.locator('[data-world="guest"]').click();check('guest can explore approved home',!await page.locator('#panel').evaluate(e=>e.open));
  await page.locator('[data-action="photo"]').click();check('guest photo clearly remains a preview',await page.locator('.home-photo figcaption').textContent().then(text=>text.includes('둘러보기')));await page.keyboard.press('Escape');
@@ -36,7 +37,7 @@ async function profile(page,button='login-a'){await page.locator('[data-action="
  await page.screenshot({path:path.join(__dirname,'mobile-photo-dialog.png')});await page.keyboard.press('Escape');
  await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>window.__synkWorld?.client.snapshot?.avatar.slots.neck);check('refresh restores HTTP-only session and outfit',await page.evaluate(()=>window.__synkWorld.client.snapshot.avatar.slots.body==='mongle-apron-starter'));
  check('no credentials stored in browser localStorage',await page.evaluate(()=>!Object.entries(localStorage).some(([k,v])=>/accessToken|refreshToken|Bearer|access_token/.test(k+v))));
- const desktop=await browser.newContext({viewport:{width:1440,height:1000}}),pc=await desktop.newPage();pc.on('pageerror',e=>errors.push(e.message));await pc.goto(base+'/desktop.html',{waitUntil:'networkidle'});await pc.locator('[data-world="guest"]').click();await profile(pc);check('independent PC browser session restores same account',await pc.evaluate(()=>window.__synkWorld.client.snapshot.accountId)===owner);await pc.waitForFunction(()=>window.__synkHome.sceneMetrics()?.outfit==='scarf-apron');check('independent PC session renders same outfit',true);await pc.screenshot({path:path.join(__dirname,'desktop-home.png'),fullPage:true});
+ const desktop=await browser.newContext({viewport:{width:1440,height:1000}}),pc=await desktop.newPage();pc.on('pageerror',e=>errors.push(e.message));await pc.goto(base+'/desktop.html',{waitUntil:'networkidle'});await enterOpening(pc);await pc.locator('[data-world="guest"]').click();await profile(pc);check('independent PC browser session restores same account',await pc.evaluate(()=>window.__synkWorld.client.snapshot.accountId)===owner);await pc.waitForFunction(()=>window.__synkHome.sceneMetrics()?.outfit==='scarf-apron');check('independent PC session renders same outfit',true);await pc.screenshot({path:path.join(__dirname,'desktop-home.png'),fullPage:true});
  // PC changes after phone snapshot: phone must report conflict and not overwrite.
  await pc.locator('[data-action="wardrobe"]').first().click();await pc.locator('[data-world="equip"][data-slot="body"]').click();await pc.waitForFunction(()=>window.__synkWorld.client.snapshot.avatar.slots.body==='');
  await page.locator('[data-action="wardrobe"]').first().click();await page.locator('[data-world="equip"][data-slot="neck"]').click();await page.locator('[data-world="discard-pending"]').waitFor();check('concurrent device edit surfaces conflict',await page.evaluate(()=>window.__synkWorld.client.status==='conflict'));await page.locator('[data-world="discard-pending"]').click();await page.waitForFunction(()=>window.__synkWorld.client.snapshot.avatar.slots.body==='');

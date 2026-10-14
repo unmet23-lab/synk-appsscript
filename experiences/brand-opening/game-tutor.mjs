@@ -10,8 +10,15 @@ const asset=path=>new URL(path,import.meta.url).href;
 const delays={marin:260,kkamong:130,mongle:0};
 const practicedHere=new Set();
 const labels={ready:'함께하는 튜터',playing:'함께하는 튜터',paused:'잠깐 쉬는 중',listening:'같이 듣는 중',picked:'고른 답 확인',success:'해냈어',combo:'또 해냈어',retry:'다시 도전',unanswered:'다음에 다시',obstacle:'다시 준비',timing:'박자 맞추기',finish:'놀이 마무리',rest:'쉬어도 괜찮아'};
-export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>false,owner='guest',onExit=()=>{},practiceEnabled=true}){
+export function gameTutorPresentation(value){
+ return Object.freeze({support:['choose','step','independent'].includes(value?.support)?value.support:'choose',
+  explanation:['brief','standard','detailed'].includes(value?.explanation)?value.explanation:'standard'});
+}
+export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>false,owner='guest',onExit=()=>{},practiceEnabled=true,presentation=null}){
  const tutor=getTutor(tutorId),guide=GAME_GUIDES[game];if(!tutor||!guide||!container)return null;
+ // The WORLD owner supplies verified preferences. Snapshot only these display
+ // choices; a later account change disposes this companion through its host.
+ const preferences=gameTutorPresentation(presentation),independent=preferences.support==='independent';
  let disposed=false,phase='lobby',kind='ready',counts={},streak=0,misses=0,lastKind='',lastAt=0,sound=false,clip=null,guideOpen=false;
  const timers=new Set();
  let answerUntil=0;
@@ -32,7 +39,9 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b> · <span class="game-tutor-label">함께하는 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite">${escape(tutorLine(tutor.id,'ready'))}</p></div><button class="game-tutor-help" type="button" aria-label="${tutor.name}에게 조작법 다시 보기">조작법</button>`;
  container.classList.add('has-game-tutor');container.prepend(element);
  const help=document.createElement('dialog');help.className='game-tutor-guide';help.setAttribute('aria-label',`${tutor.name}과 ${guide.title} 조작법`);
- help.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name} · ${escape(guide.title)}</small><h3>같이 시작하기 전에</h3><p>${escape(tutorLine(tutor.id,'hint'))}</p></div></div><ol>${guide.steps.map(s=>`<li><span class="game-tutor-key">${escape(s.keys)}</span><div><h4>${escape(s.title)}</h4><p>${escape(s.text[tutor.id])}</p></div></li>`).join('')}</ol><div class="game-tutor-guide-footer"><button class="game-tutor-continue" type="button">알겠어, 같이 해 보자</button><button class="game-tutor-practice" type="button">직접 다시 연습하기</button><button class="game-tutor-sound" type="button" aria-pressed="${sound}">반응 소리 ${sound?'켜짐':'꺼짐'}</button><small>놀이 중에는 듣기에 집중할 수 있게 튜터 소리를 쉬어요.</small></div>`;
+ help.dataset.explanation=preferences.explanation;
+ const instruction=text=>preferences.explanation==='standard'?`<p>${escape(text)}</p>`:`<details class="game-tutor-explanation" ${preferences.explanation==='detailed'?'open':''}><summary>조작 설명 더 보기</summary><p>${escape(text)}</p></details>`;
+ help.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name} · ${escape(guide.title)}</small><h3>같이 시작하기 전에</h3><p>${escape(tutorLine(tutor.id,'hint'))}</p></div></div><ol>${guide.steps.map(s=>`<li><span class="game-tutor-key">${escape(s.keys)}</span><div><h4>${escape(s.title)}</h4>${instruction(s.text[tutor.id])}</div></li>`).join('')}</ol><div class="game-tutor-guide-footer"><button class="game-tutor-continue" type="button">알겠어, 같이 해 보자</button><button class="game-tutor-practice" type="button">직접 다시 연습하기</button><button class="game-tutor-sound" type="button" aria-pressed="${sound}">반응 소리 ${sound?'켜짐':'꺼짐'}</button><small>놀이 중에는 듣기에 집중할 수 있게 튜터 소리를 쉬어요.</small></div>`;
  container.append(help);
  const supportList=document.createElement('section');supportList.className='tutor-support-list';supportList.setAttribute('aria-label','최근 어려웠던 곳과 힌트');help.querySelector('ol').before(supportList);
  const toggle=document.createElement('button');toggle.type='button';toggle.className='tutor-guide-toggle';toggle.textContent='기본 조작법도 보기';help.querySelector('.game-tutor-guide-footer').prepend(toggle);
@@ -40,7 +49,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  function refreshSupport(){
   const list=ledger.list();supportList.hidden=!list.length;toggle.hidden=!list.length;help.querySelector('ol').hidden=!!list.length;
   help.querySelector('h3').textContent=list.length?'어려웠던 곳, 같이 다시':'같이 시작하기 전에';
-  const button=element.querySelector('.game-tutor-help');button.textContent=list.length?(ledger.pending()?'힌트':'복습'):'조작법';button.setAttribute('aria-label',`${tutor.name}에게 ${list.length?'힌트와 어려웠던 곳 다시 연습':'조작법 다시 보기'}`);
+  const button=element.querySelector('.game-tutor-help');button.textContent=list.length?(ledger.pending()?'힌트':'복습'):'조작법';button.dataset.support=list.length?(ledger.pending()?'pending':'done'):'none';button.setAttribute('aria-label',`${tutor.name}에게 ${list.length?'힌트와 어려웠던 곳 다시 연습':'조작법 다시 보기'}`);
   supportList.replaceChildren();
   for(const entry of [...list].reverse()){
    const row=document.createElement('article');row.className='tutor-support-item';row.dataset.practised=String(entry.practised);row.dataset.supportType=entry.type;row.dataset.supportId=entry.id;
@@ -49,8 +58,14 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
    const hint=document.createElement('p');hint.textContent=supportLine(tutor.id,entry);
    const fact=document.createElement('p');fact.className='tutor-support-fact';fact.textContent=entry.hint;
    const retry=document.createElement('button');retry.type='button';retry.className='tutor-support-retry';retry.textContent=entry.step?'이 동작만 다시 연습':'이 내용만 다시 연습';retry.addEventListener('click',()=>entry.step?openPractice({entry}):openReview(entry));
-   row.append(label,title,hint,fact);
-   if(entry.review){const quote=document.createElement('blockquote');quote.textContent=entry.review.prompt;row.append(quote);}
+   row.append(label,title,hint);
+   let detail=row;
+   if(preferences.explanation!=='standard'){
+    detail=document.createElement('details');detail.className='game-tutor-explanation';detail.open=preferences.explanation==='detailed';
+    const summary=document.createElement('summary');summary.textContent='힌트와 근거 더 보기';detail.append(summary);row.append(detail);
+   }
+   detail.append(fact);
+   if(entry.review){const quote=document.createElement('blockquote');quote.textContent=entry.review.prompt;detail.append(quote);}
    row.append(retry);supportList.append(row);
   }
  }
@@ -90,13 +105,13 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  function openPractice({entry=null}={}){
   if(disposed||practice||review)return;
   if(guideOpen)closeGuide({keepPaused:true});command('help');clear();if(frame)frame.inert=true;
-  practice=createTutorPractice({tutor,game,container,reduced,getSound:()=>sound,owner,replay:practiced||!!entry,focusSteps:entry?[entry.step]:null,timed:entry?.timed===true,
+  practice=createTutorPractice({tutor,game,container,reduced,getSound:()=>sound,owner,replay:practiced||!!entry||independent,focusSteps:entry?[entry.step]:null,timed:entry?.timed===true,
    onComplete:()=>{
     if(entry){ledger.mark(entry);refreshSupport();endPractice();command('help-resume');return;}
     practiced=true;practicedHere.add(practiceScope);guideSeen=true;try{sessionStorage.setItem(guideKey,'true');}catch{}
     endPractice();if(frame){if(channelReady)command('practice-complete');else pendingStart=true;}
    },
-   onCancel:()=>{if(entry){endPractice({keepPaused:true});openGuide();return;}if(!practiced){onExit();return;}endPractice();element.querySelector('.game-tutor-help').focus({preventScroll:true});idle();}
+   onCancel:()=>{if(entry){endPractice({keepPaused:true});openGuide();return;}if(!practiced&&!independent){onExit();return;}endPractice();element.querySelector('.game-tutor-help').focus({preventScroll:true});idle();}
   });
  }
  function openReview(entry){
@@ -134,8 +149,10 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  document.addEventListener('visibilitychange',visibility);motion.addEventListener('change',visibility);
  if(frame)window.addEventListener('message',message);
  refreshSupport();setFace('기본');idle();
- if(practiceEnabled&&!practiced)queueMicrotask(openPractice);else if(!guideSeen)queueMicrotask(openGuide);
- return Object.freeze({element,react,setPhase,openGuide,openPractice,metrics:()=>({tutor:tutor.id,game,phase,kind,streak,misses,guideOpen,sound,practiced,difficulties:ledger.list(),review:review?.metrics()||null,practice:practice?.metrics()||null,reactionAudioPlaying:clip?.paused===false}),dispose(){
+ // Independent learners use the game's normal start button. Skipping this
+ // optional companion introduction must never mark a practice as completed.
+ if(!independent)queueMicrotask(()=>{if(disposed||phase!=='lobby')return;if(practiceEnabled&&!practiced)openPractice();else if(!guideSeen)openGuide();});
+ return Object.freeze({element,react,setPhase,openGuide,openPractice,metrics:()=>({tutor:tutor.id,game,phase,kind,streak,misses,guideOpen,sound,practiced,presentation:{...preferences},difficulties:ledger.list(),review:review?.metrics()||null,practice:practice?.metrics()||null,reactionAudioPlaying:clip?.paused===false}),dispose(){
   if(disposed)return;disposed=true;clear();if(help.open)help.close();
   practice?.dispose();practice=null;review?.dispose();review=null;
   if(frame)window.removeEventListener('message',message);document.removeEventListener('visibilitychange',visibility);motion.removeEventListener('change',visibility);

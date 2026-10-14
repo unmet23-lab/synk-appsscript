@@ -205,23 +205,23 @@ var require_world_learning_host = __commonJS({
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     var failure = (message, code) => Object.assign(new Error(message), { code });
     function createWorldLearningHost({ accountKey, revision, storage, transport, memoryTransport = null, personalMemory = null, guard, connected = true, onStatus = () => {
-    }, engine = null, clock = Date.now }) {
+    }, engine = null, clock: clock2 = Date.now }) {
       if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== "function") throw new TypeError("Verified WORLD account required");
       if (personalMemory && (!identifier(personalMemory.accountKey) || !Number.isSafeInteger(personalMemory.revision) || personalMemory.revision < 1 || typeof personalMemory.storage?.getItem !== "function" || typeof personalMemory.storage?.setItem !== "function" || typeof personalMemory.connected !== "boolean")) throw new TypeError("Verified personal WORLD memory required");
       let sync, primary, memory, memoryReady, personal, privacyBlocked = false, closed = false, run = null, generation = 0;
       const coaches = /* @__PURE__ */ new Set(), memoryListeners = /* @__PURE__ */ new Set();
-      const check = () => {
+      const check2 = () => {
         guard();
         if (closed || privacyBlocked) throw failure("WORLD account session ended", "MEMORY_SESSION_ENDED");
       };
       const shared = { getItem(key) {
-        check();
+        check2();
         return storage.getItem(key);
       }, setItem(key, value) {
-        check();
+        check2();
         storage.setItem(key, value);
       }, removeItem(key) {
-        check();
+        check2();
         storage.removeItem(key);
       } };
       const ownerKey = (eventId) => `${OWNER}.${eventId}`;
@@ -234,7 +234,7 @@ var require_world_learning_host = __commonJS({
         }
         return ids.filter((id) => shared.getItem(ownerKey(id)) != null).map((id) => [id, now]);
       }
-      function own(ids, before, context) {
+      function own2(ids, before, context) {
         const added = ids.filter((id) => !before.has(id));
         if (!added.length) return;
         for (const id of added) {
@@ -242,7 +242,7 @@ var require_world_learning_host = __commonJS({
           if (prior != null && prior !== context.id) throw new Error("Conflicting WORLD run ownership");
           shared.setItem(key, context.id);
         }
-        const now = clock(), kept = new Set(ids), rows2 = [];
+        const now = clock2(), kept = new Set(ids), rows2 = [];
         for (const [id, at] of owners(ids, now)) {
           if (kept.has(id) || now - at < OWNER_GRACE_MS) rows2.push([id, at]);
           else shared.removeItem(ownerKey(id));
@@ -266,7 +266,7 @@ var require_world_learning_host = __commonJS({
         }
       }) });
       const upload = transport && { get: (args) => transport.get(args), async post(args) {
-        check();
+        check2();
         const groups = [];
         for (const event of args.events) {
           const runId = shared.getItem(ownerKey(event.id)) ?? null;
@@ -277,7 +277,7 @@ var require_world_learning_host = __commonJS({
         const accepted = [];
         for (const group of groups) {
           const result = await transport.post({ ...args, events: group.events, ...group.runId ? { runId: group.runId } : {} });
-          check();
+          check2();
           if (result?.ok === false || result?.revision !== revision) return result;
           const sent = new Set(group.events.map((event) => event.id));
           if (!Array.isArray(result.accepted) || result.accepted.some((id) => !sent.has(id))) throw failure("Invalid WORLD run acknowledgement", "INVALID_RESPONSE");
@@ -286,20 +286,20 @@ var require_world_learning_host = __commonJS({
         return { ok: true, revision, accepted };
       } };
       function createGame(options, factory, createSync) {
-        check();
+        check2();
         const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
         if (personalMemory && !personal) {
-          const own2 = personalMemory, ownStorage = Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (...args) => {
-            check();
-            return own2.storage[method]?.(...args);
+          const own3 = personalMemory, ownStorage = Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (...args) => {
+            check2();
+            return own3.storage[method]?.(...args);
           }]));
-          personal = make.createGame({ gameId: "world-personal-memory", storage: ownStorage, learnerKey: "device", storageScope: "account", accountKey: own2.accountKey, historyComplete: !own2.connected, fold: { remote: true } });
-          if (own2.connected && own2.transport && typeof engine?.createMemorySync === "function") {
+          personal = make.createGame({ gameId: "world-personal-memory", storage: ownStorage, learnerKey: "device", storageScope: "account", accountKey: own3.accountKey, historyComplete: !own3.connected, fold: { remote: true } });
+          if (own3.connected && own3.transport && typeof engine?.createMemorySync === "function") {
             memory = engine.createMemorySync({
               adapter: personal,
-              accountKey: own2.accountKey,
-              revision: own2.revision,
-              transport: own2.transport,
+              accountKey: own3.accountKey,
+              revision: own3.revision,
+              transport: own3.transport,
               onStatus: (state) => {
                 if (state.phase === "blocked" && ["REVISION_CONFLICT", "LEARNING_DISABLED", "SESSION_REVOKED", "UNAUTHORIZED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "MEMORY_SESSION_ENDED", "ACCOUNT_UNAVAILABLE"].includes(state.code)) {
                   privacyBlocked = true;
@@ -349,23 +349,23 @@ var require_world_learning_host = __commonJS({
         }) : () => {
         };
         const logIds = () => typeof coach.syncPort.ids === "function" ? coach.syncPort.ids() : coach.syncPort.events().map((event) => event.id);
-        const record = (before) => {
+        const record2 = (before) => {
           try {
-            own(logIds(), before, context);
+            own2(logIds(), before, context);
           } catch (error2) {
             sync?.invalidate("STORAGE_ERROR");
             throw error2;
           }
         };
         const call = (method, args, closing = false) => {
-          check();
+          check2();
           if (opened !== generation && !closing) throw failure("WORLD game run ended", "RUN_ENDED");
           if (!context) return method(...args);
           const before = new Set(logIds());
           try {
             return method(...args);
           } finally {
-            record(before);
+            record2(before);
           }
         };
         const guarded = (value, closing) => typeof value === "function" ? (...args) => call(value, args, closing) : value;
@@ -376,7 +376,7 @@ var require_world_learning_host = __commonJS({
         ]).concat([
           // Each game sees the run's immutable task snapshot, without an account token.
           ["assignment", () => {
-            check();
+            check2();
             if (opened !== generation) throw failure("WORLD game run ended", "RUN_ENDED");
             return context?.target ? structuredClone(context.target) : null;
           }],
@@ -392,7 +392,7 @@ var require_world_learning_host = __commonJS({
         // Account preferences live beyond an individual game run. Expose only guarded choices,
         // never a storage/merge port; a late UI callback still checks the current account session.
         preferences() {
-          check();
+          check2();
           if (!personal && !primary) {
             if (typeof engine?.createGame !== "function") return null;
             createGame({ gameId: "world-preferences" }, engine.createGame, engine.createLearningSync);
@@ -401,26 +401,26 @@ var require_world_learning_host = __commonJS({
           if (!owner) return null;
           return Object.freeze({
             today: () => {
-              check();
+              check2();
               return owner.today();
             },
             setToday: (value) => {
-              check();
+              check2();
               return owner.setToday(value);
             },
             presentation: () => {
-              check();
+              check2();
               return owner.presentation();
             },
             setPresentation: (value) => {
-              check();
+              check2();
               return owner.setPresentation(value);
             },
             subscribe: (listener) => {
-              check();
+              check2();
               return owner.memoryPort.subscribe((change) => {
                 try {
-                  check();
+                  check2();
                   listener(change);
                 } catch {
                 }
@@ -433,31 +433,31 @@ var require_world_learning_host = __commonJS({
         // bounded memory read so a slow response cannot silently start it at defaults.
         // Offline/unsupported memory still permits device-local practice; privacy changes do not.
         async ready() {
-          check();
+          check2();
           await memoryReady;
-          check();
+          check2();
         },
         // Back in front: retry the sync and read what other devices chose.
         retry: () => {
-          check();
+          check2();
           const remembered = memoryReady = memory?.retry(), learned = sync?.retry();
           return remembered && learned ? Promise.all([remembered, learned]).then(([, state]) => state) : learned || remembered;
         },
         // Going to the background or closing: send the changed memory now.
         flush: () => {
-          check();
+          check2();
           return memory?.flush();
         },
         // One run at a time, on a connected account. Opening or closing one ends the games of the last.
         beginRun(value) {
-          check();
+          check2();
           if (!connected || !identifier(value?.id) || !identifier(value?.gameId)) throw new TypeError("A connected WORLD run is required");
           generation += 1;
           run = { id: value.id, gameId: value.gameId, ...value.target ? { target: structuredClone(value.target) } : {} };
           return structuredClone(run);
         },
         closeRun() {
-          check();
+          check2();
           generation += 1;
           run = null;
         },
@@ -483,7 +483,7 @@ var require_strata = __commonJS({
     var CONFIDENCE = ["authored", "measured", "ai_draft"];
     var KINDS = ["skill", "grammar_point", "expression", "situation", "letter", "syllable", "concept", "topic", "task", "word"];
     var TYPES = ["part_of", "prerequisite", "contrasts_with"];
-    var copy = (value) => JSON.parse(JSON.stringify(value));
+    var copy2 = (value) => JSON.parse(JSON.stringify(value));
     var fail2 = (message) => {
       throw new TypeError(`Strata: ${message}`);
     };
@@ -568,7 +568,7 @@ var require_strata = __commonJS({
     }
     function createMap(input) {
       validateMap(input);
-      const data = freeze(copy(input));
+      const data = freeze(copy2(input));
       const nodes = new Map(data.nodes.map((node) => [node.id, node]));
       const tags = new Map(data.links.tags.map((link) => [link.tag, link]));
       const goals = new Map((data.links.goals || []).map((link) => [link.goal, link]));
@@ -589,13 +589,13 @@ var require_strata = __commonJS({
         });
       }
       function forSkill(id) {
-        const skill = getNode(id);
-        if (skill?.kind !== "skill") return null;
+        const skill2 = getNode(id);
+        if (skill2?.kind !== "skill") return null;
         const edges = data.edges.filter((edge) => edge.type === "part_of" && edge.to === id);
         const grammar = edges.map((edge) => getNode(edge.from));
-        const refs = [...skill.source_refs, ...grammar.flatMap((node) => node.source_refs), ...edges.flatMap((edge) => edge.source_refs)];
+        const refs = [...skill2.source_refs, ...grammar.flatMap((node) => node.source_refs), ...edges.flatMap((edge) => edge.source_refs)];
         const sources = [...new Map(refs.map((ref) => [`${ref.source}\0${ref.selector}`, ref])).values()];
-        return freeze({ skill, grammar, level: skill.level, sources });
+        return freeze({ skill: skill2, grammar, level: skill2.level, sources });
       }
       function prerequisites(id) {
         if (!nodes.has(id)) return [];
@@ -6499,7 +6499,7 @@ var require_trail = __commonJS({
       };
       const OPTIONAL = { "practice.presented": ["measure"], "practice.attempted": ["reason", "choice"] };
       const VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
-      const copy = (value) => JSON.parse(JSON.stringify(value));
+      const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key2) => [key2, entry[key2]])) : entry);
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       function choiceRecord(value) {
@@ -6507,7 +6507,7 @@ var require_trail = __commonJS({
         if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
         return { selectedId: value.selectedId, correctId: value.correctId };
       }
-      const time = (value) => {
+      const time2 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
         return n;
@@ -6525,8 +6525,8 @@ var require_trail = __commonJS({
         return value;
       };
       const scopeOf = (e) => vouched.get(e)?.scope ?? key(e.scope);
-      const atOf = (e) => vouched.get(e)?.at ?? time(e.at);
-      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time(e.recordedAt);
+      const atOf = (e) => vouched.get(e)?.at ?? time2(e.at);
+      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time2(e.recordedAt);
       const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
       const tag = (v) => typeof v === "string" && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
       function validate(event) {
@@ -6534,7 +6534,7 @@ var require_trail = __commonJS({
         const fields = [...BASE, ...FIELDS[event.type]];
         if (Object.keys(event).some((k) => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
         key(event.scope);
-        if (time(event.recordedAt) < time(event.at)) throw new TypeError("Trail: recorded before occurrence");
+        if (time2(event.recordedAt) < time2(event.at)) throw new TypeError("Trail: recorded before occurrence");
         if (event.type === TYPES[0]) {
           if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id) || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError("Trail: invalid presentation");
           if (event.measure != null) {
@@ -6567,14 +6567,14 @@ var require_trail = __commonJS({
         if (TYPES.includes(event?.type)) validate(event);
         else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every((v) => typeof v === "string")) throw new TypeError("Trail: invalid log entry");
         freeze(event);
-        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time(event.at), recordedAt: time(event.recordedAt) });
+        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time2(event.at), recordedAt: time2(event.recordedAt) });
         return event;
       }
       function checkLink(events, event) {
         const attempts = { count: 0, latest: -Infinity };
         for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
           attempts.count += 1;
-          attempts.latest = Math.max(attempts.latest, time(earlier.at));
+          attempts.latest = Math.max(attempts.latest, time2(earlier.at));
         }
         return linked(
           event,
@@ -6620,7 +6620,7 @@ var require_trail = __commonJS({
       const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
       const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey) && (prior.keys[traceKey] & BITS[kind]) !== 0;
       function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
-        const scopeId = key(scope), cutoff = time(asOf), recordedCutoff = time(recordedAsOf);
+        const scopeId = key(scope), cutoff = time2(asOf), recordedCutoff = time2(recordedAsOf);
         if (!Array.isArray(events)) throw new TypeError("Trail: log must be an array");
         if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError("Trail: invalid decision filter");
         const reported = (decisionId) => decisions === null || decisions.includes(decisionId);
@@ -6718,7 +6718,7 @@ var require_trail = __commonJS({
         });
         return {
           version: VERSION,
-          scope: copy(scope),
+          scope: copy2(scope),
           asOf,
           recordedAsOf,
           decisions: decisions === null ? null : [...decisions],
@@ -6823,11 +6823,11 @@ var require_trail = __commonJS({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
-      const frozen = (r) => Object.freeze({ ...copy(r), conceptIds: Object.freeze([...r.conceptIds]) });
+      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const frozen = (r) => Object.freeze({ ...copy2(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record);
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record2);
         const records = [], index = /* @__PURE__ */ new Set();
         if (readable) {
           for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
@@ -6843,22 +6843,22 @@ var require_trail = __commonJS({
           firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history2) => !!history2 && typeof history2.firstExposure === "function" && typeof history2.readable === "boolean" && Array.isArray(history2.records) && typeof history2.partial === "boolean" && history2.records.every(record);
+      const opened = (history2) => !!history2 && typeof history2.firstExposure === "function" && typeof history2.readable === "boolean" && Array.isArray(history2.records) && typeof history2.partial === "boolean" && history2.records.every(record2);
       function remember(history2, summary) {
         if (!opened(history2)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history2.readable) return null;
         const known = new Set(history2.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record(r) && !known.has(r.itemKey));
-        return { records: [...history2.records, ...added].map(copy), partial: history2.partial };
+        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
+        return { records: [...history2.records, ...added].map(copy2), partial: history2.partial };
       }
       function createPracticeOutcomeIndex(summary) {
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
-        const owner = key(summary.scope), cutoff = time(summary.asOf), recordedCutoff = time(summary.recordedAsOf ?? summary.asOf);
+        const owner = key(summary.scope), cutoff = time2(summary.asOf), recordedCutoff = time2(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
           if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
-          const at = time(item.at), recordedAt = time(item.recordedAt);
+          const at = time2(item.at), recordedAt = time2(item.recordedAt);
           if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
           attempts.set(item.eventId, {
             eventId: item.eventId,
@@ -6872,7 +6872,7 @@ var require_trail = __commonJS({
         }
         return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
           if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
-          const start = time(since), at = time(outcome.at), recordedAt = time(outcome.recordedAt);
+          const start = time2(since), at = time2(outcome.at), recordedAt = time2(outcome.recordedAt);
           if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
           const attempt = attempts.get(outcome.attemptId);
           const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
@@ -6888,7 +6888,7 @@ var require_trail = __commonJS({
         for (const now of summary.attempts) {
           const concept = now.conceptIds[0];
           if (!now.independent || now.verdict !== "correct" || !concept || told.has(concept) || known.has(now.itemKey)) continue;
-          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time2(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
           if (!before) continue;
           told.add(concept);
           facts.push({
@@ -6934,7 +6934,7 @@ var require_engine = __commonJS({
       const LEVER_CLASSES = ["shape", "content"];
       const ARMS = ["adapted", "baseline"];
       const DAY = 864e5, RECENT = 30 * DAY;
-      const copy = (value) => JSON.parse(JSON.stringify(value));
+      const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const freeze = (value) => {
         if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -7059,7 +7059,7 @@ var require_engine = __commonJS({
         return true;
       }
       function append(events, event) {
-        return admit(events, event) ? [...copy(events), copy(event)] : copy(events);
+        return admit(events, event) ? [...copy2(events), copy2(event)] : copy2(events);
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
@@ -7129,7 +7129,7 @@ var require_engine = __commonJS({
           const completion = completed.get(event.completionId);
           if (ms(completion.at) <= ms(event.at)) {
             responses.delete(event.completionId);
-            responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+            responses.set(event.completionId, copy2({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
           }
         }
         const latestOutcome = /* @__PURE__ */ new Map();
@@ -7140,7 +7140,7 @@ var require_engine = __commonJS({
         for (const event of ordered) if (event.type === "experience.completed") rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
         const state = {
           version: VERSION,
-          scope: copy(scope),
+          scope: copy2(scope),
           asOf,
           recordedAsOf,
           context,
@@ -7149,7 +7149,7 @@ var require_engine = __commonJS({
           feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
           excluded: [...excluded],
           lines,
-          outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
+          outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy2),
           rounds
         };
         return { state, cutoff, personal, decisions, completed };
@@ -7191,7 +7191,7 @@ var require_engine = __commonJS({
         if (c.goal) reasons.push(`goal.${c.goal}`);
         if (c.support) reasons.push(`support.${c.support}`);
         if (!adapted) reasons.push("arm.baseline");
-        if (!eligible.length) return { version: VERSION, status: "unavailable", scope: copy(scope), experienceId, at, reasons: [...reasons, "no.feasible.experience"], evidence, alternatives: [], selected: null };
+        if (!eligible.length) return { version: VERSION, status: "unavailable", scope: copy2(scope), experienceId, at, reasons: [...reasons, "no.feasible.experience"], evidence, alternatives: [], selected: null };
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
@@ -7329,10 +7329,10 @@ var require_engine = __commonJS({
         return {
           version: VERSION,
           status: "ready",
-          scope: copy(scope),
+          scope: copy2(scope),
           experienceId,
           at,
-          selected: copy(scored[0].item),
+          selected: copy2(scored[0].item),
           support: following && bundle[following.id].option || c.support || "choose",
           focus: c.goal || "explore",
           reasons,
@@ -7347,9 +7347,9 @@ var require_engine = __commonJS({
         };
       }
       const choice = (plan, leverId, fallback = null) => plan && plan.status === "ready" && plan.bundle?.[leverId]?.option || fallback;
-      function createSession({ scope, events = [], clock = () => (/* @__PURE__ */ new Date()).toISOString(), id, explore = 0 } = {}) {
+      function createSession({ scope, events = [], clock: clock2 = () => (/* @__PURE__ */ new Date()).toISOString(), id, explore = 0 } = {}) {
         scopeKey(scope);
-        scope = copy(scope);
+        scope = copy2(scope);
         let log = [], frozen = null;
         const byId = /* @__PURE__ */ new Map(), attemptStats = /* @__PURE__ */ new Map(), completions = /* @__PURE__ */ new Map();
         const lookup = {
@@ -7374,7 +7374,7 @@ var require_engine = __commonJS({
             frozen = null;
             return;
           }
-          const entry = copy(event);
+          const entry = copy2(event);
           const t = getTrail();
           if (typeof t?.vouch === "function") t.vouch(entry);
           else freeze(entry);
@@ -7390,22 +7390,22 @@ var require_engine = __commonJS({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record = (body) => {
-          const at = clock(), event = { ...body, schema: 1, scope: copy(scope), id: nextId(), at, recordedAt: at };
+        const record2 = (body) => {
+          const at = clock2(), event = { ...body, schema: 1, scope: copy2(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
-          return copy(event);
+          return copy2(event);
         };
         return {
-          events: () => copy(log),
+          events: () => copy2(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record({ type: "context.set", field, value, until }),
-          observe: (signal) => record({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
+          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
-            const decision = decide({ events: log, scope, at: clock(), experienceId, candidates, levers, explore });
+            const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record({
+            const recorded = record2({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -7415,27 +7415,27 @@ var require_engine = __commonJS({
               alternatives: decision.alternatives,
               support: decision.support,
               focus: decision.focus,
-              candidateSnapshot: copy(candidates),
+              candidateSnapshot: copy2(candidates),
               arm: decision.arm,
               round: decision.round,
               seed: decision.seed,
               explore: decision.explore,
-              bundle: copy(decision.bundle),
-              leverSnapshot: copy(levers)
+              bundle: copy2(decision.bundle),
+              leverSnapshot: copy2(levers)
             });
             return { ...decision, id: recorded.id };
           },
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy(existing) : record({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy2(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value) => record({ type: "feedback.given", completionId, value }),
+          feedback: (completionId, value) => record2({ type: "feedback.given", completionId, value }),
           practice: (kind, fields) => {
             if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record({
+          outcome: (decisionId, result) => record2({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -7445,7 +7445,7 @@ var require_engine = __commonJS({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -7453,8 +7453,8 @@ var require_engine = __commonJS({
             attemptStats.clear();
             completions.clear();
           },
-          state: () => understand(log, scope, clock()),
-          lines: () => understand(log, scope, clock()).lines
+          state: () => understand(log, scope, clock2()),
+          lines: () => understand(log, scope, clock2()).lines
         };
       }
       return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, understand, decide, choice, createSession });
@@ -7605,7 +7605,19 @@ var require_vellum = __commonJS({
       if (typeof when !== "string" || !when.trim()) throw new TypeError("Vellum: invalid situation line");
       return `${when} \uC4F0\uB294 \uB9D0\uC774\uB77C \uACE8\uB790\uC5B4\uC694.`;
     }
-    module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine };
+    function activityReason({ reasons = [], state = "unseen", label } = {}) {
+      if (!Array.isArray(reasons)) throw new TypeError("Vellum: invalid activity reason");
+      if (reasons.includes("activity.none")) return "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uD65C\uB3D9\uC774 \uC5C6\uC5B4\uC694. \uC2DC\uAC04\uC774\uB098 \uC18C\uB9AC \uC124\uC815\uC744 \uBC14\uAFD4 \uBCFC \uC218 \uC788\uC5B4\uC694.";
+      if (reasons.includes("review.due")) return "\uBCF5\uC2B5\uD560 \uC2DC\uAC04\uC774 \uB41C \uB0B4\uC6A9\uC774 \uC788\uC5B4\uC694. \uC9E7\uAC8C \uB2E4\uC2DC \uB9CC\uB098 \uBD10\uC694.";
+      const goal = reasons.includes("goal.declared");
+      if (reasons.includes("activity.retry")) return `\uCC98\uC74C\uC5D0 \uB193\uCE5C \uBD80\uBD84\uC744 \uB2E4\uC2DC \uC5F0\uC2B5\uD574 \uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
+      if (reasons.includes("activity.assisted")) return `\uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0B8 \uBD80\uBD84\uC774\uC5D0\uC694. \uD55C \uBC88 \uB354 \uC0B4\uD3B4\uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
+      if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
+      if (goal) return "\uC9C1\uC811 \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694. \uC9E7\uAC8C \uC2DC\uC791\uD574 \uBD10\uC694.";
+      if (reasons.includes("history.incomplete")) return "\uAE30\uB85D\uC744 \uBAA8\uB450 \uD655\uC778\uD558\uAE30 \uC804\uC774\uB77C \uAE30\uBCF8 \uD65C\uB3D9\uC73C\uB85C \uC2DC\uC791\uD574\uC694.";
+      return "\uC544\uC9C1 \uC5F0\uC2B5 \uAE30\uB85D\uC774 \uC801\uC5B4\uC694. \uC9E7\uAC8C \uD574 \uBCF4\uBA70 \uB9DE\uCDB0 \uAC08\uAC8C\uC694.";
+    }
+    module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason };
   }
 });
 
@@ -7837,7 +7849,7 @@ var require_learning_ledger = __commonJS({
       "practice.delivery"
     ]);
     var MAX_ENTRIES = 2e5;
-    var own = (table, key) => Object.prototype.hasOwnProperty.call(table, key);
+    var own2 = (table, key) => Object.prototype.hasOwnProperty.call(table, key);
     var plain = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
     function empty() {
       return { version: VERSION, cutoff: null, folded: 0, keys: {}, presented: [], cells: {}, content: {}, counts: null };
@@ -7848,26 +7860,26 @@ var require_learning_ledger = __commonJS({
       return ledger;
     }
     var before = (ledger, traceKey, kinds) => {
-      const bits = ledger && own(ledger.keys, traceKey) ? ledger.keys[traceKey] : 0;
+      const bits = ledger && own2(ledger.keys, traceKey) ? ledger.keys[traceKey] : 0;
       return kinds.some((kind) => bits & BITS[kind]);
     };
     var helpedAt = (h) => Array.isArray(h) ? h[1] : h;
     function rows2(cell) {
       if (!cell) return { rows: [], unassessed: 0 };
-      const iso = (ms) => new Date(ms).toISOString();
+      const iso2 = (ms) => new Date(ms).toISOString();
       return { unassessed: cell.unassessed, rows: [
-        ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
-        ...cell.helped.map((h) => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso(helpedAt(h)), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
+        ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso2(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
+        ...cell.helped.map((h) => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso2(helpedAt(h)), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
       ] };
     }
-    var cellOf = (ledger, key) => ledger && own(ledger.cells, key) ? ledger.cells[key] : null;
-    var contentOf = (ledger, key) => ledger && own(ledger.content, key) ? ledger.content[key] : null;
+    var cellOf = (ledger, key) => ledger && own2(ledger.cells, key) ? ledger.cells[key] : null;
+    var contentOf = (ledger, key) => ledger && own2(ledger.content, key) ? ledger.content[key] : null;
     function fold(previous, events, { scope, log = events, local = false }) {
       const base = previous || empty();
       const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content } };
       if (!events.length) return ledger;
-      const time = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
-      const latest = log.reduce((max, e) => Math.max(max, time(e)), -Infinity);
+      const time2 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
+      const latest = log.reduce((max, e) => Math.max(max, time2(e)), -Infinity);
       const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
       const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
       const presented = new Map(events.filter((e) => e.type === "practice.presented").map((e) => [e.id, e]));
@@ -7876,7 +7888,7 @@ var require_learning_ledger = __commonJS({
         const p = presented.get(e.presentationId);
         if (!p) continue;
         const bit = e.type === "practice.attempted" ? BITS.attempt : e.level === "answer" ? BITS.answer : BITS.help;
-        for (const k of Trail.traceKeys(p)) ledger.keys[k] = (own(ledger.keys, k) ? ledger.keys[k] : 0) | bit;
+        for (const k of Trail.traceKeys(p)) ledger.keys[k] = (own2(ledger.keys, k) ? ledger.keys[k] : 0) | bit;
       }
       const shown = new Map(ledger.presented.map(([task, item, family, n]) => [JSON.stringify([task, item, family]), n]));
       for (const p of summary.presentations) {
@@ -7886,7 +7898,7 @@ var require_learning_ledger = __commonJS({
       ledger.presented = [...shown].map(([key, n]) => [...JSON.parse(key), n]).sort((a, b) => a.join("\0") < b.join("\0") ? -1 : 1);
       const touched = /* @__PURE__ */ new Set();
       const add = (table, key, a) => {
-        const cell = own(table, key) ? touched.has(table[key]) ? table[key] : { ind: [...table[key].ind], helped: [...table[key].helped], unassessed: table[key].unassessed } : { ind: [], helped: [], unassessed: 0 };
+        const cell = own2(table, key) ? touched.has(table[key]) ? table[key] : { ind: [...table[key].ind], helped: [...table[key].helped], unassessed: table[key].unassessed } : { ind: [], helped: [], unassessed: 0 };
         table[key] = cell;
         touched.add(cell);
         const at = Date.parse(a.at);
@@ -7906,7 +7918,7 @@ var require_learning_ledger = __commonJS({
         table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
       }
       ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
-      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
+      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time2(e)), -Infinity));
       ledger.folded += events.length;
       if (local) ledger.local = true;
       return ledger;
@@ -7991,7 +8003,7 @@ var require_learning = __commonJS({
     "use strict";
     var POLICY = Object.freeze({ version: "learning-priority-3", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
     var RESPONSE_FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "unknown"]);
-    var { learningReason } = require_vellum();
+    var { learningReason, activityReason, SUPPORTS } = require_vellum();
     var Ledger = require_learning_ledger();
     var DAY = 864e5;
     function formatEvidence(rows2, { now, complete, difficulty, responseFormat, base = null }) {
@@ -8020,6 +8032,7 @@ var require_learning = __commonJS({
         status = "supported";
         priority = 0.9;
       }
+      const reasonEvidence = status === "supported" ? helped.slice(-12) : status === "review" && !recent.length ? valid.slice(-1) : recent;
       return {
         difficulty,
         responseFormat,
@@ -8031,6 +8044,7 @@ var require_learning = __commonJS({
         lastAt,
         assisted: helped.length,
         evidence: recent.map((a) => a.eventId),
+        reasonEvidence: reasonEvidence.map((a) => a.eventId),
         unassessed: rows2.filter((a) => a.verdict === "unassessed" || a.verdict === "skipped").length + (base?.unassessed || 0)
       };
     }
@@ -8067,7 +8081,7 @@ var require_learning = __commonJS({
       };
     }
     var CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
-    function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
+    function rankLearning({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
       if (!Array.isArray(candidates)) throw new TypeError("Core: candidates must be an array");
       const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s]));
       const content = new Map((profile.concepts || []).map((c) => [c.id, c.status]));
@@ -8117,6 +8131,10 @@ var require_learning = __commonJS({
         ranked.push({ candidate, focus, score, lift, count });
       }
       ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+      return ranked;
+    }
+    function recommend(input) {
+      const ranked = rankLearning(input);
       if (!ranked.length) return { status: "unavailable", selected: null, reason: "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC5F0\uC2B5\uC774 \uC5C6\uC5B4\uC694.", alternatives: [] };
       const best = ranked[0], label = best.focus.skill.label;
       return {
@@ -8129,6 +8147,99 @@ var require_learning = __commonJS({
         policy: POLICY.version,
         evidence: best.focus.evidence,
         alternatives: ranked.slice(1).map((r) => r.candidate)
+      };
+    }
+    var ACTIVITY_POLICY = "learning-activity-1";
+    var activityToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+    var activityTime = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+    var activityList = (value) => Array.isArray(value) && value.every(activityToken) && new Set(value).size === value.length;
+    function recommendActivities({ profile, candidates, settings = {}, at = profile?.asOf, presentations = [], prior = null } = {}) {
+      if (!profile || !Array.isArray(profile.skills) || typeof profile.evidenceComplete !== "boolean" || !activityTime(at) || !Array.isArray(candidates) || candidates.length > 500 || !settings || typeof settings !== "object" || Array.isArray(settings) || Object.keys(settings).some((key) => !["goals", "minutes", "support", "audioAvailable"].includes(key)) || settings.goals != null && !activityList(settings.goals) || settings.minutes != null && (!Number.isFinite(settings.minutes) || settings.minutes <= 0) || settings.support != null && !SUPPORTS.includes(settings.support) || settings.audioAvailable != null && typeof settings.audioAvailable !== "boolean") throw new TypeError("Core: invalid activity recommendation");
+      const usable = profile.evidenceComplete ? profile : { ...profile, concepts: [], skills: profile.skills.map((skill2) => ({
+        ...skill2,
+        levels: Object.fromEntries([1, 2, 3].map((difficulty) => [difficulty, { formats: Object.fromEntries(RESPONSE_FORMATS.map((responseFormat) => [
+          responseFormat,
+          { difficulty, responseFormat, status: "unseen", priority: 0.65, n: 0, correct: 0, incorrect: 0, assisted: 0, evidence: [] }
+        ])) }]))
+      })) };
+      const goals = new Set(settings.goals || []), ids = /* @__PURE__ */ new Set(), ranked = [], excluded = [];
+      for (const candidate of candidates) {
+        if (!candidate || !activityToken(candidate.id) || ids.has(candidate.id) || !Number.isFinite(candidate.minutes) || candidate.minutes <= 0 || !Array.isArray(candidate.targets) || candidate.targets.length > 500 || candidate.goals != null && !activityList(candidate.goals) || candidate.supports != null && (!Array.isArray(candidate.supports) || !candidate.supports.length || candidate.supports.some((support) => !SUPPORTS.includes(support)) || new Set(candidate.supports).size !== candidate.supports.length) || candidate.audioRequired != null && typeof candidate.audioRequired !== "boolean" || candidate.available != null && typeof candidate.available !== "boolean" || candidate.reviewAt != null && !activityTime(candidate.reviewAt) || candidate.practiceNeed != null && (!["retry", "assisted"].includes(candidate.practiceNeed.kind) || Object.keys(candidate.practiceNeed).some((key) => !["kind", "at", "evidenceRefs"].includes(key)) || !activityTime(candidate.practiceNeed.at) || Date.parse(candidate.practiceNeed.at) > Date.parse(at) || !activityList(candidate.practiceNeed.evidenceRefs) || !candidate.practiceNeed.evidenceRefs.length)) throw new TypeError("Core: invalid learning activity");
+        ids.add(candidate.id);
+        const targets = rankLearning({
+          profile: usable,
+          candidates: candidate.targets,
+          presentations,
+          prior,
+          audioAvailable: settings.audioAvailable !== false
+        });
+        const blocked = [];
+        if (candidate.available === false) blocked.push("activity.unavailable");
+        if (settings.minutes != null && candidate.minutes > settings.minutes) blocked.push("time.limit");
+        if (settings.audioAvailable === false && (candidate.audioRequired || candidate.targets.length && !targets.length)) blocked.push("audio.unavailable");
+        if (settings.support && settings.support !== "choose" && candidate.supports && !candidate.supports.includes(settings.support)) blocked.push("support.mismatch");
+        if (blocked.length) {
+          excluded.push({ id: candidate.id, reasons: blocked });
+          continue;
+        }
+        const target = targets[0] || null, state = target?.focus.status || "unseen";
+        const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
+        const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY ? candidate.practiceNeed : null;
+        const urgent = due || hostNeed || ["practice", "supported", "review"].includes(state);
+        const tier = urgent ? 0 : state === "recent-independent" ? 2 : 1;
+        const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
+        const reasons = [
+          ...due ? ["review.due"] : [],
+          ...hostNeed ? [`activity.${hostNeed.kind}`] : [],
+          ...target && state !== "unseen" ? [`practice.${state}`] : [],
+          ...matchedGoals.length ? ["goal.declared"] : [],
+          ...!profile.evidenceComplete ? ["history.incomplete"] : [],
+          ...!due && !hostNeed && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
+        ];
+        ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons });
+      }
+      ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
+      const best = ranked[0];
+      const common = {
+        policy: ACTIVITY_POLICY,
+        asOf: at,
+        evidenceComplete: profile.evidenceComplete,
+        excluded,
+        learningEffectClaim: false,
+        abilityClaim: false,
+        grade: null
+      };
+      if (!best) return {
+        ...common,
+        status: "unavailable",
+        selected: null,
+        alternatives: [],
+        reasons: ["activity.none"],
+        reason: activityReason({ reasons: ["activity.none"] }),
+        evidence: [],
+        focusSkillId: null,
+        state: null,
+        matchedGoals: []
+      };
+      const detail = (row) => ({
+        id: row.candidate.id,
+        reasons: [...row.reasons],
+        state: row.state,
+        focusSkillId: row.target?.focus.skill.id || null,
+        matchedGoals: [...row.matchedGoals],
+        evidence: [...row.target?.focus.reasonEvidence || row.target?.focus.evidence || []],
+        ...row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: "host-schedule" } : {},
+        ...row.hostNeed ? { hostEvidence: { kind: row.hostNeed.kind, at: row.hostNeed.at, evidenceRefs: [...row.hostNeed.evidenceRefs], source: "host-practice" } } : {}
+      });
+      return {
+        ...common,
+        status: "ready",
+        selected: best.candidate,
+        alternatives: ranked.slice(1).map((row) => row.candidate),
+        ...detail(best),
+        reason: activityReason({ reasons: best.reasons, state: best.state, label: best.target?.focus.skill.label }),
+        basis: best.due ? "review-schedule" : best.hostNeed ? "host-practice" : best.target && best.state !== "unseen" ? "practice" : best.matchedGoals.length ? "declared" : "cold-start",
+        assessments: ranked.map(detail)
       };
     }
     var CONTENT = Object.freeze(["word", "grammar_point"]);
@@ -8151,15 +8262,15 @@ var require_learning = __commonJS({
       return [...rows2.values()].map(({ node, list }) => {
         const formats = {};
         for (const responseFormat of RESPONSE_FORMATS) {
-          const own = list.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat);
+          const own2 = list.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat);
           const cell = Ledger.contentOf(prior, `${node.id}|${responseFormat}`);
-          if (own.length || cell) formats[responseFormat] = formatEvidence(own, { now, complete, difficulty: null, responseFormat, base: cell ? Ledger.rows(cell) : null });
+          if (own2.length || cell) formats[responseFormat] = formatEvidence(own2, { now, complete, difficulty: null, responseFormat, base: cell ? Ledger.rows(cell) : null });
         }
         const focus = Object.values(formats).sort((a, b) => b.priority - a.priority)[0];
         return { id: node.id, kind: node.kind, label: node.label_ko, status: focus.status, priority: focus.priority, formats };
       }).sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
     }
-    module.exports = { POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, formatEvidence };
+    module.exports = { POLICY, ACTIVITY_POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, recommendActivities, formatEvidence };
   }
 });
 
@@ -8723,7 +8834,7 @@ var require_temper_flow = __commonJS({
       const VERSION = "temper-flow-1";
       const FLIP_WINDOW = 2;
       const COOL_DOWN = 2;
-      function check({ spec, knob, from, to, step, phase = "response", history: history2 = [], frozen = false } = {}) {
+      function check2({ spec, knob, from, to, step, phase = "response", history: history2 = [], frozen = false } = {}) {
         if (frozen) return { ok: false, rail: "hold" };
         const k = spec?.knobs?.find((x) => x.id === knob);
         if (!k) return { ok: false, rail: "unknown-knob" };
@@ -8893,7 +9004,7 @@ var require_temper_flow = __commonJS({
           note: "\uAC00\uC0C1 \uC0AC\uB78C\uC73C\uB85C \uAD6C\uD604\uACFC \uADDC\uCE59\uC744 \uD655\uC778\uD55C \uACB0\uACFC\uB2E4. \uC2E4\uC81C \uC0AC\uB78C\uC758 \uD559\uC2B5 \uD6A8\uACFC\xB7\uB9CC\uC871\xB7\uC131\uACFC\uC758 \uC99D\uAC70\uAC00 \uC544\uB2C8\uB2E4."
         };
       }
-      return Object.freeze({ VERSION, FLIP_WINDOW, COOL_DOWN, PERSONAS, check, truth, simulate });
+      return Object.freeze({ VERSION, FLIP_WINDOW, COOL_DOWN, PERSONAS, check: check2, truth, simulate });
     });
   }
 });
@@ -8918,7 +9029,7 @@ var require_flow = __commonJS({
       const DEADBAND = 0.75;
       const PACE_TARGET = 0.9;
       const ITEM = "item.difficulty";
-      const copy = (value) => JSON.parse(JSON.stringify(value));
+      const copy2 = (value) => JSON.parse(JSON.stringify(value));
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const scalar = (value) => ["number", "string", "boolean"].includes(typeof value) && (typeof value !== "number" || Number.isFinite(value));
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
@@ -8926,7 +9037,7 @@ var require_flow = __commonJS({
       const logit = (p) => Math.log(p / (1 - p));
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
       const round = (value, digits) => Math.round(value * 10 ** digits) / 10 ** digits;
-      const time = (value) => {
+      const time2 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Flow: invalid time");
         return n;
@@ -8962,7 +9073,7 @@ var require_flow = __commonJS({
           seen.add(value.id);
           spec.knobs.push(value);
         }
-        const result = Object.freeze(copy(spec));
+        const result = Object.freeze(copy2(spec));
         defined.add(result);
         return result;
       }
@@ -8983,18 +9094,18 @@ var require_flow = __commonJS({
           const index = memory.indices[knob.id];
           indices[knob.id] = Number.isInteger(index) && index >= 0 && index < knob.values.length ? index : knob.start;
         }
-        return { estimates: copy(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
+        return { estimates: copy2(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
       }
       function priorFromSummary(input, summary, skillIds = []) {
         const spec = defineContent(input);
         if (!spec.items || !summary || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length) return null;
-        const skills = skillIds.map((skill) => summary.skills.find((s) => s.id === skill));
-        if (skills.some((skill) => !skill)) return null;
+        const skills = skillIds.map((skill2) => summary.skills.find((s) => s.id === skill2));
+        if (skills.some((skill2) => !skill2)) return null;
         let level = spec.items.start;
         for (let index = spec.items.start; index < spec.items.levels.length - 1; index += 1) {
           const authored = spec.items.levels[index];
-          const steady = skills.every((skill) => {
-            const formats = skill.levels?.[authored]?.formats;
+          const steady = skills.every((skill2) => {
+            const formats = skill2.levels?.[authored]?.formats;
             return !!formats && Object.values(formats).some((f) => f.status === "recent-independent");
           });
           if (!steady) break;
@@ -9041,7 +9152,7 @@ var require_flow = __commonJS({
         if (condition !== null && !CONDITIONS.includes(condition)) fail2("invalid condition");
         if (!["adapted", "baseline"].includes(arm)) fail2("invalid arm");
         if (prior !== null && (typeof prior !== "object" || !within(prior.content, -20, 20))) fail2("invalid prior");
-        const startedAt = time(now), remembered = validMemory(spec, memory);
+        const startedAt = time2(now), remembered = validMemory(spec, memory);
         let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
         overall = clamp(overall, 0.55, 0.92);
         const aim = targets(spec, overall);
@@ -9057,7 +9168,7 @@ var require_flow = __commonJS({
           estimates.content.theta = prior.content;
           basis = "prior";
         }
-        const returning = !!remembered && startedAt - time(remembered.at) > RETURN_AFTER;
+        const returning = !!remembered && startedAt - time2(remembered.at) > RETURN_AFTER;
         if (returning) for (const dimension of DIMENSIONS) estimates[dimension].reversals = Math.min(estimates[dimension].reversals, 1);
         const adaptive = arm === "adapted" && mode !== "fixed";
         const calm = condition === "tired";
@@ -9166,7 +9277,7 @@ var require_flow = __commonJS({
         return {
           spec,
           settings,
-          intro: () => ({ code: `start.${intro}`, opening: copy(opening) }),
+          intro: () => ({ code: `start.${intro}`, opening: copy2(opening) }),
           // The item level the content should draw next, or the nearest level it actually has.
           level(available) {
             if (!spec.items) return null;
@@ -9249,9 +9360,9 @@ var require_flow = __commonJS({
               expected: round(before, 3),
               content: round(estimates.content.theta, 3),
               pace: round(estimates.pace.theta, 3),
-              change: change && copy(change)
+              change: change && copy2(change)
             });
-            return { change: change && copy(change), settings: settings(), evidence };
+            return { change: change && copy2(change), settings: settings(), evidence };
           },
           /* The person accepted an offer of less help (vellum-flow.supportStep). One support knob
            * moves one step toward less help; nothing else changes. Not in the same response as
@@ -9270,7 +9381,7 @@ var require_flow = __commonJS({
             const change = { step, phase: "accepted", knob: knob.id, kind: knob.kind, dimension: "content", from, to, direction: 1, because: "accepted-less-help", value: knob.values[to] };
             steady = 0;
             changes.push(change);
-            return copy(change);
+            return copy2(change);
           },
           quietStreak: () => quiet,
           steadyStreak: () => steady,
@@ -9281,8 +9392,8 @@ var require_flow = __commonJS({
             return knobs.length > 0 && knobs.every((k) => indices[k.id] === 0);
           }),
           latencies: () => [...latencies],
-          trace: () => copy(trace),
-          changes: () => copy(changes),
+          trace: () => copy2(trace),
+          changes: () => copy2(changes),
           last: () => last && { ...last },
           // What the host stores for next time: per content, no identity, no answers, no text.
           // The estimates learn in every round; the place kept is only where adapted play reached,
@@ -9292,7 +9403,7 @@ var require_flow = __commonJS({
             content: spec.id,
             specVersion: spec.version,
             policy: VERSION,
-            at: new Date(time(at)).toISOString(),
+            at: new Date(time2(at)).toISOString(),
             estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
             indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
             latencies: [...latencies]
@@ -9316,7 +9427,7 @@ var require_vellum_flow = __commonJS({
       const DAY = 864e5;
       const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
-      const time = (value) => {
+      const time2 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Vellum: invalid time");
         return n;
@@ -9335,7 +9446,7 @@ var require_vellum_flow = __commonJS({
         if (declared) return { offer: false, reason: "declared" };
         if (at >= last) return { offer: false, reason: "least-help" };
         if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
-        if (declinedAt !== null && time(now) - time(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
+        if (declinedAt !== null && time2(now) - time2(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
         return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
       }
       const WORDS = Object.freeze({
@@ -9394,14 +9505,14 @@ var require_game_flow = __commonJS({
     "use strict";
     var Flow = require_flow();
     var VellumFlow = require_vellum_flow();
-    var localDay = (iso) => {
-      const d = new Date(iso);
+    var localDay = (iso2) => {
+      const d = new Date(iso2);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
     var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
     var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var presentationOf = (value) => object3(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
-    function createFlowPort({ storage, key, clock, epoch = () => null }) {
+    function createFlowPort({ storage, key, clock: clock2, epoch = () => null }) {
       const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
       const listeners = /* @__PURE__ */ new Set();
       const notify = (change) => {
@@ -9452,11 +9563,11 @@ var require_game_flow = __commonJS({
       return Object.freeze({
         today() {
           const value = read(TODAY);
-          return value && value.day === localDay(clock()) && Flow.CONDITIONS.includes(value.condition) ? value.condition : null;
+          return value && value.day === localDay(clock2()) && Flow.CONDITIONS.includes(value.condition) ? value.condition : null;
         },
         setToday(condition) {
           if (condition !== null && !Flow.CONDITIONS.includes(condition)) throw new TypeError("Atlas: invalid condition");
-          return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
+          return write(TODAY, condition === null ? null : { day: localDay(clock2()), condition });
         },
         // Set only by the person's own choice (a hub or settings screen); a value that is not in the
         // vocabulary is never read back. null forgets it, and the forgetting keeps its time so another
@@ -9467,7 +9578,7 @@ var require_game_flow = __commonJS({
         },
         setPresentation(presentation) {
           if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(", ")}`);
-          const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock() });
+          const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock2() });
           if (done) notify({ kind: "presentation", key: "chosen" });
           return done;
         },
@@ -9532,7 +9643,7 @@ var require_game_flow = __commonJS({
         }
       });
     }
-    function createLive({ coach, port, clock }) {
+    function createLive({ coach, port, clock: clock2 }) {
       return function live(input, { declared = {}, presentation, skillIds = [], arm = "adapted", condition, level = "standard", words = {} } = {}) {
         const spec = Flow.defineContent(input);
         if (presentation === void 0) presentation = typeof port.presentation === "function" ? port.presentation() : null;
@@ -9550,9 +9661,9 @@ var require_game_flow = __commonJS({
             prior = null;
           }
         }
-        const run = Flow.start({ spec, memory, prior, declared, condition: condition === void 0 ? port.today() : condition, arm, now: clock() });
+        const run = Flow.start({ spec, memory, prior, declared, condition: condition === void 0 ? port.today() : condition, arm, now: clock2() });
         const say = (event) => VellumFlow.line(event, { level, words });
-        const save = () => port.save(spec.id, run.memory(clock()), since);
+        const save = () => port.save(spec.id, run.memory(clock2()), since);
         const shown = /* @__PURE__ */ new Map();
         const snapshot = () => {
           const s = run.settings();
@@ -9581,8 +9692,8 @@ var require_game_flow = __commonJS({
             const leading = focus ? ranked.filter((candidate) => candidate.skillIds?.includes(focus)) : ranked;
             const wanted = run.level(leading.map((candidate) => candidate.difficulty));
             const chosen = leading.find((candidate) => candidate.difficulty === wanted) || recommendation.selected;
-            const own = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);
-            return { ...own, selected: chosen, alternatives: [recommendation.selected, ...recommendation.alternatives].filter((c) => c !== chosen), flowLevel: wanted };
+            const own2 = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);
+            return { ...own2, selected: chosen, alternatives: [recommendation.selected, ...recommendation.alternatives].filter((c) => c !== chosen), flowLevel: wanted };
           },
           // The settings in force are kept with the decision, so the choice can be reviewed later.
           present(item) {
@@ -9625,7 +9736,7 @@ var require_game_flow = __commonJS({
               steady: run.steadyStreak(),
               declared: Object.hasOwn(declared.knobs || {}, support.id),
               declinedAt: port.memories().declined[spec.id] ?? null,
-              now: clock()
+              now: clock2()
             });
             return step.offer && !run.lessHelpAllowed() ? { offer: false, reason: "not-now" } : step;
           },
@@ -9635,7 +9746,7 @@ var require_game_flow = __commonJS({
             return change && { ...change, line: say(change) };
           },
           declineLessHelp() {
-            return port.decline(spec.id, clock(), since);
+            return port.decline(spec.id, clock2(), since);
           },
           floor: run.floor,
           end() {
@@ -9671,7 +9782,7 @@ var require_game_learning = __commonJS({
       map,
       storage = null,
       learnerKey = "device",
-      clock = () => (/* @__PURE__ */ new Date()).toISOString(),
+      clock: clock2 = () => (/* @__PURE__ */ new Date()).toISOString(),
       historyComplete = true,
       storageScope = "device",
       accountKey = null,
@@ -9704,17 +9815,17 @@ var require_game_learning = __commonJS({
         }
       };
       const monotonicClock = () => {
-        const value = Date.parse(clock());
+        const value = Date.parse(clock2());
         if (!Number.isFinite(value)) throw new TypeError("Atlas: invalid clock");
         lastTime = Math.max(value, lastTime);
         return new Date(lastTime).toISOString();
       };
       const AHEAD_MS = 5 * 6e4;
       const newSession = (events) => {
-        const own = Date.parse(clock());
+        const own2 = Date.parse(clock2());
         for (const e of events) {
           const at = Date.parse(e.at);
-          if (Number.isFinite(at) && (!Number.isFinite(own) || at <= own + AHEAD_MS) && at > lastTime) lastTime = at;
+          if (Number.isFinite(at) && (!Number.isFinite(own2) || at <= own2 + AHEAD_MS) && at > lastTime) lastTime = at;
         }
         return Atlas.createSession({ scope, events, clock: monotonicClock });
       };
@@ -10035,6 +10146,10 @@ var require_game_learning = __commonJS({
           const profile = summary();
           return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
         },
+        recommendActivities(candidates, options = {}) {
+          const profile = summary();
+          return { ...Learning.recommendActivities({ ...options, profile, candidates, presentations: view().presentations, prior: ledger }), storage: profile.storage };
+        },
         // Display exposure is stricter than independent-attempt qualification: an item
         // shown without an answer is still not a never-shown item. Both include folded history.
         exposure(item) {
@@ -10246,7 +10361,18 @@ var require_game_learning = __commonJS({
       api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
       return api;
     }
-    module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+    module.exports = {
+      createGame,
+      createLearningSync,
+      createMemorySync,
+      summarizeLearning: Learning.summarizeLearning,
+      recommend: Learning.recommend,
+      recommendActivities: Learning.recommendActivities,
+      POLICY: Learning.POLICY,
+      ACTIVITY_POLICY: Learning.ACTIVITY_POLICY,
+      RESPONSE_FORMATS: Learning.RESPONSE_FORMATS,
+      KEY
+    };
   }
 });
 
@@ -10264,7 +10390,7 @@ var require_ask = __commonJS({
       const DAY = 864e5;
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
-      const time = (value) => {
+      const time2 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
         return n;
@@ -10324,7 +10450,7 @@ var require_ask = __commonJS({
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time(now) - time(asked[q.id]) < quietDays * DAY) {
+          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -12072,12 +12198,12 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
   if (typeof accountId !== "string" || !accountId || typeof guard !== "function" || typeof client?.load !== "function" || typeof client?.mutate !== "function") throw TypeError("Verified WORLD play account required");
   const prefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`, rejectedPrefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`, listeners = /* @__PURE__ */ new Set(), waitingWallets = /* @__PURE__ */ new Map();
   let stopped = false, loaded = false, revision = 0, state = emptyPlayState(), phase = "loading", lastError = null, inflight = null, timer = null, initial = null;
-  function check() {
+  function check2() {
     guard();
     if (stopped) throw error("PLAY_SESSION_ENDED", "\uC774 \uACC4\uC815\uC758 \uAC8C\uC784 \uC5F0\uACB0\uC774 \uC885\uB8CC\uB410\uC5B4\uC694.");
   }
   function pending() {
-    check();
+    check2();
     const result = [];
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
@@ -12117,7 +12243,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return Object.assign(error(value.code, "\uC774 \uC694\uCCAD\uC740 \uACC4\uC815\uC5D0\uC11C \uCC98\uB9AC\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8\uC740 \uC774 \uAE30\uAE30\uC5D0 \uBCF4\uAD00\uD588\uACE0 \uB2E4\uB978 \uAC8C\uC784\uC740 \uACC4\uC18D\uD560 \uC218 \uC788\uC5B4\uC694."), { rejected: true });
   }
   function preserveRejected(entry, cause) {
-    check();
+    check2();
     const saved = { accountId, at: now(), code: cause.code, entry };
     try {
       storage.setItem(rejectedPrefix + entry.body.id, JSON.stringify(saved));
@@ -12149,7 +12275,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return value;
   }
   function accept(value) {
-    check();
+    check2();
     if (value?.ok !== true || value.scope !== PLAY_SCOPE || value.accountId !== accountId || !Number.isSafeInteger(value.revision) || value.revision < 0) throw error("PLAY_ACCOUNT_MISMATCH", "\uACC4\uC815\uC5D0\uC11C \uBC1B\uC740 \uAC8C\uC784 \uAE30\uB85D\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     if (value.revision >= revision) {
       state = validatePlayState(value.state);
@@ -12184,7 +12310,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return result;
   }
   function queue(body) {
-    check();
+    check2();
     try {
       const entry = { accountId, at: pending().reduce((at, x) => Math.max(at, x.at + 1), now()), body: { ...body, id: body.id || uuid() } };
       storage.setItem(prefix + entry.body.id, JSON.stringify(entry));
@@ -12196,28 +12322,28 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
   }
   const serial = (task) => locks?.request ? locks.request(`synk-play-account:${accountId}`, task) : task();
   async function flush() {
-    check();
+    check2();
     if (inflight) return inflight;
     inflight = serial(async () => {
-      check();
+      check2();
       if (!loaded) await receive(() => client.load());
-      check();
+      check2();
       let last;
       while (pending().length) {
         const entry = pending()[0];
-        check();
+        check2();
         emit("saving");
         let response;
         try {
           response = await client.mutate(entry.body);
         } catch (cause) {
-          check();
+          check2();
           if (!rejectedCommands.has(cause.code)) throw cause;
           preserveRejected(entry, cause);
           continue;
         }
         last = accept(response);
-        check();
+        check2();
         if (waitingWallets.has(entry.body.id)) waitingWallets.set(entry.body.id, last);
         storage.removeItem(prefix + entry.body.id);
       }
@@ -12243,16 +12369,16 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     const observed = /* @__PURE__ */ new Map();
     return Object.freeze({
       get length() {
-        check();
+        check2();
         if (!loaded) throw error("PLAY_NOT_READY");
         return Object.keys(records()).length + 1;
       },
       key(index) {
-        check();
+        check2();
         return [PLAY_WALLET_KEY, ...Object.keys(records())][index] ?? null;
       },
       getItem(key) {
-        check();
+        check2();
         if (!loaded) throw error("PLAY_NOT_READY");
         if (key === PLAY_WALLET_KEY) return JSON.stringify(state.wallet);
         if (!isPlayRecordKey(key)) throw error("INVALID_PLAY_KEY");
@@ -12261,7 +12387,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
         return value;
       },
       setItem(key, value) {
-        check();
+        check2();
         if (!loaded) throw error("PLAY_NOT_READY");
         if (phase === "conflict") throw error("REVISION_CONFLICT");
         validatePlayValue(key, value);
@@ -12272,7 +12398,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
         schedule();
       },
       removeItem(key) {
-        check();
+        check2();
         if (!loaded || !isPlayRecordKey(key)) throw error("INVALID_PLAY_KEY");
         if (phase === "conflict") throw error("REVISION_CONFLICT");
         const previous = observed.has(key) ? observed.get(key) : records()[key] ?? null;
@@ -12284,7 +12410,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     });
   }
   async function ready() {
-    check();
+    check2();
     if (phase === "conflict") throw error("REVISION_CONFLICT", status().message);
     if (loaded) return status();
     if (!initial) initial = retry().catch((cause) => {
@@ -12294,18 +12420,18 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return initial;
   }
   async function retry() {
-    check();
+    check2();
     clearTimeout(timer);
     await flush();
-    check();
+    check2();
     await receive(() => client.load());
-    check();
+    check2();
     emit(pending().length ? "saving" : "synced");
     return status();
   }
   async function wallet(method, args = []) {
     if (!loaded) await ready();
-    check();
+    check2();
     if (phase === "conflict") throw error("REVISION_CONFLICT", status().message);
     const entry = queue({ action: "wallet", method, args: clone(args) });
     waitingWallets.set(entry.body.id, null);
@@ -12316,14 +12442,14 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       } catch (cause) {
         if (!waitingWallets.get(entry.body.id)) throw cause;
       }
-      check();
+      check2();
       let response = waitingWallets.get(entry.body.id);
       if (response?.rejected) throw response.rejected;
       if (!response) {
         const rejected = rejectedError(entry.body.id);
         if (rejected) throw rejected;
         response = await receive(() => client.mutate(entry.body));
-        check();
+        check2();
         storage.removeItem(prefix + entry.body.id);
         emit(pending().length ? "saving" : "synced");
       }
@@ -12337,7 +12463,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
   }
   async function importLegacy() {
     await ready();
-    check();
+    check2();
     if (revision !== 0) throw error("PLAY_IMPORT_EXISTS", "\uACC4\uC815\uC5D0 \uC774\uBBF8 \uAC8C\uC784 \uAE30\uB85D\uC774 \uC788\uC5B4\uC694. \uAE30\uC874 \uAE30\uB85D\uC740 \uD569\uCE58\uC9C0 \uC54A\uC558\uC5B4\uC694.");
     const old = legacy();
     if (!old) throw error("INVALID_PLAY_STATE");
@@ -12346,14 +12472,14 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return status();
   }
   async function resolve(choice) {
-    check();
+    check2();
     if (!["remote", "local"].includes(choice)) throw error("INVALID_RESOLUTION");
     if (inflight) await inflight.catch(() => {
     });
-    check();
+    check2();
     const entries = pending(), desired = records();
     await receive(() => client.load());
-    check();
+    check2();
     const imports = entries.filter((x) => x.body.action === "import");
     if (imports.length && choice === "local") throw error("IMPORT_CONFLICT", "\uACC4\uC815\uC5D0 \uC774\uBBF8 \uAC8C\uC784 \uAE30\uB85D\uC774 \uC788\uC5B4\uC694. \uACC4\uC815 \uAE30\uB85D\uC744 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
     const drafts = entries.filter((x) => x.body.action === "progress" || x.body.action === "import");
@@ -12370,10 +12496,10 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     return status();
   }
   const api = Object.freeze({ ready, retry, flush, wallet, importLegacy, resolve, hasLegacy, status, storage: () => {
-    check();
+    check2();
     return createGameStorage();
   }, subscribe(fn) {
-    check();
+    check2();
     listeners.add(fn);
     fn(status());
     return () => listeners.delete(fn);
@@ -12384,7 +12510,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     emit("stopped");
     listeners.clear();
   }, snapshot() {
-    check();
+    check2();
     return { accountId, revision, state: clone({ ...state, records: records() }) };
   } });
   return api;
@@ -12393,6 +12519,23 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
 // experiences/synk-world-app/world-game-host.mjs
 var import_world_learning_host = __toESM(require_world_learning_host(), 1);
 var import_game_browser = __toESM(require_game_browser(), 1);
+function createLocalWorldLearningHost({ owner, guard = () => {
+}, target = globalThis, storage = globalThis.localStorage }) {
+  const accountKey = `local:${owner}`, revision = 1;
+  const host = import_world_learning_host.default.createWorldLearningHost({
+    accountKey,
+    revision,
+    connected: false,
+    guard,
+    engine: import_game_browser.default.engine,
+    storage: scopedStorage(storage, accountKey, revision, guard)
+  });
+  target.SYNKLearningHost = host;
+  return { dispose() {
+    if (target.SYNKLearningHost === host) delete target.SYNKLearningHost;
+    host.stop();
+  } };
+}
 function createWorldGameHost({
   accountId,
   revision,
@@ -12408,7 +12551,7 @@ function createWorldGameHost({
   engine = import_game_browser.default.engine
 }) {
   let disposed = false, installed = false;
-  const check = () => {
+  const check2 = () => {
     guard();
     if (disposed) throw Object.assign(Error("\uAC8C\uC784 \uACC4\uC815 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
   };
@@ -12419,26 +12562,26 @@ function createWorldGameHost({
     } catch {
     }
   };
-  const playHost = createWorldPlayHost({ accountId, client: play, guard: check, storage, locks: target.navigator?.locks, onStatus: () => notify() });
+  const playHost = createWorldPlayHost({ accountId, client: play, guard: check2, storage, locks: target.navigator?.locks, onStatus: () => notify() });
   const learnHost = import_world_learning_host.default.createWorldLearningHost({
     accountKey,
     revision,
     connected,
-    guard: check,
+    guard: check2,
     engine,
-    storage: scopedStorage(storage, accountKey, revision, check),
+    storage: scopedStorage(storage, accountKey, revision, check2),
     transport: learning,
-    personalMemory: { accountKey, revision, connected, storage: scopedStorage(storage, accountKey, revision, check), transport: memory },
+    personalMemory: { accountKey, revision, connected, storage: scopedStorage(storage, accountKey, revision, check2), transport: memory },
     onStatus: () => notify()
   });
   function status() {
     return { accountId, play: playHost.status(), learning: learnHost.status(), disposed };
   }
   const flush = async () => {
-    check();
+    check2();
     if (playHost.status().phase === "conflict") throw Object.assign(Error(playHost.status().message), { code: playHost.status().code || "REVISION_CONFLICT" });
     await Promise.all([playHost.flush(), learnHost.flush()]);
-    check();
+    check2();
   };
   const retry = () => {
     if (disposed || ["conflict", "stopped"].includes(playHost.status().phase)) return;
@@ -12461,14 +12604,14 @@ function createWorldGameHost({
     learnHost.stop();
   }
   const publicHandle = Object.freeze({ status, flush, async resolve(choice) {
-    check();
+    check2();
     await playHost.resolve(choice);
-    check();
+    check2();
     return status();
   }, closeGame() {
     if (disposed) return;
     try {
-      check();
+      check2();
       learnHost.closeRun();
       void flush().catch(() => {
       });
@@ -12476,22 +12619,22 @@ function createWorldGameHost({
     }
   }, dispose });
   return Object.freeze({ publicHandle, async ready() {
-    check();
+    check2();
     try {
       await playHost.ready();
     } catch (error2) {
       if (playHost.status().phase === "conflict") {
-        check();
+        check2();
         return;
       }
       throw error2;
     }
-    check();
+    check2();
     learnHost.preferences();
     await learnHost.ready();
-    check();
+    check2();
   }, install() {
-    check();
+    check2();
     if (playHost.status().phase === "conflict") return;
     target.SYNKPlayHost = playHost;
     target.SYNKLearningHost = learnHost;
@@ -12503,6 +12646,863 @@ function createWorldGameHost({
   }, dispose });
 }
 
+// experiences/synk-world-app/world-account.mjs
+var import_game_browser2 = __toESM(require_game_browser(), 1);
+
+// experiences/synk-world-app/life-content.mjs
+var choices = (texts) => texts.map((text2, index) => ({ id: ["a", "b", "c"][index], text: text2 }));
+var scene = (speaker, text2) => ({ speaker, text: text2 });
+var expression = (id, korean, meaning) => ({ id, korean, meaning });
+var transfer = (prompt, context, texts, answerId, explanation) => ({
+  prompt,
+  context,
+  choices: choices(texts),
+  answerId,
+  explanation
+});
+var question = (id, skillId, expressionId, prompt, context, texts, answerId, explanation, review) => ({
+  id,
+  skillId,
+  expressionId,
+  prompt,
+  context,
+  choices: choices(texts),
+  answerId,
+  explanation,
+  review: { ...review, id: `${id}-transfer`, skillId, expressionId }
+});
+var skill = (id, title) => ({ id, title, domain: "reading" });
+var lesson = (id, type, title, goal, expressions, scenes, questions) => ({
+  id,
+  type,
+  title,
+  goal,
+  expressions,
+  scenes,
+  questions
+});
+var greetingExpressions = [
+  expression("greet-hello", "\uC548\uB155\uD558\uC138\uC694.", "\uCC98\uC74C \uB9CC\uB098\uAC70\uB098 \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694."),
+  expression("greet-thanks", "\uAC10\uC0AC\uD569\uB2C8\uB2E4.", "\uB3C4\uC6C0\uC744 \uBC1B\uC558\uC744 \uB54C \uC815\uC911\uD558\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD574\uC694."),
+  expression("greet-name", "\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694.", "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD574\uC694. \uC774\uB984 \uB05D\uC5D0 \uBC1B\uCE68\uC774 \uC788\uC73C\uBA74 \u2018\uC774\uC5D0\uC694\u2019\uB97C \uC368\uC694.")
+];
+var cafeExpressions = [
+  expression("cafe-order", "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC74C\uB8CC\uC758 \uC885\uB958\xB7\uC628\uB3C4\xB7\uC218\uB97C \uD568\uAED8 \uB9D0\uD558\uBA70 \uC8FC\uBB38\uD574\uC694."),
+  expression("cafe-here", "\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uACA0\uB2E4\uACE0 \uB9D0\uD574\uC694."),
+  expression("cafe-takeout", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC74C\uB8CC\uB97C \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uACA0\uB2E4\uACE0 \uB9D0\uD574\uC694.")
+];
+var cafeTasteExpressions = [
+  expression("cafe-preference", "\uB530\uB73B\uD55C \uCC28\uB97C \uB9C8\uC2DC\uACE0 \uC2F6\uC5B4\uC694.", "\uCE5C\uAD6C\uAC00 \uC6D0\uD558\uB294 \uC74C\uB8CC\uC758 \uC885\uB958\uC640 \uC628\uB3C4\uB97C \uC54C\uC544\uBD10\uC694."),
+  ...cafeExpressions.filter((item) => ["cafe-order", "cafe-here"].includes(item.id))
+];
+var cafeSoldoutExpressions = [
+  expression("cafe-soldout", "\uC8FC\uC2A4\uB294 \uD488\uC808\uC774\uC5D0\uC694.", "\uD488\uC808\uC740 \uC624\uB298 \uB354 \uC8FC\uBB38\uD560 \uC218 \uC5C6\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694. \uAC00\uB2A5\uD55C \uB2E4\uB978 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694."),
+  ...cafeExpressions.filter((item) => ["cafe-order", "cafe-takeout"].includes(item.id))
+];
+var cafeChangeExpressions = [
+  expression("cafe-change", "\uC8FC\uC2A4 \uB300\uC2E0 \uB530\uB73B\uD55C \uCC28\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694.", "\uC774\uBBF8 \uC8FC\uBB38\uD55C \uC74C\uB8CC\uB97C \uB2E4\uB978 \uC74C\uB8CC\uB85C \uBC14\uAFB8\uC5B4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694."),
+  expression("cafe-add", "\uD55C \uC794 \uB354 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uD55C \uC218\uB7C9\uC5D0 \uD55C \uC794\uC744 \uCD94\uAC00\uD574\uC694."),
+  ...cafeExpressions.filter((item) => item.id === "cafe-takeout")
+];
+var cafeComposeExpressions = [
+  expression("cafe-compose", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uC9C1\uC811 \uACE8\uB77C \uD55C \uBB38\uC7A5\uC73C\uB85C \uC8FC\uBB38\uD574\uC694."),
+  ...cafeExpressions.filter((item) => ["cafe-order", "cafe-here"].includes(item.id))
+];
+var storeExpressions = [
+  expression("store-price", "\uC774\uAC70 \uC5BC\uB9C8\uC608\uC694?", "\uBB3C\uAC74\uC758 \uAC00\uACA9\uC744 \uBB3C\uC5B4\uC694."),
+  expression("store-bag", "\uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694.", "\uC0B0 \uBB3C\uAC74\uC744 \uB2F4\uC744 \uBD09\uD22C\uB97C \uBD80\uD0C1\uD574\uC694."),
+  expression("store-card", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.", "\uCE74\uB4DC\uB85C \uAC12\uC744 \uB0B4\uACA0\uB2E4\uACE0 \uB9D0\uD574\uC694.")
+];
+var directionExpressions = [
+  expression("directions-where", "\uACF5\uC6D0\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uAC00\uB824\uB294 \uC7A5\uC18C\uC758 \uC704\uCE58\uB97C \uBB3C\uC5B4\uC694."),
+  expression("directions-right", "\uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.", "\uC624\uB978\uCABD \uBC29\uD5A5\uC73C\uB85C \uC774\uB3D9\uD558\uB77C\uB294 \uC548\uB0B4\uC608\uC694."),
+  expression("directions-beside", "\uC740\uD589 \uC606\uC5D0 \uC788\uC5B4\uC694.", "\uC740\uD589 \uBC14\uB85C \uC606\uC5D0 \uC788\uB294 \uC7A5\uC18C\uB97C \uC124\uBA85\uD574\uC694.")
+];
+var transitExpressions = [
+  expression("transit-destination", "\uC774 \uBC84\uC2A4\uB294 \uACF5\uC6D0\uC5D0 \uAC00\uC694?", "\uD0C0\uB824\uB294 \uBC84\uC2A4\uAC00 \uBAA9\uC801\uC9C0\uB85C \uAC00\uB294\uC9C0 \uD655\uC778\uD574\uC694."),
+  expression("transit-alight", "\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694.", "\uC9C0\uAE08 \uC815\uB958\uC7A5\uC774 \uC544\uB2C8\uB77C \uADF8\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694."),
+  expression("transit-card", "\uAD50\uD1B5\uCE74\uB4DC\uB97C \uCC0D\uC73C\uC138\uC694.", "\uBC84\uC2A4\uC758 \uCE74\uB4DC \uB2E8\uB9D0\uAE30\uC5D0 \uAD50\uD1B5\uCE74\uB4DC\uB97C \uB300\uB77C\uB294 \uC548\uB0B4\uC608\uC694.")
+];
+var planExpressions = [
+  expression("plans-time", "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uB9CC\uB098\uC694.", "\uB9CC\uB0A0 \uB0A0\uC9DC\uC640 \uC2DC\uAC04\uC744 \uC815\uD574\uC694."),
+  expression("plans-place", "\uC5B4\uB514\uC5D0\uC11C \uB9CC\uB0A0\uAE4C\uC694?", "\uB9CC\uB0A0 \uC7A5\uC18C\uB97C \uD568\uAED8 \uC815\uD558\uB824\uACE0 \uBB3C\uC5B4\uC694."),
+  expression("plans-delay", "\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uB2E4\uACE0 \uC54C\uB824\uC694.")
+];
+var PACKS = [
+  {
+    id: "greetings",
+    title: "\uCC98\uC74C \uB9CC\uB09C \uB0A0",
+    subtitle: "\uC778\uC0AC\uD558\uACE0 \uC774\uB984\uC744 \uB098\uB220\uC694",
+    icon: "greeting",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("greet-response", "\uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uC778\uC0AC\uD558\uAE30"), skill("greet-gratitude", "\uACE0\uB9C8\uC6C0 \uC804\uD558\uAE30"), skill("greet-introduction", "\uC774\uB984 \uC18C\uAC1C \uC774\uD574\uD558\uAE30")],
+    lessons: [
+      lesson("greetings-expressions", "expressions", "\uCCAB \uC778\uC0AC \uC138 \uB9C8\uB514", "\uB9CC\uB0A8\xB7\uAC10\uC0AC\xB7\uC18C\uAC1C\uC5D0 \uB9DE\uB294 \uD45C\uD604\uC744 \uACE8\uB77C\uC694.", greetingExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uCC98\uC74C \uB9CC\uB09C \uCE5C\uAD6C\uC57C! \uAC19\uC774 \uC778\uC0AC\uD574 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uC774\uB984\uB9CC \uB9D0\uD574\uB3C4 \uB2E4 \uC54C\uC544\uBCF4\uC9C0. \u2026\uCC98\uC74C\uC774\uBA74 \uC778\uC0AC\uBD80\uD130 \uD558\uB294 \uAC70\uC57C."),
+        scene("marine", "\uCCAB \uB9CC\uB0A8 \uD655\uC778. \uC778\uC0AC, \uC774\uB984, \uACE0\uB9C8\uC6C0. \uC900\uBE44 \uC644\uB8CC.")
+      ], [
+        question("greetings-expressions-hello", "greet-response", "greet-hello", "\uCC98\uC74C \uB9CC\uB09C \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uC5B4\uB5A4 \uC778\uC0AC\uB97C \uD560\uAE4C\uC694?", "\uAD50\uC2E4\uC5D0 \uB4E4\uC5B4\uAC00 \uC120\uC0DD\uB2D8\uC744 \uCC98\uC74C \uB9CC\uB0AC\uC5B4\uC694.", ["\uC548\uB155\uD558\uC138\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4.", "\uB2E4\uB140\uC654\uC5B4\uC694."], "a", "\uC0C8\uB85C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uC778\uC0AC\uD574\uC694.", transfer("\uD559\uAD50\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC9C1\uC6D0\uC5D0\uAC8C \uC778\uC0AC\uD574\uC694.", "\uC544\uC9C1 \uB3C4\uC6C0\uC744 \uBC1B\uAC70\uB098 \uD5E4\uC5B4\uC9C0\uB294 \uC0C1\uD669\uC740 \uC544\uB2C8\uC5D0\uC694.", ["\uB2E4\uB140\uC654\uC5B4\uC694.", "\uC548\uB155\uD558\uC138\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4."], "b", "\uCC98\uC74C \uB9CC\uB09C \uC9C1\uC6D0\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uD574\uC694.")),
+        question("greetings-expressions-thanks", "greet-gratitude", "greet-thanks", "\uB3C4\uC6C0\uC744 \uBC1B\uC558\uC5B4\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uCE5C\uAD6C\uAC00 \uB5A8\uC5B4\uC9C4 \uCC45\uC744 \uC8FC\uC6CC \uC92C\uC5B4\uC694.", ["\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694.", "\uC548\uB155\uD558\uC138\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4."], "c", "\uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB4A4\uC5D0\uB294 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB85C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD574\uC694.", transfer("\uC9C1\uC6D0\uC774 \uC783\uC5B4\uBC84\uB9B0 \uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC92C\uC5B4\uC694.", "\uB3C4\uC6C0\uC744 \uC900 \uC9C1\uC6D0\uC5D0\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", ["\uAC10\uC0AC\uD569\uB2C8\uB2E4.", "\uCC98\uC74C \uBD59\uACA0\uC2B5\uB2C8\uB2E4.", "\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694."], "a", "\uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC900 \uB3C4\uC6C0\uC5D0 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uB9D0\uD574\uC694.")),
+        question("greetings-expressions-name", "greet-introduction", "greet-name", "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "\uB0B4 \uC774\uB984\uC740 \uBABD\uAE00\uC774\uC5D0\uC694.", ["\uC800\uB294 \uD559\uAD50\uC5D0 \uAC00\uC694.", "\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694.", "\uBABD\uAE00\uC740 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?"], "b", "\u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019\uB294 \uB0B4\uAC00 \uBABD\uAE00\uC774\uB77C\uB294 \uC18C\uAC1C\uC608\uC694.", transfer("\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "\uB0B4 \uC774\uB984\uC740 \uB9C8\uB9B0\uC774\uC5D0\uC694.", ["\uB9C8\uB9B0\uC740 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694.", "\uB9C8\uB9B0\uC740 \uD559\uAD50\uC5D0 \uAC00\uC694."], "b", "\u2018\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694\u2019\uB294 \uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD558\uB294 \uC18C\uAC1C\uC608\uC694."))
+      ]),
+      lesson("greetings-story", "story", "\uC774\uB984\uD45C\uB97C \uCC3E\uC544\uC11C", "\uC774\uC57C\uAE30\uB97C \uC77D\uACE0 \uC778\uC0AC\uC640 \uC18C\uAC1C\uC758 \uB73B\uC744 \uD655\uC778\uD574\uC694.", greetingExpressions, [
+        scene("narrator", "\uD55C\uAC15 \uB9C8\uB8E8\uC758 \uCCAB \uBAA8\uC784 \uB0A0\uC774\uC5D0\uC694. \uC785\uAD6C\uC5D0\uB294 \uC774\uB984\uD45C \uC138 \uC7A5\uC774 \uB193\uC5EC \uC788\uC5B4\uC694."),
+        scene("mongle", "\uC6B0\uC640! \uC6B0\uB9AC \uC774\uB984\uC774 \uC788\uB124! \uAC19\uC774 \uC778\uC0AC\uBD80\uD130 \uD560\uAE4C?"),
+        scene("mongle", "\uC548\uB155\uD558\uC138\uC694! \uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694!"),
+        scene("kkamong", "\uC774 \uBAB8\uC758 \uC774\uB984\uD45C\uB294 \uB2F9\uC5F0\uD788 \uC81C\uC77C \uD070\u2026 \uC5B4, \uB0B4 \uC774\uB984\uD45C \uC5B4\uB514 \uAC14\uC9C0."),
+        scene("narrator", "\uAE4C\uBABD\uC758 \uC774\uB984\uD45C\uAC00 \uAE4C\uBABD\uC758 \uB4A4\uC5D0 \uBD99\uC5B4 \uC788\uC5B4\uC694. \uB9C8\uB9B0\uC774 \uC870\uC2EC\uD788 \uB5BC\uC5B4 \uC918\uC694."),
+        scene("marine", "\uC774\uB984\uD45C \uBC1C\uACAC. \uAE4C\uBABD. \uD655\uC778 \uC644\uB8CC."),
+        scene("kkamong", "\uB0B4\uAC00 \uB4A4\uAE4C\uC9C0 \uBCFC \uC218 \uC788\uAC8C \uBD99\uC778 \uAC70\uC9C0. \u2026\uADF8\uB798\uB3C4 \uAC10\uC0AC\uD569\uB2C8\uB2E4."),
+        scene("mongle", "\uC6B0\uC640! \uC774\uC81C \uC138 \uC774\uB984\uC774 \uB2E4 \uBCF4\uC5EC! \uAC19\uC774 \uC549\uC790!"),
+        scene("marine", "\uC804\uC6D0 \uD655\uC778. \uC790\uB9AC, \uC14B. \u2026\uB124 \uC790\uB9AC\uB3C4 \uC5EC\uAE30\uB2E4.")
+      ], [
+        question("greetings-story-name", "greet-introduction", "greet-name", "\uCC98\uC74C\uC5D0 \u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019\uB77C\uACE0 \uC18C\uAC1C\uD55C \uCE5C\uAD6C\uB294 \uB204\uAD6C\uC608\uC694?", "", ["\uAE4C\uBABD", "\uBABD\uAE00", "\uB9C8\uB9B0"], "b", "\uBABD\uAE00\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD558\uBA70 \uC778\uC0AC\uD588\uC5B4\uC694.", transfer("\u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694.\u2019\uB77C\uACE0 \uC4F4 \uC774\uB984\uD45C\uC758 \uC8FC\uC778\uC740 \uB204\uAD6C\uC608\uC694?", "\uC0C8 \uBAA8\uC784\uC758 \uC774\uB984\uD45C\uB97C \uC77D\uACE0 \uC788\uC5B4\uC694.", ["\uB9C8\uB9B0", "\uBABD\uAE00", "\uAE4C\uBABD"], "c", "\u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694\u2019\uC5D0\uC11C \uC18C\uAC1C\uD55C \uC774\uB984\uC740 \uAE4C\uBABD\uC774\uC5D0\uC694.")),
+        question("greetings-story-thanks", "greet-gratitude", "greet-thanks", "\uAE4C\uBABD\uC774 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD55C \uC774\uC720\uB294 \uBB34\uC5C7\uC774\uC5D0\uC694?", "", ["\uB9C8\uB9B0\uC774 \uC774\uB984\uD45C\uB97C \uCC3E\uC544 \uC92C\uC5B4\uC694.", "\uBABD\uAE00\uC774 \uBA3C\uC800 \uC9D1\uC5D0 \uAC14\uC5B4\uC694.", "\uAE4C\uBABD\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uC78A\uC5C8\uC5B4\uC694."], "a", "\uB9C8\uB9B0\uC774 \uB4A4\uC5D0 \uBD99\uC740 \uC774\uB984\uD45C\uB97C \uB5BC\uC5B4 \uC900 \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD588\uC5B4\uC694.", transfer("\uBABD\uAE00\uC774 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5B4\uB5A4 \uC77C\uC774 \uC788\uC5C8\uC744\uAE4C\uC694?", "\uB9C8\uB9B0\uC774 \uBABD\uAE00\uC5D0\uAC8C \uB5A8\uC5B4\uC9C4 \uC774\uB984\uD45C\uB97C \uAC74\uB124\uC92C\uC5B4\uC694.", ["\uB9C8\uB9B0\uC774 \uC774\uB984\uD45C\uB97C \uCC3E\uC544 \uC92C\uC5B4\uC694.", "\uB9C8\uB9B0\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD588\uC5B4\uC694.", "\uB9C8\uB9B0\uC774 \uBAA8\uC784 \uC2DC\uAC04\uC744 \uBB3C\uC5C8\uC5B4\uC694."], "a", "\uC774\uB984\uD45C\uB97C \uAC74\uB124\uC900 \uB3C4\uC6C0\uC744 \uBC1B\uC544\uC11C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD588\uC5B4\uC694.")),
+        question("greetings-story-hello", "greet-response", "greet-hello", "\uBAA8\uC784\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C \uBA3C\uC800 \uD560 \uB9D0\uC744 \uACE8\uB77C\uC694.", "", ["\uC798 \uBA39\uACA0\uC2B5\uB2C8\uB2E4.", "\uB2E4\uB140\uC654\uC2B5\uB2C8\uB2E4.", "\uC548\uB155\uD558\uC138\uC694."], "c", "\uBAA8\uC784\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uC778\uC0AC\uD574\uC694.", transfer("\uC0C8 \uB3D9\uC544\uB9AC\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uCE5C\uAD6C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694.", "\uC9C0\uAE08\uC740 \uC2DD\uC0AC\uD558\uAC70\uB098 \uC678\uCD9C\uD588\uB2E4 \uB3CC\uC544\uC628 \uC0C1\uD669\uC774 \uC544\uB2C8\uC5D0\uC694.", ["\uC548\uB155\uD558\uC138\uC694.", "\uC798 \uBA39\uACA0\uC2B5\uB2C8\uB2E4.", "\uB2E4\uB140\uC654\uC2B5\uB2C8\uB2E4."], "a", "\uCC98\uC74C \uB9CC\uB09C \uC790\uB9AC\uC758 \uC778\uC0AC\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uC608\uC694."))
+      ]),
+      lesson("greetings-apply", "apply", "\uB0B4 \uCCAB \uBAA8\uC784", "\uC0C8\uB85C\uC6B4 \uB9CC\uB0A8\uC5D0\uC11C \uD544\uC694\uD55C \uB9D0\uC744 \uC9C1\uC811 \uACE8\uB77C\uC694.", greetingExpressions, [
+        scene("mongle", "\uC624! \uC774\uBC88\uC5D0\uB294 \uB124 \uCC28\uB840\uC57C! \uAC19\uC774 \uCCAB \uC778\uC0AC \uD574 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uB0B4 \uCCAB \uBAA8\uC784\uC740 \uC644\uBCBD\uD588\uC9C0. \uC774\uB984\uD45C\uAC00 \uB4A4\uC5D0 \uBD99\uC740 \uAC83\uB9CC \uBE7C\uBA74."),
+        scene("marine", "\uC0C1\uD669 \uD655\uC778. \uC0C1\uB300\uC5D0\uAC8C \uC804\uD560 \uB9D0\uC744 \uC120\uD0DD\uD558\uB77C.")
+      ], [
+        question("greetings-apply-introduction", "greet-introduction", "greet-name", "\uC774\uB984\uC744 \uBB3B\uB294 \uB9D0\uC5D0 \uB2F5\uD574\uC694.", "\u201C\uC774\uB984\uC774 \uBB50\uC608\uC694?\u201D \uB0B4 \uC774\uB984\uC740 \uC218\uC9C4\uC774\uC5D0\uC694.", ["\uD559\uAD50\uC5D0 \uC788\uC5B4\uC694.", "\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4."], "b", "\uC774\uB984\uC744 \uBB3C\uC5C8\uC73C\uBBC0\uB85C \u2018\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\u2019\uB77C\uACE0 \uC18C\uAC1C\uD574\uC694.", transfer("\uC774\uB984\uC744 \uBB3B\uB294 \uB9D0\uC5D0 \uB2F5\uD574\uC694.", "\u201C\uC131\uD568\uC774 \uC5B4\uB5BB\uAC8C \uB418\uC138\uC694?\u201D \uB0B4 \uC774\uB984\uC740 \uC9C0\uD6C8\uC774\uC5D0\uC694.", ["\uC800\uB294 \uC9C0\uD6C8\uC774\uC5D0\uC694.", "\uC9C0\uD6C8\uC740 \uC9D1\uC5D0 \uC788\uC5B4\uC694.", "\uC548\uB155\uD558\uC138\uC694."], "a", "\u2018\uC131\uD568\u2019\uC740 \uC774\uB984\uC744 \uB192\uC5EC \uB9D0\uD55C \uD45C\uD604\uC774\uC5D0\uC694. \uC790\uAE30 \uC774\uB984\uC744 \uB2F5\uD574\uC694.")),
+        question("greetings-apply-thanks", "greet-gratitude", "greet-thanks", "\uD544\uC694\uD55C \uB9D0\uC744 \uACE8\uB77C\uC694.", "\uCC98\uC74C \uC628 \uD559\uAD50\uC5D0\uC11C \uC9C1\uC6D0\uC774 \uAD50\uC2E4 \uC704\uCE58\uB97C \uC54C\uB824 \uC92C\uC5B4\uC694. \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", ["\uC800\uB294 \uD559\uC0DD\uC774\uC5D0\uC694.", "\uC548\uB155\uD558\uC138\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4."], "c", "\uC704\uCE58\uB97C \uC54C\uB824 \uC900 \uB3C4\uC6C0\uC5D0 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD574\uC694.", transfer("\uC9C0\uAE08 \uD544\uC694\uD55C \uB9D0\uC744 \uACE8\uB77C\uC694.", "\uCE74\uD398 \uC9C1\uC6D0\uC774 \uB450\uACE0 \uC628 \uAC00\uBC29\uC744 \uCC3E\uC544 \uC92C\uC5B4\uC694. \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", ["\uC548\uB155\uD558\uC138\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4.", "\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694."], "b", "\uAC00\uBC29\uC744 \uCC3E\uC544 \uC900 \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB294 \uB9D0\uC740 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uC608\uC694.")),
+        question("greetings-apply-hello", "greet-response", "greet-hello", "\uAD50\uC2E4 \uBB38\uC744 \uC5F4\uACE0 \uCC98\uC74C \uB9CC\uB09C \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uB9D0\uD574\uC694.", "\uC544\uC9C1 \uB300\uD654\uB97C \uC2DC\uC791\uD558\uAE30 \uC804\uC774\uC5D0\uC694.", ["\uC548\uB155\uD558\uC138\uC694.", "\uC800\uB294 \uC2DD\uC0AC\uD588\uC5B4\uC694.", "\uAC10\uC0AC\uD569\uB2C8\uB2E4."], "a", "\uB300\uD654\uB97C \uC2DC\uC791\uD558\uAE30 \uC804\uC5D0 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB85C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694.", transfer("\uCC98\uC74C \uBC29\uBB38\uD55C \uAC00\uAC8C\uC758 \uC9C1\uC6D0\uC5D0\uAC8C \uB9D0\uC744 \uC2DC\uC791\uD574\uC694.", "\uC544\uC9C1 \uC0C1\uD488\uC744 \uACE0\uB974\uAC70\uB098 \uB3C4\uC6C0\uC744 \uBC1B\uAE30 \uC804\uC774\uC5D0\uC694.", ["\uAC10\uC0AC\uD569\uB2C8\uB2E4.", "\uC798 \uBA39\uACA0\uC2B5\uB2C8\uB2E4.", "\uC548\uB155\uD558\uC138\uC694."], "c", "\uCC98\uC74C \uB300\uD654\uB97C \uC2DC\uC791\uD560 \uB54C \uC815\uC911\uD55C \uC778\uC0AC\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uC608\uC694."))
+      ])
+    ]
+  },
+  {
+    id: "cafe",
+    title: "\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398",
+    subtitle: "\uC8FC\uBB38\uD558\uACE0 \uB9C8\uC2E4 \uACF3\uC744 \uC815\uD574\uC694",
+    icon: "cafe",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("cafe-order-detail", "\uC74C\uB8CC\uC640 \uC218\uB7C9 \uC774\uD574\uD558\uAE30"), skill("cafe-place", "\uB9C8\uC2E4 \uC7A5\uC18C \uAD6C\uBD84\uD558\uAE30"), skill("cafe-takeout-request", "\uD3EC\uC7A5 \uC694\uCCAD\uD558\uAE30"), skill("cafe-preference-reading", "\uCE5C\uAD6C\uC758 \uCDE8\uD5A5 \uC774\uD574\uD558\uAE30"), skill("cafe-availability", "\uD488\uC808\uACFC \uC8FC\uBB38 \uAC00\uB2A5 \uC548\uB0B4 \uC77D\uAE30"), skill("cafe-order-change", "\uC8FC\uBB38 \uBCC0\uACBD \uC774\uD574\uD558\uAE30"), skill("cafe-compose-order", "\uC8FC\uBB38 \uBB38\uC7A5 \uAD6C\uC131\uD558\uAE30")],
+    lessons: [
+      lesson("cafe-expressions", "expressions", "\uCE74\uD398\uC5D0\uC11C \uD558\uB294 \uB9D0", "\uC8FC\uBB38\xB7\uB9E4\uC7A5 \uC774\uC6A9\xB7\uD3EC\uC7A5 \uD45C\uD604\uC744 \uAD6C\uBD84\uD574\uC694.", cafeExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uCC28 \uC704\uC5D0 \uC791\uC740 \uAD6C\uB984\uC774 \uC788\uC5B4! \uAC19\uC774 \uC8FC\uBB38\uD574 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uCC28\uC758 \uC628\uB3C4\uB3C4 \uC815\uD558\uC9C0. \uB728\uAC81\u2026 \uC544\uB2C8, \uB530\uB73B\uD55C \uAC78\uB85C."),
+        scene("marine", "\uC8FC\uBB38 \uC900\uBE44. \uC74C\uB8CC, \uC218\uB7C9, \uB9C8\uC2E4 \uC7A5\uC18C \uD655\uC778.")
+      ], [
+        question("cafe-expressions-order", "cafe-order-detail", "cafe-order", "\uC8FC\uBB38\uC5D0 \uB9DE\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\u201C\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.\u201D", ["\uCC28\uAC00\uC6B4 \uCC28 \uB450 \uC794", "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794", "\uB530\uB73B\uD55C \uBB3C \uC138 \uC794"], "b", "\u2018\uB530\uB73B\uD55C \uCC28\u2019\uAC00 \uC885\uB958\uC640 \uC628\uB3C4\uC774\uACE0 \u2018\uD55C \uC794\u2019\uC774 \uC218\uB7C9\uC774\uC5D0\uC694.", transfer("\uC8FC\uBB38\uC5D0 \uB9DE\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\u201C\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uB450 \uC794 \uC8FC\uC138\uC694.\u201D", ["\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uB450 \uC794", "\uB530\uB73B\uD55C \uC8FC\uC2A4 \uB450 \uC794", "\uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794"], "a", "\uC8FC\uC2A4\xB7\uCC28\uAC00\uC6B4 \uC628\uB3C4\xB7\uB450 \uC794\uC744 \uBAA8\uB450 \uD655\uC778\uD574\uC694.")),
+        question("cafe-expressions-here", "cafe-place", "cafe-here", "\u2018\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\u2019\uB294 \uBB34\uC2A8 \uB73B\uC774\uC5D0\uC694?", "\uCE74\uD398 \uC9C1\uC6D0\uC774 \uB9C8\uC2E4 \uC7A5\uC18C\uB97C \uBB3C\uC5C8\uC5B4\uC694.", ["\uBC16\uC73C\uB85C \uAC00\uC838\uAC08\uAC8C\uC694.", "\uC74C\uB8CC\uB97C \uC8FC\uBB38\uD558\uC9C0 \uC54A\uC744\uAC8C\uC694.", "\uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "c", "\uCE74\uD398\uC5D0\uC11C \uB9D0\uD55C \u2018\uC5EC\uAE30\uC11C\u2019\uB294 \uADF8 \uCE74\uD398 \uC548\uC744 \uAC00\uB9AC\uCF1C\uC694.", transfer("\u2018\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694\u2019\uB294 \uBB34\uC2A8 \uB73B\uC774\uC5D0\uC694?", "\uC9C1\uC6D0\uC774 \uD3EC\uC7A5\uD560\uC9C0 \uBB3C\uC5C8\uC5B4\uC694.", ["\uC9D1\uC73C\uB85C \uAC00\uC838\uAC08\uAC8C\uC694.", "\uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uCEF5\uC744 \uB3CC\uB824\uB4DC\uB9B4\uAC8C\uC694."], "b", "\u2018\uB9E4\uC7A5\uC5D0\uC11C\u2019\uB294 \uAC00\uAC8C \uC548\uC5D0\uC11C \uC774\uC6A9\uD558\uACA0\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.")),
+        question("cafe-expressions-takeout", "cafe-takeout-request", "cafe-takeout", "\uC74C\uB8CC\uB97C \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uACE0 \uC2F6\uC5B4\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uB530\uB73B\uD558\uAC8C \uB9C8\uC2E4\uAC8C\uC694."], "a", "\uC74C\uB8CC\uB97C \uAC00\uC838\uAC08 \uB54C\uB294 \u2018\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694\u2019\uB77C\uACE0 \uC694\uCCAD\uD574\uC694.", transfer("\uC8FC\uC2A4\uB97C \uC9D1\uC5D0 \uAC00\uC838\uAC00\uB824\uACE0 \uD574\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC798 \uB9C8\uC168\uC2B5\uB2C8\uB2E4.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uC9D1\uC5D0 \uAC00\uC838\uAC00\uB824\uBA74 \uD3EC\uC7A5\uC744 \uC694\uCCAD\uD574\uC694."))
+      ]),
+      lesson("cafe-story", "story", "\uAD6C\uB984\uC744 \uAC00\uC838\uAC08 \uC218 \uC788\uC744\uAE4C?", "\uC138 \uCE5C\uAD6C\uC758 \uC8FC\uBB38\uACFC \uC7A5\uC18C \uBCC0\uACBD\uC744 \uC774\uD574\uD574\uC694.", cafeExpressions, [
+        scene("narrator", "\uC138 \uCE5C\uAD6C\uAC00 \uAC15\uAC00\uC758 \uCE74\uD398\uC5D0 \uB4E4\uC5B4\uC654\uC5B4\uC694. \uCC3D\uAC00\uC5D0\uB294 \uC791\uC740 \uD654\uBD84\uC774 \uC788\uC5B4\uC694."),
+        scene("mongle", "\uC6B0\uC640! \uCEF5\uC5D0\uC11C \uAD6C\uB984\uC774 \uB098\uC640! \uAC19\uC774 \uB530\uB73B\uD55C \uCC28 \uB9C8\uC2E4\uAE4C?"),
+        scene("kkamong", "\uCC28 \uC8FC\uBB38\uC740 \uC774 \uBAB8\uC5D0\uAC8C \uB9E1\uACA8. \u2018\uB530\uB73B\uD55C \uCC28 \uC138 \uC794 \uC8FC\uC138\uC694.\u2019"),
+        scene("marine", "\uC218\uB7C9 \uD655\uC778. \uC14B, \uC138 \uC794. \uCC3D\uAC00 \uC790\uB9AC \uD655\uC778."),
+        scene("narrator", "\uCC98\uC74C\uC5D0\uB294 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694. \uC8FC\uBB38\uD45C\uC5D0\uB294 \u2018\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\u2019\uB77C\uACE0 \uC801\uC5B4\uC694."),
+        scene("mongle", "\uC5B4? \uBC16\uC5D0 \uC791\uC740 \uC0C8\uAC00 \uC788\uB124! \uAC19\uC774 \uAC15\uAC00 \uBCA4\uCE58\uB85C \uAC08\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uB3C4 \uC6D0\uB798 \uBC16\uC5D0\uC11C \uB9C8\uC2DC\uB824\uB358 \uAC70\uC9C0. \uC0C8\uB97C \uBCF4\uB7EC \uAC00\uB294 \uAC74\u2026 \uC870\uAE08\uB9CC."),
+        scene("narrator", "\uCE5C\uAD6C\uB4E4\uC740 \uCC28\uB97C \uAC00\uC838\uAC00\uAE30\uB85C \uBC14\uAFD4\uC694. \uC9C1\uC6D0\uC5D0\uAC8C \u2018\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694\u2019\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694."),
+        scene("marine", "\uC7A5\uC18C \uBCC0\uACBD \uD655\uC778. \uBCA4\uCE58, \uC138 \uC790\uB9AC. \u2026\uB124 \uCEF5\uC740 \uC5EC\uAE30\uB2E4."),
+        scene("mongle", "\uC624! \uCEF5\uC740 \uAC00\uC838\uC654\uB294\uB370 \uAD6C\uB984\uC740 \uC704\uB85C \uAC00\uB124! \uAC19\uC774 \uCC9C\uCC9C\uD788 \uB9C8\uC2DC\uC790!")
+      ], [
+        question("cafe-story-order", "cafe-order-detail", "cafe-order", "\uAE4C\uBABD\uC774 \uC8FC\uBB38\uD55C \uAC83\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "", ["\uB530\uB73B\uD55C \uCC28 \uC138 \uC794", "\uCC28\uAC00\uC6B4 \uBB3C \uC138 \uC794", "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794"], "a", "\uC774\uC57C\uAE30\uC5D0\uC11C \uAE4C\uBABD\uC740 \uCE5C\uAD6C \uC14B\uC774 \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uC138 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694.", transfer("\uC8FC\uBB38\uD45C\uC5D0 \uB9DE\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC0C8 \uC8FC\uBB38\uD45C: \u201C\uB530\uB73B\uD55C \uC6B0\uC720 \uB450 \uC794 \uC8FC\uC138\uC694.\u201D", ["\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uB450 \uC794", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794", "\uB530\uB73B\uD55C \uC6B0\uC720 \uB450 \uC794"], "c", "\uC6B0\uC720\xB7\uB530\uB73B\uD55C \uC628\uB3C4\xB7\uB450 \uC794\uC744 \uBAA8\uB450 \uC77D\uC5B4\uC57C \uD574\uC694.")),
+        question("cafe-story-here", "cafe-place", "cafe-here", "\u2018\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\u2019\uB77C\uACE0 \uC801\uC5C8\uC744 \uB54C\uB294 \uC5B4\uB514\uC5D0\uC11C \uB9C8\uC2DC\uB824\uACE0 \uD588\uC5B4\uC694?", "", ["\uAC15\uAC00 \uBCA4\uCE58", "\uCE74\uD398 \uC548", "\uCE5C\uAD6C\uC758 \uC9D1"], "b", "\uCC98\uC74C \uC8FC\uBB38\uD45C\uC758 \u2018\uC5EC\uAE30\uC11C\u2019\uB294 \uCE74\uD398 \uC548\uC744 \uB73B\uD574\uC694.", transfer("\uC8FC\uBB38\uD45C\uB97C \uC77D\uACE0 \uB9C8\uC2E4 \uC7A5\uC18C\uB97C \uACE8\uB77C\uC694.", "\u201C\uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694. \uCC3D\uAC00\uC5D0 \uC549\uC744\uAC8C\uC694.\u201D", ["\uCE74\uD398 \uCC3D\uAC00", "\uAC15\uAC00 \uBCA4\uCE58", "\uC9D1\uC758 \uCC3D\uAC00"], "a", "\u2018\uCE74\uD398 \uC548\u2019\uACFC \u2018\uCC3D\uAC00\u2019\uB97C \uD568\uAED8 \uD655\uC778\uD574\uC694.")),
+        question("cafe-story-takeout", "cafe-takeout-request", "cafe-takeout", "\uBC16\uC758 \uBCA4\uCE58\uB85C \uAC00\uAE30 \uC804\uC5D0 \uC9C1\uC6D0\uC5D0\uAC8C \uBD80\uD0C1\uD55C \uB9D0\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uCC28\uB294 \uC548 \uB9C8\uC2E4\uAC8C\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uCE5C\uAD6C\uB4E4\uC740 \uCC28\uB97C \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uAE30 \uC704\uD574 \uD3EC\uC7A5\uC744 \uC694\uCCAD\uD588\uC5B4\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uBE44\uAC00 \uADF8\uCCE4\uC5B4\uC694. \uC74C\uB8CC\uB97C \uAC00\uC9C0\uACE0 \uACF5\uC6D0\uC73C\uB85C \uAC00\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uCEF5\uC744 \uBE44\uC6CC \uC8FC\uC138\uC694."], "a", "\uC74C\uB8CC\uB97C \uBC16\uC758 \uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC00\uB824\uBA74 \uD3EC\uC7A5\uC744 \uC694\uCCAD\uD574\uC694."))
+      ]),
+      lesson("cafe-apply", "apply", "\uB0B4 \uC74C\uB8CC\uB97C \uC8FC\uBB38\uD574\uC694", "\uB2E4\uB978 \uC74C\uB8CC\uC640 \uC7A5\uC18C\uC5D0\uC11C\uB3C4 \uBC30\uC6B4 \uD45C\uD604\uC744 \uC0AC\uC6A9\uD574\uC694.", cafeExpressions, [
+        scene("mongle", "\uC624! \uC774\uBC88\uC5D0\uB294 \uC5B4\uB5A4 \uC74C\uB8CC\uC57C? \uAC19\uC774 \uC8FC\uBB38\uD574 \uBCF4\uC790!"),
+        scene("kkamong", "\uB0B4\uAC00 \uC54C\uB824 \uC900 \uC8FC\uBB38\uBC95\uC774\uC57C. \uC628\uB3C4\uB791 \uC218\uB97C \uB193\uCE58\uBA74 \uB0B4 \uCEF5\uC774 \uB450 \uAC1C\uAC00 \uB418\uC9C0."),
+        scene("marine", "\uC8FC\uBB38 \uD655\uC778. \uD544\uC694\uD55C \uC815\uBCF4\uBD80\uD130 \uC120\uD0DD\uD558\uB77C.")
+      ], [
+        question("cafe-apply-order", "cafe-order-detail", "cafe-order", "\uC6D0\uD558\uB294 \uC8FC\uBB38\uC744 \uACE8\uB77C\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB97C \uD55C \uC794\uC529 \uC8FC\uBB38\uD574\uC694.", ["\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC8FC\uC2A4 \uB450 \uC794 \uC8FC\uC138\uC694."], "b", "\uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC2DC\uBBC0\uB85C \uB450 \uC794\uC774\uACE0, \uC6D0\uD558\uB294 \uC628\uB3C4\uB294 \uCC28\uAC00\uC6B4 \uC628\uB3C4\uC608\uC694.", transfer("\uC6D0\uD558\uB294 \uC8FC\uBB38\uC744 \uACE8\uB77C\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uB530\uB73B\uD55C \uC6B0\uC720 \uD55C \uC794\uC744 \uC8FC\uBB38\uD574\uC694.", ["\uB530\uB73B\uD55C \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694."], "a", "\uC6B0\uC720\xB7\uB530\uB73B\uD55C \uC628\uB3C4\xB7\uD55C \uC794\uC5D0 \uB9DE\uB294 \uC8FC\uBB38\uC744 \uC120\uD0DD\uD574\uC694.")),
+        question("cafe-apply-here", "cafe-place", "cafe-here", "\uC9C1\uC6D0\uC5D0\uAC8C \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\u201C\uAC00\uC838\uAC00\uC2E4 \uAC74\uAC00\uC694?\u201D \uCE74\uD398 \uC548\uC758 \uD14C\uC774\uBE14\uC5D0\uC11C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC544\uC9C1 \uC548 \uB9C8\uC168\uC5B4\uC694.", "\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "c", "\uD14C\uC774\uBE14\uC5D0\uC11C \uB9C8\uC2DC\uBBC0\uB85C \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2E0\uB2E4\uACE0 \uB2F5\uD574\uC694.", transfer("\uC9C1\uC6D0\uC5D0\uAC8C \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\u201C\uB9E4\uC7A5\uC5D0\uC11C \uB4DC\uC2DC\uB098\uC694?\u201D \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uB124, \uC9D1\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "b", "\u2018\uB9E4\uC7A5\uC5D0\uC11C\u2019\uB77C\uB294 \uC9C8\uBB38\uC5D0 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2E0\uB2E4\uACE0 \uB2F5\uD574\uC694.")),
+        question("cafe-apply-takeout", "cafe-takeout-request", "cafe-takeout", "\uC0C1\uD669\uC5D0 \uB9DE\uB294 \uBD80\uD0C1\uC744 \uACE8\uB77C\uC694.", "\uC8FC\uBB38\uD55C \uCC28\uB97C \uAC00\uC9C0\uACE0 \uD559\uAD50\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uCC28\uB97C \uB2E4\uB978 \uC7A5\uC18C\uB85C \uAC00\uC838\uAC00\uBBC0\uB85C \uD3EC\uC7A5\uC744 \uC694\uCCAD\uD574\uC694.", transfer("\uC0C1\uD669\uC5D0 \uB9DE\uB294 \uBD80\uD0C1\uC744 \uACE8\uB77C\uC694.", "\uCE5C\uAD6C \uC9D1\uC5D0\uC11C \uD568\uAED8 \uB9C8\uC2E4 \uC8FC\uC2A4\uB97C \uCE74\uD398\uC5D0\uC11C \uC0C0\uC5B4\uC694.", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uCEF5\uC740 \uD544\uC694 \uC5C6\uC5B4\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uCE5C\uAD6C \uC9D1\uC73C\uB85C \uAC00\uC838\uAC08 \uC8FC\uC2A4\uC774\uBBC0\uB85C \uD3EC\uC7A5\uC774 \uD544\uC694\uD574\uC694."))
+      ]),
+      lesson("cafe-visit-taste", "visit", "\uAE4C\uBABD\uC758 \uB530\uB73B\uD55C \uD55C \uC794", "\uCE5C\uAD6C\uC758 \uCDE8\uD5A5\uC744 \uC77D\uACE0 \uD568\uAED8 \uB9C8\uC2E4 \uC74C\uB8CC\uB97C \uC8FC\uBB38\uD574\uC694.", cafeTasteExpressions, [
+        scene("narrator", "\uBE44 \uC624\uB294 \uC544\uCE68, \uC138 \uCE5C\uAD6C\uAC00 \uCE74\uD398\uC5D0 \uB2E4\uC2DC \uC654\uC5B4\uC694."),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBE44\uBC14\uB78C\uB3C4 \uB044\uB5A1\uC5C6\uC9C0. \u2026\uC624\uB298\uC740 \uB530\uB73B\uD55C \uCC28\uAC00 \uB9C8\uC2DC\uACE0 \uC2F6\uAD70."),
+        scene("mongle", "\uC624! \uC624\uB298\uC740 \uAE4C\uBABD\uC774 \uC88B\uC544\uD558\uB294 \uAC78\uB85C \uAC19\uC774 \uB9C8\uC154 \uBCFC\uAE4C?"),
+        scene("marine", "\uCDE8\uD5A5 \uD655\uC778. \uB530\uB73B\uD55C \uCC28. \uD568\uAED8 \uB9C8\uC2E4 \uC0AC\uB78C, \uB458.")
+      ], [
+        question("cafe-visit-taste-drink", "cafe-preference-reading", "cafe-preference", "\uAE4C\uBABD\uC774 \uC6D0\uD558\uB294 \uC74C\uB8CC\uB97C \uC8FC\uBB38\uD574\uC694.", "\uAE4C\uBABD: \u201C\uB530\uB73B\uD55C \uCC28\uAC00 \uB9C8\uC2DC\uACE0 \uC2F6\uAD70.\u201D", ["\uB530\uB73B\uD55C \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694."], "b", "\uAE4C\uBABD\uC774 \uC6D0\uD558\uB294 \uC885\uB958\uB294 \uCC28\uC774\uACE0 \uC628\uB3C4\uB294 \uB530\uB73B\uD55C \uC628\uB3C4\uC608\uC694. \uC8FC\uC2A4\uB098 \uCC28\uAC00\uC6B4 \uC74C\uB8CC\uC640 \uAD6C\uBD84\uD574\uC694.", transfer("\uBABD\uAE00\uC774 \uC6D0\uD558\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uBABD\uAE00: \u201C\uC624\uB298\uC740 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uAC00 \uB9C8\uC2DC\uACE0 \uC2F6\uC5B4!\u201D", ["\uB530\uB73B\uD55C \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uBABD\uAE00\uC758 \uC0C8 \uCDE8\uD5A5\uC740 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uC608\uC694. \uC6D0\uD558\uB294 \uC885\uB958\uC640 \uC628\uB3C4\uB97C \uD568\uAED8 \uC77D\uC5B4\uC694.")),
+        question("cafe-visit-taste-count", "cafe-order-detail", "cafe-order", "\uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC2DC\uB824\uBA74 \uC5B4\uB5BB\uAC8C \uB9D0\uD560\uAE4C\uC694?", "\uAE4C\uBABD\uACFC \uB0B4\uAC00 \uB530\uB73B\uD55C \uCC28\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694.", ["\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uCC28 \uC138 \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694."], "c", "\uAE4C\uBABD \uD55C \uC794\uACFC \uB0B4 \uD55C \uC794\uC744 \uD569\uD558\uBA74 \uB450 \uC794\uC774\uC5D0\uC694.", transfer("\uD568\uAED8 \uB9C8\uC2E4 \uC218\uB7C9\uC744 \uC8FC\uBB38\uD574\uC694.", "\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uCC28\uAC00\uC6B4 \uC6B0\uC720\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694.", ["\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uC138 \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC6B0\uC720 \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC138 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2DC\uBA74 \uC138 \uC794\uC774\uACE0 \uC6D0\uD558\uB294 \uC74C\uB8CC\uB294 \uCC28\uAC00\uC6B4 \uC6B0\uC720\uC608\uC694.")),
+        question("cafe-visit-taste-place", "cafe-place", "cafe-here", "\uC9C1\uC6D0\uC5D0\uAC8C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824 \uC8FC\uC138\uC694.", "\uBE44\uAC00 \uADF8\uCE60 \uB54C\uAE4C\uC9C0 \uCE74\uD398 \uC548\uC5D0\uC11C \uB530\uB73B\uD55C \uCC28\uB97C \uB9C8\uC2DC\uBA70 \uC26C\uC5B4\uC694.", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uCE74\uD398 \uC548\uC5D0\uC11C \uC26C\uBA74\uC11C \uB9C8\uC2DC\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694.", transfer("\uC774\uBC88\uC5D0\uB294 \uC5B4\uB514\uC5D0\uC11C \uB9C8\uC2E4\uAE4C\uC694?", "\uBABD\uAE00\uC774 \uC8FC\uC2A4\uB97C \uAC00\uC9C0\uACE0 \uC9D1\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uC9C1\uC6D0: \u201C\uB9E4\uC7A5\uC5D0\uC11C \uB4DC\uC2DC\uB098\uC694?\u201D", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uB124, \uCC3D\uAC00\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "b", "\uC0C8 \uC7A5\uBA74\uC740 \uC9D1\uC5D0 \uAC00\uC838\uAC00\uB294 \uC8FC\uBB38\uC774\uC5D0\uC694. \uB9E4\uC7A5 \uC774\uC6A9 \uB300\uC2E0 \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694."))
+      ]),
+      lesson("cafe-visit-soldout", "visit", "\uC8FC\uC2A4\uAC00 \uC5C6\uB294 \uB0A0", "\uD488\uC808 \uC548\uB0B4\uB97C \uC77D\uACE0 \uAC00\uB2A5\uD55C \uC74C\uB8CC\uB85C \uC8FC\uBB38\uC744 \uC774\uC5B4\uAC00\uC694.", cafeSoldoutExpressions, [
+        scene("narrator", "\uCE74\uD398\uC758 \uC791\uC740 \uC548\uB0B4\uD310: \u201C\uC624\uB298 \uC8FC\uC2A4 \uD488\uC808. \uB530\uB73B\uD55C \uCC28\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.\u201D"),
+        scene("mongle", "\uC5B4? \uC8FC\uC2A4\uAC00 \uB2E4 \uB098\uAC14\uB124! \uAC19\uC774 \uB2E4\uB978 \uC74C\uB8CC\uB97C \uCC3E\uC544\uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uCC28\uB3C4 \uC798 \uACE0\uB974\uC9C0. \uC6D0\uB798 \uCC28\uB97C \uB9C8\uC2E4 \uC0DD\uAC01\uB3C4\u2026 \uC788\uC5C8\uC5B4."),
+        scene("marine", "\uC8FC\uBB38 \uAC00\uB2A5 \uD655\uC778. \uB530\uB73B\uD55C \uCC28. \uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC08 \uD55C \uC794.")
+      ], [
+        question("cafe-visit-soldout-menu", "cafe-availability", "cafe-soldout", "\uC9C0\uAE08 \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC8FC\uC2A4 \uD488\uC808. \uB530\uB73B\uD55C \uCC28\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694."], "a", "\uC8FC\uC2A4\uB294 \uD488\uC808\uC774\uB77C \uC628\uB3C4\uB97C \uBC14\uAFB8\uC5B4\uB3C4 \uC8FC\uBB38\uD560 \uC218 \uC5C6\uC5B4\uC694. \uAC00\uB2A5\uD55C \uC74C\uB8CC\uB294 \uB530\uB73B\uD55C \uCC28\uC608\uC694.", transfer("\uC0C8 \uC548\uB0B4\uD310\uC5D0\uC11C \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC6B0\uC720 \uD488\uC808. \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uC6B0\uC720\uAC00 \uD488\uC808\uC774\uACE0 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694. \uC0C8 \uC548\uB0B4\uB97C \uC77D\uACE0 \uACE8\uB77C\uC694.")),
+        question("cafe-visit-soldout-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC774 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uBB3C\uC5B4\uC694. \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\uD63C\uC790 \uB9C8\uC2E4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC138 \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uD544\uC694\uD55C \uAC83\uC740 \uD55C \uC794\uC774\uC5D0\uC694. \uC9C1\uC6D0\uC758 \uB450 \uC794 \uD655\uC778\uC5D0 \uC544\uB2C8\uC694\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD55C \uC794\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC9C1\uC6D0: \u201C\uC8FC\uC2A4 \uD55C \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88 \uC8FC\uBB38\uC740 \uB450 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uB450 \uC794\uC774\uC5D0\uC694. \uD55C \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uACE0\uCCD0\uC694.")),
+        question("cafe-visit-soldout-takeout", "cafe-takeout-request", "cafe-takeout", "\uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC00\uB824\uBA74 \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uB530\uB73B\uD55C \uCC28\uB97C \uAC00\uC9C0\uACE0 \uACF5\uC6D0 \uBCA4\uCE58\uB85C \uAC00\uB824\uACE0 \uD574\uC694.", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "b", "\uCE74\uD398 \uBC16\uC758 \uACF5\uC6D0\uC5D0 \uAC00\uC838\uAC08 \uCC28\uC774\uBBC0\uB85C \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824 \uC8FC\uC138\uC694.", "\uBE44\uAC00 \uB9CE\uC774 \uC640\uC11C \uCE74\uD398 \uC548\uC758 \uD14C\uC774\uBE14\uC5D0\uC11C \uC8FC\uC2A4\uB97C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uCDE8\uC18C\uD574 \uC8FC\uC138\uC694.", "\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uC9C0 \uC54A\uACE0 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694."))
+      ]),
+      lesson("cafe-visit-change", "visit", "\uAE4C\uBABD\uC758 \uB9C8\uC74C\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694", "\uC74C\uB8CC\xB7\uC218\uB7C9\xB7\uD3EC\uC7A5\uC744 \uBC14\uAFD4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694.", cafeChangeExpressions, [
+        scene("narrator", "\uC8FC\uBB38\uD45C\uC5D0\uB294 \uB530\uB73B\uD55C \uC8FC\uC2A4 \uB450 \uC794\uC774 \uC801\uD600 \uC788\uC5B4\uC694. \uC544\uC9C1 \uC74C\uB8CC\uB97C \uB9CC\uB4E4\uAE30 \uC804\uC774\uC5D0\uC694."),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uB530\uB73B\uD55C \uCC28\uAC00 \uB354 \uB04C\uB9AC\uB294\uAD70. \u2026\uC9C0\uAE08 \uBC14\uAFC0 \uC218 \uC788\uACA0\uC9C0."),
+        scene("mongle", "\uC624! \uB9C8\uB9B0\uB3C4 \uAC19\uC774 \uB9C8\uC2E0\uB300! \uD55C \uC794 \uB354 \uCC59\uACA8\uC11C \uACF5\uC6D0\uC73C\uB85C \uAC08\uAE4C?"),
+        scene("marine", "\uBCC0\uACBD \uC900\uBE44. \uCC28\uB85C \uAD50\uCCB4, \uD55C \uC794 \uCD94\uAC00, \uC804\uC6D0 \uACF5\uC6D0\uC73C\uB85C \uC774\uB3D9.")
+      ], [
+        question("cafe-visit-change-drink", "cafe-order-change", "cafe-change", "\uC8FC\uC2A4\uB97C \uB530\uB73B\uD55C \uCC28\uB85C \uBC14\uAFB8\uC5B4 \uB2EC\uB77C\uACE0 \uB9D0\uD574\uC694.", "\uC544\uC9C1 \uB9CC\uB4E4\uAE30 \uC804\uC778 \uB530\uB73B\uD55C \uC8FC\uC2A4 \uB450 \uC794\uC744 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC73C\uB85C \uBC14\uAFB8\uB824\uACE0 \uD574\uC694.", ["\uC8FC\uC2A4 \uB300\uC2E0 \uB530\uB73B\uD55C \uCC28\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC8FC\uC2A4\uB85C \uC900\uBE44\uD574 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694."], "a", "\uC8FC\uC2A4 \uB300\uC2E0\uC774\uB77C\uB294 \uB9D0\uB85C \uC774\uC804 \uC74C\uB8CC\uB97C \uC9DA\uACE0 \uB530\uB73B\uD55C \uCC28\uB85C \uBC14\uAFD4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694.", transfer("\uC774\uBC88\uC5D0\uB294 \uCC28\uB97C \uC8FC\uC2A4\uB85C \uBC14\uAFB8\uACE0 \uC2F6\uC5B4\uC694.", "\uC544\uC9C1 \uB9CC\uB4E4\uAE30 \uC804\uC778 \uB530\uB73B\uD55C \uCC28 \uD55C \uC794\uC744 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794\uC73C\uB85C \uBC14\uAFB8\uB824\uACE0 \uD574\uC694.", ["\uB530\uB73B\uD55C \uCC28\uB85C \uC900\uBE44\uD574 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uCC28\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694.", "\uCC28 \uB300\uC2E0 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694."], "c", "\uC0C8 \uC8FC\uBB38\uC740 \uB530\uB73B\uD55C \uCC28\uC5D0\uC11C \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB85C \uBCC0\uACBD\uD558\uB294 \uAC83\uC774\uC5D0\uC694. \uBC14\uAFC0 \uC885\uB958\uC640 \uC628\uB3C4\uB97C \uD655\uC778\uD574\uC694.")),
+        question("cafe-visit-change-count", "cafe-order-detail", "cafe-add", "\uB9C8\uB9B0\uC758 \uCEF5 \uD55C \uC794\uC744 \uCD94\uAC00\uD574\uC694.", "\uD604\uC7AC \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC138 \uCE5C\uAD6C\uAC00 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uC138 \uC794\uC774 \uD544\uC694\uD574\uC694.", ["\uD55C \uC794 \uBE7C \uC8FC\uC138\uC694.", "\uD55C \uC794 \uB354 \uC8FC\uC138\uC694.", "\uADF8\uB300\uB85C \uB450 \uC794 \uC8FC\uC138\uC694."], "b", "\uB450 \uC794\uC5D0 \uD55C \uC794 \uB354 \uCD94\uAC00\uD558\uBA74 \uC138 \uC794\uC774\uC5D0\uC694. \uB354\uB294 \uC218\uB7C9\uC744 \uB298\uB9AC\uB294 \uB9D0\uC774\uC5D0\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC5D0 \uCE5C\uAD6C\uC758 \uCEF5\uC744 \uCD94\uAC00\uD574\uC694.", "\uD604\uC7AC \uC8FC\uC2A4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC2DC\uB824\uBA74 \uB450 \uC794\uC774 \uD544\uC694\uD574\uC694.", ["\uD55C \uC794 \uBE7C \uC8FC\uC138\uC694.", "\uD55C \uC794 \uB354 \uC8FC\uC138\uC694.", "\uADF8\uB300\uB85C \uD55C \uC794 \uC8FC\uC138\uC694."], "b", "\uD55C \uC794\uC5D0 \uD55C \uC794\uC744 \uB354\uD558\uBA74 \uB450 \uC794\uC774\uC5D0\uC694. \uC0C8 \uC2DC\uC791 \uC218\uB7C9\uC744 \uC77D\uACE0 \uCD94\uAC00\uD574\uC694.")),
+        question("cafe-visit-change-place", "cafe-takeout-request", "cafe-takeout", "\uB9E4\uC7A5 \uC774\uC6A9\uC744 \uD3EC\uC7A5\uC73C\uB85C \uBC14\uAFB8\uC5B4\uC694.", "\uCC98\uC74C\uC5D0\uB294 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uAE30\uB85C \uD588\uC9C0\uB9CC, \uC774\uC81C \uC74C\uB8CC\uB97C \uAC00\uC9C0\uACE0 \uACF5\uC6D0\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694.", ["\uADF8\uB300\uB85C \uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694.", "\uD3EC\uC7A5\uC73C\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694."], "c", "\uC74C\uB8CC\uB294 \uC720\uC9C0\uD558\uACE0 \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC5D0\uC11C \uD3EC\uC7A5\uC73C\uB85C \uBC14\uAFD4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694.", transfer("\uC774\uBC88\uC5D0\uB294 \uD3EC\uC7A5\uC744 \uB9E4\uC7A5 \uC774\uC6A9\uC73C\uB85C \uBC14\uAFB8\uC5B4\uC694.", "\uC8FC\uC2A4\uB97C \uC9D1\uC5D0 \uAC00\uC838\uAC00\uAE30\uB85C \uD588\uC9C0\uB9CC, \uCE5C\uAD6C\uB97C \uB9CC\uB098 \uCE74\uD398 \uC548\uC5D0\uC11C \uD568\uAED8 \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uB9E4\uC7A5 \uC774\uC6A9\uC73C\uB85C \uBC14\uAFD4 \uC8FC\uC138\uC694.", "\uADF8\uB300\uB85C \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uC774\uBC88 \uBCC0\uACBD \uBC29\uD5A5\uC740 \uD3EC\uC7A5\uC5D0\uC11C \uB9E4\uC7A5 \uC774\uC6A9\uC774\uC5D0\uC694. \uC0C8\uB85C \uB9C8\uC2E4 \uC7A5\uC18C\uC5D0 \uB9DE\uAC8C \uB9D0\uD574\uC694."))
+      ]),
+      lesson("cafe-compose", "compose", "\uB0B4 \uB9D0\uB85C \uC8FC\uBB38\uD574\uC694", "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC218\uB7C9\uC744 \uACE8\uB77C \uC8FC\uBB38 \uBB38\uC7A5\uC744 \uC644\uC131\uD574\uC694.", cafeComposeExpressions, [
+        scene("narrator", "\uC774\uC81C \uC8FC\uBB38 \uBB38\uC7A5\uC744 \uC9C1\uC811 \uB9CC\uB4E4\uC5B4 \uBCFC \uC2DC\uAC04\uC774\uC5D0\uC694. \uAE4C\uBABD\uACFC \uB458\uC774 \uB530\uB73B\uD55C \uCC28\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694."),
+        scene("mongle", "\uC624! \uB2E8\uC5B4\uB97C \uACE8\uB790\uB354\uB2C8 \uB124 \uC8FC\uBB38\uC774 \uB418\uB124! \uAC19\uC774 \uB9CC\uB4E4\uC5B4 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8 \uCEF5\uB3C4 \uCC59\uACA8 \uC918. \u2026\uB530\uB73B\uD55C \uCC28, \uD55C \uC794\uC774\uBA74 \uB3FC."),
+        scene("marine", "\uC8FC\uBB38 \uC815\uBCF4 \uD655\uC778. \uCC28, \uB530\uB73B\uD55C \uC628\uB3C4, \uB450 \uC794.")
+      ], [
+        { ...question("cafe-compose-order", "cafe-compose-order", "cafe-compose", "\uAE4C\uBABD\uACFC \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD574\uC694.", "\uAE4C\uBABD\uACFC \uB0B4\uAC00 \uB530\uB73B\uD55C \uCC28\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uC9C1\uC811 \uACE8\uB77C \uC8FC\uC138\uC694.", ["\uC8FC\uBB38 \uC870\uAC74\uC744 \uBAA8\uB450 \uB9DE\uCDC4\uC5B4\uC694.", "\uD544\uC694\uD55C \uC218\uB7C9\uACFC \uB2EC\uB77C\uC694.", "\uC74C\uB8CC\uB098 \uC628\uB3C4\uAC00 \uB2EC\uB77C\uC694."], "a", "\uC74C\uB8CC\uB294 \uCC28, \uC628\uB3C4\uB294 \uB530\uB73B\uD558\uAC8C, \uC218\uB7C9\uC740 \uB450 \uC794\uC774\uC5D0\uC694. \uC138 \uC815\uBCF4\uB97C \uC5F0\uACB0\uD558\uBA74 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694\uAC00 \uB3FC\uC694.", transfer("\uC644\uC131\uD560 \uC8FC\uBB38 \uBB38\uC7A5\uC744 \uACE8\uB77C\uC694.", "\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694.", ["\uB530\uB73B\uD55C \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694."], "c", "\uC8FC\uC2A4\xB7\uCC28\uAC00\uC6B4 \uC628\uB3C4\xB7\uC138 \uC794\uC744 \uBAA8\uB450 \uB2F4\uC544\uC57C \uC0C8 \uC8FC\uBB38\uC5D0 \uB9DE\uC544\uC694.")), kind: "compose", orderGoal: { drink: "tea", temperature: "warm", count: 2 } },
+        question("cafe-compose-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778\uC5D0 \uB2F5\uD574\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC6D0\uD558\uB294 \uC218\uB7C9\uACFC \uC9C1\uC6D0\uC774 \uD655\uC778\uD55C \uC218\uB7C9\uC774 \uBAA8\uB450 \uB450 \uC794\uC774\uC5D0\uC694. \uB124\uB77C\uACE0 \uB2F5\uD558\uACE0 \uB450 \uC794\uC744 \uD655\uC778\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uD655\uC778\uD574\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uD55C \uC794\uC774 \uD544\uC694\uD558\uBBC0\uB85C \uB450 \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uD55C \uC794\uC73C\uB85C \uACE0\uCCD0\uC694.")),
+        question("cafe-compose-place", "cafe-place", "cafe-here", "\uD568\uAED8 \uB9C8\uC2E4 \uC790\uB9AC\uB97C \uC815\uD574\uC694.", "\uAE4C\uBABD\uACFC \uCE74\uD398 \uC548\uC5D0\uC11C \uB530\uB73B\uD55C \uCC28\uB97C \uB9C8\uC2DC\uBA70 \uC26C\uB824\uACE0 \uD574\uC694.", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uCE74\uD398 \uC548\uC5D0\uC11C \uD568\uAED8 \uB9C8\uC2DC\uB824\uBA74 \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824\uC694.", "\uB9C8\uB9B0\uC774 \uCC28\uB97C \uAC00\uC9C0\uACE0 \uD559\uAD50\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uC9C1\uC6D0: \u201C\uB9E4\uC7A5\uC5D0\uC11C \uB4DC\uC2DC\uB098\uC694?\u201D", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uD559\uAD50\uB85C \uAC00\uC838\uAC00\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9 \uB300\uC2E0 \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694."))
+      ])
+    ]
+  },
+  {
+    id: "store",
+    title: "\uAE4C\uBABD\uC758 \uD3B8\uC758\uC810 \uC791\uC804",
+    subtitle: "\uAC00\uACA9\uC744 \uBB3B\uACE0 \uBB3C\uAC74\uC744 \uC0AC\uC694",
+    icon: "store",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("store-price-reading", "\uAC00\uACA9 \uC9C8\uBB38\uACFC \uD45C\uC2DC \uC77D\uAE30"), skill("store-bag-request", "\uBD09\uD22C \uC694\uCCAD\uD558\uAE30"), skill("store-payment", "\uACB0\uC81C \uBC29\uBC95 \uC774\uD574\uD558\uAE30")],
+    lessons: [
+      lesson("store-expressions", "expressions", "\uACC4\uC0B0\uB300 \uC55E \uC138 \uB9C8\uB514", "\uAC00\uACA9\xB7\uBD09\uD22C\xB7\uCE74\uB4DC \uACB0\uC81C\uB97C \uAD6C\uBD84\uD574\uC694.", storeExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uC791\uC740 \uAC00\uAC8C\uC5D0 \uBB3C\uAC74\uC774 \uAC00\uB4DD\uD574! \uAC19\uC774 \uACE8\uB77C \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uAC00\uACA9\uB3C4 \uC54C\uC544\uBCF4\uC9C0. \uC22B\uC790\uAC00 \uC791\u2026 \uC544\uB2C8, \uAC00\uAE4C\uC774\uC11C \uC77D\uB294 \uAC70\uC57C."),
+        scene("marine", "\uAD6C\uB9E4 \uC900\uBE44. \uAC00\uACA9, \uBD09\uD22C, \uACB0\uC81C \uBC29\uBC95 \uD655\uC778.")
+      ], [
+        question("store-expressions-price", "store-price-reading", "store-price", "\uBB3C\uAC74\uC758 \uAC00\uACA9\uC744 \uC54C\uACE0 \uC2F6\uC5B4\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uC774\uAC70 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uC774\uAC70 \uBA87 \uAC1C\uC608\uC694?", "\uC774\uAC70 \uC5BC\uB9C8\uC608\uC694?"], "c", "\uAC00\uACA9\uC744 \uBB3C\uC744 \uB54C\uB294 \u2018\uC5BC\uB9C8\uC608\uC694\u2019\uB97C \uC0AC\uC6A9\uD574\uC694.", transfer("\uC774 \uC0CC\uB4DC\uC704\uCE58\uC758 \uAC12\uC744 \uBB3C\uC5B4\uBCF4\uB824\uACE0 \uD574\uC694.", "", ["\uC774\uAC70 \uC5BC\uB9C8\uC608\uC694?", "\uC774\uAC70 \uC5B8\uC81C \uBA39\uC5B4\uC694?", "\uC774\uAC70 \uB204\uAD6C \uAC70\uC608\uC694?"], "a", "\uBB3C\uAC74\uC758 \uAC12\uC740 \u2018\uC5BC\uB9C8\uC608\uC694\u2019\uB85C \uBB3C\uC5B4\uC694.")),
+        question("store-expressions-bag", "store-bag-request", "store-bag", "\u2018\uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694\u2019\uB294 \uBB34\uC5C7\uC744 \uBD80\uD0C1\uD558\uB294 \uB9D0\uC774\uC5D0\uC694?", "\uC0B0 \uBB3C\uAC74\uC744 \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uB824\uACE0 \uD574\uC694.", ["\uBB3C\uAC74\uC758 \uAC00\uACA9", "\uBB3C\uAC74\uC744 \uB2F4\uC744 \uBD09\uD22C", "\uD604\uAE08\uC73C\uB85C \uACB0\uC81C\uD558\uAE30"], "b", "\u2018\uBD09\uD22C\u2019\uB294 \uC0B0 \uBB3C\uAC74\uC744 \uB2F4\uC544 \uAC00\uC838\uAC00\uB294 \uB370 \uC0AC\uC6A9\uD574\uC694.", transfer("\uC9C1\uC6D0\uC5D0\uAC8C \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uC6B0\uC720\uC640 \uBE75\uC744 \uD55C\uAEBC\uBC88\uC5D0 \uB2F4\uC544 \uAC00\uC838\uAC08 \uBD09\uD22C\uAC00 \uD544\uC694\uD574\uC694.", ["\uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694.", "\uC6B0\uC720 \uD558\uB098 \uB354 \uC8FC\uC138\uC694.", "\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694."], "a", "\uBB3C\uAC74\uC744 \uB2F4\uC744 \uBD09\uD22C\uAC00 \uD544\uC694\uD558\uBBC0\uB85C \uBD09\uD22C\uB97C \uC694\uCCAD\uD574\uC694.")),
+        question("store-expressions-card", "store-payment", "store-card", "\u2018\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694\u2019\uB294 \uC5B4\uB5BB\uAC8C \uAC12\uC744 \uB0B4\uACA0\uB2E4\uB294 \uB9D0\uC774\uC5D0\uC694?", "", ["\uCE74\uB4DC\uB85C \uB0B4\uC694.", "\uD604\uAE08\uC73C\uB85C \uB0B4\uC694.", "\uB2E4\uC74C\uC5D0 \uB0B4\uC694."], "a", "\u2018\uCE74\uB4DC\uB85C\u2019\uB294 \uCE74\uB4DC\uB77C\uB294 \uBC29\uBC95\uC744 \uC774\uC6A9\uD55C\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", transfer("\u2018\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694\u2019\uB294 \uC5B4\uB5BB\uAC8C \uAC12\uC744 \uB0B4\uACA0\uB2E4\uB294 \uB9D0\uC774\uC5D0\uC694?", "", ["\uCE74\uB4DC\uB85C \uB0B4\uC694.", "\uB0B4\uC77C \uB0B4\uC694.", "\uD604\uAE08\uC73C\uB85C \uB0B4\uC694."], "c", "\uC9C0\uD3D0\uB098 \uB3D9\uC804\uC73C\uB85C \uC9C1\uC811 \uAC12\uC744 \uB0B4\uB294 \uBC29\uBC95\uC740 \uD604\uAE08 \uACB0\uC81C\uC608\uC694."))
+      ]),
+      lesson("store-story", "story", "\uBB3C\uC740 \uC6D0\uB798 \uC900\uBE44\uD558\uB294 \uAC70\uC57C", "\uAC00\uACA9\uD45C\uC640 \uC138 \uCE5C\uAD6C\uC758 \uAD6C\uB9E4\uB97C \uC77D\uACE0 \uC774\uD574\uD574\uC694.", storeExpressions, [
+        scene("narrator", "\uC138 \uCE5C\uAD6C\uAC00 \uD3B8\uC758\uC810\uC5D0\uC11C \uAC04\uC2DD\uC744 \uACE8\uB77C\uC694. \uBB3C \uD55C \uBCD1\uC758 \uAC00\uACA9\uD45C\uC5D0\uB294 1,000\uC6D0\uC774\uB77C\uACE0 \uC801\uD600 \uC788\uC5B4\uC694."),
+        scene("mongle", "\uC6B0\uC640! \uB77C\uBA74 \uBD09\uC9C0\uAC00 \uBE68\uAC1C! \uAC19\uC774 \uC800 \uADF8\uB9BC \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uB9E4\uC6B4 \uB77C\uBA74\uB3C4 \uC798 \uBA39\uC9C0. \uBB3C\uC740\u2026 \uB098 \uB9D0\uACE0 \uB108\uD76C\uAC00 \uB9C8\uC2DC\uB77C\uACE0."),
+        scene("marine", "\uBCF4\uAE09 \uD655\uC778. \uBB3C \uD55C \uBCD1, \uCC9C \uC6D0. \u2026\uB9E4\uC6B8 \uB54C \uB9C8\uC154\uB77C."),
+        scene("narrator", "\uB9C8\uB9B0\uC740 \uB77C\uBA74\uACFC \uBB3C\uC744 \uB2F4\uC73C\uB824\uACE0 \uC9C1\uC6D0\uC5D0\uAC8C \u2018\uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694\u2019\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694."),
+        scene("mongle", "\uC624! \uBB3C\uC774 \uB118\uC5B4\uC9C0\uC9C0 \uC54A\uAC8C \uC138\uC6CC \uC92C\uB124! \uAC19\uC774 \uAC00\uC838\uAC00\uC790!"),
+        scene("kkamong", "\uACC4\uC0B0\uC740 \uC774 \uBAB8\uC774 \uD558\uC9C0. \u2018\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.\u2019"),
+        scene("narrator", "\uAE4C\uBABD\uC740 \uCE74\uB4DC\uB85C \uACC4\uC0B0\uD558\uACE0 \uBD09\uD22C\uB97C \uCC59\uACA8\uC694. \uB9C8\uB8E8\uC5D0 \uB3CC\uC544\uC640 \uB77C\uBA74\uC744 \uD55C\uC785 \uBA39\uC5B4\uC694."),
+        scene("kkamong", "\uB0B4\uAC00 \uC6D0\uB798 \uBB3C\uB3C4 \uC88B\uC544\uD558\uAC70\uB4E0. \u2026\uD55C \uBAA8\uAE08\uB9CC."),
+        scene("marine", "\uBCF4\uAE09 \uC644\uB8CC. \uBB3C, \uC5EC\uAE30. \uC804\uC6D0 \uAC04\uC2DD \uD655\uC778.")
+      ], [
+        question("store-story-price", "store-price-reading", "store-price", "\uC774\uC57C\uAE30 \uC18D \uBB3C \uD55C \uBCD1\uC740 \uC5BC\uB9C8\uC608\uC694?", "", ["2,000\uC6D0", "1,000\uC6D0", "3,000\uC6D0"], "b", "\uBB3C \uD55C \uBCD1\uC758 \uAC00\uACA9\uD45C\uC5D0 1,000\uC6D0\uC774\uB77C\uACE0 \uC801\uD600 \uC788\uC5B4\uC694.", transfer("\uC0C8 \uAC00\uACA9\uD45C\uB97C \uC77D\uC5B4\uC694. \uC6B0\uC720 \uD55C \uAC1C\uB294 \uC5BC\uB9C8\uC608\uC694?", "\uC6B0\uC720 \uD55C \uAC1C 1,500\uC6D0 / \uBE75 \uD55C \uAC1C 2,000\uC6D0", ["2,000\uC6D0", "3,500\uC6D0", "1,500\uC6D0"], "c", "\uC6B0\uC720 \uAC00\uACA9\uC740 1,500\uC6D0\uC774\uC5D0\uC694. \uB2E4\uB978 \uBB3C\uAC74\uC774\uB098 \uD569\uACC4\uC640 \uAD6C\uBD84\uD574\uC694.")),
+        question("store-story-bag", "store-bag-request", "store-bag", "\uB9C8\uB9B0\uC774 \uBD09\uD22C\uB97C \uBD80\uD0C1\uD55C \uC774\uC720\uB294 \uBB34\uC5C7\uC774\uC5D0\uC694?", "", ["\uB77C\uBA74\uACFC \uBB3C\uC744 \uB2F4\uC73C\uB824\uACE0\uC694.", "\uAC00\uACA9\uC744 \uBC14\uAFB8\uB824\uACE0\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD558\uB824\uACE0\uC694."], "a", "\uB9C8\uB9B0\uC740 \uC0B0 \uB77C\uBA74\uACFC \uBB3C\uC744 \uD568\uAED8 \uB2F4\uC544 \uAC00\uC838\uAC00\uB824\uACE0 \uBD09\uD22C\uB97C \uBD80\uD0C1\uD588\uC5B4\uC694.", transfer("\uBD09\uD22C\uB97C \uC694\uCCAD\uD558\uB294 \uC7A5\uBA74\uC744 \uACE8\uB77C\uC694.", "\uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694.", ["\uAC00\uACA9\uD45C\uB97C \uB2E4\uC2DC \uC77D\uC5B4\uC694.", "\uC0B0 \uBE75\uACFC \uC6B0\uC720\uB97C \uB2F4\uC544\uC694.", "\uAD50\uD1B5\uCE74\uB4DC\uB97C \uCDA9\uC804\uD574\uC694."], "b", "\uBD09\uD22C\uB294 \uC0B0 \uBE75\uACFC \uC6B0\uC720\uB97C \uB2F4\uC544 \uAC00\uC838\uAC08 \uB54C \uD544\uC694\uD574\uC694.")),
+        question("store-story-card", "store-payment", "store-card", "\uAE4C\uBABD\uC740 \uC5B4\uB5A4 \uBC29\uBC95\uC73C\uB85C \uACC4\uC0B0\uD588\uC5B4\uC694?", "", ["\uB2E4\uC74C \uB0A0 \uACC4\uC0B0\uD588\uC5B4\uC694.", "\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD588\uC5B4\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD588\uC5B4\uC694."], "c", "\uAE4C\uBABD\uC740 \u2018\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694\u2019\uB77C\uACE0 \uB9D0\uD558\uACE0 \uCE74\uB4DC\uB97C \uC0AC\uC6A9\uD588\uC5B4\uC694.", transfer("\uC0C8 \uACC4\uC0B0 \uC7A5\uBA74\uC744 \uC77D\uACE0 \uBC29\uBC95\uC744 \uACE8\uB77C\uC694.", "\uBABD\uAE00: \u201C\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.\u201D \uBABD\uAE00\uC774 \uC9C0\uD3D0\uB97C \uAC74\uB138\uC5B4\uC694.", ["\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD588\uC5B4\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD588\uC5B4\uC694.", "\uC544\uC9C1 \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."], "a", "\uC9C0\uD3D0\uB97C \uC0AC\uC6A9\uD55C \uACB0\uC81C\uB294 \uD604\uAE08 \uACB0\uC81C\uC608\uC694."))
+      ]),
+      lesson("store-apply", "apply", "\uB0B4 \uAC04\uC2DD\uC744 \uC0AC\uC694", "\uB2E4\uB978 \uBB3C\uAC74\uC744 \uC0B4 \uB54C \uD544\uC694\uD55C \uB9D0\uC744 \uACE8\uB77C\uC694.", storeExpressions, [
+        scene("mongle", "\uC624! \uB124 \uAC04\uC2DD\uC740 \uBB50\uC57C? \uAC19\uC774 \uACC4\uC0B0\uB300\uC5D0 \uAC00 \uBCF4\uC790!"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBB3C\uAE4C\uC9C0 \uC900\uBE44\uD588\uC9C0. \uC900\uBE44 \uC798\uD558\uB294 \uC6A9\uC774\uAC70\uB4E0."),
+        scene("marine", "\uACC4\uC0B0\uB300 \uB3C4\uCC29. \uD544\uC694\uD55C \uBD80\uD0C1\uBD80\uD130 \uD655\uC778.")
+      ], [
+        question("store-apply-price", "store-price-reading", "store-price", "\uAC00\uACA9\uC744 \uBB3C\uC744 \uBB38\uC7A5\uC744 \uACE8\uB77C\uC694.", "\uB3C4\uC2DC\uB77D\uC5D0 \uAC00\uACA9\uD45C\uAC00 \uC5C6\uC5B4\uC694. \uC9C1\uC6D0\uC5D0\uAC8C \uAC12\uC744 \uBB3C\uC5B4\uBCF4\uB824\uACE0 \uD574\uC694.", ["\uC774 \uB3C4\uC2DC\uB77D\uC740 \uC5BC\uB9C8\uC608\uC694?", "\uC774 \uB3C4\uC2DC\uB77D\uC740 \uC5B4\uB514\uC5D0\uC11C \uB9CC\uB4E4\uC5B4\uC694?", "\uC774 \uB3C4\uC2DC\uB77D\uC740 \uB204\uAC00 \uB9CC\uB4E4\uC5B4\uC694?"], "a", "\uAC00\uACA9\uD45C\uAC00 \uC5C6\uC744 \uB54C \u2018\uC5BC\uB9C8\uC608\uC694\u2019\uB85C \uAC12\uC744 \uBB3C\uC5B4\uC694.", transfer("\uAC00\uACA9\uC744 \uBB3C\uC744 \uBB38\uC7A5\uC744 \uACE8\uB77C\uC694.", "\uC6B0\uC0B0\uC758 \uAC12\uC744 \uC54C\uACE0 \uC2F6\uC5B4\uC694.", ["\uC6B0\uC0B0\uC740 \uB204\uAC00 \uC0C0\uC5B4\uC694?", "\uC6B0\uC0B0\uC740 \uC5BC\uB9C8\uC608\uC694?", "\uC6B0\uC0B0\uC740 \uC5B8\uC81C \uC368\uC694?"], "b", "\uC6B0\uC0B0\uC758 \uAC12\uC740 \u2018\uC5BC\uB9C8\uC608\uC694\u2019\uB85C \uBB3C\uC5B4\uC694.")),
+        question("store-apply-bag", "store-bag-request", "store-bag", "\uC9C1\uC6D0\uC5D0\uAC8C \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\u201C\uBD09\uD22C \uD544\uC694\uD558\uC138\uC694?\u201D \uC0B0 \uBB3C\uAC74\uC774 \uB9CE\uC544\uC11C \uB2F4\uC744 \uBD09\uD22C\uAC00 \uD544\uC694\uD574\uC694.", ["\uC544\uB2C8\uC694, \uAD1C\uCC2E\uC544\uC694.", "\uAC00\uACA9\uC740 \uC5BC\uB9C8\uC608\uC694?", "\uB124, \uBD09\uD22C \uD558\uB098 \uC8FC\uC138\uC694."], "c", "\uBD09\uD22C\uAC00 \uD544\uC694\uD558\uBBC0\uB85C \u2018\uB124\u2019\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD558\uB098\uB97C \uBD80\uD0C1\uD574\uC694.", transfer("\uC9C1\uC6D0\uC5D0\uAC8C \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\u201C\uBD09\uD22C \uB4DC\uB9B4\uAE4C\uC694?\u201D \uB0B4 \uAC00\uBC29\uC5D0 \uBB3C\uAC74\uC744 \uB2F4\uC744 \uAC70\uC608\uC694. \uBD09\uD22C\uB294 \uD544\uC694 \uC5C6\uC5B4\uC694.", ["\uB124, \uBD09\uD22C \uB450 \uAC1C \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uAD1C\uCC2E\uC544\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694."], "b", "\uBD09\uD22C\uAC00 \uD544\uC694 \uC5C6\uC73C\uBBC0\uB85C \uC815\uC911\uD558\uAC8C \u2018\uC544\uB2C8\uC694, \uAD1C\uCC2E\uC544\uC694\u2019\uB77C\uACE0 \uB2F5\uD574\uC694.")),
+        question("store-apply-card", "store-payment", "store-card", "\uCE74\uB4DC\uB85C \uAC12\uC744 \uB0B4\uB824\uACE0 \uD574\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.", "\uB098\uC911\uC5D0 \uACC4\uC0B0\uD560\uAC8C\uC694."], "b", "\uCE74\uB4DC\uB97C \uC0AC\uC6A9\uD560 \uB54C\uB294 \u2018\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694\u2019\uB77C\uACE0 \uD574\uC694.", transfer("\uD604\uAE08\uC73C\uB85C \uAC12\uC744 \uB0B4\uB824\uACE0 \uD574\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.", "\uCE74\uB4DC\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694.", "\uAC00\uACA9\uD45C\uB97C \uBD99\uC5EC \uC8FC\uC138\uC694."], "a", "\uD604\uAE08\uC744 \uC0AC\uC6A9\uD558\uBBC0\uB85C \u2018\uD604\uAE08\uC73C\uB85C \uACC4\uC0B0\uD560\uAC8C\uC694\u2019\uAC00 \uC0C1\uD669\uC5D0 \uB9DE\uC544\uC694."))
+      ])
+    ]
+  },
+  {
+    id: "directions",
+    title: "\uAC70\uAFB8\uB85C \uB4E0 \uC9C0\uB3C4",
+    subtitle: "\uC704\uCE58\uB97C \uBB3B\uACE0 \uAE38\uC744 \uCC3E\uC544\uC694",
+    icon: "map",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("directions-location-question", "\uC7A5\uC18C\uC758 \uC704\uCE58 \uBB3B\uAE30"), skill("directions-turn", "\uC774\uB3D9 \uBC29\uD5A5 \uC774\uD574\uD558\uAE30"), skill("directions-landmark", "\uC8FC\uBCC0 \uC7A5\uC18C\uB85C \uC704\uCE58 \uCC3E\uAE30")],
+    lessons: [
+      lesson("directions-expressions", "expressions", "\uC5B4\uB514\uB85C \uAC00\uBA74 \uB420\uAE4C\uC694?", "\uC704\uCE58 \uC9C8\uBB38\xB7\uC774\uB3D9 \uBC29\uD5A5\xB7\uC8FC\uBCC0 \uC7A5\uC18C\uB97C \uC77D\uC5B4\uC694.", directionExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uC9C0\uB3C4\uC5D0\uB3C4 \uC791\uC740 \uB098\uBB34\uAC00 \uC788\uB124! \uAC19\uC774 \uACF5\uC6D0 \uCC3E\uC744\uAE4C?"),
+        scene("kkamong", "\uAE38\uC740 \uC774 \uBAB8\uC774 \uC548\uB0B4\uD558\uC9C0. \uB0B4 \uC9C0\uB3C4\uB9CC \uC81C\uB300\uB85C \uD3B4\uBA74 \uB418\uB294 \uAC70\uC57C."),
+        scene("marine", "\uACBD\uB85C \uD655\uC778. \uBAA9\uC801\uC9C0\uC640 \uBC29\uD5A5\uC744 \uB530\uB85C \uC77D\uC5B4\uB77C.")
+      ], [
+        question("directions-expressions-where", "directions-location-question", "directions-where", "\uACF5\uC6D0\uC758 \uC704\uCE58\uB97C \uC54C\uACE0 \uC2F6\uC5B4\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "", ["\uACF5\uC6D0\uC740 \uBA87 \uC2DC\uC5D0 \uC5F4\uC5B4\uC694?", "\uACF5\uC6D0\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uACF5\uC6D0\uC5D0\uB294 \uB098\uBB34\uAC00 \uB9CE\uC544\uC694?"], "b", "\uC7A5\uC18C\uC758 \uC704\uCE58\uB294 \u2018\uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694\u2019\uB85C \uBB3C\uC5B4\uC694.", transfer("\uD654\uC7A5\uC2E4\uC758 \uC704\uCE58\uB97C \uBB3B\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "", ["\uD654\uC7A5\uC2E4\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uD654\uC7A5\uC2E4\uC740 \uCCAD\uC18C \uC911\uC774\uC5D0\uC694?", "\uD654\uC7A5\uC2E4\uC740 \uAE68\uB057\uD574\uC694?"], "a", "\u2018\uC5B4\uB514\uC5D0\u2019\uB294 \uC7A5\uC18C\uC758 \uC704\uCE58\uB97C \uBB3B\uB294 \uD45C\uD604\uC774\uC5D0\uC694.")),
+        question("directions-expressions-right", "directions-turn", "directions-right", "\u2018\uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694\u2019\uB77C\uB294 \uC548\uB0B4\uC5D0 \uB9DE\uB294 \uBC29\uD5A5\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "\uAE38\uC744 \uB530\uB77C \uAC77\uB2E4\uAC00 \uAC08\uB9BC\uAE38\uC5D0 \uB3C4\uCC29\uD588\uC5B4\uC694.", ["\uC67C\uCABD", "\uB4A4\uCABD", "\uC624\uB978\uCABD"], "c", "\u2018\uC624\uB978\uCABD\uC73C\uB85C\u2019\uB294 \uC624\uB978\uCABD \uBC29\uD5A5\uC73C\uB85C \uC6C0\uC9C1\uC774\uB77C\uB294 \uB73B\uC774\uC5D0\uC694.", transfer("\uAC08\uB9BC\uAE38\uC5D0\uC11C \u2018\uC67C\uCABD\uC73C\uB85C \uAC00\uC138\uC694\u2019\uB77C\uB294 \uC548\uB0B4\uB97C \uC77D\uC5C8\uC5B4\uC694.", "\uC5B4\uB290 \uBC29\uD5A5\uC73C\uB85C \uAC00\uC57C \uD574\uC694?", ["\uC624\uB978\uCABD", "\uC67C\uCABD", "\uB4A4\uCABD"], "b", "\uC0C8 \uC548\uB0B4\uC758 \uBC29\uD5A5\uC740 \uC67C\uCABD\uC774\uC5D0\uC694. \uC774\uC804 \uBB38\uC81C\uC758 \uBC29\uD5A5\uC744 \uADF8\uB300\uB85C \uACE0\uB974\uC9C0 \uC54A\uC544\uC694.")),
+        question("directions-expressions-beside", "directions-landmark", "directions-beside", "\uACF5\uC6D0\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\u201C\uACF5\uC6D0\uC740 \uC740\uD589 \uC606\uC5D0 \uC788\uC5B4\uC694.\u201D", ["\uC740\uD589 \uC606", "\uC740\uD589 \uC548", "\uD559\uAD50 \uB4A4"], "a", "\u2018\uC740\uD589 \uC606\u2019\uC740 \uC740\uD589 \uAC00\uAE4C\uC774 \uB098\uB780\uD788 \uC788\uB294 \uC704\uCE58\uC608\uC694.", transfer("\uB3C4\uC11C\uAD00\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\u201C\uB3C4\uC11C\uAD00\uC740 \uD559\uAD50 \uC606\uC5D0 \uC788\uC5B4\uC694.\u201D", ["\uD559\uAD50 \uC548", "\uC740\uD589 \uC55E", "\uD559\uAD50 \uC606"], "c", "\uAE30\uC900 \uC7A5\uC18C\uAC00 \uD559\uAD50\uC774\uACE0 \uC704\uCE58\uB294 \uADF8 \uC606\uC774\uC5D0\uC694."))
+      ]),
+      lesson("directions-story", "story", "\uC9C0\uB3C4\uB97C \uB4A4\uC9D1\uC73C\uBA74", "\uC138 \uCE5C\uAD6C\uAC00 \uACF5\uC6D0\uAE4C\uC9C0 \uAC00\uB294 \uAE38\uC744 \uC774\uD574\uD574\uC694.", directionExpressions, [
+        scene("narrator", "\uACF5\uC6D0\uC5D0\uC11C \uAF43\uC744 \uBCF4\uB824\uACE0 \uC138 \uCE5C\uAD6C\uAC00 \uAE38\uC744 \uB098\uC130\uC5B4\uC694. \uAE4C\uBABD\uC774 \uC9C0\uB3C4\uB97C \uD3BC\uCCD0\uC694."),
+        scene("mongle", "\uC5B4? \uC9C0\uB3C4 \uAE00\uC790\uAC00 \uAC70\uAFB8\uB85C\uB124! \uAC19\uC774 \uB3CC\uB824 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBC18\uB300\uCABD\uC5D0\uC11C\uB3C4 \uC77D\u2026 \uC544\uB2C8, \uBC14\uB78C \uB54C\uBB38\uC5D0 \uB3CC\uC544\uAC04 \uAC70\uC57C."),
+        scene("narrator", "\uC785\uAD6C\uC758 \uC548\uB0B4\uD310\uC5D0\uB294 \u2018\uACF5\uC6D0: \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC624\uB978\uCABD. \uC740\uD589 \uC606.\u2019\uC774\uB77C\uACE0 \uC801\uD600 \uC788\uC5B4\uC694."),
+        scene("marine", "\uC9C0\uB3C4 \uBC29\uD5A5 \uC218\uC815. \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC624\uB978\uCABD. \uC740\uD589 \uC606. \uD655\uC778."),
+        scene("mongle", "\uC6B0\uC640! \uC740\uD589 \uC606\uC5D0 \uAF43\uC774 \uBCF4\uC5EC! \uAC19\uC774 \uC800\uAE30\uB85C \uAC00\uC790!"),
+        scene("kkamong", "\uB0B4\uAC00 \uCC98\uC74C\uBD80\uD130 \uAF43 \uCABD\uC73C\uB85C \uAC00\uB824\uACE0 \uD588\uC9C0. \u2026\uB9C8\uB9B0\uB3C4 \uBCF4\uACE0 \uC788\uC5C8\uAD70."),
+        scene("narrator", "\uCE5C\uAD6C\uB4E4\uC740 \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC11C \uC740\uD589 \uC606\uC758 \uACF5\uC6D0\uC5D0 \uB3C4\uCC29\uD574\uC694."),
+        scene("marine", "\uB3C4\uCC29 \uD655\uC778. \uAF43, \uC5EC\uC12F \uC1A1\uC774. \u2026\uD55C \uC1A1\uC774\uB294 \uC544\uC9C1 \uD53C\uB294 \uC911\uC774\uB2E4.")
+      ], [
+        question("directions-story-where", "directions-location-question", "directions-where", "\uC138 \uCE5C\uAD6C\uAC00 \uCC3E\uB358 \uC7A5\uC18C\uC758 \uC704\uCE58\uB97C \uBB3B\uB294 \uB9D0\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "", ["\uACF5\uC6D0\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uD559\uAD50\uAC00 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uCE74\uD398\uAC00 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?"], "a", "\uC138 \uCE5C\uAD6C\uC758 \uBAA9\uC801\uC9C0\uB294 \uAF43\uC744 \uBCFC \uACF5\uC6D0\uC774\uBBC0\uB85C \uACF5\uC6D0\uC758 \uC704\uCE58\uB97C \uBB3C\uC5B4\uC694.", transfer("\uC0C8 \uBAA9\uC801\uC9C0\uC758 \uC704\uCE58\uB97C \uBB3B\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "\uC138 \uCE5C\uAD6C\uAC00 \uCC45\uC744 \uBE4C\uB9AC\uB824\uACE0 \uB3C4\uC11C\uAD00\uC744 \uCC3E\uACE0 \uC788\uC5B4\uC694.", ["\uC740\uD589\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uB3C4\uC11C\uAD00\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uACF5\uC6D0\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?"], "b", "\uCC45\uC744 \uBE4C\uB9B4 \uBAA9\uC801\uC9C0\uB294 \uB3C4\uC11C\uAD00\uC774\uC5D0\uC694. \uD574\uB2F9 \uC7A5\uC18C\uC758 \uC704\uCE58\uB97C \uBB3C\uC5B4\uC694.")),
+        question("directions-story-turn", "directions-turn", "directions-right", "\uC138 \uCE5C\uAD6C\uB294 \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC5B4\uB290 \uCABD\uC73C\uB85C \uAC14\uC5B4\uC694?", "", ["\uC67C\uCABD", "\uC624\uB978\uCABD", "\uC654\uB358 \uAE38"], "b", "\uC548\uB0B4\uD310\uC5D0 \uC801\uD78C \uB300\uB85C \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC624\uB978\uCABD\uC73C\uB85C \uAC14\uC5B4\uC694.", transfer("\uC0C8 \uC548\uB0B4\uB97C \uC77D\uACE0 \uAC08 \uBC29\uD5A5\uC744 \uACE8\uB77C\uC694.", "\u201C\uB3C4\uC11C\uAD00\uC5D0 \uAC00\uB824\uBA74 \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC67C\uCABD\uC73C\uB85C \uAC00\uC138\uC694.\u201D", ["\uC624\uB978\uCABD", "\uC654\uB358 \uAE38", "\uC67C\uCABD"], "c", "\uC0C8 \uC548\uB0B4\uC758 \uAC08\uB9BC\uAE38 \uBC29\uD5A5\uC740 \uC67C\uCABD\uC774\uC5D0\uC694.")),
+        question("directions-story-landmark", "directions-landmark", "directions-beside", "\uC774\uC57C\uAE30 \uC18D \uACF5\uC6D0\uC740 \uC5B4\uB290 \uAC74\uBB3C \uC606\uC5D0 \uC788\uC5B4\uC694?", "", ["\uD559\uAD50", "\uB3C4\uC11C\uAD00", "\uC740\uD589"], "c", "\uC548\uB0B4\uD310\uACFC \uB3C4\uCC29 \uC7A5\uBA74 \uBAA8\uB450 \uACF5\uC6D0\uC774 \uC740\uD589 \uC606\uC5D0 \uC788\uB2E4\uACE0 \uC54C\uB824 \uC918\uC694.", transfer("\uC0C8 \uC548\uB0B4\uB97C \uC77D\uACE0 \uAE30\uC900 \uAC74\uBB3C\uC744 \uACE8\uB77C\uC694.", "\u201C\uC57D\uAD6D\uC740 \uBCD1\uC6D0 \uC606\uC5D0 \uC788\uC5B4\uC694.\u201D", ["\uBCD1\uC6D0", "\uC740\uD589", "\uD559\uAD50"], "a", "\uC57D\uAD6D\uC758 \uC704\uCE58\uB97C \uC54C\uB824 \uC8FC\uB294 \uAE30\uC900 \uAC74\uBB3C\uC740 \uBCD1\uC6D0\uC774\uC5D0\uC694."))
+      ]),
+      lesson("directions-apply", "apply", "\uB0B4\uAC00 \uAE38\uC744 \uBB3C\uC5B4\uC694", "\uC0C8 \uC7A5\uC18C\uC758 \uC704\uCE58\uC640 \uBC29\uD5A5\uC744 \uC77D\uACE0 \uACE8\uB77C\uC694.", directionExpressions, [
+        scene("mongle", "\uC624! \uC774\uBC88\uC5D0\uB294 \uB2E4\uB978 \uACF3\uC774\uB124! \uAC19\uC774 \uAE38 \uCC3E\uC544\uBCFC\uAE4C?"),
+        scene("kkamong", "\uB0B4 \uC9C0\uB3C4\uB294 \uC774\uC81C \uB611\uBC14\uB85C\uC57C. \uC774 \uBAB8\uC758 \uC548\uB0B4\uB3C4 \uB611\uBC14\uB974\uC9C0."),
+        scene("marine", "\uC774\uB3D9 \uC900\uBE44. \uBAA9\uC801\uC9C0, \uBC29\uD5A5, \uAE30\uC900 \uC7A5\uC18C \uD655\uC778.")
+      ], [
+        question("directions-apply-where", "directions-location-question", "directions-where", "\uC9C1\uC6D0\uC5D0\uAC8C \uBB34\uC5C7\uC744 \uBB3C\uC744\uAE4C\uC694?", "\uCC98\uC74C \uC628 \uB3D9\uB124\uC5D0\uC11C \uC57D\uAD6D\uC744 \uCC3E\uACE0 \uC788\uC5B4\uC694.", ["\uC57D\uAD6D\uC740 \uBA87 \uC2DC\uC5D0 \uB2EB\uC544\uC694?", "\uC57D\uAD6D\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?", "\uC57D\uAD6D\uC5D0\uC11C \uC57D\uC744 \uC0C0\uC5B4\uC694?"], "b", "\uCC3E\uB294 \uC57D\uAD6D\uC758 \uC704\uCE58\uB97C \u2018\uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694\u2019\uB85C \uBB3C\uC5B4\uC694.", transfer("\uC9C0\uD558\uCCA0\uC5ED\uC744 \uCC3E\uACE0 \uC788\uC5B4\uC694. \uBB34\uC5C7\uC744 \uBB3C\uC744\uAE4C\uC694?", "\uCC98\uC74C \uC628 \uAC70\uB9AC\uB77C \uC704\uCE58\uB97C \uBAB0\uB77C\uC694.", ["\uC9C0\uD558\uCCA0\uC740 \uBA87 \uC2DC\uC5D0 \uC640\uC694?", "\uC9C0\uD558\uCCA0 \uD45C\uB294 \uC5BC\uB9C8\uC608\uC694?", "\uC9C0\uD558\uCCA0\uC5ED\uC774 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?"], "c", "\uAC00\uB824\uB294 \uC7A5\uC18C\uAC00 \uC9C0\uD558\uCCA0\uC5ED\uC73C\uB85C \uBC14\uB00C\uC5B4\uB3C4 \uC704\uCE58 \uC9C8\uBB38\uC740 \u2018\uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694\u2019\uC608\uC694.")),
+        question("directions-apply-turn", "directions-turn", "directions-right", "\uC548\uB0B4\uC5D0 \uB530\uB77C \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC5B4\uB290 \uCABD\uC73C\uB85C \uAC08\uAE4C\uC694?", "\u201C\uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694. \uD3B8\uC758\uC810\uC774 \uBCF4\uC774\uBA74 \uBA48\uCD94\uC138\uC694.\u201D", ["\uC624\uB978\uCABD", "\uC67C\uCABD", "\uB4A4\uCABD"], "a", "\uBA3C\uC800 \uAC08 \uBC29\uD5A5\uC740 \uC624\uB978\uCABD\uC774\uACE0 \uD3B8\uC758\uC810\uC740 \uBA48\uCD9C \uAE30\uC900\uC774\uC5D0\uC694.", transfer("\uC548\uB0B4\uC5D0 \uB530\uB77C \uAC08\uB9BC\uAE38\uC5D0\uC11C \uC5B4\uB290 \uCABD\uC73C\uB85C \uAC08\uAE4C\uC694?", "\u201C\uC67C\uCABD\uC73C\uB85C \uAC00\uC138\uC694. \uC6B0\uCCB4\uAD6D \uC55E\uC5D0\uC11C \uAE30\uB2E4\uB9AC\uC138\uC694.\u201D", ["\uB4A4\uCABD", "\uC67C\uCABD", "\uC624\uB978\uCABD"], "b", "\uAC08 \uBC29\uD5A5\uC740 \uC67C\uCABD\uC774\uC5D0\uC694. \uAE30\uB2E4\uB9B4 \uC7A5\uC18C\uC640 \uC774\uB3D9 \uBC29\uD5A5\uC744 \uB098\uB204\uC5B4 \uC77D\uC5B4\uC694.")),
+        question("directions-apply-landmark", "directions-landmark", "directions-beside", "\uC57D\uAD6D\uC758 \uC704\uCE58\uC5D0 \uB9DE\uB294 \uC124\uBA85\uC744 \uACE8\uB77C\uC694.", "\u201C\uC57D\uAD6D\uC740 \uBCD1\uC6D0 \uC606\uC5D0 \uC788\uC5B4\uC694.\u201D", ["\uBCD1\uC6D0 \uC548\uC5D0 \uC788\uC5B4\uC694.", "\uD559\uAD50 \uB4A4\uC5D0 \uC788\uC5B4\uC694.", "\uBCD1\uC6D0 \uC606\uC5D0 \uC788\uC5B4\uC694."], "c", "\u2018\uC606\u2019\uACFC \u2018\uC548\u2019\uC740 \uB2E4\uB978 \uC704\uCE58\uC608\uC694. \uBCD1\uC6D0 \uC606\uC774 \uB9DE\uC544\uC694.", transfer("\uC6B0\uCCB4\uAD6D\uC758 \uC704\uCE58\uC5D0 \uB9DE\uB294 \uC124\uBA85\uC744 \uACE8\uB77C\uC694.", "\u201C\uC6B0\uCCB4\uAD6D\uC740 \uD559\uAD50 \uC606\uC5D0 \uC788\uC5B4\uC694.\u201D", ["\uD559\uAD50 \uC606\uC5D0 \uC788\uC5B4\uC694.", "\uD559\uAD50 \uC548\uC5D0 \uC788\uC5B4\uC694.", "\uC740\uD589 \uB4A4\uC5D0 \uC788\uC5B4\uC694."], "a", "\uC0C8 \uAE30\uC900 \uC7A5\uC18C\uB294 \uD559\uAD50\uC774\uACE0 \uC6B0\uCCB4\uAD6D\uC740 \uD559\uAD50 \uC606\uC5D0 \uC788\uC5B4\uC694."))
+      ])
+    ]
+  },
+  {
+    id: "transit",
+    title: "\uBC84\uC2A4\uB85C \uAF43\uAE38\uAE4C\uC9C0",
+    subtitle: "\uBAA9\uC801\uC9C0\uC640 \uB0B4\uB9B4 \uACF3\uC744 \uD655\uC778\uD574\uC694",
+    icon: "transit",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("transit-route", "\uBAA9\uC801\uC9C0 \uD655\uC778\uD558\uAE30"), skill("transit-alighting", "\uB0B4\uB9B4 \uC21C\uC11C \uC774\uD574\uD558\uAE30"), skill("transit-instruction", "\uC2B9\uCC28 \uC548\uB0B4 \uC774\uD574\uD558\uAE30")],
+    lessons: [
+      lesson("transit-expressions", "expressions", "\uBC84\uC2A4 \uD0C0\uAE30 \uC804\uD6C4", "\uBAA9\uC801\uC9C0\xB7\uB0B4\uB9B4 \uB54C\xB7\uAD50\uD1B5\uCE74\uB4DC \uC548\uB0B4\uB97C \uC77D\uC5B4\uC694.", transitExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uBC84\uC2A4 \uCC3D\uBB38\uC774 \uCEE4! \uAC19\uC774 \uACF5\uC6D0\uC5D0 \uAC00 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBC84\uC2A4\uB3C4 \uC798 \uD0C0\uC9C0. \uB0B4\uB9B4 \uACF3\uB9CC \uBA3C\uC800 \uBCF4\uBA74 \uB418\uB294 \uAC70\uC57C."),
+        scene("marine", "\uD0D1\uC2B9 \uC900\uBE44. \uBAA9\uC801\uC9C0, \uCE74\uB4DC, \uC815\uB958\uC7A5 \uD655\uC778.")
+      ], [
+        question("transit-expressions-route", "transit-route", "transit-destination", "\uBC84\uC2A4\uAC00 \uACF5\uC6D0\uC73C\uB85C \uAC00\uB294\uC9C0 \uD655\uC778\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "", ["\uACF5\uC6D0\uC740 \uBA87 \uC2DC\uC5D0 \uB2EB\uC544\uC694?", "\uC774 \uBC84\uC2A4\uB294 \uACF5\uC6D0\uC5D0 \uAC00\uC694?", "\uACF5\uC6D0\uC5D0 \uAF43\uC774 \uB9CE\uC544\uC694?"], "b", "\uBC84\uC2A4\uC758 \uBAA9\uC801\uC9C0\uB97C \uD655\uC778\uD558\uB824\uBA74 \uADF8 \uBC84\uC2A4\uAC00 \uACF5\uC6D0\uC5D0 \uAC00\uB294\uC9C0 \uBB3C\uC5B4\uC694.", transfer("\uBC84\uC2A4\uAC00 \uB3C4\uC11C\uAD00\uC73C\uB85C \uAC00\uB294\uC9C0 \uD655\uC778\uD574\uC694.", "", ["\uC774 \uBC84\uC2A4\uB294 \uB3C4\uC11C\uAD00\uC5D0 \uAC00\uC694?", "\uB3C4\uC11C\uAD00\uC5D0 \uCC45\uC774 \uB9CE\uC544\uC694?", "\uB3C4\uC11C\uAD00\uC740 \uBA87 \uC2DC\uC5D0 \uC5F4\uC5B4\uC694?"], "a", "\uAC00\uB824\uB294 \uC7A5\uC18C\uB97C \uB3C4\uC11C\uAD00\uC73C\uB85C \uBC14\uAFD4 \uAC19\uC740 \uBC29\uC2DD\uC73C\uB85C \uBAA9\uC801\uC9C0\uB97C \uD655\uC778\uD574\uC694.")),
+        question("transit-expressions-alight", "transit-alighting", "transit-alight", "\u2018\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694\u2019\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "\uBC84\uC2A4\uAC00 \uC9C0\uAE08 \uC815\uB958\uC7A5\uC5D0 \uBA48\uCDC4\uC5B4\uC694.", ["\uC9C0\uAE08 \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694.", "\uC544\uC9C1 \uBC84\uC2A4\uB97C \uD0C0\uC9C0 \uC54A\uC544\uC694.", "\uD55C \uC815\uB958\uC7A5 \uB354 \uAC00\uC11C \uB0B4\uB824\uC694."], "c", "\u2018\uB2E4\uC74C\u2019\uC740 \uC9C0\uAE08 \uB4A4\uC5D0 \uC624\uB294 \uC815\uB958\uC7A5\uC774\uC5D0\uC694. \uD55C \uC815\uB958\uC7A5 \uB354 \uAC00\uC694.", transfer("\u2018\uC774\uBC88 \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694\u2019\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "\uBC84\uC2A4\uAC00 \uC774\uBC88 \uC815\uB958\uC7A5\uC5D0 \uBA48\uCDC4\uC5B4\uC694.", ["\uD55C \uC815\uB958\uC7A5 \uB354 \uAC00\uC694.", "\uC9C0\uAE08 \uB0B4\uB824\uC694.", "\uBC84\uC2A4\uB97C \uB2E4\uC2DC \uD0C0\uC694."], "b", "\u2018\uC774\uBC88\u2019\uACFC \u2018\uB2E4\uC74C\u2019\uC740 \uB2EC\uB77C\uC694. \uC774\uBC88 \uC815\uB958\uC7A5\uC740 \uC9C0\uAE08 \uBA48\uCD98 \uACF3\uC774\uC5D0\uC694.")),
+        question("transit-expressions-card", "transit-instruction", "transit-card", "\u2018\uAD50\uD1B5\uCE74\uB4DC\uB97C \uCC0D\uC73C\uC138\uC694\u2019\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", "\uBC84\uC2A4\uC5D0 \uC62C\uB77C \uCE74\uB4DC \uB2E8\uB9D0\uAE30\uB97C \uBD24\uC5B4\uC694.", ["\uAD50\uD1B5\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC694.", "\uAD50\uD1B5\uCE74\uB4DC \uC0AC\uC9C4\uC744 \uCC0D\uC5B4\uC694.", "\uAD50\uD1B5\uCE74\uB4DC\uB97C \uC758\uC790\uC5D0 \uB194\uC694."], "a", "\uBC84\uC2A4\uC5D0\uC11C \u2018\uCE74\uB4DC\uB97C \uCC0D\uB2E4\u2019\uB294 \uB2E8\uB9D0\uAE30\uC5D0 \uCE74\uB4DC\uB97C \uB300\uB294 \uB73B\uC774\uC5D0\uC694.", transfer("\u2018\uB0B4\uB9B4 \uB54C\uB3C4 \uAD50\uD1B5\uCE74\uB4DC\uB97C \uCC0D\uC73C\uC138\uC694\u2019\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC744 \uACE8\uB77C\uC694.", "\uC774 \uBC84\uC2A4\uC5D0\uB294 \uB0B4\uB9B4 \uB54C \uCE74\uB4DC\uB97C \uCC0D\uC73C\uB77C\uB294 \uC548\uB0B4\uAC00 \uC788\uC5B4\uC694.", ["\uCE74\uB4DC\uB97C \uC9D1\uC5D0 \uB450\uACE0 \uB0B4\uB824\uC694.", "\uCE74\uB4DC \uC0AC\uC9C4\uC744 \uCC0D\uC5B4\uC694.", "\uB0B4\uB9AC\uAE30 \uC804\uC5D0 \uB2E8\uB9D0\uAE30\uC5D0 \uCE74\uB4DC\uB97C \uB300\uC694."], "c", "\uC774 \uBB38\uC81C\uC758 \uC548\uB0B4\uB294 \uB0B4\uB9B4 \uB54C \uB2E8\uB9D0\uAE30\uC5D0 \uCE74\uB4DC\uB97C \uB300\uB77C\uB294 \uB73B\uC774\uC5D0\uC694."))
+      ]),
+      lesson("transit-story", "story", "\uB0B4\uB9B4 \uACF3\uC740 \uB2E4\uC74C\uC774\uC57C", "\uC774\uC57C\uAE30 \uC18D \uBC84\uC2A4 \uB178\uC120\uACFC \uB0B4\uB9B4 \uC21C\uC11C\uB97C \uC774\uD574\uD574\uC694.", transitExpressions, [
+        scene("narrator", "\uC774\uC57C\uAE30 \uC18D \uB9C8\uB8E8 \uBC84\uC2A4 \uB178\uC120\uC774\uC5D0\uC694. \uB3C4\uC11C\uAD00 \uB2E4\uC74C \uC815\uB958\uC7A5\uC740 \uAF43\uAE38 \uACF5\uC6D0\uC774\uC5D0\uC694."),
+        scene("mongle", "\uC6B0\uC640! \uACF5\uC6D0\uAE4C\uC9C0 \uAC19\uC774 \uBC84\uC2A4 \uD0C0\uACE0 \uAC08\uAE4C? \uCC3D\uBC16 \uAF43\uB3C4 \uBCF4\uC790!"),
+        scene("kkamong", "\uBC84\uC2A4 \uACE0\uB974\uAE30\uB294 \uC774 \uBAB8\uC758 \uD2B9\uAE30\uC9C0. \u2018\uC774 \uBC84\uC2A4\uB294 \uACF5\uC6D0\uC5D0 \uAC00\uC694?\u2019"),
+        scene("narrator", "\uC548\uB0B4\uD45C\uC5D0 \u2018\uAF43\uAE38 \uACF5\uC6D0\uD589\u2019\uC774\uB77C\uACE0 \uC801\uD600 \uC788\uC5B4\uC694. \uC138 \uCE5C\uAD6C\uB294 \uAD50\uD1B5\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uACE0 \uD0C0\uC694."),
+        scene("marine", "\uD0D1\uC2B9 \uD655\uC778. \uC804\uC6D0, \uC14B. \uAD50\uD1B5\uCE74\uB4DC \uC0AC\uC6A9 \uC644\uB8CC."),
+        scene("narrator", "\uBC84\uC2A4\uAC00 \uB3C4\uC11C\uAD00\uC5D0 \uBA48\uCDB0\uC694. \uC548\uB0B4\uBB38\uC5D0\uB294 \u2018\uB2E4\uC74C \uC815\uB958\uC7A5: \uAF43\uAE38 \uACF5\uC6D0\u2019\uC774\uB77C\uACE0 \uB098\uC640\uC694."),
+        scene("kkamong", "\uB0B4\uAC00 \uBC8C\uC368 \uC77C\uC5B4\uC120 \uAC74 \uB2E4\uB9AC\uB97C \uD3B4\uB824\uACE0\uC9C0. \uC544\uC9C1 \uB0B4\uB9B4 \uB54C\uB294 \uC544\uB2C8\uC57C."),
+        scene("mongle", "\uC5B4? \uB2E4\uC74C\uC774 \uACF5\uC6D0\uC774\uB124! \uAC19\uC774 \uD55C \uC815\uB958\uC7A5 \uB354 \uAC00\uC790!"),
+        scene("marine", "\uD558\uCC28 \uC21C\uC11C \uD655\uC778. \uB3C4\uC11C\uAD00 \uB2E4\uC74C, \uAF43\uAE38 \uACF5\uC6D0."),
+        scene("narrator", "\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0 \uB3C4\uCC29\uD558\uC790 \uCE5C\uAD6C\uB4E4\uC774 \uB0B4\uB824\uC694. \uB9C8\uB9B0\uC774 \uC791\uC740 \uAF43\uC744 \uBCF4\uACE0 \uC7A0\uAE50 \uBA48\uCDB0\uC694."),
+        scene("marine", "\uB3C4\uCC29 \uC644\uB8CC. \uC791\uC740 \uAF43, \uD558\uB098. \u2026\uC774\uB3D9\uC740 \uC7A0\uC2DC \uBA48\uCD98\uB2E4.")
+      ], [
+        question("transit-story-route", "transit-route", "transit-destination", "\uC138 \uCE5C\uAD6C\uAC00 \uD0C4 \uBC84\uC2A4\uC758 \uBAA9\uC801\uC9C0\uB294 \uC5B4\uB514\uC608\uC694?", "", ["\uD559\uAD50", "\uD3B8\uC758\uC810", "\uAF43\uAE38 \uACF5\uC6D0"], "c", "\uC548\uB0B4\uD45C\uC5D0\uB294 \u2018\uAF43\uAE38 \uACF5\uC6D0\uD589\u2019\uC774\uB77C\uACE0 \uC801\uD600 \uC788\uC5B4\uC694.", transfer("\uC0C8 \uBC84\uC2A4 \uC548\uB0B4\uD45C\uB97C \uC77D\uACE0 \uBAA9\uC801\uC9C0\uB97C \uACE8\uB77C\uC694.", "\uC548\uB0B4\uD45C: \u201C\uB9C8\uB8E8 \uB3C4\uC11C\uAD00\uD589\u201D", ["\uAF43\uAE38 \uACF5\uC6D0", "\uB9C8\uB8E8 \uB3C4\uC11C\uAD00", "\uB9C8\uB8E8 \uCE74\uD398"], "b", "\u2018\uB3C4\uC11C\uAD00\uD589\u2019\uC740 \uB3C4\uC11C\uAD00 \uCABD\uC73C\uB85C \uAC00\uB294 \uBC84\uC2A4\uB77C\uB294 \uB73B\uC774\uC5D0\uC694.")),
+        question("transit-story-alight", "transit-alighting", "transit-alight", "\uB3C4\uC11C\uAD00\uC5D0 \uBA48\uCDC4\uC744 \uB54C \uC138 \uCE5C\uAD6C\uB294 \uC5B4\uB5BB\uAC8C \uD588\uC5B4\uC694?", "", ["\uD55C \uC815\uB958\uC7A5 \uB354 \uAC14\uC5B4\uC694.", "\uBC14\uB85C \uB0B4\uB838\uC5B4\uC694.", "\uCC98\uC74C \uC815\uB958\uC7A5\uC73C\uB85C \uB3CC\uC544\uAC14\uC5B4\uC694."], "a", "\uAF43\uAE38 \uACF5\uC6D0\uC774 \uB2E4\uC74C \uC815\uB958\uC7A5\uC774\uBBC0\uB85C \uD55C \uC815\uB958\uC7A5 \uB354 \uAC14\uC5B4\uC694.", transfer("\uC0C8 \uB178\uC120\uC5D0\uC11C \uC5B8\uC81C \uB0B4\uB9B4\uAE4C\uC694?", "\uD604\uC7AC \uC815\uB958\uC7A5: \uD559\uAD50 / \uB2E4\uC74C \uC815\uB958\uC7A5: \uB9C8\uB8E8 \uB3C4\uC11C\uAD00. \uBAA9\uC801\uC9C0\uB294 \uB9C8\uB8E8 \uB3C4\uC11C\uAD00\uC774\uC5D0\uC694.", ["\uD559\uAD50\uC5D0\uC11C \uB0B4\uB824\uC694.", "\uBC84\uC2A4\uB97C \uD0C0\uC9C0 \uC54A\uC544\uC694.", "\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694."], "c", "\uBAA9\uC801\uC9C0\uAC00 \uB2E4\uC74C \uC815\uB958\uC7A5\uC774\uBBC0\uB85C \uD55C \uC815\uB958\uC7A5 \uB354 \uAC04 \uB4A4 \uB0B4\uB824\uC694.")),
+        question("transit-story-card", "transit-instruction", "transit-card", "\uCE5C\uAD6C\uB4E4\uC740 \uBC84\uC2A4\uB97C \uD0C8 \uB54C \uAD50\uD1B5\uCE74\uB4DC\uB97C \uC5B4\uB514\uC5D0 \uB314\uC5B4\uC694?", "", ["\uCC3D\uBB38", "\uCE74\uB4DC \uB2E8\uB9D0\uAE30", "\uC88C\uC11D"], "b", "\uAD50\uD1B5\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uACE0 \uBC84\uC2A4\uC5D0 \uD0D4\uC5B4\uC694.", transfer("\uC0C8 \uC2B9\uCC28 \uC548\uB0B4\uB97C \uC77D\uACE0 \uD544\uC694\uD55C \uD589\uB3D9\uC744 \uACE8\uB77C\uC694.", "\u201C\uBC84\uC2A4\uB97C \uD0C8 \uB54C \uAD50\uD1B5\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC138\uC694.\u201D", ["\uCE74\uB4DC \uC0AC\uC9C4\uC744 \uCC0D\uC5B4\uC694.", "\uCE74\uB4DC\uB97C \uC88C\uC11D\uC5D0 \uB194\uC694.", "\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC694."], "c", "\uC548\uB0B4\uC5D0 \uB530\uB77C \uCE74\uB4DC\uB97C \uCE74\uB4DC \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC694."))
+      ]),
+      lesson("transit-apply", "apply", "\uB0B4\uB9B4 \uACF3\uC744 \uB193\uCE58\uC9C0 \uC54A\uC544\uC694", "\uC0C8 \uBC84\uC2A4 \uC548\uB0B4\uB97C \uC77D\uACE0 \uD544\uC694\uD55C \uD589\uB3D9\uC744 \uACE8\uB77C\uC694.", transitExpressions, [
+        scene("mongle", "\uC624! \uC774\uBC88\uC5D0\uB294 \uB124 \uBAA9\uC801\uC9C0\uC57C! \uAC19\uC774 \uC548\uB0B4\uD45C\uB97C \uBCFC\uAE4C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBC8C\uB5A1 \uC77C\uC5B4\uB098\uC9C0 \uC54A\uC9C0. \uB0B4\uB9B4 \uACF3\uBD80\uD130 \uD655\uC778\uD558\uB294 \uAC70\uC57C."),
+        scene("marine", "\uC774\uB3D9 \uD655\uC778. \uC774 \uBB38\uC81C\uC758 \uC548\uB0B4\uC5D0 \uB530\uB77C \uC120\uD0DD\uD558\uB77C.")
+      ], [
+        question("transit-apply-route", "transit-route", "transit-destination", "\uBCD1\uC6D0\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uBC84\uC2A4 \uBAA9\uC801\uC9C0\uB97C \uD655\uC778\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "", ["\uC774 \uBC84\uC2A4\uB294 \uBCD1\uC6D0\uC5D0 \uAC00\uC694?", "\uBCD1\uC6D0\uC740 \uBA87 \uC2DC\uC5D0 \uB2EB\uC544\uC694?", "\uBCD1\uC6D0 \uC606\uC5D0 \uC740\uD589\uC774 \uC788\uC5B4\uC694?"], "a", "\uAC00\uB824\uB294 \uC7A5\uC18C\uAC00 \uBCD1\uC6D0\uC778\uC9C0\uB97C \uBC84\uC2A4\uC5D0 \uB300\uD574 \uBB3C\uC5B4\uC694.", transfer("\uD559\uAD50\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uBC84\uC2A4 \uBAA9\uC801\uC9C0\uB97C \uD655\uC778\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", "", ["\uD559\uAD50\uC5D0\uC11C \uC810\uC2EC\uC744 \uBA39\uC5B4\uC694?", "\uC774 \uBC84\uC2A4\uB294 \uD559\uAD50\uC5D0 \uAC00\uC694?", "\uD559\uAD50\uAC00 \uC0C8\uB85C \uC0DD\uACBC\uC5B4\uC694?"], "b", "\uAC00\uB824\uB294 \uC7A5\uC18C\uB97C \uD559\uAD50\uB85C \uBC14\uAFD4 \uBC84\uC2A4 \uBAA9\uC801\uC9C0\uB97C \uD655\uC778\uD574\uC694.")),
+        question("transit-apply-alight", "transit-alighting", "transit-alight", "\uC9C0\uAE08 \uC5B4\uB5BB\uAC8C \uD560\uAE4C\uC694?", "\uBAA9\uC801\uC9C0\uB294 \uBCD1\uC6D0\uC774\uC5D0\uC694. \uC548\uB0B4\uBB38: \u201C\uC774\uBC88 \uC815\uB958\uC7A5\uC740 \uBCD1\uC6D0\uC785\uB2C8\uB2E4.\u201D", ["\uD55C \uC815\uB958\uC7A5 \uB354 \uAC00\uC694.", "\uBC84\uC2A4\uB97C \uB2E4\uC2DC \uD0C0\uC694.", "\uC774\uBC88 \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694."], "c", "\uC774\uBC88 \uC815\uB958\uC7A5\uC774 \uBAA9\uC801\uC9C0\uC778 \uBCD1\uC6D0\uC774\uBBC0\uB85C \uC9C0\uAE08 \uB0B4\uB824\uC694.", transfer("\uC9C0\uAE08 \uC5B4\uB5BB\uAC8C \uD560\uAE4C\uC694?", "\uBAA9\uC801\uC9C0\uB294 \uD559\uAD50\uC608\uC694. \uC548\uB0B4\uBB38: \u201C\uC774\uBC88 \uC815\uB958\uC7A5\uC740 \uC2DC\uC7A5\uC785\uB2C8\uB2E4. \uB2E4\uC74C \uC815\uB958\uC7A5\uC740 \uD559\uAD50\uC785\uB2C8\uB2E4.\u201D", ["\uB2E4\uC74C \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694.", "\uC774\uBC88 \uC815\uB958\uC7A5\uC5D0\uC11C \uB0B4\uB824\uC694.", "\uC2DC\uC7A5\uC5D0\uC11C \uAE30\uB2E4\uB824\uC694."], "a", "\uC9C0\uAE08\uC740 \uC2DC\uC7A5\uC774\uC5D0\uC694. \uBAA9\uC801\uC9C0\uC778 \uD559\uAD50\uB294 \uB2E4\uC74C \uC815\uB958\uC7A5\uC774\uC5D0\uC694.")),
+        question("transit-apply-card", "transit-instruction", "transit-card", "\uC2B9\uCC28 \uC548\uB0B4\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC744 \uACE8\uB77C\uC694.", "\u201C\uAD50\uD1B5\uCE74\uB4DC\uB97C \uCC0D\uACE0 \uBC84\uC2A4 \uC548\uC73C\uB85C \uB4E4\uC5B4\uAC00\uC138\uC694.\u201D", ["\uCE74\uB4DC \uC0AC\uC9C4\uC744 \uCC0D\uACE0 \uB4E4\uC5B4\uAC00\uC694.", "\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uACE0 \uB4E4\uC5B4\uAC00\uC694.", "\uCE74\uB4DC\uB97C \uC88C\uC11D\uC5D0 \uB193\uACE0 \uB4E4\uC5B4\uAC00\uC694."], "b", "\uC774 \uC0C1\uD669\uC5D0\uC11C \u2018\uCE74\uB4DC\uB97C \uCC0D\uB2E4\u2019\uB294 \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uB77C\uB294 \uB73B\uC774\uC5D0\uC694.", transfer("\uC774 \uBC84\uC2A4\uC758 \uD558\uCC28 \uC548\uB0B4\uC5D0 \uB9DE\uB294 \uD589\uB3D9\uC744 \uACE8\uB77C\uC694.", "\u201C\uB0B4\uB9AC\uAE30 \uC804\uC5D0 \uAD50\uD1B5\uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC138\uC694.\u201D", ["\uBC84\uC2A4\uB97C \uD0C4 \uB4A4 \uC0AC\uC9C4\uC744 \uCC0D\uC5B4\uC694.", "\uCE74\uB4DC\uB97C \uC758\uC790\uC5D0 \uB450\uACE0 \uB0B4\uB824\uC694.", "\uB0B4\uB9AC\uAE30 \uC804\uC5D0 \uCE74\uB4DC\uB97C \uB2E8\uB9D0\uAE30\uC5D0 \uB300\uC694."], "c", "\uC548\uB0B4\uAC00 \uC9C0\uC815\uD55C \uB54C\uB294 \uB0B4\uB9AC\uAE30 \uC804\uC774\uACE0, \uD589\uB3D9\uC740 \uB2E8\uB9D0\uAE30\uC5D0 \uCE74\uB4DC\uB97C \uB300\uB294 \uAC83\uC774\uC5D0\uC694."))
+      ])
+    ]
+  },
+  {
+    id: "plans",
+    title: "\uC6B0\uB9AC\uC758 \uB0B4\uC77C \uC57D\uC18D",
+    subtitle: "\uC2DC\uAC04\xB7\uC7A5\uC18C\uB97C \uC815\uD558\uACE0 \uB2A6\uC73C\uBA74 \uC54C\uB824\uC694",
+    icon: "calendar",
+    level: "\uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4",
+    skills: [skill("plans-time-reading", "\uC57D\uC18D \uB0A0\uC9DC\uC640 \uC2DC\uAC04 \uC77D\uAE30"), skill("plans-location", "\uB9CC\uB0A0 \uC7A5\uC18C \uD655\uC778\uD558\uAE30"), skill("plans-delay-message", "\uB2A6\uB294\uB2E4\uB294 \uC5F0\uB77D \uC774\uD574\uD558\uAE30")],
+    lessons: [
+      lesson("plans-expressions", "expressions", "\uC5B8\uC81C, \uC5B4\uB514\uC11C \uB9CC\uB0A0\uAE4C\uC694?", "\uC57D\uC18D\uC758 \uC2DC\uAC04\xB7\uC7A5\uC18C\xB7\uB2A6\uB294 \uC5F0\uB77D\uC744 \uAD6C\uBD84\uD574\uC694.", planExpressions, [
+        scene("mongle", "\uC6B0\uC640! \uB0B4\uC77C\uB3C4 \uAC19\uC774 \uB180 \uC218 \uC788\uB124! \uC5B4\uB514\uC5D0\uC11C \uB9CC\uB0A0\uAE4C?"),
+        scene("kkamong", "\uC57D\uC18D\uC740 \uC774 \uBAB8\uB3C4 \uC9C0\uD0A4\uC9C0. \uB0B4 \uC2DC\uACC4\uBD80\uD130 \uB9DE\uCDB0 \uB450\uB294 \uAC70\uC57C."),
+        scene("marine", "\uC57D\uC18D \uC900\uBE44. \uB0A0\uC9DC, \uC2DC\uAC04, \uC7A5\uC18C \uD655\uC778.")
+      ], [
+        question("plans-expressions-time", "plans-time-reading", "plans-time", "\uC5B8\uC81C \uB9CC\uB098\uB294 \uC57D\uC18D\uC774\uC5D0\uC694?", "\u201C\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uB9CC\uB098\uC694.\u201D", ["\uC624\uB298 \uC624\uD6C4 \uC138 \uC2DC", "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC", "\uB0B4\uC77C \uC624\uC804 \uC138 \uC2DC"], "b", "\u2018\uB0B4\uC77C\u2019\uC774\uB77C\uB294 \uB0A0\uC9DC\uC640 \u2018\uC624\uD6C4 \uC138 \uC2DC\u2019\uB77C\uB294 \uC2DC\uAC04\uC744 \uD568\uAED8 \uC77D\uC5B4\uC694.", transfer("\uC5B8\uC81C \uB9CC\uB098\uB294 \uC57D\uC18D\uC774\uC5D0\uC694?", "\u201C\uC624\uB298 \uC624\uC804 \uC5F4 \uC2DC\uC5D0 \uB9CC\uB098\uC694.\u201D", ["\uB0B4\uC77C \uC624\uC804 \uC5F4 \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uC5F4 \uC2DC", "\uC624\uB298 \uC624\uC804 \uC5F4 \uC2DC"], "c", "\uC0C8 \uC57D\uC18D\uC740 \uC624\uB298\uC774\uACE0 \uC2DC\uAC04\uC740 \uC624\uC804 \uC5F4 \uC2DC\uC608\uC694.")),
+        question("plans-expressions-place", "plans-location", "plans-place", "\u2018\uC5B4\uB514\uC5D0\uC11C \uB9CC\uB0A0\uAE4C\uC694?\u2019\uB294 \uBB34\uC5C7\uC744 \uC815\uD558\uB824\uB294 \uB9D0\uC774\uC5D0\uC694?", "", ["\uB9CC\uB0A0 \uC7A5\uC18C", "\uB9CC\uB0A0 \uB0A0\uC9DC", "\uC0B4 \uBB3C\uAC74\uC758 \uAC00\uACA9"], "a", "\u2018\uC5B4\uB514\uC5D0\uC11C\u2019\uB294 \uB9CC\uB098\uB294 \uC7A5\uC18C\uB97C \uBB3B\uB294 \uB9D0\uC774\uC5D0\uC694.", transfer("\uB9CC\uB0A0 \uC7A5\uC18C\uB97C \uBB3C\uC5C8\uC5B4\uC694. \uC54C\uB9DE\uC740 \uB2F5\uC744 \uACE8\uB77C\uC694.", "\u201C\uC5B4\uB514\uC5D0\uC11C \uB9CC\uB0A0\uAE4C\uC694?\u201D", ["\uB0B4\uC77C \uB9CC\uB098\uC694.", "\uD559\uAD50 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.", "\uC624\uD6C4 \uB450 \uC2DC\uC5D0 \uB9CC\uB098\uC694."], "b", "\uC7A5\uC18C\uB97C \uBB3C\uC5C8\uC73C\uBBC0\uB85C \u2018\uD559\uAD50 \uC55E\u2019\uC774\uB77C\uB294 \uC7A5\uC18C\uB97C \uB2F5\uD574\uC694.")),
+        question("plans-expressions-delay", "plans-delay-message", "plans-delay", "\u2018\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694\u2019\uB294 \uC5B4\uB5A4 \uC5F0\uB77D\uC774\uC5D0\uC694?", "\uCE5C\uAD6C\uC640 \uB9CC\uB098\uAE30\uB85C \uD55C \uB0A0\uC5D0 \uBCF4\uB0B8 \uBA54\uC2DC\uC9C0\uC608\uC694.", ["\uC57D\uC18D\uC744 \uC815\uD558\uC9C0 \uC54A\uACA0\uB2E4\uB294 \uC5F0\uB77D", "\uC77C\uCC0D \uB3C4\uCC29\uD588\uB2E4\uB294 \uC5F0\uB77D", "\uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uC744 \uAC83 \uAC19\uB2E4\uB294 \uC5F0\uB77D"], "c", "\uC544\uC9C1 \uB3C4\uCC29\uD558\uAE30 \uC804\uC774\uBA70 \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uC744 \uAC00\uB2A5\uC131\uC744 \uC54C\uB9AC\uB294 \uB9D0\uC774\uC5D0\uC694.", transfer("\uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694. \uC5B4\uB5A4 \uC5F0\uB77D\uC744 \uD560\uAE4C\uC694?", "", ["\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uBC8C\uC368 \uB3C4\uCC29\uD588\uC5B4\uC694.", "\uC77C\uCC0D \uC654\uC5B4\uC694."], "a", "\uB2A6\uC744 \uAC83 \uAC19\uC744 \uB54C \uC0C1\uD669\uC744 \uBBF8\uB9AC \uC54C\uB824 \uC8FC\uB294 \uD45C\uD604\uC774\uC5D0\uC694."))
+      ]),
+      lesson("plans-story", "story", "\uC138 \uC2DC, \uB3C4\uC11C\uAD00 \uC55E", "\uC57D\uC18D \uBA54\uC2DC\uC9C0\uC640 \uAE4C\uBABD\uC758 \uB2A6\uB294 \uC5F0\uB77D\uC744 \uC774\uD574\uD574\uC694.", planExpressions, [
+        scene("narrator", "\uBABD\uAE00\uC740 \uB2E4\uC74C \uB0A0 \uC138 \uCE5C\uAD6C\uAC00 \uB2E4\uC2DC \uB9CC\uB0A0 \uC57D\uC18D \uCE74\uB4DC\uB97C \uB9CC\uB4E4\uC5B4\uC694."),
+        scene("mongle", "\uC6B0\uC640! \uB0B4\uC77C\uB3C4 \uAC19\uC774 \uB9CC\uB098\uC790! \uC624\uD6C4 \uC138 \uC2DC \uC5B4\uB54C?"),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uC57D\uC18D \uC804\uC5D0 \uB3C4\uCC29\uD558\uC9C0. \uB3C4\uC11C\uAD00 \uC55E \uBCA4\uCE58\uAC00 \uB531\uC774\uC57C."),
+        scene("marine", "\uC57D\uC18D \uAE30\uB85D. \uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC. \uB3C4\uC11C\uAD00 \uC55E \uBCA4\uCE58."),
+        scene("narrator", "\uB2E4\uC74C \uB0A0, \uBABD\uAE00\uACFC \uB9C8\uB9B0\uC774 \uBCA4\uCE58\uC5D0 \uC640 \uC788\uC5B4\uC694. \uAE4C\uBABD\uC774 \uBA54\uC2DC\uC9C0\uB97C \uBCF4\uB0B4\uC694."),
+        scene("kkamong", "\uB0B4\uAC00 \uAF43\uC744 \uC870\uAE08 \uACE8\uB790\uAC70\uB4E0. \u2018\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.\u2019 \u2026\uC870\uAE08\uB9CC."),
+        scene("mongle", "\uC624! \uAF43\uB3C4 \uAC19\uC774 \uC624\uB294\uAD6C\uB098! \uC5EC\uAE30\uC11C \uAE30\uB2E4\uB9B4\uAE4C?"),
+        scene("marine", "\uC5F0\uB77D \uD655\uC778. \uB3C4\uC11C\uAD00 \uC55E\uC5D0\uC11C \uB300\uAE30. \u2026\uAE4C\uBABD \uC790\uB9AC \uD655\uBCF4."),
+        scene("narrator", "\uAE4C\uBABD\uC774 \uC791\uC740 \uAF43 \uC138 \uC1A1\uC774\uB97C \uAC00\uC9C0\uACE0 \uC640\uC694. \uCE5C\uAD6C\uB9C8\uB2E4 \uD55C \uC1A1\uC774\uC529 \uAC74\uB124\uC918\uC694."),
+        scene("kkamong", "\uC774 \uBAB8\uC740 \uBE48\uC790\uB9AC\uB3C4 \uAF43\uC73C\uB85C \uCC44\uC6B0\uC9C0. \u2026\uB108\uD76C \uBAAB\uC774\uC57C."),
+        scene("marine", "\uC804\uC6D0 \uB3C4\uCC29. \uAF43, \uC14B. \uC57D\uC18D \uC644\uB8CC. \u2026\uAE30\uB2E4\uB9BC\uB3C4 \uB098\uC058\uC9C0 \uC54A\uB2E4.")
+      ], [
+        question("plans-story-time", "plans-time-reading", "plans-time", "\uCC98\uC74C \uC57D\uC18D \uCE74\uB4DC\uC5D0 \uC801\uC740 \uC2DC\uAC04\uC740 \uC5B8\uC81C\uC608\uC694?", "", ["\uB0B4\uC77C \uC624\uC804 \uC138 \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uC138 \uC2DC", "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC"], "c", "\uCC98\uC74C \uCE74\uB4DC\uB97C \uB9CC\uB4E4 \uB54C \uC815\uD55C \uC57D\uC18D\uC740 \uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC608\uC694.", transfer("\uC0C8 \uC57D\uC18D \uCE74\uB4DC\uC5D0 \uC801\uD78C \uC2DC\uAC04\uC744 \uACE8\uB77C\uC694.", "\uC57D\uC18D \uCE74\uB4DC: \u201C\uD1A0\uC694\uC77C \uC624\uC804 \uC5F4\uD55C \uC2DC\u201D", ["\uD1A0\uC694\uC77C \uC624\uD6C4 \uC5F4\uD55C \uC2DC", "\uD1A0\uC694\uC77C \uC624\uC804 \uC5F4\uD55C \uC2DC", "\uC77C\uC694\uC77C \uC624\uC804 \uC5F4\uD55C \uC2DC"], "b", "\uC694\uC77C\xB7\uC624\uC804\xB7\uC5F4\uD55C \uC2DC\uB97C \uBAA8\uB450 \uD655\uC778\uD574\uC694.")),
+        question("plans-story-place", "plans-location", "plans-place", "\uC138 \uCE5C\uAD6C\uB294 \uC5B4\uB514\uC5D0\uC11C \uB9CC\uB0AC\uC5B4\uC694?", "", ["\uB3C4\uC11C\uAD00 \uC55E \uBCA4\uCE58", "\uB3C4\uC11C\uAD00 \uC548 \uAD50\uC2E4", "\uCE74\uD398 \uCC3D\uAC00"], "a", "\uC57D\uC18D \uAE30\uB85D\uACFC \uAE30\uB2E4\uB9AC\uB294 \uC7A5\uBA74\uC758 \uC7A5\uC18C\uB294 \uB3C4\uC11C\uAD00 \uC55E \uBCA4\uCE58\uC608\uC694.", transfer("\uC0C8 \uBA54\uC2DC\uC9C0\uB97C \uC77D\uACE0 \uB9CC\uB0A0 \uC7A5\uC18C\uB97C \uACE8\uB77C\uC694.", "\u201C\uACF5\uC6D0 \uC785\uAD6C\uC5D0\uC11C \uB9CC\uB098\uC694. \uC548\uC758 \uBCA4\uCE58\uAC00 \uC544\uB2C8\uB77C \uC785\uAD6C\uC608\uC694.\u201D", ["\uACF5\uC6D0 \uC548 \uBCA4\uCE58", "\uB3C4\uC11C\uAD00 \uC785\uAD6C", "\uACF5\uC6D0 \uC785\uAD6C"], "c", "\u2018\uC785\uAD6C\u2019\uB77C\uB294 \uC7A5\uC18C\uC640 \u2018\uC548\uC758 \uBCA4\uCE58\uAC00 \uC544\uB2C8\uB77C\u2019\uB77C\uB294 \uD655\uC778\uC744 \uD568\uAED8 \uC77D\uC5B4\uC694.")),
+        question("plans-story-delay", "plans-delay-message", "plans-delay", "\uAE4C\uBABD\uC758 \u2018\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694\u2019\uB77C\uB294 \uC5F0\uB77D \uB4A4 \uCE5C\uAD6C\uB4E4\uC740 \uBB34\uC5C7\uC744 \uD588\uC5B4\uC694?", "", ["\uC57D\uC18D\uC744 \uBAA8\uB450 \uCDE8\uC18C\uD588\uC5B4\uC694.", "\uB3C4\uC11C\uAD00 \uC55E\uC5D0\uC11C \uAE30\uB2E4\uB838\uC5B4\uC694.", "\uBC14\uB85C \uC9D1\uC73C\uB85C \uB3CC\uC544\uAC14\uC5B4\uC694."], "b", "\uBABD\uAE00\uACFC \uB9C8\uB9B0\uC740 \uB2A6\uB294 \uC5F0\uB77D\uC744 \uD655\uC778\uD558\uACE0 \uC57D\uC18D \uC7A5\uC18C\uC5D0\uC11C \uAE30\uB2E4\uB838\uC5B4\uC694.", transfer("\uC0C8 \uBA54\uC2DC\uC9C0\uB97C \uC77D\uACE0 \uB3C4\uCC29 \uC0C1\uD0DC\uB97C \uACE8\uB77C\uC694.", "\u201C\uBC84\uC2A4\uB97C \uB193\uCCE4\uC5B4\uC694. \uC2ED \uBD84 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.\u201D", ["\uC544\uC9C1 \uB3C4\uCC29 \uC804\uC774\uACE0 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uBC8C\uC368 \uC57D\uC18D \uC7A5\uC18C\uC5D0 \uB3C4\uCC29\uD588\uC5B4\uC694.", "\uC57D\uC18D\uC774 \uCDE8\uC18C\uB410\uC5B4\uC694."], "a", "\uBC84\uC2A4\uB97C \uB193\uCCD0 \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uC744 \uAC83 \uAC19\uB2E4\uB294 \uC5F0\uB77D\uC774\uC5D0\uC694. \uCDE8\uC18C\uB77C\uB294 \uB9D0\uC740 \uC5C6\uC5B4\uC694."))
+      ]),
+      lesson("plans-apply", "apply", "\uB0B4 \uC57D\uC18D \uBA54\uC2DC\uC9C0", "\uC0C8 \uC57D\uC18D\uC758 \uC2DC\uAC04\uACFC \uC7A5\uC18C\uB97C \uD655\uC778\uD558\uACE0 \uD544\uC694\uD55C \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", planExpressions, [
+        scene("mongle", "\uC624! \uB124 \uC57D\uC18D\uC740 \uC5B8\uC81C\uC57C? \uAC19\uC774 \uBA54\uC2DC\uC9C0 \uC77D\uC5B4 \uBCFC\uAE4C?"),
+        scene("kkamong", "\uB0B4 \uAF43\uC740 \uC138 \uC1A1\uC774\uC600\uC9C0. \uB2E4\uC74C\uC5D4 \uB0B4\uAC00 \uC2DC\uAC04\uB3C4 \uB531 \uB9DE\uCDB0 \uC624\uC9C0."),
+        scene("marine", "\uBA54\uC2DC\uC9C0 \uD655\uC778. \uC2DC\uAC04\uACFC \uC7A5\uC18C\uB97C \uBD84\uB9AC\uD574 \uC77D\uC5B4\uB77C.")
+      ], [
+        question("plans-apply-time", "plans-time-reading", "plans-time", "\uC5B8\uC81C \uAC00\uC57C \uD574\uC694?", "\uCE5C\uAD6C\uC758 \uBA54\uC2DC\uC9C0: \u201C\uB0B4\uC77C \uC624\uD6C4 \uB450 \uC2DC\uC5D0 \uD559\uAD50 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uB0B4\uC77C \uC624\uD6C4 \uB450 \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uB450 \uC2DC", "\uB0B4\uC77C \uC624\uC804 \uB450 \uC2DC"], "a", "\uB0A0\uC9DC\uB294 \uB0B4\uC77C, \uC2DC\uAC04\uC740 \uC624\uD6C4 \uB450 \uC2DC\uC608\uC694.", transfer("\uC5B8\uC81C \uAC00\uC57C \uD574\uC694?", "\uCE5C\uAD6C\uC758 \uBA54\uC2DC\uC9C0: \u201C\uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC\uC5D0 \uCE74\uD398 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uB0B4\uC77C \uC624\uD6C4 \uB2E4\uC12F \uC2DC", "\uC624\uB298 \uC624\uC804 \uB2E4\uC12F \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC"], "c", "\uC0C8 \uC57D\uC18D\uC740 \uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC\uC608\uC694. \uC7A5\uC18C\uC640 \uC2DC\uAC04\uC744 \uB098\uB204\uC5B4 \uC77D\uC5B4\uC694.")),
+        question("plans-apply-place", "plans-location", "plans-place", "\uC5B4\uB514\uC5D0\uC11C \uAE30\uB2E4\uB9B4\uAE4C\uC694?", "\u201C\uC5ED \uC548\uC774 \uC544\uB2C8\uB77C \uC5ED \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uC5ED \uC548", "\uC5ED \uB4A4", "\uC5ED \uC55E"], "c", "\uBA54\uC2DC\uC9C0\uB294 \u2018\uC5ED \uC548\u2019\uC774 \uC544\uB2C8\uB77C \u2018\uC5ED \uC55E\u2019\uC774\uB77C\uACE0 \uD655\uC778\uD574 \uC918\uC694.", transfer("\uC5B4\uB514\uC5D0\uC11C \uAE30\uB2E4\uB9B4\uAE4C\uC694?", "\u201C\uD559\uAD50 \uC548\uC774 \uC544\uB2C8\uB77C \uD559\uAD50 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uD559\uAD50 \uC548", "\uD559\uAD50 \uC55E", "\uD559\uAD50 \uB4A4"], "b", "\u2018\uD559\uAD50 \uC548\u2019\uC740 \uC81C\uC678\uD558\uACE0 \u2018\uD559\uAD50 \uC55E\u2019\uC5D0\uC11C \uB9CC\uB098\uC694.")),
+        question("plans-apply-delay", "plans-delay-message", "plans-delay", "\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uC57D\uC18D \uC7A5\uC18C\uC5D0 \uAC00\uB294 \uBC84\uC2A4\uB97C \uB193\uCCE4\uC5B4\uC694. \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uBC8C\uC368 \uB3C4\uCC29\uD588\uC5B4\uC694.", "\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC77C\uCC0D \uB3C4\uCC29\uD588\uC5B4\uC694."], "b", "\uC544\uC9C1 \uB3C4\uCC29\uD558\uC9C0 \uC54A\uC558\uACE0 \uB2A6\uC744 \uAC83 \uAC19\uC73C\uBBC0\uB85C \uBBF8\uB9AC \uC5F0\uB77D\uD574\uC694.", transfer("\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uAE38\uC774 \uB9C9\uD600 \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uC2ED \uBD84 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uC2ED \uBD84 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC2ED \uBD84 \uC77C\uCC0D \uC654\uC5B4\uC694.", "\uC9C0\uAE08 \uB3C4\uCC29\uD588\uC5B4\uC694."], "a", "\uB2A6\uC744 \uC608\uC0C1 \uC2DC\uAC04\uC744 \uD568\uAED8 \uC54C\uB824 \uC8FC\uBA74 \uCE5C\uAD6C\uAC00 \uAE30\uB2E4\uB9AC\uB294 \uB370 \uB3C4\uC6C0\uC774 \uB3FC\uC694."))
+      ])
+    ]
+  }
+];
+var LESSONS = PACKS.flatMap((pack) => pack.lessons.map((item) => ({ ...item, packId: pack.id })));
+
+// experiences/korean-runner/learning.mjs
+function instructionMetadata(item) {
+  const skill2 = item.steps.length > 1 ? "sequence" : item.skill.includes("\uBD80\uC815") ? "negation" : "detail";
+  return {
+    id: `korean-runner.${item.id}`,
+    itemKey: `korean-runner.${item.id}.v4`,
+    familyKey: `korean-runner.${item.id}.v4`,
+    skillId: `ko.listening.${skill2}`,
+    difficulty: item.steps.length > 1 ? 2 : 1,
+    modality: "listening",
+    responseFormat: "action",
+    audioRequired: true,
+    confounded: true
+  };
+}
+
+// experiences/korean-runner/listening-check.mjs
+var lane = (target) => ({ action: "lane", target });
+var jump = () => ({ action: "jump" });
+var slide = () => ({ action: "slide" });
+var stay = () => ({ action: "stay" });
+var LISTENING_CHECKS = Object.freeze([
+  {
+    id: "check-star-middle",
+    text: "\uAC00\uC6B4\uB370 \uAE38\uC5D0 \uBCC4\uC774 \uC788\uC5B4\uC694. \uBCC4\uC774 \uC788\uB294 \uAE38\uB85C \uAC00\uC138\uC694.",
+    skill: "\uBC29\uD5A5",
+    explanation: "\uBCC4\uC774 \uC788\uB294 \uAE38\uC740 \uAC00\uC6B4\uB370\uC608\uC694.",
+    steps: [lane(1)],
+    choices: ["\uAC00\uC6B4\uB370 \uAE38\uB85C \uAC00\uAE30", "\uC67C\uCABD \uAE38\uB85C \uAC00\uAE30", "\uC624\uB978\uCABD \uAE38\uB85C \uAC00\uAE30"],
+    correct: 0
+  },
+  {
+    id: "check-wide-left",
+    text: "\uC67C\uCABD \uAE38\uC774 \uB113\uC5B4\uC694. \uB113\uC740 \uAE38\uB85C \uAC00\uC138\uC694.",
+    skill: "\uBC29\uD5A5",
+    explanation: "\uB113\uC740 \uAE38\uC740 \uC67C\uCABD\uC774\uC5D0\uC694.",
+    steps: [lane(0)],
+    choices: ["\uC624\uB978\uCABD \uAE38\uB85C \uAC00\uAE30", "\uAC00\uC6B4\uB370 \uAE38\uB85C \uAC00\uAE30", "\uC67C\uCABD \uAE38\uB85C \uAC00\uAE30"],
+    correct: 2
+  },
+  {
+    id: "check-fence-jump",
+    text: "\uC55E\uC5D0 \uB0AE\uC740 \uC6B8\uD0C0\uB9AC\uAC00 \uC788\uC5B4\uC694. \uC6B8\uD0C0\uB9AC\uB97C \uB118\uC5B4\uAC00\uC138\uC694.",
+    skill: "\uB3D9\uC791",
+    explanation: "\uC6B8\uD0C0\uB9AC\uB97C \uB118\uC5B4\uAC00\uB824\uBA74 \uB6F0\uC5B4\uB118\uC5B4\uC694.",
+    steps: [jump()],
+    choices: ["\uBAB8\uC744 \uC219\uC774\uAE30", "\uC6B8\uD0C0\uB9AC\uB97C \uB6F0\uC5B4\uB118\uAE30", "\uC624\uB978\uCABD \uAE38\uB85C \uAC00\uAE30"],
+    correct: 1
+  },
+  {
+    id: "check-sign-duck",
+    text: "\uC55E\uC5D0 \uB0AE\uC740 \uD45C\uC9C0\uD310\uC774 \uC788\uC5B4\uC694. \uBA38\uB9AC\uB97C \uC219\uC774\uACE0 \uC9C0\uB098\uAC00\uC138\uC694.",
+    skill: "\uC704\uCE58 \xB7 \uB3D9\uC791",
+    explanation: "\uBA38\uB9AC\uB97C \uC219\uC774\uBA74 \uB0AE\uC740 \uD45C\uC9C0\uD310 \uC544\uB798\uB85C \uC9C0\uB098\uAC08 \uC218 \uC788\uC5B4\uC694.",
+    steps: [slide()],
+    choices: ["\uBAB8\uC744 \uC219\uC5EC \uC9C0\uB098\uAC00\uAE30", "\uB6F0\uC5B4\uB118\uAE30", "\uADF8\uB300\uB85C \uB2EC\uB9AC\uAE30"],
+    correct: 0
+  },
+  {
+    id: "check-not-middle",
+    text: "\uAC00\uC6B4\uB370\uB85C \uAC00\uC9C0 \uB9D0\uACE0 \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.",
+    skill: "\uBD80\uC815 \xB7 \uBC29\uD5A5",
+    explanation: "\uAC00\uC6B4\uB370\uB294 \uAC00\uC9C0 \uB9D0\uB77C\uACE0 \uD588\uC5B4\uC694. \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC694.",
+    steps: [lane(2)],
+    choices: ["\uAC00\uC6B4\uB370\uB85C \uAC00\uAE30", "\uC67C\uCABD\uC73C\uB85C \uAC00\uAE30", "\uC624\uB978\uCABD\uC73C\uB85C \uAC00\uAE30"],
+    correct: 2
+  },
+  {
+    id: "check-no-fence",
+    text: "\uC6B8\uD0C0\uB9AC\uAC00 \uC5C6\uC73C\uB2C8\uAE4C \uB6F0\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694.",
+    skill: "\uBD80\uC815 \uC9C0\uC2DC",
+    explanation: "\uC6B8\uD0C0\uB9AC\uAC00 \uC5C6\uC5B4\uC11C \uB6F8 \uD544\uC694\uAC00 \uC5C6\uC5B4\uC694. \uADF8\uB0E5 \uB2EC\uB824\uC694.",
+    steps: [stay()],
+    choices: ["\uB6F0\uC9C0 \uC54A\uACE0 \uADF8\uB0E5 \uB2EC\uB9AC\uAE30", "\uC6B8\uD0C0\uB9AC\uB97C \uB6F0\uC5B4\uB118\uAE30", "\uBAB8\uC744 \uC219\uC774\uAE30"],
+    correct: 0
+  },
+  {
+    id: "check-high-sign",
+    text: "\uD45C\uC9C0\uD310\uC774 \uB192\uC544\uC11C \uC219\uC774\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694.",
+    skill: "\uBD80\uC815 \uC9C0\uC2DC",
+    explanation: "\uD45C\uC9C0\uD310\uC774 \uB192\uC73C\uB2C8\uAE4C \uADF8\uB300\uB85C \uC9C0\uB098\uAC00\uB3C4 \uB3FC\uC694.",
+    steps: [stay()],
+    choices: ["\uBAB8\uC744 \uC219\uC5EC \uC9C0\uB098\uAC00\uAE30", "\uC219\uC774\uC9C0 \uC54A\uACE0 \uADF8\uB300\uB85C \uC9C0\uB098\uAC00\uAE30", "\uB6F0\uC5B4\uB118\uAE30"],
+    correct: 1
+  },
+  {
+    id: "check-not-left",
+    text: "\uC67C\uCABD\uC73C\uB85C \uAC00\uC9C0 \uB9C8\uC138\uC694. \uC624\uB978\uCABD \uAE38\uC774 \uC88B\uC544\uC694.",
+    skill: "\uBD80\uC815 \xB7 \uBC29\uD5A5",
+    explanation: "\uC67C\uCABD\uC740 \uAC00\uC9C0 \uB9D0\uB77C\uACE0 \uD588\uC5B4\uC694. \uC88B\uC740 \uAE38\uC740 \uC624\uB978\uCABD\uC774\uC5D0\uC694.",
+    steps: [lane(2)],
+    choices: ["\uC67C\uCABD \uAE38\uB85C \uAC00\uAE30", "\uAC00\uC6B4\uB370 \uAE38\uC5D0\uC11C \uC219\uC774\uAE30", "\uC624\uB978\uCABD \uAE38\uB85C \uAC00\uAE30"],
+    correct: 2
+  },
+  {
+    id: "check-duck-jump",
+    text: "\uBA3C\uC800 \uBAB8\uC744 \uC219\uC774\uACE0, \uADF8\uB2E4\uC74C\uC5D0 \uC6B8\uD0C0\uB9AC\uB97C \uB6F0\uC5B4\uB118\uC73C\uC138\uC694.",
+    skill: "\uC21C\uC11C",
+    explanation: "\uBA3C\uC800 \uC219\uC774\uACE0, \uADF8\uB2E4\uC74C\uC5D0 \uB6F0\uC5B4\uB118\uC5B4\uC694.",
+    steps: [slide(), jump()],
+    choices: ["\uBAB8\uC744 \uC219\uC778 \uB4A4 \uB6F0\uC5B4\uB118\uAE30", "\uB6F0\uC5B4\uB118\uC740 \uB4A4 \uBAB8\uC744 \uC219\uC774\uAE30", "\uBAB8\uC744 \uC219\uC774\uAE30\uB9CC \uD558\uAE30"],
+    correct: 0
+  },
+  {
+    id: "check-middle-left",
+    text: "\uAC00\uC6B4\uB370\uB85C \uAC04 \uB2E4\uC74C, \uC67C\uCABD\uC73C\uB85C \uAC00\uC138\uC694.",
+    skill: "\uC21C\uC11C \xB7 \uBC29\uD5A5",
+    explanation: "\uBA3C\uC800 \uAC00\uC6B4\uB370\uB85C \uAC00\uACE0, \uADF8\uB2E4\uC74C\uC5D0 \uC67C\uCABD\uC73C\uB85C \uAC00\uC694.",
+    steps: [lane(1), lane(0)],
+    choices: ["\uC67C\uCABD\uC73C\uB85C \uAC04 \uB4A4 \uAC00\uC6B4\uB370\uB85C \uAC00\uAE30", "\uAC00\uC6B4\uB370\uB85C\uB9CC \uAC00\uAE30", "\uAC00\uC6B4\uB370\uB85C \uAC04 \uB4A4 \uC67C\uCABD\uC73C\uB85C \uAC00\uAE30"],
+    correct: 2
+  },
+  {
+    id: "check-right-before-jump",
+    text: "\uB6F0\uC5B4\uB118\uAE30 \uC804\uC5D0 \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.",
+    skill: "\uC21C\uC11C",
+    explanation: "\u2018\uB6F0\uC5B4\uB118\uAE30 \uC804\uC5D0\u2019\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uC624\uB978\uCABD\uC73C\uB85C \uBA3C\uC800 \uAC00\uC694.",
+    steps: [lane(2), jump()],
+    choices: ["\uB6F0\uC5B4\uB118\uC740 \uB4A4 \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uAE30", "\uC624\uB978\uCABD\uC73C\uB85C \uAC04 \uB4A4 \uB6F0\uC5B4\uB118\uAE30", "\uC624\uB978\uCABD\uC73C\uB85C \uAC04 \uB4A4 \uBAB8\uC744 \uC219\uC774\uAE30"],
+    correct: 1
+  },
+  {
+    id: "check-left-run",
+    text: "\uC67C\uCABD\uC73C\uB85C \uAC04 \uB2E4\uC74C, \uADF8\uB0E5 \uB2EC\uB9AC\uC138\uC694.",
+    skill: "\uC21C\uC11C \xB7 \uBC29\uD5A5",
+    explanation: "\uBA3C\uC800 \uC67C\uCABD\uC73C\uB85C \uAC00\uACE0, \uADF8\uB2E4\uC74C\uC5D0\uB294 \uADF8\uB0E5 \uB2EC\uB824\uC694.",
+    steps: [lane(0), stay()],
+    choices: ["\uADF8\uB0E5 \uB2EC\uB9B0 \uB4A4 \uC67C\uCABD\uC73C\uB85C \uAC00\uAE30", "\uC67C\uCABD\uC73C\uB85C \uAC04 \uB4A4 \uADF8\uB0E5 \uB2EC\uB9AC\uAE30", "\uC67C\uCABD\uC73C\uB85C \uAC04 \uB4A4 \uB6F0\uC5B4\uB118\uAE30"],
+    correct: 1
+  }
+].map((check2) => Object.freeze({
+  ...check2,
+  steps: Object.freeze(check2.steps),
+  choices: Object.freeze(check2.choices),
+  choiceIds: Object.freeze(check2.choices.map((_choice, index) => `runner-${check2.id}-option-${index + 1}`))
+})));
+var CORRECTIONS = Object.freeze({
+  "check-star-middle": [null, "\uC67C\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694.", "\uC624\uB978\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694."],
+  "check-wide-left": ["\uC624\uB978\uCABD\uC774 \uC544\uB2C8\uB77C \uB113\uB2E4\uACE0 \uD55C \uC67C\uCABD \uAE38\uC774\uC5D0\uC694.", "\uAC00\uC6B4\uB370\uAC00 \uC544\uB2C8\uB77C \uB113\uB2E4\uACE0 \uD55C \uC67C\uCABD \uAE38\uC774\uC5D0\uC694.", null],
+  "check-fence-jump": ["\uBAB8\uC744 \uC219\uC774\uBA74 \uC6B8\uD0C0\uB9AC\uB97C \uB118\uC744 \uC218 \uC5C6\uC5B4\uC694. \uC6B8\uD0C0\uB9AC\uB294 \uB6F0\uC5B4\uB118\uC5B4\uC694.", null, "\uAE38\uC744 \uBC14\uAFB8\uB77C\uB294 \uBD80\uD0C1\uC774 \uC544\uB2C8\uB77C \uC6B8\uD0C0\uB9AC\uB97C \uB118\uC5B4\uAC00\uB77C\uB294 \uBD80\uD0C1\uC774\uC5D0\uC694."],
+  "check-sign-duck": [null, "\uB6F0\uBA74 \uBA38\uB9AC\uAC00 \uB354 \uB192\uC544\uC838\uC694. \uB0AE\uC740 \uD45C\uC9C0\uD310 \uC544\uB798\uC5D0\uC11C\uB294 \uBA38\uB9AC\uB97C \uC219\uC5EC\uC694.", "\uADF8\uB300\uB85C \uB2EC\uB9AC\uC9C0 \uB9D0\uACE0 \uBA38\uB9AC\uB97C \uC219\uC774\uACE0 \uC9C0\uB098\uAC00\uC138\uC694."],
+  "check-not-middle": ["\uAC00\uC6B4\uB370\uB85C \uAC00\uC9C0 \uB9D0\uB77C\uACE0 \uD588\uC5B4\uC694. \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.", "\uC67C\uCABD\uC774 \uC544\uB2C8\uB77C \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uB77C\uACE0 \uD588\uC5B4\uC694.", null],
+  "check-no-fence": [null, "\u2018\uB6F0\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694\u2019\uB294 \uB6F8 \uD544\uC694\uAC00 \uC5C6\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", "\uC219\uC774\uB77C\uB294 \uBD80\uD0C1\uC740 \uC5C6\uC5B4\uC694. \uB6F0\uC9C0 \uC54A\uACE0 \uADF8\uB0E5 \uB2EC\uB824\uB3C4 \uB3FC\uC694."],
+  "check-high-sign": ["\u2018\uC219\uC774\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694\u2019\uB294 \uC219\uC77C \uD544\uC694\uAC00 \uC5C6\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", null, "\uB6F0\uB77C\uB294 \uBD80\uD0C1\uC740 \uC5C6\uC5B4\uC694. \uB192\uC740 \uD45C\uC9C0\uD310 \uC544\uB798\uB85C \uADF8\uB300\uB85C \uC9C0\uB098\uAC00\uB3C4 \uB3FC\uC694."],
+  "check-not-left": ["\u2018\uC67C\uCABD\uC73C\uB85C \uAC00\uC9C0 \uB9C8\uC138\uC694\u2019\uB77C\uACE0 \uD588\uC5B4\uC694. \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.", "\uAC00\uC6B4\uB370\uB85C \uAC00\uAC70\uB098 \uC219\uC774\uB77C\uB294 \uBD80\uD0C1\uC740 \uC5C6\uC5B4\uC694. \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC138\uC694.", null],
+  "check-duck-jump": [null, "\uBA3C\uC800 \uC219\uC774\uACE0 \uADF8\uB2E4\uC74C\uC5D0 \uB6F0\uC5B4\uC694. \uACE0\uB978 \uB2F5\uC740 \uC21C\uC11C\uAC00 \uBC18\uB300\uC608\uC694.", "\uC219\uC778 \uB2E4\uC74C\uC5D0 \uB6F0\uC5B4\uB118\uB294 \uB450 \uBC88\uC9F8 \uB3D9\uC791\uB3C4 \uD544\uC694\uD574\uC694."],
+  "check-middle-left": ["\uBA3C\uC800 \uAC00\uC6B4\uB370\uB85C \uAC00\uACE0 \uADF8\uB2E4\uC74C\uC5D0 \uC67C\uCABD\uC73C\uB85C \uAC00\uC694. \uACE0\uB978 \uB2F5\uC740 \uC21C\uC11C\uAC00 \uBC18\uB300\uC608\uC694.", "\uAC00\uC6B4\uB370\uB85C \uAC04 \uB2E4\uC74C\uC5D0 \uC67C\uCABD\uC73C\uB85C \uAC00\uB294 \uB450 \uBC88\uC9F8 \uB3D9\uC791\uB3C4 \uD544\uC694\uD574\uC694.", null],
+  "check-right-before-jump": ["\uB6F0\uAE30 \uC804\uC5D0 \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uC694. \uC624\uB978\uCABD\uC73C\uB85C \uAC00\uB294 \uAC83\uC774 \uBA3C\uC800\uC608\uC694.", null, "\uC624\uB978\uCABD\uC73C\uB85C \uAC04 \uB2E4\uC74C\uC5D0\uB294 \uC219\uC774\uB294 \uAC83\uC774 \uC544\uB2C8\uB77C \uB6F0\uC5B4\uB118\uC5B4\uC694."],
+  "check-left-run": ["\uBA3C\uC800 \uC67C\uCABD\uC73C\uB85C \uAC00\uACE0 \uADF8\uB2E4\uC74C\uC5D0 \uADF8\uB0E5 \uB2EC\uB824\uC694. \uACE0\uB978 \uB2F5\uC740 \uC21C\uC11C\uAC00 \uBC18\uB300\uC608\uC694.", null, "\uC67C\uCABD\uC73C\uB85C \uAC04 \uB2E4\uC74C\uC5D0\uB294 \uB6F0\uC9C0 \uC54A\uACE0 \uADF8\uB0E5 \uB2EC\uB824\uC694."]
+});
+var CHECK_GRAMMAR = Object.freeze({ "check-star-middle": ["G211"], "check-wide-left": ["G211"], "check-fence-jump": ["G211"], "check-sign-duck": ["G211"], "check-not-middle": ["S226", "G211"], "check-no-fence": ["G410", "G304", "G505"], "check-high-sign": ["G304", "G505"], "check-not-left": ["S226", "G211"], "check-duck-jump": ["G211"], "check-middle-left": ["G406", "G211"], "check-right-before-jump": ["G406", "G211"], "check-left-run": ["G406", "G211"] });
+function checkMetadata(item) {
+  const key = `korean-runner.listening-check.${item.id}.v1`;
+  return {
+    ...instructionMetadata(item),
+    id: `korean-runner.listening-check.${item.id}`,
+    itemKey: key,
+    familyKey: key,
+    responseFormat: "single-choice",
+    confounded: false,
+    conceptIds: [...CHECK_GRAMMAR[item.id] || []]
+  };
+}
+
+// experiences/korean-rhythm/suno-tracks.mjs
+var SUNO_RECORDINGS = [{ "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3", "title": "\uCD08\uB85D", "audioUrl": "assets/music/blue-signal.mp3", "duration": 202.68, "bpm": 111.096, "beatOffset": 0.045, "beatTimes": [0.04644, 0.58507, 1.08408, 1.63283, 2.18159, 2.73034, 3.26912, 3.80789, 4.34667, 4.89542, 5.4342, 5.98295, 6.51175, 7.0605, 7.59927, 8.13805, 8.67683, 9.22558, 9.75438, 10.30313, 10.83193, 11.39066, 11.91946, 12.46821, 12.99701, 13.54576, 14.07456, 14.62331, 15.16209, 15.70086, 16.23964, 16.77841, 17.31719, 17.86594, 18.39474, 18.94349, 19.49224, 20.02104, 20.55982, 21.09859, 21.63737, 22.17615, 22.71492, 23.26367, 23.80245, 24.3512, 24.88, 25.42875, 25.95755, 26.5063, 27.0351, 27.58385, 28.12263, 28.67138, 29.20018, 29.74893, 30.28771, 30.82649, 31.36526, 31.90404, 32.44281, 32.99156, 33.52036, 34.06912, 34.60789, 35.14667, 35.68544, 36.22422, 36.77297, 37.31175, 37.85052, 38.3893, 38.92807, 39.47683, 40.00562, 40.55438, 41.09315, 41.6419, 42.1707, 42.70948, 43.24825, 43.79701, 44.33578, 44.87456, 45.42331, 45.95211, 46.49088, 47.03964, 47.56844, 48.11719, 48.65596, 49.20472, 49.73351, 50.28227, 50.82104, 51.35982, 51.88862, 52.42739, 52.96617, 53.51492, 54.0537, 54.60245, 55.13125, 55.68, 56.2088, 56.75755, 57.29633, 57.8351, 58.37388, 58.92263, 59.45143, 60.00018, 60.53896, 61.07773, 61.61651, 62.16526, 62.69406, 63.23283, 63.77161, 64.32036, 64.85914, 65.39791, 65.93669, 66.47546, 67.01424, 67.56299, 68.08181, 68.59066, 69.16934, 69.7181, 70.25687, 70.79565, 71.33442, 71.87477, 72.41197, 72.96073, 73.48952, 74.03828, 74.56707, 75.10585, 75.6546, 76.19338, 76.72218, 77.27093, 77.80971, 78.3385, 78.87728, 79.42603, 79.96481, 80.50358, 81.04236, 81.58113, 82.11991, 82.66866, 83.19746, 83.73624, 84.27501, 84.78385, 85.35256, 85.90132, 86.44009, 86.98884, 87.51764, 88.05642, 88.59519, 89.13397, 89.67274, 90.21152, 90.76027, 91.30902, 91.82785, 92.3766, 92.9054, 93.45415, 94.0029, 94.5317, 95.07048, 95.60925, 96.14803, 96.69678, 97.22558, 97.76435, 98.30313, 98.85188, 99.39066, 99.91946, 100.45823, 101.00698, 101.53578, 102.07456, 102.62331, 103.16209, 103.69088, 104.23964, 104.76844, 105.31719, 105.84599, 106.38476, 106.93351, 107.47229, 108.01107, 108.54984, 109.08862, 109.62739, 110.16617, 110.71492, 111.2537, 111.79247, 112.33125, 112.87002, 113.4088, 113.94757, 114.48635, 115.0351, 115.57388, 116.11265, 116.65143, 117.1902, 117.72898, 118.26776, 118.80653, 119.40123, 119.94131, 120.53261, 121.02145, 121.56153, 122.1016, 122.64167, 123.18175, 123.72182, 124.26189, 124.85279, 125.34204, 125.88211, 126.46912, 127.00789, 127.54667, 128.04241, 128.6342, 129.16299, 129.66263, 130.2027, 130.74277, 131.3181, 131.82292, 132.363, 132.90307, 133.48317, 134.02195, 134.52329, 135.06336, 135.61832, 136.14351, 136.71583, 137.2546, 137.77342, 138.3038, 138.86095, 139.39973, 139.92853, 140.4641, 141.00417, 141.54424, 142.08363, 142.62439, 143.16446, 143.70454, 144.25868, 144.77751, 145.32476, 145.86483, 146.4049, 146.94498, 147.48505, 148.02513, 148.5652, 149.10527, 149.64535, 150.2351, 150.72549, 151.26557, 151.80564, 152.34571, 152.88579, 153.42586, 153.96593, 154.45551, 155.04608, 155.58615, 156.12623, 156.72036, 157.25914, 157.78794, 158.28652, 158.77569, 159.41424, 159.95302, 160.44681, 161.02059, 161.53941, 162.06703, 162.64689, 163.17569, 163.68454, 164.25324, 164.802, 165.33079, 165.86957, 166.38839, 166.94712, 167.47592, 168.00472, 168.55347, 169.09224, 169.63102, 170.17977, 170.71855, 171.24735, 171.78612, 172.3249, 172.8537, 173.39247, 173.93125, 174.47002, 174.97887, 175.5376, 176.07637, 176.61515, 177.14395, 177.68272, 178.2215, 178.76027, 179.29905, 179.83782, 180.3766, 180.91537, 181.5639, 182.04975, 182.58983, 183.1299, 183.62921, 184.25778, 184.75012, 185.33533, 185.83027, 186.42286, 186.91041, 187.50041, 187.99056, 188.558, 189.09678, 189.64553, 190.15085, 190.70313, 191.231, 191.79066, 192.33941, 192.84825, 193.38703, 193.94576, 194.47144, 195.00336, 195.55159, 196.09088, 196.63174, 197.15846, 197.68726, 198.23601, 198.79203, 199.3321, 199.84236, 200.38113, 200.92989, 201.4924, 202.03247] }, { "sourceId": "c2835bc7-6963-4503-95bd-781b55e20b88", "title": "\uD574\uC548\uC120", "audioUrl": "assets/music/one-hour-to-sea.mp3", "duration": 231.6, "bpm": 112.058, "beatOffset": 0.205, "beatTimes": [0.205, 0.79474, 1.32354, 1.81131, 2.34675, 2.88219, 3.41762, 3.95306, 4.43646, 4.97524, 5.51401, 6.04281, 6.63024, 7.12036, 7.65914, 8.18794, 8.72671, 9.30743, 9.79429, 10.33306, 10.87184, 11.40063, 11.94939, 12.47819, 13.01696, 13.56571, 14.10449, 14.64327, 15.17206, 15.71084, 16.25959, 16.78839, 17.33714, 17.8859, 18.41469, 18.94349, 19.50222, 20.02104, 20.55982, 21.08862, 21.64735, 22.1961, 22.71492, 23.26367, 23.80245, 24.34122, 24.87002, 25.4088, 25.91764, 26.38658, 27.02512, 27.55392, 28.10268, 28.63147, 29.17025, 29.59927, 30.21787, 30.7766, 31.3054, 31.79578, 32.38295, 32.86666, 33.40209, 33.90948, 34.50812, 34.9571, 35.54384, 36.07928, 36.61472, 37.18204, 37.68559, 38.22103, 38.75646, 39.2919, 39.82734, 40.36278, 40.89821, 41.43365, 41.96909, 42.50993, 43.03996, 43.5754, 44.11083, 44.64627, 45.18171, 45.71715, 46.25258, 46.80018, 47.32346, 47.85889, 48.39433, 48.95528, 49.4652, 50.00064, 50.53608, 51.11039, 51.60695, 52.14239, 52.67783, 53.25551, 53.7487, 54.28414, 54.81957, 55.35501, 55.89045, 56.42589, 56.96132, 57.5258, 58.0322, 58.56763, 59.15211, 59.68091, 60.17394, 60.70938, 61.24482, 61.78026, 62.31569, 62.85113, 63.38657, 63.97116, 64.45744, 64.99882, 65.52831, 66.06375, 66.59919, 67.13463, 67.67006, 68.2055, 68.74094, 69.27637, 69.8478, 70.34725, 70.88268, 71.41812, 71.90313, 72.489, 72.9707, 73.50948, 74.04825, 74.57705, 75.11583, 75.6546, 76.1834, 76.72218, 77.26095, 77.78975, 78.32853, 78.8673, 79.3961, 79.93488, 80.47365, 81.00245, 81.60109, 82.08, 82.6088, 83.14757, 83.68635, 84.21515, 84.75392, 85.2927, 85.83147, 86.37025, 86.89905, 87.43782, 87.98658, 88.5054, 89.05415, 89.58295, 90.1317, 90.6605, 91.19927, 91.72807, 92.25687, 92.80562, 93.3444, 93.8732, 94.43193, 94.95075, 95.4995, 96.0283, 96.5571, 97.09587, 97.63465, 98.16345, 98.70222, 99.241, 99.77977, 100.30857, 100.84735, 101.38612, 101.9249, 102.4537, 102.99247, 103.53125, 104.07002, 104.6088, 105.1376, 105.67637, 106.21515, 106.75392, 107.28272, 107.8215, 108.36027, 108.88907, 109.42785, 109.96662, 110.5054, 111.0342, 111.57297, 112.10177, 112.64054, 113.17932, 113.7181, 114.24689, 114.78567, 115.32444, 115.86322, 116.39202, 116.93079, 117.45959, 117.99837, 118.53714, 119.07592, 119.60472, 120.13351, 120.66231, 121.21107, 121.73986, 122.27864, 122.81741, 123.35619, 123.88499, 124.43374, 124.95256, 125.50132, 126.03011, 126.56889, 127.09769, 127.64644, 128.17524, 128.71401, 129.24281, 129.79156, 130.32036, 130.85914, 131.38794, 131.93669, 132.45551, 133.00426, 133.52308, 134.07184, 134.60063, 135.13941, 135.66821, 136.21696, 136.73578, 137.28454, 137.81333, 138.36209, 138.88091, 139.42966, 139.95846, 140.49723, 141.02603, 141.57478, 142.10358, 142.64236, 143.17116, 143.71991, 144.23873, 144.78748, 145.32626, 145.86503, 146.37388, 146.92263, 147.45143, 147.9902, 148.519, 149.07773, 149.59655, 150.14531, 150.66413, 151.21288, 151.7317, 152.27048, 152.80925, 153.34803, 153.87683, 154.42558, 154.9444, 155.49315, 156.02195, 156.56073, 157.08952, 157.6283, 158.1571, 158.70585, 159.23465, 159.77342, 160.30222, 160.841, 161.3698, 161.91855, 162.43737, 162.9961, 163.51492, 164.0537, 164.58249, 165.14122, 165.65007, 166.19882, 166.72762, 167.28635, 167.78522, 168.33397, 168.86277, 169.41152, 169.94032, 170.47909, 170.99791, 171.54667, 172.07546, 172.62422, 173.15302, 173.69179, 174.22059, 174.75937, 175.27819, 175.83692, 176.35574, 176.90449, 177.42331, 177.98204, 178.51084, 179.04961, 179.57841, 180.12717, 180.64727, 181.17478, 181.71356, 182.25358, 182.78113, 183.32446, 183.84871, 184.36753, 184.91628, 185.45506, 185.99383, 186.53708, 187.05143, 187.5902, 188.12898, 188.65778, 189.19655, 189.73533, 190.26413, 190.8029, 191.3317, 191.88045, 192.39927, 192.94803, 193.47683, 194.0156, 194.5444, 195.08317, 195.61197, 196.15075, 196.67955, 197.21832, 197.74712, 198.29587, 198.81469, 199.35347, 199.88227, 200.43102, 200.95982, 201.49859, 202.01741, 202.56617, 203.09497, 203.64372, 204.16254, 204.74194, 205.24009, 205.77887, 206.30766, 206.83646, 207.37524, 207.91401, 208.44281, 208.98159, 209.51039, 210.04916, 210.57796, 211.11673, 211.65551, 212.18431, 212.72308, 213.26186, 213.79066, 214.32943, 214.86821, 215.39701, 215.93578, 216.47456, 217.00336, 217.54213, 218.08091, 218.60971, 219.14848, 219.68726, 220.21605, 220.75483, 221.34048, 221.8224, 222.36118, 222.89995, 223.42875, 224.01767, 224.55311, 225.0351, 225.62398, 226.15942, 226.69485, 227.23029, 227.76573, 228.30116, 228.8366, 229.37204, 229.90748, 230.44291, 230.97835] }, { "sourceId": "ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52", "title": "\uB124 \uC2DC", "audioUrl": "assets/music/four-pm-promise.mp3", "duration": 222.8, "bpm": 106.991, "beatOffset": 0.5, "beatTimes": [0.52535, 1.08408, 1.64281, 2.18238, 2.7902, 3.30397, 3.86477, 4.42556, 4.98636, 5.54715, 6.10795, 6.66874, 7.22954, 7.79033, 8.29769, 8.91192, 9.42512, 9.98385, 10.54259, 11.1551, 11.67002, 12.22875, 12.78748, 13.35619, 13.91492, 14.47365, 15.03238, 15.60109, 16.15982, 16.72853, 17.28726, 17.85596, 18.41469, 18.99338, 19.54213, 20.10086, 20.66957, 21.2283, 21.78703, 22.34576, 22.90449, 23.4732, 24.03193, 24.60063, 25.14939, 25.7181, 26.27683, 26.84553, 27.40426, 27.97297, 28.52172, 29.09043, 29.64916, 30.21787, 30.7766, 31.33533, 31.89406, 32.46277, 33.0215, 33.58023, 34.13896, 34.70766, 35.26639, 35.82512, 36.38385, 36.95256, 37.51129, 38.07002, 38.62875, 39.14757, 39.75619, 40.31643, 40.87365, 41.44236, 42.00109, 42.57977, 43.11855, 43.68726, 44.23601, 44.80279, 45.36345, 45.92438, 46.51084, 47.04597, 47.60834, 48.16707, 48.72836, 49.28454, 49.85324, 50.41197, 50.98068, 51.53941, 52.09814, 52.66685, 53.2156, 53.78431, 54.34304, 54.91175, 55.47048, 56.02921, 56.58794, 57.15664, 57.7054, 58.2741, 58.83283, 59.39156, 59.95029, 60.519, 61.06776, 61.63646, 62.19519, 62.7639, 63.31265, 63.88136, 64.44009, 65.0088, 65.55755, 66.12626, 66.67501, 67.24372, 67.80245, 68.37116, 68.91991, 69.48862, 70.03737, 70.59935, 71.16481, 71.72354, 72.28227, 72.85098, 73.40971, 73.97841, 74.52717, 75.09587, 75.64651, 76.2073, 76.77206, 77.34077, 77.8995, 78.45823, 79.01696, 79.57569, 80.13442, 80.70313, 81.26186, 81.83057, 82.37932, 82.94803, 83.49678, 84.06549, 84.62422, 85.18295, 85.74168, 86.31039, 86.85914, 87.42785, 87.98658, 88.55528, 89.10404, 89.67274, 90.23147, 90.7902, 91.34893, 91.91764, 92.46639, 93.0351, 93.59383, 94.16254, 94.71129, 95.28, 95.82875, 96.40744, 96.95619, 97.5249, 98.07365, 98.64236, 99.20109, 99.7698, 100.31855, 100.88228, 101.44599, 102.00472, 102.55347, 103.12545, 103.69088, 104.24961, 104.80834, 105.36707, 105.93578, 106.49022, 107.05324, 107.61197, 108.1707, 108.72943, 109.2942, 109.85687, 110.40562, 110.97433, 111.53306, 112.10177, 112.65052, 113.21923, 113.76798, 114.33669, 114.89542, 115.46413, 116.0029, 116.58159, 117.13034, 117.69905, 118.2478, 118.81651, 119.36526, 119.94395, 120.4927, 121.06141, 121.61016, 122.17887, 122.72762, 123.29633, 123.85506, 124.42376, 124.97252, 125.54122, 126.08998, 126.66866, 127.21741, 127.78612, 128.33488, 128.90358, 129.45234, 130.03102, 130.57977, 131.14848, 131.69723, 132.25596, 132.81469, 133.3834, 133.93215, 134.50086, 135.04961, 135.64825, 136.21235, 136.77314, 137.28454, 137.85324, 138.41197, 138.98068, 139.52943, 140.09814, 140.64689, 141.22558, 141.77433, 142.34304, 142.89179, 143.4605, 144.00925, 144.57796, 145.13669, 145.69542, 146.25415, 146.81288, 147.38159, 147.94032, 148.49905, 149.11063, 149.61651, 150.18522, 150.74395, 151.30268, 151.86141, 152.43011, 152.98884, 153.59699, 154.1063, 154.66503, 155.27937, 155.84017, 156.3512, 156.96176, 157.46866, 158.08335, 158.62603, 159.20494, 159.71356, 160.32653, 160.841, 161.44812, 161.96844, 162.56971, 163.0859, 163.6913, 164.20336, 164.81289, 165.37368, 165.93448, 166.49527, 167.05607, 167.61686, 168.17766, 168.73845, 169.29924, 169.86004, 170.42083, 170.98163, 171.54242, 172.10322, 172.66401, 173.26277, 173.7856, 174.3464, 174.90719, 175.46799, 176.02878, 176.60517, 177.15037, 177.73261, 178.24145, 178.83276, 179.39355, 179.95435, 180.51514, 181.07501, 181.63673, 182.19753, 182.75832, 183.31991, 183.87991, 184.40744, 185.0015, 185.54485, 186.12309, 186.68388, 187.24468, 187.77977, 188.36627, 188.93714, 189.48786, 190.01469, 190.66322, 191.22195, 191.73104, 192.23964, 192.85263, 193.46685, 194.02558, 194.58431, 195.14304, 195.70177, 196.27048, 196.81923, 197.36798, 197.92671, 198.46058, 199.05415, 199.58217, 200.14296, 200.70376, 201.26455, 201.82785, 202.38614, 202.95528, 203.52399, 204.07274, 204.63147, 205.1902, 205.74893, 206.30766, 206.86639, 207.41515, 207.97388, 208.53261, 209.08136, 209.64009, 210.19882, 210.74757, 211.31628, 211.86503, 212.43374, 212.99247, 213.5512, 214.10993, 214.66866, 215.28442, 215.84522, 216.40601, 216.96681, 217.58204, 218.0884, 218.64919, 219.20998, 219.77078, 220.33157, 220.89237, 221.45316, 222.01396, 222.57475] }];
+
+// experiences/korean-rhythm/listening.mjs
+var check = (category, prompt, yes, no, explanation, recallPrompt, recallClaim, recallAnswer) => ({ category, prompt, claims: [{ question: yes, answer: "O" }, { question: no, answer: "X" }], explanation, recall: { prompt: recallPrompt, question: recallClaim, answer: recallAnswer } });
+var LISTENING = [
+  [
+    check("\uC2DC\uAC04", "\uC624\uB298\uC740 \uBC14\uBE60\uC11C \uB0B4\uC77C \uB3C4\uC11C\uAD00\uC5D0 \uAC08 \uAC70\uC608\uC694.", "\uB3C4\uC11C\uAD00\uC5D0\uB294 \uB0B4\uC77C \uAC00\uB098\uC694?", "\uB3C4\uC11C\uAD00\uC5D0\uB294 \uC624\uB298 \uAC00\uB098\uC694?", "\uB3C4\uC11C\uAD00\uC5D0 \uAC00\uB294 \uB0A0\uC740 \uC624\uB298\uC774 \uC544\uB2C8\uB77C \uB0B4\uC77C\uC774\uC5D0\uC694.", "\uB0B4\uC77C\uC740 \uBC14\uBE60\uC11C \uC624\uB298 \uB3C4\uC11C\uAD00\uC5D0 \uAC00\uC694.", "\uB3C4\uC11C\uAD00\uC5D0\uB294 \uC624\uB298 \uAC00\uB098\uC694?", "O"),
+    check("\uC7A5\uC18C", "\uCE74\uD398\uC5D0\uC11C \uCE5C\uAD6C\uB97C \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694.", "\uC9C0\uAE08 \uCE74\uD398\uC5D0 \uC788\uB098\uC694?", "\uC9C0\uAE08 \uD559\uAD50\uC5D0 \uC788\uB098\uC694?", "\uCE74\uD398\uC5D0\uC11C \uCE5C\uAD6C\uB97C \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694.", "\uCE5C\uAD6C\uB97C \uB9CC\uB098\uAE30 \uC804\uC5D0 \uB3C4\uC11C\uAD00\uC5D0\uC11C \uCC45\uC744 \uBE4C\uB9AC\uACE0 \uC788\uC5B4\uC694.", "\uC9C0\uAE08 \uCE74\uD398\uC5D0 \uC788\uB098\uC694?", "X"),
+    check("\uB300\uC870", "\uC544\uCE68\uC5D0\uB294 \uBE44\uAC00 \uC654\uC9C0\uB9CC \uC9C0\uAE08\uC740 \uB9D1\uC544\uC694.", "\uC9C0\uAE08 \uB0A0\uC528\uB294 \uB9D1\uC740\uAC00\uC694?", "\uC9C0\uAE08\uB3C4 \uBE44\uAC00 \uC624\uB098\uC694?", "\u2018-\uC9C0\uB9CC\u2019 \uB4A4\uC5D0\uC11C \uC9C0\uAE08\uC740 \uB9D1\uB2E4\uACE0 \uD588\uC5B4\uC694.", "\uC544\uCE68\uC5D0\uB294 \uB9D1\uC558\uC9C0\uB9CC \uC9C0\uAE08\uC740 \uBE44\uAC00 \uC640\uC694.", "\uC9C0\uAE08 \uB0A0\uC528\uB294 \uB9D1\uC740\uAC00\uC694?", "X"),
+    check("\uB300\uC2E0", "\uC800\uB294 \uCEE4\uD53C \uB300\uC2E0 \uCC28\uB97C \uC8FC\uBB38\uD588\uC5B4\uC694.", "\uCC28\uB97C \uC8FC\uBB38\uD588\uB098\uC694?", "\uCEE4\uD53C\uB97C \uC8FC\uBB38\uD588\uB098\uC694?", "\uCEE4\uD53C \uB300\uC2E0 \uACE0\uB978 \uAC83\uC740 \uCC28\uC608\uC694.", "\uC800\uB294 \uCC28 \uB300\uC2E0 \uC8FC\uC2A4\uB97C \uC8FC\uBB38\uD588\uC5B4\uC694.", "\uC8FC\uC2A4\uB97C \uC8FC\uBB38\uD588\uB098\uC694?", "O"),
+    check("\uBCC0\uACBD\uB41C \uC2DC\uAC04", "\uD68C\uC758\uAC00 \uB450 \uC2DC\uC5D0\uC11C \uC138 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694.", "\uD68C\uC758\uB294 \uC138 \uC2DC\uC5D0 \uC2DC\uC791\uD558\uB098\uC694?", "\uD68C\uC758\uB294 \uB450 \uC2DC\uC5D0 \uC2DC\uC791\uD558\uB098\uC694?", "\uCC98\uC74C\uC5D0\uB294 \uB450 \uC2DC\uC600\uACE0, \uBC14\uB010 \uC2DC\uAC04\uC740 \uC138 \uC2DC\uC608\uC694.", "\uD68C\uC758\uAC00 \uC138 \uC2DC\uC5D0\uC11C \uB124 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694.", "\uD68C\uC758\uB294 \uC138 \uC2DC\uC5D0 \uC2DC\uC791\uD558\uB098\uC694?", "X")
+  ],
+  [
+    check("\uC6D0\uC778\uACFC \uACB0\uACFC", "\uBE44\uAC00 \uB9CE\uC774 \uC654\uC5B4\uC694. \uADF8\uB798\uC11C \uC18C\uD48D\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694.", "\uBE44 \uB54C\uBB38\uC5D0 \uC18C\uD48D\uC744 \uCDE8\uC18C\uD588\uB098\uC694?", "\uC18C\uD48D\uC744 \uB2E4\uB140\uC654\uB098\uC694?", "\uBE44\uAC00 \uC628 \uAC83\uC774 \uC6D0\uC778\uC774\uACE0 \uC18C\uD48D\uC744 \uCDE8\uC18C\uD55C \uAC83\uC774 \uACB0\uACFC\uC608\uC694.", "\uBC84\uC2A4\uB97C \uB193\uCCE4\uC5B4\uC694. \uADF8\uB798\uC11C \uD0DD\uC2DC\uB97C \uD0D4\uC5B4\uC694.", "\uBC84\uC2A4\uB97C \uD0C0\uACE0 \uAC14\uB098\uC694?", "X"),
+    check("\uB300\uC870", "\uC774 \uAC00\uBC29\uC740 \uBE44\uC2F8\uC9C0\uB9CC \uC624\uB798 \uC4F8 \uC218 \uC788\uC5B4\uC694.", "\uAC00\uACA9\uC740 \uBE44\uC2F8\uB3C4 \uC624\uB798 \uC4F8 \uC218 \uC788\uB098\uC694?", "\uAC00\uACA9\uC774 \uC2FC \uAC00\uBC29\uC778\uAC00\uC694?", "\uAC00\uACA9\uC740 \uBE44\uC2F8\uC9C0\uB9CC \uC624\uB798 \uC4F8 \uC218 \uC788\uB2E4\uB294 \uC88B\uC740 \uC810\uC774 \uC788\uC5B4\uC694.", "\uC774 \uC9D1\uC740 \uC791\uC9C0\uB9CC \uAD50\uD1B5\uC774 \uD3B8\uB9AC\uD574\uC694.", "\uAD50\uD1B5\uC774 \uBD88\uD3B8\uD55C \uC9D1\uC778\uAC00\uC694?", "X"),
+    check("\uBAA9\uC801", "\uCE5C\uAD6C\uB97C \uB9CC\uB098\uB824\uACE0 \uCE74\uD398\uC5D0 \uAC14\uC5B4\uC694.", "\uCE5C\uAD6C\uB97C \uB9CC\uB098\uB7EC \uAC14\uB098\uC694?", "\uCC45\uC744 \uC0AC\uB7EC \uAC14\uB098\uC694?", "\uCE74\uD398\uC5D0 \uAC04 \uBAA9\uC801\uC740 \uCE5C\uAD6C\uB97C \uB9CC\uB098\uB294 \uAC83\uC774\uC5D0\uC694.", "\uD55C\uAD6D\uC5B4\uB97C \uBC30\uC6B0\uB824\uACE0 \uD559\uC6D0\uC5D0 \uB4F1\uB85D\uD588\uC5B4\uC694.", "\uD55C\uAD6D\uC5B4\uB97C \uBC30\uC6B0\uB824\uACE0 \uB4F1\uB85D\uD588\uB098\uC694?", "O"),
+    check("\uC9C4\uD589", "\uC9C0\uAE08 \uC74C\uC545\uC744 \uB4E3\uACE0 \uC788\uC5B4\uC694.", "\uC9C0\uAE08 \uC74C\uC545\uC744 \uB4E3\uB294 \uC911\uC778\uAC00\uC694?", "\uC5B4\uC81C \uB4E4\uC740 \uC74C\uC545 \uC774\uC57C\uAE30\uC778\uAC00\uC694?", "\u2018\uB4E3\uACE0 \uC788\uC5B4\uC694\u2019\uB294 \uC9C0\uAE08 \uD558\uACE0 \uC788\uB294 \uC77C\uC744 \uB9D0\uD574\uC694.", "\uC5B4\uC81C \uC74C\uC545\uC744 \uB4E4\uC5C8\uC5B4\uC694.", "\uC9C0\uAE08 \uC74C\uC545\uC744 \uB4E3\uB294 \uC911\uC778\uAC00\uC694?", "X"),
+    check("\uC774\uC720", "\uB0A0\uC528\uAC00 \uCD94\uC6B0\uB2C8\uAE4C \uCC3D\uBB38\uC744 \uB2EB\uC73C\uC138\uC694.", "\uCD94\uC6CC\uC11C \uCC3D\uBB38\uC744 \uB2EB\uC73C\uB77C\uACE0 \uD588\uB098\uC694?", "\uB354\uC6CC\uC11C \uCC3D\uBB38\uC744 \uB2EB\uC73C\uB77C\uACE0 \uD588\uB098\uC694?", "\uCC3D\uBB38\uC744 \uB2EB\uC73C\uB77C\uACE0 \uD55C \uC774\uC720\uB294 \uB0A0\uC528\uAC00 \uCDA5\uAE30 \uB54C\uBB38\uC774\uC5D0\uC694.", "\uBC16\uC774 \uC2DC\uB044\uB7EC\uC6B0\uB2C8\uAE4C \uCC3D\uBB38\uC744 \uB2EB\uC73C\uC138\uC694.", "\uC2DC\uB044\uB7EC\uC6CC\uC11C \uCC3D\uBB38\uC744 \uB2EB\uC73C\uB77C\uACE0 \uD588\uB098\uC694?", "O")
+  ],
+  [
+    check("\uC870\uAC74", "\uC774 \uC2DD\uB2F9\uC740 \uC608\uC57D\uD574\uC57C \uC774\uC6A9\uD560 \uC218 \uC788\uC5B4\uC694.", "\uC774\uC6A9\uD558\uB824\uBA74 \uBBF8\uB9AC \uC608\uC57D\uD574\uC57C \uD558\uB098\uC694?", "\uC608\uC57D \uC5C6\uC774 \uC774\uC6A9\uD560 \uC218 \uC788\uB098\uC694?", "\uC608\uC57D\uD574\uC57C \uD55C\uB2E4\uB294 \uC870\uAC74\uC774 \uC788\uC5B4\uC694.", "\uC774 \uC2DD\uB2F9\uC740 \uC608\uC57D\uD558\uC9C0 \uC54A\uC544\uB3C4 \uC774\uC6A9\uD560 \uC218 \uC788\uC5B4\uC694.", "\uC608\uC57D \uC5C6\uC774 \uC774\uC6A9\uD560 \uC218 \uC788\uB098\uC694?", "O"),
+    check("\uBE44\uAD50", "\uC0C1\uD488\uC758 \uAC00\uACA9\uC774 \uC9C0\uB09C\uD574\uBCF4\uB2E4 \uC62C\uB790\uC5B4\uC694.", "\uC9C0\uB09C\uD574\uBCF4\uB2E4 \uB354 \uBE44\uC2F8\uC84C\uB098\uC694?", "\uC9C0\uB09C\uD574\uBCF4\uB2E4 \uB354 \uC2F8\uC84C\uB098\uC694?", "\uAC00\uACA9\uC774 \uC62C\uB790\uB2E4\uB294 \uAC83\uC740 \uB354 \uBE44\uC2F8\uC84C\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", "\uC0C1\uD488\uC758 \uAC00\uACA9\uC774 \uC9C0\uB09C\uD574\uBCF4\uB2E4 \uB0B4\uB838\uC5B4\uC694.", "\uC9C0\uB09C\uD574\uBCF4\uB2E4 \uB354 \uBE44\uC2F8\uC84C\uB098\uC694?", "X"),
+    check("\uC758\uACAC", "\uC9C1\uC6D0\uB4E4\uC740 \uC0C8\uB85C\uC6B4 \uBC29\uBC95\uC5D0 \uCC2C\uC131\uD588\uC5B4\uC694.", "\uC9C1\uC6D0\uB4E4\uC740 \uADF8 \uBC29\uBC95\uC5D0 \uB3D9\uC758\uD558\uB098\uC694?", "\uC9C1\uC6D0\uB4E4\uC740 \uADF8 \uBC29\uBC95\uC5D0 \uBC18\uB300\uD558\uB098\uC694?", "\uCC2C\uC131\uC740 \uC81C\uC548\uC774\uB098 \uC758\uACAC\uC5D0 \uB3D9\uC758\uD55C\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", "\uC9C1\uC6D0\uB4E4\uC740 \uC0C8\uB85C\uC6B4 \uBC29\uBC95\uC5D0 \uBC18\uB300\uD588\uC5B4\uC694.", "\uC9C1\uC6D0\uB4E4\uC740 \uADF8 \uBC29\uBC95\uC5D0 \uB3D9\uC758\uD558\uB098\uC694?", "X"),
+    check("\uC77C\uC815", "\uC77C\uC815\uC744 \uBCC0\uACBD\uD558\uAE30 \uC5B4\uB824\uC6CC\uC694.", "\uB0A0\uC9DC\uB97C \uBC14\uAFB8\uAE30 \uD798\uB4E0\uAC00\uC694?", "\uC774\uBBF8 \uB0A0\uC9DC\uB97C \uBC14\uAFE8\uB098\uC694?", "\uBCC0\uACBD\uD558\uAE30 \uC5B4\uB835\uB2E4\uB294 \uB9D0\uC740 \uBC14\uAFB8\uAE30 \uD798\uB4E4\uB2E4\uB294 \uB73B\uC774\uC5D0\uC694.", "\uC77C\uC815\uC744 \uBCC0\uACBD\uD588\uC5B4\uC694.", "\uB0A0\uC9DC\uB97C \uBC14\uAFE8\uB098\uC694?", "O"),
+    check("\uC0DD\uD65C", "\uAD50\uD1B5\uC774 \uD3B8\uB9AC\uD55C \uACF3\uC73C\uB85C \uC774\uC0AC\uD588\uC5B4\uC694.", "\uC774\uB3D9\uD558\uAE30 \uC88B\uC740 \uACF3\uC73C\uB85C \uC9D1\uC744 \uC62E\uACBC\uB098\uC694?", "\uC9D1\uC744 \uC62E\uAE30\uC9C0 \uC54A\uACE0 \uACE0\uCCE4\uB098\uC694?", "\uAD50\uD1B5\uC774 \uD3B8\uB9AC\uD55C \uACF3\uC73C\uB85C \uC9D1\uC744 \uC62E\uACBC\uC5B4\uC694.", "\uAD50\uD1B5\uC774 \uBD88\uD3B8\uD55C \uACF3\uC5D0\uC11C \uC0B4\uACE0 \uC788\uC5B4\uC694.", "\uC774\uB3D9\uD558\uAE30 \uC88B\uC740 \uACF3\uC5D0 \uC0B4\uACE0 \uC788\uB098\uC694?", "X")
+  ]
+];
+
+// experiences/korean-rhythm/core.mjs
+var TRACKS = SUNO_RECORDINGS.map((recording, id) => ({
+  id,
+  ...recording,
+  subtitle: ["\uD55C\uAD6D\uC5B4 \uC2DC\uD2F0\uD31D \xB7 \uC2DC\uAC04\uACFC \uC7A5\uC18C \uB4E3\uAE30", "\uD55C\uAD6D\uC5B4 \uC2DC\uD2F0\uD31D \xB7 \uBB38\uC7A5 \uC5F0\uACB0 \uB4E3\uAE30", "\uD55C\uAD6D\uC5B4 \uC2DC\uD2F0\uD31D \xB7 \uAC19\uC740 \uB73B \uC54C\uC544\uB4E3\uAE30"][id],
+  tag: ["\uB4E3\uAE30 \xB7 \uC77C\uC0C1 \uD45C\uD604", "\uB4E3\uAE30 \xB7 \uBB38\uC7A5 \uC5F0\uACB0", "\uB4E3\uAE30 \xB7 \uB73B \uC774\uD574"][id],
+  color: ["#f36f63", "#86aaf4", "#ffe07a"][id],
+  questions: LISTENING[id]
+}));
+
+// experiences/korean-rhythm/personalization.mjs
+var SKILLS = [["detail", "detail", "negation", "negation", "detail"], ["reason", "negation", "reason", "detail", "reason"], ["condition", "detail", "main", "detail", "main"]];
+var RHYTHM_GRAMMAR = [[[["G302"], []], [["G409"], ["G406", "G409"]], [["G307"], ["G307"]], [["G208"], ["G208"]], [["G208"], ["G208"]]], [[["G208"], ["G208"]], [["G307", "G402"], ["G307"]], [["G208"], ["G208"]], [["G409"], ["G208"]], [["G410", "G211"], ["G410", "G211"]]], [[["G402"], ["G304", "G402"]], [["G208"], ["G208"]], [["G208"], ["G208"]], [[], ["G208"]], [["G208"], ["G409"]]]];
+var ITEM_VERSION = Object.freeze({ t1q2r: 2 });
+var RHYTHM_CANDIDATES = TRACKS.map((track) => ({
+  id: `track-${track.id}`,
+  trackId: track.id,
+  label: track.title,
+  skillIds: [...new Set(SKILLS[track.id].map((s) => `ko.listening.${s}`))],
+  difficulty: track.id + 1,
+  modality: "listening",
+  responseFormat: "binary-choice",
+  familyKeys: track.questions.map((_, i) => `korean-rhythm:t${track.id}q${i}:v1`),
+  conceptIds: [...new Set((RHYTHM_GRAMMAR[track.id] || []).flatMap(([passage]) => passage))]
+}));
+
+// experiences/synk-world-app/world-learning-plan.mjs
+var PACK_GOALS = {
+  greetings: ["life", "people", "expression"],
+  cafe: ["life", "travel", "culture", "expression"],
+  store: ["life", "travel", "expression"],
+  directions: ["life", "travel", "expression"],
+  transit: ["travel", "study", "expression"],
+  plans: ["people", "study", "work", "career", "expression"]
+};
+var REASONS = ["culture", "travel", "people", "life", "study", "work", "career", "exam", "hobby", "other"];
+var BROAD_GOALS = ["explore", "study", "work", "clarity", "expression", "prepare"];
+var supports = ["choose", "step", "independent"];
+var own = (value, key) => Object.prototype.hasOwnProperty.call(value || {}, key);
+var record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var time = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
+var copy = (value) => JSON.parse(JSON.stringify(value));
+var knownLessons = new Map(LESSONS.map((lesson2) => [lesson2.id, lesson2]));
+var iso = (value) => new Date(value).toISOString();
+function clock(value) {
+  const at = value instanceof Date ? value.getTime() : typeof value === "string" ? Date.parse(value) : value;
+  if (!time(at)) throw TypeError("WORLD learning plan needs a valid time");
+  return at;
+}
+function worldLearningSettings(settings = {}) {
+  const value = record(settings) ? settings : {};
+  const reasons = Array.isArray(value.reasons) ? [...new Set(value.reasons.filter((reason) => REASONS.includes(reason)))] : [];
+  const goals = value.primaryReason && reasons.includes(value.primaryReason) ? [value.primaryReason] : reasons;
+  if (BROAD_GOALS.includes(value.goal) && !goals.includes(value.goal)) goals.push(value.goal);
+  return {
+    goals,
+    ...Number.isInteger(value.minutes) && value.minutes > 0 && value.minutes <= 240 ? { minutes: value.minutes } : {},
+    support: supports.includes(value.support) ? value.support : value.experience === "new" ? "step" : "choose",
+    audioAvailable: value.audio !== "off"
+  };
+}
+function presentationFor(settings) {
+  const normalized = worldLearningSettings(settings);
+  return {
+    support: normalized.support,
+    explanation: ["brief", "standard", "detailed"].includes(settings?.explanation) ? settings.explanation : "standard",
+    audio: normalized.audioAvailable ? "available" : "off",
+    textSize: settings?.textSize === "large" ? "large" : "standard",
+    motion: settings?.motion === "reduced" ? "reduced" : "full"
+  };
+}
+var lessonMinutes = (lesson2) => lesson2.id === "cafe-compose" ? 4 : lesson2.type === "story" ? 3 : 2;
+function lessonCandidate(lesson2, index, settings) {
+  const cafe = lesson2.id === "cafe-apply" || lesson2.id.startsWith("cafe-visit-") || lesson2.id === "cafe-compose";
+  return {
+    id: `world.life.${String(index + 1).padStart(2, "0")}.${lesson2.packId}`,
+    label: lesson2.title,
+    route: "lesson",
+    lessonId: lesson2.id,
+    packId: lesson2.packId,
+    minutes: lessonMinutes(lesson2),
+    minutesEstimated: true,
+    targets: [],
+    goals: [...PACK_GOALS[lesson2.packId]],
+    supports: [...supports],
+    audioRequired: false,
+    modality: "reading",
+    presentation: presentationFor(settings),
+    ...cafe ? { inputMode: settings?.audio === "off" ? "read" : "choice", canReadWithoutAudio: true } : {}
+  };
+}
+function verifiedReviews(progress) {
+  return Object.values(record(progress?.reviews) ? progress.reviews : {}).flatMap((review) => {
+    const lesson2 = knownLessons.get(review?.lessonId), question2 = lesson2?.questions.find((q) => q.id === review.questionId && q.review.id === review.id);
+    if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time(review.dueAt) || !time(review.lastAt)) return [];
+    return [{ ...review, lesson: lesson2, question: question2 }];
+  });
+}
+function practiceNeed(review, progress, now) {
+  if (!(review.lapses > 0 && review.streak === 0)) return null;
+  const observations = [];
+  const answer = progress.lessons?.[review.lessonId]?.answers?.[review.questionId];
+  if (answer && typeof answer.correct === "boolean" && typeof answer.helped === "boolean") observations.push({ at: answer.at, kind: answer.correct ? answer.helped ? "assisted" : "independent" : "retry" });
+  const repeated = progress.activeReview?.answers?.[review.id];
+  if (repeated && typeof repeated.correct === "boolean" && typeof repeated.helped === "boolean") observations.push({ at: repeated.at, kind: repeated.correct ? repeated.helped ? "assisted" : "independent" : "retry" });
+  for (const day of Object.values(progress.daily?.days || {})) {
+    const item = day?.items?.[review.questionId];
+    if (item?.lessonId === review.lessonId && ["retry", "assisted", "independent"].includes(item.outcome)) observations.push({ at: item.observedAt, kind: item.outcome });
+  }
+  const latest = observations.filter((value) => time(value.at) && value.at <= now).sort((a, b) => b.at - a.at)[0];
+  if (!latest || latest.at < review.lastAt || !["retry", "assisted"].includes(latest.kind)) return null;
+  return { kind: latest.kind, at: iso(latest.at), evidenceRefs: [`life.${review.lessonId}.${review.questionId}`] };
+}
+function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date.now() } = {}) {
+  const at = clock(now), source = record(progress) ? progress : {}, candidates = [];
+  PACKS.forEach((pack, index) => {
+    const next = pack.lessons.find((lesson2) => !time(source.lessons?.[lesson2.id]?.completedAt));
+    if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index, settings));
+  });
+  const reviews = verifiedReviews(source).filter((review) => review.dueAt <= at && review.lastAt <= at);
+  const groups = /* @__PURE__ */ new Map();
+  for (const review of reviews) {
+    if (!groups.has(review.lessonId)) groups.set(review.lessonId, []);
+    groups.get(review.lessonId).push(review);
+  }
+  for (const [lessonId, rows2] of groups) {
+    rows2.sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id));
+    const need = rows2.map((review) => practiceNeed(review, source, at)).filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+    candidates.push({
+      id: `world.review.${lessonId}`,
+      label: `${rows2[0].lesson.title} \xB7 \uC0C8 \uC0C1\uD669 \uBCF5\uC2B5`,
+      route: "review",
+      lessonId,
+      packId: rows2[0].packId,
+      minutes: Math.max(1, Math.ceil(rows2.length / 3)),
+      minutesEstimated: true,
+      targets: [],
+      goals: [...PACK_GOALS[rows2[0].packId]],
+      supports: [...supports],
+      audioRequired: false,
+      modality: "reading",
+      reviewIds: rows2.map((review) => review.id),
+      reviewAt: iso(rows2[0].dueAt),
+      presentation: presentationFor(settings),
+      ...need ? { practiceNeed: need } : {}
+    });
+  }
+  const runnerTargets = LISTENING_CHECKS.map((item) => {
+    const target = checkMetadata(item);
+    return {
+      id: target.id,
+      skillIds: [target.skillId],
+      difficulty: target.difficulty,
+      modality: target.modality,
+      responseFormat: target.responseFormat,
+      familyKeys: [target.familyKey],
+      itemKey: target.itemKey,
+      conceptIds: [...target.conceptIds]
+    };
+  });
+  candidates.push(
+    {
+      id: "world.play.runner",
+      label: "\uBC14\uB78C\uAE38 \xB7 \uC9E7\uC740 \uC9C0\uC2DC \uB4E3\uAE30",
+      route: "game",
+      gameId: "runner",
+      minutes: 3,
+      minutesEstimated: true,
+      targets: runnerTargets,
+      goals: ["exam", "prepare", "listening", "travel"],
+      audioRequired: true,
+      modality: "listening",
+      presentation: presentationFor(settings)
+    },
+    {
+      id: "world.play.rhythm",
+      label: "\uB9D0\uC758 \uB9AC\uB4EC \xB7 \uB4E3\uACE0 \uB0B4\uC6A9 \uD655\uC778",
+      route: "game",
+      gameId: "rhythm",
+      minutes: 4,
+      minutesEstimated: true,
+      targets: copy(RHYTHM_CANDIDATES),
+      goals: ["exam", "prepare", "listening", "culture", "hobby", "explore"],
+      audioRequired: true,
+      modality: "listening",
+      presentation: presentationFor(settings)
+    },
+    {
+      id: "world.play.hangul",
+      label: "\uD55C\uAE00 \uB9CC\uB098\uAE30 \xB7 \uC18C\uB9AC\uC640 \uAE00\uC790",
+      route: "game",
+      gameId: "hangul",
+      minutes: 5,
+      minutesEstimated: true,
+      targets: [],
+      goals: ["study", "culture", "hobby", "explore"],
+      audioRequired: true,
+      modality: "listening",
+      presentation: presentationFor(settings)
+    }
+  );
+  return candidates;
+}
+function resumeCandidates(progress, settings, now) {
+  const result = [];
+  const lesson2 = knownLessons.get(progress?.activeLessonId), saved = lesson2 && progress.lessons?.[lesson2.id];
+  if (lesson2 && saved && time(saved.startedAt) && saved.startedAt <= now) {
+    const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
+    result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
+  }
+  const session = progress?.activeReview;
+  if (!session || !Array.isArray(session.ids) || !time(session.startedAt) || session.startedAt > now) return result;
+  const pending = session.ids.filter((id) => !own(session.answers, id)), reviews = verifiedReviews(progress), first = reviews.find((review) => review.id === pending[0]);
+  if (!first) return result;
+  result.push({
+    id: "world.resume.review",
+    label: "\uD558\uB358 \uC0C8 \uC0C1\uD669 \uBCF5\uC2B5 \xB7 \uC774\uC5B4 \uD558\uAE30",
+    route: "review",
+    lessonId: first.lessonId,
+    packId: first.packId,
+    resume: true,
+    reviewIds: pending.filter((id) => reviews.some((review) => review.id === id)),
+    minutes: Math.max(1, Math.ceil(pending.length / 3)),
+    minutesEstimated: true,
+    targets: [],
+    goals: [...PACK_GOALS[first.packId]],
+    supports: [...supports],
+    audioRequired: false,
+    modality: "reading",
+    reviewAt: iso(session.startedAt),
+    presentation: presentationFor(settings)
+  });
+  return result;
+}
+function createWorldLearningPlan({ summary = null, progress = {}, settings = {}, now = Date.now(), recommendActivities } = {}) {
+  if (typeof recommendActivities !== "function") throw TypeError("WORLD learning plan needs Core recommendActivities");
+  const at = clock(now), source = record(progress) ? progress : {}, normalized = worldLearningSettings(settings);
+  const profile = record(summary) && Array.isArray(summary.skills) && typeof summary.evidenceComplete === "boolean" ? summary : { skills: [], evidenceComplete: false, asOf: iso(at) };
+  const skills = new Set(profile.skills.map((skill2) => skill2.id));
+  const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
+  const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
+  const ready = candidates.map((candidate) => ({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }));
+  const ranked = recommendActivities({ profile, candidates: ready, settings: normalized, at: iso(at) });
+  const excluded = new Set((ranked.excluded || []).map((item) => item.id));
+  const offered = resumes.find((resume) => !excluded.has(resume.id) && [ranked.selected, ...ranked.alternatives || []].some((item) => item?.id === resume.id)) || null;
+  const result = offered ? {
+    ...ranked,
+    status: "ready",
+    selected: offered,
+    alternatives: [ranked.selected, ...ranked.alternatives || []].filter((item) => item && item.id !== offered.id),
+    reason: "\uD558\uB358 \uD559\uC2B5\uC758 \uAC19\uC740 \uC790\uB9AC\uC5D0\uC11C \uC774\uC5B4\uAC00\uC694. \uB2E4\uB978 \uD65C\uB3D9\uC744 \uACE8\uB77C\uB3C4 \uC9C0\uAE08 \uC9C4\uB3C4\uB294 \uB0A8\uC544 \uC788\uC5B4\uC694.",
+    reasons: ["progress.resume"],
+    basis: "host-progress",
+    id: offered.id,
+    evidence: [],
+    hostEvidence: null,
+    reviewAt: offered.reviewAt || null,
+    reviewSource: offered.reviewAt ? "host-schedule" : null,
+    focusSkillId: null,
+    state: null,
+    matchedGoals: offered.goals.filter((goal) => normalized.goals.includes(goal))
+  } : ranked;
+  return {
+    ...result,
+    candidates: ready,
+    resume: offered,
+    presentation: presentationFor(settings),
+    settings: normalized,
+    learningEffectClaim: false,
+    abilityClaim: false,
+    grade: null
+  };
+}
+
 // experiences/synk-world-app/life-progress-port.mjs
 var LIFE_PROGRESS_KEY = "synk.life-korean.progress.v1";
 async function createLifeProgressPort({ accountId: id, client, guard, storage: cache = globalThis.localStorage, onStatus = () => {
@@ -12510,13 +13510,13 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
 } } = {}) {
   if (typeof id !== "string" || !id || typeof guard !== "function") throw TypeError("Verified life progress owner required");
   let disposed = false;
-  const check = () => {
+  const check2 = () => {
     guard();
     if (disposed) throw Object.assign(Error("\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694."), { code: "ACCOUNT_CHANGED" });
   };
   const resolvedKey = `${LIFE_PROGRESS_KEY}:resolved:${encodeURIComponent(id)}`;
   function recoveredEntries() {
-    check();
+    check2();
     const prefix = `synk.play.account.v1:${encodeURIComponent(id)}:rejected:`, entries = [];
     let resolved = [];
     try {
@@ -12528,16 +13528,16 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
     for (let index = 0; index < cache.length; index++) {
       const recordKey = cache.key(index);
       if (!recordKey?.startsWith(prefix)) continue;
-      let record;
+      let record2;
       try {
-        record = JSON.parse(cache.getItem(recordKey));
+        record2 = JSON.parse(cache.getItem(recordKey));
       } catch {
         throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC744 \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
       }
-      if (record.accountId !== id || recordKey !== prefix + record.entry?.body?.id) throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC758 \uACC4\uC815\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
-      if (resolved.includes(record.entry.body.id)) continue;
-      const change = record.entry.body.action === "progress" && record.entry.body.changes.find((change2) => change2.key === LIFE_PROGRESS_KEY);
-      if (change) entries.push({ ...record, change });
+      if (record2.accountId !== id || recordKey !== prefix + record2.entry?.body?.id) throw Object.assign(Error("\uC0DD\uD65C \uC9C4\uB3C4 \uC6D0\uBCF8\uC758 \uACC4\uC815\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: "LIFE_PROGRESS_UNREADABLE" });
+      if (resolved.includes(record2.entry.body.id)) continue;
+      const change = record2.entry.body.action === "progress" && record2.entry.body.changes.find((change2) => change2.key === LIFE_PROGRESS_KEY);
+      if (change) entries.push({ ...record2, change });
     }
     return entries.sort((a, b) => a.entry.at - b.entry.at || a.entry.body.id.localeCompare(b.entry.body.id));
   }
@@ -12549,7 +13549,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
       const recordKey = cache.key(index);
       if (!recordKey?.startsWith(prefix)) continue;
       try {
-        const record = JSON.parse(cache.getItem(recordKey)), body = record.entry?.body || record.body;
+        const record2 = JSON.parse(cache.getItem(recordKey)), body = record2.entry?.body || record2.body;
         if (body?.action !== "progress" || !body.changes?.some((change) => change.key === LIFE_PROGRESS_KEY)) continue;
         if (recordKey.startsWith(prefix + "pending:")) pending++;
       } catch {
@@ -12570,7 +13570,7 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   const host = createWorldPlayHost({
     accountId: id,
     client,
-    guard: check,
+    guard: check2,
     storage: cache,
     locks: target.navigator?.locks,
     onStatus: () => {
@@ -12582,12 +13582,12 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   });
   const gameStorage = host.storage();
   const onlyLife = (key) => {
-    check();
+    check2();
     if (key !== LIFE_PROGRESS_KEY) throw new TypeError("Only life-Korean progress is available");
   };
   const port = Object.freeze({
     accountId: id,
-    guard: check,
+    guard: check2,
     storage: Object.freeze({ getItem(key) {
       onlyLife(key);
       const value = gameStorage.getItem(key), entries = recoveredEntries();
@@ -12602,19 +13602,19 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
     } }),
     status: lifeStatus,
     async flush() {
-      check();
+      check2();
       await host.flush();
-      check();
+      check2();
       return lifeStatus();
     },
     async retry() {
-      check();
+      check2();
       await host.retry();
-      check();
+      check2();
       return lifeStatus();
     },
     recoverySnapshot() {
-      check();
+      check2();
       const value = recoveredEntries().at(-1)?.change.value;
       if (value === void 0 || value === null) return null;
       try {
@@ -12624,11 +13624,11 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
       }
     },
     async resolve(choice) {
-      check();
+      check2();
       if (!["local", "remote"].includes(choice)) throw new TypeError("Invalid life progress choice");
       if (host.status().phase === "conflict") {
         await host.resolve(choice);
-        check();
+        check2();
         return lifeStatus();
       }
       const entries = recoveredEntries();
@@ -12638,11 +13638,11 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
         const value = entries.at(-1).change.value;
         value === null ? gameStorage.removeItem(LIFE_PROGRESS_KEY) : gameStorage.setItem(LIFE_PROGRESS_KEY, value);
         await host.flush();
-        check();
+        check2();
         if (lifeStatus().rejected) return lifeStatus();
       }
       const resolved = JSON.parse(cache.getItem(resolvedKey) || "[]");
-      cache.setItem(resolvedKey, JSON.stringify([.../* @__PURE__ */ new Set([...resolved, ...entries.map((record) => record.entry.body.id)])]));
+      cache.setItem(resolvedKey, JSON.stringify([.../* @__PURE__ */ new Set([...resolved, ...entries.map((record2) => record2.entry.body.id)])]));
       return lifeStatus();
     },
     subscribe: (fn) => host.subscribe(() => fn(lifeStatus())),
@@ -12655,11 +13655,11 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   });
   try {
     await host.ready();
-    check();
+    check2();
     return port;
   } catch (error2) {
     if (error2.code === "REVISION_CONFLICT") {
-      check();
+      check2();
       return port;
     }
     port.dispose();
@@ -12933,15 +13933,15 @@ function createWorldAccount({
       if (launch !== gameLaunch) throw changed();
       const id = owner, bound = gameBinding(currentAccount), client = verifiedClient, prefs = currentAccount.learning;
       if (!client?.play || !prefs || typeof prefs.enabled !== "boolean" || !Number.isSafeInteger(prefs.revision) || prefs.revision < 1) throw Object.assign(Error("\uACC4\uC815\uC758 \uAC8C\uC784 \uC800\uC7A5\uACFC \uD559\uC2B5 \uC124\uC815\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
-      const check = () => {
+      const check2 = () => {
         guard(expected);
         if (launch !== gameLaunch || owner !== id || gameBinding(currentAccount) !== bound) throw changed();
       };
       const wrap = (port) => port && Object.freeze(Object.fromEntries(Object.entries(port).filter(([, fn]) => typeof fn === "function").map(([name, fn]) => [name, async (...args) => {
-        check();
+        check2();
         try {
           const value = await fn(...args);
-          check();
+          check2();
           return value;
         } catch (error2) {
           if (expected === epoch && authErrors.has(error2.code)) {
@@ -12959,12 +13959,12 @@ function createWorldAccount({
         play: wrap(client.play),
         learning: wrap(client.learning),
         memory: wrap(client.memory),
-        guard: check
+        guard: check2
       });
       gameHost = current;
       try {
         await current.ready();
-        check();
+        check2();
         current.install();
         return current.publicHandle;
       } catch (error2) {
@@ -13000,15 +14000,15 @@ function createWorldAccount({
     }
     const id = owner, client = verifiedClient;
     if (typeof client?.play?.load !== "function" || typeof client?.play?.mutate !== "function") throw Object.assign(Error("\uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC800\uC7A5 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "PLAY_NOT_READY" });
-    const check = () => {
+    const check2 = () => {
       guard(expected);
       if (launch !== lifeLaunch || owner !== id) throw changed();
     };
     const wrap = (fn) => async (...args) => {
-      check();
+      check2();
       try {
         const value = await fn(...args);
-        check();
+        check2();
         return value;
       } catch (error2) {
         if (expected === epoch && authErrors.has(error2.code)) {
@@ -13021,7 +14021,7 @@ function createWorldAccount({
     const port = await createLifeProgressPort({
       accountId: id,
       client: { load: wrap(() => client.play.load()), mutate: wrap((body) => client.play.mutate(body)) },
-      guard: check,
+      guard: check2,
       storage: cache,
       target,
       onStatus,
@@ -13029,7 +14029,7 @@ function createWorldAccount({
         if (lifeHost === value) lifeHost = null;
       }
     });
-    check();
+    check2();
     lifeHost = port;
     return port;
   }
@@ -13190,9 +14190,13 @@ function createWorldAccount({
     }
   });
 }
+var export_worldLearning = import_game_browser2.default;
 export {
   createLifeProgressPort,
+  createLocalWorldLearningHost,
   createWorldAccount,
+  createWorldLearningPlan,
   loadWorldConfig,
-  publicWorldConfig
+  publicWorldConfig,
+  export_worldLearning as worldLearning
 };

@@ -1,5 +1,110 @@
+/* 힌트 · 어려웠던 곳 다시 연습 · 시그널 게임판 (2026-10-14)
+ * 안내 창 안 힌트 목록은 1px 선 줄(상태 칩 + 제목 + 튜터 한마디 + 근거 + 1px 선 알약).
+ * 다시 연습 창은 근사 검정 판: 모노 라벨 → 제목 → 초상 + 흰 말풍선 → 22px 문장 → 큰 선택지(고르면 흰 바탕)
+ * → 판정 띠 하나(LED 점: 다시 코랄 · 해냈어요 메도우) → 흰 알약 「놀이로 돌아가기」. */
 .game-tutor-guide ol[hidden],.tutor-support-list[hidden],.tutor-guide-toggle[hidden]{display:none!important}
-.tutor-support-list{display:grid;gap:16px;margin:20px 0}.tutor-support-item{display:grid;gap:8px;text-align:left}.tutor-support-item small{font-size:11px}.tutor-support-item h4{margin:0;font-size:16px}.tutor-support-item p{margin:0;font-size:14px;line-height:1.55}.tutor-support-item .support-label{font-size:12px;font-weight:800;padding:8px 14px;display:inline-block;background:url('assets/home/quality-cream-ui.webp') center/100% 100% no-repeat;color:#273b31}.support-label[data-kind=language]{background-image:url('assets/home/quality-blush-ui.webp')}.tutor-support-item blockquote{margin:0;font-size:13px;color:#45574d;line-height:1.5}.tutor-support-retry{min-height:48px;background:url('assets/home/button-white-ui.webp') center/100% 100% no-repeat;font:700 13px var(--sans,SUIT,sans-serif);padding:12px 20px;color:#273b31}.tutor-support-item[data-practised=true] .support-label{color:#285137}.tutor-guide-toggle{min-height:44px;font-size:12px;font-weight:700;background:url('assets/home/button-white-ui.webp') center/100% 100% no-repeat;padding:8px 18px;color:#273b31}
-.tutor-review{box-sizing:border-box;width:min(560px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:24px;border:0;border-radius:24px;background:#fff;color:#1a2021;overflow:auto;box-shadow:0 24px 90px #12251d40;font:400 14px/1.5 var(--sans,SUIT,sans-serif);word-break:keep-all}.tutor-review::backdrop{background:#13241da6;backdrop-filter:blur(5px)}.tutor-review header{display:flex;align-items:center;justify-content:space-between;gap:12px}.tutor-review header small{font-size:12px;color:#536259}.tutor-review h3{font-size:24px;line-height:1.3;margin:4px 0 0;letter-spacing:-.04em}.tutor-review-exit{width:44px;height:44px;flex:none;font-size:25px;background:url('assets/home/button-white-ui.webp') center/100% 100% no-repeat}.tutor-review-speech{display:flex;gap:12px;align-items:center;margin:20px 0 16px}.tutor-review-speech .game-tutor-portrait{width:80px;height:80px}.tutor-review-line{font-size:15px;line-height:1.55;margin:0}.tutor-review-prompt{font-size:18px;font-weight:700;line-height:1.5;margin:0 0 16px}.tutor-review-listen{min-height:52px;width:100%;background:url('assets/home/button-white-ui.webp') center/100% 100% no-repeat;padding:12px 20px;font:700 14px var(--sans,SUIT,sans-serif)}.tutor-review-status{font-size:12px;color:#536259;margin:12px 0}.tutor-review-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tutor-review-option{min-height:64px;min-width:0;line-height:1.5;padding:12px 20px;background:url('assets/home/button-white-ui.webp') center/100% 100% no-repeat;font-weight:700;color:#20362a;filter:drop-shadow(0 3px 3px #20362a16)}.tutor-review-option.selected{background-image:url('assets/home/quality-blush-ui.webp')}.tutor-review-option:disabled{opacity:1;color:#536259}.tutor-review-hint{margin:16px 0 0;font-size:13px;line-height:1.6}.tutor-review-return{width:100%;min-height:56px;margin-top:20px;padding:12px 20px;background:url('assets/home/button-coral-ui.webp') center/100% 100% no-repeat;color:white;text-shadow:0 1px 1px #7a241852;font:800 15px var(--sans,SUIT,sans-serif)}.tutor-review button:focus-visible{outline:3px solid #245cb3;outline-offset:2px}.tutor-review button:active,.tutor-support-retry:active{transform:translateY(2px)}.tutor-review [hidden]{display:none!important}
-@media(max-width:360px){.tutor-review{padding:18px}.tutor-review h3{font-size:21px}.tutor-review-speech .game-tutor-portrait{width:64px;height:64px}.tutor-review-line{font-size:14px}.tutor-review-prompt{font-size:16px}.tutor-review-options{gap:8px}.tutor-review-option{padding:10px 14px;font-size:13px}}
-@media(max-height:500px) and (min-width:600px){.tutor-review{width:min(780px,calc(100vw - 24px));padding:18px 24px}.tutor-review-speech{margin:10px 0}.tutor-review-speech .game-tutor-portrait{width:52px;height:52px}.tutor-review-line{font-size:13px}.tutor-review-prompt{font-size:15px;margin-bottom:10px}.tutor-review-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tutor-review-option{min-height:48px;font-size:13px}.tutor-review-listen{min-height:44px}.tutor-review-return{min-height:44px;margin-top:10px}.tutor-review-status{margin:8px 0}.game-tutor-guide:has(.tutor-support-list:not([hidden]))[open]{display:block;max-width:650px}.game-tutor-guide:has(.tutor-support-list:not([hidden])) .game-tutor-guide-top{display:flex;text-align:left}.game-tutor-guide:has(.tutor-support-list:not([hidden])) .game-tutor-guide-top .game-tutor-portrait{margin:0}.tutor-support-list{margin:14px 0;gap:16px}}
+
+/* 안내 창 안 힌트 목록 */
+.tutor-support-list{display:grid;margin:20px 0 4px;border-top:1px solid var(--w-line)}
+.tutor-support-item{display:grid;justify-items:start;gap:6px;padding:16px 0;border-bottom:1px solid var(--w-line);text-align:left}
+.tutor-support-item>*{max-width:100%}
+.tutor-support-item small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.tutor-support-item h4{margin:0;font-size:16px;font-weight:var(--wt-title);line-height:1.45;letter-spacing:var(--track-title)}
+.tutor-support-item p{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.tutor-support-item p.tutor-support-fact{font-size:14px;color:var(--w-ink-3)}
+.tutor-support-item .support-label{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13px;line-height:1.3;font-weight:var(--wt-label);color:var(--w-ink-2)}
+.tutor-support-item .support-label::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.tutor-support-item .support-label[data-kind=language]::before,.tutor-support-item .support-label[data-kind=audio]::before{background:var(--w-led-info);box-shadow:0 0 8px rgba(91,134,219,.55)}
+.tutor-support-item[data-practised=true] .support-label::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.tutor-support-item>h4{order:1}
+.tutor-support-item>blockquote{order:2}
+.tutor-support-item>p{order:3}
+.tutor-support-item>p.tutor-support-fact{order:4}
+.tutor-support-item>.game-tutor-explanation{order:5}
+.tutor-support-item>.tutor-support-retry{order:6}
+.tutor-support-item blockquote{justify-self:stretch;margin:2px 0 4px;font-size:22px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:-.022em;color:var(--w-ink);text-wrap:balance;quotes:'“' '”'}
+.tutor-support-item blockquote::before{content:open-quote}
+.tutor-support-item blockquote::after{content:close-quote}
+.tutor-support-item .game-tutor-explanation{width:100%}
+.tutor-support-item .game-tutor-explanation[open]>*+*{margin-top:8px}
+.tutor-support-retry{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin-top:4px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14px;font-weight:var(--wt-strong);letter-spacing:-.005em;line-height:1.3;text-align:center;cursor:pointer;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-support-retry::after{content:'';width:14px;height:14px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.tutor-support-retry:hover{background:var(--w-s2)}
+.tutor-support-retry:active{transform:scale(.98)}
+.tutor-guide-toggle{flex:1 1 100%;justify-self:start;min-height:44px;padding:0 2px;border:0;background:none;color:var(--w-ink-2);font-size:13.5px;font-weight:var(--wt-strong);text-align:left;text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px;cursor:pointer}
+.tutor-guide-toggle:hover{color:var(--w-ink)}
+
+/* 다시 연습 창 */
+.tutor-review{box-sizing:border-box;width:min(520px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:22px 22px 20px;border:0;border-radius:var(--w-r-xl);background:var(--w-panel);color:var(--w-ink);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow);font:var(--wt-body) 15.5px/1.55 var(--w-sans);word-break:keep-all;text-align:left;color-scheme:dark}
+.tutor-review::backdrop{background:rgba(4,5,7,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.tutor-review[open]{display:flex;flex-direction:column;animation:game-tutor-sheet .24s var(--w-ease)}
+:where(.tutor-review p,.tutor-review h3){margin:0}
+.tutor-review button:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+.tutor-review [hidden]{display:none!important}
+.tutor-review header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.tutor-review header>div{display:flex;flex-direction:column;min-width:0;padding-top:4px}
+.tutor-review header>div::before{content:'REVIEW';content:'REVIEW'/'';align-self:flex-start;padding-right:38px;background:linear-gradient(var(--w-line-2),var(--w-line-2)) right 55%/28px 1px no-repeat;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
+.tutor-review h3{order:1;margin:8px 0 4px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
+.tutor-review header small{order:2;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.tutor-review-speech{display:flex;align-items:flex-end;gap:10px;margin:18px 0 18px}
+.tutor-review-speech .game-tutor-portrait{width:56px;height:56px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.4))}
+.tutor-review-speech>div{position:relative;flex:1;min-width:0;padding:12px 15px 13px;border-radius:18px 18px 18px 6px;background:#FAFAF9;color:#08090C;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.tutor-review-speech>div::before{content:'';position:absolute;left:-5px;bottom:13px;width:12px;height:12px;border-radius:3px;background:inherit;transform:rotate(45deg)}
+.tutor-review-line{font-size:15.5px;line-height:1.55;font-weight:var(--wt-strong);overflow-wrap:anywhere;text-wrap:pretty}
+/* 다시 볼 문장: 학습 표현이라 22px */
+.tutor-review-prompt{margin:0 0 14px;font-size:22px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:-.022em;color:var(--w-ink);text-wrap:balance}
+.tutor-review-listen{display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;width:100%;padding:0 20px;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15.5px;font-weight:var(--wt-strong);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-review-listen::before{content:'';width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat}
+.tutor-review-listen:hover:not(:disabled){background:var(--w-s2)}
+.tutor-review-listen:disabled{color:var(--w-ink-3);cursor:wait}
+.tutor-review-status{margin:12px 0;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+/* 선택지: --w-s1 줄, 고르면 흰 바탕 */
+.tutor-review-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px;counter-reset:review-option}
+.tutor-review-options[data-layout=rows]{grid-template-columns:minmax(0,1fr)}
+.tutor-review-option{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;min-height:64px;padding:12px 16px;border-radius:18px;background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:22px;line-height:1.35;font-weight:var(--wt-strong);letter-spacing:-.02em;text-align:center;overflow-wrap:anywhere;counter-increment:review-option;transition:background .16s var(--w-ease),color .16s var(--w-ease),box-shadow .16s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-review-option:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.tutor-review-option:active:not(:disabled){transform:scale(.98)}
+.tutor-review-option:disabled{opacity:.42;cursor:default}
+.tutor-review-option.selected{background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 10px 24px rgba(0,0,0,.3)}
+[data-layout=rows]>.tutor-review-option{justify-content:flex-start;padding:12px 18px 12px 14px;text-align:left}
+[data-layout=rows]>.tutor-review-option::before{content:counter(review-option,upper-alpha);display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 11px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-3)}
+[data-layout=rows]>.tutor-review-option.selected::before{background:var(--w-on-ink);color:var(--w-ink);box-shadow:none}
+.tutor-review-option.selected:disabled{opacity:1}
+/* 판정 띠: 다시(코랄 점 + 근거) · 해냈어요(메도우 점) — 판 전체를 칠하지 않는다 */
+.tutor-review-hint{display:flex;align-items:baseline;gap:11px;margin:14px 0 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:15.5px;line-height:1.6;color:var(--w-ink);text-wrap:pretty}
+.tutor-review-hint::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55);transform:translateY(-1px)}
+.tutor-review:has(.tutor-review-return:not([hidden])) .tutor-review-status{order:1;display:flex;align-items:baseline;gap:11px;margin:14px 0 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:15.5px;color:var(--w-ink)}
+.tutor-review:has(.tutor-review-return:not([hidden])) .tutor-review-status::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6);transform:translateY(-1px)}
+.tutor-review-return{order:2;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin-top:16px;padding:0 24px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
+.tutor-review-return::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.tutor-review-return:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 30%,transparent)}
+.tutor-review-return:active{transform:scale(.98)}
+.tutor-review[data-reduced=true],.tutor-review[data-reduced=true] *{animation:none!important;transition:none!important}
+
+@media(max-width:599px) and (min-height:501px){
+ .tutor-review{width:100%;max-width:100%;max-height:calc(100dvh - 12px - env(safe-area-inset-top,0px));margin:auto 0 0;border-radius:var(--w-r-xl) var(--w-r-xl) 0 0;padding:20px 20px calc(18px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:359px){
+ .tutor-review{padding-left:16px;padding-right:16px}
+ .tutor-review h3{font-size:20px}
+ .tutor-review-speech .game-tutor-portrait{width:48px;height:48px}
+ .tutor-review-line{font-size:14px}
+ .tutor-review-option{min-height:58px;padding:10px 12px}
+}
+@media(max-height:500px) and (min-width:600px){
+ .tutor-review{width:min(780px,calc(100vw - 24px));padding:16px 22px}
+ .tutor-review header>div::before{display:none}
+ .tutor-review-speech{margin:10px 0}
+ .tutor-review-speech .game-tutor-portrait{width:46px;height:46px}
+ .tutor-review-line{font-size:14px}
+ .tutor-review-prompt{margin-bottom:10px}
+ .tutor-review-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .tutor-review-option{min-height:50px}
+ [data-layout=rows]>.tutor-review-option{padding:8px 12px 8px 10px}
+ .tutor-review-listen{min-height:44px}
+ .tutor-review-return{min-height:46px;margin-top:10px}
+ .tutor-review-status{margin:8px 0}
+ .game-tutor-guide:has(.tutor-support-list:not([hidden]))[open]{display:block;max-width:650px}
+ .game-tutor-guide:has(.tutor-support-list:not([hidden])) .tutor-support-list{margin:16px 0 4px}
+}
+@media(prefers-reduced-motion:reduce){.tutor-review,.tutor-review *{animation:none!important;transition:none!important}}

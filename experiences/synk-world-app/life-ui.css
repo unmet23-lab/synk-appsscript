@@ -1,385 +1,536 @@
-/* Reading stays on paper; approved felt files are supplied by the home shell. */
-#world-panel[class*="life-"] {
-  --life-paper: #fffefb;
-  --life-text: #354237;
-  --life-muted: #697362;
-  inset: 0;
-  margin: auto;
-  width: min(var(--shell-width), 840px);
-  height: fit-content;
-  max-height: min(calc(var(--shell-height) - 20px - var(--safe-top) - var(--safe-bottom)), calc(100dvh - 20px));
-  padding: 20px 20px 18px;
-  border-radius: 24px;
-  background: var(--life-paper);
-  color: var(--life-text);
-  overflow: auto;
-  scrollbar-width: thin;
-  container: life-sheet / inline-size;
+/* SYNK WORLD 생활 한국어 · 시그널 게임판 (2026-10-14)
+ * 배우기 허브 · 팩 · 레슨 · 이야기 · 문제 · 복습 · 카페 · 학습 목표 화면.
+ * 판은 home.css의 근사 검정 시트를 그대로 쓴다(크림 종이·펠트 단추 바탕 없음). 사업 색 코랄은 포스터 면과 「지금 할 일」 표시에만.
+ * 둘러보기(허브·팩·이야기 모음)는 놀이와 같은 아래 시트, 레슨·문제·복습·카페·완료는 화면을 채우는 집중 판
+ * (위 진행 막대 → 내용 → 아래 고정 흰 알약 하나). 고르면 바탕을 뒤집고, 판정은 LED가 달린 어두운 띠 하나.
+ * 학습 표현(고르는 한국어·대사)은 22px 이상, 한글은 13px 밑으로 내리지 않는다. 움직임은 누를 때의 짧은 전환뿐. */
+
+/* ── 공통 ── */
+#world-panel[class*="life-"],.world-study-panel{
+  --life-pad:20px;
+  --life-play:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.2-6.4a.9.9 0 0 0 0-1.54L9.57 4.83A.9.9 0 0 0 8.2 5.6z' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --life-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6v12M15 6v12' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --life-retry:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12a7 7 0 1 0 2.05-4.95M5 4.6v3.6h3.6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
-#world-panel[class*="life-"] .sheet-handle { display: none; }
-#world-panel[class*="life-"] .panel-header { margin-bottom: 16px; align-items: center; }
-#world-panel[class*="life-"] .panel-header h2 { font-size: 23px; line-height: 1.3; }
-#world-panel[class*="life-"] .close-button { width: 44px; height: 44px; }
-#world-panel[class*="life-"] .eyebrow { font-size: 11px; color: var(--life-muted); }
-#world-panel[class*="life-"] #panel-content { min-width: 0; }
-#world-panel[class*="life-"] button { min-width: 44px; min-height: 44px; }
-#world-panel[class*="life-"] button:disabled { cursor: default; }
-#world-panel[class*="life-"] .felt-button {
-  min-height: 54px;
-  padding: 10px 24px 16px;
-  background: var(--life-coral-button) center / 100% 100% no-repeat;
-  color: #fffdf7;
-  text-shadow: 0 1px 2px #88382c;
-  font-size: 15px;
-  line-height: 1.45;
-  gap: 10px;
-}
-#world-panel[class*="life-"] .felt-button:disabled { opacity: .65; }
-#world-panel[class*="life-"] .plain-button {
-  background: var(--life-paper-button) center / 100% 100% no-repeat;
-  min-height: 48px;
-  padding: 8px 18px 14px;
-  font-size: 13px;
-  line-height: 1.5;
-}
-#world-panel[class*="life-"] .quiet-button { padding: 8px; line-height: 1.5; font-size: 12px; }
-.life-heading { outline: none; font-size: 14px; line-height: 1.75; color: var(--life-muted); }
-.life-heading > p + p { margin-top: 8px; }
-.life-library-note { font-size: 12px; color: var(--life-muted); }
-.life-pack-description { font-size: 16px; font-weight: 700; color: var(--life-text); }
-.life-pack-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 20px; }
-.life-pack-card {
-  display: grid;
-  grid-template-columns: 68px minmax(0, 1fr) 16px;
-  align-items: center;
-  gap: 12px;
-  min-height: 142px;
-  padding: 17px 18px 23px;
-  background: var(--life-paper-button) center / 100% 100% no-repeat;
-  text-align: left;
-}
-.life-pack-card > span:nth-child(2) { min-width: 0; }
-.life-pack-card > span:nth-child(2) > * { display: block; }
-.life-pack-card small { font-size: 11px; font-weight: 600; line-height: 1.4; color: var(--life-muted); }
-.life-pack-card strong { margin: 6px 0 5px; font-size: 18px; line-height: 1.35; letter-spacing: -.035em; }
-.life-pack-card > span:nth-child(2) > span { font-size: 12px; line-height: 1.6; color: #5c6958; }
-.life-pack-card em { margin-top: 7px; font-size: 11px; line-height: 1.5; font-style: normal; color: #7f5143; }
-.life-card-art { display: grid; place-items: center; min-width: 0; }
-.life-card-art .life-friend { width: 68px; height: 85px; }
-.life-card-arrow { align-self: center; font-size: 21px; color: #79886d; }
-.life-pack-card:active, .life-lesson-card:active, .life-choice:not(:disabled):active { transform: translateY(2px); }
-.life-friend { display: block; object-fit: contain; max-width: 100%; height: auto; }
-.life-cast { display: flex; justify-content: center; align-items: flex-end; gap: 8px; margin: 4px auto 14px; }
-.life-cast > .life-friend { width: 92px; height: 112px; }
-.life-cast > .life-friend:first-child { height: 98px; }
-.life-cast > .life-friend:nth-child(3) { height: 106px; }
-.life-cast > div { flex: 1 1 0; min-width: 0; max-width: 128px; text-align: center; }
-.life-cast > div .life-friend { width: 100%; height: 112px; margin: 0 auto; }
-.life-cast > div:first-child .life-friend { height: 98px; }
-.life-cast > div:nth-child(3) .life-friend { height: 106px; }
-.life-cast small { display: block; font-size: 11px; line-height: 1.5; font-weight: 600; color: #7d8678; margin-top: 3px; }
-.life-cast .is-speaking small { color: #944c3e; font-weight: 850; }
-.life-library-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
-.life-lesson-list { display: grid; gap: 12px; margin: 20px 0 0; }
-.life-lesson-card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px 12px; align-items: center; padding: 17px 22px 24px; background: var(--life-paper-button) center / 100% 100% no-repeat; min-height: 140px; text-align: left; }
-.life-step-number { width: 34px; font: 500 14px HomeMono, monospace; color: #8a604e; }
-.life-lesson-card > span:nth-child(2) { min-width: 0; }
-.life-lesson-card small, .life-lesson-card strong, .life-lesson-card > span:nth-child(2) > span { display: block; }
-.life-lesson-card small { font-size: 11px; line-height: 1.5; color: var(--life-muted); }
-.life-lesson-card strong { margin: 4px 0; font-size: 18px; line-height: 1.35; }
-.life-lesson-card > span:nth-child(2) > span { font-size: 12px; line-height: 1.65; color: var(--life-muted); }
-.life-lesson-card em { grid-column: 2; font-style: normal; font-size: 12px; line-height: 1.5; font-weight: 700; color: #8b5244; }
-.life-session-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; font-size: 11px; line-height: 1.5; color: var(--life-muted); }
-.life-session-meta > span:first-child { min-width: 0; }
-.life-session-meta > span:last-child { flex-shrink: 0; }
-.life-intro { display: grid; gap: 20px; }
-.life-intro .life-heading { text-align: center; }
-.life-intro-friend { width: 105px; height: 116px; margin: 4px auto 12px; }
-.life-goal { font-size: 16px; line-height: 1.65; font-weight: 700; color: var(--life-text); margin-bottom: 7px; }
-.life-expression-list { display: grid; gap: 14px; }
-.life-expression-list article { padding: 0 0 14px; border-bottom: 1px solid #eaece2; }
-.life-expression-list article:last-child { border-bottom: 0; padding-bottom: 0; }
-.life-expression-list strong { font-size: 18px; line-height: 1.5; }
-.life-expression-list p { margin-top: 6px; font-size: 13px; line-height: 1.75; color: var(--life-muted); }
-.life-actions { display: grid; gap: 5px; margin-top: 18px; background: var(--life-paper); }
-.life-save-status { margin: 8px 0 0; text-align: center; font-size: 11px; line-height: 1.5; color: var(--life-muted); }
-.life-save-status[data-save-phase="unreadable"], .life-save-status[data-save-phase="conflict"], .life-save-status[data-save-phase="pending"] { color: #8a5142; }
-.life-story-stage { display: grid; gap: 14px; }
-.life-story-stage .life-cast { width: 100%; margin-bottom: 0; }
-.life-dialogue { padding: 16px 6px 12px; min-height: 110px; text-align: center; }
-.life-dialogue > small { display: block; font-size: 12px; line-height: 1.4; font-weight: 800; color: #865949; margin-bottom: 10px; }
-.life-dialogue > p { color: var(--life-text); font-size: 18px; line-height: 1.75; }
-.life-story-position { margin-top: 6px; color: var(--life-muted); text-align: center; font: 500 11px/1.5 HomeMono, monospace; }
-.life-question-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 15px; }
-.life-question-copy { display: grid; grid-template-columns: minmax(0, 1fr) 76px; align-items: center; gap: 7px 10px; min-width: 0; align-content: start; }
-.life-question-title { grid-column: 1 / -1; outline: none; }
-.life-question-title small { display: block; font-size: 11px; line-height: 1.5; color: var(--life-muted); margin-bottom: 6px; }
-.life-question-title h3 { font-size: 19px; line-height: 1.5; letter-spacing: -.035em; margin: 0; }
-.life-context { grid-column: 1 / -1; font-size: 14px; line-height: 1.75; color: #52614f; }
-.life-context:empty { display: none; }
-.life-question-friend { grid-column: 2; grid-row: 3; width: 76px; height: 72px; margin: 0 auto; }
-.life-help { grid-column: 1; grid-row: 3; justify-self: start; text-align: left; text-decoration: underline; text-underline-offset: 4px; }
-.life-hint { grid-column: 1 / -1; color: #805344; font-size: 13px; line-height: 1.7; }
-.life-hint[hidden] { display: none; }
-.life-answer-area { min-width: 0; }
-.life-choices { display: grid; gap: 8px; }
-.life-choice { min-height: 54px; padding: 10px 20px 15px; background: var(--life-paper-button) center / 100% 100% no-repeat; font-size: 15px; line-height: 1.45; font-weight: 750; text-align: center; }
-.life-choice:disabled { opacity: 1; }
-.life-choice.is-chosen { background-image: var(--life-blush); color: #774e3c; }
-.life-choice.is-correct { background-image: var(--life-cream); color: #405e3e; }
-.life-choice.is-chosen.is-correct { background-image: var(--life-blush); }
-.life-feedback { margin-top: 12px; padding: 0 3px; color: #52614f; font-size: 13px; line-height: 1.65; }
-.life-feedback strong { display: block; font-size: 14px; color: #3e6144; }
-.life-feedback p { margin-top: 5px; }
-.life-feedback small { display: block; font-size: 11px; line-height: 1.55; margin-top: 6px; color: var(--life-muted); }
-.life-complete { text-align: center; }
-.life-complete h3, .life-review-summary h3 { margin: 10px 0; font-size: 22px; line-height: 1.4; letter-spacing: -.035em; color: var(--life-text); }
-.life-complete p + p { margin-top: 10px; }
-.life-complete-score { font-size: 12px; }
-.life-pack-stamp { padding: 12px 18px 17px; background: var(--life-cream) center / 100% 100% no-repeat; font-size: 13px; color: #665940; }
-.life-review-summary { text-align: center; }
-.life-review-topics { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
-.life-review-topics span { padding: 9px 14px 13px; background: var(--life-paper-button) center / 100% 100% no-repeat; font-size: 11px; line-height: 1.45; }
-@container life-sheet (min-width: 540px) {
-  .life-pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .life-intro { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: center; gap: 28px; }
-  .life-pack-card { grid-template-columns: 64px minmax(0, 1fr) 14px; gap: 10px; }
-}
-/* Effective layout is inherited from the selected app frame, including on PC. */
-[data-layout="landscape"] #world-panel[class*="life-"] { width: min(var(--shell-width), 840px); }
-[data-layout="landscape"] .life-question-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-[data-layout="landscape"] .life-story-stage { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: 24px; }
-[data-layout="landscape"] .life-dialogue { text-align: left; }
-[data-layout="landscape"] .life-actions { grid-template-columns: minmax(0, 1fr) minmax(130px, .65fr); gap: 10px; align-items: center; }
-[data-layout="landscape"] .life-actions > :only-child { grid-column: 1 / -1; }
-[data-layout="landscape"] .life-actions > :nth-child(3) { grid-column: 1 / -1; }
-#world-panel.life-question-panel { display: flex; flex-direction: column; height: min(calc(var(--shell-height) - 20px - var(--safe-top) - var(--safe-bottom)), calc(100dvh - 20px)); overflow: hidden; }
-#world-panel.life-question-panel:not([open]) { display: none; }
-#world-panel.life-question-panel .panel-header { flex-shrink: 0; }
-#world-panel.life-question-panel #panel-content { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
-#world-panel.life-question-panel .life-session-meta { flex-shrink: 0; }
-#world-panel.life-question-panel .life-question-layout { flex: 1 1 0; min-height: 0; overflow: auto; padding: 3px 4px; margin: -3px -4px; scrollbar-width: thin; }
-#world-panel.life-question-panel .life-actions { flex-shrink: 0; padding-top: 10px; margin-top: 8px; }
-#world-panel.life-question-panel .life-save-status { flex-shrink: 0; }
-@media(max-width: 359px) {
-  #world-panel[class*="life-"] { padding-left: 16px; padding-right: 16px; }
-  #world-panel[class*="life-"] .panel-header h2 { font-size: 21px; }
-  .life-pack-card { grid-template-columns: 53px minmax(0, 1fr) 12px; gap: 9px; padding-left: 13px; padding-right: 13px; }
-  .life-card-art .life-friend { width: 53px; height: 76px; }
-  .life-pack-card strong { font-size: 17px; }
-  .life-lesson-card { padding-left: 16px; padding-right: 16px; gap: 9px; }
-  .life-cast > div .life-friend { height: 104px; }
-  .life-cast > div:first-child .life-friend { height: 95px; }
-  .life-cast > div:nth-child(3) .life-friend { height: 100px; }
-  .life-dialogue > p { font-size: 17px; }
-  .life-question-title h3 { font-size: 18px; }
-  .life-question-friend { height: 61px; }
-  .life-choice { font-size: 14px; padding-left: 16px; padding-right: 16px; }
-}
-@media(max-height: 420px) {
-  [data-layout="landscape"] #world-panel[class*="life-"] { max-height: calc(var(--shell-height) - 8px - var(--safe-top) - var(--safe-bottom)); padding: 8px 18px; border-radius: 16px; }
-  [data-layout="landscape"] #world-panel[class*="life-"] .panel-header { min-height: 44px; margin-bottom: 5px; }
-  [data-layout="landscape"] #world-panel[class*="life-"] .panel-header h2 { font-size: 18px; margin-top: 0; }
-  [data-layout="landscape"] #world-panel[class*="life-"] .panel-header .eyebrow { display: none; }
-  [data-layout="landscape"] .life-session-meta { font-size: 11px; line-height: 1.4; margin-bottom: 5px; }
-  [data-layout="landscape"] .life-actions { margin-top: 7px; gap: 8px; }
-  [data-layout="landscape"] #world-panel[class*="life-"] .felt-button { min-height: 44px; padding: 5px 20px 10px; font-size: 13px; }
-  [data-layout="landscape"] #world-panel[class*="life-"] .plain-button { min-height: 44px; }
-  [data-layout="landscape"] .life-save-status { margin-top: 3px; line-height: 1.4; }
-  [data-layout="landscape"] .life-story-stage { gap: 18px; }
-  [data-layout="landscape"] .life-story-stage .life-cast { gap: 4px; }
-  [data-layout="landscape"] .life-story-stage .life-friend { height: 106px; }
-  [data-layout="landscape"] .life-story-stage .life-cast > div:first-child .life-friend { height: 95px; }
-  [data-layout="landscape"] .life-story-stage .life-cast > div:nth-child(3) .life-friend { height: 101px; }
-  [data-layout="landscape"] .life-dialogue { min-height: 0; padding: 2px 0; }
-  [data-layout="landscape"] .life-dialogue > p { font-size: 16px; line-height: 1.65; }
-  [data-layout="landscape"] .life-dialogue > small { margin-bottom: 6px; font-size: 11px; }
-  [data-layout="landscape"] .life-story-position { margin-top: 3px; }
-  [data-layout="landscape"] #world-panel.life-question-panel { height: calc(var(--shell-height) - var(--safe-top) - var(--safe-bottom)); max-height: 100dvh; border-radius: 0; }
-  [data-layout="landscape"] #world-panel.life-question-panel .life-question-layout { overflow: visible; gap: 18px; align-items: stretch; }
-  [data-layout="landscape"] .life-question-copy, [data-layout="landscape"] .life-answer-area { overflow-y: auto; min-height: 0; scrollbar-width: thin; padding: 2px 4px; margin: -2px -4px; }
-  [data-layout="landscape"] .life-question-copy { grid-template-columns: minmax(0, 1fr) 48px; gap: 5px 8px; }
-  [data-layout="landscape"] .life-question-title small { margin-bottom: 3px; }
-  [data-layout="landscape"] .life-question-title h3 { font-size: 16px; line-height: 1.45; }
-  [data-layout="landscape"] .life-context { font-size: 13px; line-height: 1.6; }
-  [data-layout="landscape"] .life-question-friend { width: 48px; height: 44px; }
-  [data-layout="landscape"] #world-panel.life-question-panel .life-help { min-height: 44px; padding: 4px 0; }
-  [data-layout="landscape"] .life-hint { font-size: 12px; line-height: 1.6; }
-  [data-layout="landscape"] .life-choices { gap: 4px; }
-  [data-layout="landscape"] .life-choice { min-height: 44px; padding: 5px 18px 9px; font-size: 13px; line-height: 1.4; }
-  [data-layout="landscape"] .life-feedback { margin-top: 6px; font-size: 12px; line-height: 1.5; }
-  [data-layout="landscape"] .life-feedback strong { font-size: 12px; line-height: 1.5; }
-  [data-layout="landscape"] .life-feedback p { margin-top: 3px; }
-  [data-layout="landscape"] .life-feedback > small { display: none; }
-  [data-layout="landscape"] #world-panel.life-question-panel .life-actions { padding-top: 3px; margin-top: 4px; }
-  [data-layout="landscape"] .life-intro-friend { height: 82px; width: 76px; }
-  [data-layout="landscape"] .life-complete .life-cast { margin-bottom: 5px; }
-  [data-layout="landscape"] .life-complete .life-cast > .life-friend { height: 62px; width: 70px; }
-  [data-layout="landscape"] .life-complete h3, [data-layout="landscape"] .life-review-summary h3 { font-size: 18px; margin: 5px 0; }
-  [data-layout="landscape"] .life-complete, [data-layout="landscape"] .life-review-summary { font-size: 12px; line-height: 1.6; }
-}
-@media(prefers-reduced-motion: reduce) {
-  .life-pack-card:active, .life-lesson-card:active, .life-choice:not(:disabled):active { transform: none; }
+#world-panel[class*="life-"]{container:life-sheet / inline-size}
+#world-panel[class*="life-"] #panel-content{min-width:0}
+/* 누르는 곳은 44px 이상. 부품마다 높이를 따로 주므로 이 규칙은 가장 약하게 둔다. */
+:where(#world-panel[class*="life-"]) button{min-width:44px;min-height:44px}
+#world-panel[class*="life-"] button:disabled{cursor:default}
+#world-panel[class*="life-"] #panel-content>.life-tutor{margin:0 0 18px}
+#world-panel[class*="life-"] .close-button{width:44px;height:44px}
+#panel-content[data-reduced=true] *{transition:none!important}
+/* 흰 알약·선 알약의 화살표는 글자 대신 선 아이콘(튜터 고르기와 같은 손) */
+#world-panel[class*="life-"] :is(.felt-button,.plain-button)>span[aria-hidden],.study-form .felt-button>span[aria-hidden]{display:inline-block;flex-shrink:0;width:17px;height:17px;font-size:0;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-heading{outline:none}
+.life-hub>.life-heading>p{font-size:15.5px;line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.life-library-note{font-size:13px;line-height:1.5;font-weight:550;color:var(--w-ink-3)}
+/* 영문 모노 라벨 + 28px 선. 한글은 모노로 쓰지 않는다. */
+.life-section-label{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+.life-section-label::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+.life-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.life-section-head>.life-section-label{margin:0}
+.life-count{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-2);white-space:nowrap}
+
+/* ── 포스터: 코랄 면 + 촬영 조명 + 결 + 흰 인화지 펠트 사진 + 큰 한글 900 ── */
+.life-poster{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"label print" "word print" "sub sub" "meter meter" "action action";align-items:end;column-gap:14px;width:100%;margin:0;padding:18px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);text-align:left;word-break:keep-all}
+.life-poster::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-studio)}
+.life-poster::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.life-poster>.w-print{grid-area:print;align-self:start;width:112px;margin:-2px -2px 8px 0}
+.life-poster-label{font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:rgba(30,14,10,.62)}
+.life-poster-word{display:block;margin:14px 0 2px;font-size:34px;line-height:1.04;font-weight:var(--wt-poster);letter-spacing:-.05em;color:var(--w-on-face);text-wrap:balance}
+.life-poster-sub{margin:8px 0 0;font-size:14px;line-height:1.5;font-weight:var(--wt-label);color:rgba(30,14,10,.76);text-wrap:pretty}
+.life-poster>.life-poster-label{grid-area:label;align-self:start}
+.life-poster>.life-poster-word{grid-area:word}
+.life-poster>.life-poster-sub{grid-area:sub}
+.life-poster>.life-meter{grid-area:meter;margin-top:12px}
+.life-poster>.felt-button{grid-area:action;width:100%;margin-top:16px;box-shadow:0 10px 24px rgba(30,14,10,.22)}
+/* 1px 진행 막대 + 「n / m」 */
+.life-meter{display:flex;align-items:center;gap:10px;width:100%}
+.life-meter>span{position:relative;flex:1;height:1px;background:rgba(30,14,10,.22)}
+.life-meter>span>i{position:absolute;left:0;top:0;height:1px;background:var(--w-on-face)}
+.life-meter>b{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.06em;color:rgba(30,14,10,.72);white-space:nowrap}
+
+/* ── 배우기 허브 ── */
+.life-hub{display:grid;gap:22px}
+.life-now{min-height:228px}
+.life-now>.w-print{width:124px}
+.life-pack-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.life-pack-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:12px;min-height:212px;padding:14px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);text-align:left;word-break:keep-all;transition:transform .14s var(--w-ease),box-shadow .2s var(--w-ease)}
+.life-pack-card::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-studio)}
+.life-pack-card::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.life-pack-card:hover{box-shadow:0 0 0 4px color-mix(in srgb,var(--w-glow) 28%,transparent)}
+.life-pack-card:active{transform:scale(.98)}
+.life-pack-card>.w-print{position:absolute;z-index:-1;top:12px;right:12px;width:74px}
+/* 「지금 할 일」 포스터와 같은 팩: 같은 사진이 두 번 나오는 대신 「지금」 표시로 둘을 잇는다 */
+.life-pack-card[data-current=true]{box-shadow:inset 0 0 0 2px var(--w-on-face)}
+.life-pack-now{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 10px;border-radius:999px;background:rgba(8,9,12,.72);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label,550)}
+.life-pack-copy{display:grid;gap:4px;min-width:0}
+.life-pack-word{display:block;font-size:34px;line-height:.98;font-weight:var(--wt-poster);letter-spacing:calc(-.085em + var(--len,3) * .01em)}
+.life-pack-title{font-size:14px;line-height:1.4;font-weight:600;color:rgba(30,14,10,.78);text-wrap:balance}
+.life-pack-card[data-state=done] .life-meter>b::before,.life-pack-card[data-state=active] .life-meter>b::before{content:'';display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;vertical-align:1px;background:var(--w-on-face)}
+.life-pack-card[data-state=active] .life-meter>b::before{background:transparent;box-shadow:inset 0 0 0 1.5px var(--w-on-face)}
+/* 목록 줄: 흰 인화지 48px → 제목 16/650 + 설명 → 화살표 */
+.life-rows{display:grid}
+.life-row{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink)}
+.life-rows>.life-section-label+.life-row{border-top:1px solid var(--w-line)}
+.life-row::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-row:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.w-print.life-row-print{width:48px;flex-shrink:0;padding:3px;border-radius:9px;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.32)}
+.w-print.life-row-print img{border-radius:6px}
+.life-row-copy{display:grid;gap:3px;flex:1;min-width:0}
+.life-row-copy strong{font-size:16px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-row-copy small{font-size:13.5px;line-height:1.45;color:var(--w-ink-3)}
+.life-row-state{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;font-size:13px;font-weight:var(--wt-label);color:var(--w-check-text)}
+
+/* ── 팩 · 이야기 모음 · 카페 방문 목록 ── */
+#world-panel.life-library-panel #panel-content{display:grid;align-content:start;gap:22px}
+#world-panel.life-library-panel #panel-content>.life-tutor{margin:0}
+.life-pack-head{display:grid;gap:10px}
+.life-pack-poster{min-height:204px}
+.life-pack-poster .life-poster-word{font-size:56px;line-height:.95;letter-spacing:calc(-.085em + var(--len,3) * .01em)}
+.life-pack-description{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+.life-poster>.life-pack-description{color:rgba(30,14,10,.76);font-size:14px}
+.life-list{display:grid}
+.life-lesson-list{display:grid;border-top:1px solid var(--w-line)}
+.life-lesson-card{display:grid;grid-template-columns:40px minmax(0,1fr) 16px;grid-template-areas:"lead copy arrow" "lead state arrow";align-items:center;gap:6px 14px;width:100%;min-height:88px;padding:14px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink);transition:background .18s var(--w-ease)}
+.life-lesson-card::after{content:'';grid-area:arrow;width:16px;height:16px;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-lesson-card:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.life-lesson-card>:first-child{grid-area:lead}
+.life-lesson-card>span:nth-child(2){grid-area:copy;display:grid;gap:3px;min-width:0}
+.life-lesson-card small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-lesson-card strong{font-size:16px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-lesson-card>span:nth-child(2)>span{font-size:13.5px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.life-lesson-card>em{grid-area:state;display:inline-flex;align-items:center;gap:8px;font-style:normal;font-size:13px;line-height:1.4;font-weight:600;color:var(--w-ink-2)}
+.life-lesson-card>em::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
+.life-lesson-card[data-state=completed]>em{color:var(--w-ink-3)}
+.life-lesson-card[data-state=completed]>em::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.life-lesson-card[data-state=started]>em::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.life-lesson-card[data-now]>em{color:var(--w-face-text)}
+.life-lesson-card[data-now]>em::before{background:var(--w-face);box-shadow:0 0 8px rgba(249,104,89,.6)}
+.life-step-number{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 12px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-2)}
+.life-lesson-card[data-state=completed] .life-step-number{background:var(--w-s3);box-shadow:none;color:var(--w-ink)}
+.life-lesson-card[data-now] .life-step-number{background:var(--w-face);box-shadow:none;color:var(--w-on-face)}
+.life-story-card{grid-template-columns:48px minmax(0,1fr) 16px}
+.life-library-footer{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px}
+.cafe-library-title{margin:0 0 12px;font-size:17px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.life-list>.life-section-label+.cafe-library-title{margin-top:-2px}
+/* 카페 입구 카드: 승인된 카페 방 그림을 반경 22 사진으로 */
+.cafe-pack-preview{overflow:hidden;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-pack-preview>img{display:block;width:100%;height:176px;object-fit:cover;object-position:50% 58%}
+.cafe-pack-preview>div{display:grid;gap:6px;padding:16px 18px 18px}
+.cafe-pack-preview small{font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-face-text)}
+.cafe-pack-preview h3{margin:0;font-size:24px;line-height:1.3;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.cafe-pack-preview p{font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-pack-preview .felt-button{width:100%;margin-top:10px}
+
+/* ── 집중 판: 레슨 · 이야기 · 문제 · 복습 · 카페 · 완료 ── */
+#world-panel[class*="life-"]:not(.life-library-panel){inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-width:100vw;max-height:100dvh;padding:calc(10px + var(--safe-top)) var(--life-pad) 0;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
+#world-panel[class*="life-"]:not(.life-library-panel):not([open]){display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .sheet-handle{display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header{flex-shrink:0;align-items:center;min-height:48px;margin:0 0 4px}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header>div{padding-top:0}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-eyebrow{display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header h2{margin:0;font-size:17px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#world-panel:is(.life-complete-panel,.life-review-complete-panel,.life-cafe-complete-panel) .panel-header h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#world-panel:is(.life-complete-panel,.life-review-complete-panel,.life-cafe-complete-panel) .panel-header{justify-content:flex-end}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:0 calc(var(--life-pad) * -1);padding:0 var(--life-pad);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;scroll-padding:64px 0 172px}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-content>*{flex-shrink:0}
+#world-panel[class*="life-"]:not(.life-library-panel)>.home-toast{position:absolute;left:50%;bottom:calc(132px + var(--safe-bottom));z-index:6;width:max-content;max-width:calc(100% - 32px);margin:0;transform:translateX(-50%)}
+/* 맨 위: 진행 막대 + 팩·단계 + 「2 / 9」 (스크롤해도 남는다) */
+.life-session-meta,.cafe-session-meta{order:-1;position:sticky;top:0;z-index:4;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 14px;margin:0 calc(var(--life-pad,20px) * -1) 14px;padding:6px var(--life-pad,20px) 12px;background:var(--w-panel);font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-session-meta::after,.cafe-session-meta::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--w-panel),transparent);pointer-events:none}
+.life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1/-1}
+.life-session-meta>span:not(.life-progress),.cafe-session-meta>span:not(.life-progress){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.life-progress{position:relative;display:block;height:4px;border-radius:999px;background:var(--w-line-2);overflow:hidden}
+.life-progress>i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--w-ink)}
+/* 아래 고정: 흰 알약 하나 + 조용한 링크 */
+.life-actions{display:grid;gap:8px;margin-top:24px}
+.life-actions>.quiet-button{justify-self:center}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-actions{position:sticky;bottom:0;z-index:4;margin:auto calc(var(--life-pad) * -1) 0;padding:20px var(--life-pad) 6px;background:linear-gradient(180deg,transparent,var(--w-panel) 20px)}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:58px;font-size:16.5px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 14px 34px rgba(0,0,0,.3)}
+#world-panel[class*="life-"] .life-actions .felt-button:disabled{opacity:1;background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+#world-panel[class*="life-"] .life-actions .felt-button:disabled>span[aria-hidden]{display:none}
+.life-save-status{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 0;font-size:13px;line-height:1.5;color:var(--w-ink-3);text-align:center}
+.life-save-status::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.5)}
+.life-save-status:is([data-save-phase=saving],[data-save-phase=pending],[data-save-phase=loading],[data-save-phase=offline])::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.life-save-status:is([data-save-phase=unsaved],[data-save-phase=unreadable],[data-save-phase=conflict],[data-save-phase=stopped]){color:var(--w-alert-text)}
+.life-save-status:is([data-save-phase=unsaved],[data-save-phase=unreadable],[data-save-phase=conflict],[data-save-phase=stopped])::before{background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.55)}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{margin:0;padding:2px 0 calc(14px + var(--safe-bottom))}
+#world-panel.life-library-panel .life-save-status{margin-top:0}
+
+/* ── 레슨 소개: 오늘 만날 표현 ── */
+.life-intro{display:grid;gap:22px;align-content:start}
+.life-kicker{display:block;margin-bottom:8px;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-goal{font-size:24px;line-height:1.35;font-weight:var(--wt-display);letter-spacing:var(--track-display);color:var(--w-ink);text-wrap:balance}
+.life-expression-list{display:grid}
+.life-expression-list article{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--w-line)}
+.life-expression-list article:last-child{border-bottom:1px solid var(--w-line)}
+.life-expression-index{padding-top:11px;font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-3)}
+.life-expression-list strong{display:block;font-size:24px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:-.02em;color:var(--w-ink)}
+.life-expression-list p{margin-top:4px;font-size:14px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+
+/* ── 이야기: 세 친구는 무대에, 말하는 친구만 밝게. 대사는 흰 말풍선 ── */
+.life-story-stage{display:grid;gap:18px;align-content:start}
+.life-cast{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin:0}
+.life-cast>div{flex:1 1 0;min-width:0;max-width:120px;text-align:center;opacity:.38;transition:opacity .2s var(--w-ease)}
+.life-cast>div.is-speaking{opacity:1}
+.life-story-stage[data-speaker=narrator] .life-cast>div{opacity:.7}
+.life-friend{display:block;object-fit:contain;max-width:100%;height:auto}
+.life-cast .life-friend{width:100%;height:108px;margin:0 auto;filter:drop-shadow(0 14px 14px rgba(0,0,0,.42))}
+.life-cast>div:first-child .life-friend{height:96px}
+.life-cast>div:nth-child(3) .life-friend{height:104px}
+.life-cast small{display:block;margin-top:8px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-cast .is-speaking small{color:var(--w-ink);font-weight:650}
+.life-dialogue{--tail:50%;position:relative;padding:16px 20px 18px;border-radius:22px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 34px rgba(0,0,0,.3);outline:none}
+.life-dialogue::before{content:'';position:absolute;top:-6px;left:var(--tail);width:14px;height:14px;margin-left:-7px;border-radius:3px;background:inherit;transform:rotate(45deg)}
+.life-dialogue[data-speaker=mongle]{--tail:calc(50% - min(128px,(100% - 16px) / 3 + 8px))}
+.life-dialogue[data-speaker=marine]{--tail:calc(50% + min(128px,(100% - 16px) / 3 + 8px))}
+.life-dialogue>small{display:block;margin-bottom:6px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:color-mix(in srgb,var(--w-on-ink) 56%,transparent)}
+.life-dialogue>p{font-size:22px;line-height:1.55;font-weight:var(--wt-label);letter-spacing:-.015em;text-wrap:pretty}
+.life-dialogue[data-speaker=narrator]{background:var(--w-s1);color:var(--w-ink-2);box-shadow:var(--w-card-edge)}
+.life-dialogue[data-speaker=narrator]::before{display:none}
+.life-dialogue[data-speaker=narrator]>small{color:var(--w-ink-3)}
+.life-dialogue[data-speaker=narrator]>p{font-size:20px;font-weight:var(--wt-body)}
+
+/* ── 문제: 상황 → 큰 한국어 선택지 줄(56px+, 고르면 흰 바탕) → 판정 띠 ── */
+.life-question-layout{display:grid;gap:22px;align-content:start}
+.life-question-copy{display:grid;gap:10px;min-width:0;align-content:start}
+.life-question-title{outline:none}
+.life-question-title small{display:block;margin-bottom:8px;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-question-title h3{margin:0;font-size:24px;line-height:1.38;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.life-context{font-size:15.5px;line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.life-context:empty{display:none}
+.life-help{justify-self:start;margin-left:-6px}
+.life-help:disabled{opacity:.42}
+.life-hint{position:relative;padding:14px 16px 14px 36px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.life-hint::before{content:'';position:absolute;left:17px;top:22px;width:7px;height:7px;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
+.life-hint[hidden]{display:none}
+/* 답한 뒤에는 판정 띠가 같은 이유를 말하므로 도움 상자는 접는다 */
+.life-question-layout:has(.life-feedback) .life-hint{display:none}
+.life-answer-area{display:grid;gap:12px;min-width:0;align-content:start}
+.life-choices{display:grid;gap:10px}
+.life-choice{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:64px;padding:13px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;text-align:left;word-break:keep-all;transition:background .18s var(--w-ease),color .18s var(--w-ease),box-shadow .2s var(--w-ease),transform .12s var(--w-ease)}
+.life-choice>span{min-width:0;text-wrap:pretty}
+.life-choice:not(:disabled):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.life-choice:not(:disabled):active{transform:scale(.985)}
+.life-choice:disabled{opacity:1}
+.life-choice:disabled:not(.is-chosen):not(.is-correct){color:var(--w-ink-q)}
+.life-choice.is-chosen{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+/* 판정 뒤: 맞는 표현이 밝게(흰 바탕 + 체크), 내가 고른 오답은 어두운 칸에 코랄 테와 점 — 밝은 칸 둘이 겹치지 않게 */
+.life-choice.is-correct{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.life-choice.is-chosen:not(.is-correct){background:var(--w-s1);color:var(--w-ink);box-shadow:inset 0 0 0 1.5px rgba(249,104,89,.75)}
+.life-choice:is(.is-chosen,.is-correct)::after{content:'';flex-shrink:0;width:22px;height:22px;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/18px no-repeat;mask:var(--w-check) center/18px no-repeat}
+.life-choice.is-chosen:not(.is-correct)::after{width:9px;height:9px;margin-right:6px;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6);-webkit-mask:none;mask:none}
+/* 판정: 어두운 띠 하나(LED + 짧은 제목 + 이유). 카드 전체를 초록·빨강으로 칠하지 않는다. */
+.life-feedback{display:grid;padding:14px 16px 4px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px var(--w-line)}
+.life-feedback>strong{display:flex;align-items:center;gap:10px;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.life-feedback>strong::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+.life-feedback[data-result=assisted]>strong::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
+.life-feedback[data-result=retry]>strong::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+.life-explanation{margin-top:2px}
+.life-explanation>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;list-style:none}
+.life-explanation>summary::-webkit-details-marker{display:none}
+.life-explanation>summary::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.life-explanation[open]>summary::after{transform:rotate(180deg)}
+.life-explanation>summary:hover{color:var(--w-ink)}
+.life-explanation>p{padding:0 0 12px;font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.life-feedback>small{display:block;padding:12px 0;border-top:1px solid var(--w-line);font-size:13px;line-height:1.55;color:var(--w-ink-3)}
+#world-panel .life-feedback>.life-tutor-retry,#world-panel .cafe-conversation .life-tutor-retry{justify-self:start;display:inline-flex;align-items:center;min-height:44px;margin:0 0 12px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) 14px/1.3 var(--w-sans);color:var(--w-ink);text-align:left}
+#world-panel .life-feedback>.life-tutor-retry:hover,#world-panel .cafe-conversation .life-tutor-retry:hover{background:var(--w-s3)}
+
+/* ── 완료 · 복습 ── */
+.life-complete,.life-review-summary{display:grid;gap:18px;align-content:start;outline:none}
+.life-complete-poster{min-height:236px}
+.life-complete-copy{display:grid;gap:6px}
+.life-complete-copy h3{margin:0;font-size:20px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-complete-score{font-size:14px;line-height:1.5;color:var(--w-ink-3)}
+.life-complete-score b{margin-left:4px;font-family:var(--w-mono);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--w-ink)}
+.life-pack-stamp{justify-self:start;display:inline-flex;align-items:center;gap:8px;min-height:32px;margin-top:6px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:13px;font-weight:var(--wt-strong);color:var(--w-ok-text)}
+.life-pack-stamp::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.life-complete-note{font-size:13.5px;line-height:1.6;color:var(--w-ink-3)}
+.life-review-poster{min-height:220px}
+.life-review-poster .life-poster-word{font-size:30px}
+h3.life-poster-word,h3.life-poster-sub,p.life-poster-sub{margin-left:0;margin-right:0}
+h3.life-poster-sub{margin-bottom:0}
+.life-review-topics{display:flex;flex-wrap:wrap;gap:6px}
+.life-review-topics span{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-2)}
+.life-review-topics b{font-family:var(--w-mono);font-size:11px;font-weight:500;color:var(--w-ink-3)}
+
+/* ── 카페: 사진 무대 위에는 유리 캡슐만 ── */
+.cafe-focus{outline:none}
+.cafe-play-layout{display:grid;gap:20px;align-content:start;min-width:0}
+.cafe-world,.cafe-conversation{display:grid;gap:12px;align-content:start;min-width:0}
+.cafe-scene{position:relative;isolation:isolate;overflow:hidden;height:204px;border-radius:var(--w-r-lg);background:var(--cafe-room) center 62% / cover no-repeat;box-shadow:var(--w-card-edge)}
+.cafe-scene-table{background-position:15% 60%}
+.cafe-scene-table[data-cafe-seat=garden]{background-position:85% 60%}
+.cafe-place-label{position:absolute;left:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;line-height:1.2;font-weight:var(--wt-strong);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.cafe-place-label>span{font-weight:var(--wt-body);color:rgba(250,250,249,.68)}
+.cafe-place-label>span::before{content:'·';margin-right:6px}
+.cafe-friends{display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.cafe-scene>.cafe-friends{position:absolute;bottom:50px;left:12px;width:51%}
+.cafe-friends .life-friend{width:31%;height:86px;max-width:80px;filter:drop-shadow(0 6px 6px rgba(20,14,10,.3))}
+.cafe-friends .life-friend:first-child{height:75px}
+.cafe-friends .life-friend:last-child{height:79px}
+.cafe-scene-table[data-cafe-seat=garden]>.cafe-friends{left:auto;right:12px}
+.cafe-scene-table[data-cafe-seat=garden]>.cafe-tray{right:auto;left:12px}
+.cafe-cups{display:inline-flex;align-items:flex-end;justify-content:center;gap:0}
+.cafe-drink{display:block;flex-shrink:0;width:45px;height:60px;background:var(--cafe-drinks) 0 0 / 400% 100% no-repeat;filter:drop-shadow(0 2px 2px rgba(40,30,20,.18))}
+.cafe-drink-warm{background-position-x:33.333333%}
+.cafe-drink-tea{background-position-x:66.666667%}
+.cafe-drink-coldtea{background-position-x:66.666667%;position:relative}
+.cafe-ice{position:absolute;bottom:12%;right:-4%;width:46%;height:35%;background:var(--cafe-ice) center / contain no-repeat}
+.cafe-drink-takeout{background-position-x:100%}
+.cafe-tray{position:absolute;bottom:50px;right:12px;width:42%;min-height:72px;display:flex;justify-content:center;align-items:flex-end;padding:0 6px 8px;border-radius:16px;background:rgba(250,250,249,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cafe-tray .cafe-drink{width:50px;height:66px}
+.cafe-tray .cafe-cups{width:100%}
+.cafe-scene .cafe-tray[data-cafe-count="3"] .cafe-drink{width:33.333333%;max-width:46px;height:auto;aspect-ratio:3 / 4}
+.cafe-tray[data-cafe-drink=empty]::before{content:'주문 기다리는 중';align-self:center;padding:6px 4px 0;font-size:13px;line-height:1.3;font-weight:var(--wt-strong);color:#FAFAF9;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+.cafe-scene-caption{position:absolute;left:10px;right:10px;bottom:10px;z-index:2;padding:7px 12px;border-radius:12px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;line-height:1.45;font-weight:var(--wt-label);text-align:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+/* 나의 주문표 */
+.cafe-ticket{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 12px;padding:12px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-ticket small{grid-column:1/-1;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-ticket strong{min-width:0;font-size:16px;line-height:1.45;font-weight:var(--wt-title);color:var(--w-ink)}
+.cafe-ticket>span{font-size:13.5px;line-height:1.45;color:var(--w-ink-3);text-align:right}
+/* 대화 */
+.cafe-focus>small,.cafe-welcome-copy>small,.cafe-break-copy>small{display:block;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-conversation .cafe-focus h3{margin:6px 0 0;font-size:20px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);text-wrap:balance}
+.cafe-goal{margin:8px 0 0;font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+.cafe-menu-notice{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14px;line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink)}
+.cafe-menu-notice::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.cafe-staff{display:grid;gap:10px;justify-items:start;min-width:0}
+.cafe-staff>small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-staff>p:not(.cafe-speech-status){max-width:100%;padding:14px 18px 15px;border-radius:6px 20px 20px 20px;background:var(--w-ink);color:var(--w-on-ink);font-size:22px;line-height:1.5;font-weight:var(--wt-strong);letter-spacing:-.015em;text-wrap:pretty;box-shadow:0 14px 34px rgba(0,0,0,.28)}
+.cafe-staff>p[hidden]{display:none}
+.cafe-speech-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:52px;padding:0 20px 0 6px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15px;font-weight:var(--wt-strong);color:var(--w-ink);text-align:left}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]::before{content:'';width:40px;height:40px;flex-shrink:0;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]::after{content:'';position:absolute;left:16px;top:50%;width:20px;height:20px;margin-top:-10px;background:var(--w-ink);-webkit-mask:var(--life-play) center/contain no-repeat;mask:var(--life-play) center/contain no-repeat}
+#world-panel .cafe-speech-controls [data-life-cafe-speech][data-phase=playing]::before{background:var(--w-ink);box-shadow:none}
+#world-panel .cafe-speech-controls [data-life-cafe-speech][data-phase=playing]::after{background:var(--w-on-ink);-webkit-mask-image:var(--life-pause);mask-image:var(--life-pause)}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]:is([data-phase=ended],[data-phase=error],[data-phase=unavailable])::after{-webkit-mask-image:var(--life-retry);mask-image:var(--life-retry)}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]:hover{background:var(--w-s2)}
+.cafe-speech-status{font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+.cafe-friend-line{font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-friend-line>b{margin-right:6px;font-weight:650;color:var(--w-ink)}
+.cafe-repair-note,.cafe-review-note{display:flex;align-items:baseline;gap:9px;font-size:13.5px;line-height:1.55;color:var(--w-check-text)}
+.cafe-repair-note::before,.cafe-review-note::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5);transform:translateY(-1px)}
+.is-composing .cafe-friend-line{display:none}
+/* 내 말로 주문하기: 고르는 칸이 먼저 보이게 무대를 낮춘다 */
+@container life-sheet (max-width:619px){.is-composing .cafe-scene{height:148px}.is-composing .cafe-scene>.cafe-friends,.is-composing .cafe-tray{bottom:46px}.is-composing .cafe-friends .life-friend{height:64px}.is-composing .cafe-friends .life-friend:first-child{height:56px}.is-composing .cafe-friends .life-friend:last-child{height:60px}.is-composing .cafe-tray{min-height:58px}.is-composing .cafe-tray .cafe-drink{width:40px;height:53px}}
+/* 직원에게 할 말: 큰 한국어 줄, 고르면 흰 바탕 */
+.cafe-options{display:grid;gap:10px}
+.cafe-option{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:8px 16px 8px 8px;border:0;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);text-align:left;word-break:keep-all;transition:background .18s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
+.cafe-option>.cafe-cups{flex:0 0 58px;align-self:stretch;min-height:52px;align-items:center;border-radius:12px;background:rgba(250,250,249,.05)}
+.cafe-option .cafe-drink{width:30px;height:40px}
+.cafe-option .cafe-cups:has(.cafe-drink:nth-child(2)) .cafe-drink{width:24px;height:32px;margin:0 -2px}
+.cafe-option .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink{width:19px;height:26px;margin:0 -1px}
+.cafe-option>span:not(.cafe-cups){flex:1;min-width:0;font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;text-wrap:pretty}
+.cafe-option>small{flex-shrink:0;font-size:13px;line-height:1.3;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-option:not(:disabled):hover{background:var(--w-s2)}
+.cafe-option:not(:disabled):active{transform:scale(.985)}
+.cafe-option:disabled{opacity:1;cursor:default}
+.cafe-option:disabled:not(.is-chosen){color:var(--w-ink-q)}
+.cafe-option:disabled:not(.is-chosen)>.cafe-cups{opacity:.55}
+.cafe-option.is-chosen{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.cafe-option.is-chosen>.cafe-cups{background:rgba(8,9,12,.06)}
+.cafe-option.is-chosen>small{color:color-mix(in srgb,var(--w-on-ink) 58%,transparent)}
+.cafe-option:focus-visible,.study-option:has(input:focus-visible){outline:2px solid var(--w-ink);outline-offset:3px}
+/* 고르기 묶음(듣기/읽기 · 자리 · 음료·온도·잔 수): --w-s1 알약 안에서 고른 것만 흰 바탕 */
+.cafe-input-modes,.cafe-seats{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0;margin:32px 0 0;padding:4px;border:0;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-input-modes legend,.cafe-seats legend{position:absolute;top:-28px;left:2px;padding:0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+#world-panel :is(.cafe-input-modes,.cafe-seats,.cafe-composer) .plain-button{min-height:46px;padding:0 10px;border-radius:999px;background:transparent;box-shadow:none;font-size:15.5px;font-weight:var(--wt-strong);line-height:1.25;color:var(--w-ink-2)}
+#world-panel :is(.cafe-input-modes,.cafe-seats,.cafe-composer) .plain-button:not(:disabled):hover{color:var(--w-ink);background:var(--w-s2)}
+#world-panel :is(.cafe-input-modes,.cafe-seats,.cafe-composer) .plain-button[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
+#world-panel .cafe-composer .plain-button:disabled{opacity:.55}
+.cafe-composer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px}
+.cafe-composer fieldset{min-width:0;margin:0;padding:0;border:0}
+.cafe-composer fieldset:nth-child(3),.cafe-my-sentence{grid-column:1 / -1}
+.cafe-composer legend{margin:0 0 8px 2px;padding:0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-composer fieldset>div{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+/* 내가 만든 주문: 오른쪽 꼬리의 흰 말풍선(내 말) */
+.cafe-my-sentence{justify-self:end;max-width:94%;margin:2px 0 0;padding:14px 18px 15px;border-radius:20px 20px 6px 20px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 34px rgba(0,0,0,.28)}
+.cafe-my-sentence small{display:block;margin-bottom:4px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:color-mix(in srgb,var(--w-on-ink) 56%,transparent)}
+.cafe-my-sentence strong{display:block;font-size:24px;line-height:1.38;font-weight:var(--wt-title);letter-spacing:-.02em;text-wrap:balance}
+.cafe-my-sentence[data-complete=false]{background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.cafe-my-sentence[data-complete=false] small{color:var(--w-ink-3)}
+.cafe-my-sentence[data-complete=false] strong{font-size:16px;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.cafe-help{justify-self:start;margin-left:-6px}
+/* 들어가기 · 잠깐 앉기 */
+.cafe-welcome,.cafe-break{display:grid;gap:20px;align-content:start}
+.cafe-welcome-copy,.cafe-break-copy{display:grid;gap:10px;align-content:start}
+.cafe-welcome h3,.cafe-break h3{margin:0;font-size:24px;line-height:1.35;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.cafe-welcome-copy>p,.cafe-break-copy>p{font-size:15.5px;line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-break-copy>p:has(b){display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding:12px 0;border-top:1px solid var(--w-line);color:var(--w-ink)}
+.cafe-break-copy>p b,.cafe-opening-lines b,.cafe-ending-lines b{padding-top:2px;font-size:13px;line-height:1.4;font-weight:650;color:var(--w-ink-3)}
+.cafe-opening-lines,.cafe-ending-lines{display:grid;margin:4px 0;text-align:left}
+.cafe-opening-lines p,.cafe-ending-lines p{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;margin:0;padding:12px 0;border-top:1px solid var(--w-line);font-size:15.5px;line-height:1.6;color:var(--w-ink)}
+.cafe-soft-note{font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+/* 방문 완료: 영수증 */
+.cafe-complete{display:grid;gap:18px;align-content:start;text-align:left}
+.cafe-complete-copy{display:grid;gap:6px}
+.cafe-complete-copy h3{margin:0;font-size:20px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.cafe-complete-copy p{font-size:15.5px;line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-receipt{display:grid}
+.cafe-complete-orders{display:grid;border-top:1px dashed var(--w-line-2)}
+.cafe-complete-orders>div{display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-areas:"cups place" "cups label";align-items:center;column-gap:14px;padding:12px 0;border-bottom:1px dashed var(--w-line-2)}
+.cafe-complete-orders .cafe-cups{grid-area:cups;justify-content:center;min-height:56px;border-radius:12px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-complete-orders .cafe-drink{width:30px;height:40px}
+.cafe-complete-orders .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink{width:21px;height:28px}
+.cafe-complete-orders strong{grid-area:place;align-self:end;font-size:16px;line-height:1.4;font-weight:var(--wt-title)}
+.cafe-complete-orders span:not(.cafe-cups):not(.cafe-drink):not(.cafe-ice){grid-area:label;align-self:start;font-size:13.5px;line-height:1.45;color:var(--w-ink-3)}
+
+/* ── 학습 목표 · 도움 방식(나에게 맞는 한국어) ── */
+#world-panel.world-study-panel{padding-bottom:0;scroll-padding-bottom:168px}
+#world-panel.world-study-panel .close-button{width:44px;height:44px}
+.study-form{display:grid;gap:24px;max-width:680px;margin:0 auto;color:var(--w-ink)}
+.study-poster{min-height:196px}
+.study-poster>.w-print{width:104px}
+.study-print>i{display:block;aspect-ratio:1;border-radius:6px;background:#fff var(--life-print-goals,none) center / cover no-repeat}
+.study-poster .study-intro{font-size:14px;line-height:1.55}
+.study-form fieldset{min-width:0;margin:0;padding:0;border:0}
+.study-form legend,.study-field>strong,.study-today>strong{display:block;margin:0 0 12px;padding:0;font-size:16px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.study-options{display:grid;gap:8px}
+.study-option{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:0 16px 0 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15.5px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.study-option input{position:absolute;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.study-option::after{content:'';width:22px;height:22px;flex-shrink:0;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+.study-option:hover{background:var(--w-s2);color:var(--w-ink)}
+.study-option:has(input:checked){background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.study-option:has(input:checked)::after{border-radius:0;box-shadow:none;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/18px no-repeat;mask:var(--w-check) center/18px no-repeat}
+.study-field,.study-two-fields label{display:grid;gap:8px;min-width:0}
+.study-field>strong{margin-bottom:4px}
+.study-two-fields label{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.study-form select{-webkit-appearance:none;appearance:none;width:100%;min-height:54px;margin:0;padding:0 44px 0 16px;border:0;border-radius:var(--w-r-md);background:var(--w-s1) var(--w-chevron) right 16px center / 16px 16px no-repeat;box-shadow:var(--w-card-edge);font:var(--wt-strong) 15.5px/1.3 var(--w-sans);color:var(--w-ink);cursor:pointer}
+.study-form select:hover{background-color:var(--w-s2)}
+.study-form select option{background:var(--w-s2);color:var(--w-ink)}
+.study-today{display:grid;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-today>strong{margin-bottom:2px}
+.study-today>p{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:var(--w-ink-3)}
+.study-two-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 기억해도 될까요: 50×30 스위치 줄 */
+.study-consent{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;padding:16px 0;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);cursor:pointer}
+.study-consent span{font-size:15px;line-height:1.55;font-weight:var(--wt-strong);color:var(--w-ink);text-wrap:pretty}
+.study-consent input{-webkit-appearance:none;appearance:none;order:2;position:relative;flex-shrink:0;width:50px;height:30px;margin:0;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:pointer;transition:background .18s var(--w-ease)}
+.study-consent input::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.study-consent input:checked{background:var(--w-ink)}
+.study-consent input:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
+.study-consent input:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+.study-scope{font-size:13px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.study-save-status{min-height:20px;margin-top:-12px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+.study-save-status:empty{display:none}
+.study-form .life-actions{position:sticky;bottom:0;z-index:3;margin:-8px calc(var(--life-pad,20px) * -1) 0;padding:18px var(--life-pad,20px) calc(16px + var(--safe-bottom,0px));background:linear-gradient(180deg,transparent,var(--w-panel) 22px)}
+.study-form .life-actions .felt-button{min-height:58px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 14px 34px rgba(0,0,0,.3)}
+.study-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 18px;margin-top:-14px}
+.study-understanding{display:grid;gap:10px;margin:0 0 28px;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-understanding h3{margin:0;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.study-understanding ul{display:grid;margin:0;padding:0;list-style:none;border-top:1px solid var(--w-line)}
+.study-understanding li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--w-line)}
+.study-understanding li strong{font-size:15px;font-weight:var(--wt-strong)}
+.study-understanding li span{font-size:13.5px;color:var(--w-ink-3);text-align:right}
+.study-understanding>p{font-size:13.5px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+
+/* ── 넓은 판(가로 휴대폰 · PC 가로 틀): 두 단 ── */
+@container life-sheet (min-width:620px){
+  /* 넓은 판: 왼쪽은 상황·도움·판정 띠, 오른쪽은 선택지. 답한 뒤에도 스크롤 없이 함께 보이게. */
+  .life-question-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);column-gap:32px;row-gap:0;align-items:start}
+  .life-question-copy,.life-answer-area{display:contents}
+  .life-question-layout :is(.life-question-title,.life-context,.life-help,.life-hint,.life-feedback){grid-column:1;margin-bottom:12px}
+  .life-question-layout .life-choices{grid-column:2;grid-row:1 / span 12}
+  .cafe-play-layout{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:28px;align-items:start}
+  .cafe-welcome,.cafe-break{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+  .life-intro{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:32px;align-items:start}
+  .life-complete{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px 32px;align-items:start}
+  .life-complete>.life-poster{grid-row:1 / span 6}
+  .life-review-summary{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 28px}
+  .cafe-complete{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px 32px;align-items:start}
+  .cafe-complete>.life-poster{grid-row:1 / span 6}
+  /* 아래 막대: 흰 알약 옆에 선 알약 또는 조용한 링크를 한 줄로 */
+  .life-actions{grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:14px}
+  .life-actions>.quiet-button{justify-self:end;padding:0 10px}
+  .life-actions:has(>.plain-button)>.plain-button{min-height:58px;padding:0 26px}
+  .life-actions:has(>.plain-button)>.quiet-button{grid-column:1 / -1;justify-self:center}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding-bottom:132px}
 }
 
-/* The cafe uses physical felt sprites over the existing photographed room. */
-.cafe-focus { outline: none; }
-.cafe-focus > small, .cafe-welcome-copy > small, .cafe-break-copy > small, .cafe-complete > small { display: block; font-size: 11px; line-height: 1.5; color: #8a614a; font-weight: 750; }
-.cafe-focus h3, .cafe-welcome h3, .cafe-break h3 { font-size: 20px; line-height: 1.45; margin: 5px 0 10px; letter-spacing: -.035em; }
-.cafe-pack-preview { margin: 0 0 20px; overflow: hidden; border-radius: 18px; background: #f7f4eb; }
-.cafe-pack-preview > img { display: block; width: 100%; height: 170px; object-fit: cover; object-position: 50% 58%; }
-.cafe-pack-preview > div { padding: 14px 16px 18px; }
-.cafe-pack-preview small { color: #8a614a; font-size: 11px; font-weight: 750; }
-.cafe-pack-preview h3 { margin: 5px 0; font-size: 22px; line-height: 1.4; }
-.cafe-pack-preview p { font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
-.cafe-pack-preview .felt-button { width: 100%; }
-.cafe-library-title { font-size: 17px; margin: 22px 0 12px; letter-spacing: -.025em; }
-.cafe-opening-lines, .cafe-ending-lines { text-align: left; margin: 14px 0; padding: 0 2px; }
-.cafe-opening-lines p, .cafe-ending-lines p { font-size: 13px; line-height: 1.75; margin: 8px 0; }
-.cafe-opening-lines b, .cafe-ending-lines b { color: #8a614a; font-size: 11px; margin-right: 5px; }
-.cafe-goal { font-size: 13px; line-height: 1.65; margin: 0 0 12px; color: #59624f; }
-.cafe-menu-notice { padding: 9px 14px 13px; margin: 0 0 12px; font-size: 12px; line-height: 1.6; font-weight: 700; background: var(--life-cream) center / 100% 100% no-repeat; }
-#world-panel.life-cafe-panel { display: flex; flex-direction: column; height: min(calc(var(--shell-height) - 20px - var(--safe-top) - var(--safe-bottom)), calc(100dvh - 20px)); overflow: hidden; }
-#world-panel.life-cafe-panel:not([open]) { display: none; }
-#world-panel.life-cafe-panel .panel-header { flex-shrink: 0; margin-bottom: 10px; }
-#world-panel.life-cafe-panel #panel-content { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
-.cafe-welcome, .cafe-break { flex: 1 1 0; min-height: 0; overflow: auto; scrollbar-width: thin; }
-.cafe-welcome-copy, .cafe-break-copy { padding-top: 18px; }
-.cafe-welcome-copy > p, .cafe-break-copy > p { font-size: 14px; line-height: 1.75; margin: 8px 0; }
-.cafe-soft-note { color: #77806b; font-size: 12px !important; line-height: 1.65; }
-.cafe-scene { height: 196px; position: relative; isolation: isolate; overflow: hidden; border-radius: 18px; background: var(--cafe-room) center 62% / cover no-repeat; }
-.cafe-place-label { position: absolute; left: 12px; top: 10px; border-radius: 6px; padding: 6px 10px; font-size: 15px; font-weight: 850; color: #4a4734; background: #fffdf2ef; }
-.cafe-place-label > span { display: block; font-size: 10px; font-weight: 550; margin-top: 1px; color: #7a755d; }
-.cafe-friends { display: flex; align-items: flex-end; justify-content: center; gap: 5px; }
-.cafe-scene > .cafe-friends { position: absolute; bottom: 31px; left: 12px; width: 51%; }
-.cafe-friends .life-friend { width: 31%; height: 86px; max-width: 80px; filter: drop-shadow(0 4px 4px #4f463a2b); }
-.cafe-friends .life-friend:first-child { height: 75px; }
-.cafe-friends .life-friend:last-child { height: 79px; }
-.cafe-cups { display: inline-flex; align-items: flex-end; justify-content: center; gap: 0; }
-.cafe-drink { display: block; flex-shrink: 0; width: 45px; height: 60px; background: var(--cafe-drinks) 0 0 / 400% 100% no-repeat; filter: drop-shadow(0 2px 2px #5747361f); }
-.cafe-drink-warm { background-position-x: 33.333333%; }
-.cafe-drink-tea { background-position-x: 66.666667%; }
-.cafe-drink-coldtea { background-position-x: 66.666667%; position: relative; }
-.cafe-ice { position: absolute; bottom: 12%; right: -4%; width: 46%; height: 35%; background: var(--cafe-ice) center / contain no-repeat; }
-.cafe-drink-takeout { background-position-x: 100%; }
-.cafe-tray { position: absolute; bottom: 30px; right: 10px; width: 43%; min-height: 74px; display: flex; justify-content: center; align-items: flex-end; padding: 0 5px 12px; background: var(--life-cream) center bottom / 100% 72px no-repeat; }
-.cafe-tray .cafe-drink { width: 54px; height: 72px; }
-.cafe-tray .cafe-cups { width: 100%; }
-.cafe-scene .cafe-tray[data-cafe-count="3"] .cafe-drink { width: 33.333333%; max-width: 48px; height: auto; aspect-ratio: 3 / 4; }
-.cafe-tray[data-cafe-drink=empty]::before { content: '주문 기다리는 중'; font-size: 11px; color: #80735b; align-self: center; padding-top: 8px; }
-.cafe-scene-caption { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 10px; font-size: 11px; line-height: 1.45; text-align: center; color: #faf7e9; background: #413f30e8; }
-.cafe-scene-table { background-position: 15% 60%; }
-.cafe-scene-table[data-cafe-seat=garden] { background-position: 85% 60%; }
-.cafe-scene-table[data-cafe-seat=garden] > .cafe-friends { left: auto; right: 12px; }
-.cafe-scene-table[data-cafe-seat=garden] > .cafe-tray { right: auto; left: 10px; }
-.cafe-ticket { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; margin-top: 10px; padding: 9px 14px 14px; background: var(--life-paper-button) center / 100% 100% no-repeat; }
-.cafe-ticket small { font-size: 10px; color: #89806d; line-height: 1.4; }
-.cafe-ticket strong { font-size: 14px; line-height: 1.5; color: #61533e; }
-.cafe-ticket > span { font-size: 11px; line-height: 1.4; color: #797363; }
-.cafe-session-meta { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-shrink: 0; font-size: 11px; line-height: 1.5; color: #85806e; }
-.cafe-play-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; flex: 1 1 0; min-height: 0; overflow: auto; scrollbar-width: thin; padding: 2px 3px; margin: -2px -3px; }
-.cafe-world, .cafe-conversation { min-width: 0; }
-.cafe-conversation .cafe-focus h3 { font-size: 17px; line-height: 1.5; }
-.cafe-staff { padding: 11px 14px; background: #f4f2e9; border-radius: 14px; }
-.cafe-staff small { display: block; font-size: 11px; color: #8a715a; margin-bottom: 5px; font-weight: 750; }
-.cafe-staff p { font-size: 14px; line-height: 1.65; color: #3e493b; }
-.cafe-staff p[hidden] { display: none; }
-.cafe-speech-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 8px; }
-#world-panel .cafe-speech-controls .plain-button { min-height: 44px; font-size: 12px; padding: 7px 14px 12px; }
-.cafe-speech-status { font-size: 11px !important; color: #76806b !important; margin: 5px 0 0; }
-.cafe-input-modes { padding: 0; margin: 14px 0; border: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
-.cafe-input-modes legend { font-size: 12px; padding-bottom: 8px; }
-.cafe-input-modes [aria-pressed=true], .cafe-composer [aria-pressed=true] { background-image: var(--life-blush) !important; color: #874d3d; }
-.cafe-composer fieldset { padding: 0; border: 0; margin: 10px 0; }
-.cafe-composer { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 8px; }
-.cafe-composer fieldset:nth-child(3), .cafe-my-sentence { grid-column: 1 / -1; }
-.cafe-composer legend { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
-.cafe-composer fieldset > div { display: flex; gap: 5px; }
-#world-panel .cafe-composer .plain-button { flex: 1; min-height: 44px; font-size: 13px; padding: 6px 10px 12px; }
-.cafe-my-sentence { padding: 12px 16px 18px; margin-top: 14px; background: var(--life-cream) center / 100% 100% no-repeat; }
-.cafe-my-sentence small { display: block; font-size: 11px; color: #8a715a; margin-bottom: 5px; }
-.cafe-my-sentence strong { display: block; font-size: 16px; line-height: 1.6; }
-.is-composing .cafe-friend-line { display: none; }
-[data-layout=portrait] .is-composing { gap: 10px; }
-[data-layout=portrait] .is-composing .cafe-scene { height: 108px; }
-[data-layout=portrait] .is-composing .cafe-place-label { top: 4px; padding: 4px 8px; font-size: 11px; }
-[data-layout=portrait] .is-composing .cafe-place-label span { display: none; }
-[data-layout=portrait] .is-composing .cafe-friends .life-friend { height: 54px; }
-[data-layout=portrait] .is-composing .cafe-tray { min-height: 51px; padding-bottom: 7px; background-size: 100% 44px; }
-[data-layout=portrait] .is-composing .cafe-tray .cafe-drink { width: 35px; height: 47px; }
-[data-layout=portrait] .is-composing .cafe-tray[data-cafe-count="3"] .cafe-drink { width: 33.333333%; height: auto; }
-[data-layout=portrait] .is-composing .cafe-ticket { padding: 5px 14px 10px; gap: 0; margin-top: 4px; }
-[data-layout=portrait] .is-composing .cafe-ticket small { display: none; }
-[data-layout=portrait] .is-composing .cafe-ticket strong { font-size: 12px; }
-[data-layout=portrait] .is-composing .cafe-focus h3 { font-size: 15px; margin: 4px 0 8px; }
-[data-layout=portrait] .is-composing .cafe-options { margin-top: 5px; }
-#world-panel .cafe-submit { min-height: 48px; font-size: 14px; }
-.cafe-friend-line { font-size: 12px; line-height: 1.65; margin-top: 8px; color: #64715d; }
-.cafe-friend-line > b { color: #7b624d; font-size: 11px; margin-right: 5px; }
-.cafe-repair-note, .cafe-review-note { font-size: 11px; line-height: 1.6; color: #876348; margin: 8px 0; }
-.cafe-options { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; margin-top: 12px; }
-.cafe-options.cafe-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-.cafe-option { display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; padding: 7px 13px 12px; background: var(--life-paper-button) center / 100% 100% no-repeat; font-size: 13px; line-height: 1.5; text-align: left; color: #4c5645; }
-.cafe-option > span:last-child { min-width: 0; }
-.cafe-option > .cafe-cups { flex-shrink: 0; }
-.cafe-option.is-chosen { background-image: var(--life-blush); color: #8d4e3b; }
-.cafe-option:disabled { opacity: 1; }
-.cafe-option:focus-visible, .cafe-seats button:focus-visible { outline: 2px solid #84775e; outline-offset: -4px; }
-.cafe-menu .cafe-option { display: flex; flex-direction: column; justify-content: space-between; gap: 5px; padding: 9px 9px 17px; text-align: center; background-image: var(--life-cream); }
-.cafe-menu .cafe-option.is-chosen { background-image: var(--life-blush); }
-.cafe-menu .cafe-option > span:not(.cafe-cups) { font-size: 12px; font-weight: 750; }
-.cafe-menu .cafe-option small { font-size: 10px; color: #877a62; line-height: 1.4; }
-.cafe-menu .cafe-drink { width: 33px; height: 44px; }
-.cafe-menu .cafe-cups { max-width: 100%; gap: 0; }
-.cafe-menu .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink { width: 21px; height: 28px; }
-.cafe-responses .cafe-drink { width: 27px; height: 36px; }
-.cafe-seats { border: 0; padding: 0; margin: 12px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
-.cafe-seats legend { padding: 0 0 8px; font-size: 12px; font-weight: 650; }
-#world-panel .cafe-seats .plain-button { min-height: 44px; font-size: 12px; padding: 6px 8px 12px; }
-.cafe-seats [aria-pressed=true] { background-image: var(--life-blush) !important; color: #8d4e3b; }
-.cafe-help { margin-top: 5px; }
-.cafe-actions { flex-shrink: 0; margin-top: 12px; }
-.cafe-actions > .quiet-button { font-size: 11px !important; }
-#world-panel.life-cafe-panel .life-save-status { flex-shrink: 0; }
-.cafe-complete { text-align: center; }
-.cafe-complete > .cafe-friends { margin-bottom: 16px; }
-.cafe-complete > p { font-size: 14px; line-height: 1.75; margin-top: 8px; }
-.cafe-complete-orders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
-.cafe-complete-orders.is-single { grid-template-columns: minmax(0, 1fr); max-width: 320px; margin-left: auto; margin-right: auto; }
-.cafe-complete-orders > div { display: grid; justify-items: center; gap: 5px; padding: 14px 8px 20px; background: var(--life-cream) center / 100% 100% no-repeat; }
-.cafe-complete-orders .cafe-drink { width: 48px; height: 64px; }
-.cafe-complete-orders strong { font-size: 13px; }
-.cafe-complete-orders span:not(.cafe-cups):not(.cafe-drink) { font-size: 11px; color: #7c735e; }
-[data-layout=landscape] .cafe-play-layout { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 18px; overflow: hidden; }
-[data-layout=landscape] .cafe-world, [data-layout=landscape] .cafe-conversation { min-height: 0; overflow-y: auto; padding: 2px 3px; scrollbar-width: thin; }
-[data-layout=landscape] .cafe-welcome, [data-layout=landscape] .cafe-break { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: center; }
-[data-layout=landscape] .cafe-welcome-copy, [data-layout=landscape] .cafe-break-copy { padding-top: 0; }
-@media(max-height:420px) {
- [data-layout=landscape] #world-panel.life-cafe-panel { height: calc(var(--shell-height) - var(--safe-top) - var(--safe-bottom)); max-height: 100dvh; border-radius: 0; }
- [data-layout=landscape] #world-panel.life-cafe-panel .panel-header { margin-bottom: 4px; }
- [data-layout=landscape] .cafe-session-meta { margin-bottom: 4px; }
- [data-layout=landscape] .cafe-scene { height: 143px; }
- [data-layout=landscape] .cafe-place-label { top: 5px; left: 8px; font-size: 12px; padding: 4px 8px; }
- [data-layout=landscape] .cafe-place-label > span { display: none; }
- [data-layout=landscape] .cafe-friends .life-friend { height: 65px; }
- [data-layout=landscape] .cafe-friends .life-friend:first-child { height: 57px; }
- [data-layout=landscape] .cafe-friends .life-friend:last-child { height: 60px; }
- [data-layout=landscape] .cafe-tray .cafe-drink { width: 43px; height: 58px; }
- [data-layout=landscape] .cafe-tray { padding-bottom: 8px; min-height: 60px; background-size: 100% 50px; }
- [data-layout=landscape] .cafe-ticket { margin-top: 5px; padding: 5px 12px 10px; gap: 0; }
- [data-layout=landscape] .cafe-ticket strong { font-size: 12px; }
- [data-layout=landscape] .cafe-ticket small { display: none; }
- [data-layout=landscape] .cafe-conversation .cafe-focus h3 { font-size: 14px; margin: 3px 0 8px; }
- [data-layout=landscape] .cafe-staff { padding: 8px 12px; }
- [data-layout=landscape] .cafe-staff p { font-size: 12px; line-height: 1.55; }
- [data-layout=landscape] .cafe-friend-line { margin-top: 6px; font-size: 11px; }
- [data-layout=landscape] .cafe-options { margin-top: 8px; }
- [data-layout=landscape] .cafe-menu .cafe-option { padding: 8px 8px 14px; }
- [data-layout=landscape] .cafe-menu .cafe-option > span:not(.cafe-cups) { font-size: 11px; }
- [data-layout=landscape] .cafe-option { font-size: 12px; }
- [data-layout=landscape] .cafe-actions { margin-top: 5px; }
- [data-layout=landscape] .cafe-welcome-copy > p, [data-layout=landscape] .cafe-break-copy > p { font-size: 12px; line-height: 1.6; margin: 5px 0; }
- [data-layout=landscape] .cafe-welcome h3, [data-layout=landscape] .cafe-break h3 { font-size: 19px; margin: 4px 0 8px; }
- [data-layout=landscape] .cafe-soft-note { font-size: 11px !important; }
- [data-layout=landscape] .cafe-complete-orders { margin: 10px auto; max-width: 380px; }
+/* ── 작은 휴대폰 ── */
+@media(max-width:359px){
+  #world-panel[class*="life-"],.world-study-panel{--life-pad:16px}
+  .life-poster{padding:16px}
+  .life-poster>.w-print{width:96px}
+  .life-now>.w-print{width:104px}
+  .life-poster-word{font-size:30px}
+  .life-pack-poster .life-poster-word{font-size:48px}
+  .life-pack-card{min-height:184px;padding:12px}
+  .life-pack-card>.w-print{width:64px;top:10px;right:10px}
+  .life-pack-word{font-size:30px}
+  .life-goal,.life-question-title h3,.cafe-welcome h3,.cafe-break h3{font-size:20px}
+  .life-choice,.cafe-option>span:not(.cafe-cups),.life-dialogue>p,.cafe-staff>p:not(.cafe-speech-status),.life-expression-list strong{font-size:22px}
+  .life-cast .life-friend{height:92px}
+  .life-cast>div:first-child .life-friend{height:84px}
+  .life-cast>div:nth-child(3) .life-friend{height:88px}
+  .cafe-option>.cafe-cups{flex-basis:50px}
+  .cafe-my-sentence strong{font-size:22px}
+  .study-two-fields{grid-template-columns:1fr}
+}
+
+/* ── 낮은 가로 휴대폰: 머리·여백을 줄이고 이야기도 두 단 ── */
+@media(orientation:landscape) and (max-height:500px){
+  #world-panel[class*="life-"]:not(.life-library-panel){padding-top:calc(4px + var(--safe-top));padding-left:max(var(--life-pad),env(safe-area-inset-left));padding-right:max(var(--life-pad),env(safe-area-inset-right))}
+  #world-panel[class*="life-"]:not(.life-library-panel) .panel-header{min-height:44px;margin-bottom:0}
+  #world-panel[class*="life-"]:not(.life-library-panel) .panel-header h2{font-size:15.5px}
+  .life-session-meta,.cafe-session-meta{gap:6px 12px;margin-bottom:8px;padding-top:2px;padding-bottom:8px}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content>.life-tutor{margin-bottom:10px}
+  .life-story-stage{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:22px;align-items:center}
+  .life-cast .life-friend{height:92px}
+  .life-cast>div:first-child .life-friend{height:82px}
+  .life-cast>div:nth-child(3) .life-friend{height:88px}
+  .life-dialogue{--tail:50%}
+  .life-dialogue::before{top:50%;left:-6px;margin:-7px 0 0}
+  .life-dialogue>p{font-size:20px}
+  .life-question-title h3,.life-goal,.cafe-welcome h3,.cafe-break h3{font-size:20px}
+  .life-question-layout,.cafe-play-layout{gap:22px}
+  .life-choices,.cafe-options{gap:8px}
+  .life-choice{min-height:52px;padding:9px 16px}
+  .cafe-option{min-height:56px}
+  .cafe-scene{height:150px}
+  .cafe-scene>.cafe-friends{bottom:44px}
+  .cafe-friends .life-friend{height:62px}
+  .cafe-friends .life-friend:first-child{height:55px}
+  .cafe-friends .life-friend:last-child{height:58px}
+  .cafe-tray{bottom:44px;min-height:56px;padding-bottom:6px}
+  .cafe-tray .cafe-drink{width:40px;height:54px}
+  .cafe-scene-caption{padding:5px 10px;bottom:8px}
+  .life-poster{min-height:0}
+  .life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1}
+  .life-session-meta>.life-progress+span,.cafe-session-meta>.life-progress+span{display:none}
+  .life-session-meta::after,.cafe-session-meta::after{height:10px}
+  /* 아래 막대는 한 줄로: 흰 알약 · 선 알약 · 조용한 링크 */
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions{display:flex;align-items:center;gap:10px;padding-top:12px;padding-bottom:4px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions>.felt-button{flex:1 1 auto;min-height:48px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions>.plain-button{flex:0 0 auto;min-height:48px;padding:0 18px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions>.quiet-button{flex:0 0 auto}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{padding-bottom:calc(6px + var(--safe-bottom))}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding:44px 0 96px}
+}
+/* 세로로 짧은 휴대폰: 아래 막대를 조금 낮춘다 */
+@media(orientation:portrait) and (max-height:700px){
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions{gap:4px;padding-top:14px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:52px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions .plain-button{min-height:46px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{padding-bottom:calc(8px + var(--safe-bottom))}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding:56px 0 150px}
+}
+
+/* ── PC: 세로 틀은 틀 크기 그대로, 가로 틀은 가운데 판 ── */
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+  :root:not([data-layout=landscape]) #world-panel[class*="life-"]:not(.life-library-panel){border-radius:30px}
+  :root[data-layout=landscape] #world-panel[class*="life-"]:not(.life-library-panel){--life-pad:36px;width:min(800px,calc(var(--shell-width) - 48px));height:calc(var(--shell-height) - 24px);padding-top:20px;border-radius:var(--w-r-xl);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow)}
+  :root[data-layout=landscape] #world-panel[class*="life-"]:not(.life-library-panel) .panel-header{margin-bottom:8px}
+  :root[data-layout=landscape] .life-story-stage{max-width:600px;width:100%;margin:0 auto}
+  :root[data-layout=landscape] .life-cast .life-friend{height:124px}
+  :root[data-layout=landscape] .life-cast>div:first-child .life-friend{height:110px}
+  :root[data-layout=landscape] .life-cast>div:nth-child(3) .life-friend{height:118px}
+}
+@media(prefers-reduced-motion:reduce){
+  .life-pack-card:active,.life-choice:not(:disabled):active,.cafe-option:not(:disabled):active{transform:none}
 }

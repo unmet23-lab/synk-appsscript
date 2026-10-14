@@ -23,15 +23,19 @@
         <div id="sign-preview" class="sign-board sign-preview" hidden><div class="sign-post"></div><div class="sign-face"><img class="sign-picture" src="./assets/material/chair.webp" alt=""><span class="sign-arrow" aria-hidden="true"></span></div><span class="sign-label">미리보기</span></div>
         <img id="chair" class="chair" src="./assets/material/chair.webp" alt="기존 의자">
         <div id="tea-table" class="tea-table" hidden></div>
-        <div id="actor-guest" class="actor guest" data-pose="idle"><img src="./assets/cast/deer.webp" alt="손님"><span class="actor-label">손님</span><span id="guest-bubble" class="guest-bubble" hidden>편해요</span></div>
-        <div id="actor-owner" class="actor owner" data-pose="idle"><img src="./assets/cast/bear.webp" alt="찻집 주인"><span class="actor-label">주인</span></div>
+        <div id="actor-guest" class="actor guest" data-pose="idle"><img src="./assets/residents/visitor-tea-reader.png" alt="손님"><span class="actor-label">손님</span><span id="guest-bubble" class="guest-bubble" hidden>편해요</span></div>
+        <div id="actor-owner" class="actor owner" data-pose="idle"><img src="./assets/residents/cafe-owner.png" alt="찻집 주인"><span class="actor-label">주인</span></div>
         <div id="actor-tea" class="actor tea" hidden><img src="./assets/material/coffee-open.webp" alt="차 한 잔"></div>
+        <div id="life-tray" class="life-tray" hidden aria-label="주인의 정리 쟁반"><img src="./assets/material/coffee-open.webp" alt="주인의 잔"><img src="./assets/material/coffee-open.webp" alt=""></div>
         <div id="scene-caption" class="scene-caption">작은 자리가 기다리고 있어요.</div>
       </div>
+      <p id="life-result" class="life-result" aria-live="polite" hidden></p>
+      <div id="life-result-actions" class="life-result-actions" hidden></div>
       <div class="world-footer"><button id="notebook-button" class="quiet-button" type="button">함께한 일</button><span id="save-status" class="save-status" role="status">가상 기록을 불러오는 중…</span></div>
+      <div id="life-contact" class="life-contact" hidden><p id="life-contact-line"></p><button id="life-contact-open" class="felt-button" type="button">이야기 듣기</button></div>
     </section>
     <aside class="conversation" aria-label="이야기와 행동">
-      <div class="speaker-row"><img src="./assets/cast/bear.webp" alt="" class="speaker-portrait"><span id="speaker">찻집 주인</span></div>
+      <div class="speaker-row"><img src="./assets/residents/cafe-owner.png" alt="" class="speaker-portrait"><span id="speaker">찻집 주인</span></div>
       <p id="dialogue" class="dialogue" aria-live="polite" aria-atomic="true">잠깐만요.</p>
       <div id="material-summary" class="material-summary" hidden></div>
       <p id="craft-recipe" class="craft-recipe" hidden>나무 2 + 천 1 → 작은 지붕 1</p>
@@ -40,6 +44,14 @@
       <div class="conversation-bottom"><div class="help-actions"><button id="meaning-button" class="quiet-button" type="button">뜻 보기</button><button id="route-help-button" class="quiet-button" type="button" aria-pressed="false" hidden>길 보기</button></div><span>천천히 골라도 돼요.</span></div>
     </aside>
   </main>
+  <section id="life-panel" class="life-panel" aria-labelledby="life-title" hidden>
+    <div class="life-heading"><div><p class="eyebrow">이웃의 하루</p><h2 id="life-title">주인은 오늘도 자기 일을 해요</h2></div><p id="life-status" class="life-status"></p></div>
+    <div class="life-controls">
+      <fieldset class="life-preferences"><legend>먼저 말 걸기</legend><div class="life-modes"><button class="felt-button" type="button" data-life-mode="quiet" aria-pressed="false">조용히</button><button class="felt-button" type="button" data-life-mode="normal" aria-pressed="false">보통</button><button class="felt-button" type="button" data-life-mode="lively" aria-pressed="false">활발하게</button></div><p>조용히여도 내가 먼저 이야기할 수 있어요.</p></fieldset>
+      <div class="life-direct"><button id="life-open" class="felt-button" type="button">주인과 자리 이야기</button><button id="life-view-scene" class="felt-button" type="button" hidden>주인 있는 곳 보기</button><button id="life-resume" class="felt-button" type="button" hidden>다시 둘러보기</button><p id="life-direct-note">만든 자리에서 이웃과 지낼 방법을 골라요.</p></div>
+    </div>
+  </section>
   <details class="review-panel"><summary>개발 체험 안내</summary><p>이 화면은 가상의 기록으로 첫 생활을 살펴보는 개발 체험이에요. 실제 계정·급수·상품 권한에 반영되지 않아요. 주민 그림과 음성은 최종 제작 전이며, 현재는 글로 대화해요.</p><div class="review-actions"><button id="visit-button" class="felt-button" type="button">다음 방문</button><button id="remove-button" class="felt-button" type="button" hidden>지붕 보관하기</button><button id="reset-button" class="quiet-button" type="button">가상 기록 다시 시작</button></div></details>
   <dialog id="info-dialog"><div class="dialog-head"><h2 id="info-title">도움</h2><button id="close-dialog" class="quiet-button" type="button">닫기</button></div><div id="info-content"></div></dialog>
+  <dialog id="life-dialog" aria-labelledby="life-dialog-title"><div class="dialog-head"><h2 id="life-dialog-title">찻집 주인과 이야기</h2><button id="life-close" class="quiet-button" type="button">닫기</button></div><p id="life-dialog-line" class="life-dialog-line"></p><div id="life-dialog-actions" class="life-dialog-actions"></div><p class="life-dialog-note">천천히 골라도 돼요. 닫으면 하던 이야기를 남겨 둬요.</p></dialog>
 </body></html>

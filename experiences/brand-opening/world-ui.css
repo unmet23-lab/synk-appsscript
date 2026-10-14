@@ -1,0 +1,106 @@
+/* SYNK WORLD — 시그널 게임판 (2026-10-14 Claude)
+ * 유호님 「synk world 앱 처음 시작부터 모든 컨텐츠 전부 프론트 및 리디자인 … 중국에서 만든 양산형 느낌 … 감각있는 디자인으로」.
+ * 기준: 플랫폼 싱ㅋ 시그널(docs/디자인/플랫폼_시그널/README.md)과 PULSE 글자 2판(같은 손으로 만든 화면).
+ * 문법: 3D 세계 위에는 어두운 유리 캡슐만 띄우고, 창은 근사 검정 판 하나. 사업 색은 WORLD 코랄 하나.
+ *       큰 한글 포스터에 그 화면을 설명하는 펠트 물건을 세우고, 나머지는 작은 모노 라벨과 1px 선으로 조용하게.
+ *       주 행동은 흰 알약 하나, 고르면 바탕을 뒤집는다. 펠트 질감은 물건·친구 사진에만 — 단추·칩·탭 바탕에 깔지 않는다.
+ * 글자: 큰 제목 680 · 카드 제목 650 · 강조 600 · 라벨 550 · 본문 450(포스터 큰 한글만 900). 한글은 13px 밑으로 내리지 않는다.
+ * 움직임: 누를 때의 짧은 전환뿐. 스스로 움직이는 장식은 없고, 움직임 줄이기에서는 모두 멈춘다.
+ */
+@font-face{font-family:'World SUIT';src:url(assets/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+/* 라틴·숫자는 synk.im·PULSE와 같은 Inter Tight(SYNK Latin). 가운뎃점(U+00B7)은 한글 높이에 맞는 SUIT로 둔다. */
+@font-face{font-family:'World Latin';src:url(assets/SYNKLatin-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Latin';src:url(assets/SYNKLatin-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Latin';src:url(assets/SYNKLatin-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
+/* 화살표 글자만 Inter Tight로: SUIT는 →를 꺾쇠처럼 그린다. */
+@font-face{font-family:'World Arrow';src:url(assets/InterTight.woff2) format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+2190-2199;size-adjust:112%}
+/* DM Mono는 띄어쓰기를 뺀 범위만: 한글이 섞인 라벨이 고정폭 공백으로 벌어지지 않게. */
+@font-face{font-family:'World Mono';src:url(assets/home/DMMono.woff2) format('woff2');font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+
+:root{
+  --w-sans:'World Arrow','World Latin','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Mono','World SUIT',ui-monospace,monospace;
+  /* 글자 단계 — 이 이름으로만 쓴다 */
+  --t-hero:clamp(34px,9vw,48px);--t-display:30px;--t-title-l:24px;--t-title:20px;--t-title-s:17px;
+  --t-lead:17px;--t-body:15.5px;--t-help:14px;--t-label:13px;--t-mono:11px;
+  --wt-display:680;--wt-title:650;--wt-strong:600;--wt-label:550;--wt-body:450;--wt-poster:900;
+  --track-display:-.042em;--track-title:-.024em;--track-body:-.006em;--track-mono:.08em;
+  /* 밤(기본) — 플랫폼 시그널과 같은 값 */
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-blur:blur(22px) saturate(1.7);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-r-xl:28px;--w-r-lg:22px;--w-r-md:16px;--w-r-sm:12px;
+  --w-ease:cubic-bezier(.2,.75,.2,1);
+  /* WORLD 사업 색(코랄) — 면과 28px 이상 글자는 원값, 작은 글자는 옅은 실 */
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-face-deep:#AE322A;--w-glow:#F96859;
+  /* 의미 색(2027 실): 안내 청금석 · 정답 메도우 · 보상 버터 · 기념 팝 */
+  --w-led-ok:#7DB45A;--w-led-info:#5B86DB;--w-led-check:#F5C445;--w-led-alert:#F96859;--w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-info-text:#C5D6F5;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-ok-wash:rgba(125,180,90,.16);--w-info-wash:rgba(61,107,201,.2);--w-check-wash:rgba(245,196,69,.14);--w-alert-wash:rgba(249,104,89,.16);
+  --w-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* 촬영 배경지처럼 왼쪽 위가 살짝 밝고 아래가 가라앉는 정지 층(밝기 16% 이내) */
+  --w-studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.17),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(0,0,0,.13));
+  --w-cut-shadow:drop-shadow(0 18px 22px rgba(0,0,0,.28)) drop-shadow(0 3px 5px rgba(0,0,0,.18));
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23FAFAF9' stroke-opacity='.7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h10.5M9 3.8 13.2 8 9 12.2' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-arrow-up-right:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 11.5l7-7M5.5 4.5h6v6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+/* 낮: 플랫폼 낮과 같은 값. 판은 Paper, 틀은 중성 회색(크림·베이지 아님). */
+:root[data-world-theme=day]{
+  --w-bg:#ECECEA;--w-panel:#FFFFFF;--w-s1:#F5F5F4;--w-s2:#EDEDEB;--w-s3:#E2E2E0;
+  --w-line:rgba(8,9,12,.08);--w-line-2:rgba(8,9,12,.15);
+  --w-ink:#08090C;--w-ink-2:rgba(8,9,12,.72);--w-ink-3:rgba(8,9,12,.56);--w-ink-q:rgba(8,9,12,.42);--w-ink-4:rgba(8,9,12,.2);--w-on-ink:#FFFFFF;
+  --w-glass:rgba(255,255,255,.72);--w-glass-strong:rgba(255,255,255,.9);
+  --w-glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 10px 28px rgba(8,9,12,.12);
+  --w-card-edge:inset 0 0 0 1px var(--w-line);
+  --w-face-text:#AE322A;--w-ok-text:#3F6B2E;--w-info-text:#24448C;--w-check-text:#7E5A10;--w-alert-text:#AE322A;
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2308090C' stroke-opacity='.6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  color-scheme:light;
+}
+
+/* ── 공통 부품: 새 화면은 .w-* 를 쓰고, 기존 화면의 클래스는 각 CSS에서 같은 토큰으로 맞춘다 ── */
+.w-label{display:inline-flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
+.w-label.rule::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+.w-label.ko{font-family:var(--w-sans);font-size:var(--t-label);font-weight:var(--wt-label);letter-spacing:0;text-transform:none}
+.w-led{display:inline-block;flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle);box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
+.w-led.ok{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.55)}
+.w-led.info{background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
+.w-led.check{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+.w-led.alert{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+.w-chip{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label);letter-spacing:-.005em;white-space:nowrap;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.w-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) var(--t-body)/1.2 var(--w-sans);letter-spacing:-.01em;text-align:center;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .18s var(--w-ease),box-shadow .2s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
+.w-btn:hover{background:var(--w-s2)}
+.w-btn:active{transform:scale(.975)}
+.w-btn.primary{min-height:56px;padding:0 28px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);font-size:16.5px}
+.w-btn.primary:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+.w-btn.glass{background:var(--w-glass);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.w-btn.quiet{box-shadow:none;color:var(--w-ink-2);min-height:44px;padding:0 12px}
+.w-btn.quiet:hover{background:transparent;color:var(--w-ink)}
+.w-btn:disabled{opacity:.42;cursor:default;transform:none}
+.w-icon-btn{display:inline-grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:0;border-radius:50%;background:var(--w-glass);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);cursor:pointer;transition:transform .12s var(--w-ease),background .18s var(--w-ease)}
+.w-icon-btn svg{width:20px;height:20px}
+.w-icon-btn:active{transform:scale(.94)}
+.w-glass{background:var(--w-glass);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.w-card{background:var(--w-s1);border-radius:var(--w-r-lg);box-shadow:var(--w-card-edge)}
+.w-progress{position:relative;height:4px;border-radius:999px;background:var(--w-line-2);overflow:hidden}
+.w-progress>i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--w-ink)}
+.w-poster{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face)}
+.w-poster::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--w-studio)}
+.w-poster::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:var(--w-grain);opacity:.12;mix-blend-mode:overlay}
+.w-poster .art{position:absolute;filter:var(--w-cut-shadow);transform:rotate(-3deg);pointer-events:none}
+.w-poster .word{font-weight:var(--wt-poster);letter-spacing:calc(-.085em + var(--len,3) * .01em);line-height:.92;word-break:keep-all}
+/* 흰 인화지: 펠트 물건 사진(assets/world-felt/*.webp, 흰 바탕 정사각)을 포스터 위에 −4° 기울여 붙인다 */
+.w-print{display:block;padding:5px;border-radius:10px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);transform:rotate(-4deg)}
+.w-print img{display:block;width:100%;height:auto;aspect-ratio:1;border-radius:6px;object-fit:cover}
+.w-bubble{position:relative;padding:12px 15px;border-radius:18px 18px 18px 6px;background:#FAFAF9;color:#08090C;font-size:var(--t-help);font-weight:var(--wt-body);line-height:1.55;box-shadow:0 10px 26px rgba(0,0,0,.22)}
+:root[data-world-theme=day] .w-bubble{background:#08090C;color:#FAFAF9}
+
+@media(prefers-reduced-motion:reduce){.w-btn,.w-icon-btn{transition:none}.w-btn:active,.w-icon-btn:active{transform:none}}

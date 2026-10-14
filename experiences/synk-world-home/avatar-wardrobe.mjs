@@ -1,5 +1,7 @@
 import * as THREE from './scene-assets/three.module.js';
 import {wardrobeItem} from './wardrobe-catalog.mjs';
+import {buildWardrobeGarmentV8} from './wardrobe-garments-v8.mjs';
+import {wardrobeFabricProfile} from './avatar-textiles.mjs';
 
 const TAU=Math.PI*2;
 const radii=[[.2,.90],[.35,.874],[.49,.852],[.83,.820],[1.0,.803],[1.12,.782],[1.43,.690]];
@@ -7,11 +9,23 @@ function radius(y){for(let i=1;i<radii.length;i++)if(y<=radii[i][0]){const [a,b]
 const front=(x,y,lift=.055)=>[x,y,Math.sqrt(Math.max(.001,radius(y)**2-x*x))*.91+lift];
 const at=(a,y,lift=.035)=>{const r=radius(y)+lift;return[Math.sin(a)*r,y,Math.cos(a)*r*.91];};
 
+// Fabric dependencies of the authored patterns below and in v8. Only equipped
+// slots are prepared; browsing the catalog must not preload the other garments.
+const garmentFabricKinds={
+  apron:['cotton-detail'],knit:['knit-detail'],denim:['denim-detail'],cape:['wax-detail','cotton-detail'],hanbok:['silk-detail','cotton-detail'],
+  scarf:['knit-detail'],'lapis-scarf':['knit-detail'],bandana:['cotton-detail'],linen:['linen-detail'],corduroy:['corduroy-detail'],
+  quilted:['quilted-detail','cotton-detail'],velvet:['velvet-detail'],silk:['silk-detail'],'wool-felt':['wool-felt-detail'],
+};
+export function wardrobeFabricKinds(slots={}){
+  const kinds=new Set();for(const slot of ['body','neck']){const item=wardrobeItem(slots?.[slot]);if(item?.slot===slot)for(const kind of garmentFabricKinds[item.key]||[])kinds.add(kind);}
+  return [...kinds];
+}
+
 export function wardrobeDyeDefaults(slots={}){
   const result={};
   for(const slot of ['body','neck']){
     const item=wardrobeItem(slots[slot]);if(!item||item.slot!==slot)continue;
-    const trim=item.key==='knit'?'#cdb074':item.key==='hanbok'?'#ece8dd':item.key==='cape'?'#adc0b8':item.slot==='neck'&&item.key!=='bandana'?item.color:'#'+new THREE.Color(item.color).lerp(new THREE.Color('#eee8da'),.35).getHexString();
+    const trim=item.trimColor||(item.key==='knit'?'#cdb074':item.key==='hanbok'?'#ece8dd':item.key==='cape'?'#adc0b8':item.slot==='neck'&&item.key!=='bandana'?item.color:'#'+new THREE.Color(item.color).lerp(new THREE.Color('#eee8da'),.35).getHexString());
     result[slot]=[item.color,trim];
   }
   return result;
@@ -63,7 +77,7 @@ function button(parent,p,mat,r=.015){const b=mesh(parent,new THREE.CylinderGeome
 // Construct only garments actually visited. The original avatar and its two clothes
 // remain unchanged; all added resources are owned by the avatar's normal disposal.
 export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=radii,mobile=false,detail=false}={}){
-  const root=new THREE.Group();root.name='mongle-wardrobe-v6';root.position.y=-footOffset;parent.add(root);
+  const root=new THREE.Group();root.name='mongle-wardrobe-v8';root.position.y=-footOffset;parent.add(root);
   const built=new Map(),profile=bodyProfile.length>2?bodyProfile:radii;let microKnitInstances=0,currentSlots={},currentDyes={};
   function radius(y){let lo=0,hi=profile.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(profile[mid][0]<y)lo=mid;else hi=mid;}const [a,b]=profile[lo],[c,d]=profile[hi];return b+(d-b)*Math.max(0,Math.min(1,(y-a)/Math.max(.00001,c-a)));}
   const front=(x,y,lift=.045)=>[x,y,Math.sqrt(Math.max(.001,radius(y)**2-x*x))*.91+lift];
@@ -71,8 +85,9 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
   const curvePoints=(fn,count=64)=>Array.from({length:count+1},(_,i)=>fn(i/count));
   const radialFold=(a,v,amount=.017)=>amount*(Math.cos(a*7+.8)+.33*Math.sin(a*13-v*3))*Math.sin(v*Math.PI*.94);
   function fabric(kind,color,repeat=[2.2,1.4],extra={}){
-    const knit=kind==='knit-detail';
-    return dyeMaterial(new THREE.MeshPhysicalMaterial({color,...textile.fabric(kind,repeat),normalScale:new THREE.Vector2(knit?.28:.38,knit?.28:.38),roughness:knit?.96:kind==='denim-detail'?.92:.98,sheen:knit?.76:.35,sheenRoughness:.88,sheenColor:new THREE.Color(color).lerp(new THREE.Color('#ffffff'),.25),aoMapIntensity:.58,side:THREE.DoubleSide,...extra}));
+    const {normalScale,...properties}=wardrobeFabricProfile(kind),scale=Array.isArray(normalScale)?normalScale:[normalScale,normalScale];
+    const material=dyeMaterial(new THREE.MeshPhysicalMaterial({color,...textile.fabric(kind,repeat),...properties,normalScale:new THREE.Vector2(...scale),sheenColor:new THREE.Color(color).lerp(new THREE.Color('#ffffff'),.25),side:THREE.DoubleSide,...extra}));
+    material.userData.fabricKind=kind;return material;
   }
   function band(parent,fn,width,mat,thickness=.026){
     return mesh(parent,skin((u,v)=>{const p=fn(u),a=u*TAU-Math.PI,roll=.007*Math.sin(v*Math.PI)+.0018*Math.cos(u*TAU*128)*Math.sin(v*Math.PI);p[1]+=(v-.5)*width;p[0]+=Math.sin(a)*roll;p[2]+=Math.cos(a)*roll*.91;return p;},10,128,Math.min(thickness,.022)),mat,'rounded-ribbed-garment-edge');
@@ -103,10 +118,12 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
   function build(id){
     if(built.has(id))return built.get(id);const item=wardrobeItem(id);if(!item)return null;
     const group=new THREE.Group();group.name=id;root.add(group);built.set(id,group);
-    const edge=dyeMaterial(new THREE.MeshStandardMaterial({color:new THREE.Color(item.color).lerp(new THREE.Color('#eee8da'),.35),roughness:.96}),1);
+    const edge=dyeMaterial(new THREE.MeshStandardMaterial({color:item.trimColor||new THREE.Color(item.color).lerp(new THREE.Color('#eee8da'),.35),roughness:.96}),1);
     const brass=new THREE.MeshPhysicalMaterial({color:'#997049',metalness:.72,roughness:.36,clearcoat:.12});
     const lining=dyeMaterial(new THREE.MeshStandardMaterial({color:new THREE.Color(item.color).multiplyScalar(.57),roughness:1}),0,.57);
-    if(item.key==='knit'){
+    if(buildWardrobeGarmentV8({group,item,mobile,detail,at,front,curvePoints,skin,mesh,cord,button,stitching,pocket,fabric,dyeMaterial,edge,brass,lining})){
+      // The new patterns are independent of the original eight garments.
+    }else if(item.key==='knit'){
       const mat=fabric('knit-detail',item.color,[6.8,1.5]),ribMat=dyeMaterial(fabric('knit-detail','#cdb074',[6.5,.65]),1);
       const neck=a=>1.115-.123*Math.exp(-Math.pow(a/.63,2))+.007*Math.sin(a*2),hem=a=>.365+.012*Math.cos(a*3+.5);
       const body=(u,v)=>{const a=u*TAU-Math.PI,y=neck(a)*(1-v)+hem(a)*v;return at(a,y,.047+radialFold(a,v,.018)+.013*Math.sin(v*Math.PI));};
@@ -142,7 +159,7 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
       const waist=(u,v)=>at(Math.PI+(u-.5)*2.5,.826-v*.039,.037);mesh(group,skin(waist,5,56,.014),mat,'waist-tie-around-body');
       for(const side of [-1,1]){const tail=(u,v)=>{const a=Math.PI+side*(.02+v*.10);return at(a,.795-v*.165+(u-.5)*.043,.054+.024*Math.sin(v*3.1));};mesh(group,skin(tail,16,7,.012),mat,'soft-back-tie');}
     }else if(item.key==='cape'){
-      const mat=fabric('wax-detail',item.color,[2.8,2.5],{roughness:.82,clearcoat:.08,clearcoatRoughness:.75,sheen:.22});
+      const mat=fabric('wax-detail',item.color,[2.8,2.5]);
       const top=a=>1.117-.047*Math.cos(a),hem=a=>.408+.049*Math.cos(a*2+.25)+.012*Math.sin(a*3);
       const cape=(u,v)=>{const a=.085+u*(TAU-.17),y=top(a)*(1-v)+hem(a)*v;return at(a,y,.038+.088*Math.pow(v,1.8)+radialFold(a,v,.026));};
       mesh(group,skin(cape,42,112,.023),mat,'weighted-rain-cape');
@@ -154,7 +171,7 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
       for(const v of [.13,.37,.61]){const p=cape(.007,v);p[2]+=.014;button(group,p,brass,.014);}
       for(const u of [.01,.99]){mesh(group,skin((s,v)=>cape(u+(s-.5)*.012,v),30,4,.011),mat,'folded-front-cape-placket');stitching(group,t=>cape(u,t),edge,48,.0016);}
     }else if(item.key==='hanbok'){
-      const mat=fabric('silk-detail',item.color,[3.2,2.4],{sheen:.58,roughness:.88});
+      const mat=fabric('silk-detail',item.color,[3.2,2.4]);
       const neck=a=>1.112-.246*Math.max(0,1-Math.abs(a)/.58),hem=a=>.401+.018*Math.cos(a*3+.4);
       const wrap=(u,v)=>{const a=u*TAU-Math.PI,y=neck(a)*(1-v)+hem(a)*v;return at(a,y,.041+radialFold(a,v,.014));};
       mesh(group,skin(wrap,38,104,.026),mat,'V-neck-shaped-baeja');
@@ -168,7 +185,7 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
       }
       const diagonal=(u,v)=>{const a=.02+v*.325,y=.86-v*.194+(u-.5)*.050;return at(a,y,.081);};
       mesh(group,skin(diagonal,24,6,.016),white,'asymmetric-overlap-facing');
-      const tie=fabric('silk-detail','#b66d76',[.4,.8],{sheen:.52,roughness:.89});
+      const tie=fabric('silk-detail','#b66d76',[.4,.8]);
       delete tie.userData.dyeOriginal;delete tie.userData.dyeOriginalSheen;
       for(const sign of [-1,1]){
         const loop=(u,v)=>{const a=u*TAU,x=.128+sign*(.061+Math.sin(a)*.079),y=.710+Math.cos(a)*.028+(v-.5)*.031;return front(x,y,.089+Math.sin(a)*.023);};
@@ -199,12 +216,14 @@ export function createAvatarWardrobe({parent,textile,footOffset=0,bodyProfile=ra
       const knot=mesh(group,new THREE.SphereGeometry(.031,20,14),mat,'folded-bandana-back-knot');knot.position.set(...at(Math.PI,1.067,.055));knot.scale.set(1.35,.66,.92);
       for(const side of [-1,1])mesh(group,skin((u,v)=>at(Math.PI+side*(.025+v*.11),1.052-v*.12+(u-.5)*.036,.05+.02*Math.sin(v*3)),14,6,.012),mat,'bandana-tied-ends');
     }
-    group.visible=false;return group;
+    const construction={meshes:0,vertices:0,finite:true,parts:[],fabrics:[]},kinds=new Set();
+    group.traverse(object=>{if(!object.isMesh)return;construction.meshes++;if(object.name)construction.parts.push(object.name);const position=object.geometry?.getAttribute('position');if(position){construction.vertices+=position.count;for(const value of position.array)if(!Number.isFinite(value))construction.finite=false;}for(const material of Array.isArray(object.material)?object.material:[object.material]){const kind=material?.userData.fabricKind;if(!kind||kinds.has(kind))continue;kinds.add(kind);construction.fabrics.push({kind,roughness:material.roughness,sheen:material.sheen,sheenRoughness:material.sheenRoughness,anisotropy:material.anisotropy,clearcoat:material.clearcoat,normalScale:material.normalScale?.toArray(),textureSize:material.map?.image?.width||0});}});
+    group.userData.construction=construction;group.visible=false;return group;
   }
   return {
-    set(slots){currentDyes=Object.fromEntries(Object.entries(currentDyes).filter(([slot])=>slots[slot]===currentSlots[slot]));currentSlots={...slots};for(const g of built.values())g.visible=false;for(const id of [slots.body,slots.neck])if(id){const g=build(id);if(g){g.visible=true;const layer=wardrobeItem(id)?.slot==='neck'&&slots.body?slots.body==='mongle-rain-cape'?1.055:slots.body==='mongle-knit-butter'||slots.body==='mongle-hanbok-vest'?1.04:1.025:1;g.scale.set(layer,1,layer);recolorGarment(g,currentDyes[wardrobeItem(id).slot]);}}},
+    set(slots){currentDyes=Object.fromEntries(Object.entries(currentDyes).filter(([slot])=>slots[slot]===currentSlots[slot]));currentSlots={...slots};for(const g of built.values())g.visible=false;for(const id of [slots.body,slots.neck])if(id){const g=build(id);if(g){g.visible=true;const bodyKey=wardrobeItem(slots.body)?.key,bodyLayer={cape:1.055,knit:1.04,hanbok:1.04,linen:1.06,corduroy:1.045,quilted:1.13,velvet:1.105}[bodyKey]||1.025;const layer=wardrobeItem(id)?.slot==='neck'&&slots.body?bodyLayer:1;g.scale.set(layer,1,layer);recolorGarment(g,currentDyes[wardrobeItem(id).slot]);}}},
     setDyes(value={}){currentDyes=normalizeWardrobeDyes(value,currentSlots);for(const [id,g]of built)if(g.visible)recolorGarment(g,currentDyes[wardrobeItem(id).slot]);return JSON.parse(JSON.stringify(currentDyes));},
     getDyes:()=>JSON.parse(JSON.stringify(currentDyes)),
-    metrics:()=>({builtGarments:[...built.keys()],visibleGarments:[...built].filter(([,g])=>g.visible).map(([id])=>id),revision:6,dyeRevision:1,dyes:JSON.parse(JSON.stringify(currentDyes)),fitting:'derived-from-existing-body-profile',microGeometry:detail,microKnitInstances,detailTextureSize:mobile?512:1024}),
+    metrics:()=>({builtGarments:[...built.keys()],visibleGarments:[...built].filter(([,g])=>g.visible).map(([id])=>id),revision:8,fabricRevision:8,dyeRevision:1,dyes:JSON.parse(JSON.stringify(currentDyes)),construction:[...built].map(([id,g])=>({id,...g.userData.construction})),fitting:'derived-from-existing-body-profile',microGeometry:detail,microKnitInstances,detailTextureSize:mobile?512:1024}),
   };
 }

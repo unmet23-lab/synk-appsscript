@@ -3,6 +3,16 @@ import learningHost from '../synk-account/src/generated/world-learning-host.cjs'
 import learningBrowser from '../../atlas/game-browser.js';
 import {scopedStorage} from '../synk-account/src/core.mjs';
 
+// The rehearsal keeps each synthetic account's learning separate too. This uses
+// the same host contract as account games, without claiming a server connection.
+export function createLocalWorldLearningHost({owner,guard=()=>{},target=globalThis,storage=globalThis.localStorage}){
+ const accountKey=`local:${owner}`,revision=1;
+ const host=learningHost.createWorldLearningHost({accountKey,revision,connected:false,guard,engine:learningBrowser.engine,
+  storage:scopedStorage(storage,accountKey,revision,guard)});
+ target.SYNKLearningHost=host;
+ return {dispose(){if(target.SYNKLearningHost===host)delete target.SYNKLearningHost;host.stop();}};
+}
+
 // The verified WORLD entry owns both ports. Frames get the existing public host
 // contracts; neither a credential nor a general account request crosses here.
 export function createWorldGameHost({accountId,revision,connected,play,learning,memory,guard,

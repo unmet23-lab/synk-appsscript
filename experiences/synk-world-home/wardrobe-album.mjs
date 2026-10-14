@@ -3,6 +3,16 @@ import {normalizeEditState} from './wardrobe-workbench.mjs';
 
 export const ALBUM_LIMITS=Object.freeze({maxCount:40,maxBytes:40*1024*1024,maxPhotoBytes:10*1024*1024,maxSessionCount:3,maxSessionBytes:5*1024*1024});
 const sessions=new Map();
+const listeners=new Set();
+/** Observe successful local album changes without sharing photo contents. */
+export function subscribeWardrobeAlbum(listener){
+  if(typeof listener!=='function')throw new TypeError('listener is required');
+  listeners.add(listener);return ()=>listeners.delete(listener);
+}
+function changed(accountId,result){
+  if(result.ok)for(const listener of listeners){try{listener(accountId);}catch{/* A view must not change an album write result. */}}
+  return result;
+}
 const cleanText=(value,max)=>typeof value==='string'?value.slice(0,max):'';
 const bound=(value,min,max,fallback)=>Number.isFinite(Number(value))?Math.max(min,Math.min(max,Number(value))):fallback;
 const metadata=record=>{const {blob,...rest}=record;return rest;};
@@ -37,19 +47,19 @@ export function createWardrobeAlbum({accountId,indexedDB,now=Date.now,maxCount=A
     const temporary=[...session.values()],total=[...diskRecords,...temporary];
     if(total.length>=maxCount||total.reduce((sum,p)=>sum+p.size,0)+photo.size>maxBytes)return failure('ALBUM_FULL','앨범이 가득 찼어요. 사진을 내려받은 뒤 직접 삭제해 주세요. 기존 사진은 지우지 않았어요.','session');
     if(temporary.length>=maxSessionCount||temporary.reduce((sum,p)=>sum+p.size,0)+photo.size>maxSessionBytes)return failure('ALBUM_SESSION_FULL','임시 앨범이 가득 찼어요. 사진을 내려받은 뒤 직접 삭제하거나 기기 저장을 다시 연결해 주세요.','session');
-    photo.localStatus='session';session.set(photo.id,photo);status={mode:'session',message:warning?'기기 저장 공간이 부족하여 이번 실행에서만 사진을 보관해요. 브라우저를 닫기 전에 내려받아 주세요.':'이번 실행에서만 사진을 보관해요. 브라우저를 닫기 전에 내려받아 주세요.',...(warning?{warning}:{})};return {ok:true,photo:metadata(photo),...status};
+    photo.localStatus='session';session.set(photo.id,photo);status={mode:'session',message:warning?'기기 저장 공간이 부족하여 이번 실행에서만 사진을 보관해요. 브라우저를 닫기 전에 내려받아 주세요.':'이번 실행에서만 사진을 보관해요. 브라우저를 닫기 전에 내려받아 주세요.',...(warning?{warning}:{})};return changed(account,{ok:true,photo:metadata(photo),...status});
   }
   async function add(blob,value={}){
     if(!(blob instanceof Blob)||!blob.size||!/^image\/(png|jpeg|webp)$/.test(blob.type))return failure('PHOTO_INVALID','이미지 파일을 확인해 주세요.',status.mode);
     if(blob.size>maxPhotoBytes)return failure('PHOTO_TOO_LARGE','사진 한 장의 크기 한도를 넘었어요. 작은 크기로 다시 찍어 주세요.',status.mode);
     const photo=normalizePhoto(blob,value,account,now),connection=await open();let diskRecords=[];
-    if(connection){try{const {tx,completion,store,all}=await deviceRecords(connection,'readwrite');diskRecords=all;const total=[...all,...session.values()];if(total.length>=maxCount||total.reduce((sum,p)=>sum+p.size,0)+blob.size>maxBytes){tx.abort();await completion.catch(()=>{});return failure('ALBUM_FULL','앨범이 가득 찼어요. 사진을 내려받은 뒤 직접 삭제하고 다시 저장해 주세요. 기존 사진은 지우지 않았어요.','device');}photo.localStatus='device';await request(store.put(photo));await completion;status={mode:'device',message:'이 기기의 앨범에 저장했어요.'};return {ok:true,photo:metadata(photo),...status};}catch(error){if(error?.name==='QuotaExceededError')return addSession(photo,diskRecords,'ALBUM_QUOTA');status={mode:'device',message:'앨범에 저장하지 못했어요. 사진을 내려받고 다시 시도할 수 있어요.',error:'ALBUM_WRITE'};return {ok:false,...status};}}
+    if(connection){try{const {tx,completion,store,all}=await deviceRecords(connection,'readwrite');diskRecords=all;const total=[...all,...session.values()];if(total.length>=maxCount||total.reduce((sum,p)=>sum+p.size,0)+blob.size>maxBytes){tx.abort();await completion.catch(()=>{});return failure('ALBUM_FULL','앨범이 가득 찼어요. 사진을 내려받은 뒤 직접 삭제하고 다시 저장해 주세요. 기존 사진은 지우지 않았어요.','device');}photo.localStatus='device';await request(store.put(photo));await completion;status={mode:'device',message:'이 기기의 앨범에 저장했어요.'};return changed(account,{ok:true,photo:metadata(photo),...status});}catch(error){if(error?.name==='QuotaExceededError')return addSession(photo,diskRecords,'ALBUM_QUOTA');status={mode:'device',message:'앨범에 저장하지 못했어요. 사진을 내려받고 다시 시도할 수 있어요.',error:'ALBUM_WRITE'};return {ok:false,...status};}}
     return addSession(photo);
   }
   async function remove(id){
-    if(session.has(id)){session.delete(id);return {ok:true,mode:'session',message:'사진을 앨범에서 삭제했어요.'};}
+    if(session.has(id)){session.delete(id);return changed(account,{ok:true,mode:'session',message:'사진을 앨범에서 삭제했어요.'});}
     const connection=await open();if(!connection)return failure('PHOTO_NOT_FOUND','삭제할 사진을 찾지 못했어요.',status.mode);
-    try{const tx=connection.transaction('photos','readwrite'),completion=transactionDone(tx);completion.catch(()=>{});const store=tx.objectStore('photos'),photo=await request(store.get(id));if(photo?.accountId!==account){tx.abort();await completion.catch(()=>{});return failure('PHOTO_NOT_FOUND','삭제할 사진을 찾지 못했어요.','device');}await request(store.delete(id));await completion;return {ok:true,mode:'device',message:'사진을 앨범에서 삭제했어요.'};}catch(error){return failure('ALBUM_DELETE','사진을 삭제하지 못했어요. 다시 시도해 주세요.',status.mode);}
+    try{const tx=connection.transaction('photos','readwrite'),completion=transactionDone(tx);completion.catch(()=>{});const store=tx.objectStore('photos'),photo=await request(store.get(id));if(photo?.accountId!==account){tx.abort();await completion.catch(()=>{});return failure('PHOTO_NOT_FOUND','삭제할 사진을 찾지 못했어요.','device');}await request(store.delete(id));await completion;return changed(account,{ok:true,mode:'device',message:'사진을 앨범에서 삭제했어요.'});}catch(error){return failure('ALBUM_DELETE','사진을 삭제하지 못했어요. 다시 시도해 주세요.',status.mode);}
   }
   /** Convert an existing session photo in place. Failure always retains its original Blob and ID. */
   async function persist(id){
@@ -58,7 +68,7 @@ export function createWardrobeAlbum({accountId,indexedDB,now=Date.now,maxCount=A
     if(!temporary){try{const record=await get(id);return record?{ok:true,photo:metadata(record),mode:'device',message:'이미 이 기기에 보관한 사진이에요.'}:failure('PHOTO_NOT_FOUND','저장할 사진을 찾지 못했어요.','device');}catch{return failure('ALBUM_READ','사진을 확인하지 못했어요. 다시 시도해 주세요.','device');}}
     try{const {tx,completion,store,all}=await deviceRecords(connection,'readwrite'),others=[...all.filter(record=>record.id!==id),...[...session.values()].filter(record=>record.id!==id)];
       if(others.length>=maxCount||others.reduce((sum,record)=>sum+record.size,0)+temporary.size>maxBytes){tx.abort();await completion.catch(()=>{});return failure('ALBUM_FULL','앨범이 가득 차 기기 저장으로 바꾸지 못했어요. 이번 실행의 사진은 그대로 남아 있어요.','session');}
-      const saved={...temporary,localStatus:'device'};await request(store.put(saved));await completion;session.delete(id);status={mode:'device',message:'임시 사진을 같은 이름과 촬영 정보로 이 기기에 보관했어요.'};return {ok:true,photo:metadata(saved),...status};
+      const saved={...temporary,localStatus:'device'};await request(store.put(saved));await completion;session.delete(id);status={mode:'device',message:'임시 사진을 같은 이름과 촬영 정보로 이 기기에 보관했어요.'};return changed(account,{ok:true,photo:metadata(saved),...status});
     }catch(error){return failure(error?.name==='QuotaExceededError'?'ALBUM_QUOTA':'ALBUM_WRITE','기기에 보관하지 못했어요. 이번 실행의 사진은 그대로 남아 있으니 PNG로도 저장해 주세요.','session');}
   }
   async function retry(){db?.close();db=null;dbPromise=null;const connection=await open();return {ok:!!connection,...status};}

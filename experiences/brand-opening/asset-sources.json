@@ -390,6 +390,40 @@
       "transform": "First decoded frame, WebP encoding only",
       "status": "current",
       "visualEvidence": "qa/felt-v9/visual-review.json"
+    },
+    {
+      "file": "assets\\world-menu-mobile-stable-v10-web.mp4",
+      "source": "assets\\world-menu-mobile-omni11-v9-web.mp4",
+      "sourceSha256": "cdb0dfcd54bd91e4b3f3198aedbbf63e6634f91130d427aafad55b3171a96a72",
+      "sha256": "a7c6a6ab9ba27ff1e507139b15c8f2d7ba9909bec5d08f3ac1750d0bdd1d2cf1",
+      "bytes": 842011,
+      "width": 1080,
+      "height": 1920,
+      "fps": 24,
+      "frames": 240,
+      "nativeSeconds": 10,
+      "transform": "Exact first decoded v9 web frame held everywhere except a narrow inspected river strip. River frames retain original frame order/timing and native boat pixels. No new image, generated video, character rig, face patch, camera transform, or retiming.",
+      "status": "current",
+      "scope": "local only",
+      "finishingEvidence": "qa/stable-scene-20261012/mobile-metrics.json",
+      "visualEvidence": "qa/stable-scene-20261012/README.md"
+    },
+    {
+      "file": "assets\\world-menu-desktop-stable-v10-web.mp4",
+      "source": "assets\\world-menu-desktop-omni11-v9-web.mp4",
+      "sourceSha256": "99ee4d1ca7e338994e493b3cae91a23b8e40d1003f9e3ee831efcf99cbedf5fc",
+      "sha256": "584d0252f0bc617a5584ef218833f1f76de96baabd5e7bb2c006be3d0dddb963",
+      "bytes": 922325,
+      "width": 1920,
+      "height": 1080,
+      "fps": 24,
+      "frames": 240,
+      "nativeSeconds": 10,
+      "transform": "Exact first decoded v9 web frame held everywhere except a narrow inspected river strip. River frames retain original frame order/timing and native boat pixels. No new image, generated video, character rig, face patch, camera transform, or retiming.",
+      "status": "current",
+      "scope": "local only",
+      "finishingEvidence": "qa/stable-scene-20261012/desktop-metrics.json",
+      "visualEvidence": "qa/stable-scene-20261012/README.md"
     }
   ],
   "titleArtwork": {
@@ -398,18 +432,18 @@
     "scope": "Title illustration, not a gameplay render or construction photo"
   },
   "titleMotion": {
-    "version": 9,
-    "model": "gemini-omni-1.1-flash-preview",
-    "modelVerified": true,
+    "version": 10,
+    "sourceGenerationVersion": 9,
+    "newGeneration": false,
     "nativeSeconds": 10,
-    "playback": "Entire new 10-second, 240-frame shot loops; no short tail, freeze, reverse or retime",
-    "finishing": "The new v9 shot is registered to its own first frame; rigid scenery is held fixed while the generated whole trio, river/boat, sky, leaf tips, falling leaves and lantern interiors remain animated. No individual face or boat overlay.",
-    "motionControls": "No visible playback or skip controls; automatic video loop, OS reduced-motion poster",
+    "playback": "Entire 10-second source timing loops. All three characters and rigid scenery are static; only a safe river strip and the boat remain live. No retime/reverse.",
+    "finishing": "First decoded v9 web frame held outside an inward-feathered river mask. Local source-video composition, not new character animation.",
+    "motionControls": "Automatic muted loop; OS/home reduced-motion settings use the existing v9 poster.",
     "copyright": "© 2027 SYNK",
-    "visualEvidence": "qa/felt-v9/visual-review.json",
-    "playbackEvidence": "qa/felt-v9/full-loop-playback.json",
-    "uiRevision": "2026-10-10-minimal",
+    "visualEvidence": "qa/stable-scene-20261012/README.md",
+    "playbackEvidence": "qa/stable-scene-20261012/browser-result.json",
+    "scope": "local only; public/native deployment not performed",
     "entry": "Tap or click anywhere, Enter/Space; independent sound icon",
-    "userDirection": "Preserve approved felt art and minimal UI; regenerate with no visible scene shake and verify before delivery"
+    "userDirection": "Correct earthquake-like background and mascot deformation while preserving approved art."
   }
 }

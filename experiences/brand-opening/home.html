@@ -3,34 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#373a32">
-  <title>한강 마루 · SYNK WORLD</title>
+  <meta name="theme-color" content="#060709">
+  <title>나의 작은 방 · SYNK WORLD</title>
   <link rel="icon" href="assets/home/mongle-smile.webp">
   <link rel="preload" href="assets/SUIT.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/SYNKLatin-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="home-scene.css">
   <script type="module" src="home.mjs"></script>
 </head>
 <body>
 <a class="skip-link" href="#home-main">본문으로 이동</a>
-<div class="world-shell">
+<div class="world-shell" data-entry="restoring">
   <main id="home-main" tabindex="-1">
-    <section class="maru-scene" aria-label="한강 마루에서 함께하는 까몽, 몽글, 마린">
-      <img class="scene-poster" src="assets/felt-world-scene-mobile-v9.webp" alt="노을 진 한강과 한옥 마루에 함께 앉은 펠트 까몽, 몽글, 마린">
-      <video class="scene-video" muted loop playsinline preload="none" aria-hidden="true"></video>
-      <div class="scene-shade" aria-hidden="true"></div>
+    <section class="maru-scene" aria-label="나의 방에서 함께하는 3D 까몽, 몽글, 마린">
+      <div class="living-canvas"></div>
+      <div class="living-targets" aria-label="친구들과 방 둘러보기"></div>
+      <div class="living-status" role="status" hidden></div>
+      <p class="living-bubble" role="status" hidden></p>
     </section>
+    <div class="home-entry-status" role="status"><small>SYNK WORLD</small><p>나의 세계를 연결하고 있어요.</p></div>
     <header class="world-topbar">
       <button class="profile-control" data-view="me" aria-label="나의 공간 열기">
         <span class="profile-portrait"><img src="assets/home/mongle-smile.webp" alt=""></span>
-        <span class="profile-copy"><small id="home-account-status">나의 작은 세계</small><strong>나의 마루</strong></span>
+        <span class="profile-copy"><small id="home-account-status">나의 작은 세계</small><strong>나의 방</strong></span>
       </button>
       <button class="icon-button" id="settings-open" aria-label="화면 설정">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 3-.7 2.1-1.8 1-2.2-.4-2 3.5 1.5 1.7v2.2l-1.5 1.7 2 3.5 2.2-.4 1.8 1L9 21h4l.7-2.1 1.8-1 2.2.4 2-3.5-1.5-1.7v-2.2l1.5-1.7-2-3.5-2.2.4-1.8-1L13 3Z" transform="translate(1)"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
       </button>
     </header>
     <div class="place-heading">
-      <p class="place-kicker">SEOUL · HANGANG</p>
-      <h1>한강 마루</h1>
+      <p class="place-kicker">MY LITTLE ROOM</p>
+      <h1>우리의 작은 방</h1>
       <p>세 친구와 오늘의 한국어</p>
     </div>
     <div class="orientation-notice" role="status" hidden>
@@ -41,6 +45,7 @@
       <section id="home-tutor" aria-label="나의 AI 튜터와 오늘의 연습"></section>
       <button class="adventure-button life-next-button" id="life-next-button" data-view="learn" data-life-next aria-label="생활 한국어 다음 학습 이어 하기"><span class="life-next-copy"><small id="life-next-kicker">생활 한국어</small><strong id="life-next-title">친구들과 첫 인사</strong></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
       <p id="life-progress-caption">6개 생활 팩 · 22개 짧은 학습</p>
+      <div class="study-home-note"><p id="study-reason" aria-live="polite"></p><button class="quiet-button" data-view="study">학습 목표 · 도움 방식</button></div>
       <div class="life-home-shortcuts">
         <button data-view="cafe" aria-label="카페 팩 열기"><span>카페</span></button>
         <button data-view="packs" data-life-library aria-label="생활 한국어 팩 모아 보기"><span>생활 팩</span></button>
@@ -50,15 +55,15 @@
     </div>
   </main>
   <nav class="world-nav" aria-label="WORLD 주 메뉴">
-    <button data-view="home" aria-current="page"><span class="nav-object"><img src="assets/home/mongle-smile.webp" alt=""></span><span>마루</span></button>
-    <button data-view="play"><span class="nav-object"><img src="assets/home/headphones.webp" alt=""></span><span>놀이</span></button>
-    <button data-view="wardrobe"><span class="nav-object"><img src="assets/home/scarf.webp" alt=""></span><span>옷장</span></button>
-    <button data-view="me"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></span><span>나</span></button>
+    <button data-view="home" aria-current="page"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/></svg></span><span>우리 방</span></button>
+    <button data-view="packs" data-life-library><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10.2 5 7.6 4.6 4 5v13c3.6-.4 6.2 0 8 1.5 1.8-1.5 4.4-1.9 8-1.5V5c-3.6-.4-6.2 0-8 1.5z"/><path d="M12 6.5v13"/></svg></span><span>배우기</span></button>
+    <button data-view="play"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.2 7.5h9.6a4.3 4.3 0 0 1 4.2 5.1l-.6 3.4a2.6 2.6 0 0 1-4.6 1.1l-1.3-1.8H9.5l-1.3 1.8a2.6 2.6 0 0 1-4.6-1.1L3 12.6a4.3 4.3 0 0 1 4.2-5.1z"/><path d="M8 10.6v3M6.5 12.1h3"/><circle cx="15.6" cy="11.2" r=".6" fill="currentColor"/><circle cx="17" cy="13.1" r=".6" fill="currentColor"/></svg></span><span>놀이</span></button>
+    <button data-view="wardrobe"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7.6V7a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.6 3.6 13.4a1.6 1.6 0 0 0 .9 2.9h15a1.6 1.6 0 0 0 .9-2.9z"/></svg></span><span>옷장</span></button>
   </nav>
 </div>
 <dialog class="world-panel" id="world-panel" aria-labelledby="panel-title">
   <div class="sheet-handle" aria-hidden="true"></div>
-  <header class="panel-header dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="close-button dialog-close" id="panel-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+  <header class="panel-header dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="close-button dialog-close" id="panel-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></svg></button></header>
   <div id="panel-content"></div>
 </dialog>
 <div id="home-toast" class="home-toast" role="status" aria-live="polite" hidden></div>

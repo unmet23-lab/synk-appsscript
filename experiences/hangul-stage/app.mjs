@@ -25,6 +25,8 @@ function el(tag, attrs = {}, ...kids) {
 const icon = name => el('span', { class: 'icon', style: `--m:var(--i-${name})`, 'aria-hidden': 'true' });
 const now = () => new Date().toISOString();
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 화면 전환 움직임: WORLD 설정의 「움직임 줄이기」(같은 출처의 저장값)도 따른다(style.css의 html[data-reduced]). 판정·시범 순서는 그대로다.
+try { if (localStorage.getItem('synk.world.maru.reduced') === 'true') document.documentElement.dataset.reduced = 'true'; } catch { /* 저장소를 못 쓰면 기기 설정만 따른다 */ }
 const pause = ms => new Promise(r => setTimeout(r, ms));
 
 const L = window.SynkLearning;
@@ -130,7 +132,7 @@ function startSession() {
     wrongRun: 0, retries: 0, retried: new Set(), open: [] };
   show('session'); renderStep();
 }
-function bar() { $('bar').style.width = `${Math.round((S.answered / Math.max(1, S.total)) * 100)}%`; }
+function bar() { $('bar').style.width = `${Math.round((S.answered / Math.max(1, S.total)) * 100)}%`; $('count').textContent = `${S.answered} / ${S.total}`; }
 function dock(...kids) { $('dock').replaceChildren(...kids); }
 function cta(label, { tone = 'coral', disc = '', onClick, disabled = false } = {}) {
   return el('button', { class: `felt-cta ${tone}`, type: 'button', disabled, onclick: onClick }, el('span', { class: 'cta-text' }, el('b', {}, label)), el('span', { class: `disc ${disc}`, 'aria-hidden': 'true' }));
@@ -138,6 +140,7 @@ function cta(label, { tone = 'coral', disc = '', onClick, disabled = false } = {
 function prompt(text, { mini = true } = {}) { return el('p', { class: 'prompt' }, mini ? el('img', { class: 'mini', src: 'assets/brand/mongle-curious.webp', alt: '' }) : null, text); }
 function nextStep() { audio.stop(); S.open = []; S.index += 1; if (S.index >= S.steps.length) endSession(); else renderStep(); }
 function renderStep() {
+  scrollTo(0, 0); $('stage').scrollTop = 0; // 새 장은 맨 위에서(긴 만나기 카드를 내려 본 뒤 다음 장이 중간부터 보이지 않게, 가로 화면은 무대 안 스크롤)
   bar();
   const step = S.steps[S.index];
   if (step.kind === 'reason') return renderReason();
@@ -280,7 +283,8 @@ async function play(button, text, twice = false, opts = {}) {
 function tracePad(g) {
   const wrap = el('div', { class: 'trace' }), canvas = el('canvas', { 'aria-label': `${g} 따라 쓰는 칸` });
   wrap.append(canvas);
-  const ctx = canvas.getContext('2d');
+  // 소프트웨어 캔버스: WORLD가 이 iframe의 위 모서리를 둥글게 자르는데, GPU 캔버스(합성 층)가 있으면 크로뮴이 그 모서리를 밝게 비춘다(10-14 측정).
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const extent = 260, strokes = [];
   let ready = false, drawing = false, last = null, current = null;
   function size() {
@@ -293,7 +297,7 @@ function tracePad(g) {
   }
   function base() {
     ctx.clearRect(0, 0, extent, extent);
-    ctx.fillStyle = '#eadfd2'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#dcdcd6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; // 중성 종이(style.css --paper) 위의 옅은 본
     ctx.font = `900 ${Math.round(extent * 0.72)}px SUIT, "Malgun Gothic", sans-serif`;
     ctx.fillText(g, extent / 2, extent / 2 + extent * 0.03);
   }
@@ -634,7 +638,8 @@ $('quit').addEventListener('click', () => {
 // ── 노래 ──────────────────────────────────────────────
 // 노래 시각에 맞춰 글자를 켠다: 모음은 크게 + 동작 화살표, 합치기는 「ㄱ + ㅏ = 가」 세 걸음, 후렴은 글자 줄을 차례로.
 // 몽글은 움직이지 않는다. 글자 진도·아틀라스 기록에는 넣지 않는다(설계 §6 장단 — 세지 않는다).
-function durationText(sec) { const m = Math.floor(sec / 60), s = Math.round(sec % 60); return m ? `${m}분 ${s}초` : `${s}초`; }
+// 노래 카드의 길이는 모노 숫자(1:26)로 — 글을 아직 못 읽어도 읽힌다.
+function durationText(sec) { const t = Math.round(sec), m = Math.floor(t / 60), s = t % 60; return `${m}:${String(s).padStart(2, '0')}`; }
 const MOVE_WORD = { right: '오른쪽', left: '왼쪽', up: '위로', down: '아래', wide: '옆으로 쭉', tall: '차렷',
   right2: '오른쪽 두 번', left2: '왼쪽 두 번', up2: '위로 두 번', down2: '아래 두 번' };
 const consonantGlyph = id => pack.byId.get(id)?.glyph || EXTRA_CONSONANTS[id]?.[0] || '';
@@ -651,7 +656,8 @@ function moveIcon(move) {
   return el('span', { class: `move ${dir}${two ? ' two' : ''}`, 'aria-hidden': 'true' }, arrows.map(d => el('span', { class: `arrow ${d}` })));
 }
 function songStage(cue) {
-  if (!cue) return [el('img', { class: 'song-mongle', src: 'assets/brand/mongle-smile.webp', alt: '' })];
+  // 노래 앞(신호 없음): 이 노래가 가르치는 글자를 크게 둔다(입구 노래 카드와 같은 글자).
+  if (!cue) return [el('span', { class: 'song-idle', 'aria-hidden': 'true' }, SONG_GLYPHS[SP?.song.id] || '')];
   if (cue.kind === 'line') return [el('p', { class: 'song-text' }, cue.text)];
   if (cue.kind === 'vowel') {
     const l = pack.byId.get(cue.letter);

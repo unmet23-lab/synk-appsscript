@@ -13,6 +13,8 @@ export function createTutorReview({tutor,game,entry,container,reduced=()=>false,
  const stop=()=>{epoch++;voice?.pause();voice=null;};
  const status=text=>$('.tutor-review-status').textContent=text;
  const options=r.options.map((text,index)=>{const b=document.createElement('button');b.type='button';b.className='tutor-review-option';b.textContent=text;b.dataset.option=String(index);b.disabled=!heard;b.addEventListener('click',()=>choose(index));$('.tutor-review-options').append(b);return b;});
+ // 글자·O/X처럼 짧은 보기는 칸으로, 문장 보기는 한 줄씩 읽히게 줄로 놓는다.
+ $('.tutor-review-options').dataset.layout=r.options.every(text=>[...text].length<=4)?'grid':'rows';
  $('.tutor-review-prompt').textContent=heard||r.glyph?r.prompt:'소리를 먼저 끝까지 들어요.';
  $('.tutor-review-line').textContent=supportLine(tutor.id,entry);
  $('.tutor-review-listen').hidden=!r.audio&&!r.glyph;

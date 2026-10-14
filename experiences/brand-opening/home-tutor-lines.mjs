@@ -5,6 +5,8 @@ import {homeDayKey,homeTutorDays,homeTutorMemoryLine} from './home-tutor-days.mj
 export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],practised=new Map(),now=Date.now()}={}){
  if(!summary||summary.owner!==owner||snapshot?.owner!==owner||summary.status?.phase==='loading')return {kind:'loading'};
  if(['unreadable','conflict'].includes(summary.status?.phase)||summary.status?.rejected||summary.status?.code==='LIFE_PROGRESS_REJECTED')return {kind:'unavailable'};
+ if(summary.education?.status==='unavailable')return {kind:'conditions',command:'study',label:'학습 조건 바꾸기',reason:'지금 조건에 맞는 활동이 없어요. 시간이나 도움 방식을 바꿀 수 있어요.'};
+ if(summary.education?.selected){const next=summary.education.selected;return {kind:summary.education.resume?'resume':'start',title:next.label||next.title,command:'learn',label:next.route==='review'?'나의 복습 시작':'맞춤 연습 시작',reason:summary.education.reason};}
  const known=Object.values(snapshot.reviews||{}).flatMap(r=>{
   const lesson=lessons.find(l=>l.id===r.lessonId),q=lesson?.questions.find(q=>q.id===r.questionId&&q.review?.id===r.id);
   return q?[{...r,expressionId:q.expressionId,title:lifeTutorExpression(lesson,q),lessonTitle:lesson.title}]:[];
@@ -31,29 +33,38 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  return {kind:'complete',command:'packs',label:'생활 팩 둘러보기',...(memory&&!days.today.count?{memory}:{})};
 }
 
+// Keep immediate guided help available beside the selected activity, using the same owner and daily checks.
+export function homeTutorPracticeRecommendation(input={}){
+ const result=homeTutorRecommendation({...input,summary:input.summary?{...input.summary,education:null}:input.summary});
+ return result.kind==='difficult'?result:null;
+}
+
 export function homeTutorLine(id,recommendation,{completed='',day=null}={}){
  const r=recommendation,expression=r.title?`「${r.title}」`:'';
  const lines={
   marin:{loading:'연결 확인 중. 네 학습 기록을 기다린다.',unavailable:'기록 확인 필요. 연결 상태를 먼저 살핀다. …기다리겠다.',
+   conditions:'학습 조건 확인. 지금 할 수 있는 활동을 함께 다시 고른다.',
    difficult:`복귀 확인. ${expression}, 다시 살필 표현이다. …오늘은 이것부터 함께한다.`,
    review:'복귀 확인. 오늘 복습할 표현이 돌아왔다. …하나씩 확인한다.',
    resume:`복귀 확인. ${expression}의 하던 자리를 남겨 뒀다. …이어서 간다.`,
    start:`준비 완료. 오늘은 ${expression}부터 시작한다. …옆에 있겠다.`,
    complete:'학습 기록 확인. 생활 팩을 모두 만났다. …다시 가고 싶은 곳을 고른다.'},
   kkamong:{loading:'이 몸이 네 기록을 확인 중이야. …잠깐만 기다려 봐.',unavailable:'내가 기록부터 확인할게. 나의 공간에서 연결을 한번 봐 줘.',
+   conditions:'이 몸과 학습 조건을 다시 골라 볼까? 지금 할 수 있는 연습을 찾아보자.',
    difficult:`왔군! ${expression}, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게.`,
    review:'왔군! 이 몸과 전에 만난 말들이 돌아왔어. 오늘 복습부터 해 볼까?',
    resume:`왔군! ${expression}, 하던 자리는 내가 챙겨 뒀지. …같이 이어 가자.`,
    start:`이 몸이 기다리고 있었지. 오늘은 ${expression}부터 가 보자!`,
    complete:'이 몸과 생활 팩을 다 만났군! …내가 또 같이 가 줄게. 어디로 갈까?'},
   mongle:{loading:'어? 우리 기록이 오고 있어! 조금만 같이 기다리자.',unavailable:'어? 기록을 확인해야 한대. 나의 공간에서 연결부터 같이 보자!',
+   conditions:'어? 지금 조건에 맞는 연습이 없네. 시간이나 도움 방식을 같이 바꿔 볼까?',
    difficult:`어? 왔구나! ${expression}, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!`,
    review:'우와, 왔구나! 전에 만난 말들이 오늘 돌아왔어! 같이 다시 만나 볼까?',
    resume:`오! ${expression}, 하던 자리가 여기 있어! 같이 이어 가자!`,
    start:`어? 왔구나! 오늘은 ${expression}부터 같이 만나 볼까?`,
    complete:'우와! 생활 팩을 다 만났어! 어디에 다시 가 보고 싶어? 같이 가자!'}
  };
- if(['loading','unavailable'].includes(r.kind))return lines[id]?.[r.kind]||'';
+ if(['loading','unavailable','conditions'].includes(r.kind))return lines[id]?.[r.kind]||'';
  if(completed)return id==='marin'?'연습 확인. 새 상황에 맞는 말을 찾았다. …오늘 한 걸음 더 갔다.':id==='kkamong'?'역시 이 몸의… 아니, 네가 해낸 거지! 다음에도 내가 같이 봐 줄게.':'우와! 새 상황에서도 찾았어! 다음 표현도 같이 만나 보자!';
  if(day?.closed)return id==='marin'?'오늘의 마무리 확인. 돌아본 표현이 기록에 남아 있다. …쉬어도 된다.':id==='kkamong'?'오늘은 마무리까지 했군. …푹 쉬어. 더 하고 싶으면 이 몸도 같이 가 줄게.':'우와! 오늘의 기록도 다 정리했구나! 쉬었다가 또 만나자!';
  if(r.memory)return homeTutorMemoryLine(id,r.memory);

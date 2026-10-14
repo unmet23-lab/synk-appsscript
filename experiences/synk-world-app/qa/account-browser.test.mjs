@@ -72,7 +72,11 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&!r.url().startsWith(new URL(runtimeConfig.accountApiUrl).origin))assetErrors.push({url:r.url(),status:r.status()});});page.on('request',r=>{if(!r.url().startsWith(url)&&!r.url().startsWith(new URL(runtimeConfig.accountApiUrl).origin)&&!r.url().startsWith('https://synk.im/account/client.html')&&!r.url().startsWith('data:'))external.push(r.url());});
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);assert.equal(await page.evaluate(()=>window.__synkHome.isMaru),true);
-  await page.locator('.world-nav [data-view="me"]').click();assert.equal(await page.locator('#world-classroom-entry').getByRole('heading',{name:'내 반 연결'}).count(),1);
+  // First visit asks for an AI tutor (10-12 gate). Choose one so the home becomes interactive.
+  await page.waitForFunction(()=>document.querySelector('.tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
+  if(await page.locator('.tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>document.querySelector('.world-shell')?.dataset.entry==='ready');}
+  // 「나」 moved from the tab bar to the profile capsule in the 10-14 redesign (same data-view="me").
+  await page.locator('.profile-control[data-view="me"]').click();assert.equal(await page.locator('#world-classroom-entry').getByRole('heading',{name:'내 반 연결'}).count(),1);
   assert.equal(await page.locator('[data-world-learning]').isChecked(),false);await page.locator('[data-world-learning]').check();await page.waitForFunction(()=>document.querySelector('[data-world-learning]')?.checked&&!document.querySelector('[data-world-learning]')?.disabled);assert.ok(calls.some(c=>c.body?.action==='learning-consent'&&c.body.enabled===true));
   assert.equal(await page.locator('a[href="https://synk.im/account/client.html?product=world"]').count(),1);
   await page.locator('[name="invite"]').fill('synthetic_invite_1234567890123456');await page.getByRole('button',{name:'이름과 반 확인'}).click();await page.getByRole('button',{name:'이 계정으로 내 반 연결'}).waitFor();assert.equal(calls.some(c=>c.path.endsWith('/enrollment/claim')),false);
@@ -101,10 +105,19 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The published WORLD player stays in the shell and writes its own bounded
   // record through the same verified PlayHost transport as the existing games.
   // This compact case uses real choices; it does not inject a completed record.
+  // A game opened for the first time on this device shows the tutor's control practice (10-10); its exit closes the game panel too.
+  async function closeGamePanel(){if(await page.locator('dialog.tutor-practice[open] .practice-exit').count())await page.locator('dialog.tutor-practice[open] .practice-exit').click();else await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel').open);}
+  // The 3D room hides the old next-lesson pill (10-12). Its path now is the 배우기 tab's 「지금 할 일」 poster,
+  // which opens the same summary.nextLesson (10-14 redesign).
+  // Each owner (account or guest) chooses a tutor once; pass that gate when it appears.
+  async function passTutorGate(){await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] .tutor-option'));}}
+  async function learnFromHome(){await passTutorGate();await page.locator('.world-nav [data-view="packs"]').click();const next=page.locator('.life-now [data-life-lesson]');await next.waitFor();await next.click();}
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='11111111-1111-4111-8111-111111111111';}catch{return false;}});
   const lifeLesson=LESSONS.find(lesson=>lesson.id==='greetings-expressions'),lifeStory=LESSONS.find(lesson=>lesson.id==='greetings-story');
-  assert.equal(playState.records[lifeKey],undefined);
-  await page.locator('[data-life-next]').click();await page.locator('.life-intro').waitFor();
+  // The tutor chosen at the gate is stored in the same life record (10-12); no lesson has started yet.
+  const lifeBefore=playState.records[lifeKey]===undefined?null:JSON.parse(playState.records[lifeKey]);
+  assert.ok(lifeBefore===null||(Object.keys(lifeBefore.lessons).length===0&&lifeBefore.activeLessonId===null&&lifeBefore.tutor?.selected==='mongle'));
+  await learnFromHome();await page.locator('.life-intro').waitFor();
   assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.life().owner),A);
   await page.locator('[data-life-begin]').click();
   assert.deepEqual(await page.locator('.life-cast img').evaluateAll(images=>images.map(image=>image.alt)),['몽글','까몽','마린']);
@@ -119,7 +132,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.locator('[data-life-pause]').click();await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='11111111-1111-4111-8111-111111111111';}catch{return false;}});
-  await page.locator('[data-life-next]').click();await page.locator('[data-life-choice]').first().waitFor();
+  await learnFromHome();await page.locator('[data-life-choice]').first().waitFor();
   assert.equal(await page.evaluate(()=>window.__synkWorld.life().lessonId),lifeLesson.id);assert.equal(await page.evaluate(()=>window.__synkWorld.life().step),1);
   assert.equal(await page.evaluate(id=>window.__synkWorld.life().progress.lessons[id].attemptId,lifeLesson.id),firstSaved.lessons[lifeLesson.id].attemptId);
   lifeEvidence.reloadResumedSameAttempt=true;
@@ -131,7 +144,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.waitForFunction(()=>{try{return window.__synkLife.summary().completed===1;}catch{return false;}});
   assert.equal(await page.evaluate(()=>window.__synkLife.summary().nextLesson.id),lifeStory.id);assert.match(await page.locator('#life-progress-caption').textContent(),new RegExp('^1\\s*/\\s*'+LESSONS.length+'\\b'));
   lifeEvidence.completedLessonRestored=true;
-  await page.locator('[data-life-next]').click();await page.locator('[data-life-begin]').click();await page.locator('[data-life-scene-next]').click();
+  await learnFromHome();await page.locator('[data-life-begin]').click();await page.locator('[data-life-scene-next]').click();
   const storyBefore=await page.evaluate(()=>({timeOrigin:performance.timeOrigin,scene:window.__synkWorld.life().progress.lessons['greetings-story'].stage.sceneIndex,text:document.querySelector('.life-dialogue p').textContent}));
   for(const viewport of [{width:740,height:320},{width:390,height:844}]){
    await page.setViewportSize(viewport);assert.equal(await page.evaluate(()=>performance.timeOrigin),storyBefore.timeOrigin);
@@ -161,21 +174,21 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
    }
    await page.screenshot({path:path.join(output,game+'-account-mobile.png')});
    gameEntrances.push({game,href:gameFrame.url(),reward,rotationDocumentPreserved:true});
-   await page.locator('#panel-close').click();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>document.querySelector('#world-panel').open),false);
+   await closeGamePanel();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>document.querySelector('#world-panel').open),false);
   }
   assert.ok(calls.some(c=>c.path.endsWith('/synk-learning')),'enabled consent uses official learning transport');
   assert.ok(playCommands.size>=5);assert.equal(conflictInjected,true);assert.equal(playState.wallet.gameStats.runner.rounds,1);assert.equal(playState.wallet.gameStats.rhythm.rounds,1);
   await page.locator('.world-nav [data-view="play"]').click();await page.locator('[data-game="hangul"]').click();
   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.document.querySelector('#start'));
   const hangulFrame=page.frames().find(f=>f.url().includes('/hangul-stage/')),hangulHref=hangulFrame.url();assert.equal(new URL(hangulHref).origin,url);assert.equal(await page.evaluate(()=>SYNKLearningHost.status().accountKey),A);
-  await page.locator('#panel-close').click();assert.equal(await page.locator('iframe').count(),0);
+  await closeGamePanel();assert.equal(await page.locator('iframe').count(),0);
   // Logging out closes both installed ports; the next game choice stays in the sign-in surface.
   await page.evaluate(()=>window.__qaLifeBeforeLogout=window.__synkLife);
   await page.evaluate(()=>window.__synkWorld.client.logout());assert.equal(await page.evaluate(()=>!!window.SYNKPlayHost||!!window.SYNKLearningHost),false);
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='guest';}catch{return false;}});
   assert.equal(await page.evaluate(()=>window.__synkLife===window.__qaLifeBeforeLogout),false);assert.equal(await page.evaluate(()=>window.__synkWorld.life().progress.owner),'guest');lifeEvidence.logoutReleasedAccountScope=true;
   const accountLifeAtLogout=playState.records[lifeKey],callsAtLogout=calls.length;
-  await page.locator('[data-life-next]').click();await page.locator('[data-life-begin]').click();
+  await learnFromHome();await page.locator('[data-life-begin]').click();
   for(let i=0;i<12&&!await page.locator('[data-life-choice]').count();i++)await page.locator('[data-life-scene-next]').click();
   await page.locator('[data-life-choice="'+lifeLesson.questions[0].answerId+'"]').click();await page.locator('.life-feedback').waitFor();
   assert.equal(await page.evaluate(id=>window.__synkWorld.life().progress.lessons[id].answers['greetings-expressions-hello'].correct,lifeLesson.id),true);

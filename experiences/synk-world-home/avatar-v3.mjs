@@ -1,6 +1,6 @@
 import * as THREE from './scene-assets/three.module.js';
-import {createAvatarTextiles} from './avatar-textiles.mjs';
-import {createAvatarWardrobe} from './avatar-wardrobe.mjs';
+import {loadAvatarTextiles} from './avatar-textiles.mjs';
+import {createAvatarWardrobe,wardrobeFabricKinds} from './avatar-wardrobe.mjs';
 import {WARDROBE_OUTFITS,slotsForOutfit,outfitForSlots} from './wardrobe-catalog.mjs';
 
 // Shared runtime asset: +Z front, +Y up, foot origin; bounds are exposed by metrics().
@@ -12,9 +12,10 @@ const profile = new THREE.CatmullRomCurve3([
   [0,.11],[.86,.12],[.89,.25],[.84,.49],[.815,.83],[.775,1.12],[.68,1.43],[.48,1.69],[.24,1.81],[0,1.845]
 ].map(([x,y])=>new THREE.Vector3(x,y,0)),false,'centripetal');
 const seeded=seed=>()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
-function boundedTexture(loader,url,timeoutMs=12000){
- return new Promise((resolve,reject)=>{let settled=false;const timeout=setTimeout(()=>{settled=true;reject(Error('texture-timeout'));},timeoutMs);
-  Promise.resolve().then(()=>loader.loadAsync(url)).then(texture=>{if(settled){texture.dispose();return;}settled=true;clearTimeout(timeout);resolve(texture);},error=>{if(settled)return;settled=true;clearTimeout(timeout);reject(error);});
+function boundedTexture(loader,url,timeoutMs=12000,signal){
+ return new Promise((resolve,reject)=>{let settled=false;const finish=()=>{settled=true;clearTimeout(timeout);signal?.removeEventListener('abort',abort);},abort=()=>{if(settled)return;finish();reject(new DOMException('Avatar closed','AbortError'));},timeout=setTimeout(()=>{finish();reject(Error('texture-timeout'));},timeoutMs);
+  if(signal?.aborted){abort();return;}signal?.addEventListener('abort',abort,{once:true});
+  Promise.resolve().then(()=>loader.loadAsync(url)).then(texture=>{if(settled){texture.dispose();return;}finish();resolve(texture);},error=>{if(settled)return;finish();reject(error);});
  });
 }
 function mesh(parent,geometry,material){
@@ -52,14 +53,15 @@ function shortNap(mobile){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(color,3));return new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.085,depthWrite:false}));
 }
 
-export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4,wardrobeDetail=false}={}){
- const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=createAvatarTextiles({anisotropy,detailSize:mobile?512:1024}),textures=textile.textures;
+export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4,wardrobeDetail=false,initialSlots={},signal}={}){
+ const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=await loadAvatarTextiles({anisotropy,detailSize:mobile?512:1024,detailKinds:wardrobeFabricKinds(initialSlots),signal}),textures=textile.textures;
  const bodyMaterial=new THREE.MeshPhysicalMaterial({color:'#ee8b76',...textile.fabric('wool',[8.8,3.3]),normalScale:new THREE.Vector2(.46,.46),roughness:1,sheen:.72,sheenRoughness:.92,sheenColor:new THREE.Color('#f4baa7'),vertexColors:true});
  const assetFailures=[];try{
-  const felt=await boundedTexture(textureLoader,new URL('./assets/felt-coral.webp',import.meta.url).href);
+  const felt=await boundedTexture(textureLoader,new URL('./assets/felt-coral.webp',import.meta.url).href,12000,signal);
   felt.colorSpace=THREE.SRGBColorSpace;felt.wrapS=felt.wrapT=THREE.RepeatWrapping;felt.repeat.set(8.8,3.3);felt.anisotropy=anisotropy;textures.push(felt);
   bodyMaterial.map=felt;bodyMaterial.color.set('#fff0e9');
  }catch(error){assetFailures.push({asset:'felt-coral.webp',reason:error.message==='texture-timeout'?'timeout':'load-failed',fallback:'procedural-wool'});}
+ if(signal?.aborted){textures.forEach(texture=>texture.dispose());bodyMaterial.dispose();throw new DOMException('Avatar closed','AbortError');}
  const thread=new THREE.MeshStandardMaterial({color:'#e9b29a',roughness:.97});
  const eye=new THREE.MeshPhysicalMaterial({color:'#030303',roughness:.22,clearcoat:.28,clearcoatRoughness:.22,envMapIntensity:.16,specularIntensity:.4});
  const glint=new THREE.MeshBasicMaterial({color:'#fff9ef'});
@@ -124,5 +126,5 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
  function setPose(value){pose=['neutral','wave','tilt'].includes(value)?value:'neutral';group.scale.setScalar(1);applyPose();return pose;}
  function update(seconds,{reducedMotion=false,greeting=-1}={}){applyPose();if(reducedMotion){group.scale.setScalar(1);return;}const active=greeting>=0&&greeting<1.2;group.rotation.z+=active?Math.sin(greeting*TAU/1.2)*.08:Math.sin(seconds*.8)*.004;group.scale.set(1,1+Math.sin(seconds*1.7)*.003,1);}
  function dispose(){if(disposed)return;disposed=true;const geos=new Set(),allMaterials=new Set(materials);group.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geos.add(o.geometry);if(o.material)allMaterials.add(o.material);});geos.forEach(g=>g.dispose());allMaterials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());group.removeFromParent();}
- return{group,setOutfit,setEquipment:setOutfit,setDyes:value=>wardrobe.setDyes(value),getDyes:()=>wardrobe.getDyes(),setPose,getPose:()=>pose,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,wardrobeRevision:6,dyeRevision:1,pose,equipment:{...equipment},dyes:wardrobe.getDyes(),wardrobe:wardrobe.metrics(),outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
+ return{group,setOutfit,setEquipment:setOutfit,setDyes:value=>wardrobe.setDyes(value),getDyes:()=>wardrobe.getDyes(),setPose,getPose:()=>pose,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,wardrobeRevision:6,dyeRevision:1,textileBaseSources:{...textile.baseSources},textileDetailSources:{...textile.detailSources},pose,equipment:{...equipment},dyes:wardrobe.getDyes(),wardrobe:wardrobe.metrics(),outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
 }

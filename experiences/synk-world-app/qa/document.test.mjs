@@ -11,7 +11,9 @@ for(const basePath of ['/','/world/','/preview/world/'])test(`Connected Maru mou
  assert.equal((html.match(/type="module"/g)||[]).length,1,'only authenticated shell bootstraps the home');
  assert.ok(html.includes(`src="${basePath}app-shell.mjs"`));
  assert.ok(html.includes(`href="${basePath}brand-opening/home.css"`));
- assert.ok(html.includes(`src="${basePath}brand-opening/assets/felt-world-scene-mobile-v9.webp"`));
+ assert.ok(html.includes(`href="${basePath}brand-opening/home-scene.css"`));
+ assert.match(html,/class="living-canvas"/);
+ assert.doesNotMatch(html,/scene-video|felt-world-scene-mobile-v9/,'the title film must not be mounted in the post-start home');
  assert.ok(html.includes(`href="${basePath}korean-runner/"`));
  assert.doesNotMatch(html,/(?:src|href)="assets\//);
  assert.ok(html.indexOf('id="synk-world-config"')<html.indexOf('world-bootstrap.js'));

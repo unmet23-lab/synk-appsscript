@@ -176,7 +176,7 @@ export function applyTownMaterials(materials, anisotropy = 4) {
   apply(materials.roofTerra, 'roof', '#3a5067', [1.6, 2], .24);
   apply(materials.roofSage, 'roof', '#425970', [1.6, 2], .24);
   for (const roof of [materials.roofSlate, materials.roofTerra, materials.roofSage]) {
-    roof.metalness = 0; roof.envMapIntensity = 1.16;
+    roof.metalness = 0; roof.envMapIntensity = 1.16; roof.userData.townSurface = 'roof';
   }
   materials.paving = new THREE.MeshStandardMaterial({ color: '#ffffff' });
   apply(materials.paving, 'stone', '#ffffff', [1, 1], .43);
@@ -184,6 +184,17 @@ export function applyTownMaterials(materials, anisotropy = 4) {
   materials.ceramic.clearcoat = .92; materials.ceramic.clearcoatRoughness = .16; materials.ceramic.ior = 1.48; materials.ceramic.envMapIntensity = 1.10;
   materials.glass.color.set('#d6e7eb'); materials.glass.metalness = 0; materials.glass.roughness = .075;
   materials.glass.ior = 1.48; materials.glass.clearcoat = 1; materials.glass.clearcoatRoughness = .07; materials.glass.envMapIntensity = 1.24;
+  // Keep reflected edges while the middle of a thin window reveals the room.
+  // Ordinary alpha glazing uses the existing shader and no transmission target.
+  materials.glass.onBeforeCompile = function(shader) {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>',
+      'float townGlassFacing = clamp(abs(dot(normal, geometryViewDir)), 0.0, 1.0);\n' +
+      'float townGlassEdge = pow(1.0 - townGlassFacing, 3.0);\n' +
+      'diffuseColor.a *= mix(0.35, 1.0, townGlassEdge);\n#include <opaque_fragment>');
+  };
+  materials.glass.customProgramCacheKey = () => 'town-thin-window-v19';
+  materials.glass.clone = cloneTownMaterial;
+  materials.glass.needsUpdate = true;
   materials.brass.color.set('#baa17d'); materials.brass.metalness = .72; materials.brass.roughness = .33;
   materials.frame.color.set('#3c4b57'); materials.frame.metalness = .58; materials.frame.roughness = .32;
   materials.paper.color.set(TOWN_BRAND.paper);
@@ -214,5 +225,5 @@ export function applyTownMaterials(materials, anisotropy = 4) {
   materials.foliage.customProgramCacheKey = () => 'town-thin-leaf-v6';
   packed.forEach(usePackedSurface);
   Object.values(groups).forEach(g => Object.values(g).forEach(t => t.dispose()));
-  return { textures: owned, version: 10 };
+  return { textures: owned, version: 19 };
 }

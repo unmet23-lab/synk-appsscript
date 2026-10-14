@@ -7,7 +7,7 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   const removeCover=()=>{cover?.remove();clearTimeout(window.__synkOpeningSafetyTimer);};
   let previouslySeen=false;try{previouslySeen=sessionStorage.getItem(SEEN)==='1';}catch{}
   const query=new URLSearchParams(location.search);
-  if(query.get('opening')==='off'||(!replay&&previouslySeen&&query.get('opening')!=='replay')){removeCover();return {done:Promise.resolve('return'),destroy:()=>{},stage:()=> 'closed'};}
+  if(!replay&&(query.get('opening')==='off'||(previouslySeen&&query.get('opening')!=='replay'))){removeCover();return {done:Promise.resolve('return'),destroy:()=>{},stage:()=> 'closed'};}
   const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dialog=document.createElement('dialog');dialog.className='synk-opening';dialog.dataset.stage='company';dialog.dataset.reduced=String(reduced);dialog.setAttribute('aria-label',`${product} 시작 화면`);dialog.tabIndex=-1;
   dialog.innerHTML=`<section class="opening-company" aria-label="제작사 SYNK"><div class="opening-light" aria-hidden="true"></div><div class="opening-company-lockup"><img class="opening-wordmark" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><p class="opening-credit">CREATED BY SYNK</p></div></section><section class="opening-title" aria-labelledby="opening-world-title" hidden><picture><source media="(max-width:799px)" srcset="${asset('felt-world-scene-mobile-v9.webp')}"><img class="opening-title-scene" src="${asset('felt-world-scene-desktop-v9.webp')}" alt="한옥과 한강·남산을 배경으로 함께 모인 펠트 몽글·까몽·마린"></picture><video class="opening-title-video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="opening-title-shade" aria-hidden="true"></div><div class="opening-title-copy"><img class="opening-title-logo" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><h1 class="opening-world" id="opening-world-title">WORLD</h1><p class="opening-title-subtitle">몽글과, 나의 작은 세계.</p></div></section><button class="opening-enter" type="button" aria-label="오프닝 건너뛰기"><span class="opening-hint" hidden>화면을 터치해 주세요</span></button><div class="opening-controls"><button class="opening-sound" type="button" aria-pressed="false" aria-label="소리 켜기" title="소리 켜기"><img class="opening-sound-icon" src="${asset('sound-off.webp')}" alt="" aria-hidden="true"></button></div><p class="opening-copyright">© 2027 SYNK</p>`;
@@ -23,7 +23,7 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   const previousFocus=document.activeElement;
   const previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   const soundButton=dialog.querySelector('.opening-sound'),enter=dialog.querySelector('.opening-enter'),hint=dialog.querySelector('.opening-hint');
-  hint.textContent=matchMedia('(pointer:coarse)').matches?'화면을 터치해 주세요':'화면을 클릭해 주세요';
+  hint.textContent='시작하기';
   const stopAudio=()=>{audio.pause();try{audio.currentTime=0;}catch{}};
   const updateSound=()=>{soundButton.querySelector('img').src=asset(soundOn?'sound-on.webp':'sound-off.webp');soundButton.setAttribute('aria-pressed',String(soundOn));soundButton.setAttribute('aria-label',soundOn?'소리 끄기':'소리 켜기');soundButton.title=soundOn?'소리 끄기':'소리 켜기';};
   const playSound=()=>{if(!soundOn||document.hidden||settled)return;stopAudio();audio.play().catch(()=>{soundOn=false;updateSound();});};
@@ -44,7 +44,7 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   }
   function playVideo(){
     if(settled||!motionRequested||stage!=='title'||document.hidden)return;
-    const source=asset(viewport.matches?'world-menu-mobile-omni11-v9-web.mp4':'world-menu-desktop-omni11-v9-web.mp4');
+    const source=asset(viewport.matches?'world-menu-mobile-stable-v10-web.mp4':'world-menu-desktop-stable-v10-web.mp4');
     if(video.src!==source||video.error){dialog.classList.remove('video-ready');video.src=source;video.load();}
     const attempt=++playAttempt;dialog.dataset.videoState='loading';
     video.play().catch(()=>{

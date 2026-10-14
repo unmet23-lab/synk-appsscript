@@ -14,6 +14,12 @@
       "sha256": "3a24744f0d6207706d2fce116fe7795a1fa24b6e6749ad17b631655488142229"
     },
     {
+      "path": "world/hangul.webp",
+      "from": "experiences/brand-opening/assets/world-felt/hangul.webp · WORLD 시그널 흰 인화지 펠트 사진(붓·종이·벼루) — 입구 포스터",
+      "bytes": 17330,
+      "sha256": "6b0f80193ef37cde978a7f708565b8d56329ee5fac863afc268153c203fb63a1"
+    },
+    {
       "path": "fonts/SUIT-OFL.txt",
       "from": "experiences/entry-check/assets/fonts/SUIT-OFL.txt",
       "bytes": 4380,
@@ -24,6 +30,42 @@
       "from": "experiences/entry-check/assets/fonts/SUIT-Variable.woff2",
       "bytes": 624536,
       "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "fonts/SYNKLatin-Regular.woff2",
+      "from": "experiences/brand-opening/assets/SYNKLatin-Regular.woff2 · Inter Tight 라틴·숫자 부분 글꼴(WORLD 시그널과 같은 파일)",
+      "bytes": 17828,
+      "sha256": "6b303b0fd95d0eaedab9cf451725271d9046c59c32f4b444babf54db089ca865"
+    },
+    {
+      "path": "fonts/SYNKLatin-SemiBold.woff2",
+      "from": "experiences/brand-opening/assets/SYNKLatin-SemiBold.woff2 · Inter Tight 라틴·숫자 부분 글꼴(WORLD 시그널과 같은 파일)",
+      "bytes": 18460,
+      "sha256": "baaf020fbb1df04c31246321e8008dafc1f4d1656ab16b1986afffef25f11c71"
+    },
+    {
+      "path": "fonts/SYNKLatin-Bold.woff2",
+      "from": "experiences/brand-opening/assets/SYNKLatin-Bold.woff2 · Inter Tight 라틴·숫자 부분 글꼴(WORLD 시그널과 같은 파일)",
+      "bytes": 18400,
+      "sha256": "b6382dedb2ab0b3c6b96de12eaafd6f630689f95ceaeff836ade00b2b77abe43"
+    },
+    {
+      "path": "fonts/InterTight-OFL.txt",
+      "from": "docs/브랜드_폰트/InterTight/OFL.txt",
+      "bytes": 4476,
+      "sha256": "7bb9fbf670a56dcfbb1889314d248fa21c92acf2548ae42c08a67788ea50336c"
+    },
+    {
+      "path": "fonts/DMMono.woff2",
+      "from": "experiences/brand-opening/assets/home/DMMono.woff2 · 영문 모노 라벨(WORLD 시그널과 같은 파일)",
+      "bytes": 20860,
+      "sha256": "845728ef62631a81b4bdcd05a8157fdb3fac058bf6b23a93b838206a265da8b8"
+    },
+    {
+      "path": "fonts/DMMono-OFL.txt",
+      "from": "docs/브랜드_폰트/DM_Mono/OFL.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
     },
     {
       "path": "kit/badge-check.webp",

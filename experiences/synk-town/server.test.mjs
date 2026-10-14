@@ -15,6 +15,11 @@ test('normal server denies town entry and developer commands regardless of query
     assert.equal(entry.allowed, false);
     assert.equal((await fetch(origin + '/api/preview/state')).status, 403);
     assert.equal((await fetch(origin + '/preview.html')).status, 404);
+    assert.equal((await fetch(origin + '/day-residents.mjs')).status, 404);
+    assert.equal((await fetch(origin + '/day-rendering.mjs')).status, 404);
+    assert.equal((await fetch(origin + '/rendering/SSAOPass.js')).status, 404);
+    assert.equal((await fetch(origin + '/avatar-wardrobe.mjs')).status, 404);
+    assert.equal((await fetch(origin + '/wardrobe-catalog.mjs')).status, 404);
   });
 });
 test('explicit local preview uses same-origin JSON mutations and denies repository exposure', async () => {
@@ -30,6 +35,27 @@ test('explicit local preview uses same-origin JSON mutations and denies reposito
       assert.ok((await fetch(origin + route)).status >= 400, route);
     }
     assert.equal((await fetch(origin + '/engine/loom-life.js')).status, 200);
+    const residentModule = await fetch(origin + '/day-residents.mjs');
+    assert.equal(residentModule.status, 200);
+    assert.match(residentModule.headers.get('content-type'), /javascript/);
+    for (const route of ['/day-materials.mjs', '/day-rendering.mjs', '/rendering/EffectComposer.js', '/rendering/SSAOPass.js', '/rendering/OutputPass.js']) {
+      const module = await fetch(origin + route);
+      assert.equal(module.status, 200, route);
+      assert.match(module.headers.get('content-type'), /javascript/, route);
+    }
+    assert.equal((await fetch(origin + '/rendering/provenance.json')).status, 404);
+    assert.equal((await fetch(origin + '/rendering/unlisted.js')).status, 404);
+    for (const route of ['/avatar-wardrobe.mjs', '/wardrobe-catalog.mjs']) {
+      const response = await fetch(origin + route);
+      assert.equal(response.status, 200, route);
+      assert.match(response.headers.get('content-type'), /javascript/, route);
+    }
+    assert.equal((await fetch(origin + '/avatar-unlisted.mjs')).status, 404);
+    for (const id of ['cafe-owner', 'visitor-tea-reader']) {
+      const portrait = await fetch(origin + `/assets/residents/${id}.png`);
+      assert.equal(portrait.status, 200);
+      assert.match(portrait.headers.get('content-type'), /image\/png/);
+    }
     const badHostStatus = await new Promise((resolve, reject) => {
       http.get(origin + '/api/preview/state', { headers: { Host: 'untrusted.example' } }, response => {
         response.resume(); resolve(response.statusCode);
