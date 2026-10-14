@@ -44,13 +44,15 @@ snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestB
 
 설치기 인계는 일회성 nonce와 일치하는 `SYNK_UPDATE_READY` 응답을 받은 뒤 정상 종료한다. 인계가 거절되면 앱과 트레이를 다시 사용할 수 있다. 복구 인자는 고정 위치의 인계 기록·복구 증거와 현재 실행 파일/실제 ASAR 바이트 해시·10분 만료를 대조한 뒤 한 번만 소비한다. 최신 버전 확인이 성공하면 현재 이하 버전·동일 OS/CPU의 정확한 갱신기 파일명에 해당하는 일반 캐시 파일만 정리하고, 다른 파일·링크·디렉터리·잠긴 파일은 보존한다. [검증 증거와 한계](../docs/_ops/qa/platform-auto-update-20261014/README.md).
 
-### 계정 라이브러리 자동 연결 · 0.4.8
+### 계정 라이브러리 자동 연결 · 0.4.9
 
 설치형 Platform은 기존 로그인의 검증이 끝나면 계정 라이브러리를 자동으로 시작한다. 앱을 닫고 다시 실행하거나 업데이트 후 재실행해도 같은 흐름을 사용한다. `launcher.setAuth`는 검증된 계정 주인이 있을 때 `mountPlatformLibrary.connect()`를 호출하며, 연결 중·연결 완료 상태의 중복 호출은 기존 연결을 유지한다. 이후 계정 변경·재검증은 이미 연결한 어댑터의 구독이 처리한다.
 
 시작 시 동작은 기존 계정 기록을 읽는 것이다. 별도 OAuth, 저장 동의 변경, 기기 기록 가져오기, 복구본 자동 선택은 수행하지 않는다. 저장이 꺼진 계정은 기존의 **계정 저장 켜기** 선택을 유지한다. 계정 확인이 실패하면 기존 연결 재시도를 제공하고, 같은 계정의 재검증 과정에서 작성 중인 입력을 다시 불러온 원격 문서로 덮어쓰지 않는다. 웹의 연결 시작 방식은 유지한다.
 
-0.4.8은 0.4.7 동결 원문에서 `renderer/launcher.mjs`·`renderer/platform-continuity.mjs` 두 파일만 반영한다. 원문은 `experiences/synk-account/src/platform-library-view.mjs`이며 `tools/build-platform-continuity.cjs`로 생성물을 일치시킨다. 새 버전의 공개·설치·실제 계정 검증 여부는 [통합 QA 기록](../docs/_ops/qa/platform-auto-update-20261014/README.md)에서 따로 확인한다.
+라이브러리 조회 중의 즐겨찾기·정렬·성공한 앱 실행 기록은 `ready()`로 조회 완료를 기다린 뒤 입력 순서대로 적용한다. 앱 실행 자체는 기다리지 않는다. 각 동작은 요청 당시 계정 세대를 대조하며 로그아웃·계정 변경 뒤 다른 계정으로 넘기지 않는다. 이 동작이 끝나기 전에는 종료·업데이트·로그아웃을 안내와 함께 보류하며, 완료 후 다시 진행할 수 있다. 정상 조회에서 저장 동의가 꺼져 있으면 기기 기록만 변경하고, 첫 조회 실패에는 안내한다. 이미 불러온 문서는 기존 오프라인 임시 저장을 유지한다.
+
+0.4.9는 0.4.7 동결 원문에서 `renderer/launcher.mjs`·`renderer/platform-continuity.mjs` 두 파일만 반영한다. 원문은 `experiences/synk-account/src/platform-library-view.mjs`이며 `tools/build-platform-continuity.cjs`로 생성물을 일치시킨다. 0.4.8은 지연 조회 중 사용자 동작 유실을 발견한 미공개 후보로 보존한다. 새 버전의 공개·설치·실제 계정 검증 여부는 [통합 QA 기록](../docs/_ops/qa/platform-auto-update-20261014/README.md)에서 따로 확인한다.
 
 ### 변경하지 않을 배포 기준
 

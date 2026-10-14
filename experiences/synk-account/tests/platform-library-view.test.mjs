@@ -335,6 +335,68 @@ test('public connection retries failed readiness and disposal fences a still-pen
   assert.equal(disposed.calls.length,0);assert.equal(disposed.view.projection(),null);
 });
 
+test('ready waits for the remote library before applying a launcher favorite and resolves every waiter', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:7,state:state(['care'])}]])});assert.equal(await f.view.ready(),true);
+  const gate=f.hold('platformLoad');let settled=0;const connecting=f.view.connect();
+  const first=f.view.ready().then(value=>{settled++;return value;}),second=f.view.ready().then(value=>{settled++;return value;});
+  await connecting;await settle();assert.equal(settled,0);assert.equal(f.calls.length,1);assert.equal(f.writes().length,0);
+  gate.resolve();assert.deepEqual(await Promise.all([first,second]),[true,true]);
+  assert.deepEqual(f.view.projection().favorites,['care']);await f.view.dispatch({type:'favorite',id:'world'});await until(()=>f.writes().length===1&&!f.view.hasPending());
+  assert.deepEqual(f.records.get('A').state.favorites,['care','world']);assert.equal(f.writes()[0].params.expected_revision,7);
+});
+
+test('ready distinguishes a successfully read absent or disabled library from an unavailable account document', async t => {
+  for(const document of [null,emptyPlatformLibrary()]){
+    const f=await fixture(t,{records:new Map([['A',{revision:3,state:document}]]),device:{favorites:['world']}}),gate=f.hold('platformLoad');
+    await f.view.connect();let settled=false;const pending=f.view.ready().then(value=>{settled=true;return value;});await settle();assert.equal(settled,false);
+    gate.resolve();assert.equal(await pending,true);assert.equal(f.view.connected(),false);assert.equal(f.view.projection(),null);
+    assert.equal(f.writes().length,0);assert.deepEqual(f.records.get('A'),{revision:3,state:document});
+  }
+});
+
+test('ready rejects a failed first account read instead of treating the initial device candidate as a loaded library', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:2,state:state(['care'])}]]),device:{favorites:['world']}}),gate=f.hold('platformLoad');
+  await f.view.connect();const pending=f.view.ready();gate.reject(Object.assign(Error('합성 계정 읽기 실패'),{code:'NETWORK'}));
+  assert.equal(await pending,false);assert.equal(await f.view.ready(),false);assert.equal(f.writes().length,0);assert.deepEqual(f.records.get('A').state.favorites,['care']);
+  const retryGate=f.hold('platformLoad');await f.click('retry');let settled=false;const retry=f.view.ready().then(value=>{settled=true;return value;});
+  await settle();assert.equal(settled,false);retryGate.resolve();assert.equal(await retry,true);assert.deepEqual(f.view.projection().favorites,['care']);assert.equal(f.writes().length,0);
+});
+
+test('ready preserves editing and the outbox after a verified library save goes offline', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:5,state:state(['care'])}]])});await f.view.connect();await settle();assert.equal(await f.view.ready(),true);
+  f.input('오프라인에도 남겨 둘 입력');const input=f.content.querySelector('[name=title]');f.setFail(true);
+  await f.view.dispatch({type:'favorite',id:'world'});await until(()=>f.writes().length===1);await settle();assert.equal(f.view.hasPending(),true);
+  assert.equal(await f.view.ready(),true);await f.view.dispatch({type:'favorite',id:'rehearsal'});await until(()=>f.writes().length===2);await settle();
+  assert.equal(await f.view.ready(),true);assert.equal(f.view.hasPending(),true);assert.deepEqual(f.view.projection().favorites,['care','world','rehearsal']);
+  assert.equal(f.content.querySelector('[name=title]'),input);assert.equal(input.value,'오프라인에도 남겨 둘 입력');assert.deepEqual(f.records.get('A'),{revision:5,state:state(['care'])});
+  assert.ok(f.storage.data.size>0);assert.ok([...f.storage.data.values()].some(raw=>raw.includes('rehearsal')));
+});
+
+test('ready remains pending for the new owner when an earlier account read finishes late', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:1,state:state(['world'])}],['B',{revision:4,state:state(['care'])}]])}),oldRead=f.hold('platformLoad');
+  await f.view.connect();let settled=false;const pending=f.view.ready().then(value=>{settled=true;return value;});
+  const newRead=f.hold('platformLoad');await f.auth(signed('B',2));oldRead.resolve();await settle();
+  assert.equal(settled,false);assert.equal(f.view.projection(),null);newRead.resolve();assert.equal(await pending,true);
+  assert.deepEqual(f.view.projection().favorites,['care']);assert.deepEqual(f.calls.map(row=>row.owner),['A','B']);assert.equal(f.writes().length,0);
+});
+
+test('logout releases ready waiters to the guest path without accepting a late account read', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:1,state:state(['care'])}]])}),gate=f.hold('platformLoad');
+  await f.view.connect();const pending=f.view.ready();await f.auth({configured:true,status:'signed-out',signedIn:false,sessionGeneration:2});
+  assert.equal(await pending,true);assert.equal(f.view.connected(),false);assert.equal(f.view.projection(),null);
+  gate.resolve();await settle();assert.equal(await f.view.ready(),true);assert.equal(f.view.projection(),null);assert.equal(f.writes().length,0);
+});
+
+test('suspension and disposal release ready waiters with false even while the account read is still pending', async t => {
+  for(const action of ['suspend','dispose']){
+    const f=await fixture(t,{records:new Map([['A',{revision:1,state:state(['care'])}]])}),gate=f.hold('platformLoad');
+    await f.view.connect();const first=f.view.ready(),second=f.view.ready();
+    if(action==='suspend')f.lifecycle.get('pagehide')();else f.view.dispose();
+    assert.deepEqual(await Promise.all([first,second]),[false,false]);assert.equal(await f.view.ready(),false);
+    gate.resolve();await settle();assert.equal(await f.view.ready(),false);assert.equal(f.view.projection(),null);assert.equal(f.writes().length,0);
+  }
+});
+
 test('the compact library chooses an unfinished note and keeps editing controls collapsed until opened', async t => {
   const record=state();record.notes=[{id:'done',appId:'world',title:'이미 끝낸 메모',done:true,createdAt:2},{id:'next',appId:'rehearsal',title:'다음 대화 이어쓰기',done:false,createdAt:1}];
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();

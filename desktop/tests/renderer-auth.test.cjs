@@ -12,10 +12,42 @@ const viewKey=id=>'synk-launcher-view-v1'+(id?':account:'+encodeURIComponent(id)
 const personalKey=id=>'synk.platform.launcher.personalization.v1'+(id?':account:'+encodeURIComponent(id):'');
 const deferred=()=>{let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail;});return {promise,resolve,reject};};
 
+// Parsed descendants let the shipped account-library bundle own its real
+// notebook, identity adapter and sync code, including during auth-only tests.
+class ContinuityElement {
+  constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.attributes=new Map();this.handlers=new Map();this.hidden=false;this.disabled=false;this.inert=false;this.value='';this.checked=false;this.style={};this._text='';this.classList={add(){},remove(){},toggle(){}};}
+  set innerHTML(html){
+    this._html=html;this.children=[];this._text='';const stack=[this],decode=value=>value.replace(/&(?:amp|lt|gt|quot|#39);/g,entity=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[entity]));
+    for(const token of html.match(/<[^>]+>|[^<]+/g)||[]){
+      if(token.startsWith('</')){if(stack.length>1)stack.pop();continue;}
+      if(token.startsWith('<')){const tag=/^<([\w-]+)/.exec(token)?.[1];if(!tag)continue;const node=new ContinuityElement(tag);for(const [,key,double,single,bare]of token.slice(tag.length+1,-1).matchAll(/([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g))node.setAttribute(key,decode(double??single??bare??''));stack.at(-1).append(node);if(!['input','br','img','link','meta'].includes(tag))stack.push(node);}
+      else stack.at(-1)._text+=decode(token);
+    }
+    for(const select of this.querySelectorAll('select'))select.value=select.querySelector('option[selected]')?.value??select.querySelector('option')?.value??'';
+  }
+  get innerHTML(){return this._html||'';}
+  set textContent(value){this._text=String(value);this.children=[];}
+  get textContent(){return this._text+this.children.map(node=>node.textContent).join('');}
+  setAttribute(key,value){this.attributes.set(key,String(value));if(key.startsWith('data-'))this.dataset[key.slice(5).replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]=String(value);else if(key==='value')this.value=value;else if(['hidden','disabled','checked'].includes(key))this[key]=true;}
+  getAttribute(key){return this.attributes.get(key)??null;}
+  removeAttribute(key){this.attributes.delete(key);}
+  append(...nodes){for(const node of nodes){node.parentElement=this;this.children.push(node);}}
+  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
+  addEventListener(name,handler){this.handlers.set(name,handler);}
+  removeEventListener(name){this.handlers.delete(name);}
+  contains(node){return node===this||this.children.some(child=>child.contains(node));}
+  focus(){}
+  matches(selector){const tag=/^[a-z]+/i.exec(selector)?.[0];if(tag&&this.tagName!==tag.toUpperCase())return false;const klass=/\.([\w-]+)/.exec(selector)?.[1];if(klass&&!(this.attributes.get('class')||this.className||'').split(/\s+/).includes(klass))return false;for(const [,key,double,bare]of selector.matchAll(/\[([^=\]]+)(?:=(?:"([^"]*)"|([^\]]*)))?\]/g)){const value=key.startsWith('data-')?this.dataset[key.slice(5).replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]:this.attributes.get(key);if(value===undefined||((double??bare)!==undefined&&value!==(double??bare)))return false;}return true;}
+  querySelectorAll(selector){const descendants=node=>node.children.flatMap(child=>[child,...descendants(child)]);return descendants(this).filter(node=>selector.split(',').some(part=>{const segments=part.trim().split(/\s+/);if(!node.matches(segments.pop()))return false;let parent=node.parentElement;while(segments.length){const previous=segments.pop();while(parent&&!parent.matches(previous))parent=parent.parentElement;if(!parent)return false;parent=parent.parentElement;}return true;}));}
+  querySelector(selector){return this.querySelectorAll(selector)[0]??null;}
+}
+const settleLibrary=async()=>{for(let i=0;i<16;i++)await new Promise(resolve=>setImmediate(resolve));};
+const cloudLibrary=()=>({version:1,consent:true,favorites:['world'],recent:[],rememberRecent:true,notes:[{id:'saved-note',appId:'world',title:'자동으로 이어질 합성 메모',done:false,createdAt:1}]});
+
 // Actual renderer handlers, including adversarial IPC ordering. This DOM double
 // is not layout, real authentication, or an operating-service assertion.
-async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bridgeOverrides={},initialPreferences=null,personalPreferences=null,storageEntries=[],native=true}={}) {
-  const nodes=new Map(),subscriptions=new Map(),documentHandlers=new Map(),lifecycleHandlers=new Map(),ready=deferred();let currentAuth=initialAuth,created=0;
+async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bridgeOverrides={},initialPreferences=null,personalPreferences=null,storageEntries=[],native=true,libraryDOM=false}={}) {
+  const nodes=new Map(),subscriptions=new Map(),documentHandlers=new Map(),lifecycleHandlers=new Map(),windowHandlers=new Map(),timers=new Map(),ready=deferred();let currentAuth=initialAuth,timerId=0;
   function element(id) {
     if(!nodes.has(id)) {
       const handlers=new Map(),attributes=new Map();
@@ -29,29 +61,39 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     return nodes.get(id);
   }
   const root=element('html');root.dataset=new Proxy({}, {set(object,key,value){object[key]=value;if(key==='ready')ready.resolve(value);return true;}});
-  const document={getElementById:element,documentElement:root,activeElement:null,head:element('head'),createElement:tag=>element('created-'+tag+'-'+(++created)),
+  const document={getElementById:element,documentElement:root,activeElement:null,head:element('head'),createElement:tag=>new ContinuityElement(tag),
     querySelectorAll:selector=>selector==='dialog[open]'?[...nodes.values()].filter(node=>node.open):[],
     querySelector:selector=>selector==='.footer-progress'?element('footer-progress'):selector==='dialog[open]'?[...nodes.values()].find(node=>node.open):null,
     addEventListener:(name,callback)=>documentHandlers.set(name,callback)};
   const subscribe=(channel,callback)=>{const list=subscriptions.get(channel)||[];list.push(callback);subscriptions.set(channel,list);return ()=>{};};
   const bridge={getEnvironment:async()=>environment,getClients:async()=>initialClients,authStatus:async()=>currentAuth,
     onAuthChanged:callback=>subscribe('auth',callback),onClientsChanged:callback=>subscribe('clients',callback),onClientProgress:callback=>subscribe('progress',callback),...bridgeOverrides};
+  // Auth-only fixtures have no saved cloud library or consent. Keep their
+  // existing suite-retry transport separate from the real platform hydration.
+  if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>operation==='platformLoad'?{ok:true,scope:'synk-personal',resource:'platform-library',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-insight-view','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-insight-view|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
   assert.notEqual(continuity,fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8'),'continuity module export must be loaded into the VM');
-  const context={rendererModules:modules,SynkAtlasPersonalization:personalEngine,document,window:{addEventListener(){}},synkDesktop:native?bridge:undefined,
-    localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},setTimeout:()=>0,clearTimeout(){},Intl,Date,
+  const context={rendererModules:modules,SynkAtlasPersonalization:personalEngine,document,window:{addEventListener:(name,callback)=>windowHandlers.set(name,callback)},synkDesktop:native?bridge:undefined,
+    localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key),key:index=>[...storage.keys()][index]??null,get length(){return storage.size;}},setTimeout:(callback,delay)=>{const id=++timerId;if(libraryDOM)timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),Intl,Date,crypto:require('node:crypto').webcrypto,
     addEventListener:(name,callback)=>lifecycleHandlers.set(name,callback),removeEventListener:name=>lifecycleHandlers.delete(name),structuredClone,TextEncoder,URL,URLSearchParams,queueMicrotask};
-  vm.createContext(context);vm.runInContext('(function(){'+continuity+'\n})();',context,{filename:'desktop/renderer/platform-continuity.mjs'});vm.runInContext(source,context,{filename:'desktop/renderer/launcher.mjs'});
-  return {element,bridge,storage,document,lifecycleHandlers,ready:ready.promise,setAuth:value=>{currentAuth=value;},
+  vm.createContext(context);
+  // Electron serializes IPC replies into the renderer realm. Reproduce that
+  // boundary so the real personal-data validator sees ordinary local objects.
+  vm.runInContext('structuredClone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value))',context);
+  if(native&&bridge.accountRequest)vm.runInContext('synkDesktop.accountRequest=((request)=>async(...args)=>{const value=await request(...args);return value===undefined?undefined:JSON.parse(JSON.stringify(value));})(synkDesktop.accountRequest)',context);
+  vm.runInContext('(function(){'+continuity+'\n})();',context,{filename:'desktop/renderer/platform-continuity.mjs'});vm.runInContext(source,context,{filename:'desktop/renderer/launcher.mjs'});
+  return {element,bridge,storage,document,lifecycleHandlers,ready:ready.promise,setAuth:value=>{currentAuth=value;},continuity:()=>vm.runInContext('continuity',context),continuityRoot:()=>element('view-home').beforeNodes[0],
+    async flushLibrary(){for(let round=0;round<20;round++){const saves=[...timers].filter(([,timer])=>timer.delay===400);if(!saves.length)return;for(const [id,timer]of saves){timers.delete(id);timer.callback();}await settleLibrary();}assert.fail('library save did not settle');},
+    beforeUnload(){const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};windowHandlers.get('beforeunload')?.(event);return event.defaultPrevented;},
     ids:()=>[...element('app-list').innerHTML.matchAll(/data-app="([^"]+)"/g)].map(match=>match[1]),
     emit(channel,value){if(channel==='auth')currentAuth=value;for(const callback of subscriptions.get(channel)||[])callback(value);},
     async click(id){const callback=element(id).handlers.get('click');assert.equal(typeof callback,'function');await callback();},
@@ -70,6 +112,132 @@ async function savePersonal(f,{context='teacher',consent=true}={}){
   await f.click('personal-open');f.element('personal-context').value=context;f.element('personal-context').handlers.get('change')();
   f.element('personal-text').value='large';f.element('personal-explanation').value='brief';f.element('personal-motion').value='reduced';f.element('personal-consent').checked=consent;f.submitPersonal();
 }
+
+async function autoLibraryFixture(t,{initialAuth=signedIn,request,bridgeOverrides={},storageEntries=[]}={}){
+  let identity=initialAuth;const calls=[];
+  const f=await fixture({initialAuth,libraryDOM:true,storageEntries,bridgeOverrides:{
+    authSignIn:async()=>{calls.push({operation:'OAuth'});return identity;},
+    accountRequest:async(operation,params={})=>{const owner=identity.account?.synk_user_id;calls.push({operation,owner,params});if(request)return request(operation,params,owner);assert.equal(operation,'platformLoad');return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:cloudLibrary()};},...bridgeOverrides,
+  }});
+  t.after(()=>f.continuity().dispose());
+  const emit=f.emit;f.emit=(channel,value)=>{if(channel==='auth')identity=value;emit(channel,value);};
+  return {...f,calls};
+}
+
+test('verified launcher startup loads its saved account library without a click, write or OAuth',async t=>{
+  const f=await autoLibraryFixture(t);assert.equal(await f.ready,'true');await settleLibrary();
+  assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad'],f.continuityRoot().textContent);
+  assert.equal(f.continuity().connected(),true,f.continuityRoot().textContent);
+  assert.equal(f.continuity().projection().notes[0].title,'자동으로 이어질 합성 메모');
+  assert.equal(f.continuityRoot().querySelector('[data-connect]').hidden,true);
+  assert.equal(f.continuityRoot().querySelector('[data-library-panel]').hidden,true);
+});
+
+test('automatic connection and repeated verified events share one pending library load',async t=>{
+  const gate=deferred(),f=await autoLibraryFixture(t,{request:async(operation,_params,owner)=>{assert.equal(operation,'platformLoad');await gate.promise;return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:cloudLibrary()};}});
+  await f.ready;await settleLibrary();f.emit('auth',signedIn);f.emit('auth',signedIn);await f.continuity().connect();await settleLibrary();
+  assert.equal(f.calls.length,1);gate.resolve();await settleLibrary();assert.equal(f.continuity().projection().notes.length,1);assert.equal(f.calls.length,1);
+});
+
+test('restored identity wins over an old startup status and connects the library only once',async t=>{
+  const stale=deferred();let reads=0;
+  const f=await autoLibraryFixture(t,{initialAuth:{...signedOut,status:'restoring'},bridgeOverrides:{authStatus:()=>++reads===1?stale.promise:Promise.resolve(signedIn)}});
+  await settleLibrary();assert.equal(f.calls.length,0);f.emit('auth',signedIn);await settleLibrary();stale.resolve(signedOut);assert.equal(await f.ready,'true');await settleLibrary();
+  assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.equal(f.continuity().connected(),true);assert.equal(f.element('account-label').textContent,'합성 student-a');
+});
+
+test('signed-out, restoring, unconfigured and uncertain startup never auto-load or open OAuth',async t=>{
+  for(const initialAuth of [signedOut,{...signedOut,status:'restoring'},{...signedOut,status:'unconfigured',configured:false},{...signedOut,status:'error',error:{retryable:true}}]){
+    const f=await autoLibraryFixture(t,{initialAuth});await f.ready;await settleLibrary();assert.deepEqual(f.calls,[]);assert.equal(f.continuity().projection(),null);
+  }
+});
+
+test('a fresh launcher mount restores the same remote library again without a remembered connect click',async t=>{
+  const first=await autoLibraryFixture(t);await first.ready;await settleLibrary();const saved=[...first.storage];first.continuity().dispose();
+  const second=await autoLibraryFixture(t,{storageEntries:saved});await second.ready;await settleLibrary();assert.deepEqual(second.calls.map(row=>row.operation),['platformLoad']);assert.equal(second.continuity().projection().notes[0].id,'saved-note');
+});
+
+test('automatic library hydration keeps missing or disabled consent read-only',async t=>{
+  for(const state of [null,{...cloudLibrary(),consent:false,favorites:[],notes:[]}]){
+    const f=await autoLibraryFixture(t,{request:async(operation,_params,owner)=>({ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:state?1:0,updatedAt:null,state})});await f.ready;await settleLibrary();
+    assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.equal(f.continuity().connected(),false);assert.equal(f.continuity().projection(),null);
+  }
+});
+
+test('a late automatic library reply cannot expose the previous account after switching owners',async t=>{
+  const gate=deferred(),f=await autoLibraryFixture(t,{request:async(operation,_params,owner)=>{assert.equal(operation,'platformLoad');if(owner==='student-a')await gate.promise;return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:{...cloudLibrary(),notes:[{...cloudLibrary().notes[0],id:owner,title:owner}]}};}});
+  await f.ready;await settleLibrary();f.emit('auth',account('student-b',['world'],{sessionGeneration:2}));await settleLibrary();gate.resolve();await settleLibrary();
+  assert.deepEqual(f.calls.map(row=>row.owner),['student-a','student-b']);assert.equal(f.continuity().projection().notes[0].title,'student-b');
+});
+
+test('favorite and successful launch during automatic hydration survive the delayed remote reply',async t=>{
+  const gate=deferred();let remote={...cloudLibrary(),favorites:[],recent:[]},revision=1,launches=0;
+  const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>{launches++;return {ok:true};}},request:async(operation,params,owner)=>{
+    if(operation==='platformLoad')await gate.promise;
+    else if(operation==='platformSave'){assert.equal(params.expected_revision,revision);remote=params.state;revision++;}
+    else assert.fail('unexpected operation '+operation);
+    return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision,updatedAt:null,state:remote};
+  }});
+  await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();assert.equal(launches,1,'hydration must not delay opening the app');gate.resolve();await actions;await settleLibrary();await f.flushLibrary();
+  assert.ok(f.continuity().projection().favorites.includes('world'),'the explicit favorite survives hydration');
+  assert.ok(f.continuity().projection().recent.some(row=>row.id==='world'&&row.at>0),'the successful launch survives hydration');
+  assert.ok(remote.favorites.includes('world'));assert.ok(remote.recent.some(row=>row.id==='world'&&row.at>0));assert.equal(f.continuity().hasPending(),false);
+  assert.doesNotMatch(f.element('toast').textContent,/보관하지 못|확인하지 못|먼저 확인/);
+});
+
+test('two favorite clicks waiting for hydration execute in order without a false save-failure toast',async t=>{
+  const gate=deferred();let remote={...cloudLibrary(),favorites:[],recent:[]},revision=1;
+  const f=await autoLibraryFixture(t,{request:async(operation,params,owner)=>{
+    if(operation==='platformLoad')await gate.promise;
+    else if(operation==='platformSave'){assert.equal(params.expected_revision,revision);remote=params.state;revision++;}
+    else assert.fail('unexpected operation '+operation);
+    return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision,updatedAt:null,state:remote};
+  }});
+  await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('favorite')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();await f.flushLibrary();
+  assert.equal(f.continuity().projection().favorites.length,0);assert.equal(f.calls.filter(row=>row.operation==='platformSave').length,1);assert.equal(remote.favorites.length,0);assert.equal(f.continuity().hasPending(),false);assert.doesNotMatch(f.element('toast').textContent,/보관하지 못|확인하지 못|먼저 확인/);
+});
+
+test('actions waiting for automatic hydration use only device storage when account consent is off',async t=>{
+  const gate=deferred();
+  const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>({ok:true})},request:async(operation,_params,owner)=>{
+    assert.equal(operation,'platformLoad');await gate.promise;
+    return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:{...cloudLibrary(),consent:false,favorites:[],recent:[],notes:[]}};
+  }});
+  await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();
+  const saved=JSON.parse(f.storage.get(viewKey('student-a')));assert.ok(saved.favorites.includes('world'));assert.ok(saved.lastLaunch.world>0);assert.equal(f.continuity().connected(),false);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);
+});
+
+test('a waiting favorite or launch cannot transfer into a different verified account',async t=>{
+  const gate=deferred();
+  const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>({ok:true})},request:async(operation,_params,owner)=>{
+    assert.equal(operation,'platformLoad');if(owner==='student-a')await gate.promise;
+    return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:{...cloudLibrary(),favorites:[],recent:[]}};
+  }});
+  await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();f.emit('auth',account('student-b',['world'],{sessionGeneration:2}));await settleLibrary();gate.resolve();await actions;await settleLibrary();
+  assert.equal(f.continuity().projection().favorites.length,0);assert.equal(f.continuity().projection().recent.length,0);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad','platformLoad']);
+});
+
+test('failed automatic hydration does not silently save an account action into device preferences',async t=>{
+  const gate=deferred();let launches=0;
+  const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>{launches++;return {ok:true};}},request:async operation=>{assert.equal(operation,'platformLoad');await gate.promise;return {ok:false,error:{code:'NETWORK_FAILED'}};}});
+  await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();
+  assert.equal(launches,1);assert.equal(f.continuity().projection(),null);assert.equal(f.storage.get(viewKey('student-a')),null);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.match(f.element('toast').textContent,/계정 기록을 확인하지 못했어요/);
+});
+
+for(const succeeds of [true,false])test('pending library action blocks close and releases it after '+(succeeds?'successful hydration':'failed hydration'),async t=>{
+  const gate=deferred();let remote={...cloudLibrary(),favorites:[],recent:[]},revision=1,closes=0;
+  const f=await autoLibraryFixture(t,{bridgeOverrides:{windowAction:async action=>{assert.equal(action,'close');closes++;return {ok:true};}},request:async(operation,params,owner)=>{
+    if(operation==='platformLoad'){await gate.promise;if(!succeeds)return {ok:false,error:{code:'NETWORK_FAILED'}};}
+    else if(operation==='platformSave'){assert.equal(params.expected_revision,revision);remote=params.state;revision++;}
+    else assert.fail('unexpected operation '+operation);
+    return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision,updatedAt:null,state:remote};
+  }});
+  await f.ready;await settleLibrary();const favorite=f.click('favorite');favorite.catch(()=>{});await settleLibrary();assert.equal(f.beforeUnload(),true,'the pending explicit action must guard native close');
+  await f.action({window:'close'});await settleLibrary();assert.equal(closes,0);assert.notEqual(f.element('leave-dialog').open,true);assert.match(f.element('toast').textContent,/처리|확인|기다|저장/);
+  gate.resolve();await favorite;await settleLibrary();await f.flushLibrary();
+  assert.equal(remote.favorites.includes('world'),succeeds);assert.equal(f.calls.filter(row=>row.operation==='platformSave').length,succeeds?1:0);assert.equal(f.beforeUnload(),false);
+  await f.action({window:'close'});await settleLibrary();assert.equal(closes,1);
+});
 
 for(const id of ['path'])test(id+' native preview invokes only its dedicated bridge with a library grant',async()=>{
   const calls=[];
@@ -140,7 +308,7 @@ test('PULSE sidebar opens separately without replacing the current app and failu
   let called=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{called++;return {ok:false,code:'PULSE_APP_OPEN_FAILED'};}}});assert.equal(await f.ready,'true');const before=f.element('breadcrumb-app').textContent;await f.action({app:'pulse'});await new Promise(resolve=>setImmediate(resolve));assert.equal(called,1);assert.equal(f.element('breadcrumb-app').textContent,before);assert.match(f.element('toast').textContent,/PULSE를 열지 못했어요/);assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.storage.get(viewKey('customer')),null);
 });
 test('teacher preview needs server library and explicit development capability',async()=>{
-  let calls=0;const opts={getEnvironment:async()=>({...environment,teacherPreviewAvailable:true}),openTeacherPreview:async()=>{calls++;return {ok:true};}};const f=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:opts});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').dataset.action,'teacher-preview');await f.click('primary-action');assert.equal(calls,1);assert.notEqual(f.element('last-launch').textContent,'기록 없음');const old=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:{openTeacherPreview:opts.openTeacherPreview}});assert.equal(await old.ready,'true');assert.equal(old.element('primary-action').disabled,true);await old.click('primary-action');assert.equal(calls,1);
+  let calls=0;const opts={getEnvironment:async()=>({...environment,teacherPreviewAvailable:true}),openTeacherPreview:async()=>{calls++;return {ok:true};}};const f=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:opts});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').dataset.action,'teacher-preview');await f.click('primary-action');await settleLibrary();assert.equal(calls,1);assert.notEqual(f.element('last-launch').textContent,'기록 없음');const old=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:{openTeacherPreview:opts.openTeacherPreview}});assert.equal(await old.ready,'true');assert.equal(old.element('primary-action').disabled,true);await old.click('primary-action');assert.equal(calls,1);
 });
 test('self-declared teacher interest changes presentation without granting apps',async()=>{
   const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');await savePersonal(f,{consent:false});assert.match(f.element('personal-message').textContent,/동의/);assert.equal(f.storage.get(personalKey('student-a')),null);f.element('personal-consent').checked=true;f.submitPersonal();assert.equal(f.element('html').dataset.textSize,'large');assert.deepEqual(f.ids(),['world']);assert.doesNotMatch(f.element('recommendation').innerHTML,/data-personal-app="(?:teacher|studio)"/);assert.ok(f.storage.get(personalKey('student-a')));await f.click('personal-clear');assert.equal(f.storage.has(personalKey('student-a')),false);assert.equal(f.element('html').dataset.textSize,'standard');assert.deepEqual(f.ids(),['world']);
@@ -283,7 +451,7 @@ test('successful preview launches preserve per-account history and other view pr
   for(const id of ['teacher','path','care','fortune','rehearsal','family-album']){
     const owner='preview-history-'+id;
     const options={initialAuth:account(owner,[id]),initialPreferences:JSON.stringify({selected:id,favorites:[id],density:'compact',lastLaunch:{world:123}}),bridgeOverrides:{getEnvironment:async()=>({...environment,teacherPreviewAvailable:true,productPreviewsAvailable:[id]}),openTeacherPreview:async()=>({ok:true}),openProductPreview:async()=>({ok:true})}};
-    const f=await fixture(options);assert.equal(await f.ready,'true');await f.click('primary-action');
+    const f=await fixture(options);assert.equal(await f.ready,'true');await f.click('primary-action');await settleLibrary();
     const saved=JSON.parse(f.storage.get(viewKey(owner)));assert.ok(saved.lastLaunch[id]>0,id);assert.equal(saved.lastLaunch.world,123);assert.deepEqual(saved.favorites,[id]);assert.equal(saved.density,'compact');
     const reopened=await fixture({...options,initialPreferences:JSON.stringify(saved)});assert.equal(await reopened.ready,'true');assert.notEqual(reopened.element('last-launch').textContent,'기록 없음',id);assert.equal(reopened.storage.get(viewKey()),undefined);
   }

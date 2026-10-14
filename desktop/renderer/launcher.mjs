@@ -17,7 +17,7 @@ let personal=createPersonal(),personalState=personal.current({appIds:displayLibr
 const games={racing:{name:'한국어 레이싱',image:'racing.jpg',tag:'듣고 이해하며 달리는 레이스',description:'한국어를 듣고 뜻을 이해하며 달리는 레이싱 게임입니다. 질문과 선택지를 듣는 연습을 게임 안에서 진행합니다.'},runner:{name:'바람길',image:'runner.jpg',tag:'짧은 지시를 듣고 움직이기',description:'짧은 한국어 지시를 듣고 길을 선택하는 게임입니다. TOPIK I의 짧은 지시 듣기를 보조하는 연습이며, 게임 기록 자체가 시험 점수나 학습 효과를 입증하지는 않습니다.'},rhythm:{name:'시그널 리듬',image:'rhythm.jpg',tag:'리듬과 함께 한국어에 귀 기울이기',description:'음악과 리듬, 한국어 듣기 활동을 함께 경험하는 게임입니다. 리듬 조작 성적과 한국어 이해도는 서로 다른 기록으로 다룹니다.'}};
 let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer;
 let selectedBenefit=null,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
-let continuity=null,convenience=null,platformUpdates=null;
+let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
 let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false;
 const memberInsight=createMemberInsight({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params),onChange:()=>{if(view==='benefits'&&selectedBenefit==='insight')renderInsight();}});
 function renderInsight(){const target=$('benefit-detail'),active=target.contains(document.activeElement),action=document.activeElement?.dataset.insightAction;target.innerHTML=renderMemberInsight(memberInsight.read(),{native:true});if(active)(action?target.querySelector(`[data-insight-action="${action}"]`):target.querySelector('#benefit-title'))?.focus({preventScroll:true});}
@@ -27,7 +27,20 @@ const continuityRoot=document.createElement('aside');continuityRoot.setAttribute
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./platform-continuity.css';document.head.append(continuityStyle);
 continuity=mountPlatformLibrary(continuityRoot,{native:true,getHost:()=>bridge,getAppIds:()=>library.appIds,getDevice:()=>({favorites:prefs.favorites,recent:Object.entries(prefs.lastLaunch).filter(([,at])=>at).map(([id,at])=>({id,at,mode:'client'}))}),onChange:()=>{renderLibrary();renderSelected();memberHome.render();convenience?.refresh();},onOpen:id=>{if(allowed(id))launchFromHome(id);else toast('이 계정의 앱 이용 권한과 설치 상태를 확인해 주세요.');},storage:localStorage});
 function effectivePrefs(){const cloud=continuity?.projection();return projectLibraryPreferences(cloud?{...prefs,accountLibrary:true,favorites:cloud.favorites,lastLaunch:Object.fromEntries(cloud.recent.map(row=>[row.entryId||row.id,row.at]))}:prefs,library);}
-function recordLaunch(id,mode='client'){if(continuity?.connected()){void continuity.dispatch({type:'launch',id,mode}).catch(error=>toast(error.message));}else{prefs.lastLaunch[id]=Date.now();savePrefs();}}
+function enqueueLibraryAction(id,action){
+  const epoch=ownerEpoch;
+  pendingLibraryActions++;
+  const pending=libraryActionQueue.then(async()=>{
+    if(epoch!==ownerEpoch||!allowed(id))return;
+    const ready=await continuity?.ready();
+    if(epoch!==ownerEpoch||!allowed(id))return;
+    if(ready===false){toast('계정 기록을 확인하지 못했어요. 연결을 다시 확인한 뒤 기록해 주세요.');return;}
+    await action();
+  });
+  libraryActionQueue=pending.catch(error=>{if(epoch===ownerEpoch)toast(error.message);}).finally(()=>{pendingLibraryActions--;});
+  return libraryActionQueue;
+}
+function recordLaunch(id,mode='client'){return enqueueLibraryAction(id,async()=>{if(continuity?.connected())await continuity.dispatch({type:'launch',id,mode});else{prefs.lastLaunch[id]=Date.now();savePrefs();renderLibrary();renderSelected();memberHome.render();}});}
 // Presentation helpers: sprite icons, status LEDs and the device-level night/day theme.
 const icon=name=>'<svg class="i" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
 const THEME_KEY='synk-platform-theme',THEMES=['night','day','system'];
@@ -79,6 +92,7 @@ function setMobileSearch(open,{focus=true}={}){document.documentElement.classLis
 function openLibrarySearch(){if(matchMedia('(max-width:760px)').matches)setMobileSearch(true);else{$('search').focus();$('search').select();}}
 function hasUnsavedDrafts(){return pulseClient.hasUnsavedChanges()||memberHome.hasUnsavedChanges()||!!continuity?.hasUnsavedDraft();}
 function confirmDraftExit(message){
+  if(pendingLibraryActions){toast('즐겨찾기·실행 기록을 확인하고 있어요. 완료된 뒤 다시 닫거나 업데이트해 주세요.');return Promise.resolve(false);}
   if(!hasUnsavedDrafts())return Promise.resolve(true);
   if(leaveDecision)return Promise.resolve(false);
   $('leave-description').textContent=message;
@@ -202,12 +216,12 @@ $('brand-home').addEventListener('click',()=>showView('home'));
 $('library-search-toggle').addEventListener('click',()=>setMobileSearch(!document.documentElement.classList.contains('library-search-open')));
 $('leave-dialog').addEventListener('close',async()=>{const done=leaveDecision;leaveDecision=null;if(!done)return;const discard=$('leave-dialog').returnValue==='discard';if(discard){const clearing=await Promise.allSettled([memberHome.discardDraft(),continuity?.discardDraft(),pulseClient.discard()]);if(clearing.some(result=>result.status==='rejected'||result.value===false)){toast('초안 복구본을 지우지 못했어요. 설정에서 메모 복구를 꺼 주세요.');done(false);return;}}else{if($('account-dialog').open)$('account-dialog').close();if(pulseClient.hasUnsavedChanges()){selectApp('pulse',{legacy:true});pulseClient.openBrief();}else showView('home');if(continuity?.hasUnsavedDraft())continuity.focusDraft();else memberHome.focusDraft();}done(discard);});
 $('leave-dialog').addEventListener('cancel',()=>{$('leave-dialog').returnValue='keep';});
-window.addEventListener('beforeunload',event=>{if(hasUnsavedDrafts()){event.preventDefault();event.returnValue='';}});
+window.addEventListener('beforeunload',event=>{if(pendingLibraryActions||hasUnsavedDrafts()){event.preventDefault();event.returnValue='';if(pendingLibraryActions)toast('즐겨찾기·실행 기록을 확인하고 있어요. 완료된 뒤 다시 닫거나 업데이트해 주세요.');}});
 $('search').addEventListener('input',event=>{search=event.target.value.trim().toLowerCase();renderLibrary();});
 $('primary-action').addEventListener('click',()=>command($('primary-action').dataset.action));
 $('refresh').addEventListener('click',refresh);$('refresh-downloads').addEventListener('click',refresh);
-function toggleFavorite(id){if(!allowed(id))return;if(continuity?.connected()){void continuity.dispatch({type:'favorite',id}).catch(error=>toast(error.message));return;}prefs.favorites=effectivePrefs().favorites.includes(id)?prefs.favorites.filter(entry=>displayLibraryAppId(entry,library)!==id):[...prefs.favorites,id];savePrefs();renderLibrary();renderActions();}
-function moveFavorite(id,direction){if(!allowed(id)||![-1,1].includes(direction))return;if(continuity?.connected()){void continuity.dispatch({type:'move-favorite',id,direction}).catch(error=>toast(error.message));return;}const rows=effectivePrefs().favorites.filter(allowed),index=rows.indexOf(id),next=index+direction;if(index<0||next<0||next>=rows.length)return;[rows[index],rows[next]]=[rows[next],rows[index]];prefs.favorites=rows;savePrefs();renderLibrary();renderActions();toast('즐겨찾기 순서를 바꿨어요.');}
+function toggleFavorite(id){if(!allowed(id))return;return enqueueLibraryAction(id,async()=>{if(continuity?.connected())return continuity.dispatch({type:'favorite',id});prefs.favorites=effectivePrefs().favorites.includes(id)?prefs.favorites.filter(entry=>displayLibraryAppId(entry,library)!==id):[...prefs.favorites,id];savePrefs();renderLibrary();renderActions();});}
+function moveFavorite(id,direction){if(!allowed(id)||![-1,1].includes(direction))return;return enqueueLibraryAction(id,async()=>{if(continuity?.connected())return continuity.dispatch({type:'move-favorite',id,direction});const rows=effectivePrefs().favorites.filter(allowed),index=rows.indexOf(id),next=index+direction;if(index<0||next<0||next>=rows.length)return;[rows[index],rows[next]]=[rows[next],rows[index]];prefs.favorites=rows;savePrefs();renderLibrary();renderActions();toast('즐겨찾기 순서를 바꿨어요.');});}
 $('favorite').addEventListener('click',()=>toggleFavorite(prefs.selected));
 $('download-shortcut').addEventListener('click',()=>showView('downloads'));$('footer-settings').addEventListener('click',()=>showView('settings'));
 for(const id of ['account-button','settings-login','library-account'])$(id).addEventListener('click',()=>$('account-dialog').showModal());

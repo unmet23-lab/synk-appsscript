@@ -9473,6 +9473,25 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   let editing = null, parkedDraft = null, deletedNotes = [], completedExpanded = false, noteQuery = "", noteFilter = "all";
   let recoveryOwner = null;
   let accountAdapter = null, nativeVerification = null, nativeVerificationNotice = null;
+  let documentOwner = null, documentReady = false;
+  const readyWaiters = /* @__PURE__ */ new Set();
+  function readiness() {
+    if (disposed || pageSuspended) return false;
+    const status = notebook?.status;
+    if (connecting || status?.status === "loading" || status?.hydrating || notebook?.active && status?.status === "closed") return null;
+    if (!notebook?.active) return true;
+    return documentReady && Number.isSafeInteger(status.revision) && status.accountId === documentOwner && notebook.canEdit;
+  }
+  function notifyReady() {
+    const value = readiness();
+    if (value === null) return;
+    for (const resolve of readyWaiters) resolve(value);
+    readyWaiters.clear();
+  }
+  function ready() {
+    const value = readiness();
+    return value === null ? new Promise((resolve) => readyWaiters.add(resolve)) : Promise.resolve(value);
+  }
   const panelId = "synk-library-panel-" + ++librarySequence;
   root.classList.add("platform-continuity");
   root.innerHTML = '<header class="continuity-overview"><div class="continuity-preview"><p class="continuity-eyebrow">MY LIBRARY</p><h2 data-library-title>계정으로 이어가기</h2><p data-library-detail>즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.</p><span class="continuity-status" data-library-status></span></div><div class="continuity-overview-actions"><span data-connect><button type="button" data-connect-button>계정 라이브러리 연결</button></span><button type="button" data-resume hidden>이어서 열기</button><button type="button" data-panel-toggle hidden aria-expanded="false" aria-controls="' + panelId + '">메모·계정 설정</button></div></header><div id="' + panelId + '" data-library-panel hidden><section data-notebook-mount hidden></section><section data-cloud-content hidden></section></div>';
@@ -9658,6 +9677,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   }
   let renderedNotes = "", renderedCatalog = "", renderedFavorites = "";
   function render({ captureDraft = true } = {}) {
+    notifyReady();
     if (pageSuspended || disposed) return;
     if (captureDraft) capture();
     const active = !!notebook?.active, editable = !!notebook?.canEdit;
@@ -9736,8 +9756,9 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         content,
         description: "즐겨찾기·최근 열기·직접 적은 메모만 연결합니다. 앱 원문과 이용 권한은 각 앱에서 확인해요.",
         getState: () => doc,
-        applyState: (value) => {
+        applyState: (value, { guest = false } = {}) => {
           doc = validatePlatformLibrary(value);
+          documentReady = !guest;
           clearNoteSession();
           draft = { appId: "world", title: "" };
           render({ captureDraft: false });
@@ -9763,6 +9784,10 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
             nativeVerificationNotice = null;
           }
           const nextOwner = value.signedIn ? value.accountId : null;
+          if (nextOwner !== documentOwner && (nextOwner || !["restoring", "signing-in", "error"].includes(value.status))) {
+            documentOwner = nextOwner;
+            documentReady = false;
+          }
           if (recoveryOwner !== nextOwner) {
             recoveryOwner = nextOwner;
             recovery.reset();
@@ -9786,6 +9811,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       }
     } finally {
       connecting = false;
+      notifyReady();
       if (!disposed) {
         connect.disabled = false;
         connect.setAttribute("aria-busy", "false");
@@ -9954,6 +9980,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     capture();
     void recovery.persist();
     pageSuspended = true;
+    notifyReady();
     notebook?.suspend();
     summary();
   }, resume = () => {
@@ -9977,6 +10004,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   globalThis.addEventListener("beforeunload", beforeUnload);
   return {
     connect: connectLibrary,
+    ready,
     connected: () => !!notebook?.active && doc.consent,
     projection() {
       return notebook?.active && notebook.canEdit && doc.consent ? projectPlatformLibrary(doc, { appIds: entryIds() }) : null;
@@ -10008,6 +10036,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     },
     dispose() {
       disposed = true;
+      notifyReady();
       if (native) mount.removeEventListener?.("click", verifyNativeConnection, true);
       recovery.dispose();
       notebook?.dispose();
