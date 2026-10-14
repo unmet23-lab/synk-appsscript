@@ -1,7 +1,8 @@
-/* 힌트 · 어려웠던 곳 다시 연습 · 시그널 게임판 (2026-10-14)
+/* 힌트 · 다시 풀기 · 시그널 게임판 (2026-10-14 3차)
  * 안내 창 안 힌트 목록은 1px 선 줄(상태 칩 + 제목 + 튜터 한마디 + 근거 + 1px 선 알약).
- * 다시 연습 창은 근사 검정 판: 모노 라벨 → 제목 → 초상 + 흰 말풍선 → 22px 문장 → 큰 선택지(고르면 흰 바탕)
- * → 판정 띠 하나(LED 점: 다시 코랄 · 해냈어요 메도우) → 흰 알약 「놀이로 돌아가기」. */
+ * 힌트를 누르고 들어오면 「다음에 누를 곳」 하나에만 정지 테두리(코랄 점 + NEXT)를 한 번 둔다 — 깜빡이거나 움직이지 않는다.
+ * 다시 풀기 창은 근사 검정 판: 모노 라벨 → 제목 → 초상 + 흰 말풍선 → 22px 문장 → 큰 선택지(고르면 흰 바탕)
+ * → 판정 띠 하나(LED 점) → 맞히면 같은 창이 결과 한 장(코랄 포스터 + 부메랑 인화지 + 맞힌 표현 · 다시 듣기 + 흰 알약 하나). */
 .game-tutor-guide ol[hidden],.tutor-support-list[hidden],.tutor-guide-toggle[hidden]{display:none!important}
 
 /* 안내 창 안 힌트 목록 */
@@ -9,7 +10,7 @@
 .tutor-support-item{display:grid;justify-items:start;gap:6px;padding:16px 0;border-bottom:1px solid var(--w-line);text-align:left}
 .tutor-support-item>*{max-width:100%}
 .tutor-support-item small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
-.tutor-support-item h4{margin:0;font-size:16px;font-weight:var(--wt-title);line-height:1.45;letter-spacing:var(--track-title)}
+.tutor-support-item h4{margin:0;font-size:17px;font-weight:var(--wt-title);line-height:1.4;letter-spacing:var(--track-title)}
 .tutor-support-item p{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
 .tutor-support-item p.tutor-support-fact{font-size:14px;color:var(--w-ink-3)}
 .tutor-support-item .support-label{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13px;line-height:1.3;font-weight:var(--wt-label);color:var(--w-ink-2)}
@@ -27,14 +28,18 @@
 .tutor-support-item blockquote::after{content:close-quote}
 .tutor-support-item .game-tutor-explanation{width:100%}
 .tutor-support-item .game-tutor-explanation[open]>*+*{margin-top:8px}
-.tutor-support-retry{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin-top:4px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14px;font-weight:var(--wt-strong);letter-spacing:-.005em;line-height:1.3;text-align:center;cursor:pointer;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-support-retry{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;margin-top:6px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14.5px;font-weight:var(--wt-strong);letter-spacing:-.005em;line-height:1.3;text-align:center;cursor:pointer;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
 .tutor-support-retry::after{content:'';width:14px;height:14px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .tutor-support-retry:hover{background:var(--w-s2)}
 .tutor-support-retry:active{transform:scale(.98)}
+/* 다음에 누를 곳: 힌트를 눌러 열었을 때 아직 연습하지 않은 첫 줄 하나. 흰 알약이 아니라 테두리만 밝힌다(주 행동은 창에 하나). */
+.tutor-support-item[data-next=true] .tutor-support-retry{box-shadow:inset 0 0 0 1.5px var(--w-ink),0 0 0 4px rgba(249,104,89,.24)}
+.tutor-support-item[data-next=true] .tutor-support-retry::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 9px rgba(249,104,89,.6)}
+.tutor-support-item[data-next=true] .support-label::after{content:'NEXT';content:'NEXT'/'';margin-left:3px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);color:var(--w-face-text)}
 .tutor-guide-toggle{flex:1 1 100%;justify-self:start;min-height:44px;padding:0 2px;border:0;background:none;color:var(--w-ink-2);font-size:13.5px;font-weight:var(--wt-strong);text-align:left;text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px;cursor:pointer}
 .tutor-guide-toggle:hover{color:var(--w-ink)}
 
-/* 다시 연습 창 */
+/* ── 다시 풀기 창 ── */
 .tutor-review{box-sizing:border-box;width:min(520px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:22px 22px 20px;border:0;border-radius:var(--w-r-xl);background:var(--w-panel);color:var(--w-ink);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow);font:var(--wt-body) 15.5px/1.55 var(--w-sans);word-break:keep-all;text-align:left;color-scheme:dark}
 .tutor-review::backdrop{background:rgba(4,5,7,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .tutor-review[open]{display:flex;flex-direction:column;animation:game-tutor-sheet .24s var(--w-ease)}
@@ -47,14 +52,15 @@
 .tutor-review h3{order:1;margin:8px 0 4px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
 .tutor-review header small{order:2;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
 .tutor-review-speech{display:flex;align-items:flex-end;gap:10px;margin:18px 0 18px}
-.tutor-review-speech .game-tutor-portrait{width:56px;height:56px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.4))}
+.tutor-review-speech .game-tutor-portrait{width:60px;height:60px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.4))}
 .tutor-review-speech>div{position:relative;flex:1;min-width:0;padding:12px 15px 13px;border-radius:18px 18px 18px 6px;background:#FAFAF9;color:#08090C;box-shadow:0 12px 28px rgba(0,0,0,.28)}
 .tutor-review-speech>div::before{content:'';position:absolute;left:-5px;bottom:13px;width:12px;height:12px;border-radius:3px;background:inherit;transform:rotate(45deg)}
 .tutor-review-line{font-size:15.5px;line-height:1.55;font-weight:var(--wt-strong);overflow-wrap:anywhere;text-wrap:pretty}
-/* 다시 볼 문장: 학습 표현이라 22px */
+.tutor-review-question{display:flex;flex-direction:column}
+/* 다시 볼 문장: 학습 표현이라 22px 이상 */
 .tutor-review-prompt{margin:0 0 14px;font-size:22px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:-.022em;color:var(--w-ink);text-wrap:balance}
-.tutor-review-listen{display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;width:100%;padding:0 20px;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15.5px;font-weight:var(--wt-strong);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
-.tutor-review-listen::before{content:'';width:18px;height:18px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat}
+.tutor-review-listen{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;width:100%;padding:0 20px;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15.5px;font-weight:var(--wt-strong);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-review-listen::before,.tutor-review-again::before{content:'';width:18px;height:18px;flex-shrink:0;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E") center/contain no-repeat}
 .tutor-review-listen:hover:not(:disabled){background:var(--w-s2)}
 .tutor-review-listen:disabled{color:var(--w-ink-3);cursor:wait}
 .tutor-review-status{margin:12px 0;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
@@ -62,6 +68,7 @@
 .tutor-review-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px;counter-reset:review-option}
 .tutor-review-options[data-layout=rows]{grid-template-columns:minmax(0,1fr)}
 .tutor-review-option{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;min-height:64px;padding:12px 16px;border-radius:18px;background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:22px;line-height:1.35;font-weight:var(--wt-strong);letter-spacing:-.02em;text-align:center;overflow-wrap:anywhere;counter-increment:review-option;transition:background .16s var(--w-ease),color .16s var(--w-ease),box-shadow .16s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-review-options[data-layout=grid] .tutor-review-option{min-height:84px;font-size:34px}
 .tutor-review-option:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .tutor-review-option:active:not(:disabled){transform:scale(.98)}
 .tutor-review-option:disabled{opacity:.42;cursor:default}
@@ -70,11 +77,30 @@
 [data-layout=rows]>.tutor-review-option::before{content:counter(review-option,upper-alpha);display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 11px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-3)}
 [data-layout=rows]>.tutor-review-option.selected::before{background:var(--w-on-ink);color:var(--w-ink);box-shadow:none}
 .tutor-review-option.selected:disabled{opacity:1}
-/* 판정 띠: 다시(코랄 점 + 근거) · 해냈어요(메도우 점) — 판 전체를 칠하지 않는다 */
-.tutor-review-hint{display:flex;align-items:baseline;gap:11px;margin:14px 0 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:15.5px;line-height:1.6;color:var(--w-ink);text-wrap:pretty}
+/* 판정 띠: 어두운 띠 하나 + 코랄 점 + 근거 한 줄 — 판 전체를 칠하지 않는다 */
+.tutor-review-hint{display:flex;align-items:baseline;gap:11px;margin:14px 0 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-bg);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15.5px;line-height:1.6;color:var(--w-ink);text-wrap:pretty;animation:tutor-review-band .2s var(--w-ease)}
 .tutor-review-hint::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55);transform:translateY(-1px)}
-.tutor-review:has(.tutor-review-return:not([hidden])) .tutor-review-status{order:1;display:flex;align-items:baseline;gap:11px;margin:14px 0 0;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:15.5px;color:var(--w-ink)}
-.tutor-review:has(.tutor-review-return:not([hidden])) .tutor-review-status::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6);transform:translateY(-1px)}
+@keyframes tutor-review-band{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 결과 한 장: 코랄 포스터(부메랑 인화지 + 모노 라벨 + 큰 한글 900 + 맞힌 표현과 다시 듣기) */
+.tutor-review-result{margin:0}
+.tutor-review-poster{position:relative;isolation:isolate;overflow:hidden;display:grid;justify-items:start;gap:12px;min-height:236px;padding:20px 20px 20px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face)}
+.tutor-review-poster::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--w-studio);pointer-events:none}
+.tutor-review-poster::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.tutor-review-print{position:absolute;z-index:1;top:18px;right:18px;width:104px;padding:5px;border-radius:10px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);transform:rotate(-4deg);pointer-events:none}
+.tutor-review-print img{display:block;width:100%;height:auto;aspect-ratio:1;border-radius:6px;object-fit:cover}
+.tutor-review-tag{position:relative;z-index:2;display:flex;align-items:center;gap:10px;font:500 11px/1.4 var(--w-mono);letter-spacing:var(--track-mono);color:rgba(30,14,10,.6)}
+.tutor-review-tag::after{content:'';width:28px;height:1px;background:rgba(30,14,10,.2)}
+.tutor-review-word{position:relative;z-index:2;max-width:calc(100% - 120px);margin:2px 0 0;font-size:36px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.06em;text-wrap:balance}
+.tutor-review-answer{position:relative;z-index:2;align-self:end;display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;width:100%;margin-top:8px}
+.tutor-review-answer-text{display:inline-grid;place-items:center;min-height:64px;padding:8px 16px;border-radius:14px;background:#FAFAF9;color:#08090C;box-shadow:0 10px 22px rgba(30,14,10,.22);font-size:22px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:-.022em;text-wrap:balance}
+.tutor-review-answer[data-size=glyph] .tutor-review-answer-text{min-width:84px;font-size:46px;line-height:1;font-weight:var(--wt-display)}
+.tutor-review-again{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:rgba(30,14,10,.1);color:var(--w-on-face);box-shadow:inset 0 0 0 1px rgba(30,14,10,.2);font-size:14.5px;font-weight:var(--wt-strong);cursor:pointer;transition:background .18s var(--w-ease)}
+.tutor-review-again:hover{background:rgba(30,14,10,.16)}
+.tutor-review-again:disabled{opacity:.6;cursor:wait}
+/* 연출: 바뀔 때 200ms 페이드 한 번(설정의 「보상 연출」이 꺼져 있거나 움직임 줄이기면 없음) */
+.tutor-review[data-result=enter] .tutor-review-result{animation:tutor-review-fade .2s var(--w-ease)}
+@keyframes tutor-review-fade{from{opacity:0}to{opacity:1}}
 .tutor-review-return{order:2;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin-top:16px;padding:0 24px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 .tutor-review-return::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .tutor-review-return:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 30%,transparent)}
@@ -90,6 +116,9 @@
  .tutor-review-speech .game-tutor-portrait{width:48px;height:48px}
  .tutor-review-line{font-size:14px}
  .tutor-review-option{min-height:58px;padding:10px 12px}
+ .tutor-review-poster{padding:16px}
+ .tutor-review-print{width:84px}
+ .tutor-review-word{max-width:calc(100% - 96px);font-size:30px}
 }
 @media(max-height:500px) and (min-width:600px){
  .tutor-review{width:min(780px,calc(100vw - 24px));padding:16px 22px}
@@ -99,12 +128,27 @@
  .tutor-review-line{font-size:14px}
  .tutor-review-prompt{margin-bottom:10px}
  .tutor-review-options{grid-template-columns:repeat(3,minmax(0,1fr))}
- .tutor-review-option{min-height:50px}
+ .tutor-review-option,.tutor-review-options[data-layout=grid] .tutor-review-option{min-height:52px;font-size:22px}
  [data-layout=rows]>.tutor-review-option{padding:8px 12px 8px 10px}
  .tutor-review-listen{min-height:44px}
- .tutor-review-return{min-height:46px;margin-top:10px}
+ .tutor-review-return{min-height:48px;margin-top:10px}
  .tutor-review-status{margin:8px 0}
+ .tutor-review-poster{min-height:0;padding:14px 18px}
+ .tutor-review-print{width:80px;top:12px}
+ .tutor-review-word{font-size:28px}
+ .tutor-review-answer-text{min-height:52px}
+ .tutor-review-answer[data-size=glyph] .tutor-review-answer-text{font-size:36px;min-width:64px}
  .game-tutor-guide:has(.tutor-support-list:not([hidden]))[open]{display:block;max-width:650px}
  .game-tutor-guide:has(.tutor-support-list:not([hidden])) .tutor-support-list{margin:16px 0 4px}
+}
+/* PC 넓은 틀: 창을 키우고 문제·선택지를 두 단으로(선택지가 문장이면 한 단) */
+@media(min-width:1100px) and (min-height:600px){
+ .tutor-review{width:min(760px,calc(100vw - 48px));padding:28px 32px 26px}
+ .tutor-review-prompt{font-size:26px}
+ .tutor-review-options[data-layout=grid] .tutor-review-option{min-height:104px;font-size:44px}
+ .tutor-review-poster{min-height:268px;padding:26px 28px}
+ .tutor-review-print{width:140px;top:22px;right:26px}
+ .tutor-review-word{max-width:calc(100% - 170px);font-size:48px}
+ .tutor-review-answer[data-size=glyph] .tutor-review-answer-text{min-width:104px;min-height:96px;font-size:64px}
 }
 @media(prefers-reduced-motion:reduce){.tutor-review,.tutor-review *{animation:none!important;transition:none!important}}

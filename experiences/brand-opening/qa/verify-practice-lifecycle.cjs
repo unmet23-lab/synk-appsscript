@@ -29,7 +29,7 @@ async function open(id){await close();await page.locator('[data-view="play"]').c
    check(`actual phone-style swipe performs ${action}`,await page.evaluate(()=>window.__synkGameTutor.metrics().practice.phase==='success'));
    if(action!=='slide')await page.locator('.practice-primary').click();
   }
-  await page.locator('.practice-exit').click();check('swipe rehearsal exits without a false completion',await page.locator('.tutor-practice,.game-frame').count()===0&&await page.evaluate(()=>!localStorage.getItem('synk.world.tutor.practice.v1:guest:marin:runner')));
+  await page.locator('.practice-exit').click();check('swipe rehearsal exits to the same game without a false completion',await page.locator('.tutor-practice').count()===0&&await page.locator('.game-frame').count()===1&&await page.evaluate(()=>!localStorage.getItem('synk.world.tutor.practice.v1:guest:marin:runner')));
   check('no swipe browser exceptions',errors.length===0,errors);await ctx.close();
   fs.writeFileSync(path.join(output,'swipe-result.json'),JSON.stringify({at:new Date().toISOString(),base,pass:checks.length,fail:0,checks,errors},null,2));console.log(`DONE ${checks.length} swipe checks`);return;
  }

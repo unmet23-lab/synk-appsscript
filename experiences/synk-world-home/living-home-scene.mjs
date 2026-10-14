@@ -23,8 +23,9 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
   let renderer;
   try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'low-power'});}
   catch(error){canvas.remove();onError(error);throw error;}
-  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.09;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  const scene=new THREE.Scene();scene.background=new THREE.Color('#eee9df');
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  // 2차(10-14): 방은 한강 노을이 드는 저녁. 바탕은 어두운 나무색이라 벽 밖이 보여도 천장 그늘처럼 읽힌다.
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#17120f');
   const camera=new THREE.PerspectiveCamera(36,1,.1,40),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const motionQuery=matchMedia('(prefers-reduced-motion:reduce)');
   let disposed=false,lost=false,active=true,inView=true,reduced=Boolean(reducedMotion),level=qualityId(quality),selected=tutorId(selectedTutor),frame=0,frames=0,lastDraw=0,clock=0,renderMs=0,photoGeneration=0;
@@ -36,10 +37,13 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
   const stop=()=>{cancelAnimationFrame(frame);frame=0;lastDraw=0;};
   const material=(color,props={})=>{const m=new THREE.MeshStandardMaterial({color,roughness:.9,...props});extraMaterials.add(m);return m;};
   function interactive(root,id,anchor=[0,1,0]){root.userData.homeTarget=id;interactables.push(root);const point=new THREE.Object3D();point.position.set(...anchor);root.add(point);anchors.set(id,point);return root;}
-  const hemi=new THREE.HemisphereLight('#e9f0f4','#a19481',1.15);scene.add(hemi);
-  const key=new THREE.DirectionalLight('#fff3dc',2.8);key.position.set(-3.8,6.5,4.8);key.castShadow=true;key.shadow.camera.left=-4.8;key.shadow.camera.right=4.8;key.shadow.camera.top=4;key.shadow.camera.bottom=-4;key.shadow.camera.near=.5;key.shadow.camera.far=18;key.shadow.bias=-.0002;key.shadow.normalBias=.016;key.shadow.radius=3;scene.add(key);
-  const fill=new THREE.DirectionalLight('#dce8f4',.62);fill.position.set(4,3,3);scene.add(fill);
-  const rim=new THREE.DirectionalLight('#fffaf0',.65);rim.position.set(0,4,-3);scene.add(rim);
+  // 조명(2차): 창밖 노을이 주광원이라는 설정. 앞쪽 따뜻한 키(얼굴이 읽히게) + 창에서 오는 주황 림 + 오른쪽 차가운 보조광.
+  const hemi=new THREE.HemisphereLight('#f4d6bc','#5b4a3b',1.0);scene.add(hemi);
+  const key=new THREE.DirectionalLight('#ffe4c6',2.45);key.position.set(-3.6,6.4,5.0);key.castShadow=true;key.shadow.camera.left=-4.8;key.shadow.camera.right=4.8;key.shadow.camera.top=4;key.shadow.camera.bottom=-4;key.shadow.camera.near=.5;key.shadow.camera.far=18;key.shadow.bias=-.0002;key.shadow.normalBias=.016;key.shadow.radius=3;scene.add(key);
+  const fill=new THREE.DirectionalLight('#b9cde6',.5);fill.position.set(4.5,3,3);scene.add(fill);
+  const rim=new THREE.DirectionalLight('#ffb078',1.9);rim.position.set(.8,3.6,-3.6);scene.add(rim);
+  // 창에서 방 안쪽 바닥으로 떨어지는 노을 웅덩이.
+  const glow=new THREE.SpotLight('#ffb982',2.2,11,.75,.7,1.6);glow.position.set(0,2.5,-3.1);glow.target.position.set(0,0,1.8);scene.add(glow,glow.target);
   function dispose(){
     if(disposed)return;disposed=true;photoGeneration++;stop();resizeObserver?.disconnect();intersection?.disconnect();document.removeEventListener('visibilitychange',visibility);motionQuery.removeEventListener('change',motionChange);signal?.removeEventListener('abort',abort);
     canvas.removeEventListener('pointerup',handlePointerUp);canvas.removeEventListener('webglcontextlost',contextLost);
@@ -75,12 +79,50 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     }
     for(const id of IDS){const wrapper=new THREE.Group();wrapper.name=`home-tutor-${id}`;wrapper.add(controllers[id].group);scene.add(wrapper);wrappers.set(id,wrapper);interactive(wrapper,`tutor:${id}`,[0,.05,.62]);}
 
-    const kit=companions.materials,oak=kit.wood,plaster=material('#e7e6de'),sage=material('#96a69c'),lapis=material('#5f7890'),brass=material('#b89561',{metalness:.65,roughness:.38}),paper=material('#fff4df'),ink=material('#4c615c');
+    const kit=companions.materials,oak=kit.wood,plaster=material('#dacfbe'),sage=material('#96a69c'),lapis=material('#5f7890'),brass=material('#b89561',{metalness:.65,roughness:.38}),paper=material('#fff4df'),ink=material('#4c615c');
     // Real wood planks and a plaster wall retain the wardrobe room's materials.
-    const floor=new THREE.Group();scene.add(floor);for(let i=0;i<40;i++)box(floor,[8,.09,.39],oak,[0,-.055,-3.05+i*.40]); // full-screen home: planks run under the glass dock to the camera
-    const wall=box(scene,[8,3.9,.14],plaster,[0,1.85,-2.85]);wall.castShadow=false;
-    box(scene,[8,.16,.18],oak,[0,.08,-2.73]);
-    const rugMat=kit.cottonCream.clone();rugMat.color.set('#d8d2bd');extraMaterials.add(rugMat);
+    const floor=new THREE.Group();scene.add(floor);for(let i=0;i<40;i++)box(floor,[20,.09,.39],oak,[0,-.055,-3.05+i*.40]); // full-screen home: planks run under the glass dock to the camera
+    box(scene,[20,.16,.18],oak,[0,.08,-2.73]); // PC 가로 틀은 방을 오른쪽으로 밀어 왼쪽 열까지 벽·바닥이 이어져야 한다(2차 3판)
+    // ── 창밖 한강(2차 10-14) ── 뒷벽에 큰 창을 내고 승인 타이틀 장면(한강·남산·노을)을 창밖에 둔다. 카메라가 고정이라 시차 없이 창문 사진처럼 보인다.
+    // 세로·가로 화면은 창 비율이 달라 두 벌을 만들고 arrange()에서 하나만 보인다. 그림 한 장(텍스처 하나)을 두 창이 함께 쓰고,
+    // 어느 부분을 쓸지는 창 판의 UV로 정한다(3차: 텍스처 복제본은 그림이 늦게 오면 첫 진입에서 업로드를 놓쳐 창이 까맣게 남았다).
+    const viewTexture=new THREE.TextureLoader().load(new URL('./scene-assets/window-hangang-20261014.webp',import.meta.url).href,()=>schedule());
+    viewTexture.colorSpace=THREE.SRGBColorSpace;viewTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());extraTextures.add(viewTexture);
+    function wallWithWindow(W,H,cy){
+      const shape=new THREE.Shape();shape.moveTo(-10,0);shape.lineTo(10,0);shape.lineTo(10,4.6);shape.lineTo(-10,4.6);shape.closePath();
+      const hole=new THREE.Path(),x=-W/2,y=cy-H/2;hole.moveTo(x,y);hole.lineTo(x+W,y);hole.lineTo(x+W,y+H);hole.lineTo(x,y+H);hole.closePath();shape.holes.push(hole);
+      const geometry=new THREE.ExtrudeGeometry(shape,{depth:.14,bevelEnabled:false});geometry.translate(0,0,-.07);
+      const wall=mesh(scene,geometry,plaster,[0,0,-2.85]);wall.castShadow=false;return wall;
+    }
+    function windowSet(W,H,cy,[u0,u1]){
+      const g=new THREE.Group();scene.add(g);const t=.085,d=.2;
+      box(g,[W+2*t,t,d],oak,[0,cy+H/2+t/2,-2.84]);box(g,[W+2*t,t,d],oak,[0,cy-H/2-t/2,-2.84]);
+      box(g,[t,H,d],oak,[-W/2-t/2,cy,-2.84]);box(g,[t,H,d],oak,[W/2+t/2,cy,-2.84]);
+      const bars=Math.max(2,Math.round(W/1.25));for(let i=1;i<bars;i++)box(g,[.04,H,.06],paper,[-W/2+i*W/bars,cy,-2.8]);
+      box(g,[W,.035,.06],paper,[0,cy+H*.2,-2.8]);
+      box(g,[W+.5,.07,.34],oak,[0,cy-H/2-t-.035,-2.72]);
+      const mat=new THREE.MeshBasicMaterial({map:viewTexture,toneMapped:false});extraMaterials.add(mat);
+      const ratio=(1260*(u1-u0))/485,pw=W*1.18,ph=Math.max(pw/ratio,H*1.12);
+      const plane=new THREE.PlaneGeometry(pw,ph),uv=plane.attributes.uv;for(let i=0;i<uv.count;i++)uv.setX(i,u0+uv.getX(i)*(u1-u0));uv.needsUpdate=true;
+      const view=mesh(g,plane,mat,[0,cy+.03,-3.45]);view.castShadow=view.receiveShadow=false;
+      return g;
+    }
+    const windowPortrait={wall:wallWithWindow(2.0,1.42,2.42),set:windowSet(2.0,1.42,2.42,[.492,1])};
+    const windowLandscape={wall:wallWithWindow(3.8,1.5,2.45),set:windowSet(3.8,1.5,2.45,[0,1])};
+    // 펜던트 등: 저녁 방의 두 번째 광원. 스스로 움직이지 않는다.
+    const shadeMat=material('#f4e6cf',{side:THREE.DoubleSide,emissive:'#ffb978',emissiveIntensity:.22}),bulbMat=material('#fff3dc',{emissive:'#ffd59a',emissiveIntensity:2.4});
+    const lamp=new THREE.Group();scene.add(lamp);
+    mesh(lamp,new THREE.CylinderGeometry(.012,.012,1.3,6),ink,[0,.6,0]);
+    const shade=mesh(lamp,new THREE.CylinderGeometry(.13,.36,.3,28,1,true),shadeMat,[0,-.07,0]);shade.castShadow=false;
+    mesh(lamp,new THREE.SphereGeometry(.07,14,10),bulbMat,[0,-.16,0]).castShadow=false;
+    const lampLight=new THREE.PointLight('#ffc48a',1.3,7,2);lampLight.position.set(0,-.22,0);lamp.add(lampLight);
+    // 동네 문 위 작은 선반: 잔·코랄 펠트 공·책 두 권.
+    const coral=material('#F96859'),shelf=new THREE.Group();scene.add(shelf);
+    box(shelf,[1.1,.05,.26],oak,[0,0,0]);box(shelf,[.05,.16,.2],oak,[-.4,-.1,-.02]);box(shelf,[.05,.16,.2],oak,[.4,-.1,-.02]);
+    mesh(shelf,new THREE.CylinderGeometry(.075,.062,.12,20),kit.ceramic,[-.33,.085,.02]);
+    mesh(shelf,new THREE.SphereGeometry(.09,18,14),coral,[.02,.115,0]);
+    box(shelf,[.3,.035,.2],lapis,[.33,.043,0]);box(shelf,[.26,.03,.18],sage,[.33,.076,.01]);
+    const rugMat=kit.cottonCream.clone();rugMat.color.set('#cdbfa5');extraMaterials.add(rugMat);
     const rug=mesh(scene,new THREE.CircleGeometry(2.45,72),rugMat,[0,.005,.18],[1,.72,1]);rug.rotation.x=-Math.PI/2; rug.castShadow=false;
     const contactCanvas=document.createElement('canvas');contactCanvas.width=contactCanvas.height=128;const cc=contactCanvas.getContext('2d'),gradient=cc.createRadialGradient(64,64,9,64,64,62);gradient.addColorStop(0,'rgba(40,36,28,.25)');gradient.addColorStop(.55,'rgba(40,36,28,.12)');gradient.addColorStop(1,'rgba(40,36,28,0)');cc.fillStyle=gradient;cc.fillRect(0,0,128,128);const contactTexture=canvasTexture(contactCanvas);extraTextures.add(contactTexture);
     const contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,depthWrite:false,toneMapped:false});extraMaterials.add(contactMaterial);
@@ -129,7 +171,7 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     const photo=new THREE.Group();scene.add(photo);interactive(photo,'photo',[0,.30,.28]);rounded(photo,[.48,.28,.19],kit.ceramic,[0,.27,0]);const lens=mesh(photo,new THREE.CylinderGeometry(.09,.09,.09,24),ink,[0,.27,.13]);lens.rotation.x=Math.PI/2;mesh(photo,new THREE.CylinderGeometry(.04,.04,.038,12),brass,[-.14,.435,0]);
 
     const plant=new THREE.Group();scene.add(plant);mesh(plant,new THREE.CylinderGeometry(.20,.16,.34,24),kit.ceramic,[0,.17,0]);for(let i=0;i<7;i++){const a=i*2.399,l=mesh(plant,new THREE.SphereGeometry(1,16,10),leafMat,[Math.sin(a)*.16,.56+(i%3)*.1,Math.cos(a)*.13],[.08,.24,.04]);l.rotation.set(.25,a,Math.sin(a)*.5);}
-    const envScene=new THREE.Scene();envScene.background=new THREE.Color('#dfe7e7');const envWhite=new THREE.MeshBasicMaterial({color:'#ffffff'});mesh(envScene,new THREE.PlaneGeometry(5,4),envWhite,[-3,3,4]).lookAt(0,1,0);mesh(envScene,new THREE.PlaneGeometry(4,3),envWhite,[3,2,-3]).lookAt(0,1,0);const pmrem=new THREE.PMREMGenerator(renderer);environment=pmrem.fromScene(envScene,.02);scene.environment=environment.texture;scene.environmentIntensity=.42;pmrem.dispose();envScene.traverse(o=>o.geometry?.dispose());envWhite.dispose();
+    const envScene=new THREE.Scene();envScene.background=new THREE.Color('#dcc9b4');const envWhite=new THREE.MeshBasicMaterial({color:'#ffffff'});mesh(envScene,new THREE.PlaneGeometry(5,4),envWhite,[-3,3,4]).lookAt(0,1,0);mesh(envScene,new THREE.PlaneGeometry(4,3),envWhite,[3,2,-3]).lookAt(0,1,0);const pmrem=new THREE.PMREMGenerator(renderer);environment=pmrem.fromScene(envScene,.02);scene.environment=environment.texture;scene.environmentIntensity=.42;pmrem.dispose();envScene.traverse(o=>o.geometry?.dispose());envWhite.dispose();
 
     function arrange(){
       const portrait=width/height<1,sideIds=IDS.filter(id=>id!==selected);
@@ -142,7 +184,11 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
         wrapper.position.set(center?0:(index===0?-1:1)*(portrait?1.30:1.58),.028,center?.33:portrait?-.50:-.29);
         wrapper.rotation.y=center?-.025:(index===0?.14:-.14);
       }
-      cafe.position.set(portrait?-1.76:-2.65,.02,-2.60);town.position.set(portrait?1.76:2.65,.02,-2.60);memory.position.set(0,2.61,-2.65);
+      cafe.position.set(portrait?-1.76:-2.65,.02,-2.60);town.position.set(portrait?1.76:2.65,.02,-2.60);
+      // 창이 벽 가운데를 차지하므로 액자는 카페 문 위, 선반은 동네 문 위, 등은 오른쪽 앞.
+      memory.position.set(portrait?-1.78:-2.65,portrait?3.02:3.05,-2.65);memory.scale.setScalar(.75);
+      windowPortrait.wall.visible=windowPortrait.set.visible=portrait;windowLandscape.wall.visible=windowLandscape.set.visible=!portrait;
+      shelf.position.set(portrait?1.78:2.65,portrait?2.68:2.7,-2.7);lamp.position.set(portrait?1.2:2.3,portrait?3.25:3.3,portrait?-.5:-.8);
       book.position.set(portrait?-1.30:-2.10,.01,1.17);wardrobe.position.set(portrait?1.70:2.30,.01,.52);wardrobe.scale.setScalar(portrait?.73:.9);photo.position.set(.61,.03,1.25);plant.position.set(portrait?-2.36:-3.29,.015,-1.32);
     }
     function updateCharacters(){for(const id of IDS){const start=greetings.get(id),greeting=start===undefined?-1:clock-start;controllers[id].update(clock,{reducedMotion:still(),greeting});if(greeting>1.2)greetings.delete(id);}}
@@ -150,7 +196,7 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     function render(force=false){if(disposed||lost||!force&&stopped())return;const before=performance.now();updateCharacters();renderer.render(scene,camera);frames++;renderMs=performance.now()-before;}
     function schedule(){if(!frame&&!stopped())frame=requestAnimationFrame(tick);}
     function tick(now){frame=0;if(stopped())return;const interval=level==='low'?1000/20:1000/30;if(!lastDraw||now-lastDraw>=interval-1||still()){const dt=lastDraw?Math.min(.05,(now-lastDraw)/1000):0;lastDraw=now;if(!still())clock+=dt;render();}if(!still())schedule();}
-    function resize(){if(disposed)return;const rect=container.getBoundingClientRect();width=Math.max(1,Math.round(rect.width));height=Math.max(1,Math.round(rect.height));const ratio=width/height;renderer.setPixelRatio(Math.min(devicePixelRatio||1,level==='low'?1:level==='high'?1.75:1.5,Math.sqrt((level==='low'?420000:level==='high'?1400000:850000)/(width*height))));renderer.setSize(width,height,false);camera.aspect=ratio;const spanOverride=Number.parseFloat(getComputedStyle(container).getPropertyValue(ratio<1?'--scene-span-portrait':'--scene-span-landscape')),span=spanOverride>0?spanOverride:ratio<1?4.60:7.4,distance=Math.max(6.0,span/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*ratio));camera.position.set(0,2.65,distance);camera.lookAt(0,1.28,0);
+    function resize(){if(disposed)return;const rect=container.getBoundingClientRect();width=Math.max(1,Math.round(rect.width));height=Math.max(1,Math.round(rect.height));const ratio=width/height;renderer.setPixelRatio(Math.min(devicePixelRatio||1,level==='low'?1:level==='high'?1.75:1.5,Math.sqrt((level==='low'?420000:level==='high'?1400000:850000)/(width*height))));renderer.setSize(width,height,false);camera.aspect=ratio;const spanOverride=Number.parseFloat(getComputedStyle(container).getPropertyValue(ratio<1?'--scene-span-portrait':'--scene-span-landscape')),span=spanOverride>0?spanOverride:ratio<1?4.60:7.4,distance=Math.max(6.0,span/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*ratio));camera.position.set(0,2.45,distance);camera.lookAt(0,1.33,0);
      // The home lays glass UI over the lower screen; --scene-lift raises the framed room without changing perspective.
      const style=getComputedStyle(container),lift=Number.parseFloat(style.getPropertyValue('--scene-lift'))||0,shift=Number.parseFloat(style.getPropertyValue('--scene-shift'))||0;if(lift||shift)camera.setViewOffset(width,height,-Math.round(width*shift),Math.round(height*lift),width,height);else camera.clearViewOffset();
      camera.updateProjectionMatrix();arrange();schedule();}

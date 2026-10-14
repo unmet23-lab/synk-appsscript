@@ -24,6 +24,12 @@ const store = {
   set(key, value) { try { localStorage.setItem(key, value); } catch { /* 이 페이지에서만 */ } },
 };
 function announce(text) { const n = $('sr-live'); n.textContent = ''; setTimeout(() => { n.textContent = text; }, 30); }
+// ── WORLD 안(2026-10-14 3차): world-host.js가 붙인 data-host=world일 때만 쓰는 무대·문구·소리·박자 맞추기·결과 한 장.
+// LAB 단독 화면은 이 분기를 하나도 타지 않는다(r2/games/standalone-proof.cjs로 계산 스타일·DOM·캔버스 픽셀 차이 0 확인).
+const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+const wt = (lab, world) => (WORLD ? world : lab);   // 보이는 글: LAB 그대로 · WORLD 새 문구
+let worldSound = null;   // 공통 소리·진동·연출 스위치 — WORLD 안에서만 불러오고, 못 불러오면 조용히 넘어간다
+if (WORLD) import('../brand-opening/world-sound.mjs').then((m) => { worldSound = m; m.bindTaps(document); }).catch(() => {});
 
 /* ── 공통 학습 기록(Atlas) ── */
 let coach = null, learningAvailable = true;
@@ -64,7 +70,7 @@ let collectionRoundId = null;
 const music = new MusicPlayer({ onDelivery: (q, status) => { q.delivered = status.audio; if (q.presentationId) learn((c) => c.delivery(q.presentationId, status)); } });
 music.enabled = state.musicOn;
 const pads = [$('pad-0'), $('pad-1')];
-const stage = new Stage($('stage'), { pads });
+const stage = new Stage($('stage'), { pads, theme: WORLD ? 'world' : 'lab' });   // WORLD: 어두운 무대 + 흰 판정선 하나
 new Stage($('hero-runway'), { preview: true });   // 입구 그림(멈춘 무대)
 stage.reduced = state.reduced;
 let raf = 0, lastFrame = 0, lastUi = 0, toastTimer = 0, startGeneration = 0, reviewSeq = 0;
@@ -149,6 +155,7 @@ function tip(text) { $('tip').hidden = !text; if (text) $('tip').textContent = t
 /* ── 한 곡 ── */
 async function start() {
   if (state.loading) return;
+  if (needsCalibration() && openCalibration()) return;   // WORLD 처음 한 번: 박자 맞추기 → 「노래 시작하기」로 다시 여기
   state.loading = true;
   const generation = ++startGeneration;
   $('start-button').disabled = true; $('replay-button').disabled = true;
@@ -161,7 +168,7 @@ async function start() {
     state.round = round; state.pressed.clear(); state.paused = false;
     resetQuestion(); resetHud(round);
     show('game');
-    tip('노래와 문장을 준비하고 있어요…');
+    tip(wt('노래와 문장을 준비하고 있어요…', '노래와 문장을 준비하고 있어요'));
     stage.ready.then(() => { if (state.loading && state.round === round) stage.draw(round, -99, state.pressed, 0); });
     const [buffer] = await Promise.all([loading, stage.ready]);
     if (generation !== startGeneration) return;
@@ -173,7 +180,7 @@ async function start() {
     lastFrame = performance.now(); lastUi = 0;
     cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
     $('pause-button').focus({ preventScroll: true });
-    announce(`${track.title}. 네 박자 뒤에 시작해요. 노트가 크림색 선에 닿을 때 눌러요.`);
+    announce(`${track.title}. 네 박자 뒤에 시작해요. 노트가 ${wt('크림색', '흰')} 선에 닿을 때 눌러요.`);
   } catch (error) {
     if (generation !== startGeneration) return;
     music.stop(); state.round = null; tip(null); show('lobby');
@@ -226,7 +233,7 @@ function countdown(round, t) {
   const box = $('countdown');
   if (t >= 0) { if (!box.hidden) { box.hidden = true; tip(null); } return; }
   const n = String(Math.max(1, Math.min(4, Math.ceil(-t / round.beat))));
-  if (box.hidden) { box.hidden = false; tip('노트가 크림색 선에 닿을 때 눌러요'); }
+  if (box.hidden) { box.hidden = false; tip(wt('노트가 크림색 선에 닿을 때 눌러요', '노트가 흰 선에 닿을 때 눌러요')); }
   if ($('countdown-number').textContent !== n) { $('countdown-number').textContent = n; punch(box); }
 }
 
@@ -275,7 +282,7 @@ function questionPhase(q, t) {
   card.dataset.phase = phase;
   if (answered) return;   // 답한 뒤의 글은 answered()가 쓴다
   $('q-ask').textContent = phase === 'listening' ? '잘 들어 보세요' : phase === 'think' ? '맞는 내용일까요?' : '들은 내용과 맞으면 O, 아니면 X';
-  $('q-hint').textContent = phase === 'answer' ? '노트가 크림색 선에 닿을 때 눌러요' : '끝까지 들은 뒤에 답해요';
+  $('q-hint').textContent = phase === 'answer' ? wt('노트가 크림색 선에 닿을 때 눌러요', '노트가 흰 선에 닿을 때 눌러요') : '끝까지 들은 뒤에 답해요';
   if (phase === 'answer') announce('들은 내용과 맞으면 O, 아니면 X. 노트가 선에 닿을 때 눌러요.');
 }
 /** 글로 보기: 들은 문장과 질문을 글로 보여 준다. 이 문제는 도움을 받은 답으로 남는다. */
@@ -298,7 +305,7 @@ function eventEffect(event) {
   if (event.type === 'listening') return;
   if (event.type === 'intent') {
     pads.forEach((b, i) => b.classList.toggle('intent', i === event.lane));
-    $('q-hint').textContent = '골랐어요. 노트가 선에 닿을 때 한 번 더 눌러요.';
+    $('q-hint').textContent = wt('골랐어요. 노트가 선에 닿을 때 한 번 더 눌러요.', '골랐어요. 노트가 흰 선에 닿을 때 한 번 더 눌러요.');
     return;
   }
   if (event.quality > 0) { stage.hit(event.lane, event.quality); music.hit(event.lane); judgment(event.lane, event.quality); }
@@ -317,8 +324,9 @@ function answered(event) {
   const result = q.response === null ? 'none' : event.correct ? 'ok' : 'ko', card = $('phrase-card');
   card.dataset.phase = 'answered'; card.dataset.result = result;
   $('q-text-btn').hidden = true;
-  $('q-ask').textContent = result === 'ok' ? '잘 들었어요!' : result === 'ko' ? '다시 들어 봐요' : '다음에 다시 들어 봐요';
-  $('q-hint').textContent = `정답은 ${q.answer} · 해설은 곡이 끝나면 볼 수 있어요`;
+  $('q-ask').textContent = result === 'ok' ? wt('잘 들었어요!', '맞아요') : result === 'ko' ? wt('다시 들어 봐요', `정답은 ${q.answer}예요`) : wt('다음에 다시 들어 봐요', '이번에는 지나갔어요');
+  $('q-hint').textContent = wt(`정답은 ${q.answer} · 해설은 곡이 끝나면 볼 수 있어요`, result === 'ok' ? `정답 ${q.answer} · 해설은 곡이 끝나면 나와요` : '해설은 곡이 끝나면 나와요');
+  if (WORLD && result !== 'none') worldSound?.verdict(result === 'ok');
   const right = q.options.indexOf(q.answer);
   pads.forEach((b, i) => { b.classList.toggle('right', i === right); b.classList.toggle('intent', i === q.response); });
   if (q.presentationId) learn((c) => c.help(q.presentationId, 'answer'));
@@ -430,6 +438,7 @@ function finish() {
   resetQuestion(); tip(null);
   show('results');
   tutorEvent('finish');
+  if (WORLD) $('result-title').textContent = '말의\u00a0리듬, 끝!';   // 줄이 바뀌면 「말의 리듬, / 끝!」으로
   const correct = r.correctCount, total = r.questions.length, stars = correct >= total ? 3 : correct >= total - 1 ? 2 : correct >= Math.ceil(total / 2) ? 1 : 0;
   $('r-kicker').textContent = `${r.track.title} · ${LEVELS[r.levelName].label}`;
   $('r-correct').textContent = String(correct); $('r-total').textContent = String(total);
@@ -455,6 +464,7 @@ function finish() {
   state.recallIndex = 0;
   $('recall-content').hidden = true; $('recall-intro').hidden = false;
   $('recall-button').hidden = false; $('recall-button').textContent = '다른 문장 듣기';
+  if (WORLD) { worldResults(); worldArrive(); }
   $('result-title').focus({ preventScroll: true });
 }
 
@@ -543,6 +553,147 @@ async function recall() {
     $('recall-button').textContent = '다시 듣기'; $('recall-button').hidden = false;
   }
 }
+
+/* ── WORLD 안: 입구·결과 문구, 결과 한 장(오늘 들은 문장 셋 + 다시 들어 볼 문장 하나 + 얻은 것 + 흰 알약 「우리 방으로」), 박자 맞추기 ── */
+const WORLD_COPY = [
+  ['#lobby .hero-copy>.kicker', '03 · RHYTHM'],
+  ['#lobby .hero .lede', '노래를 듣다가 O·X로 답해요'],
+  ['#lobby .hero .sub', '노래에 맞춰 두 단추로 박자를 쳐요. 노래가 잠깐 작아지면 짧은 문장이 들려요. 들은 내용과 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.'],
+  ['.card-head>.tag', '곡 고르기'],
+  ['#start-button>span', '노래 시작하기'],
+  ['.levels-label', '난이도'],
+  ['#how-title', '하는 법'],
+  ['.how-steps li:nth-child(1) strong', '박자 맞추기'],
+  ['.how-steps li:nth-child(1) span', '노트가 흰 선에 닿을 때 아래 O·X 단추를 눌러요. 길게 이어진 노트는 끝까지 누르고 있어요.'],
+  ['.how-steps li:nth-child(2) strong', '듣고 O·X'],
+  ['.how-steps li:nth-child(2) span', '노래가 작아지면 짧은 문장이 들려요. 끝까지 듣고, 내용이 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.'],
+  ['.how-steps li:nth-child(3) strong', '이어서 치기'],
+  ['.how-steps li:nth-child(3) span', '놓치지 않고 이어 치면 콤보가 쌓여요. 곡이 끝나면 들은 문장을 다시 듣고 해설을 볼 수 있어요.'],
+  ['.how>.fine', '컴퓨터에서는 F·J나 ←·→ 키로 쳐요. Space나 Esc를 누르면 멈춰요. 문장은 글로 나오지 않고, 꼭 필요할 때만 ‘글로 보기’를 눌러요.'],
+  ['.lobby-foot>p:nth-child(1)', 'TOPIK I 듣기의 내용 일치(시간·장소·이유·조건을 담은 짧은 말)를 연습해요. 박자 점수는 TOPIK 급수와 상관없어요.'],
+  ['#settings-close>span', '완료'],
+  ['#resume-button>span', '이어서 하기'],
+  ['#leave-button', '게임 처음으로'],
+  ['.log>.tag', '오늘 들은 문장'],
+  ['#replay-button>span', '한 곡 더'],
+  ['#recall-title', '새 문장으로 한 번 더'],
+];
+function setupWorld() {
+  for (const [sel, text] of WORLD_COPY) { const n = document.querySelector(sel); if (n) n.textContent = text; }
+  $('arena').setAttribute('aria-label', '두 줄의 노트가 흰 판정선으로 다가와요. 선에 닿을 때 아래 O 단추(F 키)나 X 단추(J 키)를 눌러요.');
+  $('lane-controls').dataset.sound = 'none';   // O·X 단추는 박자 소리가 맡는다 — 단추 탭 소리는 겹치지 않게 뺀다
+  const gain = document.querySelector('.res-hero .synk-collection-line');   // 얻은 것(공통 코인)은 목록 아래 한 줄로
+  if (gain) { gain.classList.add('w-gain'); document.querySelector('.res-grid .log').after(gain); }
+  const more = document.createElement('button'); more.type = 'button'; more.className = 'text-link w-more'; more.hidden = true;
+  more.addEventListener('click', () => { const log = document.querySelector('.res-grid .log'); const all = log.classList.toggle('w-all'); more.textContent = all ? '접기' : more.dataset.label; });
+  document.querySelector('.res-grid .log').append(more);
+  const bar = document.createElement('div'); bar.className = 'w-room-bar';
+  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 방으로</span><i class="disc" aria-hidden="true"></i></button>';
+  bar.firstChild.addEventListener('click', backToRoom); $('results').append(bar);
+  const cal = document.createElement('dialog'); cal.id = 'w-calibrate'; cal.className = 'paper lab-dialog w-calibrate'; cal.setAttribute('aria-labelledby', 'w-cal-title');
+  cal.innerHTML = '<span class="kicker">TIMING CHECK</span><h2 id="w-cal-title">박자 맞추기</h2>'
+    + '<p data-w-copy>딸깍 소리가 날 때마다 아래 원을 눌러요. 여덟 번이면 끝나요. 이어폰이나 스피커가 소리를 늦게 내는 만큼을 한 번 맞춰 둬요.</p>'
+    + '<button class="w-cal-pad" type="button" data-w-tap data-sound="none" aria-label="소리에 맞춰 누르기" disabled><b data-w-count>0 / 8</b><span>소리에 맞춰 누르기</span></button>'
+    + '<p class="w-cal-note" data-w-note role="status"></p>'
+    + '<div class="dialog-actions"><button class="felt-cta" type="button" data-w-go><span>소리 듣고 맞추기</span><i class="disc" aria-hidden="true"></i></button>'
+    + '<button class="chip-btn wide" type="button" data-w-skip>건너뛰기</button></div>';
+  document.body.append(cal);
+  const tap = cal.querySelector('[data-w-tap]');
+  tap.addEventListener('pointerdown', (e) => { e.preventDefault(); calibrationTap(); });
+  tap.addEventListener('click', (e) => { if (e.detail === 0) calibrationTap(); });   // 키보드로 누른 단추
+  cal.addEventListener('keydown', (e) => { if (calibration && ['KeyF', 'KeyJ', 'ArrowLeft', 'ArrowRight'].includes(e.code)) { e.preventDefault(); if (!e.repeat) calibrationTap(); } });
+  cal.querySelector('[data-w-go]').addEventListener('click', () => { if (cal.dataset.step === 'done') { cal.close(); start(); } else void runCalibration(); });
+  cal.querySelector('[data-w-skip]').addEventListener('click', () => { stopCalibration(); store.set(CAL_KEY, '1'); cal.close(); start(); });
+  cal.addEventListener('close', stopCalibration);
+}
+/** 결과 → 우리 방: WORLD 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
+function backToRoom() {
+  music.stop();
+  try { const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  show('lobby'); renderRecommendation();
+}
+function worldResults() {
+  const list = $('review-list'), items = [...list.children].filter((li) => li.matches('li.ok,li.ko'));
+  let picked = 0;
+  for (const li of items) if (li.classList.contains('ok') && picked < 3) { li.classList.add('w-pick'); picked += 1; }
+  const again = items.find((li) => li.classList.contains('ko'));
+  if (again) {
+    again.classList.add('w-again');
+    const label = document.createElement('li'); label.className = 'w-again-label'; label.setAttribute('aria-hidden', 'true'); label.textContent = '다시 들어 볼 문장';
+    list.append(label, again);
+  }
+  const hidden = items.length - picked - (again ? 1 : 0), more = document.querySelector('.w-more');
+  document.querySelector('.res-grid .log')?.classList.remove('w-all');
+  if (more) { more.dataset.label = `전체 ${items.length}개 보기`; more.textContent = more.dataset.label; more.hidden = hidden <= 0; }
+}
+/** 결과가 나올 때 한 번: 첫 완주만 200ms 페이드 + 'reward', 그 뒤는 'done'. 「보상 연출」을 끄면 연출 없이 결과만. */
+function worldArrive() {
+  const ws = worldSound;
+  if (!ws?.getPref || !ws.getPref('celebrate')) return;
+  const key = 'synk.world.first-finish.rhythm';
+  let first = false;
+  try { first = !localStorage.getItem(key); if (first) localStorage.setItem(key, '1'); } catch { first = false; }
+  if (first && !state.reduced) { const r = $('results'); r.classList.remove('w-arrive'); void r.offsetWidth; r.classList.add('w-arrive'); }
+  ws.play(first ? 'reward' : 'done'); ws.haptic?.('done');
+}
+
+/* 박자 맞추기(WORLD 처음 한 번): 0.6초마다 딸깍 여덟 번, 누른 시각과 소리 시각의 차이(앞 두 번 빼고 가운데 값)를 박자 보정에 넣는다.
+   게임 시계(audio.mjs의 context.currentTime)와 같은 기준으로 재므로, 이어폰이 늦게 내는 만큼이 그대로 + 보정이 된다. 화면은 깜빡이지 않는다(소리만 듣고 누른다). */
+const CAL_KEY = 'synk.world.rhythm.calibrated', CAL_BEATS = 8, CAL_GAP = 0.6;
+let calibration = null;
+function needsCalibration() { return WORLD && store.get(CAL_KEY) !== '1' && store.get(OFFSET_KEY) === null; }
+function calStep(step, ms = 0) {
+  const cal = $('w-calibrate'); if (!cal) return;
+  cal.dataset.step = step;
+  const go = cal.querySelector('[data-w-go]'), tap = cal.querySelector('[data-w-tap]'), note = cal.querySelector('[data-w-note]');
+  go.hidden = step === 'run'; tap.disabled = step !== 'run';
+  go.querySelector('span').textContent = step === 'done' ? '노래 시작하기' : step === 'retry' ? '다시 맞추기' : '소리 듣고 맞추기';
+  cal.querySelector('[data-w-skip]').hidden = step === 'done';
+  note.textContent = step === 'done' ? (ms ? `소리가 ${Math.abs(ms)}ms ${ms > 0 ? '늦게' : '일찍'} 들리는 만큼 맞췄어요. ‘소리·박자 설정’에서 언제든 바꿀 수 있어요.` : '이 기기는 따로 맞추지 않아도 돼요.')
+    : step === 'retry' ? '소리에 맞춰 누른 횟수가 적어서 재지 못했어요. 한 번 더 하거나 건너뛰어요.' : step === 'run' ? '들리는 대로 눌러요.' : '';
+  if (step === 'ready' || step === 'retry') cal.querySelector('[data-w-count]').textContent = `0 / ${CAL_BEATS}`;   // 맞춘 뒤에는 누른 수를 그대로 둔다
+  if (step === 'run') tap.focus({ preventScroll: true }); else go.focus({ preventScroll: true });
+}
+function openCalibration() { const cal = $('w-calibrate'); if (!cal) return false; calStep('ready'); if (!cal.open) cal.showModal(); return true; }
+async function runCalibration() {
+  stopCalibration();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { store.set(CAL_KEY, '1'); $('w-calibrate').close(); start(); return; }
+  const ctx = new AC({ latencyHint: 'interactive' });
+  try { await ctx.resume(); } catch { /* 이미 켜짐 */ }
+  const ctxAt = ctx.currentTime, perfAt = performance.now(), first = ctxAt + 0.7, ticks = [];
+  for (let i = 0; i < CAL_BEATS; i += 1) {
+    const t = first + i * CAL_GAP, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = i % 4 === 0 ? 1318.5 : 987.8;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.09);
+    ticks.push(perfAt + (t - ctxAt) * 1000);
+  }
+  calibration = { ctx, ticks, taps: [], timer: setTimeout(endCalibration, (first - ctxAt + CAL_BEATS * CAL_GAP + 0.4) * 1000) };
+  calStep('run');
+}
+function calibrationTap() {
+  if (!calibration) return;
+  calibration.taps.push(performance.now());
+  $('w-calibrate').querySelector('[data-w-count]').textContent = `${Math.min(CAL_BEATS, calibration.taps.length)} / ${CAL_BEATS}`;
+}
+function stopCalibration() { if (!calibration) return; clearTimeout(calibration.timer); try { calibration.ctx.close(); } catch { /* 닫힘 */ } calibration = null; }
+function endCalibration() {
+  const cal = calibration; if (!cal) return;
+  calibration = null; try { cal.ctx.close(); } catch { /* 닫힘 */ }
+  const deltas = [];
+  for (const tick of cal.ticks.slice(2)) {   // 앞의 두 번은 박자를 잡는 동안이라 재지 않는다
+    let best = null;
+    for (const tap of cal.taps) { const d = tap - tick; if (Math.abs(d) <= 280 && (best === null || Math.abs(d) < Math.abs(best))) best = d; }
+    if (best !== null) deltas.push(best);
+  }
+  if (deltas.length < 4) { calStep('retry'); return; }
+  deltas.sort((a, b) => a - b);
+  const ms = Math.max(-OFFSET_MAX, Math.min(OFFSET_MAX, Math.round(deltas[Math.floor(deltas.length / 2)] / 10) * 10));
+  state.offset = ms; store.set(OFFSET_KEY, String(ms)); store.set(CAL_KEY, '1'); syncSettings();
+  calStep('done', ms);
+}
+if (WORLD) setupWorld();
 
 /* ── 이벤트 ── */
 $('start-button').addEventListener('click', start);

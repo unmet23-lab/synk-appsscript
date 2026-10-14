@@ -112,7 +112,12 @@ svg{width:24px;height:24px;flex-shrink:0}
 
 /* ── 시트: 근사 검정 판 하나 ── */
 .world-panel{position:fixed;inset:auto 0 max(0px,calc((100dvh - var(--shell-height))/2));margin:0 auto;border:0;width:var(--shell-width);max-width:none;max-height:calc(var(--shell-height) - 56px - var(--safe-top));padding:10px 20px calc(28px + var(--safe-bottom));border-radius:var(--w-r-xl) var(--w-r-xl) 0 0;background:var(--w-panel);color:var(--w-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -20px 60px rgba(0,0,0,.45);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;font-family:var(--w-sans)}
-.world-panel[open]{animation:sheet-enter .26s var(--w-ease)}
+/* 시트 전환(유호님 10-14 B안): 열 때 200ms 투명·97%→원래, 닫을 때 160ms →투명·98%(home.mjs closePanel의 .is-closing). 바탕 막도 같은 시간. 위치는 움직이지 않는다. */
+.world-panel[open]{animation:sheet-enter .2s var(--w-ease);transform-origin:50% 100%}
+.world-panel[open]::backdrop{animation:backdrop-in .2s linear}
+.world-panel.is-closing{animation:sheet-exit .16s var(--w-ease) forwards;pointer-events:none}
+.world-panel.is-closing::backdrop{animation:backdrop-out .16s linear forwards}
+:root[data-motion=reduced] .world-panel,:root[data-motion=reduced] .world-panel::backdrop{animation:none!important}
 .world-panel::backdrop{background:rgba(4,5,7,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .sheet-handle{width:36px;height:4px;border-radius:4px;background:var(--w-ink-4);margin:0 auto 14px}
 .panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
@@ -127,6 +132,7 @@ svg{width:24px;height:24px;flex-shrink:0}
 /* 시트 안 공통 글·단추 */
 .panel-description{font-size:15.5px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
 .panel-art{display:block;width:150px;height:150px;object-fit:contain;margin:4px auto 18px;filter:var(--w-cut-shadow)}
+.panel-print{width:128px;margin:6px auto 24px}
 .panel-actions{display:grid;gap:10px;margin-top:24px}
 .felt-button,.plain-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;font-size:15.5px;font-weight:var(--wt-strong);letter-spacing:-.01em;line-height:1.3;text-align:center;transition:transform .12s var(--w-ease),background .18s var(--w-ease),box-shadow .2s var(--w-ease)}
 .felt-button{min-height:56px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
@@ -170,6 +176,18 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .play-copy small:last-child{font-size:13.5px;line-height:1.45;font-weight:var(--wt-label);color:rgba(30,14,10,.74);text-wrap:balance}
 .play-list .arrow{position:absolute;top:14px;left:14px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:0;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.16)}
 .play-list .arrow::before{content:'';width:13px;height:13px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
+/* 리듬(2차): 코랄 포스터는 첫 게임 하나. 나머지 게임은 어두운 카드 + 흰 인화지(기울기·자리를 달리한다) */
+.play-list button:not(:first-child){background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge);min-height:196px}
+.play-list button:not(:first-child)::before{display:none}
+.play-list button:not(:first-child)::after{opacity:.05}
+.play-list button:not(:first-child) .play-label{color:var(--w-ink-3)}
+.play-list button:not(:first-child) .play-copy strong{font-size:22px;line-height:1.15;font-weight:var(--wt-display);letter-spacing:var(--track-title)}
+.play-list button:not(:first-child) .play-copy small:last-child{color:var(--w-ink-3)}
+.play-list button:not(:first-child) .play-art{top:16px;right:16px;width:70px}
+.play-list button:nth-child(3) .play-art{transform:rotate(3deg)}
+.play-list button:not(:first-child) .arrow{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
+.play-list button:not(:first-child):hover{box-shadow:var(--w-card-edge),0 0 0 4px var(--w-line)}
+@container (min-width:600px){.play-list{grid-template-columns:1.3fr 1fr}.play-list button:first-child{grid-column:auto;grid-row:span 2;min-height:400px}.play-list button:first-child .play-art{width:190px}}
 .play-more{display:grid;margin-top:22px}
 .play-more .eyebrow{margin-bottom:6px}
 .play-more button{display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink)}
@@ -199,7 +217,10 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .settings-row input[type=checkbox]:checked{background:var(--w-ink)}
 .settings-row input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
 .settings-row input[type=checkbox]:disabled{opacity:.5;cursor:default}
-.orientation-settings{border:0;padding:0;margin:0 0 18px;min-width:0}
+.settings-group{margin:6px 0 4px}
+.settings-group>.eyebrow{margin:0 0 6px}
+.settings-group .settings-row:last-of-type{border-bottom:1px solid var(--w-line)}
+.orientation-settings{border:0;padding:0;margin:0 0 22px;min-width:0}
 .orientation-settings legend{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title);margin-bottom:12px;padding:0}
 .orientation-options{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
 .orientation-options label{position:relative;cursor:pointer}
@@ -221,7 +242,10 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .frame-loader{position:absolute;inset:0;z-index:2;background:var(--w-panel);display:grid;place-content:center;text-align:center;gap:14px;padding:24px;font-size:15px;line-height:1.6;color:var(--w-ink-2)}
 .frame-loader a{text-decoration:underline;text-underline-offset:5px;font-size:14px;color:var(--w-ink)}
 noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:var(--w-ink);padding:20px;border-radius:var(--w-r-md);z-index:10}
-@keyframes sheet-enter{from{transform:translateY(28px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes sheet-enter{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
+@keyframes sheet-exit{to{transform:scale(.98);opacity:0}}
+@keyframes backdrop-in{from{opacity:0}}
+@keyframes backdrop-out{to{opacity:0}}
 
 /* 옷장: 실제 피팅룸이 안쪽을 맡고, 둘레 창만 맞춘다 */
 #world-panel.wardrobe-dialog{inset:0;margin:auto;width:min(1140px,calc(100vw - 40px));height:fit-content;max-height:94dvh;border-radius:var(--w-r-xl);padding:20px 26px 0;overflow:auto}
@@ -295,6 +319,20 @@ noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:va
  [data-layout=landscape] .lobby-action{left:20px;bottom:98px;width:380px}
  [data-layout=landscape] .world-nav{left:20px;bottom:20px;width:380px}
  [data-layout=landscape] .world-panel{bottom:max(0px,calc((100dvh - var(--shell-height))/2));border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
+}
+/* ── PC 시트 계약(2차): 가로 틀이 넓으면 휴대폰 시트를 키우지 않고 PC 전용으로 둔다.
+ * 둘러보기 시트(놀이·설정·나·배우기 허브 등)는 방 오른쪽에 떠 있는 680px 패널 — 방이 왼쪽에 보인 채로 남는다.
+ * 집중 화면(home.mjs WIDE_PANEL: 레슨·문제·카페·결과·이야기·옷장·마을·보상)은 틀 가운데 최대 1120px.
+ * 안쪽 배치는 각 화면이 컨테이너 쿼리로 짠다(뷰포트 미디어 쿼리로 시트 폭을 추측하지 않는다).
+ * 게임(.game-panel)과 튜터 고르기(.tutor-panel)는 틀 전체를 그대로 쓴다. */
+@media(min-width:1100px) and (min-height:600px) and (pointer:fine){
+ [data-layout=landscape] #world-panel:not(.game-panel):not(.tutor-panel):not(.is-wide){inset:calc((100dvh - var(--shell-height))/2 + 12px) calc((100vw - var(--shell-width))/2 + 12px) auto auto;margin:0;width:min(680px,calc(var(--shell-width) - 24px));height:calc(var(--shell-height) - 24px);max-height:none;padding:24px 28px 28px;border-radius:var(--w-r-xl);container-type:inline-size}
+ [data-layout=landscape] #world-panel.is-wide:not(.game-panel):not(.tutor-panel){inset:0;margin:auto;width:min(1120px,calc(var(--shell-width) - 24px));height:calc(var(--shell-height) - 24px);max-height:none;border-radius:var(--w-r-xl)}
+ [data-layout=landscape] #world-panel:not(.game-panel) .sheet-handle{display:none}
+ [data-layout=landscape] #world-panel:not(.is-wide){transform-origin:100% 50%}
+ [data-layout=landscape] #world-panel.is-wide{transform-origin:50% 50%}
+ /* 오른쪽 패널이 열려 있는 동안 방이 보이도록 바탕은 가볍게만 덮는다. */
+ [data-layout=landscape] #world-panel:not(.is-wide):not(.game-panel):not(.tutor-panel)::backdrop{background:rgba(4,5,7,.28);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}button:active{transform:none!important}}
 

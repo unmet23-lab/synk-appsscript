@@ -30,7 +30,7 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   practiceRecommendation=homeTutorPracticeRecommendation({owner:selected.owner,summary:data?.summary,snapshot:data?.snapshot,lessons:data?.lessons,practised});
   if(!selected.tutor){
    if(!container.querySelector('.home-tutor-choose')){
-    container.innerHTML='<p class="home-tutor-invitation">오늘의 한국어를 함께할 친구</p><button type="button" class="home-tutor-choose">나의 AI 튜터 만나기 <span aria-hidden="true">→</span></button>';
+    container.innerHTML='<p class="home-tutor-invitation">아직 AI 튜터를 고르지 않았어요.</p><button type="button" class="home-tutor-choose">AI 튜터 고르기 <span aria-hidden="true">→</span></button>';
     container.querySelector('button').addEventListener('click',choose);
    }
    return;
@@ -61,7 +61,7 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
    companion.element.classList.remove('life-tutor');
    companion.element.querySelector('.life-tutor-help').classList.replace('life-tutor-help','home-tutor-action');
    companion.element.querySelector('.game-tutor-message').append(note);
-   practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='home-tutor-practice';practiceButton.textContent='헷갈린 표현 함께 연습';practiceButton.addEventListener('click',()=>openPractice(practiceRecommendation));container.append(practiceButton);
+   practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='home-tutor-practice';practiceButton.textContent='헷갈린 표현 연습하기';practiceButton.addEventListener('click',()=>openPractice(practiceRecommendation));container.append(practiceButton);
    dayButton=document.createElement('button');dayButton.type='button';dayButton.className='home-tutor-day';dayButton.addEventListener('click',openRecap);container.append(dayButton);
    companion.setActive(active);
   }
@@ -70,10 +70,10 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   button.textContent=recommendation.label||(recommendation.kind==='loading'?'기록 확인 중':'연결 상태 보기');button.disabled=recommendation.kind==='loading';
   container.dataset.recommendation=recommendation.kind;
   practiceButton.hidden=!practiceRecommendation||recommendation.command==='practice';
-  practiceButton.setAttribute('aria-label',practiceRecommendation?`헷갈린 표현 함께 연습 · ${practiceRecommendation.title}`:'헷갈린 표현 함께 연습');
+  practiceButton.setAttribute('aria-label',practiceRecommendation?`헷갈린 표현 연습하기 · ${practiceRecommendation.title}`:'헷갈린 표현 연습하기');
   const pending=data?.summary.status?.phase==='unsaved';
-  note.textContent=(completed?'방금 함께 연습했어요':recommendation.reason|| (recommendation.kind==='difficult'?`지난 학습에서 다시 볼 말 · ${recommendation.lessonTitle}`:recommendation.kind==='review'?'오늘 돌아온 표현':recommendation.kind==='resume'?'하던 자리 그대로':recommendation.kind==='start'?'오늘의 한 걸음':''))+(pending?' · 저장 대기 중':'');
-  dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?'오늘 기록 다시 보기':`오늘의 ${days.today.count}개 표현 · 마무리하기`;
+  note.textContent=(completed?'방금 함께 연습했어요':recommendation.reason|| (recommendation.kind==='difficult'?`지난 학습에서 다시 볼 말 · ${recommendation.lessonTitle}`:recommendation.kind==='review'?'다시 볼 표현이 있어요':recommendation.kind==='resume'?'하던 곳에서 이어서':recommendation.kind==='start'?'다음 레슨':''))+(pending?' · 저장 대기 중':'');
+  dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?'오늘 기록 다시 보기':`오늘 배운 표현 ${days.today.count}개 정리하기`;
   recap?.update(days,data.summary.status);
  }
  return {

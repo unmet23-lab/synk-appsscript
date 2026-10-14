@@ -350,3 +350,46 @@ body.walk-mode{overflow:hidden;background:var(--w-bg);--edge:24px;--top:calc(16p
   .stick-direction,#settings-open::before,#journal-open::before,.camera::before,.dialog-head .felt::after{background:CanvasText}
   .brand img{filter:none}
 }
+
+/* ════ 우리 동네 HUD(3차): 왼쪽 위 유리 판 하나에 가장 작은 지도 + 할 일 한 줄 ════
+ * 지금 있는 곳은 판 머리 글로, 내 자리는 코랄 점, 들렀던 곳은 메도우 점. 지도는 표시만 한다(누르지 않는다).
+ * 끝낸 생활 팩만큼 장소가 열리는 구조는 타운 서버의 이동 권한과 묶여 있어 여기서는 잠금 표시를 하지 않는다. */
+.town-map{display:none}
+.walk-mode .town-map{position:absolute;left:var(--edge);top:calc(var(--top) + 56px);z-index:3;display:grid;gap:8px;width:200px;margin:0;padding:10px 12px 12px;border-radius:var(--w-r-lg);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);pointer-events:none;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.walk-mode .scene-badge{display:none}
+.town-map-head{display:flex;align-items:center;gap:9px;margin:0;font-size:14px;line-height:1.3;font-weight:var(--wt-title);color:var(--w-ink)}
+.town-map-label{font-size:11px;font-weight:var(--wt-strong);letter-spacing:.1em;color:var(--w-ink-3)}
+.town-map-label::after{content:'';display:inline-block;width:18px;height:1px;margin-left:8px;vertical-align:middle;background:var(--w-line-2)}
+.town-map-plot{position:relative;height:96px;border-radius:12px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);color:rgba(250,250,249,.14)}
+.town-map-plot svg{position:absolute;inset:0;width:100%;height:100%}
+.town-map-place{position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%)}
+.town-map-place i{position:absolute;inset:0;border-radius:50%;background:var(--w-panel);box-shadow:inset 0 0 0 2px rgba(250,250,249,.5)}
+.town-map-place b{position:absolute;left:50%;top:calc(100% + 4px);transform:translateX(-50%);font-size:13px;line-height:1;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap}
+.town-map-place[data-place=greenhouse] b{left:calc(100% + 6px);top:50%;transform:translateY(-50%)}
+.town-map-place[data-visited=true] i{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.town-map-place[data-near=true] b{color:var(--w-ink)}
+.town-map-place[data-near=true] i{box-shadow:0 0 0 3px rgba(250,250,249,.22),inset 0 0 0 2px #FAFAF9}
+.town-map-me{position:absolute;left:50%;top:80%;z-index:1;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--w-face);box-shadow:0 0 0 3px rgba(249,104,89,.26),0 0 10px rgba(249,104,89,.6)}
+.town-todo{display:flex;align-items:baseline;gap:8px;margin:0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink)}
+.town-todo::before{content:'';width:7px;height:7px;flex:none;border-radius:50%;background:var(--w-face);box-shadow:0 0 8px rgba(249,104,89,.6);transform:translateY(-1px)}
+/* 조작 안내는 지도 아래(키보드·패드일 때만). 손가락일 때는 큰 조이스틱이 안내를 맡는다. */
+.walk-mode .walk-help{top:calc(var(--top) + 56px + 186px);max-width:200px}
+body[data-walk-input=touch] .walk-help{display:none}
+@media(max-width:760px){
+  .walk-mode .town-map{width:176px;padding:9px 10px 10px;gap:7px}
+  .town-map-plot{height:80px}
+  .walk-mode.walk-engaged .town-map{display:none}
+  .walk-mode .walk-help{top:calc(var(--top) + 56px + 168px);max-width:176px}
+}
+@media(max-width:360px){
+  /* 좁은 휴대폰: 시점 단추 줄 아래로 내려 겹치지 않게 */
+  .walk-mode .town-map{top:calc(var(--top) + 104px);width:164px}
+  .town-map-plot{height:72px}
+}
+@media(max-height:600px) and (min-width:600px){
+  .walk-mode .town-map{top:calc(var(--top) + 54px);width:184px;padding:8px 10px 9px;gap:6px}
+  .town-map-plot{height:62px}
+  .walk-mode .walk-help{display:none}
+}
+@media(prefers-reduced-transparency:reduce){.walk-mode .town-map{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.walk-mode .town-map{background:Canvas;color:CanvasText;border:1px solid CanvasText}.town-map-me,.town-todo::before{background:Highlight}}

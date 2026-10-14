@@ -6,10 +6,18 @@ import {loadWardrobeEnvironment} from './wardrobe-environment.mjs';
 import {wardrobeDyeDefaults} from './avatar-wardrobe.mjs';
 import {STAGE_DEFAULT_VIEW,STAGE_POSES,STAGE_BACKGROUNDS,normalizeStageView,stagePointerDistance} from './wardrobe-stage-state.mjs';
 
+// 무대(2026-10-14 3차): 어두운 판 위 따뜻한 조명. 배경은 「배운 장소」의 색·빛·바닥으로만 만든다(새 그림 없음).
+// 낮·노을은 어두운 무대, 사진관은 밝은 회색 스튜디오(옷 그림 썸네일과 같은 빛 — 썸네일 촬영도 이 빛을 쓴다).
 const LIGHTS={
-  daylight:{background:'#eef2f1',key:'#fff4e1',fill:'#d9e9f3',intensity:2.85,exposure:1.09},
-  sunset:{background:'#ece5e4',key:'#ffd1ad',fill:'#c1cbed',intensity:3.05,exposure:1.05},
-  studio:{background:'#edf0f2',key:'#ffffff',fill:'#edf1f7',intensity:2.8,exposure:1.03},
+  daylight:{background:'#1a1815',key:'#fff0d8',fill:'#c7d3e2',intensity:3.1,exposure:1.08,dark:true},
+  sunset:{background:'#2b1a17',key:'#ffbf92',fill:'#a7a6dc',intensity:3.3,exposure:1.05,dark:true},
+  studio:{background:'#edf0f2',key:'#ffffff',fill:'#edf1f7',intensity:2.8,exposure:1.03,dark:false},
+};
+// 장소별 색: [어두운 무대 배경, 어두운 무대 벽(스윕), 밝은 스튜디오 배경, 밝은 스튜디오 벽]
+const PLACES={
+  room:['#1a1815','#2a2622','#edf0f2','#f2f3f0'],
+  warm:['#24190f','#3a2a1d','#f0e6da','#efe6d9'],
+  garden:['#121b17','#1f2b24','#e0ebe2','#edf1e8'],
 };
 function mesh(parent,geometry,material,position=[0,0,0]){const m=new THREE.Mesh(geometry,material);m.position.set(...position);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
 function woodMap(){
@@ -103,7 +111,8 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   const pointers=new Map();
   const motionQuery=matchMedia('(prefers-reduced-motion: reduce)');
   renderer.debug.onShaderError=()=>{lost=true;cancelAnimationFrame(frame);frame=0;onError('3D 표현을 준비하지 못했어요. 다시 열어 주세요.');};
-  function fit(width=size.width,height=size.height){camera.aspect=width/height;camera.fov=36;const scale=1/(1+zoom*.75);target.set(0,detail?.73:.91,0);camera.position.set(0,target.y+(detail?.27:.42)*scale,(detail?2.33:4.03)*scale);if(camera.aspect<.8)camera.position.z*=.8/camera.aspect;camera.lookAt(target);camera.updateProjectionMatrix();}
+  // 살아 있는 무대와 사진은 머리 위로 여백을 두어 몽글이 무대의 60~70%를 차지하게 한다(옷 썸네일 촬영은 정본 구도 그대로).
+  function fit(width=size.width,height=size.height,{live=true}={}){camera.aspect=width/height;camera.fov=36;const scale=1/(1+zoom*.75),room=live&&!detail?1.16:1;target.set(0,detail?.73:(live?.88:.91),0);camera.position.set(0,target.y+(detail?.27:.42)*scale,(detail?2.33:4.03)*scale*room);if(camera.aspect<.8)camera.position.z*=.8/camera.aspect;camera.lookAt(target);camera.updateProjectionMatrix();}
   function render(){if(preparing||disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
   function schedule(){if(!preparing&&!frame&&!disposed&&!lost&&active&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
   function tick(now){frame=0;if(disposed||lost||!active||!inView||document.hidden)return;const dt=Math.min(.05,lastFrame?(now-lastFrame)/1000:.016);lastFrame=now;const reduced=reducedMotion||motionQuery.matches;angle=reduced?targetAngle:angle+(targetAngle-angle)*(1-Math.exp(-dt*16));if(Math.abs(targetAngle-angle)<.0005)angle=targetAngle;render();if(angle!==targetAngle)schedule();}
@@ -127,9 +136,10 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   for(const [event,handler]of events)canvas.addEventListener(event,handler);
   canvas.addEventListener('wheel',wheel,{passive:false});
   document.addEventListener('visibilitychange',visibility);resize();
-  function setLight(value){light=LIGHTS[value]?value:'daylight';const preset=LIGHTS[light];scene.background=new THREE.Color(preset.background).lerp(new THREE.Color(background==='warm'?'#f0e6da':background==='garden'?'#e0ebe2':preset.background),.50);key.color.set(preset.key);key.intensity=preset.intensity;fill.color.set(preset.fill);const neutral=light==='studio';key.position.set(...(neutral?[-3.8,3.6,3.3]:[-3.4,4.8,4.6]));fill.intensity=neutral?.42:.65;hemi.intensity=neutral?.88:1.15;scene.environmentIntensity=neutral?.48:.42;renderer.toneMappingExposure=preset.exposure;schedule();}
+  function paintStage(){const preset=LIGHTS[light],place=PLACES[background]||PLACES.room,dark=preset.dark;scene.background=new THREE.Color(preset.background).lerp(new THREE.Color(dark?place[0]:place[2]),.5);plaster.color.set(dark?place[1]:place[3]);if(dark&&light==='sunset')plaster.color.lerp(new THREE.Color('#4a2a24'),.45);hemi.color.set(dark?'#f1e2cf':'#e3edf5');hemi.groundColor.set(dark?'#3a2c22':'#9a8d7c');}
+  function setLight(value){light=LIGHTS[value]?value:'daylight';const preset=LIGHTS[light];paintStage();key.color.set(preset.key);key.intensity=preset.intensity;fill.color.set(preset.fill);const neutral=light==='studio';key.position.set(...(neutral?[-3.8,3.6,3.3]:[-2.6,5.2,4.2]));fill.intensity=neutral?.42:.5;hemi.intensity=neutral?.88:.72;rim.intensity=neutral?.88:1.25;rim.color.set(neutral?'#ffffff':light==='sunset'?'#ffd7b8':'#ffe9cc');scene.environmentIntensity=neutral?.48:.36;renderer.toneMappingExposure=preset.exposure;schedule();}
   function setPose(value){pose=STAGE_POSES.includes(value)?value:'neutral';avatar.setPose(pose);schedule();return pose;}
-  function setBackground(value){background=STAGE_BACKGROUNDS.includes(value)?value:'room';props.visible=background==='room';for(const g of backgrounds.values())g.visible=false;if(background!=='room')backdrop(background).visible=true;plaster.color.set(background==='warm'?'#efe6d9':background==='garden'?'#edf1e8':'#f2f3f0');setLight(light);schedule();return background;}
+  function setBackground(value){background=STAGE_BACKGROUNDS.includes(value)?value:'room';props.visible=background==='room';for(const g of backgrounds.values())g.visible=false;if(background!=='room')backdrop(background).visible=true;setLight(light);schedule();return background;}
   function setDyes(value={}){const normalized=avatar.setDyes(value);schedule();return normalized;}
   function getState(){return {slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),light,pose,background};}
   setLight(light);
@@ -140,7 +150,7 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
     try{
       renderer.setPixelRatio(1);renderer.setSize(width,height,false);
       if(thumbnail){angle=-.11;detail=false;zoom=0;setPose('neutral');setBackground('room');setLight('studio');}
-      fit(width,height);if(photoSlots)avatar.setEquipment(slotsForOutfit(photoSlots));if(photoDyes!==undefined)avatar.setDyes(photoDyes);avatar.group.rotation.y=thumbnail?angle:targetAngle;contactLight.render();
+      fit(width,height,{live:!thumbnail});if(photoSlots)avatar.setEquipment(slotsForOutfit(photoSlots));if(photoDyes!==undefined)avatar.setDyes(photoDyes);avatar.group.rotation.y=thumbnail?angle:targetAngle;contactLight.render();
       return canvas.toDataURL('image/png');
     }finally{angle=previousAngle;targetAngle=previousTargetAngle;detail=previous.view.detail;zoom=previous.view.zoom;avatar.setEquipment(previous.slots);avatar.setDyes(previous.dyes);avatar.group.rotation.y=angle;setPose(previous.pose);setBackground(previous.background);setLight(previous.light);renderer.setPixelRatio(dpr);renderer.setSize(size.width,size.height,false);fit();if(restoreImmediately)render();schedule();}
   }

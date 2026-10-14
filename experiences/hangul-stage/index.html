@@ -15,32 +15,32 @@
 </head>
 <body>
 <div id="app">
-  <!-- 입구: 코랄 포스터(붓·벼루 인화지 + 큰 한글 + 흰 알약 하나) → 노래 · 한글 길 · 글자 상자 · 간판 · 명패 -->
+  <!-- 입구: 코랄 포스터(붓·벼루 인화지 + 지금 만날 글자를 포스터 크기로 + 흰 알약 하나) → 노래 · 한글 길 · 글자 상자 · 간판 · 명패 -->
   <main id="home" hidden>
     <header class="hero">
       <div class="topbar">
-        <span class="name-tag" aria-hidden="true">HANGUL STAGE</span>
+        <span class="name-tag" id="hero-tag" aria-hidden="true">HANGUL STAGE</span>
         <button id="effects" class="round-btn sound" type="button" aria-pressed="true" aria-label="효과음 켜고 끄기"></button>
       </div>
       <!-- 흰 인화지: 붓·종이·벼루 펠트 사진(brand-opening/assets/world-felt/hangul.webp의 사본) -->
       <div class="hero-print" aria-hidden="true"><img src="assets/world/hangul.webp" alt="" width="640" height="640" decoding="async"></div>
       <div class="hero-body">
         <div class="hero-copy">
-          <h1 id="hero-title">가나다부터</h1>
-          <p class="lede" id="hero-lede">소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.</p>
+          <h1 id="hero-title">한글 만나기</h1>
+          <p class="lede" id="hero-lede">소리를 듣고 글자를 고르고, 직접 만들어요.</p>
         </div>
       </div>
       <button id="start" class="felt-cta cream" type="button">
-        <span class="cta-text"><b id="start-label">시작</b><small id="start-sub"></small></span>
+        <span class="cta-text"><b id="start-label">시작하기</b><small id="start-sub"></small></span>
         <span class="disc play" aria-hidden="true"></span>
       </button>
       <a id="games" class="games-link" href="../learning-hub/" hidden>미니게임 하러 가기</a>
-      <p id="games-note" class="games-note" hidden>이제 WORLD의 다른 게임으로 연습해요. 게임 목록은 이 화면 위에 있어요.</p>
+      <p id="games-note" class="games-note" hidden>놀이 목록의 바람길·말의 리듬으로 이어서 연습해요.</p>
       <p id="voice-note" class="voice-note" role="status" hidden></p>
     </header>
 
     <section class="block" aria-labelledby="songs-title">
-      <div class="block-head"><p class="eyebrow" aria-hidden="true">SONGS</p><h2 id="songs-title">노래로 배우기</h2><span class="fine">노래에 맞춰 글자가 켜져요</span></div>
+      <div class="block-head"><p class="eyebrow" aria-hidden="true">SONGS</p><h2 id="songs-title">노래</h2><span class="fine">노래에 맞춰 글자가 켜져요</span></div>
       <div id="songs" class="songs"></div>
     </section>
 
@@ -73,13 +73,13 @@
         <h2 id="settings-title" class="small-title">한 번에 풀 문제</h2>
         <div id="amounts" class="amounts" role="radiogroup" aria-labelledby="settings-title"></div>
       </div>
-      <button id="skip" class="text-link" type="button">한글을 읽을 수 있어요</button>
+      <button id="skip" class="text-link" type="button">한글을 이미 읽을 수 있어요</button>
       <p id="skipped-note" class="fine" hidden>한글 단계를 건너뛰었어요. <button id="unskip" class="text-link" type="button">다시 배우기</button></p>
       <p id="save-note" class="fine" hidden></p>
     </section>
   </main>
 
-  <!-- 한 회차 -->
+  <!-- 한 회차: HUD는 닫기 + 「03 / 10」 숫자 하나 -->
   <main id="session" hidden>
     <div class="session-top">
       <button id="quit" class="round-btn close" type="button" aria-label="그만하기"></button>
@@ -90,21 +90,23 @@
     <div id="dock" class="dock"></div>
   </main>
 
-  <!-- 마무리: 요약 포스터 한 장 + 1px 선 줄 -->
+  <!-- 결과 한 장: 코랄 포스터(도장 카드 인화지 + 큰 한글 한 줄 + 오늘 만난 글자) → 다시 볼 글자 하나 → 얻은 것 → 흰 알약 하나 -->
   <main id="finish" hidden>
     <section class="finish-card">
       <div class="finish-poster">
-        <p class="eyebrow" aria-hidden="true">TODAY</p>
-        <h1 id="finish-title">오늘 만난 글자예요</h1>
+        <div class="finish-print" aria-hidden="true"><img src="assets/world/complete.webp" alt="" width="640" height="640" decoding="async"></div>
+        <p class="eyebrow" id="finish-tag" aria-hidden="true">RESULT</p>
+        <h1 id="finish-title">끝!</h1>
         <div id="finish-letters" class="finish-letters"></div>
       </div>
+      <div id="finish-review" class="finish-row finish-review" hidden></div>
       <div id="finish-extra" class="finish-extra"></div>
       <div class="tomorrow" id="tomorrow"></div>
-      <button id="finish-song" class="song-review" type="button"><span class="note-mark" aria-hidden="true"></span><span id="finish-song-label">노래로 복습</span></button>
+      <button id="finish-song" class="song-review" type="button"><span class="note-mark" aria-hidden="true"></span><span id="finish-song-label">노래로 복습하기</span></button>
     </section>
     <div class="dock">
-      <button id="again" class="felt-cta cream" type="button"><span class="cta-text"><b>한 번 더</b></span><span class="disc play" aria-hidden="true"></span></button>
-      <button id="done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
+      <button id="done" class="felt-cta coral" type="button"><span class="cta-text"><b id="done-label">처음으로 가기</b></span><span class="disc" aria-hidden="true"></span></button>
+      <button id="again" class="text-link again-link" type="button">한 번 더 하기</button>
     </div>
   </main>
 
@@ -126,12 +128,13 @@
     </div>
   </main>
 
-  <!-- 졸업 -->
+  <!-- 졸업: 결과 한 장과 같은 손(포스터 + 명패 + 이제 읽는 낱말 + 흰 알약 하나) -->
   <main id="graduation" hidden>
     <section class="graduation-card">
       <div class="finish-poster grad-poster">
+        <div class="finish-print" aria-hidden="true"><img src="assets/world/complete.webp" alt="" width="640" height="640" decoding="async"></div>
         <p class="eyebrow" aria-hidden="true">GRADUATION</p>
-        <h1>한글 단계를 졸업했어요</h1>
+        <h1>한글 단계, 졸업!</h1>
         <p class="grad-line">이제 받침이 있는 낱말도 읽을 수 있어요.</p>
       </div>
       <div id="grad-plate" class="plate"></div>
@@ -140,8 +143,8 @@
     </section>
     <div class="dock">
       <a id="grad-games" class="felt-cta cream" href="../learning-hub/" hidden><span class="cta-text"><b>미니게임 하러 가기</b></span><span class="disc play" aria-hidden="true"></span></a>
-      <p id="grad-note" class="games-note" hidden>이제 WORLD의 다른 게임으로 연습해요. 게임 목록은 이 화면 위에 있어요.</p>
-      <button id="grad-done" class="felt-cta coral" type="button"><span class="cta-text"><b>끝</b></span><span class="disc" aria-hidden="true"></span></button>
+      <p id="grad-note" class="games-note" hidden>바람길·말의 리듬으로 이어서 연습해요.</p>
+      <button id="grad-done" class="felt-cta coral" type="button"><span class="cta-text"><b id="grad-done-label">처음으로 가기</b></span><span class="disc" aria-hidden="true"></span></button>
     </div>
   </main>
 

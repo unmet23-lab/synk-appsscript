@@ -1,5 +1,6 @@
-/* 첫 시작 · 함께할 AI 튜터 고르기 — 어두운 무대 위 캐릭터 선택(2026-10-14 시그널 게임판)
- * 고른 친구 카드는 바탕을 뒤집어 흰 종이 위 펠트 인형처럼 보이게 하고, 나머지는 판 위에 조용히 둔다.
+/* 첫 시작 · AI 튜터 고르기 — 어두운 무대 위 캐릭터 선택(2026-10-14 시그널 게임판, 2차 3판)
+ * 위 이름 탭(알약 묶음)으로 한 명씩 넘겨 보고, 아래 큰 무대에서 그 튜터의 자기소개·말투를 본다(조사 §5-3 「한 장씩 넘겨 보며」).
+ * 무대 빛은 튜터 몸 색에서 온다(코랄은 몽글 하나). 확정은 아래 흰 알약 「○○과 함께하기」.
  * 얼굴만 바꾸는 마스크 규칙(몸·털·알파 고정)은 그대로 지킨다. 반응 몸짓은 회전 없이 작은 위아래만. */
 #world-panel.tutor-panel{inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-height:100dvh;border-radius:0;padding:calc(18px + var(--safe-top)) 20px 0;background:radial-gradient(120% 60% at 50% 0%,#17181d 0%,var(--w-panel) 58%);color:var(--w-ink);overflow:auto;scrollbar-width:thin;animation:none}
 .tutor-panel .sheet-handle{display:none}
@@ -11,22 +12,29 @@
 .tutor-sound::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
 .tutor-sound[aria-pressed=true]{color:var(--w-ink)}
 .tutor-sound[aria-pressed=true]::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
-.tutor-intro{font-size:15.5px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
-.tutor-intro strong{color:var(--w-ink);font-weight:var(--wt-strong)}
+.tutor-intro{font-size:15px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.tutor-intro strong{color:var(--w-ink-2);font-weight:var(--wt-strong)}
+/* 무대: 말풍선이 위, 큰 초상이 아래. 빛은 튜터 몸 색. 스스로 움직이지 않는다(눈 깜빡임만). */
+[data-tutor=mongle]{--tutor-glow:rgba(249,104,89,.26)}
+[data-tutor=kkamong]{--tutor-glow:rgba(176,124,84,.28)}
+[data-tutor=marin]{--tutor-glow:rgba(96,128,214,.30)}
+.tutor-detail[data-tutor] .tutor-stage,.tutor-welcome .tutor-stage{position:relative;flex-direction:column;align-items:center;gap:4px;padding:18px 16px 0;border-radius:var(--w-r-xl);background:radial-gradient(64% 58% at 50% 82%,var(--tutor-glow,rgba(255,255,255,.08)),transparent 72%),linear-gradient(180deg,var(--w-s1),#0e0f12);box-shadow:var(--w-card-edge);overflow:hidden}
+.tutor-detail[data-tutor] .tutor-speech,.tutor-welcome .tutor-speech{order:-1;flex:none;width:min(100%,340px);border-radius:20px;text-align:center}
+.tutor-detail[data-tutor] .tutor-speech::before,.tutor-welcome .tutor-speech::before{left:50%;top:auto;bottom:-6px;transform:translateX(-50%) rotate(45deg)}
+.tutor-detail[data-tutor] .tutor-speech p,.tutor-welcome .tutor-speech p{min-height:0;font-size:16px}
+.tutor-detail[data-tutor] .tutor-touch,.tutor-welcome .tutor-touch{background:none;border-radius:0}
+.tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:196px;height:196px;margin-top:4px}
 
 /* 세 친구 카드 */
-.tutor-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.tutor-option{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-height:150px;padding:10px 6px 14px;border-radius:var(--w-r-lg);background:radial-gradient(80% 60% at 50% 34%,rgba(255,255,255,.07),transparent 70%),var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);transition:background .2s var(--w-ease),box-shadow .2s var(--w-ease),transform .12s var(--w-ease)}
-.tutor-option:hover{box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.tutor-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.tutor-option{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;min-height:52px;padding:4px 12px 4px 6px;border-radius:999px;color:var(--w-ink-2);transition:background .18s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
+.tutor-option:hover{color:var(--w-ink)}
 .tutor-option:active{transform:scale(.97)}
-.tutor-option strong{font-size:17px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
-.tutor-option small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
-.tutor-option .tutor-portrait{width:76px;height:76px;margin-bottom:6px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}
+.tutor-option strong{font-size:15.5px;line-height:1.2;font-weight:var(--wt-strong);letter-spacing:var(--track-title)}
+.tutor-option small{display:none}
+.tutor-option .tutor-portrait{width:40px;height:40px;margin:0}
 .tutor-selected{display:none}
-.tutor-option[aria-pressed=true]{background:radial-gradient(80% 60% at 50% 34%,#fff,#f1f1ef 80%);color:#08090C;box-shadow:0 14px 34px rgba(0,0,0,.35)}
-.tutor-option[aria-pressed=true] small{color:rgba(8,9,12,.58)}
-.tutor-option[aria-pressed=true] .tutor-portrait{filter:drop-shadow(0 10px 10px rgba(0,0,0,.18))}
-.tutor-option[aria-pressed=true]::after{content:'';position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:#08090C url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.4l2.6 2.6L12 5.4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.tutor-option[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
 
 /* 초상: 몸은 그대로, 얼굴 조각만 바뀐다 */
 .tutor-portrait{position:relative;display:block;width:82px;height:82px;flex-shrink:0;isolation:isolate}
@@ -41,8 +49,7 @@
 
 /* 고른 친구: 무대 + 말풍선 + 소개 */
 .tutor-detail{min-width:0}
-.tutor-empty{display:grid;gap:8px;align-content:center;min-height:150px;padding:28px 18px;border-radius:var(--w-r-lg);text-align:center;box-shadow:inset 0 0 0 1px var(--w-line);background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(255,255,255,.015) 10px 20px)}
-.tutor-empty strong{font-size:var(--t-title-s);font-weight:var(--wt-title);color:var(--w-ink)}
+.tutor-empty{padding:28px 4px;text-align:center}
 .tutor-empty p{font-size:14px;line-height:1.65;color:var(--w-ink-3)}
 .tutor-stage{display:flex;align-items:center;gap:6px;min-width:0}
 .tutor-touch{display:grid;place-items:center;flex-shrink:0;min-width:44px;min-height:44px;padding:0;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.16),rgba(255,255,255,.05) 62%,transparent)}
@@ -56,7 +63,7 @@
 .tutor-speech.speak{animation:tutor-bubble-in .3s var(--w-ease)}
 .tutor-speech[data-character=marin].speak p{animation:tutor-transmission var(--speech-duration,1s) steps(12,end)}
 .tutor-about{padding-top:14px}
-.tutor-about h3{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 10px;font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-display)}
+.tutor-about h3{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 10px;font-size:var(--t-display);font-weight:var(--wt-display);letter-spacing:var(--track-display)}
 .tutor-about h3 span{font-size:14px;font-weight:var(--wt-label);letter-spacing:0;color:var(--w-ink-3)}
 .tutor-traits{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .tutor-traits span{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-2)}
@@ -107,37 +114,30 @@
 @keyframes tutor-bubble-in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes tutor-transmission{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 
-/* 친구를 고른 뒤에는 소개 문단 대신 카드와 무대가 말한다 */
-.tutor-panel #panel-content:has(.tutor-detail[data-tutor])>.tutor-intro{display:none}
 
 @media(max-width:359px){
  #world-panel.tutor-panel{padding-left:16px;padding-right:16px}
  .tutor-footer{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
  .tutor-panel .panel-header h2{font-size:26px}
- .tutor-option{min-height:136px}.tutor-option .tutor-portrait{width:62px;height:62px}
- .tutor-portrait.large{width:118px;height:118px}
+ .tutor-option{padding:4px 8px 4px 4px;gap:4px}.tutor-option .tutor-portrait{width:34px;height:34px}.tutor-option strong{font-size:14px}
+ .tutor-portrait.large,.tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:150px;height:150px}
  .tutor-speech{padding:12px 13px}.tutor-speech p{font-size:14.5px;min-height:58px}
 }
-@media(max-width:599px) and (orientation:portrait){.tutor-portrait.large{width:136px;height:136px}}
+@media(max-height:700px) and (orientation:portrait){.tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:150px;height:150px}}
 /* PC: 가운데 판 */
 @media(min-width:600px) and (min-height:600px) and (pointer:fine){
- #world-panel.tutor-panel{width:min(760px,calc(100vw - 48px));height:fit-content;max-height:calc(100dvh - 48px);border-radius:var(--w-r-xl);padding:30px 40px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow)}
+ #world-panel.tutor-panel{width:min(980px,calc(100vw - 48px));height:fit-content;max-height:calc(100dvh - 48px);border-radius:var(--w-r-xl);padding:30px 40px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow)}
  .tutor-footer{margin:2px -40px 0;padding:18px 40px 26px}
- .tutor-option{min-height:184px}.tutor-option .tutor-portrait{width:108px;height:100px}
- .tutor-portrait.large{width:184px;height:176px}
+ .tutor-options{max-width:520px}
+ .tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:250px;height:250px}
+ .tutor-detail[data-tutor] .tutor-stage,.tutor-welcome .tutor-stage{padding-top:22px}
  .tutor-speech p{font-size:16.5px}
  .tutor-detail[data-tutor]{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:4px 28px;align-items:start}
  .tutor-detail[data-tutor] .tutor-stage{grid-row:1/3}
  .tutor-detail[data-tutor] .tutor-about{padding-top:4px}
  .tutor-detail[data-tutor] .tutor-samples{grid-column:1;grid-row:3;margin-top:-6px}
- .tutor-detail[data-tutor] .tutor-stage{flex-direction:column;align-items:stretch}
- .tutor-detail[data-tutor] .tutor-touch{align-self:center}
- .tutor-detail[data-tutor] .tutor-speech{border-radius:20px}
- .tutor-detail[data-tutor] .tutor-speech::before{left:50%;top:-6px;bottom:auto;transform:translateX(-50%) rotate(45deg)}
  .tutor-welcome{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 32px;align-items:start}
- .tutor-welcome .tutor-stage{grid-row:1/3;flex-direction:column;align-items:stretch}
- .tutor-welcome .tutor-touch{align-self:center}
- .tutor-welcome .tutor-speech::before{left:50%;top:-6px;bottom:auto;transform:translateX(-50%) rotate(45deg)}
+ .tutor-welcome .tutor-stage{grid-row:1/3}
 }
 /* 낮은 가로 화면: 왼쪽 고르기 · 오른쪽 소개 */
 @media(orientation:landscape) and (max-height:599px){
@@ -147,14 +147,18 @@
  .tutor-step-line{grid-column:1/-1}
  .tutor-intro{grid-column:1;font-size:13.5px;line-height:1.6}
  .tutor-panel #panel-content:has(.tutor-detail[data-tutor])>.tutor-intro{display:block}
- .tutor-options{grid-column:1}.tutor-option{min-height:112px;padding:6px 4px 10px}.tutor-option .tutor-portrait{width:52px;height:52px;margin-bottom:2px}.tutor-option strong{font-size:15px}
+ .tutor-options{grid-column:1}
  .tutor-detail{grid-column:2;grid-row:2/5;max-height:calc(100dvh - 92px);overflow:auto;padding-bottom:10px}
- .tutor-portrait.large{width:100px;height:100px}
- .tutor-speech p{min-height:46px;font-size:13.5px}
+ .tutor-detail[data-tutor] .tutor-stage,.tutor-welcome .tutor-stage{flex-direction:row;align-items:flex-end;padding:10px 12px 0}
+ .tutor-detail[data-tutor] .tutor-speech,.tutor-welcome .tutor-speech{order:0;flex:1;width:auto;min-width:0;margin-bottom:14px;text-align:left}
+ .tutor-detail[data-tutor] .tutor-speech::before,.tutor-welcome .tutor-speech::before{left:-6px;bottom:14px;transform:rotate(45deg)}
+ .tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:104px;height:104px}
+ .tutor-speech p,.tutor-detail[data-tutor] .tutor-speech p,.tutor-welcome .tutor-speech p{min-height:0;font-size:13.5px}
+ .tutor-option{min-height:46px}.tutor-option .tutor-portrait{width:32px;height:32px}.tutor-option strong{font-size:14px}
  .tutor-footer{grid-column:1;position:static;margin:0;padding:0 0 12px;background:none}
  .tutor-primary{min-height:50px;font-size:15px}
  .tutor-welcome{grid-column:1/-1;grid-template-columns:1fr 1fr;gap:6px 20px}
- .tutor-welcome .tutor-stage{grid-row:1/3}
+ .tutor-welcome .tutor-stage{grid-row:1/3;align-self:start}
  .tutor-welcome-copy strong{font-size:18px}
  .tutor-how{grid-column:2;grid-row:1/3}.tutor-how li{padding:8px 0}
  .tutor-welcome+.tutor-footer{grid-column:1/-1;grid-template-columns:1fr 1fr;gap:6px 14px}

@@ -19,7 +19,7 @@ function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return {
 function harness(){
   const save=deferred(),saving=deferred(),capture=deferred(),capturing=deferred();
   const state={panel:'home',saved:[],albumOwners:[],closedAlbums:0,memoryRefreshes:0,memoryOpens:0,notices:[],disposedPanels:[]};
-  const panel={open:false,classList:{add(){}},close(){this.open=false;},showModal(){this.open=true;}};
+  const panel={open:false,classList:{add(){},toggle(){}},close(){this.open=false;},showModal(){this.open=true;}};
   const nodes=new Map(),getNode=selector=>{if(!nodes.has(selector))nodes.set(selector,{textContent:'',focus(){}});return nodes.get(selector);};
   const ports={panel,content:{innerHTML:''},document:{activeElement:null,body:{}},$:getNode,
     living:{capture:async()=>{capturing.resolve();return capture.promise;},metrics:()=>({scene:{drawingBuffer:{width:900,height:600}}})},
@@ -32,10 +32,10 @@ function harness(){
     showMemory(){state.memoryOpens++;state.panel='memory';},
     toast:message=>state.notices.push(message),showMe(){state.panel='profile';},
     disposePanelContent(){state.disposedPanels.push(state.panel);},
-    setNav(value){if(value==='home'&&!panel.open)state.panel='home';},syncScene(){}
+    setNav(value){if(value==='home'&&!panel.open)state.panel='home';},syncScene(){},play(){},focusHomeAction(){}
   };
   const api=new Function('ports',`
-    const {panel,content,document,$,living,createWardrobeAlbum,fetch,memory,showMemory,toast,showMe,disposePanelContent,setNav,syncScene}=ports;
+    const {panel,content,document,$,living,createWardrobeAlbum,fetch,memory,showMemory,toast,showMe,disposePanelContent,setNav,syncScene,play,focusHomeAction}=ports;
     let photoBusy=false,accountOwner='photo-test-a',panelEpoch=0,equipment={slots:{body:'synthetic-outfit'},dyes:{}},lastFocus=null,panelKind='',education=null;
     ${controller}
     return {photo,closePanel,openPanel,setOwner(value){accountOwner=value;},isBusy:()=>photoBusy};

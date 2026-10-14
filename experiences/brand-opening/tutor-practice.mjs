@@ -1,10 +1,12 @@
 import {PracticeRun,PRACTICES,BEAT_AT,BEAT_PERIOD,BEAT_WINDOW,beatPosition,inputForKey,savePractice} from './tutor-practice-core.mjs';
 import {practiceLine} from './tutor-practice-lines.mjs';
 import {tutorFace} from './game-tutor-lines.mjs';
+import {verdict,getPref} from './world-sound.mjs';
 
 const asset=path=>new URL(path,import.meta.url).href;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const buttons={runner:[['left','←','왼쪽'],['jump','↑','점프'],['slide','↓','숙이기'],['right','→','오른쪽']],rhythm:[['left','O','F · ←'],['right','X','J · →']],hangul:[['a','아',''],['eo','어','']],first:[['hello','안녕하세요',''],['thanks','감사합니다','']]};
+const pad2=n=>String(n).padStart(2,'0');
 export function createTutorPractice({tutor,game,container,reduced=()=>false,getSound=()=>false,owner='guest',replay=false,focusSteps=null,timed=false,onComplete=()=>{},onCancel=()=>{}}){
  const run=new PracticeRun(game,{steps:focusSteps,timed}),plan={...PRACTICES[game],steps:run.steps},timers=new Set(),held=new Set(),pointers=new Map();
  let disposed=false,voice=null,reactionVoice=null,generation=0,raf=0,gesture=null,pausedDemo=false,launching=false;
@@ -12,17 +14,19 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
  const dialog=document.createElement('dialog');dialog.className='tutor-practice';dialog.dataset.tutor=tutor.id;dialog.dataset.practiceGame=game;
  dialog.setAttribute('aria-label',`${tutor.name}과 ${plan.title} 조작 연습`);dialog.tabIndex=-1;
  const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${asset('assets/tutors/'+tutor.images.기본)}" width="480" height="480" alt="${tutor.name}"><img class="game-tutor-face" src="${asset('assets/tutors/'+tutor.images.기본)}" width="480" height="480" alt="" aria-hidden="true"></span>`;
- dialog.innerHTML=`<header class="practice-header"><div><small>${tutor.name}과 · ${escape(plan.title)}</small><h3>먼저 같이 해 볼까?</h3></div><button type="button" class="practice-exit" aria-label="${replay?'연습을 닫고 놀이로 돌아가기':'연습을 닫고 마루로 돌아가기'}">×</button></header><div class="practice-progress" aria-label="연습 진행"><span class="practice-count"></span><div class="practice-stops">${plan.steps.map((s,i)=>`<span data-stop="${i}" aria-label="${escape(s.title)}">${i+1}</span>`).join('')}</div></div><div class="practice-speech">${portrait()}<div><small class="practice-phase"></small><p class="practice-line" role="status" aria-live="polite"></p></div></div><div class="practice-work"><div class="practice-stage" tabindex="-1"><div class="practice-road" aria-hidden="true"><i></i><i></i><i></i></div><div class="practice-performer">${portrait()}</div><div class="practice-beat" aria-hidden="true"><span class="practice-note">O</span><span class="practice-hit-line"></span></div><p class="practice-example"></p><span class="practice-pose-label" aria-hidden="true"></span></div><div class="practice-controls" role="group" aria-label="직접 해 보는 조작 단추"></div><p class="practice-key-hint"></p></div><footer class="practice-footer"><button type="button" class="practice-primary">시범 보기</button><button type="button" class="practice-replay">시범 다시 보기</button></footer>`;
+ dialog.innerHTML=`<header class="practice-header"><div><small>${tutor.name}과 · ${escape(plan.title)}</small><h3>${escape(plan.title)} 조작 연습</h3></div><button type="button" class="practice-exit" aria-label="연습을 닫고 놀이로 돌아가기">×</button></header><div class="practice-progress" aria-label="연습 진행"><span class="practice-count"></span><div class="practice-stops">${plan.steps.map((s,i)=>`<span data-stop="${i}" aria-label="${escape(s.title)}">${i+1}</span>`).join('')}</div></div><div class="practice-speech">${portrait()}<div><small class="practice-phase"></small><p class="practice-line" role="status" aria-live="polite"></p></div></div><div class="practice-work"><div class="practice-stage" tabindex="-1"><div class="practice-road" aria-hidden="true"><i></i><i></i><i></i></div><div class="practice-performer">${portrait()}</div><div class="practice-beat" aria-hidden="true"><span class="practice-note">O</span><span class="practice-hit-line"></span></div><p class="practice-example"></p><span class="practice-pose-label" aria-hidden="true"></span></div><div class="practice-controls" role="group" aria-label="직접 해 보는 조작 단추"></div><p class="practice-key-hint"></p></div><footer class="practice-footer"><button type="button" class="practice-primary">시범 보기</button><button type="button" class="practice-replay">시범 다시 보기</button></footer>`;
  container.append(dialog);
  const $=selector=>dialog.querySelector(selector);
  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);if(!disposed&&!document.hidden)fn();},ms);timers.add(id);};
  function stopAudio(){voice?.pause();voice=null;reactionVoice?.pause();reactionVoice=null;}
  function clear(){generation++;timers.forEach(clearTimeout);timers.clear();cancelAnimationFrame(raf);raf=0;stopAudio();held.clear();pointers.clear();gesture=null;}
  function face(emotion){const file=tutor.images[emotion]||tutor.images.기본;dialog.querySelectorAll('.game-tutor-face').forEach(img=>img.src=asset('assets/tutors/'+file));dialog.dataset.face=emotion;}
+ // 판정 하나: 소리 + 진동 + (「친구들의 반응」이 켜져 있을 때만) 튜터 얼굴 한 번. 꺼져 있으면 시범 얼굴 그대로 둔다.
+ function judged(correct){dialog.dataset.reactions=String(getPref('reactions'));verdict(correct,{react:ok=>face(tutorFace(tutor.id,ok?'success':'retry'))});}
  function speak(kind){$('.practice-line').textContent=practiceLine(tutor.id,kind);}
  function pose(action=''){
   $('.practice-performer').dataset.pose=action;
-  $('.practice-pose-label').textContent=({left:'← 한 칸',right:'한 칸 →',middle:'가운데',stay:'그대로',jump:'↑ 폴짝',slide:'↓ 쏙',a:'아',hello:'안녕하세요',next:'다음 →'})[action]||'';
+  $('.practice-pose-label').textContent=({left:'왼쪽 한 칸',right:'오른쪽 한 칸',middle:'가운데',stay:'그대로',jump:'점프',slide:'숙이기',a:'아',hello:'안녕하세요',next:'다음'})[action]||'';
   dialog.querySelectorAll('[data-practice-input]').forEach(b=>{b.classList.toggle('demo-press',b.dataset.practiceInput===action);});
  }
  function reactionSound(){
@@ -33,9 +37,9 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
  function buildStep(){
   const s=run.step;dialog.dataset.step=s.id;
   const next=s.id==='next';
-  $('.practice-controls').innerHTML=(next?[['next','다음 →','']]:buttons[game]).map(([action,key,label])=>`<button type="button" class="practice-pad" data-practice-input="${action}" aria-label="${escape(label?key+' '+label:key)}"><b>${escape(key)}</b>${label?`<small>${escape(label)}</small>`:''}</button>`).join('');
+  $('.practice-controls').innerHTML=(next?[['next','다음','']]:buttons[game]).map(([action,key,label])=>`<button type="button" class="practice-pad" data-practice-input="${action}" aria-label="${escape(label?key+' '+label:key)}"><b>${escape(key)}</b>${label?`<small>${escape(label)}</small>`:''}</button>`).join('');
   $('.practice-example').textContent=game==='rhythm'&&s.timed?(s.action==='left'?'왼쪽으로 가라는 말인가요?':'오른쪽으로 가라는 말인가요?'):game==='first'&&!next?'친구를 만났어요. 어떤 인사를 할까요?':game==='hangul'&&!next?'소리를 듣고, 글자를 골라요.':'';
-  $('.practice-key-hint').textContent=game==='runner'?'컴퓨터는 ← → · ↑ 또는 Space · ↓ / 손가락으로 밀어도 돼요.':game==='rhythm'?'컴퓨터는 F·J 또는 ←·→ / 화면 단추도 눌러 보세요.':'화면 단추를 눌러 보세요.';
+  $('.practice-key-hint').textContent=game==='runner'?'키보드 ← → 이동 · ↑ 또는 Space 점프 · ↓ 숙이기. 화면을 밀어도 돼요.':game==='rhythm'?'키보드 F 또는 ← · J 또는 →':'';
   $('.practice-stage').dataset.scene=next?'next':game;
   dialog.dataset.timed=String(!!s.timed);
   $('.practice-note').textContent=game==='runner'?({jump:'↑',slide:'↓',left:'←',right:'→',middle:'→'})[s.id]||'↑':s.action==='right'?'X':'O';
@@ -43,13 +47,14 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
  }
  function render(){
   dialog.dataset.phase=run.phase;dialog.dataset.reduced=String(still());
-  $('.practice-count').textContent=run.complete?'연습 전부 완료':`${run.index+1} / ${plan.steps.length} · ${run.step.title}`;
+  // 지시 한 줄: 「01 / 05」 숫자 + 이번 동작(크게)
+  $('.practice-count').innerHTML=run.complete?`<span class="practice-count-n">${pad2(plan.steps.length)} / ${pad2(plan.steps.length)}</span><b>연습을 모두 마쳤어요</b>`:`<span class="practice-count-n">${pad2(run.index+1)} / ${pad2(plan.steps.length)}</span><b>${escape(run.step.title)}</b>`;
   for(const dot of dialog.querySelectorAll('[data-stop]')){const i=Number(dot.dataset.stop);dot.classList.toggle('passed',!!run.passed[i]);dot.classList.toggle('current',i===run.index);}
-  $('.practice-phase').textContent=({demo:'튜터 시범',try:'이제 내 차례',success:'직접 해냈어요',complete:'출발 준비 완료'})[run.phase];
-  $('.practice-header h3').textContent=run.complete?(run.fullIntro?'준비 끝, 같이 출발해요':'이 부분도 다시 해냈어요'):(run.fullIntro?'먼저 같이 해 볼까?':'어려웠던 동작만 다시');
+  $('.practice-phase').textContent=({demo:'시범',try:'내 차례',success:'해냈어요',complete:'연습 끝'})[run.phase];
+  $('.practice-header h3').textContent=run.complete?(run.fullIntro?'연습 끝':'다시 해냈어요'):(run.fullIntro?`${plan.title} 조작 연습`:'어려운 동작 연습');
   dialog.querySelectorAll('[data-practice-input]').forEach(b=>b.disabled=run.phase!=='try');
   const primary=$('.practice-primary');primary.hidden=run.phase==='try'||run.phase==='demo'&&!pausedDemo;
-  primary.disabled=launching;primary.textContent=run.complete?(!run.fullIntro?'놀이로 돌아가기':replay?'놀이로 이어가기':`${plan.title} 시작`):run.phase==='success'?'해냈어, 다음으로':'시범 다시 보기';
+  primary.disabled=launching;primary.textContent=run.complete?(!run.fullIntro?'놀이로 돌아가기':replay?'놀이로 이어가기':`${plan.title} 시작하기`):run.phase==='success'?'다음으로 넘어가기':'시범 다시 보기';
   $('.practice-replay').hidden=run.complete||pausedDemo;
  }
  function startBeat(){
@@ -114,10 +119,10 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
    await clip.play();
   }catch{audioError(revision);}
  }
- function success(action){cancelAnimationFrame(raf);raf=0;dialog.dataset.feedback='success';pose(run.step.pose||action);face(tutorFace(tutor.id,'success'));speak('success');reactionSound();render();$('.practice-primary').focus({preventScroll:true});}
+ function success(action){cancelAnimationFrame(raf);raf=0;dialog.dataset.feedback='success';pose(run.step.pose||action);judged(true);speak('success');if(getPref('reactions'))reactionSound();render();$('.practice-primary').focus({preventScroll:true});}
  function feedback(result,action){if(!result.accepted)return;
   if(result.holding){pose(action);return;}
-  if(!result.correct){face(tutorFace(tutor.id,'retry'));speak(result.reason==='timing'?'timing':'retry');dialog.dataset.feedback='retry';pose(action);return;}
+  if(!result.correct){judged(false);speak(result.reason==='timing'?'timing':'retry');dialog.dataset.feedback='retry';pose(action);return;}
   success(action);
  }
  const input=action=>feedback(run.input(action,performance.now()),action);
@@ -166,7 +171,7 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
  dialog.addEventListener('keydown',keydown);dialog.addEventListener('keyup',keyup);dialog.addEventListener('cancel',cancel);
  document.addEventListener('visibilitychange',visibility);
  buildStep();dialog.showModal();dialog.focus({preventScroll:true});
- if(run.step.audio){pausedDemo=true;speak(instructionKind());render();$('.practice-primary').textContent='소리와 시범 듣기';}
+ if(run.step.audio){pausedDemo=true;speak(instructionKind());render();$('.practice-primary').textContent='시범 듣기';}
  else void demonstrate();
  return {element:dialog,metrics:()=>({game,index:run.index,step:run.step.id,steps:run.steps.map(s=>s.id),targeted:!run.fullIntro,holding:run.holding!==null,phase:run.phase,passed:[...run.passed],heard:run.heard,complete:run.complete,voicePlaying:voice?.paused===false,cycleStart:run.cycleStart,cueInMs:run.step.timed?BEAT_AT-beatPosition(performance.now(),run.cycleStart)*BEAT_PERIOD:null}),dispose(){
   if(disposed)return;disposed=true;clear();document.removeEventListener('visibilitychange',visibility);if(dialog.open)dialog.close();dialog.remove();

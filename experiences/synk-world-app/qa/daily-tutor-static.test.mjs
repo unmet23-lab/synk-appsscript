@@ -121,7 +121,7 @@ test('frozen /world daily tutor stores assisted practice and recap, resumes on a
   await page.locator(`[data-life-choice="${q.review.answerId}"]`).click();await saved();
   const reviewed=(await read()).progress,reviewResult=reviewed.activeReview.answers[q.review.id];
   check('same-day guided exposure survives reload and marks the later regular correct answer as assisted',reviewResult.correct&&reviewResult.helped&&reviewed.reviews[q.review.id].streak===0&&reviewed.reviews[q.review.id].intervalDays===0);
-  check('the regular review feedback and selected tutor agree with persisted assistance',(await read()).tutor.kind==='assisted'&&await page.locator('.life-feedback strong').textContent()==='함께 확인해요.');
+  check('the regular review feedback and selected tutor agree with persisted assistance',(await read()).tutor.kind==='assisted'&&await page.locator('.life-feedback strong').textContent()==='도움을 받아 맞혔어요');
   check('another study action reopens the completed day without changing the original lesson answer',!(await home()).days.today.closed&&JSON.stringify(reviewed.lessons['greetings-expressions'].answers[q.id])===JSON.stringify(first));
   await page.screenshot({path:path.join(out,'account-assisted-review-after-reload.png')});
   await page.locator('#panel-close').click();
