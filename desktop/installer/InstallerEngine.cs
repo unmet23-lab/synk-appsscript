@@ -98,6 +98,7 @@ namespace Synk.SignalInstaller
 
         public string Preflight()
         {
+            CheckPendingTransaction();
             if (!Environment.Is64BitOperatingSystem) throw new InvalidOperationException("Windows 64비트에서 설치할 수 있습니다.");
             Process[] running = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName));
             try
@@ -137,7 +138,8 @@ namespace Synk.SignalInstaller
                 return BitConverter.ToString(sha.ComputeHash(input)).Replace("-", "").ToLowerInvariant();
         }
 
-        public string Install(Action<string,string,int?> progress)
+        string InstallPayload(Action<string,string,int?> progress) { return InstallPayload(progress,BackendProcess.DeadlineMilliseconds); }
+        internal string InstallPayload(Action<string,string,int?> progress,int deadline)
         {
             Preflight();
             string cache = CreatePrivateCache();
@@ -167,14 +169,9 @@ namespace Synk.SignalInstaller
                         throw new IOException("설치 파일 확인에 실패했습니다. 홈페이지에서 다시 받아 주세요.");
                     Preflight();
                     progress(Short + "를 설치합니다", "잠시만 기다려 주세요. 설치 중에는 창을 닫을 수 없습니다.", null);
-                    ProcessStartInfo start = new ProcessStartInfo(backend, "/S /currentuser") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = cache };
-                    using (Process child = Process.Start(start))
-                    {
-                        if (child == null) throw new IOException("설치를 시작할 수 없습니다.");
-                        child.WaitForExit();
-                        if (child.ExitCode == 20) throw new InvalidOperationException(Short + "가 실행 중이거나 실행 상태를 확인할 수 없습니다. " + Short + "를 닫고 다시 시도해 주세요.");
-                        if (child.ExitCode != 0) throw new IOException("설치가 완료되지 않았습니다. 다시 시도해 주세요. (코드 " + child.ExitCode + ")");
-                    }
+                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치 작업을 중단합니다","제한 시간을 넘겼습니다. 설치 작업을 멈춘 뒤 이전 상태를 확인합니다.",null); });
+                    if (exitCode == 20) throw new InvalidOperationException(Short + "가 실행 중이거나 실행 상태를 확인할 수 없습니다. " + Short + "를 닫고 다시 시도해 주세요.");
+                    if (exitCode != 0) throw new IOException("설치가 완료되지 않았습니다. 다시 시도해 주세요. (코드 " + exitCode + ")");
                 }
                 return VerifyInstalled(progress);
             }

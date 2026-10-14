@@ -32,7 +32,7 @@
 <div class="bg" id="bg">
   <div class="grain"></div>
   <div class="layer">
-    <span class="scope" id="scope">SYNK · PLATFORM · 0.4.3</span>
+    <span class="scope" id="scope">SYNK · PLATFORM · PREVIEW</span>
     <span class="stage">끌어서 설치</span>
     <span class="name" id="app-name" style="left:100px;width:160px"></span>
     <span class="name" style="left:430px;width:100px"></span>
@@ -48,9 +48,9 @@
 <script>
   // 이름 알약 폭은 Finder 13pt 이름 길이(SYNKPlatformPreview 131pt 실측, 글자당 약 6.9pt) + 양옆 15pt
   const variants={
-    world:{face:'#F96859',on:'30,14,10',dot:'#F96859',glow:'249,104,89',scope:'SYNK · WORLD · 0.4.1',name:[110,140],
+    world:{face:'#F96859',on:'30,14,10',dot:'#F96859',glow:'249,104,89',scope:'SYNK · WORLD · PREVIEW',name:[110,140],
       title:'WORLD를 Applications 폴더로 끌어 놓으세요',sub1:'옮긴 뒤 SYNK 플랫폼에서 「설치 상태 확인」을 눌러요. DMG 안에서 바로 열지 마세요.',en:'DRAG WORLD INTO APPLICATIONS · THEN CHECK IT IN SYNK'},
-    messenger:{face:'#17181C',on:'197,214,245',dot:'#3D6BC9',glow:'61,107,201',scope:'SYNK · WORKSPACE · 0.4.1',name:[96,168],
+    messenger:{face:'#17181C',on:'197,214,245',dot:'#3D6BC9',glow:'61,107,201',scope:'SYNK · WORKSPACE · PREVIEW',name:[96,168],
       title:'워크스페이스를 Applications 폴더로 끌어 놓으세요',sub1:'옮긴 뒤 SYNK 플랫폼에서 「설치 상태 확인」을 눌러요. DMG 안에서 바로 열지 마세요.',en:'DRAG WORKSPACE INTO APPLICATIONS · THEN CHECK IT IN SYNK'},
   };
   const v=variants[new URLSearchParams(location.search).get('product')];

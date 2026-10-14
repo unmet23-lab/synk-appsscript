@@ -96,7 +96,7 @@ async function main() {
   const licenses=['SUIT-LICENSE.txt','InterTight-LICENSE.txt','DMMono-LICENSE.txt'].map(file=>'/resource:'+path.join(fonts,file)+',license.'+file);
   command(path.join(framework,'csc.exe'),['/nologo','/target:winexe','/platform:x64','/optimize+','/out:'+target,'/win32manifest:'+path.join(ROOT,'app.manifest'),'/win32icon:'+icon,
     '/r:System.Core.dll','/r:System.Runtime.Serialization.dll','/r:System.Xaml.dll',...['PresentationFramework.dll','PresentationCore.dll','WindowsBase.dll'].map(file=>'/r:'+path.join(framework,'WPF',file)),
-    '/resource:'+path.join(output,'install.json')+',install.json','/resource:'+backend+',backend.exe',...resources,...licenses,...['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','SignalWindow.cs'].map(file=>path.join(ROOT,file)),assembly]);
+    '/resource:'+path.join(output,'install.json')+',install.json','/resource:'+backend+',backend.exe',...resources,...licenses,...['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs'].map(file=>path.join(ROOT,file)),assembly]);
   assert(JSON.stringify(await inventory(payload))===JSON.stringify(files),'Builder modified public app payload');
   const report={ok:true,builtAt:new Date().toISOString(),product:id,appVersion:spec.version,installerRevision:product.revision,baseline:pin,installer:{file:path.basename(target),bytes:fs.statSync(target).size,sha256:await sha(target)},backend:{bytes:spec.backendBytes,sha256:spec.backendSHA256},appPayloadUnchanged:true,payloadFiles:files.length,nsisGUID:guid,unsignedPreview:true,requiresDotNetFramework:'4.8',sources:await inventory(ROOT).then(list=>list.filter(item=>!item.path.startsWith('dist/')))};
   json(path.join(output,product.report),report);

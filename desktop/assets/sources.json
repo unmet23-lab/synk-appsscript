@@ -1,6 +1,31 @@
 {
-  "version": 1,
+  "version": 2,
   "transformation": "Approved existing assets; proportion preserved, centered on white; no recoloring or redrawing.",
+  "mac": {
+    "canvas": 1024,
+    "tile": 824,
+    "inset": 100,
+    "radius": 185,
+    "exterior": "transparent",
+    "composition": "Existing Windows composition proportionally scaled into the tile; marks unchanged.",
+    "inputs": [
+      {
+        "id": "platform",
+        "file": "platform.png",
+        "sha256": "bdaa6a7071c0ec6a8b3b7aa711ada93d3e2e947b6adc52a2cb7aebae80d4a5fe"
+      },
+      {
+        "id": "world",
+        "file": "world.png",
+        "sha256": "f590318880ad89fe93048982b84fc26a422b61df2342b35fd572f40f4d1be87c"
+      },
+      {
+        "id": "messenger",
+        "file": "messenger.png",
+        "sha256": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423"
+      }
+    ]
+  },
   "sources": [
     {
       "id": "platform",

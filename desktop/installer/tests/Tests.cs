@@ -117,6 +117,19 @@ internal static class SignalInstallerTests
                 var bad = ReadSpec(); bad.MinFreeBytes = long.MaxValue;
                 ExpectFailure(delegate { Engine(bad).Preflight(); });
             });
+            if(Fixture.ContainsKey("timeoutBackend"))Check("fresh partial install timeout removes only its new files registration and shortcuts",delegate
+            {
+                string backend=(string)Fixture["timeoutBackend"];var limited=ReadSpec();limited.BackendSHA256=Hash(backend);limited.BackendBytes=new FileInfo(backend).Length;
+                limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
+                var timed=new InstallerEngine(limited,delegate { return File.OpenRead(backend); });InstallFailure failure=null;
+                try { Task.Run(delegate { return timed.InstallWithDeadline(Progress,1500); }).GetAwaiter().GetResult(); }catch(InstallFailure error){failure=error;}
+                Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped&&failure.Message.Contains("부분 설치"),"Fresh timeout state was not safely explained.");
+                Assert(!Directory.Exists(Spec.InstallDirectory),"Fresh partial installation remains.");
+                Assert(!File.Exists(StartMenuShortcut())&&!File.Exists(DesktopShortcut()),"Fresh partial shortcuts remain.");
+                using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))Assert(hive.OpenSubKey(UninstallKey())==null,"Fresh partial uninstall registration remains.");
+                Assert(Hash(sentinel)==sentinelHash,"Fresh timeout changed external account data.");
+                Assert(Same(timed.Preflight(),Spec.InstallDirectory),"Fresh timeout did not release retry.");
+            });
             Check("real NSIS install through production engine", delegate
             {
                 Assert(Same(InstallOnWorker(engine), Spec.InstallDirectory), "Installation returned another directory.");
@@ -172,6 +185,71 @@ internal static class SignalInstallerTests
                 Assert(SnapshotProductionRegistration()==productionBefore,"Automatic rejection touched production registration.");
                 engine.VerifyInstalled();
             });
+            if(Fixture.ContainsKey("timeoutBackend"))
+            {
+                Check("deadline stops descendants after parent exit then restores files registry shortcuts and preserves external data",delegate
+                {
+                    string backend=(string)Fixture["timeoutBackend"],pulse=Path.Combine(Root,"timeout-pulse.txt");
+                    var limited=ReadSpec();limited.BackendSHA256=Hash(backend);limited.BackendBytes=new FileInfo(backend).Length;
+                    limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
+                    var timed=new InstallerEngine(limited,delegate { return File.OpenRead(backend); });
+                    InstallFailure failure=null;var elapsed=Stopwatch.StartNew();
+                    try { Task.Run(delegate { return timed.InstallWithDeadline(Progress,1500); }).GetAwaiter().GetResult(); }
+                    catch(InstallFailure error) { failure=error; }
+                    Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped,"Timed-out partial install was not safely retryable.");
+                    Assert(failure.Message.Contains("복구했습니다"),"Failure did not disclose rollback status.");
+                    Assert(elapsed.ElapsedMilliseconds<20000,"Timeout did not return within the bounded stop grace.");
+                    Assert(File.Exists(pulse),"Fixture descendant did not run.");
+                    string prior=File.ReadAllText(pulse);Thread.Sleep(400);
+                    Assert(prior==File.ReadAllText(pulse),"Descendant continued writing after rollback.");
+                    Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,"update-only.txt")),"Partial new payload remains.");
+                    engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    Assert(Hash(sentinel)==sentinelHash,"Timeout rollback changed external account data.");
+                    Assert(Same(timed.Preflight(),Spec.InstallDirectory),"Safe rollback did not release the retry barrier.");
+                });
+                Check("unconfirmed backend stop never rolls back or relaunches and blocks reopening the installer",delegate
+                {
+                    using(var parent=Process.GetCurrentProcess())
+                    {
+                        // A terminated disposable process satisfies the same parent-exit precondition.
+                        using(var exited=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)){UseShellExecute=false,CreateNoWindow=true}))
+                        {
+                            Assert(exited.WaitForExit(5000),"Fixture parent did not exit.");
+                            var session=new AutomaticUpdateSession { Parent=exited,Directory=Spec.InstallDirectory,Version=Spec.Version,ExecutableSHA256=Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),AsarSHA256=Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),Nonce=new string('a',64),InstallerSHA256=new string('b',64) };
+                            bool relaunched=false;var blocked=Engine(ReadSpec());
+                            var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(session,Progress,delegate(Action<string,string,int?> progress) { throw new InstallFailure("Synthetic stop confirmation failure",false,false); },delegate(string executable,string arguments){relaunched=true;}); }).GetAwaiter().GetResult();
+                            Assert(!result.Restored&&!result.Updated&&!relaunched,"Unconfirmed stop attempted recovery or launch.");
+                            Assert(result.Message.Contains("일부 바뀐 상태")&&result.Message.Contains("복구 원본"),"Uncertain state not disclosed.");
+                            InstallFailure failure=null;try { Engine(ReadSpec()).Preflight(); }catch(InstallFailure error){failure=error;}
+                            Assert(failure!=null&&!failure.CanRetry,"New installer did not respect unresolved transaction barrier.");
+                            failure=null;try { Engine(ReadSpec()).PrepareAutomaticUpdate(exited.Id,new string('a',64),new string('b',64)); }catch(InstallFailure error){failure=error;}
+                            Assert(failure!=null&&!failure.CanRetry,"Automatic update did not reject the unresolved transaction before READY.");
+                            string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
+                            Assert(File.Exists(pending),"Recovery marker missing.");
+                            // Injected failure launched no backend, so this fixture alone can clear its barrier.
+                            File.Delete(pending);engine.VerifyInstalled();Assert(Hash(sentinel)==sentinelHash,"Uncertain branch changed account data.");
+                        }
+                    }
+                });
+                Check("automatic update timeout uses the same bounded backend and restores previous application before recovery launch",delegate
+                {
+                    string backend=(string)Fixture["timeoutBackend"];var limited=ReadSpec();limited.Version="0.0.2";limited.BackendSHA256=Hash(backend);limited.BackendBytes=new FileInfo(backend).Length;
+                    limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
+                    var timed=new InstallerEngine(limited,delegate { return File.OpenRead(backend); });
+                    using(var exited=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)){UseShellExecute=false,CreateNoWindow=true}))
+                    {
+                        Assert(exited.WaitForExit(5000),"Automatic timeout fixture parent did not exit.");
+                        string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N");
+                        var session=new AutomaticUpdateSession { Parent=exited,Directory=Spec.InstallDirectory,Version=Spec.Version,ExecutableSHA256=Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),AsarSHA256=Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),Nonce=nonce,InstallerSHA256=new string('b',64) };
+                        int launches=0;
+                        var result=Task.Run(delegate { return timed.InstallAutomaticUpdateCore(session,Progress,delegate(Action<string,string,int?> progress){return timed.InstallPayload(progress,1500);},delegate(string executable,string arguments){engine.VerifyInstalled();VerifyRegistrationAndShortcuts();Assert(arguments=="--synk-update-recovery="+nonce,"Timeout recovery token differs");launches++;}); }).GetAwaiter().GetResult();
+                        Assert(result.Restored&&result.Relaunched&&!result.Updated&&launches==1,"Automatic timeout did not recover exactly once: "+result.Message);
+                        Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,"update-only.txt")),"Automatic timeout left partial payload.");
+                        Assert(Hash(sentinel)==sentinelHash,"Automatic timeout changed external account data.");
+                        Assert(result.RecoveryFile.EndsWith(Spec.AppId+".json",StringComparison.Ordinal),"Fixture recovery file differs");File.Delete(result.RecoveryFile);
+                    }
+                });
+            }
             if (Fixture.ContainsKey("autoFailure"))
             {
                 Check("real automatic installer READY then normal parent exit rolls failed NSIS verification back and relaunches once", delegate
@@ -271,8 +349,8 @@ internal static class SignalInstallerTests
                     Assert(!parent.HasExited,"Installer terminated the parent before normal exit.");
                     File.WriteAllText(Path.Combine(hold,"stop"),"fixture parent exits normally after READY");
                     Assert(parent.WaitForExit(5000),"Parent did not exit normally.");
-                    WaitFor(delegate{return File.Exists(launched);},"Automatic installer did not relaunch the application.",30000);
-                    string arguments=File.ReadAllText(launched);
+                    string arguments=null;
+                    WaitFor(delegate{try { if(!File.Exists(launched))return false;arguments=File.ReadAllText(launched);return true; }catch(IOException){return false;}},"Automatic installer did not finish its fixture launch receipt.",30000);
                     if(success) { Assert(arguments=="","Successful update used a startup bypass.");Assert(child.WaitForExit(10000),"Successful installer did not close itself.");Assert(child.ExitCode==0,"Successful installer failed."); }
                     else
                     {

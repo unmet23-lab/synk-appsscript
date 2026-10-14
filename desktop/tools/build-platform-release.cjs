@@ -42,7 +42,7 @@ async function buildTarget(options){
     const powershell=options.powershell||path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe');command(powershell,['-NoProfile','-NonInteractive','-File',script,'-Source',baseline,'-Output',backend]);assert(sha(backend)===pin.backendSHA256,'Embedded baseline backend changed');
     const seven=await deps('app-builder-lib/out/toolsets/7zip').getPath7za();command(seven,['x',backend,'-o'+baselineRoot,'-y','resources/app.asar','resources/clients/*']);oldResources=path.join(baselineRoot,'resources');
   }else{command('hdiutil',['attach','-readonly','-nobrowse','-noautoopen','-mountpoint',baselineRoot,baseline]);mounted=true;oldResources=path.join(baselineRoot,'SYNKPlatformPreview.app/Contents/Resources');}
-  let runtime,children;
+  let runtime,children,childReports=[],childDirectory=path.join(out,'children');
   try{
     assert(sha(path.join(oldResources,'app.asar'))===pin.asarSHA256,'Baseline archive changed');runtime=JSON.parse(asar.extractFile(path.join(oldResources,'app.asar'),'runtime.json'));
     assert(runtime.clientId==='platform'&&runtime.mode==='development'&&runtime.entry==='synk-desktop://platform/index.html','Unexpected baseline runtime');
@@ -73,6 +73,20 @@ async function buildTarget(options){
     config.dmg={format:'UDZO',sign:false,writeUpdateInfo:false,title:'SYNK Platform Preview '+spec.version+' '+arch,background,icon:path.join(stage,'assets/platform.icns'),window:{width:660,height:448},iconSize:112,iconTextSize:13,contents:[{x:180,y:200,type:'file'},{x:480,y:200,type:'link',path:'/Applications'}]};
     if(arch==='x64')config.afterPack=context=>{const source=path.join(builder,'native-libs/x64'),provenance=JSON.parse(fs.readFileSync(path.join(source,'provenance.json'))),library=path.join(source,'libvulkan.dylib');assert(sha(library)===provenance.sha256,'Intel graphics loader mismatch');const app=path.join(context.appOutDir,'SYNKPlatformPreview.app');fs.copyFileSync(library,path.join(app,'Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libvulkan.dylib'));const notices=path.join(app,'Contents/Resources/Vulkan-Loader');fs.mkdirSync(notices,{recursive:true});for(const name of ['provenance.json','Vulkan-Loader-LICENSE.txt','LICENSES'])fs.cpSync(path.join(source,name),path.join(notices,name),{recursive:true});};
   }
+  if(spec.refreshBundledClients){
+    assert(spec.refreshBundledClients.version===spec.version,'Bundled clients must share the common release version');
+    const {buildChild}=require('./build-child-release.cjs');
+    const originalChildren=children;childDirectory=path.join(out,'refreshed-children');fs.mkdirSync(childDirectory);
+    for(const child of originalChildren){
+      const report=await buildChild({child,baseline:path.join(out,'children',child.installer.relativePath),root,out:path.join(out,'child-'+child.id),builder,platform,arch,version:spec.version,buildId:spec.buildId,releaseId:spec.releaseId,deps,sha,command,signal:path.resolve(options.signal||path.join(__dirname,'../installer')),powershell:options.powershell||path.join(process.env.USERPROFILE||'','.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe'),electronDownload:config.electronDownload,backgroundDirectory:path.dirname(path.resolve(options.background||path.join(builder,'mac-dmg-signal/background.png')))});
+      childReports.push(report);fs.copyFileSync(report.artifactFile,path.join(childDirectory,report.release.installer.relativePath));
+    }
+    // Preserve approvals for installed older clients, while selecting only the
+    // newly built installers for preparation and future updates.
+    runtime.releases=runtime.releases.map(row=>{const previous=originalChildren.find(child=>child.id===row.id&&child.version===row.version);if(!previous)return row;const {installer,...legacy}=row;return legacy;});
+    children=childReports.map(report=>report.release);runtime.releases.unshift(...children);json(path.join(stage,'runtime.json'),runtime);
+    config.extraResources=[{from:path.join(stage,'synk-install.json'),to:'synk-install.json'},...children.map(child=>({from:path.join(childDirectory,child.installer.relativePath),to:'clients/'+child.installer.relativePath}))];
+  }
   const {build,Platform,Arch}=deps('electron-builder');const built=await build({projectDir:builder,targets:(platform==='win32'?Platform.WINDOWS:Platform.MAC).createTarget(platform==='win32'?'dir':'dmg',arch==='arm64'?Arch.arm64:Arch.x64),config,publish:'never'});
   const app=platform==='win32'?path.join(dist,'win-unpacked'):path.join(dist,arch==='arm64'?'mac-arm64':'mac','SYNKPlatformPreview.app'),resources=platform==='win32'?path.join(app,'resources'):path.join(app,'Contents/Resources'),archive=path.join(resources,'app.asar');const memberCount=verifyArchive(asar,stage,archive);
   assert(JSON.stringify(JSON.parse(fs.readFileSync(path.join(resources,'synk-install.json'))))===JSON.stringify(metadata),'Delivered metadata differs');for(const child of children)assert(sha(path.join(resources,'clients',child.installer.relativePath))===child.installer.sha256,'Delivered child changed');
@@ -89,7 +103,7 @@ async function buildTarget(options){
   const descriptor={platform,arch,url:'https://github.com/unmet23-lab/synk-policy/releases/download/'+spec.releaseId+'/'+path.basename(artifact),bytes:fs.statSync(artifact).size,sha256:sha(artifact),asarSHA256:sha(archive)};
   if(platform==='darwin'){
     const relative=file=>path.relative(builder,file).split(path.sep).join('/');
-    const packages=children.map(child=>({client:child.id,version:child.version,metadata:{version:child.version},executable:{sha256:child.executableSHA256},asar:{sha256:child.asarSHA256},installer:{path:relative(path.join(out,'children',child.installer.relativePath)),bytes:child.installer.bytes,sha256:child.installer.sha256}}));
+    const packages=children.map(child=>({client:child.id,version:child.version,metadata:{version:child.version},executable:{sha256:child.executableSHA256},asar:{sha256:child.asarSHA256},installer:{path:relative(path.join(childDirectory,child.installer.relativePath)),bytes:child.installer.bytes,sha256:child.installer.sha256}}));
     packages.push({client:'platform',version:spec.version,metadata,executable:{sha256:sha(path.join(app,'Contents/MacOS/SYNKPlatformPreview'))},asar:{sha256:descriptor.asarSHA256},installer:{path:relative(artifact),bytes:descriptor.bytes,sha256:descriptor.sha256}});
     json(path.join(out,'mac-package-'+arch+'.json'),{ok:true,platform,arch,version:spec.version,packages});
   }

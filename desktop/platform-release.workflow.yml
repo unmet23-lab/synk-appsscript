@@ -1,22 +1,29 @@
-name: SYNK unified Platform Preview
+name: SYNK Platform unified Preview
 on:
   workflow_dispatch:
     inputs:
-      architecture:
+      targets:
+        description: Native targets to build (a completed Windows draft can be retained)
         type: choice
-        options: [both, arm64, x64]
-        default: both
+        options: [all, mac]
+        default: all
 permissions:
   contents: read
 jobs:
   mac:
-    name: Mac ${{ matrix.arch }}
+    name: Platform macOS ${{ matrix.arch }}
+    permissions:
+      contents: write
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.architecture == 'x64' && '[{"arch":"x64","runner":"macos-15-intel"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15-intel"}]') }}
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x64
+            runner: macos-15-intel
     defaults:
       run:
         working-directory: .github/desktop-preview
@@ -33,39 +40,183 @@ jobs:
       - run: npm ci --no-audit --no-fund
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-      - name: Build the existing Intel graphics loader
+      - run: node node_modules/electron/install.js
+        env:
+          npm_config_arch: ${{ matrix.arch }}
+      - name: Prepare Intel graphics compatibility
         if: matrix.arch == 'x64'
         run: bash build-vulkan-loader.sh
-      - name: Build one frozen Platform artifact
-        run: node unified/tools/build-platform-release.cjs --release=unified --out=unified-out/${{ matrix.arch }} --builder=. --platform=darwin --arch=${{ matrix.arch }} --background=unified/mac-dmg/background.png
+      - name: Build the frozen common release
+        run: node unified/tools/build-platform-release.cjs --release=unified --out=unified-out/${{ matrix.arch }} --builder=. --arch=${{ matrix.arch }} --platform=darwin --background=unified/mac-dmg/background.png
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-      - name: Verify the delivered DMGs and native Platform in isolation
-        run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }} --manifest=unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json --scope=platform
+      - name: Verify the mounted installer and native application
+        run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }} --scope=platform --manifest=unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json
         env:
           SYNK_QA_VISIBLE: '1'
           SYNK_QA_SOFTWARE_GPU: ${{ matrix.arch == 'x64' && '1' || '0' }}
-      - name: Preserve the exact verified release artifact
+      - name: Verify native application move and replacement consent
+        run: node unified/tools/mac-application-location-native-qa.cjs --config=qa-results/${{ matrix.arch }}/native-config.json --out=qa-results/${{ matrix.arch }}/application-location --builder=.
+      - name: Verify actual Finder Dock and DMG icons
+        run: node unified/tools/mac-icon-native-qa.cjs --root=. --manifest=unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json --out=unified-out/${{ matrix.arch }}/icon-native --assets=unified/source/assets
+      - name: Save the immutable checked installer
         uses: actions/upload-artifact@v7
         with:
-          name: synk-unified-platform-${{ matrix.arch }}
+          name: platform-unified-${{ matrix.arch }}
           path: |
             .github/desktop-preview/unified-out/${{ matrix.arch }}/dist/*.dmg
-            .github/desktop-preview/unified-out/${{ matrix.arch }}/build-report.json
             .github/desktop-preview/unified-out/${{ matrix.arch }}/artifact.json
-            .github/desktop-preview/unified-out/${{ matrix.arch }}/SHA256SUMS.txt
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/build-report.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/child-*/build-report.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
-      - name: Preserve native verification evidence
+      - name: Upload checked DMG to the existing draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(node -p "require('./unified/release-input.json').releaseId")
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = true
+          gh release upload "$TAG" unified-out/${{ matrix.arch }}/dist/*.dmg --repo "$GITHUB_REPOSITORY"
+      - name: Save small release metadata for common publication
+        uses: actions/upload-artifact@v7
+        with:
+          name: platform-unified-metadata-${{ matrix.arch }}
+          path: |
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/artifact.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/build-report.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/child-*/build-report.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save native verification evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: synk-unified-platform-evidence-${{ matrix.arch }}
+          name: platform-unified-qa-${{ matrix.arch }}
           path: |
             .github/desktop-preview/qa-results/${{ matrix.arch }}/mac-native-qa.json
             .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/report.json
             .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/*.png
             .github/desktop-preview/qa-results/${{ matrix.arch }}/*-process.log
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/icon-native/report.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/icon-native/*.png
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/application-location/report.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/application-location/*/done.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/application-location/*/events.jsonl
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/application-location/*/process.log
+          if-no-files-found: ignore
+          retention-days: 14
+# Job fragment: insert `windows` under the unified workflow's existing jobs.
+# Requires unified/tools/verify-windows-startup-native.cjs and the reviewed
+# unified/installer source, tests, fonts, posters, manifest and ICO files.
+  windows:
+    if: github.event.inputs.targets != 'mac'
+    name: Platform Windows x64
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: .github/desktop-preview
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          architecture: x64
+          cache: npm
+          cache-dependency-path: .github/desktop-preview/package-lock.json
+      - name: Install pinned build dependencies
+        run: npm ci --no-audit --no-fund
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - name: Verify the isolated installer timeout and recovery regression
+        run: node unified/installer/tests/test.cjs --builder=.
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify all three installer failure windows without installing an app
+        run: |
+          $framework = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319'
+          $source = (Resolve-Path -LiteralPath 'unified/installer').Path
+          $output = Join-Path (Get-Location).Path 'qa-results/win32-x64-installer-ui'
+          New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
+          $checker = Join-Path $output 'signal-ui-check.exe'
+          $compile = @('/nologo', '/target:exe', '/platform:x64', "/out:$checker", '/r:System.Core.dll', '/r:System.Xaml.dll')
+          foreach ($assembly in @('PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll')) {
+            $compile += '/r:' + (Join-Path $framework "WPF/$assembly")
+          }
+          foreach ($product in @('platform', 'world', 'messenger')) {
+            $compile += '/resource:' + (Join-Path $source "art/poster-$product.png") + ",art.poster-$product.png"
+          }
+          $compile += @((Join-Path $source 'SignalWindow.cs'), (Join-Path $source 'tests/ui-check.cs'))
+          & (Join-Path $framework 'csc.exe') @compile
+          if ($LASTEXITCODE -ne 0) { throw 'Installer UI checker compilation failed' }
+          foreach ($product in @('platform', 'world', 'messenger')) {
+            & $checker (Join-Path $source 'fonts') $output $product 2>&1 | Tee-Object -FilePath (Join-Path $output "$product.txt")
+            if ($LASTEXITCODE -ne 0) { throw "Installer UI regression failed: $product" }
+          }
+      - name: Build the frozen common release and both bundled clients
+        run: node unified/tools/build-platform-release.cjs --release=unified --out=unified-out/win32-x64 --builder=. --arch=x64 --platform=win32 --signal=unified/installer --powershell=pwsh
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify the exact packaged Windows app with an isolated profile
+        run: |
+          $definition = Get-Content -LiteralPath 'unified/release-input.json' -Raw | ConvertFrom-Json
+          if ($definition.sourceHash -notmatch '^[a-f0-9]{64}$') { throw 'Invalid frozen source hash' }
+          node unified/tools/verify-windows-startup-native.cjs --build=unified-out/win32-x64 --out=qa-results/win32-x64 --definition=unified/release-input.json "--source-hash=$($definition.sourceHash)"
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged Windows native verification failed' }
+      - name: Upload only the checked installer to the existing draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $definition = Get-Content -LiteralPath 'unified/release-input.json' -Raw | ConvertFrom-Json
+          $release = Get-Content -LiteralPath 'unified-out/win32-x64/build-report.json' -Raw | ConvertFrom-Json
+          $native = Get-Content -LiteralPath 'qa-results/win32-x64/report.json' -Raw | ConvertFrom-Json
+          if (-not $release.ok -or -not $native.ok -or -not $native.normalQuit -or -not $native.packageBytesUnchanged) { throw 'Completed build and native verification required' }
+          if ($release.sourceHash -ne $definition.sourceHash -or $native.buildSourceHash -ne $definition.sourceHash -or $release.releaseId -ne $definition.releaseId -or $release.buildId -ne $definition.buildId -or $release.version -ne $definition.version) { throw 'Release identity differs from reviewed source' }
+          $installer = Get-Item -LiteralPath $release.artifactFile
+          if ($installer.Extension -ne '.exe' -or $installer.Name -ne "SYNK-Platform-Preview-$($definition.version)-Signal-win-x64.exe" -or $installer.Length -ne $release.artifact.bytes -or (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne $release.artifact.sha256) { throw 'Verified installer bytes differ' }
+          $draftText = gh release view $definition.releaseId --repo $env:GITHUB_REPOSITORY --json isDraft,tagName
+          if ($LASTEXITCODE -ne 0) { throw 'Existing draft release is required' }
+          $draft = $draftText | ConvertFrom-Json
+          if (-not $draft.isDraft -or $draft.tagName -ne $definition.releaseId) { throw 'Refusing to upload to a published or different release' }
+          gh release upload $definition.releaseId $installer.FullName --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { throw 'Verified installer upload failed' }
+      - name: Save small release metadata for common publication
+        uses: actions/upload-artifact@v7
+        with:
+          name: platform-unified-metadata-win32-x64
+          path: |
+            .github/desktop-preview/unified-out/win32-x64/artifact.json
+            .github/desktop-preview/unified-out/win32-x64/build-report.json
+            .github/desktop-preview/unified-out/win32-x64/payload-files.json
+            .github/desktop-preview/unified-out/win32-x64/child-*/build-report.json
+            .github/desktop-preview/unified-out/win32-x64/signal/windows-signal-package.json
+            .github/desktop-preview/unified-out/win32-x64/signal/install.json
+            .github/desktop-preview/unified-out/win32-x64/child-*/signal/windows-signal-*.json
+            .github/desktop-preview/unified-out/win32-x64/child-*/signal/install.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save native and installer regression evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: platform-unified-qa-win32-x64
+          include-hidden-files: true
+          path: |
+            .github/desktop-preview/qa-results/win32-x64/report.json
+            .github/desktop-preview/qa-results/win32-x64/native-result.json
+            .github/desktop-preview/qa-results/win32-x64/*.png
+            .github/desktop-preview/qa-results/win32-x64/electron.log
+            .github/desktop-preview/qa-results/win32-x64-installer-ui/*.txt
+            .github/desktop-preview/qa-results/win32-x64-installer-ui/*.png
+            .github/desktop-preview/.tmp/signal-installer-test-*/test-results.json
+            .github/desktop-preview/.tmp/signal-installer-test-*/test-output.txt
           if-no-files-found: ignore
           retention-days: 14

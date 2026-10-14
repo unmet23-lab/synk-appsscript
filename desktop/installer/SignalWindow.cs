@@ -399,12 +399,13 @@ namespace Synk.SignalInstaller
                 SetButtons("설치 중", "나중에", false);
                 step = 0;
             }
-            int next = StepOf(title);
+            int mapped = StepOf(title);
+            int next = mapped;
             if (next == 0) next = Math.Max(step, 1);
             if (next != step) { step = next; stepStarted = DateTime.UtcNow; }
             percent = percentage.HasValue ? (int?)Math.Max(0, Math.Min(100, percentage.Value)) : null;
-            statusTitle.Text = StepTitle(step, title);
-            detail.Text = StepDetail(step, detailText);
+            statusTitle.Text = mapped>0?StepTitle(step, title):title;
+            detail.Text = mapped>0?StepDetail(step, detailText):detailText;
             progress.IsIndeterminate = !percent.HasValue;
             progress.Value = percent.HasValue ? percent.Value : 0;
             for (int i = 0; i < 3; i++) {
@@ -433,29 +434,30 @@ namespace Synk.SignalInstaller
             Announce(headline);
         }
 
-        public void ShowFailure(string message)
+        public void ShowFailure(string message) { ShowFailure(message,true); }
+        public void ShowFailure(string message,bool canRetry)
         {
-            if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<string>(ShowFailure), message); return; }
+            if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<string,bool>(ShowFailure), message,canRetry); return; }
             state = InstallerState.Failure;
-            retryAllowed = true;
+            retryAllowed = canRetry;
             clock.Stop();
             SetHeadline("설치를\n마치지 못했어요.");
-            description.Text = "아래 내용을 확인한 뒤 다시 시도해 주세요.\n이 설치 파일은 나중에 다시 열어도 돼요.";
+            description.Text = canRetry?"아래 내용을 확인한 뒤 다시 시도해 주세요.\n이 설치 파일은 나중에 다시 열어도 돼요.":"복구 확인이 끝날 때까지 다시 설치하지 마세요.\n아래에 남은 상태와 복구 위치를 적어 두었어요.";
             SetSticker("확인 필요", Coral);
             failureText.Text = String.IsNullOrWhiteSpace(message) ? "설치 파일을 다시 실행해 주세요." : message.Trim();
             failureText.ToolTip = failureText.Text;
             AutomationProperties.SetName(failureText, failureText.Text);
             ShowBlock(failureBlock);
-            SetButtons("다시 시도", "닫기", true);
+            SetButtons(canRetry?"다시 시도":"닫기", "닫기", true);
             primary.Focus();
             Announce(failureText);
         }
 
         public void ShowAutomaticFailure(string message)
         {
-            ShowFailure(message);
+            ShowFailure(message,false);
             retryAllowed = false;
-            description.Text = "이전 앱을 다시 열 수 있는지 확인했습니다.\n자동 업데이트는 앱에서 다시 시도해 주세요.";
+            description.Text = "아래에서 이전 앱과 복구 상태를 확인해 주세요.\n자동 업데이트는 복구가 끝난 뒤 앱에서 다시 시도해요.";
             SetButtons("닫기", "닫기", true);
         }
 
@@ -628,9 +630,9 @@ namespace Synk.SignalInstaller
             TimeSpan spent = DateTime.UtcNow - stepStarted;
             if (spent < TimeSpan.Zero) spent = TimeSpan.Zero;
             statusMeter.Text = "경과 " + ((int)spent.TotalMinutes).ToString(CultureInfo.InvariantCulture) + ":" + spent.Seconds.ToString("00", CultureInfo.InvariantCulture);
-            // 진행률이 없는 단계가 길어지면 멈춘 것이 아니라 계속 진행 중이라고 알린다
+            // 실제 진행 여부를 추측하지 않는다. 엔진이 한계 시각에 중단·복구 후 실패 상태를 보낸다.
             if (step == 2 && spent.TotalSeconds >= 30 && detail.Text == StepDetail(2, null))
-                detail.Text = "조금 더 걸리고 있어요. 설치는 계속 진행 중이에요.";
+                detail.Text = "조금 더 걸리고 있어요. 설치 단계가 10분을 넘기면 중단하고 이전 상태를 확인해요.";
         }
 
         // ── 부품 ─────────────────────────────────────────
@@ -742,13 +744,11 @@ namespace Synk.SignalInstaller
             head.Children.Add(new Ellipse { Width = 6, Height = 6, Fill = Coral, Margin = new Thickness(0, 0, 9, 0), VerticalAlignment = VerticalAlignment.Center });
             head.Children.Add(Text(suitBold, 13.5, -.015, CoralText, "확인할 내용"));
             stack.Children.Add(head);
-            // 긴 문구는 네 줄까지 보이고 말줄임, 전체 문구는 손을 올리면(그리고 화면 읽기 프로그램에) 그대로 나온다
+            // 실패·복구 위치를 말줄임으로 숨기지 않는다. 긴 안내도 스크롤/화면 읽기로 모두 확인한다.
             message = Paragraph(12.5, Ink2, 19);
             message.Margin = new Thickness(15, 6, 0, 0);
-            message.MaxHeight = 76;
-            message.TextTrimming = TextTrimming.WordEllipsis;
             AutomationProperties.SetLiveSetting(message, AutomationLiveSetting.Assertive);
-            stack.Children.Add(message);
+            stack.Children.Add(new ScrollViewer { Content=message,MaxHeight=100,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled });
             card.Child = stack;
             return card;
         }

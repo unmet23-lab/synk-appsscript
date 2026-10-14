@@ -34,6 +34,7 @@ const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
 const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
 const {launchWindowsUpdate}=require('./platform-update-handoff.cjs');
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
+const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -62,6 +63,8 @@ if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
+let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
+const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 function publishAuthState(state){pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
@@ -136,10 +139,13 @@ app.on('will-quit',event=>{
 });
 if(!app.requestSingleInstanceLock())app.quit();
 else {
-  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
+  app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
-  app.on('activate',()=>{if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
+  app.on('activate',()=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
   app.whenReady().then(async()=>{
+    const location=await appLocation.run();
+    if(!location.continueStartup||quittingRequested)return;
+    appLocationReady=true;
     if(runtime.clientId==='platform'){
       const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
       platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);},
@@ -182,7 +188,7 @@ function beginPlatformStartup(recoveryCode=null,recoveryReleaseId=null){
   return startupGate.start();
 }
 function initializeMain(){
-  if(mainInitialized||!startupAllowed)return;mainInitialized=true;
+  if(mainInitialized||!startupAllowed||!appLocationReady)return;mainInitialized=true;
   suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
@@ -197,6 +203,7 @@ function initializeMain(){
 }
 function createWindow(){
   if(!startupAllowed){startupWindow?.show();return;}
+  if(!appLocationReady)return;
   mainWindowReady=false;
   let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);

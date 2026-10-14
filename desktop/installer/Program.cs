@@ -97,7 +97,7 @@ namespace Synk.SignalInstaller
                                 });
                                 window.ShowComplete();
                             }
-                            catch (Exception error) { window.ShowFailure(error.Message); }
+                            catch (Exception error) { var failure=error as InstallFailure;window.ShowFailure(error.Message,failure==null||failure.CanRetry); }
                         };
                         window.LaunchRequested += delegate
                         {

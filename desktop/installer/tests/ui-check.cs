@@ -25,10 +25,10 @@ internal static class SignalUiCheck
             Directory.CreateDirectory(output);
             Application app = new Application();
             SignalProduct product = SignalProduct.ById(args.Length > 2 ? args[2] : "platform");
-            string version = product.Id == "world" ? "0.4.1" : product.Id == "messenger" ? "0.4.0" : "0.4.3";
+            string version = "0.4.11";
             string folder = product.Id == "world" ? "SYNKWorldPreview" : product.Id == "messenger" ? "SYNKMessengerPreview" : "SYNKPlatformPreview";
             SignalWindow window = new SignalWindow(fonts, version, product);
-            window.SetInstallLocation(@"C:\Users\q1212\AppData\Local\Programs\" + folder, (product.Id == "platform" ? 3L : 1L) * 1024 * 1024 * 1024);
+            window.SetInstallLocation(@"C:\Users\Example\AppData\Local\Programs\" + folder, (product.Id == "platform" ? 3L : 1L) * 1024 * 1024 * 1024);
             FrameworkElement surface = (FrameworkElement)window.Content;
             HashSet<string> renderedFonts = new HashSet<string>();
             Action<string> render = delegate(string state) {
@@ -63,6 +63,11 @@ internal static class SignalUiCheck
             window.ShowFailure(product.ShortName + "가 실행 중입니다. 작업을 저장하고 " + product.ShortName + "를 닫은 뒤 다시 설치해 주세요."); render("failure");
             CheckButtons(surface, true);
             window.ShowFailure("설치 파일을 확인하지 못했습니다: resources/app.asar. 다시 설치해 주세요. 설치 파일이 손상됐을 수 있으니 홈페이지에서 다시 받은 뒤 실행해 주세요. (코드 2)"); render("failure-long");
+            window.ShowFailure("설치 제한 시간(10분)을 넘겼습니다. 설치 작업을 중단했습니다.\n이전 앱 파일·설치 등록·바로가기를 복구했습니다. 계정·사용자 기록은 그대로입니다. 다시 시도하거나 닫아도 됩니다."); render("timeout-restored");
+            if(FindButton(surface,"다시 시도")==null||FindButton(surface,"닫기")==null)throw new Exception("Timeout retry/close missing");
+            window.ShowFailure("설치가 끝나지 않았습니다. 앱 파일이 일부 바뀐 상태일 수 있어 재시도를 막았습니다. 계정·사용자 기록은 건드리지 않았습니다.\n복구 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example\n지원에 이 내용을 알려 주세요.",false); render("timeout-recovery-required");
+            if(FindButton(surface,"다시 시도")!=null)throw new Exception("Unsafe recovery exposed retry");
+            window.ShowProgress("이전 버전으로 복구합니다","앱 파일과 설치 정보를 되돌립니다.",null);render("restoring");
             window.SetInstalled(true);
             window.SetReady();
             int installed = 0, launched = 0;
@@ -125,4 +130,3 @@ internal static class SignalUiCheck
         if (group != null) foreach (Drawing child in group.Children) CollectDrawingFonts(child, fonts);
     }
 }
-
