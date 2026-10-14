@@ -43,7 +43,7 @@ test('HTTP current team changes and project reassignment remove previously visib
 test('HTTP malformed overlap projection returns an explicit error while retaining the existing task list',async t=>{
   const f=await fixture(t),before=await f.api(),workspace=f.app.clientProjects.workspace;
   f.app.clientProjects.workspace=(...args)=>{const result=workspace(...args);for(const project of result.projects)if(project.id===f.own[0].id)project.schedule.milestones.find(item=>item.id==='preview').targetDate='2026-02-30';return result;};
-  const result=await f.api();assert.equal(result.status,200);assert.equal(typeof result.data.deadlineOverlaps.error,'string');assert.match(result.data.deadlineOverlaps.error,/확인하지 못했습니다/);assert.equal(Object.hasOwn(result.data.deadlineOverlaps,'data'),false);assert.deepEqual(result.data.items,before.data.items);assert.deepEqual(result.data.projectGroups,before.data.projectGroups);f.app.clientProjects.workspace=workspace;
+  const result=await f.api();assert.equal(result.status,200);assert.equal(typeof result.data.deadlineOverlaps.error,'string');assert.match(result.data.deadlineOverlaps.error,/계산하지 못했어요/);assert.equal(Object.hasOwn(result.data.deadlineOverlaps,'data'),false);assert.deepEqual(result.data.items,before.data.items);assert.deepEqual(result.data.projectGroups,before.data.projectGroups);f.app.clientProjects.workspace=workspace;
   const recovered=await f.api();assert.equal(recovered.data.deadlineOverlaps.data.days.length,1);
 });
 
