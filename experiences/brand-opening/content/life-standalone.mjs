@@ -13476,7 +13476,7 @@ for (const type of ["pointerdown", "touchend", "click", "keydown"]) {
   } catch {
   }
 }
-var playingMedia = /* @__PURE__ */ new Set();
+var playingMedia = globalThis.__synkPlayingMedia || (globalThis.__synkPlayingMedia = /* @__PURE__ */ new Set());
 function session(type) {
   try {
     const value = navigator.audioSession;
@@ -13490,16 +13490,21 @@ function guardMedia() {
   const native = proto.play;
   Object.defineProperty(proto, "__synkAudioSession", { value: true });
   proto.play = function(...args) {
+    let done = null;
     if (!this.muted) {
       playingMedia.add(this);
       session("playback");
-      const done = () => {
+      done = () => {
         for (const type of ["pause", "ended", "error"]) this.removeEventListener(type, done);
         playingMedia.delete(this);
       };
       for (const type of ["pause", "ended", "error"]) this.addEventListener(type, done);
     }
-    return native.apply(this, args);
+    const result = native.apply(this, args);
+    if (done && result?.then) result.then(null, () => {
+      if (this.paused) done();
+    });
+    return result;
   };
 }
 guardMedia();
@@ -13621,7 +13626,7 @@ function storyVoice(who, text, { cps = 23, render = null } = {}) {
 var canVibrate = () => typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
 function canSwitch() {
   try {
-    return typeof document !== "undefined" && "switch" in HTMLInputElement.prototype && (navigator.maxTouchPoints || 0) > 0;
+    return typeof document !== "undefined" && "switch" in HTMLInputElement.prototype && /iPhone/.test(navigator.userAgent || "");
   } catch {
     return false;
   }
@@ -13848,11 +13853,12 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
     const sheet = el?.closest?.("dialog");
     return !!sheet && !sheet.contains(content);
   };
+  const ON_PHOTO = "button,.life-tutor";
   const storyTarget = (event) => isActive() && event.target instanceof Element && !inSheet(event.target);
   function onPointerDown(event) {
     if (!storyTarget(event) || event.button) return;
     const figure = event.target.closest(".life-story-photo");
-    down = figure && !event.target.closest("button") ? { x: event.clientX, y: event.clientY } : null;
+    down = figure && !event.target.closest(ON_PHOTO) ? { x: event.clientX, y: event.clientY } : null;
     swiped = false;
   }
   function onPointerUp(event) {
@@ -13881,7 +13887,7 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
       return;
     }
     const figure = event.target.closest(".life-story-photo");
-    if (!figure || event.target.closest("button")) return;
+    if (!figure || event.target.closest(ON_PHOTO)) return;
     if (swiped) {
       swiped = false;
       return;
@@ -13911,12 +13917,12 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
   }
   const onVisibility = () => {
     if (document.hidden) stopTyping();
+  }, onCancel = () => {
+    down = null;
   };
   content.addEventListener("pointerdown", onPointerDown, { passive: true });
   content.addEventListener("pointerup", onPointerUp, { passive: true });
-  content.addEventListener("pointercancel", () => {
-    down = null;
-  }, { passive: true });
+  content.addEventListener("pointercancel", onCancel, { passive: true });
   content.addEventListener("click", onClick);
   document.addEventListener("keydown", onKey);
   document.addEventListener("visibilitychange", onVisibility);
@@ -13932,6 +13938,7 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
       stopTyping();
       content.removeEventListener("pointerdown", onPointerDown);
       content.removeEventListener("pointerup", onPointerUp);
+      content.removeEventListener("pointercancel", onCancel);
       content.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("visibilitychange", onVisibility);

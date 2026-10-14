@@ -22,7 +22,7 @@ export async function storyCharacters(){
 }
 export function missingCharacters(chars,list=JSON.parse(fs.readFileSync(listPath,'utf8'))){const have=new Set(list.chars);return chars.filter(ch=>!have.has(ch));}
 
-if(import.meta.url===pathToFileURL(process.argv[1]).href){
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  const chars=await storyCharacters();
  if(process.argv.includes('--check')){
   const missing=missingCharacters(chars);

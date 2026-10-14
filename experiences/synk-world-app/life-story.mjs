@@ -111,11 +111,13 @@ export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced
 
  // WORLD 판(#world-panel)도 dialog라서, 판 안에 따로 열린 창(표현 도움·연습)만 뺀다.
  const inSheet=el=>{const sheet=el?.closest?.('dialog');return !!sheet&&!sheet.contains(content);};
+ const ON_PHOTO='button,.life-tutor';
  const storyTarget=event=>isActive()&&event.target instanceof Element&&!inSheet(event.target);
  function onPointerDown(event){
   if(!storyTarget(event)||event.button)return;
   const figure=event.target.closest('.life-story-photo');
-  down=figure&&!event.target.closest('button')?{x:event.clientX,y:event.clientY}:null;swiped=false;
+  // 사진 위 단추·이름표와 튜터 알약(얼굴 포함)은 넘기기에서 뺀다
+  down=figure&&!event.target.closest(ON_PHOTO)?{x:event.clientX,y:event.clientY}:null;swiped=false;
  }
  function onPointerUp(event){
   if(!down||!storyTarget(event))return;const dx=event.clientX-down.x,dy=event.clientY-down.y;down=null;
@@ -127,7 +129,7 @@ export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced
   if(mark&&!typing){event.preventDefault();onMark(Number(mark.dataset.lifeMark));return;}
   if(event.target.closest('.life-dialogue')){if(typing){event.preventDefault();stopTyping();}return;}
   const figure=event.target.closest('.life-story-photo');
-  if(!figure||event.target.closest('button'))return;
+  if(!figure||event.target.closest(ON_PHOTO))return;
   if(swiped){swiped=false;return;}
   const box=figure.getBoundingClientRect();markUsed();
   ((event.clientX-box.left)/box.width<.3?onPrev:onNext)();
@@ -141,16 +143,16 @@ export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced
   if(event.key==='ArrowRight'){event.preventDefault();onNext();}
   else if(event.key==='ArrowLeft'){event.preventDefault();onPrev();}
  }
- const onVisibility=()=>{if(document.hidden)stopTyping();};
+ const onVisibility=()=>{if(document.hidden)stopTyping();},onCancel=()=>{down=null;};
  content.addEventListener('pointerdown',onPointerDown,{passive:true});
  content.addEventListener('pointerup',onPointerUp,{passive:true});
- content.addEventListener('pointercancel',()=>{down=null;},{passive:true});
+ content.addEventListener('pointercancel',onCancel,{passive:true});
  content.addEventListener('click',onClick);
  document.addEventListener('keydown',onKey);
  document.addEventListener('visibilitychange',onVisibility);
  return {
   enter,stop(){stopTyping();photoSwap?.remove();photoSwap=null;},
   typing:()=>!!typing,
-  dispose(){stopTyping();content.removeEventListener('pointerdown',onPointerDown);content.removeEventListener('pointerup',onPointerUp);content.removeEventListener('click',onClick);document.removeEventListener('keydown',onKey);document.removeEventListener('visibilitychange',onVisibility);}
+  dispose(){stopTyping();content.removeEventListener('pointerdown',onPointerDown);content.removeEventListener('pointerup',onPointerUp);content.removeEventListener('pointercancel',onCancel);content.removeEventListener('click',onClick);document.removeEventListener('keydown',onKey);document.removeEventListener('visibilitychange',onVisibility);}
  };
 }

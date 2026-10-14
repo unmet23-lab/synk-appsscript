@@ -94,18 +94,23 @@ for(const type of ['pointerdown','touchend','click','keydown']){try{addEventList
 
 /* ── 오디오 세션(아이폰 사파리) ── 효과음·말소리는 듣던 음악 위에 섞이고 무음 모드에서는 조용히(ambient).
  * 낱말·목소리 같은 오디오 파일이 나는 동안만 무음 모드에서도 들리게(playback) 둔다. audioSession이 없는 브라우저에서는 아무것도 하지 않는다. */
-const playingMedia=new Set();
+// 한 문서에 이 모듈이 둘 들어와도(바로 연 home.html의 묶음 + 낱개 모듈) 지금 나는 오디오 파일 목록은 하나로 본다.
+const playingMedia=globalThis.__synkPlayingMedia||(globalThis.__synkPlayingMedia=new Set());
 function session(type){try{const value=navigator.audioSession;if(value&&value.type!==type)value.type=type;}catch{}}
 function guardMedia(){
   const proto=globalThis.HTMLMediaElement?.prototype;if(!proto||!globalThis.navigator?.audioSession||proto.__synkAudioSession)return;
   const native=proto.play;Object.defineProperty(proto,'__synkAudioSession',{value:true});
   proto.play=function(...args){
+    let done=null;
     if(!this.muted){
       playingMedia.add(this);session('playback');
-      const done=()=>{for(const type of ['pause','ended','error'])this.removeEventListener(type,done);playingMedia.delete(this);};
+      done=()=>{for(const type of ['pause','ended','error'])this.removeEventListener(type,done);playingMedia.delete(this);};
       for(const type of ['pause','ended','error'])this.addEventListener(type,done);
     }
-    return native.apply(this,args);
+    const result=native.apply(this,args);
+    // 재생이 거절되면(누르기 전 자동 재생 등) pause·ended가 오지 않으니 여기서 정리한다(목록에 남으면 playback에 묶인다).
+    if(done&&result?.then)result.then(null,()=>{if(this.paused)done();});
+    return result;
   };
 }
 guardMedia();
@@ -173,7 +178,8 @@ export function storyVoice(who,text,{cps=23,render=null}={}){
 
 /* ── 진동 ── 안드로이드는 vibrate. 아이폰은 vibrate가 없어서 iOS 18의 스위치 체크박스를 눌러 시스템 진동을 빌린다(누르는 처리 안에서만 된다). */
 const canVibrate=()=>typeof navigator!=='undefined'&&typeof navigator.vibrate==='function';
-function canSwitch(){try{return typeof document!=='undefined'&&'switch' in HTMLInputElement.prototype&&(navigator.maxTouchPoints||0)>0;}catch{return false;}}
+// 스위치 진동은 아이폰에만 있다(아이패드·맥 사파리도 스위치 칸은 알지만 울리지 않는다).
+function canSwitch(){try{return typeof document!=='undefined'&&'switch' in HTMLInputElement.prototype&&/iPhone/.test(navigator.userAgent||'');}catch{return false;}}
 /** 이 기기에서 진동을 낼 수 있는지(설정의 「진동」 줄을 보일지). */
 export const hapticAvailable=()=>canVibrate()||canSwitch();
 /** 아주 짧은 진동. 넘기기·정답·완료 정도에만 쓴다. */
