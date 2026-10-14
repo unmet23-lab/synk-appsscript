@@ -90,13 +90,22 @@ function 결과읽기(stdout) {
   return { init: init ? init.init : null, result: 결과들[0] };
 }
 
-function 임시방지우기(방) {
+function 임시방지우기(방, 지우기 = fs.rmSync) {
   const 임시루트 = path.resolve(os.tmpdir()) + path.sep;
   const 대상 = path.resolve(방);
   if (!대상.startsWith(임시루트) || !path.basename(대상).startsWith('synk-agy-review-')) {
     throw new Error(`임시방 경계 밖은 지우지 않는다: ${대상}`);
   }
-  fs.rmSync(대상, { recursive: true, force: true });
+  /* agy가 띄우는 `--bg-updater`가 이 방을 작업 폴더로 물려받아 잠깐 잡고 있는다(10-14 실측: 답은 받았는데
+   * 지우기가 EPERM으로 터져 호출 전체가 실패로 나갔다). 몇 초 기다리며 다시 지우고, 그래도 안 되면
+   * 방만 남기고 알린다 — 이미 받은 답을 임시 폴더 때문에 버리지 않는다. */
+  try {
+    지우기(대상, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
+    return true;
+  } catch (e) {
+    console.error(`주의: 임시방을 못 지워 남겨 둔다(${e.code || e.message}) — ${대상}`);
+    return false;
+  }
 }
 
 function 비밀환경걷기(env = process.env) {
@@ -107,6 +116,13 @@ function 비밀환경걷기(env = process.env) {
   ]) delete 안전[이름];
   return 안전;
 }
+
+/* agy는 에이전트라 전역 GEMINI.md를 읽고 「먼저 자료를 보자」며 도구를 부르기도 한다. 도구를 부르면
+ * 전역 PreToolUse 훅이 돌고, 10-14에는 그 훅(없는 파일을 가리키는 orca-status)이 CP949 오류문을 내
+ * agy가 `proto: … invalid UTF-8`로 통째로 실패했다(몽골어 검문 문법 층). 이 통로의 일은 «모델에게 한 번
+ * 묻기»이므로 도구 없이 주어진 글만 보고 답하라고 앞에 붙인다. */
+const 도구없이 = '[이 요청은 도구 없이 답한다] 파일 읽기·명령 실행·검색 같은 도구를 쓰지 말고, '
+  + '아래에 주어진 글만 보고 바로 답해라. 다른 문서를 읽어야 하는 요청이 아니다.\n\n';
 
 function main(argv = process.argv.slice(2)) {
   const model = 값(argv, '--model');
@@ -131,7 +147,7 @@ function main(argv = process.argv.slice(2)) {
       '--sandbox', '--disable-slash-commands',
       ...(schema ? ['--json-schema', schema] : []),
     ];
-    const input = JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n';
+    const input = JSON.stringify({ event: 'user', message: { content: 도구없이 + prompt } }) + '\n';
     const p = spawnSync(실행파일(), args, {
       cwd: 방,
       input,
