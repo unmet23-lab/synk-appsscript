@@ -19,6 +19,39 @@ function fixture(){
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('first entry renders loading before ensure starts and settles without a refresh or duplicate request',async()=>{
+  const f=fixture(),frames=[];f.run('socialWorkspaceReset()');
+  f.context.render=()=>{frames.push(f.run('renderSocialWorkspace()'));f.run('socialWorkspaceEnsure()');};
+  f.context.render();f.run('socialWorkspaceEnsure();socialWorkspaceEnsure()');
+  assert.equal(f.requests.length,1);assert.ok(frames.length>=2);
+  for(const html of frames){assert.match(html,/SNS 작업실을 불러오고 있어요/);assert.ok(!html.includes('작업실을 불러오지 못했어요'));}
+  await f.run('snswAction("refresh","")');assert.equal(f.requests.length,1);
+  f.requests[0].resolve(f.context.initial);await settle();
+  assert.equal(f.run('socialWorkspaceState.loading'),false);assert.match(frames.at(-1),/SNS 운영 숫자/);assert.ok(!frames.at(-1).includes('작업실을 불러오지 못했어요'));
+});
+test('a real first-load failure stays failed until an explicit retry and the retry shows loading immediately',async()=>{
+  const f=fixture(),frames=[];f.run('socialWorkspaceReset()');f.context.render=()=>{frames.push(f.run('renderSocialWorkspace()'));f.run('socialWorkspaceEnsure()');};
+  f.context.render();f.requests[0].reject(new Error('조회 연결 실패'));await settle();
+  assert.equal(f.requests.length,1);assert.match(frames.at(-1),/조회 연결 실패/);assert.match(frames.at(-1),/작업실을 불러오지 못했어요/);
+  f.context.render();assert.equal(f.requests.length,1,'renders do not retry a failed request');
+  const retry=f.run('snswAction("refresh","")');assert.equal(f.requests.length,2);assert.match(frames.at(-1),/SNS 작업실을 불러오고 있어요/);assert.ok(!frames.at(-1).includes('조회 연결 실패'));
+  await f.run('snswAction("refresh","")');assert.equal(f.requests.length,2);
+  f.requests[1].resolve(f.context.initial);await retry;assert.equal(f.run('socialWorkspaceState.error'),'');assert.match(frames.at(-1),/SNS 운영 숫자/);
+});
+test('a first load may finish after leaving social without rendering over the next screen',async()=>{
+  const f=fixture();f.run('socialWorkspaceReset();socialWorkspaceEnsure()');const renders=f.renders;
+  f.context.state.tab='home';f.requests[0].resolve(f.context.initial);await settle();
+  assert.equal(f.renders,renders);assert.equal(f.run('socialWorkspaceState.loading'),false);assert.equal(f.context.state.tab,'home');
+  f.context.state.tab='social';f.run('socialWorkspaceEnsure()');assert.equal(f.requests.length,1);assert.match(f.run('renderSocialWorkspace()'),/SNS 운영 숫자/);
+});
+test('late initial responses cannot clear loading or expose data after an identity reset',async()=>{
+  const f=fixture();f.run('socialWorkspaceReset();socialWorkspaceEnsure()');
+  f.context.state.user={id:'next',role:'viewer'};f.run('socialWorkspaceEnsure()');assert.equal(f.requests.length,2);
+  f.requests[0].resolve({...f.context.initial,posts:[{id:'old-secret',body:'prior user'}]});await settle();
+  assert.equal(f.run('socialWorkspaceState.loading'),true);assert.equal(f.run('socialWorkspaceState.data'),null);
+  f.requests[1].resolve({...f.context.initial,canWrite:false});await settle();assert.equal(f.run('socialWorkspaceState.loading'),false);assert.equal(f.run('socialWorkspaceState.data.posts.length'),0);
+});
+
 test('calendar groups each reservation once in Korean time and keeps sorted dates and unscheduled posts',()=>{
   const f=fixture();f.run(`socialWorkspaceState.date='2026-10-14';socialWorkspaceState.calendar='month';
     socialWorkspaceState.data.posts=[{id:'p',title:'예약 있는 게시물',status:'approved',canPublish:true,variants:[]},{id:'cancelled',title:'취소만 있는 게시물',status:'draft',variants:[]}];
@@ -355,7 +388,7 @@ test('typing while another request runs is kept when the screen redraws',async()
   const form={dataset:{swForm:'inbox-update',id:'i2'},values:{replyDraft:'수집 기다리며 쓴 초안',assigneeId:'u',status:'open'}};fire('input',{dataset:{},hasAttribute:()=>false,closest:()=>form});
   const followup={dataset:{swForm:'followup',id:'i1',revision:'1'},values:{roomId:'r',assigneeId:'u',dueDate:'2026-10-15',nextAction:'기다리며 쓴 다음 행동'}};fire('change',{dataset:{},hasAttribute:()=>false,closest:selector=>selector==='[data-sw-form="followup"]'?followup:null});
   assert.equal(f.run('socialWorkspaceState.forms["followup:i1"].nextAction'),'기다리며 쓴 다음 행동');
-  f.requests[0].resolve({ok:true});await settle();assert.equal(f.requests[1].path,'/api/social/workspace');f.requests[1].resolve(JSON.parse(JSON.stringify(f.context.initial)));await pending;
+  f.requests[0].resolve({ok:true});await settle();assert.equal(f.requests[1].path.split('?')[0],'/api/social/workspace');f.requests[1].resolve(JSON.parse(JSON.stringify(f.context.initial)));await pending;
   assert.match(f.run('snswInbox()'),/수집 기다리며 쓴 초안/);
 });
 
@@ -479,7 +512,7 @@ test('a recovery summary in the workspace read fetches the full drafts once per 
   f.requests[0].resolve(f.context.full(2,'다른 창 본문'));await first;
   assert.equal(f.run('socialRecoveryState.offers.length'),1);assert.equal(f.run('socialRecoveryState.offers[0].draft.body'),'다른 창 본문');assert.ok(f.run('snswRecoveryPanel()').includes('다른 창 원고'));
   await f.run('snswRecoveryAccept(summary(2))');assert.equal(f.requests.length,1,'the same summary reuses the fetched drafts');assert.equal(f.run('socialRecoveryState.offers[0].draft.body'),'다른 창 본문');
-  const load=f.run('snswLoad()');assert.equal(f.requests[1].path,'/api/social/workspace');f.requests[1].resolve({...JSON.parse(JSON.stringify(f.context.initial)),recovery:f.context.summary(2)});await load;
+  const load=f.run('snswLoad()');assert.equal(f.requests[1].path.split('?')[0],'/api/social/workspace');f.requests[1].resolve({...JSON.parse(JSON.stringify(f.context.initial)),recovery:f.context.summary(2)});await load;
   assert.equal(f.requests.length,2,'a workspace read with the same summary does not fetch again');assert.equal(f.run('socialRecoveryState.offers[0].draft.body'),'다른 창 본문');
   const third=f.run('snswRecoveryAccept(summary(3))');assert.equal(f.requests[2].path,'/api/social/recovery');f.requests[2].resolve(f.context.full(3,'고친 본문'));await third;
   assert.equal(f.run('socialRecoveryState.offers[0].draft.body'),'고친 본문');assert.equal(f.run('socialRecoveryState.offers[0].revision'),3);
@@ -523,13 +556,13 @@ test('the account classification save carries the revision the form was opened w
   assert.ok(f.run('snswAccounts()').includes('name="revision" value="3"'),'the open form keeps the revision it started from');
   f.context.form=form;let pending=f.run('snswSubmit(form)');assert.equal(f.requests[0].path,'/api/social/accounts/ch');assert.equal(f.requests[0].body.revision,3);assert.equal(f.requests[0].body.brand,'PULSE');
   f.requests[0].reject(Object.assign(new Error('다른 창에서 계정 분류가 바뀌었어요. 새로고침한 뒤 다시 저장해 주세요.'),{status:409}));await settle();
-  assert.equal(f.requests[1].path,'/api/social/workspace','a conflict reloads the workspace');
+  assert.equal(f.requests[1].path.split('?')[0],'/api/social/workspace','a conflict reloads the workspace');
   const fresh=JSON.parse(JSON.stringify(f.context.initial));fresh.channels[0].metaRevision=4;fresh.accounts=[{id:'ch',brandId:'synk',language:'ko',category:'뉴스',timeZone:'Asia/Seoul'}];f.requests[1].resolve(fresh);await pending;
   assert.equal(f.run('socialWorkspaceState.forms["account:ch"]'),undefined,'the stale typed values are dropped');
   const after=f.run('snswAccounts()');assert.ok(after.includes('name="revision" value="4"'));assert.ok(after.includes('value="synk"'));assert.ok(!after.includes('value="PULSE"'));
   assert.ok(f.run('socialWorkspaceState.error').includes('다른 창에서 계정 분류가 바뀌었어요'));assert.equal(f.run('socialWorkspaceState.busy'),false);
   form.values={brand:'LAB',language:'ko',category:'뉴스',timeZone:'Asia/Seoul',campaign:'',revision:'4'};fire('input',{dataset:{},hasAttribute:()=>false,closest:()=>form});
-  pending=f.run('snswSubmit(form)');assert.equal(f.requests[2].body.revision,4);f.requests[2].resolve({ok:true});await settle();assert.equal(f.requests[3].path,'/api/social/workspace');f.requests[3].resolve(fresh);await pending;
+  pending=f.run('snswSubmit(form)');assert.equal(f.requests[2].body.revision,4);f.requests[2].resolve({ok:true});await settle();assert.equal(f.requests[3].path.split('?')[0],'/api/social/workspace');f.requests[3].resolve(fresh);await pending;
   assert.equal(f.run('socialWorkspaceState.forms["account:ch"]'),undefined,'a saved form forgets its typed copy');assert.equal(f.run('socialWorkspaceState.notice'),'계정 분류를 저장했어요.');
   f.run('delete socialWorkspaceState.data.channels[0].metaRevision');assert.ok(f.run('snswAccounts()').includes('name="revision" value="0"'),'no revision from the server sends 0');
   const other={dataset:{swForm:'account',id:'ch'},values:{brand:'LAB',language:'ko',category:'',timeZone:'Asia/Seoul',campaign:''}};f.context.form=other;pending=f.run('snswSubmit(form)');assert.equal(f.requests[4].body.revision,0);f.requests[4].reject(new Error('offline'));await pending;
@@ -542,4 +575,87 @@ test('a more button keeps the reader at the same place after the redraw',()=>{
   f.run('snswAction("list-more","inbox")');assert.equal(f.renders,1);assert.equal(next.scrollTop,4200,'the redrawn page opens where the more button was');
   next.scrollTop=900;main={scrollTop:900};const again={scrollTop:900};f.context.render=()=>{original();main=again;};f.run('snswAction("list-more","calendar")');assert.equal(again.scrollTop,900,'a redraw that kept the place is left alone');
   f.context.document.querySelector=base;f.context.render=original;f.run('snswAction("list-more","inbox")');assert.equal(f.renders,3,'no page container still redraws');
+});
+
+function pagedFixture(){
+  const f=fixture();f.context.page={posts:{total:120,limit:50,hasMore:true,nextCursor:'post-next'},jobs:{total:3000,limit:50,hasMore:true,nextCursor:'job-next'}};
+  f.run('socialWorkspaceState.data.pagination=JSON.parse(JSON.stringify(page));socialWorkspaceState.loadKey=snswWorkspacePath();socialWorkspaceState.loadedKey=socialWorkspaceState.loadKey');return f;
+}
+test('workspace requests send bounded pages with the current date, mode and every filter',()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.view="calendar";socialWorkspaceState.calendar="week";socialWorkspaceState.date="2026-10-15";socialWorkspaceState.query="문구 & 검색";socialWorkspaceState.filters={brand:"LAB",channel:"ch",status:"failed",campaign:"c",language:"ko",owner:"u"}');
+  const url=new URL(f.run('snswWorkspacePath("jobs")'),'https://workspace.test');
+  assert.deepEqual(Object.fromEntries(url.searchParams),{pageSize:'50',section:'calendar',view:'week',date:'2026-10-15',search:'문구 & 검색',brandId:'LAB',channelId:'ch',status:'failed',campaignId:'c',language:'ko',ownerId:'u',jobCursor:'job-next'});
+  f.run('socialWorkspaceState.view="settings"');assert.equal(new URL(f.run('snswWorkspacePath()'),'https://workspace.test').searchParams.has('search'),false);
+});
+test('independent page loading merges unique rows and preserves the other cursor and linked post lookup',async()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.data.posts=[{id:"p1",title:"first"}];socialWorkspaceState.data.jobs=[{id:"j1",postId:"linked"}];socialWorkspaceState.data.linkedPosts=[{id:"linked",title:"job context"}]');
+  const pending=f.run('snswAction("page-more","posts")');assert.match(f.requests[0].path,/postCursor=post-next/);assert.ok(!f.requests[0].path.includes('jobCursor='));
+  await f.run('snswAction("page-more","posts")');assert.equal(f.requests.length,1);
+  f.requests[0].resolve({...f.context.initial,posts:[{id:'p1',title:'updated'},{id:'p2',title:'second'}],jobs:[{id:'ignored'}],linkedPosts:[{id:'context2'}],pagination:{posts:{total:120,limit:50,hasMore:true,nextCursor:'post-final'},jobs:{total:3000,limit:50,hasMore:true,nextCursor:'reset'}}});await pending;
+  assert.equal(f.run('socialWorkspaceState.data.posts.length'),2);assert.equal(f.run('socialWorkspaceState.data.posts[0].title'),'updated');assert.equal(f.run('socialWorkspaceState.data.jobs[0].id'),'j1');assert.equal(f.run('socialWorkspaceState.data.pagination.jobs.nextCursor'),'job-next');assert.equal(f.run('socialWorkspaceState.data.pagination.posts.nextCursor'),'post-final');assert.equal(f.run('snswRows("posts").length'),4);assert.equal(f.run('snswPostList().length'),2);
+});
+test('a filter change replaces an in-flight next page and late pages cannot mix query results',async()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.view="calendar";socialWorkspaceState.loadKey=snswWorkspacePath();socialWorkspaceState.loadedKey=socialWorkspaceState.loadKey');
+  f.context.render=()=>{f.run('renderSocialWorkspace();socialWorkspaceEnsure()');};
+  const older=f.run('snswAction("page-more","jobs")');f.run('socialWorkspaceState.filters.channel="new-channel";snswRender()');assert.equal(f.requests.length,2);assert.match(f.requests[1].path,/channelId=new-channel/);assert.ok(!f.requests[1].path.includes('Cursor='));
+  f.requests[1].resolve({...f.context.initial,posts:[],jobs:[{id:'new'}],pagination:{posts:{total:0,hasMore:false},jobs:{total:1,hasMore:false}}});await settle();
+  f.requests[0].resolve({...f.context.initial,jobs:[{id:'old-private'}],pagination:f.context.page});await older;
+  assert.equal(f.run('socialWorkspaceState.data.jobs.length'),1);assert.equal(f.run('socialWorkspaceState.data.jobs[0].id'),'new');assert.equal(f.run('socialWorkspaceState.loading'),false);
+});
+test('calendar uses authoritative counts and occupancy outside the hydrated page without inventing empty slots',()=>{
+  const f=pagedFixture();f.run(`socialWorkspaceState.view='calendar';socialWorkspaceState.calendar='day';socialWorkspaceState.date='2099-10-15';socialWorkspaceState.data.posts=[{id:'draft',title:'Unscheduled',hasActiveJobs:false,variants:[]}];socialWorkspaceState.data.linkedPosts=[{id:'scheduled',title:'Linked',hasActiveJobs:true,variants:[]}];socialWorkspaceState.data.jobs=[];socialWorkspaceState.data.pagination.posts.total=120;socialWorkspaceState.data.summary={days:[{day:'2099-10-15',total:100}],jobs:{monthScheduled:1000,monthPublished:800}};socialWorkspaceState.data.occupiedSlots=[{channelId:'ch',scheduledAt:'2099-10-15T00:00:00Z'}];socialWorkspaceState.data.slots=[{channelId:'ch',timezone:'Asia/Seoul',slots:[{weekday:new Date('2099-10-15T12:00Z').getUTCDay(),time:'09:00'}]}]`);
+  const html=f.run('snswCalendar()');assert.match(html,/일정 없는 게시물<b>120<\/b>/);assert.match(html,/게시 작업을 더 불러오세요/);assert.ok(!html.includes('빈 시간 칸'));assert.ok(!html.includes('예약 없음'));assert.deepEqual(Array.from(f.run('snswPosterStats("calendar")'),x=>Array.from(x)),[['이달 예약',1000,''],['이달 게시',800,'ok']]);
+  f.run('socialWorkspaceState.calendar="month"');assert.match(f.run('snswCalendar()'),/100개 게시 일정 보기">100건/);
+});
+test('linked posts do not inflate the post list or bulk selection and a later source opens through its detail endpoint',async()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.view="calendar";socialWorkspaceState.calendar="list";socialWorkspaceState.data.posts=[{id:"visible",title:"Visible",variants:[],canEdit:true}];socialWorkspaceState.data.linkedPosts=[{id:"linked",title:"Context only",variants:[],canEdit:true}];socialWorkspaceState.loadKey=snswWorkspacePath();socialWorkspaceState.loadedKey=socialWorkspaceState.loadKey');
+  assert.equal(f.run('snswFilteredPosts().length'),1);await f.run('snswExtendedAction("bulk-select-all","")');assert.deepEqual(Array.from(f.run('socialWorkspaceState.forms.bulkSelected')),['visible']);
+  const pending=f.run('snswAction("edit","not-in-page")');assert.equal(f.requests[0].path,'/api/social/posts/not-in-page');f.requests[0].resolve({post:{id:'not-in-page',title:'Full source',body:'full body',variants:[],status:'approved',revision:9,canEdit:true},jobs:[{id:'full-job',postId:'not-in-page',status:'published'}]});await pending;
+  assert.equal(f.run('socialWorkspaceState.editId'),'not-in-page');assert.equal(f.run('socialWorkspaceState.draft.body'),'full body');assert.equal(f.run('snswPostJobs(socialWorkspaceState.detail.post)[0].id'),'full-job');assert.equal(f.run('socialWorkspaceState.view'),'compose');
+});
+test('a failed page leaves the existing rows and cursor available and a detail denial never opens stale content',async()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.data.posts=[{id:"p",title:"Existing",variants:[]}]');
+  const more=f.run('snswAction("page-more","posts")');f.requests[0].reject(new Error('Page unavailable'));await more;assert.equal(f.run('socialWorkspaceState.data.posts[0].id'),'p');assert.equal(f.run('socialWorkspaceState.data.pagination.posts.nextCursor'),'post-next');assert.match(f.run('snswPageFooter("posts")'),/게시물 더 불러오기/);
+  const detail=f.run('snswAction("edit","p")');f.requests[1].reject(Object.assign(new Error('Access denied'),{status:403}));await detail;assert.equal(f.run('socialWorkspaceState.editId'),'');assert.equal(f.run('socialWorkspaceState.detail'),null);assert.match(f.run('socialWorkspaceState.error'),/Access denied/);
+});
+
+test('leaving the workspace while a post detail is loading never navigates back into the editor',async()=>{
+  const f=pagedFixture(),pending=f.run('snswAction("edit","p")');f.context.state.tab='home';f.requests[0].resolve({post:{id:'p',title:'Late',body:'Late body',variants:[]},jobs:[]});await pending;
+  assert.equal(f.context.state.tab,'home');assert.equal(f.run('socialWorkspaceState.editId'),'');assert.equal(f.run('socialWorkspaceState.busy'),false);
+});
+test('server brand choices and job statuses remain visible outside the hydrated job page',()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.data.summary={brands:["Older brand"]};socialWorkspaceState.data.posts=[{id:"p",title:"Old failed post",variants:[],jobStatuses:["failed","published"]}];socialWorkspaceState.data.jobs=[]');
+  assert.match(f.run('snswFilterBar()'),/Older brand/);const html=f.run('snswPostCard(snswPostList()[0])');assert.match(html,/data-status="failed"/);assert.match(html,/data-status="published"/);
+});
+
+test('overview renders each bounded preview bucket and keeps its global counts and job actions',async()=>{
+  const f=pagedFixture();f.run(`socialWorkspaceState.data.posts=Array.from({length:50},(_,i)=>({id:'recent'+i,title:'Recent published',status:'published'}));socialWorkspaceState.data.jobs=Array.from({length:50},(_,i)=>({id:'old'+i,status:'published'}));socialWorkspaceState.data.overview={review:[{id:'old-review',title:'Old review still pending',status:'review',variants:[]}],drafts:[{id:'old-draft',title:'Earlier draft',status:'draft',variants:[]}],attention:[{id:'missed',postId:'linked',channelId:'ch',status:'missed',scheduledAt:'2026-01-01T00:00:00Z'}],upcoming:[{id:'next',postId:'linked',channelId:'ch',status:'scheduled',scheduledAt:'2099-10-15T00:00:00Z'}]};socialWorkspaceState.data.linkedPosts=[{id:'linked',title:'Future scheduled source',variants:[],canPublish:true}];socialWorkspaceState.data.summary={posts:{draft:21,review:88},jobs:{scheduled:71,attention:64,published7d:500}}`);
+  const html=f.run('snswOverview()');assert.match(html,/Old review still pending/);assert.match(html,/Earlier draft/);assert.match(html,/Future scheduled source/);assert.match(html,/63건 더 보기/);assert.match(html,/최근 초안[\s\S]*?21/);assert.ok(!html.includes('게시물 50 /'));
+  await f.run('snswAction("job-now","missed")');assert.equal(f.run('socialWorkspaceState.forms.job.id'),'missed');assert.equal(f.run('socialWorkspaceState.forms.job.kind'),'now');
+});
+
+test('a failed editor permission refresh preserves authored text but prevents saving until source access is confirmed',async()=>{
+  const f=pagedFixture();f.run('socialWorkspaceState.view="compose";socialWorkspaceState.editId="p";socialWorkspaceState.draft={...snswBlank(),id:"p",title:"Keep authored text",body:"unsaved text"};socialWorkspaceState.dirty=true;socialWorkspaceState.detail={post:{id:"p",title:"Old source",canEdit:true,variants:[]},jobs:[]}');
+  const pending=f.run('snswLoad()');f.requests[0].resolve({...f.context.initial,posts:[],jobs:[],pagination:f.context.page});await settle();assert.equal(f.requests[1].path,'/api/social/posts/p');f.requests[1].reject(Object.assign(new Error('Source access expired'),{status:404}));await pending;
+  assert.equal(f.run('socialWorkspaceState.draft.body'),'unsaved text');assert.equal(f.run('socialWorkspaceState.detailUnavailable'),true);assert.equal(f.run('socialWorkspaceState.detail'),null);assert.match(f.run('snswComposer()'),/<fieldset disabled>/);
+  await f.run('snswSavePost()');assert.equal(f.requests.length,2);f.run('socialWorkspaceState.dirty=false;snswOpenDraftReady()');assert.equal(f.run('socialWorkspaceState.detailUnavailable'),false);assert.equal(f.run('socialWorkspaceState.editId'),'');
+});
+
+test('capacity renders fifty reservations at a time while preserving full totals, selections and the preview',async()=>{
+  const f=fixture();f.run(`socialWorkspaceState.data.capacity={generatedAt:'2026-10-15T00:00:00Z',periodMinutes:15,planningLimit:80,limit:100,reserve:20,jobs:Array.from({length:3333},(_,i)=>({jobId:'capacity-'+i,title:'Reservation '+i,channelId:'ch',scheduledAt:'2026-10-15T00:00:00Z',mode:'fixed',estimatedRequests:3,canMove:true})),windows:[],assumptions:[],warnings:[]};socialWorkspaceState.forms.capacitySelected=['capacity-0'];socialWorkspaceState.forms.capacityFixed=['capacity-0'];socialWorkspaceState.forms.capacityPreview={previewId:'existing-plan',changes:[],warnings:[],validCount:1,blockedCount:0,canApply:true}`);
+  const before=f.run('snswCapacityPanel()');assert.equal((before.match(/data-sw-capacity-select=/g)||[]).length,50);assert.match(before,/현재 예약 전체 추정 합계 9,999회 · 3333건/);assert.match(before,/예약 목록 50 \/ 3,333건 표시/);assert.match(before,/data-sw-action="list-more" data-value="capacity"/);assert.ok(!before.includes('Reservation 50'));assert.ok(before.includes('data-sw-capacity-select="capacity-0" checked'));assert.ok(before.includes('data-sw-capacity-fixed="capacity-0" checked'));
+  await f.run('snswAction("list-more","capacity")');const after=f.run('snswCapacityPanel()');assert.equal((after.match(/data-sw-capacity-select=/g)||[]).length,100);assert.match(after,/예약 목록 100 \/ 3,333건 표시/);assert.ok(after.includes('Reservation 99'));assert.ok(!after.includes('Reservation 100'));assert.ok(after.includes('data-sw-capacity-select="capacity-0" checked'));assert.ok(after.includes('data-sw-capacity-fixed="capacity-0" checked'));assert.equal(f.run('socialWorkspaceState.forms.capacityPreview.previewId'),'existing-plan');assert.equal(f.requests.length,0);
+  f.context.event={type:'change',target:{dataset:{swCapacitySelect:'capacity-75'},checked:true}};f.run('snswFourInput(event)');assert.deepEqual(Array.from(f.run('socialWorkspaceState.forms.capacitySelected')),['capacity-0','capacity-75']);assert.equal(f.run('socialWorkspaceState.forms.capacityPreview'),undefined);
+});
+
+test('a workspace detail refresh cannot replace a newer editor or a reopened revision of the same post',async()=>{
+  const make=(id,revision)=>({id,revision,contentVersion:revision,status:'approved',title:id,body:'Body '+id,variants:[{channelId:'ch',format:'text',options:{}}],media:[],source:{},canEdit:true,canApprove:true,canPublish:true});
+  for(const scenario of [{next:'b',deny:false},{next:'a',deny:false},{next:'b',deny:true}]){
+    const f=pagedFixture(),a=make('a',1),b=make('b',1),fresh=make(scenario.next,2),data={...f.context.initial,posts:[a],linkedPosts:[b],jobs:[],pagination:f.context.page};f.context.data=data;f.context.a=a;f.context.next=scenario.next;
+    f.run('socialWorkspaceState.data=data;socialWorkspaceState.view="compose";socialWorkspaceState.editId="a";socialWorkspaceState.draft=snswEditorDraft(a);socialWorkspaceState.loadKey=snswWorkspacePath();socialWorkspaceState.loadedKey=socialWorkspaceState.loadKey');
+    const loading=f.run('snswLoad()');f.requests[0].resolve(data);await settle();assert.equal(f.requests[1].path,'/api/social/posts/a');
+    const opening=f.run('snswOpenDraft(next,true)');f.requests[2].resolve({post:fresh,jobs:[]});await opening;
+    if(scenario.deny)f.requests[1].reject(Object.assign(new Error('Old source denied'),{status:404}));else f.requests[1].resolve({post:a,jobs:[]});await loading;
+    assert.equal(f.run('socialWorkspaceState.editId'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.id'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.revision'),2);assert.equal(f.run('snswRows("posts").find(p=>p.id===next).revision'),2);assert.equal(f.run('socialWorkspaceState.draft.revision'),2);assert.equal(f.run('socialWorkspaceState.detailUnavailable'),false);assert.equal(f.run('socialWorkspaceState.error'),'');assert.equal(f.run('socialWorkspaceState.loading'),false);
+  }
 });

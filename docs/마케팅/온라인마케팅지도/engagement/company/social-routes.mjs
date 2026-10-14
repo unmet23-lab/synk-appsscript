@@ -23,11 +23,11 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     }
     if(req.method==='GET'){
       if(path==='/api/social/workspace'){send(res,200,store.readScope(()=>{
-        const social=publishing.workspace(user,Object.fromEntries(url.searchParams)),extra=marketing.workspace(user,social);
+        const filters=Object.fromEntries(url.searchParams),social=publishing.workspace(user,filters),paged=!!social.pagination,complete=paged?publishing.summary(user,filters):social,extra=marketing.workspace(user,complete,paged?{includeInsights:filters.section==='results',includeNotifications:false}:{});
         const jobs=social.jobs.map(job=>{let linkCheck=null;if(job.performanceEntryId&&publicationLinks)try{linkCheck=publicationLinks.get(user,{kind:'post',id:job.performanceEntryId}).check;}catch(error){if(![403,404,409].includes(error.status))throw error;}return {...job,linkCheck};});
-        const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),capacity:capacity?.workspace(user),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.summary?recovery.summary(user):recovery?.list(user),tracking:tracking?.workspace(user),workflows:workflows?.workspace(user),runtime:runtime()};
+        const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),...(!paged||filters.section==='queue'?{capacity:capacity?.workspace(user)}:{}),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.summary?recovery.summary(user):recovery?.list(user),tracking:tracking?.workspace(user),workflows:workflows?.workspace(user),runtime:runtime()};
         if(result.inboxProvider&&inboxRecovery){const recoveryByChannel=new Map(inboxRecovery.workspace(user).channels.map(row=>[row.channelId,row.recovery]));result.inboxProvider={...result.inboxProvider,channels:result.inboxProvider.channels.map(row=>({...row,recovery:recoveryByChannel.get(row.channelId)||null}))};}
-        result.onboarding=socialOnboarding(result,{origin});return result;
+        result.onboarding=socialOnboarding(paged?{...result,...publishing.summary(user)}:result,{origin});return result;
       }));return true;}
       const followup=path.match(/^\/api\/social\/inbox\/([^/]+)\/followup$/);
       if(followup){send(res,200,followups.workspace(user,{inboxId:parameter(followup[1])}));return true;}
@@ -35,6 +35,8 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
       if(path==='/api/social/recovery'){send(res,200,recovery.list(user));return true;}
       const reviewPost=path.match(/^\/api\/social\/posts\/([^/]+)\/review$/);
       if(reviewPost){send(res,200,review.workspace(user,{postId:parameter(reviewPost[1])}));return true;}
+      const detailPost=path.match(/^\/api\/social\/posts\/([^/]+)$/);
+      if(detailPost){send(res,200,store.readScope(()=>publishing.get(user,parameter(detailPost[1]))));return true;}
       throw fail('SNS 조회 주소를 찾을 수 없어요.',404);
     }
     if(req.method!=='POST')throw fail('SNS 요청 방식을 확인해 주세요.',405);
@@ -84,7 +86,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     else if((match=path.match(/^\/api\/social\/posts\/([^/]+)\/action$/)))result=await publishing.action(actor,match[1],input);
     else if((match=path.match(/^\/api\/social\/posts\/([^/]+)\/comments$/)))result=publishing.comment(actor,match[1],input);
     else if((match=path.match(/^\/api\/social\/jobs\/([^/]+)\/link-check$/))){
-      const job=publishing.workspace(actor).jobs.find(row=>row.id===match[1]);
+      const job=publishing.getJob?publishing.getJob(actor,parameter(match[1])):publishing.workspace(actor).jobs.find(row=>row.id===match[1]);
       if(!job?.performanceEntryId||job.status!=='published')throw fail('게시 주소가 기록된 작업을 선택해 주세요.',409);
       result=await publicationLinks.check(actor,{kind:'post',id:job.performanceEntryId},{authorize,signal});
     }

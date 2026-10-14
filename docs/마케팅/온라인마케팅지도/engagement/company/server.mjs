@@ -162,9 +162,9 @@ export function createCompanyApp(options={}) {
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
-      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(clientNotifications?.list(user).notifications||[]),...(automationNotifications?.list(user).notifications||[]),...(socialMarketing?.notifications(user,socialPublishing.workspace(user))||[])];},
-      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.workspace(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
-      readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);socialMarketing?.readNotifications(user,socialPublishing.workspace(user));},
+      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(clientNotifications?.list(user).notifications||[]),...(automationNotifications?.list(user).notifications||[]),...(socialMarketing?.notifications(user,socialPublishing.summary(user))||[])];},
+      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
+      readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);socialMarketing?.readNotifications(user,socialPublishing.summary(user));},
     },
     authenticate(req){const auth=session(req);if(!auth)return null;return {companyUserId:auth.user.id,role:auth.user.role,canWrite:auth.user.role!=='viewer',canManage:auth.user.role==='admin',csrfToken:auth.body.csrfToken,token:auth.hash,parentOrigin:origin};},
     resolveWorkspaceLink({companyUserId,recipientCompanyUserIds,workspaceLink,purpose}){
@@ -361,7 +361,7 @@ export function createCompanyApp(options={}) {
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
   const publicationReview=createPublicationReviewService({store,studio,publicationPackages,publicationLinks,clock});
   const publicationWorkflow=automationReadScope.service(createPublicationWorkflowService({store,studio,publicationInbox,publicationPackages,publicationReview,postPerformance,publicationLinks,clock}),['workspace']);
-  function readPublicationWorkday(user){const data=publicationWorkflow.workspace(user);return {...data,items:[...data.items,...socialMarketing.workday(user,socialPublishing.workspace(user))]};}
+  function readPublicationWorkday(user){const data=publicationWorkflow.workspace(user);return {...data,items:[...data.items,...socialMarketing.workday(user,socialPublishing.summary(user))]};}
   const publicationLearning=automationReadScope.service(createPublicationLearningService({store,studio,publicationPackages,postPerformance,clock}),['workspace']);
   const weeklySummarySchedule=options.weeklySummarySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   if(typeof weeklySummarySchedule!=='boolean')throw httpError('주간 정리 자동 실행 설정을 확인해 주세요.');

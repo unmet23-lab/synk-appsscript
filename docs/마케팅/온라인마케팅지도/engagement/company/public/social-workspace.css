@@ -292,7 +292,7 @@
 :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-move-button{display:none}
 :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-meta i{display:none}
 :root .synk-workspace .sw-workspace .sw-calendar-event-wrap:has(.sw-calendar-drag-handle) .sw-calendar-meta{padding-right:22px}
-:root .synk-workspace .sw-workspace .sw-calendar-day-count{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day-count{display:block;width:100%;min-height:30px;padding:0;border:0;border-radius:8px;background:var(--sw-surface-2);color:var(--sw-ink);font:var(--w-strong) 13px/1 var(--sw-sans);cursor:pointer}
 :root .synk-workspace .sw-workspace .sw-calendar.is-week{grid-template-columns:repeat(7,minmax(0,1fr))}
 :root .synk-workspace .sw-workspace .sw-calendar.is-week .sw-calendar-day{min-height:300px}
 :root .synk-workspace .sw-workspace .sw-calendar.is-day{grid-template-columns:1fr}

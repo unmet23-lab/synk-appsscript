@@ -11,14 +11,15 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
   const now=()=>new Date(clock()).toISOString();
   function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('열람 계정은 예약을 바꿀 수 없어요.',403);return live;}
   function state(user){
-    user=current(user);const view=publishing.workspace(user),visible=new Set(view.jobs.map(job=>job.id));
-    const jobs=(typeof store.allWhere==='function'?store.allWhere('socialPublishJobs','status','scheduled'):store.all('socialPublishJobs')).filter(job=>{const c=store.get('channels',job.channelId);return visible.has(job.id)&&job.status==='scheduled'&&c?.active!==false&&c?.hidden!==true;});
+    user=current(user);const view=publishing.scheduled?publishing.scheduled(user):publishing.workspace(user),visible=new Set(view.jobs.map(job=>job.id));
+    const jobs=(publishing.scheduled?view.jobs:typeof store.allWhere==='function'?store.allWhere('socialPublishJobs','status','scheduled'):store.all('socialPublishJobs')).filter(job=>{const c=store.get('channels',job.channelId);return visible.has(job.id)&&job.status==='scheduled'&&c?.active!==false&&c?.hidden!==true;});
     const settings=provider.settings(user),limit=settings.rateLimit?.requests||30,reserve=Math.min(6,Math.max(1,limit-1)),planningLimit=limit-reserve;
+    const posts=new Map((view.posts||[]).map(p=>[p.id,p]));
     const records=jobs.map(job=>{
-      const channel=store.get('channels',job.channelId),post=store.get('socialPosts',job.postId),variant=job.snapshot?.variant||{},cap=provider.capability(channel);
+      const channel=store.get('channels',job.channelId),post=posts.has(job.postId)?posts.get(job.postId):store.get('socialPosts',job.postId),variant=job.snapshot?.variant||{},cap=provider.capability(channel);
       const automatic=cap?.mode==='automatic'&&cap?.canPublish===true&&variant.options?.notifyOnly!==true;
-      const estimatedRequests=automatic?4+(variant.media||[]).length+(variant.options?.coverUrl?1:0):0;
-      const canMove=job.attempts===0&&channel?.active!==false&&channel?.hidden!==true&&post?.approval?.hash===job.approvalHash&&post?.contentVersion===job.contentVersion&&post?.variants?.every(v=>canManageOwners(user,store.get('channels',v.channelId)));
+      const estimatedRequests=automatic?4+(variant.mediaCount??(variant.media||[]).length)+(variant.options?.coverUrl?1:0):0;
+      const canMove=job.attempts===0&&channel?.active!==false&&channel?.hidden!==true&&!!post?.approval?.hash&&post.approval.hash===job.approvalHash&&post?.contentVersion===job.contentVersion&&post?.variants?.every(v=>canManageOwners(user,store.get('channels',v.channelId)));
       return {jobId:job.id,channelId:job.channelId,title:job.snapshot?.post?.title||post?.title||'게시물',scheduledAt:job.scheduledAt,mode:job.mode,estimatedRequests,canMove:!!canMove,reason:!automatic?'자동 발행 대상이 아니므로 호출량에서 제외':!canMove?'승인 버전·발행 권한·시도 이력을 확인해 주세요.':null};
     }).sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt)||a.jobId.localeCompare(b.jobId));
     const stamp=Date.parse(now()),requests=provider.requestBudgetSnapshot?.(user)||store.get('socialProviderRequests','postiz')||{};
