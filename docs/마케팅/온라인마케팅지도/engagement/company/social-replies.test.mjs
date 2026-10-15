@@ -33,6 +33,51 @@ function fixture(t,{platform='instagram',authType=platform==='instagram'?'instag
   return {store,admin,member,viewer,other,channel,credentials,row,calls,service,create,preview,send,setHandler:value=>handler=value,advance:ms=>at=new Date(Date.parse(at)+ms).toISOString(),enable:()=>store.put('socialInboxConnections','channel',{id:'channel',enabled:true,version:'config-1',updatedBy:'member'})};
 }
 
+test('Facebook object omission proves the original on every page of its owned post before preview and send',async t=>{
+  const f=fixture(t,{platform:'facebook'});let lists=0;
+  f.setHandler((path,url)=>{
+    if(path==='200_300')return json({id:'200_300',message:f.row.text,from:{id:'900'},can_comment:true});
+    if(path==='100_200/comments'){lists++;assert.equal(url.searchParams.get('filter'),'toplevel');return url.searchParams.get('after')?json({data:[{id:'200_300',message:f.row.text}]}):json({data:[{id:'200_299',message:'다른 댓글'}],paging:{next:'https://graph.facebook.com/unused',cursors:{after:'next-page'}}});}
+  });
+  const preview=await f.preview();assert.equal(lists,2);assert.ok(f.calls.every(c=>c.init.method==='GET'));assert.equal((await f.send(preview)).attempt.status,'sent');assert.equal(lists,4);assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);
+});
+
+test('Facebook object omission rejects incomplete or conflicting parent-post membership and never sends',async t=>{
+  for(const mode of ['missing','wrong-text','nested','hidden','duplicate','missing-cursor','repeated-cursor','late-error','limit','account','explicit-object']){
+    await t.test(mode,async t=>{const f=fixture(t,{platform:'facebook'});let lists=0;
+      f.setHandler((path,url)=>{
+        if(path==='200_300')return json({id:'200_300',message:f.row.text,from:{id:'900'},can_comment:true,...(mode==='explicit-object'?{object:{id:'999'}}:{})});
+        if(path==='100_200'&&mode==='account')return json({id:'100_200',from:{id:'999'}});
+        if(path!=='100_200/comments')return;
+        lists++;const item={id:'200_300',message:mode==='wrong-text'?'바뀐 댓글':f.row.text,...(mode==='nested'?{parent:{id:'999'}}:{}),...(mode==='hidden'?{is_hidden:true}:{})};
+        if(mode==='late-error'&&url.searchParams.has('after'))return json({error:{code:2}},503);
+        const unfinished=['missing-cursor','repeated-cursor','late-error','limit'].includes(mode);
+        return json({data:mode==='missing'?[]:mode==='duplicate'?[item,item]:lists===1||!unfinished?[item]:[],...(unfinished?{paging:{next:'https://graph.facebook.com/unused',...(mode==='missing-cursor'?{}:{cursors:{after:mode==='limit'?'page-'+lists:'same-cursor'}})}}:{})});
+      });
+      await assert.rejects(f.preview());assert.equal(f.store.all('socialReplyPreviews').length,0);assert.equal(f.calls.filter(c=>c.init.method==='POST').length,0);assert.ok(lists<=4);if(['account','explicit-object'].includes(mode))assert.equal(lists,0);
+    });
+  }
+});
+
+test('Facebook object omission rechecks completed membership at send time',async t=>{
+  const f=fixture(t,{platform:'facebook'});let exists=true;
+  f.setHandler(path=>path==='200_300'?json({id:'200_300',message:f.row.text,can_comment:true}):path==='100_200/comments'?json({data:exists?[{id:'200_300',message:f.row.text}]:[]}):null);
+  const preview=await f.preview();exists=false;const result=await f.send(preview);assert.equal(result.attempt.status,'failed');assert.equal(result.attempt.errorCode,'COMMENT_MISMATCH');assert.equal(f.calls.filter(c=>c.init.method==='POST').length,0);
+});
+
+test('Facebook object omission on reply proof uses its exact parent after current parent-post verification',async t=>{
+  const f=fixture(t,{platform:'facebook'});let lost=false,wrongObject=true;
+  f.setHandler((path,_url,init)=>{
+    if(path==='200_300')return json({id:'200_300',message:f.row.text,can_comment:true});
+    if(path==='100_200/comments')return json({data:[{id:'200_300',message:f.row.text}]});
+    if(init.method==='POST'&&lost)throw Error('network lost');
+    if(path==='400')return json({id:'400',message:'최종 답장',parent:{id:'200_300'},from:{id:'100'},created_time:'2026-10-13T00:00:00Z',...(wrongObject?{object:{id:'999'}}:{})});
+  });
+  const preview=await f.preview();lost=true;const {attempt}=await f.send(preview);assert.equal(attempt.status,'unknown');const before=f.calls.length;
+  await assert.rejects(f.service.reconcile(f.member,{attemptId:attempt.id,remoteReplyId:'400'}),{code:'REPLY_PROOF_MISMATCH'});assert.equal(f.store.get('socialReplyAttempts',attempt.id).status,'unknown');
+  wrongObject=false;const proved=await f.service.reconcile(f.member,{attemptId:attempt.id,remoteReplyId:'400'});assert.equal(proved.attempt.status,'sent');assert.ok(f.calls.slice(before).every(c=>c.init.method==='GET'));assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);
+});
+
 test('explicit Instagram preview is read only, stores only token hash and sends final text once',async t=>{
   const f=fixture(t),p=await f.preview();assert.equal(p.preview.account.channelId,'channel');assert.equal(p.preview.comment.text,'질문입니다');assert.equal(p.preview.text,'최종 답장');assert.equal(f.calls.length,4);assert.ok(f.calls.every(c=>c.init.method==='GET'));
   const stored=f.store.get('socialReplyPreviews',p.preview.id);assert.notEqual(stored.tokenHash,p.confirmationToken);assert.ok(!JSON.stringify(stored).includes(p.confirmationToken));

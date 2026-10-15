@@ -115,14 +115,36 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     if(account.id!==channel.externalId||channel.platform==='instagram'&&channel.handle&&String(account.username||'').toLowerCase()!==channel.handle.replace(/^@/,'').toLowerCase())throw fail('ACCOUNT_MISMATCH','SNS에서 확인한 발신 계정이 선택한 계정과 달라요.');
     return {api,check,account};
   }
+  async function inspectFacebookPostMembership(session,row){
+    // Meta can omit Comment.object even when the field is requested (2026-10-15
+    // live Page test). Only a complete bounded scan of this owned post can replace
+    // that missing relationship; an explicit different object is never replaced.
+    const cursors=new Set(),seenIds=new Set();let after,matches=0;
+    for(let page=0;page<4;page++){
+      const result=await session.api(row.nativePostId+'/comments',{fields:'id,message,parent,is_hidden,is_private',filter:'toplevel',order:'reverse_chronological',limit:50,after});
+      if(!Array.isArray(result.data)||result.data.length>50)throw fail('COMMENT_PROOF_INCOMPLETE','게시물의 원댓글 목록을 확인하지 못했어요. SNS 원문을 확인해 주세요.');
+      for(const comment of result.data){
+        if(!id(comment?.id)||seenIds.has(comment.id))throw fail('COMMENT_PROOF_INCOMPLETE','게시물 댓글 목록이 겹치거나 식별자가 불분명해요. 다시 확인해 주세요.');seenIds.add(comment.id);
+        if(comment.id!==row.externalId)continue;matches++;
+        if(comment.parent?.id||comment.is_hidden===true||comment.is_private===true||typeof comment.message!=='string'||comment.message.trim()!==row.text)throw fail('COMMENT_MISMATCH','게시물 목록에서 원댓글의 내용이나 구조가 달라졌어요. 댓글을 다시 수집해 주세요.');
+      }
+      if(!result.paging?.next){if(matches!==1)throw fail('COMMENT_MISMATCH','선택한 게시물의 원댓글인지 확인하지 못했어요. 댓글을 다시 수집해 주세요.');return;}
+      const cursor=result.paging?.cursors?.after;
+      if(typeof cursor!=='string'||!cursor||cursor.length>2000||/[\s\u0000-\u001f\u007f]/.test(cursor)||cursors.has(cursor))throw fail('COMMENT_PROOF_INCOMPLETE','게시물의 원댓글 목록을 끝까지 확인하지 못했어요. SNS 원문을 확인해 주세요.');
+      cursors.add(cursor);after=cursor;
+    }
+    throw fail('COMMENT_PROOF_INCOMPLETE','게시물의 원댓글이 많아 확인 범위를 넘었어요. SNS 원문에서 확인해 주세요.');
+  }
   async function inspectComment(session,row,channel){
     const ig=channel.platform==='instagram',comment=await session.api(row.externalId,{fields:ig?'id,text,username,media,parent_id,hidden':'id,message,from,parent,object,can_comment,is_hidden,is_private'});
     if(comment.id!==row.externalId||comment.hidden||comment.is_hidden||comment.is_private||!ig&&comment.can_comment!==true)throw fail('COMMENT_UNAVAILABLE','지금은 이 댓글에 답장할 수 없어요. SNS에서 댓글 상태를 확인해 주세요.');
-    if(comment.parent_id||comment.parent?.id||String(ig?comment.media?.id:comment.object?.id)!==row.nativePostId)throw fail('COMMENT_MISMATCH','원댓글이 달린 게시물이나 댓글 구조가 바뀌었어요. 댓글을 다시 수집해 주세요.');
+    const missingFacebookObject=!ig&&comment.object==null;
+    if(comment.parent_id||comment.parent?.id||!missingFacebookObject&&String(ig?comment.media?.id:comment.object?.id)!==row.nativePostId)throw fail('COMMENT_MISMATCH','원댓글이 달린 게시물이나 댓글 구조가 바뀌었어요. 댓글을 다시 수집해 주세요.');
     const remoteText=ig?comment.text:comment.message;if(typeof remoteText!=='string'||remoteText.trim()!==row.text)throw fail('COMMENT_CHANGED','원댓글 내용이 달라졌어요. 댓글을 다시 수집한 뒤 답장해 주세요.');
     const post=await session.api(row.nativePostId,{fields:ig?'id,owner':'id,from'}),owner=ig?post.owner?.id:post.from?.id;
     const owned=owner===session.account.id||ig&&session.account.appScopedId&&owner===session.account.appScopedId;
-    if(post.id!==row.nativePostId||!owned||!ig&&!row.nativePostId.startsWith(channel.externalId+'_'))throw fail('ACCOUNT_MISMATCH','발신 계정의 게시물인지 확인할 수 없어요.');session.check();return comment;
+    if(post.id!==row.nativePostId||!owned||!ig&&!row.nativePostId.startsWith(channel.externalId+'_'))throw fail('ACCOUNT_MISMATCH','발신 계정의 게시물인지 확인할 수 없어요.');
+    if(missingFacebookObject)await inspectFacebookPostMembership(session,row);session.check();return {comment,verifiedPostId:row.nativePostId,verifiedAccountId:session.account.id};
   }
   async function inspectExistingReplies(session,row,channel){
     const ig=channel.platform==='instagram',owners=new Set([session.account.id,session.account.appScopedId].filter(Boolean)),replies=new Map(),own=[],cursors=new Set();let after;
@@ -194,10 +216,11 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
   },context.signal);}
   // A hidden or private own reply with the exact text was still posted; it proves the send and is marked as hidden.
   const hiddenOnPlatform=remote=>remote?.hidden===true||remote?.is_hidden===true||remote?.is_private===true;
-  function replyProof(remote,replyId,attempt,session,channel){
+  function replyProof(remote,replyId,attempt,session,channel,originalProof){
     const ig=channel.platform==='instagram',parent=ig?remote.parent_id:remote.parent?.id,owner=ig?(remote.user?.id||remote.from?.id):remote.from?.id,body=ig?remote.text:remote.message,postId=ig?remote.media?.id:remote.object?.id;
     const owned=owner===session.account.id||ig&&session.account.appScopedId&&owner===session.account.appScopedId;
-    if(remote.id!==replyId||parent!==attempt.externalId||!owned||body!==attempt.text||postId!==attempt.nativePostId)throw fail('REPLY_PROOF_MISMATCH','SNS 답장의 계정·원댓글·게시물·최종 문구가 전송 기록과 맞지 않아요.');
+    const postMatches=postId===attempt.nativePostId||!ig&&remote.object==null&&originalProof?.comment?.id===attempt.externalId&&originalProof.verifiedPostId===attempt.nativePostId&&originalProof.verifiedAccountId===session.account.id;
+    if(remote.id!==replyId||parent!==attempt.externalId||!owned||body!==attempt.text||!postMatches)throw fail('REPLY_PROOF_MISMATCH','SNS 답장의 계정·원댓글·게시물·최종 문구가 전송 기록과 맞지 않아요.');
     const timestamp=ig?remote.timestamp:remote.created_time,sentAt=Number.isFinite(Date.parse(timestamp))?new Date(timestamp).toISOString():null;if(sentAt&&Date.parse(sentAt)<Date.parse(attempt.createdAt)-5*MINUTE)throw fail('REPLY_PROOF_MISMATCH','이번 전송 요청보다 먼저 작성된 답장이에요.');
     return sentAt;
   }
@@ -207,8 +230,8 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     if(attempt.status==='sent'&&attempt.remoteReplyId===replyId)return {attempt:attemptView(attempt)};
     if(store.all(K.attempts).some(other=>other.id!==attempt.id&&other.remoteReplyId===replyId))throw fail('REPLY_ALREADY_RECORDED','이 답장 ID는 다른 전송 기록에 이미 연결돼 있어요.',409);if(attempt.status!=='unknown')throw fail('RECONCILE_NOT_NEEDED','전송 여부를 모르는 답장만 SNS 답장 ID로 확인할 수 있어요.');
     const generation=binding(channel.id),check=()=>{const current=getItem(user,row.id,context).row;if(binding(channel.id)!==generation||channel.platform!==attempt.platform||current.externalId!==attempt.externalId||current.nativePostId!==attempt.nativePostId||current.sourceAccountId!==attempt.sourceAccountId||current.source!=='api:'+channel.platform)throw fail('CONNECTION_CHANGED','원댓글이나 발신 계정이 바뀌었어요.');};check();
-    const session=await accountSession(user,channel,context,generation,true);await inspectComment(session,row,channel);const remote=await session.api(replyId,{fields:replyFields(channel)});check();
-    const sentAt=replyProof(remote,replyId,attempt,session,channel);
+    const session=await accountSession(user,channel,context,generation,true),originalProof=await inspectComment(session,row,channel);const remote=await session.api(replyId,{fields:replyFields(channel)});check();
+    const sentAt=replyProof(remote,replyId,attempt,session,channel,originalProof);
     const hidden=hiddenOnPlatform(remote);check();attempt=finish(attempt,{status:'sent',remoteReplyId:replyId,sentAt,hiddenOnPlatform:hidden,observedAt:now(),reconciledBy:user.id,reconciledAt:now(),retryable:false,message:'SNS에서 원댓글·발신 계정·답장 내용을 조회해 확인했어요.'+(hidden?' 다만 SNS에서 숨김 상태라 다른 사람에게는 보이지 않을 수 있어요.':''),errorCode:null});if(attempt.status!=='sent'||attempt.remoteReplyId!==replyId)throw fail('RECONCILE_CONFLICT','그사이 이 답장 기록이 바뀌었어요. 새로고침한 뒤 다시 확인해 주세요.',409);return {attempt:attemptView(attempt)};
   },context.signal);}
   // An unknown result clears only from a fresh read of the original comment's replies: an own-account reply
@@ -219,10 +242,10 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     const {row,channel}=getItem(user,attempt.inboxId,context);if(attempt.status!=='unknown')throw fail('RECHECK_NOT_NEEDED','전송 여부를 모르는 답장만 SNS에서 다시 확인할 수 있어요.');
     const settledAt=Date.parse(attempt.submittedAt||attempt.createdAt)+SETTLE;if(!(settledAt<=stamp()))throw fail('RECHECK_TOO_EARLY','보낸 뒤 10분이 지나야 SNS에서 다시 확인할 수 있어요. SNS에 늦게 반영될 수 있어서예요.',409,{retryAt:Number.isFinite(settledAt)?new Date(settledAt).toISOString():null});
     const generation=binding(channel.id),check=()=>{const current=getItem(user,row.id,context).row;if(binding(channel.id)!==generation||channel.platform!==attempt.platform||current.externalId!==attempt.externalId||current.nativePostId!==attempt.nativePostId||current.sourceAccountId!==attempt.sourceAccountId||current.source!=='api:'+channel.platform)throw fail('CONNECTION_CHANGED','원댓글이나 발신 계정이 바뀌었어요.');};check();
-    const session=await accountSession(user,channel,context,generation,true);await inspectComment(session,row,channel);check();const evidence=await inspectExistingReplies(session,row,channel);check();
+    const session=await accountSession(user,channel,context,generation,true),originalProof=await inspectComment(session,row,channel);check();const evidence=await inspectExistingReplies(session,row,channel);check();
     const floor=Date.parse(attempt.createdAt)-5*MINUTE,candidates=evidence.ownReplies.filter(reply=>!reply.at||Date.parse(reply.at)>=floor);
     if(candidates.length>5)throw fail('RECHECK_AMBIGUOUS','이 계정이 그 뒤 단 답장이 많아 자동으로 가릴 수 없어요. SNS에서 확인한 답장 ID로 확인해 주세요.');
-    for(const candidate of candidates){const remote=await session.api(candidate.id,{fields:replyFields(channel)});check();let sentAt;try{sentAt=replyProof(remote,candidate.id,attempt,session,channel);}catch(error){if(error.code==='REPLY_PROOF_MISMATCH')continue;throw error;}
+    for(const candidate of candidates){const remote=await session.api(candidate.id,{fields:replyFields(channel)});check();let sentAt;try{sentAt=replyProof(remote,candidate.id,attempt,session,channel,originalProof);}catch(error){if(error.code==='REPLY_PROOF_MISMATCH')continue;throw error;}
       const hidden=hiddenOnPlatform(remote);check();attempt=finish(attempt,{status:'sent',remoteReplyId:candidate.id,sentAt,hiddenOnPlatform:hidden,observedAt:now(),reconciledBy:user.id,reconciledAt:now(),retryable:false,message:'SNS에서 원댓글의 답글을 다시 읽어 이 답장이 올라간 것을 확인했어요.'+(hidden?' 다만 SNS에서 숨김 상태라 다른 사람에게는 보이지 않을 수 있어요.':''),errorCode:null});return {attempt:attemptView(attempt)};}
     if(candidates.length)throw fail('RECHECK_AMBIGUOUS','이 계정이 그 뒤 단 답장이 있지만 이번 문구와 같은지 가릴 수 없어요. SNS에서 확인한 답장 ID로 확인해 주세요.');
     check();attempt=finish(attempt,{status:'failed',verifiedAbsent:true,errorCode:'REPLY_NOT_POSTED',retryable:true,observedAt:now(),checkedBy:user.id,checkedAt:now(),message:'SNS에서 원댓글의 답글을 다시 읽어 보니 이 답장은 올라가지 않았어요. 미리보기부터 다시 보낼 수 있어요.'});return {attempt:attemptView(attempt)};

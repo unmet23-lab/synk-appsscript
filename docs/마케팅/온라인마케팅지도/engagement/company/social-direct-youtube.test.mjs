@@ -160,12 +160,27 @@ test('a title and description that differ only by whitespace, CRLF and NFC still
   const response=await f.adapter.publish(f.input);assert.equal(response.status,'published');assert.equal(response.errorCode,null);assert.equal(f.mediaWrites().length,1);
 });
 
-test('a persistent description mismatch ends as published-unverified after three checks without another upload',async()=>{
+test('a persistent description mismatch remains uncertain after repeated checks without another upload',async()=>{
   const f=fixture();f.setHook(r=>r.method==='GET'&&r.url.includes('/youtube/v3/videos?')?f.json({items:[{...f.video(),snippet:{...f.video().snippet,description:'다른 설명'}}]}):null);
   const first=await f.adapter.publish(f.input);assert.equal(first.status,'uncertain');assert.equal(first.errorCode,'PUBLICATION_PROOF_MISMATCH');
   assert.equal((await f.build().status({channel:f.input.channel,job:f.input.job})).status,'uncertain');
-  const third=await f.build().status({channel:f.input.channel,job:f.input.job});assert.equal(third.status,'published');assert.equal(third.errorCode,'PUBLICATION_PROOF_UNVERIFIED');assert.equal(third.providerId,vid);assert.match(third.message,/3회/);
-  const before=f.requests.length;assert.equal((await f.build().status({channel:f.input.channel,job:f.input.job})).status,'published');assert.equal(f.requests.length,before);assert.equal(f.mediaWrites().length,1);
+  const third=await f.build().status({channel:f.input.channel,job:f.input.job});assert.equal(third.status,'uncertain');assert.equal(third.errorCode,'PUBLICATION_PROOF_MISMATCH');assert.equal(third.providerId,vid);assert.match(third.message,/3회/);
+  assert.equal((await f.build().status({channel:f.input.channel,job:f.input.job})).status,'uncertain');assert.equal(f.mediaWrites().length,1);
+});
+
+test('public privacy and required declarations cannot be confirmed by repeated mismatching reads',async()=>{
+  for(const mutate of [v=>{v.status.privacyStatus='private';},v=>{v.status.privacyStatus='unlisted';},v=>{v.status.selfDeclaredMadeForKids=true;},v=>{delete v.status.selfDeclaredMadeForKids;}]){
+    const f=fixture();let mismatching=true;
+    f.setHook(r=>{if(r.method==='GET'&&r.url.includes('/youtube/v3/videos?')){const video=f.video();if(mismatching)mutate(video);return f.json({items:[video]});}});
+    const initial=await f.adapter.publish(f.input);assert.equal(initial.status,'uncertain');
+    for(let check=0;check<5;check++){
+      const result=await f.build().status({channel:f.input.channel,job:f.input.job});
+      assert.equal(result.status,'uncertain');assert.equal(result.errorCode,'PUBLICATION_OPTIONS_MISMATCH');assert.equal(result.retryable,false);assert.equal(result.publicVerified,false);
+    }
+    assert.equal(f.mediaWrites().length,1);assert.equal(f.requests.filter(r=>r.method==='POST').length,1);
+    mismatching=false;const resolved=await f.build().status({channel:f.input.channel,job:f.input.job});
+    assert.equal(resolved.status,'published');assert.equal(resolved.errorCode,null);assert.equal(f.mediaWrites().length,1);
+  }
 });
 
 test('a video on another channel never finalizes as published however often it is checked',async()=>{

@@ -17,14 +17,14 @@ const success = (channel, partial = false) => ({
 });
 const failure = (code, retryable = false) => Object.assign(new Error('Fixture collection failure'), { code, retryable });
 
-async function fixture(t, collector, { seed, startAt = startOfSchedule() } = {}) {
+async function fixture(t, collector, { seed, startAt = startOfSchedule(), appOptions = {} } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'synk-scheduler-'));
   let at = startAt;
   if (seed) {
     const store = new Store(dir);
     try { seed(store, at); } finally { store.close(); }
   }
-  const app = createCompanyApp({ dataDir: dir, port: 0, allowTestHost: true, schedule: false, collector, dailyTrendsCollector:async()=>({items:[],sources:[]}), clock: () => at });
+  const app = createCompanyApp({ dataDir: dir, port: 0, allowTestHost: true, schedule: false, collector, dailyTrendsCollector:async()=>({items:[],sources:[]}), ...appOptions, clock: () => at });
   const address = await app.start();
   t.after(async () => {
     await app.stop();
@@ -103,6 +103,65 @@ test('enqueue persists failure, scheduled tick waits then retries, and success c
   assert.equal(calls, 4, 'a recent-content scan is due after 30 minutes');
   assert.equal(f.app.store.all('runs').filter(run => run.mode === 'recent').length, 1);
   assert.equal(f.app.store.get('channels', channel.id).lastCollectedAt, atMinutes(start, 25), 'recent scans do not replace the full daily timestamp');
+});
+
+test('one-minute inbox checks avoid a second fifteen-minute delay when account scans start 1.5 seconds apart', async t => {
+  const start = startOfSchedule(), atMs = elapsed => new Date(Date.parse(start) + elapsed).toISOString();
+  const calls = [], scans = { instagram: [], facebook: [] };
+  const credentials = {
+    instagram: { accessToken: 'fixture-instagram-token', authType: 'instagram-login', apiVersion: 'v26.0', scope: 'instagram_business_basic instagram_business_manage_comments' },
+    facebook: { accessToken: 'fixture-facebook-token', authType: 'facebook-page', apiVersion: 'v26.0', scope: 'pages_show_list pages_read_engagement pages_read_user_content' },
+  };
+  const json = value => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } });
+  let f;
+  f = await fixture(t, async channel => success(channel), { startAt: start, appOptions: {
+    socialInboxOptions: {
+      getCredentials: async channel => credentials[channel.platform],
+      fetchImpl: async (url, init) => {
+        const parsed = new URL(url), platform = parsed.hostname === 'graph.instagram.com' ? 'instagram' : 'facebook';
+        assert.equal(init.method, 'GET');
+        assert.ok(['graph.instagram.com', 'graph.facebook.com'].includes(parsed.hostname));
+        calls.push({ platform, path: parsed.pathname, at: f.getTime() });
+        if (parsed.pathname === '/v26.0/me') {
+          scans[platform].push(f.getTime());
+          // The first account consumes 1.5 seconds before the Facebook scan starts.
+          if (platform === 'instagram' && scans.instagram.length === 1) f.setTime(atMs(1500));
+          return json({ id: platform === 'instagram' ? '100' : '200', username: 'fixtureinstagram', name: 'Fixture Facebook' });
+        }
+        if (parsed.pathname === '/v26.0/100/media' || parsed.pathname === '/v26.0/200/posts') return json({ data: [] });
+        throw new Error('Unexpected fixture inbox endpoint');
+      },
+    },
+    socialReplyOptions: { fetchImpl: async () => { throw new Error('Fixture reply health is offline'); } },
+    socialProviderOptions: { fetchImpl: async () => { throw new Error('Fixture publishing health is offline'); } },
+  } });
+  for (const platform of ['instagram', 'facebook']) {
+    const channel = { id: `inbox-${platform}`, platform, externalId: platform === 'instagram' ? '100' : '200', handle: `fixture${platform}`, active: true, ownerIds: [f.admin.id], connectionVersion: 1 };
+    f.app.store.put('channels', channel.id, channel);
+    f.app.store.setSecret(`channel:${channel.id}`, credentials[platform]);
+    f.app.socialInboxProvider.configure(f.admin, { channelId: channel.id, enabled: true });
+  }
+  const tick = async elapsed => { f.setTime(atMs(elapsed)); await f.app.scanSocialPublishing(); await f.app.waitForIdle(); };
+  await tick(0);
+  assert.deepEqual(scans, { instagram: [atMs(0)], facebook: [atMs(1500)] });
+  const initialBudget = Object.fromEntries(['instagram', 'facebook'].map(platform => [platform, f.app.store.get('socialInboxRequests', `inbox-${platform}`).times.length]));
+  // Run the actual server entry point at its normal 15-second cadence. No account
+  // may hit Graph again until its own fifteen-minute interval has elapsed.
+  for (let elapsed = 15000; elapsed <= 15 * 60000; elapsed += 15000) await tick(elapsed);
+  assert.deepEqual(scans, { instagram: [atMs(0), atMs(15 * 60000)], facebook: [atMs(1500)] });
+  for (let elapsed = 15 * 60000 + 15000; elapsed <= 16 * 60000; elapsed += 15000) await tick(elapsed);
+  assert.deepEqual(scans.facebook, [atMs(1500), atMs(16 * 60000)], 'Facebook is checked at the next minute, not after another global fifteen-minute round');
+  for (let elapsed = 16 * 60000 + 15000; elapsed <= 31 * 60000; elapsed += 15000) await tick(elapsed);
+  assert.deepEqual(scans, { instagram: [atMs(0), atMs(15 * 60000), atMs(30 * 60000)], facebook: [atMs(1500), atMs(16 * 60000), atMs(31 * 60000)] });
+  assert.equal(calls.length, 12, 'minute-level due checks do not add Graph calls between actual account scans');
+  for (const platform of ['instagram', 'facebook']) {
+    assert.ok(scans[platform].slice(1).every((at, index) => Date.parse(at) - Date.parse(scans[platform][index]) >= 15 * 60000));
+    assert.equal(f.app.store.get('socialInboxRequests', `inbox-${platform}`).times.length, initialBudget[platform] + 4, 'only the two due scans add collection requests after initial connection health checks');
+    assert.equal(f.app.socialInboxProvider.capability(f.app.store.get('channels', `inbox-${platform}`)).intervalMinutes, 15);
+  }
+  const state = await f.call('/api/social/workspace?section=overview');
+  assert.equal(state.status, 200);
+  assert.equal(state.data.runtime.inbox.intervalMs, 60000);
 });
 
 test('initial failure plus three retries exhausts today, and the next daily schedule starts a new cycle', async t => {

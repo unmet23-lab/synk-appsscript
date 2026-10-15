@@ -194,6 +194,17 @@ test('YouTube options use explicit boolean declarations and account capability s
 test('channel-specific asset selection preserves shared media',()=>{
   const f=fixture();f.run('socialWorkspaceState.data.assets=[{id:"v2",url:"/api/social/media/v2",mimeType:"video/mp4",name:"세로 영상"}];socialWorkspaceState.draft.media=[{id:"common",url:"/api/social/media/common",type:"video"}];socialWorkspaceState.draft.variants=[{channelId:"ch",options:{}}]');const target={dataset:{swVariantAsset:'0'},value:'v2',hasAttribute:()=>false};for(const h of f.handlers.get('change'))h({target});assert.equal(f.run('socialWorkspaceState.draft.variants[0].media[0].id'),'v2');assert.equal(f.run('socialWorkspaceState.draft.media[0].id'),'common');
 });
+
+test('YouTube subscriber notification choice preserves an explicit false through saving',()=>{
+  const f=fixture();f.run('socialWorkspaceState.data.channels=[{id:"yt",name:"YouTube",platform:"youtube",capability:{options:["notifySubscribers"]}}];socialWorkspaceState.draft.variants=[{channelId:"yt",options:{}}]');
+  assert.match(f.run('snswVariantFields(socialWorkspaceState.draft.variants[0],0)'),/data-sw-variant-bool="notifySubscribers"/);
+  const target={dataset:{swVariantBool:'notifySubscribers',index:'0'},value:'false',hasAttribute:()=>false,closest:()=>null};
+  for(const h of f.handlers.get('change'))h({target});
+  assert.equal(f.run('socialWorkspaceState.draft.variants[0].options.notifySubscribers'),false);
+  assert.match(f.run('snswVariantFields(socialWorkspaceState.draft.variants[0],0)'),/value="false" selected/);
+  f.run('socialWorkspaceState.data.channels[0].capability.options=[]');
+  assert.doesNotMatch(f.run('snswVariantFields(socialWorkspaceState.draft.variants[0],0)'),/data-sw-variant-bool="notifySubscribers"/);
+});
 test('upload is CSRF protected, validates file types and aborts on identity reset',async()=>{
   const f=fixture();await f.run('snswUpload({name:"fake.svg",type:"image/svg+xml",size:20})');assert.equal(f.uploads.length,0);const pending=f.run('snswUpload({name:"영상.mp4",type:"video/mp4",size:20})');assert.equal(f.uploads[0].headers['X-CSRF-Token'],'csrf');assert.equal(f.uploads[0].headers['X-File-Name'],encodeURIComponent('영상.mp4'));f.context.state.user=null;f.run('socialWorkspaceReset()');await pending;assert.equal(f.uploads[0].aborted,true);assert.equal(f.run('socialWorkspaceState.draft.media.length'),0);
 });

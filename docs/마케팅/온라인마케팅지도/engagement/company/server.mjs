@@ -293,7 +293,7 @@ export function createCompanyApp(options={}) {
   if(typeof socialSchedule!=='boolean')throw httpError('SNS 예약 실행 설정을 확인해 주세요.');
   const socialRuntime=runtimeJob('social',socialSchedule,15000),socialAbort=new AbortController();
   const socialSourceRuntime=runtimeJob('socialSources',socialSchedule,60000);
-  const socialInboxRuntime=runtimeJob('socialInbox',socialSchedule,900000);
+  const socialInboxRuntime=runtimeJob('socialInbox',socialSchedule,60000);
   const metaConnections=createMetaConnectionService({store,clock,getProviderConfig:providerConfig,fetchImpl:options.metaConnectionFetch});
   const socialHealthRuntime=runtimeJob('socialHealth',socialSchedule,3600000);
   const socialDistribution=createSocialSourceDistribution({store,studio,publicationPackages,marketing:socialMarketing,publishing:socialPublishing,clock});
@@ -343,7 +343,9 @@ export function createCompanyApp(options={}) {
       if(!socialSourceRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialSourceRuntime.lastAttemptAt)>=60000){
         beginRuntime(socialSourceRuntime);jobs.push(socialDistribution.scan({signal:socialAbort.signal}).then(result=>{finishRuntime(socialSourceRuntime,!result.failed);if(result.created)notifySocialChanges();},()=>finishRuntime(socialSourceRuntime,false)));
       }
-      if(!socialInboxRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialInboxRuntime.lastAttemptAt)>=900000){
+      // Check due accounts frequently; scanDue retains each account's 15-minute
+      // interval and request budget even when an earlier account delays its start.
+      if(!socialInboxRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialInboxRuntime.lastAttemptAt)>=socialInboxRuntime.intervalMs){
         beginRuntime(socialInboxRuntime);jobs.push(socialInboxProvider.scanDue({signal:socialAbort.signal}).then(result=>{finishRuntime(socialInboxRuntime,!result.failed);if(result.imported||result.updated)notifySocialChanges();},()=>finishRuntime(socialInboxRuntime,false)));
       }
       if(!socialHealthRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialHealthRuntime.lastAttemptAt)>=3600000){
