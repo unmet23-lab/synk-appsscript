@@ -5,7 +5,8 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createServer as createNetServer } from 'node:net';
 
 const deploy = fileURLToPath(new URL('./deploy/', import.meta.url));
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
@@ -21,7 +22,8 @@ test('Caddy adapter advertises only reachable TCP protocols and clears cached al
     encoding: 'utf8', timeout: 10000,
   });
   assert.equal(result.status, 0, result.error?.message || result.stderr);
-  const servers = Object.values(JSON.parse(result.stdout).apps.http.servers);
+  const config = JSON.parse(result.stdout), servers = Object.values(config.apps.http.servers);
+  assert.deepEqual(config.logging.logs.default.encoder.fields['request>uri'],{filter:'regexp',regexp:'^/social-publish-media/.*$',value:'/social-publish-media/REDACTED'});
   assert.equal(servers.length, 1);
   assert.deepEqual(servers[0].protocols, ['h1', 'h2']);
   const handlers = [];
@@ -31,12 +33,26 @@ test('Caddy adapter advertises only reachable TCP protocols and clears cached al
     for (const child of Object.values(value)) visit(child);
   };
   visit(servers[0].routes);
+  assert.equal(handlers.filter(value=>value.handler==='vars'&&value.log_skip===true).length,1);
   const clear = handlers.filter(value => value.handler === 'headers' && value.response?.set?.['Alt-Svc']);
   assert.equal(clear.length, 1);
   assert.deepEqual(clear[0].response.set['Alt-Svc'], ['clear']);
   assert.equal(clear[0].response.deferred, true, 'clear must be applied when response headers are written');
   assert.deepEqual(handlers.filter(value => value.handler === 'reverse_proxy').flatMap(value => value.upstreams.map(upstream => upstream.dial)).sort(),
     ['company:4191', 'synk-spaceship:4318']);
+});
+
+test('Caddy runtime proxy error redacts a synthetic media capability URI', {skip:caddy?false:'Set SYNK_QA_CADDY to an existing Caddy binary.'}, async t=>{
+  const root=await mkdtemp(join(tmpdir(),'synk-caddy-media-')),output=join(root,'runtime.log');let child;
+  t.after(async()=>{if(child&&child.exitCode===null){const done=new Promise(resolve=>child.once('exit',resolve));child.kill();await done;}assert.ok(resolve(root).startsWith(resolve(tmpdir())+sep));await rm(root,{recursive:true,force:true});});
+  const adapted=spawnSync(caddy,['adapt','--config',join(deploy,'Caddyfile'),'--adapter','caddyfile'],{env:{...process.env,SYNK_COMPANY_DOMAIN:'workspace.example.test',SYNK_TLS_EMAIL:'ops@example.test'},encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(adapted.status,0,adapted.stderr);
+  const config=JSON.parse(adapted.stdout),listener=createNetServer();await new Promise(resolve=>listener.listen(0,'127.0.0.1',resolve));const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
+  config.admin={disabled:true,config:{persist:false}};config.logging.logs.default.writer={output:'file',filename:output};const server=Object.values(config.apps.http.servers)[0];server.listen=['127.0.0.1:'+port];server.automatic_https={disable:true};delete server.routes[0].match;
+  const visit=value=>{if(!value||typeof value!=='object')return;if(value.handler==='reverse_proxy')value.upstreams=[{dial:'127.0.0.1:1'}];for(const child of Object.values(value))visit(child);};visit(server.routes);
+  const configPath=join(root,'caddy.json');await writeFile(configPath,JSON.stringify(config));child=spawn(caddy,['run','--config',configPath],{windowsHide:true,stdio:'ignore'});
+  let response;for(let tries=0;tries<100;tries++){try{response=await fetch('http://127.0.0.1:'+port+'/social-publish-media/synthetic-capability?test=1',{headers:{Host:'workspace.example.test'},signal:AbortSignal.timeout(500)});break;}catch{await new Promise(resolve=>setTimeout(resolve,50));}}
+  assert.equal(response?.status,502);let logs='';for(let tries=0;tries<40;tries++){logs=await readFile(output,'utf8').catch(()=> '');if(logs.includes('/social-publish-media/REDACTED'))break;await new Promise(resolve=>setTimeout(resolve,25));}
+  assert.match(logs,/\/social-publish-media\/REDACTED/);assert.doesNotMatch(logs,/synthetic-capability/);
 });
 
 async function fixture(t) {

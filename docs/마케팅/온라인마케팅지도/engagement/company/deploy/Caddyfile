@@ -1,5 +1,14 @@
 {
     email {$SYNK_TLS_EMAIL}
+    # A media grant is a temporary bearer credential. Redact runtime error logs.
+    log default {
+        format filter {
+            wrap json
+            fields {
+                request>uri regexp ^/social-publish-media/.*$ /social-publish-media/REDACTED
+            }
+        }
+    }
     # The production load balancer publishes TCP only, so HTTP/3 is unavailable.
     servers {
         protocols h1 h2
@@ -7,6 +16,8 @@
 }
 
 {$SYNK_COMPANY_DOMAIN} {
+    # Keep capability URLs out of access logs if access logging is enabled later.
+    log_skip /social-publish-media/*
     # Preserve the public Host for company origin/session validation.
     header Strict-Transport-Security "max-age=31536000"
     # Invalidate the earlier HTTP/3 advertisement cached by returning browsers.
