@@ -9,6 +9,7 @@ import Ko4Statement from '../src/member-statement-v4.cjs';
 import Ko5Statement from '../src/member-statement-v5.cjs';
 import Ko6Statement from '../src/member-statement-v6.cjs';
 import Ko7Statement from '../src/member-statement-v7.cjs';
+import Ko8Statement from '../src/member-statement-v8.cjs';
 import Statements from '../src/member-statement.cjs';
 import { emptyMemberUnderstanding, validateMemberUnderstanding, updateMemberUnderstanding, MEMBER_UNDERSTANDING_LIMITS } from '../src/member-understanding-data.mjs';
 import { PERSONAL_LIMITS, validatePersonalState, serializePersonalState, parsePersonalState, validatePersonalResponse } from '../src/personal-data.mjs';
@@ -110,7 +111,7 @@ test('strict v1 stays unchanged and only a confirmed statement explicitly promot
   const original = validateMemberUnderstanding(state());original.reviews[0].note = '혼자 하는 게 좋아';
   assert.deepEqual(validateMemberUnderstanding(original), original);
   assert.equal(updateMemberUnderstanding(original, { type: 'review', value: original.reviews[0] }, now).version, 1);
-  for (const value of [{ ...original, statements: [] }, { ...original, version: 2 }, { ...v2(), version: 10 }])
+  for (const value of [{ ...original, statements: [] }, { ...original, version: 2 }, { ...v2(), version: 11 }])
     assert.throws(() => validateMemberUnderstanding(value), { code: 'INVALID_PERSONAL_STATE' });
   const row = statement(), promoted = updateMemberUnderstanding(original, { type: 'statement', value: row, replaceId: null }, now);
   assert.equal(promoted.version, 2);assert.deepEqual(promoted.reviews, original.reviews);assert.deepEqual(promoted.overrides, original.overrides);assert.deepEqual(promoted.statements, [row]);
@@ -182,7 +183,7 @@ test('stored clarification choices must replay the exact current question before
   const preview = Statements.previewMemberStatement({ text, asOf: now, clarifications });
   const row = Statements.confirmMemberStatement({ preview, acceptedIds: preview.proposals.map(p => p.id), id: randomUUID(), at: now });
   const value = updateMemberUnderstanding(state(), { type: 'statement', value: row, replaceId: null }, now);
-  assert.equal(value.version, 9);assert.equal(value.statements[0].clarifications.length, 1);
+  assert.equal(value.version, 10);assert.equal(value.statements[0].clarifications.length, 1);
   for (const change of [r => r.clarifications[0].optionId = 'skip', r => r.text = '나는 짧은 설명이 좋을 수도 있어요.', r => r.clarifications.push(r.clarifications[0])]) {
     const changed = structuredClone(value);change(changed.statements[0]);
     assert.throws(() => validateMemberUnderstanding(changed), { code: 'INVALID_PERSONAL_STATE' });
@@ -211,14 +212,14 @@ test('ko3 promotes v1/v2/v3 to v4 and preserves old statements, selection and th
   }
 });
 
-for (const [parser, storageVersion] of [[Ko4Statement, 5], [Ko5Statement, 6], [Ko6Statement, 7], [Ko7Statement, 8], [Statement, 9]]) test(`${parser.PARSER_VERSION} promotes supported documents and refuses older version labels`, () => {
+for (const [parser, storageVersion] of [[Ko4Statement, 5], [Ko5Statement, 6], [Ko6Statement, 7], [Ko7Statement, 8], [Ko8Statement, 9], [Statement, 10]]) test(`${parser.PARSER_VERSION} promotes supported documents and refuses older version labels`, () => {
   const text = '책 읽기를 좋아해요.', parsed = Ko3Statement.parseMemberStatement(text);
   const oldRow = { id: randomUUID(), parserVersion: Ko3Statement.PARSER_VERSION, text, at: now, confirmedAt: now, meanings: parsed.meanings, clarifications: [] };
   const currentText = '글로 소통하는 게 좋아요.', currentParsed = parser.parseMemberStatement(currentText);
   assert.equal(currentParsed.question, null);assert.ok(currentParsed.meanings.length);
   const row = { id: randomUUID(), parserVersion: parser.PARSER_VERSION, text: currentText, at: now, confirmedAt: now, meanings: currentParsed.meanings, clarifications: [] };
   const parents = [state(), v2(), { ...v2(), version: 3 }, { ...v2(), version: 4, statements: [statement(), oldRow] }];
-  for (const [olderParser, version] of [[Ko4Statement, 5], [Ko5Statement, 6], [Ko6Statement, 7], [Ko7Statement, 8]]) {
+  for (const [olderParser, version] of [[Ko4Statement, 5], [Ko5Statement, 6], [Ko6Statement, 7], [Ko7Statement, 8], [Ko8Statement, 9]]) {
     if (version >= storageVersion) continue;
     const olderText = '글로 소통하는 게 좋아요.', olderParsed = olderParser.parseMemberStatement(olderText);
     parents.push({ ...v2(), version, statements: [statement(), oldRow, { id: randomUUID(), parserVersion: olderParser.PARSER_VERSION, text: olderText, at: now, confirmedAt: now, meanings: olderParsed.meanings, clarifications: [] }] });

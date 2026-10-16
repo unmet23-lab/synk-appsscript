@@ -1,17 +1,17 @@
 {
   "version": 1,
   "entry": "atlas/member-understanding.js",
-  "sha256": "79e56e2bbd24e7ecbb3c6e552c0126b14af1c24cecf16745c8b9079d08a847e9",
+  "sha256": "54999e7c694f28573d0acce9cd15db742956016ccd0583c4242b1d5b34826f41",
   "sources": {
     "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
     "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
     "atlas/domain.js": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
     "atlas/interpretation.js": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
     "atlas/member-understanding-contract.js": "5abde8c31c430662b3995e5505beea986e85aa890d83efd58cfe0f994af0f5a3",
-    "atlas/member-understanding.js": "9c99115b2dcdfc3f9377104bcbbe4277e5bd9b8fa4ffe9c6ac2d9577a62cb945",
+    "atlas/member-understanding.js": "c943da0e52c942c47675abb171b57330144d7de2c97845422dcf06fda36804a4",
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
     "atlas/vellum.js": "fcc7d75ba25b64e0403843c458aebdf2cf496d78c2a42b92cc3ea57204349ace",
-    "experiences/synk-account/src/member-statement-contract.cjs": "1c796568b36cb57f77a3143857b0389541aff036979a95f7fe44d77577ee5b69",
+    "experiences/synk-account/src/member-statement-contract.cjs": "ade5c0378e1697ecc3d8f8c315a956dc43471febbe2c34d14c8e25faafa799af",
     "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
     "experiences/synk-account/src/member-statement-v2.cjs": "7e26a5dd658f02951ea7ff3fe302e8992f1d547f07e76fda30e693a3cb37c220",
     "experiences/synk-account/src/member-statement-v3.cjs": "8eadd4133d3474150d577c6b4e86286ed6370030956bccbdbfb248883d15f271",
@@ -19,6 +19,7 @@
     "experiences/synk-account/src/member-statement-v5.cjs": "d4da785c129f7533422c4ec17cfa6c6a124eb911d4ac7fe9442af3c7a6a98111",
     "experiences/synk-account/src/member-statement-v6.cjs": "e20eda01490cb2627c88b9212baae47058f9831d1e8c3cab09f72f751167e2b5",
     "experiences/synk-account/src/member-statement-v7.cjs": "9289ce1899c8fe0b847391a75c661628c898d862309344f60d8c71699b15aa5e",
-    "experiences/synk-account/src/member-statement.cjs": "003f2bc26219804fea8cb800e3c66c5eb9b5139c4d83292fadf74a8b73c34653"
+    "experiences/synk-account/src/member-statement-v8.cjs": "1c796568b36cb57f77a3143857b0389541aff036979a95f7fe44d77577ee5b69",
+    "experiences/synk-account/src/member-statement.cjs": "36da5ac9b0677db827ff8799b34520db1e84d4b70db606949d578d0ba757c9a3"
   }
 }

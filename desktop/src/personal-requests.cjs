@@ -22,7 +22,7 @@ function personalRequestSpec(operation, params = {}, product, resource) {
   }
   if (operation === 'personalDelete') {
     keys(['expected_revision', ...(resource === 'member-understanding' ? ['document_version'] : [])]);
-    if (Object.hasOwn(params, 'document_version') && ![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(params.document_version)) invalid();
+    if (Object.hasOwn(params, 'document_version') && ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(params.document_version)) invalid();
     return { path: 'synk-personal', body: { resource, action: 'delete', expected_revision: revision(params.expected_revision),
       ...(Object.hasOwn(params, 'document_version') ? { document_version: params.document_version } : {}) } };
   }

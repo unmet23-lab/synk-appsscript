@@ -114,13 +114,13 @@ test('confirmed text survives a new analysis and undo preserves existing correct
   const f = fixture({ state: original }); await f.controller.refresh(); describe(f);
   assert.equal(f.calls.filter(x => x.operation === 'understandingSave').length, 0);
   await f.controller.confirmStatement();
-  const saved = f.saved().state; assert.equal(saved.version, 9); assert.equal(saved.statements.length, 1);
+  const saved = f.saved().state; assert.equal(saved.version, 10); assert.equal(saved.statements.length, 1);
   assert.equal(saved.statements[0].meanings.length, 2); assert.deepEqual(saved.overrides, original.overrides);
   const next = fixture({ state: saved }); await next.controller.refresh();
   assert.deepEqual(next.controller.read().document.statements, saved.statements);
   await next.controller.removeStatement({ id: saved.statements[0].id });
   assert.equal(next.saved().state.statements.length, 0); assert.deepEqual(next.saved().state.overrides, original.overrides);
-  await f.controller.clear(); assert.equal(f.calls.at(-1).params.document_version, 9);
+  await f.controller.clear(); assert.equal(f.calls.at(-1).params.document_version, 10);
 });
 
 test('version-three documents retain their delete acknowledgement and existing corrections', async () => {
@@ -172,7 +172,7 @@ test('successive clarification answers remain local until the newly interpreted 
   ready.text = '혼자 하는 게 좋아요.'; ready.clarifications[0].optionId = 'explanation'; ready.preview.proposals[0].value = 'independent';
   await f.controller.confirmStatement();
   const state = f.saved().state;
-  assert.equal(state.version, 9); assert.equal(state.statements[0].text, clarificationText);
+  assert.equal(state.version, 10); assert.equal(state.statements[0].text, clarificationText);
   assert.equal(state.statements[0].clarifications.length, 4); assert.equal(state.statements[0].meanings[0].value, 'example');
   const reopened = fixture({ state }); await reopened.controller.refresh(); assert.deepEqual(reopened.controller.read().document, state);
 });

@@ -1,0 +1,2580 @@
+{
+  "provenance": {
+    "source": ".tmp/member-language9-20261016/private-evaluation/corpus.json",
+    "sha256": "0ac490f52d83817513fcc5e419a17734ba5e93431bfe9780a8ed7d1992a50447",
+    "disclosureReceipt": {
+      "at": "2026-10-16T08:12:53.701Z",
+      "transition": "The full 120-sentence corpus is now development-disclosed by explicit root instruction. Future reruns are regression, not new unseen tests.",
+      "authorization": {
+        "from": "/root",
+        "instruction": "최초120 성적변경없이보존. 새120을개발공개로명시전환; 범주별실패원인/대표원문·gold 작성; 전체원문/gold 위치 공유."
+      },
+      "filesBeforeDisclosure": {
+        "freeze.json": "d0408fecafb8e4534884a1840b04f3a21b51ed4f2c5d054369c990a7db63e57c",
+        "corpus.json": "0ac490f52d83817513fcc5e419a17734ba5e93431bfe9780a8ed7d1992a50447",
+        "baseline-first.json": "8b29c8020b5825a3af504de6ff2fd19dd43c777c8c77f8b77b9e32b0bf9206f1",
+        "candidate-first.json": "03653095ea0950ca83060338fd553393f82847a25445d51ef6b41bb404daaf94",
+        "comparison-summary.json": "39d406d0067f69aed4bf827145434d72f2b0cd7f1ff7b1a6625a9c2b68cd1678",
+        "first-evaluation-report.json": "6089aa346198877f5a7eebd6c206118f74569fef57d9a6ce335464167f4dd7e6"
+      },
+      "fullCorpusAndGold": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\member-language9-20261016\\private-evaluation\\corpus.json",
+      "diagnosis": {
+        "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\member-language9-20261016\\development\\candidate1-disclosed-diagnosis.json",
+        "sha256": "bd680a8077b9a105082f6d8c165fc17cba8ea8a28d15320bac6a768cd222daac"
+      },
+      "rawAndGoldNowAuthorizedForRootAndImplementer": true,
+      "originalFirstScoresPreserved": true,
+      "goldChanges": 0
+    }
+  },
+  "originalFirstPass": {
+    "at": "2026-10-16T08:10:26.133Z",
+    "freezeSha256": "d0408fecafb8e4534884a1840b04f3a21b51ed4f2c5d054369c990a7db63e57c",
+    "baseline": {
+      "cases": 120,
+      "passed": 73,
+      "exactCaseRate": 0.6083333333333333,
+      "directCases": 80,
+      "directExact": 33,
+      "directExactRate": 0.4125,
+      "truePositives": 67,
+      "falsePositives": 0,
+      "falseNegatives": 55,
+      "proposedTuples": 67,
+      "expectedTuples": 122,
+      "precision": 1,
+      "recall": 0.5491803278688525,
+      "f1": 0.7089947089947091,
+      "deferredCases": 40,
+      "deferredWithoutFalseProposal": 40,
+      "noProposalCases": 73,
+      "noProposalRate": 0.6083333333333333,
+      "supportedAbstentions": 33,
+      "supportedAbstentionRate": 0.4125,
+      "questionsAsked": 70,
+      "questionFailures": 46,
+      "evidenceErrors": 0,
+      "parseErrors": 0,
+      "safetyGatePass": true,
+      "allExpectationsPass": false,
+      "unnecessaryQuestions": 46,
+      "falseProposalCases": 0,
+      "conditionErrors": 0,
+      "schemaErrors": 0,
+      "validateConfirmedEligible": 33,
+      "validateConfirmedFailures": 0,
+      "cumulativeSkipFailures": 0,
+      "cumulativeSkipEvidenceErrors": 0,
+      "runtimeErrors": 0,
+      "descriptiveDirectTarget": 0.8,
+      "directTargetMet": false
+    },
+    "candidate": {
+      "cases": 120,
+      "passed": 74,
+      "exactCaseRate": 0.6166666666666667,
+      "directCases": 80,
+      "directExact": 34,
+      "directExactRate": 0.425,
+      "truePositives": 68,
+      "falsePositives": 0,
+      "falseNegatives": 54,
+      "proposedTuples": 68,
+      "expectedTuples": 122,
+      "precision": 1,
+      "recall": 0.5573770491803278,
+      "f1": 0.7157894736842105,
+      "deferredCases": 40,
+      "deferredWithoutFalseProposal": 40,
+      "noProposalCases": 72,
+      "noProposalRate": 0.6,
+      "supportedAbstentions": 32,
+      "supportedAbstentionRate": 0.4,
+      "questionsAsked": 69,
+      "questionFailures": 45,
+      "evidenceErrors": 0,
+      "parseErrors": 0,
+      "safetyGatePass": true,
+      "allExpectationsPass": false,
+      "unnecessaryQuestions": 45,
+      "falseProposalCases": 0,
+      "conditionErrors": 0,
+      "schemaErrors": 0,
+      "validateConfirmedEligible": 34,
+      "validateConfirmedFailures": 0,
+      "cumulativeSkipFailures": 0,
+      "cumulativeSkipEvidenceErrors": 0,
+      "runtimeErrors": 0,
+      "descriptiveDirectTarget": 0.8,
+      "directTargetMet": false
+    },
+    "directImproved": 1,
+    "directRegressed": 0,
+    "matchedTupleCasesImproved": 1,
+    "newFalseAssertionCases": 0,
+    "matchedTupleCasesRegressed": 0,
+    "population": "120 independently authored synthetic Korean sentences (80 clear current self-preference, 40 withholding); not real-user or general language accuracy evidence.",
+    "baselineReportSha256": "8b29c8020b5825a3af504de6ff2fd19dd43c777c8c77f8b77b9e32b0bf9206f1",
+    "candidateReportSha256": "03653095ea0950ca83060338fd553393f82847a25445d51ef6b41bb404daaf94",
+    "rawLabelsAndRunnerUnchanged": true
+  },
+  "corpus": {
+    "version": "language9-independent-unseen-v1",
+    "population": "120 independently authored synthetic Korean sentences (80 clear current self-preference, 40 withholding); not real-user or general language accuracy evidence.",
+    "authoredAt": "2026-10-16T08:02:58.777Z",
+    "cases": [
+      {
+        "id": "D001",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "저는 글로 의견을 전하는 게 편하고, 판단할 때는 여러 선택지를 비교하는 쪽이 좋아요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            "decision"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "저는 글로 의견을 전하는 게 편하고, 판단할 때는 여러 선택지를 비교하는 쪽이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D002",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "나는 음악 듣기와 자연을 구경하는 일 둘 다 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 30,
+            "quote": "나는 음악 듣기와 자연을 구경하는 일 둘 다 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D003",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "전 일의 계획을 먼저 세우는 게 좋고 설명은 길지 않게 핵심만 듣고 싶어요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "prefer",
+            null
+          ],
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "전 일의 계획을 먼저 세우는 게 좋고 설명은 길지 않게 핵심만 듣고 싶어요."
+          }
+        ]
+      },
+      {
+        "id": "D004",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "저는 사진 촬영을 좋아하며, 연습은 듣기로 하는 편이 더 좋아요.",
+        "expect": [
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ],
+          [
+            "practice-mode",
+            "listening",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "저는 사진 촬영을 좋아하며, 연습은 듣기로 하는 편이 더 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D005",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "난 일을 한 가지씩 끝내는 게 편하고, 내 의견은 말로 전달하는 게 편해.",
+        "expect": [
+          [
+            "work-style",
+            "single-task",
+            "prefer",
+            null
+          ],
+          [
+            "communication",
+            "spoken",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 41,
+            "quote": "난 일을 한 가지씩 끝내는 게 편하고, 내 의견은 말로 전달하는 게 편해."
+          }
+        ]
+      },
+      {
+        "id": "D006",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "저는 책 읽기와 직접 요리하기에 흥미가 있고 둘 다 즐겨요.",
+        "expect": [
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "cooking",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 33,
+            "quote": "저는 책 읽기와 직접 요리하기에 흥미가 있고 둘 다 즐겨요."
+          }
+        ]
+      },
+      {
+        "id": "D007",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "나는 설명을 들을 때 전체 개요를 먼저 알고 싶고, 선택은 근거를 살펴서 하는 걸 선호해요.",
+        "expect": [
+          [
+            "explanation-detail",
+            "overview-first",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 51,
+            "quote": "나는 설명을 들을 때 전체 개요를 먼저 알고 싶고, 선택은 근거를 살펴서 하는 걸 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D008",
+        "split": "holdout",
+        "category": "current_parallel",
+        "mode": "direct",
+        "text": "저는 운동을 즐기고 영상 제작에도 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "exercise",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "content-video",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 27,
+            "quote": "저는 운동을 즐기고 영상 제작에도 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D009",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "저는 글로 소통하는 게, 내용을 다시 확인할 수 있어서, 더 편해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 38,
+            "quote": "저는 글로 소통하는 게, 내용을 다시 확인할 수 있어서, 더 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D010",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "전 한 번에 한 가지씩 처리하는 게 좋아요. 놓친 부분을 찾기가 쉬워서요.",
+        "expect": [
+          [
+            "work-style",
+            "single-task",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 41,
+            "quote": "전 한 번에 한 가지씩 처리하는 게 좋아요. 놓친 부분을 찾기가 쉬워서요."
+          }
+        ]
+      },
+      {
+        "id": "D011",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "나는 계획부터 잡는 쪽이, 중간에 길을 잃지 않을 수 있으니까, 잘 맞아요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "나는 계획부터 잡는 쪽이, 중간에 길을 잃지 않을 수 있으니까, 잘 맞아요."
+          }
+        ]
+      },
+      {
+        "id": "D012",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "저는 이유까지 자세히 설명해 주는 걸 선호해요. 그래야 납득이 되거든요.",
+        "expect": [
+          [
+            "explanation-detail",
+            "reasons-detail",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 40,
+            "quote": "저는 이유까지 자세히 설명해 주는 걸 선호해요. 그래야 납득이 되거든요."
+          }
+        ]
+      },
+      {
+        "id": "D013",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "저는 선택지를 비교하는 방식이 (차이가 눈에 보이니까) 더 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 37,
+            "quote": "저는 선택지를 비교하는 방식이 (차이가 눈에 보이니까) 더 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D014",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "저는 듣기 연습을 좋아해요. 소리의 흐름을 느낄 수 있다는 점 때문이에요.",
+        "expect": [
+          [
+            "practice-mode",
+            "listening",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 41,
+            "quote": "저는 듣기 연습을 좋아해요. 소리의 흐름을 느낄 수 있다는 점 때문이에요."
+          }
+        ]
+      },
+      {
+        "id": "D015",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "난 대화를 할 때 상대 이야기를 먼저 듣고 정리하는 게, 요점을 놓치지 않아서, 편해.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "난 대화를 할 때 상대 이야기를 먼저 듣고 정리하는 게, 요점을 놓치지 않아서, 편해."
+          }
+        ]
+      },
+      {
+        "id": "D016",
+        "split": "holdout",
+        "category": "causal_parenthesis",
+        "mode": "direct",
+        "text": "저는 여행 숙소를 알아보는 걸 좋아해요. 머무를 곳을 상상하는 게 즐겁거든요.",
+        "expect": [
+          [
+            "topic",
+            "travel-stay",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 43,
+            "quote": "저는 여행 숙소를 알아보는 걸 좋아해요. 머무를 곳을 상상하는 게 즐겁거든요."
+          }
+        ]
+      },
+      {
+        "id": "D017",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "처음 시도할 때 저는, 막막함이 줄어드니까, 단계별 안내를 받는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "step",
+            "prefer",
+            "first-try"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "처음 시도할 때 저는, 막막함이 줄어드니까, 단계별 안내를 받는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D018",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "바쁠 때는, 중요한 일을 놓치지 않으려면, 우선순위를 정해서 처리하는 방식이 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "busy"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 47,
+            "quote": "바쁠 때는, 중요한 일을 놓치지 않으려면, 우선순위를 정해서 처리하는 방식이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D019",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "익숙한 내용일 때 전 혼자 해보는 게, 제 속도를 지킬 수 있어서, 더 좋아요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 44,
+            "quote": "익숙한 내용일 때 전 혼자 해보는 게, 제 속도를 지킬 수 있어서, 더 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D020",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "회의할 때는 (말을 놓치지 않기 위해) 먼저 듣고 정리하는 게 편해요.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            "meeting"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 39,
+            "quote": "회의할 때는 (말을 놓치지 않기 위해) 먼저 듣고 정리하는 게 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D021",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "함께 일할 때 저는 글로 의견을 남기는 게 좋아요. 기록이 있으면 서로 확인하기 쉬워서요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            "teamwork"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 50,
+            "quote": "함께 일할 때 저는 글로 의견을 남기는 게 좋아요. 기록이 있으면 서로 확인하기 쉬워서요."
+          }
+        ]
+      },
+      {
+        "id": "D022",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "결정할 때는, 나중에 이유를 설명할 수 있으니까, 근거를 확인하는 걸 선호해요.",
+        "expect": [
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            "decision"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 44,
+            "quote": "결정할 때는, 나중에 이유를 설명할 수 있으니까, 근거를 확인하는 걸 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D023",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "일을 계획할 때는, 한꺼번에 벌이지 않도록, 우선순위를 정하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "planning"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 41,
+            "quote": "일을 계획할 때는, 한꺼번에 벌이지 않도록, 우선순위를 정하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D024",
+        "split": "holdout",
+        "category": "condition_causal",
+        "mode": "direct",
+        "text": "예시를 본 다음에는, 감을 잡은 상태니까, 혼자 해보는 쪽이 편해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "after-example"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 38,
+            "quote": "예시를 본 다음에는, 감을 잡은 상태니까, 혼자 해보는 쪽이 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D025",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "저는 처음 시도할 때는 예시를 보는 게 좋고, 익숙한 내용일 때는 혼자 해보는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 50,
+            "quote": "저는 처음 시도할 때는 예시를 보는 게 좋고, 익숙한 내용일 때는 혼자 해보는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D026",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "바쁠 때 저는 핵심만 짧게 설명받고 싶어요. 처음 시도할 때는 자세한 설명이 더 좋아요.",
+        "expect": [
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            "busy"
+          ],
+          [
+            "explanation",
+            "detailed",
+            "prefer",
+            "first-try"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 49,
+            "quote": "바쁠 때 저는 핵심만 짧게 설명받고 싶어요. 처음 시도할 때는 자세한 설명이 더 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D027",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "회의할 때 저는 먼저 듣고 정리하는 게 좋고, 함께 일할 때 저는 글로 의견을 전하는 걸 선호해요.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            "meeting"
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            "teamwork"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 55,
+            "quote": "회의할 때 저는 먼저 듣고 정리하는 게 좋고, 함께 일할 때 저는 글로 의견을 전하는 걸 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D028",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "일을 계획할 때는 우선순위를 정하는 게 좋지만, 익숙한 내용일 때는 일단 시도하며 조정하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "planning"
+          ],
+          [
+            "work-style",
+            "try-adjust",
+            "prefer",
+            "familiar"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 57,
+            "quote": "일을 계획할 때는 우선순위를 정하는 게 좋지만, 익숙한 내용일 때는 일단 시도하며 조정하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D029",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "처음 시도할 때 예시를 본 다음에는 혼자 하는 게 좋아요. 바쁠 때는 단계별 안내를 선호해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "first-try-after-example"
+          ],
+          [
+            "support",
+            "step",
+            "prefer",
+            "busy"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 52,
+            "quote": "처음 시도할 때 예시를 본 다음에는 혼자 하는 게 좋아요. 바쁠 때는 단계별 안내를 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D030",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "익숙한 내용에서 예시를 본 다음에는 혼자 해보고 싶고, 처음 시도할 때는 함께 해보는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar-after-example"
+          ],
+          [
+            "support",
+            "together",
+            "prefer",
+            "first-try"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 54,
+            "quote": "익숙한 내용에서 예시를 본 다음에는 혼자 해보고 싶고, 처음 시도할 때는 함께 해보는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D031",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "바쁠 때 예시를 본 다음에는 혼자 시도하는 쪽이 편해요. 결정할 때는 조언을 구하는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "busy-after-example"
+          ],
+          [
+            "decision",
+            "consult",
+            "prefer",
+            "decision"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 53,
+            "quote": "바쁠 때 예시를 본 다음에는 혼자 시도하는 쪽이 편해요. 결정할 때는 조언을 구하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D032",
+        "split": "holdout",
+        "category": "conditional_pair",
+        "mode": "direct",
+        "text": "처음 시도할 때는 전체 개요부터 설명받고 싶어요. 익숙한 내용일 때는 설명을 짧게 듣는 게 좋아요.",
+        "expect": [
+          [
+            "explanation-detail",
+            "overview-first",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            "familiar"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 55,
+            "quote": "처음 시도할 때는 전체 개요부터 설명받고 싶어요. 익숙한 내용일 때는 설명을 짧게 듣는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D033",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "저는 말로 의견을 전하는 건 싫고, 글로 전하는 게 더 편해요.",
+        "expect": [
+          [
+            "communication",
+            "spoken",
+            "avoid",
+            null
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 35,
+            "quote": "저는 말로 의견을 전하는 건 싫고, 글로 전하는 게 더 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D034",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "전 자세한 설명은 싫어요. 핵심만 짧게 설명해 주는 쪽이 좋아요.",
+        "expect": [
+          [
+            "explanation",
+            "detailed",
+            "avoid",
+            null
+          ],
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "전 자세한 설명은 싫어요. 핵심만 짧게 설명해 주는 쪽이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D035",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "저는 게임은 좋아하지 않지만 사진 촬영은 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "games",
+            "avoid",
+            null
+          ],
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 28,
+            "quote": "저는 게임은 좋아하지 않지만 사진 촬영은 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D036",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "나는 다른 사람과 함께 해보는 건 싫고 혼자 시도하는 게 좋아.",
+        "expect": [
+          [
+            "support",
+            "together",
+            "avoid",
+            null
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 35,
+            "quote": "나는 다른 사람과 함께 해보는 건 싫고 혼자 시도하는 게 좋아."
+          }
+        ]
+      },
+      {
+        "id": "D037",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "저는 글 읽기 연습을 싫어하고 듣기 연습을 좋아해요.",
+        "expect": [
+          [
+            "practice-mode",
+            "reading",
+            "avoid",
+            null
+          ],
+          [
+            "practice-mode",
+            "listening",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 29,
+            "quote": "저는 글 읽기 연습을 싫어하고 듣기 연습을 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D038",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "난 내 경험으로 결정하는 건 선호하지 않아요. 근거를 따져서 결정하는 게 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "experience",
+            "avoid",
+            null
+          ],
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 45,
+            "quote": "난 내 경험으로 결정하는 건 선호하지 않아요. 근거를 따져서 결정하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D039",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "전 계획부터 세우는 걸 좋아하지 않아요. 먼저 해보며 조정하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "avoid",
+            null
+          ],
+          [
+            "work-style",
+            "try-adjust",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 41,
+            "quote": "전 계획부터 세우는 걸 좋아하지 않아요. 먼저 해보며 조정하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D040",
+        "split": "holdout",
+        "category": "negation_contrast",
+        "mode": "direct",
+        "text": "저는 디자인에는 관심이 없지만 영상 제작에는 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "content-design",
+            "avoid",
+            null
+          ],
+          [
+            "topic",
+            "content-video",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 33,
+            "quote": "저는 디자인에는 관심이 없지만 영상 제작에는 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D041",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "동료는 즉흥적으로 해보는 걸 좋아하지만, 저는 먼저 계획을 세우는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 43,
+            "quote": "동료는 즉흥적으로 해보는 걸 좋아하지만, 저는 먼저 계획을 세우는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D042",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "언니는 게임을 좋아하고, 저는 음악 듣기와 책 읽기를 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 35,
+            "quote": "언니는 게임을 좋아하고, 저는 음악 듣기와 책 읽기를 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D043",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "다른 사람들은 말로 설명하는 걸 편해하지만 저는 글로 소통하는 게 더 편해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 43,
+            "quote": "다른 사람들은 말로 설명하는 걸 편해하지만 저는 글로 소통하는 게 더 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D044",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "친구는 혼자 해보고 싶다지만, 저는 단계별로 안내받는 게 편해요.",
+        "expect": [
+          [
+            "support",
+            "step",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "친구는 혼자 해보고 싶다지만, 저는 단계별로 안내받는 게 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D045",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "팀장은 먼저 의견을 말하는 걸 좋아해요. 저는 먼저 듣고 정리하는 게 좋아요.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 43,
+            "quote": "팀장은 먼저 의견을 말하는 걸 좋아해요. 저는 먼저 듣고 정리하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D046",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "동생은 숙소 찾기를 즐기지만 저는 여행지 음식을 알아보는 데 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "travel-food",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "동생은 숙소 찾기를 즐기지만 저는 여행지 음식을 알아보는 데 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D047",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "다른 분은 자세한 설명을 선호하더라도 저는 핵심만 짧게 듣는 게 좋아요.",
+        "expect": [
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 40,
+            "quote": "다른 분은 자세한 설명을 선호하더라도 저는 핵심만 짧게 듣는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D048",
+        "split": "holdout",
+        "category": "subject_contrast",
+        "mode": "direct",
+        "text": "친구는 자기 경험으로 결정하는 편인데, 저는 선택지를 비교해서 결정하는 방식이 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "친구는 자기 경험으로 결정하는 편인데, 저는 선택지를 비교해서 결정하는 방식이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D049",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "예전에는 게임을 좋아했지만 지금 저는 자연을 구경하는 게 좋아요.",
+        "expect": [
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "예전에는 게임을 좋아했지만 지금 저는 자연을 구경하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D050",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "지난해엔 혼자 하는 걸 좋아했어요. 지금은 저는 함께 해보는 게 더 편해요.",
+        "expect": [
+          [
+            "support",
+            "together",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "지난해엔 혼자 하는 걸 좋아했어요. 지금은 저는 함께 해보는 게 더 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D051",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "과거에는 글로 의견을 전하는 게 좋았지만 요즘 저는 말로 소통하는 게 편해요.",
+        "expect": [
+          [
+            "communication",
+            "spoken",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 43,
+            "quote": "과거에는 글로 의견을 전하는 게 좋았지만 요즘 저는 말로 소통하는 게 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D052",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "전에는 계획을 먼저 세우는 게 좋았어요. 현재는 일단 해보면서 조정하는 방식이 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "try-adjust",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "전에는 계획을 먼저 세우는 게 좋았어요. 현재는 일단 해보면서 조정하는 방식이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D053",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "옛날에는 듣기 연습을 좋아했는데 지금 저는 읽기 연습을 좋아해요.",
+        "expect": [
+          [
+            "practice-mode",
+            "reading",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "옛날에는 듣기 연습을 좋아했는데 지금 저는 읽기 연습을 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D054",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "어릴 때는 요리를 즐겼지만 요즘은 저는 사진 촬영에 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 37,
+            "quote": "어릴 때는 요리를 즐겼지만 요즘은 저는 사진 촬영에 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D055",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "이전에는 설명이 짧을수록 좋았지만 지금은 저는 자세한 설명이 좋아요.",
+        "expect": [
+          [
+            "explanation",
+            "detailed",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 38,
+            "quote": "이전에는 설명이 짧을수록 좋았지만 지금은 저는 자세한 설명이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D056",
+        "split": "holdout",
+        "category": "past_current",
+        "mode": "direct",
+        "text": "예전에는 내 경험을 믿고 결정하는 게 좋았어요. 요즘 저는 근거를 확인해서 결정하는 게 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 53,
+            "quote": "예전에는 내 경험을 믿고 결정하는 게 좋았어요. 요즘 저는 근거를 확인해서 결정하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D057",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 음악과 운동을 둘 다 즐기는 편이에요.",
+        "expect": [
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "exercise",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 24,
+            "quote": "저는 음악과 운동을 둘 다 즐기는 편이에요."
+          }
+        ]
+      },
+      {
+        "id": "D058",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 여행 일정 짜기와 숙소 알아보기에 모두 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "travel-planning",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "travel-stay",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 33,
+            "quote": "저는 여행 일정 짜기와 숙소 알아보기에 모두 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D059",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 영상 제작도 디자인도 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "content-video",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "content-design",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 20,
+            "quote": "저는 영상 제작도 디자인도 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D060",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 면접 준비와 진로 계획 세우기 둘 다 관심이 있어요.",
+        "expect": [
+          [
+            "topic",
+            "career-interview",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "career-planning",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 32,
+            "quote": "저는 면접 준비와 진로 계획 세우기 둘 다 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D061",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "나는 독서와 사진 촬영을 모두 좋아해.",
+        "expect": [
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 21,
+            "quote": "나는 독서와 사진 촬영을 모두 좋아해."
+          }
+        ]
+      },
+      {
+        "id": "D062",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 AI 도구 쓰기와 업무 협업 방식 알아보기를 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "ai-tools",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "work-collaboration",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 33,
+            "quote": "저는 AI 도구 쓰기와 업무 협업 방식 알아보기를 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D063",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "전 게임과 요리에는 둘 다 관심이 없어요.",
+        "expect": [
+          [
+            "topic",
+            "games",
+            "avoid",
+            null
+          ],
+          [
+            "topic",
+            "cooking",
+            "avoid",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 23,
+            "quote": "전 게임과 요리에는 둘 다 관심이 없어요."
+          }
+        ]
+      },
+      {
+        "id": "D064",
+        "split": "holdout",
+        "category": "shared_preference",
+        "mode": "direct",
+        "text": "저는 여행지 음식 알아보기, 자연 구경하기, 음악 듣기를 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "travel-food",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 37,
+            "quote": "저는 여행지 음식 알아보기, 자연 구경하기, 음악 듣기를 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D065",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "바쁠 때는 설명을 짧게 듣고 싶어요. 평소에 저는 요리를 즐겨요.",
+        "expect": [
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            "busy"
+          ],
+          [
+            "topic",
+            "cooking",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 36,
+            "quote": "바쁠 때는 설명을 짧게 듣고 싶어요. 평소에 저는 요리를 즐겨요."
+          }
+        ]
+      },
+      {
+        "id": "D066",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "회의할 때는 먼저 듣고 정리하는 편이 좋아요. 상황과 관계없이 저는 음악을 좋아해요.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            "meeting"
+          ],
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 47,
+            "quote": "회의할 때는 먼저 듣고 정리하는 편이 좋아요. 상황과 관계없이 저는 음악을 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D067",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "처음 시도할 때는 예시가 있으면 좋겠어요. 평소 저는 글로 소통하는 방식을 선호해요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 47,
+            "quote": "처음 시도할 때는 예시가 있으면 좋겠어요. 평소 저는 글로 소통하는 방식을 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D068",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "익숙한 내용일 때는 혼자 해보는 게 편해요. 평소 취미로는 사진 촬영을 좋아해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ],
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 45,
+            "quote": "익숙한 내용일 때는 혼자 해보는 게 편해요. 평소 취미로는 사진 촬영을 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D069",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "결정할 때는 여러 선택지를 비교하는 게 좋아요. 별개로 저는 운동을 즐겨요.",
+        "expect": [
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            "decision"
+          ],
+          [
+            "topic",
+            "exercise",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "결정할 때는 여러 선택지를 비교하는 게 좋아요. 별개로 저는 운동을 즐겨요."
+          }
+        ]
+      },
+      {
+        "id": "D070",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "함께 일할 때는 글로 의견을 주고받는 게 좋아요. 일과 별개로 저는 독서를 좋아해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            "teamwork"
+          ],
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 47,
+            "quote": "함께 일할 때는 글로 의견을 주고받는 게 좋아요. 일과 별개로 저는 독서를 좋아해요."
+          }
+        ]
+      },
+      {
+        "id": "D071",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "일을 계획할 때는 우선순위를 정하는 걸 선호해요. 평소에 저는 디자인에 관심이 있어요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "planning"
+          ],
+          [
+            "topic",
+            "content-design",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "일을 계획할 때는 우선순위를 정하는 걸 선호해요. 평소에 저는 디자인에 관심이 있어요."
+          }
+        ]
+      },
+      {
+        "id": "D072",
+        "split": "holdout",
+        "category": "conditional_scope_reset",
+        "mode": "direct",
+        "text": "예시를 본 다음에는 혼자 해보는 게 좋아요. 상황과 관계없이 설명은 자세한 쪽을 선호해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "after-example"
+          ],
+          [
+            "explanation",
+            "detailed",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 50,
+            "quote": "예시를 본 다음에는 혼자 해보는 게 좋아요. 상황과 관계없이 설명은 자세한 쪽을 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D073",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "제 방식은 이래요. 혼자 시도하는 걸 좋아하고, 정확히 말하면 도움 없이 직접 해보는 쪽이 편해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 55,
+            "quote": "제 방식은 이래요. 혼자 시도하는 걸 좋아하고, 정확히 말하면 도움 없이 직접 해보는 쪽이 편해요."
+          }
+        ]
+      },
+      {
+        "id": "D074",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 설명이 간결한 게 좋아요. 핵심만 짧게 알려주는 방식을 말하는 거예요.",
+        "expect": [
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "저는 설명이 간결한 게 좋아요. 핵심만 짧게 알려주는 방식을 말하는 거예요."
+          }
+        ]
+      },
+      {
+        "id": "D075",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 듣기와 읽기를 섞어서 연습하는 게 좋아요. 한쪽으로만 하지 않고 두 가지를 같이 연습하고 싶어요.",
+        "expect": [
+          [
+            "practice-mode",
+            "mixed",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 57,
+            "quote": "저는 듣기와 읽기를 섞어서 연습하는 게 좋아요. 한쪽으로만 하지 않고 두 가지를 같이 연습하고 싶어요."
+          }
+        ]
+      },
+      {
+        "id": "D076",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 일을 시작하기 전에 계획부터 정하는 방식이 좋아요. 먼저 계획을 세우는 편을 선호한다는 뜻이에요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 57,
+            "quote": "저는 일을 시작하기 전에 계획부터 정하는 방식이 좋아요. 먼저 계획을 세우는 편을 선호한다는 뜻이에요."
+          }
+        ]
+      },
+      {
+        "id": "D077",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "전 직접 겪어 본 경험을 바탕으로 결정하는 걸 선호해요. 제 경험을 판단 기준으로 삼는 방식이 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "experience",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 57,
+            "quote": "전 직접 겪어 본 경험을 바탕으로 결정하는 걸 선호해요. 제 경험을 판단 기준으로 삼는 방식이 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D078",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 내 의견을 먼저 꺼내는 쪽이 편해요. 대화 초반에 먼저 생각을 말하는 게 좋아요.",
+        "expect": [
+          [
+            "communication",
+            "share-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 48,
+            "quote": "저는 내 의견을 먼저 꺼내는 쪽이 편해요. 대화 초반에 먼저 생각을 말하는 게 좋아요."
+          }
+        ]
+      },
+      {
+        "id": "D079",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 글로 설명하는 게 편해요. 문자로 내 생각을 전달하는 방식을 선호해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 42,
+            "quote": "저는 글로 설명하는 게 편해요. 문자로 내 생각을 전달하는 방식을 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "D080",
+        "split": "holdout",
+        "category": "explicit_restatement",
+        "mode": "direct",
+        "text": "저는 중요한 것부터 처리하는 게 좋아요. 일의 우선순위를 정해서 하는 쪽을 선호해요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "start": 0,
+            "end": 47,
+            "quote": "저는 중요한 것부터 처리하는 게 좋아요. 일의 우선순위를 정해서 하는 쪽을 선호해요."
+          }
+        ]
+      },
+      {
+        "id": "W001",
+        "split": "holdout",
+        "category": "other_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "우리 팀원은 먼저 계획을 세우는 게 좋고 글로 소통하는 게 편하대요.",
+        "expect": [],
+        "reason": "Other person only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W002",
+        "split": "holdout",
+        "category": "other_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "친구는 음악과 운동을 즐기며, 설명은 짧은 편을 좋아해요.",
+        "expect": [],
+        "reason": "Other person only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W003",
+        "split": "holdout",
+        "category": "other_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "동생은 처음 배우는 일에는 예시가 있는 걸 좋아한다고 했어요.",
+        "expect": [],
+        "reason": "Other person only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W004",
+        "split": "holdout",
+        "category": "other_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "강사는 선택지를 비교하는 방법을 선호한다는데 제 방식은 아직 모르겠어요.",
+        "expect": [],
+        "reason": "Other preference and explicit unknown self",
+        "authorEvidence": []
+      },
+      {
+        "id": "W005",
+        "split": "holdout",
+        "category": "other_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "그 사람은 회의에서 먼저 듣고 정리하는 게 편하다고 말했어요.",
+        "expect": [],
+        "reason": "Other person only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W006",
+        "split": "holdout",
+        "category": "quote_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "책에 “저는 혼자 해보는 게 좋아요”라는 문장이 실려 있어요.",
+        "expect": [],
+        "reason": "Quoted sentence only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W007",
+        "split": "holdout",
+        "category": "quote_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "친구가 “난 글로 소통하는 걸 선호해”라고 했는데 제 이야기는 아니에요.",
+        "expect": [],
+        "reason": "Explicit other quote",
+        "authorEvidence": []
+      },
+      {
+        "id": "W008",
+        "split": "holdout",
+        "category": "quote_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "연습 문제의 예문은 “처음엔 단계별 안내가 좋고 익숙하면 혼자가 좋아요”예요.",
+        "expect": [],
+        "reason": "Language example, no self preference",
+        "authorEvidence": []
+      },
+      {
+        "id": "W009",
+        "split": "holdout",
+        "category": "quote_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "화면에 “저는 계획을 세우는 게 편해요”라는 선택지가 있네요. 아직 선택하지 않았어요.",
+        "expect": [],
+        "reason": "Unselected quoted option",
+        "authorEvidence": []
+      },
+      {
+        "id": "W010",
+        "split": "holdout",
+        "category": "quote_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "“음악을 좋아해요”라는 대사를 맡았어요. 제 실제 취향을 말한 건 아니에요.",
+        "expect": [],
+        "reason": "Acting quoted line",
+        "authorEvidence": []
+      },
+      {
+        "id": "W011",
+        "split": "holdout",
+        "category": "past_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "어릴 때는 혼자 시도하는 게 좋았는데 지금은 어떤지 모르겠어요.",
+        "expect": [],
+        "reason": "Past only, current unknown",
+        "authorEvidence": []
+      },
+      {
+        "id": "W012",
+        "split": "holdout",
+        "category": "past_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "작년에는 긴 설명을 좋아했지만 현재 선호는 아직 판단하지 못했어요.",
+        "expect": [],
+        "reason": "Past only, current unknown",
+        "authorEvidence": []
+      },
+      {
+        "id": "W013",
+        "split": "holdout",
+        "category": "past_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "예전에는 여행 숙소 찾기를 즐겼어요. 요즘 관심사는 잘 모르겠어요.",
+        "expect": [],
+        "reason": "Past only, current unknown",
+        "authorEvidence": []
+      },
+      {
+        "id": "W014",
+        "split": "holdout",
+        "category": "past_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "그 당시에는 먼저 계획을 세우는 게 좋았어요. 현재의 저를 뜻하는 건 아니에요.",
+        "expect": [],
+        "reason": "Explicit historical-only report",
+        "authorEvidence": []
+      },
+      {
+        "id": "W015",
+        "split": "holdout",
+        "category": "past_only",
+        "mode": "withhold",
+        "question": "either",
+        "text": "학생 때는 듣기 연습이 더 좋았어요. 지금도 그런지는 확인이 필요해요.",
+        "expect": [],
+        "reason": "Past only, current unconfirmed",
+        "authorEvidence": []
+      },
+      {
+        "id": "W016",
+        "split": "holdout",
+        "category": "hypothetical",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제가 만약 운동을 좋아한다면 주말에 자주 나갈 수도 있겠죠.",
+        "expect": [],
+        "reason": "Hypothetical liking, not asserted",
+        "authorEvidence": []
+      },
+      {
+        "id": "W017",
+        "split": "holdout",
+        "category": "hypothetical",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제가 글로 소통하는 걸 선호한다고 가정하고 예문을 만들어 주세요.",
+        "expect": [],
+        "reason": "Assumed preference for requested example",
+        "authorEvidence": []
+      },
+      {
+        "id": "W018",
+        "split": "holdout",
+        "category": "hypothetical",
+        "mode": "withhold",
+        "question": "either",
+        "text": "내가 혼자 하는 게 좋다고 답했다면 결과가 어떻게 달라졌을까요?",
+        "expect": [],
+        "reason": "Counterfactual response",
+        "authorEvidence": []
+      },
+      {
+        "id": "W019",
+        "split": "holdout",
+        "category": "hypothetical",
+        "mode": "withhold",
+        "question": "either",
+        "text": "나중에는 자세한 설명이 좋아질 수도 있지만 지금은 모르겠어요.",
+        "expect": [],
+        "reason": "Possible future only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W020",
+        "split": "holdout",
+        "category": "hypothetical",
+        "mode": "withhold",
+        "question": "either",
+        "text": "언젠가 음악을 좋아하게 될지는 모르겠어요.",
+        "expect": [],
+        "reason": "Uncertain future only",
+        "authorEvidence": []
+      },
+      {
+        "id": "W021",
+        "split": "holdout",
+        "category": "unresolved_domain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 처음에는 짧은 쪽이 좋은데 무엇이 짧아야 하는지 저도 설명하기 어렵네요.",
+        "expect": [],
+        "reason": "Ambiguous domain",
+        "authorEvidence": []
+      },
+      {
+        "id": "W022",
+        "split": "holdout",
+        "category": "unresolved_domain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 그 방식이 더 편해요. 어떤 방식인지 아직 말하지 않았어요.",
+        "expect": [],
+        "reason": "Missing referent",
+        "authorEvidence": []
+      },
+      {
+        "id": "W023",
+        "split": "holdout",
+        "category": "unresolved_domain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제게는 적당한 정도가 좋지만 설명인지 연습인지 아직 정하지 않았어요.",
+        "expect": [],
+        "reason": "Unresolved domain",
+        "authorEvidence": []
+      },
+      {
+        "id": "W024",
+        "split": "holdout",
+        "category": "unresolved_domain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "둘 중 하나를 좋아하는 것 같은데 어느 쪽인지 모르겠어요.",
+        "expect": [],
+        "reason": "Unresolved value",
+        "authorEvidence": []
+      },
+      {
+        "id": "W025",
+        "split": "holdout",
+        "category": "unresolved_domain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 상황에 맞는 방식이 좋아요. 구체적인 기준은 아직 없어요.",
+        "expect": [],
+        "reason": "No supported concrete value",
+        "authorEvidence": []
+      },
+      {
+        "id": "W026",
+        "split": "holdout",
+        "category": "unsupported_condition",
+        "mode": "withhold",
+        "question": "either",
+        "text": "비가 올 때만 저는 혼자 시도하는 게 좋아요.",
+        "expect": [],
+        "reason": "Unsupported restrictive condition must not become general",
+        "authorEvidence": []
+      },
+      {
+        "id": "W027",
+        "split": "holdout",
+        "category": "unsupported_condition",
+        "mode": "withhold",
+        "question": "either",
+        "text": "잠을 네 시간 못 잔 날에만 저는 핵심만 짧게 설명받는 게 좋아요.",
+        "expect": [],
+        "reason": "Unsupported restrictive condition",
+        "authorEvidence": []
+      },
+      {
+        "id": "W028",
+        "split": "holdout",
+        "category": "unsupported_condition",
+        "mode": "withhold",
+        "question": "either",
+        "text": "일요일 오후에만 저는 글로 소통하는 게 편해요.",
+        "expect": [],
+        "reason": "Unsupported restrictive condition",
+        "authorEvidence": []
+      },
+      {
+        "id": "W029",
+        "split": "holdout",
+        "category": "unsupported_condition",
+        "mode": "withhold",
+        "question": "either",
+        "text": "카메라가 꺼져 있을 때만 저는 먼저 의견을 말하는 게 좋아요.",
+        "expect": [],
+        "reason": "Unsupported restrictive condition",
+        "authorEvidence": []
+      },
+      {
+        "id": "W030",
+        "split": "holdout",
+        "category": "unsupported_condition",
+        "mode": "withhold",
+        "question": "either",
+        "text": "오직 집에 있을 때만 저는 자세한 설명을 좋아해요.",
+        "expect": [],
+        "reason": "Unsupported restrictive condition",
+        "authorEvidence": []
+      },
+      {
+        "id": "W031",
+        "split": "holdout",
+        "category": "reported_or_denied",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제가 음악을 좋아한다는 말은 사실이 아니에요. 좋아하는지도 싫어하는지도 아직 모르겠어요.",
+        "expect": [],
+        "reason": "Denies report, not affirmative opposite",
+        "authorEvidence": []
+      },
+      {
+        "id": "W032",
+        "split": "holdout",
+        "category": "reported_or_denied",
+        "mode": "withhold",
+        "question": "either",
+        "text": "누가 제가 혼자 하는 걸 좋아한다고 했는데 그 말을 제 선호로 기록하지 마세요.",
+        "expect": [],
+        "reason": "Unconfirmed report explicitly rejected",
+        "authorEvidence": []
+      },
+      {
+        "id": "W033",
+        "split": "holdout",
+        "category": "reported_or_denied",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제가 계획부터 세우는 걸 좋아한다고 단정할 근거는 없어요.",
+        "expect": [],
+        "reason": "Denial of certainty, not opposite preference",
+        "authorEvidence": []
+      },
+      {
+        "id": "W034",
+        "split": "holdout",
+        "category": "reported_or_denied",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 “글로 의견을 내는 게 편하다”고 말한 적이 없고 제 선호도 아직 정하지 않았어요.",
+        "expect": [],
+        "reason": "Denied quote, current unknown",
+        "authorEvidence": []
+      },
+      {
+        "id": "W035",
+        "split": "holdout",
+        "category": "reported_or_denied",
+        "mode": "withhold",
+        "question": "either",
+        "text": "제가 듣기 연습을 싫어한다는 소문은 확인된 내용이 아니에요.",
+        "expect": [],
+        "reason": "Unconfirmed negative report",
+        "authorEvidence": []
+      },
+      {
+        "id": "W036",
+        "split": "holdout",
+        "category": "fact_not_preference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "어제 음악을 세 시간 들었어요. 좋아해서인지 일 때문인지는 말하지 않았어요.",
+        "expect": [],
+        "reason": "Activity alone does not establish preference",
+        "authorEvidence": []
+      },
+      {
+        "id": "W037",
+        "split": "holdout",
+        "category": "fact_not_preference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "이번 주에 혼자 과제를 끝냈어요. 혼자 하는 걸 선호하는지는 모르겠어요.",
+        "expect": [],
+        "reason": "Observed activity, explicit unknown preference",
+        "authorEvidence": []
+      },
+      {
+        "id": "W038",
+        "split": "holdout",
+        "category": "fact_not_preference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "회의 기록은 글로 남겼지만 소통 방식에 대한 제 선호는 아직 없어요.",
+        "expect": [],
+        "reason": "Activity not preference",
+        "authorEvidence": []
+      },
+      {
+        "id": "W039",
+        "split": "holdout",
+        "category": "fact_not_preference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "예시를 먼저 본 건 필수 절차였고 제가 좋아해서 고른 건 아니에요.",
+        "expect": [],
+        "reason": "Compelled action, not self choice",
+        "authorEvidence": []
+      },
+      {
+        "id": "W040",
+        "split": "holdout",
+        "category": "fact_not_preference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "자료를 자세히 읽으라는 업무 지시를 받았어요. 설명 길이에 대한 취향을 말하는 건 아니에요.",
+        "expect": [],
+        "reason": "Instruction not preference",
+        "authorEvidence": []
+      }
+    ]
+  }
+}

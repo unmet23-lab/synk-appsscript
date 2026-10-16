@@ -1,7 +1,7 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-7 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-8 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
@@ -9,8 +9,9 @@ const Previous4 = require('./member-statement-v4.cjs');
 const Previous5 = require('./member-statement-v5.cjs');
 const Previous6 = require('./member-statement-v6.cjs');
 const Previous7 = require('./member-statement-v7.cjs');
+const Previous8 = require('./member-statement-v8.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-8';
+const PARSER_VERSION = 'member-statement-ko-9';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -78,9 +79,9 @@ function phrase(body, condition) {
 function expanded(quote) {
   let body=quote.replace(/\s/gu,'').replace(/(?:지만|는데)$/u,'');
   if(/["“”‘’]/u.test(body)||/(?:라고|다고)(?:했|말|들)/u.test(body))return null;
-  if(/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body))return null;
+  if(/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|다른분|그녀|그|너|당신)(?:은|는|이|가)/u.test(body))return null;
   if(/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(body))return null;
-  body=body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u,'').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u,'');
+  body=body.replace(/^(?:저는|나는|제가|내가|제경우에는|내경우에는)/u,'').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u,'');
   let condition=null;
   const prefixes=[['first-try',/^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u],['familiar',/^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u],['busy',/^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
   for(const [id,re] of prefixes)if(re.test(body)){condition=id;body=body.replace(re,'');break;}
@@ -132,7 +133,7 @@ const CONDITION_PREFIXES = [
   ['first-try', /^(?:처음(?:시도|시작|연습|학습|공부|도전|경험)하는|처음해보는)(?:때|상황)(?:에는|에서는|라면|는)/u],
   ['familiar', /^(?:(?:내용|일|작업|과제)(?:이|가))?익숙할때(?:에는|라면|는)/u],
   ['familiar', /^(?:같은)?익숙한(?:상황|내용|일|작업)(?:에서는|이라면|에는|일때는)/u],
-  ['busy', /^바쁠때(?:라면|에는|는)/u],
+  ['busy', /^바쁠때(?:라면|에는|에도|는|도)/u],
   ['meeting', /^회의(?:를)?(?:하는|할)(?:때|상황)(?:에는|에서는|는)/u],
   ['planning', /^(?:일|업무|작업)(?:을)?계획하는(?:상황|때)(?:에서는|에는|는)/u],
   ['decision', /^(?:결정|판단|선택)(?:을)?하는(?:때|상황)(?:에는|에서는|는)/u],
@@ -377,8 +378,21 @@ function recognizeAction(body,condition) {
   const known=phrase(parsed.action+'좋아',condition);
   return known&&!parsed.habitual?{meanings:[{...known,polarity:parsed.polarity}]}:null;
 }
+function selfSurface(quote) {
+  // 전 is a first-person contraction only at a lexical subject boundary.
+  // Keep temporal 전/전에는 and nouns such as 전기 untouched.
+  let surface=quote.replace(/^전\s+/u,'저는 ').replace(/^난\s+/u,'나는 ').replace(/(때(?:는)?|에서는|에는|다음에는)\s+전\s+/gu,'$1 저는 ');
+  // Preserve accepted unspaced Korean only when the entire following action
+  // is independently licensed. A suffix starting in particles cannot turn
+  // the noun 난이도 into a subject contraction.
+  if(/^난\S/u.test(surface)){
+    const stance=composeStance(surface.slice(1).replace(/\s/gu,'')),units=stance&&phraseUnits(stance.action,true);
+    if(units?.length&&units[0].tag!=='particle'&&composeMeaning(phraseUnits(stance.action),stance.nominalHead))surface='나는'+surface.slice(1);
+  }
+  return surface;
+}
 function normalizePrefix(quote) {
-  let body = quote.replace(/\s/gu, '').replace(/(?:지만|는데)$/u, '').replace(/좋고$/u,'좋아요').replace(/좋아하고$/u,'좋아해요').replace(/편하고$/u,'편해요').replace(/즐겁고$/u,'즐거워요').replace(/싫$/u,'싫어요').replace(/(?:좋아하|선호하)$/u,s=>s.slice(0,-1)+'해').replace(/할땐/gu,'할때는').replace(/배울땐/gu,'배울때는');
+  let body = selfSurface(quote).replace(/\s/gu, '').replace(/(?:지만|는데)$/u, '').replace(/좋고$/u,'좋아요').replace(/좋아하고$/u,'좋아해요').replace(/편하고$/u,'편해요').replace(/즐겁고$/u,'즐거워요').replace(/싫$/u,'싫어요').replace(/(?:좋아하|선호하)$/u,s=>s.slice(0,-1)+'해').replace(/할땐/gu,'할때는').replace(/배울땐/gu,'배울때는');
   if(/좋지만\s*$/u.test(quote))body=body.replace(/좋$/u,'좋아요');
   if(/일이지만\s*$/u.test(quote))body=body.replace(/일이$/u,'일이에요');
   body=body.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u,m=>({좋아하며:'좋아해요',선호하고:'선호해요',선호하며:'선호해요',원하고:'원해요',원하며:'원해요',편하며:'편해요',싫고:'싫어요',관심이있고:'관심있어요',관심이많고:'관심많아요',원하지않고:'원하지않아요',선호하지않고:'선호하지않아요',좋아하지않고:'좋아하지않아요'}[m]))
@@ -386,11 +400,12 @@ function normalizePrefix(quote) {
     .replace(/관심이많$/u,'관심이많아요').replace(/관심이없$/u,'관심이없어요').replace(/좋아하$/u,'좋아해요')
     .replace(/((?:원|좋아|선호)하지)않$/u,'$1않아요').replace(/좋아하$/u,'좋아해요').replace(/좋아하는$/u,'좋아해요');
   body=body.replace(/좋(?:아하)?고요$/u,s=>s.startsWith('좋아')?'좋아해요':'좋아요').replace(/싶고$/u,'싶어요').replace(/을땐/gu,'을때는').replace(/^(?:저라면|나라면)/u,'');
-  body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, '').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, '');
-  body=body.replace(/^(?:저는|나는|난|제가|내가)/u,'');
+  body = body.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, '').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, '');
+  body=body.replace(/^(?:저는|나는|제가|내가)/u,'');
   let condition = null;
   for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) { condition = id;body = body.replace(prefix, '');break; }
   body=body.replace(/^,+/u,'');
+  if(condition)body=body.replace(/^(?:저는|나는|제가|내가)(?=,|$)/u,'');
   if(['first-try','familiar','busy'].includes(condition)){
     const after=/^(?:예시|예제|샘플)(?:를|을|도|까지|부터)?(?:먼저|이미|한번)?(?:본|보고난|확인한|확인하고난)(?:뒤|후|다음|상태|이후)(?:라면|에는|에도|엔|에서는|의작업은)/u.exec(body);
     if(after){condition+='-after-example';body=body.slice(after[0].length);}
@@ -403,10 +418,13 @@ function normalizePrefix(quote) {
 // final action governed by an explicit wish receives this morphology rewrite;
 // embedded negation, subject and context words remain for full consumption.
 function surfaceDeclaration(quote) {
-  let body=quote.replace(/\s/gu,'');
+  let body=selfSurface(quote).replace(/\s/gu,'');
   // Explicit discourse connectives and inflected stance endings carry no new
   // actor, condition or value. Keep the rest of each clause fully consumed.
   body=body.replace(/^(?:그와별개로|그것과별개로|그렇지만|반대로)(?!는|도)/u,'')
+    .replace(/^(?:상황과관계없이|일과별개로|별개로|정확히말하면)/u,'')
+    .replace(/(?:즐기고|즐기며|즐기는편이에요)$/u,'즐겨요')
+    .replace(/싫어하고$/u,'싫어요').replace(/흥미가있고$/u,'흥미가있어요')
     .replace(/(?:원치않고|원치않으며)$/u,'원하지않고')
     .replace(/원치않(?:아요|습니다|아|는다)$/u,'원하지않아요')
     .replace(/(?:좋으며|좋아하며)$/u,'좋아하고').replace(/마음에들고$/u,'마음에들어요')
@@ -492,7 +510,7 @@ function natural(quote) {
   if(coordinated){
     const first=natural(coordinated[1]+coordinated[3]),second=natural(coordinated[2]+coordinated[3]);
     if(first?.meanings.length===1&&second?.meanings.length===1&&!first.uncertain&&!second.uncertain){
-      const secondGeneral=/^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
+      const secondGeneral=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
       return {meanings:[...first.meanings.map(m=>({...m,condition:m.condition||condition})),...second.meanings.map(m=>({...m,condition:m.condition||(secondGeneral?null:condition)}))]};
     }
   }
@@ -604,7 +622,7 @@ const COMPOSE_LEXICON = [
   ['multiple', /^(?:여러일을맡아도)/u], ['process-frame', /^처리방식/u],
   ['grasp', /^(?:잡기|잡는)/u],
   ['on', /^(?:켜두기|켜두는)/u], ['sit', /^(?:앉아있는|앉아있기)/u], ['stuck', /^막막하게/u],
-  ['look', /^(?:살펴서)/u], ['data', /^(?:자료에있는근거)/u],
+  ['look', /^(?:찾기|살펴서|구경(?:하는|하기|하고))/u], ['data', /^(?:자료에있는근거)/u],
   ['communicate', /^(?:대화에참여하는|대화에참여하기)/u],
   ['reason-effect', /^이해하기/u],
   ['topic-frame', /^(?:다루(?:는|기|면)|다뤄주는|다뤄줬으면|주제로|중심으로)/u],
@@ -693,7 +711,7 @@ const COMPOSE_LEXICON = [
   ['make', /^(?:정해(?:두|놓)(?:는|기|고)|만들어(?:두|놓)(?:는|기|고)|세워(?:두|놓)(?:는|기|고)|세우기|세우는|세우고|짜(?:두|놓)(?:는|기|고)|짜기|짜는|짜고|만들기|만드는|만들고|잡아(?:주|놔|두)(?:는|기|야)|잡기|잡는|잡고)/u],
   ['try', /^(?:해볼수있는|부딪쳐보는|부딪쳐보기|부딪쳐보고|해보면서|해보는|해보기|해보고|시도해보는|시도해보기|실행해보는|실행해보기)/u],
   ['finish', /^(?:끝내기|끝내는|끝내고|끝낸)/u], ['adjust', /^(?:고쳐나가는|고쳐나가기|고쳐가기|고쳐가는|고치기|고치는|다듬어가기|다듬어가는|바꿔가기|바꿔가는)/u],
-  ['decide', /^(?:내리기|내리는|고르기|고르는|고르고|정하기|정하는|정하고|정하며)/u], ['choose', /^(?:골라서|골라|택하고)/u], ['check', /^(?:찾아보기|찾아보는|찾아보고|따져보기|따져보는|따져보고|따져)/u],
+  ['decide', /^(?:내리기|내리는|고르기|고르는|고르고|정하기|정하는|정하고|정하며)/u], ['choose', /^(?:골라서|골라|택하고)/u], ['check', /^(?:따져서|찾아보기|찾아보는|찾아보고|따져보기|따져보는|따져보고|따져)/u],
   ['explain', /^(?:알려주기|알려주는|알려주면|전해주는|설명해주기|설명해주는|풀어주기|풀어주는|짚어주는)/u], ['show', /^(?:보여주기|보여주는|보여주면)/u],
   ['exchange', /^(?:주고받아야|주고받기|주고받는|주고받고|나눠|나누는|나누고)/u], ['flow', /^(?:이어가는|이어가기|이어서|이어지는|이어지기|흐름)/u],
   ['cut', /^(?:끊는|끊기)/u], ['omit', /^(?:생략하기|생략하는)/u], ['or', /^(?:거나)/u],
@@ -709,8 +727,8 @@ const COMPOSE_LEXICON = [
   ['only', /^(?:만)/u], ['means', /^(?:하는법|법)/u], ['nominal', /^(?:것|거|방식|식|쪽|편)/u],
   ['before-start', /^(?:착수하기전|시작하기전|벌이기전)/u],
   ['explanation-purpose', /^(?:결론이어떻게나왔는지|왜그런지)/u],
-  ['selfcase', /^(?:제가|내가|저는|나는|난)/u], ['and', /^(?:그리고|또한|또|및)/u],
-  ['particle', /^(?:에서는|으로는|로는|자체는|에게|한테|에서|으로|위주로|이랑|끼리|랑|와|과|나|의|을|를|은|는|이|가|로|에|도|들|씩)/u],
+  ['selfcase', /^(?:제가|내가|저는|나는)/u], ['and', /^(?:그리고|또한|또|및)/u],
+  ['particle', /^(?:에서는|으로는|로는|자체는|까지|에게|한테|에서|으로|위주로|이랑|끼리|랑|와|과|나|의|을|를|은|는|이|가|로|에|도|들|씩)/u],
   ['first', /^부터/u],
   ['sequence', /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
   ['neutral', /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
@@ -736,17 +754,17 @@ function phraseUnits(action,keepSurface=false) {
 }
 function composeMeaning(tags,nominalHead) {
   const words=tags.filter(tag=>!['nominal','means','method'].includes(tag)).join(' '), match=pattern=>pattern.test(words), out=(field,value)=>({field,value});
-  if(match(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u))return out('communication','listen-organize');
+  if(match(/^(?:person )?(?:(?:opinion|speech) )?(?:first )?listen (?:(?:opinion|speech) )?organize$/u))return out('communication','listen-organize');
   if(match(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u))return out('communication','share-first');
-  if(match(/^(?:text (?:opinion )?|opinion text )(?:communicate|write|send|organize|speak)(?: send|exchange)?$/u))return out('communication','written');
+  if(match(/^(?:text (?:opinion )?|opinion text )(?:communicate|write|send|organize|speak|explain)(?: send|exchange)?$/u))return out('communication','written');
   if(match(/^speech (?:opinion )?(?:communicate|speak|send)$/u))return out('communication','spoken');
-  if(match(/^(?:before-start )?(?:first )?plan (?:first )?make(?: start)?$/u))return out('work-style','plan-first');
+  if(match(/^(?:before-start )?(?:first )?plan (?:first )?(?:make|grasp)(?: start)?$/u))return out('work-style','plan-first');
   if(match(/^(?:first )?(?:small )?(?:try|start)(?: later| mismatch)? adjust$/u))return out('work-style','try-adjust');
   if(match(/^one (?:task )?(?:focus|process|finish)(?: next (?:task )?(?:do|process))?$/u))return out('work-style','single-task');
   if(match(/^(?:task )?priority (?:first )?(?:make|decide|process)(?: process)?$|^important task first (?:process|finish|do)$|^important task identity rank(?: order)? process$/u))return out('work-style','prioritize');
   if(match(/^data (?:(?:and )?data )?(?:first )?(?:check|look|reference)(?: decide)?$|^data basis decide$/u))return out('decision','evidence');
   if(match(/^options (?:options )?(?:compare|check)(?: decide)?$/u))return out('decision','compare-options');
-  if(match(/^experience (?:reference|look)(?: decide)?$|^(?:experience-verb|try) decide$/u))return out('decision','experience');
+  if(match(/^experience (?:(?:reference|look|basis) )?decide$|^experience (?:reference|look)(?: decide)?$|^(?:experience-verb|try) decide$/u))return out('decision','experience');
   if(match(/^(?:person )?(?:first )?(?:opinion exchange )?consult(?: decide)?$|^person opinion listen decide$/u))return out('decision','consult');
   if(match(/^(?:explanation )?(?:content first )?overview first (?:look|show|know|listen|make)$/u))return out('explanation-detail','overview-first');
   if(match(/^(?:explanation-purpose )?(?:reason|data)(?: (?:and )?(?:reason|data))? detail (?:know|listen|look|explain)$/u))return out('explanation-detail','reasons-detail');
@@ -818,14 +836,14 @@ function composeRoles(units,nominalHead) {
     ['cooking','cooking make do learn self eat','cooking'],['photography','photo capture enjoyment-reason','photo'],['games','game do','game'],
     ['nature','nature inquiry look do enjoy','nature'],['travel-planning','travel route plan make do route-inquiry','travel'],['travel-food','travel cooking decide order do learn restaurant know method inquiry','travel'],
     ['travel-stay','travel stay inquiry stay-verb know look decide reserve','stay'],['career-interview','interview do practice-verb method-inquiry know','interview'],
-    ['career-planning','career inquiry task possibility explore plan do know choose','career'],['content-video','video make do','video'],
-    ['content-design','design design-example similarity make do','design'],['ai-tools','ai inquiry use possibility know learn','ai'],
+    ['career-planning','career inquiry task possibility explore plan make do know choose','career'],['content-video','video make do','video'],
+    ['content-design','design design-example similarity make do','design'],['ai-tools','ai inquiry use write possibility know learn','ai'],
     ['work-collaboration','task together do person collaboration method know','collaboration']
   ];
   // A declared interest can be expressed as wanting to learn about a topic.
   // Content nouns and learning verbs are licensed only inside topic frames;
   // they are never globally discarded from an action or somebody's speech.
-  for(const [value,licensed,anchor]of topicFrames){const enough=value==='travel-planning'?has('travel')&&any('route','plan'):value==='travel-food'?all('travel','cooking'):value==='travel-stay'?all('travel','stay'):has(anchor);frame('topic',value,licensed+' opinion content topic-frame learn know',enough);}
+  for(const [value,licensed,anchor]of topicFrames){const enough=value==='travel-planning'?has('travel')&&any('route','plan'):value==='travel-food'?all('travel','cooking'):value==='travel-stay'?has('stay'):has(anchor);frame('topic',value,licensed+' opinion content topic-frame learn know',enough);}
   return matches.length===1?matches[0]:null;
 }
 const COMPOSE_STANCES=[
@@ -877,12 +895,12 @@ const COMPOSE_FRAMES=[
   [/^어느쪽을고를지,?/u,['decision'],''],
   [/^설명을들을때(?:는)?/u,['explanation','explanation-detail'],'설명'],
   [/^(?:배울때(?:는)?|공부할때(?:는)?|학습할때(?:는)?)/u,['practice-mode'],'연습'],
-  [/^(?:대화를나눌때(?:는)?|소통할때(?:는)?)/u,['communication'],''],
+  [/^(?:대화를(?:나눌|할)때(?:는)?|대화초반에|소통할때(?:는)?)/u,['communication'],''],
   [/^(?:이야기|대화)(?:를)?시작하면/u,['communication'],''],
   [/^(?:도와줄거면|도움을받을때(?:는)?|도움을받을땐|시도할때(?:는)?)/u,['support'],''],
   [/^(?:연습할때|연습은|연습을)/u,['practice-mode'],'연습'],
   [/^설명(?:분량)?(?:은|에서|을)/u,['explanation','explanation-detail'],'설명'],
-  [/^판단(?:은|을)/u,['decision'],''],
+  [/^(?:판단|선택)(?:은|을)/u,['decision'],''],
   [/^(?:평소)?소통에서는|^생각을전달할때/u,['communication'],'']
 ];
 // A declaration can contain a supported action inside harmless explanation
@@ -991,9 +1009,17 @@ function declaredCore(action,{polarity,habitual},condition,fields,source) {
   return {meanings:unique};
 }
 function compositional(quote) {
+  const nominalSubject=/^([^\s]+?)(?:은|는|이|가|도)\s/u.exec(quote.trim());
+  if(nominalSubject&&normalizePrefix(surfaceDeclaration(nominalSubject[0])).body&&!/^(?:저|나|제|내)$/u.test(nominalSubject[1])){
+    const head=phraseUnits(nominalSubject[1],true);
+    // A complete leading noun cannot consist solely of discarded particles
+    // or a possessive (제도/의도). Do not expose a later known topic by
+    // silently deleting that head; source token boundaries remain evidence.
+    if(head?.length&&head.every(x=>['particle','mine','selfcase'].includes(x.tag)))return null;
+  }
   let {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   body=surfaceDeclaration(body);
-  body=body.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u,'').replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u,'');
+  body=body.replace(/^(?:저는|나는|제가|내가|제경우엔|내경우엔)(?:요)?/u,'').replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u,'');
   let fields=null,head='';
   const ownedExplanation=/^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(body);
   if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
@@ -1061,7 +1087,11 @@ function compositional(quote) {
   }
   const variants=[...actions.map(a=>head+a.replace(/^한꺼번에말고/u,'')),head+normalized.action];
   const recognized=[];
-  for(const variant of new Set(variants)){const units=phraseUnits(variant);if(!units)continue;const m=composeMeaning(units,normalized.nominalHead);if(m)recognized.push(m);}
+  for(const variant of new Set(variants)){const units=phraseUnits(variant);if(!units)continue;
+    // A named decision frame binds an otherwise generic final 'do' to that
+    // decision. Do not rewrite syllables inside verbs such as 참고하는.
+    const roles=fields?.length===1&&fields[0]==='decision'&&units.at(-1)==='do'&&units.includes('data')?[...units.slice(0,-1),'decide']:units;
+    const m=composeMeaning(roles,normalized.nominalHead);if(m)recognized.push(m);}
   if(!recognized.length){
     const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
     // Coordinated clauses may share their final preference predicate. Each
@@ -1097,7 +1127,7 @@ function coordinatedDeclaration(quote,depth=0,work={remaining:128,cache:new Map(
   if(excludedOrigin(body)||relativePersonClause(body)||CLAUSE_UNSAFE.test(body))return null;
   const normalized=composeStance(body);if(!normalized||normalized.habitual)return null;
   let action=normalized.surfaceAction.replace(/(?:(?:저는|나는|제가|내가)?(?:둘다|모두)|(?:둘다|모두)(?:저는|나는|제가|내가)?)$/u,'').replace(/,+$/u,'');
-  action=normalizeActionPhrase(action).surfaceAction;
+  action=normalizeActionPhrase(action).surfaceAction.replace(/(?:에는|에도|에)$/u,'');
   const ending=normalized.polarity==='avoid'?'선호하지않아요':'좋아요';
   const read=part=>{
     if(work.remaining--<=0)return null;
@@ -1121,6 +1151,8 @@ function coordinatedDeclaration(quote,depth=0,work={remaining:128,cache:new Map(
   // an unmarked action sequence is handled separately and never negated twice.
   const nominal=[...action.matchAll(/(?:것|거|방식|시간|활동|쪽|일)도,?|기도,?/gu)];
   if(nominal.length){let start=0;const parts=[];for(const m of nominal){parts.push(action.slice(start,m.index)+(m[0].startsWith('기도')?'기':''));start=m.index+m[0].length;}parts.push(action.slice(start));const found=combine(parts);if(found)return found;}
+  const additiveSurface=sourceSurface(quote,action);
+  if(/도(?:\s|,)/u.test(additiveSurface)){const found=combine(additiveSurface.split(/도(?:\s+|,\s*)/u).map(x=>x.replace(/\s/gu,'')));if(found)return found;}
   if(action.includes(',')){const found=combine(action.split(','));if(found)return found;}
   const links=[...action.matchAll(/뿐아니라|이랑|랑|와|과|및/gu)];
   if(links.length>8)return null;
@@ -1169,37 +1201,114 @@ function focusedContrast(quote) {
 function universalAside(body) {
   return /^(?:[가-힣]{1,20}(?:이|가|은|는))?(?:무엇이든|뭐든|어떤것이든|어느것이든)(?:지)?$/u.test(body);
 }
-function pendingScopeAside(body) {
+function sourceSurface(whole,part,tail=false) {
+  const positions=[];let compact='';for(let i=0;i<whole.length;i++)if(!/\s/u.test(whole[i])){compact+=whole[i];positions.push(i);}
+  const start=compact.indexOf(part);return start<0?part:whole.slice(positions[start],tail?whole.length:positions[start+part.length-1]+1);
+}
+function adjunctHasActor(body,surface=body) {
+  if(!/\s/u.test(surface))return unresolvedSubject(body);
+  // Use case particles at lexical boundaries, not an 이/는 inside a noun or
+  // inflected verb. Object phrases and nominalized processes are not actors.
+  const tokens=surface.trim().split(/\s+/u);
+  for(let i=0;i<tokens.length;i++){
+    const word=tokens[i].replace(/[,()]/gu,'');
+    if(/(?:을|를)$/u.test(word))continue;
+    if(/(?:께서는|께서)$/u.test(word))return true;
+    if(word==='수는'&&/^(?:알|할|될|볼|읽을|들을|느낄|지킬|찾을|받을|줄일)$/u.test(tokens[i-1]||'')&&/^(?:있|없)/u.test(tokens[i+1]||''))continue;
+    if(/려는$/u.test(word)&&/^(?:게|것이)$/u.test(tokens[i+1]||'')&&/^아니라[,)]?$/u.test(tokens[i+2]||''))continue;
+    const subject=/^(.+?)(?:은|는|이|가)$/u.exec(word);if(!subject)continue;
+    const head=subject[1];
+    if(phraseUnits(normalizeActionPhrase(head).action)||new RegExp('^'+PURPOSE_OBJECT+'$','u').test(head))continue;
+    // Scan the entire adjunct: a recognized object or non-agent topic does
+    // not license ignoring a later subject ("책을 민수는 읽으니까"). A
+    // nominalized process licenses its own verb, not an arbitrary -는 name.
+    if(/^(?:과정|활동|시간|답|결과|사실|차이|막막함|납득|속도)$/u.test(head))continue;
+    if(/^(?:상상|생각|확인|이해|설명|비교|판단|정리|연결|기억|집중)하는$/u.test(word)&&/^(?:과정|활동|시간|답|결과|사실)(?:이|가|은|는)$/u.test(tokens[i+1]||''))continue;
+    if(/^(?:과정|활동|시간|답|결과|사실|상태|점)(?:이|가|은|는|니까|때문|$)/u.test(tokens[i+1]||'')){
+      const nominal=word.replace(/(?:은|는)$/u,'기').replace(/(?:한|할)$/u,'하기');
+      if(phraseUnits(nominal)||word==='있다는'&&tokens[i-1]==='수')continue;
+    }
+    return true;
+  }
+  return false;
+}
+function neutralAside(body) {
+  if(/["“”‘’「」『』]/u.test(body)||/(?:좋아|싫어|선호|원하|원해|원치|관심|취향|취소|철회|없던일)/u.test(body))return false;
+  return /(?:려는|고자하는)(?:뜻|의미|의도|목적)(?:은|는)?아니(?:고|지만|에요|예요|다|라고요)$/u.test(body)
+    ||/해달라는(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요|예요)$/u.test(body)
+    ||/(?:야한다는|야된다는)(?:부담|의무)(?:은|는)?없(?:어요|습니다)$/u.test(body)
+    ||/(?:해야만).+수있다고생각하지(?:는)?않(?:아요|습니다)$/u.test(body)
+    ||/(?:가치|의미)(?:를|을)(?:낮게|작게)(?:보는|평가하는)(?:건|것은)아니(?:지만|고|에요)$/u.test(body);
+}
+function discourseAside(quote,segments) {
+  const meanings=segments.flatMap(s=>s.meanings||[]);if(!meanings.length)return false;
+  const body=quote.replace(/\s/gu,'');if(neutralAside(body))return true;
+  // A completed declaration may be followed by its reason rather than a new
+  // preference. Preserve correction, quotation, agency and scope blockers.
+  if(!/(?:좋아|싫|선호|원하|원해|원치|싶|관심|취향|취소|철회|[“”"‘’])/u.test(body)){
+    const reason=body.replace(/^그래야/u,'').replace(/(?:라는|다는)점때문(?:이에요|입니다)$/u,'어서')
+      .replace(/되거든요$/u,'돼서').replace(/(?:어서|아서|해서|워서|니까)요$/u,m=>m.slice(0,-1));
+    if(reason!==body&&clauseAdjunct(reason,false,sourceSurface(quote,body)))return true;
+  }
+  // A restatement is redundant only when the independently parsed action,
+  // polarity and supported scope agree with a previously understood claim.
+  const restatement=/^(.+?)(?:(?:방식|방법|쪽)(?:을|를)말하는(?:거예요|것이에요)|(?:좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:이에요|입니다))$/u.exec(body);
+  if(restatement&&!CLAUSE_UNSAFE.test(restatement[1])){
+    const declaration=restatement[1]+'좋아요',found=natural(declaration)||expanded(declaration)||compositional(declaration);
+    if(found?.meanings?.length&&found.meanings.every(m=>meanings.some(p=>p.field===m.field&&p.value===m.value&&p.polarity===m.polarity&&p.condition===m.condition)))return true;
+  }
+  if(/^한쪽으로만하지않고(?:두가지|둘)(?:를|을)?(?:함께|같이)연습하고싶어요$/u.test(body)&&meanings.at(-1)?.field==='practice-mode'&&meanings.at(-1)?.value==='mixed'&&meanings.at(-1)?.polarity==='prefer')return true;
+  if(/^(?:두|둘|세|여러)(?:방식|취향|사람|의취향|가지)(?:을|를)?(?:같은(?:선호|것)(?:으?로)?|같게)(?:묶|적)(?:고싶지|고싶지는)않아요$/u.test(body))return meanings.length>=2||segments.some(s=>['other','quotation'].includes(s.unresolved?.reason));
+  if(/^어느한쪽만(?:편하|좋|싫)다고말하는(?:건|것은)아니에요$/u.test(body))return meanings.length>=2&&meanings.every(m=>m.polarity===meanings[0].polarity);
+  const denial=/^(?:그렇다고)?(.+?)(싫어한다는|좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요)$/u.exec(body);
+  if(denial){const action=denial[1].replace(/핵심개요/gu,'전체개요'),ending={싫어한다는:'싫어요',좋아한다는:'좋아해요',선호한다는:'선호해요',원한다는:'원해요'}[denial[2]],found=natural(action+ending)||expanded(action+ending)||compositional(action+ending);return !!found?.meanings?.length&&!found.uncertain&&found.meanings.every(m=>!meanings.some(prior=>prior.field===m.field&&prior.value===m.value&&prior.polarity===m.polarity));}
+  return false;
+}
+function pendingScopeAside(body,surface=body) {
   // An inset can explain a yet-unspoken preference, but cannot contribute a
   // preference, actor or scope of its own. Unknown insets remain unresolved.
   body=body.replace(/^,+|,+$/gu,'');
+  if(/아니$/u.test(body)&&/아니지만\s*$/u.test(surface))body+='지만';
   if(!body)return true;
-  if(universalAside(body)||explanatoryAside(body,{meanings:[{}]}))return true;
+  if(universalAside(body)||neutralAside(body)||explanatoryAside(body,{meanings:[{}]}))return true;
+  if(clauseAdjunct(body,false,surface))return true;
+  // A complete fact followed by "apart from that fact" closes its subject;
+  // that subject does not become the actor of the following main clause.
+  if(!/["“”‘’「」『』]/u.test(body)&&!/(?:좋아|싫어|선호|원하|원해|취소|철회|만약|라면|다면)/u.test(body)&&/(?:있다는|없다는)사실(?:과|과는)(?:별개로|관계없이)$/u.test(body))return true;
   if(excludedOrigin(body)||OTHER_PERSON_SUBJECT.test(body)||relativePersonClause(body)
     ||/(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(body))return false;
   // Reuse the existing subject/action grammar. A new unknown actor cannot
   // disappear just because its predicate uses an explanatory connective.
-  if(unresolvedSubject(body.replace(/려는(?:게|것이)아니라$/u,'려고')))return false;
+  if(adjunctHasActor(body.replace(/려는(?:게|것이)아니라$/u,'려고'),surface))return false;
   // Finite objective reasons/concessions and denied purposes are adjuncts,
   // not independent assertions. Keep the condition until a main clause wins.
   return /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(body);
 }
-function clauseAdjunct(prefix, explicitSelf) {
+function clauseAdjunct(prefix, explicitSelf, surface=prefix) {
   if(!prefix||prefix.length>300||/(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(prefix))return false;
-  if(/(?:때만|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만|경우라면|상황이라면)/u.test(prefix)||OTHER_PERSON_SUBJECT.test(prefix))return false;
-  const purpose=/(?:려고|기위해|기위해서|지않도록|수있도록|수있게)$/u.test(prefix);
-  const reason=/(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서)$/u.test(prefix);
+  if(/(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(prefix)||OTHER_PERSON_SUBJECT.test(prefix))return false;
+  const purpose=/(?:려고|기위해|기위해서|지않도록|지않게|수있도록|수있게|(?:놓치|빠뜨리|잊|헷갈리)지않으려면)$/u.test(prefix);
+  const reason=/(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서|돼서)$/u.test(prefix);
   const concession=/(?:더라도|어도|아도|여도|워도|러도)$/u.test(prefix);
   if(!purpose&&!reason&&!concession)return false;
   if(explicitSelf)return true;
   // Without an explicit new self subject, an unknown topical actor survives.
   // An ordinary objective phrase ending in a purpose is not a new subject.
-  if(!/^(?:제가|내가|제|내)/u.test(prefix)&&unresolvedSubject(prefix)&&!purpose&&!/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(prefix))return false;
+  if(!/^(?:제가|내가)/u.test(prefix)&&adjunctHasActor(prefix,surface)&&!/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(prefix))return false;
   if(/^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(prefix)&&!/^시간|^내용|^설명|^생각|^기억|^의견/u.test(prefix))return false;
   return true;
 }
 function structuredDeclaration(quote,depth=0) {
   if(depth>3)return null;
+  const brackets=[...quote.matchAll(/\(([^()]*)\)/gu)];
+  if(brackets.length&&brackets.length<=3&&brackets.every(m=>neutralAside(m[1].replace(/\s/gu,''))||clauseAdjunct(m[1].replace(/\s/gu,''),false,m[1]))){const main=quote.replace(/\([^()]*\)/gu,'');return natural(main)||expanded(main)||compositional(main)||structuredDeclaration(main,depth+1);}
+  // An explanatory inset can interrupt a single nominal subject and its
+  // predicate. Rejoin the grammatical skeleton only after fully checking
+  // every inset; the original evidence span and its outer scope are retained.
+  const commas=quote.split(',');
+  if(commas.length===3&&/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(commas[0])&&clauseAdjunct(commas[1].replace(/\s/gu,''),false,commas[1])){
+    const main=commas[0]+commas[2],found=natural(main)||expanded(main)||compositional(main)||structuredDeclaration(main,depth+1);if(found)return found;
+  }
   const {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   if(CLAUSE_UNSAFE.test(body)||OTHER_PERSON_SUBJECT.test(body)||relativePersonClause(body))return null;
   const read=part=>{
@@ -1214,10 +1323,10 @@ function structuredDeclaration(quote,depth=0) {
   // A finite reason, purpose or concession ends before the main declaration.
   // Try the longest boundaries first so a dependent conditional within the
   // reason cannot masquerade as the declaration's scope.
-  const adjuncts=[...body.matchAll(/(?:기위해서|기위해|지않도록|수있도록|수있게|더라도|려고|니까|어서|아서|해서|여서|워서|러서|라서|어도|아도|여도|워도|러도)/gu)];
+  const adjuncts=[...body.matchAll(/(?:기위해서|기위해|지않도록|지않게|수있도록|수있게|더라도|려고|니까|어서|아서|해서|여서|워서|러서|라서|어도|아도|여도|워도|러도)/gu)];
   if(adjuncts.length<=12)for(const boundary of adjuncts.reverse()){
     const end=boundary.index+boundary[0].length,prefix=body.slice(0,end),rest=body.slice(end).replace(/^,+/u,'');
-    if(!rest||!clauseAdjunct(prefix,/^(?:저는|나는|제가|내가)/u.test(rest)))continue;
+    if(!rest||!clauseAdjunct(prefix,/^(?:저는|나는|제가|내가)/u.test(rest),sourceSurface(quote,prefix)))continue;
     // A fully asserted preference inside the causal arm is not disposable
     // background. The existing same-meaning causal path resolves it first.
     const stated=/^(.*?)(좋아해서|선호해서|좋아서|편해서)$/u.exec(prefix);
@@ -1268,21 +1377,27 @@ function excludedOrigin(body) {
   // other people here. A plural -이 clause may instead modify the topic
   // ("팀원들이 함께 일하는 협업 방식에 관심…"); complete existing grammar
   // can recognise that, while the loose semantic fallback rejects its agency.
-  if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(body)) return 'other';
-  if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return 'past';
+  if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|다른분|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(body)) return 'other';
+  if (/(?:예전|과거|전에는|옛날|어렸을때|어릴때|즐겼|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return 'past';
   if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return 'sensitive';
   // A recognised factual scope such as familiar material is different from
   // imagining a preference. Unknown conditional clauses remain withheld.
   const scoped=normalizePrefix(surfaceDeclaration(body));
-  if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition?scoped.body:surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u,''))) return 'hypothetical';
+  const hypotheticalBody=(scoped.condition?scoped.body:surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u,'')).replace(/상상하는(?=과정|활동|시간)/gu,'');
+  if (/(?:만약|라면|다면|가정하|상상하)/u.test(hypotheticalBody)) return 'hypothetical';
   return null;
 }
 function pieces(text) {
-  const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu;let start=0, match;
+  const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:즐기고|즐기며|싫어하고|흥미가\s*있고|선호하더라도|마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu;let start=0, match;
   const push = end => { while(start<end&&/\s/u.test(text[start]))start++;while(end>start&&/\s/u.test(text[end-1]))end--;if(end>start)result.push({start,end,quote:text.slice(start,end)}); };
   while((match=separator.exec(text))){
     if(match[0]===','&&/^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(text.slice(match.index+1)))continue;
     if(match[0]===','){
+      const head=text.slice(start,match.index);
+      if(/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(head))continue;
+      const inset=head.split(',');
+      if(inset.length===2&&/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(inset[0])&&clauseAdjunct(inset[1].replace(/\s/gu,''),false,inset[1]))continue;
+      if(/기\s*$/u.test(head)&&/^[^.!?;\n]*(?:좋아|선호|관심|싫)/u.test(text.slice(match.index+1)))continue;
       const scope=normalizePrefix(surfaceDeclaration(text.slice(start,match.index)));
       if(scope.condition&&(!scope.body||universalAside(scope.body.replace(/^,+/u,''))))continue;
     }
@@ -1299,10 +1414,18 @@ function pieces(text) {
     if(match[0]===','&&(/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(text.slice(start,match.index))||/^\s*(?:둘\s*다|모두)/u.test(text.slice(match.index+1))))continue;
     // -고 is not an assertion boundary when it continues into a desiderative
     // or a metalinguistic choice such as "좋고 싫고를 모르겠어요".
-    if(/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0])&&/^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text.slice(match.index+match[0].length)))continue;
+    if(/^(?:흥미가\s*있고|관심이\s*있고)$/u.test(match[0])&&/^\s*(?:배워|알아|살펴)\s*보고\s*싶/u.test(text.slice(match.index+match[0].length)))continue;
+    if(/^(?:좋고|좋아하고|편하고|즐겁고|즐기고|즐기며|싫어하고|흥미가\s*있고|관심이\s*있고)$/u.test(match[0])){
+      const tail=text.slice(match.index+match[0].length);
+      if(/^\s*(?:싶|말고|싫고|아니고|그랬|없고)/u.test(tail))continue;
+      // A connective inside reported or denied wording is not a completed
+      // preference. Its governing quotation/denial may occur after another
+      // dependent verb, so inspect that same sentence before cutting it.
+      if(/^(?:즐기고|즐기며|싫어하고)$/u.test(match[0])&&/^[^.!?;\n]*(?:(?:다는|라는)\s*(?:말|뜻|의미|문장|이야기)|(?:다고|라고)\s*(?:말|이야기|얘기|하|했|하셨|들))/u.test(tail))continue;
+    }
     // A noun ending in -지 followed by the restrictive particle -만 is not
     // the contrastive predicate ending -지만 (for example, 요지만).
-    if(match[0]==='지만'&&!/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞)$/u.test(text.slice(start,match.index).replace(/\s/gu,'')))continue;
+    if(match[0]==='지만'&&!/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞|기|겼)$/u.test(text.slice(start,match.index).replace(/\s/gu,'')))continue;
     push(match.index+(!/^[.!?;\n,\s]/u.test(match[0])?match[0].length:0));start=match.index+match[0].length;
   }push(text.length);return result;
 }
@@ -1362,26 +1485,40 @@ function scopeBoundaryBetween(text,start,end) {
   for(let i=start;i<end;i++)if(/[.!?;\n]/u.test(text[i])&&!quotedAt(text,i))return true;
   return false;
 }
+function reattributedPreference(body,segments) {
+  const restatement=/^(.+?(?:은|는|이|가))(?:좋아한다는|싫어한다는|선호한다는|원한다는|편하다는)(?:뜻|의미)(?:이에요|입니다)$/u.exec(body);
+  if(!restatement||!OTHER_PERSON_SUBJECT.test(restatement[1]))return false;
+  const prior=segments.at(-1);if(!prior?.meanings?.length)return false;
+  // The following nominal restatement corrects the owner of the immediately
+  // preceding preference. Asking about the correction alone must not leave
+  // that superseded self attribution saved when the question is skipped.
+  delete prior.meanings;delete prior.candidate;prior.generic=true;
+  prior.unresolved={...prior.evidence,reason:'other',reasonLabel:'뒤 문장에서 선호의 주체를 다른 사람으로 설명해 본인의 선호인지 다시 확인해요.'};
+  return true;
+}
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
   const segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
   for(const evidence of pieces(text)) {
     const insideLiteral=quotedAt(text,evidence.start);
-    const body=evidence.quote.replace(/\s/gu,''), self=!insideLiteral&&(/^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(body)||/^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(surfaceDeclaration(body))), current=/^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
-    const generalReset=/^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
+    const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&(/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(body)||/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(surfaceDeclaration(evidence.quote))), current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
+    const generalReset=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
     // A prefix before comma-separated insets owns the following main clause.
     // It lives independently of parsed meanings and coordinating endings.
     if(pendingScope&&(scopeBoundaryBetween(text,pendingScope.end,evidence.start)||generalReset&&!insideLiteral))pendingScope=null;
     if(pendingScope&&insideLiteral)pendingScope={...pendingScope,uncertain:true};
     if(self&&!insideLiteral)unknownSubject=false;
     if(inherited==='quotation'&&self&&!insideLiteral)inherited=null;
-    if(explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[]});continue;}
+    if(!insideLiteral&&reattributedPreference(body,segments)){segments.push({evidence,unresolved:{...evidence,reason:'other',reasonLabel:EXCLUDED.other}});continue;}
+    if(/^(?:제|내)(?:방식|선호|취향)(?:은|는)(?:이래요|다음과같아요)$/u.test(body)){segments.push({evidence,meanings:[]});continue;}
+    if(discourseAside(evidence.quote,segments)||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[]});continue;}
     if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical','sensitive'].includes(inherited)&&self&&current)inherited=null;
     const sentenceStart=Math.max(text.lastIndexOf('.',evidence.start-1),text.lastIndexOf('!',evidence.start-1),text.lastIndexOf('?',evidence.start-1),text.lastIndexOf('\n',evidence.start-1))+1;
     const stop=/[.!?\n]/u.exec(text.slice(evidence.end)),sentenceEnd=stop?evidence.end+stop.index:text.length;
     const nounModifier=relativePersonClause(text.slice(sentenceStart,sentenceEnd).replace(/\s/gu,''));
-    const segment={evidence}, reason=(nounModifier?'other':excludedOrigin(body))||inherited;
+    const localRelative=/(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(body);
+    const segment={evidence}, reason=(nounModifier||localRelative?'other':excludedOrigin(body))||inherited;
     if(reason||unknownSubject) {
       inherited=reason;continuingCondition=null;
       // Rejecting a quoted/other-owned inset rejects its content, not the
@@ -1414,7 +1551,7 @@ function analyze(text) {
     let found=natural(clause)||expanded(clause)||compositional(clause)||coordinatedDeclaration(clause)||focusedContrast(clause)||structuredDeclaration(clause)||tentative(clause)||restrictedMethod(clause);
     const commaContinuation=/^\s*,/u.test(text.slice(evidence.end));
     if(!found&&(declaredCondition||pendingScope)&&commaContinuation){
-      const safe=pendingScopeAside(normalizedClause.body);
+      const safe=pendingScopeAside(normalizedClause.body,sourceSurface(evidence.quote,normalizedClause.body,true));
       pendingScope={condition:pendingScope?.condition||declaredCondition,start:pendingScope?.start??evidence.start,end:evidence.end,uncertain:!safe||!!pendingScope?.uncertain};
       if(safe){segment.meanings=[];segments.push(segment);continue;}
     }
@@ -1457,7 +1594,10 @@ function analyze(text) {
       pendingScope=null;
     }
     if(unresolvedCondition){found=null;inherited='condition';}
-    previousCondition=scopedCondition&&/(?:지만|는데)$/u.test(body)?scopedCondition:false;
+    // An unresolved explicitly scoped clause cannot silently turn its next
+    // unscoped continuation into a general preference. Keep that question
+    // open until a new explicit scope or general reset resolves the boundary.
+    previousCondition=scopedCondition&&(!found||/(?:지만|는데)$/u.test(body))?scopedCondition:false;
     const asking=/^[\s.!?]*/u.exec(text.slice(evidence.end))[0].includes('?');
     const uncertain=/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
     if(!found&&!uncertain&&!declaredCondition&&/(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)){unresolvedCondition=true;inherited='condition';}
@@ -1520,6 +1660,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous5.PARSER_VERSION)return Previous5.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous6.PARSER_VERSION)return Previous6.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous8.PARSER_VERSION)return Previous8.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -1547,6 +1688,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous5.PARSER_VERSION)return Previous5.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous6.PARSER_VERSION)return Previous6.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous8.PARSER_VERSION)return Previous8.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

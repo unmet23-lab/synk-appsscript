@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto'),{performance}=require('node:perf_hooks');
-const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
+const C=require('../experiences/synk-account/src/member-statement-v8.cjs');
 const V7=require('../experiences/synk-account/src/member-statement-v7.cjs');
 const tuple=m=>[m.field,m.value,m.polarity,m.condition];
 const canonical=xs=>xs.map(JSON.stringify).sort();
