@@ -76,10 +76,15 @@ function checkedRedirect(platform, value) {
   return url.href;
 }
 
-export function createAuthorization(platform, { clientId, redirectUri, state, challenge, apiVersion, comments = false, existingGrantedScopes = [] } = {}) {
+export function createAuthorization(platform, { clientId, redirectUri, state, challenge, apiVersion, comments = false, publishing = false, existingGrantedScopes = [] } = {}) {
   const provider = definition(platform);
   const commentScopes=platform==='instagram'?['instagram_business_basic','instagram_business_manage_comments']:['pages_show_list','pages_read_engagement','pages_read_user_content','pages_manage_engagement'];
-  const scopes=comments===true&&['instagram','facebook'].includes(platform)?[...new Set([...commentScopes,...(Array.isArray(existingGrantedScopes)?existingGrantedScopes.filter(scope=>provider.scopes.includes(scope)):[])])]:provider.scopes;
+  const publishScopes=platform==='youtube'?['https://www.googleapis.com/auth/youtube.readonly','https://www.googleapis.com/auth/youtube.upload']:platform==='instagram'?['instagram_business_basic','instagram_business_content_publish']:['pages_show_list','pages_read_engagement','pages_manage_posts'];
+  const meta=['instagram','facebook'].includes(platform),allowed=new Set([...provider.scopes,...(meta?commentScopes:[]),...((meta||platform==='youtube')?publishScopes:[])]);
+  // Preserve already verified grants when a user adds a second capability.
+  // Requested scopes are still checked against the token response after OAuth.
+  const requested=meta&&(comments||publishing)?[...(comments?commentScopes:[]),...(publishing?publishScopes:[])]:platform==='youtube'&&publishing?publishScopes:provider.scopes;
+  const scopes=[...new Set([...requested,...(Array.isArray(existingGrantedScopes)?existingGrantedScopes.filter(scope=>allowed.has(scope)):[])])];
   required(clientId, 'provider_not_configured', '관리자가 먼저 플랫폼 앱 연결을 설정해야 합니다.');
   required(state, 'invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
   if (state.length < 16) throw new OAuthError('invalid_state', '계정 연결 요청을 다시 시작해 주세요.');
@@ -88,7 +93,7 @@ export function createAuthorization(platform, { clientId, redirectUri, state, ch
   const params = new URLSearchParams({ client_id: clientId, redirect_uri: redirect, state, response_type: 'code' });
   if (platform === 'youtube') {
     endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-    params.set('scope', provider.scopes.join(' '));
+    params.set('scope', scopes.join(' '));
     params.set('access_type', 'offline');
     params.set('prompt', 'consent select_account');
     params.set('include_granted_scopes', 'true');
@@ -195,6 +200,28 @@ function credentials(platform, data, previous = {}, extra = {}) {
     tokenType: data.token_type || 'Bearer',
     ...(accountId ? { accountId } : {}),
   };
+}
+
+// Only call with the server's OAuth exchange result, never browser-supplied grants.
+export async function verifyYouTubePublishingConnection({channel,credentials={},fetchImpl=fetch,clock=()=>new Date().toISOString(),signal,authorize}={}) {
+  const scopes=String(credentials.scope||'').split(/[ ,]+/),needed=['https://www.googleapis.com/auth/youtube.readonly','https://www.googleapis.com/auth/youtube.upload'];
+  if(!credentials.accessToken||needed.some(scope=>!scopes.includes(scope)))throw new OAuthError('YOUTUBE_SCOPES_REQUIRED','Google 로그인에서 YouTube 조회·업로드 권한을 모두 허용해 주세요.',409);
+  if(!Number.isFinite(Date.parse(credentials.expiresAt))||Date.parse(credentials.expiresAt)<=Date.parse(clock()))throw new OAuthError('YOUTUBE_TOKEN_EXPIRED','YouTube 로그인 유효 기간을 확인하지 못했어요. 다시 연결해 주세요.',409);
+  const combined=signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000);
+  const read=async query=>{
+    authorize?.();if(combined.aborted)throw new OAuthError('YOUTUBE_CONNECTION_STOPPED','YouTube 연결 확인이 중단됐어요.',409);
+    try{
+      const url=new URL('https://www.googleapis.com/youtube/v3/channels');for(const [key,value]of Object.entries({part:'id',maxResults:'50',...query}))url.searchParams.set(key,value);
+      const response=await fetchImpl(url.href,{method:'GET',headers:{Authorization:'Bearer '+credentials.accessToken,Accept:'application/json'},redirect:'error',signal:combined});
+      if(!response.ok)throw new OAuthError('YOUTUBE_CONNECTION_FAILED','YouTube 계정 정보를 확인하지 못했어요. 권한을 확인한 뒤 다시 연결해 주세요.',502);
+      const data=await response.json();authorize?.();if(!Array.isArray(data.items))throw new OAuthError('YOUTUBE_CONNECTION_FAILED','YouTube 계정 응답을 확인하지 못했어요.',502);return data;
+    }catch(error){if(error instanceof OAuthError)throw error;throw new OAuthError('YOUTUBE_CONNECTION_FAILED','YouTube 계정 연결을 확인하지 못했어요. 다시 시도해 주세요.',502);}
+  };
+  if(!channel?.externalId&&!channel?.handle)throw new OAuthError('YOUTUBE_ACCOUNT_REQUIRED','먼저 게시할 YouTube 채널 주소를 등록해 주세요.',409);
+  const target=await read(channel.externalId?{id:channel.externalId}:{forHandle:channel.handle}),id=target.items.length===1?target.items[0]?.id:null;
+  if(!/^UC[A-Za-z0-9_-]{22}$/.test(id||'')||channel.externalId&&channel.externalId!==id)throw new OAuthError('YOUTUBE_ACCOUNT_MISMATCH','등록한 YouTube 채널을 확인하지 못했어요.',409);
+  const mine=await read({mine:'true'});if(!mine.items.some(item=>item.id===id)||credentials.accountId&&credentials.accountId!==id)throw new OAuthError('YOUTUBE_ACCOUNT_MISMATCH','등록한 YouTube 채널의 소유자 계정으로 로그인해 주세요.',409);
+  authorize?.();return {identity:{id},credentials:{...credentials,accountId:id,authType:'google-oauth',permissionsVerifiedAt:new Date(clock()).toISOString()}};
 }
 
 export async function exchangeCode(platform, { clientId, clientSecret, redirectUri, code, verifier, apiVersion } = {}, { fetchImpl = fetch } = {}) {

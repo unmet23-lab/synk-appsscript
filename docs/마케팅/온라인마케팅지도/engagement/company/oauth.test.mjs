@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { providers, createAuthorization, exchangeCode, refreshCredentials, OAuthError } from './oauth.mjs';
+import { providers, createAuthorization, exchangeCode, refreshCredentials, verifyYouTubePublishingConnection, OAuthError } from './oauth.mjs';
 
 const DAY = 86_400_000;
 const config = { clientId: 'fixture-client', clientSecret: 'fixture-secret', redirectUri: 'https://sns.example.test/api/oauth/youtube/callback' };
@@ -15,6 +15,47 @@ test('comment OAuth is an explicit addition and verified unknown-expiry IG token
   assert.ok(new URL(createAuthorization('instagram',{...flow,comments:true,existingGrantedScopes:['instagram_business_manage_insights','forged']})).searchParams.get('scope').includes('manage_insights'));
   const token={accessToken:'synthetic-existing',authType:'instagram-login',metaIdentityVersion:1,expiresAt:null,expiryStatus:'not-provided'};
   assert.deepEqual(await refreshCredentials('instagram',token,{}, {fetchImpl:failNetwork}),token);
+});
+
+test('publishing OAuth requests the correct capability and preserves only allowlisted existing grants',()=>{
+  const scopes=(platform,options)=>new URL(createAuthorization(platform,{...flow,...options})).searchParams.get('scope').split(/[ ,]+/);
+  assert.deepEqual(scopes('instagram',{publishing:true}),['instagram_business_basic','instagram_business_content_publish']);
+  assert.deepEqual(scopes('facebook',{publishing:true}),['pages_show_list','pages_read_engagement','pages_manage_posts']);
+  assert.ok(!scopes('instagram',{publishing:true}).some(scope=>scope.includes('insights')));assert.ok(!scopes('facebook',{publishing:true}).includes('read_insights'));
+  const combined=scopes('instagram',{publishing:true,comments:true,existingGrantedScopes:['instagram_business_manage_insights','forged_scope','pages_manage_posts']});
+  for(const scope of ['instagram_business_basic','instagram_business_manage_comments','instagram_business_content_publish','instagram_business_manage_insights'])assert.ok(combined.includes(scope));
+  assert.ok(!combined.includes('forged_scope'));assert.ok(!combined.includes('pages_manage_posts'));assert.equal(combined.length,new Set(combined).size);
+  assert.ok(scopes('instagram',{comments:true,existingGrantedScopes:['instagram_business_content_publish']}).includes('instagram_business_content_publish'));
+  const youtube=scopes('youtube',{publishing:true});assert.ok(youtube.includes('https://www.googleapis.com/auth/youtube.upload'));assert.ok(youtube.includes('https://www.googleapis.com/auth/youtube.readonly'));assert.ok(!youtube.includes('https://www.googleapis.com/auth/yt-analytics.readonly'));
+  assert.ok(!scopes('youtube',{}).includes('https://www.googleapis.com/auth/youtube.upload'));assert.ok(!scopes('tiktok',{publishing:true}).includes('video.publish'));
+});
+
+const ytId='UC'+'A'.repeat(22),ytOther='UC'+'B'.repeat(22),ytClock=()=> '2026-10-14T00:00:00.000Z';
+const ytCredentials={accessToken:'synthetic-google-private',refreshToken:'synthetic-refresh-private',authType:'google-oauth',scope:'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload',expiresAt:'2026-10-14T01:00:00.000Z'};
+test('YouTube publishing proof uses server-observed target and ownership with a header token',async()=>{
+  const calls=[],fetchImpl=async(raw,options)=>{const url=new URL(raw);calls.push({url,options});return {ok:true,json:async()=>({items:[{id:ytId}]})};};let authorized=0;
+  const result=await verifyYouTubePublishingConnection({channel:{handle:'@synk'},credentials:ytCredentials,clock:ytClock,fetchImpl,authorize:()=>authorized++});
+  assert.deepEqual(result.identity,{id:ytId});assert.equal(result.credentials.accountId,ytId);assert.equal(result.credentials.permissionsVerifiedAt,ytClock());assert.equal(result.credentials.refreshToken,ytCredentials.refreshToken);assert.equal(ytCredentials.accountId,undefined);
+  assert.equal(calls.length,2);assert.equal(calls[0].url.searchParams.get('forHandle'),'@synk');assert.equal(calls[1].url.searchParams.get('mine'),'true');assert.ok(authorized>=4);
+  for(const {url,options} of calls){assert.equal(url.origin,'https://www.googleapis.com');assert.ok(!url.href.includes(ytCredentials.accessToken));assert.equal(options.headers.Authorization,'Bearer '+ytCredentials.accessToken);assert.equal(options.method,'GET');assert.equal(options.redirect,'error');}
+});
+
+test('YouTube publishing refuses missing grants or invalid expiry before a network request',async()=>{
+  for(const credentials of [{...ytCredentials,scope:'https://www.googleapis.com/auth/youtube.readonly'},{...ytCredentials,scope:'https://www.googleapis.com/auth/youtube.upload'},{...ytCredentials,accessToken:''},{...ytCredentials,expiresAt:null},{...ytCredentials,expiresAt:'2026-10-14T00:00:00.000Z'}])await assert.rejects(verifyYouTubePublishingConnection({channel:{externalId:ytId},credentials,clock:ytClock,fetchImpl:failNetwork}),OAuthError);
+});
+
+test('YouTube publishing rejects unrelated ownership, exchanged account mismatch and malformed targets',async()=>{
+  for(const [target,owned,credentials] of [[ytOther,ytOther,ytCredentials],[ytId,ytOther,ytCredentials],[ytId,ytId,{...ytCredentials,accountId:ytOther}],['invalid-id','invalid-id',ytCredentials]]){
+    let reads=0;const fetchImpl=async()=>({ok:true,json:async()=>({items:[{id:++reads===1?target:owned}]})});
+    await assert.rejects(verifyYouTubePublishingConnection({channel:{externalId:ytId},credentials,clock:ytClock,fetchImpl}),{code:'YOUTUBE_ACCOUNT_MISMATCH'});
+  }
+});
+
+test('YouTube proof honors authorization changes and never exposes provider error details',async()=>{
+  let allowed=true,calls=0;const fetchImpl=async()=>{calls++;allowed=false;return {ok:true,json:async()=>({items:[{id:ytId}]})};};
+  await assert.rejects(verifyYouTubePublishingConnection({channel:{externalId:ytId},credentials:ytCredentials,clock:ytClock,fetchImpl,authorize:()=>{if(!allowed)throw Error('synthetic-secret-detail');}}),error=>error instanceof OAuthError&&!error.message.includes('synthetic-secret-detail'));assert.equal(calls,1);
+  for(const fetchImpl of [async()=>{throw Error('synthetic-google-private');},async()=>({ok:false,json:async()=>({error:'synthetic-google-private'})}),async()=>({ok:true,json:async()=>({items:null})})])await assert.rejects(verifyYouTubePublishingConnection({channel:{externalId:ytId},credentials:ytCredentials,clock:ytClock,fetchImpl}),error=>error instanceof OAuthError&&!error.message.includes('synthetic-google-private'));
+  const controller=new AbortController();controller.abort();await assert.rejects(verifyYouTubePublishingConnection({channel:{externalId:ytId},credentials:ytCredentials,clock:ytClock,signal:controller.signal,fetchImpl:failNetwork}),{code:'YOUTUBE_CONNECTION_STOPPED'});
 });
 function fakeProvider(responses) {
   const calls = [];
