@@ -10,7 +10,7 @@ function statement(text, id = 1, when = at, selected = null) {
   while (preview.question) preview = Core.previewMemberStatement({ text, asOf: when, clarifications: [...preview.clarifications, { questionId: preview.question.id, optionId: 'skip' }] });
   return Core.confirmMemberStatement({ preview, acceptedIds: selected || preview.proposals.map(p => p.id), id: uuid(id), at: when });
 }
-const document = (...statements) => ({ version: 8, reviews: [], overrides: [], statements });
+const document = (...statements) => ({ version: 9, reviews: [], overrides: [], statements });
 const report = (doc, args = {}) => Core.summarizeMemberUnderstanding({ document: doc, asOf: later(50), ...args });
 function account(enabled = true) {
   const from = new Date(Date.parse(at) - 30 * 86400000).toISOString(), prevFrom = new Date(Date.parse(at) - 60 * 86400000).toISOString();

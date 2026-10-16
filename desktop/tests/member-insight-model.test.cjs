@@ -277,7 +277,7 @@ test('literal explanations accept 200 Unicode characters and preserve markup as 
 
 async function confirmedStatement(text, acceptedIds = ['p0', 'p1']) {
   const core = (await import('../renderer/generated/member-understanding.mjs')).default;
-  const document = { version: 8, reviews: [], overrides: [], statements: [] };
+  const document = { version: 9, reviews: [], overrides: [], statements: [] };
   let preview = core.previewMemberStatement({ text, document, asOf });
   while (preview.question) {
     assert.ok(preview.question.options.some(option => option.id === 'skip'));
@@ -350,7 +350,7 @@ test('clarification answer history is retained on the next analysis as an explic
   let preview = core.previewMemberStatement({ text, asOf });
   preview = core.previewMemberStatement({ text, asOf, clarifications: [{ questionId: preview.question.id, optionId: 'confirm' }] });
   const row = core.confirmMemberStatement({ preview, acceptedIds: preview.proposals.map(p => p.id), id: '00000000-0000-4000-8000-000000000001', at: asOf });
-  const result = buildMemberInsightReport(understandingInput(), { understanding: { version: 8, reviews: [], overrides: [], statements: [row] }, understandingStatus: 'ready' });
+  const result = buildMemberInsightReport(understandingInput(), { understanding: { version: 9, reviews: [], overrides: [], statements: [row] }, understandingStatus: 'ready' });
   assert.equal(result.understanding.status, 'ready');
   assert.equal(result.understanding.statementHistory[0].clarificationAnswers.length, 1);
   assert.ok(result.understanding.statementHistory[0].clarificationAnswers[0].questionLabel);

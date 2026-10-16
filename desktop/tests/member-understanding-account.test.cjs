@@ -57,9 +57,9 @@ test('understanding account path preserves CAS load/save/delete semantics and st
 });
 
 test('document-version deletion acknowledgement is confined to member-understanding and survives transport', async t => {
-  for (const document_version of [1, 2, 3, 4, 5, 6, 7, 8]) assert.deepEqual(requestSpec('understandingDelete', { expected_revision: 7, document_version }, '1', 'platform', 'platform').body,
+  for (const document_version of [1, 2, 3, 4, 5, 6, 7, 8, 9]) assert.deepEqual(requestSpec('understandingDelete', { expected_revision: 7, document_version }, '1', 'platform', 'platform').body,
     { resource: 'member-understanding', action: 'delete', expected_revision: 7, document_version });
-  for (const document_version of [0, 9, '2', null, undefined]) assert.throws(() => requestSpec('understandingDelete', { expected_revision: 7, document_version }, '1', 'platform', 'platform'), { code: 'INVALID_REQUEST' });
+  for (const document_version of [0, 10, '2', null, undefined]) assert.throws(() => requestSpec('understandingDelete', { expected_revision: 7, document_version }, '1', 'platform', 'platform'), { code: 'INVALID_REQUEST' });
   for (const operation of ['platformDelete', 'insightDelete']) assert.throws(() => requestSpec(operation, { expected_revision: 7, document_version: 2 }, '1', 'platform', 'platform'), { code: 'INVALID_REQUEST' });
   const f = await fixture(t), state = { version: 2, reviews: [], overrides: [], statements: [] };
   await f.service.accountRequest('understandingSave', { expected_revision: 0, state });

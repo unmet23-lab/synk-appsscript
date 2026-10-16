@@ -1,0 +1,290 @@
+{
+  "at": "2026-10-16T06:53:49.201Z",
+  "authorization": "Root explicitly authorized disclosure of the six condition failures only. Other 74 sentences and gold remain private.",
+  "firstGoldAndScoresPreserved": true,
+  "prior80RerunClassification": "Any replay of this frozen 80 corpus is regression/follow-up, never a new first unseen score.",
+  "findings": [
+    {
+      "id": "D012",
+      "text": "바쁠 때는, 사소한 누락을 줄일 수 있으니까, 우선순위를 정해 처리하는 게 좋아요. 저는 평소에는 음악 듣기를 좋아해요.",
+      "expected": [
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          "busy"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    },
+    {
+      "id": "D014",
+      "text": "익숙한 내용에서는, 잘한다는 평가와는 별개로, 혼자 시도하는 게 좋아요. 저는 평소에는 운동에 관심이 있어요.",
+      "expected": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "topic",
+          "exercise",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "exercise",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "exercise",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    },
+    {
+      "id": "D015",
+      "text": "결정할 때는, 답이 늦게 나와도, 자료를 확인하고 판단하는 게 좋아요. 저는 평소에는 읽기 연습이 좋아요.",
+      "expected": [
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          "decision"
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          null
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          null
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    },
+    {
+      "id": "D016",
+      "text": "함께 일할 때는, 모두의 결론이 같지 않아도, 계획을 먼저 세우는 게 좋아요. 저는 평소에는 요리를 좋아해요.",
+      "expected": [
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          "teamwork"
+        ],
+        [
+          "topic",
+          "cooking",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "cooking",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "cooking",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    },
+    {
+      "id": "D018",
+      "text": "처음 하는 내용에서는, 완성된 답을 외우려는 게 아니라, 예시를 먼저 보고 싶어요. 저는 평소에는 산책을 좋아해요.",
+      "expected": [
+        [
+          "support",
+          "example",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "topic",
+          "nature",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "nature",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "topic",
+          "nature",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    },
+    {
+      "id": "D020",
+      "text": "예시를 본 다음에는, 결과가 완벽하지 않아도, 혼자 해보는 게 좋아요. 저는 평소에는 영상 제작에 관심이 있어요.",
+      "expected": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss-across-comma-parenthetical",
+      "reason": "A supported condition explicitly opens the first sentence and scopes its preference across a non-preference insertion. The separate second sentence explicitly resets to general current self preference. Null condition on the first preference is unjustified broadening."
+    }
+  ]
+}

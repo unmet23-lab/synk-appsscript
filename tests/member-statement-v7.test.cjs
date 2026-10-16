@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{createHash}=require('node:crypto');
-const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
+const C=require('../experiences/synk-account/src/member-statement-v7.cjs');
 const V6=require('../experiences/synk-account/src/member-statement-v6.cjs');
 const tuple=m=>[m.field,m.value,m.polarity,m.condition];
 const actions=[
