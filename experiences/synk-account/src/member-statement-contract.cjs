@@ -1,13 +1,14 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-4 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-5 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
 const Previous4 = require('./member-statement-v4.cjs');
+const Previous5 = require('./member-statement-v5.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-5';
+const PARSER_VERSION = 'member-statement-ko-6';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -124,6 +125,21 @@ const NATURAL_SUBJECTS = [
   ['topic','nature', /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
 ];
 const CONDITION_PREFIXES = [
+  ['first-try', /^처음(?:손대는|해보는|접하는|배우는|시도하는)(?:일|작업|과제|내용)(?:에는|이라도|에서는|에서|은|을배울때는)/u],
+  ['familiar', /^(?:이미)?(?:손에익은|익숙한)(?:일|작업|과제|내용)(?:이면|이라면|에는|에서는|에서|은)/u],
+  ['familiar', /^(?:내용|일|작업)(?:이|은)익숙하고/u],
+  ['busy', /^시간에쫓길때(?:에는|는)?/u],
+  ['after-example', /^(?:예시|예제|샘플)(?:를|을|도)?(?:한번|이미)?(?:확인하고난|보고난|본)(?:뒤|후|다음|이후)(?:에는|라면|의작업은)/u],
+  ['planning', /^(?:일|업무|작업)(?:을)?계획하는단계(?:에서는|에는|는)?/u],
+  ['teamwork', /^(?:동료|팀원|다른사람)(?:와|과)(?:함께|같이)일하는(?:상황|경우)(?:에서는|에는|라면)/u],
+  ['decision', /^(?:뭔가|무언가|어떤것)(?:를|을)?결정할때(?:에는|는)?/u],
+  ['first-try', /^(?:(?:새로운|낯선)(?:걸|것|일|내용)(?:을)?)?처음(?:접하는내용을배울|해보는(?:날|과제|일)|시도하는건|시도하는것|하는과제에서)(?:때(?:는)?|에는|에서|엔|은)?/u],
+  ['familiar', /^(?:이건|이것은)?익숙한(?:내용|일)(?:이니까|에서|에서는)/u],
+  ['busy', /^(?:(?:할)?일(?:이)?몰려)?바쁜(?:날|와중)(?:에는|에도|에|엔)?/u],
+  ['busy', /^(?:할)?일(?:이)?몰려바쁠때(?:에는|는)?/u],
+  ['decision', /^(?:뭘|무엇을)?결정해야할때(?:에는|는)?|^결정을앞두면/u],
+  ['first-try', /^(?:새로운|낯선)(?:일|내용)(?:을)?(?:처음)?(?:접했을|접할|배우게될)때(?:라면|에는|는)?/u],
+  ['meeting', /^회의(?:중|도중)(?:에는|엔|에|은)?/u],
   ['first-try', /^(?:완전히|아주)?처음(?:해보는|시도하는|하는|배우는)(?:일|내용)(?:일때(?:에는|는)?|에대해서(?:는)?)/u],
   ['after-example', /^(?:예시|예제|샘플)(?:를)?보고난(?:뒤|후|다음)(?:라면|에는|엔|에)/u],
   ['busy', /^(?:일이몰려)?바쁠(?:때(?:에는|는)?|수록)/u],
@@ -227,8 +243,10 @@ function actionAndStance(body) {
 function normalizeActionPhrase(source) {
   let action=source;
   // Degree words do not create a stronger score or an opposite preference.
-  action=action.replace(/(?:(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u,'')
-    .replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u,'');
+  action=action.replace(/(?:(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u,'');
+  // A nominalizer is not the last syllable of a lexical noun (근거, 이메일).
+  if(!/(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(action))
+    action=action.replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u,'');
   const nominalHead=/(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(action)?'explanation':null;
   if(nominalHead)action=action.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u,'$1');
   // Retain the surface verb: a final -는 can be a relative verb ending rather
@@ -340,11 +358,67 @@ function recognizeAction(body,condition) {
 }
 function normalizePrefix(quote) {
   let body = quote.replace(/\s/gu, '').replace(/(?:지만|는데)$/u, '').replace(/좋고$/u,'좋아요').replace(/좋아하고$/u,'좋아해요').replace(/편하고$/u,'편해요').replace(/즐겁고$/u,'즐거워요').replace(/싫$/u,'싫어요').replace(/(?:좋아하|선호하)$/u,s=>s.slice(0,-1)+'해').replace(/할땐/gu,'할때는').replace(/배울땐/gu,'배울때는');
-  body=body.replace(/좋(?:아하)?고요$/u,s=>s.startsWith('좋아')?'좋아해요':'좋아요').replace(/^(?:저라면|나라면)/u,'');
+  body=body.replace(/좋(?:아하)?고요$/u,s=>s.startsWith('좋아')?'좋아해요':'좋아요').replace(/싶고$/u,'싶어요').replace(/을땐/gu,'을때는').replace(/^(?:저라면|나라면)/u,'');
   body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, '').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, '');
   let condition = null;
   for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) { condition = id;body = body.replace(prefix, '');break; }
+  body=body.replace(/^,+/u,'');
+  if(['first-try','familiar','busy'].includes(condition)){
+    const after=/^(?:예시|예제|샘플)(?:를|을|도|까지|부터)?(?:먼저|이미|한번)?(?:본|보고난|확인한|확인하고난)(?:뒤|후|다음|상태|이후)(?:라면|에는|엔|에서는|의작업은)/u.exec(body);
+    if(after){condition+='-after-example';body=body.slice(after[0].length);}
+  }
+  body=body.replace(/^,+/u,'');
   return { body, condition };
+}
+// Wishes are current declarations, unlike a hypothetical premise. Only the
+// final action governed by an explicit wish receives this morphology rewrite;
+// embedded negation, subject and context words remain for full consumption.
+function surfaceDeclaration(quote) {
+  let body=quote.replace(/\s/gu,'');
+  // A request to save or display a description does not assert the embedded
+  // preference. Likewise, asking someone to do an activity is not liking it.
+  if(/(?:저장|기록|입력|등록|설정|표시|분류)(?:해|하|해주|해줘)/u.test(body))return body;
+  body=body.replace(/^(?:제|내)경우(?:에는|엔|는)?/u,'')
+    .replace(/^(?:저에게는|나에게는|제게는|내게는|저로서는|나로서는)/u,'저는');
+  body=body.replace(/^(?:이번에는|이번엔|지금은|지금)(?=(?:저는|나는|제가|내가)?(?:채용|한국어|설명|연습|도움|음악|요리|영상))/u,'');
+  body=body.replace(/해주시면(?=좋겠|편하겠)/u,'해주면')
+    .replace(/짧았으면(?:해요|해)$/u,'짧게해주는게좋아요');
+  if(/(?:설명|풀이|안내|도움|연습|소통)/u.test(body))body=body
+    .replace(/(?:해주시고)$/u,'해주는게좋아요')
+    .replace(/(?:해주세요|해줘요|해줘)$/u,'해주는게좋아요');
+  body=body.replace(/(?:좋아하|선호하|원하)(?:거든요|거든|잖아요|는걸요)$/u,m=>m.startsWith('좋아')?'좋아해요':m.startsWith('선호')?'선호해요':'원해요')
+    .replace(/(?:좋|싫)(?:거든요|거든|잖아요|네요)$/u,m=>m.startsWith('좋')?'좋아요':'싫어요')
+    .replace(/(?:편하)(?:거든요|거든|잖아요|네요)$/u,'편해요')
+    .replace(/(?:즐기고요|즐기는걸요)$/u,'즐겨요')
+    .replace(/(?:편하고요)$/u,'편해요')
+    .replace(/(?:좋아하고요)$/u,'좋아해요');
+  // Polite requests and first-person choices explicitly express what the
+  // member wants here. The action, not the ending, determines the field.
+  body=body.replace(/(?:보여주세요|보여줘요|보여줘)$/u,'보여주는게좋아요')
+    .replace(/(?:알려주세요|알려줘요|알려줘)$/u,'알려주는게좋아요')
+    .replace(/(?:해볼래요|해볼래)$/u,'해보는게좋아요')
+    .replace(/(?:할래요|할래)$/u,'하는게좋아요')
+    .replace(/(짧게|간단히|자세히)(?:부탁할게요|부탁해요|부탁해)$/u,'$1해주는게좋아요')
+    .replace(/(?:쪽으로)?(?:부탁할게요|부탁해요|부탁해)$/u,'좋아요')
+    .replace(/(?:풀어줬으면해요|풀어줬으면해)$/u,'풀어주는게좋아요')
+    .replace(/(?:해줬으면해요|해줬으면해)$/u,'해주는게좋아요')
+    .replace(/(?:고마워요|고맙습니다)$/u,'좋아요')
+    .replace(/(?:잘)?맞는편(?:이야|이에요|입니다)$/u,'맞아요');
+  const wish=/(?:좋겠(?:어요|습니다|어)|편하겠(?:어요|습니다|어))$/u.exec(body);
+  if(wish){
+    const action=body.slice(0,wish.index).replace(/(?:제일|가장|더|좀더)$/u,'');
+    body=action.replace(/(?:할|해볼|볼|들을|읽을)수있으면$/u,m=>m.startsWith('해볼')?'해보는':m.startsWith('할')?'하는':m.startsWith('들을')?'듣는':m.startsWith('읽을')?'읽는':'보는')
+      .replace(/(?:였으면|이었으면)$/u,'').replace(/(?:해주면|해주셨으면)$/u,'해주는')
+      .replace(/(?:보여주면|보여주셨으면)$/u,'보여주는').replace(/(?:들려주면|들려주셨으면)$/u,'들려주는')
+      .replace(/(?:받으면)$/u,'받는').replace(/(?:하면)$/u,'하는').replace(/(?:들어가면)$/u,'들어가는').replace(/(?:이면)$/u,'')+'좋아요';
+  }
+  // A nominal method followed by an actual preference is a topic, not an
+  // imagined new personality. "만약" and conditional verbal clauses survive.
+  body=body.replace(/(방식|방법|쪽|편)이라면(?=(?:저는|나는|제가|내가)?(?:더|좀더)?(?:좋|편|맞))/u,'$1은');
+  body=body.replace(/(이야기|얘기|주제)라면(?=(?:저는|나는)?(?:더)?좋)/u,'$1는');
+  const directive=/^(.+?)(?:라고두지않았으면|라고하지않았으면)(?:해요|합니다|해)$/u.exec(body);
+  if(directive)body=directive[1].replace(/해보$/u,'해보는').replace(/하$/u,'하는')+'걸원하지않아요';
+  return body;
 }
 function comparative(body) {
   const known=arm=>{
@@ -425,6 +499,76 @@ function restrictedMethod(quote) {
 // words, internal negation and unhandled conditions cannot disappear in a
 // keyword match. Core still receives only reviewable source-backed proposals.
 const COMPOSE_LEXICON = [
+  ['task', /^(?:이과제|나머지|할일이생기면)/u], ['person', /^(?:여럿)/u],
+  ['process', /^(?:풀어가(?:는|기|고)|풀(?:기|고)|푸(?:는)?)/u],
+  ['help-time', /^시점/u], ['on', /^(?:켜(?:는|기|고))/u],
+  ['short', /^(?:두세문장(?:정도)?로|간추린)/u], ['before-start', /^시작전(?:에)?/u],
+  ['practice', /^한국어/u], ['practice', /^문제/u], ['explanation', /^풀이/u],
+  ['answer', /^뜻/u], ['know', /^알아맞히(?:는|기|고)/u], ['mix', /^넣어서/u],
+  ['step', /^나눠서/u], ['travel', /^여행가서/u], ['stay-verb', /^묵을/u],
+  ['interview', /^채용/u], ['prepare', /^준비(?:하는|하기|하고)/u],
+  ['topic-frame', /^(?:주제|소재|취미|관한|다루고)/u], ['inquiry', /^(?:무슨일을|어디부터|어느길로)/u],
+  ['route', /^(?:돌(?:기|고)|갈지)/u], ['capture', /^촬영(?:하는|하기|하고)/u],
+  ['make', /^편집(?:하는|하기|하고)/u], ['design-example', /^화면/u],
+  ['design', /^디자인(?:하는|하기|하고)/u], ['basis', /^삼(?:는|기|고)?/u],
+  ['topic-context', /^생활/u], ['use', /^써먹는지/u], ['topic-context', /^직장/u],
+  ['collaboration', /^(?:나눠맡고|협업(?:하는|하기|하고))/u], ['do', /^하면서/u],
+  ['learn', /^익히(?:는|기|고)/u], ['nature', /^산책(?:하는|하기|하고)/u], ['inquiry', /^속/u],
+  ['nominal', /^역할/u], ['exchange', /^주고받으며/u], ['neutral', /^(?:전체|관련|맨)(?!적인)/u],
+  ['try', /^해나가면서/u], ['one', /^한(?=일)/u], ['finish', /^끝내야/u],
+  ['rank', /^매겨/u], ['reference', /^기준으로삼(?:는|기|고)?/u],
+  ['overview', /^전체적인큰그림/u], ['explanation-purpose', /^왜그런결론이나왔는지/u],
+  ['length', /^길이/u], ['standard', /^(?:보통정도|보통수준)/u],
+  ['speech', /^통화/u], ['person', /^(?:누가)/u], ['selfcase', /^(?:나|저)(?=혼자|스스로)/u],
+  ['needhelp', /^필요해졌을때/u], ['before-help', /^도움받기전(?:에)?/u],
+  ['first', /^(?:그다음은)/u], ['inquiry', /^어떻게하는지/u],
+  ['mismatch', /^(?:어긋나는부분|맞지않는점)/u],
+  ['multiple', /^(?:여러일을맡아도)/u], ['process-frame', /^처리방식/u],
+  ['grasp', /^(?:잡기|잡는)/u],
+  ['on', /^(?:켜두기|켜두는)/u], ['sit', /^(?:앉아있는|앉아있기)/u], ['stuck', /^막막하게/u],
+  ['look', /^(?:살펴서)/u], ['data', /^(?:자료에있는근거)/u],
+  ['communicate', /^(?:대화에참여하는|대화에참여하기)/u],
+  ['reason-effect', /^이해하기/u],
+  ['topic-frame', /^(?:다루(?:는|기|면)|다뤄주는|다뤄줬으면|주제로|중심으로)/u],
+  ['learn', /^(?:배워보고|배우고)/u], ['use', /^(?:써먹는|써먹기)/u],
+  ['reserve', /^(?:예약하는|예약하기)/u],
+  ['travel', /^(?:여행가기전|다른나라에가서)/u], ['route-inquiry', /^어디부터돌지/u],
+  ['cooking', /^(?:먹을음식)/u], ['restaurant', /^식당/u],
+  ['choose', /^(?:택할지)/u], ['career', /^진로/u],
+  ['neutral', /^(?:오늘도|막|더|집에서|중간중간|계속|나란히)/u], ['cut', /^(?:잘라말하기)/u],
+  ['experience', /^(?:직접겪어본경험|겪어본경험)/u],
+  ['know', /^(?:알아가는|알아가기|알아보는|알아보기)/u],
+  ['method-inquiry', /^(?:어떻게준비하면좋을지|어떻게준비할지)/u],
+  ['decision-context', /^(?:판단|결정)/u],
+  ['basis', /^(?:바탕|참고로삼는)/u],
+  ['eat', /^(?:먹는|먹기)/u],
+  ['make', /^(?:만들어)/u], ['rank', /^(?:붙이는|붙이기|붙이고)/u],
+  ['reason', /^(?:어떤근거로|무슨근거로|그런결론을내렸는지)/u],
+  ['flow', /^(?:잘게끊지않고)/u],
+  ['before-help', /^(?:누가|누군가|다른사람이)(?:옆에서)?(?:알려주기|도와주기)(?:전|이전)(?:에)?/u],
+  ['before-start', /^(?:작업|일|업무)(?:에)?(?:손대기|들어가기)(?:전|이전)(?:에)?/u],
+  ['order', /^(?:(?:제가|내가)?할)?순서에맞춰/u],
+  ['needhelp', /^필요하다고느끼는(?:순간|때)(?:에)?(?:만)?/u],
+  ['self', /^(?:제손으로|내손으로)/u],
+  ['priority', /^(?:중요도(?:의)?순서|중요도|중요한순위|우선순위대로)/u],
+  ['rank', /^(?:순서를붙이(?:고|는|기)|순위를붙이(?:고|는|기)|높은순서부터)/u],
+  ['overview', /^(?:큰틀|큰줄기|전반적인흐름|전체가어떻게생겼는지)/u],
+  ['detail', /^(?:속속들이|세세하게|세세히|구체적인|빠짐없이)/u],
+  ['standard', /^(?:중간길이|중간정도(?:의)?길이|적당한분량|보통분량)/u],
+  ['outcome', /^(?:결과|반응)/u], ['method', /^(?:방법|방식)/u], ['answer', /^(?:답장|답)/u],
+  ['opinion', /^(?:하고싶은이야기|하고싶은말)/u],
+  ['listen', /^(?:들려주(?:는|기)|들어가며|들어가는)/u],
+  ['send', /^(?:전하(?:는|기|고)|보내(?:는|기|고))/u],
+  ['write', /^(?:담아|적어서|써서)/u],
+  ['make', /^(?:만들어보(?:는|기|고)|짜두(?:는|기|고)|짜놓(?:는|기|고))/u],
+  ['try', /^(?:해보다가|시도하다가|해가면서|해나가(?:는|기)|해볼)/u],
+  ['speak', /^(?:꺼내놓(?:는|기)|꺼내두(?:는|기))/u],
+  ['reference', /^(?:참고로삼(?:는|기|고)|바탕으로삼(?:는|기|고))/u],
+  ['experience', /^(?:실제로겪어본일|겪어본일|겪어본것)/u],
+  ['consult', /^(?:의견을구해|의견을구하(?:는|기|고)|조언을구하(?:는|기|고))/u],
+  ['explain', /^(?:풀어서)/u],
+  ['flow', /^(?:끊지않고|중간에끊지않고|끝까지이어)/u],
+  ['neutral', /^(?:처음부터끝까지|무엇을할지|끝까지|제일|살짝|푹빠져|늘|실제로|편안하게)/u],
   ['self', /^(?:내자신|제자신|스스로|혼자서|혼자|독립적으로|내힘으로|제힘으로|자력으로)/u],
   ['person', /^(?:다른사람들?|다른분들?|다른이들|여러사람들?|사람들|상대방|상대|동료들?|팀원들?|주변사람들?|주위사람들?|남들|누군가|누구|모두)/u],
   ['mine', /^(?:나의|저의|제|내)/u],
@@ -436,17 +580,17 @@ const COMPOSE_LEXICON = [
   ['small', /^(?:작게|조그맣게|작은것부터|작은규모로)/u], ['later', /^(?:나중에|그뒤에|그다음에)/u],
   ['first', /^(?:시작부터)/u],
   ['multiple', /^(?:이것저것|동시에|한꺼번에|여러가지)/u], ['intuition', /^감/u],
-  ['both', /^(?:두가지|둘다)/u], ['identity', /^(?:뭔지|무엇인지)/u], ['similarity', /^(?:같은)/u],
+  ['both', /^(?:두가지|두방식|둘다)/u], ['identity', /^(?:뭔지|무엇인지)/u], ['similarity', /^(?:같은)/u],
   ['data', /^(?:근거자료|자료|데이터|근거|수치|사실|증거)/u],
   ['options', /^(?:선택지|대안|후보|장단점|차이점|여러방법|방법)/u], ['experience', /^(?:겪어본(?:일|것)|겪었던(?:일|것)|겪은(?:일|경험)|해본(?:일|것)|경험|체험)/u],
   ['overview', /^(?:전체적인(?:개요|흐름|그림|구조|윤곽)|전체(?:개요|흐름|그림|구조|윤곽)|큰그림|개요|윤곽|핵심요약)/u],
   ['reason', /^(?:핵심근거|핵심이유|이유|근거)/u], ['explanation', /^(?:설명|안내)/u],
-  ['short', /^(?:한두문장(?:정도)?로|간결하게|간단하게|간단히|짧게|짧(?=거나)|핵심만|요점만|요지만|짧은|간결한|간단한)/u],
+  ['short', /^(?:한두문장(?:정도)?로|간결하게|간단하게|간단히|짧게|짧(?=거나)|핵심만|요점만|요지만|요점위주로|핵심위주로|짧은|간결한|간단한)/u],
   ['standard', /^(?:보통(?:수준|길이|정도)(?:인)?|적당한길이)/u], ['content', /^(?:세부내용|내용|세부사항)/u],
   ['detail', /^(?:깊이있게|자세하게|상세하게|자세히|상세히|자세한|상세한|구체적으로|꼼꼼하게)/u],
   ['long', /^(?:길어지는|길어지기|길게|길기|장황하게|장황한|너무긴|긴)/u],
   ['example', /^(?:완성된(?:예|예시|결과물)|예시|예제|샘플|보기)/u], ['step', /^(?:한단계씩|단계별로|단계별|차근차근|차례차례|하나씩차례대로|하나씩순서대로)/u],
-  ['help', /^(?:도움|도와주기|도움받기)/u], ['nohelp', /^(?:(?:다른)?도움없이|도움받지않고)/u],
+  ['help', /^(?:도움|도와주(?:는|기|면)|도움받기)/u], ['nohelp', /^(?:(?:다른)?도움없이|도움받지않고)/u],
   ['needhelp', /^(?:도움이)?(?:필요해지는(?:순간|때)(?:에)?|필요한(?:순간|때)(?:에)?|필요할때)(?:만)?/u],
   ['together', /^(?:함께|같이)/u], ['practice', /^(?:연습|학습|공부)/u],
   ['audio', /^(?:소리|귀)/u], ['visual', /^(?:문장|눈)/u], ['basis', /^(?:바탕으로|기반으로)/u],
@@ -472,7 +616,7 @@ const COMPOSE_LEXICON = [
   ['try', /^(?:해볼수있는|부딪쳐보는|부딪쳐보기|부딪쳐보고|해보면서|해보는|해보기|해보고|시도해보는|시도해보기|실행해보는|실행해보기)/u],
   ['finish', /^(?:끝내기|끝내는|끝내고|끝낸)/u], ['adjust', /^(?:고쳐나가는|고쳐나가기|고쳐가기|고쳐가는|고치기|고치는|다듬어가기|다듬어가는|바꿔가기|바꿔가는)/u],
   ['decide', /^(?:내리기|내리는|고르기|고르는|고르고|정하기|정하는|정하고|정하며)/u], ['choose', /^(?:골라서|골라|택하고)/u], ['check', /^(?:찾아보기|찾아보는|찾아보고|따져보기|따져보는|따져보고|따져)/u],
-  ['explain', /^(?:알려주기|알려주는|알려주면|전해주는|설명해주기|설명해주는|풀어주기|풀어주는|짚어주는)/u], ['show', /^(?:보여주기|보여주는)/u],
+  ['explain', /^(?:알려주기|알려주는|알려주면|전해주는|설명해주기|설명해주는|풀어주기|풀어주는|짚어주는)/u], ['show', /^(?:보여주기|보여주는|보여주면)/u],
   ['exchange', /^(?:주고받아야|주고받기|주고받는|주고받고|나눠|나누는|나누고)/u], ['flow', /^(?:이어가는|이어가기|이어서|이어지는|이어지기|흐름)/u],
   ['cut', /^(?:끊는|끊기)/u], ['omit', /^(?:생략하기|생략하는)/u], ['or', /^(?:거나)/u],
   ['capture', /^(?:찍기|찍는|찍고)/u], ['receive', /^(?:받아가며|받기|받는|받고)/u], ['do', /^(?:해주면|해주는|해주기|하기|하는|하고|하며)/u],
@@ -488,7 +632,7 @@ const COMPOSE_LEXICON = [
   ['before-start', /^(?:착수하기전|시작하기전|벌이기전)/u],
   ['explanation-purpose', /^(?:결론이어떻게나왔는지|왜그런지)/u],
   ['selfcase', /^(?:제가|내가|저는|나는|난)/u], ['and', /^(?:그리고|또한|또|및)/u],
-  ['particle', /^(?:에서는|으로는|로는|자체는|에게|한테|에서|으로|위주로|이랑|끼리|랑|와|과|의|을|를|은|는|이|가|로|에|도|들|씩)/u],
+  ['particle', /^(?:에서는|으로는|로는|자체는|에게|한테|에서|으로|위주로|이랑|끼리|랑|와|과|나|의|을|를|은|는|이|가|로|에|도|들|씩)/u],
   ['first', /^부터/u],
   ['sequence', /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
   ['neutral', /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
@@ -513,7 +657,7 @@ function phraseUnits(action) {
   return offset===action.length?units.filter(tag=>!['particle','neutral','selfcase','mine','sequence'].includes(tag)):null;
 }
 function composeMeaning(tags,nominalHead) {
-  const words=tags.filter(tag=>!['nominal','means'].includes(tag)).join(' '), match=pattern=>pattern.test(words), out=(field,value)=>({field,value});
+  const words=tags.filter(tag=>!['nominal','means','method'].includes(tag)).join(' '), match=pattern=>pattern.test(words), out=(field,value)=>({field,value});
   if(match(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u))return out('communication','listen-organize');
   if(match(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u))return out('communication','share-first');
   if(match(/^(?:text (?:opinion )?|opinion text )(?:communicate|write|send|organize|speak)(?: send|exchange)?$/u))return out('communication','written');
@@ -553,7 +697,7 @@ function composeMeaning(tags,nominalHead) {
 // Event order is preserved where it changes the meaning (listen then organise,
 // try then adjust). Noun order and repetitions do not change that event order.
 function composeRoles(units,nominalHead) {
-  const tags=units.filter(t=>!['nominal','means'].includes(t));
+  const tags=units.filter(t=>!['nominal','means','method'].includes(t));
   if(nominalHead==='explanation'&&!tags.includes('explanation'))tags.push('explanation');
   const has=t=>tags.includes(t),any=(...t)=>t.some(has),all=(...t)=>t.every(has),before=(a,b)=>tags.indexOf(a)<tags.indexOf(b);
   // A flexible noun frame must not reverse the order of its actions. The
@@ -566,43 +710,54 @@ function composeRoles(units,nominalHead) {
     &&(!beforeOverview.includes('enter')||beforeOverview.indexOf('enter')<beforeOverview.indexOf('before'));
   const explained=has('explain')||all('explanation','receive');
   const matches=[],frame=(field,value,licensed,required)=>{const allowed=new Set(licensed.split(' '));if(required&&tags.every(t=>allowed.has(t)))matches.push({field,value});};
-  frame('communication','written','text opinion communicate write send organize speak exchange',has('text')&&any('communicate','write','send','organize','speak','exchange'));
+  frame('communication','written','text opinion communicate write send organize speak exchange answer receive',has('text')&&any('communicate','write','send','organize','speak','exchange'));
   frame('communication','spoken','speech opinion communicate speak send exchange',has('speech')&&any('communicate','speak','send','exchange'));
-  frame('communication','listen-organize','person opinion speech first listen organize',any('opinion','speech')&&all('listen','organize')&&before('listen','organize'));
+  frame('communication','listen-organize','person opinion speech first listen organize communicate',any('opinion','speech')&&all('listen','organize')&&before('listen','organize'));
   frame('communication','share-first','opinion speech first speak send start different-opinion occur before',has('opinion')&&any('speak','send')&&(has('first')||all('different-opinion','before')));
   frame('work-style','plan-first','task plan first make decide start before-start',has('plan')&&any('make','decide')&&beforeStart('make','decide'));
-  frame('work-style','try-adjust','small first try start mismatch later adjust',all('try','adjust')&&before('try','adjust'));
-  frame('work-style','single-task','task one focus process finish do next proceed present-task',has('one')&&any('focus','process','finish','do'));
+  frame('work-style','try-adjust','small first try start mismatch later adjust outcome look method task do',all('try','adjust')&&before('try','adjust'));
+  frame('work-style','single-task','task one focus process finish do next proceed present-task start multiple process-frame',has('one')&&any('focus','process','finish','do','process-frame')&&(!has('next')||has('finish')&&before('finish','next')));
   frame('work-style','prioritize','task priority important first rank order front make decide process finish do identity',any('process','finish','do')&&(has('priority')&&any('rank','make','decide')||has('important')&&any('rank','order','front','first')));
-  frame('decision','evidence','data first check look reference basis decide conclusion',has('data')&&any('check','look','reference','basis'));
+  frame('decision','evidence','data first check look reference basis decide conclusion decision-context possibility',has('data')&&any('check','look','reference','basis'));
   frame('decision','compare-options','options available arrange compare check decide conclusion',has('options')&&any('compare','check'));
-  frame('decision','experience','experience reference basis decide conclusion',has('experience')&&any('reference','basis'));
+  frame('decision','experience','experience reference basis decide conclusion decision-context',has('experience')&&any('reference','basis'));
   frame('decision','consult','person opinion exchange first consult decide conclusion',has('consult'));
-  frame('explanation-detail','overview-first','explanation overview first detail content enter before look show know listen make explain receive do',has('overview')&&overviewLeads&&(any('look','show','know','listen','make')||explained)&&(has('first')||all('content','before')));
+  frame('explanation-detail','overview-first','explanation overview first detail content enter before look show know listen make explain receive do reason-effect',has('overview')&&overviewLeads&&(any('look','show','know','listen','make')||explained)&&(has('first')||all('content','before')));
   frame('explanation-detail','reasons-detail','explanation-purpose explanation conclusion occur reason data detail know listen look explain receive',any('reason','data')&&has('detail')&&(any('know','listen','look')||explained));
-  frame('explanation-detail','long-flow','explanation long flow explain',all('explanation','long'));
-  frame('explanation','brief','explanation short explain listen know finish receive',has('short')&&(has('explanation')||any('explain','listen','know')));
+  frame('explanation-detail','long-flow','explanation long flow explain listen',all('explanation','long'));
+  frame('explanation','brief','explanation short explain listen know finish receive do',has('short')&&(has('explanation')||any('explain','listen','know')));
   frame('explanation','detailed','explanation detail content explain listen know receive',has('detail')&&(has('explanation')||any('explain','listen','know')));
-  frame('explanation','standard','explanation standard',all('explanation','standard'));
+  frame('explanation','standard','explanation standard listen receive length',all('explanation','standard'));
   frame('support','independent','self nohelp first try do process before-help',any('self','nohelp')&&any('try','do','process'));
   frame('support','together','person together first try do process',has('together')&&any('try','do','process'));
-  frame('support','example','example first one look show start intent-start',has('example')&&any('look','show')&&beforeStart('look','show'));
-  frame('support','step','step sequence-step help explain receive do',any('step','sequence-step')&&any('explain','receive','do'));
+  frame('support','example','example first one look show start intent-start help method inquiry',has('example')&&any('look','show')&&beforeStart('look','show'));
+  frame('support','step','step sequence-step help explain receive do order person',any('step','sequence-step')&&any('explain','receive','do','help'));
   frame('support','choose','needhelp help choose decide receive',has('needhelp')&&any('choose','decide')&&(has('help')||has('receive')));
   const practice=any('practice','practice-verb','mix'),listen=has('listen'),read=has('read');
-  frame('practice-mode',listen&&read?'mixed':listen?'listening':'reading','practice practice-verb audio visual text listen read both together mix do',practice&&(listen||read));
+  frame('practice-mode',listen&&read?'mixed':listen?'listening':'reading','practice practice-verb audio visual text listen read both together mix do enter',practice&&(listen||read));
   const topicFrames=[
     ['reading-books','book read learn','book'],['music','music listen learn','music'],['exercise','exercise do learn','exercise'],
-    ['cooking','cooking make do learn','cooking'],['photography','photo capture enjoyment-reason','photo'],['games','game do','game'],
-    ['nature','nature look do','nature'],['travel-planning','travel route plan make do','travel'],['travel-food','travel cooking decide order do learn','travel'],
-    ['travel-stay','travel stay inquiry stay-verb know look','stay'],['career-interview','interview do practice-verb','interview'],
-    ['career-planning','career inquiry task possibility explore plan do know','career'],['content-video','video make do','video'],
-    ['content-design','design design-example similarity make do','design'],['ai-tools','ai inquiry use possibility know learn','ai']
+    ['cooking','cooking make do learn self eat','cooking'],['photography','photo capture enjoyment-reason','photo'],['games','game do','game'],
+    ['nature','nature look do','nature'],['travel-planning','travel route plan make do route-inquiry','travel'],['travel-food','travel cooking decide order do learn restaurant','travel'],
+    ['travel-stay','travel stay inquiry stay-verb know look decide reserve','stay'],['career-interview','interview do practice-verb method-inquiry know','interview'],
+    ['career-planning','career inquiry task possibility explore plan do know choose','career'],['content-video','video make do','video'],
+    ['content-design','design design-example similarity make do','design'],['ai-tools','ai inquiry use possibility know learn','ai'],
+    ['work-collaboration','task together do person collaboration method know','collaboration']
   ];
-  for(const [value,licensed,anchor]of topicFrames){const enough=value==='travel-planning'?has('travel')&&any('route','plan'):value==='travel-food'?all('travel','cooking'):value==='travel-stay'?all('travel','stay'):has(anchor);frame('topic',value,licensed,enough);}
+  // A declared interest can be expressed as wanting to learn about a topic.
+  // Content nouns and learning verbs are licensed only inside topic frames;
+  // they are never globally discarded from an action or somebody's speech.
+  for(const [value,licensed,anchor]of topicFrames){const enough=value==='travel-planning'?has('travel')&&any('route','plan'):value==='travel-food'?all('travel','cooking'):value==='travel-stay'?all('travel','stay'):has(anchor);frame('topic',value,licensed+' opinion content topic-frame learn know',enough);}
   return matches.length===1?matches[0]:null;
 }
 const COMPOSE_STANCES=[
+  ['avoid',/(?:하고)?싶지않(?:아요|습니다|아|다)$/u],
+  ['avoid',/(?:빼고|제외하고)싶(?:어요|습니다|어|다)$/u],
+  ['prefer',/배워보고싶은마음이커요$/u],
+  ['prefer',/(?:제|내)?(?:취향|스타일|선호)(?:이에요|입니다|이야|이다|이죠)$/u],
+  ['prefer',/(?:제가|내가)?(?:즐기는|좋아하는)(?:분야|활동)(?:중하나)?(?:예요|이에요|입니다)$/u],
+  ['prefer',/(?:즐겁게하는)?취미(?:예요|이에요|입니다)$/u],
+  ['prefer',/(?:(?:요즘)?관심(?:이)?커요|흥미(?:를)?느껴요|관심사(?:예요|입니다))$/u],
   ['avoid',/(?:좋아하는편이|맞지는?|맞지)않(?:아요|습니다|아|는다)$/u],
   ['avoid',/좋아하는편이아니(?:에요|야|다)$/u],
   ['avoid',/(?:제|내)(?:취향|스타일)(?:이)?아니(?:에요|예요|야|다)$/u],
@@ -624,16 +779,159 @@ function composeStance(body) {
 // Only a completely consumed alternative can be left out; it never generates
 // the opposite preference. Frames constrain the field rather than supplying it.
 const COMPOSE_FRAMES=[
+  [/^설명(?:을)?받을때(?:는)?(?:저는|나는)?/u,['explanation','explanation-detail'],'설명'],
+  [/^(?:배울때|연습할때)(?:는)?(?=단계|한단계|도움|혼자|같이|함께|예시)/u,['support'],''],
+  [/^(?:나한테|저한테|제게|내게)?설명할때(?:는)?/u,['explanation','explanation-detail'],'설명'],
+  [/^(?:오늘도)?연습방식(?:은|는)/u,['practice-mode'],'연습'],
+  [/^이야기를주고받을때(?:는)?/u,['communication'],''],
+  [/^도움(?:은|는)/u,['support'],'도움'],
+  [/^어느쪽을고를지,?/u,['decision'],''],
+  [/^설명을들을때(?:는)?/u,['explanation','explanation-detail'],'설명'],
+  [/^(?:배울때(?:는)?|공부할때(?:는)?|학습할때(?:는)?)/u,['practice-mode'],'연습'],
+  [/^(?:대화를나눌때(?:는)?|소통할때(?:는)?)/u,['communication'],''],
+  [/^(?:이야기|대화)(?:를)?시작하면/u,['communication'],''],
   [/^(?:도와줄거면|도움을받을때(?:는)?|도움을받을땐|시도할때(?:는)?)/u,['support'],''],
   [/^(?:연습할때|연습은|연습을)/u,['practice-mode'],'연습'],
   [/^설명(?:분량)?(?:은|에서|을)/u,['explanation','explanation-detail'],'설명'],
   [/^판단(?:은|을)/u,['decision'],''],
   [/^(?:평소)?소통에서는|^생각을전달할때/u,['communication'],'']
 ];
+// A declaration can contain a supported action inside harmless explanation
+// or background words. Recover its semantic head and the governing action
+// together, rather than requiring a dictionary entry for every adjective.
+// This fallback never runs without a current stance, and retains blockers
+// for agency, scope, negation and order. It emits the original clause span.
+// The noun owns its subject particle even after a possessive prefix, plural
+// or honorific ending. "우리 팀원들은" is not the writer's own preference.
+const OTHER_PERSON_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u;
+const CORE_ACTION_ROLES={
+  independent:'self nohelp before-help first task try do process finish',together:'person together task try do process finish',
+  example:'example first one look show check start before-start inquiry task',step:'help step receive explain do',choose:'help help-time needhelp choose decide on receive use',
+  brief:'explanation short receive do explain listen know content',standard:'explanation standard length receive do explain listen know',detailed:'explanation detail receive do explain listen know content',
+  'reasons-detail':'explanation-purpose reason data detail know listen look explain receive conclusion',
+  'long-flow':'explanation long flow explain receive do listen','overview-first':'explanation content overview first look show know listen make receive',
+  written:'text opinion communicate write send organize speak exchange answer',spoken:'speech opinion person communicate speak send exchange',
+  'listen-organize':'person opinion speech listen organize do','share-first':'opinion first speak send speech start',
+  'plan-first':'before-start first plan make start task','try-adjust':'first small try start later mismatch adjust',
+  'single-task':'one task focus process finish next do start','prioritize':'task priority first make decide process important identity rank order',
+  evidence:'data first check look reference decide basis decision-context',experience:'before experience reference look decide decision-context basis',
+  'compare-options':'options compare check decide front',consult:'person first opinion exchange consult decide',
+  reading:'practice audio visual text listen read both mix answer know do',listening:'practice audio visual text listen read both mix answer know do',mixed:'practice audio visual text listen read both mix answer know do'
+};
+function declaredCore(action,{polarity,habitual},condition,fields,source) {
+  if(habitual)return null;
+  if(/(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(source))return null;
+  let body=action.replace(/,/gu,'');
+  if(polarity==='avoid'&&/(?:글|말|문자|메시지|메일|이메일)로만/u.test(body))return null;
+  const safeNegation=body.replace(/(?:누구|다른사람의)?도움(?:을)?(?:받지않고|없이)/gu,'혼자')
+    .replace(/생략하지않고/gu,'상세하게').replace(/(?:중간중간)?끊(?:기)?지않고/gu,'이어지는')
+    .replace(/짧지도길지도않은(?=보통|중간)/u,'');
+  if(/(?:않|못|아니|싫|없지|말고|없는|없이|안하|안해|안되|비선호|불편|거부(?:하|감|되))/u.test(safeNegation))return null;
+  if(/(?:보다는|보단|보다(?!가)|대신|느니|않|말했|라고|다고|다는|라는|것같|듯|모르|수도|아마)/u.test(safeNegation))return null;
+  if(/(?:강요|억지|시키|시켜|명령|할수밖에|해야한다|해야만|잘하고|잘하|능력|실력|시험점수)/u.test(body))return null;
+  if(/(?:화면|페이지|앱|프로필)(?:의)?(?:배경|색|버튼|글자|배치)|(?:연습|수업|학습|공부)(?:의)?(?:시간표|날짜|요일|알림)/u.test(body))return null;
+  if(OTHER_PERSON_SUBJECT.test(body)||/(?:하는|하던|보는|보던)(?:사람|친구|동료|분)/u.test(body))return null;
+  const subject=/^\s*(?:(우리|저희|제|내|그|그들의)\s+)?([^\s]+?)(?:들)?(?:께서는|께서|은|는|이(?!랑)|가)\s+/u.exec(source);
+  if(subject&&(/^(?:우리|저희|그|그들의)$/u.test(subject[1]||'')||!/^(?:저|나|제|내|난|설명|도움|연습|한국어|글|말|의견|생각|읽기|듣기|자료|근거|계획|일|작업|업무|판단|결정|요리|음악|독서|게임|운동|사진|영상|디자인|여럿|풀|이번에|그다음에)$/u.test(subject[2])&&!/(?:받|하|되|없|있)$/u.test(subject[2])))return null;
+  if(/(?:받고|듣고|보고|읽고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body))return null;
+  const scopedBody=body.replace(/(?:도움이)?(?:필요한|필요해졌을|필요할)(?:순간|시점|때)(?:에)?(?:만)?/gu,'필요도움');
+  if(/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(scopedBody)||/에서/u.test(scopedBody.replace(/옆에서/gu,''))&&!/(?:주제|소재|이야기|얘기)/u.test(body))return null;
+  // Every remaining surface unit must have an explicit role in the existing
+  // grammar. Only known neutral modifiers may disappear; an unrecognised
+  // instruction, simulation, subject or condition cannot be ignored here.
+  const coreUnits=phraseUnits(normalizeActionPhrase(safeNegation).action);
+  if(!coreUnits)return null;
+  const results=[],add=(field,value,pass)=>{if(pass&&(!fields||fields.includes(field)))results.push({field,value,polarity,condition});};
+  const has=re=>re.test(body),both=(a,b)=>has(a)&&has(b),pos=re=>body.search(re),ordered=(a,b)=>pos(a)>=0&&pos(b)>pos(a);
+  const topicContext=has(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u);
+  const practiceContext=has(/(?:연습|문제|학습)/u)&&!has(/(?:주제|소재|관한)/u);
+  if(practiceContext){
+    const listening=has(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u),reading=has(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
+    add('practice-mode',listening&&reading?'mixed':listening?'listening':'reading',listening||reading);
+  }
+  const noPriorStart=(verb)=>!has(/(?:시작하|시작한|착수하|착수한)/u)||ordered(verb,/(?:시작하|시작한|착수하|착수한)/u);
+  add('support','independent',both(/(?:혼자|스스로|제힘으로|내힘으로|도움없이|누구도움없이)/u,/(?:시도|해보|진행|마무리|해결|하[는기고]|끝내)/u)&&!has(/함께|같이/u));
+  add('support','together',both(/(?:함께|같이)/u,/(?:해보|해나가|풀어가|푸는|풀기|진행|하는|하기|해결)/u)&&!topicContext&&!has(/혼자|도움없이/u));
+  add('support','example',both(/예시|예제|샘플|완성된예/u,/보여|살펴|보고|보는|보기|확인/u)&&noPriorStart(/보여|살펴|보고|보는|확인/u));
+  add('support','step',both(/단계별|한단계씩|차근차근|차례차례/u,/도움|도와|안내|알려|짚어|설명|받/u));
+  add('support','choose',both(/도움/u,/필요/u)&&has(/골라|고르|선택/u)&&has(/받|켜|사용/u));
+  const explanation=has(/설명|알려|풀어|풀이/u),standard=has(/보통|중간길이/u),detail=has(/자세|상세|세세|구체적|속속들이/u),brief=has(/짧|간단|간결|핵심만|요점만/u);
+  add('explanation','standard',explanation&&standard&&!detail);
+  add('explanation','brief',explanation&&brief&&!standard&&!detail&&!has(/길게|긴설명/u));
+  const reasonDetail=has(/근거|이유|왜그런/u)&&detail;
+  add('explanation','detailed',explanation&&detail&&!reasonDetail&&!brief&&!standard);
+  add('explanation-detail','reasons-detail',reasonDetail&&has(/알|듣|설명|받|보/u));
+  add('explanation-detail','long-flow',explanation&&has(/길게이어|길게계속|긴설명을끊|길게설명/u));
+  const overview=has(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+  add('explanation-detail','overview-first',overview&&has(/먼저|부터|우선/u)&&has(/보|듣|파악|알/u)&&!/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(body));
+  if(!topicContext&&!practiceContext){
+    add('communication','written',both(/글로|문자로|메시지로|메신저로|텍스트로|글을/u,/소통|전달|주고받|쓰|적|남기|정리/u)&&!has(/말로|목소리/u));
+    add('communication','spoken',both(/말로|말을|목소리|대화로/u,/소통|주고받|이야기|대화|전달/u)&&!has(/글로|문자로/u));
+    add('communication','listen-organize',has(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u)&&ordered(/듣|들어/u,/정리|정돈|취합/u));
+    add('communication','share-first',has(/(?:제|내)(?:의견|생각)/u)&&has(/먼저|부터/u)&&has(/말하|꺼내|내는|전하/u));
+    add('work-style','plan-first',both(/계획|일정|할일목록/u,/세우|세워|짜|정해|만들/u)&&noPriorStart(/세우|세워|짜|정해|만들/u));
+    add('work-style','try-adjust',ordered(/해보|시도|실행/u,/고치|고쳐|조정|수정|보완/u));
+    add('work-style','single-task',has(/한번에(?:한가지|하나)|하나씩|한가지만/u)&&has(/처리|하는|하기|끝내|마무리/u));
+    add('work-style','prioritize',both(/우선순위|중요한순서|중요도/u,/정하|정한|정해|매겨|매기|처리/u));
+    add('decision','evidence',both(/자료|데이터|근거|사실/u,/확인|검토|살펴|바탕|기준|참고/u)&&!reasonDetail);
+    add('decision','compare-options',both(/선택지|대안|후보|장단점/u,/비교|따져/u));
+    add('decision','experience',both(/겪|경험|체험/u,/참고|바탕|기준/u));
+    add('decision','consult',both(/다른사람|동료|팀원|주변사람/u,/상의|의논|의견을구/u));
+  }
+  if(!practiceContext){
+    const topics=[['travel-planning',/여행/u,/일정|동선/u],['travel-food',/여행지|여행|다른나라/u,/음식|식당|주문/u],['travel-stay',/여행/u,/숙소/u],
+      ['career-interview',/면접/u,/준비|채용|주제/u],['career-planning',/진로/u,/탐색|계획|선택|주제|이야기/u],['content-video',/영상|동영상/u,/만들|제작|촬영|편집/u],
+      ['content-design',/디자인/u,/만들|제작|하는|주제/u],['ai-tools',/AI도구|인공지능도구/iu,/활용|사용|써먹|이야기|주제/u],['work-collaboration',/협업/u,/일|직장|동료|방식/u],
+      ['reading-books',/독서|책/u,/읽|독서/u],['music',/음악|노래/u,/음악|노래/u],['exercise',/운동|달리기|수영|등산/u,/운동|달리기|수영|등산/u],
+      ['cooking',/요리|베이킹/u,/요리|베이킹/u],['photography',/사진/u,/찍|촬영/u],['games',/게임/u,/게임/u],['nature',/자연|공원/u,/산책|자연/u]];
+    for(const [value,noun,verb]of topics)add('topic',value,topicContext&&both(noun,verb));
+  }
+  const unique=[...new Map(results.map(m=>[semanticKey(m),m])).values()];
+  if(unique.length!==1)return null;
+  const meaning=unique[0],beforeRole=(role,events)=>{const index=coreUnits.indexOf(role);return index>=0&&coreUnits.slice(0,index).some(t=>events.includes(t));};
+  // Known words are not automatically harmless: a game about acting alone
+  // is a different object from the writer wanting to act alone. Every role
+  // must also belong to this declared action, not an embedded unrelated one.
+  if(meaning.field!=='topic'){
+    const allowed=new Set((CORE_ACTION_ROLES[meaning.value]||'').split(' ').concat(['nominal','means','method']));
+    if(coreUnits.some(tag=>!allowed.has(tag)))return null;
+  }
+  if(meaning.value==='plan-first'&&beforeRole('plan',['start','try','process','finish','do']))return null;
+  if(meaning.value==='example'&&beforeRole('example',['start','try','process','finish','do']))return null;
+  if(meaning.value==='overview-first'&&beforeRole('overview',['listen','read','receive','explain','look']))return null;
+  return {meanings:unique};
+}
 function compositional(quote) {
-  let {body,condition}=normalizePrefix(quote);
+  let {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   body=body.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u,'').replace(/^(?:대체로|주로|보통은|보통)/u,'');
   let fields=null,head='';
+  const ownedExplanation=/^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(body);
+  if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
+  const degree=/^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(body);
+  if(degree){
+    const described=compositional(degree[1].replace(/^(?:쉴때도|여유시간에도)/u,'')+'관심있어요');
+    const declared=compositional(degree[2]);
+    if(described?.meanings.length===1&&declared?.meanings.length===1&&described.meanings[0].field==='topic'
+      &&semanticKey(described.meanings[0])===semanticKey(declared.meanings[0]))return {meanings:declared.meanings.map(m=>({...m,condition:m.condition||condition}))};
+    return null;
+  }
+  const topicNominal=/^(?:(?:제가|내가)?(?:배우고싶은|알고싶은|다루고싶은|좋아하는|관심있는)(?:주제|소재))(?:은|는)(.+?)(?:이에요|예요|입니다|이야|야)$/u.exec(body);
+  if(topicNominal){body=topicNominal[1]+'관심있어요';fields=['topic'];}
+  // Two explicitly stated versions of the same preference may form one
+  // causal sentence. Both sides must independently resolve to that meaning;
+  // a reason alone never becomes a second declaration or a dropped clause.
+  const causal=/^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(body);
+  if(causal){
+    const first=compositional(causal[1]+(causal[2]==='편해서'?'편해요':causal[2]==='선호해서'?'선호해요':'좋아해요'));
+    const second=compositional(causal[3]);
+    if(first?.meanings.length===1&&second?.meanings.length===1&&semanticKey(first.meanings[0])===semanticKey(second.meanings[0]))
+      return {meanings:first.meanings.map(m=>({...m,condition:m.condition||condition}))};
+    return null;
+  }
+  // The self-owned copular frame supplies an expressed stance, not a trait.
+  // Its complement must still be fully understood by the same role grammar.
+  const owned=/^(?:(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)|(?:(?:제가|내가))?(?:좋아하는|선호하는)(?:방식|방법|활동|취미))(?:은|는)(.+?)(?:거예요|것입니다|예요|이에요|입니다)$/u.exec(body);
+  if(owned)body=owned[1]+'좋아요';
   // Self-owned nominal predicates state the value after the frame, unlike
   // ordinary action clauses where the preference predicate comes last.
   const nominal=/^(?:(?:제|내)취향(?:은|이)|(?:(?:내가|제가))?원하는(설명길이|연습방식|도움방식|소통방식)(?:는|은))(.+?)(?:이에요|예요|입니다)$/u.exec(body);
@@ -644,13 +942,20 @@ function compositional(quote) {
   const interest=/^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(body);
   let normalized=interest?{...normalizeActionPhrase(interest[1]),polarity:'prefer',habitual:false}:composeStance(body);
   if(!normalized)return null;
-  const stripSelf=s=>s.replace(/(?:(?:저|나)(?:는|에게|한테)|제게|제겐|저에겐|내게|내겐)(?:한결|더|잘|딱|그다지)?$/u,'').replace(/(?:자꾸|더|한결|딱|취미로)$/u,'');
+  const stripSelf=s=>s.replace(/(?:(?:저|나)(?:는|에게|한테)(?:는)?|제게(?:는)?|제겐|저에겐|내게(?:는)?|내겐)(?:한결|더|잘|딱|그다지)?$/u,'').replace(/(?:자꾸|더|한결|딱|취미로)$/u,'');
   let action=stripSelf(normalized.surfaceAction||normalized.action);
+  // Recover an explicitly requested middle length without treating rejection
+  // of either extreme as a negative declaration for every detailed answer.
+  action=action.replace(/^(설명(?:은|이)?)?(?:너무)?짧거나길게말고(?=중간길이|보통길이)/u,'$1');
   action=normalizeActionPhrase(action).surfaceAction;
   action=action.replace(/(?:하는|받는)편$/u,s=>s.slice(0,-1));
   action=normalizeActionPhrase(action).surfaceAction;
+  // A trailing mode-of-use phrase retains the stated action. It is not a
+  // free deletion rule: the head explicitly constrains the same field below.
+  const manner=/^(.+?)(?:쪽|방식|식)(?:으로)(?:소통하고|일하고|일하는|연습하고|진행하고)$/u.exec(action);
+  if(manner){fields=[action.endsWith('소통하고')?'communication':action.endsWith('연습하고')?'practice-mode':'work-style'];action=manner[1];}
   const recognizedAlternative=s=>!!phraseUnits(s.replace(/(?:것|거|게)$/u,'').replace(/(?:할때|할땐)$/u,'하기'));
-  const comparison=/(?:보다는|보단|보다|대신|느니|아닌)/u.exec(action);
+  const comparison=/(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(action);
   let actions=[action];
   if(comparison){
     const left=action.slice(0,comparison.index),right=action.slice(comparison.index+comparison[0].length);
@@ -663,7 +968,30 @@ function compositional(quote) {
   const variants=[...actions.map(a=>head+a.replace(/^한꺼번에말고/u,'')),head+normalized.action];
   const recognized=[];
   for(const variant of new Set(variants)){const units=phraseUnits(variant);if(!units)continue;const m=composeMeaning(units,normalized.nominalHead);if(m)recognized.push(m);}
-  if(!recognized.length||new Set(recognized.map(m=>m.field+':'+m.value)).size!==1)return null;
+  if(!recognized.length){
+    const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
+    // Coordinated clauses may share their final preference predicate. Each
+    // arm must independently consume a complete supported action under that
+    // same polarity. A known ordered action (try then adjust, listen then
+    // organise) has already matched above and never reaches this fallback.
+    // Negating a whole sequence does not reject each action separately.
+    // Likewise, bound the number of possible coordinations before recursion.
+    if(normalized.polarity!=='prefer')return null;
+    const separators=[...action.matchAll(/고(?:,)?/gu)];
+    if(separators.length>6)return null;
+    for(const split of separators){
+      const left=action.slice(0,split.index+1),right=action.slice(split.index+split[0].length);
+      if(!right||/[?!]/u.test(left+right))continue;
+      const a=compositional(head+left+'좋아요'),b=compositional(head+right+'좋아요');
+      if(!a?.meanings.length||!b?.meanings.length||a.meanings.some(m=>m.condition)||b.meanings.some(m=>m.condition))continue;
+      const joined=[...a.meanings,...b.meanings];
+      if(joined.some(m=>!MULTI_FIELDS.includes(m.field))||new Set(joined.map(m=>m.field+':'+m.value)).size<2)continue;
+      if(fields&&joined.some(m=>!fields.includes(m.field)))continue;
+      return {meanings:joined.map(m=>({...m,polarity:normalized.polarity,condition}))};
+    }
+    return null;
+  }
+  if(new Set(recognized.map(m=>m.field+':'+m.value)).size!==1)return null;
   const meaning=recognized[0];
   if(fields&&!fields.includes(meaning.field)||meaning.field==='topic'&&normalized.habitual)return null;
   return {meanings:[{...meaning,polarity:normalized.polarity,condition}]};
@@ -674,19 +1002,29 @@ const EXCLUDED = Object.freeze({ other:'다른 사람의 이야기여서 본인�
   condition:'이 조건의 범위를 정확히 이해하지 못했어요.', uncertain:'확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.', limit:'이번에 확인할 수 있는 범위를 넘어 남겨 두었어요.' });
 function excludedOrigin(body) {
   if (/["“”‘’「」『』]/u.test(body) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(body)) return 'quotation';
-  if (/^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이(?!랑)|가)/u.test(body)) return 'other';
+  // Topic-marked plural subjects and honorific subjects are unambiguously
+  // other people here. A plural -이 clause may instead modify the topic
+  // ("팀원들이 함께 일하는 협업 방식에 관심…"); complete existing grammar
+  // can recognise that, while the loose semantic fallback rejects its agency.
+  if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서)|께서는|께서|은|는|이(?!랑)|가)/u.test(body)) return 'other';
   if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return 'past';
   if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return 'sensitive';
   // A recognised factual scope such as familiar material is different from
   // imagining a preference. Unknown conditional clauses remain withheld.
-  const scoped=normalizePrefix(body);
-  if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition?scoped.body:body.replace(/^(?:저라면|나라면)/u,''))) return 'hypothetical';
+  const scoped=normalizePrefix(surfaceDeclaration(body));
+  if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition?scoped.body:surfaceDeclaration(body).replace(/^(?:저라면|나라면)/u,''))) return 'hypothetical';
   return null;
 }
 function pieces(text) {
-  const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고)(?=\s)|[.!?;\n,]+/gu;let start=0, match;
+  const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고|싶고)(?=\s|,)|[.!?;\n,]+/gu;let start=0, match;
   const push = end => { while(start<end&&/\s/u.test(text[start]))start++;while(end>start&&/\s/u.test(text[end-1]))end--;if(end>start)result.push({start,end,quote:text.slice(start,end)}); };
   while((match=separator.exec(text))){
+    if(match[0]===','){
+      const prefix=text.slice(start,match.index),scoped=normalizePrefix(surfaceDeclaration(prefix));
+      // A comma may separate a scope from its own predicate. It is not a new
+      // preference, nor a reason to lose that scope and ask it again.
+      if(scoped.condition&&!scoped.body||/^어느쪽을고를지$/u.test(scoped.body)||/(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(prefix)||/고\s*$/u.test(prefix)&&!/해\s*주시고\s*$/u.test(prefix))continue;
+    }
     // Coordinated nominal arms share a final predicate, including its negation.
     if(match[0]===','&&/(?:것|거)도\s*$/u.test(text.slice(start,match.index))&&/^\s*.+?(?:것|거)도/u.test(text.slice(match.index+1)))continue;
     // -고 is not an assertion boundary when it continues into a desiderative
@@ -695,7 +1033,7 @@ function pieces(text) {
     // A noun ending in -지 followed by the restrictive particle -만 is not
     // the contrastive predicate ending -지만 (for example, 요지만).
     if(match[0]==='지만'&&!/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text.slice(start,match.index).replace(/\s/gu,'')))continue;
-    push(match.index+(/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고)$/u.test(match[0])?match[0].length:0));start=match.index+match[0].length;
+    push(match.index+(/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고|싶고)$/u.test(match[0])?match[0].length:0));start=match.index+match[0].length;
   }push(text.length);return result;
 }
 const OPTIONS_END = [{id:'unsure',label:'아직 잘 모르겠어요'},{id:'skip',label:'이 부분은 건너뛸게요'}];
@@ -714,10 +1052,14 @@ function analyze(text) {
     let found=natural(evidence.quote)||expanded(evidence.quote)||compositional(evidence.quote)||tentative(evidence.quote)||restrictedMethod(evidence.quote);
     // An anaphoric explanation adds no new field, condition or preference.
     // It does not make the member answer the same understood claim again.
-    if(!found&&segments.at(-1)?.meanings?.length&&/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)){segment.meanings=[];segments.push(segment);continue;}
+    if(!found&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))&&segments.at(-1)?.meanings?.length&&(/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)
+      ||/^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body)
+      ||/^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body)
+      ||/^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body)
+      ||segments.at(-1).meanings.some(m=>m.field==='communication'&&m.value==='share-first')&&/^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))){segment.meanings=[];segments.push(segment);continue;}
     if(!found) { const old=Legacy.parseMemberStatement(evidence.quote);if(old.meanings.length===1&&!old.unresolved.length)found={meanings:old.meanings}; }
     if(found&&continuingCondition&&!generalReset)found={...found,meanings:found.meanings.map(m=>({...m,condition:m.condition||continuingCondition}))};
-    continuingCondition=found?.meanings.at(-1)?.condition&&/(?:좋고|좋아하고|편하고|즐겁고)$/u.test(body)?found.meanings.at(-1).condition:null;
+    continuingCondition=found?.meanings.at(-1)?.condition&&/(?:좋고|좋아하고|편하고|즐겁고|싶고)$/u.test(body)?found.meanings.at(-1).condition:null;
     let unresolvedCondition=previousCondition&&found?.meanings.some(m=>!m.condition)&&!generalReset;
     if(unresolvedCondition)found=null;
     previousCondition=!!found?.meanings.some(m=>m.condition)&&/(?:지만|는데)$/u.test(body);
@@ -779,6 +1121,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous.PARSER_VERSION)return Previous.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous3.PARSER_VERSION)return Previous3.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous4.PARSER_VERSION)return Previous4.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous5.PARSER_VERSION)return Previous5.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -803,6 +1146,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous.PARSER_VERSION)return Previous.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous3.PARSER_VERSION)return Previous3.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous4.PARSER_VERSION)return Previous4.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous5.PARSER_VERSION)return Previous5.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

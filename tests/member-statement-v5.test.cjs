@@ -63,10 +63,10 @@ test('unconsumed modifiers, negation, factual reports, another person and unsupp
   assert.ok(C.parseMemberStatement('글로만 소통하는 걸 선호하지 않아요').question);
 });
 
-test('ko5 proposals are pending until the user explicitly accepts a subset',()=>{
+test('current proposals are pending until the user explicitly accepts a subset',()=>{
   const text='일정을 미리 만들어 두는 쪽이 나는 편하더라. 채팅으로 생각을 전달하는 걸 좋아해요';
   const p=A.previewMemberStatement({text,asOf:at});
-  assert.equal(p.parserVersion,'member-statement-ko-5');assert.equal(p.proposals.length,2);assert.ok(p.proposals.every(m=>m.status==='pending'));
+  assert.equal(p.parserVersion,C.PARSER_VERSION);assert.equal(p.proposals.length,2);assert.ok(p.proposals.every(m=>m.status==='pending'));
   assert.throws(()=>A.confirmMemberStatement({preview:p,acceptedIds:[],id:uuid(999),at}));
   const saved=A.confirmMemberStatement({preview:p,acceptedIds:[p.proposals[1].id],id:uuid(999),at});
   assert.equal(saved.meanings.length,1);assert.equal(saved.meanings[0].value,'written');assert.deepEqual(C.validateMemberStatement(saved),saved);

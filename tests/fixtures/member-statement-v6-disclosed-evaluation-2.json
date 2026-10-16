@@ -1,0 +1,1483 @@
+[
+  {
+    "id": "N2-01",
+    "category": "explicit",
+    "domain": "support",
+    "text": "처음 손대는 일에는 옆에서 한 단계씩 짚어 주는 도움을 받고 싶어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "step",
+        "polarity": "prefer",
+        "condition": "first-try",
+        "exactTextSource": {
+          "quote": "처음 손대는 일에는 옆에서 한 단계씩 짚어 주는 도움을 받고 싶어요.",
+          "start": 0,
+          "end": 38
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-02",
+    "category": "explicit",
+    "domain": "support",
+    "text": "이미 손에 익은 작업이면 도움 없이 제 힘으로 마무리하는 게 편해요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": "familiar",
+        "exactTextSource": {
+          "quote": "이미 손에 익은 작업이면 도움 없이 제 힘으로 마무리하는 게 편해요.",
+          "start": 0,
+          "end": 38
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-03",
+    "category": "explicit",
+    "domain": "support",
+    "text": "저는 완성된 예 하나를 먼저 살펴보고 시작하고 싶어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "example",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "완성된 예 하나를 먼저 살펴보고 시작하고 싶어요",
+          "start": 3,
+          "end": 29
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-04",
+    "category": "explicit",
+    "domain": "support",
+    "text": "도움받는 시점은 제가 고르고, 정말 필요한 순간에만 도움을 켜고 싶어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "choose",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "도움받는 시점은 제가 고르고, 정말 필요한 순간에만 도움을 켜고 싶어요",
+          "start": 0,
+          "end": 39
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-05",
+    "category": "explicit",
+    "domain": "support",
+    "text": "이 과제는 누군가와 같이 풀어 가고 싶어요. 설명도 세세하게 해 주시면 좋겠어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "together",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "누군가와 같이 풀어 가고 싶어요",
+          "start": 6,
+          "end": 23
+        }
+      },
+      {
+        "field": "explanation",
+        "value": "detailed",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명도 세세하게 해 주시면 좋겠어요",
+          "start": 25,
+          "end": 44
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-06",
+    "category": "explicit",
+    "domain": "support",
+    "text": "예시를 한번 확인하고 난 다음에는 나머지를 혼자 해 보는 쪽이 좋아요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": "after-example",
+        "exactTextSource": {
+          "quote": "예시를 한번 확인하고 난 다음에는 나머지를 혼자 해 보는 쪽이 좋아요.",
+          "start": 0,
+          "end": 39
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-07",
+    "category": "explicit",
+    "domain": "support",
+    "text": "처음 해 보는 일이라도 예시까지 보고 난 뒤라면, 그다음은 제 힘으로 해 보고 싶어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": "first-try-after-example",
+        "exactTextSource": {
+          "quote": "처음 해 보는 일이라도 예시까지 보고 난 뒤라면, 그다음은 제 힘으로 해 보고 싶어요.",
+          "start": 0,
+          "end": 48
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-08",
+    "category": "explicit",
+    "domain": "support",
+    "text": "내용이 익숙하고 예시도 이미 본 상태라면 저는 혼자 진행하는 편이 편해요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": "familiar-after-example",
+        "exactTextSource": {
+          "quote": "내용이 익숙하고 예시도 이미 본 상태라면 저는 혼자 진행하는 편이 편해요.",
+          "start": 0,
+          "end": 41
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-09",
+    "category": "explicit",
+    "domain": "support",
+    "text": "시간에 쫓길 때, 예시를 본 이후의 작업은 누구 도움 없이 혼자 하고 싶어요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": "busy-after-example",
+        "exactTextSource": {
+          "quote": "시간에 쫓길 때, 예시를 본 이후의 작업은 누구 도움 없이 혼자 하고 싶어요.",
+          "start": 0,
+          "end": 43
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-10",
+    "category": "explicit",
+    "domain": "support",
+    "text": "여럿이 함께 푸는 방식은 피하고 싶어요. 저는 혼자 시도하는 쪽을 원해요.",
+    "expected": [
+      {
+        "field": "support",
+        "value": "together",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "여럿이 함께 푸는 방식은 피하고 싶어요",
+          "start": 0,
+          "end": 21
+        }
+      },
+      {
+        "field": "support",
+        "value": "independent",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "혼자 시도하는 쪽을 원해요",
+          "start": 26,
+          "end": 40
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-11",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "정신없이 바쁜 때에는 설명을 두세 문장으로 짧게 해 주면 좋겠어요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "brief",
+        "polarity": "prefer",
+        "condition": "busy",
+        "exactTextSource": {
+          "quote": "정신없이 바쁜 때에는 설명을 두세 문장으로 짧게 해 주면 좋겠어요.",
+          "start": 0,
+          "end": 37
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-12",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "설명 분량은 짧지도 길지도 않은 보통 정도가 제게 맞아요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "standard",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명 분량은 짧지도 길지도 않은 보통 정도가 제게 맞아요",
+          "start": 0,
+          "end": 31
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-13",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "저는 설명할 내용을 생략하지 않고 세세하게 알려 주는 게 좋아요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "detailed",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명할 내용을 생략하지 않고 세세하게 알려 주는 게 좋아요",
+          "start": 3,
+          "end": 35
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-14",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "제가 원하는 설명은 핵심만 간추린 짧은 설명이에요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "brief",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "제가 원하는 설명은 핵심만 간추린 짧은 설명이에요",
+          "start": 0,
+          "end": 27
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-15",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "저는 자세한 설명은 원하지 않아요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "detailed",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "자세한 설명은 원하지 않아요",
+          "start": 3,
+          "end": 18
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-16",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "설명은 보통 길이로 해 주세요. 그 정도 분량을 선호해요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "standard",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명은 보통 길이로 해 주세요",
+          "start": 0,
+          "end": 16
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-17",
+    "category": "explicit",
+    "domain": "explanation",
+    "text": "설명은 짧게 해 주시고, 시작 전에 예시를 먼저 보여 주세요.",
+    "expected": [
+      {
+        "field": "explanation",
+        "value": "brief",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명은 짧게 해 주시고",
+          "start": 0,
+          "end": 12
+        }
+      },
+      {
+        "field": "support",
+        "value": "example",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "시작 전에 예시를 먼저 보여 주세요",
+          "start": 14,
+          "end": 33
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-18",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "한국어는 귀로 듣고 뜻을 알아맞히는 연습을 하고 싶어요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "listening",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "귀로 듣고 뜻을 알아맞히는 연습을 하고 싶어요",
+          "start": 5,
+          "end": 30
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-19",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "지금 저는 한국어 문장을 눈으로 읽는 연습을 원해요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "reading",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "한국어 문장을 눈으로 읽는 연습을 원해요",
+          "start": 6,
+          "end": 28
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-20",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "듣기랑 읽기를 둘 다 넣어서 한국어를 연습하고 싶어요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "mixed",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "듣기랑 읽기를 둘 다 넣어서 한국어를 연습하고 싶어요",
+          "start": 0,
+          "end": 29
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-21",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "이번 연습에서는 듣기 문제는 빼고 싶어요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "listening",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "듣기 문제는 빼고 싶어요",
+          "start": 9,
+          "end": 22
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-22",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "저는 읽기 연습은 하고 싶지 않아요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "reading",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "읽기 연습은 하고 싶지 않아요",
+          "start": 3,
+          "end": 19
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-23",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "소리를 듣는 문제로 연습하고 싶고, 풀이 설명은 짧았으면 해요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "listening",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "소리를 듣는 문제로 연습하고 싶고",
+          "start": 0,
+          "end": 18
+        }
+      },
+      {
+        "field": "explanation",
+        "value": "brief",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "풀이 설명은 짧았으면 해요",
+          "start": 20,
+          "end": 34
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-24",
+    "category": "explicit",
+    "domain": "practice-mode",
+    "text": "저는 듣기와 읽기를 함께 연습하고 싶어요. 도움은 한 단계씩 나눠서 받고 싶어요.",
+    "expected": [
+      {
+        "field": "practice-mode",
+        "value": "mixed",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "듣기와 읽기를 함께 연습하고 싶어요",
+          "start": 3,
+          "end": 22
+        }
+      },
+      {
+        "field": "support",
+        "value": "step",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "도움은 한 단계씩 나눠서 받고 싶어요",
+          "start": 24,
+          "end": 44
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-25",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "여행에서 어디부터 돌고 어느 길로 갈지, 일정과 동선을 짜는 주제로 공부하고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "travel-planning",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "여행에서 어디부터 돌고 어느 길로 갈지, 일정과 동선을 짜는 주제로 공부하고 싶어요",
+          "start": 0,
+          "end": 46
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-26",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "여행지 식당에서 음식을 고르고 주문하는 이야기에 관심이 있어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "travel-food",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "여행지 식당에서 음식을 고르고 주문하는 이야기에 관심이 있어요",
+          "start": 0,
+          "end": 34
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-27",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "여행 가서 묵을 숙소를 알아보는 내용을 배우고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "travel-stay",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "여행 가서 묵을 숙소를 알아보는 내용을 배우고 싶어요",
+          "start": 0,
+          "end": 29
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-28",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "이번에는 채용 면접을 준비하는 주제로 한국어를 배우고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "career-interview",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "채용 면접을 준비하는 주제로 한국어를 배우고 싶어요",
+          "start": 5,
+          "end": 33
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-29",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "앞으로 무슨 일을 할지 진로를 탐색하는 이야기를 다루고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "career-planning",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "앞으로 무슨 일을 할지 진로를 탐색하는 이야기를 다루고 싶어요",
+          "start": 0,
+          "end": 34
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-30",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "영상을 촬영하고 편집하는 주제에 관심이 있어요. 배울 때 단계별 도움을 받고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "content-video",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "영상을 촬영하고 편집하는 주제에 관심이 있어요",
+          "start": 0,
+          "end": 25
+        }
+      },
+      {
+        "field": "support",
+        "value": "step",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "단계별 도움을 받고 싶어요",
+          "start": 32,
+          "end": 46
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-31",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "포스터나 화면을 디자인하는 내용을 주제로 삼고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "content-design",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "포스터나 화면을 디자인하는 내용을 주제로 삼고 싶어요",
+          "start": 0,
+          "end": 29
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-32",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "AI 도구를 생활에 어떻게 써먹는지 배우는 데 관심이 있어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "ai-tools",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "AI 도구를 생활에 어떻게 써먹는지 배우는 데 관심이 있어요",
+          "start": 0,
+          "end": 33
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-33",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "직장 동료들과 일을 나눠 맡고 협업하는 이야기를 공부하고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "work-collaboration",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "직장 동료들과 일을 나눠 맡고 협업하는 이야기를 공부하고 싶어요",
+          "start": 0,
+          "end": 35
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-34",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "책을 읽는 독서를 주제로 연습하고 싶고, 설명은 자세히 해 주시면 좋겠어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "reading-books",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "책을 읽는 독서를 주제로 연습하고 싶고",
+          "start": 0,
+          "end": 21
+        }
+      },
+      {
+        "field": "explanation",
+        "value": "detailed",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명은 자세히 해 주시면 좋겠어요",
+          "start": 23,
+          "end": 41
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-35",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "음악에 관한 주제로는 공부하고 싶지 않아요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "music",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "음악에 관한 주제로는 공부하고 싶지 않아요",
+          "start": 0,
+          "end": 23
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-36",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "요즘 제가 다루고 싶은 소재는 운동이에요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "exercise",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "요즘 제가 다루고 싶은 소재는 운동이에요",
+          "start": 0,
+          "end": 22
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-37",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "집에서 요리하는 이야기를 한국어 공부 소재로 쓰고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "cooking",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "집에서 요리하는 이야기를 한국어 공부 소재로 쓰고 싶어요",
+          "start": 0,
+          "end": 31
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-38",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "사진 찍는 취미에 관한 주제로 배우고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "photography",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "사진 찍는 취미에 관한 주제로 배우고 싶어요",
+          "start": 0,
+          "end": 24
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-39",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "게임 이야기를 하면서 한국어를 익히고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "games",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "게임 이야기를 하면서 한국어를 익히고 싶어요",
+          "start": 0,
+          "end": 24
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-40",
+    "category": "explicit",
+    "domain": "topic",
+    "text": "자연 속을 산책하는 이야기를 공부 주제로 골라 보고 싶어요.",
+    "expected": [
+      {
+        "field": "topic",
+        "value": "nature",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "자연 속을 산책하는 이야기를 공부 주제로 골라 보고 싶어요",
+          "start": 0,
+          "end": 32
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-41",
+    "category": "explicit",
+    "domain": "communication",
+    "text": "회의 중에는 다른 분들 생각을 끝까지 듣고 나서 제가 정리하는 역할이 편해요.",
+    "expected": [
+      {
+        "field": "communication",
+        "value": "listen-organize",
+        "polarity": "prefer",
+        "condition": "meeting",
+        "exactTextSource": {
+          "quote": "회의 중에는 다른 분들 생각을 끝까지 듣고 나서 제가 정리하는 역할이 편해요.",
+          "start": 0,
+          "end": 43
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-42",
+    "category": "explicit",
+    "domain": "communication",
+    "text": "저는 제 의견을 먼저 꺼내 놓고 이야기를 시작하는 쪽이 편해요.",
+    "expected": [
+      {
+        "field": "communication",
+        "value": "share-first",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "제 의견을 먼저 꺼내 놓고 이야기를 시작하는 쪽이 편해요",
+          "start": 3,
+          "end": 34
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-43",
+    "category": "explicit",
+    "domain": "communication",
+    "text": "동료와 함께 일하는 상황에서는 글로 생각을 주고받는 쪽을 선호해요.",
+    "expected": [
+      {
+        "field": "communication",
+        "value": "written",
+        "polarity": "prefer",
+        "condition": "teamwork",
+        "exactTextSource": {
+          "quote": "동료와 함께 일하는 상황에서는 글로 생각을 주고받는 쪽을 선호해요.",
+          "start": 0,
+          "end": 37
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-44",
+    "category": "explicit",
+    "domain": "communication",
+    "text": "저는 상대와 직접 말을 주고받으며 소통하는 방식이 좋아요.",
+    "expected": [
+      {
+        "field": "communication",
+        "value": "spoken",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "상대와 직접 말을 주고받으며 소통하는 방식이 좋아요",
+          "start": 3,
+          "end": 31
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-45",
+    "category": "explicit",
+    "domain": "communication",
+    "text": "말로 소통하는 방식은 피하고 싶고, 글로 주고받고 싶어요.",
+    "expected": [
+      {
+        "field": "communication",
+        "value": "spoken",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "말로 소통하는 방식은 피하고 싶고",
+          "start": 0,
+          "end": 18
+        }
+      },
+      {
+        "field": "communication",
+        "value": "written",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "글로 주고받고 싶어요",
+          "start": 20,
+          "end": 31
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-46",
+    "category": "explicit",
+    "domain": "work-style",
+    "text": "일을 계획하는 단계에서는 먼저 전체 계획을 세워 놓는 게 좋아요.",
+    "expected": [
+      {
+        "field": "work-style",
+        "value": "plan-first",
+        "polarity": "prefer",
+        "condition": "planning",
+        "exactTextSource": {
+          "quote": "일을 계획하는 단계에서는 먼저 전체 계획을 세워 놓는 게 좋아요.",
+          "start": 0,
+          "end": 36
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-47",
+    "category": "explicit",
+    "domain": "work-style",
+    "text": "저는 우선 직접 해 보고, 해 나가면서 방법을 고치는 편이 잘 맞아요.",
+    "expected": [
+      {
+        "field": "work-style",
+        "value": "try-adjust",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "우선 직접 해 보고, 해 나가면서 방법을 고치는 편이 잘 맞아요",
+          "start": 3,
+          "end": 38
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-48",
+    "category": "explicit",
+    "domain": "work-style",
+    "text": "한 일을 끝내야 다음 일을 시작하는 식으로, 한 번에 하나씩 처리하고 싶어요.",
+    "expected": [
+      {
+        "field": "work-style",
+        "value": "single-task",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "한 일을 끝내야 다음 일을 시작하는 식으로, 한 번에 하나씩 처리하고 싶어요",
+          "start": 0,
+          "end": 42
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-49",
+    "category": "explicit",
+    "domain": "work-style",
+    "text": "할 일이 생기면 중요한 순서를 정한 뒤 그 순서대로 처리하는 걸 선호해요.",
+    "expected": [
+      {
+        "field": "work-style",
+        "value": "prioritize",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "할 일이 생기면 중요한 순서를 정한 뒤 그 순서대로 처리하는 걸 선호해요",
+          "start": 0,
+          "end": 40
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-50",
+    "category": "explicit",
+    "domain": "work-style",
+    "text": "한 번에 한 가지만 하는 방식은 피하고 싶어요. 업무는 우선순위를 매겨 처리하고 싶어요.",
+    "expected": [
+      {
+        "field": "work-style",
+        "value": "single-task",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "한 번에 한 가지만 하는 방식은 피하고 싶어요",
+          "start": 0,
+          "end": 25
+        }
+      },
+      {
+        "field": "work-style",
+        "value": "prioritize",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "업무는 우선순위를 매겨 처리하고 싶어요",
+          "start": 27,
+          "end": 48
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-51",
+    "category": "explicit",
+    "domain": "decision",
+    "text": "결정을 내려야 할 때는 관련 자료와 근거부터 확인하는 편이 좋아요.",
+    "expected": [
+      {
+        "field": "decision",
+        "value": "evidence",
+        "polarity": "prefer",
+        "condition": "decision",
+        "exactTextSource": {
+          "quote": "결정을 내려야 할 때는 관련 자료와 근거부터 확인하는 편이 좋아요.",
+          "start": 0,
+          "end": 37
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-52",
+    "category": "explicit",
+    "domain": "decision",
+    "text": "뭔가를 결정할 때 저는 가능한 선택지들을 나란히 놓고 비교하고 싶어요.",
+    "expected": [
+      {
+        "field": "decision",
+        "value": "compare-options",
+        "polarity": "prefer",
+        "condition": "decision",
+        "exactTextSource": {
+          "quote": "뭔가를 결정할 때 저는 가능한 선택지들을 나란히 놓고 비교하고 싶어요.",
+          "start": 0,
+          "end": 39
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-53",
+    "category": "explicit",
+    "domain": "decision",
+    "text": "저는 전에 직접 겪었던 일을 판단의 기준으로 삼는 편이에요.",
+    "expected": [
+      {
+        "field": "decision",
+        "value": "experience",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "전에 직접 겪었던 일을 판단의 기준으로 삼는 편이에요",
+          "start": 3,
+          "end": 32
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-54",
+    "category": "explicit",
+    "domain": "decision",
+    "text": "저는 다른 사람들과 상의해서 판단하는 방식을 선호해요.",
+    "expected": [
+      {
+        "field": "decision",
+        "value": "consult",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "다른 사람들과 상의해서 판단하는 방식을 선호해요",
+          "start": 3,
+          "end": 29
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-55",
+    "category": "explicit",
+    "domain": "decision",
+    "text": "판단할 때 직접 겪은 경험을 참고하는 방식은 피하고 싶고, 자료와 근거를 확인하고 싶어요.",
+    "expected": [
+      {
+        "field": "decision",
+        "value": "experience",
+        "polarity": "avoid",
+        "condition": "decision",
+        "exactTextSource": {
+          "quote": "판단할 때 직접 겪은 경험을 참고하는 방식은 피하고 싶고",
+          "start": 0,
+          "end": 31
+        }
+      },
+      {
+        "field": "decision",
+        "value": "evidence",
+        "polarity": "prefer",
+        "condition": "decision",
+        "exactTextSource": {
+          "quote": "자료와 근거를 확인하고 싶어요",
+          "start": 33,
+          "end": 49
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-56",
+    "category": "explicit",
+    "domain": "explanation-detail",
+    "text": "설명을 받을 때 저는 전체적인 큰 그림을 맨 먼저 보고 싶어요.",
+    "expected": [
+      {
+        "field": "explanation-detail",
+        "value": "overview-first",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "전체적인 큰 그림을 맨 먼저 보고 싶어요",
+          "start": 12,
+          "end": 34
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-57",
+    "category": "explicit",
+    "domain": "explanation-detail",
+    "text": "왜 그런 결론이 나왔는지, 핵심 근거를 하나하나 자세히 알고 싶어요.",
+    "expected": [
+      {
+        "field": "explanation-detail",
+        "value": "reasons-detail",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "왜 그런 결론이 나왔는지, 핵심 근거를 하나하나 자세히 알고 싶어요",
+          "start": 0,
+          "end": 37
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-58",
+    "category": "explicit",
+    "domain": "explanation-detail",
+    "text": "설명이 중간중간 끊기지 않고 길게 이어지는 쪽이 저는 좋아요.",
+    "expected": [
+      {
+        "field": "explanation-detail",
+        "value": "long-flow",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "설명이 중간중간 끊기지 않고 길게 이어지는 쪽이 저는 좋아요",
+          "start": 0,
+          "end": 33
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-59",
+    "category": "explicit",
+    "domain": "explanation-detail",
+    "text": "저는 길게 이어지는 설명은 원하지 않아요.",
+    "expected": [
+      {
+        "field": "explanation-detail",
+        "value": "long-flow",
+        "polarity": "avoid",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "길게 이어지는 설명은 원하지 않아요",
+          "start": 3,
+          "end": 22
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-60",
+    "category": "explicit",
+    "domain": "explanation-detail",
+    "text": "먼저 전체 개요를 보고 싶고, 그다음에는 핵심 근거를 자세히 알고 싶어요.",
+    "expected": [
+      {
+        "field": "explanation-detail",
+        "value": "overview-first",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "먼저 전체 개요를 보고 싶고",
+          "start": 0,
+          "end": 15
+        }
+      },
+      {
+        "field": "explanation-detail",
+        "value": "reasons-detail",
+        "polarity": "prefer",
+        "condition": null,
+        "exactTextSource": {
+          "quote": "그다음에는 핵심 근거를 자세히 알고 싶어요",
+          "start": 17,
+          "end": 40
+        }
+      }
+    ],
+    "clarificationExpected": false
+  },
+  {
+    "id": "N2-61",
+    "category": "negation-ambiguous",
+    "domain": null,
+    "text": "혼자 해 보는 게 싫지는 않은데, 그렇다고 그 방식으로 정하고 싶다는 뜻은 아니에요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-62",
+    "category": "negation-ambiguous",
+    "domain": null,
+    "text": "설명이 짧은 걸 안 좋아한다고 말하면 그것도 정확하진 않아요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-63",
+    "category": "negation-ambiguous",
+    "domain": null,
+    "text": "글로 소통하기가 불편하지 않은 건 아닌데, 어떤 방식이 좋은지는 아직 모르겠어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-64",
+    "category": "negation-ambiguous",
+    "domain": null,
+    "text": "듣기 연습을 피하고 싶지 않다고 해서 즐겨 한다는 뜻은 아니에요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-65",
+    "category": "other-person",
+    "domain": null,
+    "text": "동생은 여행지에서 먹을 음식을 알아보는 걸 좋아한다고 했어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-66",
+    "category": "other-person",
+    "domain": null,
+    "text": "우리 팀장은 먼저 계획을 세워 놓는 방식이 마음에 든대요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-67",
+    "category": "other-person",
+    "domain": null,
+    "text": "제 친구한테는 긴 설명을 끊지 않고 듣는 게 잘 맞는다고 해요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-68",
+    "category": "other-person",
+    "domain": null,
+    "text": "선생님은 자료와 근거를 보고 결정하는 편이래요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-69",
+    "category": "past-only",
+    "domain": null,
+    "text": "중학생 때는 누구 도움 없이 혼자 하는 걸 좋아했어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-70",
+    "category": "past-only",
+    "domain": null,
+    "text": "지난 학기에는 읽기 연습을 주로 골랐는데, 이번 학기에는 아직 정하지 않았어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-71",
+    "category": "past-only",
+    "domain": null,
+    "text": "예전 회사에서는 회의 때 제가 먼저 의견을 말하는 편이었어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-72",
+    "category": "past-only",
+    "domain": null,
+    "text": "몇 년 전에는 사진 찍는 이야기를 제일 좋아했어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-73",
+    "category": "ambiguous",
+    "domain": null,
+    "text": "저는 그 방식이 더 편해요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-74",
+    "category": "ambiguous",
+    "domain": null,
+    "text": "이번에는 적당히 해 주시면 좋겠어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-75",
+    "category": "ambiguous",
+    "domain": null,
+    "text": "저는 먼저 해 보고 싶어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-76",
+    "category": "ambiguous",
+    "domain": null,
+    "text": "일단 보기 편한 쪽으로 하고 싶네요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-77",
+    "category": "unsupported",
+    "domain": null,
+    "text": "공부 화면의 바탕은 연한 베이지색이면 좋겠어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-78",
+    "category": "unsupported",
+    "domain": null,
+    "text": "수업은 저녁 아홉 시 이후에 받고 싶어요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-79",
+    "category": "unsupported",
+    "domain": null,
+    "text": "매주 화요일에 공부 알림을 보내 주세요.",
+    "expected": [],
+    "clarificationExpected": true
+  },
+  {
+    "id": "N2-80",
+    "category": "unsupported",
+    "domain": null,
+    "text": "연습 문제의 글자는 지금보다 크게 보여 주세요.",
+    "expected": [],
+    "clarificationExpected": true
+  }
+]

@@ -112,7 +112,7 @@ function completePeriods(periods, asOf) {
 }
 const evidence = entry => ({ kind: 'statement', ref: `statement.${entry.row.id}.${entry.meaning.id}`, label: [...entry.meaning.evidence.quote].slice(0, 120).join('') });
 function summarizeStatementRelations({ document, facets, summary, activity, learning, asOf } = {}) {
-  const resolved = resolveMemberStatements([2, 3, 4, 5, 6].includes(document?.version) ? document.statements : [], asOf), { entries } = resolved, relations = [], coveredFacets = new Set();
+  const resolved = resolveMemberStatements([2, 3, 4, 5, 6, 7].includes(document?.version) ? document.statements : [], asOf), { entries } = resolved, relations = [], coveredFacets = new Set();
   // A directly written preference is authorized by the person's confirmation.
   // Turning learning observation off disables comparisons, not that declaration.
   const available = () => true;
