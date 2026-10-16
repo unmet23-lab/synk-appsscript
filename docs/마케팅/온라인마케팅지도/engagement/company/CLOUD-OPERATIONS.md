@@ -1,5 +1,15 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="sns-health-production-20261016"></a>
+## SNS 계정 점검 주기·공정성 — 2026-10-16 운영 인수
+
+원본 `b3453b3e73f882ff276e7591f8812f746d80fe8d`, manifest `574180783026dd4c21cff594e42a19d7111e7dc51ac8a4911a20149b57fdfc2e`, 이미지 `sha256:7dfbc80bdd7b9e306a10815e6605ac79265d1e37f19d4518b6237bc73753e71f`. 부모 `97f0382c…`의 나머지 1,019파일을 보존하고 실행 2·시험 2파일만 변경했다. Windows/Linux 각각 1,200/1,200·호환성 2/2를 통과했다. [기능·검증](WORKSPACE_QA.md#sns-health-cadence-20261016).
+
+- **반영:** 09:34 KST 배포 `5ec9b7d34e3a4247723b45ec931f05c2`의 runtime·공개 126/126·HTTPS ready 검증을 마쳤다. 10:01:26 새 백업·격리 복구·HA 운영 인수까지 완료했다. [실행 대조](../../../../../.tmp/company-sns-health-20261016/deployment/runtime-live-postcheck-1792110808894.json) · [공개 검증](../../../../../.tmp/company-sns-health-20261016/deployment/public-verification-1792110846880.json).
+- **백업·격리 복구:** 새 백업 generation `1792111362742360`(420,521,944바이트)의 원본·SHA-256을 대조하고 09:53:50 KST 격리 앱 기동을 통과했다. 계정 9테이블·활성 세션/토큰·원래 암호화 키를 보존했고 만료 토큰 삭제 0, 외부 네트워크/공개 포트 0, 시험 컨테이너 제거를 확인했다. 현재 버전으로 강제 장애 전환을 시험한 것은 아니다. [완료 백업](../../../../../.tmp/company-sns-health-20261016/rearm/dr/backup-status-1792111357314.json) · [격리 복원](../../../../../.tmp/company-sns-health-20261016/rearm/dr/restore-v1.json).
+- **최종 HA·SNS:** A owner epoch7·B 대기·복제 정상·armed=true·HTTPS 200/ready/TLS를 확인했다. 정상 상태의 기존 관측은 18표본·3리전·1,120,473ms에서 오류 0이며 최종 HA 루프 관측 중 재시작 0이다. 10:01:51 별도 읽기에서 양 노드 원문 각 1,023파일·현재 SNS 연결 3개·예약 3건의 옵션/시도 0·발행 4건을 확인했고 경고 0이었다. 실제 7일 경과·연속 가용성·이번 버전의 강제 장애 전환까지 입증한 것은 아니다. [계정 기준선](../../../../../.tmp/company-sns-health-20261016/rearm/account-baseline-final-v1.json) · [자연 관측](../../../../../.tmp/company-sns-health-20261016/rearm/natural-final-v1.json) · [최종 HA](../../../../../.tmp/company-sns-health-20261016/rearm/arm-postcheck-final-v1.json) · [SNS 기준선](../../../../../.tmp/company-sns-soak-20261015/release-prep/observations/baseline-1792112511095.json).
+- **보존·비용:** 기존 예약 3건·실제 발행/답장 기록을 보존하며 새 SNS 쓰기는 실행하지 않았다. 공간 확보는 확인된 과거 전송·복원용 파생 사본만 정리했고 원본 백업·소스·실행 이미지를 유지했다. 새 구독·유료 AI API·서버 증설·SSH 범위 확대 없이 기존 운영 자원을 사용했다. [부모 복원 사본 정리](../../../../../.tmp/company-sns-health-20261016/cleanup/result-v1.json).
+
 <a id="sns-soak-production-20261015"></a>
 ## SNS 장기 예약·실계정 발행·답장 — 2026-10-15~16 운영 인수
 
