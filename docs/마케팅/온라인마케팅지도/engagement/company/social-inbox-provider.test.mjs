@@ -75,6 +75,50 @@ test('Facebook bounded recent polling explains partial coverage after history fi
   assert.equal(second.coverage.commentsReceived,0);assert.equal(second.coverage.requestsUsed,10);assert.equal(second.coverage.requestsLimit,40);assert.equal(second.coverage.completeHistory,false);assert.equal(f.provider.capability(f.channel).lastError,null);assert.equal(f.store.all('socialInbox').length,0);
 });
 
+test('Facebook scheduled history restarts after completion and finds later replies on old posts without starvation',async t=>{
+  const f=fixture(t,{platform:'facebook',authType:'facebook-user'});f.enable();let laterReply=false;
+  const posts=Array.from({length:12},(_,i)=>({id:'100_'+(200+i),permalink_url:'https://www.facebook.com/100/posts/'+(200+i)}));
+  f.setHandler((path,url)=>{
+    if(path==='100/posts'){
+      const offset=Number(url.searchParams.get('after')||0),limit=Number(url.searchParams.get('limit')),data=posts.slice(offset,offset+limit),next=offset+data.length;
+      return json({data,...(next<posts.length?{paging:{next:'https://untrusted.test/do-not-follow',cursors:{after:String(next)}}}:{})});
+    }
+    if(/^100_\d+\/comments$/.test(path)){
+      const post=path.split('/')[0].split('_')[1];
+      if(post==='211'&&url.searchParams.get('after'))return json({data:[{id:'211_301',message:'existing page reply',from:{id:'100'},parent:{id:'211_300'}},...(laterReply?[{id:'211_302',message:'later page reply',from:{id:'100'},parent:{id:'211_300'}}]:[])]});
+      return json({data:[{id:post+'_300',message:'question on '+post,from:{id:'999'}}],...(post==='211'?{paging:{next:'https://untrusted.test/do-not-follow',cursors:{after:'older-comments'}}}:{})});
+    }
+  });
+  const rounds=[];
+  async function scan(service,store){
+    const start=f.calls.length,result=await service.scanDue(),coverage=store.get('socialInboxConnections','channel').coverage;
+    assert.equal(result.checked,1);assert.equal(result.failed,0);assert.ok(f.calls.length-start<=40);assert.equal(coverage.requestsUsed,f.calls.length-start);
+    assert.equal(coverage.completeHistory,false);assert.equal(coverage.recentStatus,'limited');assert.ok(coverage.partialReasons.includes('recent-post-limit'));
+    rounds.push({recent:coverage.progress.recentPostsChecked,history:coverage.progress.historyPostsChecked,pending:coverage.progress.historyPending,imported:result.imported,requests:coverage.requestsUsed});
+    return coverage.progress;
+  }
+  const first=await scan(f.provider,f.store);assert.equal(first.historyCompletedAt,null);assert.equal(f.store.all('socialInbox').length,10);
+  const before=f.calls.length;assert.equal((await f.provider.scanDue()).checked,0);assert.equal(f.calls.length,before);
+  // A new Store/provider must continue the saved post cursor, including the old post's comment cursor.
+  const restored=new Store(f.store.directory),close=f.store.close.bind(f.store);f.store.close=()=>{restored.close();close();};const service=f.create({store:restored});
+  f.advance(15*60000);const second=await scan(service,restored);assert.equal(second.historyPending,false);assert.ok(second.historyCompletedAt);
+  assert.equal(restored.all('socialInbox').length,13);const parent=restored.all('socialInbox').find(row=>row.externalId==='211_300');
+  assert.deepEqual(parent.externalReplyEvidence.replyIds,['211_301']);assert.equal(parent.externalReplyEvidence.complete,false);
+  restored.put('socialInbox',parent.id,{...parent,status:'resolved',assigneeId:'admin',replyDraft:'local draft'});laterReply=true;
+  f.advance(15*60000);const third=await scan(service,restored);
+  assert.equal(third.historyPending,true);assert.equal(third.historyCompletedAt,second.historyCompletedAt);assert.equal(restored.all('socialInbox').length,13);
+  f.advance(15*60000);const fourth=await scan(service,restored);assert.equal(fourth.historyPending,false);assert.ok(fourth.historyCompletedAt>second.historyCompletedAt);
+  assert.deepEqual(rounds,[{recent:10,history:0,pending:true,imported:10,requests:13},{recent:5,history:2,pending:false,imported:3,requests:12},{recent:10,history:0,pending:true,imported:0,requests:13},{recent:5,history:2,pending:false,imported:1,requests:12}]);
+  const rows=restored.all('socialInbox'),expected=[...posts.map(post=>post.id.split('_')[1]+'_300'),'211_301','211_302'].sort();
+  assert.deepEqual(rows.map(row=>row.externalId).sort(),expected);assert.equal(new Set(rows.map(row=>row.externalId)).size,14);
+  const same=restored.get('socialInbox',parent.id);assert.equal(same.status,'resolved');assert.equal(same.assigneeId,'admin');assert.equal(same.replyDraft,'local draft');assert.equal(same.outboundSent,false);assert.deepEqual(same.externalReplyEvidence.replyIds,['211_301','211_302']);
+  assert.equal(restored.all('socialReplyAttempts').length,0);assert.equal(restored.all('socialReplyDedupe').length,0);
+  assert.equal(restored.get('socialInboxRequests','channel').times.length,50);
+  assert.ok(f.calls.every(call=>call.init.method==='GET'&&!call.init.body&&new URL(call.url).origin==='https://graph.facebook.com'));
+  assert.ok(f.calls.filter(call=>new URL(call.url).pathname.endsWith('/comments')).every(call=>new URL(call.url).searchParams.get('filter')==='stream'));
+  t.diagnostic(JSON.stringify({syntheticScheduledRounds:rounds,uniqueStoredComments:14,realNetworkCalls:0}));
+});
+
 test('empty completed scan and an invalid cursor remain distinct from bounded collection',async t=>{
   const empty=fixture(t,{platform:'facebook'});empty.enable();empty.setHandler(path=>path==='100/posts'?json({data:[]}):null);
   const complete=await empty.sync();assert.equal(complete.status,'scanned');assert.equal(complete.coverage.recentStatus,'complete');assert.deepEqual(complete.coverage.partialReasons,[]);assert.equal(complete.coverage.requestsUsed,2);
