@@ -1,0 +1,75 @@
+{
+  "upstreamToolCommit": "47dd88d2f893a310bd2547de91776211f6f314b1",
+  "toolSources": [
+    {
+      "file": "tools/원격배포.js",
+      "sha256": "710b8035fbd8dbc86b4fc3cb984e4d55b19d984c3ddff854d2d582eb8a98ffba"
+    },
+    {
+      "file": "tools/원격SQL.js",
+      "sha256": "f1a37dbad7d71d343af65dd6a9c6598ecacdc0631fe733b0cd155c05618d8c5c"
+    },
+    {
+      "file": "tools/배포빚.js",
+      "sha256": "4b4f0f48f655a8146940c2c862e68bb12407a02b6de48eda6ebe7992284f1da3"
+    },
+    {
+      "file": "tools/마이그레이션_합본.js",
+      "sha256": "d467b9673fd3250f81d50d1efe1ac90ac777c14704f83a770045e4a8c75f7214"
+    },
+    {
+      "file": "tools/lib/연동사후상태.js",
+      "sha256": "c506495c80ec466c68dc62f68ac3127717e013e2cf5efcee43cb2d062f582879"
+    },
+    {
+      "file": "lib/자격증명.js",
+      "sha256": "e4ccdf6c68b086287a06a72a058b77d2cc56996e3dd0328596336df39c6e34e4"
+    },
+    {
+      "file": "lib/플래그.js",
+      "sha256": "00e4cc3b50d3971b0ce802434bc63ae1d7cf9600448caba60545186afe24d387"
+    }
+  ],
+  "candidateManifestSha256": "710a00e7b4d132a3533dccd3065dee7d3403a4021d259b905b6f69c5026b3ff7",
+  "parentManifestSha256": "0bd3e4e33362c364447fe1d93dab0a1aa5dbcc1fdec4c841ac8a8e50a428ebce",
+  "runnerSha256": "064c780f1374bfdac80d2d2b2e859e5c9ae493727451f3ee8b10d1110b41f8d8",
+  "parent": [
+    {
+      "slug": "synk-personal",
+      "version": 42,
+      "sha256": "e388c759c6d30d40e6da3d14ed3e849978ac0aa5306a1a0eb674db905f2523fc"
+    },
+    {
+      "slug": "synk-account",
+      "version": 59,
+      "sha256": "4b0d148682f89b65f815cd2c9c5bca7c4054d115ad68365c8c09fd7116e54f28"
+    }
+  ],
+  "files": [
+    {
+      "file": "functions/synk-personal/index.ts",
+      "parentSha256": "d82f20657277e3f49c4223b347fd927621684c768c18693fcdd0ec5907f8223b",
+      "sha256": "d82f20657277e3f49c4223b347fd927621684c768c18693fcdd0ec5907f8223b",
+      "bytes": 668,
+      "changed": false
+    },
+    {
+      "file": "functions/synk-personal/synk-personal-runtime.mjs",
+      "parentSha256": "63fd1208abe40181b58179b15834d6f754efc150c21dc117de32d01d0f83d94d",
+      "sha256": "343d9b715c6f40a6c139ee252883bfefc56137350b7e2f872a794237321630c7",
+      "bytes": 1426801,
+      "changed": true
+    }
+  ],
+  "schemaDependency": {
+    "file": "migrations/20261014210000_synk_member_understanding_c18.sql",
+    "sha256": "e7d821dca1cf9ecce1a46db9f8bbd9dac00afd9d38a0ef68393da0377171527b",
+    "receipt": {
+      "version": "20261014210000",
+      "name": "20261014210000_synk_member_understanding_c18.sql",
+      "checksum": "db39e9de3efd169e03a306bbb53dc64f6d74f34ea30ba0bc122e273aebe0cc7c"
+    },
+    "apply": false
+  },
+  "remoteWrites": false
+}
