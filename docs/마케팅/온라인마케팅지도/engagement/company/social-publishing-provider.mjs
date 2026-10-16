@@ -50,8 +50,14 @@ export function createSocialPublishingProvider({store,clock=()=>new Date().toISO
   }
   function disconnect(user,input={},context={}){const {channel}=authorized(user,input.channelId,context),old=store.get(LINKS,channel.id);store.put(LINKS,channel.id,{...old,id:channel.id,channelId:channel.id,enabled:false,version:randomUUID(),updatedAt:now(),updatedBy:user.id});return {channelId:channel.id,disconnected:true};}
   function health(user){const actor=current(user),channels=visible(actor).map(c=>{const cap=capability(c),link=store.get(LINKS,c.id),saved=store.get(HEALTH,c.id),same=saved?.version===link?.version&&saved?.connectionVersion===(c.connectionVersion||0),record=same?saved:null;return {channelId:c.id,state:!supported(c)?'unsupported':!link?.enabled?'not_configured':!cap.canPublish?'auth_required':record?.state||'connected',message:!link?.enabled||!cap.canPublish?cap.reason:record?.message||cap.reason,checkedAt:record?.checkedAt||null,lastAttemptAt:record?.lastAttemptAt||null,stale:!record?.checkedAt||Date.parse(now())-Date.parse(record.checkedAt)>3600000,canCheck:supported(c)&&canManageOwners(actor,c),errorCode:record?.errorCode||cap.errorCode||null};});return {provider:'direct',api:{state:'connected',message:'별도 구독 없이 SNS 공식 API에 직접 연결해요. 계정별 권한은 아래 결과를 확인하세요.',checkedAt:null},channels,canCheck:channels.some(c=>c.canCheck),intervalMinutes:60};}
-  async function inspect(user,channel,context={}){
+  async function inspect(user,channel,context={},scheduled=false){
     const previous=store.get(LINKS,channel.id),check=()=>guard(user,channel,context,previous),attempt=now();
+    if(scheduled){
+      // Reserve the interval before awaiting SNS: cancellation or a restart must
+      // not retry the same binding every minute or replace its last known proof.
+      check();const saved=store.get(HEALTH,channel.id),same=saved?.version===previous?.version&&saved?.connectionVersion===(channel.connectionVersion||0);
+      store.put(HEALTH,channel.id,{...(same?saved:{}),id:channel.id,channelId:channel.id,version:previous?.version||null,connectionVersion:channel.connectionVersion||0,lastAttemptAt:attempt});
+    }
     try{await adapter(channel).checkConnection(channel,{signal:context.signal,authorize:check});check();store.put(HEALTH,channel.id,{id:channel.id,channelId:channel.id,version:previous?.version||null,connectionVersion:channel.connectionVersion||0,state:'connected',checkedAt:now(),lastAttemptAt:attempt,message:'SNS 계정과 게시 권한을 확인했어요.',errorCode:null});return true;}
     catch(error){check();store.put(HEALTH,channel.id,{id:channel.id,channelId:channel.id,version:previous?.version||null,connectionVersion:channel.connectionVersion||0,state:/AUTH|SCOPE|CONNECT|TOKEN|PERMISSION|ACCOUNT/.test(error.code||'')?'auth_required':'error',checkedAt:null,lastAttemptAt:attempt,message:error.providerSafe||error.metaSafe?error.message:'게시 연결을 확인하지 못했어요. 다시 확인해 주세요.',errorCode:error.code||'CONNECTION_CHECK_FAILED'});return false;}
   }
@@ -77,7 +83,28 @@ export function createSocialPublishingProvider({store,clock=()=>new Date().toISO
     if(supported(input.channel))return {provider:providerName(input.channel),status:'not_found',errorCode:'NOT_SUBMITTED',message:'전송 기록이 없어 공개 게시 요청을 보내지 않은 것으로 확인했어요. 다시 예약할 수 있어요.',retryable:true,definitive:true,publicVerified:false};
     return {provider:'manual',status:'uncertain',errorCode:'SUBMISSION_NOT_FOUND',message:'전송 기록이 없어서 다시 보내지 않았어요. SNS에서 실제 게시 여부를 확인해 주세요.',retryable:false,publicVerified:false};}
   async function reconcile(user,input={},context={}){const job=store.get('socialPublishJobs',input.jobId);authorized(user,job?.channelId,context);if(existingLedger({channel:{id:job.channelId},job})?.adapter===legacy)return legacy.reconcile(user,input,context);throw fail('DIRECT_RECONCILE_REQUIRED','직접 게시 작업은 결과 다시 확인 또는 실제 게시 주소 확인을 이용해 주세요.');}
-  function scanHealthDue({signal}={}){if(stopped||healthRun)return healthRun||Promise.resolve({checked:0});controller=new AbortController();const combined=signal?AbortSignal.any([signal,controller.signal]):controller.signal;healthRun=(async()=>{let checked=0,failed=0;for(const link of store.all(LINKS)){if(stopped||combined.aborted||checked>=5)break;const channel=store.get('channels',link.channelId),actor=store.get('users',link.updatedBy),last=store.get(HEALTH,link.channelId);if(!link.enabled||!channel||channel.hidden||channel.active===false||!actor?.active||!canManageOwners(actor,channel)||Date.parse(last?.lastAttemptAt||0)>Date.parse(now())-3600000)continue;try{if(!await inspect(actor,channel,{signal:combined}))failed++;checked++;}catch{failed++;}}return {checked,failed};})().finally(()=>{healthRun=null;controller=null;});return healthRun;}
+  function lastHealthAttempt(channel,link){
+    const saved=store.get(HEALTH,link.channelId),same=saved?.version===link.version&&saved?.connectionVersion===(channel?.connectionVersion||0),at=same?Date.parse(saved?.lastAttemptAt):NaN;
+    return Number.isFinite(at)?at:-Infinity;
+  }
+  function scanHealthDue({signal}={}){
+    if(stopped||healthRun)return healthRun||Promise.resolve({checked:0});
+    controller=new AbortController();const combined=signal?AbortSignal.any([signal,controller.signal]):controller.signal;
+    healthRun=(async()=>{
+      let checked=0,failed=0;
+      const candidates=store.all(LINKS).map(link=>({id:link.channelId,at:lastHealthAttempt(store.get('channels',link.channelId),link)})).sort((a,b)=>a.at-b.at);
+      for(const candidate of candidates){
+        if(stopped||combined.aborted||checked>=5)break;
+        // Earlier checks await the network; re-read eligibility and the interval
+        // so revoked access, a disconnected account or a manual check takes effect.
+        const link=store.get(LINKS,candidate.id),channel=store.get('channels',candidate.id),actor=store.get('users',link?.updatedBy);
+        if(!link?.enabled||!supported(channel)||channel.hidden||channel.active===false||!actor?.active||!canManageOwners(actor,channel)||lastHealthAttempt(channel,link)>Date.parse(now())-3600000)continue;
+        checked++;
+        try{if(!await inspect(actor,channel,{signal:combined},true))failed++;}catch{failed++;}
+      }
+      return {checked,failed};
+    })().finally(()=>{healthRun=null;controller=null;});return healthRun;
+  }
   function requestBudgetSnapshot(user){const rows=visible(user).map(c=>store.get('socialDirectPublishRequests',c.platform==='youtube'?'youtube-direct:'+c.id:c.id)||{});return {times:rows.flatMap(r=>r.times||[]).sort((a,b)=>a-b),retryAfter:Math.max(0,...rows.map(r=>r.retryAt||0))};}
   async function stopHealth(){stopped=true;controller?.abort();await healthRun;await legacy.stopHealth?.();}
   return {assertUnique,requestBudgetSnapshot,settings,configure,connect,disconnect,refresh,capability,preflight,publish,status,reconcile,health,checkHealth,scanHealthDue,stopHealth,waitForHealthIdle:()=>healthRun||Promise.resolve()};

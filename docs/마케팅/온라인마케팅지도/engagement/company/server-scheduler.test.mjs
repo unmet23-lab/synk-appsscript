@@ -164,6 +164,43 @@ test('one-minute inbox checks avoid a second fifteen-minute delay when account s
   assert.equal(state.data.runtime.inbox.intervalMs, 60000);
 });
 
+test('minute health polling catches accounts starting 1.5 seconds apart without extra Graph calls or idle notifications', async t => {
+  const start=startOfSchedule(),atMs=elapsed=>new Date(Date.parse(start)+elapsed).toISOString(),calls={instagram:[],facebook:[]};
+  let f;
+  f=await fixture(t,async channel=>success(channel),{startAt:start,appOptions:{socialProviderOptions:{
+    getCredentials:async channel=>f.app.store.secret('channel:'+channel.id),
+    fetchImpl:async(raw,init)=>{
+      const url=new URL(raw),platform=url.hostname==='graph.instagram.com'?'instagram':'facebook';
+      assert.equal(init.method,'GET');assert.equal(url.pathname,'/v26.0/me');
+      calls[platform].push(f.getTime());
+      if(platform==='instagram'&&calls.instagram.length===1)f.setTime(atMs(1500));
+      return new Response(JSON.stringify(platform==='instagram'?{id:'101',user_id:'100',username:'fixtureinstagram'}:{id:'200',name:'Fixture Facebook'}),{headers:{'content-type':'application/json'}});
+    },
+  }}});
+  let notifications=0;f.app.messenger.notifyCompanyUsers=()=>{notifications++;};
+  for(const platform of ['instagram','facebook']){
+    const id='health-'+platform,accountId=platform==='instagram'?'100':'200',authType=platform==='instagram'?'instagram-login':'facebook-page';
+    f.app.store.put('channels',id,{id,platform,externalId:accountId,handle:'fixture'+platform,active:true,ownerIds:[f.admin.id],connectionVersion:1});
+    f.app.store.setSecret('channel:'+id,{accessToken:'fixture-'+platform,accountId,appScopedId:platform==='instagram'?'101':undefined,authType,apiVersion:'v26.0',metaIdentityVersion:1,permissionsVerifiedAt:start,scope:platform==='instagram'?'instagram_business_basic instagram_business_content_publish':'pages_manage_posts pages_read_engagement pages_show_list'});
+    f.app.store.put('socialDirectConnections',id,{id,channelId:id,provider:'meta-direct',enabled:true,version:'v1',connectionVersion:1,accountId,authType,updatedBy:f.admin.id});
+  }
+  const tick=async elapsed=>{f.setTime(atMs(elapsed));await f.app.scanSocialPublishing();await f.app.waitForIdle();};
+  await tick(0);
+  assert.deepEqual(calls,{instagram:[atMs(0)],facebook:[atMs(1500)]});assert.equal(notifications,1);
+  for(let elapsed=15000;elapsed<3600000;elapsed+=15000)await tick(elapsed);
+  assert.deepEqual(calls,{instagram:[atMs(0)],facebook:[atMs(1500)]});
+  assert.equal(notifications,1,'empty due polls do not invalidate every user notification view');
+  await tick(3600000);assert.deepEqual(calls,{instagram:[atMs(0),atMs(3600000)],facebook:[atMs(1500)]});
+  for(let elapsed=3615000;elapsed<=3660000;elapsed+=15000)await tick(elapsed);
+  assert.deepEqual(calls.facebook,[atMs(1500),atMs(3660000)],'the second account waits at most the next minute instead of an extra hour');
+  assert.equal(notifications,3);
+  for(const platform of ['instagram','facebook']){
+    assert.ok(Date.parse(calls[platform][1])-Date.parse(calls[platform][0])>=3600000);
+    assert.equal(f.app.store.get('socialDirectPublishRequests','health-'+platform).times.length,1,'the unchanged rolling budget contains only the due request');
+  }
+  const state=await f.call('/api/social/workspace?section=overview');assert.equal(state.status,200);assert.equal(state.data.runtime.health.intervalMs,60000);
+});
+
 test('initial failure plus three retries exhausts today, and the next daily schedule starts a new cycle', async t => {
   let calls = 0;
   const f = await fixture(t, async () => { calls++; throw failure('NETWORK_ERROR', true); });

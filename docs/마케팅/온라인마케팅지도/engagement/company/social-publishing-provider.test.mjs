@@ -101,6 +101,91 @@ test('scheduled connection checks honor interval and revoked owner authority',as
   const f=fixture();await f.provider.connect(f.manager,{channelId:'ig'});f.calls.length=0;assert.equal((await f.provider.scanHealthDue()).checked,0);f.advance(3600001);assert.equal((await f.provider.scanHealthDue()).checked,1);assert.deepEqual(f.calls,[['direct.check','ig']]);
   f.advance(3600001);f.store.put('users','manager',{...f.manager,active:false});assert.equal((await f.provider.scanHealthDue()).checked,0);
 });
+
+function scheduledHealthChannel(f,id,lastAttemptAt,{healthVersion='v1',healthConnectionVersion=4,updatedBy='admin'}={}){
+  const channel={...f.channel,id,externalId:id,handle:id};
+  f.store.put('channels',id,channel);
+  f.store.put('socialDirectConnections',id,{id,channelId:id,enabled:true,version:'v1',connectionVersion:4,accountId:id,updatedBy});
+  if(lastAttemptAt!==undefined)f.store.put('socialDirectHealth',id,{id,channelId:id,version:healthVersion,connectionVersion:healthConnectionVersion,state:'connected',checkedAt:lastAttemptAt,lastAttemptAt,errorCode:null});
+}
+
+test('scheduled health prioritizes unchecked and oldest accounts and does not starve accounts beyond five',async()=>{
+  const f=fixture(),hour=3600000,old=new Date(Date.parse(AT)-hour).toISOString();
+  for(let n=1;n<=5;n++)scheduledHealthChannel(f,'account-'+n,old);
+  scheduledHealthChannel(f,'account-6',new Date(Date.parse(AT)-2*hour).toISOString());
+  scheduledHealthChannel(f,'account-7');
+  assert.deepEqual(await f.provider.scanHealthDue(),{checked:5,failed:0});
+  assert.deepEqual(f.calls.map(c=>c[1]),['account-7','account-6','account-1','account-2','account-3']);
+  f.advance(60000);assert.deepEqual(await f.provider.scanHealthDue(),{checked:2,failed:0});
+  assert.deepEqual(f.calls.slice(5).map(c=>c[1]),['account-4','account-5']);
+  assert.deepEqual(await f.provider.scanHealthDue(),{checked:0,failed:0});
+  // Even if execution is delayed by a full hour, the accounts left out of the
+  // preceding round must get the first slots in the following one.
+  const g=fixture();for(let n=1;n<=7;n++)scheduledHealthChannel(g,'account-'+n,old);
+  await g.provider.scanHealthDue();g.advance(hour);await g.provider.scanHealthDue();
+  assert.deepEqual(g.calls.slice(5,7).map(c=>c[1]),['account-6','account-7']);
+});
+
+test('scheduled health counts guard failures within its five-attempt budget',async()=>{
+  const f=fixture({onCheck:(channel,_context,{store})=>store.put('channels',channel.id,{...channel,connectionVersion:5})});
+  for(let n=1;n<=7;n++)scheduledHealthChannel(f,'account-'+n);
+  assert.deepEqual(await f.provider.scanHealthDue(),{checked:5,failed:5});
+  assert.equal(f.calls.length,5);
+  assert.ok(f.store.all('socialDirectHealth').every(row=>row.checkedAt==null&&row.connectionVersion===4),'a revoked binding never receives a successful result');
+});
+
+test('scheduled health rechecks disabled, recently checked, unauthorized and unsupported candidates after awaiting',async()=>{
+  for(const change of [
+    store=>store.put('socialDirectConnections','b',{...store.get('socialDirectConnections','b'),enabled:false}),
+    store=>store.put('socialDirectHealth','b',{id:'b',channelId:'b',version:'v1',connectionVersion:4,lastAttemptAt:AT}),
+    store=>store.put('users','manager',{...store.get('users','manager'),active:false}),
+    store=>store.put('channels','b',{...store.get('channels','b'),platform:'tiktok'}),
+  ]){
+    const f=fixture({onCheck:(channel,_context,{store})=>{if(channel.id==='a')change(store);}});
+    scheduledHealthChannel(f,'a');scheduledHealthChannel(f,'b',undefined,{updatedBy:'manager'});
+    assert.deepEqual(await f.provider.scanHealthDue(),{checked:1,failed:0});
+    assert.deepEqual(f.calls,[['direct.check','a']]);
+  }
+});
+
+test('scheduled health reserves an aborted attempt without replacing prior proof and retains the hour gate after restart',async()=>{
+  const controller=new AbortController();let abort=true;
+  const f=fixture({onCheck:()=>{if(abort)controller.abort();}}),old=new Date(Date.parse(AT)-3600000).toISOString();
+  scheduledHealthChannel(f,'a',old);
+  assert.deepEqual(await f.provider.scanHealthDue({signal:controller.signal}),{checked:1,failed:1});
+  assert.deepEqual(f.store.get('socialDirectHealth','a'),{id:'a',channelId:'a',version:'v1',connectionVersion:4,state:'connected',checkedAt:old,lastAttemptAt:AT,errorCode:null});
+  abort=false;f.advance(60000);
+  assert.deepEqual(await f.provider.scanHealthDue(),{checked:0,failed:0});
+  const restarted=createSocialPublishingProvider({store:f.store,directProvider:f.direct,legacyProvider:f.legacy,clock:()=>new Date(Date.parse(AT)+60000).toISOString()});
+  assert.deepEqual(await restarted.scanHealthDue(),{checked:0,failed:0});
+  assert.equal(f.calls.length,1);
+  f.advance(3540000);assert.deepEqual(await f.provider.scanHealthDue(),{checked:1,failed:0});
+  assert.equal(f.calls.length,2);
+});
+
+test('scheduled health treats missing or invalid attempts as due but respects future times and new bindings',async()=>{
+  const f=fixture(),future=new Date(Date.parse(AT)+3600000).toISOString();
+  scheduledHealthChannel(f,'future',future);scheduledHealthChannel(f,'invalid','invalid-date');scheduledHealthChannel(f,'missing');
+  scheduledHealthChannel(f,'new-version',AT,{healthVersion:'old-version'});
+  scheduledHealthChannel(f,'new-connection',AT,{healthConnectionVersion:3});
+  assert.deepEqual(await f.provider.scanHealthDue(),{checked:4,failed:0});
+  assert.deepEqual(f.calls.map(c=>c[1]).sort(),['invalid','missing','new-connection','new-version']);
+  f.advance(-1000);assert.deepEqual(await f.provider.scanHealthDue(),{checked:0,failed:0});
+  f.advance(7201000);await f.provider.scanHealthDue();assert.equal(f.calls.filter(c=>c[1]==='future').length,1);
+});
+
+test('concurrent scheduled health scans coalesce and shutdown prevents late results and later accounts',async()=>{
+  let entered,release;const started=new Promise(resolve=>entered=resolve),pending=new Promise(resolve=>release=resolve);
+  const f=fixture({onCheck:async()=>{entered();await pending;}});
+  scheduledHealthChannel(f,'a');scheduledHealthChannel(f,'b');
+  const first=f.provider.scanHealthDue();await started;
+  assert.equal(f.provider.scanHealthDue(),first);
+  const stopped=f.provider.stopHealth();release();
+  assert.deepEqual(await first,{checked:1,failed:1});await stopped;
+  assert.deepEqual(f.calls.filter(c=>c[0]==='direct.check'),[['direct.check','a']]);
+  const saved=f.store.get('socialDirectHealth','a');assert.equal(saved.lastAttemptAt,AT);assert.equal(saved.checkedAt,undefined);assert.equal(saved.state,undefined);
+  assert.equal(f.store.get('socialDirectHealth','b'),null);
+});
 test('stop blocks connection changes and further health scans',async()=>{
   const f=fixture();await f.provider.stopHealth();await assert.rejects(()=>f.provider.connect(f.admin,{channelId:'ig'}),{code:'PROVIDER_STOPPED'});assert.deepEqual(await f.provider.scanHealthDue(),{checked:0});assert.deepEqual(f.calls,[['legacy.stop']]);
 });

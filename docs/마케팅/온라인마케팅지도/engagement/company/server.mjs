@@ -295,7 +295,7 @@ export function createCompanyApp(options={}) {
   const socialSourceRuntime=runtimeJob('socialSources',socialSchedule,60000);
   const socialInboxRuntime=runtimeJob('socialInbox',socialSchedule,60000);
   const metaConnections=createMetaConnectionService({store,clock,getProviderConfig:providerConfig,fetchImpl:options.metaConnectionFetch});
-  const socialHealthRuntime=runtimeJob('socialHealth',socialSchedule,3600000);
+  const socialHealthRuntime=runtimeJob('socialHealth',socialSchedule,60000);
   const socialDistribution=createSocialSourceDistribution({store,studio,publicationPackages,marketing:socialMarketing,publishing:socialPublishing,clock});
   const socialInboxProvider=createSocialInboxProvider({store,clock,getCredentials:credentialsFor,...options.socialInboxOptions});
   const socialInboxRecovery=createSocialInboxRecovery({store,inboxProvider:socialInboxProvider,clock,getProviderConfig:providerConfig,fetchImpl:options.metaConnectionFetch});
@@ -348,8 +348,8 @@ export function createCompanyApp(options={}) {
       if(!socialInboxRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialInboxRuntime.lastAttemptAt)>=socialInboxRuntime.intervalMs){
         beginRuntime(socialInboxRuntime);jobs.push(socialInboxProvider.scanDue({signal:socialAbort.signal}).then(result=>{finishRuntime(socialInboxRuntime,!result.failed);if(result.imported||result.updated)notifySocialChanges();},()=>finishRuntime(socialInboxRuntime,false)));
       }
-      if(!socialHealthRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialHealthRuntime.lastAttemptAt)>=3600000){
-        beginRuntime(socialHealthRuntime);jobs.push(Promise.all([socialProvider.scanHealthDue?.({signal:socialAbort.signal}),socialReplies.scanHealthDue({signal:socialAbort.signal})]).then(results=>{finishRuntime(socialHealthRuntime,!results.some(result=>result?.failed));notifySocialChanges();},()=>finishRuntime(socialHealthRuntime,false)));
+      if(!socialHealthRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialHealthRuntime.lastAttemptAt)>=socialHealthRuntime.intervalMs){
+        beginRuntime(socialHealthRuntime);jobs.push(Promise.all([socialProvider.scanHealthDue?.({signal:socialAbort.signal}),socialReplies.scanHealthDue({signal:socialAbort.signal})]).then(results=>{finishRuntime(socialHealthRuntime,!results.some(result=>result?.failed));if(results.some(result=>result?.checked>0))notifySocialChanges();},()=>finishRuntime(socialHealthRuntime,false)));
       }
       await Promise.all(jobs);
     }).catch(()=>{}).finally(()=>{socialExtrasRunning=false;});
