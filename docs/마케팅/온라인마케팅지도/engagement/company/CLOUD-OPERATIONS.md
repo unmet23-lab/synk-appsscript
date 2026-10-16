@@ -1,5 +1,20 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="server-log-retention-20261016"></a>
+## 공통 서버 반복 로그·보관 정책 — 2026-10-16
+
+반복 경고의 원인은 배포 worker의 `UMask=0077` 아래 원자적 파일 교체가 요청한 권한을 다시 적용하지 않아 systemd drop-in이 `0600`으로 생성된 것이었다. A/B의 정확한 5개 파일씩에서 비밀값이 없음을 확인하고 `0644`로 교정했으며 내용 SHA와 앱·HA·rsyslog PID/상태를 보존했다. `company.env`·키·인증 파일의 권한은 변경하지 않았다. B의 동일 30초 표본에서 경고 **1,024→0건**, syslog 증가 **286,245→886B**였다. 첫 교정 직후 표본에는 과거 경고가 뒤늦게 기록되어, event 시각과 교정 이후 journal을 구분한 뒤 새 표본으로 확인했다. 이 수치는 해당 표본의 로그 감소이며 장기 성능 측정이 아니다. [교정 전](../../../../../.tmp/company-server-logs-20261016/remote/before-window-standby-1792125973461.json) · [시각 대조](../../../../../.tmp/company-server-logs-20261016/remote/mode-window-reconcile-1792126325243.json) · [새 표본](../../../../../.tmp/company-server-logs-20261016/remote/after-window-standby-1792126371337.json).
+
+공용 원문 `c7a49d5ab`에 fd 권한 적용과 실제 파일 회귀를 반영했다. Linux에서 수정 전 권한 오류를 재현한 뒤 공용 **16/16**, 최신 부모의 보호 코드를 모두 보존한 다음 배포 worker 준비본 **30/30**을 통과했다. 완료된 배포의 worker와 기존 QA는 덮어쓰지 않았다. 다음 배포는 준비본의 권한 수정·회귀를 승계하고 새 worker SHA/QA를 고정해야 한다. [원문 검증](../../../../../.tmp/company-server-logs-20261016/implementation/verification.json) · [최신 worker 승계](../../../../../.tmp/company-server-logs-20261016/implementation/successor-worker-preparation.json).
+
+정책 원문은 [SYSTEMD](deploy/SYSTEMD.md#호스트-로그와-설정-파일-권한)를 따른다. syslog는 주간 또는 **128MiB 초과** 때 회전하고 최근 **8회분**을 압축 보관한다. 기존 logrotate를 매시간 실행하며 최대 5분 분산·1분 정확도를 적용한다. auth·kernel·mail·user·cron은 기존 주간 4회분 정책을 유지한다. journal은 영구 **512MiB**, 파일64MiB, 디스크 여유1GiB, 메모리64MiB, **최대30일**이다. 크기 회전은 실행 시 판정하며 8주·최소30일 보관이나 순간적인 절대 용량 상한을 보장하지 않는다. 기존 Docker 제한(company/Caddy10m×3, spaceship5m×2)은 유지한다. 실제 Linux logrotate의 비강제 크기 회전10회·8개 보관·압축 읽기·매회 새 파일 기록·기타5로그 보존·전체 설정 검사도 통과했다. [정책·실제 worker 시험](../../../../../.tmp/company-server-logs-20261016/remote/isolated-qa-continuation-1792126589056.json).
+
+**14:17:29 KST 세 서버 운영 반영·후검증 완료.** 기존 journal·syslog 이력51개 **3,659,002,443B→526,694,603B**를 `/var/lib/synk-log-archive/20261016-retention-v1/<role>`의 root 전용0700/파일0600 보존본으로 압축하고, 해제한 바이트 수·SHA-256과 원문을 대조했다. 이 일회성 보존본과 기존 별도 압축 이력은 새512MiB/30일 삭제 범위에 넣지 않는다. 실제 journal은 A222,821,816B·B468,233,776B·관리75,261,208B이며 모두 상한 이내다. B의 디스크 여유는 **2,408,394,752B 증가**했다. 세 노드의 정책3파일 SHA/0644·매시간 타이머·1분 정확도·journald 실효 설정·설정 인식 오류0·새 반복 경고0을 확인했다. 회사 앱·HA·rsyslog를 재시작하지 않았고 journald와 logrotate 타이머만 재시작했다. [A 후검사](../../../../../.tmp/company-server-logs-20261016/remote/retention-postcheck-primary-1792127798556.json) · [B 후검사](../../../../../.tmp/company-server-logs-20261016/remote/retention-postcheck-standby-1792127721312.json) · [관리 서버 후검사](../../../../../.tmp/company-server-logs-20261016/remote/retention-postcheck-controller-1792127849756.json).
+
+B의 긴 보관 작업 중 SSH 대기 제한이 끝났으나 동일 원격 PID가 계속 실행해 완료 영수증을 먼저 저장했다. 이후 닫힌 stdout에서 발생한 `phase=complete/BrokenPipeError` 기록도 보존했고, 재실행 없이 완료 영수증·실제 설정·사용량·서비스를 읽어 완료를 판정했다. [같은 실행의 완료 결과](../../../../../.tmp/company-server-logs-20261016/remote/retention-result-standby-recovered.json).
+
+14:17:23 SNS 읽기에서 기존 manifest `f1978e99…`·앱 시작 시각/재시작 횟수·A owner epoch7·HA armed=true·실행 원문을 보존했고, 게시 연결3개·댓글 연결2개에 오류가 없으며 예약3건의 시각/옵션/시도0이 작업 전과 정확히 같았다. 공개 HTTPS200/ok/ready도 확인했다. 새 SNS 발송·DB/계정 쓰기·앱 릴리스 교체·서버 증설·구독·유료 API 추가0. 기존10월22일16시 확인 일정은 유지한다. [SNS 최종 읽기](../../../../../.tmp/company-sns-soak-20261015/release-prep/observations/sample-1792127843921.json) · [공개 상태](../../../../../.tmp/company-server-logs-20261016/public-health-final.json) · [통합 검증](../../../../../.tmp/company-server-logs-20261016/final-summary.json).
+
 <a id="sns-auth-production-20261016"></a>
 ## SNS 장기 인증·자동 갱신 — 2026-10-16 운영 인수
 
