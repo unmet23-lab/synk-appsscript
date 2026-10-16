@@ -1,5 +1,16 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="sns-auth-production-20261016"></a>
+## SNS 장기 인증·자동 갱신 — 2026-10-16 운영 인수
+
+최종 원본 `e20c71ff28a8c0e6c04316dfc63777fd7f9365c1`, manifest `f1978e99e62bf485dab91c7aa3dea8b3e4694757c02553582fe6b26753b2c148`, 이미지 `sha256:8a0fb710c793c4382e5e6064dbbfff15838b76f3b169023f80de995541246791`. 자동 갱신 보완 b9 위에 Facebook Page 데이터 접근 만료 예외를 반영했다. 부모 원문1,016개를 보존하고 실행4·시험4파일만 바꿔 source1,024·payload594로 고정했다. Windows/Linux 각각1,255/1,255·이미지 호환2/2, HA Node119·Linux Python35를 통과했다. [기능·실제 갱신·검증 범위](WORKSPACE_QA.md#sns-auth-refresh-20261016).
+
+- **반영:** 12:51:23 KST 배포 `47d05f7a7d63e25dc2213acc445d18a2`의 실행·공개126/126·HTTPS200/ready·익명SNS401을 확인했다. 기동 전 전체 데이터와 암호화 키 보존, 기동 후 세션/토큰 표의 정확한 일치·변경 표0을 확인했다. [실행 대조](../../../../../.tmp/company-sns-page-auth-20261016/deployment/runtime-live-postcheck-1792122683478.json) · [공개 검증](../../../../../.tmp/company-sns-page-auth-20261016/deployment/public-verification-1792122692812.json).
+- **실제 갱신·계정:** 12:45:47 KST 자동 갱신 보완 b9에서 YouTube 토큰이 자연 갱신됐으며 계정·소유자 바인딩·기존 동의 시각·scope 수가 유지됐다. 12:51:32 최종 f197 운영의 관련 실행6파일 SHA가 수정본과 같고 SNS3계정은 모두 연결 정상·재연결 요구0이다. 관측 도구의 강제 갱신·SNS API·DB 쓰기0. Instagram의 장기간 경과는 주입 시계 시험이며 실계정 수개월 경과를 확인한 것은 아니다. [수정본 실제 갱신](../../../../../.tmp/company-sns-auth-20261016/live/youtube-natural-renewal-after-fix.json) · [최종 인증 메타데이터](../../../../../.tmp/company-sns-auth-20261016/live/credential-status-1792122692753.json).
+- **백업·격리 복원:** 최종 백업 generation1792123187846585(420,746,312B, SHA256 `ca05f92958c4f0ed3c0531c4e7f2db8587640bff0ff7cae78f69a3cead442e66`)의 업로드·원문 해시·완료 영수증을 확인했다. 13:27:31 KST 격리 복원에서 source1,024·계정9테이블·세션/토큰15행·원래 암호화 키를 보존했다. 만료 토큰 삭제0·외부 요청0·network none·공개 포트0·시험 컨테이너 제거를 확인했다. [완료 백업](../../../../../.tmp/company-sns-page-auth-20261016/rearm/dr/backup-status-1792123369286.json) · [격리 복원](../../../../../.tmp/company-sns-page-auth-20261016/rearm/dr/restore-v1.json).
+- **최종 HA·SNS:** 13:33:16 KST armed=true·A owner epoch7·B 대기·복제 정상·HTTPS200/ready/TLS·루프 재시작0을 확인했다. 자연 관측은19표본·3리전·1,160,446ms·오류0이며 새 강제 장애 시험은 하지 않았다. 13:33:46 별도 읽기에서 양 노드 원문 각1,024개 SHA 일치, 현재 게시3계정·댓글2연결 정상, 예약3건의 시각/비공개/구독자 알림 꺼짐/시도0 보존, 경고0이었다. 장기 관측 계획은 기대 manifest 한 필드만 f197로 갱신했고 기존 작업·일정·옵션·자동화는 변경하지 않았다. [계정 기준선](../../../../../.tmp/company-sns-page-auth-20261016/rearm/account-baseline-final-v1.json) · [자연 관측](../../../../../.tmp/company-sns-page-auth-20261016/rearm/natural-final-v1.json) · [최종 HA](../../../../../.tmp/company-sns-page-auth-20261016/rearm/arm-postcheck-final-v1.json) · [최종 SNS 기준선](../../../../../.tmp/company-sns-soak-20261015/release-prep/observations/baseline-1792125226925.json) · [기존 계획 한 필드 승격](../../../../../.tmp/company-sns-page-auth-20261016/existing-plan-promotion.json).
+- **보존·비용:** 기존 예약3개와10월22일16시 확인 일정을 유지한다. 새 SNS 게시·댓글 발송·권한 확대·구독·유료 AI API·서버 증설0. 공간 확보는 로컬 전체 원본1,792개가 정확히 보존된 과거 실패 QA의 중복 소스2곳, 이전 완료 전송 사본2곳, 이전 복원 파생5곳만 정리했다. 실패 QA를 성공으로 바꾸지 않았고 원본 백업·검증 기록·활성 로그·현재/부모 소스와 이미지·mobile·기타 QA10은 보존했다. [원본 보존 소스 정리](../../../../../.tmp/company-sns-page-auth-20261016/qa/retained-stage-sources-v3-result-1792124415631.json) · [전송 사본 정리](../../../../../.tmp/company-sns-page-auth-20261016/qa/stage-transfer-result-1792124490898.json) · [복원 파생 정리](../../../../../.tmp/company-sns-page-auth-20261016/cleanup/result-v1.json).
+
 <a id="sns-health-production-20261016"></a>
 ## SNS 계정 점검 주기·공정성 — 2026-10-16 운영 인수
 
