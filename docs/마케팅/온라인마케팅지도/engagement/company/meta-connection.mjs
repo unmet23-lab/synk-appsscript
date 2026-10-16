@@ -37,6 +37,12 @@ export function metaCommentScopes(platform,authType){
   return ['pages_read_engagement','pages_read_user_content','pages_manage_engagement',...(authType==='facebook-user'?['pages_show_list']:[])];
 }
 
+export function metaPublishScopes(platform,authType){
+  if(platform==='instagram')return authType==='instagram-login'?['instagram_business_basic','instagram_business_content_publish']:['instagram_basic','instagram_content_publish','pages_read_engagement'];
+  if(platform==='facebook')return ['pages_read_engagement','pages_manage_posts',...(authType==='facebook-user'?['pages_show_list']:[])];
+  return [];
+}
+
 export function hasVerifiedMetaComments(channel,credentials){
   const proof=credentials?.capabilityVerification;
   return channel?.platform==='instagram'&&credentials?.authType==='instagram-login'&&credentials.metaIdentityVersion===1&&typeof credentials.accessToken==='string'&&
@@ -44,7 +50,7 @@ export function hasVerifiedMetaComments(channel,credentials){
     (!channel.externalId||channel.externalId===proof.accountId)&&proof.tokenSha256===digest(credentials.accessToken);
 }
 
-export async function verifyMetaConnection({channel,credentials={},provider={},purpose='comments',fetchImpl=globalThis.fetch,clock=()=>new Date().toISOString(),signal,authorize,trustedExpiry=false,trustedGrant=false}={}){
+export async function verifyMetaConnection({channel,credentials={},provider={},purpose='comments',requireComments=false,fetchImpl=globalThis.fetch,clock=()=>new Date().toISOString(),signal,authorize,trustedExpiry=false,trustedGrant=false}={}){
   const platform=channel?.platform,authType=credentials.authType,accessToken=string(credentials.accessToken),apiVersion=credentials.apiVersion||provider.apiVersion||'v26.0';
   if(!['instagram','facebook'].includes(platform))throw fail('META_PLATFORM_REQUIRED','Instagram 또는 Facebook 페이지를 선택해 주세요.');
   const types=platform==='instagram'?['instagram-login','instagram-facebook','facebook-page']:['facebook-user','facebook-page'];
@@ -80,6 +86,7 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
       // Only the OAuth code-exchange response, never an HTTP client's scope.
       scope=unique(typeof credentials.scope==='string'?credentials.scope.split(/[ ,]+/).filter(Boolean):[]);
     }else{
+      if(purpose==='publishing')throw fail('META_PUBLISH_OAUTH_REQUIRED','게시 권한은 Instagram 로그인으로 허용해 주세요. 댓글 조회 확인만으로 자동 게시를 켜지 않아요.',409);
       // IG Login has no working permissions edge. Meta's official collection
       // requires basic + manage_comments for both GET comments and POST replies.
       // This proves read capability, not a granted-scope list or a sent reply.
@@ -107,7 +114,7 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
         matched=page.data.find(row=>(!requestedId||row.id===requestedId)&&facebookMatches(channel,row));
         if(matched||!page.paging?.next)break;const next=page.paging?.cursors?.after;if(typeof next!=='string'||!next||next.length>2000||cursors.has(next))break;cursors.add(next);cursor=next;
       }
-      if(!matched?.access_token||purpose==='comments'&&!matched.tasks?.includes('MODERATE'))throw fail('META_PAGE_ACCESS_REQUIRED','선택한 Facebook 페이지와 댓글 관리 권한을 확인해 주세요.',409);
+      if(!matched?.access_token||(purpose==='comments'||requireComments)&&!matched.tasks?.includes('MODERATE')||purpose==='publishing'&&!matched.tasks?.some(task=>['CREATE_CONTENT','MANAGE'].includes(task)))throw fail('META_PAGE_ACCESS_REQUIRED',purpose==='publishing'?'선택한 Facebook 페이지의 콘텐츠 게시 권한을 확인해 주세요.':'선택한 Facebook 페이지와 댓글 관리 권한을 확인해 주세요.',409);
       pageToken=matched.access_token;selectedPageId=matched.id;
     }
     const account=await get(platform==='instagram'?(requestedId||channel.externalId):'me',{fields:platform==='instagram'?'id,username':'id,name,username,link'},pageToken);
@@ -118,8 +125,8 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
   const verifiedAt=new Date(clock()).toISOString();
   if([expiresAt,dataAccessExpiresAt].some(value=>value&&Date.parse(value)<=Date.parse(verifiedAt)))throw fail('META_TOKEN_EXPIRED','연결 토큰이나 데이터 접근 권한이 만료됐어요. 다시 연결해 주세요.',409);
   assertIdentity(identity);
-  const needed=purpose==='comments'?metaCommentScopes(platform,authType):platform==='instagram'?[direct?'instagram_business_basic':'instagram_basic']:['pages_read_engagement'];
-  if(!capabilityVerification&&needed.some(value=>!scope.includes(value)))throw fail('META_SCOPES_REQUIRED','승인한 권한에 이 연결에 필요한 댓글이나 계정 조회 권한이 없어요. 권한을 허용한 뒤 다시 연결해 주세요.',409);
+  const needed=[...new Set([...(purpose==='publishing'?metaPublishScopes(platform,authType):purpose==='comments'?metaCommentScopes(platform,authType):platform==='instagram'?[direct?'instagram_business_basic':'instagram_basic']:['pages_read_engagement']),...(requireComments?metaCommentScopes(platform,authType):[])])];
+  if((purpose==='publishing'||!capabilityVerification)&&needed.some(value=>!scope.includes(value)))throw fail('META_SCOPES_REQUIRED',purpose==='publishing'?'자동 게시에 필요한 권한이 허용되지 않았어요. 게시 권한을 허용한 뒤 다시 연결해 주세요.':'승인한 권한에 이 연결에 필요한 댓글이나 계정 조회 권한이 없어요. 권한을 허용한 뒤 다시 연결해 주세요.',409);
   check();return {identity,credentials:{accessToken,authType,apiVersion,accountId:identity.id,...(identity.appScopedId?{appScopedId:identity.appScopedId}:{}),scope:scope.join(' '),expiresAt,dataAccessExpiresAt,expiryStatus,verifiedAt,permissionsVerifiedAt:scope.length?verifiedAt:null,capabilityVerification,refreshMode:trustedExpiry&&credentials.longLived===true?'oauth-long-lived':'external-manual',metaIdentityVersion:1,graphHost:new URL(origin).hostname,...(trustedExpiry&&at(credentials.issuedAt)?{issuedAt:at(credentials.issuedAt),longLived:credentials.longLived===true}:{})}};
 }
 
