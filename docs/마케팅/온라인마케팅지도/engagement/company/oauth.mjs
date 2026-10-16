@@ -185,16 +185,17 @@ function grantedScope(data, previous = '') {
   return previous;
 }
 
-function credentials(platform, data, previous = {}, extra = {}) {
-  const now = Date.now();
+function credentials(platform, data, previous = {}, extra = {}, now = Date.now()) {
   const rawAccountId = data.open_id || data.user_id;
   const accountId = typeof rawAccountId === 'string' || (typeof rawAccountId === 'number' && Number.isSafeInteger(rawAccountId)) ? String(rawAccountId) : null;
+  const refreshExpiryKey=platform==='youtube'?'refresh_token_expires_in':'refresh_expires_in',refreshExpiresAt=expiry(data[refreshExpiryKey],now);
+  if(Object.hasOwn(data,refreshExpiryKey)&&!refreshExpiresAt)throw new OAuthError('token_exchange_failed','갱신 권한의 유효 기간을 확인하지 못했어요. 다시 연결해 주세요.',502);
   return {
     ...previous, ...extra,
     accessToken: data.access_token,
     refreshToken: data.refresh_token || previous.refreshToken || null,
     expiresAt: expiry(data.expires_in ?? data.expires, now),
-    refreshExpiresAt: expiry(data.refresh_expires_in, now) || previous.refreshExpiresAt || null,
+    refreshExpiresAt: refreshExpiresAt || previous.refreshExpiresAt || null,
     issuedAt: new Date(now).toISOString(),
     scope: grantedScope(data, previous.scope || ''),
     tokenType: data.token_type || 'Bearer',
@@ -253,10 +254,15 @@ export async function exchangeCode(platform, { clientId, clientSecret, redirectU
   return credentials(platform, { ...short, ...long }, {}, { authType: 'facebook-user', graphHost: 'graph.facebook.com', apiVersion: version(apiVersion), authorized: true, longLived: true });
 }
 
-export async function refreshCredentials(platform, current, clientConfig = {}, { fetchImpl = fetch } = {}) {
+export async function refreshCredentials(platform, current, clientConfig = {}, { fetchImpl = fetch, clock = Date.now } = {}) {
   definition(platform);
   required(current?.accessToken, 'connection_required', '이 페이지의 계정을 먼저 연결해 주세요.');
-  const now = Date.now();
+  const now = new Date(clock()).getTime();
+  const renewed = data => {
+    const value=credentials(platform,data,current,{},now);
+    if(!value.expiresAt||current.accountId&&value.accountId!==current.accountId)throw new OAuthError('token_exchange_failed','갱신한 인증 정보의 계정과 유효 기간을 확인하지 못했어요. 다시 연결해 주세요.',502);
+    return value;
+  };
   const expiration = Date.parse(current.expiresAt || '');
   const refreshWindow = platform === 'instagram' ? 7 * DAY : 5 * 60_000;
   if (!clientConfig.force && Number.isFinite(expiration) && expiration > now + refreshWindow) return { ...current };
@@ -273,7 +279,7 @@ export async function refreshCredentials(platform, current, clientConfig = {}, {
     const issued = Date.parse(current.issuedAt || '');
     if (Number.isFinite(issued) && now - issued < DAY) return { ...current };
     const data = await requestToken(platform, 'https://graph.instagram.com/refresh_access_token', { grant_type: 'ig_refresh_token', access_token: current.accessToken }, { fetchImpl, method: 'GET' });
-    return credentials(platform, data, current);
+    return renewed(data);
   }
   required(current.refreshToken, 'reconnect_required', '자동 갱신 권한이 없습니다. 계정을 다시 연결해 주세요.');
   const refreshExpiration = Date.parse(current.refreshExpiresAt || '');
@@ -285,5 +291,5 @@ export async function refreshCredentials(platform, current, clientConfig = {}, {
   const endpoint = platform === 'youtube' ? 'https://oauth2.googleapis.com/token' : 'https://open.tiktokapis.com/v2/oauth/token/';
   values[platform === 'youtube' ? 'client_id' : 'client_key'] = clientId;
   const data = await requestToken(platform, endpoint, values, { fetchImpl });
-  return credentials(platform, data, current);
+  return renewed(data);
 }

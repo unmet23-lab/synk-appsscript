@@ -4,6 +4,49 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createCompanyApp } from './server.mjs';
+import { createSocialPublishingProvider } from './social-publishing-provider.mjs';
+
+async function credentialFixture(t,handler){
+  const directory=await mkdtemp(join(tmpdir(),'synk-credential-renewal-'));let getCredentials,at=Date.now(),calls=0;
+  t.mock.method(globalThis,'fetch',async(url,options)=>{assert.equal(new URL(url).origin,'https://oauth2.googleapis.com');calls++;return handler(url,options,calls);});
+  const options={dataDir:directory,port:0,allowTestHost:true,schedule:false,clock:()=>new Date(at).toISOString(),socialProviderFactory:input=>{getCredentials=input.getCredentials;return createSocialPublishingProvider(input);}};
+  let app=createCompanyApp(options);t.after(async()=>{await app.stop();await rm(directory,{recursive:true,force:true});});
+  const user={id:'connector',name:'Synthetic connector',email:'connector@example.test',role:'admin',active:true},channel={id:'renewal',platform:'youtube',active:true,ownerIds:[user.id],connectionVersion:1};
+  const credentials={accessToken:'synthetic-old-access',refreshToken:'synthetic-refresh',expiresAt:new Date(at-60000).toISOString(),scope:'granted',accountId:'synthetic-account',connectedBy:user.id};
+  app.store.put('users',user.id,user);app.store.put('channels',channel.id,channel);app.store.setSecret('provider:youtube',{clientId:'synthetic-client',clientSecret:'synthetic-client-secret'});app.store.setSecret('channel:'+channel.id,credentials);
+  return {get app(){return app;},channel,credentials,user,get:()=>getCredentials(channel),calls:()=>calls,advance:ms=>at+=ms,restart:async()=>{await app.stop();app=createCompanyApp(options);}};
+}
+
+test('concurrent collectors, health checks and publishers share one credential refresh',async t=>{
+  let release;const hold=new Promise(resolve=>release=resolve);
+  const f=await credentialFixture(t,async()=>{await hold;return {ok:true,status:200,json:async()=>({access_token:'synthetic-rotated',expires_in:3600})};});
+  const tasks=Array.from({length:3},()=>f.get());release();const results=await Promise.all(tasks);
+  assert.equal(f.calls(),1);assert.ok(results.every(value=>value.accessToken==='synthetic-rotated'));
+  const saved=f.app.store.secret('channel:'+f.channel.id);assert.equal(saved.refreshToken,f.credentials.refreshToken);assert.equal(saved.scope,'granted');assert.equal(saved.accountId,'synthetic-account');
+  await f.get();assert.equal(f.calls(),1);
+});
+
+test('a newer secret cannot be overwritten by an older in-flight refresh even in the same channel version',async t=>{
+  let release,began;const hold=new Promise(resolve=>release=resolve),started=new Promise(resolve=>began=resolve);
+  const f=await credentialFixture(t,async()=>{began();await hold;return {ok:true,status:200,json:async()=>({access_token:'stale-result',expires_in:3600})};});
+  const result=f.get();await started;const newer={...f.credentials,accessToken:'newly-reconnected',refreshToken:'new-refresh',expiresAt:new Date(Date.now()+3600000).toISOString()};
+  f.app.store.setSecret('channel:'+f.channel.id,newer);release();await assert.rejects(result,{code:'CONNECTION_CHANGED'});
+  assert.deepEqual(f.app.store.secret('channel:'+f.channel.id),newer);
+});
+
+test('revoked access is checked before asking the provider to refresh',async t=>{
+  const f=await credentialFixture(t,async()=>({ok:true,status:200,json:async()=>({access_token:'must-not-request',expires_in:3600})}));
+  f.app.store.put('users',f.user.id,{...f.user,active:false});await assert.rejects(f.get(),{code:'CONNECTION_OWNER_INACTIVE'});assert.equal(f.calls(),0);
+  assert.deepEqual(f.app.store.secret('channel:'+f.channel.id),f.credentials);
+});
+
+test('refresh outages retain credentials and back off across callers and a server restart',async t=>{
+  const f=await credentialFixture(t,async()=>({ok:false,status:503}));
+  await assert.rejects(f.get(),{code:'oauth_unavailable'});await assert.rejects(f.get(),{code:'oauth_unavailable'});assert.equal(f.calls(),1);
+  assert.deepEqual(f.app.store.secret('channel:'+f.channel.id),f.credentials);await f.restart();await assert.rejects(f.get(),{code:'oauth_unavailable'});assert.equal(f.calls(),1);
+  f.advance(15*60000);await assert.rejects(f.get(),{code:'oauth_unavailable'});assert.equal(f.calls(),2);
+  f.app.store.setSecret('channel:'+f.channel.id,{...f.credentials,refreshToken:'new-authorized-refresh'});await assert.rejects(f.get(),{code:'oauth_unavailable'});assert.equal(f.calls(),3);
+});
 
 for (const change of ['disconnect', 'deactivate']) {
   test(`${change} during token refresh cannot restore credentials or collect data`, async t => {

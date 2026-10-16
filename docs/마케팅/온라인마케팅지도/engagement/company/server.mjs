@@ -590,15 +590,36 @@ export function createCompanyApp(options={}) {
     };
     return withinTransaction?write():store.transaction(write);
   }
-  async function credentialsFor(c){const provider=providerConfig(c.platform);let credentials=connection(c)||{};
-    if(credentials.accessToken){
-      credentials={...credentials,...await refreshCredentials(c.platform,credentials,provider)};
-      const live=store.get('channels',c.id);
-      const hold=credentialHoldReason(live,c,credentials.connectedBy?store.get('users',credentials.connectedBy)||null:undefined);
+  const credentialRefreshes=new Map(),credentialRefreshState='oauthRefreshStates';
+  async function credentialsFor(c){
+    const provider=providerConfig(c.platform),credentials=connection(c)||{};
+    if(!credentials.accessToken)return {...provider,...credentials};
+    const fingerprint=(channel,value,config)=>hash(JSON.stringify([channel?.id,channel?.platform,channel?.externalId,channel?.handle,channel?.connectionVersion||0,channel?.ownerIds,channel?.teamId,value,config]));
+    const binding=fingerprint(c,credentials,provider),check=()=>{
+      const live=store.get('channels',c.id),hold=credentialHoldReason(live,c,credentials.connectedBy?store.get('users',credentials.connectedBy)||null:undefined);
       if(hold)throw Object.assign(httpError(hold[1]),{code:hold[0]});
-      store.setSecret('channel:'+c.id,credentials);
-    }
-    return {...provider,...credentials};
+      if(fingerprint(live,connection(c)||{},providerConfig(c.platform))!==binding)throw Object.assign(httpError('계정 인증 정보가 바뀌었어요. 새 연결로 다시 시도해 주세요.',409),{code:'CONNECTION_CHANGED'});
+    };check();
+    const existing=credentialRefreshes.get(c.id);if(existing?.binding===binding)return existing.task;
+    const saved=store.get(credentialRefreshState,c.id);
+    if(saved?.binding===binding&&Date.parse(saved.nextRetryAt)>Date.parse(clock()))throw Object.assign(httpError('인증 갱신을 잠시 기다리고 있어요. 안내된 시각 이후 다시 확인해 주세요.',saved.retryable?503:409),{code:saved.code,retryable:saved.retryable,nextRetryAt:saved.nextRetryAt});
+    // Health, collection and publishing may arrive together. Only one renewal of
+    // this exact connection may run; stale responses never overwrite a new login.
+    const task=Promise.resolve().then(async()=>{
+      check();
+      let renewed;
+      try{renewed={...credentials,...await refreshCredentials(c.platform,credentials,provider,{fetchImpl:options.oauthFetch,clock})};}
+      catch(error){
+        check();const retryable=error.retryable===true,nextRetryAt=new Date(Date.parse(clock())+(retryable?15:60)*60000).toISOString();
+        store.put(credentialRefreshState,c.id,{id:c.id,binding,code:error.code||'token_exchange_failed',retryable,lastAttemptAt:clock(),nextRetryAt});
+        error.nextRetryAt=nextRetryAt;throw error;
+      }
+      check();
+      if(JSON.stringify(renewed)!==JSON.stringify(credentials))store.setSecret('channel:'+c.id,renewed);
+      if(store.get(credentialRefreshState,c.id))store.remove(credentialRefreshState,c.id);
+      return {...provider,...renewed};
+    }).finally(()=>{if(credentialRefreshes.get(c.id)?.task===task)credentialRefreshes.delete(c.id);});
+    credentialRefreshes.set(c.id,{binding,task});return task;
   }
   function enqueueCollection(user,c,{mode='full'}={}){
     if(!c.active)throw httpError('보관된 채널은 수집하지 않습니다.');

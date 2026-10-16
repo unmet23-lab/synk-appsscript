@@ -78,6 +78,33 @@ test('Facebook object omission on reply proof uses its exact parent after curren
   wrongObject=false;const proved=await f.service.reconcile(f.member,{attemptId:attempt.id,remoteReplyId:'400'});assert.equal(proved.attempt.status,'sent');assert.ok(f.calls.slice(before).every(c=>c.init.method==='GET'));assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);
 });
 
+test('Instagram read-only preview and health pin the renewed token before checking their connection binding',async t=>{
+  for(const mode of ['preview','health'])await t.test(mode,async t=>{
+    const f=fixture(t);f.enable();let renewed=false;
+    const service=f.create({getCredentials:async()=>{if(!renewed){renewed=true;f.store.setSecret('channel:channel',{...f.credentials,accessToken:'renewed-synthetic',expiresAt:'2026-12-12T00:00:00.000Z'});}return f.store.secret('channel:channel');}});
+    if(mode==='preview'){const result=await service.preview(f.member,{inboxId:'inbox',revision:1,text:'최종 답장'});assert.ok(result.preview.id);}
+    else{const result=await service.checkHealth(f.member,{channelId:'channel'});assert.equal(result.channels[0].state,'connected');assert.equal(result.channels[0].errorCode,null);}
+    assert.ok(f.calls.length>0);assert.ok(f.calls.every(call=>call.init.method==='GET'&&call.init.headers.Authorization==='Bearer renewed-synthetic'));
+    assert.equal(f.store.all('socialReplyAttempts').length,0);
+  });
+});
+
+test('renewal before a preview still rejects account changes and never creates a preview',async t=>{
+  const f=fixture(t);const service=f.create({getCredentials:async()=>{f.store.put('channels','channel',{...f.channel,connectionVersion:2});return f.credentials;}});
+  await assert.rejects(service.preview(f.member,{inboxId:'inbox',revision:1,text:'최종 답장'}),{code:'CONNECTION_CHANGED'});assert.equal(f.calls.length,0);assert.equal(f.store.all('socialReplyPreviews').length,0);
+});
+
+test('read-only reply recovery can renew credentials without retrying the write',async t=>{
+  for(const mode of ['reconcile','recheck'])await t.test(mode,async t=>{
+    const f=fixture(t),p=await f.preview();f.setHandler((_path,_url,init)=>{if(init.method==='POST')throw Error('synthetic lost response');});
+    const {attempt}=await f.send(p);assert.equal(attempt.status,'unknown');f.advance(11*60000);f.setHandler(null);const before=f.calls.length;let renewed=false;
+    const service=f.create({getCredentials:async()=>{if(!renewed){renewed=true;f.store.setSecret('channel:channel',{...f.credentials,accessToken:'renewed-synthetic',expiresAt:'2026-12-12T00:00:00.000Z'});}return f.store.secret('channel:channel');}});
+    const result=await service[mode](f.member,{attemptId:attempt.id,...(mode==='reconcile'?{remoteReplyId:'400'}:{})});
+    assert.equal(result.attempt.status,mode==='reconcile'?'sent':'failed');assert.equal(f.store.all('socialReplyAttempts').length,1);assert.equal(f.calls.filter(call=>call.init.method==='POST').length,1);
+    assert.ok(f.calls.slice(before).every(call=>call.init.method==='GET'&&call.init.headers.Authorization==='Bearer renewed-synthetic'));
+  });
+});
+
 test('explicit Instagram preview is read only, stores only token hash and sends final text once',async t=>{
   const f=fixture(t),p=await f.preview();assert.equal(p.preview.account.channelId,'channel');assert.equal(p.preview.comment.text,'질문입니다');assert.equal(p.preview.text,'최종 답장');assert.equal(f.calls.length,4);assert.ok(f.calls.every(c=>c.init.method==='GET'));
   const stored=f.store.get('socialReplyPreviews',p.preview.id);assert.notEqual(stored.tokenHash,p.confirmationToken);assert.ok(!JSON.stringify(stored).includes(p.confirmationToken));
