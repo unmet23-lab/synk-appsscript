@@ -43,6 +43,18 @@ export function metaPublishScopes(platform,authType){
   return [];
 }
 
+// Meta's 90-day data-access clock does not expire these Page permissions.
+// Apply the exception to the permissions needed for this Page operation, not to
+// every permission on the token. Actual token expiry and API rejection still apply.
+// https://developers.facebook.com/documentation/facebook-login/auth-vs-data
+const PAGE_DATA_ACCESS_EXEMPT=new Set(['pages_read_engagement','pages_read_user_content','pages_manage_engagement','pages_manage_posts','pages_show_list','business_management']);
+export function metaDataAccessExpired(channel,credentials,{purpose,requiredScopes=[],now}={}){
+  const value=credentials?.dataAccessExpiresAt;if(value==null||value==='')return false;
+  const expiresAt=at(value);if(!expiresAt)return true;
+  const exempt=channel?.platform==='facebook'&&['facebook-page','facebook-user'].includes(credentials.authType)&&['comments','publishing'].includes(purpose)&&Array.isArray(requiredScopes)&&requiredScopes.length>0&&requiredScopes.every(scope=>PAGE_DATA_ACCESS_EXEMPT.has(scope));
+  return !exempt&&Date.parse(expiresAt)<=Date.parse(now);
+}
+
 export function hasVerifiedMetaComments(channel,credentials){
   const proof=credentials?.capabilityVerification;
   return channel?.platform==='instagram'&&credentials?.authType==='instagram-login'&&credentials.metaIdentityVersion===1&&typeof credentials.accessToken==='string'&&
@@ -123,9 +135,9 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
     identity={id:account.id,appScopedId:null,username:account.username||'',name:account.name||'',...(platform==='facebook'?{link:account.link||''}:{})};
   }
   const verifiedAt=new Date(clock()).toISOString();
-  if([expiresAt,dataAccessExpiresAt].some(value=>value&&Date.parse(value)<=Date.parse(verifiedAt)))throw fail('META_TOKEN_EXPIRED','연결 토큰이나 데이터 접근 권한이 만료됐어요. 다시 연결해 주세요.',409);
-  assertIdentity(identity);
   const needed=[...new Set([...(purpose==='publishing'?metaPublishScopes(platform,authType):purpose==='comments'?metaCommentScopes(platform,authType):platform==='instagram'?[direct?'instagram_business_basic':'instagram_basic']:['pages_read_engagement']),...(requireComments?metaCommentScopes(platform,authType):[])])];
+  if(expiresAt&&Date.parse(expiresAt)<=Date.parse(verifiedAt)||metaDataAccessExpired(channel,{authType,dataAccessExpiresAt},{purpose,requiredScopes:needed,now:verifiedAt}))throw fail('META_TOKEN_EXPIRED','연결 토큰이나 데이터 접근 권한이 만료됐어요. 다시 연결해 주세요.',409);
+  assertIdentity(identity);
   if((purpose==='publishing'||!capabilityVerification)&&needed.some(value=>!scope.includes(value)))throw fail('META_SCOPES_REQUIRED',purpose==='publishing'?'자동 게시에 필요한 권한이 허용되지 않았어요. 게시 권한을 허용한 뒤 다시 연결해 주세요.':'승인한 권한에 이 연결에 필요한 댓글이나 계정 조회 권한이 없어요. 권한을 허용한 뒤 다시 연결해 주세요.',409);
   check();return {identity,credentials:{accessToken,authType,apiVersion,accountId:identity.id,...(identity.appScopedId?{appScopedId:identity.appScopedId}:{}),scope:scope.join(' '),expiresAt,dataAccessExpiresAt,expiryStatus,verifiedAt,permissionsVerifiedAt:scope.length?verifiedAt:null,capabilityVerification,refreshMode:trustedExpiry&&credentials.longLived===true?'oauth-long-lived':'external-manual',metaIdentityVersion:1,graphHost:new URL(origin).hostname,...(trustedExpiry&&at(credentials.issuedAt)?{issuedAt:at(credentials.issuedAt),longLived:credentials.longLived===true}:{})}};
 }

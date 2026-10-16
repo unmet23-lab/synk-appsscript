@@ -55,6 +55,21 @@ test('Instagram single JPEG waits for container and verifies owner/body after pu
 test('Facebook text and link post uses page feed with explicit published flag',async()=>{
   const f=fixture({platform:'facebook',options:{link:'https://synk.im/'}});const response=await f.provider.publish(f.input);assert.equal(response.status,'published');assert.equal(f.posts().length,1);assert.equal(f.posts()[0].path,'100/feed');assert.equal(f.posts()[0].params.get('link'),'https://synk.im/');assert.equal(f.posts()[0].params.get('published'),'true');
 });
+
+test('Facebook publishing ignores expired data access only for its exempt Page permissions',async t=>{
+  for(const authType of ['facebook-page','facebook-user'])await t.test(authType,async()=>{
+    const f=fixture({platform:'facebook',authType});f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:'2020-01-01T00:00:00Z',scope:f.credentials.scope+' email'});
+    assert.equal(f.provider.capability(f.input.channel).canPublish,true);assert.equal((await f.provider.publish(f.input)).status,'published');assert.equal(f.posts().length,1);
+  });
+});
+
+test('Page data-access exemption never bypasses actual expiry, malformed dates, Instagram expiry or API revocation',async t=>{
+  for(const mode of ['expired-token','invalid-data-expiry','instagram','401','403'])await t.test(mode,async()=>{
+    const f=fixture({platform:mode==='instagram'?'instagram':'facebook',handler:call=>['401','403'].includes(mode)&&call.path==='me'?json({error:{code:190}},Number(mode)):undefined});
+    f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:mode==='invalid-data-expiry'?'invalid':'2020-01-01T00:00:00Z',...(mode==='expired-token'?{expiresAt:'2020-01-01T00:00:00Z'}:{})});
+    await assert.rejects(f.provider.checkConnection(f.input.channel));assert.equal(f.posts().length,0);if(!['401','403'].includes(mode))assert.equal(f.calls.length,0);else assert.equal(f.calls.length,1);
+  });
+});
 test('Facebook photo verifies returned post ID rather than assuming photo ID is a post',async()=>{
   const f=fixture({platform:'facebook',format:'image',media:[asset()],options:{altText:'그림 설명'}});const response=await f.provider.publish(f.input);assert.equal(response.status,'published');assert.equal(response.providerId,'100_700');assert.equal(f.posts()[0].path,'100/photos');assert.equal(f.posts()[0].params.get('caption'),'확정 원문');assert.equal(f.posts()[0].params.get('alt_text_custom'),'그림 설명');
 });

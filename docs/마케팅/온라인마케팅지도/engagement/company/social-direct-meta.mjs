@@ -1,7 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {isIP} from 'node:net';
 import {isPublicLinkAddress} from './publication-link-probe.mjs';
-import {instagramIdentity,metaPublishScopes} from './meta-connection.mjs';
+import {instagramIdentity,metaPublishScopes,metaDataAccessExpired} from './meta-connection.mjs';
 
 // API contracts checked 2026-10-14 against Meta's official Postman collection
 // and generated SDK. This module contains no Postiz code or paid API dependency.
@@ -91,7 +91,7 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     const types=channel.platform==='instagram'?['instagram-login','instagram-facebook','facebook-page']:['facebook-user','facebook-page'];
     if(!types.includes(credentials.authType)||/[\r\n]/.test(credentials.accessToken))return ['AUTH_TYPE_REQUIRED','직접 발행할 수 있는 로그인 연결을 확인해 주세요.'];
     if(credentials.accountId!==channel.externalId||credentials.metaIdentityVersion!==1)return ['ACCOUNT_MISMATCH','SNS에서 검증한 계정 ID와 현재 계정이 맞지 않아요.'];
-    for(const key of ['expiresAt','dataAccessExpiresAt'])if(credentials[key]&&(!Number.isFinite(Date.parse(credentials[key]))||Date.parse(credentials[key])<=stamp()))return ['AUTH_REQUIRED','발행 연결이 만료됐어요. 발행 권한을 허용해 다시 연결해 주세요.'];
+    if(credentials.expiresAt&&(!Number.isFinite(Date.parse(credentials.expiresAt))||Date.parse(credentials.expiresAt)<=stamp())||metaDataAccessExpired(channel,credentials,{purpose:'publishing',requiredScopes:metaPublishScopes(channel.platform,credentials.authType),now:now()}))return ['AUTH_REQUIRED','발행 연결이 만료됐어요. 발행 권한을 허용해 다시 연결해 주세요.'];
     const missing=metaPublishScopes(channel.platform,credentials.authType).filter(scope=>!scopeSet(credentials).has(scope));
     if(missing.length||!Number.isFinite(Date.parse(credentials.permissionsVerifiedAt)))return ['SCOPES_REQUIRED','서버에서 확인한 게시 권한이 필요해요. 댓글 연결과 별도로 발행 권한을 허용해 주세요.',missing];
     if(enabled){const link=store.get(CONNECTIONS,channel.id);if(!link?.enabled||!link.version||link.connectionVersion!==(channel.connectionVersion||0)||link.accountId!==channel.externalId||link.authType!==credentials.authType)return ['NOT_CONFIGURED','이 계정의 직접 발행 연결을 확인하고 켜 주세요.'];}

@@ -61,6 +61,20 @@ test('Facebook user credentials resolve a managed Page token and read all-level 
   const f=fixture(t,{platform:'facebook',authType:'facebook-user'});f.enable();const result=await f.sync();assert.equal(result.imported,2);const calls=f.calls;assert.equal(calls[0].init.headers.Authorization,'Bearer synthetic-meta-user-secret');assert.equal(calls[1].init.headers.Authorization,'Bearer synthetic-meta-page-secret');const comments=calls.find(call=>call.url.includes('/comments?'));assert.equal(new URL(comments.url).searchParams.get('filter'),'stream');assert.equal(f.store.all('socialInbox')[1].parentExternalId,'200_300');assert.ok(!JSON.stringify(f.provider.settings(f.admin)).includes('secret'));
 });
 
+test('Facebook collection continues with exempt Page scopes after data access time passes',async t=>{
+  for(const authType of ['facebook-page','facebook-user'])await t.test(authType,async t=>{
+    const f=fixture(t,{platform:'facebook',authType});f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:'2020-01-01T00:00:00Z',scope:f.credentials.scope+' email'});f.enable();
+    assert.equal(f.provider.capability(f.channel).canSync,true);assert.equal((await f.sync()).imported,2);assert.ok(f.calls.every(call=>call.init.method==='GET'));
+  });
+});
+
+test('Page collection still blocks real token expiry, malformed data expiry and Instagram data expiry',async t=>{
+  for(const mode of ['expired-token','invalid-data-expiry','instagram'])await t.test(mode,async t=>{
+    const f=fixture(t,{platform:mode==='instagram'?'instagram':'facebook'});f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:mode==='invalid-data-expiry'?'invalid':'2020-01-01T00:00:00Z',...(mode==='expired-token'?{expiresAt:'2020-01-01T00:00:00Z'}:{})});f.enable();
+    assert.equal(f.provider.capability(f.channel).canSync,false);await assert.rejects(f.sync(),{code:'AUTH_REQUIRED'});assert.equal(f.calls.length,0);
+  });
+});
+
 test('Facebook bounded recent polling explains partial coverage after history finishes with no comments',async t=>{
   const f=fixture(t,{platform:'facebook'});f.enable();
   const posts=Array.from({length:12},(_,i)=>({id:'100_'+(200+i),permalink_url:'https://www.facebook.com/100/posts/'+(200+i)}));

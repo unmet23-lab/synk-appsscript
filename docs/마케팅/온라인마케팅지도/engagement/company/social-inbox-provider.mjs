@@ -1,6 +1,6 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {canReadChannel,canWriteChannel,canManageOwners} from './organization.mjs';
-import {instagramIdentity,hasVerifiedMetaComments} from './meta-connection.mjs';
+import {instagramIdentity,hasVerifiedMetaComments,metaDataAccessExpired} from './meta-connection.mjs';
 import {inboxProgressBinding,loadInboxProgress,newInboxTraversal,nextInboxPage,inboxProgressView} from './social-inbox-progress.mjs';
 
 // Read-only Graph API contract checked 2026-10-13. No reply, DM, hide or delete call.
@@ -26,7 +26,7 @@ function credentialIssue(channel,credentials,at){
   if(!credentials?.accessToken)return ['NOT_CONNECTED','댓글 조회 권한이 있는 SNS 계정을 연결해 주세요.'];
   if(channel.collectionDisabled)return ['NOT_CONNECTED','SNS 조회 연결이 해제돼 있어요.'];
   if(credentials.expiresAt&&(!instant(credentials.expiresAt)||Date.parse(credentials.expiresAt)<=Date.parse(at)))return ['AUTH_REQUIRED','SNS 연결이 만료됐어요. 댓글 조회 권한을 허용해 다시 연결해 주세요.'];
-  if(credentials.dataAccessExpiresAt&&(!instant(credentials.dataAccessExpiresAt)||Date.parse(credentials.dataAccessExpiresAt)<=Date.parse(at)))return ['AUTH_REQUIRED','SNS 데이터 접근 권한이 만료됐어요. 다시 연결해 주세요.'];
+  if(metaDataAccessExpired(channel,credentials,{purpose:'comments',requiredScopes:requiredScopes(channel,credentials),now:at}))return ['AUTH_REQUIRED','SNS 데이터 접근 권한이 만료됐어요. 다시 연결해 주세요.'];
   const types=channel.platform==='instagram'?['instagram-login','instagram-facebook','facebook-page']:['facebook-user','facebook-page'];
   if(!types.includes(credentials.authType))return ['AUTH_TYPE_REQUIRED','댓글 조회용 Instagram 로그인 또는 Facebook 페이지 연결을 확인해 주세요.'];
   if(channel.platform==='facebook'&&!id(channel.externalId))return ['ACCOUNT_ID_REQUIRED','Facebook 페이지를 먼저 조회해 공식 계정 ID를 확인해 주세요.'];

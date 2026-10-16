@@ -42,6 +42,20 @@ test('Facebook object omission proves the original on every page of its owned po
   const preview=await f.preview();assert.equal(lists,2);assert.ok(f.calls.every(c=>c.init.method==='GET'));assert.equal((await f.send(preview)).attempt.status,'sent');assert.equal(lists,4);assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);
 });
 
+test('Facebook reply preview and send use exempt Page scopes after data access time passes',async t=>{
+  for(const authType of ['facebook-page','facebook-user'])await t.test(authType,async t=>{
+    const f=fixture(t,{platform:'facebook',authType});f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:'2020-01-01T00:00:00Z',scope:f.credentials.scope+' email'});
+    assert.equal(f.service.workspace(f.member).items[0].canReply,true);const preview=await f.preview();assert.equal((await f.send(preview)).attempt.status,'sent');assert.equal(f.calls.filter(call=>call.init.method==='POST').length,1);
+  });
+});
+
+test('Page replies still reject real token expiry, malformed data expiry, Instagram expiry and revoked API access',async t=>{
+  for(const mode of ['expired-token','invalid-data-expiry','instagram','403'])await t.test(mode,async t=>{
+    const f=fixture(t,{platform:mode==='instagram'?'instagram':'facebook'});f.store.setSecret('channel:channel',{...f.credentials,dataAccessExpiresAt:mode==='invalid-data-expiry'?'invalid':'2020-01-01T00:00:00Z',...(mode==='expired-token'?{expiresAt:'2020-01-01T00:00:00Z'}:{})});if(mode==='403')f.setHandler(path=>path==='me'?json({error:{code:190}},403):null);
+    await assert.rejects(f.preview());assert.equal(f.calls.filter(call=>call.init.method==='POST').length,0);assert.equal(f.store.all('socialReplyAttempts').length,0);assert.equal(f.calls.length,mode==='403'?1:0);
+  });
+});
+
 test('Facebook object omission rejects incomplete or conflicting parent-post membership and never sends',async t=>{
   for(const mode of ['missing','wrong-text','nested','hidden','duplicate','missing-cursor','repeated-cursor','late-error','limit','account','explicit-object']){
     await t.test(mode,async t=>{const f=fixture(t,{platform:'facebook'});let lists=0;
