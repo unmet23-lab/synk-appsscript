@@ -22,7 +22,10 @@ test('fixed benefit demos are available only in a local HTTP preview', () => {
 test('benefits are discoverable without being treated as installed or entitled applications', () => {
   assert.deepEqual(filterBenefits('가족').map(v => v.id), ['family-album']);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), ['rehearsal']);
-  assert.deepEqual(filterBenefits().map(v => v.id), ['care', 'fortune', 'rehearsal', 'family-album']);
+  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'care', 'fortune', 'rehearsal', 'family-album']);
+  assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
+  assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
+  assert.equal(publicBenefitEntry('insight'), null);
   assert.deepEqual(filterBenefits('운세').map(v => v.id), ['fortune']);
   assert.match(benefitDetail('fortune', 'http://localhost/'), /href="http:\/\/127\.0\.0\.1:4299\/"/);
   assert.match(benefitDetail('fortune', 'http://localhost/'), /비회원 입력은 이 화면에만 남아요/);

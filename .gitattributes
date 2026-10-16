@@ -42,3 +42,6 @@ docs/마케팅/맞춤도구/dist/**/atlas-engine.js text eol=lf
 
 # 보존 패치의 빈 문맥 줄에는 형식상 한 칸이 필요하다.
 docs/_ops/qa/atlas-eight-fix-20261008/*.patch -whitespace
+
+tests/fixtures/member-statement-*.json text eol=lf
+experiences/synk-account/src/member-statement*.cjs text eol=lf

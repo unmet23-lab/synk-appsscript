@@ -4,7 +4,7 @@ export const LIBRARY_KEY = 'synk.platform.device-library.v1';
 // Device shortcuts only: including a benefit here never grants installation or account access.
 export const LIBRARY_ITEMS = Object.freeze([
   ...APPLICATIONS.map(app => Object.freeze({ ...app, kind: 'app' })),
-  ...MEMBER_BENEFITS.map(item => Object.freeze({ ...item, kind: 'benefit', category: 'life',
+  ...MEMBER_BENEFITS.filter(item => !item.embedded).map(item => Object.freeze({ ...item, kind: 'benefit', category: 'life',
     subtitle: item.kicker, image: `member/${item.asset}`, tags: ['회원 혜택', '일상'], keywords: [item.headline, item.description] })),
 ]);
 const ids = new Set(LIBRARY_ITEMS.map(app => app.id));

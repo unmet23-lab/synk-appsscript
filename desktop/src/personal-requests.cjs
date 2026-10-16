@@ -1,6 +1,7 @@
 'use strict';
-const RESOURCES = Object.freeze(['path', 'rehearsal', 'family-album', 'platform-library']);
-const LIMITS = Object.freeze({ path: 64 * 1024, rehearsal: 500000, 'family-album': 32 * 1024 * 1024, 'platform-library':64 * 1024 });
+const RESOURCES = Object.freeze(['path', 'rehearsal', 'family-album', 'platform-library', 'member-insight', 'member-understanding']);
+const LIMITS = Object.freeze({ path: 64 * 1024, rehearsal: 500000, 'family-album': 32 * 1024 * 1024, 'platform-library':64 * 1024, 'member-insight':256 * 1024, 'member-understanding':64 * 1024 });
+const PLATFORM_OPERATIONS = Object.freeze({ platformLoad: 'platform-library', platformSave: 'platform-library', platformDelete: 'platform-library', insightLoad: 'member-insight', insightSave: 'member-insight', insightDelete: 'member-insight', understandingLoad: 'member-understanding', understandingSave: 'member-understanding', understandingDelete: 'member-understanding' });
 const MIME = Object.freeze({ image: ['image/jpeg', 'image/png', 'image/webp'], audio: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4'] });
 const MEDIA_LIMITS = Object.freeze({ image: 6 * 1024 * 1024, audio: 8 * 1024 * 1024 });
 const PERSONAL_OPERATIONS = Object.freeze(['personalLoad', 'personalSave', 'personalDelete', 'personalAssetPrepare', 'personalAssetConfirm', 'personalAssetRead', 'personalAssetDelete']);
@@ -19,7 +20,12 @@ function personalRequestSpec(operation, params = {}, product, resource) {
     if (Buffer.byteLength(state, 'utf8') > LIMITS[resource]) invalid();
     return { path: 'synk-personal', body: { resource, action: 'save', expected_revision: revision(params.expected_revision), state: JSON.parse(state) } };
   }
-  if (operation === 'personalDelete') { keys(['expected_revision']); return { path: 'synk-personal', body: { resource, action: 'delete', expected_revision: revision(params.expected_revision) } }; }
+  if (operation === 'personalDelete') {
+    keys(['expected_revision', ...(resource === 'member-understanding' ? ['document_version'] : [])]);
+    if (Object.hasOwn(params, 'document_version') && ![1, 2, 3, 4, 5, 6].includes(params.document_version)) invalid();
+    return { path: 'synk-personal', body: { resource, action: 'delete', expected_revision: revision(params.expected_revision),
+      ...(Object.hasOwn(params, 'document_version') ? { document_version: params.document_version } : {}) } };
+  }
   if (resource !== 'family-album') invalid();
   if (operation === 'personalAssetPrepare') {
     keys(['kind', 'mime', 'size', 'sha256']);
@@ -30,4 +36,4 @@ function personalRequestSpec(operation, params = {}, product, resource) {
   if (!action) invalid(); keys(['assetId']); if (!uuid(params.assetId)) invalid();
   return { path: 'synk-personal', body: { resource, action, assetId: params.assetId } };
 }
-module.exports = { RESOURCES, LIMITS, MIME, MEDIA_LIMITS, PERSONAL_OPERATIONS, uuid, personalRequestSpec };
+module.exports = { RESOURCES, LIMITS, MIME, MEDIA_LIMITS, PERSONAL_OPERATIONS, PLATFORM_OPERATIONS, uuid, personalRequestSpec };

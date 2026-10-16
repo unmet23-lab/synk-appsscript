@@ -7,6 +7,17 @@ const {configuration}=require('../src/auth-config.cjs');
 const root=path.resolve(__dirname,'..');
 const hashFile=p=>require('node:crypto').createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const sourceHash=()=>require('./source-hash.cjs').sourceHash(root);
+function verifyMemberActivity(desktopRoot=root){
+  for(const [name,entry]of [['member-activity','atlas/member-activity.js'],['member-activity-data','experiences/synk-account/src/member-activity-data.mjs'],['member-understanding','atlas/member-understanding.js'],['member-understanding-data','experiences/synk-account/src/member-understanding-data.mjs']]){
+  const generated=path.join(desktopRoot,'renderer/generated',name+'.mjs'),manifestPath=path.join(desktopRoot,'renderer/generated',name+'.manifest.json');
+  let manifest;try{manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));}catch{throw Error('Member activity build manifest is missing or invalid.');}
+  if(manifest.version!==1||manifest.entry!==entry||!manifest.sources||!Object.hasOwn(manifest.sources,entry)||!Object.values(manifest.sources).every(value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value))||!fs.existsSync(generated)||require('node:crypto').createHash('sha256').update(fs.readFileSync(generated,'utf8').replace(/\r\n/g,'\n')).digest('hex')!==manifest.sha256)throw Error('Member activity browser artifact differs from its build manifest.');
+  }
+  // A frozen desktop-only release carries the build receipt; a source checkout
+  // also verifies freshness against the canonical Atlas implementation.
+  const sourceRoot=path.resolve(desktopRoot,'..');
+  if(fs.existsSync(path.join(sourceRoot,'atlas/member-activity.js')))require(path.join(sourceRoot,'tools/build-member-activity.js')).buildMemberActivity({sourceRoot,check:true});
+}
 function previewReleases(options) {
   const entries=[];
   for(const id of ['world','messenger']) {
@@ -49,6 +60,7 @@ function previewEntry(id,options={}){
 function prepare(id,options){
   const config=configFor(id,options),c=identity(id,options.mode);let entry=previewEntry(id,options),releases=[],auth=null;
   if(id==='platform'&&['index.html','launcher.mjs','launcher.css'].some(file=>!fs.existsSync(path.join(root,'renderer',file))))throw Error('The native platform renderer must be built before packaging.');
+  if(id==='platform')verifyMemberActivity();
   if(options.authConfig){auth=JSON.parse(fs.readFileSync(options.authConfig,'utf8'));configuration(auth,id,options.mode);}
   if(options.mode==='development'&&id==='platform')releases=previewReleases(options);
   if(options.mode==='release') {
@@ -91,4 +103,4 @@ async function main(args=process.argv.slice(2)) {
   }
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.message+'\n');process.exitCode=1;});
-module.exports={configFor,prepare,previewEntry,parseOptions};
+module.exports={configFor,prepare,previewEntry,parseOptions,verifyMemberActivity};

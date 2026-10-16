@@ -43,7 +43,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // experiences/synk-account/src/platform-entry.mjs
 function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   const key = `synk.platform.entry.${clientKey}`;
-  let captured = false, restored = false, invalid3 = false, cancelled = false, intent = null, storage;
+  let captured = false, restored = false, invalid5 = false, cancelled = false, intent = null, storage;
   function capture(value) {
     if (captured) return;
     const url = new URL(getUrl()), params = new URLSearchParams(url.hash.slice(1));
@@ -64,7 +64,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
       throw Object.assign(new Error("플랫폼의 계정 연결을 이 탭에 보관하지 못했어요. 브라우저 저장 설정을 확인한 뒤 다시 시도해 주세요."), { code: "PLATFORM_ENTRY_STORAGE", retryable: true });
     }
     intent = next;
-    invalid3 = next.invalid === true;
+    invalid5 = next.invalid === true;
     params.delete(PARAM);
     url.hash = params.toString();
     replaceUrl(url.href);
@@ -76,7 +76,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   return {
     capture,
     restore(value) {
-      if (invalid3) throw mismatch();
+      if (invalid5) throw mismatch();
       if (restored) return;
       storage = value;
       const text4 = storage.getItem(key);
@@ -419,29 +419,89 @@ var init_model = __esm({
 function validPractice(scenario, practice) {
   return practice && typeof practice === "object" && !Array.isArray(practice) && Object.keys(practice).length === 2 && Object.keys(practice).every((key) => ["counterpart", "goal"].includes(key)) && Object.hasOwn(PRACTICES[scenario].counterparts, practice.counterpart) && Object.hasOwn(PRACTICES[scenario].goals, practice.goal);
 }
+function calendarDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const time2 = Date.parse(`${value}T00:00:00.000Z`);
+  return Number.isFinite(time2) && new Date(time2).toISOString().slice(0, 10) === value;
+}
+function validSchema2Session(s) {
+  if (has(s, "intensity") && !Object.hasOwn(INTENSITIES, s.intensity)) return false;
+  if (has(s, "plan") && s.plan !== null && (!keys(s.plan, ["ifThey", "iWill"]) || Object.keys(s.plan).length !== 2 || !bounded(s.plan.ifThey, 200) || !bounded(s.plan.iWill, 200) || !(s.plan.ifThey.trim() || s.plan.iWill.trim()))) return false;
+  if (has(s, "realAt") && s.realAt !== null && !calendarDate(s.realAt)) return false;
+  if (has(s, "outcome") && s.outcome !== null) {
+    const o = s.outcome;
+    if (!keys(o, ["did", "usedFirst", "reaction", "note", "at"]) || Object.keys(o).length !== 5 || !Object.hasOwn(OUTCOMES.did, o.did) || !(o.usedFirst === null || typeof o.usedFirst === "boolean") || !(o.reaction === null || Object.hasOwn(OUTCOMES.reaction, o.reaction)) || o.did !== "yes" && (o.usedFirst !== null || o.reaction !== null) || !bounded(o.note, 600) || !isoTime(o.at)) return false;
+  }
+  return true;
+}
+function validSchema2Turn(turn) {
+  if (has(turn, "mode") && !Object.hasOwn(MODES, turn.mode)) return false;
+  if (has(turn, "seconds") && (!secondsValue(turn.seconds) || turn.seconds !== null && turn.mode !== "voice")) return false;
+  if (has(turn, "retryMode") && (turn.retry ? !(turn.retryMode === null || Object.hasOwn(MODES, turn.retryMode)) : turn.retryMode !== null)) return false;
+  if (has(turn, "retrySeconds") && (!secondsValue(turn.retrySeconds) || turn.retrySeconds !== null && turn.retryMode !== "voice")) return false;
+  return true;
+}
 function validateArchive(value) {
-  const invalid3 = () => {
+  const invalid5 = () => {
     throw new TypeError("리허설 기록 형식이 올바르지 않아요. 이 앱에서 내보낸 JSON 파일을 선택해 주세요.");
   };
-  if (!keys(value, ["schema", "savedAt", "sessions"]) || value.schema !== SCHEMA || !bounded(value.savedAt, 40, false) || !Number.isFinite(Date.parse(value.savedAt)) || !Array.isArray(value.sessions) || value.sessions.length > MAX_SESSIONS) invalid3();
-  const ids3 = /* @__PURE__ */ new Set();
+  if (!keys(value, ["schema", "savedAt", "sessions"]) || !SCHEMAS.includes(value.schema) || !bounded(value.savedAt, 40, false) || !Number.isFinite(Date.parse(value.savedAt)) || !Array.isArray(value.sessions) || value.sessions.length > MAX_SESSIONS) invalid5();
+  const ids3 = /* @__PURE__ */ new Set(), sessionKeys = SESSION_KEYS[value.schema], turnKeys = TURN_KEYS[value.schema];
   for (const s of value.sessions) {
-    if (!keys(s, ["id", "at", "scenario", "counterpart", "goal", "practice", "focus", "turns", "firstSentence", "takeaway"]) || !bounded(s.id, 80, false) || ids3.has(s.id) || !bounded(s.at, 40, false) || !Number.isFinite(Date.parse(s.at)) || !Object.hasOwn(SCENARIOS, s.scenario) || !Object.hasOwn(DIRECTIONS, s.focus) || !bounded(s.counterpart, 80, false) || !bounded(s.goal, 240, false) || !bounded(s.firstSentence, 600) || !bounded(s.takeaway, 600) || !Array.isArray(s.turns) || s.turns.length !== 3 || Object.hasOwn(s, "practice") && !validPractice(s.scenario, s.practice)) invalid3();
+    if (!keys(s, sessionKeys) || !bounded(s.id, 80, false) || ids3.has(s.id) || !bounded(s.at, 40, false) || !Number.isFinite(Date.parse(s.at)) || !Object.hasOwn(SCENARIOS, s.scenario) || !Object.hasOwn(DIRECTIONS, s.focus) || !bounded(s.counterpart, 80, false) || !bounded(s.goal, 240, false) || !bounded(s.firstSentence, 600) || !bounded(s.takeaway, 600) || !Array.isArray(s.turns) || s.turns.length !== 3 || Object.hasOwn(s, "practice") && !validPractice(s.scenario, s.practice) || !validSchema2Session(s)) invalid5();
     ids3.add(s.id);
     for (const [index, turn] of s.turns.entries()) {
       const expected = index === 0 ? "opening" : index === 1 ? s.focus : "close";
-      if (!keys(turn, ["id", "answer", "review", "retry", "retryReview"]) || turn.id !== expected || !bounded(turn.answer, 2e3, false) || !Object.hasOwn(REVIEWS, turn.review) || !bounded(turn.retry, 2e3) || (turn.retry ? !Object.hasOwn(REVIEWS, turn.retryReview) : turn.retryReview !== null)) invalid3();
+      if (!keys(turn, turnKeys) || turn.id !== expected || !bounded(turn.answer, 2e3, false) || !Object.hasOwn(REVIEWS, turn.review) || !bounded(turn.retry, 2e3) || (turn.retry ? !Object.hasOwn(REVIEWS, turn.retryReview) : turn.retryReview !== null) || !validSchema2Turn(turn)) invalid5();
     }
   }
-  return JSON.parse(JSON.stringify(value));
+  const text4 = JSON.stringify(value);
+  if (byteLength(text4) > MAX_IMPORT_BYTES) invalid5();
+  return JSON.parse(text4);
 }
-var SCHEMA, MAX_SESSIONS, MAX_IMPORT_BYTES, REVIEWS, SCENARIOS, DIRECTIONS, PRACTICES, record, keys, safeCharacters, bounded;
+var SCHEMAS, MAX_SESSIONS, MAX_IMPORT_BYTES, MAX_SPOKEN_SECONDS, REVIEWS, INTENSITIES, MODES, OUTCOMES, TURN_IDS, PRESENTATION_STATUS, NEGOTIATION_PRICE, APOLOGY_MISTAKE, FEEDBACK_IMPROVE, SCENARIOS, DIRECTIONS, PRACTICES, record, keys, safeCharacters, bounded, isoTime, byteLength, SESSION_KEYS, TURN_KEYS, has, secondsValue;
 var init_domain = __esm({
   "experiences/conversation-rehearsal/domain.mjs"() {
-    SCHEMA = 1;
-    MAX_SESSIONS = 10;
+    SCHEMAS = Object.freeze([1, 2]);
+    MAX_SESSIONS = 30;
     MAX_IMPORT_BYTES = 5e5;
+    MAX_SPOKEN_SECONDS = 600;
     REVIEWS = Object.freeze({ easy: "말할 수 있었어요", unsure: "조금 망설였어요", stuck: "말이 막혔어요" });
+    INTENSITIES = Object.freeze({ gentle: "부드럽게", normal: "보통", tough: "세게" });
+    MODES = Object.freeze({ text: "글로 답함", voice: "말로 답함" });
+    OUTCOMES = Object.freeze({
+      did: Object.freeze({ yes: "대화했어요", no: "하지 못했어요", later: "나중으로 미뤘어요" }),
+      reaction: Object.freeze({ good: "잘 통했어요", mixed: "반반이었어요", hard: "어려웠어요" })
+    });
+    TURN_IDS = Object.freeze(["opening", "specific", "concise", "pressure", "close"]);
+    PRESENTATION_STATUS = {
+      opening: { title: "결론 한 문장으로 시작하기", prompt: "지금 진행 상황이 어떤지 먼저 말해 줄래요?", hint: "「결론부터 말씀드리면 ○○는 ○○ 상태입니다」처럼 상태를 먼저 말하고, 설명은 그 뒤에 붙이세요." },
+      specific: { title: "근거와 예시 붙이기", prompt: "그렇게 판단한 근거가 뭐예요? 숫자나 실제 사례가 있어요?", hint: "근거 하나에 그것을 보여 주는 숫자나 실제 장면 하나를 짝지어 말해 보세요." },
+      concise: { title: "30초 안에 정리하기", prompt: "회의가 곧 시작이라서요. 30초 안에 정리해 줄래요?", hint: "결론 한 문장, 근거 한 문장이면 충분해요. 배경 설명은 빼도 괜찮아요." },
+      pressure: { title: "근거가 약하다는 말에 답하기", prompt: "그 정도 근거로는 결정하기 어려운데요. 다른 자료는 없어요?", tones: { gentle: "근거를 조금만 더 들어 볼 수 있을까요?", tough: "그 숫자 하나로 결정하라는 거예요? 확실한 게 뭐예요?" }, hint: "근거를 부풀리지 말고 확인된 것과 아직 확인 중인 것을 나눠 말하세요. 언제까지 무엇을 더 확인할지도 덧붙이세요." },
+      close: { title: "필요한 결정으로 마무리하기", prompt: "알겠어요. 그래서 제가 정해 줘야 하는 게 뭐예요?", hint: "처음에 말한 결론을 한 번 더 말하고, 필요한 결정 하나를 분명히 부탁하세요." }
+    };
+    NEGOTIATION_PRICE = {
+      opening: { title: "원하는 조건을 숫자로", prompt: "생각하시는 금액이 어느 정도인가요?", hint: "「○○을 희망합니다」처럼 숫자 하나로 먼저 말하고, 근거는 그다음 한 문장으로 붙이세요." },
+      specific: { title: "숫자의 근거 세우기", prompt: "그 금액을 생각하신 근거가 있을까요?", hint: "비슷한 일의 시장 수준, 내가 낸 결과, 맡을 일의 범위 가운데 실제로 확인한 것을 말하세요." },
+      concise: { title: "요청을 짧게 정리하기", prompt: "정리하면 원하시는 게 정확히 뭔가요?", hint: "금액 한 문장, 함께 원하는 조건 하나로 정리해 보세요." },
+      pressure: { title: "기준에 안 맞는다는 말에", prompt: "저희 기준으로는 그 금액을 맞춰 드리기 어려워요.", tones: { gentle: "저희도 맞춰 드리고 싶은데, 그 금액은 조금 어려울 것 같아요.", tough: "그 금액은 불가능해요. 이 조건이 싫으시면 어쩔 수 없고요." }, hint: "바로 물러서지 말고, 금액 말고 조정할 수 있는 조건을 묻거나 받아들일 수 있는 선을 차분히 말하세요." },
+      close: { title: "다음 단계 정하기", prompt: "그럼 내부에서 다시 검토해 볼게요. 더 하실 말씀 있으세요?", hint: "오늘 이야기한 조건을 한 문장으로 다시 정리하고, 언제까지 어떤 방식으로 답을 받을지 확인하세요." }
+    };
+    APOLOGY_MISTAKE = {
+      opening: { title: "변명 없이 인정하기", prompt: "무슨 일이 있었던 건지 먼저 말해 줄래요?", hint: "무엇을 잘못했는지 한 문장으로 인정하고 사과하세요. 사정 설명은 뒤로 미뤄도 괜찮아요." },
+      specific: { title: "무엇을 놓쳤는지 짚기", prompt: "정확히 어떤 부분이 문제였다고 생각해요?", hint: "상황 탓보다 내가 놓친 것 하나를 짚고, 그 때문에 상대가 겪은 일을 말하세요." },
+      concise: { title: "사과와 행동을 한 번에", prompt: "길게 말하지 않아도 돼요. 그래서 어떻게 할 거예요?", hint: "「제 실수였어요. 죄송해요. 오늘 안에 다시 보내 드릴게요.」처럼 인정과 바로잡을 행동을 한 번에 말해 보세요." },
+      pressure: { title: "또 그러면 어떡하냐는 말에", prompt: "다음에도 또 이러면 어떡해요?", tones: { gentle: "다음에는 괜찮겠죠? 조금 걱정돼서요.", tough: "이번엔 정말 달라지는 거 맞아요? 뭘 바꿀 건데요?" }, hint: "다짐보다 방법을 말하세요. 무엇을 바꿔서 같은 일이 다시 생기지 않게 할지 한 가지를 정하세요." },
+      close: { title: "관계를 다시 잇기", prompt: "알겠어요. 이번엔 믿어 볼게요.", hint: "받아 준 것에 고마움을 전하고, 약속한 행동을 언제 확인할지 말하며 마무리하세요." }
+    };
+    FEEDBACK_IMPROVE = {
+      opening: { title: "본 것으로 시작하기", prompt: "무슨 이야기인지 먼저 들어 볼게요.", hint: "「지난 ○○ 때 ○○하는 걸 봤어요」처럼 언제 무엇을 봤는지로 시작하세요. 「항상」「늘」은 빼 보세요." },
+      specific: { title: "영향을 구체적으로", prompt: "그게 왜 문제가 되는 건지 잘 모르겠어요.", hint: "그 행동 때문에 일이나 다른 사람에게 실제로 생긴 일을 하나 말하세요." },
+      concise: { title: "바라는 것을 한 문장으로", prompt: "그래서 제가 어떻게 하면 되는 거예요?", hint: "「다음부터는 ○○해 주면 좋겠어요」처럼 바라는 행동 하나를 분명하게 말하세요." },
+      pressure: { title: "방어하는 반응에 답하기", prompt: "저만 그런 것도 아닌데요.", tones: { gentle: "아, 저는 그게 문제가 되는 줄 몰랐어요.", tough: "다른 사람들도 다 그렇게 하는데 왜 저한테만 그러세요?" }, hint: "다른 사람과 비교하는 이야기로 번지지 않게, 본 사실을 차분히 다시 말하고 상대의 사정을 물어보세요." },
+      close: { title: "함께 정하고 마무리하기", prompt: "알겠어요. 다음부터 신경 쓸게요.", hint: "고맙다고 말하고, 도울 일이 있는지 또는 언제 다시 이야기할지 물으며 마무리하세요." }
+    };
     SCENARIOS = Object.freeze({
       interview: {
         name: "면접에서 나를 소개할 때",
@@ -454,7 +514,7 @@ var init_domain = __esm({
           opening: { title: "첫 인상보다, 첫 문장", prompt: "이 역할에 지원한 이유를 들려주시겠어요?", hint: "관심 있는 일 한 가지와 연결되는 내 경험 한 가지를 적어 보세요." },
           specific: { title: "경험을 하나만 꺼내기", prompt: "그 경험에서 본인이 직접 한 일은 무엇이었나요?", hint: "상황 → 내가 한 행동 → 실제로 일어난 결과. 없는 성과를 만들 필요는 없어요." },
           concise: { title: "핵심부터 말하기", prompt: "시간이 많지 않아서요. 가장 전하고 싶은 내용을 두 문장으로 정리해 주시겠어요?", hint: "먼저 결론 한 문장. 그다음 그 결론을 뒷받침하는 실제 경험 한 문장." },
-          pressure: { title: "예상 밖의 질문", prompt: "그 경험이 우리 팀의 일에도 도움이 된다고 생각하는 이유는 무엇인가요?", hint: "상대의 상황을 모르면, 먼저 확인하고 싶은 점을 질문해도 좋아요." },
+          pressure: { title: "예상 밖의 질문", prompt: "그 경험이 우리 팀의 일에도 도움이 된다고 생각하는 이유는 무엇인가요?", tones: { gentle: "그 경험이 저희 일에도 도움이 될 수 있을지 궁금해요.", tough: "그 경험이 우리 일이랑 무슨 상관이죠?" }, hint: "상대의 상황을 모르면, 먼저 확인하고 싶은 점을 질문해도 좋아요." },
           close: { title: "대화를 이어 갈 한마디", prompt: "마지막으로 저희에게 물어보고 싶은 것이 있나요?", hint: "역할에 관해 정말 알고 싶은 점 한 가지로 마무리해 보세요." }
         },
         starter: "제가 이 역할에 관심을 가진 이유는…",
@@ -470,7 +530,7 @@ var init_domain = __esm({
           opening: { title: "조심스럽게 시작하기", prompt: "무슨 일이에요? 지금 잠깐 이야기할 수 있어요.", hint: "대화를 나눌 수 있는지 확인하고, 부탁하고 싶은 일을 한 가지로 말해 보세요." },
           specific: { title: "부탁의 크기를 분명하게", prompt: "제가 정확히 무엇을, 언제까지 도와드리면 될까요?", hint: "필요한 작업과 기한을 나누어 적고, 조정 가능한 부분도 말해 보세요." },
           concise: { title: "짧게 핵심 전하기", prompt: "지금은 시간이 별로 없어요. 필요한 것부터 짧게 말해 줄래요?", hint: "“○○를 부탁드리고 싶어요. ○○까지 가능하실까요?”처럼 시작할 수 있어요." },
-          pressure: { title: "부담스럽다는 말에 답하기", prompt: "저도 일정이 꽉 차 있어서 전부 도와드리기는 어려울 것 같아요.", hint: "상대의 상황을 인정하고, 부탁을 줄이거나 다른 시점을 제안해 보세요." },
+          pressure: { title: "부담스럽다는 말에 답하기", prompt: "저도 일정이 꽉 차 있어서 전부 도와드리기는 어려울 것 같아요.", tones: { gentle: "저도 일정이 좀 있어서, 일부만 도와드려도 괜찮을까요?", tough: "저도 일정이 꽉 찼어요. 그걸 왜 제가 해야 하죠?" }, hint: "상대의 상황을 인정하고, 부탁을 줄이거나 다른 시점을 제안해 보세요." },
           close: { title: "서로 같은 뜻인지 확인하기", prompt: "그럼 제가 가능한 범위에서 해 볼게요. 어떻게 진행하면 좋을까요?", hint: "합의한 범위와 다음 확인 시점을 정리해 보세요. 아직 합의되지 않은 일은 묻는 표현으로요." }
         },
         starter: "잠깐 이야기 나눌 수 있을까요? 부탁드리고 싶은 일이 있어요.",
@@ -486,78 +546,266 @@ var init_domain = __esm({
           opening: { title: "내 범위를 말하는 시작", prompt: "이번에도 부탁 좀 해도 될까요? 꼭 해 줬으면 좋겠어요.", hint: "상대의 마음을 짧게 받아 준 뒤, 내가 할 수 없는 부분을 분명하게 말해 보세요." },
           specific: { title: "이유와 범위를 나누기", prompt: "어떤 부분이 어려운 건지 알려 줄 수 있어요?", hint: "공유하고 싶은 만큼만 이유를 말해도 괜찮아요. 할 수 있는 범위가 있다면 따로 말해 보세요." },
           concise: { title: "짧고 분명한 거절", prompt: "그래서, 이번에는 가능하다는 건가요? 어렵다는 건가요?", hint: "결정을 한 문장으로 먼저 말하고, 필요하면 설명을 덧붙이세요." },
-          pressure: { title: "한 번 더 부탁할 때", prompt: "딱 이번 한 번만 안 될까요? 다른 부탁은 안 할게요.", hint: "새로운 이유를 계속 만들기보다, 결정한 범위를 차분하게 반복해 보세요." },
+          pressure: { title: "한 번 더 부탁할 때", prompt: "딱 이번 한 번만 안 될까요? 다른 부탁은 안 할게요.", tones: { gentle: "정말 어렵다면 어쩔 수 없지만, 이번 한 번만 다시 생각해 줄 수 있어요?", tough: "이번 한 번인데 그것도 안 돼요? 다른 부탁은 안 한다니까요." }, hint: "새로운 이유를 계속 만들기보다, 결정한 범위를 차분하게 반복해 보세요." },
           close: { title: "관계를 남기는 마무리", prompt: "알겠어요. 조금 아쉽기는 하네요.", hint: "아쉬움을 인정하면서 마무리해 보세요. 할 수 없는 대안을 약속하지 않아도 괜찮아요." }
         },
         starter: "부탁한 마음은 이해해요. 다만 이번에는 제가…",
         check: "내가 할 수 없는 범위를 모호하지 않게 말했나요?"
+      },
+      presentation: {
+        name: "결론부터 발표·보고할 때",
+        short: "발표·보고",
+        note: "결론을 먼저, 근거와 예시로 받치고, 끝에서 다시 결론.",
+        counterpart: "보고를 받는 팀장",
+        goal: "결론을 먼저 말하고 근거와 예시로 결정을 돕기",
+        turns: PRESENTATION_STATUS,
+        starter: "결론부터 말씀드리면…",
+        check: "첫 문장에 결론이 있고, 마지막에 다시 결론을 말했나요?"
+      },
+      negotiation: {
+        name: "조건과 연봉을 협상할 때",
+        short: "협상",
+        note: "원하는 것과 근거를 먼저, 물러설 수 없는 선은 미리 정해 두기.",
+        counterpart: "처우를 정하는 인사 담당자",
+        goal: "원하는 조건을 근거와 함께 말하고 다음 단계까지 정하기",
+        turns: NEGOTIATION_PRICE,
+        starter: "제가 희망하는 조건은 ○○입니다. 그렇게 생각한 근거는…",
+        check: "원하는 것을 숫자로 말하고, 근거와 다음 단계를 함께 정했나요?"
+      },
+      apology: {
+        name: "진심으로 사과해야 할 때",
+        short: "사과",
+        note: "변명보다 인정, 말보다 바로잡을 행동.",
+        counterpart: "함께 일하는 동료",
+        goal: "잘못을 인정하고 바로잡을 행동과 재발 방지를 약속하기",
+        turns: APOLOGY_MISTAKE,
+        starter: "제가 ○○한 건 제 잘못이에요. 죄송해요.",
+        check: "변명 없이 인정하고, 상대가 겪은 일과 바로잡을 행동을 말했나요?"
+      },
+      feedback: {
+        name: "피드백을 건네야 할 때",
+        short: "피드백",
+        note: "평가 대신 본 것, 그 영향, 바라는 것.",
+        counterpart: "함께 일하는 후배",
+        goal: "관찰한 사실과 영향을 말하고 바라는 점을 함께 정하기",
+        turns: FEEDBACK_IMPROVE,
+        starter: "지난 ○○ 때 본 것을 이야기하고 싶어요.",
+        check: "평가가 아니라 본 사실을 말하고, 상대의 생각을 물었나요?"
       }
     });
     DIRECTIONS = Object.freeze({ specific: "내용을 구체적으로", concise: "짧고 분명하게", pressure: "부담스러운 반응에 답하기" });
     PRACTICES = Object.freeze({
       interview: {
         counterparts: {
-          recruiter: { label: "채용 담당자", opening: "지원 내용을 함께 살펴볼게요.", pressure: "채용 기준에 맞는지 확인하고 싶어요.", hint: "직무 용어만 나열하지 말고, 처음 듣는 사람도 이해할 수 있게 설명해 보세요." },
-          lead: { label: "실무 팀장", opening: "함께 일할 장면을 생각하며 여쭤볼게요.", pressure: "우리 팀은 바로 함께 일할 사람을 찾고 있어요.", hint: "내가 맡은 일과 함께 일한 사람의 일을 구분해 보세요." }
+          recruiter: {
+            label: "채용 담당자",
+            opening: "지원 내용을 함께 살펴볼게요.",
+            pressure: "채용 기준에 맞는지 확인하고 싶어요.",
+            hint: "직무 용어만 나열하지 말고, 처음 듣는 사람도 이해할 수 있게 설명해 보세요.",
+            tone: { gentle: { opening: "편하게 말씀하셔도 돼요. 지원 내용을 함께 살펴볼게요.", pressure: "기준에 맞는지 같이 확인해 보고 싶어서요." }, tough: { opening: "지원자가 많아서 짧게 여쭤볼게요.", pressure: "솔직히 지금까지 말씀만으로는 기준에 못 미쳐 보여요." } }
+          },
+          lead: {
+            label: "실무 팀장",
+            opening: "함께 일할 장면을 생각하며 여쭤볼게요.",
+            pressure: "우리 팀은 바로 함께 일할 사람을 찾고 있어요.",
+            hint: "내가 맡은 일과 함께 일한 사람의 일을 구분해 보세요.",
+            tone: { gentle: { opening: "편하게 이야기 나눠요. 함께 일하는 장면을 떠올리며 여쭤볼게요.", pressure: "저희 팀 일에 어떻게 맞을지 조금 더 듣고 싶어요." }, tough: { opening: "실무 이야기만 할게요.", pressure: "저희는 가르칠 시간이 없어요." } }
+          }
         },
         goals: {
           experience: { label: "경험으로 강점 전하기", goal: "내가 직접 한 일과 그 경험의 쓰임을 전하기", starter: "제가 직접 맡았던 일은…", check: "내 행동과 실제 결과를 구분하고, 지원 역할과 연결했나요?", turns: {
             opening: { title: "내가 한 일로 시작하기", prompt: "이 역할과 연결되는 경험을 하나 소개해 주시겠어요?", hint: "상황 한 문장 뒤에 내가 직접 한 일을 붙여 보세요." },
             specific: { title: "내 행동과 결과 나누기", prompt: "그때 본인이 선택한 방법과 실제로 달라진 점은 무엇인가요?", hint: "내 선택 → 행동 → 확인한 결과를 적으세요. 수치가 없으면 관찰한 변화를 말해도 좋아요." },
             concise: { title: "경험을 두 문장으로", prompt: "그 경험에서 드러난 강점을 두 문장으로 들려주시겠어요?", hint: "강점 한 문장, 그 근거가 되는 내 행동 한 문장으로 줄여 보세요." },
-            pressure: { title: "경험의 쓰임 설명하기", prompt: "같은 방법이 통하지 않는 상황이라면 어떻게 하시겠어요?", hint: "바로 성과를 약속하기보다, 먼저 확인할 조건과 바꿔 볼 행동을 나누세요." },
+            pressure: { title: "경험의 쓰임 설명하기", prompt: "같은 방법이 통하지 않는 상황이라면 어떻게 하시겠어요?", tones: { gentle: "혹시 그 방법이 잘 안 통했던 경우도 있었을까요?", tough: "그건 운이 좋았던 거 아닌가요? 안 통하면 어떻게 할 건데요?" }, hint: "바로 성과를 약속하기보다, 먼저 확인할 조건과 바꿔 볼 행동을 나누세요." },
             close: { title: "역할을 확인하는 질문", prompt: "그 강점을 쓸 수 있을지 판단하려면 저희에게 무엇을 확인하고 싶으세요?", hint: "실제 맡을 일이나 협업 방식에 대한 질문 한 가지로 마무리하세요." }
           } },
           transition: { label: "새 역할에 도전하는 이유", goal: "부족한 경험을 인정하고 옮겨 쓸 역량과 준비를 전하기", starter: "이 역할은 새롭지만, 제가 옮겨 쓸 수 있는 경험은…", check: "아직 해 보지 않은 일과 이미 준비한 행동을 구분했나요?", turns: {
             opening: { title: "새 역할을 택한 이유", prompt: "이전과 다른 역할에 도전하려는 이유는 무엇인가요?", hint: "떠나고 싶은 이유보다, 새 역할에서 해 보고 싶은 일과 연결되는 경험을 말해 보세요." },
             specific: { title: "준비를 행동으로 보여 주기", prompt: "새 역할을 이해하기 위해 지금까지 직접 해 본 일은 무엇인가요?", hint: "실제로 해 본 공부·작은 작업·관찰 중 하나와 거기서 알게 된 점을 적으세요." },
             concise: { title: "전환 이유를 짧게", prompt: "왜 이 역할인지, 어떤 준비가 되었는지 두 문장으로 정리해 주세요.", hint: "도전 이유 한 문장과 준비한 행동 한 문장을 남겨 보세요." },
-            pressure: { title: "경험 부족에 답하기", prompt: "직접 해 본 경험이 부족한데, 처음 맡는 일은 어떻게 시작하시겠어요?", hint: "모르는 점을 인정한 뒤, 확인할 기준·도움을 구할 시점·첫 작업을 구체적으로 말하세요." },
+            pressure: { title: "경험 부족에 답하기", prompt: "직접 해 본 경험이 부족한데, 처음 맡는 일은 어떻게 시작하시겠어요?", tones: { gentle: "경험이 아직 많지 않으신데, 처음엔 어떻게 시작해 보고 싶으세요?", tough: "이 일을 직접 해 본 적이 없으시잖아요. 왜 경험자 대신 뽑아야 하죠?" }, hint: "모르는 점을 인정한 뒤, 확인할 기준·도움을 구할 시점·첫 작업을 구체적으로 말하세요." },
             close: { title: "첫걸음의 기준 확인하기", prompt: "입사 초기에 무엇을 배우거나 확인하고 싶으세요?", hint: "첫 업무의 성공 기준이나 적응 과정에 관한 질문 하나를 준비해 보세요." }
           } }
         }
       },
       request: {
         counterparts: {
-          colleague: { label: "함께 일하는 동료", opening: "지금 잠깐 이야기할 수 있어요.", pressure: "저도 맡은 일이 남아 있어요.", hint: "동료가 선택할 수 있도록 필요한 도움과 조정 가능한 범위를 함께 말하세요." },
-          manager: { label: "일정을 결정하는 상사", opening: "어떤 조정이 필요한지 말씀해 주세요.", pressure: "다른 업무 일정에도 영향이 생길 수 있어요.", hint: "현재 상태와 필요한 결정을 나누고, 내가 할 수 있는 대응도 제시하세요." }
+          colleague: {
+            label: "함께 일하는 동료",
+            opening: "지금 잠깐 이야기할 수 있어요.",
+            pressure: "저도 맡은 일이 남아 있어요.",
+            hint: "동료가 선택할 수 있도록 필요한 도움과 조정 가능한 범위를 함께 말하세요.",
+            tone: { gentle: { opening: "그럼요, 편하게 말해 줘요.", pressure: "저도 일이 좀 있긴 한데, 이야기는 들어 볼게요." }, tough: { opening: "지금 좀 바쁜데, 급한 거예요?", pressure: "제 일도 밀려 있어요. 왜 하필 저예요?" } }
+          },
+          manager: {
+            label: "일정을 결정하는 상사",
+            opening: "어떤 조정이 필요한지 말씀해 주세요.",
+            pressure: "다른 업무 일정에도 영향이 생길 수 있어요.",
+            hint: "현재 상태와 필요한 결정을 나누고, 내가 할 수 있는 대응도 제시하세요.",
+            tone: { gentle: { opening: "무슨 일인지 편하게 말해 봐요.", pressure: "다른 일정도 있어서 같이 고민해 봐야겠네요." }, tough: { opening: "용건만 간단히 말해 줘요.", pressure: "지금 와서 바꾸면 다른 팀 일정까지 다 꼬여요." } }
+          }
         },
         goals: {
           help: { label: "작은 도움 구하기", goal: "필요한 작업과 기한을 정해 도움을 요청하기", starter: "지금 ○○까지 했는데, ○○ 부분을 부탁드려도 될까요?", check: "도움의 크기·기한·상대가 거절하거나 줄일 여지를 말했나요?", turns: {
             opening: { title: "필요한 도움 하나 꺼내기", prompt: "어떤 도움이 필요한가요?", hint: "현재까지 한 일 뒤에, 부탁할 작업 하나와 필요한 시점을 붙이세요." },
             specific: { title: "부탁의 끝을 정하기", prompt: "어디까지 도와드리면 되고, 언제까지 필요한가요?", hint: "작업의 시작과 끝, 필요한 기한, 전달 방법을 구체적으로 정해 보세요." },
             concise: { title: "한 번에 이해할 부탁", prompt: "핵심 요청과 기한부터 짧게 말해 줄래요?", hint: "“○○를 ○○까지 부탁드릴 수 있을까요?” 다음에 이유를 한 문장만 붙이세요." },
-            pressure: { title: "도움을 줄일 수 있을 때", prompt: "전부 맡기는 어려운데, 가장 필요한 부분만 정할 수 있을까요?", hint: "상황을 인정하고 최소한의 도움 하나로 줄이거나 다른 시점을 물어보세요." },
+            pressure: { title: "도움을 줄일 수 있을 때", prompt: "전부 맡기는 어려운데, 가장 필요한 부분만 정할 수 있을까요?", tones: { gentle: "다 도와주긴 어렵지만, 꼭 필요한 부분이 있으면 말해 줘요.", tough: "그걸 다 해 달라고요? 저도 바빠요. 정말 필요한 게 뭐예요?" }, hint: "상황을 인정하고 최소한의 도움 하나로 줄이거나 다른 시점을 물어보세요." },
             close: { title: "가능한 범위를 확인하기", prompt: "가능한 범위와 전달 방법을 같이 정해 볼까요?", hint: "아직 합의하지 않은 도움을 확정하지 말고, 범위·기한·확인 방법을 질문으로 확인하세요." }
           } },
           deadline: { label: "일정 조정 부탁하기", goal: "현재 진행 상황을 알리고 가능한 새 일정을 상의하기", starter: "현재 ○○까지 진행했고, ○○ 때문에 일정 조정을 상의드리고 싶어요.", check: "현재 상태·영향·가능한 대안·확인할 시점을 함께 전했나요?", turns: {
             opening: { title: "일정 문제를 먼저 알리기", prompt: "지금 진행 상황과 조정이 필요한 일정을 알려 주세요.", hint: "끝난 일과 남은 일을 나누고, 바꾸고 싶은 시점을 구체적으로 말하세요." },
             specific: { title: "새 일정의 근거 세우기", prompt: "얼마나 더 필요하고, 그때까지 무엇을 마칠 수 있나요?", hint: "막연히 늦추지 말고, 남은 작업·가능한 날짜·중간 확인 시점을 제안하세요." },
             concise: { title: "변경 요청을 짧게", prompt: "기존 일정과 제안하는 일정, 이유를 짧게 정리해 주세요.", hint: "“○○를 ○○로 조정할 수 있을까요? 현재 ○○가 남았습니다.”처럼 말해 보세요." },
-            pressure: { title: "마감이 고정돼 있을 때", prompt: "마감 자체를 바꾸기 어렵다면 어떤 방법이 있을까요?", hint: "그대로 가능하다고 약속하지 말고, 범위·우선순위·도움 중 조정할 수 있는 것을 상의하세요." },
+            pressure: { title: "마감이 고정돼 있을 때", prompt: "마감 자체를 바꾸기 어렵다면 어떤 방법이 있을까요?", tones: { gentle: "마감은 그대로 두고 싶은데, 다른 방법이 있을까요?", tough: "마감은 못 바꿔요. 그 안에 어떻게 끝낼 건지 말해 봐요." }, hint: "그대로 가능하다고 약속하지 말고, 범위·우선순위·도움 중 조정할 수 있는 것을 상의하세요." },
             close: { title: "조정안을 확정하기 전에", prompt: "그럼 변경 범위와 다음 확인 시점을 어떻게 정하면 될까요?", hint: "누가 무엇을 언제까지 하는지 제안하고, 상대가 동의하는지 확인하세요." }
           } }
         }
       },
       refusal: {
         counterparts: {
-          colleague: { label: "업무를 부탁하는 동료", opening: "업무와 관련해 부탁이 있어요.", pressure: "함께 일하는 사이인데 조금만 더 도와주시면 안 될까요?", hint: "상대에 대한 평가 대신, 현재 맡은 일과 가능한 범위를 말하세요." },
-          friend: { label: "가까운 친구", opening: "함께하고 싶은 일이 있어요.", pressure: "우리 사이인데 이번 한 번만 안 될까요?", hint: "친구의 마음을 인정해도 결정한 범위를 바꿀 필요는 없어요." }
+          colleague: {
+            label: "업무를 부탁하는 동료",
+            opening: "업무와 관련해 부탁이 있어요.",
+            pressure: "함께 일하는 사이인데 조금만 더 도와주시면 안 될까요?",
+            hint: "상대에 대한 평가 대신, 현재 맡은 일과 가능한 범위를 말하세요.",
+            tone: { gentle: { opening: "혹시 시간 되면 부탁 하나 해도 될까요?", pressure: "어렵다면 괜찮은데, 혹시 조금이라도 안 될까요?" }, tough: { opening: "바쁜 건 아는데, 이번엔 거절하지 말아 줘요.", pressure: "팀 일인데 이렇게 빠지면 곤란하죠." } }
+          },
+          friend: {
+            label: "가까운 친구",
+            opening: "함께하고 싶은 일이 있어요.",
+            pressure: "우리 사이인데 이번 한 번만 안 될까요?",
+            hint: "친구의 마음을 인정해도 결정한 범위를 바꿀 필요는 없어요.",
+            tone: { gentle: { opening: "같이 하고 싶은 일이 있는데, 들어 볼래요?", pressure: "아쉽다… 정말 안 되는 거예요?" }, tough: { opening: "이번엔 꼭 들어줬으면 해요.", pressure: "친구라면서 이 정도도 못 해 줘요?" } }
+          }
         },
         goals: {
           scope: { label: "맡기 어려운 일 거절하기", goal: "이번에 맡을 수 없는 범위를 분명하게 전하기", starter: "부탁한 마음은 이해해요. 다만 이번 일은 제가 맡기 어려워요.", check: "거절의 뜻이 분명하고, 할 수 없는 대안을 약속하지 않았나요?", turns: {
             opening: { title: "맡을 수 없는 범위 말하기", prompt: "이번 일을 맡아 줄 수 있을까요?", hint: "부탁을 받아 준 마음 한 문장과, 맡기 어려운 범위 한 문장을 나누세요." },
             specific: { title: "어디까지 어려운지", prompt: "일부만이라도 맡을 수 있는지 알려 주세요.", hint: "전부 어려우면 그렇게 말해도 괜찮아요. 가능한 범위가 있을 때만 따로 제안하세요." },
             concise: { title: "모호한 기대 남기지 않기", prompt: "그래서 이번 일은 맡을 수 있다는 뜻인가요?", hint: "“이번 일은 맡기 어렵습니다.”처럼 결정을 먼저 전하고 설명은 짧게 덧붙이세요." },
-            pressure: { title: "다시 부탁해도 내 범위 유지하기", prompt: "다른 사람을 구하기 어려워요. 조금만 맡아 줄 수 없나요?", hint: "상황이 어려운 점을 인정하되, 새 핑계를 만들지 말고 결정한 범위를 반복하세요." },
+            pressure: { title: "다시 부탁해도 내 범위 유지하기", prompt: "다른 사람을 구하기 어려워요. 조금만 맡아 줄 수 없나요?", tones: { gentle: "다른 사람을 찾기가 좀 어려워서요. 정말 조금이라도 안 될까요?", tough: "지금 맡아 줄 사람이 없어요. 이번만 그냥 해 줘요." }, hint: "상황이 어려운 점을 인정하되, 새 핑계를 만들지 말고 결정한 범위를 반복하세요." },
             close: { title: "존중하며 끝맺기", prompt: "알겠어요. 다른 방법을 찾아볼게요.", hint: "들어 준 것에 고마움을 전하세요. 관계를 위해 불가능한 대안을 덧붙일 필요는 없어요." }
           } },
           schedule: { label: "약속·시간 제안 거절하기", goal: "어려운 시간을 분명히 말하고 가능한 경우에만 다른 때를 제안하기", starter: "그 시간에는 함께하기 어려워요. 제 일정을 먼저 말씀드릴게요.", check: "어려운 시간을 분명히 말하고, 대안은 실제 가능할 때만 제안했나요?", turns: {
             opening: { title: "그 시간은 어렵다고 말하기", prompt: "이번에 제안한 시간에 함께할 수 있나요?", hint: "가능 여부를 먼저 말하세요. 개인 일정을 자세히 설명할 의무는 없어요." },
             specific: { title: "가능한 시간과 불가능한 시간", prompt: "그 시간이 안 되면 가능한 다른 때가 있을까요?", hint: "가능한 때가 있으면 제안하고, 아직 모르겠으면 확인 전 약속하지 마세요." },
             concise: { title: "가능 여부부터 짧게", prompt: "일정을 잡아야 해서요. 이번에는 참석할 수 있나요?", hint: "가능 여부 한 문장과, 필요하면 대안 한 문장으로 정리하세요." },
-            pressure: { title: "잠깐만 오라는 말에 답하기", prompt: "잠깐만 시간을 내면 안 될까요? 이미 기대하고 있어요.", hint: "기대하는 마음을 인정하고, 어렵다는 결정을 차분히 반복해 보세요." },
+            pressure: { title: "잠깐만 오라는 말에 답하기", prompt: "잠깐만 시간을 내면 안 될까요? 이미 기대하고 있어요.", tones: { gentle: "잠깐 얼굴만 보는 것도 어려울까요? 다들 보고 싶어 해서요.", tough: "다들 오는데 혼자만 빠지는 거예요? 잠깐이면 되잖아요." }, hint: "기대하는 마음을 인정하고, 어렵다는 결정을 차분히 반복해 보세요." },
             close: { title: "다음 약속을 강요하지 않고", prompt: "알겠어요. 다음 일정을 정할 때 어떻게 하면 좋을까요?", hint: "다음 연락 방법을 정하거나, 일정 확인 뒤 답하겠다고 말하세요. 날짜를 억지로 약속하지 않아도 돼요." }
+          } }
+        }
+      },
+      presentation: {
+        counterparts: {
+          lead: {
+            label: "보고를 받는 팀장",
+            opening: "바쁘니까 핵심부터 들어 볼게요.",
+            pressure: "이대로 위에 올리기엔 아직 근거가 약해 보여요.",
+            hint: "팀장이 바로 결정하거나 위에 전달할 수 있게, 결론과 필요한 결정을 앞에 두세요.",
+            tone: { gentle: { opening: "편하게 말해 주세요. 핵심부터 들어 볼게요.", pressure: "조금만 더 보완하면 좋겠어요." }, tough: { opening: "5분밖에 없어요. 결론부터 말해요.", pressure: "이 근거로는 위에 못 올려요." } }
+          },
+          client: {
+            label: "제안을 듣는 고객",
+            opening: "오늘 어떤 이야기를 들고 오셨는지 궁금하네요.",
+            pressure: "좋은 말씀인데, 저희 상황에도 맞는지는 잘 모르겠어요.",
+            hint: "우리 쪽 사정보다 고객이 얻는 것과 고객이 정할 일을 먼저 말하세요.",
+            tone: { gentle: { opening: "천천히 들어 볼게요.", pressure: "저희 상황에 맞는지 조금 더 알고 싶어요." }, tough: { opening: "비슷한 제안을 많이 받아서요. 다른 점부터 말씀해 주세요.", pressure: "솔직히 다른 곳 제안이랑 차이를 모르겠어요." } }
+          }
+        },
+        goals: {
+          status: { label: "진행 상황 보고하기", goal: "현재 상태를 결론부터 알리고 필요한 결정을 받기", starter: "결론부터 말씀드리면, ○○는 지금 ○○ 상태입니다.", check: "첫 문장에 현재 상태가 있고, 근거와 필요한 결정을 함께 말했나요?", turns: PRESENTATION_STATUS },
+          proposal: { label: "새 방안 제안하기", goal: "제안을 결론부터 말하고 근거와 예시로 설득하기", starter: "제안드리고 싶은 것은 ○○입니다. 이유는 두 가지예요.", check: "제안을 먼저 말하고, 근거·예시·다시 결론의 순서로 정리했나요?", turns: {
+            opening: { title: "제안을 먼저 꺼내기", prompt: "오늘 제안하려는 게 정확히 뭐예요?", hint: "「○○를 ○○ 방식으로 바꾸자고 제안드립니다」처럼 무엇을 바꾸자는 건지 한 문장으로 먼저 말하세요." },
+            specific: { title: "근거를 예시로 보여 주기", prompt: "그 방법이 효과가 있다는 걸 어떻게 알 수 있어요?", hint: "직접 확인한 숫자·사례·비교 중 하나를 고르고, 예를 들어 어떤 장면에서 달라지는지 붙이세요." },
+            concise: { title: "제안을 두 문장으로", prompt: "핵심만 두 문장으로 정리해 주세요.", hint: "제안 한 문장, 가장 강한 근거 한 문장으로 줄여 보세요." },
+            pressure: { title: "반대 의견에 답하기", prompt: "지금 방식도 큰 문제는 없잖아요. 굳이 바꿔야 해요?", tones: { gentle: "지금 방식도 괜찮아 보이는데, 바꾸면 뭐가 좋아지는지 조금 더 듣고 싶어요.", tough: "바꿨다가 안 되면 누가 책임져요? 지금 방식으로도 충분해요." }, hint: "지금 방식의 장점을 인정한 뒤, 바꾸지 않으면 생기는 손해와 작게 시험해 볼 방법을 말해 보세요." },
+            close: { title: "다시 결론과 다음 단계", prompt: "좋아요. 그럼 다음에 뭘 하면 될까요?", hint: "제안을 한 문장으로 다시 말하고, 시험해 볼 범위와 확인 날짜를 제안하세요." }
+          } }
+        }
+      },
+      negotiation: {
+        counterparts: {
+          hr: {
+            label: "처우를 정하는 인사 담당자",
+            opening: "처우 이야기를 나눠 볼게요.",
+            pressure: "다른 직원들과의 형평성도 봐야 해서요.",
+            hint: "감정보다 기준과 근거로 말하세요. 금액이 막히면 시작일·직급·교육비처럼 다른 조건도 함께 보세요.",
+            tone: { gentle: { opening: "편하게 원하시는 조건을 말씀해 주세요.", pressure: "다른 분들과 균형도 맞춰야 해서 고민이에요." }, tough: { opening: "저희가 드릴 수 있는 범위는 정해져 있어요.", pressure: "이 조건이면 다른 지원자를 볼 수밖에 없어요." } }
+          },
+          partner: {
+            label: "계약을 정하는 거래처 담당자",
+            opening: "이번 계약 조건을 정리해 보죠.",
+            pressure: "다른 곳은 더 낮은 견적을 냈어요.",
+            hint: "가격만 맞서지 말고 품질·일정·범위처럼 상대가 얻는 것과 함께 말하세요.",
+            tone: { gentle: { opening: "서로 좋은 조건을 찾아봤으면 해요.", pressure: "예산이 조금 빠듯해서 고민이에요." }, tough: { opening: "시간이 많지 않으니 숫자로 이야기하죠.", pressure: "다른 업체는 20% 싸게 해 준대요." } }
+          }
+        },
+        goals: {
+          price: { label: "금액 협상하기", goal: "원하는 금액을 근거와 함께 말하고 받아들일 수 있는 선을 지키기", starter: "제가 희망하는 금액은 ○○입니다. 그 근거는…", check: "희망 금액, 근거, 내 기준선, 다음 단계를 구분해서 말했나요?", turns: NEGOTIATION_PRICE },
+          terms: { label: "일정·범위 같은 조건 맞추기", goal: "금액 밖의 조건에서 지킬 것과 양보할 것을 나눠 합의하기", starter: "이번에 제가 꼭 지키고 싶은 조건은 ○○입니다.", check: "지킬 조건과 양보할 수 있는 조건을 나누고, 상대가 얻는 것을 말했나요?", turns: {
+            opening: { title: "꼭 지킬 조건 먼저", prompt: "금액 말고 가장 중요하게 보시는 조건이 뭔가요?", hint: "일정·업무 범위·근무 방식 가운데 꼭 지킬 조건 하나를 먼저 말하고, 이유를 한 문장 붙이세요." },
+            specific: { title: "조건의 근거 세우기", prompt: "그 조건이 꼭 필요한 이유가 뭐예요?", hint: "들어가는 시간, 이전 경험, 결과물의 품질처럼 확인할 수 있는 근거를 말하세요." },
+            concise: { title: "조건을 한 번에 정리하기", prompt: "원하시는 조건을 한 번에 정리해 주시겠어요?", hint: "꼭 지킬 조건 하나, 양보할 수 있는 조건 하나를 나눠 말해 보세요." },
+            pressure: { title: "조건이 많다는 말에", prompt: "그 조건까지 맞춰 드리긴 어려워요.", tones: { gentle: "그 조건은 저희가 조금 고민이 되네요.", tough: "조건을 이렇게 많이 거시면 진행이 어려워요." }, hint: "모든 조건을 지키려 하지 말고, 꼭 지킬 것 하나를 남기고 나머지는 바꿀 수 있는 대안을 제안하세요." },
+            close: { title: "합의 내용 확인하기", prompt: "좋아요. 그럼 어떻게 마무리할까요?", hint: "합의한 조건을 정리하고, 서면으로 확인할 시점과 방법을 제안하세요." }
+          } }
+        }
+      },
+      apology: {
+        counterparts: {
+          colleague: {
+            label: "함께 일하는 동료",
+            opening: "네, 지금 잠깐 괜찮아요.",
+            pressure: "이번이 처음도 아니잖아요.",
+            hint: "상대가 겪은 불편을 구체적으로 말하고, 일에서 바로잡을 것을 정해 말하세요.",
+            tone: { gentle: { opening: "네, 천천히 말해도 돼요.", pressure: "솔직히 조금 서운하긴 했어요." }, tough: { opening: "지금 좀 화가 나 있어요. 짧게 말해 줘요.", pressure: "사과는 지난번에도 들었어요." } }
+          },
+          family: {
+            label: "가족이나 가까운 친구",
+            opening: "응, 지금 괜찮아요.",
+            pressure: "그때 내가 얼마나 속상했는지 알아요?",
+            hint: "잘잘못을 따지기보다 상대의 마음을 먼저 인정하세요. 사정 설명은 상대가 물을 때 짧게만요.",
+            tone: { gentle: { opening: "응, 천천히 말해요.", pressure: "사실 그때 좀 속상했어요." }, tough: { opening: "이제 와서요?", pressure: "그때 나는 정말 혼자라고 느꼈어요." } }
+          }
+        },
+        goals: {
+          mistake: { label: "실수 인정하고 바로잡기", goal: "내 실수를 인정하고 바로잡을 행동과 시점을 약속하기", starter: "○○를 놓친 건 제 실수예요. 죄송해요.", check: "실수를 내 말로 인정하고, 바로잡을 행동과 시점을 말했나요?", turns: APOLOGY_MISTAKE },
+          hurt: { label: "마음을 상하게 한 일 사과하기", goal: "상대가 겪은 마음을 인정하고 책임 있게 사과하기", starter: "그때 내가 한 말 때문에 속상했을 것 같아요. 미안해요.", check: "상대가 겪은 마음을 말하고, 변명 없이 내 책임을 인정했나요?", turns: {
+            opening: { title: "마음에 걸린 일 꺼내기", prompt: "어떤 이야기예요?", hint: "그 일이 계속 마음에 걸렸다고 말한 뒤, 무엇이 미안한지 구체적으로 말하세요." },
+            specific: { title: "무엇이 잘못이었는지", prompt: "정확히 뭐가 미안하다는 거예요?", hint: "「○○라고 말한 것」처럼 내가 한 행동을 짚고, 그게 상대에게 어떻게 닿았을지 말하세요." },
+            concise: { title: "한마디로 진심 전하기", prompt: "그래서 하고 싶은 말이 뭐예요?", hint: "「그때 ○○해서 미안해요. 앞으로는 ○○할게요.」처럼 사과와 달라질 행동을 한 번에 말해 보세요. 「~했다면」 같은 조건은 빼 보세요." },
+            pressure: { title: "쉽게 풀리지 않을 때", prompt: "미안하다고 하면 다 끝나는 거예요?", tones: { gentle: "사과해 줘서 고마운데, 아직은 마음이 좀 그래요.", tough: "말로만 미안하다고 하면 뭐가 달라져요?" }, hint: "마음이 바로 풀리지 않아도 괜찮다고 인정하고, 앞으로 달라질 행동 하나를 말하세요." },
+            close: { title: "기다려 주는 마무리", prompt: "조금 생각할 시간이 필요해요.", hint: "시간이 필요하다는 마음을 존중한다고 말하고, 재촉하지 않고 마무리하세요." }
+          } }
+        }
+      },
+      feedback: {
+        counterparts: {
+          junior: {
+            label: "함께 일하는 후배",
+            opening: "네, 지금 괜찮아요.",
+            pressure: "저는 나름대로 열심히 했는데요.",
+            hint: "사람이 아니라 행동을 이야기하세요. 실제로 잘한 점이 있다면 함께 말해도 좋아요.",
+            tone: { gentle: { opening: "네, 편하게 말씀하세요.", pressure: "아, 그렇게 보였을 수도 있겠네요." }, tough: { opening: "혹시 제가 뭐 잘못했나요?", pressure: "다들 그렇게 하는데 왜 저한테만 그러세요?" } }
+          },
+          peer: {
+            label: "같은 팀 동료",
+            opening: "잠깐이면 괜찮아요.",
+            pressure: "그건 제 방식인데, 꼭 바꿔야 해요?",
+            hint: "동료는 내 지시를 받는 사람이 아니에요. 부탁과 제안의 말로, 함께 정하는 방식으로 말하세요.",
+            tone: { gentle: { opening: "네, 들을게요.", pressure: "저는 그게 편해서 그랬는데요." }, tough: { opening: "바쁜데 짧게 해 줄래요?", pressure: "제 일에 그렇게까지 말할 건 아니지 않아요?" } }
+          }
+        },
+        goals: {
+          improve: { label: "고쳤으면 하는 점 말하기", goal: "관찰한 행동과 영향을 말하고 다음에 바라는 행동을 함께 정하기", starter: "지난 ○○ 때 ○○하는 걸 봤어요. 그래서 ○○ 일이 생겼어요.", check: "본 사실·영향·바라는 행동을 말하고, 상대의 사정을 물었나요?", turns: FEEDBACK_IMPROVE },
+          praise: { label: "잘한 점 구체적으로 칭찬하기", goal: "잘한 행동과 그 효과를 구체적으로 말해 계속하도록 돕기", starter: "어제 ○○한 거, 정말 도움이 됐어요.", check: "「잘했어요」 대신 무엇을 어떻게 했고 어떤 효과가 있었는지 말했나요?", turns: {
+            opening: { title: "잘한 행동을 짚기", prompt: "어떤 일 때문에 부르셨어요?", hint: "「잘했어요」 대신 언제 무엇을 했는지 구체적으로 짚으세요." },
+            specific: { title: "그 효과를 말하기", prompt: "그게 그렇게 도움이 됐어요?", hint: "그 행동 덕분에 실제로 달라진 일이나 사람들의 반응을 말하세요." },
+            concise: { title: "계속 바라는 것 한 문장", prompt: "쑥스럽네요. 그럼 앞으로도 이렇게 하면 된다는 거죠?", hint: "「다음에도 ○○해 주면 좋겠어요」처럼 계속 해 줬으면 하는 행동을 분명히 말해 보세요." },
+            pressure: { title: "칭찬을 밀어낼 때", prompt: "에이, 별것 아니었어요. 다들 하는 건데요.", tones: { gentle: "그렇게 말해 주시니 감사해요. 근데 별건 아니었어요.", tough: "칭찬하시는 거 보니 뭔가 부탁하실 게 있는 거죠?" }, hint: "겸손을 받아 주되, 그 행동이 왜 특별했는지 본 사실로 한 번 더 말하고 어떻게 했는지 물어보세요." },
+            close: { title: "계속하도록 묻기", prompt: "감사해요. 다음에도 그렇게 해 볼게요.", hint: "계속 해 줬으면 하는 점을 말하고, 그렇게 하는 데 필요한 게 있는지 물어보세요." }
           } }
         }
       }
@@ -566,10 +814,33 @@ var init_domain = __esm({
     keys = (value, names2) => record(value) && Object.keys(value).every((key) => names2.includes(key));
     safeCharacters = (value) => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/u.test(value);
     bounded = (value, max, allowEmpty = true) => typeof value === "string" && value.length <= max && safeCharacters(value) && (allowEmpty || value.trim().length > 0);
+    isoTime = (value) => bounded(value, 40, false) && Number.isFinite(Date.parse(value));
+    byteLength = (text4) => new TextEncoder().encode(text4).length;
+    SESSION_KEYS = { 1: ["id", "at", "scenario", "counterpart", "goal", "practice", "focus", "turns", "firstSentence", "takeaway"] };
+    SESSION_KEYS[2] = [...SESSION_KEYS[1], "intensity", "plan", "realAt", "outcome"];
+    TURN_KEYS = { 1: ["id", "answer", "review", "retry", "retryReview"] };
+    TURN_KEYS[2] = [...TURN_KEYS[1], "mode", "seconds", "retryMode", "retrySeconds"];
+    has = (value, key) => Object.hasOwn(value, key);
+    secondsValue = (value) => value === null || Number.isInteger(value) && value >= 0 && value <= MAX_SPOKEN_SECONDS;
   }
 });
 
 // experiences/family-album/model.mjs
+function validateStoryteller(v) {
+  if (!ownKeys(v, STORYTELLER_KEYS) || !STORYTELLER_KEYS.every((k) => Object.hasOwn(v, k))) storytellerError();
+  if (typeof v.name !== "string" || v.name.length > STORYTELLER_LIMITS.name || !v.name.trim()) storytellerError();
+  if (!STORYTELLER_RELATIONS.some((r) => r.id === v.relation)) storytellerError();
+  if (typeof v.callName !== "string" || v.callName.length > STORYTELLER_LIMITS.callName) storytellerError();
+  if (typeof v.hometown !== "string" || v.hometown.length > STORYTELLER_LIMITS.hometown) storytellerError();
+  if (v.birthYear !== null && !(Number.isInteger(v.birthYear) && v.birthYear >= STORYTELLER_LIMITS.firstBirthYear && v.birthYear <= (/* @__PURE__ */ new Date()).getFullYear())) storytellerError();
+  return { name: v.name.trim(), relation: v.relation, callName: v.callName.trim(), birthYear: v.birthYear, hometown: v.hometown.trim() };
+}
+function validateSkippedQuestions(v) {
+  if (!Array.isArray(v) || v.length > LIMITS.skippedQuestions) fail(`건너뛴 질문은 ${LIMITS.skippedQuestions}개까지 기억할 수 있어요.`);
+  const list3 = Array.from(v);
+  if (list3.some((item) => !isQuestionRef(item)) || new Set(list3).size !== list3.length) fail("건너뛴 질문 기록을 확인해 주세요.");
+  return list3;
+}
 function validateRecipe(recipe, at) {
   if (!ownKeys(recipe, ["servings", "learnedFrom", "ingredients", "steps", "attempts", "revisedAt"]) || !Array.isArray(recipe.attempts) || recipe.attempts.length > LIMITS.attempts || !stamp(recipe.revisedAt ?? at)) fail("손맛 기록을 확인해 주세요. 만들어 본 기록은 20번까지 남길 수 있어요.");
   const ids3 = /* @__PURE__ */ new Set();
@@ -598,13 +869,16 @@ function mediaBytes(media, kind) {
   return count;
 }
 function validateAlbum(input) {
-  if (!ownKeys(input, ["format", "version", "pages"]) || input.format !== "synk-family-album" || input.version !== 1 || !Array.isArray(input.pages) || input.pages.length > LIMITS.pages) fail("가족 이야기 앨범 파일이 아니거나 페이지가 너무 많아요.");
+  if (!ownKeys(input, ["format", "version", "storyteller", "skippedQuestions", "pages"]) || input.format !== "synk-family-album" || input.version !== 1 || !Array.isArray(input.pages) || input.pages.length > LIMITS.pages) fail("가족 이야기 앨범 파일이 아니거나 페이지가 너무 많아요.");
+  const storyteller = Object.hasOwn(input, "storyteller") ? validateStoryteller(input.storyteller) : null;
+  const skippedQuestions = Object.hasOwn(input, "skippedQuestions") ? validateSkippedQuestions(input.skippedQuestions) : null;
   let bytes = 0;
   const ids3 = /* @__PURE__ */ new Set();
   const pages = input.pages.map((p) => {
-    if (!ownKeys(p, ["id", "title", "date", "person", "author", "story", "photo", "audio", "details", "skipped", "contributions", "createdAt", "updatedAt", "recipe"]) || !id(p.id) || ids3.has(p.id) || !stamp(p.createdAt) || !stamp(p.updatedAt)) fail("페이지 정보가 올바르지 않아요.");
+    if (!ownKeys(p, ["id", "title", "date", "person", "author", "story", "photo", "audio", "details", "skipped", "contributions", "createdAt", "updatedAt", "questionId", "recipe"]) || !id(p.id) || ids3.has(p.id) || !stamp(p.createdAt) || !stamp(p.updatedAt)) fail("페이지 정보가 올바르지 않아요.");
     ids3.add(p.id);
     if (!validDate(p.date)) fail("날짜를 확인해 주세요.");
+    if (Object.hasOwn(p, "questionId") && !isQuestionRef(p.questionId)) fail("질문 기록을 확인해 주세요.");
     const recipe = Object.hasOwn(p, "recipe") ? validateRecipe(p.recipe, p.createdAt) : null;
     const questions = recipe ? [...QUESTIONS, ...RECIPE_QUESTIONS] : QUESTIONS;
     if (!ownKeys(p.details, questions.map((q) => q.id)) || !Array.isArray(p.skipped) || p.skipped.some((v) => !questions.some((q) => q.id === v)) || new Set(p.skipped).size !== p.skipped.length) fail("질문 기록을 확인해 주세요.");
@@ -617,17 +891,29 @@ function validateAlbum(input) {
       return { id: c.id, name: text(c.name, 60, true), text: text(c.text, 2e3, true), createdAt: c.createdAt };
     });
     bytes += mediaBytes(p.photo, "photo") + mediaBytes(p.audio, "audio");
-    return { id: p.id, title: text(p.title, 100, true), date: p.date, person: text(p.person, 100), author: text(p.author, 60, true), story: text(p.story, 1e4, true), photo: p.photo ? { ...p.photo } : null, audio: p.audio ? { ...p.audio } : null, details, skipped: [...p.skipped], contributions, createdAt: p.createdAt, updatedAt: p.updatedAt, ...recipe ? { recipe } : {} };
+    return { id: p.id, title: text(p.title, 100, true), date: p.date, person: text(p.person, 100), author: text(p.author, 60, true), story: text(p.story, 1e4, true), photo: p.photo ? { ...p.photo } : null, audio: p.audio ? { ...p.audio } : null, details, skipped: [...p.skipped], contributions, createdAt: p.createdAt, updatedAt: p.updatedAt, ...Object.hasOwn(p, "questionId") ? { questionId: p.questionId } : {}, ...recipe ? { recipe } : {} };
   });
   if (bytes > LIMITS.total) fail("앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요. 기존 파일을 줄여 주세요.");
-  const result = { format: input.format, version: 1, pages };
+  const result = { format: input.format, version: 1, ...storyteller ? { storyteller } : {}, ...skippedQuestions ? { skippedQuestions } : {}, pages };
   if (new TextEncoder().encode(JSON.stringify(result)).length > LIMITS.export) fail("사진·음성·글을 합친 앨범 파일은 32 MB까지 담을 수 있어요. 일부 내용을 나눠 보관해 주세요.");
   return result;
 }
-var LIMITS, QUESTIONS, RECIPE_QUESTIONS, fail, text, id, stamp, validDate, ownKeys;
+var LIMITS, STORYTELLER_RELATIONS, STORYTELLER_LIMITS, QUESTIONS, RECIPE_QUESTIONS, fail, text, id, stamp, validDate, ownKeys, isQuestionRef, STORYTELLER_KEYS, storytellerError;
 var init_model2 = __esm({
   "experiences/family-album/model.mjs"() {
-    LIMITS = Object.freeze({ photo: 6 * 1024 * 1024, audio: 8 * 1024 * 1024, total: 20 * 1024 * 1024, export: 32 * 1024 * 1024, pages: 30, contributions: 40, attempts: 20 });
+    LIMITS = Object.freeze({ photo: 6 * 1024 * 1024, audio: 8 * 1024 * 1024, total: 20 * 1024 * 1024, export: 32 * 1024 * 1024, pages: 30, contributions: 40, attempts: 20, skippedQuestions: 300 });
+    STORYTELLER_RELATIONS = Object.freeze([
+      { id: "mother", label: "어머니", callName: "어머니" },
+      { id: "father", label: "아버지", callName: "아버지" },
+      { id: "grandmother", label: "할머니", callName: "할머니" },
+      { id: "grandfather", label: "할아버지", callName: "할아버지" },
+      { id: "maternal-grandmother", label: "외할머니", callName: "외할머니" },
+      { id: "maternal-grandfather", label: "외할아버지", callName: "외할아버지" },
+      { id: "spouse", label: "배우자", callName: "" },
+      { id: "self", label: "나", callName: "" },
+      { id: "other", label: "그 밖의 가족", callName: "" }
+    ].map(Object.freeze));
+    STORYTELLER_LIMITS = Object.freeze({ name: 30, callName: 20, hometown: 40, firstBirthYear: 1900 });
     QUESTIONS = Object.freeze([
       { id: "place", label: "장소", prompt: () => "함께한 그날, 어디에 있었나요?" },
       { id: "occasion", label: "그날의 계기", prompt: (p) => `「${p.title}」의 날, 함께 모인 계기가 있었나요?` },
@@ -650,6 +936,9 @@ var init_model2 = __esm({
     stamp = (v) => typeof v === "string" && Number.isFinite(Date.parse(v));
     validDate = (v, required = false) => typeof v === "string" && (!v ? !required : /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v);
     ownKeys = (v, allowed) => v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).every((k) => allowed.includes(k));
+    isQuestionRef = (v) => typeof v === "string" && v.length <= 60 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
+    STORYTELLER_KEYS = ["name", "relation", "callName", "birthYear", "hometown"];
+    storytellerError = () => fail(`이야기 주인 정보를 확인해 주세요. 이름은 ${STORYTELLER_LIMITS.name}자, 호칭은 ${STORYTELLER_LIMITS.callName}자, 고향은 ${STORYTELLER_LIMITS.hometown}자까지이고 태어난 해는 ${STORYTELLER_LIMITS.firstBirthYear}년부터 올해까지 적을 수 있어요.`);
   }
 });
 
@@ -755,6 +1044,3428 @@ var init_platform_library_data = __esm({
     text2 = (value, limit) => typeof value === "string" && value.trim().length > 0 && value.length <= limit && !/[\x00-\x1f\x7f]/.test(value);
     ids = (value) => Array.isArray(value) && value.length <= PLATFORM_APP_IDS.length && new Set(value).size === value.length && value.every((id2) => PLATFORM_APP_IDS.includes(id2));
     note = (row) => exact(row, ["id", "appId", "title", "done", "createdAt"]) && text2(row.id, 80) && /^[a-zA-Z0-9-]+$/.test(row.id) && PLATFORM_APP_IDS.includes(row.appId) && text2(row.title, 240) && typeof row.done === "boolean" && stamp2(row.createdAt);
+  }
+});
+
+// experiences/synk-account/src/member-activity-data.mjs
+function clock(value) {
+  if (iso(value)) return Date.parse(value);
+  if (Number.isSafeInteger(value) && Math.abs(value) <= 864e13) return value;
+  invalid2();
+}
+function emptyMemberActivity() {
+  return { version: 1, consent: false, enabledAt: null, events: [], favorites: [] };
+}
+function validateMemberActivity(value, { now = Date.now(), enforceRetention = false } = {}) {
+  if (!exact2(value, ["version", "consent", "enabledAt", "events", "favorites"]) || value.version !== 1 || typeof value.consent !== "boolean" || !(value.enabledAt === null || iso(value.enabledAt)) || value.consent && value.enabledAt === null || !list(value.events, MEMBER_ACTIVITY_LIMITS.events) || !list(value.favorites, MEMBER_ACTIVITY_APP_IDS.length)) invalid2();
+  const eventIds = /* @__PURE__ */ new Set(), favoriteIds = /* @__PURE__ */ new Set();
+  for (const event of value.events) {
+    if (!exact2(event, ["id", "appId", "at"]) || !uuid(event.id) || !MEMBER_ACTIVITY_APP_IDS.includes(event.appId) || !iso(event.at) || eventIds.has(event.id.toLowerCase()) || value.consent && Date.parse(event.at) < Date.parse(value.enabledAt)) invalid2();
+    eventIds.add(event.id.toLowerCase());
+  }
+  for (const id2 of value.favorites) {
+    if (!MEMBER_ACTIVITY_APP_IDS.includes(id2) || favoriteIds.has(id2)) invalid2();
+    favoriteIds.add(id2);
+  }
+  if (!value.consent) return emptyMemberActivity();
+  if (enforceRetention) {
+    const at = clock(now);
+    if (Date.parse(value.enabledAt) > at || value.events.some((event) => Date.parse(event.at) > at || Date.parse(event.at) < at - RETENTION_MS)) invalid2();
+  }
+  return {
+    version: 1,
+    consent: true,
+    enabledAt: value.enabledAt,
+    events: value.events.map((event) => ({ id: event.id.toLowerCase(), appId: event.appId, at: event.at })),
+    favorites: [...value.favorites]
+  };
+}
+var MEMBER_ACTIVITY_APP_IDS, MEMBER_ACTIVITY_LIMITS, RETENTION_MS, invalid2, object2, exact2, list, uuid, iso;
+var init_member_activity_data = __esm({
+  "experiences/synk-account/src/member-activity-data.mjs"() {
+    MEMBER_ACTIVITY_APP_IDS = Object.freeze(["world", "messenger", "path", "pulse"]);
+    MEMBER_ACTIVITY_LIMITS = Object.freeze({ events: 2e3, days: 90, maxBytes: 256 * 1024 });
+    RETENTION_MS = MEMBER_ACTIVITY_LIMITS.days * 864e5;
+    invalid2 = () => {
+      throw Object.assign(new TypeError("성향에 사용할 앱 이용 기록의 형식을 확인해 주세요."), { code: "INVALID_PERSONAL_STATE" });
+    };
+    object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+    exact2 = (value, keys2) => object2(value) && Reflect.ownKeys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
+    list = (value, max) => Array.isArray(value) && value.length <= max && Object.keys(value).length === value.length;
+    uuid = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
+    iso = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+  }
+});
+
+// atlas/member-understanding-contract.js
+var require_member_understanding_contract = __commonJS({
+  "atlas/member-understanding-contract.js"(exports, module) {
+    "use strict";
+    var VERSION = 1;
+    var DAY = 864e5;
+    var choices = (rows) => Object.freeze(rows.map(([id2, label]) => Object.freeze({ id: id2, label })));
+    var MEMBER_UNDERSTANDING_FACETS = Object.freeze({
+      topics: Object.freeze({ title: "직접 고른 관심 주제", multiple: true, max: 5, choices: choices([
+        ["travel-planning", "여행 일정·동선"],
+        ["travel-food", "여행지 음식·주문"],
+        ["travel-stay", "여행지 숙소"],
+        ["career-interview", "면접 준비"],
+        ["career-planning", "진로 탐색"],
+        ["content-video", "영상 제작"],
+        ["content-design", "디자인 제작"],
+        ["ai-tools", "AI 도구 활용"],
+        ["work-collaboration", "업무 협업"]
+      ]) }),
+      "usage-repeat": Object.freeze({ title: "여러 날 다시 연 앱", multiple: false, max: 1, choices: choices([
+        ["world", "WORLD"],
+        ["messenger", "워크스페이스"],
+        ["path", "PATH"],
+        ["pulse", "PULSE"],
+        ["no-fixed-app", "특정 앱으로 정해 두지 않음"]
+      ]) }),
+      "practice-mode": Object.freeze({ title: "기록에 반복해서 나타난 학습 방식", multiple: false, max: 1, choices: choices([
+        ["listening", "듣기"],
+        ["reading", "읽기"],
+        ["mixed", "듣기와 읽기를 함께"],
+        ["no-fixed-mode", "특정 방식으로 정해 두지 않음"]
+      ]) }),
+      "practice-response": Object.freeze({ title: "기록에 반복해서 나타난 응답 방식", multiple: false, max: 1, choices: choices([
+        ["binary-choice", "두 보기에서 고르기"],
+        ["single-choice", "여러 보기에서 고르기"],
+        ["cup-compose", "낱말을 조합하기"],
+        ["action", "행동으로 답하기"],
+        ["mixed", "여러 방식을 함께"],
+        ["no-fixed-format", "특정 방식으로 정해 두지 않음"]
+      ]) }),
+      "learning-topic": Object.freeze({ title: "실제로 다룬 학습 내용", multiple: false, max: 1, choices: choices([
+        ["interested", "관심 있는 내용이에요"],
+        ["practice-only", "연습에서 다룬 내용일 뿐이에요"],
+        ["not-now", "지금 관심 있는 내용은 아니에요"]
+      ]) }),
+      support: Object.freeze({ title: "직접 고른 도움 방식", multiple: false, max: 1, choices: choices([
+        ["choose", "필요할 때 선택"],
+        ["step", "단계별 도움"],
+        ["independent", "먼저 혼자 시도"]
+      ]) }),
+      explanation: Object.freeze({ title: "직접 고른 설명 길이", multiple: false, max: 1, choices: choices([
+        ["brief", "짧게"],
+        ["standard", "보통 길이"],
+        ["detailed", "자세히"]
+      ]) })
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var dataField = (x, key) => {
+      const field = Object.getOwnPropertyDescriptor(x, key);
+      return field?.enumerable === true && Object.hasOwn(field, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => dataField(x, key));
+    var token3 = (x) => typeof x === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(x) && !["constructor", "prototype", "__proto__"].includes(x);
+    var fail6 = () => {
+      throw new TypeError("Member understanding: invalid structured contract");
+    };
+    var CLAIM_FIELDS = Object.freeze(["version", "kind", "source", "generation", "reference", "value", "from", "to", "count", "total", "activeDays", "lastAt"]);
+    function instant(x) {
+      if (typeof x !== "string" || !Number.isFinite(Date.parse(x)) || new Date(x).toISOString() !== x) fail6();
+      return Date.parse(x);
+    }
+    function understandingFacet(facetId) {
+      if (typeof facetId !== "string") fail6();
+      if (facetId.startsWith("learning-topic:") && token3(facetId.slice(15))) return MEMBER_UNDERSTANDING_FACETS["learning-topic"];
+      if (facetId !== "learning-topic" && Object.hasOwn(MEMBER_UNDERSTANDING_FACETS, facetId)) return MEMBER_UNDERSTANDING_FACETS[facetId];
+      return fail6();
+    }
+    function validateUnderstandingValues(facetId, values) {
+      const facet2 = understandingFacet(facetId);
+      if (!Array.isArray(values) || !values.length || values.length > facet2.max || Reflect.ownKeys(values).length !== values.length + 1 || !Array.from({ length: values.length }, (_, index) => index).every((index) => dataField(values, String(index))) || new Set(values).size !== values.length || values.some((value) => !facet2.choices.some((choice) => choice.id === value))) fail6();
+      return facet2.choices.filter((choice) => values.includes(choice.id)).map((choice) => choice.id);
+    }
+    function validateUnderstandingClaim(claim, { facetId } = {}) {
+      understandingFacet(facetId);
+      if (!exact5(claim, CLAIM_FIELDS) || claim.version !== VERSION || !["learning-topic", "usage-repeat", "practice-mode", "practice-response"].includes(claim.kind)) fail6();
+      const expectedFacet = claim.kind === "learning-topic" ? `learning-topic:${claim.reference}` : claim.kind;
+      if (facetId !== expectedFacet || claim.source !== (claim.kind === "usage-repeat" ? "usage" : "learning") || claim.value !== (claim.kind === "learning-topic" ? "interested" : "fits") || !token3(claim.reference)) fail6();
+      if (claim.source === "usage") {
+        if (instant(claim.generation) > instant(claim.lastAt)) fail6();
+      } else if (!Number.isSafeInteger(claim.generation) || claim.generation < 0) fail6();
+      if (claim.kind !== "learning-topic") {
+        const allowed = MEMBER_UNDERSTANDING_FACETS[claim.kind].choices.map((choice) => choice.id).filter((id2) => !["mixed", "no-fixed-app", "no-fixed-mode", "no-fixed-format"].includes(id2));
+        if (!allowed.includes(claim.reference)) fail6();
+      }
+      const from = instant(claim.from), to = instant(claim.to), last = instant(claim.lastAt);
+      if (to - from !== 30 * DAY || last <= from || last > to || !["count", "total", "activeDays"].every((key) => Number.isSafeInteger(claim[key]) && claim[key] >= 1 && claim[key] <= 1e6) || claim.count > claim.total || claim.activeDays > claim.count || claim.activeDays > 31) fail6();
+      return Object.fromEntries(CLAIM_FIELDS.map((key) => [key, claim[key]]));
+    }
+    module.exports = { VERSION, MEMBER_UNDERSTANDING_FACETS, understandingFacet, validateUnderstandingClaim, validateUnderstandingValues };
+  }
+});
+
+// experiences/synk-account/src/member-statement-v1.cjs
+var require_member_statement_v1 = __commonJS({
+  "experiences/synk-account/src/member-statement-v1.cjs"(exports, module) {
+    "use strict";
+    var PARSER_VERSION = "member-statement-ko-1";
+    var MEMBER_STATEMENT_LIMITS = Object.freeze({ text: 500, statements: 20, meanings: 8, unresolved: 12 });
+    var VALUES = Object.freeze({
+      support: Object.freeze(["independent", "example", "step", "choose", "together"]),
+      explanation: Object.freeze(["brief", "standard", "detailed"]),
+      "practice-mode": Object.freeze(["listening", "reading", "mixed"]),
+      topic: Object.freeze(["travel-planning", "travel-food", "travel-stay", "career-interview", "career-planning", "content-video", "content-design", "ai-tools", "work-collaboration"])
+    });
+    var LABELS = Object.freeze({
+      independent: "혼자 시도하기",
+      example: "예시를 먼저 보기",
+      step: "단계별 도움",
+      choose: "필요할 때 도움 선택",
+      together: "함께 하기",
+      brief: "짧은 설명",
+      standard: "보통 길이의 설명",
+      detailed: "자세한 설명",
+      listening: "듣기 연습",
+      reading: "읽기 연습",
+      mixed: "듣기와 읽기를 함께",
+      "travel-planning": "여행 일정·동선",
+      "travel-food": "여행지 음식·주문",
+      "travel-stay": "여행지 숙소",
+      "career-interview": "면접 준비",
+      "career-planning": "진로 탐색",
+      "content-video": "영상 제작",
+      "content-design": "디자인 제작",
+      "ai-tools": "AI 도구 활용",
+      "work-collaboration": "업무 협업"
+    });
+    var CONDITIONS = Object.freeze({ "first-try": "처음 시도할 때", familiar: "익숙한 내용일 때", busy: "바쁠 때" });
+    var REASONS = Object.freeze({
+      other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
+      past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
+      hypothetical: "가정한 내용을 현재 선호로 사용하지 않아요.",
+      uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
+      quotation: "인용된 말의 주체와 뜻을 분명하게 확인하지 못했어요.",
+      condition: "이 조건의 범위를 정확히 이해하지 못했어요.",
+      unsupported: "이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.",
+      limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요.",
+      duplicate: "같은 뜻이 앞의 제안에 이미 포함되어 있어요."
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var data = (x, key) => {
+      const d = Object.getOwnPropertyDescriptor(x, key);
+      return d?.enumerable === true && Object.hasOwn(d, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
+    var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
+    var fail6 = () => {
+      throw new TypeError("Member statement: invalid confirmed statement");
+    };
+    var literal = (x) => typeof x === "string" && x.trim() && [...x].length <= MEMBER_STATEMENT_LIMITS.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(x);
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
+    function clauses(text4) {
+      const result = [], separators = /\s+(?:하지만|그런데|그리고|반면에)\s+|(?:지만|는데)(?=\s)|[.!?;\n]+/g;
+      let start = 0, match;
+      function push(end) {
+        while (start < end && /\s/u.test(text4[start])) start++;
+        while (end > start && /\s/u.test(text4[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+      }
+      while (match = separators.exec(text4)) {
+        push(match.index + (/^(?:지만|는데)$/.test(match[0]) ? match[0].length : 0));
+        start = match.index + match[0].length;
+      }
+      push(text4.length);
+      return result;
+    }
+    var SUBJECTS = [
+      ["support", "independent", /^(?:혼자(?:서)?(?:하는|해보는|시도하는|시도해보는)?(?:게|것(?:이|은|을)?|걸|건|하기|하길)?)/],
+      ["support", "together", /^(?:같이|함께)(?:하는|해보는|시도하는)?(?:게|것(?:이|은|을)?|걸|건|하기|하길)?/],
+      ["support", "example", /^(?:예시|예제)(?:를|가|는|부터|먼저)?(?:보는(?:게|것)?|보여주는(?:게|것)?)?/],
+      ["support", "step", /^(?:단계별(?:로)?(?:도움|안내|설명)?|차근차근(?:한)?(?:도움|안내|설명)?)/],
+      ["support", "choose", /^필요할때(?:만)?(?:도움(?:을)?(?:받는(?:게|것)?|선택하는(?:게|것)?)?)/],
+      ["explanation", "brief", /^(?:(?:설명(?:은|을)?)?(?:짧게|간단하게)(?:설명(?:하는|해주는)(?:게|것)?)?|(?:짧은|간단한)설명)/],
+      ["explanation", "detailed", /^(?:(?:설명(?:은|을)?)?(?:자세히|길게)(?:설명(?:하는|해주는)(?:게|것)?)?|(?:자세한|긴)설명)/],
+      ["explanation", "standard", /^(?:보통길이(?:의)?설명)/],
+      ["practice-mode", "mixed", /^(?:듣기와읽기(?:를)?함께(?:하는게)?)/],
+      ["practice-mode", "listening", /^(?:듣기(?:연습)?|듣는연습)/],
+      ["practice-mode", "reading", /^(?:읽기(?:연습)?|읽는연습)/],
+      ["topic", "travel-planning", /^(?:여행일정(?:짜기)?|여행동선|여행계획)/],
+      ["topic", "travel-food", /^(?:여행지음식|현지음식|음식주문)/],
+      ["topic", "travel-stay", /^(?:여행지숙소|여행숙소)/],
+      ["topic", "career-interview", /^(?:면접준비|면접)/],
+      ["topic", "career-planning", /^(?:진로탐색|진로계획)/],
+      ["topic", "content-video", /^(?:영상제작|영상만들기|동영상제작)/],
+      ["topic", "content-design", /^(?:디자인제작|디자인)/],
+      ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/i],
+      ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/]
+    ];
+    var positive = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|(?:하고|받고|보고)싶(?:어(?:요)?|다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?|보고싶(?:어(?:요)?|다))$/;
+    var negative = /^(?:싫(?:어(?:요)?|다|습니다)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/;
+    function recognize(evidence) {
+      let body = evidence.quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/, "");
+      if (/["“”‘’]/u.test(body) || /(?:라고|다고)(?:했|말|들)/u.test(body)) return { reason: "quotation" };
+      if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return { reason: "other" };
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body)) return { reason: "uncertain" };
+      if (/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었)/u.test(body)) return { reason: "past" };
+      body = body.replace(/^(?:저는|나는|난|제가|내가|저|나)(?=.)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
+      let condition = null;
+      const conditions = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:는)?|처음시도할때(?:는)?)/], ["familiar", /^(?:익숙할때(?:는)?|익숙한내용일때(?:는)?)/], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?)/]];
+      for (const [id2, pattern] of conditions) if (pattern.test(body)) {
+        condition = id2;
+        body = body.replace(pattern, "");
+        break;
+      }
+      if (/(?:만약|라면|다면|으면|한다면|때|땐|바쁠|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body) && !/^필요할때/u.test(body)) return { reason: /(?:만약|라면|다면|으면)/u.test(body) ? "hypothetical" : "condition" };
+      for (const [field, value, pattern] of SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        let predicate = body.slice(match[0].length).replace(/^(?:을|를|이|가|은|는|에|엔)/u, "");
+        if (/(?:지만|는데)$/u.test(evidence.quote)) predicate = predicate.replace(/^(필요|선호|원)하$/u, "$1해");
+        const polarity = negative.test(predicate) ? "avoid" : positive.test(predicate) ? "prefer" : null;
+        if (polarity) return { field, value, polarity, condition };
+      }
+      return { reason: condition ? "condition" : "unsupported" };
+    }
+    function parseMemberStatement(text4) {
+      if (!literal(text4)) fail6();
+      const meanings = [], unresolved = [], seen = /* @__PURE__ */ new Set(), pieces = clauses(text4);
+      let inherited = null, priorCondition = false, stopped = false;
+      function unresolvedPiece(evidence, reason) {
+        if (unresolved.length === MEMBER_STATEMENT_LIMITS.unresolved - 1 && evidence !== pieces.at(-1)) {
+          unresolved.push({ start: evidence.start, end: text4.length, quote: text4.slice(evidence.start), reason: "limit", reasonLabel: REASONS.limit });
+          stopped = true;
+        } else unresolved.push({ ...evidence, reason, reasonLabel: REASONS[reason] });
+      }
+      for (let cursor = 0; cursor < pieces.length && !stopped; cursor++) {
+        const evidence = pieces[cursor];
+        const compact = evidence.quote.replace(/\s/gu, "");
+        if (inherited === "other" && /^(?:나는|난|저는|제가|내가)/u.test(compact)) inherited = null;
+        if (inherited === "past" && /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재)/u.test(compact)) inherited = null;
+        if (inherited === "condition" && /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(compact)) inherited = null;
+        const result = inherited ? { reason: inherited } : recognize(evidence);
+        if (priorCondition && !result.reason && !result.condition && !/^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(compact)) {
+          unresolvedPiece(evidence, "condition");
+          priorCondition = /(?:지만|는데)$/u.test(compact);
+          continue;
+        }
+        priorCondition = !!result.condition && /(?:지만|는데)$/u.test(compact);
+        if (["other", "past", "hypothetical", "condition", "uncertain", "quotation"].includes(result.reason)) inherited = result.reason;
+        if (result.reason) {
+          unresolvedPiece(evidence, result.reason);
+          continue;
+        }
+        if (meanings.length >= MEMBER_STATEMENT_LIMITS.meanings) {
+          unresolvedPiece(evidence, "limit");
+          continue;
+        }
+        const key = semanticKey(result);
+        if (seen.has(key)) {
+          unresolvedPiece(evidence, "duplicate");
+          continue;
+        }
+        seen.add(key);
+        meanings.push({ id: "p" + meanings.length, ...result, evidence });
+      }
+      return { parserVersion: PARSER_VERSION, meanings, unresolved };
+    }
+    function meaningsConflict(a, b) {
+      if (a.field !== b.field || a.condition !== b.condition) return false;
+      if (a.value === b.value) return a.polarity !== b.polarity;
+      return a.field !== "topic" && a.polarity === "prefer" && b.polarity === "prefer";
+    }
+    function meaningLabel(m) {
+      return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
+    }
+    function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings"]) || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || row.parserVersion !== PARSER_VERSION || !literal(row.text) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      const parsed = parseMemberStatement(row.text), ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        ids3.add(m.id);
+        const expected = parsed.meanings.find((x) => x.id === m.id);
+        if (!expected) fail6();
+        for (const field of ["field", "value", "polarity", "condition"]) if (m[field] !== expected[field]) fail6();
+        for (const field of ["start", "end", "quote"]) if (m.evidence[field] !== expected.evidence[field]) fail6();
+        return { id: expected.id, field: expected.field, value: expected.value, polarity: expected.polarity, condition: expected.condition, evidence: { ...expected.evidence } };
+      }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings };
+    }
+    module.exports = {
+      PARSER_VERSION,
+      MEMBER_STATEMENT_LIMITS,
+      MEMBER_STATEMENT_VALUES: VALUES,
+      MEMBER_STATEMENT_LABELS: LABELS,
+      MEMBER_STATEMENT_CONDITIONS: CONDITIONS,
+      parseMemberStatement,
+      validateMemberStatement,
+      meaningsConflict,
+      meaningLabel
+    };
+  }
+});
+
+// atlas/ask.js
+var require_ask = __commonJS({
+  "atlas/ask.js"(exports, module) {
+    (function(root, factory) {
+      if (typeof module === "object" && module.exports) module.exports = factory();
+      else root.SynkAsk = factory();
+    })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
+      "use strict";
+      const VERSION = "ask-1.1";
+      const MAX_OPTIONS = 64;
+      const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
+      const DAY = 864e5;
+      const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
+      const time2 = (value) => {
+        const n = Date.parse(value);
+        if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
+        return n;
+      };
+      const finite = (value) => typeof value === "number" && Number.isFinite(value);
+      const owns = (value, key) => Object.hasOwn(value, key);
+      function probabilities(q) {
+        const supplied = q.options.filter((option) => owns(option, "p")).length;
+        if (!supplied) return q.options.map(() => 1 / q.options.length);
+        if (supplied !== q.options.length || q.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q.id}`);
+        const total = q.options.reduce((sum, option) => sum + option.p, 0);
+        if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q.id}`);
+        return q.options.map((option) => option.p / total);
+      }
+      function validate(questions) {
+        if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
+        const ids3 = /* @__PURE__ */ new Set();
+        for (const q of questions) {
+          if (!q || !id2(q.id) || ids3.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id2(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
+          ids3.add(q.id);
+          const options = /* @__PURE__ */ new Set();
+          for (const option of q.options) {
+            if (!option || !id2(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
+            options.add(option.id);
+          }
+          probabilities(q);
+          if (owns(q, "cost") && (!finite(q.cost) || q.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q.id}`);
+          if (owns(q, "responseProbability") && (!finite(q.responseProbability) || q.responseProbability < 0 || q.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q.id}`);
+        }
+        return questions;
+      }
+      function difference(a, b) {
+        if (a && b && typeof a === "object" && typeof b === "object" && ("content" in a || "shape" in a)) {
+          return (canonical(a.content) !== canonical(b.content) ? 2 : 0) + (canonical(a.shape) !== canonical(b.shape) ? 1 : 0);
+        }
+        return canonical(a) === canonical(b) ? 0 : 1;
+      }
+      function decisionValue(evaluate, context) {
+        const value = evaluate(context);
+        if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
+        const result = (value.utility ?? 0) - (value.loss ?? 0);
+        if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
+        return result;
+      }
+      function rank({ questions, decide, answers = {}, denied = [], asked = {}, now = null, quietDays = 7, evaluate } = {}) {
+        validate(questions);
+        if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
+        if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
+        const valued = typeof evaluate === "function";
+        if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
+        const current = decide({ ...answers });
+        const result = [];
+        for (const q of questions) {
+          const about = q.about ?? q.id;
+          if (Object.hasOwn(answers, about)) continue;
+          if (denied.includes(q.id)) {
+            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
+            continue;
+          }
+          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY) {
+            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
+            continue;
+          }
+          const chances = probabilities(q);
+          const outcomes = /* @__PURE__ */ Object.create(null);
+          let impact = 0, expectedGain = 0;
+          q.options.forEach((option, index) => {
+            const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
+            const decided = decide({ ...scenario });
+            outcomes[option.id] = decided;
+            impact += chances[index] * difference(current, decided);
+            if (valued && chances[index] > 0) {
+              const context = { answers: scenario, question: q, option };
+              const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
+              if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
+              expectedGain += chances[index] * gain;
+            }
+          });
+          const distinct = new Set(Object.values(outcomes).map(canonical)).size;
+          const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
+          if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
+          const skippable = impact === 0 || valued && value <= 0;
+          result.push({
+            id: q.id,
+            kind: q.kind ?? "setting",
+            about,
+            impact: Math.round(impact * 1e3) / 1e3,
+            distinct,
+            skippable,
+            reason: impact === 0 ? "no-change" : valued ? value > 0 ? "positive-decision-value" : "no-positive-decision-value" : "changes-decision",
+            outcomes,
+            ...valued ? { basis: "declared-decision-value", expectedGain, responseProbability, cost, value } : {}
+          });
+        }
+        const score = (entry) => valued ? entry.value ?? 0 : entry.impact;
+        return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
+      }
+      function choose({ budget = 1, usedToday = 0, ...input } = {}) {
+        if (!Number.isInteger(budget) || budget < 0 || !Number.isInteger(usedToday) || usedToday < 0) throw new TypeError("Ask: invalid budget");
+        const ranked = rank(input);
+        if (usedToday >= budget) return { version: VERSION, status: "none", reason: "budget", ranked };
+        const valued = typeof input.evaluate === "function";
+        const best = ranked.find((entry) => !entry.skippable && (valued ? entry.value > 0 : entry.impact > 0));
+        if (!best) return { version: VERSION, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
+        return {
+          version: VERSION,
+          status: "ask",
+          question: input.questions.find((q) => q.id === best.id),
+          impact: best.impact,
+          reason: best.reason,
+          ranked,
+          ...valued ? { value: best.value, basis: best.basis } : {}
+        };
+      }
+      function fromAtlas({ engine, events = [], scope: scope3, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
+        if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
+        validate(questions);
+        const byAbout = new Map(questions.map((q) => [q.about ?? q.id, q]));
+        const decide = (answers) => {
+          const extra = [];
+          for (const [about, value] of Object.entries(answers)) {
+            const q = byAbout.get(about);
+            if (!q) continue;
+            const base = { schema: 1, id: `ask-virtual-${q.id}`, scope: scope3, at, recordedAt: at };
+            if (q.kind === "confirm") extra.push({ ...base, type: "estimate.responded", line: q.line, value });
+            else extra.push({ ...base, type: "context.set", field: q.field ?? about, value, until: null });
+          }
+          const plan = engine.decide({ events: [...events, ...extra], scope: scope3, at, experienceId, candidates, levers });
+          if (plan.status !== "ready") return { content: "unavailable", shape: null };
+          const classes = Object.fromEntries(levers.map((lever) => [lever.id, lever.class]));
+          const content = [plan.selected.id], shape = [];
+          for (const [lever, pick] of Object.entries(plan.bundle)) if (lever !== "mode") (classes[lever] === "content" ? content : shape).push(`${lever}=${pick.option}`);
+          return { content, shape };
+        };
+        return choose({ ...rest, questions, decide });
+      }
+      return Object.freeze({ VERSION, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
+    });
+  }
+});
+
+// experiences/synk-account/src/member-statement-v2.cjs
+var require_member_statement_v2 = __commonJS({
+  "experiences/synk-account/src/member-statement-v2.cjs"(exports, module) {
+    "use strict";
+    var Legacy = require_member_statement_v1();
+    var Ask2 = require_ask();
+    var PARSER_VERSION = "member-statement-ko-2";
+    var MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
+    var VALUES = Legacy.MEMBER_STATEMENT_VALUES;
+    var LABELS = Legacy.MEMBER_STATEMENT_LABELS;
+    var CONDITIONS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_CONDITIONS,
+      "after-example": "예시를 본 다음",
+      "first-try-after-example": "처음 시도하며 예시를 본 다음",
+      "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
+      "busy-after-example": "바쁠 때 예시를 본 다음"
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var data = (x, key) => {
+      const d = Object.getOwnPropertyDescriptor(x, key);
+      return d?.enumerable === true && Object.hasOwn(d, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
+    var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
+    var fail6 = () => {
+      throw new TypeError("Member statement: invalid confirmed statement");
+    };
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
+    var copy2 = (x) => JSON.parse(JSON.stringify(x));
+    var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+    function sourceKey(text4) {
+      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+      padded.set(bytes);
+      padded[bytes.length] = 128;
+      new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
+      const h = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], w = new Uint32Array(64), ro = (x, n) => x >>> n | x << 32 - n;
+      for (let offset = 0; offset < padded.length; offset += 64) {
+        const view = new DataView(padded.buffer, offset, 64);
+        for (let i = 0; i < 16; i++) w[i] = view.getUint32(i * 4);
+        for (let i = 16; i < 64; i++) {
+          const x = w[i - 15], y = w[i - 2];
+          w[i] = w[i - 16] + (ro(x, 7) ^ ro(x, 18) ^ x >>> 3) + w[i - 7] + (ro(y, 17) ^ ro(y, 19) ^ y >>> 10) >>> 0;
+        }
+        let [a, b, c, d, e, f, g, hh] = h;
+        for (let i = 0; i < 64; i++) {
+          const t1 = hh + (ro(e, 6) ^ ro(e, 11) ^ ro(e, 25)) + (e & f ^ ~e & g) + SHA_K[i] + w[i] >>> 0, t2 = (ro(a, 2) ^ ro(a, 13) ^ ro(a, 22)) + (a & b ^ a & c ^ b & c) >>> 0;
+          hh = g;
+          g = f;
+          f = e;
+          e = d + t1 >>> 0;
+          d = c;
+          c = b;
+          b = a;
+          a = t1 + t2 >>> 0;
+        }
+        [a, b, c, d, e, f, g, hh].forEach((v, i) => {
+          h[i] = h[i] + v >>> 0;
+        });
+      }
+      return h.map((n) => n.toString(16).padStart(8, "0")).join("");
+    }
+    var POSITIVE = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u;
+    var NEGATIVE = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u;
+    var SUBJECTS = [
+      ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
+      ["support", "step", /^(?:단계별(?:로)?|차근차근|하나씩차례대로)(?:도움|안내|설명|알려주는|설명해주는)?(?:것|편|게|걸|건)?/u],
+      ["support", "choose", /^필요할때(?:만)?(?:도움(?:을)?(?:받는|선택하는|받고|선택하고)?)(?:것|편|게|걸|건)?/u],
+      ["explanation", "brief", /^(?:(?:설명(?:은|을)?)?(?:짧게|간단하게|간결하게|짧고핵심만)(?:설명해주는|설명하는|알려주는)?|(?:짧은|간단한|간결한)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "detailed", /^(?:(?:설명(?:은|을)?)?(?:자세히|상세히|길게)(?:설명해주는|설명하는|알려주는)?|(?:자세한|상세한|긴)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "standard", /^보통길이(?:의)?설명/u],
+      ["practice-mode", "mixed", /^듣기와읽기(?:를)?함께(?:하는)?(?:것|편|게|걸|건)?/u],
+      ["practice-mode", "listening", /^(?:듣기(?:연습)?|듣는연습|듣고배우는것)/u],
+      ["practice-mode", "reading", /^(?:읽기(?:연습)?|읽는연습|읽고배우는것)/u],
+      ["topic", "travel-planning", /^(?:여행일정(?:짜기)?|여행동선|여행계획)/u],
+      ["topic", "travel-food", /^(?:여행지음식|현지음식|음식주문)/u],
+      ["topic", "travel-stay", /^(?:여행지숙소|여행숙소)/u],
+      ["topic", "career-interview", /^면접(?:준비)?/u],
+      ["topic", "career-planning", /^(?:진로탐색|진로계획)/u],
+      ["topic", "content-video", /^(?:영상제작|영상만들기|동영상제작|영상만드는것)/u],
+      ["topic", "content-design", /^(?:디자인제작|디자인)/u],
+      ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/iu],
+      ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
+    ];
+    function phrase(body, condition) {
+      for (const [field, value, pattern] of SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const predicate = body.slice(match[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, "");
+        const polarity = NEGATIVE.test(predicate) ? "avoid" : POSITIVE.test(predicate) ? "prefer" : null;
+        if (polarity) return { field, value, polarity, condition };
+      }
+      return null;
+    }
+    function expanded(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      if (/["“”‘’]/u.test(body) || /(?:라고|다고)(?:했|말|들)/u.test(body)) return null;
+      if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return null;
+      if (/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(body)) return null;
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
+      let condition = null;
+      const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
+      for (const [id2, re] of prefixes) if (re.test(body)) {
+        condition = id2;
+        body = body.replace(re, "");
+        break;
+      }
+      const sequence = /^(?:예시|예제|샘플)(?:를|을)?(?:먼저)?(?:(?:보고(?:감을잡은)?|살펴본|본)(?:뒤(?:에)?|다음(?:에)?|후(?:에)?)|보고나서)/u.exec(body);
+      if (sequence) {
+        const next = phrase(body.slice(sequence[0].length), condition ? condition + "-after-example" : "after-example");
+        if (next?.field === "support" && next.value === "independent" && next.polarity === "prefer") return { meanings: [{ field: "support", value: "example", polarity: "prefer", condition }, next] };
+        return null;
+      }
+      const uncertain = /(?:좋을수도있(?:어(?:요)?|다)|좋을것같(?:아(?:요)?|다)|좋(?:아)?하는것같(?:아(?:요)?|다)|편할수도있(?:어(?:요)?|다))$/u.exec(body);
+      if (uncertain) {
+        const candidate = phrase(body.slice(0, uncertain.index) + (uncertain[0].startsWith("편") ? "편해" : "좋아"), condition);
+        return candidate ? { meanings: [candidate], uncertain: true } : null;
+      }
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body) && !/^필요할때/u.test(body)) return null;
+      const result = phrase(body, condition);
+      if (result) return { meanings: [result] };
+      const corrected = body.replace(/혼쟈/gu, "혼자").replace(/예씨/gu, "예시");
+      if (corrected !== body) {
+        const candidate = phrase(corrected, condition);
+        if (candidate) return { meanings: [candidate], typo: true };
+      }
+      return null;
+    }
+    var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
+    var FIELDS = { support: "도움받는 방식", explanation: "설명 길이", "practice-mode": "연습 방식", topic: "관심 분야" };
+    function analyze(text4) {
+      const base = Legacy.parseMemberStatement(text4), segments = [...base.meanings.map((m) => ({ evidence: m.evidence, meanings: [m] })), ...base.unresolved.map((u) => ({ evidence: { start: u.start, end: u.end, quote: u.quote }, unresolved: u }))].sort((a, b) => a.evidence.start - b.evidence.start);
+      let blocked = false;
+      for (const segment of segments) {
+        if (segment.unresolved && ["other", "past", "hypothetical", "quotation", "duplicate"].includes(segment.unresolved.reason)) continue;
+        const ending = /^[\s.!?]*/u.exec(text4.slice(segment.evidence.end))[0];
+        if (ending.includes("?")) {
+          delete segment.meanings;
+          segment.unresolved = { ...segment.evidence, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
+          segment.generic = true;
+          continue;
+        }
+        if (!segment.unresolved) continue;
+        const u = segment.unresolved;
+        if (u.reason === "limit") {
+          blocked = true;
+          continue;
+        }
+        if (blocked || ["other", "past", "hypothetical", "quotation", "duplicate"].includes(u.reason)) continue;
+        const found = expanded(u.quote);
+        if (found && !(u.reason === "condition" && found.meanings.some((m) => !m.condition))) {
+          if (found.uncertain || found.typo || u.reason === "uncertain") segment.candidate = { ...found, uncertain: found.uncertain || u.reason === "uncertain" };
+          else segment.meanings = found.meanings;
+        } else segment.generic = true;
+      }
+      return segments;
+    }
+    function stateFor(text4, segments, answers, key) {
+      const raw = [], unresolved = [], questions = [];
+      const question = (index, stage, label, options, apply) => {
+        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        if (answer !== void 0) {
+          apply(answer);
+          return;
+        }
+        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+      };
+      for (let index = 0; index < segments.length; index++) {
+        const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
+        if (s.meanings) {
+          add(s.meanings);
+          continue;
+        }
+        let handled = false;
+        if (s.candidate) {
+          question(
+            index,
+            "confirm",
+            `「${s.evidence.quote}」${s.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
+            [{ id: "confirm", label: s.candidate.meanings.map(meaningLabel).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+            (answer) => {
+              handled = true;
+              if (answer === "confirm") add(s.candidate.meanings);
+            }
+          );
+        } else if (s.generic) {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+            handled = true;
+            if (!Object.hasOwn(VALUES, field)) return;
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+              if (!VALUES[field].includes(selected)) return;
+              question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
+                if (!["prefer", "avoid"].includes(polarity)) return;
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Legacy.MEMBER_STATEMENT_CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                  if (condition === "general" || Object.hasOwn(Legacy.MEMBER_STATEMENT_CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
+                });
+              });
+            });
+          });
+        }
+        if (!raw.some((m) => m.evidence.start === s.evidence.start)) unresolved.push({ ...s.unresolved, ...handled ? { reasonLabel: "답한 범위에서 확인 중이거나, 이번에는 반영하지 않기로 한 내용이에요." } : {} });
+      }
+      const meanings = [], seen = /* @__PURE__ */ new Set();
+      for (const m of raw) {
+        const identity = semanticKey(m);
+        if (seen.has(identity)) continue;
+        if (meanings.length === MEMBER_STATEMENT_LIMITS.meanings) {
+          unresolved.push({ ...m.evidence, reason: "limit", reasonLabel: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요." });
+          continue;
+        }
+        seen.add(identity);
+        meanings.push({ id: "p" + meanings.length, field: m.field, value: m.value, polarity: m.polarity, condition: m.condition, evidence: m.evidence });
+      }
+      const grouped = /* @__PURE__ */ new Set();
+      for (const m of meanings) {
+        if (grouped.has(m.id)) continue;
+        const group = meanings.filter((other) => other.id === m.id || Legacy.meaningsConflict(m, other));
+        if (group.length < 2) continue;
+        group.forEach((p) => grouped.add(p.id));
+        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
+        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        else for (const p of group) if (p.id !== answer) p.withheld = true;
+      }
+      return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
+    }
+    function choose(state, text4, segments, answers, key) {
+      const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
+        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
+      } });
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+    }
+    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+      if (parserVersion === Legacy.PARSER_VERSION) {
+        if (clarifications.length) fail6();
+        return Legacy.parseMemberStatement(text4);
+      }
+      if (parserVersion !== PARSER_VERSION) fail6();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
+      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      for (const row of clarifications) {
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        const option = question.options.find((o) => o.id === row.optionId);
+        if (!option) fail6();
+        answers[row.questionId] = row.optionId;
+        clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
+        state = stateFor(text4, segments, answers, key);
+        question = choose(state, text4, segments, answers, key);
+      }
+      if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
+        const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && Legacy.meaningsConflict(a, b)));
+        state.meanings = state.meanings.filter((m) => !conflicted.includes(m));
+        state.unresolved = [...state.unresolved, ...conflicted.map((m) => ({ ...m.evidence }))].slice(0, MEMBER_STATEMENT_LIMITS.unresolved).map((u) => ({ ...u, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." }));
+        question = null;
+      }
+      return { parserVersion: PARSER_VERSION, meanings: state.meanings, unresolved: state.unresolved, question, clarifications: copy2(clarifications), clarificationAnswers };
+    }
+    function meaningLabel(m) {
+      return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
+    }
+    function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
+      const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
+      if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
+      if (parsed.question) fail6();
+      const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        ids3.add(m.id);
+        const expected = parsed.meanings.find((p) => p.id === m.id);
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        return copy2(expected);
+      }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => Legacy.meaningsConflict(a, b)))) fail6();
+      return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
+    }
+    module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, parseMemberStatement, validateMemberStatement, meaningsConflict: Legacy.meaningsConflict, meaningLabel };
+  }
+});
+
+// experiences/synk-account/src/member-statement-v3.cjs
+var require_member_statement_v3 = __commonJS({
+  "experiences/synk-account/src/member-statement-v3.cjs"(exports, module) {
+    "use strict";
+    var Legacy = require_member_statement_v1();
+    var Previous = require_member_statement_v2();
+    var Ask2 = require_ask();
+    var PARSER_VERSION = "member-statement-ko-3";
+    var MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
+    var VALUES = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_VALUES,
+      communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
+      "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
+      decision: Object.freeze(["evidence", "compare-options", "experience", "consult"]),
+      "explanation-detail": Object.freeze(["overview-first", "reasons-detail", "long-flow"]),
+      topic: Object.freeze([...Legacy.MEMBER_STATEMENT_VALUES.topic, "reading-books", "music", "exercise", "cooking", "photography", "games", "nature"])
+    });
+    var LABELS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_LABELS,
+      "listen-organize": "다른 사람의 생각을 듣고 정리하기",
+      "share-first": "내 의견을 먼저 말하기",
+      written: "글로 소통하기",
+      spoken: "말로 소통하기",
+      "plan-first": "계획을 먼저 세우기",
+      "try-adjust": "시도하며 조정하기",
+      "single-task": "한 번에 한 가지 처리하기",
+      prioritize: "우선순위를 정해 처리하기",
+      evidence: "자료와 근거를 확인해 판단하기",
+      "compare-options": "여러 선택지를 비교하기",
+      experience: "직접 경험한 내용을 참고하기",
+      consult: "다른 사람과 상의해 판단하기",
+      "overview-first": "전체 개요를 먼저 보기",
+      "reasons-detail": "핵심 근거를 자세히 알기",
+      "long-flow": "길게 이어지는 설명",
+      "reading-books": "독서",
+      music: "음악",
+      exercise: "운동",
+      cooking: "요리",
+      photography: "사진 촬영",
+      games: "게임",
+      nature: "자연·산책"
+    });
+    var MULTI_FIELDS = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]);
+    var CONDITIONS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_CONDITIONS,
+      "after-example": "예시를 본 다음",
+      "first-try-after-example": "처음 시도하며 예시를 본 다음",
+      "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
+      "busy-after-example": "바쁠 때 예시를 본 다음",
+      meeting: "회의할 때",
+      teamwork: "함께 일할 때",
+      planning: "일을 계획할 때",
+      decision: "결정할 때"
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var data = (x, key) => {
+      const d = Object.getOwnPropertyDescriptor(x, key);
+      return d?.enumerable === true && Object.hasOwn(d, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
+    var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
+    var fail6 = () => {
+      throw new TypeError("Member statement: invalid confirmed statement");
+    };
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
+    var copy2 = (x) => JSON.parse(JSON.stringify(x));
+    var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+    function sourceKey(text4) {
+      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+      padded.set(bytes);
+      padded[bytes.length] = 128;
+      new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
+      const h = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], w = new Uint32Array(64), ro = (x, n) => x >>> n | x << 32 - n;
+      for (let offset = 0; offset < padded.length; offset += 64) {
+        const view = new DataView(padded.buffer, offset, 64);
+        for (let i = 0; i < 16; i++) w[i] = view.getUint32(i * 4);
+        for (let i = 16; i < 64; i++) {
+          const x = w[i - 15], y = w[i - 2];
+          w[i] = w[i - 16] + (ro(x, 7) ^ ro(x, 18) ^ x >>> 3) + w[i - 7] + (ro(y, 17) ^ ro(y, 19) ^ y >>> 10) >>> 0;
+        }
+        let [a, b, c, d, e, f, g, hh] = h;
+        for (let i = 0; i < 64; i++) {
+          const t1 = hh + (ro(e, 6) ^ ro(e, 11) ^ ro(e, 25)) + (e & f ^ ~e & g) + SHA_K[i] + w[i] >>> 0, t2 = (ro(a, 2) ^ ro(a, 13) ^ ro(a, 22)) + (a & b ^ a & c ^ b & c) >>> 0;
+          hh = g;
+          g = f;
+          f = e;
+          e = d + t1 >>> 0;
+          d = c;
+          c = b;
+          b = a;
+          a = t1 + t2 >>> 0;
+        }
+        [a, b, c, d, e, f, g, hh].forEach((v, i) => {
+          h[i] = h[i] + v >>> 0;
+        });
+      }
+      return h.map((n) => n.toString(16).padStart(8, "0")).join("");
+    }
+    var POSITIVE = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u;
+    var NEGATIVE = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u;
+    var SUBJECTS = [
+      ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
+      ["support", "step", /^(?:단계별(?:로)?|차근차근|하나씩차례대로)(?:도움|안내|설명|알려주는|설명해주는)?(?:것|편|게|걸|건)?/u],
+      ["support", "choose", /^필요할때(?:만)?(?:도움(?:을)?(?:받는|선택하는|받고|선택하고)?)(?:것|편|게|걸|건)?/u],
+      ["explanation", "brief", /^(?:(?:설명(?:은|을)?)?(?:짧게|간단하게|간결하게|짧고핵심만)(?:설명해주는|설명하는|알려주는)?|(?:짧은|간단한|간결한)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "detailed", /^(?:(?:설명(?:은|을)?)?(?:자세히|상세히|길게)(?:설명해주는|설명하는|알려주는)?|(?:자세한|상세한|긴)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "standard", /^보통길이(?:의)?설명/u],
+      ["practice-mode", "mixed", /^듣기와읽기(?:를)?함께(?:하는)?(?:것|편|게|걸|건)?/u],
+      ["practice-mode", "listening", /^(?:듣기(?:연습)?|듣는연습|듣고배우는것)/u],
+      ["practice-mode", "reading", /^(?:읽기(?:연습)?|읽는연습|읽고배우는것)/u],
+      ["topic", "travel-planning", /^(?:여행일정(?:짜기)?|여행동선|여행계획)/u],
+      ["topic", "travel-food", /^(?:여행지음식|현지음식|음식주문)/u],
+      ["topic", "travel-stay", /^(?:여행지숙소|여행숙소)/u],
+      ["topic", "career-interview", /^면접(?:준비)?/u],
+      ["topic", "career-planning", /^(?:진로탐색|진로계획)/u],
+      ["topic", "content-video", /^(?:영상제작|영상만들기|동영상제작|영상만드는것)/u],
+      ["topic", "content-design", /^(?:디자인제작|디자인)/u],
+      ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/iu],
+      ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
+    ];
+    function phrase(body, condition) {
+      for (const [field, value, pattern] of SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const predicate = body.slice(match[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, "");
+        const polarity = NEGATIVE.test(predicate) ? "avoid" : POSITIVE.test(predicate) ? "prefer" : null;
+        if (polarity) return { field, value, polarity, condition };
+      }
+      return null;
+    }
+    function expanded(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      if (/["“”‘’]/u.test(body) || /(?:라고|다고)(?:했|말|들)/u.test(body)) return null;
+      if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return null;
+      if (/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(body)) return null;
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
+      let condition = null;
+      const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
+      for (const [id2, re] of prefixes) if (re.test(body)) {
+        condition = id2;
+        body = body.replace(re, "");
+        break;
+      }
+      const sequence = /^(?:예시|예제|샘플)(?:를|을)?(?:먼저)?(?:(?:보고(?:감을잡은)?|살펴본|본)(?:뒤(?:에)?|다음(?:에)?|후(?:에)?)|보고나서)/u.exec(body);
+      if (sequence) {
+        const next = phrase(body.slice(sequence[0].length), condition ? condition + "-after-example" : "after-example");
+        if (next?.field === "support" && next.value === "independent" && next.polarity === "prefer") return { meanings: [{ field: "support", value: "example", polarity: "prefer", condition }, next] };
+        return null;
+      }
+      const uncertain = /(?:좋을수도있(?:어(?:요)?|다)|좋을것같(?:아(?:요)?|다)|좋(?:아)?하는것같(?:아(?:요)?|다)|편할수도있(?:어(?:요)?|다))$/u.exec(body);
+      if (uncertain) {
+        const candidate = phrase(body.slice(0, uncertain.index) + (uncertain[0].startsWith("편") ? "편해" : "좋아"), condition);
+        return candidate ? { meanings: [candidate], uncertain: true } : null;
+      }
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body) && !/^필요할때/u.test(body)) return null;
+      const result = phrase(body, condition);
+      if (result) return { meanings: [result] };
+      const corrected = body.replace(/혼쟈/gu, "혼자").replace(/예씨/gu, "예시");
+      if (corrected !== body) {
+        const candidate = phrase(corrected, condition);
+        if (candidate) return { meanings: [candidate], typo: true };
+      }
+      return null;
+    }
+    var ENDING = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u;
+    var DENIAL = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u;
+    var NATURAL_SUBJECTS = [
+      ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
+      ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
+      ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
+      ["communication", "written", /^(?:(?:말보다)?(?:글|문자|메시지|메일|이메일)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|정리(?:해서|해)(?:전하|전달하)(?:는|기)?|정리하(?:는|기)?|전달하(?:는|기)?|전하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?)?)/u],
+      ["communication", "spoken", /^(?:(?:글보다)?(?:말|대화)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|직접이야기하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?|설명하(?:는|기)?)?)/u],
+      ["work-style", "plan-first", /^(?:(?:일|작업)(?:을)?(?:시작하기전에|하기전에))?(?:먼저|미리)?(?:계획|일정|할일목록)(?:을|부터)?(?:먼저|미리)?(?:세우(?:는|기)?|짜(?:는|기)?|정하(?:는|기)?|만드(?:는|기)?)/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저)?(?:작게)?(?:시도해보(?:고|면서)|해보(?:고|면서)|시작해보(?:고|면서)|실행해보(?:고|면서)|실행하(?:고|면서))(?:조금씩|필요에따라|나중에)?(?:수정하(?:는|기)?|조정하(?:는|기)?|바꿔가(?:는|기)?|고쳐가(?:는|기)?)/u],
+      ["work-style", "single-task", /^(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|에)?(?:만)?(?:을|를)?(?:집중하(?:는|기)?|처리하(?:는|기)?|끝내(?:는|기)?|하(?:는|기)?)/u],
+      ["work-style", "prioritize", /^(?:일(?:은|을)|작업(?:은|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고|하는|하기)|중요한(?:일|것)(?:부터))(?:차례로|순서대로)?(?:처리하(?:는|기)?|하(?:는|기)?|진행하(?:는|기)?|해나가(?:는|기)?)?/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:고|며)|살펴보(?:고|며)|찾아보(?:고|며)|바탕으로)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:는|기)?|살펴보(?:는|기)?|찾아보(?:는|기)?)/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한)?(?:선택지|대안|방법)(?:들)?(?:을|를)?(?:서로)?(?:비교하(?:고|며))?(?:(?:장단점)(?:을)?비교하(?:고|며))?(?:비교하(?:는|기)?|비교해보(?:는|기)?|결정하(?:는|기)?|고르(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하(?:는|기)?|바탕으로(?:판단하(?:는|기)?|결정하(?:는|기)?))/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하(?:는|기)?|결정하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:과|와|에)?(?:상의하(?:고|며)|의견을나누(?:고|며))(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:에게|한테)(?:의견을|생각을)?물어보(?:고|며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:의)?(?:조언|의견)(?:을)?듣(?:고|으며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|는|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보는|보기|아는|알기|듣는|듣기|파악하는|파악하기|알고|보고|듣고)/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유)(?:는|은|를|을)?(?:자세히|상세히|충분히)(?:알고|듣고|보고|알아보는|살펴보는|설명받는|듣는|보는|아는)?/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|길게이어지는설명|장황하게이어지는설명)/u],
+      ["topic", "reading-books", /^(?:독서|책읽기|책(?:을)?읽는것|책읽는것)/u],
+      ["topic", "music", /^(?:음악(?:감상|듣기|듣는것|듣는)?|노래듣기)/u],
+      ["topic", "exercise", /^(?:운동|달리기|러닝|수영|등산|자전거타기|헬스)/u],
+      ["topic", "cooking", /^(?:요리(?:하기|하는것|하는)?|음식만들기|베이킹)/u],
+      ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
+      ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
+      ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
+    ];
+    var CONDITION_PREFIXES = [
+      ["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u],
+      ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u],
+      ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은)|시간이부족할때(?:는)?)/u],
+      ["meeting", /^(?:회의(?:에서(?:는)?|(?:할)?때(?:에는|는)?|중(?:에는|에)?))/u],
+      ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
+      ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
+      ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
+    ];
+    var STANCE_ENDINGS = [
+      ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
+      ["avoid", /(?:싫(?:어요|습니다|다|어)|부담스러(?:워요|워)|피하고싶(?:어요|습니다|다|어))$/u],
+      ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음이편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
+      ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
+      ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
+    ];
+    var ACTION_VERBS = [
+      ["세우기", /(?:세워(?:두|놓)는|세워(?:두|놓)기|세우는|세우고|세우기)$/u],
+      ["짜기", /(?:짜(?:두|놓)는|짜(?:두|놓)기|짜는|짜고|짜기)$/u],
+      ["정하기", /(?:정해(?:두|놓)는|정해(?:두|놓)기|정하는|정하고|정하기)$/u],
+      ["정리하기", /(?:정리해(?:두|놓)는|정리해(?:두|놓)기|정리하는|정리하고|정리하기)$/u],
+      ["전달하기", /(?:전달하는|전달하고|전달하기)$/u],
+      ["남기기", /(?:남겨(?:두|놓)는|남기는|남기고|남기기)$/u],
+      ["이야기하기", /(?:이야기하는|얘기하는|이야기하고|얘기하고|얘기하기|이야기하기)$/u],
+      ["소통하기", /(?:소통하는|소통하고|소통하기)$/u],
+      ["대화하기", /(?:대화하는|대화하고|대화하기)$/u],
+      ["주고받기", /(?:주고받는|주고받고|주고받기)$/u],
+      ["말하기", /(?:말하는|말하고|말하기)$/u],
+      ["내기", /(?:내는|내고|내기)$/u],
+      ["꺼내기", /(?:꺼내는|꺼내고|꺼내기)$/u],
+      ["수정하기", /(?:수정하는|수정하고|수정하기)$/u],
+      ["조정하기", /(?:조정하는|조정하고|조정하기)$/u],
+      ["수정하기", /(?:고치는|고치고|고치기)$/u],
+      ["시작하기", /(?:시작하는|시작하고|시작하기)$/u],
+      ["바꿔가기", /(?:바꿔가는|바꿔가고|바꿔가기)$/u],
+      ["고쳐가기", /(?:고쳐가는|고쳐가고|고쳐가기)$/u],
+      ["집중하기", /(?:집중하는|집중하고|집중하기)$/u],
+      ["처리하기", /(?:처리하는|처리하고|처리하기)$/u],
+      ["마무리하기", /(?:마무리하는|마무리하고|마무리하기)$/u],
+      ["끝내기", /(?:끝내는|끝내고|끝내기)$/u],
+      ["판단하기", /(?:판단하는|판단하고|판단하기)$/u],
+      ["결정하기", /(?:결정하는|결정하고|결정하기)$/u],
+      ["확인하기", /(?:확인하는|확인하고|확인하기)$/u],
+      ["찾아보기", /(?:찾아보는|찾아보고|찾아보기)$/u],
+      ["비교하기", /(?:비교하는|비교하고|비교하기)$/u],
+      ["비교해보기", /(?:비교해보는|비교해보고|비교해보기)$/u],
+      ["참고하기", /(?:참고하는|참고하고|참고하기)$/u],
+      ["살펴보기", /(?:살펴보는|살펴보고|살펴보기)$/u],
+      ["파악하기", /(?:파악하는|파악하고|파악하기)$/u],
+      ["알기", /(?:아는|알고|알기)$/u],
+      ["읽기", /(?:읽는|읽고|읽기)$/u],
+      ["듣기", /(?:듣는|듣고|듣기)$/u],
+      ["보기", /(?:보는|보고|보기)$/u],
+      ["찍기", /(?:찍는|찍고|찍기)$/u],
+      ["하기", /(?:하는|하고|하기)$/u]
+    ];
+    var FINITE_ACTIONS = [
+      ["세우기", /(?:세워요|세웁니다|세운다)$/u],
+      ["짜기", /(?:짜요|짭니다|짠다)$/u],
+      ["정하기", /(?:정해요|정합니다|정한다)$/u],
+      ["정리하기", /(?:정리해요|정리합니다|정리한다)$/u],
+      ["전달하기", /(?:전달해요|전달합니다|전달한다)$/u],
+      ["남기기", /(?:남겨요|남깁니다|남긴다)$/u],
+      ["소통하기", /(?:소통해요|소통합니다|소통한다)$/u],
+      ["이야기하기", /(?:얘기해요|이야기해요|이야기합니다)$/u],
+      ["대화하기", /(?:대화해요|대화합니다|대화한다)$/u],
+      ["말하기", /(?:말해요|말합니다|말한다)$/u],
+      ["수정하기", /(?:수정해요|수정합니다|수정한다)$/u],
+      ["조정하기", /(?:조정해요|조정합니다|조정한다)$/u],
+      ["집중하기", /(?:집중해요|집중합니다|집중한다)$/u],
+      ["처리하기", /(?:처리해요|처리합니다|처리한다)$/u],
+      ["마무리하기", /(?:마무리해요|마무리합니다|마무리한다)$/u],
+      ["끝내기", /(?:끝내요|끝냅니다|끝낸다)$/u],
+      ["판단하기", /(?:판단해요|판단합니다|판단한다)$/u],
+      ["결정하기", /(?:결정해요|결정합니다|결정한다)$/u],
+      ["확인하기", /(?:확인해요|확인합니다|확인한다)$/u],
+      ["찾아보기", /(?:찾아봐요|찾아봅니다|찾아본다)$/u],
+      ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
+      ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
+    ];
+    function actionAndStance(body) {
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(body)) return null;
+      let stance = null, action = body;
+      for (const [polarity, ending] of STANCE_ENDINGS) {
+        const match = ending.exec(body);
+        if (match) {
+          stance = polarity;
+          action = body.slice(0, match.index);
+          break;
+        }
+      }
+      let habitual = false;
+      if (!stance) {
+        const verb2 = FINITE_ACTIONS.find(([, ending]) => ending.test(body));
+        if (!verb2) return null;
+        action = body.replace(verb2[1], verb2[0]);
+        stance = "prefer";
+        habitual = true;
+      }
+      action = action.replace(/(?:좀더|더욱|훨씬|더)$/u, "").replace(/(?:것|방식|쪽)(?:이|은|을|도)?$|(?:게|걸|건)$/u, "");
+      const verb = ACTION_VERBS.find(([, ending]) => ending.test(action));
+      if (verb) action = action.replace(verb[1], verb[0]);
+      else action = action.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
+      const links = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
+      action = action.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (_all, stem) => links[stem]).replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저");
+      return { action, polarity: stance, habitual };
+    }
+    var ACTIONS = [
+      ["communication", "listen-organize", /^(?:(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|상대(?:방)?|동료(?:들)?|팀원(?:들)?)(?:의)?|다른)(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들으며)(?:(?:내|제)(?:생각|의견)(?:을)?)?정리하기$/u],
+      ["communication", "share-first", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:먼저|앞서)|먼저(?:내|제)?(?:생각|의견)(?:을)?)(?:말하기|내기|꺼내기|이야기하기)$/u],
+      ["communication", "written", /^(?:(?:메신저|메일|이메일|문자|메시지)(?:로)?(?:글(?:을)?|의견(?:을)?)?|글(?:로|을)?)(?:(?:정리해서|정리해)(?:전달하기|남기기)|소통하기|정리하기|전달하기|남기기|이야기하기|대화하기|주고받기)$/u],
+      ["communication", "spoken", /^(?:말|대화)(?:로)?(?:소통하기|이야기하기|대화하기|(?:의견을)?주고받기|의견을전달하기)$/u],
+      ["work-style", "plan-first", /^(?:(?:일|업무|작업)(?:을)?(?:시작하기전에|하기전에))?(?:미리|먼저)?(?:계획|일정|할일목록)(?:을|부터)?(?:미리|먼저)?(?:세우기|짜기|정하기)$/u],
+      ["work-style", "plan-first", /^(?:계획|일정|할일목록)(?:을)?(?:세우고|짜고|정하고)(?:일(?:을)?)?시작하기$/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저)?(?:작게)?(?:시도(?:해보|하)|실행(?:해보|하)|해보|시작해보)(?:고|면서)(?:조금씩|나중에|필요에따라)?(?:수정하기|조정하기|바꿔가기|고쳐가기)$/u],
+      ["work-style", "single-task", /^(?:(?:일|업무|작업)(?:은|는))?(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|만|에|을|를)?(?:집중해서)?(?:집중하기|처리하기|마무리하기|끝내기|하기)$/u],
+      ["work-style", "prioritize", /^(?:(?:일|업무|작업)(?:은|는|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고)|중요한(?:일|것)부터|중요한순서대로(?:일(?:을)?)?)(?:차례로|순서대로)?(?:처리하기|하기|마무리하기)$/u],
+      ["work-style", "prioritize", /^우선순위(?:를)?(?:먼저)?정하기$/u],
+      ["work-style", "prioritize", /^우선순위대로(?:일(?:을)?)?(?:처리하기|하기|마무리하기)$/u],
+      ["decision", "evidence", /^(?:근거자료|자료와근거|데이터와근거|근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하기|살펴보기|찾아보기|(?:확인하고|살펴보고|찾아보고|바탕으로)(?:판단하기|결정하기))$/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한)?(?:선택지|대안|방법)(?:들)?(?:의장단점|장단점)?(?:을|를)?(?:서로)?(?:비교하기|비교해보기|(?:비교해서|비교하고)(?:정하기|결정하기|판단하기))$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험하고|체험하고|경험해보고|체험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하기|결정하기)$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하기|바탕으로(?:판단하기|결정하기))$/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:(?:과|와)(?:상의하고|의견을나누고)|(?:의)?(?:조언|의견)(?:을)?(?:듣고|참고하고)|(?:에게|한테)(?:의견을|생각을)?물어보고)(?:결정하기|판단하기)$/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조|윤곽)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보기|알기|듣기|파악하기)$/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유|이유와근거|근거와이유)(?:는|은|를|을)?(?:자세히|상세히|충분히)(?:알기|듣기|보기|살펴보기)$/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|길게이어지는설명)$/u],
+      ["topic", "reading-books", /^(?:독서|책(?:을)?읽기)$/u],
+      ["topic", "music", /^(?:음악(?:감상|(?:을)?듣기)?|노래(?:를)?듣기)$/u],
+      ["topic", "exercise", /^(?:운동(?:하기)?|달리기|러닝|수영|등산|자전거타기|헬스)$/u],
+      ["topic", "cooking", /^(?:요리(?:하기)?|음식(?:을)?만들기|베이킹)$/u],
+      ["topic", "photography", /^(?:(?:풍경|인물)?사진(?:촬영|(?:을)?찍기)?)$/u],
+      ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
+      ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|(?:을)?보기)?|산책(?:하기)?|공원산책)$/u]
+    ];
+    function recognizeAction(body, condition) {
+      const parsed = actionAndStance(body);
+      if (!parsed) return null;
+      const found = ACTIONS.find(([, , pattern]) => pattern.test(parsed.action));
+      return found && !(parsed.habitual && found[0] === "topic") ? { meanings: [{ field: found[0], value: found[1], polarity: parsed.polarity, condition }] } : null;
+    }
+    function normalizePrefix(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
+      let condition = null;
+      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id2;
+        body = body.replace(prefix, "");
+        break;
+      }
+      return { body, condition };
+    }
+    function natural(quote) {
+      let { body, condition } = normalizePrefix(quote);
+      body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, "");
+      const explanationSequence = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
+      if (explanationSequence) {
+        const first = natural(explanationSequence[1] + "보는게좋아요"), second = natural(explanationSequence[2]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && first.meanings[0].value === "overview-first" && second.meanings[0].value === "reasons-detail" && second.meanings[0].polarity === "prefer")
+          return { meanings: [...first.meanings, ...second.meanings].map((m) => ({ ...m, condition })) };
+      }
+      const longEffect = /^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u;
+      if (longEffect.test(body)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition }] };
+      const action = recognizeAction(body, condition);
+      if (action) return action;
+      for (const [field, value, pattern] of NATURAL_SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const rest = body.slice(match[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해");
+        const polarity = DENIAL.test(rest) || NEGATIVE.test(rest) ? "avoid" : field !== "topic" && ENDING.test(rest) || POSITIVE.test(rest) && !(field === "topic" && /^해줘/u.test(rest)) ? "prefer" : null;
+        if (polarity) return { meanings: [{ field, value, polarity, condition }] };
+      }
+      return null;
+    }
+    var EXCLUDED = Object.freeze({
+      other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
+      past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
+      hypothetical: "가정한 내용을 현재 선호로 사용하지 않아요.",
+      quotation: "인용된 말의 주체와 뜻을 분명하게 확인하지 못했어요.",
+      unsupported: "이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.",
+      sensitive: "이 내용은 성향 항목으로 추정하거나 분류하지 않아요.",
+      condition: "이 조건의 범위를 정확히 이해하지 못했어요.",
+      uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
+      limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
+    });
+    function excludedOrigin(body) {
+      if (/["“”‘’「」『』]/u.test(body) || /(?:라고|다고)(?:했|하셨|말|들)|(?:라는|다는)(?:말|이야기)/u.test(body)) return "quotation";
+      if (/^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return "other";
+      if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|했어요|했습니다)/u.test(body)) return "past";
+      if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return "sensitive";
+      if (/(?:만약|라면|다면|가정하|상상하)/u.test(body)) return "hypothetical";
+      return null;
+    }
+    function pieces(text4) {
+      const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데)(?=\s)|[.!?;\n,]+/gu;
+      let start = 0, match;
+      const push = (end) => {
+        while (start < end && /\s/u.test(text4[start])) start++;
+        while (end > start && /\s/u.test(text4[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+      };
+      while (match = separator.exec(text4)) {
+        push(match.index + (/^(?:지만|는데)$/u.test(match[0]) ? match[0].length : 0));
+        start = match.index + match[0].length;
+      }
+      push(text4.length);
+      return result;
+    }
+    var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
+    var FIELDS = {
+      support: "도움받는 방식",
+      explanation: "설명 길이",
+      "practice-mode": "연습 방식",
+      topic: "관심 분야",
+      communication: "소통 방식",
+      "work-style": "일을 진행하는 방식",
+      decision: "판단 방식",
+      "explanation-detail": "설명에서 원하는 구성"
+    };
+    function analyze(text4) {
+      Legacy.parseMemberStatement(text4);
+      const segments = [];
+      let inherited = null, previousCondition = false;
+      for (const evidence of pieces(text4)) {
+        const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재)/u.test(body);
+        const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
+        if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
+        const segment = { evidence }, reason = excludedOrigin(body) || inherited;
+        if (reason) {
+          inherited = reason;
+          segment.unresolved = { ...evidence, reason, reasonLabel: EXCLUDED[reason] };
+          if (["uncertain", "condition"].includes(reason)) segment.generic = true;
+          segments.push(segment);
+          continue;
+        }
+        let found = natural(evidence.quote) || expanded(evidence.quote);
+        if (!found) {
+          const old = Legacy.parseMemberStatement(evidence.quote);
+          if (old.meanings.length === 1 && !old.unresolved.length) found = { meanings: old.meanings };
+        }
+        let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
+        if (unresolvedCondition) found = null;
+        previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
+        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
+        if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
+          unresolvedCondition = true;
+          inherited = "condition";
+        }
+        if (uncertain && /(?:지만|는데)$/u.test(body)) inherited = "uncertain";
+        if (asking) {
+          segment.generic = true;
+          segment.unresolved = { ...evidence, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
+        } else if (found) {
+          if (found.uncertain || found.typo || uncertain) segment.candidate = { ...found, uncertain: found.uncertain || uncertain };
+          else segment.meanings = found.meanings;
+        } else segment.generic = true;
+        if (!segment.meanings && !segment.unresolved) {
+          const why = uncertain ? "uncertain" : unresolvedCondition ? "condition" : "unsupported";
+          segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
+        }
+        segments.push(segment);
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+          const last = segments.at(-1);
+          delete last.meanings;
+          delete last.candidate;
+          delete last.generic;
+          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
+          break;
+        }
+      }
+      return segments;
+    }
+    function stateFor(text4, segments, answers, key) {
+      const raw = [], unresolved = [], questions = [];
+      const question = (index, stage, label, options, apply) => {
+        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        if (answer !== void 0) {
+          apply(answer);
+          return;
+        }
+        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+      };
+      for (let index = 0; index < segments.length; index++) {
+        const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
+        if (s.meanings) {
+          add(s.meanings);
+          continue;
+        }
+        let handled = false;
+        if (s.candidate) {
+          question(
+            index,
+            "confirm",
+            `「${s.evidence.quote}」${s.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
+            [{ id: "confirm", label: s.candidate.meanings.map(meaningLabel).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+            (answer) => {
+              handled = true;
+              if (answer === "confirm") add(s.candidate.meanings);
+            }
+          );
+        } else if (s.generic) {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+            handled = true;
+            if (!Object.hasOwn(VALUES, field)) return;
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+              if (!VALUES[field].includes(selected)) return;
+              question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
+                if (!["prefer", "avoid"].includes(polarity)) return;
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                  if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
+                });
+              });
+            });
+          });
+        }
+        if (!raw.some((m) => m.evidence.start === s.evidence.start)) unresolved.push({ ...s.unresolved, ...handled ? { reasonLabel: "답한 범위에서 확인 중이거나, 이번에는 반영하지 않기로 한 내용이에요." } : {} });
+      }
+      const meanings = [], seen = /* @__PURE__ */ new Set();
+      for (const m of raw) {
+        const identity = semanticKey(m);
+        if (seen.has(identity)) continue;
+        if (meanings.length === MEMBER_STATEMENT_LIMITS.meanings) {
+          unresolved.push({ ...m.evidence, reason: "limit", reasonLabel: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요." });
+          continue;
+        }
+        seen.add(identity);
+        meanings.push({ id: "p" + meanings.length, field: m.field, value: m.value, polarity: m.polarity, condition: m.condition, evidence: m.evidence });
+      }
+      const grouped = /* @__PURE__ */ new Set();
+      for (const m of meanings) {
+        if (grouped.has(m.id)) continue;
+        const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
+        if (group.length < 2) continue;
+        group.forEach((p) => grouped.add(p.id));
+        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
+        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        else for (const p of group) if (p.id !== answer) p.withheld = true;
+      }
+      return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
+    }
+    function choose(state, text4, segments, answers, key) {
+      const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
+        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
+      } });
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+    }
+    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+      if (parserVersion === Legacy.PARSER_VERSION) {
+        if (clarifications.length) fail6();
+        return Legacy.parseMemberStatement(text4);
+      }
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail6();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
+      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      for (const row of clarifications) {
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        const option = question.options.find((o) => o.id === row.optionId);
+        if (!option) fail6();
+        answers[row.questionId] = row.optionId;
+        clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
+        state = stateFor(text4, segments, answers, key);
+        question = choose(state, text4, segments, answers, key);
+      }
+      if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
+        const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
+        state.meanings = state.meanings.filter((m) => !conflicted.includes(m));
+        state.unresolved = [...state.unresolved, ...conflicted.map((m) => ({ ...m.evidence }))].slice(0, MEMBER_STATEMENT_LIMITS.unresolved).map((u) => ({ ...u, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." }));
+        question = null;
+      }
+      return { parserVersion: PARSER_VERSION, meanings: state.meanings, unresolved: state.unresolved, question, clarifications: copy2(clarifications), clarificationAnswers };
+    }
+    function meaningLabel(m) {
+      return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
+    }
+    function meaningsConflict(a, b) {
+      if (a.field !== b.field || a.condition !== b.condition) return false;
+      if (a.value === b.value) return a.polarity !== b.polarity;
+      return a.field !== "topic" && !MULTI_FIELDS.includes(a.field) && a.polarity === "prefer" && b.polarity === "prefer";
+    }
+    function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
+      const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
+      if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
+      if (parsed.question) fail6();
+      const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        ids3.add(m.id);
+        const expected = parsed.meanings.find((p) => p.id === m.id);
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        return copy2(expected);
+      }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
+    }
+    module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
+  }
+});
+
+// experiences/synk-account/src/member-statement-v4.cjs
+var require_member_statement_v4 = __commonJS({
+  "experiences/synk-account/src/member-statement-v4.cjs"(exports, module) {
+    "use strict";
+    var Legacy = require_member_statement_v1();
+    var Previous = require_member_statement_v2();
+    var Previous3 = require_member_statement_v3();
+    var Ask2 = require_ask();
+    var PARSER_VERSION = "member-statement-ko-4";
+    var MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
+    var VALUES = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_VALUES,
+      communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
+      "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
+      decision: Object.freeze(["evidence", "compare-options", "experience", "consult"]),
+      "explanation-detail": Object.freeze(["overview-first", "reasons-detail", "long-flow"]),
+      topic: Object.freeze([...Legacy.MEMBER_STATEMENT_VALUES.topic, "reading-books", "music", "exercise", "cooking", "photography", "games", "nature"])
+    });
+    var LABELS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_LABELS,
+      "listen-organize": "다른 사람의 생각을 듣고 정리하기",
+      "share-first": "내 의견을 먼저 말하기",
+      written: "글로 소통하기",
+      spoken: "말로 소통하기",
+      "plan-first": "계획을 먼저 세우기",
+      "try-adjust": "시도하며 조정하기",
+      "single-task": "한 번에 한 가지 처리하기",
+      prioritize: "우선순위를 정해 처리하기",
+      evidence: "자료와 근거를 확인해 판단하기",
+      "compare-options": "여러 선택지를 비교하기",
+      experience: "직접 경험한 내용을 참고하기",
+      consult: "다른 사람과 상의해 판단하기",
+      "overview-first": "전체 개요를 먼저 보기",
+      "reasons-detail": "핵심 근거를 자세히 알기",
+      "long-flow": "길게 이어지는 설명",
+      "reading-books": "독서",
+      music: "음악",
+      exercise: "운동",
+      cooking: "요리",
+      photography: "사진 촬영",
+      games: "게임",
+      nature: "자연·산책"
+    });
+    var MULTI_FIELDS = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]);
+    var CONDITIONS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_CONDITIONS,
+      "after-example": "예시를 본 다음",
+      "first-try-after-example": "처음 시도하며 예시를 본 다음",
+      "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
+      "busy-after-example": "바쁠 때 예시를 본 다음",
+      meeting: "회의할 때",
+      teamwork: "함께 일할 때",
+      planning: "일을 계획할 때",
+      decision: "결정할 때"
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var data = (x, key) => {
+      const d = Object.getOwnPropertyDescriptor(x, key);
+      return d?.enumerable === true && Object.hasOwn(d, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
+    var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
+    var fail6 = () => {
+      throw new TypeError("Member statement: invalid confirmed statement");
+    };
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
+    var copy2 = (x) => JSON.parse(JSON.stringify(x));
+    var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+    function sourceKey(text4) {
+      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+      padded.set(bytes);
+      padded[bytes.length] = 128;
+      new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
+      const h = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], w = new Uint32Array(64), ro = (x, n) => x >>> n | x << 32 - n;
+      for (let offset = 0; offset < padded.length; offset += 64) {
+        const view = new DataView(padded.buffer, offset, 64);
+        for (let i = 0; i < 16; i++) w[i] = view.getUint32(i * 4);
+        for (let i = 16; i < 64; i++) {
+          const x = w[i - 15], y = w[i - 2];
+          w[i] = w[i - 16] + (ro(x, 7) ^ ro(x, 18) ^ x >>> 3) + w[i - 7] + (ro(y, 17) ^ ro(y, 19) ^ y >>> 10) >>> 0;
+        }
+        let [a, b, c, d, e, f, g, hh] = h;
+        for (let i = 0; i < 64; i++) {
+          const t1 = hh + (ro(e, 6) ^ ro(e, 11) ^ ro(e, 25)) + (e & f ^ ~e & g) + SHA_K[i] + w[i] >>> 0, t2 = (ro(a, 2) ^ ro(a, 13) ^ ro(a, 22)) + (a & b ^ a & c ^ b & c) >>> 0;
+          hh = g;
+          g = f;
+          f = e;
+          e = d + t1 >>> 0;
+          d = c;
+          c = b;
+          b = a;
+          a = t1 + t2 >>> 0;
+        }
+        [a, b, c, d, e, f, g, hh].forEach((v, i) => {
+          h[i] = h[i] + v >>> 0;
+        });
+      }
+      return h.map((n) => n.toString(16).padStart(8, "0")).join("");
+    }
+    var POSITIVE = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u;
+    var NEGATIVE = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u;
+    var SUBJECTS = [
+      ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
+      ["support", "step", /^(?:단계별(?:로)?|차근차근|하나씩차례대로)(?:도움|안내|설명|알려주는|설명해주는)?(?:것|편|게|걸|건)?/u],
+      ["support", "choose", /^필요할때(?:만)?(?:도움(?:을)?(?:받는|선택하는|받고|선택하고)?)(?:것|편|게|걸|건)?/u],
+      ["explanation", "brief", /^(?:(?:설명(?:은|을)?)?(?:짧게|간단하게|간결하게|짧고핵심만)(?:설명해주는|설명하는|알려주는)?|(?:짧은|간단한|간결한)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "detailed", /^(?:(?:설명(?:은|을)?)?(?:자세히|상세히|길게)(?:설명해주는|설명하는|알려주는)?|(?:자세한|상세한|긴)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "standard", /^보통길이(?:의)?설명/u],
+      ["practice-mode", "mixed", /^듣기와읽기(?:를)?함께(?:하는)?(?:것|편|게|걸|건)?/u],
+      ["practice-mode", "listening", /^(?:듣기(?:연습)?|듣는연습|듣고배우는것)/u],
+      ["practice-mode", "reading", /^(?:읽기(?:연습)?|읽는연습|읽고배우는것)/u],
+      ["topic", "travel-planning", /^(?:여행일정(?:짜기)?|여행동선|여행계획)/u],
+      ["topic", "travel-food", /^(?:여행지음식|현지음식|음식주문)/u],
+      ["topic", "travel-stay", /^(?:여행지숙소|여행숙소)/u],
+      ["topic", "career-interview", /^면접(?:준비)?/u],
+      ["topic", "career-planning", /^(?:진로탐색|진로계획)/u],
+      ["topic", "content-video", /^(?:영상제작|영상만들기|동영상제작|영상만드는것)/u],
+      ["topic", "content-design", /^(?:디자인제작|디자인)/u],
+      ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/iu],
+      ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
+    ];
+    function phrase(body, condition) {
+      for (const [field, value, pattern] of SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const predicate = body.slice(match[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, "");
+        const polarity = NEGATIVE.test(predicate) ? "avoid" : POSITIVE.test(predicate) ? "prefer" : null;
+        if (polarity) return { field, value, polarity, condition };
+      }
+      return null;
+    }
+    function expanded(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      if (/["“”‘’]/u.test(body) || /(?:라고|다고)(?:했|말|들)/u.test(body)) return null;
+      if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return null;
+      if (/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(body)) return null;
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
+      let condition = null;
+      const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
+      for (const [id2, re] of prefixes) if (re.test(body)) {
+        condition = id2;
+        body = body.replace(re, "");
+        break;
+      }
+      const sequence = /^(?:예시|예제|샘플)(?:를|을)?(?:먼저)?(?:(?:보고(?:감을잡은)?|살펴본|본)(?:뒤(?:에)?|다음(?:에)?|후(?:에)?)|보고나서)/u.exec(body);
+      if (sequence) {
+        const next = phrase(body.slice(sequence[0].length), condition ? condition + "-after-example" : "after-example");
+        if (next?.field === "support" && next.value === "independent" && next.polarity === "prefer") return { meanings: [{ field: "support", value: "example", polarity: "prefer", condition }, next] };
+        return null;
+      }
+      const uncertain = /(?:좋을수도있(?:어(?:요)?|다)|좋을것같(?:아(?:요)?|다)|좋(?:아)?하는것같(?:아(?:요)?|다)|편할수도있(?:어(?:요)?|다))$/u.exec(body);
+      if (uncertain) {
+        const candidate = phrase(body.slice(0, uncertain.index) + (uncertain[0].startsWith("편") ? "편해" : "좋아"), condition);
+        return candidate ? { meanings: [candidate], uncertain: true } : null;
+      }
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body) && !/^필요할때/u.test(body)) return null;
+      const result = phrase(body, condition);
+      if (result) return { meanings: [result] };
+      const corrected = body.replace(/혼쟈/gu, "혼자").replace(/예씨/gu, "예시");
+      if (corrected !== body) {
+        const candidate = phrase(corrected, condition);
+        if (candidate) return { meanings: [candidate], typo: true };
+      }
+      return null;
+    }
+    var ENDING = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u;
+    var DENIAL = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u;
+    var NATURAL_SUBJECTS = [
+      ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
+      ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
+      ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
+      ["communication", "written", /^(?:(?:말보다)?(?:글|문자|메시지|메일|이메일)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|정리(?:해서|해)(?:전하|전달하)(?:는|기)?|정리하(?:는|기)?|전달하(?:는|기)?|전하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?)?)/u],
+      ["communication", "spoken", /^(?:(?:글보다)?(?:말|대화)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|직접이야기하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?|설명하(?:는|기)?)?)/u],
+      ["work-style", "plan-first", /^(?:(?:일|작업)(?:을)?(?:시작하기전에|하기전에))?(?:먼저|미리)?(?:계획|일정|할일목록)(?:을|부터)?(?:먼저|미리)?(?:세우(?:는|기)?|짜(?:는|기)?|정하(?:는|기)?|만드(?:는|기)?)/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저)?(?:작게)?(?:시도해보(?:고|면서)|해보(?:고|면서)|시작해보(?:고|면서)|실행해보(?:고|면서)|실행하(?:고|면서))(?:조금씩|필요에따라|나중에)?(?:수정하(?:는|기)?|조정하(?:는|기)?|바꿔가(?:는|기)?|고쳐가(?:는|기)?)/u],
+      ["work-style", "single-task", /^(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|에)?(?:만)?(?:을|를)?(?:집중하(?:는|기)?|처리하(?:는|기)?|끝내(?:는|기)?|하(?:는|기)?)/u],
+      ["work-style", "prioritize", /^(?:일(?:은|을)|작업(?:은|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고|하는|하기)|중요한(?:일|것)(?:부터))(?:차례로|순서대로)?(?:처리하(?:는|기)?|하(?:는|기)?|진행하(?:는|기)?|해나가(?:는|기)?)?/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:고|며)|살펴보(?:고|며)|찾아보(?:고|며)|바탕으로)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:는|기)?|살펴보(?:는|기)?|찾아보(?:는|기)?)/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한)?(?:선택지|대안|방법)(?:들)?(?:을|를)?(?:서로)?(?:비교하(?:고|며))?(?:(?:장단점)(?:을)?비교하(?:고|며))?(?:비교하(?:는|기)?|비교해보(?:는|기)?|결정하(?:는|기)?|고르(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하(?:는|기)?|바탕으로(?:판단하(?:는|기)?|결정하(?:는|기)?))/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하(?:는|기)?|결정하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:과|와|에)?(?:상의하(?:고|며)|의견을나누(?:고|며))(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:에게|한테)(?:의견을|생각을)?물어보(?:고|며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:의)?(?:조언|의견)(?:을)?듣(?:고|으며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|는|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보는|보기|아는|알기|듣는|듣기|파악하는|파악하기|알고|보고|듣고)/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유)(?:는|은|를|을)?(?:자세히|상세히|충분히)(?:알고|듣고|보고|알아보는|살펴보는|설명받는|듣는|보는|아는)?/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|길게이어지는설명|장황하게이어지는설명)/u],
+      ["topic", "reading-books", /^(?:독서|책읽기|책(?:을)?읽는것|책읽는것)/u],
+      ["topic", "music", /^(?:음악(?:감상|듣기|듣는것|듣는)?|노래듣기)/u],
+      ["topic", "exercise", /^(?:운동|달리기|러닝|수영|등산|자전거타기|헬스)/u],
+      ["topic", "cooking", /^(?:요리(?:하기|하는것|하는)?|음식만들기|베이킹)/u],
+      ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
+      ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
+      ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
+    ];
+    var CONDITION_PREFIXES = [
+      ["first-try", /^(?:새로운|낯선)(?:걸|것|일|내용)(?:을)?(?:처음)?(?:배울|할|시도할)때(?:에는|는)?/u],
+      ["familiar", /^(?:잘아는|익숙한)(?:내용|일)(?:일때|을할때)(?:에는|는)?/u],
+      ["first-try", /^(?:익숙하지않은(?:걸|것|내용|일)(?:을)?(?:처음)?할(?:때|땐)(?:에는|는)?|처음(?:배우거나|시도하거나)?(?:하는|해보는|배우는)(?:걸|것|일|내용)(?:을)?할(?:때|땐)(?:는)?|처음할땐)/u],
+      ["familiar", /^(?:이미)?익숙(?:해진|한)(?:내용|일)(?:은|을할땐|을할때(?:는)?)/u],
+      ["busy", /^(?:바쁘면|바쁠땐|시간이(?:없|부족하|촉박하)면|시간이촉박할때(?:는)?)/u],
+      ["teamwork", /^(?:여럿이)?(?:함께|같이)(?:일|작업)할(?:때|땐)(?:에는|는)?/u],
+      ["decision", /^(?:결정|판단|선택)(?:을)?해야할(?:때|땐)(?:는)?/u],
+      ["after-example", /^(?:예시|예제|샘플)(?:를|을)?(?:한번)?(?:본|살펴본)(?:뒤|다음|후)(?:에는|엔)/u],
+      ["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u],
+      ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u],
+      ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은)|시간이부족할때(?:는)?)/u],
+      ["meeting", /^(?:회의(?:에서(?:는)?|(?:할)?때(?:에는|는)?|중(?:에는|에)?))/u],
+      ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
+      ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
+      ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
+    ];
+    var STANCE_ENDINGS = [
+      ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
+      ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
+      ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
+      ["avoid", /(?:싫(?:어요|습니다|다|어)|부담스러(?:워요|워)|피하고싶(?:어요|습니다|다|어))$/u],
+      ["prefer", /(?:(?:제가|내가)?좋아하는취미(?:예요|입니다)|(?:제)?(?:관심분야|취향)(?:입니다|이에요|예요)|(?:좋아하|즐기)는편(?:이에요|입니다)|마음에들(?:어요|어|었습니다)|즐(?:겨요|깁니다|긴다|겨)|즐거(?:워요|워)|좋(?:더라고요|더라|겠어요|겠습니다))$/u],
+      ["prefer", /(?:(?:제게|저한테|내게|나한테)?(?:잘)?맞(?:아요|습니다|아)|(?:요즘|최근)?관심(?:이)?(?:많(?:아요|습니다)|생겼(?:어요|습니다)))$/u],
+      ["prefer", /(?:관심(?:이)?|흥미(?:가)?)있고(?:더|직접|한번)?배워보고싶(?:어요|습니다|어|다)$/u],
+      ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
+      ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
+      ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
+    ];
+    var ACTION_VERBS = [
+      ["적기", /적(?:는|기)$/u],
+      ["쓰기", /쓰(?:는|기)$/u],
+      ["해결하기", /해결하(?:는|기)$/u],
+      ["알려주기", /알려주(?:는|기|면)$/u],
+      ["따져보기", /따져보(?:는|기)$/u],
+      ["나누기", /나누(?:는|기)$/u],
+      ["수정하기", /다듬어가(?:는|기)$/u],
+      ["이어지기", /이어지(?:는|기)$/u],
+      ["수정하기", /수정해가(?:는|기)$/u],
+      ["배우기", /배우(?:는|기)$/u],
+      ["보여주기", /보여주(?:는|기)$/u],
+      ["도와주기", /도와주(?:는|기)$/u],
+      ["주문하기", /주문하(?:는|기)$/u],
+      ["상의하기", /상의(?:해보는|해보기|하는|하기)$/u],
+      ["시도하기", /시도해보(?:는|기)$/u],
+      ["전하기", /전하(?:는|기)$/u],
+      ["꺼내기", /꺼내(?:두|놓)는$/u],
+      ["고쳐가기", /고쳐나가는$/u],
+      ["연습하기", /연습(?:하는|하고|하기)$/u],
+      ["만들기", /(?:만들어보는|만들어보기|만드는|만들기)$/u],
+      ["설명해주기", /설명해(?:주는|주면|주기)$/u],
+      ["해주기", /해(?:주는|주면|주기)$/u],
+      ["도움받기", /도움받(?:는|기)$/u],
+      ["받기", /받(?:는|기|고)$/u],
+      ["시작하기", /시작하면$/u],
+      ["잡기", /잡(?:고|는|기)$/u],
+      ["고르기", /고르(?:는|기)$/u],
+      ["해보기", /해보(?:는|기)$/u],
+      ["시도하기", /시도(?:하는|하기)$/u],
+      ["길어지기", /길어지(?:는|기)$/u],
+      ["먹기", /먹(?:는|기)$/u],
+      ["짧은", /짧은$/u],
+      ["세우기", /(?:세워(?:두|놓)는|세워(?:두|놓)기|세우는|세우고|세우기)$/u],
+      ["짜기", /(?:짜(?:두|놓)는|짜(?:두|놓)기|짜는|짜고|짜기)$/u],
+      ["정하기", /(?:정해(?:두|놓)는|정해(?:두|놓)기|정하는|정하고|정하기)$/u],
+      ["정리하기", /(?:정리해(?:두|놓)는|정리해(?:두|놓)기|정리하는|정리하고|정리하기)$/u],
+      ["전달하기", /(?:전달하는|전달하고|전달하기)$/u],
+      ["남기기", /(?:남겨(?:두|놓)는|남기는|남기고|남기기)$/u],
+      ["이야기하기", /(?:이야기하는|얘기하는|이야기하고|얘기하고|얘기하기|이야기하기)$/u],
+      ["소통하기", /(?:소통하는|소통하고|소통하기)$/u],
+      ["대화하기", /(?:대화하는|대화하고|대화하기)$/u],
+      ["주고받기", /(?:주고받는|주고받고|주고받기)$/u],
+      ["말하기", /(?:말하는|말하고|말하기)$/u],
+      ["내기", /(?:내는|내고|내기)$/u],
+      ["꺼내기", /(?:꺼내는|꺼내고|꺼내기)$/u],
+      ["수정하기", /(?:수정하는|수정하고|수정하기)$/u],
+      ["조정하기", /(?:조정하는|조정하고|조정하기)$/u],
+      ["수정하기", /(?:고치는|고치고|고치기)$/u],
+      ["시작하기", /(?:시작하는|시작하고|시작하기)$/u],
+      ["바꿔가기", /(?:바꿔가는|바꿔가고|바꿔가기)$/u],
+      ["고쳐가기", /(?:고쳐가는|고쳐가고|고쳐가기)$/u],
+      ["집중하기", /(?:집중하는|집중하고|집중하기)$/u],
+      ["처리하기", /(?:처리하는|처리하고|처리하기)$/u],
+      ["마무리하기", /(?:마무리하는|마무리하고|마무리하기)$/u],
+      ["끝내기", /(?:끝내는|끝내고|끝내기)$/u],
+      ["판단하기", /(?:판단하는|판단하고|판단하기)$/u],
+      ["결정하기", /(?:결정하는|결정하고|결정하기)$/u],
+      ["확인하기", /(?:확인하는|확인하고|확인하기)$/u],
+      ["찾아보기", /(?:찾아보는|찾아보고|찾아보기)$/u],
+      ["비교하기", /(?:비교하는|비교하고|비교하기)$/u],
+      ["비교해보기", /(?:비교해보는|비교해보고|비교해보기)$/u],
+      ["참고하기", /(?:참고하는|참고하고|참고하기)$/u],
+      ["살펴보기", /(?:살펴보는|살펴보고|살펴보기)$/u],
+      ["파악하기", /(?:파악하는|파악하고|파악하기)$/u],
+      ["알기", /(?:아는|알고|알기)$/u],
+      ["읽기", /(?:읽는|읽고|읽기)$/u],
+      ["듣기", /(?:듣는|듣고|듣기)$/u],
+      ["보기", /(?:보는|보고|보기)$/u],
+      ["찍기", /(?:찍는|찍고|찍기)$/u],
+      ["하기", /(?:하는|하고|하기)$/u]
+    ];
+    var FINITE_ACTIONS = [
+      ["세우기", /(?:세워요|세웁니다|세운다)$/u],
+      ["짜기", /(?:짜요|짭니다|짠다)$/u],
+      ["정하기", /(?:정해요|정합니다|정한다)$/u],
+      ["정리하기", /(?:정리해요|정리합니다|정리한다)$/u],
+      ["전달하기", /(?:전달해요|전달합니다|전달한다)$/u],
+      ["남기기", /(?:남겨요|남깁니다|남긴다)$/u],
+      ["소통하기", /(?:소통해요|소통합니다|소통한다)$/u],
+      ["이야기하기", /(?:얘기해요|이야기해요|이야기합니다)$/u],
+      ["대화하기", /(?:대화해요|대화합니다|대화한다)$/u],
+      ["말하기", /(?:말해요|말합니다|말한다)$/u],
+      ["수정하기", /(?:수정해요|수정합니다|수정한다)$/u],
+      ["조정하기", /(?:조정해요|조정합니다|조정한다)$/u],
+      ["집중하기", /(?:집중해요|집중합니다|집중한다)$/u],
+      ["처리하기", /(?:처리해요|처리합니다|처리한다)$/u],
+      ["마무리하기", /(?:마무리해요|마무리합니다|마무리한다)$/u],
+      ["끝내기", /(?:끝내요|끝냅니다|끝낸다)$/u],
+      ["판단하기", /(?:판단해요|판단합니다|판단한다)$/u],
+      ["결정하기", /(?:결정해요|결정합니다|결정한다)$/u],
+      ["확인하기", /(?:확인해요|확인합니다|확인한다)$/u],
+      ["찾아보기", /(?:찾아봐요|찾아봅니다|찾아본다)$/u],
+      ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
+      ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
+    ];
+    function actionAndStance(body) {
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(body)) return null;
+      let stance = null, action = body;
+      for (const [polarity, ending] of STANCE_ENDINGS) {
+        const match = ending.exec(body);
+        if (match) {
+          stance = polarity;
+          action = body.slice(0, match.index);
+          break;
+        }
+      }
+      let habitual = false;
+      if (!stance) {
+        const verb = FINITE_ACTIONS.find(([, ending]) => ending.test(body));
+        if (!verb) return null;
+        action = body.replace(verb[1], verb[0]);
+        stance = "prefer";
+        habitual = true;
+      }
+      return { ...normalizeActionPhrase(action), polarity: stance, habitual };
+    }
+    function normalizeActionPhrase(source) {
+      let action = source;
+      action = action.replace(/(?:(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u, "").replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u, "");
+      const nominalHead = /(?:는|기)설명(?:이|은|을|도)?$/u.test(action) ? "explanation" : null;
+      if (nominalHead) action = action.replace(/((?:는|기))설명(?:이|은|을|도)?$/u, "$1");
+      const verb = ACTION_VERBS.find(([, ending]) => ending.test(action));
+      if (verb) action = action.replace(verb[1], verb[0]);
+      else action = action.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
+      const links = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
+      action = action.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (_all, stem) => links[stem]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (_all, stem) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[stem]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (s) => s.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (stem) => stem.startsWith("들어") ? "듣고" : stem.startsWith("비교") ? "비교하고" : stem.startsWith("실행") ? "실행하고" : "시도하고").replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (s) => s.startsWith("만들어") ? "만들고" : s.startsWith("세워") ? "세우고" : s.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저");
+      return { action, nominalHead };
+    }
+    var ACTIONS = [
+      ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
+      ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
+      ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
+      ["explanation", "brief", /^(?:설명(?:은|을))?(?:요점|요지|핵심)만(?:짧게|간단히)?(?:설명해주기|알려주기|알기|듣기)$/u],
+      ["explanation", "brief", /^(?:간단하게|짧게|간결하게)(?:요지|요점|핵심)만알려주기$/u],
+      ["communication", "share-first", /^말(?:을)?먼저꺼내서(?:내|제)?(?:의견|생각)(?:을)?(?:이야기하기|말하기|전하기)$/u],
+      ["work-style", "single-task", /^(?:한가지|하나)(?:일|작업)?(?:를|을)?(?:마무리하고|끝내고)(?:다음|다른)(?:걸|것|일|작업)(?:을)?하기$/u],
+      ["decision", "experience", /^(?:직접)?(?:겪어본|경험한|해본)(?:경험|일|것)(?:을)?(?:참고하고|바탕으로)(?:판단하기|결정하기)$/u],
+      ["decision", "consult", /^(?:다른사람|사람|동료|팀원|주변사람)(?:들)?(?:과|와|이랑)(?:먼저)?상의하기$/u],
+      ["explanation", "detailed", /^(?:설명(?:을)?)?(?:자세히|상세히)(?:듣기|설명받기)$/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:가|이)?(?:먼저)?있으면(?:시작|이해|시도)하기편해서(?:그런|그|이런|이)(?:방식)?$/u],
+      ["support", "step", /^(?:차근차근)?단계별로도와주기$/u],
+      ["support", "choose", /^(?:도움이)?필요할때(?:만)?도움(?:을)?(?:골라|선택해서|선택해)받기$/u],
+      ["practice-mode", "listening", /^(?:연습(?:할때(?:는)?|은))?듣(?:는방식|기)$/u],
+      ["practice-mode", "reading", /^(?:연습(?:할때(?:는)?|은))?읽(?:는방식|기)$/u],
+      ["practice-mode", "mixed", /^(?:읽기도하고듣기도|듣기도하고읽기도)하는연습$/u],
+      ["practice-mode", "mixed", /^(?:듣기(?:와|랑)읽기|읽기(?:와|랑)듣기)(?:를)?번갈아하는연습$/u],
+      ["topic", "travel-food", /^여행지에서음식(?:을)?주문하기$/u],
+      ["communication", "listen-organize", /^(?:남들|다른사람들?|동료들?|팀원들?)(?:이|의)?(?:무슨)?(?:생각|의견)(?:인지|을)?듣고(?:내|제)?(?:생각|의견)(?:을)?정리하기$/u],
+      ["communication", "written", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:글|문자|메시지|메일|이메일)(?:로)(?:전달하기|남기기|말하기)|(?:메신저|메일|이메일|문자|메시지)(?:에|로)(?:생각|의견|글)(?:을)?(?:(?:적어서|써서)(?:주고받기|전달하기)|주고받기|전달하기))$/u],
+      ["communication", "spoken", /^입(?:으로)?(?:말하기|이야기하기|대화하기)$/u],
+      ["work-style", "single-task", /^(?:한|한가지)(?:일|작업)(?:을)?(?:끝낸|마무리한)(?:다음|뒤|후)(?:에)?(?:다른|다음)(?:일|작업)(?:을)?하기$/u],
+      ["work-style", "prioritize", /^중요한(?:일|것)부터(?:순서(?:를)?매겨|순위를정해)(?:처리하기|하기|마무리하기)$/u],
+      ["decision", "evidence", /^(?:자료|데이터|문서)(?:에나온|의)(?:근거|사실)(?:를|을)?(?:확인하고|살펴보고)(?:판단하기|결정하기)$/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람)(?:들)?(?:과|와|이랑)(?:상의하기|(?:상의해서|상의하고|의논해서|의논하고)(?:판단하기|결정하기))$/u],
+      ["decision", "experience", /^(?:(?:제가|내가)?직접)?(?:(?:겪었던|경험했던)(?:일|것)|경험한(?:걸|내용|것)|해본(?:일|걸|것))(?:을|를)?참고하기$/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|을들을때(?:는)?))?(?:먼저|우선)(?:전체(?:적인)?(?:윤곽|개요|흐름|구조)|큰그림)(?:을|를)?(?:잡기|파악하기|보기|알기|듣기)$/u],
+      ["explanation-detail", "reasons-detail", /^(?:핵심)?(?:이유|근거)(?:를|을|도|는|은)?(?:자세히|상세히|충분히)설명해주기$/u],
+      ["explanation-detail", "long-flow", /^설명(?:이|은)(?:끝없이|너무|지나치게)?길어지기$/u],
+      ["explanation", "brief", /^(?:(?:간단하게|짧게|간결하게)(?:요지|핵심)(?:만)?알려주는설명|설명(?:은|이)짧은|(?:설명(?:을|은))?짧게(?:설명)?해주기)$/u],
+      ["explanation", "detailed", /^(?:설명(?:은|이))?(?:내용(?:을)?(?:충분히)?풀어서)?(?:자세히|상세히)(?:풀어서)?(?:설명)?해주기$/u],
+      ["support", "independent", /^(?:(?:누가|다른사람이)도와주기전(?:에)?(?:제가|내가)?)?(?:혼자(?:서)?|스스로|(?:제|내)힘으로)(?:먼저)?(?:해보기|시도하기|해결하기)$/u],
+      ["support", "example", /^(?:실제)?(?:예시|예제|샘플)(?:하나)?(?:를|을)?(?:먼저)?(?:보고시작하기|보기)$/u],
+      ["support", "step", /^(?:하나씩|단계별로)(?:순서에맞춰|차례대로)?도움받기$/u],
+      ["support", "choose", /^도움(?:이)?필요해지면(?:그때)?(?:제가|내가)?선택해서받기$/u],
+      ["support", "together", /^(?:다른사람|누군가|누구)(?:이랑|과|와)(?:같이|함께)(?:시도하기|해보기|하기)$/u],
+      ["practice-mode", "listening", /^(?:소리(?:를)?들으면서연습하기|연습(?:은)?듣기로하기)$/u],
+      ["practice-mode", "reading", /^(?:(?:문장|글)(?:을)?(?:눈으로)?읽으며연습하기|읽기만하는연습|연습(?:은)?읽기로하기)$/u],
+      ["practice-mode", "mixed", /^듣기(?:랑|와)읽기(?:를)?(?:섞어서|함께)연습하기$/u],
+      ["topic", "music", /^(?:노래나음악|음악이나노래)(?:를|을)?듣기$/u],
+      ["topic", "cooking", /^(?:직접)?음식(?:을)?만들어먹기$/u],
+      ["topic", "travel-planning", /^여행(?:의)?(?:일정(?:과이동동선)?|동선)(?:을)?짜기$/u],
+      ["topic", "career-interview", /^면접(?:준비)?$/u],
+      ["topic", "content-video", /^(?:영상|동영상)(?:을)?만들기$/u],
+      ["topic", "ai-tools", /^(?:AI|인공지능)도구(?:를)?활용하기$/iu],
+      ["communication", "listen-organize", /^(?:(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|사람들|남|상대(?:방)?|동료(?:들)?|팀원(?:들)?)(?:의)?|다른)(?:생각|의견|이야기|말)(?:을|를)?(?:먼저|충분히)?(?:듣고|들어보고|들으며)(?:(?:내|제)?(?:생각|의견)(?:을)?)?정리하기$/u],
+      ["communication", "share-first", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:먼저|앞서)|먼저(?:내|제)?(?:생각|의견)(?:을)?)(?:말하기|내기|꺼내기|이야기하기)$/u],
+      ["communication", "written", /^(?:(?:메신저|메일|이메일|문자|메시지)(?:로)?(?:글(?:을)?|의견(?:을)?)?|글(?:로|을)?)(?:(?:정리해서|정리해)?(?:의견(?:을)?)?(?:전달하기|남기기|주고받기)|소통하기|정리하기|이야기하기|대화하기)$/u],
+      ["communication", "spoken", /^(?:말|대화)(?:로)?(?:소통하기|이야기하기|대화하기|(?:의견을)?주고받기|의견을전달하기)$/u],
+      ["work-style", "plan-first", /^(?:(?:일|업무|작업)(?:을)?(?:시작하기전|하기전)(?:에)?)?(?:미리|먼저)?(?:계획|일정|할일목록)(?:을|부터)?(?:미리|먼저)?(?:세우기|짜기|정하기)$/u],
+      ["work-style", "plan-first", /^(?:먼저|미리)?(?:계획|일정|할일목록)(?:을)?(?:세우고|짜고|정하고|만들고)(?:일(?:을)?)?시작하기$/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저|시작은)?(?:작게)?(?:시도(?:해보|하)|실행(?:해보|하)|해보|시작해보)(?:고|면서)(?:조금씩|나중에|필요에따라)?(?:수정하기|조정하기|바꿔가기|고쳐가기)$/u],
+      ["work-style", "single-task", /^(?:(?:일|업무|작업)(?:은|는))?(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|만|에|을|를)?(?:집중해서)?(?:집중하기|처리하기|마무리하기|끝내기|하기)$/u],
+      ["work-style", "prioritize", /^(?:(?:일|업무|작업)(?:은|는|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고)|중요한(?:일|것)부터|중요한순서대로(?:일(?:을)?)?)(?:차례로|순서대로)?(?:처리하기|하기|마무리하기)$/u],
+      ["work-style", "prioritize", /^우선순위(?:를)?(?:먼저)?정하기$/u],
+      ["work-style", "prioritize", /^우선순위대로(?:일(?:을)?)?(?:처리하기|하기|마무리하기)$/u],
+      ["decision", "evidence", /^(?:근거자료|자료와근거|데이터와근거|근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하기|살펴보기|찾아보기|(?:확인하고|살펴보고|찾아보고|바탕으로)(?:판단하기|결정하기))$/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한|선택할수있는)?(?:선택지|대안|방법|후보)(?:들)?(?:의장단점|장단점)?(?:을|를)?(?:서로|나란히)?(?:비교하기|비교해보기|(?:비교해서|비교하고)(?:정하기|결정하기|판단하기|고르기))$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험하고|체험하고|경험해보고|체험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하기|결정하기)$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하기|바탕으로(?:판단하기|결정하기))$/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:(?:과|와)(?:상의하고|의견을나누고)|(?:의)?(?:조언|의견)(?:을)?(?:듣고|참고하고)|(?:에게|한테)(?:의견을|생각을)?물어보고)(?:결정하기|판단하기)$/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조|윤곽)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보기|알기|듣기|파악하기|보여주기)$/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유|이유와근거|근거와이유)(?:는|은|를|을|도)?(?:자세히|상세히|충분히)(?:풀어서)?(?:알기|듣기|보기|살펴보기|알려주기)$/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|(?:너무|지나치게)?길게이어지는설명)$/u],
+      ["topic", "reading-books", /^(?:독서|책(?:을)?읽기)$/u],
+      ["topic", "music", /^(?:음악(?:감상|(?:을)?듣기)?|노래(?:를)?듣기)$/u],
+      ["topic", "exercise", /^(?:운동(?:하기)?|달리기|러닝|수영|등산|자전거타기|헬스)$/u],
+      ["topic", "cooking", /^(?:요리(?:하기)?|음식(?:을)?(?:직접)?만들기|베이킹)$/u],
+      ["topic", "photography", /^(?:(?:풍경|인물)?사진(?:촬영|(?:을)?찍기)?)$/u],
+      ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
+      ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
+    ];
+    function recognizeAction(body, condition) {
+      const parsed = actionAndStance(body);
+      if (!parsed) return null;
+      if (parsed.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(parsed.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: parsed.polarity, condition }] };
+      if (/배우기$/u.test(parsed.action)) {
+        const activity = parsed.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, "");
+        const inner = recognizeAction(activity + "좋아요", condition);
+        if (inner?.meanings.length === 1 && inner.meanings[0].field === "topic") return { meanings: inner.meanings.map((m) => ({ ...m, polarity: parsed.polarity })) };
+      }
+      const found = ACTIONS.find(([, , pattern]) => pattern.test(parsed.action));
+      if (found) return !(parsed.habitual && found[0] === "topic") ? { meanings: [{ field: found[0], value: found[1], polarity: parsed.polarity, condition }] } : null;
+      const known = phrase(parsed.action + "좋아", condition);
+      return known && !parsed.habitual ? { meanings: [{ ...known, polarity: parsed.polarity }] } : null;
+    }
+    function normalizePrefix(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
+      body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
+      let condition = null;
+      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id2;
+        body = body.replace(prefix, "");
+        break;
+      }
+      return { body, condition };
+    }
+    function comparative(body) {
+      const known = (arm) => {
+        const cleaned = arm.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
+        return !!natural(cleaned + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(cleaned);
+      };
+      const postposed = /^(.+?(?:게|것이|쪽이|방식이|방법이|편이))(.+?)(?:보다는|보다)(.+)$/u.exec(body);
+      if (postposed && known(postposed[2]) && natural(postposed[1] + postposed[3])?.meanings.length) return postposed[1] + postposed[3];
+      const prefix = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(body);
+      return prefix && known(prefix[1]) ? prefix[2] : body;
+    }
+    function natural(quote) {
+      let { body, condition } = normalizePrefix(quote);
+      const coordinated = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(body);
+      if (coordinated) {
+        const first = natural(coordinated[1] + coordinated[3]), second = natural(coordinated[2] + coordinated[3]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && !first.uncertain && !second.uncertain) {
+          const secondGeneral = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
+          return { meanings: [...first.meanings.map((m) => ({ ...m, condition: m.condition || condition })), ...second.meanings.map((m) => ({ ...m, condition: m.condition || (secondGeneral ? null : condition) }))] };
+        }
+      }
+      const topicList = /^(?:(?:제|내)?(?:취미|관심분야)(?:는|은))?(.+?)(?:이랑|랑|와|과)(.+?)(?:이고|고|을|를)(?:둘다|모두)(.+)$/u.exec(body);
+      if (topicList) {
+        const first = natural(topicList[1] + topicList[3]), second = natural(topicList[2] + topicList[3]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && [...first.meanings, ...second.meanings].every((m) => m.field === "topic")) return { meanings: [...first.meanings, ...second.meanings].map((m) => ({ ...m, condition })) };
+      }
+      const availability = /^(?:시간날때|시간이날때|여유시간에)(.+)$/u.exec(body);
+      if (availability) {
+        const activity = natural(availability[1]);
+        if (activity?.meanings.length === 1 && activity.meanings[0].field === "topic") return { meanings: activity.meanings.map((m) => ({ ...m, condition })) };
+      }
+      body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, "");
+      body = comparative(body).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+      const explanationSequence = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
+      if (explanationSequence) {
+        const first = natural(explanationSequence[1] + "보는게좋아요"), second = natural(explanationSequence[2]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && first.meanings[0].value === "overview-first" && second.meanings[0].value === "reasons-detail" && second.meanings[0].polarity === "prefer")
+          return { meanings: [...first.meanings, ...second.meanings].map((m) => ({ ...m, condition })) };
+      }
+      const longEffect = /^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u;
+      if (longEffect.test(body)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition }] };
+      const action = recognizeAction(body, condition);
+      if (action) return action;
+      for (const [field, value, pattern] of NATURAL_SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const rest = body.slice(match[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해");
+        const polarity = DENIAL.test(rest) || NEGATIVE.test(rest) ? "avoid" : field !== "topic" && ENDING.test(rest) || POSITIVE.test(rest) && !(field === "topic" && /^해줘/u.test(rest)) ? "prefer" : null;
+        if (polarity) return { meanings: [{ field, value, polarity, condition }] };
+      }
+      return null;
+    }
+    function tentative(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      const endings = [
+        [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
+        [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
+        [/(?:싫을수도있(?:어요|겠네요)|싫은것같(?:아요|습니다))$/u, "싫어요"],
+        [/(?:편일수도있(?:어요|겠네요)|편일지도몰라요)$/u, "편이에요"]
+      ];
+      const ending = endings.find(([pattern]) => pattern.test(body));
+      if (!ending) return null;
+      body = body.replace(ending[0], ending[1]).replace(/^(아마|어쩌면)/u, "").replace(/(?:아마|어쩌면)(?=(?:좀더|더)?(?:좋아요|편해요|싫어요)$)/u, "");
+      const parsed = natural(body) || expanded(body);
+      return parsed && !parsed.typo ? { ...parsed, uncertain: true } : null;
+    }
+    function restrictedMethod(quote) {
+      const { body, condition } = normalizePrefix(quote);
+      if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(body)) return null;
+      const parsed = natural(body.replace(/^(.+?)로만/u, "$1로"));
+      if (parsed?.meanings.length !== 1 || parsed.meanings[0].field !== "communication") return null;
+      const meanings = parsed.meanings.map((m) => ({ ...m, condition }));
+      return { meanings, uncertain: meanings[0].polarity === "avoid", restricted: true };
+    }
+    var EXCLUDED = Object.freeze({
+      other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
+      past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
+      hypothetical: "가정한 내용을 현재 선호로 사용하지 않아요.",
+      quotation: "인용된 말의 주체와 뜻을 분명하게 확인하지 못했어요.",
+      unsupported: "이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.",
+      sensitive: "이 내용은 성향 항목으로 추정하거나 분류하지 않아요.",
+      condition: "이 조건의 범위를 정확히 이해하지 못했어요.",
+      uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
+      limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
+    });
+    function excludedOrigin(body) {
+      if (/["“”‘’「」『』]/u.test(body) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(body)) return "quotation";
+      if (/^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이(?!랑)|가)/u.test(body)) return "other";
+      if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|했어요|했습니다)/u.test(body)) return "past";
+      if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return "sensitive";
+      if (/(?:만약|라면|다면|가정하|상상하)/u.test(body)) return "hypothetical";
+      return null;
+    }
+    function pieces(text4) {
+      const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고)(?=\s)|[.!?;\n,]+/gu;
+      let start = 0, match;
+      const push = (end) => {
+        while (start < end && /\s/u.test(text4[start])) start++;
+        while (end > start && /\s/u.test(text4[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+      };
+      while (match = separator.exec(text4)) {
+        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text4.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text4.slice(match.index + 1))) continue;
+        if (/^(?:좋고|좋아하고|편하고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고)/u.test(text4.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        push(match.index + (/^(?:지만|는데|좋고|좋아하고|편하고)$/u.test(match[0]) ? match[0].length : 0));
+        start = match.index + match[0].length;
+      }
+      push(text4.length);
+      return result;
+    }
+    var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
+    var FIELDS = {
+      support: "도움받는 방식",
+      explanation: "설명 길이",
+      "practice-mode": "연습 방식",
+      topic: "관심 분야",
+      communication: "소통 방식",
+      "work-style": "일을 진행하는 방식",
+      decision: "판단 방식",
+      "explanation-detail": "설명에서 원하는 구성"
+    };
+    function analyze(text4) {
+      Legacy.parseMemberStatement(text4);
+      const segments = [];
+      let inherited = null, previousCondition = false, continuingCondition = null;
+      for (const evidence of pieces(text4)) {
+        const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
+        const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
+        if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
+        const segment = { evidence }, reason = excludedOrigin(body) || inherited;
+        if (reason) {
+          inherited = reason;
+          continuingCondition = null;
+          segment.unresolved = { ...evidence, reason, reasonLabel: EXCLUDED[reason] };
+          if (["uncertain", "condition"].includes(reason)) segment.generic = true;
+          segments.push(segment);
+          continue;
+        }
+        let found = natural(evidence.quote) || expanded(evidence.quote) || tentative(evidence.quote) || restrictedMethod(evidence.quote);
+        if (!found && segments.at(-1)?.meanings?.length && /^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)) {
+          segment.meanings = [];
+          segments.push(segment);
+          continue;
+        }
+        if (!found) {
+          const old = Legacy.parseMemberStatement(evidence.quote);
+          if (old.meanings.length === 1 && !old.unresolved.length) found = { meanings: old.meanings };
+        }
+        if (found && continuingCondition && !generalReset) found = { ...found, meanings: found.meanings.map((m) => ({ ...m, condition: m.condition || continuingCondition })) };
+        continuingCondition = found?.meanings.at(-1)?.condition && /(?:좋고|좋아하고|편하고)$/u.test(body) ? found.meanings.at(-1).condition : null;
+        let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
+        if (unresolvedCondition) found = null;
+        previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
+        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
+        if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
+          unresolvedCondition = true;
+          inherited = "condition";
+        }
+        if (uncertain && /(?:지만|는데)$/u.test(body)) inherited = "uncertain";
+        if (asking) {
+          if (found) segment.candidate = { ...found, uncertain: true };
+          else segment.generic = true;
+          segment.unresolved = { ...evidence, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
+        } else if (found) {
+          if (found.uncertain || found.typo || uncertain) segment.candidate = { ...found, uncertain: found.uncertain || uncertain };
+          else segment.meanings = found.meanings;
+        } else segment.generic = true;
+        if (!segment.meanings && !segment.unresolved) {
+          const why = uncertain ? "uncertain" : unresolvedCondition ? "condition" : "unsupported";
+          segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
+        }
+        segments.push(segment);
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+          const last = segments.at(-1);
+          delete last.meanings;
+          delete last.candidate;
+          delete last.generic;
+          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
+          break;
+        }
+      }
+      return segments;
+    }
+    function stateFor(text4, segments, answers, key) {
+      const raw = [], unresolved = [], questions = [];
+      const question = (index, stage, label, options, apply) => {
+        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        if (answer !== void 0) {
+          apply(answer);
+          return;
+        }
+        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+      };
+      for (let index = 0; index < segments.length; index++) {
+        const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
+        if (s.meanings) {
+          add(s.meanings);
+          continue;
+        }
+        let handled = false;
+        if (s.candidate) {
+          question(
+            index,
+            "confirm",
+            `「${s.evidence.quote}」${s.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : s.candidate.restricted ? "에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
+            [{ id: "confirm", label: s.candidate.meanings.map(meaningLabel).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+            (answer) => {
+              handled = true;
+              if (answer === "confirm") add(s.candidate.meanings);
+            }
+          );
+        } else if (s.generic) {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+            handled = true;
+            if (!Object.hasOwn(VALUES, field)) return;
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+              if (!VALUES[field].includes(selected)) return;
+              question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
+                if (!["prefer", "avoid"].includes(polarity)) return;
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                  if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
+                });
+              });
+            });
+          });
+        }
+        if (!raw.some((m) => m.evidence.start === s.evidence.start)) unresolved.push({ ...s.unresolved, ...handled ? { reasonLabel: "답한 범위에서 확인 중이거나, 이번에는 반영하지 않기로 한 내용이에요." } : {} });
+      }
+      const meanings = [], seen = /* @__PURE__ */ new Set();
+      for (const m of raw) {
+        const identity = semanticKey(m);
+        if (seen.has(identity)) continue;
+        if (meanings.length === MEMBER_STATEMENT_LIMITS.meanings) {
+          unresolved.push({ ...m.evidence, reason: "limit", reasonLabel: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요." });
+          continue;
+        }
+        seen.add(identity);
+        meanings.push({ id: "p" + meanings.length, field: m.field, value: m.value, polarity: m.polarity, condition: m.condition, evidence: m.evidence });
+      }
+      const grouped = /* @__PURE__ */ new Set();
+      for (const m of meanings) {
+        if (grouped.has(m.id)) continue;
+        const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
+        if (group.length < 2) continue;
+        group.forEach((p) => grouped.add(p.id));
+        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
+        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        else for (const p of group) if (p.id !== answer) p.withheld = true;
+      }
+      return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
+    }
+    function choose(state, text4, segments, answers, key) {
+      const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
+        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
+      } });
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+    }
+    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+      if (parserVersion === Legacy.PARSER_VERSION) {
+        if (clarifications.length) fail6();
+        return Legacy.parseMemberStatement(text4);
+      }
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail6();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
+      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      for (const row of clarifications) {
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        const option = question.options.find((o) => o.id === row.optionId);
+        if (!option) fail6();
+        answers[row.questionId] = row.optionId;
+        clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
+        state = stateFor(text4, segments, answers, key);
+        question = choose(state, text4, segments, answers, key);
+      }
+      if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
+        const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
+        state.meanings = state.meanings.filter((m) => !conflicted.includes(m));
+        state.unresolved = [...state.unresolved, ...conflicted.map((m) => ({ ...m.evidence }))].slice(0, MEMBER_STATEMENT_LIMITS.unresolved).map((u) => ({ ...u, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." }));
+        question = null;
+      }
+      return { parserVersion: PARSER_VERSION, meanings: state.meanings, unresolved: state.unresolved, question, clarifications: copy2(clarifications), clarificationAnswers };
+    }
+    function meaningLabel(m) {
+      return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
+    }
+    function meaningsConflict(a, b) {
+      if (a.field !== b.field || a.condition !== b.condition) return false;
+      if (a.value === b.value) return a.polarity !== b.polarity;
+      return a.field !== "topic" && !MULTI_FIELDS.includes(a.field) && a.polarity === "prefer" && b.polarity === "prefer";
+    }
+    function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
+      const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
+      if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.validateMemberStatement(row, { now, enforceTime });
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
+      if (parsed.question) fail6();
+      const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        ids3.add(m.id);
+        const expected = parsed.meanings.find((p) => p.id === m.id);
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        return copy2(expected);
+      }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
+    }
+    module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
+  }
+});
+
+// experiences/synk-account/src/member-statement-contract.cjs
+var require_member_statement_contract = __commonJS({
+  "experiences/synk-account/src/member-statement-contract.cjs"(exports, module) {
+    "use strict";
+    var Legacy = require_member_statement_v1();
+    var Previous = require_member_statement_v2();
+    var Previous3 = require_member_statement_v3();
+    var Previous4 = require_member_statement_v4();
+    var Ask2 = require_ask();
+    var PARSER_VERSION = "member-statement-ko-5";
+    var MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
+    var VALUES = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_VALUES,
+      communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
+      "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
+      decision: Object.freeze(["evidence", "compare-options", "experience", "consult"]),
+      "explanation-detail": Object.freeze(["overview-first", "reasons-detail", "long-flow"]),
+      topic: Object.freeze([...Legacy.MEMBER_STATEMENT_VALUES.topic, "reading-books", "music", "exercise", "cooking", "photography", "games", "nature"])
+    });
+    var LABELS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_LABELS,
+      "listen-organize": "다른 사람의 생각을 듣고 정리하기",
+      "share-first": "내 의견을 먼저 말하기",
+      written: "글로 소통하기",
+      spoken: "말로 소통하기",
+      "plan-first": "계획을 먼저 세우기",
+      "try-adjust": "시도하며 조정하기",
+      "single-task": "한 번에 한 가지 처리하기",
+      prioritize: "우선순위를 정해 처리하기",
+      evidence: "자료와 근거를 확인해 판단하기",
+      "compare-options": "여러 선택지를 비교하기",
+      experience: "직접 경험한 내용을 참고하기",
+      consult: "다른 사람과 상의해 판단하기",
+      "overview-first": "전체 개요를 먼저 보기",
+      "reasons-detail": "핵심 근거를 자세히 알기",
+      "long-flow": "길게 이어지는 설명",
+      "reading-books": "독서",
+      music: "음악",
+      exercise: "운동",
+      cooking: "요리",
+      photography: "사진 촬영",
+      games: "게임",
+      nature: "자연·산책"
+    });
+    var MULTI_FIELDS = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]);
+    var CONDITIONS = Object.freeze({
+      ...Legacy.MEMBER_STATEMENT_CONDITIONS,
+      "after-example": "예시를 본 다음",
+      "first-try-after-example": "처음 시도하며 예시를 본 다음",
+      "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
+      "busy-after-example": "바쁠 때 예시를 본 다음",
+      meeting: "회의할 때",
+      teamwork: "함께 일할 때",
+      planning: "일을 계획할 때",
+      decision: "결정할 때"
+    });
+    var plain2 = (x) => x !== null && typeof x === "object" && !Array.isArray(x) && [Object.prototype, null].includes(Object.getPrototypeOf(x));
+    var data = (x, key) => {
+      const d = Object.getOwnPropertyDescriptor(x, key);
+      return d?.enumerable === true && Object.hasOwn(d, "value");
+    };
+    var exact5 = (x, fields2) => plain2(x) && Reflect.ownKeys(x).length === fields2.length && fields2.every((key) => data(x, key));
+    var list3 = (x, max) => Array.isArray(x) && x.length <= max && Reflect.ownKeys(x).length === x.length + 1 && Array.from({ length: x.length }, (_, i) => data(x, String(i))).every(Boolean);
+    var fail6 = () => {
+      throw new TypeError("Member statement: invalid confirmed statement");
+    };
+    var instant = (x) => typeof x === "string" && Number.isFinite(Date.parse(x)) && new Date(x).toISOString() === x ? Date.parse(x) : fail6();
+    var semanticKey = (m) => [m.field, m.value, m.polarity, m.condition || "general"].join(":");
+    var copy2 = (x) => JSON.parse(JSON.stringify(x));
+    var SHA_K = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+    function sourceKey(text4) {
+      const bytes = new TextEncoder().encode(text4), padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64);
+      padded.set(bytes);
+      padded[bytes.length] = 128;
+      new DataView(padded.buffer).setUint32(padded.length - 4, bytes.length * 8);
+      const h = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], w = new Uint32Array(64), ro = (x, n) => x >>> n | x << 32 - n;
+      for (let offset = 0; offset < padded.length; offset += 64) {
+        const view = new DataView(padded.buffer, offset, 64);
+        for (let i = 0; i < 16; i++) w[i] = view.getUint32(i * 4);
+        for (let i = 16; i < 64; i++) {
+          const x = w[i - 15], y = w[i - 2];
+          w[i] = w[i - 16] + (ro(x, 7) ^ ro(x, 18) ^ x >>> 3) + w[i - 7] + (ro(y, 17) ^ ro(y, 19) ^ y >>> 10) >>> 0;
+        }
+        let [a, b, c, d, e, f, g, hh] = h;
+        for (let i = 0; i < 64; i++) {
+          const t1 = hh + (ro(e, 6) ^ ro(e, 11) ^ ro(e, 25)) + (e & f ^ ~e & g) + SHA_K[i] + w[i] >>> 0, t2 = (ro(a, 2) ^ ro(a, 13) ^ ro(a, 22)) + (a & b ^ a & c ^ b & c) >>> 0;
+          hh = g;
+          g = f;
+          f = e;
+          e = d + t1 >>> 0;
+          d = c;
+          c = b;
+          b = a;
+          a = t1 + t2 >>> 0;
+        }
+        [a, b, c, d, e, f, g, hh].forEach((v, i) => {
+          h[i] = h[i] + v >>> 0;
+        });
+      }
+      return h.map((n) => n.toString(16).padStart(8, "0")).join("");
+    }
+    var POSITIVE = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u;
+    var NEGATIVE = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u;
+    var SUBJECTS = [
+      ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
+      ["support", "step", /^(?:단계별(?:로)?|차근차근|하나씩차례대로)(?:도움|안내|설명|알려주는|설명해주는)?(?:것|편|게|걸|건)?/u],
+      ["support", "choose", /^필요할때(?:만)?(?:도움(?:을)?(?:받는|선택하는|받고|선택하고)?)(?:것|편|게|걸|건)?/u],
+      ["explanation", "brief", /^(?:(?:설명(?:은|을)?)?(?:짧게|간단하게|간결하게|짧고핵심만)(?:설명해주는|설명하는|알려주는)?|(?:짧은|간단한|간결한)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "detailed", /^(?:(?:설명(?:은|을)?)?(?:자세히|상세히|길게)(?:설명해주는|설명하는|알려주는)?|(?:자세한|상세한|긴)설명)(?:것|편|게|걸|건)?/u],
+      ["explanation", "standard", /^보통길이(?:의)?설명/u],
+      ["practice-mode", "mixed", /^듣기와읽기(?:를)?함께(?:하는)?(?:것|편|게|걸|건)?/u],
+      ["practice-mode", "listening", /^(?:듣기(?:연습)?|듣는연습|듣고배우는것)/u],
+      ["practice-mode", "reading", /^(?:읽기(?:연습)?|읽는연습|읽고배우는것)/u],
+      ["topic", "travel-planning", /^(?:여행일정(?:짜기)?|여행동선|여행계획)/u],
+      ["topic", "travel-food", /^(?:여행지음식|현지음식|음식주문)/u],
+      ["topic", "travel-stay", /^(?:여행지숙소|여행숙소)/u],
+      ["topic", "career-interview", /^면접(?:준비)?/u],
+      ["topic", "career-planning", /^(?:진로탐색|진로계획)/u],
+      ["topic", "content-video", /^(?:영상제작|영상만들기|동영상제작|영상만드는것)/u],
+      ["topic", "content-design", /^(?:디자인제작|디자인)/u],
+      ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/iu],
+      ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
+    ];
+    function phrase(body, condition) {
+      for (const [field, value, pattern] of SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const predicate = body.slice(match[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, "");
+        const polarity = NEGATIVE.test(predicate) ? "avoid" : POSITIVE.test(predicate) ? "prefer" : null;
+        if (polarity) return { field, value, polarity, condition };
+      }
+      return null;
+    }
+    function expanded(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      if (/["“”‘’]/u.test(body) || /(?:라고|다고)(?:했|말|들)/u.test(body)) return null;
+      if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(body)) return null;
+      if (/(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(body)) return null;
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
+      let condition = null;
+      const prefixes = [["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u], ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u], ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은))/u]];
+      for (const [id2, re] of prefixes) if (re.test(body)) {
+        condition = id2;
+        body = body.replace(re, "");
+        break;
+      }
+      const sequence = /^(?:예시|예제|샘플)(?:를|을)?(?:먼저)?(?:(?:보고(?:감을잡은)?|살펴본|본)(?:뒤(?:에)?|다음(?:에)?|후(?:에)?)|보고나서)/u.exec(body);
+      if (sequence) {
+        const next = phrase(body.slice(sequence[0].length), condition ? condition + "-after-example" : "after-example");
+        if (next?.field === "support" && next.value === "independent" && next.polarity === "prefer") return { meanings: [{ field: "support", value: "example", polarity: "prefer", condition }, next] };
+        return null;
+      }
+      const uncertain = /(?:좋을수도있(?:어(?:요)?|다)|좋을것같(?:아(?:요)?|다)|좋(?:아)?하는것같(?:아(?:요)?|다)|편할수도있(?:어(?:요)?|다))$/u.exec(body);
+      if (uncertain) {
+        const candidate = phrase(body.slice(0, uncertain.index) + (uncertain[0].startsWith("편") ? "편해" : "좋아"), condition);
+        return candidate ? { meanings: [candidate], uncertain: true } : null;
+      }
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body) && !/^필요할때/u.test(body)) return null;
+      const result = phrase(body, condition);
+      if (result) return { meanings: [result] };
+      const corrected = body.replace(/혼쟈/gu, "혼자").replace(/예씨/gu, "예시");
+      if (corrected !== body) {
+        const candidate = phrase(corrected, condition);
+        if (candidate) return { meanings: [candidate], typo: true };
+      }
+      return null;
+    }
+    var ENDING = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u;
+    var DENIAL = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u;
+    var NATURAL_SUBJECTS = [
+      ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
+      ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
+      ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
+      ["communication", "written", /^(?:(?:말보다)?(?:글|문자|메시지|메일|이메일)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|정리(?:해서|해)(?:전하|전달하)(?:는|기)?|정리하(?:는|기)?|전달하(?:는|기)?|전하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?)?)/u],
+      ["communication", "spoken", /^(?:(?:글보다)?(?:말|대화)(?:로)?(?:소통하(?:는|기)?|의견을전하(?:는|기)?|직접이야기하(?:는|기)?|이야기하(?:는|기)?|대화하(?:는|기)?|설명하(?:는|기)?)?)/u],
+      ["work-style", "plan-first", /^(?:(?:일|작업)(?:을)?(?:시작하기전에|하기전에))?(?:먼저|미리)?(?:계획|일정|할일목록)(?:을|부터)?(?:먼저|미리)?(?:세우(?:는|기)?|짜(?:는|기)?|정하(?:는|기)?|만드(?:는|기)?)/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저)?(?:작게)?(?:시도해보(?:고|면서)|해보(?:고|면서)|시작해보(?:고|면서)|실행해보(?:고|면서)|실행하(?:고|면서))(?:조금씩|필요에따라|나중에)?(?:수정하(?:는|기)?|조정하(?:는|기)?|바꿔가(?:는|기)?|고쳐가(?:는|기)?)/u],
+      ["work-style", "single-task", /^(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|에)?(?:만)?(?:을|를)?(?:집중하(?:는|기)?|처리하(?:는|기)?|끝내(?:는|기)?|하(?:는|기)?)/u],
+      ["work-style", "prioritize", /^(?:일(?:은|을)|작업(?:은|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고|하는|하기)|중요한(?:일|것)(?:부터))(?:차례로|순서대로)?(?:처리하(?:는|기)?|하(?:는|기)?|진행하(?:는|기)?|해나가(?:는|기)?)?/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:고|며)|살펴보(?:고|며)|찾아보(?:고|며)|바탕으로)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "evidence", /^(?:(?:자료와|데이터와|사실과))?(?:근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하(?:는|기)?|살펴보(?:는|기)?|찾아보(?:는|기)?)/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한)?(?:선택지|대안|방법)(?:들)?(?:을|를)?(?:서로)?(?:비교하(?:고|며))?(?:(?:장단점)(?:을)?비교하(?:고|며))?(?:비교하(?:는|기)?|비교해보(?:는|기)?|결정하(?:는|기)?|고르(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하(?:는|기)?|바탕으로(?:판단하(?:는|기)?|결정하(?:는|기)?))/u],
+      ["decision", "experience", /^(?:직접|제가직접|내가직접)?(?:경험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하(?:는|기)?|결정하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:과|와|에)?(?:상의하(?:고|며)|의견을나누(?:고|며))(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:에게|한테)(?:의견을|생각을)?물어보(?:고|며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:의)?(?:조언|의견)(?:을)?듣(?:고|으며)(?:결정하(?:는|기)?|판단하(?:는|기)?)/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|는|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보는|보기|아는|알기|듣는|듣기|파악하는|파악하기|알고|보고|듣고)/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유)(?:는|은|를|을)?(?:자세히|상세히|충분히)(?:알고|듣고|보고|알아보는|살펴보는|설명받는|듣는|보는|아는)?/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|길게이어지는설명|장황하게이어지는설명)/u],
+      ["topic", "reading-books", /^(?:독서|책읽기|책(?:을)?읽는것|책읽는것)/u],
+      ["topic", "music", /^(?:음악(?:감상|듣기|듣는것|듣는)?|노래듣기)/u],
+      ["topic", "exercise", /^(?:운동|달리기|러닝|수영|등산|자전거타기|헬스)/u],
+      ["topic", "cooking", /^(?:요리(?:하기|하는것|하는)?|음식만들기|베이킹)/u],
+      ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
+      ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
+      ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
+    ];
+    var CONDITION_PREFIXES = [
+      ["first-try", /^(?:완전히|아주)?처음(?:해보는|시도하는|하는|배우는)(?:일|내용)(?:일때(?:에는|는)?|에대해서(?:는)?)/u],
+      ["after-example", /^(?:예시|예제|샘플)(?:를)?보고난(?:뒤|후|다음)(?:라면|에는|엔|에)/u],
+      ["busy", /^(?:일이몰려)?바쁠(?:때(?:에는|는)?|수록)/u],
+      ["busy", /^바빠서시간이부족할때(?:에는|는)?/u],
+      ["familiar", /^(?:이미)?잘아는(?:내용|일)(?:은|일때(?:는)?)/u],
+      ["teamwork", /^(?:팀으로)?(?:함께|같이)일하는(?:상황|경우)(?:에서는|에선|에는|엔)/u],
+      ["decision", /^결정을내려야할때(?:에는|는)?/u],
+      ["busy", /^(?:정신없이|아주|매우)?바쁜(?:상황|경우|때|날)(?:에서는|에는|엔|은|에)?/u],
+      ["familiar", /^(?:이미)?익숙(?:해진|한)(?:내용|일)(?:이라면|이면|일경우(?:에는|엔|는)?)/u],
+      ["meeting", /^회의(?:시간|자리)(?:에는|에서는|엔|에|에서)/u],
+      ["decision", /^(?:뭔가|무언가|어떤것을)?(?:고를|선택할|정할)(?:때|땐)(?:에는|는)?/u],
+      ["first-try", /^(?:새로운|낯선)(?:걸|것|일|내용)(?:을)?(?:처음)?(?:배울|할|시도할)때(?:에는|는)?/u],
+      ["familiar", /^(?:잘아는|익숙한)(?:내용|일)(?:일때|을할때)(?:에는|는)?/u],
+      ["first-try", /^(?:익숙하지않은(?:걸|것|내용|일)(?:을)?(?:처음)?할(?:때|땐)(?:에는|는)?|처음(?:배우거나|시도하거나)?(?:하는|해보는|배우는)(?:걸|것|일|내용)(?:을)?할(?:때|땐)(?:는)?|처음할땐)/u],
+      ["familiar", /^(?:이미)?익숙(?:해진|한)(?:내용|일)(?:은|을할땐|을할때(?:는)?)/u],
+      ["busy", /^(?:바쁘면|바쁠땐|시간이(?:없|부족하|촉박하)면|시간이촉박할때(?:는)?)/u],
+      ["teamwork", /^(?:여럿이)?(?:함께|같이)(?:일|작업)할(?:때|땐)(?:에는|는)?/u],
+      ["decision", /^(?:결정|판단|선택)(?:을)?해야할(?:때|땐)(?:는)?/u],
+      ["after-example", /^(?:예시|예제|샘플)(?:를|을)?(?:한번)?(?:본|살펴본)(?:뒤|다음|후)(?:에는|엔)/u],
+      ["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u],
+      ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u],
+      ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은)|시간이부족할때(?:는)?)/u],
+      ["meeting", /^(?:회의(?:에서(?:는)?|(?:할)?때(?:에는|는)?|중(?:에는|에)?))/u],
+      ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
+      ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
+      ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
+    ];
+    var STANCE_ENDINGS = [
+      ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
+      ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
+      ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
+      ["avoid", /(?:싫(?:어요|습니다|다|어)|부담스러(?:워요|워)|피하고싶(?:어요|습니다|다|어))$/u],
+      ["prefer", /(?:(?:제가|내가)?좋아하는취미(?:예요|입니다)|(?:제)?(?:관심분야|취향)(?:입니다|이에요|예요)|(?:좋아하|즐기)는편(?:이에요|입니다)|마음에들(?:어요|어|었습니다)|즐(?:겨요|깁니다|긴다|겨)|즐거(?:워요|워)|좋(?:더라고요|더라|겠어요|겠습니다))$/u],
+      ["prefer", /(?:(?:제게|저한테|내게|나한테)?(?:잘)?맞(?:아요|습니다|아)|(?:요즘|최근)?관심(?:이)?(?:많(?:아요|습니다)|생겼(?:어요|습니다)))$/u],
+      ["prefer", /(?:관심(?:이)?|흥미(?:가)?)있고(?:더|직접|한번)?배워보고싶(?:어요|습니다|어|다)$/u],
+      ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
+      ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
+      ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
+    ];
+    var ACTION_VERBS = [
+      ["적기", /적(?:는|기)$/u],
+      ["쓰기", /쓰(?:는|기)$/u],
+      ["해결하기", /해결하(?:는|기)$/u],
+      ["알려주기", /알려주(?:는|기|면)$/u],
+      ["따져보기", /따져보(?:는|기)$/u],
+      ["나누기", /나누(?:는|기)$/u],
+      ["수정하기", /다듬어가(?:는|기)$/u],
+      ["이어지기", /이어지(?:는|기)$/u],
+      ["수정하기", /수정해가(?:는|기)$/u],
+      ["배우기", /배우(?:는|기)$/u],
+      ["보여주기", /보여주(?:는|기)$/u],
+      ["도와주기", /도와주(?:는|기)$/u],
+      ["주문하기", /주문하(?:는|기)$/u],
+      ["상의하기", /상의(?:해보는|해보기|하는|하기)$/u],
+      ["시도하기", /시도해보(?:는|기)$/u],
+      ["전하기", /전하(?:는|기)$/u],
+      ["꺼내기", /꺼내(?:두|놓)는$/u],
+      ["고쳐가기", /고쳐나가는$/u],
+      ["연습하기", /연습(?:하는|하고|하기)$/u],
+      ["만들기", /(?:만들어보는|만들어보기|만드는|만들기)$/u],
+      ["설명해주기", /설명해(?:주는|주면|주기)$/u],
+      ["해주기", /해(?:주는|주면|주기)$/u],
+      ["도움받기", /도움받(?:는|기)$/u],
+      ["받기", /받(?:는|기|고)$/u],
+      ["시작하기", /시작하면$/u],
+      ["잡기", /잡(?:고|는|기)$/u],
+      ["고르기", /고르(?:는|기)$/u],
+      ["해보기", /해보(?:는|기)$/u],
+      ["시도하기", /시도(?:하는|하기)$/u],
+      ["길어지기", /길어지(?:는|기)$/u],
+      ["먹기", /먹(?:는|기)$/u],
+      ["짧은", /짧은$/u],
+      ["세우기", /(?:세워(?:두|놓)는|세워(?:두|놓)기|세우는|세우고|세우기)$/u],
+      ["짜기", /(?:짜(?:두|놓)는|짜(?:두|놓)기|짜는|짜고|짜기)$/u],
+      ["정하기", /(?:정해(?:두|놓)는|정해(?:두|놓)기|정하는|정하고|정하기)$/u],
+      ["정리하기", /(?:정리해(?:두|놓)는|정리해(?:두|놓)기|정리하는|정리하고|정리하기)$/u],
+      ["전달하기", /(?:전달하는|전달하고|전달하기)$/u],
+      ["남기기", /(?:남겨(?:두|놓)는|남기는|남기고|남기기)$/u],
+      ["이야기하기", /(?:이야기하는|얘기하는|이야기하고|얘기하고|얘기하기|이야기하기)$/u],
+      ["소통하기", /(?:소통하는|소통하고|소통하기)$/u],
+      ["대화하기", /(?:대화하는|대화하고|대화하기)$/u],
+      ["주고받기", /(?:주고받는|주고받고|주고받기)$/u],
+      ["말하기", /(?:말하는|말하고|말하기)$/u],
+      ["내기", /(?:내는|내고|내기)$/u],
+      ["꺼내기", /(?:꺼내는|꺼내고|꺼내기)$/u],
+      ["수정하기", /(?:수정하는|수정하고|수정하기)$/u],
+      ["조정하기", /(?:조정하는|조정하고|조정하기)$/u],
+      ["수정하기", /(?:고치는|고치고|고치기)$/u],
+      ["시작하기", /(?:시작하는|시작하고|시작하기)$/u],
+      ["바꿔가기", /(?:바꿔가는|바꿔가고|바꿔가기)$/u],
+      ["고쳐가기", /(?:고쳐가는|고쳐가고|고쳐가기)$/u],
+      ["집중하기", /(?:집중하는|집중하고|집중하기)$/u],
+      ["처리하기", /(?:처리하는|처리하고|처리하기)$/u],
+      ["마무리하기", /(?:마무리하는|마무리하고|마무리하기)$/u],
+      ["끝내기", /(?:끝내는|끝내고|끝내기)$/u],
+      ["판단하기", /(?:판단하는|판단하고|판단하기)$/u],
+      ["결정하기", /(?:결정하는|결정하고|결정하기)$/u],
+      ["확인하기", /(?:확인하는|확인하고|확인하기)$/u],
+      ["찾아보기", /(?:찾아보는|찾아보고|찾아보기)$/u],
+      ["비교하기", /(?:비교하는|비교하고|비교하기)$/u],
+      ["비교해보기", /(?:비교해보는|비교해보고|비교해보기)$/u],
+      ["참고하기", /(?:참고하는|참고하고|참고하기)$/u],
+      ["살펴보기", /(?:살펴보는|살펴보고|살펴보기)$/u],
+      ["파악하기", /(?:파악하는|파악하고|파악하기)$/u],
+      ["알기", /(?:아는|알고|알기)$/u],
+      ["읽기", /(?:읽는|읽고|읽기)$/u],
+      ["듣기", /(?:듣는|듣고|듣기)$/u],
+      ["보기", /(?:보는|보고|보기)$/u],
+      ["찍기", /(?:찍는|찍고|찍기)$/u],
+      ["하기", /(?:하는|하고|하기)$/u]
+    ];
+    var FINITE_ACTIONS = [
+      ["세우기", /(?:세워요|세웁니다|세운다)$/u],
+      ["짜기", /(?:짜요|짭니다|짠다)$/u],
+      ["정하기", /(?:정해요|정합니다|정한다)$/u],
+      ["정리하기", /(?:정리해요|정리합니다|정리한다)$/u],
+      ["전달하기", /(?:전달해요|전달합니다|전달한다)$/u],
+      ["남기기", /(?:남겨요|남깁니다|남긴다)$/u],
+      ["소통하기", /(?:소통해요|소통합니다|소통한다)$/u],
+      ["이야기하기", /(?:얘기해요|이야기해요|이야기합니다)$/u],
+      ["대화하기", /(?:대화해요|대화합니다|대화한다)$/u],
+      ["말하기", /(?:말해요|말합니다|말한다)$/u],
+      ["수정하기", /(?:수정해요|수정합니다|수정한다)$/u],
+      ["조정하기", /(?:조정해요|조정합니다|조정한다)$/u],
+      ["집중하기", /(?:집중해요|집중합니다|집중한다)$/u],
+      ["처리하기", /(?:처리해요|처리합니다|처리한다)$/u],
+      ["마무리하기", /(?:마무리해요|마무리합니다|마무리한다)$/u],
+      ["끝내기", /(?:끝내요|끝냅니다|끝낸다)$/u],
+      ["판단하기", /(?:판단해요|판단합니다|판단한다)$/u],
+      ["결정하기", /(?:결정해요|결정합니다|결정한다)$/u],
+      ["확인하기", /(?:확인해요|확인합니다|확인한다)$/u],
+      ["찾아보기", /(?:찾아봐요|찾아봅니다|찾아본다)$/u],
+      ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
+      ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
+    ];
+    function actionAndStance(body) {
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(body)) return null;
+      let stance = null, action = body;
+      for (const [polarity, ending] of STANCE_ENDINGS) {
+        const match = ending.exec(body);
+        if (match) {
+          stance = polarity;
+          action = body.slice(0, match.index);
+          break;
+        }
+      }
+      let habitual = false;
+      if (!stance) {
+        const verb = FINITE_ACTIONS.find(([, ending]) => ending.test(body));
+        if (!verb) return null;
+        action = body.replace(verb[1], verb[0]);
+        stance = "prefer";
+        habitual = true;
+      }
+      return { ...normalizeActionPhrase(action), polarity: stance, habitual };
+    }
+    function normalizeActionPhrase(source) {
+      let action = source;
+      action = action.replace(/(?:(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u, "").replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u, "");
+      const nominalHead = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(action) ? "explanation" : null;
+      if (nominalHead) action = action.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1");
+      const surfaceAction = action;
+      const verb = ACTION_VERBS.find(([, ending]) => ending.test(action));
+      if (verb) action = action.replace(verb[1], verb[0]);
+      else action = action.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
+      const links = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
+      action = action.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (_all, stem) => links[stem]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (_all, stem) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[stem]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (s) => s.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (stem) => stem.startsWith("들어") ? "듣고" : stem.startsWith("비교") ? "비교하고" : stem.startsWith("실행") ? "실행하고" : "시도하고").replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (s) => s.startsWith("만들어") ? "만들고" : s.startsWith("세워") ? "세우고" : s.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저");
+      return { action, nominalHead, surfaceAction };
+    }
+    var ACTIONS = [
+      ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
+      ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
+      ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
+      ["explanation", "brief", /^(?:설명(?:은|을))?(?:요점|요지|핵심)만(?:짧게|간단히)?(?:설명해주기|알려주기|알기|듣기)$/u],
+      ["explanation", "brief", /^(?:간단하게|짧게|간결하게)(?:요지|요점|핵심)만알려주기$/u],
+      ["communication", "share-first", /^말(?:을)?먼저꺼내서(?:내|제)?(?:의견|생각)(?:을)?(?:이야기하기|말하기|전하기)$/u],
+      ["work-style", "single-task", /^(?:한가지|하나)(?:일|작업)?(?:를|을)?(?:마무리하고|끝내고)(?:다음|다른)(?:걸|것|일|작업)(?:을)?하기$/u],
+      ["decision", "experience", /^(?:직접)?(?:겪어본|경험한|해본)(?:경험|일|것)(?:을)?(?:참고하고|바탕으로)(?:판단하기|결정하기)$/u],
+      ["decision", "consult", /^(?:다른사람|사람|동료|팀원|주변사람)(?:들)?(?:과|와|이랑)(?:먼저)?상의하기$/u],
+      ["explanation", "detailed", /^(?:설명(?:을)?)?(?:자세히|상세히)(?:듣기|설명받기)$/u],
+      ["support", "example", /^(?:예시|예제|샘플)(?:가|이)?(?:먼저)?있으면(?:시작|이해|시도)하기편해서(?:그런|그|이런|이)(?:방식)?$/u],
+      ["support", "step", /^(?:차근차근)?단계별로도와주기$/u],
+      ["support", "choose", /^(?:도움이)?필요할때(?:만)?도움(?:을)?(?:골라|선택해서|선택해)받기$/u],
+      ["practice-mode", "listening", /^(?:연습(?:할때(?:는)?|은))?듣(?:는방식|기)$/u],
+      ["practice-mode", "reading", /^(?:연습(?:할때(?:는)?|은))?읽(?:는방식|기)$/u],
+      ["practice-mode", "mixed", /^(?:읽기도하고듣기도|듣기도하고읽기도)하는연습$/u],
+      ["practice-mode", "mixed", /^(?:듣기(?:와|랑)읽기|읽기(?:와|랑)듣기)(?:를)?번갈아하는연습$/u],
+      ["topic", "travel-food", /^여행지에서음식(?:을)?주문하기$/u],
+      ["communication", "listen-organize", /^(?:남들|다른사람들?|동료들?|팀원들?)(?:이|의)?(?:무슨)?(?:생각|의견)(?:인지|을)?듣고(?:내|제)?(?:생각|의견)(?:을)?정리하기$/u],
+      ["communication", "written", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:글|문자|메시지|메일|이메일)(?:로)(?:전달하기|남기기|말하기)|(?:메신저|메일|이메일|문자|메시지)(?:에|로)(?:생각|의견|글)(?:을)?(?:(?:적어서|써서)(?:주고받기|전달하기)|주고받기|전달하기))$/u],
+      ["communication", "spoken", /^입(?:으로)?(?:말하기|이야기하기|대화하기)$/u],
+      ["work-style", "single-task", /^(?:한|한가지)(?:일|작업)(?:을)?(?:끝낸|마무리한)(?:다음|뒤|후)(?:에)?(?:다른|다음)(?:일|작업)(?:을)?하기$/u],
+      ["work-style", "prioritize", /^중요한(?:일|것)부터(?:순서(?:를)?매겨|순위를정해)(?:처리하기|하기|마무리하기)$/u],
+      ["decision", "evidence", /^(?:자료|데이터|문서)(?:에나온|의)(?:근거|사실)(?:를|을)?(?:확인하고|살펴보고)(?:판단하기|결정하기)$/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람)(?:들)?(?:과|와|이랑)(?:상의하기|(?:상의해서|상의하고|의논해서|의논하고)(?:판단하기|결정하기))$/u],
+      ["decision", "experience", /^(?:(?:제가|내가)?직접)?(?:(?:겪었던|경험했던)(?:일|것)|경험한(?:걸|내용|것)|해본(?:일|걸|것))(?:을|를)?참고하기$/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|을들을때(?:는)?))?(?:먼저|우선)(?:전체(?:적인)?(?:윤곽|개요|흐름|구조)|큰그림)(?:을|를)?(?:잡기|파악하기|보기|알기|듣기)$/u],
+      ["explanation-detail", "reasons-detail", /^(?:핵심)?(?:이유|근거)(?:를|을|도|는|은)?(?:자세히|상세히|충분히)설명해주기$/u],
+      ["explanation-detail", "long-flow", /^설명(?:이|은)(?:끝없이|너무|지나치게)?길어지기$/u],
+      ["explanation", "brief", /^(?:(?:간단하게|짧게|간결하게)(?:요지|핵심)(?:만)?알려주는설명|설명(?:은|이)짧은|(?:설명(?:을|은))?짧게(?:설명)?해주기)$/u],
+      ["explanation", "detailed", /^(?:설명(?:은|이))?(?:내용(?:을)?(?:충분히)?풀어서)?(?:자세히|상세히)(?:풀어서)?(?:설명)?해주기$/u],
+      ["support", "independent", /^(?:(?:누가|다른사람이)도와주기전(?:에)?(?:제가|내가)?)?(?:혼자(?:서)?|스스로|(?:제|내)힘으로)(?:먼저)?(?:해보기|시도하기|해결하기)$/u],
+      ["support", "example", /^(?:실제)?(?:예시|예제|샘플)(?:하나)?(?:를|을)?(?:먼저)?(?:보고시작하기|보기)$/u],
+      ["support", "step", /^(?:하나씩|단계별로)(?:순서에맞춰|차례대로)?도움받기$/u],
+      ["support", "choose", /^도움(?:이)?필요해지면(?:그때)?(?:제가|내가)?선택해서받기$/u],
+      ["support", "together", /^(?:다른사람|누군가|누구)(?:이랑|과|와)(?:같이|함께)(?:시도하기|해보기|하기)$/u],
+      ["practice-mode", "listening", /^(?:소리(?:를)?들으면서연습하기|연습(?:은)?듣기로하기)$/u],
+      ["practice-mode", "reading", /^(?:(?:문장|글)(?:을)?(?:눈으로)?읽으며연습하기|읽기만하는연습|연습(?:은)?읽기로하기)$/u],
+      ["practice-mode", "mixed", /^듣기(?:랑|와)읽기(?:를)?(?:섞어서|함께)연습하기$/u],
+      ["topic", "music", /^(?:노래나음악|음악이나노래)(?:를|을)?듣기$/u],
+      ["topic", "cooking", /^(?:직접)?음식(?:을)?만들어먹기$/u],
+      ["topic", "travel-planning", /^여행(?:의)?(?:일정(?:과이동동선)?|동선)(?:을)?짜기$/u],
+      ["topic", "career-interview", /^면접(?:준비)?$/u],
+      ["topic", "content-video", /^(?:영상|동영상)(?:을)?만들기$/u],
+      ["topic", "ai-tools", /^(?:AI|인공지능)도구(?:를)?활용하기$/iu],
+      ["communication", "listen-organize", /^(?:(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|사람들|남|상대(?:방)?|동료(?:들)?|팀원(?:들)?)(?:의)?|다른)(?:생각|의견|이야기|말)(?:을|를)?(?:먼저|충분히)?(?:듣고|들어보고|들으며)(?:(?:내|제)?(?:생각|의견)(?:을)?)?정리하기$/u],
+      ["communication", "share-first", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:먼저|앞서)|먼저(?:내|제)?(?:생각|의견)(?:을)?)(?:말하기|내기|꺼내기|이야기하기)$/u],
+      ["communication", "written", /^(?:(?:메신저|메일|이메일|문자|메시지)(?:로)?(?:글(?:을)?|의견(?:을)?)?|글(?:로|을)?)(?:(?:정리해서|정리해)?(?:의견(?:을)?)?(?:전달하기|남기기|주고받기)|소통하기|정리하기|이야기하기|대화하기)$/u],
+      ["communication", "spoken", /^(?:말|대화)(?:로)?(?:소통하기|이야기하기|대화하기|(?:의견을)?주고받기|의견을전달하기)$/u],
+      ["work-style", "plan-first", /^(?:(?:일|업무|작업)(?:을)?(?:시작하기전|하기전)(?:에)?)?(?:미리|먼저)?(?:계획|일정|할일목록)(?:을|부터)?(?:미리|먼저)?(?:세우기|짜기|정하기)$/u],
+      ["work-style", "plan-first", /^(?:먼저|미리)?(?:계획|일정|할일목록)(?:을)?(?:세우고|짜고|정하고|만들고)(?:일(?:을)?)?시작하기$/u],
+      ["work-style", "try-adjust", /^(?:일단|우선|먼저|시작은)?(?:작게)?(?:시도(?:해보|하)|실행(?:해보|하)|해보|시작해보)(?:고|면서)(?:조금씩|나중에|필요에따라)?(?:수정하기|조정하기|바꿔가기|고쳐가기)$/u],
+      ["work-style", "single-task", /^(?:(?:일|업무|작업)(?:은|는))?(?:한번에)?(?:한가지(?:일|작업)?|하나)(?:씩|만|에|을|를)?(?:집중해서)?(?:집중하기|처리하기|마무리하기|끝내기|하기)$/u],
+      ["work-style", "prioritize", /^(?:(?:일|업무|작업)(?:은|는|을))?(?:우선순위(?:를)?(?:먼저)?정(?:해서|해|하고)|중요한(?:일|것)부터|중요한순서대로(?:일(?:을)?)?)(?:차례로|순서대로)?(?:처리하기|하기|마무리하기)$/u],
+      ["work-style", "prioritize", /^우선순위(?:를)?(?:먼저)?정하기$/u],
+      ["work-style", "prioritize", /^우선순위대로(?:일(?:을)?)?(?:처리하기|하기|마무리하기)$/u],
+      ["decision", "evidence", /^(?:근거자료|자료와근거|데이터와근거|근거|자료|데이터|사실)(?:를|을)?(?:먼저)?(?:확인하기|살펴보기|찾아보기|(?:확인하고|살펴보고|찾아보고|바탕으로)(?:판단하기|결정하기))$/u],
+      ["decision", "compare-options", /^(?:여러|몇가지|가능한|선택할수있는)?(?:선택지|대안|방법|후보)(?:들)?(?:의장단점|장단점)?(?:을|를)?(?:서로|나란히)?(?:비교하기|비교해보기|(?:비교해서|비교하고)(?:정하기|결정하기|판단하기|고르기))$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험하고|체험하고|경험해보고|체험해보고|해보고|겪어보고|써보고|사용해보고)(?:판단하기|결정하기)$/u],
+      ["decision", "experience", /^(?:직접)?(?:경험한(?:내용|것)?|해본것|겪어본것)(?:을|를)?(?:참고하기|바탕으로(?:판단하기|결정하기))$/u],
+      ["decision", "consult", /^(?:다른사람|동료|팀원|주변사람|주변)(?:들)?(?:(?:과|와)(?:상의하고|의견을나누고)|(?:의)?(?:조언|의견)(?:을)?(?:듣고|참고하고)|(?:에게|한테)(?:의견을|생각을)?물어보고)(?:결정하기|판단하기)$/u],
+      ["explanation-detail", "overview-first", /^(?:설명(?:은|을들을때(?:는)?))?(?:짧은|간단한)?(?:전체(?:적인)?(?:개요|흐름|그림|구조|윤곽)|개요|요약|큰그림|핵심요약)(?:(?:을|를|은|는)?(?:짧게|간단히)?(?:먼저|우선)|부터)(?:보기|알기|듣기|파악하기|보여주기)$/u],
+      ["explanation-detail", "reasons-detail", /^(?:왜그런지)?(?:핵심(?:적인)?)?(?:근거|이유|이유와근거|근거와이유)(?:는|은|를|을|도)?(?:자세히|상세히|충분히)(?:풀어서)?(?:알기|듣기|보기|살펴보기|알려주기)$/u],
+      ["explanation-detail", "long-flow", /^(?:(?:너무|지나치게)?(?:긴|장황한)설명|(?:너무|지나치게)?길게이어지는설명)$/u],
+      ["topic", "reading-books", /^(?:독서|책(?:을)?읽기)$/u],
+      ["topic", "music", /^(?:음악(?:감상|(?:을)?듣기)?|노래(?:를)?듣기)$/u],
+      ["topic", "exercise", /^(?:운동(?:하기)?|달리기|러닝|수영|등산|자전거타기|헬스)$/u],
+      ["topic", "cooking", /^(?:요리(?:하기)?|음식(?:을)?(?:직접)?만들기|베이킹)$/u],
+      ["topic", "photography", /^(?:(?:풍경|인물)?사진(?:촬영|(?:을)?찍기)?)$/u],
+      ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
+      ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
+    ];
+    function recognizeAction(body, condition) {
+      const parsed = actionAndStance(body);
+      if (!parsed) return null;
+      if (parsed.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(parsed.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: parsed.polarity, condition }] };
+      if (/배우기$/u.test(parsed.action)) {
+        const activity = parsed.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, "");
+        const inner = recognizeAction(activity + "좋아요", condition);
+        if (inner?.meanings.length === 1 && inner.meanings[0].field === "topic") return { meanings: inner.meanings.map((m) => ({ ...m, polarity: parsed.polarity })) };
+      }
+      const found = ACTIONS.find(([, , pattern]) => pattern.test(parsed.action));
+      if (found) return !(parsed.habitual && found[0] === "topic") ? { meanings: [{ field: found[0], value: found[1], polarity: parsed.polarity, condition }] } : null;
+      const known = phrase(parsed.action + "좋아", condition);
+      return known && !parsed.habitual ? { meanings: [{ ...known, polarity: parsed.polarity }] } : null;
+    }
+    function normalizePrefix(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
+      body = body.replace(/좋(?:아하)?고요$/u, (s) => s.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/^(?:저라면|나라면)/u, "");
+      body = body.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
+      let condition = null;
+      for (const [id2, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) {
+        condition = id2;
+        body = body.replace(prefix, "");
+        break;
+      }
+      return { body, condition };
+    }
+    function comparative(body) {
+      const known = (arm) => {
+        const cleaned = arm.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
+        return !!natural(cleaned + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(cleaned);
+      };
+      const postposed = /^(.+?(?:게|것이|쪽이|방식이|방법이|편이))(.+?)(?:보다는|보다)(.+)$/u.exec(body);
+      if (postposed && known(postposed[2]) && natural(postposed[1] + postposed[3])?.meanings.length) return postposed[1] + postposed[3];
+      const prefix = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(body);
+      return prefix && known(prefix[1]) ? prefix[2] : body;
+    }
+    function natural(quote) {
+      let { body, condition } = normalizePrefix(quote);
+      const coordinated = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(body);
+      if (coordinated) {
+        const first = natural(coordinated[1] + coordinated[3]), second = natural(coordinated[2] + coordinated[3]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && !first.uncertain && !second.uncertain) {
+          const secondGeneral = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
+          return { meanings: [...first.meanings.map((m) => ({ ...m, condition: m.condition || condition })), ...second.meanings.map((m) => ({ ...m, condition: m.condition || (secondGeneral ? null : condition) }))] };
+        }
+      }
+      const topicList = /^(?:(?:제|내)?(?:취미|관심분야)(?:는|은))?(.+?)(?:이랑|랑|와|과)(.+?)(?:이고|고|을|를)(?:둘다|모두)(.+)$/u.exec(body);
+      if (topicList) {
+        const first = natural(topicList[1] + topicList[3]), second = natural(topicList[2] + topicList[3]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && [...first.meanings, ...second.meanings].every((m) => m.field === "topic")) return { meanings: [...first.meanings, ...second.meanings].map((m) => ({ ...m, condition })) };
+      }
+      const availability = /^(?:시간날때|시간이날때|여유시간에)(.+)$/u.exec(body);
+      if (availability) {
+        const activity = natural(availability[1]);
+        if (activity?.meanings.length === 1 && activity.meanings[0].field === "topic") return { meanings: activity.meanings.map((m) => ({ ...m, condition })) };
+      }
+      body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, "");
+      body = comparative(body).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+      const explanationSequence = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
+      if (explanationSequence) {
+        const first = natural(explanationSequence[1] + "보는게좋아요"), second = natural(explanationSequence[2]);
+        if (first?.meanings.length === 1 && second?.meanings.length === 1 && first.meanings[0].value === "overview-first" && second.meanings[0].value === "reasons-detail" && second.meanings[0].polarity === "prefer")
+          return { meanings: [...first.meanings, ...second.meanings].map((m) => ({ ...m, condition })) };
+      }
+      const longEffect = /^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u;
+      if (longEffect.test(body)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition }] };
+      const action = recognizeAction(body, condition);
+      if (action) return action;
+      for (const [field, value, pattern] of NATURAL_SUBJECTS) {
+        const match = pattern.exec(body);
+        if (!match) continue;
+        const rest = body.slice(match[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (s) => s.slice(0, -1) + "해");
+        const polarity = DENIAL.test(rest) || NEGATIVE.test(rest) ? "avoid" : field !== "topic" && ENDING.test(rest) || POSITIVE.test(rest) && !(field === "topic" && /^해줘/u.test(rest)) ? "prefer" : null;
+        if (polarity) return { meanings: [{ field, value, polarity, condition }] };
+      }
+      return null;
+    }
+    function tentative(quote) {
+      let body = quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
+      const endings = [
+        [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
+        [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
+        [/(?:싫을수도있(?:어요|겠네요)|싫은것같(?:아요|습니다))$/u, "싫어요"],
+        [/(?:편일수도있(?:어요|겠네요)|편일지도몰라요)$/u, "편이에요"]
+      ];
+      const ending = endings.find(([pattern]) => pattern.test(body));
+      if (!ending) return null;
+      body = body.replace(ending[0], ending[1]).replace(/^(아마|어쩌면)/u, "").replace(/(?:아마|어쩌면)(?=(?:좀더|더)?(?:좋아요|편해요|싫어요)$)/u, "");
+      const parsed = natural(body) || expanded(body);
+      return parsed && !parsed.typo ? { ...parsed, uncertain: true } : null;
+    }
+    function restrictedMethod(quote) {
+      const { body, condition } = normalizePrefix(quote);
+      if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(body)) return null;
+      const parsed = natural(body.replace(/^(.+?)로만/u, "$1로"));
+      if (parsed?.meanings.length !== 1 || parsed.meanings[0].field !== "communication") return null;
+      const meanings = parsed.meanings.map((m) => ({ ...m, condition }));
+      return { meanings, uncertain: meanings[0].polarity === "avoid", restricted: true };
+    }
+    var COMPOSE_LEXICON = [
+      ["self", /^(?:내자신|제자신|스스로|혼자서|혼자|독립적으로|내힘으로|제힘으로|자력으로)/u],
+      ["person", /^(?:다른사람들?|다른분들?|다른이들|여러사람들?|사람들|상대방|상대|동료들?|팀원들?|주변사람들?|주위사람들?|남들|누군가|누구|모두)/u],
+      ["mine", /^(?:나의|저의|제|내)/u],
+      ["text", /^(?:이메일|메신저|메시지|메세지|문자|채팅|텍스트|메일|글)/u],
+      ["speech", /^(?:목소리|말|대화|입)/u],
+      ["opinion", /^(?:의견|생각|이야기|얘기)/u],
+      ["plan", /^(?:할일목록|계획표|계획|일정표|일정)/u],
+      ["task", /^(?:업무|작업|할일|일)/u],
+      ["one", /^(?:한가지|한개|하나씩|하나)/u],
+      ["first", /^(?:먼저|우선|앞서|미리|사전에|처음부터)/u],
+      ["next", /^(?:다음|그다음|다른)/u],
+      ["priority", /^(?:우선순위|중요한순서|급한순서)/u],
+      ["important", /^(?:중요한|급한)/u],
+      ["small", /^(?:작게|조그맣게|작은것부터|작은규모로)/u],
+      ["later", /^(?:나중에|그뒤에|그다음에)/u],
+      ["first", /^(?:시작부터)/u],
+      ["multiple", /^(?:이것저것|동시에|한꺼번에|여러가지)/u],
+      ["intuition", /^감/u],
+      ["both", /^(?:두가지|둘다)/u],
+      ["identity", /^(?:뭔지|무엇인지)/u],
+      ["similarity", /^(?:같은)/u],
+      ["data", /^(?:근거자료|자료|데이터|근거|수치|사실|증거)/u],
+      ["options", /^(?:선택지|대안|후보|장단점|차이점|여러방법|방법)/u],
+      ["experience", /^(?:겪어본(?:일|것)|겪었던(?:일|것)|겪은(?:일|경험)|해본(?:일|것)|경험|체험)/u],
+      ["overview", /^(?:전체적인(?:개요|흐름|그림|구조|윤곽)|전체(?:개요|흐름|그림|구조|윤곽)|큰그림|개요|윤곽|핵심요약)/u],
+      ["reason", /^(?:핵심근거|핵심이유|이유|근거)/u],
+      ["explanation", /^(?:설명|안내)/u],
+      ["short", /^(?:한두문장(?:정도)?로|간결하게|간단하게|간단히|짧게|짧(?=거나)|핵심만|요점만|요지만|짧은|간결한|간단한)/u],
+      ["standard", /^(?:보통(?:수준|길이|정도)(?:인)?|적당한길이)/u],
+      ["content", /^(?:세부내용|내용|세부사항)/u],
+      ["detail", /^(?:깊이있게|자세하게|상세하게|자세히|상세히|자세한|상세한|구체적으로|꼼꼼하게)/u],
+      ["long", /^(?:길어지는|길어지기|길게|길기|장황하게|장황한|너무긴|긴)/u],
+      ["example", /^(?:완성된(?:예|예시|결과물)|예시|예제|샘플|보기)/u],
+      ["step", /^(?:한단계씩|단계별로|단계별|차근차근|차례차례|하나씩차례대로|하나씩순서대로)/u],
+      ["help", /^(?:도움|도와주기|도움받기)/u],
+      ["nohelp", /^(?:(?:다른)?도움없이|도움받지않고)/u],
+      ["needhelp", /^(?:도움이)?(?:필요해지는(?:순간|때)(?:에)?|필요한(?:순간|때)(?:에)?|필요할때)(?:만)?/u],
+      ["together", /^(?:함께|같이)/u],
+      ["practice", /^(?:연습|학습|공부)/u],
+      ["audio", /^(?:소리|귀)/u],
+      ["visual", /^(?:문장|눈)/u],
+      ["basis", /^(?:바탕으로|기반으로)/u],
+      ["collaboration", /^(?:협업(?:방식)?)/u],
+      ["design-example", /^(?:포스터|전단지|로고|배너)/u],
+      ["mismatch", /^(?:안맞는부분|맞지않는부분|부족한부분|문제점|어긋난부분)/u],
+      ["order", /^(?:그순서에맞춰|그순서대로|차례대로|순서대로)/u],
+      ["rank", /^(?:순서를매기고|순위를매기고|순서를매기는|순위를매기는|매겨두고|매겨놓고|매기는)/u],
+      ["front", /^(?:앞에놓고|앞에두고)/u],
+      ["book", /^(?:책읽기|독서|책)/u],
+      ["music", /^(?:음악감상|음악|노래)/u],
+      ["exercise", /^(?:자전거타기|운동|달리기|러닝|조깅|수영|헬스|등산)/u],
+      ["cooking", /^(?:음식만들기|요리|베이킹|음식)/u],
+      ["photo", /^(?:사진촬영|사진찍기|풍경사진|인물사진|사진)/u],
+      ["game", /^(?:보드게임|비디오게임|게임)/u],
+      ["nature", /^(?:자연풍경|자연|산책|공원산책)/u],
+      ["travel", /^(?:여행지|여행)/u],
+      ["route", /^(?:이동동선|동선|일정)/u],
+      ["stay", /^(?:숙소)/u],
+      ["interview", /^(?:면접준비|면접)/u],
+      ["career", /^(?:진로탐색|진로계획|진로)/u],
+      ["video", /^(?:영상제작|동영상|영상)/u],
+      ["design", /^(?:디자인제작|디자인)/u],
+      ["ai", /^(?:인공지능도구|AI도구)/iu],
+      ["learn", /^(?:배워보기|배워보는|배우기|배우는|배우고)/u],
+      ["listen", /^(?:들어보고|들어보는|들어보기|들으면서|들으며|들으면|듣고|듣는|듣기|들은)/u],
+      ["read", /^(?:읽어가며|읽어가는|읽으면서|읽으며|읽고|읽는|읽기)/u],
+      ["look", /^(?:살펴보고|살펴보는|살펴보기|보면서|보며|보고|보는|보기|본)/u],
+      ["know", /^(?:알아보기|알아보는|파악하기|파악하는|파악하게|알기|아는|알고)/u],
+      ["write", /^(?:적어놓기|적어두기|적어놓는|적어두는|써놓기|써두기|쓰는|쓰기|적는|적기|적어|남기는|남기기)/u],
+      ["speak", /^(?:꺼내놓고|꺼내놓기|꺼내기|꺼내는|의견내기|내기|내는)/u],
+      ["make", /^(?:정해(?:두|놓)(?:는|기|고)|만들어(?:두|놓)(?:는|기|고)|세워(?:두|놓)(?:는|기|고)|세우기|세우는|세우고|짜(?:두|놓)(?:는|기|고)|짜기|짜는|짜고|만들기|만드는|만들고|잡아(?:주|놔|두)(?:는|기|야)|잡기|잡는|잡고)/u],
+      ["try", /^(?:해볼수있는|부딪쳐보는|부딪쳐보기|부딪쳐보고|해보면서|해보는|해보기|해보고|시도해보는|시도해보기|실행해보는|실행해보기)/u],
+      ["finish", /^(?:끝내기|끝내는|끝내고|끝낸)/u],
+      ["adjust", /^(?:고쳐나가는|고쳐나가기|고쳐가기|고쳐가는|고치기|고치는|다듬어가기|다듬어가는|바꿔가기|바꿔가는)/u],
+      ["decide", /^(?:내리기|내리는|고르기|고르는|고르고|정하기|정하는|정하고|정하며)/u],
+      ["choose", /^(?:골라서|골라|택하고)/u],
+      ["check", /^(?:찾아보기|찾아보는|찾아보고|따져보기|따져보는|따져보고|따져)/u],
+      ["explain", /^(?:알려주기|알려주는|알려주면|전해주는|설명해주기|설명해주는|풀어주기|풀어주는|짚어주는)/u],
+      ["show", /^(?:보여주기|보여주는)/u],
+      ["exchange", /^(?:주고받아야|주고받기|주고받는|주고받고|나눠|나누는|나누고)/u],
+      ["flow", /^(?:이어가는|이어가기|이어서|이어지는|이어지기|흐름)/u],
+      ["cut", /^(?:끊는|끊기)/u],
+      ["omit", /^(?:생략하기|생략하는)/u],
+      ["or", /^(?:거나)/u],
+      ["capture", /^(?:찍기|찍는|찍고)/u],
+      ["receive", /^(?:받아가며|받기|받는|받고)/u],
+      ["do", /^(?:해주면|해주는|해주기|하기|하는|하고|하며)/u],
+      ["reference", /^(?:떠올리며|떠올리는)/u],
+      ["proceed", /^(?:넘어가는|넘어가기)/u],
+      ["mix", /^(?:섞어주면|섞어주는|섞는|섞기)/u],
+      ["sequence-step", /^(?:단계를건너뛰지않고)/u],
+      ["different-opinion", /^(?:다른얘기|다른이야기)/u],
+      ["enter", /^(?:들어가기|들어가는)/u],
+      ["occur", /^(?:나오기|나온|나오는)/u],
+      ["more-speech", /^말이많기/u],
+      ["before", /^(?:전에)/u],
+      ["conclusion", /^(?:결론)/u],
+      ["before-help", /^(?:남의도움(?:을)?바로받기전에)/u],
+      ["start", /^(?:벌이기|벌이)/u],
+      ["intent-start", /^(?:이해하고시작하려면)/u],
+      ["present-task", /^(?:지금하는것)/u],
+      ["inquiry", /^(?:어디에|어떻게|어떤)/u],
+      ["stay-verb", /^(?:묵을지|묵는)/u],
+      ["possibility", /^(?:할지|수있을지|수있는)/u],
+      ["available", /^(?:고를수있는)/u],
+      ["arrange", /^(?:놓고)/u],
+      ["enjoyment-reason", /^(?:생각만해도즐거워서)/u],
+      ["only", /^(?:만)/u],
+      ["means", /^(?:하는법|법)/u],
+      ["nominal", /^(?:것|거|방식|식|쪽|편)/u],
+      ["before-start", /^(?:착수하기전|시작하기전|벌이기전)/u],
+      ["explanation-purpose", /^(?:결론이어떻게나왔는지|왜그런지)/u],
+      ["selfcase", /^(?:제가|내가|저는|나는|난)/u],
+      ["and", /^(?:그리고|또한|또|및)/u],
+      ["particle", /^(?:에서는|으로는|로는|자체는|에게|한테|에서|으로|위주로|이랑|끼리|랑|와|과|의|을|를|은|는|이|가|로|에|도|들|씩)/u],
+      ["first", /^부터/u],
+      ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
+      ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
+    ];
+    var COMPOSE_VERBS = [
+      ["communicate", "소통"],
+      ["communicate", "대화"],
+      ["speak", "말"],
+      ["speak", "이야기"],
+      ["speak", "얘기"],
+      ["send", "전달"],
+      ["organize", "정리"],
+      ["organize", "정돈"],
+      ["organize", "취합"],
+      ["write", "기록"],
+      ["start", "시작"],
+      ["try", "시도"],
+      ["try", "실행"],
+      ["adjust", "조정"],
+      ["adjust", "수정"],
+      ["adjust", "보완"],
+      ["finish", "마무리"],
+      ["finish", "완료"],
+      ["process", "처리"],
+      ["process", "진행"],
+      ["process", "해결"],
+      ["focus", "집중"],
+      ["decide", "결정"],
+      ["decide", "판단"],
+      ["check", "확인"],
+      ["check", "검토"],
+      ["check", "점검"],
+      ["compare", "비교"],
+      ["reference", "참고"],
+      ["consult", "상의"],
+      ["consult", "의논"],
+      ["consult", "상담"],
+      ["experience-verb", "경험"],
+      ["experience-verb", "체험"],
+      ["explain", "설명"],
+      ["explain", "안내"],
+      ["choose", "선택"],
+      ["practice-verb", "연습"],
+      ["practice-verb", "학습"],
+      ["practice-verb", "공부"],
+      ["use", "활용"],
+      ["use", "사용"],
+      ["order", "주문"],
+      ["make", "제작"],
+      ["explore", "탐색"],
+      ["summary", "요약"]
+    ].map(([tag, stem]) => [tag, new RegExp("^" + stem + "(?:해(?:봐야|보(?:는|기|고)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]);
+    var COMPOSE_UNITS = [...COMPOSE_VERBS, ...COMPOSE_LEXICON];
+    function phraseUnits(action) {
+      const units = [];
+      let offset = 0;
+      while (offset < action.length && units.length < 120) {
+        let best = null;
+        for (const [tag, pattern] of COMPOSE_UNITS) {
+          const m = pattern.exec(action.slice(offset));
+          if (m && (!best || m[0].length > best.text.length)) best = { tag, text: m[0] };
+        }
+        if (!best) return null;
+        units.push(best.tag);
+        offset += best.text.length;
+      }
+      return offset === action.length ? units.filter((tag) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(tag)) : null;
+    }
+    function composeMeaning(tags, nominalHead) {
+      const words = tags.filter((tag) => !["nominal", "means"].includes(tag)).join(" "), match = (pattern) => pattern.test(words), out = (field, value) => ({ field, value });
+      if (match(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u)) return out("communication", "listen-organize");
+      if (match(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return out("communication", "share-first");
+      if (match(/^(?:text (?:opinion )?|opinion text )(?:communicate|write|send|organize|speak)(?: send|exchange)?$/u)) return out("communication", "written");
+      if (match(/^speech (?:opinion )?(?:communicate|speak|send)$/u)) return out("communication", "spoken");
+      if (match(/^(?:before-start )?(?:first )?plan (?:first )?make(?: start)?$/u)) return out("work-style", "plan-first");
+      if (match(/^(?:first )?(?:small )?(?:try|start)(?: later| mismatch)? adjust$/u)) return out("work-style", "try-adjust");
+      if (match(/^one (?:task )?(?:focus|process|finish)(?: next (?:task )?(?:do|process))?$/u)) return out("work-style", "single-task");
+      if (match(/^(?:task )?priority (?:first )?(?:make|decide|process)(?: process)?$|^important task first (?:process|finish|do)$|^important task identity rank(?: order)? process$/u)) return out("work-style", "prioritize");
+      if (match(/^data (?:(?:and )?data )?(?:first )?(?:check|look|reference)(?: decide)?$|^data basis decide$/u)) return out("decision", "evidence");
+      if (match(/^options (?:options )?(?:compare|check)(?: decide)?$/u)) return out("decision", "compare-options");
+      if (match(/^experience (?:reference|look)(?: decide)?$|^(?:experience-verb|try) decide$/u)) return out("decision", "experience");
+      if (match(/^(?:person )?(?:first )?(?:opinion exchange )?consult(?: decide)?$|^person opinion listen decide$/u)) return out("decision", "consult");
+      if (match(/^(?:explanation )?(?:content first )?overview first (?:look|show|know|listen|make)$/u)) return out("explanation-detail", "overview-first");
+      if (match(/^(?:explanation-purpose )?(?:reason|data)(?: (?:and )?(?:reason|data))? detail (?:know|listen|look|explain)$/u)) return out("explanation-detail", "reasons-detail");
+      if (match(/^long(?: flow)?(?: explain)? explanation$/u) || nominalHead === "explanation" && match(/^long(?: flow)?(?: explain)?$/u)) return out("explanation-detail", "long-flow");
+      if (match(/^(?:explanation )?short(?: short)? (?:explain|listen|know)$|^short explanation(?: listen)?$/u)) return out("explanation", "brief");
+      if (match(/^(?:explanation )?detail (?:explain|listen|know)$|^detail explanation(?: listen)?$/u)) return out("explanation", "detailed");
+      if (match(/^explanation standard$|^standard explanation$/u)) return out("explanation", "standard");
+      if (match(/^(?:self|nohelp) (?:first )?(?:try|do|process)$/u)) return out("support", "independent");
+      if (match(/^(?:person )?together (?:try|do|process)$/u)) return out("support", "together");
+      if (match(/^example (?:first |one )?(?:look|show)(?: start)?$/u)) return out("support", "example");
+      if (match(/^step (?:help )?(?:explain|receive|do)$/u)) return out("support", "step");
+      if (match(/^(?:help )?needhelp (?:help )?(?:choose|decide) (?:help )?receive$/u)) return out("support", "choose");
+      if (match(/^(?:practice )?(?:audio )?listen (?:and )?(?:text |visual )?read (?:both together )?(?:practice|practice-verb|learn)$|^(?:practice )?(?:text |visual )?read (?:and )?(?:audio )?listen (?:both together )?(?:practice|practice-verb|learn)$/u)) return out("practice-mode", "mixed");
+      if (match(/^(?:audio )?listen (?:practice|practice-verb|learn)$|^practice (?:audio )?listen$/u)) return out("practice-mode", "listening");
+      if (match(/^(?:text |visual )?read (?:practice|practice-verb|learn)$|^practice (?:text |visual )?read$/u)) return out("practice-mode", "reading");
+      const topicRules = [
+        ["reading-books", /^book(?: read)?(?: learn)?$/u],
+        ["music", /^music(?: listen)?(?: learn)?$/u],
+        ["exercise", /^exercise(?: do)?(?: learn)?$/u],
+        ["cooking", /^cooking(?: make|do)?(?: learn)?$/u],
+        ["photography", /^photo(?: capture)?(?: learn)?$/u],
+        ["games", /^game(?: do)?$/u],
+        ["nature", /^nature(?: nature)?(?: look|do)?$/u],
+        ["travel-planning", /^travel (?:route|plan) (?:make|do)$/u],
+        ["travel-food", /^travel cooking (?:order|do)$/u],
+        ["travel-stay", /^travel stay$/u],
+        ["career-interview", /^interview(?: do)?$/u],
+        ["career-planning", /^career(?: do)?$/u],
+        ["content-video", /^video(?: make|do)?$/u],
+        ["content-design", /^(?:design-example similarity )?design(?: make|do)?$/u],
+        ["ai-tools", /^ai(?: use)?$/u],
+        ["work-collaboration", /^(?:person together task do )?collaboration$/u]
+      ];
+      const topic = topicRules.find(([, pattern]) => pattern.test(words));
+      return topic ? out("topic", topic[0]) : composeRoles(tags, nominalHead);
+    }
+    function composeRoles(units, nominalHead) {
+      const tags = units.filter((t) => !["nominal", "means"].includes(t));
+      if (nominalHead === "explanation" && !tags.includes("explanation")) tags.push("explanation");
+      const has2 = (t) => tags.includes(t), any = (...t) => t.some(has2), all = (...t) => t.every(has2), before = (a, b) => tags.indexOf(a) < tags.indexOf(b);
+      const beforeStart = (...actions) => !has2("start") || actions.some((action) => has2(action) && before(action, "start"));
+      const beforeOverview = has2("overview") ? tags.slice(0, tags.indexOf("overview")) : [];
+      const overviewLeads = beforeOverview.every((t) => ["explanation", "detail", "content", "first", "enter", "before"].includes(t)) && (!beforeOverview.includes("enter") || beforeOverview.indexOf("enter") < beforeOverview.indexOf("before"));
+      const explained = has2("explain") || all("explanation", "receive");
+      const matches = [], frame = (field, value, licensed, required) => {
+        const allowed = new Set(licensed.split(" "));
+        if (required && tags.every((t) => allowed.has(t))) matches.push({ field, value });
+      };
+      frame("communication", "written", "text opinion communicate write send organize speak exchange", has2("text") && any("communicate", "write", "send", "organize", "speak", "exchange"));
+      frame("communication", "spoken", "speech opinion communicate speak send exchange", has2("speech") && any("communicate", "speak", "send", "exchange"));
+      frame("communication", "listen-organize", "person opinion speech first listen organize", any("opinion", "speech") && all("listen", "organize") && before("listen", "organize"));
+      frame("communication", "share-first", "opinion speech first speak send start different-opinion occur before", has2("opinion") && any("speak", "send") && (has2("first") || all("different-opinion", "before")));
+      frame("work-style", "plan-first", "task plan first make decide start before-start", has2("plan") && any("make", "decide") && beforeStart("make", "decide"));
+      frame("work-style", "try-adjust", "small first try start mismatch later adjust", all("try", "adjust") && before("try", "adjust"));
+      frame("work-style", "single-task", "task one focus process finish do next proceed present-task", has2("one") && any("focus", "process", "finish", "do"));
+      frame("work-style", "prioritize", "task priority important first rank order front make decide process finish do identity", any("process", "finish", "do") && (has2("priority") && any("rank", "make", "decide") || has2("important") && any("rank", "order", "front", "first")));
+      frame("decision", "evidence", "data first check look reference basis decide conclusion", has2("data") && any("check", "look", "reference", "basis"));
+      frame("decision", "compare-options", "options available arrange compare check decide conclusion", has2("options") && any("compare", "check"));
+      frame("decision", "experience", "experience reference basis decide conclusion", has2("experience") && any("reference", "basis"));
+      frame("decision", "consult", "person opinion exchange first consult decide conclusion", has2("consult"));
+      frame("explanation-detail", "overview-first", "explanation overview first detail content enter before look show know listen make explain receive do", has2("overview") && overviewLeads && (any("look", "show", "know", "listen", "make") || explained) && (has2("first") || all("content", "before")));
+      frame("explanation-detail", "reasons-detail", "explanation-purpose explanation conclusion occur reason data detail know listen look explain receive", any("reason", "data") && has2("detail") && (any("know", "listen", "look") || explained));
+      frame("explanation-detail", "long-flow", "explanation long flow explain", all("explanation", "long"));
+      frame("explanation", "brief", "explanation short explain listen know finish receive", has2("short") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "detailed", "explanation detail content explain listen know receive", has2("detail") && (has2("explanation") || any("explain", "listen", "know")));
+      frame("explanation", "standard", "explanation standard", all("explanation", "standard"));
+      frame("support", "independent", "self nohelp first try do process before-help", any("self", "nohelp") && any("try", "do", "process"));
+      frame("support", "together", "person together first try do process", has2("together") && any("try", "do", "process"));
+      frame("support", "example", "example first one look show start intent-start", has2("example") && any("look", "show") && beforeStart("look", "show"));
+      frame("support", "step", "step sequence-step help explain receive do", any("step", "sequence-step") && any("explain", "receive", "do"));
+      frame("support", "choose", "needhelp help choose decide receive", has2("needhelp") && any("choose", "decide") && (has2("help") || has2("receive")));
+      const practice = any("practice", "practice-verb", "mix"), listen = has2("listen"), read = has2("read");
+      frame("practice-mode", listen && read ? "mixed" : listen ? "listening" : "reading", "practice practice-verb audio visual text listen read both together mix do", practice && (listen || read));
+      const topicFrames = [
+        ["reading-books", "book read learn", "book"],
+        ["music", "music listen learn", "music"],
+        ["exercise", "exercise do learn", "exercise"],
+        ["cooking", "cooking make do learn", "cooking"],
+        ["photography", "photo capture enjoyment-reason", "photo"],
+        ["games", "game do", "game"],
+        ["nature", "nature look do", "nature"],
+        ["travel-planning", "travel route plan make do", "travel"],
+        ["travel-food", "travel cooking decide order do learn", "travel"],
+        ["travel-stay", "travel stay inquiry stay-verb know look", "stay"],
+        ["career-interview", "interview do practice-verb", "interview"],
+        ["career-planning", "career inquiry task possibility explore plan do know", "career"],
+        ["content-video", "video make do", "video"],
+        ["content-design", "design design-example similarity make do", "design"],
+        ["ai-tools", "ai inquiry use possibility know learn", "ai"]
+      ];
+      for (const [value, licensed, anchor] of topicFrames) {
+        const enough = value === "travel-planning" ? has2("travel") && any("route", "plan") : value === "travel-food" ? all("travel", "cooking") : value === "travel-stay" ? all("travel", "stay") : has2(anchor);
+        frame("topic", value, licensed, enough);
+      }
+      return matches.length === 1 ? matches[0] : null;
+    }
+    var COMPOSE_STANCES = [
+      ["avoid", /(?:좋아하는편이|맞지는?|맞지)않(?:아요|습니다|아|는다)$/u],
+      ["avoid", /좋아하는편이아니(?:에요|야|다)$/u],
+      ["avoid", /(?:제|내)(?:취향|스타일)(?:이)?아니(?:에요|예요|야|다)$/u],
+      ["avoid", /(?:피하|즐기지않)는편(?:이에요|입니다|이다)$/u],
+      ["prefer", /(?:편하|좋|수월하)(?:더라고요|더라고|더라)$/u],
+      ["prefer", /(?:한결)?수월(?:해요|합니다|해|하다)$/u],
+      ["prefer", /마음(?:이)?놓(?:여요|입니다|여|인다)$/u],
+      ["prefer", /(?:딱)?(?:제|내)(?:취향|스타일)(?:이에요|입니다|이야|이다)$/u],
+      ["prefer", /(?:낫겠(?:어요|습니다|어)|낫(?:습니다|더라고요|더라)|고를래(?:요)?|(?:것을|걸|쪽을|방식을|편을|방법을)(?:고르고|택하고|선택하고)싶(?:어요|습니다|어|다))$/u],
+      ["prefer", /(?:제가|내가)?좋아하는(?:분야|취미)(?:예요|이에요|입니다)$/u],
+      ["prefer", /(?:관심(?:이)?가(?:요)?|관심(?:을)?두고있(?:어요|습니다|다))$/u]
+    ];
+    function composeStance(body) {
+      if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body)) return null;
+      for (const [polarity, pattern] of COMPOSE_STANCES) {
+        const m = pattern.exec(body);
+        if (m) return { ...normalizeActionPhrase(body.slice(0, m.index)), polarity, habitual: false };
+      }
+      return actionAndStance(body);
+    }
+    var COMPOSE_FRAMES = [
+      [/^(?:도와줄거면|도움을받을때(?:는)?|도움을받을땐|시도할때(?:는)?)/u, ["support"], ""],
+      [/^(?:연습할때|연습은|연습을)/u, ["practice-mode"], "연습"],
+      [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
+      [/^판단(?:은|을)/u, ["decision"], ""],
+      [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
+    ];
+    function compositional(quote) {
+      let { body, condition } = normalizePrefix(quote);
+      body = body.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통)/u, "");
+      let fields2 = null, head = "";
+      const nominal = /^(?:(?:제|내)취향(?:은|이)|(?:(?:내가|제가))?원하는(설명길이|연습방식|도움방식|소통방식)(?:는|은))(.+?)(?:이에요|예요|입니다)$/u.exec(body);
+      if (nominal) {
+        body = nominal[2] + "좋아요";
+        if (nominal[1] === "설명길이") {
+          head = "설명";
+          fields2 = ["explanation"];
+        }
+      }
+      for (const [pattern, allowed, heading] of COMPOSE_FRAMES) {
+        const m = pattern.exec(body);
+        if (m) {
+          fields2 = allowed;
+          head = heading;
+          body = body.slice(m[0].length);
+          break;
+        }
+      }
+      const interest = /^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(body);
+      let normalized = interest ? { ...normalizeActionPhrase(interest[1]), polarity: "prefer", habitual: false } : composeStance(body);
+      if (!normalized) return null;
+      const stripSelf = (s) => s.replace(/(?:(?:저|나)(?:는|에게|한테)|제게|제겐|저에겐|내게|내겐)(?:한결|더|잘|딱|그다지)?$/u, "").replace(/(?:자꾸|더|한결|딱|취미로)$/u, "");
+      let action = stripSelf(normalized.surfaceAction || normalized.action);
+      action = normalizeActionPhrase(action).surfaceAction;
+      action = action.replace(/(?:하는|받는)편$/u, (s) => s.slice(0, -1));
+      action = normalizeActionPhrase(action).surfaceAction;
+      const recognizedAlternative = (s) => !!phraseUnits(s.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기"));
+      const comparison = /(?:보다는|보단|보다|대신|느니|아닌)/u.exec(action);
+      let actions = [action];
+      if (comparison) {
+        const left = action.slice(0, comparison.index), right = action.slice(comparison.index + comparison[0].length);
+        const post = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(left);
+        actions = [];
+        if (recognizedAlternative(left)) actions.push(right);
+        if (post && recognizedAlternative(post[2])) actions.push(post[1] + right);
+        if (!actions.length) return null;
+      }
+      const variants = [...actions.map((a) => head + a.replace(/^한꺼번에말고/u, "")), head + normalized.action];
+      const recognized = [];
+      for (const variant of new Set(variants)) {
+        const units = phraseUnits(variant);
+        if (!units) continue;
+        const m = composeMeaning(units, normalized.nominalHead);
+        if (m) recognized.push(m);
+      }
+      if (!recognized.length || new Set(recognized.map((m) => m.field + ":" + m.value)).size !== 1) return null;
+      const meaning = recognized[0];
+      if (fields2 && !fields2.includes(meaning.field) || meaning.field === "topic" && normalized.habitual) return null;
+      return { meanings: [{ ...meaning, polarity: normalized.polarity, condition }] };
+    }
+    var EXCLUDED = Object.freeze({
+      other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
+      past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
+      hypothetical: "가정한 내용을 현재 선호로 사용하지 않아요.",
+      quotation: "인용된 말의 주체와 뜻을 분명하게 확인하지 못했어요.",
+      unsupported: "이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.",
+      sensitive: "이 내용은 성향 항목으로 추정하거나 분류하지 않아요.",
+      condition: "이 조건의 범위를 정확히 이해하지 못했어요.",
+      uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
+      limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
+    });
+    function excludedOrigin(body) {
+      if (/["“”‘’「」『』]/u.test(body) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(body)) return "quotation";
+      if (/^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이(?!랑)|가)/u.test(body)) return "other";
+      if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return "past";
+      if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return "sensitive";
+      const scoped = normalizePrefix(body);
+      if (/(?:만약|라면|다면|가정하|상상하)/u.test(scoped.condition ? scoped.body : body.replace(/^(?:저라면|나라면)/u, ""))) return "hypothetical";
+      return null;
+    }
+    function pieces(text4) {
+      const result = [], separator = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고)(?=\s)|[.!?;\n,]+/gu;
+      let start = 0, match;
+      const push = (end) => {
+        while (start < end && /\s/u.test(text4[start])) start++;
+        while (end > start && /\s/u.test(text4[end - 1])) end--;
+        if (end > start) result.push({ start, end, quote: text4.slice(start, end) });
+      };
+      while (match = separator.exec(text4)) {
+        if (match[0] === "," && /(?:것|거)도\s*$/u.test(text4.slice(start, match.index)) && /^\s*.+?(?:것|거)도/u.test(text4.slice(match.index + 1))) continue;
+        if (/^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(text4.slice(match.index + match[0].length))) continue;
+        if (match[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(text4.slice(start, match.index).replace(/\s/gu, ""))) continue;
+        push(match.index + (/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고)$/u.test(match[0]) ? match[0].length : 0));
+        start = match.index + match[0].length;
+      }
+      push(text4.length);
+      return result;
+    }
+    var OPTIONS_END = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }];
+    var FIELDS = {
+      support: "도움받는 방식",
+      explanation: "설명 길이",
+      "practice-mode": "연습 방식",
+      topic: "관심 분야",
+      communication: "소통 방식",
+      "work-style": "일을 진행하는 방식",
+      decision: "판단 방식",
+      "explanation-detail": "설명에서 원하는 구성"
+    };
+    function analyze(text4) {
+      Legacy.parseMemberStatement(text4);
+      const segments = [];
+      let inherited = null, previousCondition = false, continuingCondition = null;
+      for (const evidence of pieces(text4)) {
+        const body = evidence.quote.replace(/\s/gu, ""), self = /^(?:나는|난|저는|제가|내가)/u.test(body), current = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
+        const generalReset = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(body);
+        if (inherited === "other" && self || inherited === "past" && current || inherited === "condition" && generalReset || inherited === "uncertain" && current || ["quotation", "hypothetical", "sensitive"].includes(inherited) && self && current) inherited = null;
+        const segment = { evidence }, reason = excludedOrigin(body) || inherited;
+        if (reason) {
+          inherited = reason;
+          continuingCondition = null;
+          segment.unresolved = { ...evidence, reason, reasonLabel: EXCLUDED[reason] };
+          if (["uncertain", "condition"].includes(reason)) segment.generic = true;
+          segments.push(segment);
+          continue;
+        }
+        let found = natural(evidence.quote) || expanded(evidence.quote) || compositional(evidence.quote) || tentative(evidence.quote) || restrictedMethod(evidence.quote);
+        if (!found && segments.at(-1)?.meanings?.length && /^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)) {
+          segment.meanings = [];
+          segments.push(segment);
+          continue;
+        }
+        if (!found) {
+          const old = Legacy.parseMemberStatement(evidence.quote);
+          if (old.meanings.length === 1 && !old.unresolved.length) found = { meanings: old.meanings };
+        }
+        if (found && continuingCondition && !generalReset) found = { ...found, meanings: found.meanings.map((m) => ({ ...m, condition: m.condition || continuingCondition })) };
+        continuingCondition = found?.meanings.at(-1)?.condition && /(?:좋고|좋아하고|편하고|즐겁고)$/u.test(body) ? found.meanings.at(-1).condition : null;
+        let unresolvedCondition = previousCondition && found?.meanings.some((m) => !m.condition) && !generalReset;
+        if (unresolvedCondition) found = null;
+        previousCondition = !!found?.meanings.some((m) => m.condition) && /(?:지만|는데)$/u.test(body);
+        const asking = /^[\s.!?]*/u.exec(text4.slice(evidence.end))[0].includes("?");
+        const uncertain = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
+        if (!found && !uncertain && /(?:때|땐|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(body)) {
+          unresolvedCondition = true;
+          inherited = "condition";
+        }
+        if (uncertain && /(?:지만|는데)$/u.test(body)) inherited = "uncertain";
+        if (asking) {
+          if (found) segment.candidate = { ...found, uncertain: true };
+          else segment.generic = true;
+          segment.unresolved = { ...evidence, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
+        } else if (found) {
+          if (found.uncertain || found.typo || uncertain) segment.candidate = { ...found, uncertain: found.uncertain || uncertain };
+          else segment.meanings = found.meanings;
+        } else segment.generic = true;
+        if (!segment.meanings && !segment.unresolved) {
+          const why = uncertain ? "uncertain" : unresolvedCondition ? "condition" : "unsupported";
+          segment.unresolved = { ...evidence, reason: why, reasonLabel: EXCLUDED[why] };
+        }
+        segments.push(segment);
+        if (segments.length === MEMBER_STATEMENT_LIMITS.unresolved && evidence.end < text4.length) {
+          const last = segments.at(-1);
+          delete last.meanings;
+          delete last.candidate;
+          delete last.generic;
+          last.evidence = { ...evidence, end: text4.length, quote: text4.slice(evidence.start) };
+          last.unresolved = { ...last.evidence, reason: "limit", reasonLabel: EXCLUDED.limit };
+          break;
+        }
+      }
+      return segments;
+    }
+    function stateFor(text4, segments, answers, key) {
+      const raw = [], unresolved = [], questions = [];
+      const question = (index, stage, label, options, apply) => {
+        const id2 = `q.${key}.${index}.${stage}`, answer = answers[id2];
+        if (answer !== void 0) {
+          apply(answer);
+          return;
+        }
+        questions.push({ id: id2, about: id2, kind: "follow_up", label, options: [...options, ...OPTIONS_END].map((o) => ({ ...o, value: o.id })) });
+      };
+      for (let index = 0; index < segments.length; index++) {
+        const s = segments[index], add = (meanings2) => meanings2.forEach((m) => raw.push({ ...m, evidence: copy2(s.evidence) }));
+        if (s.meanings) {
+          add(s.meanings);
+          continue;
+        }
+        let handled = false;
+        if (s.candidate) {
+          question(
+            index,
+            "confirm",
+            `「${s.evidence.quote}」${s.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : s.candidate.restricted ? "에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
+            [{ id: "confirm", label: s.candidate.meanings.map(meaningLabel).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+            (answer) => {
+              handled = true;
+              if (answer === "confirm") add(s.candidate.meanings);
+            }
+          );
+        } else if (s.generic) {
+          question(index, "field", `「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(FIELDS).map(([id2, label]) => ({ id: id2, label })), (field) => {
+            handled = true;
+            if (!Object.hasOwn(VALUES, field)) return;
+            question(index, "value", `${FIELDS[field]}에서 어떤 내용을 확인할까요?`, VALUES[field].map((id2) => ({ id: id2, label: LABELS[id2] })), (selected) => {
+              if (!VALUES[field].includes(selected)) return;
+              question(index, "polarity", `‘${LABELS[selected]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (polarity) => {
+                if (!["prefer", "avoid"].includes(polarity)) return;
+                question(index, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(CONDITIONS).map(([id2, label]) => ({ id: id2, label }))], (condition) => {
+                  if (condition === "general" || Object.hasOwn(CONDITIONS, condition)) add([{ field, value: selected, polarity, condition: condition === "general" ? null : condition }]);
+                });
+              });
+            });
+          });
+        }
+        if (!raw.some((m) => m.evidence.start === s.evidence.start)) unresolved.push({ ...s.unresolved, ...handled ? { reasonLabel: "답한 범위에서 확인 중이거나, 이번에는 반영하지 않기로 한 내용이에요." } : {} });
+      }
+      const meanings = [], seen = /* @__PURE__ */ new Set();
+      for (const m of raw) {
+        const identity = semanticKey(m);
+        if (seen.has(identity)) continue;
+        if (meanings.length === MEMBER_STATEMENT_LIMITS.meanings) {
+          unresolved.push({ ...m.evidence, reason: "limit", reasonLabel: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요." });
+          continue;
+        }
+        seen.add(identity);
+        meanings.push({ id: "p" + meanings.length, field: m.field, value: m.value, polarity: m.polarity, condition: m.condition, evidence: m.evidence });
+      }
+      const grouped = /* @__PURE__ */ new Set();
+      for (const m of meanings) {
+        if (grouped.has(m.id)) continue;
+        const group = meanings.filter((other) => other.id === m.id || meaningsConflict(m, other));
+        if (group.length < 2) continue;
+        group.forEach((p) => grouped.add(p.id));
+        const id2 = `q.${key}.conflict.${sourceKey(group.map((p) => p.id + semanticKey(p)).join("|")).slice(0, 16)}`, answer = answers[id2];
+        if (answer === void 0) questions.push({ id: id2, about: id2, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...group.map((p) => ({ id: p.id, label: meaningLabel(p), value: p.id })), ...OPTIONS_END.map((o) => ({ ...o, value: o.id }))] });
+        else for (const p of group) if (p.id !== answer) p.withheld = true;
+      }
+      return { meanings: meanings.filter((m) => !m.withheld), unresolved: unresolved.slice(0, MEMBER_STATEMENT_LIMITS.unresolved), questions };
+    }
+    function choose(state, text4, segments, answers, key) {
+      const result = Ask2.choose({ questions: state.questions, decide: (scenario) => {
+        const outcome = stateFor(text4, segments, { ...answers, ...scenario }, key);
+        return { meanings: outcome.meanings.map((m) => semanticKey(m)), questions: outcome.questions.map((q) => q.id) };
+      } });
+      return result.status === "ask" ? { id: result.question.id, label: result.question.label, options: result.question.options.map(({ id: id2, label }) => ({ id: id2, label })) } : null;
+    }
+    function parseMemberStatement(text4, { clarifications = [], parserVersion = PARSER_VERSION } = {}) {
+      if (parserVersion === Legacy.PARSER_VERSION) {
+        if (clarifications.length) fail6();
+        return Legacy.parseMemberStatement(text4);
+      }
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.parseMemberStatement(text4, { clarifications, parserVersion });
+      if (parserVersion !== PARSER_VERSION) fail6();
+      if (!list3(clarifications, MEMBER_STATEMENT_LIMITS.clarifications) || clarifications.some((row) => !exact5(row, ["questionId", "optionId"]) || typeof row.questionId !== "string" || typeof row.optionId !== "string")) fail6();
+      const segments = analyze(text4), key = sourceKey(text4), answers = /* @__PURE__ */ Object.create(null), clarificationAnswers = [];
+      let state = stateFor(text4, segments, answers, key), question = choose(state, text4, segments, answers, key);
+      for (const row of clarifications) {
+        if (!question || question.id !== row.questionId || Object.hasOwn(answers, row.questionId)) fail6();
+        const option = question.options.find((o) => o.id === row.optionId);
+        if (!option) fail6();
+        answers[row.questionId] = row.optionId;
+        clarificationAnswers.push({ ...row, questionLabel: question.label, optionLabel: option.label });
+        state = stateFor(text4, segments, answers, key);
+        question = choose(state, text4, segments, answers, key);
+      }
+      if (clarifications.length === MEMBER_STATEMENT_LIMITS.clarifications && question) {
+        const conflicted = state.meanings.filter((a) => state.meanings.some((b) => a !== b && meaningsConflict(a, b)));
+        state.meanings = state.meanings.filter((m) => !conflicted.includes(m));
+        state.unresolved = [...state.unresolved, ...conflicted.map((m) => ({ ...m.evidence }))].slice(0, MEMBER_STATEMENT_LIMITS.unresolved).map((u) => ({ ...u, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." }));
+        question = null;
+      }
+      return { parserVersion: PARSER_VERSION, meanings: state.meanings, unresolved: state.unresolved, question, clarifications: copy2(clarifications), clarificationAnswers };
+    }
+    function meaningLabel(m) {
+      return `${m.condition ? CONDITIONS[m.condition] + " · " : ""}${m.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${LABELS[m.value]}`;
+    }
+    function meaningsConflict(a, b) {
+      if (a.field !== b.field || a.condition !== b.condition) return false;
+      if (a.value === b.value) return a.polarity !== b.polarity;
+      return a.field !== "topic" && !MULTI_FIELDS.includes(a.field) && a.polarity === "prefer" && b.polarity === "prefer";
+    }
+    function validateMemberStatement(row, { now = Date.now(), enforceTime = false } = {}) {
+      const parserVersion = plain2(row) ? Object.getOwnPropertyDescriptor(row, "parserVersion")?.value : null;
+      if (parserVersion === Legacy.PARSER_VERSION) return Legacy.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous.PARSER_VERSION) return Previous.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous3.PARSER_VERSION) return Previous3.validateMemberStatement(row, { now, enforceTime });
+      if (parserVersion === Previous4.PARSER_VERSION) return Previous4.validateMemberStatement(row, { now, enforceTime });
+      if (!exact5(row, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || parserVersion !== PARSER_VERSION || typeof row.id !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id) || !list3(row.meanings, MEMBER_STATEMENT_LIMITS.meanings) || !row.meanings.length) fail6();
+      const at = instant(row.at), confirmed = instant(row.confirmedAt), cutoff = enforceTime ? typeof now === "string" ? instant(now) : Number.isSafeInteger(now) ? now : fail6() : null;
+      if (confirmed < at || enforceTime && confirmed > cutoff) fail6();
+      const parsed = parseMemberStatement(row.text, { clarifications: row.clarifications });
+      if (parsed.question) fail6();
+      const ids3 = /* @__PURE__ */ new Set(), meanings = row.meanings.map((m) => {
+        if (!exact5(m, ["id", "field", "value", "polarity", "condition", "evidence"]) || !exact5(m.evidence, ["start", "end", "quote"]) || ids3.has(m.id)) fail6();
+        ids3.add(m.id);
+        const expected = parsed.meanings.find((p) => p.id === m.id);
+        if (!expected || ["field", "value", "polarity", "condition"].some((key) => m[key] !== expected[key]) || ["start", "end", "quote"].some((key) => m.evidence[key] !== expected.evidence[key])) fail6();
+        return copy2(expected);
+      }).sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+      if (meanings.some((a, i) => meanings.slice(i + 1).some((b) => meaningsConflict(a, b)))) fail6();
+      return { id: row.id.toLowerCase(), parserVersion: PARSER_VERSION, text: row.text, at: row.at, confirmedAt: row.confirmedAt, meanings, clarifications: parsed.clarifications };
+    }
+    module.exports = { PARSER_VERSION, MEMBER_STATEMENT_LIMITS, MEMBER_STATEMENT_VALUES: VALUES, MEMBER_STATEMENT_LABELS: LABELS, MEMBER_STATEMENT_CONDITIONS: CONDITIONS, MEMBER_STATEMENT_MULTI_FIELDS: MULTI_FIELDS, parseMemberStatement, validateMemberStatement, meaningsConflict, meaningLabel };
+  }
+});
+
+// experiences/synk-account/src/member-understanding-data.mjs
+function clock2(value) {
+  if (iso2(value)) return Date.parse(value);
+  if (Number.isSafeInteger(value) && Math.abs(value) <= 864e13) return value;
+  invalid3();
+}
+function facet(id2) {
+  try {
+    if (!import_member_understanding_contract.default.understandingFacet(id2)) invalid3();
+  } catch {
+    invalid3();
+  }
+  return id2;
+}
+function validateMemberUnderstanding(value, { now = Date.now(), enforceTime = false } = {}) {
+  const version = object3(value) && Object.getOwnPropertyDescriptor(value, "version")?.value;
+  if (![1, 2, 3, 4, 5, 6].includes(version) || !exact3(value, version >= 2 ? ["version", "reviews", "overrides", "statements"] : ["version", "reviews", "overrides"]) || !list2(value.reviews, MEMBER_UNDERSTANDING_LIMITS.reviews) || !list2(value.overrides, MEMBER_UNDERSTANDING_LIMITS.overrides) || version >= 2 && !list2(value.statements, MEMBER_UNDERSTANDING_LIMITS.statements)) invalid3();
+  const ids3 = /* @__PURE__ */ new Set(), cutoff = enforceTime ? clock2(now) : null;
+  const rows = (items, kind) => {
+    const facets = /* @__PURE__ */ new Set();
+    return items.map((row) => {
+      const fields2 = kind === "review" ? ["id", "facetId", "verdict", "claim", "note", "at"] : ["id", "facetId", "values", "note", "at"];
+      if (!exact3(row, fields2) || !uuid2(row.id) || ids3.has(row.id.toLowerCase()) || !iso2(row.at) || enforceTime && Date.parse(row.at) > cutoff || !validNote(row.note) || facets.has(row.facetId)) invalid3();
+      facet(row.facetId);
+      ids3.add(row.id.toLowerCase());
+      facets.add(row.facetId);
+      let checked;
+      try {
+        if (kind === "review") {
+          if (!["agree", "disagree", "contextual"].includes(row.verdict)) invalid3();
+          const claim = import_member_understanding_contract.default.validateUnderstandingClaim(row.claim, { facetId: row.facetId });
+          if (Date.parse(claim.to) > Date.parse(row.at)) invalid3();
+          checked = { verdict: row.verdict, claim };
+        } else {
+          if (!list2(row.values, 5)) invalid3();
+          checked = { values: import_member_understanding_contract.default.validateUnderstandingValues(row.facetId, row.values) };
+        }
+      } catch {
+        invalid3();
+      }
+      return { id: row.id.toLowerCase(), facetId: row.facetId, ...checked, note: row.note, at: row.at };
+    });
+  };
+  const result = { version, reviews: rows(value.reviews, "review"), overrides: rows(value.overrides, "override") };
+  if (version >= 2) result.statements = value.statements.map((row) => {
+    let checked;
+    try {
+      checked = import_member_statement_contract.default.validateMemberStatement(row, { now, enforceTime });
+    } catch {
+      invalid3();
+    }
+    if (version === 2 && checked.parserVersion !== "member-statement-ko-1") invalid3();
+    if (version === 3 && !["member-statement-ko-1", "member-statement-ko-2"].includes(checked.parserVersion)) invalid3();
+    if (version === 4 && !["member-statement-ko-1", "member-statement-ko-2", "member-statement-ko-3"].includes(checked.parserVersion)) invalid3();
+    if (version === 5 && !["member-statement-ko-1", "member-statement-ko-2", "member-statement-ko-3", "member-statement-ko-4"].includes(checked.parserVersion)) invalid3();
+    if (!uuid2(checked.id) || ids3.has(checked.id.toLowerCase())) invalid3();
+    ids3.add(checked.id.toLowerCase());
+    return { ...checked, id: checked.id.toLowerCase() };
+  });
+  if (new TextEncoder().encode(JSON.stringify(result)).length > MEMBER_UNDERSTANDING_LIMITS.maxBytes) invalid3();
+  return result;
+}
+var import_member_understanding_contract, import_member_statement_contract, MEMBER_UNDERSTANDING_LIMITS, invalid3, object3, exact3, list2, uuid2, iso2, validNote;
+var init_member_understanding_data = __esm({
+  "experiences/synk-account/src/member-understanding-data.mjs"() {
+    import_member_understanding_contract = __toESM(require_member_understanding_contract(), 1);
+    import_member_statement_contract = __toESM(require_member_statement_contract(), 1);
+    MEMBER_UNDERSTANDING_LIMITS = Object.freeze({ reviews: 50, overrides: 50, statements: 20, note: 200, maxBytes: 64 * 1024 });
+    invalid3 = () => {
+      throw Object.assign(new TypeError("확인·수정한 성향 정보의 형식을 확인해 주세요."), { code: "INVALID_PERSONAL_STATE" });
+    };
+    object3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+    exact3 = (value, keys2) => object3(value) && Reflect.ownKeys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key) && Object.getOwnPropertyDescriptor(value, key).enumerable && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
+    list2 = (value, max) => Array.isArray(value) && value.length <= max && Reflect.ownKeys(value).length === value.length + 1 && Object.keys(value).length === value.length && Object.keys(value).every((key, index) => key === String(index) && Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), "value"));
+    uuid2 = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value);
+    iso2 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+    validNote = (value) => typeof value === "string" && [...value].length <= MEMBER_UNDERSTANDING_LIMITS.note && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(value);
   }
 });
 
@@ -4500,8 +8211,8 @@ var require_domain = __commonJS({
           let score = 0;
           const reasons = [], policyReasons = [], blocked = [];
           for (const c of contract2.criteria) {
-            const fact = facts.get(c.field), field = specs.get(c.field), has = own2(candidate.features, c.feature), v = candidate.features[c.feature];
-            if (!fact.usable || !has) {
+            const fact = facts.get(c.field), field = specs.get(c.field), has2 = own2(candidate.features, c.feature), v = candidate.features[c.feature];
+            if (!fact.usable || !has2) {
               if (c.required) blocked.push(`unknown:${c.id}`);
               continue;
             }
@@ -4691,162 +8402,6 @@ var require_travel = __commonJS({
         return result;
       }
       return Object.freeze({ VERSION, evaluateBundles });
-    });
-  }
-});
-
-// atlas/ask.js
-var require_ask = __commonJS({
-  "atlas/ask.js"(exports, module) {
-    (function(root, factory) {
-      if (typeof module === "object" && module.exports) module.exports = factory();
-      else root.SynkAsk = factory();
-    })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
-      "use strict";
-      const VERSION = "ask-1.1";
-      const MAX_OPTIONS = 64;
-      const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
-      const DAY = 864e5;
-      const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-      const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
-      const time2 = (value) => {
-        const n = Date.parse(value);
-        if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
-        return n;
-      };
-      const finite = (value) => typeof value === "number" && Number.isFinite(value);
-      const owns = (value, key) => Object.hasOwn(value, key);
-      function probabilities(q) {
-        const supplied = q.options.filter((option) => owns(option, "p")).length;
-        if (!supplied) return q.options.map(() => 1 / q.options.length);
-        if (supplied !== q.options.length || q.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q.id}`);
-        const total = q.options.reduce((sum, option) => sum + option.p, 0);
-        if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q.id}`);
-        return q.options.map((option) => option.p / total);
-      }
-      function validate(questions) {
-        if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
-        const ids3 = /* @__PURE__ */ new Set();
-        for (const q of questions) {
-          if (!q || !id2(q.id) || ids3.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id2(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
-          ids3.add(q.id);
-          const options = /* @__PURE__ */ new Set();
-          for (const option of q.options) {
-            if (!option || !id2(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
-            options.add(option.id);
-          }
-          probabilities(q);
-          if (owns(q, "cost") && (!finite(q.cost) || q.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q.id}`);
-          if (owns(q, "responseProbability") && (!finite(q.responseProbability) || q.responseProbability < 0 || q.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q.id}`);
-        }
-        return questions;
-      }
-      function difference(a, b) {
-        if (a && b && typeof a === "object" && typeof b === "object" && ("content" in a || "shape" in a)) {
-          return (canonical(a.content) !== canonical(b.content) ? 2 : 0) + (canonical(a.shape) !== canonical(b.shape) ? 1 : 0);
-        }
-        return canonical(a) === canonical(b) ? 0 : 1;
-      }
-      function decisionValue(evaluate, context) {
-        const value = evaluate(context);
-        if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
-        const result = (value.utility ?? 0) - (value.loss ?? 0);
-        if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
-        return result;
-      }
-      function rank({ questions, decide, answers = {}, denied = [], asked = {}, now = null, quietDays = 7, evaluate } = {}) {
-        validate(questions);
-        if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
-        if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
-        const valued = typeof evaluate === "function";
-        if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
-        const current = decide({ ...answers });
-        const result = [];
-        for (const q of questions) {
-          const about = q.about ?? q.id;
-          if (Object.hasOwn(answers, about)) continue;
-          if (denied.includes(q.id)) {
-            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
-            continue;
-          }
-          if (Object.hasOwn(asked, q.id) && now !== null && time2(now) - time2(asked[q.id]) < quietDays * DAY) {
-            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
-            continue;
-          }
-          const chances = probabilities(q);
-          const outcomes = /* @__PURE__ */ Object.create(null);
-          let impact = 0, expectedGain = 0;
-          q.options.forEach((option, index) => {
-            const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
-            const decided = decide({ ...scenario });
-            outcomes[option.id] = decided;
-            impact += chances[index] * difference(current, decided);
-            if (valued && chances[index] > 0) {
-              const context = { answers: scenario, question: q, option };
-              const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
-              if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
-              expectedGain += chances[index] * gain;
-            }
-          });
-          const distinct = new Set(Object.values(outcomes).map(canonical)).size;
-          const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
-          if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
-          const skippable = impact === 0 || valued && value <= 0;
-          result.push({
-            id: q.id,
-            kind: q.kind ?? "setting",
-            about,
-            impact: Math.round(impact * 1e3) / 1e3,
-            distinct,
-            skippable,
-            reason: impact === 0 ? "no-change" : valued ? value > 0 ? "positive-decision-value" : "no-positive-decision-value" : "changes-decision",
-            outcomes,
-            ...valued ? { basis: "declared-decision-value", expectedGain, responseProbability, cost, value } : {}
-          });
-        }
-        const score = (entry) => valued ? entry.value ?? 0 : entry.impact;
-        return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
-      }
-      function choose({ budget = 1, usedToday = 0, ...input } = {}) {
-        if (!Number.isInteger(budget) || budget < 0 || !Number.isInteger(usedToday) || usedToday < 0) throw new TypeError("Ask: invalid budget");
-        const ranked = rank(input);
-        if (usedToday >= budget) return { version: VERSION, status: "none", reason: "budget", ranked };
-        const valued = typeof input.evaluate === "function";
-        const best = ranked.find((entry) => !entry.skippable && (valued ? entry.value > 0 : entry.impact > 0));
-        if (!best) return { version: VERSION, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
-        return {
-          version: VERSION,
-          status: "ask",
-          question: input.questions.find((q) => q.id === best.id),
-          impact: best.impact,
-          reason: best.reason,
-          ranked,
-          ...valued ? { value: best.value, basis: best.basis } : {}
-        };
-      }
-      function fromAtlas({ engine, events = [], scope: scope3, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
-        if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
-        validate(questions);
-        const byAbout = new Map(questions.map((q) => [q.about ?? q.id, q]));
-        const decide = (answers) => {
-          const extra = [];
-          for (const [about, value] of Object.entries(answers)) {
-            const q = byAbout.get(about);
-            if (!q) continue;
-            const base = { schema: 1, id: `ask-virtual-${q.id}`, scope: scope3, at, recordedAt: at };
-            if (q.kind === "confirm") extra.push({ ...base, type: "estimate.responded", line: q.line, value });
-            else extra.push({ ...base, type: "context.set", field: q.field ?? about, value, until: null });
-          }
-          const plan = engine.decide({ events: [...events, ...extra], scope: scope3, at, experienceId, candidates, levers });
-          if (plan.status !== "ready") return { content: "unavailable", shape: null };
-          const classes = Object.fromEntries(levers.map((lever) => [lever.id, lever.class]));
-          const content = [plan.selected.id], shape = [];
-          for (const [lever, pick] of Object.entries(plan.bundle)) if (lever !== "mode") (classes[lever] === "content" ? content : shape).push(`${lever}=${pick.option}`);
-          return { content, shape };
-        };
-        return choose({ ...rest, questions, decide });
-      }
-      return Object.freeze({ VERSION, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
     });
   }
 });
@@ -6475,26 +10030,26 @@ var require_trail_life = __commonJS({
         "life.delivered": ["reactionId", "deliveryId", "npcId", "semanticKey", "sourceIds", "revisions", "contentVersion", "mode"]
       };
       const copy2 = (value) => JSON.parse(JSON.stringify(value));
-      const object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+      const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
       const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const integer3 = (value) => Number.isSafeInteger(value) && value >= 0;
-      const list = (value, min = 0) => Array.isArray(value) && value.length >= min && value.length <= 64 && value.every(id2) && new Set(value).size === value.length;
-      const exact3 = (value, keys2) => object3(value) && Object.keys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key));
-      const revisions = (value) => object3(value) && Object.entries(value).length <= 64 && Object.entries(value).every(([key, revision]) => id2(key) && integer3(revision));
-      const canonical = (value) => JSON.stringify(value, (_key, entry) => object3(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
+      const list3 = (value, min = 0) => Array.isArray(value) && value.length >= min && value.length <= 64 && value.every(id2) && new Set(value).size === value.length;
+      const exact5 = (value, keys2) => object5(value) && Object.keys(value).length === keys2.length && keys2.every((key) => Object.hasOwn(value, key));
+      const revisions = (value) => object5(value) && Object.entries(value).length <= 64 && Object.entries(value).every(([key, revision]) => id2(key) && integer3(revision));
+      const canonical = (value) => JSON.stringify(value, (_key, entry) => object5(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       function scopeKey(scope3) {
-        if (!exact3(scope3, ["domain", "workspace", "subject"]) || !["LAB", "SHIFT", "PATH"].includes(scope3.domain) || !id2(scope3.workspace) || !id2(scope3.subject)) throw new TypeError("Trail Life: invalid scope");
+        if (!exact5(scope3, ["domain", "workspace", "subject"]) || !["LAB", "SHIFT", "PATH"].includes(scope3.domain) || !id2(scope3.workspace) || !id2(scope3.subject)) throw new TypeError("Trail Life: invalid scope");
         return JSON.stringify([scope3.domain, scope3.workspace, scope3.subject]);
       }
       function validate(event) {
-        if (!object3(event) || !TYPES.includes(event.type) || !exact3(event, [...BASE, ...FIELDS[event.type]]) || event.schema !== 1 || !id2(event.id) || !integer3(event.seq) || event.seq < 1) throw new TypeError("Trail Life: invalid event fields");
+        if (!object5(event) || !TYPES.includes(event.type) || !exact5(event, [...BASE, ...FIELDS[event.type]]) || event.schema !== 1 || !id2(event.id) || !integer3(event.seq) || event.seq < 1) throw new TypeError("Trail Life: invalid event fields");
         scopeKey(event.scope);
-        if (event.type === "life.fact" && (!id2(event.factType) || !list(event.causes) || !revisions(event.revisions) || !list(event.knownBy))) {
+        if (event.type === "life.fact" && (!id2(event.factType) || !list3(event.causes) || !revisions(event.revisions) || !list3(event.knownBy))) {
           throw new TypeError("Trail Life: invalid fact");
         }
         if (event.type === "life.corrected" && !id2(event.targetId)) throw new TypeError("Trail Life: invalid correction");
         if (event.type === "life.knowledge" && (!id2(event.factId) || !id2(event.npcId) || typeof event.allowed !== "boolean" || (event.allowed ? !id2(event.viaId) : event.viaId !== null))) throw new TypeError("Trail Life: invalid knowledge");
-        if (event.type === "life.delivered" && (![event.reactionId, event.deliveryId, event.npcId, event.semanticKey, event.contentVersion].every(id2) || !list(event.sourceIds, 1) || !revisions(event.revisions) || !["motion", "static", "text"].includes(event.mode))) {
+        if (event.type === "life.delivered" && (![event.reactionId, event.deliveryId, event.npcId, event.semanticKey, event.contentVersion].every(id2) || !list3(event.sourceIds, 1) || !revisions(event.revisions) || !["motion", "static", "text"].includes(event.mode))) {
           throw new TypeError("Trail Life: invalid delivery");
         }
         return event;
@@ -6631,31 +10186,31 @@ var require_temper_outcomes = __commonJS({
         const fail6 = (message) => {
           throw new TypeError(`Temper outcomes: ${message}`);
         };
-        const object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+        const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
         const token3 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-        const exact3 = (value, required, optional = []) => object3(value) && required.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => required.includes(key) || optional.includes(key));
+        const exact5 = (value, required, optional = []) => object5(value) && required.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => required.includes(key) || optional.includes(key));
         const number = (value) => typeof value === "number" && Number.isFinite(value);
         const instant = (value) => {
           const time2 = typeof value === "string" && value.length <= 40 ? Date.parse(value) : NaN;
           if (!Number.isFinite(time2)) fail6("invalid timestamp");
           return time2;
         };
-        const canonical = (value) => JSON.stringify(value, (_key, entry) => object3(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
+        const canonical = (value) => JSON.stringify(value, (_key, entry) => object5(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
         const scopeKey = (scope3) => {
-          if (!exact3(scope3, ["domain", "workspace", "purpose"]) || !Object.values(scope3).every(token3)) fail6("invalid scope");
+          if (!exact5(scope3, ["domain", "workspace", "purpose"]) || !Object.values(scope3).every(token3)) fail6("invalid scope");
           if (scope3.domain === "PULSE") fail6("PULSE does not keep personal behavioral observations");
           return JSON.stringify([scope3.domain, scope3.workspace, scope3.purpose]);
         };
         const policyKey = (policy) => {
-          if (!exact3(policy, ["id", "version"]) || !token3(policy.id) || !token3(policy.version)) fail6("invalid policy");
+          if (!exact5(policy, ["id", "version"]) || !token3(policy.id) || !token3(policy.version)) fail6("invalid policy");
           return JSON.stringify([policy.id, policy.version]);
         };
-        if (!exact3(contract2, ["id", "version", "scope", "outcome"]) || !token3(contract2.id) || !token3(contract2.version)) fail6("invalid contract");
-        const sameContract = (ref) => exact3(ref, ["id", "version"]) && ref.id === contract2.id && ref.version === contract2.version;
+        if (!exact5(contract2, ["id", "version", "scope", "outcome"]) || !token3(contract2.id) || !token3(contract2.version)) fail6("invalid contract");
+        const sameContract = (ref) => exact5(ref, ["id", "version"]) && ref.id === contract2.id && ref.version === contract2.version;
         if (typeof strictProvenance !== "boolean" || !Array.isArray(revisions)) fail6("invalid provenance options");
         const trace = strictProvenance || revisions.length > 0;
         const boundary = scopeKey(contract2.scope), target = contract2.outcome;
-        if (!exact3(target, ["id", "kind", "direction", "windowMs"], ["allowedValues", "range"]) || !token3(target.id) || !["binary", "numeric"].includes(target.kind) || !["higher", "lower"].includes(target.direction) || !Number.isSafeInteger(target.windowMs) || target.windowMs < 0) fail6("invalid outcome definition");
+        if (!exact5(target, ["id", "kind", "direction", "windowMs"], ["allowedValues", "range"]) || !token3(target.id) || !["binary", "numeric"].includes(target.kind) || !["higher", "lower"].includes(target.direction) || !Number.isSafeInteger(target.windowMs) || target.windowMs < 0) fail6("invalid outcome definition");
         if (target.kind === "binary") {
           if (Object.hasOwn(target, "range") || !Array.isArray(target.allowedValues) || target.allowedValues.length !== 2 || !target.allowedValues.includes(0) || !target.allowedValues.includes(1)) fail6("binary outcomes require allowedValues [0, 1]");
         } else if (Object.hasOwn(target, "allowedValues") || !Array.isArray(target.range) || target.range.length !== 2 || !target.range.every(number) || target.range[0] >= target.range[1] || !Number.isFinite(target.range[1] - target.range[0])) fail6("numeric outcomes require a finite increasing range");
@@ -6669,7 +10224,7 @@ var require_temper_outcomes = __commonJS({
           if (!Array.isArray(input)) fail6(`${kind} must be an array`);
           const found = /* @__PURE__ */ new Map();
           for (const row of input) {
-            if (!exact3(row, ["id", "subject", "scope", "at", ...required], ["recordedAt", ...optional]) || !token3(row.id) || !token3(row.subject)) fail6(`invalid ${kind} record`);
+            if (!exact5(row, ["id", "subject", "scope", "at", ...required], ["recordedAt", ...optional]) || !token3(row.id) || !token3(row.subject)) fail6(`invalid ${kind} record`);
             if (scopeKey(row.scope) !== boundary || !allowed.has(row.subject)) fail6("record outside authorized subject, workspace or purpose");
             const happened = instant(row.at), recorded = instant(row.recordedAt ?? row.at);
             if (recorded < happened) fail6("recorded before occurrence");
@@ -6694,7 +10249,7 @@ var require_temper_outcomes = __commonJS({
           if (!Array.isArray(row.candidateIds) || !row.candidateIds.every(token3) || new Set(row.candidateIds).size !== row.candidateIds.length || !(row.selectedId === null || token3(row.selectedId) && row.candidateIds.includes(row.selectedId))) fail6("invalid decision candidates or selection");
           if (Object.hasOwn(row, "latencyMs") && (!number(row.latencyMs) || row.latencyMs < 0)) fail6("invalid latency");
           if (Object.hasOwn(row, "cost")) {
-            if (!exact3(row.cost, ["value", "unit"]) || !number(row.cost.value) || row.cost.value < 0 || !token3(row.cost.unit)) fail6("invalid normalized cost");
+            if (!exact5(row.cost, ["value", "unit"]) || !number(row.cost.value) || row.cost.value < 0 || !token3(row.cost.unit)) fail6("invalid normalized cost");
             costUnits.add(row.cost.unit);
           }
         }
@@ -6870,12 +10425,12 @@ var require_temper_outcomes = __commonJS({
         };
       }
       function summarizePreparation({ scope: scope3, subject, records = [], asOf } = {}) {
-        const object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+        const object5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
         const token3 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
         const fail6 = (message) => {
           throw new TypeError(`Temper preparation: ${message}`);
         };
-        if (!object3(scope3) || Object.keys(scope3).sort().join(",") !== "domain,purpose,workspace" || !Object.values(scope3).every(token3) || scope3.domain === "PULSE" || !token3(subject)) fail6("invalid boundary");
+        if (!object5(scope3) || Object.keys(scope3).sort().join(",") !== "domain,purpose,workspace" || !Object.values(scope3).every(token3) || scope3.domain === "PULSE" || !token3(subject)) fail6("invalid boundary");
         const time2 = (value) => {
           const at = typeof value === "string" ? Date.parse(value) : NaN;
           if (!Number.isFinite(at)) fail6("invalid time");
@@ -6885,7 +10440,7 @@ var require_temper_outcomes = __commonJS({
         let selected = 0;
         if (!Array.isArray(records) || records.length > 1e4) fail6("invalid records");
         for (const row of records) {
-          if (!object3(row) || Object.keys(row).some((key) => !["id", "scope", "subject", "shownAt", "selectedAt", "elapsedSeconds", "satisfaction", "satisfactionAt"].includes(key)) || !token3(row.id) || row.subject !== subject || !object3(row.scope) || Object.keys(row.scope).length !== 3 || Object.keys(scope3).some((key) => row.scope[key] !== scope3[key])) fail6("foreign or invalid record");
+          if (!object5(row) || Object.keys(row).some((key) => !["id", "scope", "subject", "shownAt", "selectedAt", "elapsedSeconds", "satisfaction", "satisfactionAt"].includes(key)) || !token3(row.id) || row.subject !== subject || !object5(row.scope) || Object.keys(row.scope).length !== 3 || Object.keys(scope3).some((key) => row.scope[key] !== scope3[key])) fail6("foreign or invalid record");
           if (seen.has(row.id)) fail6("duplicate record");
           seen.add(row.id);
           const shown = time2(row.shownAt), chosen = row.selectedAt == null ? null : time2(row.selectedAt);
@@ -7030,7 +10585,7 @@ function jsonCopy(value) {
   return JSON.parse(raw);
 }
 function validateStoredLeg(leg) {
-  if (!exact2(
+  if (!exact4(
     leg,
     ["fromId", "toId", "distanceMeters", "minMinutes", "maxMinutes", "coordinates", "source", "estimated", "label", "departureTime", "arrivalTime"],
     ["sourceAt", "unknownAccess", "steps", "connectorMeters", "notice", "assumptions", "stepFreeVerified"]
@@ -7042,29 +10597,29 @@ function validateStoredLeg(leg) {
 }
 function validatePlan(plan, query) {
   if (plan === null) return null;
-  if (!exact2(plan, ["id", "status", "stops", "legs", "walking", "cost", "startTime", "endTime", "reasons", "checks", "lockedIds", "inputFingerprint"], ["score", "label", "destination", "returnLeg"]) || !token2(plan.id) || !["ready", "partial"].includes(plan.status) || !token2(plan.inputFingerprint) || !time(plan.startTime) || !time(plan.endTime) || minute(plan.startTime) >= minute(plan.endTime) || plan.startTime !== query.startTime || minute(plan.endTime) > minute(query.endTime) || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === "remaining" ? 1 : 2) || plan.stops.length > query.stopCount || !Array.isArray(plan.legs) || plan.legs.length !== plan.stops.length || Object.hasOwn(plan, "score") && !Number.isFinite(plan.score) || Object.hasOwn(plan, "label") && !text3(plan.label, 160)) fail4("저장된 여행안의 구조를 확인하지 못했어요. 현재 기록은 유지했어요.");
+  if (!exact4(plan, ["id", "status", "stops", "legs", "walking", "cost", "startTime", "endTime", "reasons", "checks", "lockedIds", "inputFingerprint"], ["score", "label", "destination", "returnLeg"]) || !token2(plan.id) || !["ready", "partial"].includes(plan.status) || !token2(plan.inputFingerprint) || !time(plan.startTime) || !time(plan.endTime) || minute(plan.startTime) >= minute(plan.endTime) || plan.startTime !== query.startTime || minute(plan.endTime) > minute(query.endTime) || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === "remaining" ? 1 : 2) || plan.stops.length > query.stopCount || !Array.isArray(plan.legs) || plan.legs.length !== plan.stops.length || Object.hasOwn(plan, "score") && !Number.isFinite(plan.score) || Object.hasOwn(plan, "label") && !text3(plan.label, 160)) fail4("저장된 여행안의 구조를 확인하지 못했어요. 현재 기록은 유지했어요.");
   const stopIds = /* @__PURE__ */ new Set();
   for (const stop of plan.stops) {
-    if (!exact2(stop, ["placeId", "place", "arrivalTime", "departureTime", "stayMinutes", "waitMinutes", "schedule", "cost", "reasons"], ["stayProvenance", "pauses", "preStartPause"]) || !places2.has(stop.placeId) || stopIds.has(stop.placeId) || !object2(stop.place) || stop.place.id !== stop.placeId || !time(stop.arrivalTime) || !time(stop.departureTime) || !integer2(stop.stayMinutes, 1, 1440) || !integer2(stop.waitMinutes, 0, 1440) || minute(stop.departureTime) - minute(stop.arrivalTime) !== stop.stayMinutes || Object.hasOwn(stop, "stayProvenance") && stop.stayProvenance !== "estimated" || !texts(stop.reasons)) fail4("저장된 장소의 방문 시각·체류시간을 확인해 주세요.");
+    if (!exact4(stop, ["placeId", "place", "arrivalTime", "departureTime", "stayMinutes", "waitMinutes", "schedule", "cost", "reasons"], ["stayProvenance", "pauses", "preStartPause"]) || !places2.has(stop.placeId) || stopIds.has(stop.placeId) || !object4(stop.place) || stop.place.id !== stop.placeId || !time(stop.arrivalTime) || !time(stop.departureTime) || !integer2(stop.stayMinutes, 1, 1440) || !integer2(stop.waitMinutes, 0, 1440) || minute(stop.departureTime) - minute(stop.arrivalTime) !== stop.stayMinutes || Object.hasOwn(stop, "stayProvenance") && stop.stayProvenance !== "estimated" || !texts(stop.reasons)) fail4("저장된 장소의 방문 시각·체류시간을 확인해 주세요.");
     if (Object.hasOwn(stop, "pauses")) {
       if (!Array.isArray(stop.pauses) || stop.pauses.length > 288) fail4("저장된 쉬는 시간의 목록을 확인해 주세요.");
       let previousEnd = minute(stop.arrivalTime), totalPause = 0;
       for (const pause of stop.pauses) {
-        if (!exact2(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || minute(pause.startTime) < previousEnd || minute(pause.endTime) > minute(stop.departureTime) || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("저장된 쉬는 시간·순서·장소 확인 상태를 확인해 주세요.");
+        if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || minute(pause.startTime) < previousEnd || minute(pause.endTime) > minute(stop.departureTime) || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("저장된 쉬는 시간·순서·장소 확인 상태를 확인해 주세요.");
         previousEnd = minute(pause.endTime);
         totalPause += pause.durationMinutes;
       }
       if (totalPause >= stop.stayMinutes) fail4("쉬는 시간 외에 장소를 방문할 시간이 남아 있어야 해요.");
     }
     const place = placeById.get(stop.placeId);
-    if (!object2(place.coordinates) || !coordinate([place.coordinates.lon, place.coordinates.lat])) fail4("현재 위치 자료가 없는 장소가 들어 있어 여행 지도를 열 수 없어요.");
+    if (!object4(place.coordinates) || !coordinate([place.coordinates.lon, place.coordinates.lat])) fail4("현재 위치 자료가 없는 장소가 들어 있어 여행 지도를 열 수 없어요.");
     stopIds.add(stop.placeId);
     const schedule = stop.schedule;
-    if (!exact2(schedule, ["status", "label", "reason"], ["sourceUrl"]) || !["matched", "unknown"].includes(schedule.status) || !text3(schedule.label, 160) || !text3(schedule.reason) || Object.hasOwn(schedule, "sourceUrl") && !publicUrl2(schedule.sourceUrl)) fail4("저장된 운영 안내의 형식을 확인해 주세요.");
+    if (!exact4(schedule, ["status", "label", "reason"], ["sourceUrl"]) || !["matched", "unknown"].includes(schedule.status) || !text3(schedule.label, 160) || !text3(schedule.reason) || Object.hasOwn(schedule, "sourceUrl") && !publicUrl2(schedule.sourceUrl)) fail4("저장된 운영 안내의 형식을 확인해 주세요.");
     const cost2 = stop.cost;
-    if (!exact2(cost2, ["knownAmount", "status", "unknowns", "items"]) || !amount(cost2.knownAmount) || !["matched", "unknown"].includes(cost2.status) || !texts(cost2.unknowns) || !Array.isArray(cost2.items) || cost2.items.length > 40 || (cost2.status === "matched" ? cost2.unknowns.length !== 0 : cost2.unknowns.length === 0)) fail4("저장된 장소의 비용 안내를 확인해 주세요.");
+    if (!exact4(cost2, ["knownAmount", "status", "unknowns", "items"]) || !amount(cost2.knownAmount) || !["matched", "unknown"].includes(cost2.status) || !texts(cost2.unknowns) || !Array.isArray(cost2.items) || cost2.items.length > 40 || (cost2.status === "matched" ? cost2.unknowns.length !== 0 : cost2.unknowns.length === 0)) fail4("저장된 장소의 비용 안내를 확인해 주세요.");
     for (const item of cost2.items) {
-      if (!exact2(item, ["label", "quantity", "unitAmount", "amount", "basis", "sourceUrl"]) || !text3(item.label, 500) || !integer2(item.quantity, 1, 40) || !amount(item.unitAmount) || !amount(item.amount) || item.quantity * item.unitAmount !== item.amount || !["suggested-menu", "adult-admission", "child-admission"].includes(item.basis) || !publicUrl2(item.sourceUrl)) fail4("저장된 비용 항목의 인원·금액·출처를 확인해 주세요.");
+      if (!exact4(item, ["label", "quantity", "unitAmount", "amount", "basis", "sourceUrl"]) || !text3(item.label, 500) || !integer2(item.quantity, 1, 40) || !amount(item.unitAmount) || !amount(item.amount) || item.quantity * item.unitAmount !== item.amount || !["suggested-menu", "adult-admission", "child-admission"].includes(item.basis) || !publicUrl2(item.sourceUrl)) fail4("저장된 비용 항목의 인원·금액·출처를 확인해 주세요.");
       if (item.quantity !== (item.basis === "child-admission" ? query.party.children : query.party.adults)) fail4("저장된 비용 항목의 인원과 여행 인원이 맞지 않아요.");
     }
     const adultItems = cost2.items.filter((item) => item.basis !== "child-admission"), childItems = cost2.items.filter((item) => item.basis === "child-admission");
@@ -7081,13 +10636,13 @@ function validatePlan(plan, query) {
     const stop = plan.stops[index];
     if (Object.hasOwn(stop, "preStartPause")) {
       const pause = stop.preStartPause;
-      if (!exact2(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || pause.startTime !== leg.arrivalTime || minute(pause.endTime) > minute(stop.arrivalTime) || pause.durationMinutes > stop.waitMinutes || query.restEveryMinutes === null || pause.durationMinutes !== query.restDurationMinutes || !query.appointments.some((row) => row.placeId === stop.placeId) && !(query.meal.mode === "window" && stop.place.category === "food") || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("방문 시작 전 쉬는 시간은 도착 뒤 대기 시간 안에 있어야 해요.");
+      if (!exact4(pause, ["startTime", "endTime", "durationMinutes", "kind", "locationStatus"]) || !time(pause.startTime) || !time(pause.endTime) || !integer2(pause.durationMinutes, 5, 30) || minute(pause.endTime) - minute(pause.startTime) !== pause.durationMinutes || pause.startTime !== leg.arrivalTime || minute(pause.endTime) > minute(stop.arrivalTime) || pause.durationMinutes > stop.waitMinutes || query.restEveryMinutes === null || pause.durationMinutes !== query.restDurationMinutes || !query.appointments.some((row) => row.placeId === stop.placeId) && !(query.meal.mode === "window" && stop.place.category === "food") || pause.kind !== "planned-rest" || pause.locationStatus !== "unverified") fail4("방문 시작 전 쉬는 시간은 도착 뒤 대기 시간 안에 있어야 해요.");
     }
   }
   const lastStop = plan.stops.at(-1), allLegs = [...plan.legs];
   if (query.destination !== null) {
     const destination = plan.destination;
-    if (!exact2(destination, ["id", "name", "lat", "lon"]) || ["id", "name", "lat", "lon"].some((key) => destination[key] !== query.destination[key])) fail4("저장된 마지막 도착지와 여행 조건이 맞지 않아요.");
+    if (!exact4(destination, ["id", "name", "lat", "lon"]) || ["id", "name", "lat", "lon"].some((key) => destination[key] !== query.destination[key])) fail4("저장된 마지막 도착지와 여행 조건이 맞지 않아요.");
     validateStoredLeg(plan.returnLeg);
     const leg = plan.returnLeg;
     if (leg.fromId !== lastStop.placeId || leg.toId !== destination.id || leg.departureTime !== lastStop.departureTime || leg.arrivalTime !== plan.endTime || !sameCoordinate(leg.coordinates[0], plan.legs.at(-1).coordinates.at(-1)) || !sameCoordinate(leg.coordinates.at(-1), [destination.lon, destination.lat])) fail4("마지막 도착지까지의 이동 경로·시각·좌표가 맞지 않아요.");
@@ -7101,20 +10656,20 @@ function validatePlan(plan, query) {
   const meals = plan.stops.filter((stop) => stop.place.category === "food");
   if (query.meal.mode === "none" && meals.length || query.meal.mode === "window" && (!meals.length || meals.some((stop) => stop.arrivalTime < query.meal.startTime || stop.arrivalTime > query.meal.endTime))) fail4("저장된 일정이 식사 조건과 맞지 않아요.");
   const walking = plan.walking, cost = plan.cost;
-  if (!exact2(walking, ["minMinutes", "maxMinutes", "scope", "label"]) || !integer2(walking.minMinutes, 0, 1440) || !integer2(walking.maxMinutes, walking.minMinutes, 1440) || walking.scope !== "between-places" || !text3(walking.label, 500) || walking.minMinutes !== allLegs.reduce((sum, leg) => sum + leg.minMinutes, 0) || walking.maxMinutes !== allLegs.reduce((sum, leg) => sum + leg.maxMinutes, 0) || walking.maxMinutes > query.maxWalkMinutes || query.maxLegWalkMinutes !== null && allLegs.some((leg) => leg.maxMinutes > query.maxLegWalkMinutes)) fail4("저장된 도보 합계·상한이 맞지 않아요.");
-  if (!exact2(cost, ["knownAmount", "unknownPlaceIds", "status", "notes"]) || !amount(cost.knownAmount) || !uniqueIds(cost.unknownPlaceIds, stopIds) || !["matched", "unknown"].includes(cost.status) || !texts(cost.notes) || cost.knownAmount !== plan.stops.reduce((sum, stop) => sum + stop.cost.knownAmount, 0) || cost.status !== (cost.unknownPlaceIds.length ? "unknown" : "matched") || JSON.stringify(cost.unknownPlaceIds) !== JSON.stringify(plan.stops.filter((stop) => stop.cost.status === "unknown").map((stop) => stop.placeId))) fail4("저장된 여행 비용의 합계를 확인해 주세요.");
+  if (!exact4(walking, ["minMinutes", "maxMinutes", "scope", "label"]) || !integer2(walking.minMinutes, 0, 1440) || !integer2(walking.maxMinutes, walking.minMinutes, 1440) || walking.scope !== "between-places" || !text3(walking.label, 500) || walking.minMinutes !== allLegs.reduce((sum, leg) => sum + leg.minMinutes, 0) || walking.maxMinutes !== allLegs.reduce((sum, leg) => sum + leg.maxMinutes, 0) || walking.maxMinutes > query.maxWalkMinutes || query.maxLegWalkMinutes !== null && allLegs.some((leg) => leg.maxMinutes > query.maxLegWalkMinutes)) fail4("저장된 도보 합계·상한이 맞지 않아요.");
+  if (!exact4(cost, ["knownAmount", "unknownPlaceIds", "status", "notes"]) || !amount(cost.knownAmount) || !uniqueIds(cost.unknownPlaceIds, stopIds) || !["matched", "unknown"].includes(cost.status) || !texts(cost.notes) || cost.knownAmount !== plan.stops.reduce((sum, stop) => sum + stop.cost.knownAmount, 0) || cost.status !== (cost.unknownPlaceIds.length ? "unknown" : "matched") || JSON.stringify(cost.unknownPlaceIds) !== JSON.stringify(plan.stops.filter((stop) => stop.cost.status === "unknown").map((stop) => stop.placeId))) fail4("저장된 여행 비용의 합계를 확인해 주세요.");
   if (cost.knownAmount > query.budget || query.budget === 0 && cost.status !== "matched") fail4("저장된 여행 비용이 예산 조건과 맞지 않아요. 0원 예산은 무료로 확인된 장소만 가능해요.");
-  if (!Array.isArray(plan.checks) || plan.checks.length > 200 || plan.checks.some((check2) => !exact2(check2, ["kind", "status", "reason"], ["placeId"]) || !token2(check2.kind) || !["matched", "unknown"].includes(check2.status) || !text3(check2.reason) || Object.hasOwn(check2, "placeId") && !(stopIds.has(check2.placeId) || /^transfer-[0-4]$/.test(check2.placeId) || plan.returnLeg && check2.placeId === "return-transfer"))) fail4("저장된 확인 항목의 형식을 확인해 주세요.");
+  if (!Array.isArray(plan.checks) || plan.checks.length > 200 || plan.checks.some((check2) => !exact4(check2, ["kind", "status", "reason"], ["placeId"]) || !token2(check2.kind) || !["matched", "unknown"].includes(check2.status) || !text3(check2.reason) || Object.hasOwn(check2, "placeId") && !(stopIds.has(check2.placeId) || /^transfer-[0-4]$/.test(check2.placeId) || plan.returnLeg && check2.placeId === "return-transfer"))) fail4("저장된 확인 항목의 형식을 확인해 주세요.");
   if (plan.stops.some((stop) => (stop.preStartPause || stop.pauses?.length) && !plan.checks.some((check2) => check2.kind === "rest-place" && check2.status === "unknown" && check2.placeId === stop.placeId))) fail4("쉬는 장소의 미확인 안내가 빠져 있어요.");
   if (plan.status === "ready" && (plan.checks.some((check2) => check2.status === "unknown") || cost.status === "unknown" || plan.stops.some((stop) => stop.schedule.status === "unknown"))) fail4("저장된 일정의 완료 조건이 일치하지 않아요.");
   if (!matchesPlannerInputFingerprint(query, plan.inputFingerprint)) fail4("저장된 일정과 날짜·여행 조건이 맞지 않아요. 조건을 바꾸려면 새 일정을 만들어 주세요.");
   return plan;
 }
 function validateProgress(progress, memory) {
-  if (!exact2(progress, ["date", "currentTime", "completed", "skippedIds", "requiredCategories", "finished", "updatedAt"]) || memory.query.planningMode !== "remaining" || progress.date !== memory.query.date || !Array.isArray(progress.completed) || progress.completed.length > dayPlaces.size || !uniqueIds(progress.skippedIds, dayPlaces, dayPlaces.size) || progress.completed.length + progress.skippedIds.length > dayPlaces.size || !time(progress.currentTime) || !uniqueIds(progress.requiredCategories, /* @__PURE__ */ new Set(["food", "tea", "culture"]), 3) || typeof progress.finished !== "boolean" || !isTravelTime(progress.updatedAt) || !progress.finished && minute(progress.currentTime) > minute(memory.query.startTime) || Date.parse(progress.updatedAt) > Date.parse(memory.updatedAt)) fail4("여행 진행 기록의 날짜·형식·기록 시각을 확인해 주세요.");
+  if (!exact4(progress, ["date", "currentTime", "completed", "skippedIds", "requiredCategories", "finished", "updatedAt"]) || memory.query.planningMode !== "remaining" || progress.date !== memory.query.date || !Array.isArray(progress.completed) || progress.completed.length > dayPlaces.size || !uniqueIds(progress.skippedIds, dayPlaces, dayPlaces.size) || progress.completed.length + progress.skippedIds.length > dayPlaces.size || !time(progress.currentTime) || !uniqueIds(progress.requiredCategories, /* @__PURE__ */ new Set(["food", "tea", "culture"]), 3) || typeof progress.finished !== "boolean" || !isTravelTime(progress.updatedAt) || !progress.finished && minute(progress.currentTime) > minute(memory.query.startTime) || Date.parse(progress.updatedAt) > Date.parse(memory.updatedAt)) fail4("여행 진행 기록의 날짜·형식·기록 시각을 확인해 주세요.");
   const completedIds = /* @__PURE__ */ new Set();
   for (const entry of progress.completed) {
-    if (!exact2(entry, ["placeId", "completedTime"]) || !dayPlaces.has(entry.placeId) || completedIds.has(entry.placeId) || progress.skippedIds.includes(entry.placeId) || !time(entry.completedTime) || minute(entry.completedTime) > minute(progress.currentTime)) fail4("완료한 장소와 완료 시각을 확인해 주세요.");
+    if (!exact4(entry, ["placeId", "completedTime"]) || !dayPlaces.has(entry.placeId) || completedIds.has(entry.placeId) || progress.skippedIds.includes(entry.placeId) || !time(entry.completedTime) || minute(entry.completedTime) > minute(progress.currentTime)) fail4("완료한 장소와 완료 시각을 확인해 주세요.");
     completedIds.add(entry.placeId);
   }
   const removedIds = /* @__PURE__ */ new Set([...completedIds, ...progress.skippedIds]);
@@ -7124,7 +10679,7 @@ function validateProgress(progress, memory) {
 function validateTravelMemory(value, { now } = {}) {
   const memory = jsonCopy(value);
   timestamp(now);
-  if (!exact2(memory, ["format", "version", "consent", "query", "plan", "confirmedPreferences", "visits", "journal", "updatedAt"], ["progress"]) || memory.format !== TRAVEL_FORMAT || memory.version !== 1 || typeof memory.consent !== "boolean" || !isTravelTime(memory.updatedAt)) fail4();
+  if (!exact4(memory, ["format", "version", "consent", "query", "plan", "confirmedPreferences", "visits", "journal", "updatedAt"], ["progress"]) || memory.format !== TRAVEL_FORMAT || memory.version !== 1 || typeof memory.consent !== "boolean" || !isTravelTime(memory.updatedAt)) fail4();
   memory.query = normalizePlannerInput(memory.query, { places: TRAVEL_PLACES });
   memory.plan = validatePlan(memory.plan, memory.query);
   if (Object.hasOwn(memory, "progress")) memory.progress = validateProgress(memory.progress, memory);
@@ -7132,12 +10687,12 @@ function validateTravelMemory(value, { now } = {}) {
   if (!Array.isArray(memory.visits) || memory.visits.length > 150 || !Array.isArray(memory.confirmedPreferences) || memory.confirmedPreferences.length > TRAVEL_PREFERENCE_KEYS.length) fail4();
   const visitIds = /* @__PURE__ */ new Set();
   for (const visit of memory.visits) {
-    if (!exact2(visit, ["id", "placeId", "planId", "decisionId", "rating", "reasons", "at", "source"]) || !token2(visit.id) || visitIds.has(visit.id) || !places2.has(visit.placeId) || visit.planId !== null && !token2(visit.planId) || visit.decisionId !== null && !token2(visit.decisionId) || !Number.isInteger(visit.rating) || visit.rating < 1 || visit.rating > 5 || !validTime(visit.at) || visit.source !== "self-reported" || !Array.isArray(visit.reasons) || new Set(visit.reasons).size !== visit.reasons.length || visit.reasons.some((reason) => !TRAVEL_VISIT_REASONS.some((option) => option.id === reason))) fail4();
+    if (!exact4(visit, ["id", "placeId", "planId", "decisionId", "rating", "reasons", "at", "source"]) || !token2(visit.id) || visitIds.has(visit.id) || !places2.has(visit.placeId) || visit.planId !== null && !token2(visit.planId) || visit.decisionId !== null && !token2(visit.decisionId) || !Number.isInteger(visit.rating) || visit.rating < 1 || visit.rating > 5 || !validTime(visit.at) || visit.source !== "self-reported" || !Array.isArray(visit.reasons) || new Set(visit.reasons).size !== visit.reasons.length || visit.reasons.some((reason) => !TRAVEL_VISIT_REASONS.some((option) => option.id === reason))) fail4();
     visitIds.add(visit.id);
   }
   const keys2 = /* @__PURE__ */ new Set();
   for (const preference of memory.confirmedPreferences) {
-    if (!exact2(preference, ["id", "key", "value", "status", "confirmedAt", "source"]) || !token2(preference.id) || !TRAVEL_PREFERENCE_KEYS.includes(preference.key) || keys2.has(preference.key) || typeof preference.value !== "boolean" || preference.status !== "confirmed" || !validTime(preference.confirmedAt) || !exact2(preference.source, ["kind"], ["feedbackId"]) || preference.source.kind !== "user-confirmation" || Object.hasOwn(preference.source, "feedbackId") && (!token2(preference.source.feedbackId) || !visitIds.has(preference.source.feedbackId))) fail4();
+    if (!exact4(preference, ["id", "key", "value", "status", "confirmedAt", "source"]) || !token2(preference.id) || !TRAVEL_PREFERENCE_KEYS.includes(preference.key) || keys2.has(preference.key) || typeof preference.value !== "boolean" || preference.status !== "confirmed" || !validTime(preference.confirmedAt) || !exact4(preference.source, ["kind"], ["feedbackId"]) || preference.source.kind !== "user-confirmation" || Object.hasOwn(preference.source, "feedbackId") && (!token2(preference.source.feedbackId) || !visitIds.has(preference.source.feedbackId))) fail4();
     keys2.add(preference.key);
   }
   validateTravelJournal(memory.journal, { now: memory.updatedAt });
@@ -7161,7 +10716,7 @@ function validateTravelMemory(value, { now } = {}) {
   }
   return memory;
 }
-var TRAVEL_FORMAT, TRAVEL_MAX_BYTES, encoder, token2, object2, exact2, fail4, timestamp, places2, placeById, dayPlaces, integer2, text3, texts, time, minute, amount, uniqueIds, publicUrl2, coordinate, sameCoordinate;
+var TRAVEL_FORMAT, TRAVEL_MAX_BYTES, encoder, token2, object4, exact4, fail4, timestamp, places2, placeById, dayPlaces, integer2, text3, texts, time, minute, amount, uniqueIds, publicUrl2, coordinate, sameCoordinate;
 var init_planner_storage = __esm({
   "experiences/path-travel/planner-storage.mjs"() {
     init_planner();
@@ -7172,8 +10727,8 @@ var init_planner_storage = __esm({
     TRAVEL_MAX_BYTES = 512 * 1024;
     encoder = new TextEncoder();
     token2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-    object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-    exact2 = (value, fields2, optional = []) => object2(value) && fields2.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => fields2.includes(key) || optional.includes(key));
+    object4 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    exact4 = (value, fields2, optional = []) => object4(value) && fields2.every((key) => Object.hasOwn(value, key)) && Object.keys(value).every((key) => fields2.includes(key) || optional.includes(key));
     fail4 = (message = "여행 파일의 형식이 맞지 않아요. 현재 기록은 유지했어요.") => {
       throw new TypeError(message);
     };
@@ -7250,35 +10805,35 @@ var init_planner_account = __esm({
 
 // experiences/synk-account/src/personal-data.mjs
 function resourceLimit(resource) {
-  if (!Object.hasOwn(PERSONAL_LIMITS, resource)) invalid2();
+  if (!Object.hasOwn(PERSONAL_LIMITS, resource)) invalid4();
   return PERSONAL_LIMITS[resource];
 }
 function jsonCopy2(value, maxBytes) {
   const ancestors = /* @__PURE__ */ new Set();
   let nodes = 0;
   function visit(item, depth) {
-    if (++nodes > 2e5 || depth > 32) invalid2();
+    if (++nodes > 2e5 || depth > 32) invalid4();
     if (typeof item === "string") {
-      if (/\u0000|[\uD800-\uDFFF]/u.test(item)) invalid2();
+      if (/\u0000|[\uD800-\uDFFF]/u.test(item)) invalid4();
       return;
     }
     if (item === null || typeof item === "boolean") return;
     if (typeof item === "number") {
-      if (!Number.isFinite(item)) invalid2();
+      if (!Number.isFinite(item)) invalid4();
       return;
     }
-    if (typeof item !== "object" || ancestors.has(item)) invalid2();
+    if (typeof item !== "object" || ancestors.has(item)) invalid4();
     const prototype = Object.getPrototypeOf(item);
-    if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) invalid2();
+    if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) invalid4();
     ancestors.add(item);
     for (const key of Reflect.ownKeys(item)) {
       if (Array.isArray(item) && key === "length") continue;
       const descriptor = Object.getOwnPropertyDescriptor(item, key);
-      if (typeof key !== "string" || /\u0000|[\uD800-\uDFFF]/u.test(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) invalid2();
-      if (Array.isArray(item) && !/^(0|[1-9]\d*)$/.test(key)) invalid2();
+      if (typeof key !== "string" || /\u0000|[\uD800-\uDFFF]/u.test(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) invalid4();
+      if (Array.isArray(item) && !/^(0|[1-9]\d*)$/.test(key)) invalid4();
       visit(descriptor.value, depth + 1);
     }
-    if (Array.isArray(item) && Object.keys(item).length !== item.length) invalid2();
+    if (Array.isArray(item) && Object.keys(item).length !== item.length) invalid4();
     ancestors.delete(item);
   }
   visit(value, 0);
@@ -7287,40 +10842,40 @@ function jsonCopy2(value, maxBytes) {
   return JSON.parse(serialized);
 }
 function pathDocument(value) {
-  if (!fields(value, ["version", "prefsConfirmed", "prefs", "zone", "cursor", "answers"])) invalid2();
+  if (!fields(value, ["version", "prefsConfirmed", "prefs", "zone", "cursor", "answers"])) invalid4();
   const checked = validateState({ ...value, consent: true });
-  if (checked.answers.some((answer) => answer.at.length > 40)) invalid2();
+  if (checked.answers.some((answer) => answer.at.length > 40)) invalid4();
   delete checked.consent;
   return checked;
 }
-function validatePersonalState(resource, value) {
+function validatePersonalState(resource, value, options) {
   const limit = resourceLimit(resource), copy2 = jsonCopy2(value, limit);
   try {
-    return resource === "path-travel" ? validateTravelAccountDocument(copy2) : resource === "platform-library" ? validatePlatformLibrary(copy2) : resource === "path" ? pathDocument(copy2) : resource === "rehearsal" ? validateArchive(copy2) : familyManifest(copy2);
+    return resource === "member-understanding" ? validateMemberUnderstanding(copy2, options) : resource === "member-insight" ? validateMemberActivity(copy2, options) : resource === "path-travel" ? validateTravelAccountDocument(copy2) : resource === "platform-library" ? validatePlatformLibrary(copy2) : resource === "path" ? pathDocument(copy2) : resource === "rehearsal" ? validateArchive(copy2) : familyManifest(copy2);
   } catch (error) {
     if (error.code) throw error;
-    invalid2();
+    invalid4();
   }
 }
 function validatePersonalMediaRef(value, { kind } = {}) {
   const copy2 = jsonCopy2(value, 2048);
-  if (!fields(copy2, ["assetId", "sha256", "mime", "size", "kind"]) || typeof copy2.assetId !== "string" || !uuid.test(copy2.assetId) || typeof copy2.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(copy2.sha256) || !Object.hasOwn(mediaTypes, copy2.kind) || !mediaTypes[copy2.kind].includes(copy2.mime) || !Number.isSafeInteger(copy2.size) || copy2.size <= 0 || copy2.size > PERSONAL_MEDIA_LIMITS[copy2.kind] || kind !== void 0 && copy2.kind !== kind) invalid2();
+  if (!fields(copy2, ["assetId", "sha256", "mime", "size", "kind"]) || typeof copy2.assetId !== "string" || !uuid3.test(copy2.assetId) || typeof copy2.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(copy2.sha256) || !Object.hasOwn(mediaTypes, copy2.kind) || !mediaTypes[copy2.kind].includes(copy2.mime) || !Number.isSafeInteger(copy2.size) || copy2.size <= 0 || copy2.size > PERSONAL_MEDIA_LIMITS[copy2.kind] || kind !== void 0 && copy2.kind !== kind) invalid4();
   return copy2;
 }
 function familyManifest(value) {
-  if (!fields(value, ["format", "version", "pages"]) || value.format !== FAMILY_MANIFEST_FORMAT || value.version !== 1 || !Array.isArray(value.pages) || value.pages.length > LIMITS.pages) invalid2();
+  if (!fields(value, ["format", "version", ...FAMILY_ALBUM_OPTIONAL, "pages"]) || value.format !== FAMILY_MANIFEST_FORMAT || value.version !== 1 || !Array.isArray(value.pages) || value.pages.length > LIMITS.pages) invalid4();
   let totalBytes = 0, encodedBytes = 0;
   const assets = /* @__PURE__ */ new Map();
   const pages = value.pages.map((page) => {
-    if (!record2(page)) invalid2();
+    if (!record2(page)) invalid4();
     const next = { ...page };
     for (const slot of ["photo", "audio"]) {
       const media = page[slot];
       if (media !== null) {
-        if (!fields(media, ["name", "mediaRef"]) || typeof media.name !== "string" || media.name.length > 180) invalid2();
+        if (!fields(media, ["name", "mediaRef"]) || typeof media.name !== "string" || media.name.length > 180) invalid4();
         const ref = validatePersonalMediaRef(media.mediaRef, { kind: mediaKind(slot) });
         const prior = assets.get(ref.assetId);
-        if (prior && ["sha256", "mime", "size", "kind"].some((key) => prior[key] !== ref[key])) invalid2();
+        if (prior && ["sha256", "mime", "size", "kind"].some((key) => prior[key] !== ref[key])) invalid4();
         assets.set(ref.assetId, ref);
         totalBytes += ref.size;
         encodedBytes += 4 * Math.ceil(ref.size / 3);
@@ -7330,7 +10885,7 @@ function familyManifest(value) {
     return next;
   });
   if (totalBytes > LIMITS.total) fail5("PERSONAL_MEDIA_TOO_LARGE", "앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요.");
-  const textAlbum = validateAlbum({ format: "synk-family-album", version: 1, pages });
+  const textAlbum = validateAlbum({ format: "synk-family-album", version: 1, ...familyOptional(value), pages });
   const exportShell = { ...textAlbum, pages: textAlbum.pages.map((page, index) => {
     const next = { ...page };
     for (const slot of ["photo", "audio"]) {
@@ -7340,17 +10895,19 @@ function familyManifest(value) {
     return next;
   }) };
   if (encoder2.encode(JSON.stringify(exportShell)).length + encodedBytes > LIMITS.export) fail5("PERSONAL_DATA_TOO_LARGE", "원본을 포함한 앨범 내보내기가 32 MB를 넘어요. 앨범을 나눠 보관해 주세요.");
-  return { format: FAMILY_MANIFEST_FORMAT, version: 1, pages: textAlbum.pages.map((page, index) => ({ ...page, photo: value.pages[index].photo, audio: value.pages[index].audio })) };
+  return { format: FAMILY_MANIFEST_FORMAT, version: 1, ...familyOptional(textAlbum), pages: textAlbum.pages.map((page, index) => ({ ...page, photo: value.pages[index].photo, audio: value.pages[index].audio })) };
 }
-var PERSONAL_LIMITS, PERSONAL_RESOURCES, FAMILY_MANIFEST_FORMAT, PERSONAL_MEDIA_LIMITS, encoder2, fail5, invalid2, record2, fields, uuid, mediaTypes, mediaKind;
+var PERSONAL_LIMITS, PERSONAL_RESOURCES, FAMILY_MANIFEST_FORMAT, PERSONAL_MEDIA_LIMITS, encoder2, fail5, invalid4, record2, fields, uuid3, mediaTypes, mediaKind, FAMILY_ALBUM_OPTIONAL, familyOptional;
 var init_personal_data = __esm({
   "experiences/synk-account/src/personal-data.mjs"() {
     init_model();
     init_domain();
     init_model2();
     init_platform_library_data();
+    init_member_activity_data();
+    init_member_understanding_data();
     init_planner_account();
-    PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, "path-travel": TRAVEL_ACCOUNT_CONTRACT.maxBytes, rehearsal: MAX_IMPORT_BYTES, "family-album": LIMITS.export, "platform-library": 64 * 1024 });
+    PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, "path-travel": TRAVEL_ACCOUNT_CONTRACT.maxBytes, rehearsal: MAX_IMPORT_BYTES, "family-album": LIMITS.export, "platform-library": 64 * 1024, "member-insight": MEMBER_ACTIVITY_LIMITS.maxBytes, "member-understanding": MEMBER_UNDERSTANDING_LIMITS.maxBytes });
     PERSONAL_RESOURCES = Object.freeze(Object.keys(PERSONAL_LIMITS));
     FAMILY_MANIFEST_FORMAT = "synk-family-album-manifest";
     PERSONAL_MEDIA_LIMITS = Object.freeze({ image: LIMITS.photo, audio: LIMITS.audio, total: LIMITS.total });
@@ -7358,12 +10915,14 @@ var init_personal_data = __esm({
     fail5 = (code, message) => {
       throw Object.assign(new TypeError(message), { code });
     };
-    invalid2 = () => fail5("PERSONAL_DATA_INVALID", "저장할 개인 기록의 형식을 확인해 주세요.");
+    invalid4 = () => fail5("PERSONAL_DATA_INVALID", "저장할 개인 기록의 형식을 확인해 주세요.");
     record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
     fields = (value, names2) => record2(value) && Object.keys(value).every((key) => names2.includes(key));
-    uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+    uuid3 = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
     mediaTypes = Object.freeze({ image: ["image/jpeg", "image/png", "image/webp"], audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4"] });
     mediaKind = (slot) => slot === "photo" ? "image" : "audio";
+    FAMILY_ALBUM_OPTIONAL = Object.freeze(["storyteller", "skippedQuestions"]);
+    familyOptional = (value) => Object.fromEntries(FAMILY_ALBUM_OPTIONAL.filter((key) => Object.hasOwn(value, key)).map((key) => [key, value[key]]));
   }
 });
 
@@ -7379,10 +10938,10 @@ function validateMediaRequest(operation, values) {
   if (operation === "assetUpload") {
     const bytes = buffer(values.bytes);
     if (Object.keys(values).some((key) => !["kind", "mime", "bytes"].includes(key)) || !Object.hasOwn(types, values.kind) || !types[values.kind].includes(values.mime) || !bytes || !bytes.length || bytes.length > PERSONAL_MEDIA_LIMITS[values.kind]) throw fault("INVALID_REQUEST");
-  } else if (Object.keys(values).some((key) => key !== "assetId") || !uuid2(values.assetId)) throw fault("INVALID_REQUEST");
+  } else if (Object.keys(values).some((key) => key !== "assetId") || !uuid4(values.assetId)) throw fault("INVALID_REQUEST");
 }
 function own(data, ownerId) {
-  if (data?.ok !== true) throw Object.assign(fault(data?.error?.code || "MEDIA_TRANSFER_FAILED"), ["ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED"].includes(data?.error?.code) && uuid2(data?.error?.assetId) ? { assetId: data.error.assetId } : {});
+  if (data?.ok !== true) throw Object.assign(fault(data?.error?.code || "MEDIA_TRANSFER_FAILED"), ["ASSET_NOT_FOUND", "ASSET_NOT_CONFIRMED"].includes(data?.error?.code) && uuid4(data?.error?.assetId) ? { assetId: data.error.assetId } : {});
   if (data.scope !== "synk-personal" || data.resource !== "family-album" || data.accountId !== ownerId) throw fault("ACCOUNT_CHANGED");
   return data;
 }
@@ -7477,7 +11036,7 @@ async function requestPersonalMedia({ operation, values, ownerId, api, fetcher, 
   if (operation === "assetUpload") {
     const bytes2 = buffer(values.bytes).slice(), sha256 = await hash(bytes2);
     const prepared = await invoke({ action: "media-upload", kind: values.kind, mime: values.mime, size: bytes2.length, sha256 });
-    if (!uuid2(prepared.assetId)) throw fault();
+    if (!uuid4(prepared.assetId)) throw fault();
     await transfer(signedUrl(prepared.uploadUrl, { origin, ownerId, assetId: prepared.assetId, upload: true }), { bytes: bytes2, mime: values.mime, size: bytes2.length });
     const confirmed = await invoke({ action: "media-confirm", assetId: prepared.assetId });
     const result = validateMediaResponse(confirmed, { operation, values, ownerId });
@@ -7492,11 +11051,11 @@ async function requestPersonalMedia({ operation, values, ownerId, api, fetcher, 
   guard();
   return validateMediaResponse({ ...data, bytes }, { operation, values, ownerId });
 }
-var uuid2, fault, types, buffer;
+var uuid4, fault, types, buffer;
 var init_personal_media = __esm({
   "experiences/synk-account/src/personal-media.mjs"() {
     init_personal_data();
-    uuid2 = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
+    uuid4 = (value) => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
     fault = (code = "INVALID_RESPONSE") => Object.assign(new Error("앨범 원본 파일을 확인하지 못했어요. 현재 앨범을 유지하고 다시 시도해 주세요."), { code });
     types = { image: ["image/jpeg", "image/png", "image/webp"], audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4"] };
     buffer = (value) => value instanceof ArrayBuffer ? new Uint8Array(value) : ArrayBuffer.isView(value) && value.buffer instanceof ArrayBuffer ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength) : null;
@@ -9466,6 +13025,7 @@ var esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;"
 var librarySequence = 0;
 function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
 }, native = false, getDevice = () => ({}), getAppIds = () => ACTIVE_PLATFORM_APP_IDS, onChange = () => {
+}, onFavoritesChanged = () => {
 }, onOpen = () => {
 }, onLogin = () => {
 }, onManage = onLogin, storage = globalThis.localStorage } = {}) {
@@ -9474,6 +13034,8 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   let recoveryOwner = null;
   let accountAdapter = null, nativeVerification = null, nativeVerificationNotice = null;
   let documentOwner = null, documentReady = false;
+  let favoriteIntent = null;
+  const favoriteSignature = (value) => JSON.stringify(projectPlatformLibrary(value, { appIds: entryIds() }).favorites);
   const readyWaiters = /* @__PURE__ */ new Set();
   function readiness() {
     if (disposed || pageSuspended) return false;
@@ -9716,11 +13278,14 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   async function change(action) {
     if (!notebook?.canEdit) throw new Error("계정 연결과 저장 상태를 먼저 확인해 주세요.");
     const expected = modeVersion, next = updatePlatformLibrary(doc, action, Date.now(), entryIds());
+    const favoriteChange = ["favorite", "move-favorite"].includes(action.type) && favoriteSignature(next) !== favoriteSignature(doc) ? { version: expected, owner: documentOwner, signature: favoriteSignature(next) } : null;
+    if (favoriteChange) favoriteIntent = favoriteChange;
     doc = next;
     message = "";
     const result = notebook.change(next);
     render();
     if (!await result) {
+      if (favoriteIntent === favoriteChange) favoriteIntent = null;
       if (expected !== modeVersion) return false;
       throw new Error("변경을 보관하지 못했어요. 저장 상태를 확인해 주세요.");
     }
@@ -9757,6 +13322,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         description: "즐겨찾기·최근 열기·직접 적은 메모만 연결합니다. 앱 원문과 이용 권한은 각 앱에서 확인해요.",
         getState: () => doc,
         applyState: (value, { guest = false } = {}) => {
+          favoriteIntent = null;
           doc = validatePlatformLibrary(value);
           documentReady = !guest;
           clearNoteSession();
@@ -9769,7 +13335,19 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
         deleteLabel: "계정 라이브러리 삭제·저장 끄기",
         deleteConfirmation: "이 계정의 즐겨찾기·최근 열기·이어쓰기 메모를 삭제하고 저장을 끌까요? 다른 기기에서도 이 목록을 다시 불러올 수 없어요. 각 앱의 원본 기록은 유지돼요.",
         onStatusChange: () => queueMicrotask(render),
+        // change() only queues the edit. Observe the validated server ACK, and
+        // only the latest still-visible choice in the same account generation.
+        onDocumentSaved: (value) => {
+          const intent = favoriteIntent;
+          if (!intent || disposed || pageSuspended || intent.version !== modeVersion || intent.owner !== documentOwner || favoriteSignature(value) !== intent.signature || favoriteSignature(doc) !== intent.signature) return;
+          favoriteIntent = null;
+          void Promise.resolve().then(() => {
+            if (!disposed && !pageSuspended && intent.version === modeVersion && intent.owner === documentOwner) return onFavoritesChanged();
+          }).catch(() => {
+          });
+        },
         onDocumentRemoved: () => {
+          favoriteIntent = null;
           void recovery.clear();
         },
         beforeNavigate: () => {

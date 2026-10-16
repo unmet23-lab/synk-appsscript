@@ -11,6 +11,7 @@ for (let i = 0; i < args.length; i++) {
   if (!['--talk-root', '--source-root'].includes(args[i]) || !args[++i]) throw new Error('Usage: build-synk-account.js [--check] [--talk-root path] [--source-root path]');
 }
 const sourceRoot = option('--source-root', root), talkRoot = option('--talk-root', path.resolve(root, '../SYNK-talk'));
+require('./build-member-activity.js').buildMemberActivity({ sourceRoot, check });
 const dir = path.join(root, 'experiences/synk-account'), hashes = {};
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 // Text (code, styles, markup, the manifest) is written, compared and hashed with LF line ends, so a
@@ -46,6 +47,7 @@ output('assets/tex-blush.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디�
 for (const file of ['SYNKSans-ui.woff2', 'SYNKSans-rest.woff2', 'SYNKArrow.woff2', 'InterTight-Regular.woff2', 'InterTight-Medium.woff2', 'DMMono-Medium.woff2']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트/플랫폼_웹', file)));
 // 플랫폼 카드(235px)·상세(453px)에는 800px 사본이면 고해상도 화면에서도 같아 보인다(168KB→99KB).
 output('assets/path-vr-felt.webp', fs.readFileSync(path.join(sourceRoot, 'experiences/path-vr/assets/path-vr-felt-800.webp')));
+output('member-insight.css', fs.readFileSync(path.join(sourceRoot, 'desktop/renderer/member-insight.css')));
 for (const file of ['studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
 // 회원 혜택 그림 세 장은 웹에서 보이는 크기에 맞춘 판이다(이름·형식 그대로, 데스크톱 앱은 원본을 쓴다).
 for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', file)));

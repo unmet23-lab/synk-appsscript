@@ -70,14 +70,14 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     onAuthChanged:callback=>subscribe('auth',callback),onClientsChanged:callback=>subscribe('clients',callback),onClientProgress:callback=>subscribe('progress',callback),...bridgeOverrides};
   // Auth-only fixtures have no saved cloud library or consent. Keep their
   // existing suite-retry transport separate from the real platform hydration.
-  if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>operation==='platformLoad'?{ok:true,scope:'synk-personal',resource:'platform-library',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
+  if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>['platformLoad','insightLoad'].includes(operation)?{ok:true,scope:'synk-personal',resource:operation==='platformLoad'?'platform-library':'member-insight',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-insight-view','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-activity-controller','member-understanding-controller','member-understanding-host','member-insight-view','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-insight-view|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-activity-controller|member-understanding-controller|member-understanding-host|member-insight-view|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
@@ -117,7 +117,11 @@ async function autoLibraryFixture(t,{initialAuth=signedIn,request,bridgeOverride
   let identity=initialAuth;const calls=[];
   const f=await fixture({initialAuth,libraryDOM:true,storageEntries,bridgeOverrides:{
     authSignIn:async()=>{calls.push({operation:'OAuth'});return identity;},
-    accountRequest:async(operation,params={})=>{const owner=identity.account?.synk_user_id;calls.push({operation,owner,params});if(request)return request(operation,params,owner);assert.equal(operation,'platformLoad');return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:cloudLibrary()};},...bridgeOverrides,
+    accountRequest:async(operation,params={})=>{const owner=identity.account?.synk_user_id;calls.push({operation,owner,params});
+      // Successful app opens and favorite changes re-read their independent
+      // activity consent. No document means collection remains disabled.
+      if(operation==='insightLoad'){assert.deepEqual(Object.keys(params),[]);return {ok:true,scope:'synk-personal',resource:'member-insight',accountId:owner,revision:0,updatedAt:null,state:null};}
+      if(request)return request(operation,params,owner);assert.equal(operation,'platformLoad');return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:cloudLibrary()};},...bridgeOverrides,
   }});
   t.after(()=>f.continuity().dispose());
   const emit=f.emit;f.emit=(channel,value)=>{if(channel==='auth')identity=value;emit(channel,value);};
@@ -204,7 +208,8 @@ test('actions waiting for automatic hydration use only device storage when accou
     return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:{...cloudLibrary(),consent:false,favorites:[],recent:[],notes:[]}};
   }});
   await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();
-  const saved=JSON.parse(f.storage.get(viewKey('student-a')));assert.ok(saved.favorites.includes('world'));assert.ok(saved.lastLaunch.world>0);assert.equal(f.continuity().connected(),false);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);
+  const saved=JSON.parse(f.storage.get(viewKey('student-a')));assert.ok(saved.favorites.includes('world'));assert.ok(saved.lastLaunch.world>0);assert.equal(f.continuity().connected(),false);
+  assert.deepEqual(f.calls.map(({operation,owner})=>[operation,owner]),[['platformLoad','student-a'],['insightLoad','student-a'],['insightLoad','student-a']]);
 });
 
 test('a waiting favorite or launch cannot transfer into a different verified account',async t=>{
@@ -214,14 +219,16 @@ test('a waiting favorite or launch cannot transfer into a different verified acc
     return {ok:true,scope:'synk-personal',resource:'platform-library',accountId:owner,revision:1,updatedAt:null,state:{...cloudLibrary(),favorites:[],recent:[]}};
   }});
   await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();f.emit('auth',account('student-b',['world'],{sessionGeneration:2}));await settleLibrary();gate.resolve();await actions;await settleLibrary();
-  assert.equal(f.continuity().projection().favorites.length,0);assert.equal(f.continuity().projection().recent.length,0);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad','platformLoad']);
+  assert.equal(f.continuity().projection().favorites.length,0);assert.equal(f.continuity().projection().recent.length,0);
+  assert.deepEqual(f.calls.map(({operation,owner})=>[operation,owner]),[['platformLoad','student-a'],['insightLoad','student-a'],['platformLoad','student-b']]);
 });
 
 test('failed automatic hydration does not silently save an account action into device preferences',async t=>{
   const gate=deferred();let launches=0;
   const f=await autoLibraryFixture(t,{bridgeOverrides:{getClients:async()=>[installedClient],launch:async()=>{launches++;return {ok:true};}},request:async operation=>{assert.equal(operation,'platformLoad');await gate.promise;return {ok:false,error:{code:'NETWORK_FAILED'}};}});
   await f.ready;await settleLibrary();const actions=Promise.all([f.click('favorite'),f.click('primary-action')]);actions.catch(()=>{});await settleLibrary();gate.resolve();await actions;await settleLibrary();
-  assert.equal(launches,1);assert.equal(f.continuity().projection(),null);assert.equal(f.storage.get(viewKey('student-a')),null);assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.match(f.element('toast').textContent,/계정 기록을 확인하지 못했어요/);
+  assert.equal(launches,1);assert.equal(f.continuity().projection(),null);assert.equal(f.storage.get(viewKey('student-a')),null);
+  assert.deepEqual(f.calls.map(({operation,owner})=>[operation,owner]),[['platformLoad','student-a'],['insightLoad','student-a']]);assert.match(f.element('toast').textContent,/계정 기록을 확인하지 못했어요/);
 });
 
 for(const succeeds of [true,false])test('pending library action blocks close and releases it after '+(succeeds?'successful hydration':'failed hydration'),async t=>{

@@ -1,5 +1,198 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-insight-20261014"></a>
+## 2026-10-14 회원 혜택 — 내 성향 확인하기
+
+사용자 요청은 기존 Atlas가 개인별로 수집한 정보로 자신을 이해할 수 있는 화면이다. 후속 선택은 **나의 관심사·선호 / 학습 성향·성장을 나눠 함께 보기**다. 회원 혜택의 `insight`에서 바로 열며, 새 설치 앱이나 이용 권한을 만들지 않는다.
+
+아래 네 항목은 최초판의 범위다. 현재 추가한 이용 기록·기간 비교·다음 활동은 이어지는 ‘후속 3개 확장’에 정리한다.
+
+- **나의 관심사·선호:** 직접 밝힌 배우는 이유와 직접 고른 도움·설명·글씨·움직임·소리 설정. 지금의 계정 요약에 없는 일반 취향이나 다른 서비스의 사적인 기록을 추측하거나 합치지 않는다.
+- **학습 성향·성장:** 전체 응답·혼자 응답·도움받은 응답의 누적 횟수와 기존 Vellum의 항목별 안내·다시 볼 내용. 같은 문항 재응답도 누적되므로 고유 문항 개수로 표시하지 않는다. `independent`는 오답도 포함하므로 ‘혼자 맞힌 수’로 표시하지 않는다. 단일 시점 요약에서 성장률·성격 유형·급수를 만들어 내지 않는다.
+- **근거와 날짜:** 직접 선택/연습 기록을 나누고 근거를 펼쳐 볼 수 있다. `asOf`는 요약 확인 시각, `practice.lastAt`은 마지막 연습 시각이다. 설정·이유의 입력 시점은 현재 API가 제공하지 않는다. 항목별 독립 수행 표본은 최근 30일의 선택 난이도·응답 형식 최대 12개이므로 전체 정답률로 확대하지 않는다.
+- **계정·동의:** 기존 `atlasSummary()` → `synk-account?view=atlas`만 읽는다. 서버의 동의가 꺼졌거나 `declared-only`이면 배우는 이유만 표시한다. 로그아웃·계정 전환·백그라운드 이동·혜택 화면 이탈 시 화면용 요약을 비우고, 재진입 때 다시 읽는다. 별도 프로필·로컬 저장·LLM 호출은 없다. 정보 수정은 기존 SYNK ID로 연결하며 PC의 웹 계정 설정은 브라우저에서 별도 로그인할 수 있다.
+
+<a id="member-insight-expanded-20261014"></a>
+### 후속 3개 확장 — 2026-10-14
+
+사용자가 일반 관심사 확장 → 기간 비교 → 다음 활동 연결을 모두 진행하도록 승인했다. 아래는 후속 구현 계약이며, 앞선 공개판·PC 설치본의 완료 증거와 구분한다.
+
+- **관심사 확장:** `member-insight` 개인문서의 별도 동의는 기본 꺼짐이다. 켠 뒤 플랫폼에서 WORLD·워크스페이스·PATH·PULSE를 연 사실(`appId`, UUID, 시각)과 직접 고른 즐겨찾기만 연결한다. 앱 내부 내용·메모·고객 자료·체류 시간은 읽지 않는다. 열기 관찰과 직접 선택을 구분하며 성격 유형이나 관심의 강도로 해석하지 않는다. 기록을 저장할 때 90일이 지난 항목과 최근 2,000건을 넘는 항목을 정리한다. 사용하지 않는 계정의 만료 항목을 정기 삭제하는 작업은 이번 범위에 없으며, 끄면 문서의 관찰·즐겨찾기·시작 시각을 비운다. 계정 소유권·CAS는 기존 개인자료 API를 재사용하고, 로컬 저장이나 추가 LLM 호출은 없다.
+- **기간 비교:** 최근 30일과 그 이전 30일의 열기/응답 횟수·활동일을 비교한다. 학습 응답은 전체 Trail 이력에서 도움·이전 노출을 판정한 뒤 실제 발생 시각으로 나눈다. 활동일은 한국 시간 기준이다. 이용 기록은 두 기간의 동의 범위·자료가 충분할 때만 차이를 표시하고, 저장 한도로 잘린 기간이나 빈 기간은 비교 불충분으로 안내한다. 응답량 차이는 실력 성장이나 학습 효과를 뜻하지 않는다.
+- **다음 활동:** 근거가 있는 기존 앱을 여는 버튼을 제공한다. 학습 안내는 ‘WORLD에서 연습 고르기’이며 특정 문항이 자동 시작된다고 약속하지 않는다. 서버가 임의 링크를 지정할 수 없고, 기존 설치·로그인·회사 권한 및 실행 경로를 유지한다. 실행에 실패하면 관찰 기록을 추가하지 않는다.
+- **계정·동의 경계:** 학습 동의와 앱 이용 동의를 독립적으로 표시한다. 계정·세션 전환 시 RAM의 관찰과 지연 응답을 폐기한다. 쓰기 전 최신 문서를 확인하고 충돌 시 같은 UUID로 제한 재시도하며, 다른 기기의 철회를 자동으로 되돌리지 않는다. 철회는 이미 꺼진 문서에도 CAS를 진행해 이전에 시간 초과한 저장이 뒤늦게 연결을 되살리지 못하게 한다.
+- **구현 원천:** `atlas/member-activity.js`·`atlas/trail-periods.js`·기존 `account-summary.js`·Vellum을 사용한다. 브라우저와 PC는 `tools/build-member-activity.js`로 만든 동일 원천 번들과 SHA manifest를 쓰며, 개인자료 형식은 `experiences/synk-account/src/member-activity-data.mjs` 한 곳에서 관리한다.
+
+기존 조사에서 채택한 기간·근거·빈 상태 원칙을 재사용했다. [Apple Music Replay의 월별·연간 실제 이용 집계](https://support.apple.com/en-ie/109356), 아래 Daylio의 기간 회고, Oura의 기준선·해석 한계를 참고하되 제품별 최소 표본 수·효과 주장을 SYNK 기준으로 가져오지 않는다. 안내를 읽고 실제 다음 활동으로 이동할 수 있는지는 합성 웹·Electron 화면에서 별도 확인한다.
+
+후속 구현 검증은 소스 웹 67/67, 격리 Electron 100/100, 공개 후보 웹 67/67을 통과했다. 320·390·1440px의 밤/낮 화면, 동의 철회·계정 교체·늦은 응답·다음 활동 이동을 확인했으며 외부 실계정과 설치 프로필은 사용하지 않았다. [화면 검증](../experiences/synk-account/qa/member-insight-expanded-20261014/) · [공개 후보 검증](../.tmp/member-insight-expanded-20261014/web-qa/browser-result.json).
+
+공개 웹은 기존 홈페이지 변경을 포함한 부모 `145e187a2bbc` 위에 `9c3e03798895`로 반영했다. 2026-10-14 19:45 KST에 Pages와 사이트 전체 자동 검사 모두 성공했고, 공개 JS·CSS가 HTTP200이며 검증 후보와 크기·전체 SHA256이 일치했다. HTML의 성향 CSS·플랫폼 스크립트 링크도 확인했다. [공개 화면](https://synk.im/account/platform.html#benefits/insight) · [공개 검증 증거](../.tmp/member-insight-expanded-20261014/web-publication.json). 실제 사용자 계정으로 새 이용 동의를 켜거나 기록을 만들지는 않았다.
+
+계정 서버는 신규 migration `20261014200000_synk_member_insight_c18.sql` 적용 후 `synk-personal` v33, `synk-account` v58로 반영했다. 운영 원문 18개 중 2개만 변경했고 나머지 16개·의존 파일 37개와 npm 해석을 보존했다. 원격 모듈 SHA, ACTIVE/JWT, 익명 401, RLS·개인문서 권한·계정 삭제 연동을 모두 확인했다. 기존 c18 계약판은 유지하며 실제 사용자 자료·동의는 변경하지 않았다. [원격 배포 검증](../.tmp/member-insight-expanded-20261014/backend-deployment/2026-10-14T10-32-29-673Z/journal.json).
+
+PC는 기존 실제 조작 중단 상태를 유지하고 **다음 릴리스용 소스 꾸러미까지만 준비**했다. 0.4.12 부모의 122파일을 그대로 보존하고 9파일 변경·5파일 추가로 총 136파일이다. 후보 자체의 회귀 197/197과 역변환·생성물 재현 등 8검증을 통과했다. 설치파일 빌드·버전 지정·실제 설치·재실행·푸시 확인은 이번 후속 완료에 포함하지 않는다. [PC 인계 문서](../.tmp/member-insight-expanded-20261014/desktop-candidate/README.txt) · [후보 검증](../.tmp/member-insight-expanded-20261014/desktop-candidate/verification.json).
+
+<a id="member-understanding-20261014"></a>
+### 자기이해와 확인·수정 — 네 가지 확장, 2026-10-14
+
+사용자는 기존 Atlas로 구체적 관심, 반복 패턴, 종합 설명, 본인 확인·수정의 다음 분석 반영까지 구현하도록 요청했다. 기존 두 영역을 유지하고 상단의 종합 설명에서 확인·수정 → 저장 → 바뀐 설명 → 재진입 → 되돌리기를 연결한다.
+
+- **구체적인 관심:** 여행·진로·영상·디자인·AI 도구·협업의 세부 주제를 직접 선택한다. 학습한 내용은 Trail의 실제 개념 ID를 Strata의 이름과 연결해 보여 주고, 관심인지 연습 때문인지는 본인이 확인한다. 앱을 열었다는 사실만으로 영상 취향·여행 목적 등을 추론하지 않는다.
+- **반복 패턴:** 최근 30일 중 3회 이상이면서 서로 다른 3일 이상 관찰된 앱 열기·듣기/읽기·응답 방식을 표시한다. 횟수와 날짜를 함께 보여 주며 학습 실력이나 고정된 성격으로 확장하지 않는다.
+- **종합 설명:** Core의 기존 interpretation·domain과 Vellum으로 직접 선택, 관찰, 본인이 확인한 해석을 구분한 설명을 만든다. 가장 최근의 활성 확인·수정을 우선 표시한다. 직접 쓴 설명은 본인 발언으로 인용하며 분류 지시나 관찰 사실로 사용하지 않는다. 현재 자료가 부족하면 빈 근거를 알린다. 추가 LLM 호출·별도 엔진·성격 진단은 없다.
+- **확인·수정과 다음 분석:** ‘맞아요 / 달라요 / 상황마다 달라요’와 선택값 수정, 200자 메모를 미리 본 뒤 명시적으로 저장한다. 다음 조회에서 직접 수정한 값을 우선하고 거부한 해석은 채택하지 않는다. 실제 관찰 수치는 그대로 유지한다. 개별 되돌리기와 전체 삭제가 가능하며 원래 앱·학습 기록을 삭제하지 않는다.
+
+명시적으로 확인한 관심에서 다음 활동도 연결한다. 진로는 PATH, 영상·디자인은 PULSE, 협업은 워크스페이스, 실제 학습 내용에 대한 관심은 WORLD의 연습 선택으로 이어진다. 여행·AI 도구에 임의 목적지를 만들지 않는다. 앱 권한과 설치 조건은 기존 실행 경로에서 확인한다. 도움·설명 선택 수정은 이 화면의 설명에 사용하며 실제 앱 설정을 몰래 바꾸지 않는다.
+
+확인·수정은 기존 개인자료 저장소의 별도 member-understanding 문서에 보관한다. 관찰과 자기보고를 분리하고 구판 member-insight 저장이 확인·수정을 덮어쓰지 않게 했다. Platform 전용 고정 메서드, 계정 소유권, CAS, 삭제 revision, RLS·계정 삭제 연동을 재사용한다. 관찰 기록을 이 문서에 자동 적재하지 않으며 편집 초안은 RAM에만 둔다. 같은 항목을 다른 기기에서 바꾸면 자동으로 덮지 않고 충돌을 안내한다. 응답 시간 초과 뒤 재시도는 같은 제출 UUID를 사용한다.
+
+확인한 해석은 원래 근거의 종류·동의 세대·의미가 같은 동안만 적용한다. 연결을 끄거나 근거가 바뀌면 과거 확인을 새 근거에 붙이지 않는다. 확인·상황별 응답의 신선도는 기존 Core의 30일 계약을 쓰고, 거부는 같은 의미의 해석이 유지되는 동안 보존한다. 직접 고른 값은 변경·삭제할 때까지 유지하며 자료 연결이 필요한 항목은 연결이 꺼지면 적용하지 않는다. 저장된 내역과 현재 적용 여부를 구분한다.
+
+원문은 atlas/member-understanding.js·member-understanding-contract.js, trail-member-observations.js, 기존 account-summary.js·Vellum이다. 자료 형식은 experiences/synk-account/src/member-understanding-data.mjs 한 곳에서 관리한다. 웹·PC는 동일한 생성물 네 모듈과 검증 manifest, 공통 member-understanding-controller.mjs·member-understanding-host.mjs를 소비한다.
+
+이번 수정은 기존 아래 비교를 바탕으로 설명의 수정·반영·되돌리기를 추가 조사했다(2026-10-14, 공식 문서 4개·공개 사용자 토론 4개에서 관련 댓글 12개 표본). [Spotify의 Taste Profile](https://support.spotify.com/nz/article/your-taste-profile/)·[공식 발표](https://newsroom.spotify.com/2026-09-23/taste-profile-shape-home-feed/)는 프로필 설명과 본인 수정을 연결한다. [사용자 토론](https://www.reddit.com/r/truespotify/comments/1wow6gm/new_taste_profile_feature_thoughts/)의 발견 기대와 반복 불만을 참고해 ‘저장됨’과 실제 설명 반영을 구분한다. [YouTube 피드백 관리](https://support.google.com/youtube/answer/6342839?hl=en)·[되돌리기 질문](https://www.reddit.com/r/youtube/comments/1rs08fd/how_do_i_undo_the_do_not_recommend_channel_on_yt/), [Pinterest 자료별 조절](https://help.pinterest.com/en/article/tune-your-home-feed)·[추천 불만](https://www.reddit.com/r/Pinterest/comments/1vz3v45/not_getting_homefeed_recommendations_anymore/), [Spotify 제외 내역 질문](https://www.reddit.com/r/truespotify/comments/1vrf70x/where_is_the_list_of_songs_i_excluded_from_my/)에서 항목별 근거와 지속적으로 찾을 수 있는 되돌리기를 채택했다. 일부 토론의 정확한 게시일·전체 반응은 미확인이며 작은 사용성 표본을 인기나 효과의 증거로 쓰지 않는다.
+
+검증은 Core 관련 32개, 모델·화면 40개, 공통 저장 제어 11개(계정 전환의 36개 Promise 순서 포함), 동결 서버 후보 64개를 통과했다. 소스 웹 103개·격리 Electron 136개 기능 검사 이후 실제 화면에서 낮 테마의 메모 대비·체크 표시 겹침을 수정했다. 같은 계정 세대에서 동적 학습 항목이 사라져도 미저장 메모·취소에 접근할 수 있고, 계정을 다시 검증해 세대가 바뀌면 RAM 초안을 폐기한다. 기존 Strata 예문 문자열 불일치와 공용 dirty 서버 생성물 전체 바이트 검사는 별개이며, 후자는 실제 배포 후보의 API·검증·정리 export와 행동 시험으로 검증했다.
+
+계정 서버는 migration 20261014210000 적용 후 synk-personal v34·synk-account v59로 반영했다. 운영 원문 18개 중 2개만 바꾸고 나머지 16개·의존 파일 37개와 npm 해석을 보존했다. 원격 전체 SHA, ACTIVE/JWT, 익명 401, RLS·개인문서 권한·계정 삭제 연동을 확인했다. 기존 실제 계정 자료·동의 변경은 없다. [운영 배포 증거](../.tmp/member-understanding-20261014/backend-deployment/2026-10-14T12-27-23-768Z/journal.json).
+
+PC 실제 설치·재실행은 기존 조작 중단 상태를 유지했다. 공개 저장소의 0.4.13 부모 bcc192c29a 기준으로 이전 성향 확장과 이번 변경을 합친 다음 릴리스용 소스를 준비했다. 중간 부모 136파일 중 127개 바이트 보존·9개 변경·6개 추가로 142파일이며, 후보 자체 시험 231/231과 무결성 검사 10/10을 통과했다. 설치파일 빌드·실제 설치·실행·재실행·실계정 왕복·푸시는 수행하지 않았다. [PC 인계 설명](../.tmp/member-understanding-20261014/desktop-candidate/README.txt) · [후보 검증](../.tmp/member-understanding-20261014/desktop-candidate/verification.json).
+
+공개 웹 최종 후보는 121/121 검사와 오류·예상 밖 요청·자산 누락 0을 확인했다. bcc192c29a 부모의 무관한 원문을 역패치로 보존하고 account 2파일만 9d50ddb100a4로 공개했다. 2026-10-14 21:49 KST에 공개 JS·CSS의 HTTP200·크기·전체 SHA256 일치와 HTML 파일 링크를 확인했다. [내 성향 화면](https://synk.im/account/platform.html#benefits/insight) · [후보 화면 검증](../.tmp/member-understanding-20261014/web-qa-final/browser-result.json) · [공개 HTTP 검증](../.tmp/member-understanding-20261014/public-http.json). 21:56 KST에 Pages·사이트 전체 자동 점검 모두 성공했고 공개 파일을 다시 대조했다. 전체 점검 중 기존 PULSE 이미지의 일시적 503은 새 화면의 읽기 전용 재검사 1회로 통과했으며 최초 실패 기록은 CI가 보존했다. [최종 공개 검증](../.tmp/member-understanding-20261014/web-publication.json). 실제 본인 계정에 확인·수정을 저장한 인수는 이번 합성 검증과 구분한다.
+
+<a id="member-statement-20261015"></a>
+### 상황별 종합 설명과 직접 쓴 수정 — 2026-10-15
+
+사용자는 단순한 항목 나열을 보완하고, 자신의 말로 고친 뜻이 다음 분석에도 반영되는지 실제 계정에서 확인하도록 요청했다. ‘내 말로 고치기 → 해석 미리보기 → 맞는 뜻 선택 → 반영 → 다음 조회 → 개별 되돌리기’를 기존 두 영역 안에 연결한다.
+
+- **원문과 확인:** 새 입력은 최대 500자이며 원문 구간을 인용해 최대 8개 뜻을 제안한다. 기본 선택은 0개다. 본인이 확인한 뜻만 저장하고, 입력을 바꾸면 이전 미리보기와 선택을 무효화한다. 기존 200자 메모는 자동으로 해석하지 않는다. 같은 상황의 상충하는 뜻은 함께 저장하지 않는다.
+- **지원 범위:** 현재 제품의 도움 방식·설명 길이·듣기/읽기·관심 주제와 처음 시도/익숙한 내용/바쁜 상황의 제한된 한국어 표현을 해석한다. 모든 자유문장을 이해하는 모델은 아니다. 부정은 반대 선호로 만들지 않으며, 타인·과거·가정·불확실하거나 해석하지 못한 구간은 ‘아직 반영하지 않은 부분’으로 표시한다.
+- **관계를 설명:** 확인한 기본 선호와 상황별 예외, 이전 선언과 현재 선언의 차이, 직접 고른 선호와 충분히 반복된 관찰의 일치·차이를 근거와 함께 설명한다. 원인·성격·실력은 추정하지 않는다. 기본 선호가 달라지면 이전 조건을 자동으로 새 선호에 붙이지 않는다. 종합 문장은 한 번만 표시하고 바로 아래에서 연결 근거를 펼친다.
+- **기존 Atlas 재사용:** 제품 어댑터 `experiences/synk-account/src/member-statement.cjs`와 제한된 문법 계약 `member-statement-contract.cjs`가 기존 Core `interpretation.prepare/review/resolve`, `domain.understand`, `conditional-preference.assess`, `ask.choose`를 소비한다. 저장한 원문·정확한 구간·확인한 뜻을 재검증하며 독립 LLM 실행기나 유료 API는 추가하지 않는다. 별도 공통 엔진 파일을 늘리지 않는다.
+- **자기보고와 관찰:** 이 화면에서 새로 확인한 자기보고는 기록 연결을 꺼도 보존한다. 연결을 끈 관찰과 비교하지는 않는다. 앱 설정·실제 관찰 횟수·학습 동의는 변경하지 않는다. 조건부 관심과 부정에서 일반적인 앱 추천을 만들지 않는다.
+- **저장 호환:** 같은 `member-understanding` 문서에서 첫 서술 확정 때만 v2(`reviews/overrides/statements`)로 승격한다. 최대 20개 원문·전체 64KiB를 유지한다. 서버 계정 잠금 안에서 CAS와 v2→v1 덮어쓰기를 검사하고, v2 전체 삭제에는 `document_version:2`를 요구한다. 구형 앱이 최신 revision을 읽더라도 새 내용을 지울 수 없다. 입력 초안은 RAM에만 두며 계정·세션 변경 시 폐기한다. 공개한 parserVersion의 검증 의미는 이후 버전에서도 보존한다.
+
+기존 조사를 2026-10-15에 좁게 재확인했다. [Spotify의 자유서술 수정과 삭제](https://support.spotify.com/nz/article/your-taste-profile/) 및 [YouTube의 피드백 관리](https://support.google.com/youtube/answer/6342839?hl=en)에서 편집·되돌리기를, [Oura의 저장한 기억 관리](https://support.ouraring.com/hc/en-us/articles/39512345699219-Oura-Advisor)에서 내역 접근을 참고했다. [Microsoft HAX의 불확실성 범위 조절](https://www.microsoft.com/en-us/haxtoolkit/guideline/scope-services-when-in-doubt/)과 [부분 수정 지원](https://www.microsoft.com/en-us/haxtoolkit/guideline/support-efficient-correction/)은 미리보기·미해석 표시·개별 확인에 적용했다. 기존 공식 문서 4개와 보조 공식 3개, 기존 토론 2개의 관련 댓글 6개·질문 본문 1개를 재확인한 표본이며 인기·만족도 전수조사는 아니다. 확인할 결과는 저장 알림 자체가 아니라 새 조회의 종합 문장과 되돌린 뒤의 설명이다.
+
+2026-10-15 서버는 개인자료 함수만 v35로 반영했다. 계정 함수 v59·SQL 계약은 그대로이며 의존 37파일과 npm 해석을 보존했다. ACTIVE/JWT·익명 401·원격 모듈 해시·기존 c18 계약을 확인했다. [배포 증거](../.tmp/member-understanding-statements-20261015/backend-deployment/2026-10-14T18-43-23-965Z/journal.json).
+
+공개 화면은 `7f8451ddf769`에 반영한 뒤, 실제 계정에서 발견한 자기보고가 있는데 빈 정보 안내가 함께 나오는 문제를 `da680c397e76`에서 고쳤다. 최종 후보 159/159 검사와 JS·CSS의 HTTP200·전체 SHA256 일치를 확인했다. [후보 검증](../.tmp/member-statement-20261015/candidate-web-qa-empty-state/browser-result.json) · [공개 파일 대조](../.tmp/member-understanding-statements-20261015/public-http.json).
+
+04:21 KST 최종 대조에서는 후속 WORLD 공개 `26cc803b0105`가 이 변경 바로 다음에 올라왔으며 account JS·CSS·HTML이 모두 보존됐음을 확인했다. Pages 성공, 공개 파일 HTTP200·SHA 일치와 HTML의 CSS/JS 링크를 다시 확인했다. 사이트 전체 점검은 처음 무관한 두 URL의 일시적 503으로 실패했고, 재검사는 후속 공개의 공통 실행 제한 때문에 취소됐다. 후속 커밋의 전체 검사는 당시 진행 중으로, 전체 사이트 검사 성공까지 확인했다고 보고하지 않는다. [후속 공개 보존·HTTP·워크플로 증거](../.tmp/member-understanding-statements-20261015/web-publication-following-main.json).
+
+실제 본인 계정에서 검증용 ‘혼자 시도 + 처음엔 예시’를 직접 확인해 저장한 뒤 전체 새로고침에서도 기본 선호·상황별 설명이 복원됐다. 이어 ‘지금은 함께 하기’를 확인하자 다음 서버 조회에서 선호 변화와 이전 조건의 재확인 필요가 표시됐다. 사용자 승인 뒤 두 검증 서술만 개별 되돌렸으며, 다시 새로고침해 수정 내역 0건·원래 설명·학습 횟수 6/0/6·앱 이용 연결 꺼짐을 확인했다. 검증 문장은 실제 성향으로 남기지 않았다. [실계정 왕복·복구 증거](../.tmp/member-understanding-statements-20261015/real-account/result.json).
+
+PC는 기존 실제 조작 중단을 유지했다. 공개 0.4.14 릴리스 원문 기준 142파일 중 11개만 바꾼 다음 릴리스 후보와 보존 검증을 준비했으며, 설치 파일 제작·실제 PC 업데이트·재실행·푸시 확인은 이번 결과에 포함하지 않는다. [PC 후보와 범위](../.tmp/member-understanding-statements-20261015/desktop-candidate/README.md).
+
+<a id="member-insight-optimization-20261015"></a>
+### 입력 최적화와 PC 반영 재개 — 2026-10-15
+
+사용자가 최적화와 이번 보완의 PC 설치·자동 연결·정상 재실행·전체 사이트 검사를 요청해 기존 PC 조작 중단을 해제했다. 푸시는 계속 보류한다. 기존 해석·확인·되돌리기 경험을 유지하며 `member-insight.mjs`는 RAM 편집 내용만 바뀐 경우 이미 표시한 분석을 재사용한다. 저장 문서의 전체 내용·revision·오류·대기 상태가 달라지거나 새 자료/재조회 알림을 받으면 다시 분석한다. 계정 전환·화면 이탈·새로고침·종료 때 비교 상태를 폐기한다. `member-insight-view.mjs`는 동일한 한국어/서울 시각 formatter를 공유한다. 지원하는 의미와 저장 계약·동의 범위는 늘리지 않았다.
+
+합성 20개 서술에서 50글자를 입력하는 로컬 측정은 Core 분석 50회→0회, 578ms→28ms였다. 이력 120개 화면의 렌더 중앙값은 6.51ms→0.70ms였다. 횟수는 재현 검사이고 시간은 해당 PC의 표본 측정으로 기기 전체 성능 보장이 아니다. 관련 81검사, 최종 공개 후보 159검사 통과. 0.4.14에서 남았던 런처 시험틀의 새 모듈·활동 기록 읽기 기대값을 실제 코드에 맞춰 수정해 관련 104검사도 통과했다. [최적화 측정·검사](../.tmp/member-insight-optimization-20261015/ui/validation.json) · [공개 후보](../.tmp/member-insight-optimization-20261015/ui/candidate-web-qa/browser-result.json) · [런처 회귀](../.tmp/member-insight-optimization-20261015/qa/renderer-auth-regression.json).
+
+웹 최적화 커밋은 `87237a222ecc`다. PC는 0.4.14 원문 142파일 중 11파일 변경·131파일 보존한 `0.4.15/build20261015.2`를 동결했다(sourceHash `408f61c72927d1565706bbee89b8f018940bd158248714f707dd37a7541b55b7`). 기존 WORLD·Workspace 0.4.11 자식 설치파일을 보존한다. Windows 패키지25·설치 회귀22, Mac ARM34/Intel37·각 위치 이동31·각 제품3개 아이콘 검사가 통과했다. 세 설치파일을 공개 주소에서 전부 다운로드해 SHA256을 확인하고 공통 다운로드·feed를 `2c1e31ec8c7e`로 게시했다. [동결 범위](../.tmp/member-insight-optimization-20261015/release/integration-scope.json) · [공통 게시](../.tmp/member-insight-optimization-20261015/release/installers/publication.json).
+
+설치 전 0.4.10 프로그램 77파일과 프로필 319파일·Suite 1파일을 별도 로컬 백업하고 전부 해시 대조했다. 같은 공개 Windows 설치기의 내장 InstallerEngine으로 실제 PC를 0.4.15로 교체했으며 75파일·버전·ASAR과 동결 소스142파일이 일치하고 설치 직후 프로필319+Suite1의 변경·추가·누락은 0이다. 실계정 첫 실행에서 수동 연결 없이 계정 라이브러리와 기존 기기 할 일2·결과2를 확인했고, 성향 두 영역·종합 설명·자유서술 편집기·기존 학습6/0/6·수정이력0·앱 이용 연결 꺼짐을 확인했다. 새 성향 저장은 하지 않았다. [백업](../.tmp/member-insight-optimization-20261015/pc/backup.json) · [설치](../.tmp/member-insight-optimization-20261015/pc/receipts/apply.json) · [프로필 보존](../.tmp/member-insight-optimization-20261015/pc/preservation-after-install.json) · [설치 소스·updater 대조](../.tmp/member-insight-optimization-20261015/pc/installed-verification.json).
+
+04:50 KST 정상 종료 후 프로세스0을 확인했다. 공개 feed 배포가 끝나기 전 첫 실행에는 구버전 feed 거부 안내가 있었으나, 공개 반영 후 재실행은 시작 우회 클릭0으로 통과하고 최신0.4.15로 표시됐다. 계정 라이브러리 자동 연결, 계정 메모7·완료7·별도 복구 제공, 기기 할 일2·결과2, 성향6/0/6·수정이력0을 다시 확인했다. `closeToTray=true`를 UI에서 원복한 뒤 저장값도 대조했고 내 성향 화면을 열어 뒀다. 새 로그인·수동 계정 연결·메모 편집/삭제·성향 저장·푸시 시험0이다. 이번 설치는 공식 InstallerEngine 적용이며 앱 안의 자동 업데이트 설치 왕복 시험으로 확대 해석하지 않는다. [실계정·재실행 결과](../.tmp/member-insight-optimization-20261015/pc/real-account-complete.json) · [실제 화면](../.tmp/member-insight-optimization-20261015/pc/insight-after-restart.png).
+
+05:01 KST 최종 공개 커밋 `2c1e31ec8c7e3d0da3895c714802a6520f475fa5`의 Pages(`38627058351`)·전체 사이트 검사(`38627061579`)가 모두 통과했다. 33페이지×PC/모바일·LAB8게임×PC/모바일·질문창 정상, 공개 한영 홈페이지의0.4.15·세 다운로드 링크·feed 일치, 최적화 JS469,996B와 기존 CSS28,818B의 전체 SHA256 일치 및 HTML 연결을 확인했다. 회사 서버도 고객 관리 CSS HTTP200·71,372B·SHA256 `42204c949c709ef5bdaaccdf97ef252090e6a9f4001c5bb9903b0c94aab673a7`와 루트 HTML의 CSS 링크를 다시 확인했다. [공개 대조](../.tmp/member-insight-optimization-20261015/public/final-verification.json) · [전체 검사 로그](../.tmp/member-insight-optimization-20261015/public/ci-38627061579.log) · [회사 CSS](../.tmp/member-insight-optimization-20261015/public/company-final-verification.json) · [완료 증거 목록](../.tmp/member-insight-optimization-20261015/completion.json). 요청한 최적화·공개·PC 설치·자동 연결·재실행·사이트 검사는 완료했고, 푸시 수신·클릭 이동 시험만 사용자 요청대로 보류한다.
+
+<a id="member-clarification-20261015"></a>
+### 문장 이해와 필요한 추가 질문 — 2026-10-15
+
+사용자는 기존 Atlas로 문장 이해와 추가 질문을 먼저 보완하고, 실제 계정 검증 후 공개 플랫폼과 PC 설치본에 반영하도록 요청했다. 푸시는 계속 보류한다. 기존 Core Interpretation·Domain·Ask·Conditional Preference를 재사용하며 별도 LLM 실행기나 유료 API를 추가하지 않는다. 위 조사에서 채택한 불확실성 표시·부분 수정·답변 내역 접근을 이어 적용한다.
+
+- 한국어 표현·절·순서·조건의 지원 범위를 넓혔다. ‘처음 배우는 일은 예시를 보고 감을 잡은 다음 혼자 해보고 싶어요’는 처음 시도의 예시 도움과 예시 이후 혼자 시도를 구분한다. 타인·과거·가정·인용을 본인 선호로 바꾸지 않으며, 문장 끝 공백과 복합 구두점이 있는 질문도 확정 서술로 처리하지 않는다.
+- 모호한 표현은 확인·현재 뜻 아님·잘 모르겠음·건너뛰기로 묻는다. 지원하지 않는 표현은 도움/설명/매체/관심 영역, 구체적인 뜻, 긍정/부정, 적용 상황 순으로 필요한 질문을 제공한다. 답변을 골라도 바로 저장하지 않으며 마지막에 본인이 선택한 해석만 반영한다. 질문이 남은 동안 버튼과 Enter 저장을 막는다.
+- 질문은 원문 전체 SHA256과 연결하고 최대 12개 답변의 순서·선택지·근거 구간을 다시 검증한다. 입력 수정·답변 다시 고르기·계정/세션 변경은 오래된 미리보기와 선택을 폐기한다. 저장한 답변 내역은 같은 서술에서 다시 확인할 수 있다.
+- 새 해석은 `member-statement-ko-2`이며 ko-1 검증기는 동결해 기존 기록의 뜻을 유지한다. 첫 ko-2 저장만 문서 v3로 승격하고 기존 ko-1 기록과 함께 보존한다. 서버는 revision 검사와 v2→v3 승격을 허용하되 구형 앱의 v3→v2 덮어쓰기·삭제를 차단한다. 새 기록을 모두 되돌려도 문서 버전은 낮추지 않는다.
+
+관련 회귀 252개, 최종 웹 후보 187개, 정확한 동결 소스의 격리 PC 화면 220개를 통과했다. 웹 오류·예상 밖 요청·누락과 PC 콘솔 오류·외부 통신은 0이다. 서버는 synk-personal v36으로 배포했고 synk-account v59·기존 SQL 계약·의존 37파일과 npm 해석을 보존했다. ACTIVE/JWT·익명 401·원격 모듈 해시를 확인했다. [관련 검사](../.tmp/member-clarification-20261015/ui/final-tests.tap) · [웹 후보](../.tmp/member-clarification-20261015/ui/candidate-web-qa-final/browser-result.json) · [동결 PC 후보](../.tmp/member-clarification-20261015/release/qa/frozen-feature/native-result.json) · [서버 배포](../.tmp/member-clarification-20261015/backend-deployment/2026-10-14T20-36-54-747Z/journal.json).
+
+PC는 0.4.15 원문 142파일 중 10파일 변경·132파일 보존한 `0.4.16/build20261015.3`을 동결했다(sourceHash `5d02b03e0aaeecb195f1288501889554d57eb5fd271a7ed28189baf2faf0bfd2`). 정확한 동결 소스에서 기능 220검사를 다시 통과했고, Windows 패키지25·설치 엔진22, Mac ARM34/Intel37·각 위치 이동31·아이콘3종 검사를 통과했다. WORLD/Workspace 0.4.11 묶음은 바이트 보존했다. [동결 범위](../.tmp/member-clarification-20261015/release/integration-scope.json) · [최종 빌드 검증](../.tmp/member-clarification-20261015/release/native-qa-verification.json).
+
+실제 PC는 정상 종료 후 프로그램77·프로필318·Suite1 파일을 백업하고, 공식 InstallerEngine으로 0.4.16을 설치했다. 설치75파일·ASAR·동결 소스142파일이 일치했고 설치 직후 프로필318+Suite1의 변경·추가·누락은 0이다. 실제 계정에서 순차 문장 두 해석을 미리보기로 확인한 뒤, 별도 검증 문장 한 건에 네 질문을 답하고 최종 해석을 선택해 저장했다. 새 서버 조회와 정상 종료→재실행 뒤 종합 설명과 답변4개가 유지됐으며, 공개 웹의 같은 계정에서도 같은 해석을 확인했다. 기존 학습6/0/6과 앱 이용 연결 꺼짐을 유지했다. 이후 사용자의 ‘검증용 1건만 지워’ 승인에 따라 해당 서술과 답변4개만 단일 되돌리기로 제거했다. PC 새 분석과 공개 웹 새 조회에서 내역0건·검증 해석 제거·기존 학습6/0/6과 연결 꺼짐 유지까지 확인했다. [설치](../.tmp/member-clarification-20261015/pc/receipts/apply.json) · [프로필 보존](../.tmp/member-clarification-20261015/pc/preservation-after-install.json) · [실제 계정 검증·정리](../.tmp/member-clarification-20261015/real-account/result.json).
+
+웹 두 파일은 `6c7401102d6b`, 공통 설치파일 다운로드와 업데이트 목록은 `dec6212096af`로 공개했다. 세 운영체제 파일을 공개 URL에서 전부 내려받아 전체 SHA256을 확인한 뒤 홈페이지·feed를 함께 갱신했다. 갱신된 공개 feed 기준 PC 정상 종료→재실행은 중간 버튼 조작·계정 재연결 없이 통과했고, 실제 설정 화면의 0.4.16 최신 안내와 저장한 성향을 확인했다. 검증 중 변경한 트레이에 남기기 설정도 원래의 켜짐으로 복원했다. 공개 전 후보 실행의 구버전 feed 거부 안내에서 ‘현재 버전 열기’를 두 번 사용한 이력은 이 최종 자동 통과 검증과 구분한다. [공통 게시 증거](../.tmp/member-clarification-20261015/release/installers/publication.json) · [최종 설치·업데이트 대조](../.tmp/member-clarification-20261015/pc/installed-verification.json) · [자동 시작 화면](../.tmp/member-clarification-20261015/real-account/pc-final-auto-start.png).
+
+06:12 KST 최종 공개 `dec6212096af`의 Pages(`38636863229`)·전체 사이트 검사(`38636863378`)가 모두 통과했다. 33페이지×PC/모바일·LAB8게임×PC/모바일·질문창 정상, 한영 홈페이지0.4.16·세 다운로드 링크·feed 일치, 공개 JS520,907B와 CSS29,989B의 전체 SHA256 일치 및 HTML 연결을 확인했다. 회사 서버의 고객 관리 CSS도 HTTP200·71,372B·SHA256 `42204c949c709ef5bdaaccdf97ef252090e6a9f4001c5bb9903b0c94aab673a7`와 루트 HTML 링크가 유지된다. 기능 보완·실제 계정 검증·공개 배포·PC 설치와 자동 연결·재실행을 완료했다. 검증용 한 서술도 사용자 승인 후 정리하고 공개·PC에서 원래 상태로 돌아왔음을 확인했다. 푸시 시험만 보류한다. [최종 공개 검사](../.tmp/member-clarification-20261015/public/final-verification.json) · [전체 사이트 로그](../.tmp/member-clarification-20261015/public/ci-38636863378.log) · [회사 CSS](../.tmp/member-clarification-20261015/public/company-final-verification.json) · [완료 기록](../.tmp/member-clarification-20261015/completion.json).
+
+<a id="member-language-expansion-20261015"></a>
+### 성향 표현·주제 범위 확장 — 2026-10-15
+
+사용자 요청으로 기존 Atlas Core의 Interpretation·Domain·Ask·Conditional과 Trail/Vellum 연결을 그대로 사용해 한국어 표현과 지원 주제를 넓혔다. 별도 LLM 하네스·모델 선택기·유료 호출은 추가하지 않았다. 소통 방식(듣고 정리·먼저 말하기·글·말), 일 처리(계획·시도하며 조정·한 가지·우선순위), 판단(근거·선택지 비교·경험·상의), 설명 구성(개요·핵심 근거·긴 설명)을 추가했다. 독서·음악·운동·요리·사진·게임·자연/산책도 관심사로 확인할 수 있다. 회의·협업·계획·결정의 상황 조건을 구분하고, 서로 함께 성립하는 선호를 억지로 하나만 고르게 하지 않는다.
+
+조사·명사화·공손형·부정·정도 부사·보조 동사·일상 동의 표현을 공통 문법층에서 처리한다. 원문과 근거 위치는 보존하며, 타인·과거·인용·가정·민감한 유형은 현재 내 성향으로 단정하지 않는다. 활동 사실(예: “게임을 해요”)도 관심이나 능력으로 바꾸지 않는다. 직접 이해하지 못한 말은 기존 추가 질문으로 확인하며, 본인이 선택해 저장한 해석만 다음 분석에 반영한다.
+
+새 `member-statement-ko-3` 행은 문서 v4에 저장한다. ko1/ko2 파서와 질문/답변 재생은 동결 원문을 유지한다(ko2는 공개 0.4.16과 LF 기준 동일). 기존 v1/v2/v3 저장·선택·설명을 보존하며, v4를 구클라이언트가 덮어쓰거나 삭제하지 못하도록 계정 잠금·CAS·정확한 문서 버전 확인을 유지한다. 새 일상 주제에 존재하지 않는 앱 추천이나 실제 학습 성과를 만들지 않는다.
+
+평가는 처음 고정한 개발72+미공개40, 이후 별도 미공개24+24로 진행했다. 최초 미공개 결과는 각각 기대 동작26/40, 7/24, 12/24이며 마지막 별도 평가의 직접 의미 재현율은6/18이었다. 이 실패를 공개해 공통 문법을 보완한 뒤 **160/160 회귀 문장, 명시106문장·115개 의미, 추가로 잘못 제안한 뜻0개**를 확인했다. 보류54문장도 의도한 질문·보류 동작인지 검사했다. 이는 수정에 사용한 합성 문장의 회귀 결과이며 실제 사용자나 새로운 자유문장의 정확도100%가 아니다. 모든 최초 결과와 최종 source SHA를 [평가 설명](../.tmp/member-language-expansion-20261015/evaluation/README.md)에 보존한다.
+
+관련 소스397시험, 공개 웹 후보197검사, 정확한 동결 PC 소스의 격리 Electron230검사, 서버 후보155시험을 통과했다. 서버는 synk-personal v37 운영 배포와 ACTIVE/JWT/익명401/원격 모듈 SHA 확인을 마쳤으며 계정v59·37개 의존 파일·SQL 계약은 보존했다. [서버 결과](../.tmp/member-language-expansion-20261015/backend-deployment/2026-10-15T03-27-49-881Z/journal.json) · [소스 검사](../.tmp/member-language-expansion-20261015/ui/final-tests.tap).
+
+공개 웹은 `921d818a9e28`, 최종 설치파일·feed·한영 홈페이지는 `161db6a33647`로 게시했다. PC 공통0.4.17/build20261015.4는 sourceHash `413b9baf5957dfd13fab043ec2b3ac4f0bc47c8c7c72ebbb7e1651ef625f5354`이며 기존142파일 중7개 변경·135개 및 WORLD/Workspace 묶음을 보존했다. Windows·Mac arm64·Mac x64 CI와 공개 설치파일3개 전체 다운로드 SHA 검증, 최종 Pages·전체 사이트 검사(회귀69/69), 공개 JS/CSS 해시·HTML 링크·업데이트 목록 검사를 통과했다. [최종 공개 검사](../.tmp/member-language-expansion-20261015/public/final-verification.json).
+
+2026-10-16 PC 검증을 마쳤다. 설치75파일·동결 소스142파일·ASAR 일치와 업데이트 상태 current0.4.17을 확인했다. 설치 직후 계정 프로필312파일·공통 계정1파일 보존을 대조했고, 실제 실행에서 수동 로그인/재연결 없이 기존 계정과 학습6/0/6을 불러왔다. 회의에서 듣고 정리하기·글로 소통하기·독서의 세 뜻을 미리보기로 확인한 뒤 저장 없이 취소했다. 정상 종료(잔류 프로세스0)→재실행에서도 자동 연결·학습6/0/6·확인/수정0건을 확인했으며 트레이 설정은 원복했다. 이번 판의 공개 웹 실계정 화면은 Chrome 탭 생성 도구 오류로 재검증하지 못했으며 공개 파일·합성 웹 검사와 실제 PC 계정 검증을 구분한다. 실계정 서술 저장/삭제0건이고 푸시 시험은 보류한다. [PC 설치 검사](../.tmp/member-language-expansion-20261015/pc/installed-verification.json) · [실제 PC 화면·결과](../.tmp/member-language-expansion-20261015/real-account/result.json) · [완료 기록](../.tmp/member-language-expansion-20261015/completion.json).
+
+<a id="member-language-unseen-20261016"></a>
+### 처음 보는 성향 문장 검증과 해석 보완 — 2026-10-16
+
+기존 Atlas의 문장 해석·질문 계약에서 명사화, 자기지시, 공손형·보조동사, 비교 양쪽의 어순, 여러 절의 공유 술어와 조건 범위를 보완했다. 명확한 선호는 다시 항목을 고르게 하지 않고 바로 미리보기로 제안한다. 이미 알아낸 뜻의 범위만 불확실하면 한 번 확인하며, 선택·최종 저장 전에는 분석에 적용하지 않는다. “글로만 소통하는 건 싫다”는 글 자체를 거부하는 뜻으로 확대하지 않는다. “평소에는”처럼 일반 상황을 명시하면 앞 절의 회의 조건을 이어 붙이지 않는다. 별도 LLM 실행기·모델 선택기·유료 호출은 추가하지 않았다.
+
+새 행은 `member-statement-ko-4`와 문서 v5를 사용한다. 공개 ko3 원문을 `member-statement-v3.cjs`에 바이트 그대로 동결했고 ko1·ko2·ko3 기록과 확인 답변 재생을 보존한다. 계정 잠금과 revision CAS 안에서 명시 저장할 때만 문서를 상향하며, 이전 클라이언트의 덮어쓰기·삭제와 미래 버전 변경을 막는다. 삭제·되돌리기 후에도 현재 문서 버전의 보호는 유지한다.
+
+합성 새 문장120개(진단80·미공개40)를 먼저 고정하고, 이후 마지막24도 구현자에게 공개하기 전에 고정했다. 진단80 보완 직후 미공개40의 최초 성공은13/40이었고, 다음 후보의 새24 최초 성공은10/24·명시4/18이었다. 실패한 표현을 수정에 사용한 뒤에는 모두 **회귀 검사**로 분류했다. 최종 계약 SHA `973796df567dc4fc8dd7c38dd0034406c7c82cb40c86cd33f5a5a3dd185b9b0c`에서 기존160+새144의 원라벨 점수302/304이며, 정답 자체가 모호한 H04(‘글로만’ 부정의 범위)·H30(조건의 절 범위)을 별도 판정해 제외하면302/302다. 명시212문장·230의미와 원문 위치를 확인했고 잘못 제안·누락은0이었다. 최초 결과·정답·후보 바이트는 수정하지 않았다. **최종 소스의 또 다른 미공개 문장 일반화는 미검증**이며, 회귀 통과를 자유문장 정확도100%로 표현하지 않는다. [평가 설명](../.tmp/member-language-unseen-20261016/evaluation/README.md) · [최종 회귀·한계](../.tmp/member-language-unseen-20261016/evaluation/summary-final.json).
+
+소스 시험은510개 중508통과·위 라벨 경계2개 명시 제외, 공개 웹 후보208검사·정확한 동결 소스의 격리 Electron241검사·서버 후보170시험을 통과했다. 서버는 synk-personal v38 운영 반영 후 ACTIVE/JWT/익명401과 원격 모듈 SHA를 확인했고, 계정 v59·의존 파일37개·SQL 계약은 보존했다. [서버 결과](../.tmp/member-language-unseen-20261016/backend-deployment/2026-10-15T22-00-38-644Z/journal.json) · [소스 시험](../.tmp/member-language-unseen-20261016/ui/final-tests.json).
+
+0.4.18/build20261016.1은 sourceHash `e73110ed9f1c4edea6d0d77f90d50a9a659bc16420557ad14407d0f17b4e2b16`으로 동결했다. 기존142파일 중 성향 관련5개만 바꾸고 나머지137개와 WORLD/Workspace 묶음을 보존했다. 공개 웹 `0efe5d5a68ce`와 공통 릴리스 `928b8d9d03cd`를 게시했으며, Windows·Mac 2종 설치파일 전체 공개 다운로드 SHA, 실제 feed·한/영 홈페이지의3종 링크·성향 JS/CSS HTTP200·SHA·HTML 연결을 확인했다. 최종 Pages38818133626·전체 사이트38818133703도 성공했다. [최종 공개 증거](../.tmp/member-language-unseen-20261016/public/final-verification.json).
+
+PC0.4.17 프로그램·계정 프로필·공통 계정을 백업한 뒤0.4.18을 설치했고, payload75파일·내부소스142파일과 ASAR 해시를 대조했다. 첫 실행 전 프로필312파일·공통계정1파일의 변경·누락·추가0을 확인했다. 최초 PC 실행 시 Esc로 조작이 중단됐으나 사용자의 재개 요청 뒤 실제 계정의 자동 연결·성향 두 영역 표시, 비교 표현의 즉시 제안·모호한 부정 범위의 단일 확인 질문을 미리보기로 확인했다. 저장하지 않고 취소했으며 기존 학습6/0/6·확인수정0건·이용기록 연결 꺼짐이 유지됐다. 정상 종료 후 창·프로세스0을 확인하고 재실행했을 때 추가 로그인·재연결 없이 계정과 성향 화면이 복원됐다. 원래 트레이 설정을 복구하고 성향 화면을 열어 두었다. 공개 웹 실계정 UI는 이번에 별도로 조작하지 않았으며 공개 바이트·합성웹 검증과 구분한다. 푸시 시험은 보류했다. [PC 실계정 증거](../.tmp/member-language-unseen-20261016/real-account/installed-verification.json) · [완료 증거](../.tmp/member-language-unseen-20261016/completion.json).
+
+<a id="member-insight-quality-20261016"></a>
+### 처음 보는 문장의 일반화와 종합 설명 — 2026-10-16
+
+사용자 요청으로 기존 Atlas의 문장 계약과 Core·Vellum 요약을 보완한다. 단어가 나온 사실만으로 선호를 만들지 않고 대상·방법·동작·선호 표현을 따로 읽어 조합한다. 같은 역할의 표현이 반복되거나 명사 순서가 달라도 뜻을 보존하며, ‘듣고 정리하기’처럼 동작의 순서가 뜻을 결정하면 그 순서는 유지한다. 부정·과거·타인·불확실한 조건은 별도로 검토하고 원문 구간을 보존한다. 별도 LLM 실행기·모델 선택기·유료 API는 추가하지 않는다.
+
+새 해석은 `member-statement-ko-5`, 새 행의 저장 문서는 v6다. 공개 ko4 원문은 `member-statement-v4.cjs`에 그대로 동결하고 ko1~4의 저장 기록·답변 재생을 보존한다. 기존 잠금·CAS 안에서 새 저장에만 문서 버전을 높이며 구클라이언트의 덮어쓰기·삭제와 미래 버전을 차단한다. 미리보기에서 같은 문장을 두 번 해석하던 호출은 한 번으로 줄였고, 다른 사용자나 요청 사이에 결과를 캐시하지 않는다.
+
+종합 설명은 본인이 확인한 선호·조건·수정을 먼저 보여준다. 직접 확인한 선호가 없으면 그 사실을 밝히고, 학습 응답 수·도움 여부·관찰 날짜·연결 범위를 설명한다. 하나의 응답에 붙은 여러 문법 항목을 합쳐 응답 수로 만들거나 하루의 기록을 반복되는 성향으로 해석하지 않는다. 학습 항목별 근거는 상세 화면에 남긴다. 실제 계정과 같은 합성 조건(응답 6건, 도움 없이 0건·도움 받고 6건, 관찰 1일, 직접 확인 0건, 앱 이용 연결 꺼짐)에서 이 구분을 검사했다. 이는 자료와 설명의 일치 검사이며 본인의 실제 선호에 대한 주관적 정확도 확인은 아니다.
+
+개발용 60문장을 통과한 첫 후보를 별도 미공개 80문장으로 검사했을 때 최초 성공은 26/80, 명시적 선호는 6/60이었다. 잘못 제안한 뜻과 원문 위치 오류는 0이었으나 불필요한 질문은 52/60이었다. 최초 후보·문장·라벨·성적을 보존했고, 공개된 80문장은 이후 회귀 검사로만 사용한다. 다음 후보의 별도 60문장은 구현자에게 공개하기 전에 고정했다. [최초 평가와 한계](../.tmp/member-insight-quality-20261016/evaluation/sealed-first-summary.json) · [합성 요약 근거](../.tmp/member-insight-quality-20261016/summary/evidence.json).
+
+두 번째 후보(`37ddfa2d…`)는 개발60·공개80 회귀와 개발자가 만든 1,500개 문법 조합을 통과했으나, 별도 미공개60 최초 결과는23/60·명시3/40이었다. 평가자가 문장을 다듬는 과정에서 발생한 ID 지정 오류와 조건 라벨 불일치 2건(F021/F022)을 원문·원점수와 함께 공개했다. 두 건을 제외한 민감도는23/58·명시3/38(7.9%), 불필요한 질문32/38(84.2%), 의도적 보류20/20, 잘못 제안한 뜻과 원문 위치 오류0이다. 최초 원점수의 추가 의미1건은 ‘선택할 때’의 조건을 추출한 결과여서 잘못된 성향 단정으로 세지 않는다. 이 제외 결과도 사전정답을 사후 교체한 새 정확도 결과로 취급하지 않는다. **명시 직접 해석90%·불필요 질문10% 이하라는 내부 목표에 미달하며, 자유문장 이해가 충분해졌다는 근거는 없다.** 이후 발견된 순서 해석 문제를 수정한 최종 소스는 회귀로 검증하며 이 최초 미공개 성적을 대체하지 않는다. 실계정의 확인과 수정은 자료 충실성 검사로 구분한다.
+
+최종 계약 `d4da785c…`는 순서가 반대인 문장을 ‘계획 먼저·예시 먼저·전체 먼저’로 뒤집던 문제를 막았다. 최종 소스 669건 중667통과·기존 승인제외2·실패0, 동결 PC253·공개 후보 웹220·서버185검사를 통과했다. 공개 웹 성향 번들은 `c6ca26a28e2b`, 설치 링크·feed는 `d9fc5f629b3a`로 배포했다. 개인자료 서버 v39만 반영했으며 계정 서버 v59·기존 의존 파일37개는 보존했다. Platform `0.4.19/build20261016.2`, sourceHash `877bf50a…`의 Windows·Mac 두 종류 CI와 공개 설치파일3종의 전체 크기·SHA256이 일치한다. Intel Mac 첫 아이콘 시험은 이미지 대조 뒤 DMG 분리의 일시적 실패로 끝나 동일 커밋의 해당 job만 재실행했으며 첫 실패 기록과 성공 artifact를 구분해 보존했다.
+
+실제 공개 계정과 설치 PC0.4.19에서 새 종합 설명의 응답6·도움 없이0·도움 받고6·관찰1일·확인수정0건·앱 이용 연결 꺼짐을 확인했다. 공개 화면에서는 자료·근거 판단 문장을, PC에서는 시작 후 계획 문장을 저장 없는 미리보기로 검사했다. 후자는 반대 성향으로 제안하지 않고 지원 범위를 밝혀 추가 확인으로 남겼다. 실제 계정에 테스트 선호를 저장하거나 삭제하지 않았다. PC0.4.18 프로그램·프로필을 백업하고 설치 후 첫 실행 전에 프로필312파일·공통계정1파일이 바이트 그대로임을 확인했다. 설치75파일·내부142소스·ASAR 해시도 일치한다. 공개 feed 반영 전 최초 실행의 업데이트 확인 보류는 기록했으며, feed 반영 후 정상 종료(프로세스0)·재실행에서는 복구 버튼·추가 로그인·재연결 없이 성향 화면이 복원됐다. 설정의 최신0.4.19 표시를 확인하고 원래 트레이 설정을 복원했다. 푸시 알림 시험은 보류했다. [공개 실계정](../.tmp/member-insight-quality-20261016/ui/actual-public-account.json) · [PC 설치 대조](../.tmp/member-insight-quality-20261016/pc/installed-verification.json).
+
+최종 공개 커밋 `d9fc5f629b3a`의 Pages와 전체 사이트 검사가 모두 성공했다. 변경18파일 대조, 33쪽×2기기, LAB8게임×2기기와 질문창 검사를 통과했고, 실제 공개 feed·한/영 홈페이지3종 설치 링크·성향 JS/CSS의 HTTP200/전체SHA·플랫폼 HTML 참조를 확인했다. 회사 고객 관리11판 CSS도 HTTP200·SHA256 `42204c949c709ef5bdaaccdf97ef252090e6a9f4001c5bb9903b0c94aab673a7` 및 첫 화면 링크를 읽기 전용으로 재확인했다. [최종 공개 검사](../.tmp/member-insight-quality-20261016/public/final-verification.json) · [실제 PC 자동 연결·재실행](../.tmp/member-insight-quality-20261016/pc/actual-account-verification.json) · [완료 기록](../.tmp/member-insight-quality-20261016/completion.json). 원본 커밋은 공유 작업본의 다른 변경을 제외한 격리 사본에서 만들며, 배포·실계정 자료 충실성 검증과 자유문장 이해의 남은 한계를 구분한다.
+
+### 조사 근거 → 채택한 경험
+
+2026-10-14 공개 공식 원문·스토어·사용자 토론 표본을 확인했다. 인기와 평점은 해당 서비스 전체의 지표이며 개별 기능의 효과나 SYNK의 학습 효과로 해석하지 않는다.
+
+| 후보·범위 | 확인 근거·반응 | 채택 / SYNK 확인 항목 |
+|---|---|---|
+| Spotify Wrapped | [2025 Wrapped 참여 3억·공유 6.3억, 회사 발표](https://newsroom.spotify.com/2026-02-10/spotify-q4-2025-earnings/), [클럽 기능](https://newsroom.spotify.com/2025-12-03/wrapped-clubs-overview/), [2025 토론 댓글 8개 표본](https://www.reddit.com/r/spotifywrapped/comments/1pd95u7/what_are_your_thoughts_on_this_years_spotify/). 재미있는 요약 호평, 엉뚱한 해석·수치 불일치 불만 | 짧은 요약 뒤 실제 근거. SYNK는 고정 유형 대신 확인 가능한 자기보고·연습 기록을 표시 |
+| Daylio | [미국 App Store 4.8/5·6.2만 평가](https://apps.apple.com/us/app/daylio-journal-mood-tracker/id1194023242?see-all=reviews), [활동 통계 원문](https://daylio.net/faq/docs/daylio-faq/about/activity-and-mood-statistics/). 공개 리뷰 10개(2018~2025)에서 적은 입력과 기록 회고 호평, 상관관계 해석과 다음 행동의 어려움 | 기간·자료 종류·빈 상태를 분명히. 단순 설정을 실제 수행 효과로 해석하지 않음 |
+| Oura | [미국 App Store 4.9/5·31.2만](https://apps.apple.com/us/app/oura/id1043837948), [Discovery Hub 2026-10-07 문서](https://support.ouraring.com/hc/en-us/articles/30697762898323-Discovery-Hub), [최근 약 두 달 표시 글·답변 2개](https://www.reddit.com/r/ouraring/comments/1uyxz0a/trends/). 그래프 해석과 다시 찾기 불편 | 그래프보다 평이한 설명, 혜택에 고정 진입점. 제품별 표본 기준은 복사하지 않고 Atlas 계약 사용 |
+| Finch | [미국 App Store 4.9/5·76.3만](https://apps.apple.com/us/app/finch-self-care-pet/id1528595748?platform=iphone&see-all=reviews), [장기 사용자 토론 의견 8개](https://www.reddit.com/r/finch/comments/1vxl8r3/i_could_literally_write_an_essay_with_peer/). 완료 동기와 동반자 호평, 장식·메뉴 과잉 불만 | 확인할 정보와 계정 설정 행동에 집중. 성향 화면에 새 재화·게임을 추가하지 않음 |
+| 인접 후보 | [16Personalities 공식 이론](https://www.16personalities.com/articles/our-theory)·[누적 검사 15.8억 이상 표기](https://www.16personalities.com/), [Apple Music Replay 월·연간 회고](https://support.apple.com/en-ie/109356), [Duolingo 회고 제작](https://blog.duolingo.com/year-in-review-behind-the-scenes/)·[2025-12-28 결과 재열람 불만, 글·답변 2개](https://www.reddit.com/r/duolingo/comments/1pxkykm/the_year_in_review_for_2025_is_already_gone/) | 읽기 쉬운 자기이해와 상시 재열람만 참고. 누적 검사 수·회사 정확도 표기는 만족도나 진단 정확도로 쓰지 않음 |
+
+전체 리뷰를 조사한 것은 아니다. Daylio 최신 리뷰 전체, 로그인 뒤 리포트·유료 기능 조작, Reddit 접힌·삭제된 댓글은 미확인이다. Finch 토론은 검색색인 날짜와 본문의 상대시간이 달라 정확한 게시일을 확정하지 않았다.
+
+### 최초판 구현·검증 위치
+
+공통 원본은 `desktop/renderer/member-insight-model.mjs`(기존 엔진 요약 투영), `member-insight.mjs`(계정·조회 수명주기), `member-insight-view.mjs`·`member-insight.css`(표시)다. 웹 `src/platform.mjs`와 PC `renderer/launcher.mjs`가 같은 화면을 소비한다. 최초판에서는 서버 원본 `atlas/account-summary.js`를 변경하지 않았다. 웹 글꼴을 다시 부분화하고 포털 빌드에 공통 CSS·기존 펠트 책을 포함한다.
+
+모델·화면·계정·권한·기존 플랫폼 관련 단위·회귀 시험 120/120을 통과했다(`unit-results.tap`). 합성 계정의 격리 웹/숨김 Electron에서 목록 → 요약 → 근거 → 설정/복귀, 동의 해제·정보 없음·오류·늦은 응답과 320·390·1440px 밤/낮 표시를 확인했다. 웹 43/43, PC 54/54 검사 통과, 런타임 오류·외부 통신 0건이다(`browser-result.json`, `native-result.json`). 결과 파일은 `experiences/synk-account/qa/member-insight-20261014/`에 둔다. 일반 관심사의 서비스 간 연결은 구현 범위 밖이다. 최초 공개 준비에서 발견한 `prepare-platform-public.cjs`의 `client.html` 링크 변환 불일치(WORLD 링크 1개, 다음 학습 링크 2개)는 현재 문서 구조를 엄격하게 검증하도록 수정했고 관련 패키징 시험 5/5를 통과했다.
+
+2026-10-14 후속 반영: 기존 공개 번들·계정 흐름을 보존한 웹 후보는 7시험과 합성 화면 55/55 검사(320·390·1440px, 밤/낮, 계정 전환·화면 이탈·오류)를 통과했다. account4파일만 `47fb0b72dddbf82bbbc8928f57b412beadf7badc`로 공개했고 Pages 성공, 공개 HTTP200·파일 크기·전체 SHA256 일치를 확인했다. [공개 화면](https://synk.im/account/platform.html#benefits/insight) · [공개 증거](../.tmp/platform-insight-20261014/web-publication.json). PC 기능 9파일은 공통 0.4.7/build20261014.4에 포함됐고 설치75파일·ASAR 및 공개3설치파일을 통합 릴리스에서 대조했다([설치 결과](../.tmp/platform-complete-20261014/receipts/apply.json)). 14:29 KST 사용자의 이어서 진행 요청 뒤 기존 Chrome 본인 계정으로 새 성향 두 영역·실제 Atlas 요약·근거 펼침·확인/연습 날짜 구분·새로고침 후 정상 표시를 확인했다. 콘솔 오류 0, 계정 설정·프로필·노트 변경 0이며 개인 식별자나 기록 내용을 증거에 저장하지 않았다([실계정 공개 화면 확인](../.tmp/platform-insight-20261014/real-account-public.json)). 같은 앱의 저장·복원 검수 종료 뒤 14:34 KST 기존 설치0.4.7·기존 로그인 상태에서 회원 혜택 → 내 성향의 두 영역과 실제 Atlas 요약을 화면·접근성 트리로 확인했다. 공개 계정과 같은 요약이며 추가 로그인·계정 설정·프로필·노트 변경은 없다([설치 앱 실계정 화면 확인](../.tmp/platform-insight-20261014/real-account-installed.json)). 공개·설치본의 새 성향 실계정 인수를 모두 완료했다.
+
 <a id="platform-always-on-20261011"></a>
 ## 2026-10-11 모든 플랫폼의 PC 독립 상시 운영
 
