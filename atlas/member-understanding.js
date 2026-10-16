@@ -23,7 +23,7 @@ const safeText = (s, max = 160) => typeof s === 'string' && s.trim() && [...s].l
 const semantic = c => canonical(Object.fromEntries(['version', 'kind', 'source', 'generation', 'reference', 'value'].map(key => [key, c[key]])));
 function documentOf(document, asOf) {
   if (document == null) return { version: 1, reviews: [], overrides: [] };
-  if (![1, 2, 3, 4, 5, 6, 7].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
+  if (![1, 2, 3, 4, 5, 6, 7, 8].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
   const ids = new Set();
   for (const [key, fields] of [['reviews', ['id', 'facetId', 'verdict', 'claim', 'note', 'at']], ['overrides', ['id', 'facetId', 'values', 'note', 'at']]]) {
     if (!Array.isArray(document[key]) || document[key].length > 50) fail();
@@ -49,7 +49,8 @@ function documentOf(document, asOf) {
         || document.version === 3 && !['member-statement-ko-1', 'member-statement-ko-2'].includes(checked.parserVersion)
         || document.version === 4 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3'].includes(checked.parserVersion)
         || document.version === 5 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4'].includes(checked.parserVersion)
-        || document.version === 6 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5'].includes(checked.parserVersion)) fail();
+        || document.version === 6 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5'].includes(checked.parserVersion)
+        || document.version === 7 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5', 'member-statement-ko-6'].includes(checked.parserVersion)) fail();
       ids.add(checked.id);
     }
   }

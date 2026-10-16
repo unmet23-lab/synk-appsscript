@@ -24,7 +24,7 @@ if(!process.versions.electron){
   if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-insight-'))throw Error('Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
   app.whenReady().then(async()=>{
-    let window;const checks=[],errors=[],requests=[],screenshots=[],popupIntents=[],sourceHashes=fingerprints();
+    let window;const checks=[],errors=[],requests=[],screenshots=[],popupIntents=[],captureRecoveries=[],sourceHashes=fingerprints();
     const check=(name,ok,details={})=>{checks.push({name,ok:!!ok,...details});if(!ok)throw Error(name);};
     try{
       fs.mkdirSync(out,{recursive:true});Menu.setApplicationMenu(null);
@@ -41,12 +41,16 @@ if(!process.versions.electron){
         if(scrollTarget)await run('document.querySelector('+JSON.stringify(scrollTarget.startsWith('.')?scrollTarget:'#'+scrollTarget)+').scrollIntoView({block:"start"})');
         // A hidden Electron window may return its last surface on the first call.
         // Discard that warm-up frame before capturing the current DOM/theme.
-        await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await pause(300);
-        let pixels;
-        for(let attempt=0;attempt<3;attempt++){
-          try{window.webContents.invalidate();await pause(150);pixels=await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});if(pixels.isEmpty())throw Error('EMPTY_SYNTHETIC_CAPTURE');break;}
-          catch(error){if(attempt===2)throw error;await pause(200);}
-        }
+        // The warm-up can also fail while Chromium prepares a hidden surface.
+        // Bound both captures equally and retain every recovered error in QA.
+        const frame=async phase=>{
+          for(let attempt=0;attempt<3;attempt++){
+            try{window.webContents.invalidate();await pause(150);const pixels=await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});if(pixels.isEmpty())throw Error('EMPTY_SYNTHETIC_CAPTURE');return pixels;}
+            catch(error){if(attempt===2)throw error;captureRecoveries.push({name,phase,attempt:attempt+1,error:error.message});await pause(200);}
+          }
+        };
+        await frame('warm-up');await pause(300);
+        const pixels=await frame('current');
         fs.writeFileSync(path.join(out,name+'.png'),pixels.toPNG());screenshots.push(name+'.png');
         const dimensions=await run('(()=>{const m=document.getElementById("main");return {width:innerWidth,page:document.documentElement.scrollWidth,main:m.scrollWidth,mainWidth:m.clientWidth};})()');
         check(name+' no horizontal overflow',dimensions.page<=dimensions.width&&dimensions.main<=dimensions.mainWidth,dimensions);
@@ -108,7 +112,7 @@ if(!process.versions.electron){
       await run('document.querySelector(".mi-back").click()');check('back returns to benefits overview',await run('!document.getElementById("benefits-overview").hidden&&document.getElementById("benefit-detail").hidden'));
       check('window remained hidden',!window.isVisible());check('no remote requests',!requests.length);check('no renderer console errors',!errors.length);
       check('tested source files did not change during execution',JSON.stringify(sourceHashes)===JSON.stringify(fingerprints()));
-      process.stdout.write(prefix+JSON.stringify({ok:true,checkedOn:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),scope:'Actual hidden Electron renderer; synthetic Atlas and consent IPC with isolated temporary profile; 1440/390/320 night/day. WORLD launch returns a fixture success without starting any app. No live account, installed profile, AI or publication.',checks,consoleErrors:errors,requests,screenshots,popupIntents,sourceHashes})+'\n');window.destroy();app.exit(0);
-    }catch(error){const state=window&&!window.isDestroyed()?await window.webContents.executeJavaScript('({hidden:document.hidden,status:document.querySelector("[data-insight-status]")?.dataset.insightStatus,text:document.querySelector(".member-insight")?.innerText,calls:window.__synkFixture?.calls()})').catch(()=>null):null;process.stdout.write(prefix+JSON.stringify({ok:false,error:error.stack,state,checks,consoleErrors:errors,requests,screenshots,popupIntents})+'\n');window?.destroy();app.exit(1);}
+      process.stdout.write(prefix+JSON.stringify({ok:true,checkedOn:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),scope:'Actual hidden Electron renderer; synthetic Atlas and consent IPC with isolated temporary profile; 1440/390/320 night/day. WORLD launch returns a fixture success without starting any app. No live account, installed profile, AI or publication.',checks,consoleErrors:errors,requests,screenshots,popupIntents,captureRecoveries,sourceHashes})+'\n');window.destroy();app.exit(0);
+    }catch(error){const state=window&&!window.isDestroyed()?await window.webContents.executeJavaScript('({hidden:document.hidden,status:document.querySelector("[data-insight-status]")?.dataset.insightStatus,text:document.querySelector(".member-insight")?.innerText,calls:window.__synkFixture?.calls()})').catch(()=>null):null;process.stdout.write(prefix+JSON.stringify({ok:false,error:error.stack,state,checks,consoleErrors:errors,requests,screenshots,popupIntents,captureRecoveries})+'\n');window?.destroy();app.exit(1);}
   });
 }

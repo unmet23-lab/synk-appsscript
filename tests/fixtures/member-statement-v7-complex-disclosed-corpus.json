@@ -1,0 +1,582 @@
+{
+  "version": "independent-complex-ko-20261016-v1",
+  "population": "Independently evaluator-authored synthetic Korean, no user data, not a population accuracy estimate.",
+  "cases": [
+    {
+      "id": "D01",
+      "text": "저는 혼자 먼저 시도하는 걸 좋아하고, 설명은 짧게 받는 게 편해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D02",
+      "text": "차례를 하나씩 짚어 주는 도움은 좋지만, 누군가와 함께 하는 방식은 원하지 않아요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D03",
+      "text": "저는 읽기 연습이 좋고 듣기 연습은 원하지 않아요. 두 연습에 대한 제 취향은 이렇게 달라요.",
+      "mode": "direct",
+      "category": "anaphora"
+    },
+    {
+      "id": "D04",
+      "text": "제게 편한 소통은 글로 하는 쪽이고, 말로 소통하는 건 선호하지 않아요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D05",
+      "text": "저는 일을 시작하기 전에 계획을 세우는 것도, 우선순위를 정해 처리하는 것도 좋아해요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D06",
+      "text": "판단할 때는 자료와 근거를 확인하는 게 좋고 다른 사람과 상의하는 것도 편합니다.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D07",
+      "text": "설명에서 제가 원하는 건 전체 개요를 먼저 보고, 핵심 근거도 자세히 알아보는 거예요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D08",
+      "text": "책 읽는 시간도 음악 듣는 시간도 저는 즐거워요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D09",
+      "text": "저는 예시를 먼저 보는 게 좋고, 그 예시를 보고 나서는 혼자 시도하는 게 좋아요.",
+      "mode": "direct",
+      "category": "sequence"
+    },
+    {
+      "id": "D10",
+      "text": "처음 시도할 때에는 단계별로 도움받는 걸 선호하고 설명도 자세한 편을 원해요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D11",
+      "text": "익숙한 내용일 때는 혼자 해보는 게 편하고 짧은 설명을 받는 게 좋아요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D12",
+      "text": "바쁠 때 제가 선호하는 건 한 번에 한 가지 처리하기와 짧은 설명이에요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D13",
+      "text": "회의할 때는 다른 사람들의 생각을 듣고 정리하는 게 편하고, 글로 소통하는 것도 좋아요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D14",
+      "text": "함께 일할 때 저는 제 의견을 먼저 말하는 걸 좋아하고 판단은 다른 사람과 상의하는 방식을 선호해요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D15",
+      "text": "일을 계획할 때는 우선순위를 정해 처리하는 방식도, 계획을 먼저 세우는 방식도 제게 잘 맞아요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D16",
+      "text": "결정할 때 여러 선택지를 비교하는 건 좋지만 제가 직접 겪은 경험에 기대어 판단하는 건 선호하지 않아요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D17",
+      "text": "저는 듣기와 읽기를 함께 연습하는 방식이 좋고, 도움은 예시부터 보여 주는 쪽을 원해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D18",
+      "text": "몸을 움직이며 운동하는 걸 좋아하는데 사진 촬영에도 관심이 있어요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D19",
+      "text": "제 취미 얘기를 하자면 요리는 좋아하지만 게임에는 관심이 없어요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D20",
+      "text": "자연 속을 산책하는 것도 좋고 여행지 숙소를 알아보는 일에도 관심이 있어요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D21",
+      "text": "저는 여행 일정과 동선 짜기를 좋아하며 여행지 음식과 주문 방법에도 관심이 있습니다.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D22",
+      "text": "지금 저는 면접 준비뿐 아니라 진로를 탐색하는 데에도 관심이 있어요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D23",
+      "text": "영상 제작에는 관심이 많지만 디자인 제작에는 관심이 없어요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D24",
+      "text": "AI 도구를 활용하는 일과 업무 협업, 둘 다 제가 관심을 두는 분야예요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D25",
+      "text": "처음 시도할 때는 예시를 먼저 보고 싶고, 예시를 본 다음에는 혼자 시도하는 걸 선호해요.",
+      "mode": "direct",
+      "category": "sequence"
+    },
+    {
+      "id": "D26",
+      "text": "익숙한 내용일 때도 저는 먼저 예시를 보는 게 좋고, 그걸 보고 나서 혼자 해보는 게 편해요.",
+      "mode": "direct",
+      "category": "sequence"
+    },
+    {
+      "id": "D27",
+      "text": "바쁠 때에는 예시부터 보는 쪽을 선호하고 그 예시를 보고 나면 혼자 시도하는 게 좋아요.",
+      "mode": "direct",
+      "category": "sequence"
+    },
+    {
+      "id": "D28",
+      "text": "짧은 설명은 제가 원하지 않는 방식이고, 핵심 근거를 자세히 알아보는 건 좋아해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D29",
+      "text": "회의할 때 저는 말로 소통하는 게 편하고 다른 사람의 생각을 듣고 정리하는 것도 선호합니다.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D30",
+      "text": "일단 시도하면서 조정해 가는 방식이 저는 좋고, 일은 한 번에 하나씩 처리하는 게 편해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D31",
+      "text": "저는 직접 경험한 내용을 참고해 판단하기와 여러 대안을 비교하기를 둘 다 선호해요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D32",
+      "text": "길게 이어지는 설명은 싫어요. 전체 개요부터 보는 방식은 좋아하고요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D33",
+      "text": "저는 듣기 연습을 좋아하며 도움받을 때 함께 하는 방식도 좋아해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D34",
+      "text": "읽기 연습이 제게는 좋고, 시도하는 방식으로는 혼자 하는 쪽이 편해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D35",
+      "text": "음악에는 관심이 없지만 게임을 하는 건 좋아해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D36",
+      "text": "설명은 보통 길이가 좋고, 도움은 필요할 때 제가 선택해서 받는 게 좋아요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D37",
+      "text": "단계마다 안내받는 건 원하지 않고 예시를 먼저 보는 방식은 원해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D38",
+      "text": "제가 먼저 의견을 꺼내는 방식은 선호하지 않지만 글로 소통하는 건 편해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D39",
+      "text": "계획부터 세우는 건 싫고, 직접 시도해 보며 조정하는 방식이 좋아요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D40",
+      "text": "판단은 남과 상의하는 방식을 원하지 않아요. 자료와 근거를 확인하는 방식은 선호해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D41",
+      "text": "전체 개요를 먼저 보는 게 좋고, 길게 이어지는 설명도 저는 좋아해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D42",
+      "text": "바쁠 때에는 듣기 연습은 싫고 읽기 연습은 좋아요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D43",
+      "text": "익숙한 내용일 때 저는 듣기와 읽기를 함께 연습하는 걸 좋아하며 설명은 보통 길이를 원합니다.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D44",
+      "text": "결정할 때 제가 좋아하는 과정은 자료로 근거를 확인하고 여러 선택지를 비교하는 거예요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D45",
+      "text": "회의할 때 말로 소통하는 건 원하지 않아요. 같은 회의 상황에서는 글로 소통하는 게 더 편해요.",
+      "mode": "direct",
+      "category": "anaphora"
+    },
+    {
+      "id": "D46",
+      "text": "일을 계획할 때는 계획을 먼저 세우는 쪽을 선호하지만 시도하면서 조정하는 방식은 좋아하지 않아요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D47",
+      "text": "함께 일할 때 저는 함께 도움받는 방식이 좋고, 맡은 일은 한 번에 하나씩 처리하는 게 좋아요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D48",
+      "text": "익숙한 내용일 때는 예시를 먼저 보는 게 싫고 혼자 시도하는 게 편합니다.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D49",
+      "text": "처음 시도할 때 저는 혼자 해보는 방식은 원하지 않고 단계별 도움을 받는 건 원해요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D50",
+      "text": "저는 산책과 운동을 좋아해요. 설명을 받는 방식은 짧은 쪽을 선호하고요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D51",
+      "text": "제게 필요한 도움은 예시부터 보여 주는 것이고, 설명은 전체 개요를 먼저 보는 구성이 좋아요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D52",
+      "text": "저는 우선순위를 정해 일을 처리하고 싶은 편이고, 자료에 근거해 판단하는 것도 글로 소통하는 것도 편해요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D53",
+      "text": "사진 촬영과 영상 제작은 제가 좋아하는 일이지만 디자인 제작에는 관심이 없어요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D54",
+      "text": "음악을 좋아하고 듣기 연습도 좋아해요; 도움은 필요할 때 골라 받는 방식을 원해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D55",
+      "text": "저는 진로 탐색에 관심이 있어요. 결정을 내릴 때는 직접 경험한 내용을 참고하는 게 좋아요.",
+      "mode": "direct",
+      "category": "condition"
+    },
+    {
+      "id": "D56",
+      "text": "영상 만드는 일에 관심이 있고 단계별로 도움을 받는 방식을 선호해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D57",
+      "text": "여행지 숙소에는 관심이 많아요. 반면 여행지 음식과 주문 방법에는 관심이 없어요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D58",
+      "text": "저는 한 번에 한 가지씩 처리하는 것, 우선순위를 정하는 것, 계획부터 세우는 것을 모두 선호합니다.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D59",
+      "text": "글로 소통하는 방식도 말로 소통하는 방식도 저에게는 편해요. 둘 다 좋아해요.",
+      "mode": "direct",
+      "category": "anaphora"
+    },
+    {
+      "id": "D60",
+      "text": "저는 개요를 먼저 보고 핵심 근거를 자세히 아는 게 좋지만, 설명이 길게 이어지는 것은 싫어요.",
+      "mode": "direct",
+      "category": "contrast"
+    },
+    {
+      "id": "D61",
+      "text": "처음 시도할 때는 자세한 설명을 원하고, 익숙한 내용일 때는 짧은 설명을 원해요.",
+      "mode": "direct",
+      "category": "condition-contrast"
+    },
+    {
+      "id": "D62",
+      "text": "회의할 때는 말로 소통하는 걸 좋아하지만 평소에는 글로 소통하는 걸 좋아해요.",
+      "mode": "direct",
+      "category": "condition-contrast"
+    },
+    {
+      "id": "D63",
+      "text": "바쁠 때에는 혼자 시도하는 게 싫고 익숙한 내용일 때에는 혼자 시도하는 게 편해요.",
+      "mode": "direct",
+      "category": "condition-contrast"
+    },
+    {
+      "id": "D64",
+      "text": "함께 일할 때는 다른 사람과 상의해 판단하는 것도 자료와 근거를 확인해 판단하는 것도 선호해요.",
+      "mode": "direct",
+      "category": "shared-predicate"
+    },
+    {
+      "id": "D65",
+      "text": "제 연습 취향은 듣기와 읽기를 함께 하는 쪽이에요. 설명이 길게 이어지는 건 선호하지 않아요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D66",
+      "text": "저는 독서에 관심이 있어요. 도움 방식으로는 예시부터 보는 걸 좋아하고, 그 방식이 제게 편해요.",
+      "mode": "direct",
+      "category": "anaphora"
+    },
+    {
+      "id": "D67",
+      "text": "시도하며 조정하는 방식이 좋고 제 의견을 먼저 말하는 것도 편해요. 판단은 다른 사람과 상의하는 쪽을 원하고요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "D68",
+      "text": "저는 혼자 해보는 방식을 선호해요. 그 방식이 편하고, 설명도 짧게 받는 걸 좋아해요.",
+      "mode": "direct",
+      "category": "anaphora"
+    },
+    {
+      "id": "D69",
+      "text": "전체 개요를 먼저 보는 걸 저는 좋아해요. 그다음 핵심 근거를 자세히 알아보는 것도 선호해요.",
+      "mode": "direct",
+      "category": "sequence"
+    },
+    {
+      "id": "D70",
+      "text": "저는 예시를 먼저 보고 싶고 읽기 연습을 좋아해요. 소통은 글로 하는 게 편하며, 일은 계획부터 세우는 방식을 선호해요.",
+      "mode": "direct",
+      "category": "parallel"
+    },
+    {
+      "id": "S01",
+      "text": "우리 조장은 글로 소통하는 걸 좋아하고 자료에 근거해 판단하는 걸 선호해요.",
+      "mode": "defer",
+      "category": "other"
+    },
+    {
+      "id": "S02",
+      "text": "동생은 혼자 시도하는 게 편하다면서 읽기 연습도 좋다고 하더라고요.",
+      "mode": "defer",
+      "category": "other"
+    },
+    {
+      "id": "S03",
+      "text": "담당 선생님은 개요부터 보는 걸 좋아하지만 길게 이어지는 설명은 싫어하세요.",
+      "mode": "defer",
+      "category": "other"
+    },
+    {
+      "id": "S04",
+      "text": "옆자리 사람은 사진 촬영과 영상 제작에 관심이 많고 게임에는 관심이 없대요.",
+      "mode": "defer",
+      "category": "other"
+    },
+    {
+      "id": "S05",
+      "text": "초등학생이던 시절의 저는 듣기 연습을 좋아했고 혼자 해보는 것도 편했어요.",
+      "mode": "defer",
+      "category": "past"
+    },
+    {
+      "id": "S06",
+      "text": "지난 회사에 다니던 당시에는 먼저 의견을 말하는 게 좋았고 계획 세우기도 좋아했어요.",
+      "mode": "defer",
+      "category": "past"
+    },
+    {
+      "id": "S07",
+      "text": "몇 년 전의 취향을 적어 보면 독서와 음악을 좋아했고 요리는 싫어했어요.",
+      "mode": "defer",
+      "category": "past"
+    },
+    {
+      "id": "S08",
+      "text": "예전에는 단계별 도움과 자세한 설명을 원했어요. 지금 취향에 대한 설명은 아니에요.",
+      "mode": "defer",
+      "category": "past"
+    },
+    {
+      "id": "S09",
+      "text": "대본의 제 대사는 \"나는 혼자 시도하는 게 좋고 짧은 설명이 편해\"예요.",
+      "mode": "defer",
+      "category": "quotation"
+    },
+    {
+      "id": "S10",
+      "text": "여기서 번역할 문장은 \"저는 글로 소통하고 근거를 확인해 판단하는 걸 좋아해요\"입니다.",
+      "mode": "defer",
+      "category": "quotation"
+    },
+    {
+      "id": "S11",
+      "text": "설문 답안 예시로 \"나는 여행 일정 짜기와 현지 음식 주문에 관심이 있어\"라고 써 놓았어요.",
+      "mode": "defer",
+      "category": "quotation"
+    },
+    {
+      "id": "S12",
+      "text": "소설 속 화자는 \"나는 음악을 싫어하지만 게임은 좋아해\"라고 말해요.",
+      "mode": "defer",
+      "category": "quotation"
+    },
+    {
+      "id": "S13",
+      "text": "비가 오는 날에는 짧은 설명이 좋고 혼자 시도하는 게 편해요.",
+      "mode": "defer",
+      "category": "unsupported-condition"
+    },
+    {
+      "id": "S14",
+      "text": "잠을 푹 잔 날에만 읽기 연습과 글로 소통하는 게 좋아요.",
+      "mode": "defer",
+      "category": "unsupported-condition"
+    },
+    {
+      "id": "S15",
+      "text": "누구랑 있느냐에 따라서 의견을 먼저 말하는 것도 좋고 듣고 정리하는 것도 편해요.",
+      "mode": "defer",
+      "category": "unclear-condition"
+    },
+    {
+      "id": "S16",
+      "text": "어떤 상황인지에 따라 단계별 도움이 좋을 때도 있고 혼자 하는 게 좋을 때도 있어요.",
+      "mode": "defer",
+      "category": "unclear-condition"
+    },
+    {
+      "id": "S17",
+      "text": "회사 규정 때문에 저는 계획을 먼저 세우고 글로 소통해야만 해요. 제 선호를 말하는 건 아니에요.",
+      "mode": "defer",
+      "category": "compulsion"
+    },
+    {
+      "id": "S18",
+      "text": "선생님이 시켜서 예시를 보고 듣기 연습을 하고 있어요. 제가 좋아해서 택한 건 아니에요.",
+      "mode": "defer",
+      "category": "compulsion"
+    },
+    {
+      "id": "S19",
+      "text": "팀장이 정해 준 절차라 자료를 확인하고 동료와 상의해야 해요. 편한지는 따로 말하지 않았어요.",
+      "mode": "defer",
+      "category": "compulsion"
+    },
+    {
+      "id": "S20",
+      "text": "저는 글로 소통하는 게 싫다는 말은 하지 않았어요.",
+      "mode": "defer",
+      "category": "negation-scope"
+    },
+    {
+      "id": "S21",
+      "text": "음악과 독서를 좋아한다고 단정한 건 아니에요.",
+      "mode": "defer",
+      "category": "negation-scope"
+    },
+    {
+      "id": "S22",
+      "text": "혼자 시도하는 걸 좋아하지 않는 건 아니라는 말만으로 제 취향을 정하지 마세요.",
+      "mode": "defer",
+      "category": "negation-scope"
+    },
+    {
+      "id": "S23",
+      "text": "저는 실내 온도를 낮게 유지하는 게 좋고 밝은 조명은 싫어요.",
+      "mode": "defer",
+      "category": "unsupported-value"
+    },
+    {
+      "id": "S24",
+      "text": "저는 창가 좌석과 푹신한 의자를 좋아해요.",
+      "mode": "defer",
+      "category": "unsupported-value"
+    },
+    {
+      "id": "S25",
+      "text": "저는 알림이 전혀 오지 않는 설정과 큰 글자 화면을 원해요.",
+      "mode": "defer",
+      "category": "unsupported-value"
+    },
+    {
+      "id": "S26",
+      "text": "저는 급여를 월초에 받는 게 좋고 출근 시간을 늦추는 걸 선호해요.",
+      "mode": "defer",
+      "category": "unsupported-value"
+    }
+  ]
+}

@@ -127,7 +127,7 @@ module.exports=async function understandingScenarios({run,until,click,inspect,se
   await capture(prefix+'-statement-answers-390-day',390,'day','.mi-statement-editor');
   await proposals(['p0']);await click(button('confirm-statement'));await statementSaved();
   const clarified=await inspect(),clarifiedId=clarified.state.statements[0].id;
-  check('explicit final confirmation stores the source and exact four answers under v7',clarified.state.version===7&&clarified.state.statements[0].text===clarificationWords&&clarified.state.statements[0].clarifications.length===4&&clarified.state.statements[0].meanings[0].value==='example'&&clarified.state.statements[0].meanings[0].condition==='first-try');
+  check('explicit final confirmation stores the source and exact four answers under v7',clarified.state.version===8&&clarified.state.statements[0].text===clarificationWords&&clarified.state.statements[0].clarifications.length===4&&clarified.state.statements[0].meanings[0].value==='example'&&clarified.state.statements[0].meanings[0].condition==='first-try');
   await reenter();await until('!!document.querySelector('+literal(button('describe'))+')');
   check('clarified meaning survives the next analysis',(await content('.mi-summary')).includes('처음 시도할 때')&&(await content('.mi-summary')).includes('예시'));
   await history();await run('document.querySelector(".mi-statement-history-row .mi-clarification-history").open=true');
@@ -164,7 +164,7 @@ module.exports=async function understandingScenarios({run,until,click,inspect,se
   check('editing original discards preview and accepted selections',await run('!document.querySelector("[data-insight-proposal]")&&document.querySelector("[data-insight-field=statement]")?.value==='+literal(ownWords)));
   await click(button('preview'));await skipUncertain();await proposals(['p0','p1']);await click(button('confirm-statement'));await statementSaved();
   const confirmed=await inspect(),statementId=confirmed.state.statements[0].id;
-  check('explicit confirmation stores only accepted meanings under v7',confirmed.state.version===7&&confirmed.statements===1&&confirmed.state.statements[0].meanings.length===2&&confirmed.state.statements[0].text===ownWords);
+  check('explicit confirmation stores only accepted meanings under v7',confirmed.state.version===8&&confirmed.statements===1&&confirmed.state.statements[0].meanings.length===2&&confirmed.state.statements[0].text===ownWords);
   check('conditional relationship appears once with linked evidence and unchanged observations',(await content('.mi-summary')).includes('처음 시도할 때')&&await run('document.querySelectorAll(".mi-summary .mi-relation-evidence").length>0&&!document.querySelector(".mi-relations")')&&(await content('.mi-counters'))===currentCounts);
   for(const theme of ['night','day'])await capture(prefix+'-statement-summary-390-'+theme,390,theme,'.mi-summary');
   await reenter();await until('!!document.querySelector(".mi-relation-evidence")');
@@ -216,12 +216,12 @@ module.exports=async function understandingScenarios({run,until,click,inspect,se
   for(const [width,theme] of [[320,'night'],[390,'day']])await capture(prefix+'-expanded-preview-'+width+'-'+theme,width,theme,'.mi-statement-editor');
   await proposals(['p0','p1','p2']);await click(button('confirm-statement'));await statementSaved();
   const expandedSaved=await inspect();
-  check('confirmed expansion persists v7 with exact source and three meanings',expandedSaved.state.version===7&&expandedSaved.state.statements[0].text===expandedWords&&expandedSaved.state.statements[0].meanings.length===3);
+  check('confirmed expansion persists v8 with exact source and three meanings',expandedSaved.state.version===8&&expandedSaved.state.statements[0].text===expandedWords&&expandedSaved.state.statements[0].meanings.length===3);
   await reenter();await until('!!document.querySelector('+literal(button('describe'))+')');
   check('next analysis combines two communication preferences without inventing practice', (await content('.mi-summary')).includes('듣고 정리')&&(await content('.mi-summary')).includes('글로 소통')&&(await content('.mi-summary')).includes('독서')&&(await content('.mi-counters'))===expandedCounts);
   await history();await capture(prefix+'-expanded-saved-390-day',390,'day','.mi-understanding-history');
   await click(button('remove-statement','[data-insight-id="'+expandedSaved.state.statements[0].id+'"]'));await until('!document.querySelector(".mi-statement-history-row")');
-  check('expanded statement reversal removes only its derived declarations',(await inspect()).statements===0&&(await inspect()).state.version===7&&!(await content('.mi-summary')).includes('글로 소통'));
+  check('expanded statement reversal removes only its derived declarations',(await inspect()).statements===0&&(await inspect()).state.version===8&&!(await content('.mi-summary')).includes('글로 소통'));
 
   const contrastWords='말로 소통하는 건 싫지만 글로 소통하는 건 좋아해요.';
   const contrastBefore=await inspect();
@@ -230,11 +230,11 @@ module.exports=async function understandingScenarios({run,until,click,inspect,se
   await capture(prefix+'-contrast-preview-390-day',390,'day','.mi-statement-editor');
   await proposals(['p0','p1']);await click(button('confirm-statement'));await statementSaved();
   const contrastSaved=await inspect(),contrastRow=contrastSaved.state.statements[0];
-  check('confirmed contrast preserves positive and negative meaning with original evidence',contrastSaved.state.version===7&&contrastRow.parserVersion==='member-statement-ko-6'&&contrastRow.text===contrastWords&&contrastRow.meanings.some(m=>m.value==='spoken'&&m.polarity==='avoid')&&contrastRow.meanings.some(m=>m.value==='written'&&m.polarity==='prefer'));
+  check('confirmed contrast preserves positive and negative meaning with original evidence',contrastSaved.state.version===8&&contrastRow.parserVersion==='member-statement-ko-7'&&contrastRow.text===contrastWords&&contrastRow.meanings.some(m=>m.value==='spoken'&&m.polarity==='avoid')&&contrastRow.meanings.some(m=>m.value==='written'&&m.polarity==='prefer'));
   await reenter();await until('!!document.querySelector('+literal(button('describe'))+')');
   check('fresh analysis replays the exact confirmed contrast without changing learning facts',JSON.stringify((await inspect()).state.statements[0])===JSON.stringify(contrastRow)&&(await content('.mi-counters'))===expandedCounts);
   await history();await click(button('remove-statement','[data-insight-id="'+contrastRow.id+'"]'));await until('!document.querySelector(".mi-statement-history-row")');
-  check('contrast reversal preserves the v7 fence and baseline observations',(await inspect()).statements===0&&(await inspect()).state.version===7&&(await content('.mi-counters'))===expandedCounts);
+  check('contrast reversal preserves the v8 fence and baseline observations',(await inspect()).statements===0&&(await inspect()).state.version===8&&(await content('.mi-counters'))===expandedCounts);
 
   const phrasingBefore=await inspect();
   await click(button('describe'));await statement('글로 의견을 나누는 방식이 말로 설명하는 것보다 저에게 더 편해요.');await click(button('preview'));
