@@ -44,6 +44,18 @@ sudo systemctl status synk-company.service synk-company-health.timer synk-compan
 
 로컬 백업 자동 삭제·GCS 보관 기간·삭제 정책은 이 스크립트가 설정하지 않는다. 디스크 용량 감시와 보관 정책의 실제 적용 상태는 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)의 운영 기록에서 확인한다. GCS 비공개/IAM·암호화·저장 후 복구 가능성도 업로드 명령 자체로 증명되지 않는다.
 
+## 호스트 로그와 설정 파일 권한
+
+systemd unit과 drop-in은 **비밀값이 없음을 확인한 파일만 root:root 0644**로 설치한다. `company.env`·키·인증 정보는 기존 0600을 유지한다. 배포 작업의 `UMask=0077`도 유지하며, 원자적 파일 교체는 `os.open(..., mode)`만 믿지 않고 열린 파일에 `os.fchmod(fd, mode)`를 적용한 뒤 교체한다. 실제 POSIX 임시 파일에서 umask 077 아래 0644·0600·0755와 실패 시 대상 보존을 검증한다. 공용 수정 원문과 회귀는 `ha/release-transition.py`·`ha/release-transition.test.py`다. 다음 배포는 최신 부모 worker의 rollback·start-dispatch 등 후속 보호를 유지한 채 이 권한 수정과 실제 파일 회귀를 승계하고 Linux QA·worker 해시를 새로 고정한다. 공용 기반 파일 전체를 최신 worker 위에 덮어쓰거나 과거 `workerBytesUnchanged`·QA 재사용 결과를 그대로 쓰지 않는다. 과거 배포 증거는 수정하지 않는다.
+
+호스트의 로그 정책 원문은 `logrotate/rsyslog`, `systemd/logrotate.timer.d/50-synk-retention.conf`, `journald.conf.d/50-synk-retention.conf`다. syslog는 주간 회전과 `maxsize 128M`을 함께 적용하고 회전 파일 8개를 압축 보관한다. auth·kernel·mail·user·cron 로그는 기존 주간 4개 정책을 유지한다. 기존 logrotate 타이머를 매시간 실행하며 최대 5분 분산·1분 정확도를 지정한다. journald는 영구 로그 512MiB·파일 64MiB·디스크 여유 1GiB·메모리 로그 64MiB·최대 30일로 설정한다. 별도 스케줄러나 유료 로그 서비스를 추가하지 않는다.
+
+`/var/log/syslog`의 크기 기준 회전은 logrotate가 실행될 때 판정하므로 순간적인 파일 크기의 절대 상한은 아니다. `rotate`는 보관할 회전 파일 개수이며 최소 보관 일수를 뜻하지 않는다. journald의 용량·최대 기간도 최소 보관 기간을 보장하지 않는다. 컨테이너의 Docker 로그 제한과 호스트 syslog/journal 제한은 각각 적용된다.
+
+정책 전환 전 현재 설정을 보관하고, 기존 로그는 root 전용 날짜별 보존 경로에 압축·복원 읽기·SHA-256 대조를 마친다. 새 보관 정책에서 이 전환 보존본을 삭제하지 않는다. 활성 syslog는 정상 회전과 rsyslog reopen을 사용하며 `copytruncate`를 사용하지 않는다. journal은 기존 보관 파일을 먼저 보존하고 rotate 뒤 새로 닫힌 파일까지 확인한 뒤 상한을 적용한다. 적용 후 반복 경고 건수·동일 시간의 파일 증가량·실효 설정·서비스/HA 상태를 함께 대조한다. 구체 수치와 실제 반영 결과는 운영 기록을 따른다.
+
+공식 근거: [systemd 파일 권한 검사](https://github.com/systemd/systemd/blob/main/src/basic/fs-util.c), [logrotate 회전 기준](https://github.com/logrotate/logrotate/blob/main/logrotate.8.in), [journald 보관 한도](https://github.com/systemd/systemd/blob/main/man/journald.conf.xml).
+
 ## 검증 범위와 운영 현황
 
 `deploy-operations.test.mjs`는 실제 Bash 문법·분기와 가짜 Docker/gcloud 명령으로 실패 시나리오를 확인한다. 백업의 120초 대기 선택·실패 사건과 상태 검사의 기존 skip 계약을 검사하며, 격리 Linux에서는 실제 util-linux `flock` 경합 후 잠금 해제에 따라 백업이 진행되는지도 검사한다. 실제 120초 시간 초과 검사는 격리 Linux 컨테이너에서만 `SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT=1`로 선택 실행한다. 이 검사에서 Docker·GCS 전송은 합성 명령으로 대체한다. `deploy-backup-watch.test.mjs`는 합성 archive·업로드 표시로 27시간 경계, 실패 차단과 경로·로그를 확인한다. 실제 영구 디스크 권한·systemd·Caddy TLS·GCS 전송·VM 재부팅·휴대폰 접속은 별도 운영 인수이며, 이미 확인한 결과와 남은 범위는 [CLOUD-OPERATIONS](../CLOUD-OPERATIONS.md)에서 구분한다.
