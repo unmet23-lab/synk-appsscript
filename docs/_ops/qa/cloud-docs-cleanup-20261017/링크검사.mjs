@@ -2,6 +2,7 @@
 // 사용: node docs/_ops/qa/cloud-docs-cleanup-20261017/링크검사.mjs [--json 출력.json]
 // 외부 주소(http·mailto 등)와 형제 저장소(저장소 밖) 경로는 검사하지 않고 따로 센다.
 // git에 없지만 작업본에 있는 대상(로컬 증거·.tmp 등)은 깨짐으로 세지 않고 「작업본에만 있음」으로 따로 센다.
+// 없는 대상은 지금 가지의 이력(지워짐)과 합치지 않은 다른 가지(로컬·원격 끝)에 있는지도 가른다. 원격 가지를 받아 두면 더 정확하다.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,17 +24,43 @@ const FROZEN = new Map([
   ['docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md', '원래 자리에서 옮겨 온 보존 사본'],
 ]);
 
-// 지난 커밋에 있던 경로(얕은 복제면 일부만 보인다)와 2026-10-17 Release 보관 목록
+// 지금 가지의 지난 커밋에 있던 경로(얕은 복제면 일부만 보인다)와 2026-10-17 Release 보관 목록
 const historyPaths = new Set();
 const historyDirs = new Set();
 try {
-  const out = execFileSync('git', ['-C', ROOT, '-c', 'core.quotepath=off', 'log', '--all', '--name-only', '--format=', '--no-renames', '-z'],
+  const out = execFileSync('git', ['-C', ROOT, '-c', 'core.quotepath=off', 'log', 'HEAD', '--name-only', '--format=', '--no-renames', '-z'],
     { encoding: 'utf8', maxBuffer: 1 << 30 });
   for (const f of out.split(/[\0\n]/)) {
     if (!f) continue;
     historyPaths.add(f);
     let d = path.posix.dirname(f);
     while (d !== '.' && !historyDirs.has(d)) { historyDirs.add(d); d = path.posix.dirname(d); }
+  }
+} catch {}
+// 아직 합치지 않은 다른 가지(로컬·원격)의 끝에만 있는 경로. 가지 이름은 대상마다 두 개까지 적는다.
+const branchPaths = new Map();
+const branchFiles = new Map();
+try {
+  const head = execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const refs = execFileSync('git', ['-C', ROOT, 'for-each-ref', '--format=%(objectname) %(refname:short)', 'refs/heads', 'refs/remotes'], { encoding: 'utf8' })
+    .split('\n').filter(Boolean).map((l) => l.split(' ')).filter(([sha, name]) => sha !== head && !name.endsWith('/HEAD'));
+  for (const [, name] of refs) {
+    const names = execFileSync('git', ['-C', ROOT, '-c', 'core.quotepath=off', 'ls-tree', '-r', '--name-only', '-z', name], { encoding: 'utf8', maxBuffer: 1 << 28 })
+      .split('\0').filter(Boolean);
+    const seenDirs = new Set();
+    for (const f of names) {
+      if (!branchFiles.has(f)) branchFiles.set(f, []);
+      branchFiles.get(f).push(name);
+      let d = f;
+      while (d !== '.') {
+        if (!seenDirs.has(d)) {
+          seenDirs.add(d);
+          if (!branchPaths.has(d)) branchPaths.set(d, []);
+          branchPaths.get(d).push(name);
+        }
+        d = path.posix.dirname(d);
+      }
+    }
   }
 } catch {}
 const shallow = execFileSync('git', ['-C', ROOT, 'rev-parse', '--is-shallow-repository'], { encoding: 'utf8' }).trim() === 'true';
@@ -64,9 +91,24 @@ function slug(text) {
 const anchorCache = new Map();
 function anchorsOf(rel) {
   if (anchorCache.has(rel)) return anchorCache.get(rel);
+  const set = anchorsOfText(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+  anchorCache.set(rel, set);
+  return set;
+}
+// 앵커가 없을 때, 아직 합치지 않은 가지 판의 같은 문서에는 있는지 본다.
+function branchesWithAnchor(rel, anchor) {
+  const out = [];
+  for (const name of branchFiles.get(rel) || []) {
+    let text;
+    try { text = execFileSync('git', ['-C', ROOT, 'show', `${name}:${rel}`], { encoding: 'utf8', maxBuffer: 1 << 28 }); } catch { continue; }
+    const set = anchorsOfText(text);
+    if (set.has(anchor) || set.has(anchor.toLowerCase())) out.push(name);
+  }
+  return out;
+}
+function anchorsOfText(text) {
   const set = new Set();
   const counts = new Map();
-  const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
   let fence = null;
   for (const raw of text.split('\n')) {
     const line = raw.replace(/\r$/, '');
@@ -83,7 +125,6 @@ function anchorsOf(rel) {
       set.add(n ? `${base}-${n}` : base);
     }
   }
-  anchorCache.set(rel, set);
   return set;
 }
 
@@ -253,7 +294,9 @@ for (const md of mdFiles) {
         const set = anchorsOf(rel);
         const a = anchor.toLowerCase();
         if (!set.has(anchor) && !set.has(a)) {
-          broken.push({ ...item, target: rel, reason: '앵커 없음', kind: 'anchor', candidates: anchorCandidates(rel, anchor).map((x) => (p === '' ? x : p + x)) });
+          const inBranches = branchesWithAnchor(rel, anchor);
+          const reason = inBranches.length ? `앵커 없음 — 합치지 않은 가지 판에는 있음(${inBranches.slice(0, 2).join(', ')})` : '앵커 없음';
+          broken.push({ ...item, target: rel, reason, kind: 'anchor', branches: inBranches, candidates: anchorCandidates(rel, anchor).map((x) => (p === '' ? x : p + x)) });
           continue;
         }
       }
@@ -267,7 +310,8 @@ const reasons = {
   archived: '파일 없음 — 2026-10-17 Release 보관본에 있음(tools/git-storage-restore.py로 복원)',
   ignored: '파일 없음 — .gitignore 대상(로컬 PC에만 있을 수 있음)',
   history: '파일 없음 — 예전 커밋에는 있었음(지워지거나 옮겨짐)',
-  never: shallow ? '파일 없음(얕은 복제라 이력 미확인)' : '파일 없음 — 커밋된 적 없음(로컬 전용·오타)',
+  branch: '파일 없음 — 합치지 않은 다른 가지에만 있음',
+  never: shallow ? '파일 없음(얕은 복제라 이력 미확인)' : '파일 없음 — 어느 가지에도 커밋된 적 없음(로컬 전용·오타)',
 };
 for (const m of missing) {
   const rel = m.target;
@@ -275,8 +319,11 @@ for (const m of missing) {
   if (archived.has(rel) || archiveDirs.has(rel)) kind = 'archived';
   else if (ignored.has(rel)) kind = 'ignored';
   else if (historyPaths.has(rel) || historyDirs.has(rel)) kind = 'history';
+  else if (branchPaths.has(rel)) kind = 'branch';
   else kind = 'never';
-  broken.push({ ...m, reason: reasons[kind], kind, candidates: candidatesFor(rel) });
+  const extra = kind === 'branch' ? { branches: branchPaths.get(rel) } : {};
+  const reason = kind === 'branch' ? `${reasons.branch}(${branchPaths.get(rel).slice(0, 2).join(', ')})` : reasons[kind];
+  broken.push({ ...m, reason, kind, ...extra, candidates: candidatesFor(rel) });
 }
 broken.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.line - b.line));
 
