@@ -92,7 +92,7 @@ export const Attention5: React.FC = () => {
           </filter>
         </defs>
       </svg>
-      <CaptionF text="다 써 가는 계정, 모자란 크레딧부터." em="다 써 가는 계정," at={8} />
+      <CaptionF text="다 써 가는 계정, 모자란 크레딧부터." em="다 써 가는 계정," at={14} />
     </>
   );
 };
