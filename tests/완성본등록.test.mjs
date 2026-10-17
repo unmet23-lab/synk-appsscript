@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { watch, writeFileSync } from 'node:fs';
-import { stagePublicationDelivery, parseDeliveryArgs } from './완성본등록.mjs';
+import { stagePublicationDelivery, parseDeliveryArgs } from '../tools/완성본등록.mjs';
 
 const hash = (buffer) => createHash('sha256').update(buffer).digest('hex');
 const videoBytes = Buffer.concat([Buffer.from('000000206674797069736f6d', 'hex'), Buffer.alloc(1024, 17)]);
@@ -172,7 +172,7 @@ test('a source changed while staging is rejected and its unfinished delivery is 
 
 test('CLI handles quoted paths as values and reports handoff rather than publication', async (t) => {
   const { options } = await fixture(t);
-  const command = fileURLToPath(new URL('./완성본등록.mjs', import.meta.url));
+  const command = fileURLToPath(new URL('../tools/완성본등록.mjs', import.meta.url));
   const title = '쉘 $(echo BAD) `whoami` 문자열';
   const result = spawnSync(process.execPath, [command, '--inbox', options.inbox, '--video', options.video, '--title', title, '--body-file', options.bodyFile, '--subtitle', options.subtitle, '--confirmed'], { encoding: 'utf8', windowsHide: true });
   assert.equal(result.status, 0, result.stderr);
