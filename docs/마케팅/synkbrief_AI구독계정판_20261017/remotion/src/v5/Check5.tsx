@@ -11,8 +11,8 @@ import { BoardZ, CaptionF, CursorArc, FloatCard, HeadF, Lines, MarkF, settle } f
 const BW = 500;
 const SCALE = (L.W - L.X - L.R) / BW;
 const TOP = 640;
-// 「지금 확인」 단추 가운데(화면 좌표) — 렌더 정지컷으로 맞춘 값
-export const BTN = { x: 806, y: 760 };
+// 「지금 확인」 단추 가운데(줌 전 화면 좌표) — 10-17 정지컷 실측(줌 1.26에서 (783,820) → 되돌린 값)
+export const BTN = { x: 788, y: 808 };
 
 export const Check5: React.FC = () => {
   const f = useCurrentFrame();
@@ -20,11 +20,12 @@ export const Check5: React.FC = () => {
   const reading = f >= CHK.click + 1 && done < ACCOUNTS.length;
   const finished = done === ACCOUNTS.length;
   const endAt = CHK.done[ACCOUNTS.length - 1];
-  // 카메라: 단추에 1.25배로 붙어 있다가 누른 뒤 물러나고, 6/6에서 살짝 다가가 머문다
+  // 카메라: 단추 쪽에 1.25배로 붙어 있다가 누른 뒤 물러나고, 6/6에서 살짝 다가가 머문다(원점 y 720은 카드 위끝을 제목 아래에 두려고)
   const pull = settle(f, CHK.click + 2, 8);
   const hold = settle(f, endAt, 10);
   const zoom = 1.25 - 0.25 * pull + 0.03 * hold;
-  const ox = interpolate(pull, [0, 1], [BTN.x, 540]);
+  // 시작 원점 x 525(Fable v5c): 클로즈업에서 앱 문구 첫 글자가 왼쪽 밖으로 잘리지 않게(문장 x 40부터, 단추 오른끝 915)
+  const ox = interpolate(pull, [0, 1], [525, 540]);
   const oy = interpolate(pull, [0, 1], [720, 960]);
   const slam = settle(f, endAt, 18);
   const progress = Math.min(1, done / ACCOUNTS.length + (reading ? ramp(f, CHK.done[Math.min(done, 5)] - 12, 12) / ACCOUNTS.length : 0));
@@ -54,7 +55,7 @@ export const Check5: React.FC = () => {
               <div className="ms-hero" style={{ padding: '16px 18px 14px', borderRadius: 16 }}>
                 <span className="ms-eyebrow">SYNK FOR YOU / AI 구독 계정판</span>
                 <div className="ms-hero-note" style={{ marginTop: 12 }}>
-                  <span>{reading ? '공식 프로그램으로 읽는 중이에요…' : finished ? `마지막 확인 ${CHECK.at} · 6/6개 읽음` : '연결한 계정 6개'}</span>
+                  <span>{reading ? '공식 프로그램으로 읽는 중이에요…' : finished ? `마지막 확인 ${CHECK.at} · 6/6개 읽음` : '「지금 확인」을 누르면 연결한 계정을 한꺼번에 읽어요.'}</span>
                   <div className="ms-hero-actions">
                     <button className="ms-button ms-button-primary" style={{ opacity: reading ? 0.72 : 1, scale: String(interpolate(f, [CHK.click - 1, CHK.click + 1, CHK.click + 6], [1, 0.94, 1], clamp)) }}>
                       {reading ? '확인 중…' : '지금 확인'}
@@ -69,7 +70,8 @@ export const Check5: React.FC = () => {
                 {ACCOUNTS.map((a, i) => {
                   const ok = f >= CHK.done[i];
                   const current = reading && i === done;
-                  const fill = ok ? ramp(f, CHK.done[i], 10) : 1;
+                  const fill = ok ? ramp(f, CHK.done[i], 10) : 0; // 읽기 전엔 빈 막대만
+                  const shown = ok ? interpolate(f, [CHK.done[i], CHK.done[i] + 6], [0, 1], clamp) : 0; // 값은 읽히는 순간 생긴다
                   const lit = ok ? interpolate(f, [CHK.done[i], CHK.done[i] + 6], [0.5, 1], clamp) : reading || current ? 0.5 : 1;
                   return (
                     <div
@@ -91,10 +93,10 @@ export const Check5: React.FC = () => {
                           <span className={`ms-bar${a.weekly >= 90 ? ' hot' : ''}`}>
                             <span style={{ width: `${a.weekly * fill}%` }} />
                           </span>
-                          <span className="ms-num">주간 {a.weekly}%</span>
+                          <span className="ms-num" style={{ opacity: shown }}>주간 {a.weekly}%</span>
                         </>
                       ) : (
-                        <span className="ms-num ms-warn-text">크레딧 {a.credits!.toFixed(2)}</span>
+                        <span className="ms-num ms-warn-text" style={{ opacity: shown }}>크레딧 {a.credits!.toFixed(2)}</span>
                       )}
                     </div>
                   );

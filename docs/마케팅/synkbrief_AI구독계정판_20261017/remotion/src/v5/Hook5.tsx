@@ -32,7 +32,7 @@ export const Hook5: React.FC = () => {
           <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>남은 한도</MarkF>,
         ]}
       />
-      <div style={{ position: 'absolute', left: L.X, top: 905, width: BW * SCALE, perspective: 1700 }}>
+      <div style={{ position: 'absolute', left: L.X, top: 890, width: BW * SCALE, perspective: 1700 }}>
         <FloatCard
           style={{
             position: 'relative',
@@ -46,7 +46,9 @@ export const Hook5: React.FC = () => {
               <div className="ms-hero" style={{ padding: '11px 16px', borderRadius: 16 }}>
                 <div className="ms-hero-note" style={{ borderTop: 0, paddingTop: 0 }}>
                   <span>마지막 확인 11:45 · 6/6개 읽음</span>
-                  <span className="ms-num" style={{ fontSize: '.875rem' }}>6/6</span>
+                  <div className="ms-hero-actions">
+                    <button className="ms-button ms-button-primary">지금 확인</button>
+                  </div>
                 </div>
               </div>
               <div className="mt-list" style={{ marginTop: 6 }}>
