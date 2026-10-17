@@ -242,3 +242,43 @@ experiences/atlas-lab/qa/**/*share*.html
 # 검수 화면 캡처 PNG는 커밋하지 않고 작업본에만 둔다(유호님 10-08). 위 공유판 줄의 「화면 캡처는 남긴다」를 바꾼다.
 experiences/atlas-lab/qa/**/*.png
 docs/_ops/qa/atlas-*/**/*.png
+
+# 2026-10-17: QA 캡처는 복구 보관본으로 보존하고 새 Git 이력에 누적하지 않는다.
+# 정본·생성 입력·런타임 자산은 제외하지 않는다. 제외는 로컬 삭제가 아니다.
+**/qa/**/*.[pP][nN][gG]
+**/qa/**/*.[jJ][pP][gG]
+**/qa/**/*.[jJ][pP][eE][gG]
+**/qa/**/*.[wW][eE][bB][pP]
+**/qa/**/*.[aA][vV][iI][fF]
+**/qa/**/*.[gG][iI][fF]
+**/qa-output/**/*.[pP][nN][gG]
+**/qa-output/**/*.[jJ][pP][gG]
+**/qa-output/**/*.[jJ][pP][eE][gG]
+**/qa-output/**/*.[wW][eE][bB][pP]
+**/qa-output/**/*.[aA][vV][iI][fF]
+**/qa-output/**/*.[gG][iI][fF]
+# 이 네 파일은 이름과 달리 실제 런처/카드 제작 입력이다.
+!experiences/korean-racing/qa/ui-refinement-playing-20261002.jpg
+!experiences/korean-runner/qa/v6-run-blossom-mobile.jpg
+!experiences/korean-rhythm/qa/listening-20261001/play-desktop.jpg
+!experiences/loom-living/qa/grass-contour.png
+# 승인 정본과 같은 출력 사본·재생성 가능한 작은 검수판만 제외한다.
+/docs/캐릭터/표정교정_20261011/*_4K.png
+/docs/캐릭터/표정교정_20261011/*_480.png
+/docs/캐릭터/마린몽글표정교정_20261011/*_4K.png
+/docs/캐릭터/마린몽글표정교정_20261011/*_480.png
+**/qa/**/*.[bB][mM][pP]
+**/qa/**/*.[tT][iI][fF]
+**/qa/**/*.[tT][iI][fF][fF]
+**/qa-output/**/*.[bB][mM][pP]
+**/qa-output/**/*.[tT][iI][fF]
+**/qa-output/**/*.[tT][iI][fF][fF]
+# 이름에 출력 크기가 붙어도 이전 원본·생성 입력·마스크는 보존한다.
+!/docs/캐릭터/표정교정_20261011/이전_*
+!/docs/캐릭터/표정교정_20261011/원본_*
+!/docs/캐릭터/표정교정_20261011/*생성원본*
+!/docs/캐릭터/표정교정_20261011/*마스크*
+!/docs/캐릭터/마린몽글표정교정_20261011/이전_*
+!/docs/캐릭터/마린몽글표정교정_20261011/원본_*
+!/docs/캐릭터/마린몽글표정교정_20261011/*생성원본*
+!/docs/캐릭터/마린몽글표정교정_20261011/*마스크*

@@ -16,6 +16,8 @@
 - `docs/_ops/결정.md`에는 확정과 근거, `docs/_ops/트랙.md`에는 결과 위치·남은 일을 해당 항목에만 짧게 남긴다.
 - `index.lock`이 생기면 잠시 뒤 재시도한다. 10초 넘게 남으면 `node tools/git잠금.js`로 확인하고 `--정리`는 주인 없는 잠금에만 쓴다.
 
+- 커밋 전 `npm run check:storage`, 푸시 전 `node tools/git-storage-check.cjs --base origin/master --head HEAD`로 새 Git 파일의 용량·산출물 범위를 확인한다. 별도 인덱스에서는 같은 `GIT_INDEX_FILE`과 기준 커밋을 쓴다. 원본 보존·복원은 [Git 자산 보관](docs/_ops/github-storage/README.md)을 따른다.
+
 ## Code Review Rules
 
 실제 문제만 파일·줄·깨지는 동작·재현 근거와 함께 적는다. P0는 데이터·인증·라이브 손상, P1은 기능 오류, P2는 품질 문제, P3는 추가 확인이 필요한 의심이다. 읽지 못한 범위는 밝히고 지적을 만들지 않는다.
