@@ -172,13 +172,14 @@ const WINDOW_NAME = { session: '5시간', weekly: '주간' };
 const keep = text => text.replace(/ /g, '\u00a0');
 const leftHtml = w => (w.left <= 0 ? '<b class="ms-alert-text">소진</b>' : `<b class="ms-num${w.left <= 10 ? ' ms-warn-text' : ''}">${w.left}%</b> 남음`);
 // 고리 그림(viewBox 120): 바깥 주간 · 안 5시간. 남은 만큼 12시 방향에서 시계 방향으로 찬다. 서비스 줄의 작은 고리는 굵게.
+// 97% 넘게 남으면 둥근 끝이 맞닿아 닫혀 보여 각진 끝으로, 100%는 이음매 없는 닫힌 원으로 그린다.
 const RINGS = { full: { weekly: 54, session: 43, width: 8 }, mini: { weekly: 46, session: 46, width: 20 } };
 function ringsSvg(g, size = 'full') {
   const spec = RINGS[size];
   const ring = key => {
     const w = g[key]; if (!w) return '';
     const level = gaugeLevel(w), attrs = `cx="60" cy="60" r="${spec[key]}" stroke-width="${spec.width}"`;
-    return `<circle class="ms-track" data-level="${level}" ${attrs}/>${w.left > 0 ? `<circle class="ms-arc" data-ring="${key}" data-level="${level}" ${attrs} stroke-linecap="${w.left >= 97 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - w.left}" transform="rotate(-90 60 60)"/>` : ''}`;
+    return `<circle class="ms-track" data-level="${level}" ${attrs}/>${w.left > 0 ? `<circle class="ms-arc" data-ring="${key}" data-level="${level}" ${attrs}${w.left >= 100 ? ' data-full' : ` stroke-linecap="${w.left >= 97 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - w.left}" transform="rotate(-90 60 60)"`}/>` : ''}`;
   };
   return `<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">${ring('weekly')}${ring('session')}</svg>`;
 }

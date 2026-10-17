@@ -58,7 +58,7 @@ test('the board draws one ring per service and rolls the number only when it fir
     const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
     const fresh=Date.now();
     const claude=[row({email:'out@example.com',live:{readAt:fresh,session:{usedPercent:100,resetsAt:fresh+36*60e3+30e3},weekly:{usedPercent:51,resetsAt:fresh+115*3600e3}}}),row({email:'roomy@example.com',live:{readAt:fresh,weekly:{usedPercent:78,resetsAt:fresh+44*3600e3+60e3}}})];
-    const gpt=row({service:'gpt',label:'ChatGPT · Codex',email:'gpt@example.com',live:{readAt:fresh,weekly:{usedPercent:49,resetsAt:fresh+145*3600e3}}});
+    const gpt=row({service:'gpt',label:'ChatGPT · Codex',email:'gpt@example.com',live:{readAt:fresh,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:49,resetsAt:fresh+145*3600e3}}});
     const credit=row({service:'higgsfield',label:'Higgsfield',kind:'credit',live:{readAt:fresh,credits:1373},credits:1373,creditsAt:fresh});
     let snapshot={ok:true,tools:{},rows:[...claude,gpt,credit],settings:{usdKrw:1400},check:{at:fresh,total:4,ok:4},login:null,checking:false};
     const listeners=[];
@@ -75,6 +75,8 @@ test('the board draws one ring per service and rolls the number only when it fir
     assert.match(el.innerHTML,/data-roll="m-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
     assert.match(el.innerHTML,/data-roll="m-gpt">51<small>%/);assert.match(el.innerHTML,/주간 초기화까지 <b>1일 20시간<\/b>/);
     assert.ok(!el.innerHTML.includes('ms-bar'));
+    // 다 남은 고리(아직 안 쓴 5시간)는 이음매 없는 닫힌 원이다(대시 없음).
+    assert.match(el.innerHTML,/<circle class="ms-arc" data-ring="session" data-level="ok" cx="60" cy="60" r="43" stroke-width="8" data-full\/>/);
     // 서비스 줄은 「주간 한도」 구획이라 작은 고리와 글 모두 주간 기준이다.
     assert.match(el.innerHTML,/<b>roomy<\/b> <span class="ms-gauge ms-gauge-mini" data-level="ok">.*?<\/span>주간 <b class="ms-num">22%<\/b> 남음/);
     assert.deepEqual(drawn.sort(),['m-claude:is-drawing','m-gpt:is-drawing']);

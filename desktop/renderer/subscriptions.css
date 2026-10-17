@@ -121,7 +121,9 @@
 .member-subs .ms-gauge-mini{display:inline-grid;width:20px;margin:0 6px 0 2px;vertical-align:-4px}
 .member-subs .ms-gauge.is-drawing .ms-arc{animation:ms-arc .9s cubic-bezier(.2,.8,.2,1) both}
 .member-subs .ms-gauge.is-drawing .ms-arc[data-ring=session]{animation-delay:.12s}
+.member-subs .ms-gauge.is-drawing .ms-arc[data-full]{animation-name:ms-fade}
 @keyframes ms-arc{from{stroke-dashoffset:100}}
+@keyframes ms-fade{from{opacity:0}}
 /* 숫자 굴림: WORLD world-motion.css의 .w-roll과 같은 띠·곡선·간격 */
 .member-subs .ms-roll{position:relative;display:inline-block;line-height:1.15}
 .member-subs .ms-roll>.ms-roll-t{color:transparent}
