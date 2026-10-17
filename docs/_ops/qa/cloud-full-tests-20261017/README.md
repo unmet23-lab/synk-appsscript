@@ -145,7 +145,13 @@
 
 10-17 오후, Apps Script 전역 점검 세션(가지 `claude/friendly-newton-6kin0f`)이 「유호님이 docs/마케팅 실패 정리를 맡겼다」며 그 파일들을 이 가지에서 건드리지 말아 달라고 알려 왔다. 그 전에 이 가지가 이미 고쳐 push한 docs/마케팅 커밋(`55904d69a`·`d53bf7446`·`19e0daf4c`·`e411ad746`·`8c5f65151`)의 목록과 근거를 그 세션에 보냈다.
 
-그 뒤 3단계에서 유호님이 이 세션에 직접 지도 작업을 맡겨, `docs/마케팅/온라인마케팅지도/`의 지도 파일을 다시 고쳤다(`23cfcfbfc`·`7809423e2`: `inputs/content-status.json`, `account-setup-proposal.json`, `build-map.mjs`, `verify-map.test.mjs`, `engagement/server.test.mjs`, `dashboard/src/data.json`, `verification-data.json`). 이를 알리는 두 번째 메시지는 그 세션이 이미 끝나 전달되지 않았다(「requested resource was not found」). 3단계의 비전 교체는 문서 정리 세션이 다룰 수 있는 정본 문서 3곳(`docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`, `docs/SHIFT/SYNK_SHIFT_소개서.html`, `docs/소개서_지면.html`)도 바꿨다. 가지를 합칠 때 같은 파일이 겹치면 이 문서의 근거로 대조한다. 남은 docs/마케팅 실패(회의 키트 zip, 발주서 수신판 산출물, 지도 dist 화면)는 그 세션과 유호님 몫이다.
+그 뒤 3단계에서 유호님이 이 세션에 직접 지도 작업을 맡겨, `docs/마케팅/온라인마케팅지도/`의 지도 파일을 다시 고쳤다(`23cfcfbfc`·`7809423e2`: `inputs/content-status.json`, `account-setup-proposal.json`, `build-map.mjs`, `verify-map.test.mjs`, `engagement/server.test.mjs`, `dashboard/src/data.json`, `verification-data.json`). 이를 알리는 두 번째 메시지는 그 세션을 더는 찾을 수 없어 전달되지 않았다(「requested resource was not found」, 세션 조회도 같음).
+
+그 세션이 09:53 UTC에 보낸 알림은 이 가지의 마지막 push 뒤에야 읽었다. 내용은 이렇다. 그 세션은 이 가지의 2단계 docs/마케팅 수정이 낫다고 보고, 자기 가지에서 겹친 수정을 되돌렸다(`371c48292`). 그 가지에는 회의 키트(`맞춤도구/meeting/rules.test.js`)·발주서 수신판(`receiver-build.test.cjs`) 시험을 `tests/_git밖.js`로 CI에서만 건너뛰게 한 수정이 남아 있다. 이 문서 「로컬에만 있는 자료」의 두 건이다. 3단계 지도 커밋까지 넣은 이 가지 끝과 그 가지는 `git merge-tree`로 충돌이 없다.
+
+그 알림이 짚은 다른 가지 `claude/atlas-prism-strata2-20261017`(`d01d4d8f7`, 교원 검수 시트 중급 줄)와는 `tests/교원검수시트.test.js` 한 곳이 충돌한다. 임시 worktree에서 병합해 확인한 해법은 다음과 같다. 그쪽의 중급 능력·중급 선행 단언 세 줄은 넣고, 「게임↔상황」은 이 가지의 9줄과 「허브는 게임이 아님」 단언을 남긴다. `tools/교원검수시트.js`는 자동 병합되어 9줄을 만든다. 이렇게 풀면 12/12 통과한다. 나중에 병합하는 쪽이 이대로 풀면 된다.
+
+3단계의 비전 교체는 문서 정리 세션이 다룰 수 있는 정본 문서 3곳(`docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`, `docs/SHIFT/SYNK_SHIFT_소개서.html`, `docs/소개서_지면.html`)도 바꿨다. 가지를 합칠 때 같은 파일이 겹치면 이 문서의 근거로 대조한다. 남은 docs/마케팅 실패(회의 키트 zip, 발주서 수신판 산출물, 지도 dist 화면)는 그 세션과 유호님 몫이다.
 
 ## 자율 진행에서 내린 판단(검토용)
 
