@@ -167,6 +167,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 병합 전에 `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 본다. 번호만 바꿀 때는 「로컬 판 + 번호 문자열 바꾸기」로 blob을 만든다. 로컬과 origin이 크게 갈라졌을 때 합친 기록과 도구는 `.tmp/origin-merge-20261009/scripts/`(`apply3.cjs`: 병합 트리 → 공용 작업본 3방향 → master CAS → 그 경로만 인덱스)·`.tmp/origin-sync-20261010/README.md`. 작업 중 origin이 계속 움직이면 머리가 바뀔 때마다 처음부터 다시 계산하고, origin에 올리는 세션에 잠깐 멈춰 달라고 한다.
 - 다시 확인: 병합 커밋과 origin/master의 `git diff --stat`이 로컬에만 있는 커밋들의 변경뿐이다.
 
+### push 직후 `merge_local.py`가 「origin has other commits」로 멈춘다
+- 증상: 내 커밋을 `restack.py --push`로 올린 직후 `merge_local.py`가 `AssertionError: ('origin has other commits', 4)`로 멈췄다(10-17). 그사이 다른 세션이 origin에 세 커밋을 올렸다.
+- 원인: 이 도구는 로컬 master에 없는 origin 커밋이 방금 내가 올린 것뿐일 때만 「트리는 로컬 그대로」로 합친다. 남의 push가 섞인 채 트리를 로컬로 두면, 로컬에 아직 없는 남의 줄이 병합에서 빠진다(10-17에는 결정 표·트랙의 줄이 그랬다).
+- 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
+- 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
