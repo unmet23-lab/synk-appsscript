@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-09-27T06:19:28.345Z",
+  "generatedAt": "2026-10-17T10:06:13.258Z",
   "sourceAsOf": {
-    "registry": "2026-09-21",
+    "registry": "2026-10-02",
     "social": "2026-09-21",
     "latestContent": "2026-09-27"
   },
   "counts": {
     "operating": 23,
     "mongolia": 5,
-    "plannedCountries": 23,
-    "prioritySlots": 46,
-    "newSlots": 44,
-    "expansionConfirmed": 24,
-    "expansionUnconfirmed": 20,
-    "channelRows": 70,
+    "plannedCountries": 25,
+    "prioritySlots": 50,
+    "newSlots": 48,
+    "expansionConfirmed": 26,
+    "expansionUnconfirmed": 22,
+    "channelRows": 74,
     "contents": 25,
     "identities": 6
   },
@@ -28,7 +28,7 @@
     },
     {
       "file": "inputs/content-status.json",
-      "sha256": "4219854ed73ce4a47d354c446966c720249725b6ff79dce340f89c7155723bd3"
+      "sha256": "d10714bac58085296be3d4edd1e406e7b60a3f0a3b1f3f5e412fb4a0ffb53fff"
     },
     {
       "file": "inputs/content-lines.json",
@@ -36,15 +36,15 @@
     },
     {
       "file": "../콘텐츠_운영체계_20260927.md",
-      "sha256": "4fc79be1bca9406be2b1d4451e8990b0232d20d28f42e6c4ae6c1332ead7a33c"
+      "sha256": "bf38910c244265f2df61be92ab5a17efd596e2d60f79431a53af5eb31895e2ff"
     },
     {
       "file": "account-setup-proposal.json",
-      "sha256": "bd27e1bc36f8fb14e77fe34ce416ac56f0534cadc6b8326893874a55143f56e6"
+      "sha256": "c7dc9f690a9ff01e319e20f80e1e7e24a2fc25db37319528d641a6823b636669"
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "6a688a7f073ca870636b2eec3b7ad33eb7fdbb7be075d8b587d15cfa9a9300b3"
+      "sha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
@@ -68,11 +68,15 @@
     },
     {
       "file": "../yuhobuilds_1편_쇼츠수정_20260922/README.md",
-      "sha256": "92ad381a729aa1fb9e40f4e777ca605335bd0d029a2a8d03db8bbbbbd35a1d7e"
+      "sha256": "fead93358476eadb6eba4572607536154e0e03357a59f92a0fd7b6d15420f7fa"
     },
     {
       "file": "../synkbrief_회의메모_20260921/video-v12/README.md",
       "sha256": "118a0b30b7af80663900ced8164090f4595c7b2f0af46bf13af9461d7503a04a"
+    },
+    {
+      "file": "../프로필_클로드판_20261002/개설기록_브라질멕시코.json",
+      "sha256": "3f172fd671ededbe7f301a82b8b5ccda46e29b99ac8931f322f2442a6b731190"
     }
   ]
 }
