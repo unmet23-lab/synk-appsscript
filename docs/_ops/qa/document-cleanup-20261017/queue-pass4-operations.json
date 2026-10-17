@@ -1,0 +1,2454 @@
+[
+  {
+    "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 402173,
+    "lines": 1299,
+    "sha256": "a4e39cb682cb99fbaafe88f68a6fa773182d9944e165e9d0b41c92672ac52366",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/결정.md",
+    "previousCoverage": "targeted",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 357254,
+    "lines": 390,
+    "sha256": "aca566dd075179629098dd79d13a2650718cbcad0cedebadbbedee1db1e612d2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-capability-history-20261005/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 243843,
+    "lines": 972,
+    "sha256": "93a6ded5e901dfb8e8b7209fd7043429daa8e8e4505574466079c5f110d25bbe",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/company-messenger/QA.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 60418,
+    "lines": 277,
+    "sha256": "218cd74b3fa0f2d2339184dfeae22bf90951775e70b40cee6401d7636444b490",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/RELEASE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 51149,
+    "lines": 203,
+    "sha256": "ac760a98cae68ef18939ac0072c45d8dd3d97c24fc88cd0c1ae556557832cc31",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/검수_AI예산원장_튜터_20261003.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 46592,
+    "lines": 171,
+    "sha256": "36de3d94a1dfe6ded9b6b317e61162fc56f24e39ed9f04c497726536d2d38a7e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 34271,
+    "lines": 194,
+    "sha256": "8e58b63aa69f29e84bd9a5efbfbe8101bc8454a5c95c9a03e8a22cd7deb79f9c",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-real-account-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 33337,
+    "lines": 177,
+    "sha256": "af7ce1e68d735a8f9ace6566338045c0fb004c03c9f1ea7cacc3fd713291898b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-single-sign-on-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 32576,
+    "lines": 136,
+    "sha256": "030764b4b8c8406726d0c1e751d74ea0b51faa48ad4fb37590af92cd51f88792",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-signal-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 31831,
+    "lines": 136,
+    "sha256": "edd0710055ebe3266c561fc24b3ed8a2263898aedf276435e549b8d6af7ea50b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/classroom-release-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 30563,
+    "lines": 155,
+    "sha256": "0306a5d28a32c00f71b6049f236d1b668ec2233bf2cdacf462bae5bab7c1a026",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 28129,
+    "lines": 108,
+    "sha256": "4fddcca2e4dece67540cb9bdf7f34aa1c9466b94b6d8a4c0cc937378a1c96148",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/옛시스템_정리목록_20261002.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 26502,
+    "lines": 254,
+    "sha256": "257ded51fdce5782d1ea037ab967a1781ca8c74af9612997756860d64c4876c5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/COMPLETION.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 25977,
+    "lines": 102,
+    "sha256": "3ec474bae91a344f1cdbe1da3df84059e41161b0bc3a5f9114e662b97589976c",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-village.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 25567,
+    "lines": 172,
+    "sha256": "1e6214cf9039e82874fd8ffcfb350fceadcbe42b4fb6d8615b87a51336184c6a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/GOOGLE-SMS-SETUP.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 22428,
+    "lines": 162,
+    "sha256": "3538d2421db00c2dff6945dbf89cc695a96e8344e44bc87e815659f9d8621652",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/아틀라스2단계_인계_20260918.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 22088,
+    "lines": 160,
+    "sha256": "b96eb6410452619c1f31eb03b46ae28adc747dee7f776f47e911778102bdd22e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/트랙정리_20261002.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 21741,
+    "lines": 268,
+    "sha256": "5f1f45062205ba07d08a11980b270029d1e7767cd50a1c0738d7459750b41ad1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-followup-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 20414,
+    "lines": 105,
+    "sha256": "4b86b4d94c24d9abb7eaa098f0f6daa9932473edad1d3d173e5b346a3e4e7f5a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-learning.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 20267,
+    "lines": 159,
+    "sha256": "8313e4065c4a530d16ba189ef2922c0995106a23df76560e418fad85f8974a40",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19726,
+    "lines": 94,
+    "sha256": "013a1631e7002f2f5dd69aca249140348b41ac7e3ebb129a0231f89da64db57e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/아틀라스검토_인계_20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19649,
+    "lines": 96,
+    "sha256": "05fcd58e3babd3b6b3bbe6c56376a070b37889930b798a77692eac28782e04e6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/synk-id/qa/운영적용-최종준비-20261007.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19554,
+    "lines": 125,
+    "sha256": "c8cb5e32a31b7ef2ecaae58821ef2ed6d4ad068c92c2738153aaa76bd6abbcc7",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-review-20261006/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19544,
+    "lines": 110,
+    "sha256": "520bba4fdf62c07144fab777e46abee7589a61e6276a704d6ced879f9b38f2bd",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19476,
+    "lines": 122,
+    "sha256": "a7b047b049200f28d4c9f9a100fad30e1366013f3e1e7fb7ff00fb9bdb9dc5a9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-platform.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 19058,
+    "lines": 168,
+    "sha256": "f490d82ae575a484899f841401999a062f29fe24dca76c3d4e7fdcc7b3450731",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-workspace-integration-20261013/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 18921,
+    "lines": 92,
+    "sha256": "24bf87f7a140637ec32a5a33fb02ae1ec1dcead900898a76e10031c4dcd43fe1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/협업장치_정리_20260921.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 17422,
+    "lines": 109,
+    "sha256": "5561190d48533271df5a3aa858d63de21705de09ec0968362e4eaa0602da514d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 16963,
+    "lines": 49,
+    "sha256": "3d7c0befa2aa537fc8e40749665cba3ca6fc806af0a0132679808dd2ec7b5008",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/말투강제_정리_20260921.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 16564,
+    "lines": 107,
+    "sha256": "5a712d85038c37a62f908f0a77cff4f5f6da36aea1b269250db13c8af12f7342",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/LAB게임_목소리_인계_20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 15735,
+    "lines": 64,
+    "sha256": "dcaa30a0fd832f90dd0f8014b93931f088ad19002b5ec2efc9f568e165948ae5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/아틀라스교육_20260930/평가기준.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 15411,
+    "lines": 94,
+    "sha256": "8277b29dfd362579fef8de3aa4e0d6f4000270789b7543114c81913b41f3fbe1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/복구보고_20260918.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 15318,
+    "lines": 95,
+    "sha256": "c59abbd22bac5edd773fba4ec1ea4a0bf41f7cea74bdb9570b0009bbdefbedc2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 14971,
+    "lines": 99,
+    "sha256": "c3576f3fed15cf1b94cf1bd88fdd5e204ad87187c021fccb81c815d5f56de27f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/SERVER-CONSUMERS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 14844,
+    "lines": 92,
+    "sha256": "1975652579450f7644d0af2ea2fec22f2d20ba5df2e5d281de72dafba8512b5e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-experience-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 13553,
+    "lines": 77,
+    "sha256": "353f14d1ebc6b45eacd94da6aedc3abb9f135b599398a6f9d545c00ea17e9586",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-persistent-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 13551,
+    "lines": 77,
+    "sha256": "d1447830a2a1e142c2864fc8e8c63d32cf063cea4c037174e44eed94ca89dd16",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/final-review/review-v8-22b.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 13477,
+    "lines": 160,
+    "sha256": "00359a5b3dc51c87e6212815c3962168a141b663207a884cda07294adf10918b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 13450,
+    "lines": 68,
+    "sha256": "affbba2fb0fbd69ed215e2be2f1d6c8b9c2cebf0218fa4d5e04c023d29f64105",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/검수_AI예산원장_20261003.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 13057,
+    "lines": 117,
+    "sha256": "19280e8f02c6fda14ab2a6242a5d7b20d0b50ad995b62a03e394639cd8226a20",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/COMPLETION-before-release.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12927,
+    "lines": 76,
+    "sha256": "7aecc338ac3d5d782250dc8efa8e4905bcd32f999ccf9631c9e75261fdb4e61a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-connect-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12533,
+    "lines": 53,
+    "sha256": "1d6ea703bef922c152945687e3ba90304944b870bd8e7497cff405e4280e1a5e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/AI_운영원칙.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12531,
+    "lines": 41,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/게임문구_받침_인계_20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12386,
+    "lines": 45,
+    "sha256": "3cdc4cf594a1bdf15d7153c3bcc0c7e00f566cfb717afe0a5c1c51a93d6cc877",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/acceptance/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12080,
+    "lines": 60,
+    "sha256": "2574735dedb3b1b591ca34426e2faa97650ff7d36ff3219ed790ef0dd8d1e23f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/previous-findings.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 12010,
+    "lines": 101,
+    "sha256": "241081b32e8e197b2aaaba60a442065ad2dd6c99e9c1a362c665f6e3952a7bd1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/synk-id/qa/운영재개-실행준비-20261006.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11707,
+    "lines": 88,
+    "sha256": "30a549281355a2424ae25e988b07d64f21c948ac4d750af504107f9c40be7e38",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11502,
+    "lines": 61,
+    "sha256": "26f88f5deb1a82c08d20fdd37342fd8bbed2372f313f2a0763fec8a839c3cf7f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/AGENTS.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11327,
+    "lines": 84,
+    "sha256": "215baf947a82508f9aa349acce5fb747e43aaf874ddf7b9b11436b80fab50240",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11173,
+    "lines": 71,
+    "sha256": "37721ea96924cd0f7771bcc20f5c50456eb50452ed72ce62eede74812a86c7e6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/wardrobe-save-state-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11084,
+    "lines": 44,
+    "sha256": "9146a632ee966c7ab693a08e58155a56a836fd8f46316d244039c5744d2eddb8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/claude-delta-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11048,
+    "lines": 133,
+    "sha256": "9cacf1ee1df01cb1c55ac43b7f38044e1b243891bf0524b2849a7830b43beca2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/charts.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 11033,
+    "lines": 109,
+    "sha256": "85f8c4106b1693994590f11d2fc4ef557c8ee00502c3bef1d831171b2cd74217",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-followthrough-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10987,
+    "lines": 38,
+    "sha256": "df831decb791f1d9e3239058bed8191849cdec6e7203eb5b93ba64f5ea03e659",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10928,
+    "lines": 56,
+    "sha256": "375a20e46d93121348b22fb887fa4345440185549c3dfcc62a0f4031fe7d5033",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/messenger-felt-upgrade-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10923,
+    "lines": 65,
+    "sha256": "56752a21e6e24072e4790047e566c454e16f7a2be7f49e186fd5b37891ac347d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10727,
+    "lines": 75,
+    "sha256": "f10afb91021cdf5bead7efa8fd0fa9d9c3e3e21246561a1c3f776c8c2c055b55",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/release-inventory.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10704,
+    "lines": 72,
+    "sha256": "197d1e8931310ba43426d68f9a410eaad5a3ebad3c76835c461b93c31e26b105",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-signal2-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10488,
+    "lines": 83,
+    "sha256": "11758a7cca966ce313d11a7dec6e9c440c5b0251966416027ad1bce94af0bd6d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/operations-readiness.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 10022,
+    "lines": 62,
+    "sha256": "a36de16626be13dc225100feab2475283c8a00a230ee84fca949569d5a16f88d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/아틀라스검토_인계_20261007.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9757,
+    "lines": 58,
+    "sha256": "6c574331882b097e8069bbc4b3e0dc636bae07cb71023a1dc6a05a401fde3165",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-continuity-exit-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9756,
+    "lines": 67,
+    "sha256": "42a20629d64a930c22349f477c1e33b9eb55440a45d8cb94804db923ec83c276",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v3/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9702,
+    "lines": 51,
+    "sha256": "ed36c9f2f60ad648c984312b5a1cb4e9b81690bc4675edac93b1a30ebb160d6e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-mobile-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9640,
+    "lines": 51,
+    "sha256": "7cb4a4921d74b581d3a8bd7c81ddace924d8935c969d47e9fcb8cf85bbe2808a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/final-review/review-suite-followup.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9574,
+    "lines": 113,
+    "sha256": "f4f03f83980cf995530a6e15035b35e6733f30fa01a5714df9c9abf3764369d8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-release-preparation-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9520,
+    "lines": 60,
+    "sha256": "4fdbe6808928f7c3518dacba5bdf839d75366a5239b9f71e8718cb47dbed58dd",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-input-continuity-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9486,
+    "lines": 49,
+    "sha256": "e3a079045604d8563c3f5bfc00cfb70717ce3a3f3339919ff4b38b5a46d3c79f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-independent-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9422,
+    "lines": 55,
+    "sha256": "91527c90a9bc75ce5a563c1a02059d65431fc8671c2bcafa8dafcef31f38b550",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-next/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9223,
+    "lines": 32,
+    "sha256": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-root-v2/prompt.md"
+    ]
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/filtering.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9179,
+    "lines": 79,
+    "sha256": "7820b3d916b4c3c74243d98be96e819f7bd0a828e466e9621127a32c2bf6c1b9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-note-management-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9036,
+    "lines": 38,
+    "sha256": "aed8c8ad7d87b738c712cdc90d3befcd55badc0e58e82e6ed7e23d98fa579759",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/sortable-layout.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 9002,
+    "lines": 90,
+    "sha256": "fd0f9bfae34a9aa1563e17699a8591f1c24f7579303c176dcb27f45e6dc7bf96",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-signal2-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8901,
+    "lines": 58,
+    "sha256": "8f6d1d94f8ff3ba02dd6f5d63b47bfeefc42a90caed9406d905aa62fa902e14e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-connect-close-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8864,
+    "lines": 44,
+    "sha256": "d54a58f7e1cb710732bb41dc224334f64258e3bba4db24827de10f7372cc810f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-deploy-20261008/claude-review-20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8839,
+    "lines": 60,
+    "sha256": "21f35b491f6fae68f08af5e70a80de13e5b4d55c15a71dc78461db53e7f59f09",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8814,
+    "lines": 48,
+    "sha256": "2f4edb39a1a8b5993c21142a7fa535488f2a23f5d6cf093d8650288842079255",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8634,
+    "lines": 50,
+    "sha256": "0ac1d78e2c807bc15cf485fc88700debbecfa98e1e8d6690183697ea81ae4470",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/backend/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8607,
+    "lines": 84,
+    "sha256": "b4f7f72065766baef9281a956f3922c07ab18004c81a652f2c570edba6955037",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8354,
+    "lines": 61,
+    "sha256": "fe9fe9c951302b0e48e7ccd6542224e89588adfdbf42efbd2960f6b547cb8946",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 8197,
+    "lines": 36,
+    "sha256": "3088a67432daae1adb230e9ac03cfd9fe1154025b6d5582f3cce2a87d2ac1d35",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-ux-refinement-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7927,
+    "lines": 53,
+    "sha256": "4196e4c3fe8794dd0f8d36ea80e15a3370cc29c39ee69293dc9d8d713775cec5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7876,
+    "lines": 47,
+    "sha256": "0548753d26da265c49cbeb33bc662c80319fcd7780368ec775d5dcfc3f382457",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/DEVELOPMENT-CATALOG.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7631,
+    "lines": 47,
+    "sha256": "b708a9006c6a21791d7ebb41df65136d639e244c8c14fdf2d67554bde1d919d8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND4.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7541,
+    "lines": 52,
+    "sha256": "0132988f05b09c406f24e2a354b75cd9bed25e8aebc4959830bfa69199f433ad",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/synk-id/qa/path-travel-production-20261009/BACKEND-CANDIDATE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7485,
+    "lines": 39,
+    "sha256": "dca9823c8691b4c270f877a79c24c8a848798a04ea6c8eadfb17c9c3efbcb2ab",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7476,
+    "lines": 43,
+    "sha256": "76544c262b3fe6ca3194b933ea27062a0f217baa82e63dae4256c65614ded316",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7461,
+    "lines": 37,
+    "sha256": "964af9e5cfa8d94fa7e39428f217de28596918f40d1ae2958c3fe0cff086ce4e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7386,
+    "lines": 28,
+    "sha256": "14a90d6001c5a4506371ec70ffe1227e8373a12806b2a4221acb5f25cccecea7",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-care-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7266,
+    "lines": 51,
+    "sha256": "482944eae937d5edc1ceac7df4bcdb7d7c5ef98f4c0735366ec8f5baf2f199ab",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7203,
+    "lines": 48,
+    "sha256": "88221522473f050e06287482b94b76de12f6a131fa5287353365b21b587d548c",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/review-prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7053,
+    "lines": 39,
+    "sha256": "f2975f88f0ef36fb345b4d0ef1f9b52a3fb1c62dbc4a9ba7ed235c7a8e9dede9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/delivery/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 7052,
+    "lines": 59,
+    "sha256": "e7acb15cf3841034c6fb3130a039e106972d95b7adf988ecd401b61c1a5ffbf3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/delivery/resume/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6972,
+    "lines": 58,
+    "sha256": "8d730e16f7fc6ef731a242d852d4a850f3c085dbacb77b38a3fed07d8d3d8b40",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.before-input-binding.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6868,
+    "lines": 43,
+    "sha256": "9669cf553b5c820d3850b89ac0aa3427280b89f50fe7361a464080ef70621cf0",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND9.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6858,
+    "lines": 56,
+    "sha256": "d4558efb88cbfac2c06c82ccff5ab3f3ece3dcf5199f5ab6fe12dab2eb644b1b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6805,
+    "lines": 37,
+    "sha256": "cf40d236ca860cff8fa66c9d9f33bcc6f23a798b3ab7f892049fc30f370d3bd7",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/collision-audit.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6735,
+    "lines": 59,
+    "sha256": "be0aaed317196c918e1edc778f7f2fdd3c6bfacd3936e325e65d7d9a52d1462e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-macos-preview-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6718,
+    "lines": 49,
+    "sha256": "9c86466f660395f5a73908fd7b13575070ed83a239fc6ae879243906a8dbbaf5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README-before-user-fixture.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6660,
+    "lines": 32,
+    "sha256": "33c3b65129847c5904fb6ce14a10ed9f05b7e534fdc0242dd6d0e3c143873055",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6600,
+    "lines": 26,
+    "sha256": "5c13768764f030d08a9d9e1b16357d54eab06d752d0b8d77f8fb5b38bf0af063",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND8.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6584,
+    "lines": 42,
+    "sha256": "fd1fc1ae0fa81e74d7232c212ba82914d568e2569b25c95eda793d7203c3f3f5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-workflow-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6558,
+    "lines": 45,
+    "sha256": "e86c9290d3820ff22fdd5b370050edc919535f2190c84260630679b6bd6d7bb3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/worktree-cleanup-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6462,
+    "lines": 80,
+    "sha256": "a8ea688b0587c8ba5c47937df67e584b4ecbaee3cde99f974356602533495989",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/recovery-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6450,
+    "lines": 59,
+    "sha256": "bb2a9f4c18d00c357096b620148a2c1fa243f2f2bbf35fbbc73d55ea6b48eaf4",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/release-readiness/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6449,
+    "lines": 37,
+    "sha256": "14f498e1b049c7efbf5bd652fafba917391ce1eaf53ce8c3c1947dae8a40670e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-library-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6411,
+    "lines": 54,
+    "sha256": "8a345a890ffa09836b2c49ff331b839db2514b4f930d11b14538975ce15a06df",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workroom-desk-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6264,
+    "lines": 38,
+    "sha256": "af8c05b5b438b31a9979b589962dd9832d09c9b38a399619754467e0884d9f09",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6243,
+    "lines": 38,
+    "sha256": "db4331d4feb36d38e39803617fa208617059b1d87a631b6185825af8500addc0",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/CLOUD-READONLY.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6240,
+    "lines": 54,
+    "sha256": "7dc49fb30687df08e7cf6d83dc476ea253f1ba41fbdf5049ee4f80353567aeec",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-app-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6206,
+    "lines": 43,
+    "sha256": "3f02ca15bc77ed74d1d1a563524243d8098aea73732534d9d25a97b4b724543b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6185,
+    "lines": 46,
+    "sha256": "c432b76fd7e0c439e350356d776f2e468d9901358658b312eb3b9410e67b37bd",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/layout.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6138,
+    "lines": 57,
+    "sha256": "da9013b89a528bfee18235581de33da73d6aefd5695851f3e808d84b53446bd1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/summary-draft.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6116,
+    "lines": 36,
+    "sha256": "3eb60d34aebf8629ec148cbd89018e00733b7d449ce8e2589096f780c417cb85",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r2/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6103,
+    "lines": 42,
+    "sha256": "7217dcdee42d25f8fbdb9965d755549434fd2e802b82ee0bea09949bdb2513b3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/modern-runtime.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6058,
+    "lines": 43,
+    "sha256": "f100e6b9be4698d2a02d092c483df80a3f1cf561a7e0b82e168b6b7d6d30fc10",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workroom-practice-removal-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 6039,
+    "lines": 36,
+    "sha256": "f1f67387d9a646aad18f42d199599c52287aabc264a8124a793edbbcf2ada4eb",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-ui-polish-20261009/audit/messenger/findings.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5964,
+    "lines": 49,
+    "sha256": "3186701e499c681bbc5e1777d844f43ccea2963df05224fe788d5dbd04f6c364",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5912,
+    "lines": 38,
+    "sha256": "43a97845189a97b0082523c86cf4d5b6a0222191f1430af9adb1764182662d59",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND5.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5895,
+    "lines": 44,
+    "sha256": "cedd7b2101f9fa793518084fa39fbdb75378d0060b3794fc710c2f4f17f14edb",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-planning-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5829,
+    "lines": 40,
+    "sha256": "3efec224f241344edad819077976255815d2191e9179f0833622875e88bfa2c7",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/wardrobe-startup/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5787,
+    "lines": 39,
+    "sha256": "a5784d08c7a215113483011e8bd0dc44fa335d114561cd423d0d27c630741d3c",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/classroom-pc-recovery-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5774,
+    "lines": 31,
+    "sha256": "bbe5ba10b8b86a8e5338eb9973bc68cd09c9b947a964be5a3dc80f1ad820a4e5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND6.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5768,
+    "lines": 44,
+    "sha256": "e8e192b34f4d0fc19529f0051f1eaac1a5e7a0d5b7643f634b800474557ba10a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/classroom-reliability-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5755,
+    "lines": 53,
+    "sha256": "9e12591a0a681c07c6cddb6bfe7ba18630f42405142c7a2866780a3677abbfe2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5665,
+    "lines": 31,
+    "sha256": "944227072ab939570471d071d274a33ee82d94f07a85b98a580b64f0d4c5c43f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-live-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5650,
+    "lines": 42,
+    "sha256": "39fac19e70bb6a0ce49bc3f26e2db370b329c6ffdf9db8f0e318dd55ca0a822b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-installation-asar-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5484,
+    "lines": 45,
+    "sha256": "0e84efc902cbf3da08b31165584eef896744a9a9efa3a59e00854617d4795070",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-oauth-api-plan.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5481,
+    "lines": 43,
+    "sha256": "aec952d62b3cb888d952887be8c0d5c75728a1b3e613d6f4a03f1521656cada4",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/classroom-followup-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5462,
+    "lines": 49,
+    "sha256": "815f4f0090c87da930c1c0f477f325c060fbb0506ffcd1f9029637641876805a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/migration-platform-final.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5442,
+    "lines": 51,
+    "sha256": "c8f51c09f82fe2c728fd083f588961de3ac9c9b581e5a98e4dd7dcd6c1df8317",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/review-prompt-v2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5422,
+    "lines": 27,
+    "sha256": "56d7d2ea0c38f42d35d39a1337fa5fa8d807f984819e1f8e20bda6cfcdf42983",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND7.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5385,
+    "lines": 40,
+    "sha256": "b94906d6d8f0dac10dc3386ea0686e64e6db0c289cea36eb2e8562929033d34f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5384,
+    "lines": 33,
+    "sha256": "9e5b0fa637d234a865e059ef89e2daef9f1f5a65169c1fe9937eefa6fd36f226",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-release-preparation-20261007/backup-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5328,
+    "lines": 42,
+    "sha256": "1e02861094a93f609853380efe5ddbf75cca6bfa4553beada847d9ba2c3a9407",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5269,
+    "lines": 40,
+    "sha256": "2c9f0a5b03b837ed7d9a35ce8be0de7dfc795a8071e480475e29765b05a26d99",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/사내메신저_Google_AI_검토_20260927.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5256,
+    "lines": 70,
+    "sha256": "c69c2f82976ce4f5329e3a8d042aa68ac8ce50a9b3f20e9fef0c7af92883b9a9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-brand-label-20261009/research.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5195,
+    "lines": 28,
+    "sha256": "a543234411e1b360c8994612c4ce8b2b108a3c811ee9974b9afe26fe6e5c2cc9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/backend.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5135,
+    "lines": 36,
+    "sha256": "0987bda2ab5163702fbce1e9c69d1c374644f52b8bdd6bbb7527519aeabe3426",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/desktop-clients/HANDOFF.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 5122,
+    "lines": 46,
+    "sha256": "caf288d62b6e4ee1b84a3e4e069de450048b1336cbe395c6f249334395357430",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/synk-id/qa/운영등록-공개반영-완료-20261007.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4977,
+    "lines": 33,
+    "sha256": "ed749d575d031e4a0ff87f644eb50da1d594922b7e5078eb2d5277f1f4502099",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-invite-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4965,
+    "lines": 48,
+    "sha256": "495c4f0f36282581c764b3b9e491e98633c3b7f1981b6de375d327ab3b196101",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/attempt2-interruption-retry/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4890,
+    "lines": 20,
+    "sha256": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/followup-review/prompt.md"
+    ]
+  },
+  {
+    "path": "docs/_ops/qa/pulse-casting-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4829,
+    "lines": 30,
+    "sha256": "aec06e6f2cdd5d6a1ff9e4e1051de949caf1ad85f16dade4bae1d43be39bbea4",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/desktop/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4788,
+    "lines": 31,
+    "sha256": "46486fb737bb9ba0525b05f3f25fed08ed436a69d7b2eb76f199460f97448fec",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-recovery-default-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4708,
+    "lines": 28,
+    "sha256": "385ec4371e2569b1cb65ce55c61ad30f4a511df9e789c9daf0af99e56a67a1c6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/controls.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4703,
+    "lines": 48,
+    "sha256": "697c4e56b377e535c263220acbf4a4b4c05f8b072a47126051aa85dff8f3ea99",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4682,
+    "lines": 29,
+    "sha256": "9a75c01b3d668724fbe5d3569e39e918069c230549517cdc4503169ba46ca25b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/company-cloud-release-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4617,
+    "lines": 30,
+    "sha256": "406151c5b00ce6329f8ccc72c6392b8767e6cf3ae0683c1e6ec21d5d3fab6933",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-oauth-logout-analysis.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4544,
+    "lines": 23,
+    "sha256": "9685b522faa6d2c34770193b883ea51c028c607e07207a12f210cf3afd489d3f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/엔진8종표기정리_20260921/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4513,
+    "lines": 35,
+    "sha256": "44931618f74984c462aa49063e95aaebefefb83ecb2cd8368de9eb106ca82f4a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/world-cloud-preview-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4474,
+    "lines": 39,
+    "sha256": "a0616768933e3ea6dc44ca56b9ba80c5ab2ea750e7daa5ed5e44768e70b9d129",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-demo-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4448,
+    "lines": 28,
+    "sha256": "c55545415b1c9e7e8f3e7603a2c4e486a16113619bfe6c1511544f4bf83649ad",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/reports.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4446,
+    "lines": 36,
+    "sha256": "a698727d6993ce703ca4b33749cce9313aece525ce91132f2433f39fe3894cf0",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-worldbook-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4389,
+    "lines": 38,
+    "sha256": "683246129c664fabe7b393cdd4859ae74ec28a45c079d3ca6e6657f7080f6c10",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4349,
+    "lines": 14,
+    "sha256": "bdde30e1ff85c6ddf59c3ffab7c4f94cdbc20f895c9bb64a583e6f3824b84018",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/scope.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4337,
+    "lines": 18,
+    "sha256": "bfb2f1741209f715ec572ae44ae3cc1027687293dbab8bf45453653b250b59c9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/RELEASE-COMMANDS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4325,
+    "lines": 54,
+    "sha256": "476475627587516f5ec85024dacb3a0ec52c47ed6f0c97021889bc2d8a8523e8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-site-check-recovery-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4320,
+    "lines": 31,
+    "sha256": "1cdf80f6ca136d9c401b1591104f38f3758b1edc0e60778d7565a298d470df46",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/migration-checksum-audit.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4301,
+    "lines": 36,
+    "sha256": "28173eb0eaa06d57aff5bd7cf670e06b2488fc29c8413ff622130880e4b6175e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-login-v3-20261013/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4264,
+    "lines": 43,
+    "sha256": "6cd0f26348316ed366655cb1f06ccd72b75cc6c43581d964ef2036510c804500",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4233,
+    "lines": 20,
+    "sha256": "2c145416a6fd0123da56a1babcd98038f568e07d8ab077752bea656a66ed3a2b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/combined-review-prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4167,
+    "lines": 8,
+    "sha256": "734363813f05cae461c3bedc549a9c905da8fe5bbeec95bb3ed9b465941716ca",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-brand-label-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4135,
+    "lines": 27,
+    "sha256": "391d7b0ab539fd3a5405d84acb6a61b90f5f915d4f1f0275e4e777339d24cf13",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4069,
+    "lines": 39,
+    "sha256": "4a8a9e4f14d1f74010313d889b2d53c3da3f9f4053667c71c8a9903c50cf86f1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/PUSH.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 4044,
+    "lines": 28,
+    "sha256": "92f55145877f9274ebcf38f8b821981cd6246f3cf70759304aa4f9aa3eeb8684",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r1/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3970,
+    "lines": 29,
+    "sha256": "15f9efd790d0d393e39450e4b7d516d2ac7fdfa38882e7cbfad6b5f624ebb59a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/insight-0.4.14/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3922,
+    "lines": 20,
+    "sha256": "5ec229f4b9aca8ba10c14e88debd4ba127bf9377e49791356a1794fc073709a4",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/async-data.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3910,
+    "lines": 66,
+    "sha256": "ddd293d4e1200a3c4814e520443dd9e22c1214b102deef877e0eb7da132cfb7d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/final-review/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3903,
+    "lines": 16,
+    "sha256": "61ab1b4d8a39e0e66ddd0ef51e983c1c9739d338da12ce68082edc559e35f744",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/ai-media-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3900,
+    "lines": 42,
+    "sha256": "713e5e635b19d585f0eea3cd231ef2c7d54287193866abdde9cf9f1ebba224f3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/product-web-logout-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3900,
+    "lines": 19,
+    "sha256": "136557508a926feab2a8354fc376d401e22ac7a174c2e84a7d998848f8b9fe26",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/GOOGLE-REGISTRATION-NOTICE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3832,
+    "lines": 25,
+    "sha256": "198bd52a1b9a9a914d9db1a381c470a6a431fcd432d37fc93c77d1afc930412b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-independent-20261011/pc-performance.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3802,
+    "lines": 18,
+    "sha256": "ac701009b606f1d7dd3151ee3120759511ba3115ea65e5ee91e8465244859c85",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-note-management-20261009/pre-integration/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3727,
+    "lines": 25,
+    "sha256": "ced3f126d2809fb74922ff332e66c09b59b5ad6c36b011d969de54a39e91dc2d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/initial-inputs/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3698,
+    "lines": 12,
+    "sha256": "a7c96cde0ba59b9f1f28755e8858a4e6532f9f1b64c6a36dd371299488b74228",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/initial-inputs/scope.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3686,
+    "lines": 16,
+    "sha256": "d8effb381cd2a0e177ad689e6fa21d8f4107af6c3d777d198bdce66ad80f0304",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/google-console-actions.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3676,
+    "lines": 19,
+    "sha256": "15408fa70d0aabf717a1a7a2239b5ad62c3492be1c2254f3ad46913d51601061",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/native-install-handoff.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3644,
+    "lines": 12,
+    "sha256": "5bac5db27f684a9a78ed4a459465ae3b203f1fb30d0c222bb2b9b9923908e2f2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/album-public-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3632,
+    "lines": 22,
+    "sha256": "f5ae0643ab2460c9f652c45b074222649f1fbbf9e0f1fd6f5c0915bfdef2466b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-personal-runtime-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3624,
+    "lines": 28,
+    "sha256": "a57f6bbd3ef69f6103fc145a0f326d836ee8f0530582d3e6bd2c7d1e79957944",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-macos-preview-20261012/release-notes.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3558,
+    "lines": 36,
+    "sha256": "92cebb487e1e2f0e291794faa6b972f6552d45bc91e915389e35e71b041c4a06",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/benefits-0.4.12/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3375,
+    "lines": 17,
+    "sha256": "bd8298acd5c16ac8d09d21e9eadab976c59dff98016a6168d85023079d6d1b4a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/bar-presentations.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3350,
+    "lines": 33,
+    "sha256": "3ec11931b0d05ec75282d3b23f77b348a271fff4dfad3379890cea35fff9309a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/pc-live/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3326,
+    "lines": 35,
+    "sha256": "2e5e042d187cd766ee39478384312c0a0712d650ddd94ff4ca4a77129384edd6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/messenger-teaching-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3273,
+    "lines": 19,
+    "sha256": "61e55c3fc61ee8237b8b1ed8525e8cabbb1a543db1bfc4974271d02258461554",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-live-roundtrip-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3155,
+    "lines": 22,
+    "sha256": "922904869d6960735d3ef0230e125bec2dfe02602c3ddd0e8344fc0019fb18e6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/company-generation-fix/attempt2/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3153,
+    "lines": 18,
+    "sha256": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/company-generation-fix/attempt2/README.md"
+    ]
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-cleanup-fix/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3121,
+    "lines": 25,
+    "sha256": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/native-cleanup-fix/README.md"
+    ]
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/README.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3109,
+    "lines": 33,
+    "sha256": "c24c56d48a2b491a0a648ec0beee10f43d12c8d7fe2b5e74d89879fd31879419",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/ops-delta-review-prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3104,
+    "lines": 12,
+    "sha256": "780e253a4726bf25fb7353c21de88d02cea305af0ed2becf05494fa346230ba7",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-pc-web-conflict-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3088,
+    "lines": 27,
+    "sha256": "bd3ce69b65b0eb94b74f57381754a192dea8abb1ab2fb7bba9429ca9eb6c08d5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3075,
+    "lines": 16,
+    "sha256": "117e83f16bb324f565a300cef7f216efcaa48f5ef2d84e6653c8aa98478f4cd8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-native-logout-install-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3062,
+    "lines": 16,
+    "sha256": "35854bc59648b0c47636dcabb5ca806335f660dc54814158257f81965f1340fb",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-provision-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 3040,
+    "lines": 29,
+    "sha256": "fd5af0de1796206db159122ae35e3a6dae2810009336851d6f8e19b30223ef2f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/browser/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2989,
+    "lines": 21,
+    "sha256": "2cde341c484260d716eb76d89127eaee11fb3b226f442ec1283564d7bf8f967d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/코스튬_20261008/자산검수.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2965,
+    "lines": 24,
+    "sha256": "28548debe4c8fbb3d8fbd232ecaaebe0ceda2ef7f4323ff247256cb1855332aa",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2854,
+    "lines": 16,
+    "sha256": "7c66eef61cb3e2a812cd4327ad35ddf4d772bb8b6a7973f4c595083d9db8a375",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-rehearsal-copy-release.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2828,
+    "lines": 25,
+    "sha256": "5d2ebda9a4fe873df606ff2a45faf4fd5c4db4ed0d0a8f6c069d6c3c4d8a0073",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/ops-review-prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2821,
+    "lines": 16,
+    "sha256": "c58ce35b8670291e82f9b6f690763da412ec600eae6ebd4642f9c709502bd818",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-personal-runtime-release.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2788,
+    "lines": 24,
+    "sha256": "ddb1f1bfc9ba3b70d2f60f4c2369454be54003fbc12f26cb4f107d70cb8a130b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-care-push-timeouts-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2775,
+    "lines": 23,
+    "sha256": "0bb8e9ce9f3bf318c9fa9a8bdd411ac6af2667a83a89415cd49e765746941f3b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/sdk-browser/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2769,
+    "lines": 17,
+    "sha256": "08d6cc0a57ab2cbf09e16576d8d013397fd24fc68cd132ad6231e9f66f6006fa",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2768,
+    "lines": 17,
+    "sha256": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/native-retry-ux/README.md"
+    ]
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/album-0.4.13/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2731,
+    "lines": 16,
+    "sha256": "ff2d359176abe630c2286b1c343c0dc63a054edea62a19354c5cdb6b27e35f25",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/comparison-formatting.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2727,
+    "lines": 29,
+    "sha256": "35faa7cc51b5e7f3a00ee2b155343589b62c645cf9ae4f053118c72c528959e9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/PUBLIC-CHECK.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2725,
+    "lines": 19,
+    "sha256": "6e404c32ea2e48b28425d6f7cd3b497ca69b83a021d5d579e22b11844664afe0",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/classroom-release-20261009/rehearsal-index-ast-compare.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2721,
+    "lines": 23,
+    "sha256": "bd493238deba4da671451aed5d3a6275b64e0ae42f59d8316940117651a0e752",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/frontend-read-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2585,
+    "lines": 18,
+    "sha256": "365031140491e1311ec28dc9c7aaac4250b35b5ed976f18e77b1ec6876560f31",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-notification-copy-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2574,
+    "lines": 14,
+    "sha256": "b9afab22e502f176771d581dc7156f92cae82b85d0813c69c3a5d54245d0e3d8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-ui-polish-20261009/exact-candidate/messenger/verification.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2562,
+    "lines": 29,
+    "sha256": "6f032bea02ad9435afabe8bbe036890090f0b8c121130c29306b76c153692ddd",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/CLOSE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2546,
+    "lines": 19,
+    "sha256": "4ba9ad12258d8c08feecb529b1a32763cdcf58156ca0adadc98b5380b59dc621",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/backend-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2546,
+    "lines": 14,
+    "sha256": "484913a86644cac0de8aaf8bab261168b03c56751bafdd2b2cf8292eb0144441",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/PERSISTENCE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2499,
+    "lines": 12,
+    "sha256": "a3ed963ff929093d7f0145f533d87803dd2292c1a14defc619f6cd169e999f6d",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-tray-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2414,
+    "lines": 16,
+    "sha256": "e629f31abbf807ba2b5b1e0cab3100ec8c3ce4d1651c99fcfe6bf4275ac2c92a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/feedback-review/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2409,
+    "lines": 5,
+    "sha256": "05e7213b4d2e01f363066aa1c98659fc0ca2be10883db68ae2f0f95d0f04fffd",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/official-p2-excerpt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2407,
+    "lines": 30,
+    "sha256": "8df9c8ebe627838d1a68e2f74948bfc4a8954d4e774c6ce533c622c60280c6a6",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/synk-id/qa/운영재개-리허설완료-20261007.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2270,
+    "lines": 14,
+    "sha256": "c163e066ec179c8a1c2e2fd9467731dbbae8369f6e4f3bc7e546901c778e6a23",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/key-safety-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2174,
+    "lines": 12,
+    "sha256": "d5dcca993e34a51eaa4ada0a922b619b1ee971d5107ddd7c43f4a70276d1bbf2",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/tables.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2137,
+    "lines": 22,
+    "sha256": "bad26c41789c621c24e25748111e20c6a100533477ef582c175a1edca12380f3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/browser/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2129,
+    "lines": 15,
+    "sha256": "829edd0aa4051ab019617a69f96682bb1f73b850f27b8d7401d98a2b9375ef6b",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-db-release.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 2064,
+    "lines": 23,
+    "sha256": "183c5403832a92a27c887bda22076c4f146025b830627ffb164cf567ba3020d8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/ci/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1977,
+    "lines": 15,
+    "sha256": "282fc0d389766775ca0da841308f45cf4c4641c5fd71614e6e6eb2b6e27368e5",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-library-20261012/fullbody/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1976,
+    "lines": 17,
+    "sha256": "5516c851ebb8912d181ba40a727bdc9db3c5bbfb5273996115f07b1e243229c1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/sdk-browser/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1973,
+    "lines": 15,
+    "sha256": "95e4e47a1f1f9b0a402494d7b564f11b8b8865e3d2579cdcdd0c4631bb6a67a8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/RELEASE-COMMANDS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1930,
+    "lines": 21,
+    "sha256": "7083bc8dac45a9eb551b2521dd761bc335217315d2e4fd4a9ec9fda992cbfe92",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/sources.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1923,
+    "lines": 20,
+    "sha256": "2e6efcd576ec195c64895ded0aa29d629d94154fcc437828d2288a9440c31202",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/backend/postdeploy-followup.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1901,
+    "lines": 19,
+    "sha256": "e4b9385db22c0f114b6515488e80db398633f883b471a44cafa3e1d5f22d2fdb",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1881,
+    "lines": 13,
+    "sha256": "485d49c37088e571842e9903f7d037fda46f7c5dd6f54868ef701ffc83090945",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/launcher-race/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1862,
+    "lines": 14,
+    "sha256": "f135179d917caebe26eb9721ab074bc22160d70d8a00d41c9f9aa6453ec9d85f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/os-integration.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1860,
+    "lines": 12,
+    "sha256": "0b4a6fb4e22fa2ebd0b5f1188f978563b4f0eefc9893df597b7d65fe4be0a350",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/app-compaction-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1856,
+    "lines": 17,
+    "sha256": "56deec62b7f3f560463a6e71097fb5f2a90753806f560a718551fccbf7210bc8",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/pulse-followthrough-20261012/samples.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1818,
+    "lines": 11,
+    "sha256": "0ece9de8656bffa7e144ebbf9884da51e9a43ec9dc73298f8b3d9d0b3472832a",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/notice-review/prompt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1730,
+    "lines": 4,
+    "sha256": "1507fd34ac469fb6359c45333a5924e5b42e5ff1697bf1ce694c40597f10ac7e",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/track-first-line-proposal.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1719,
+    "lines": 4,
+    "sha256": "d717538a741fd03fa6d7b6594547e2a396fdb49d593a5662802f9f095229340f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-current-install-check-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1441,
+    "lines": 10,
+    "sha256": "1257f5a0b53505f8bc380f38fe40a96a6f8c6d20fdb8da79f665c0464c3e1463",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/funnels.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1417,
+    "lines": 14,
+    "sha256": "bc6f858194ad820b4b62123191d9603847f4f860ca3428d08816457323f79ed3",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/user-delta-review-exception.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1283,
+    "lines": 10,
+    "sha256": "513aa57192f764f1d72cb66d69ecf10df9f9001e7272379f18a46735ea6408b1",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-care-push-timeouts-20261009/copy-followup/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 1221,
+    "lines": 10,
+    "sha256": "4d3b138af81fa414402b3436384105ef79dd231a8398cb6ad1a8f33f5ce524b4",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/prior-product-review-excerpt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 795,
+    "lines": 6,
+    "sha256": "16826009e5dfd1b76622df3e2cd0a396279bbd2c6b1585a791867d0b3aedf528",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/official-p3-excerpt.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 599,
+    "lines": 8,
+    "sha256": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0",
+    "owner": "operations",
+    "sameContentPaths": [
+      "docs/_ops/qa/platform-account-integration-20261009/native-retry-ux/official-p3-excerpt.md"
+    ]
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/user-logout-and-ownership-exception.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 531,
+    "lines": 6,
+    "sha256": "5fa2649a94c875d4cf52ec0629fa0e31a943fa78d3b8c81ed54b61bb723f2a47",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/native-v2-owner-delta/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 479,
+    "lines": 4,
+    "sha256": "ef923cd0de6e51bcdde0c78657d78a373e7c947d5c01e50ae02ac3605ddce9d9",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/src/content/shared/README.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 192,
+    "lines": 5,
+    "sha256": "36ae02985b054edb3e526dd75d89d019c4ac6ec14d70f58b40c83d439c6dbf8f",
+    "owner": "operations",
+    "sameContentPaths": []
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/src/content/assets/README.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-operations-pass3.json",
+    "bytes": 179,
+    "lines": 4,
+    "sha256": "1a17117302d00a4301c95b0562c12a244e38efe35aa508831ea404e7051556d7",
+    "owner": "operations",
+    "sameContentPaths": []
+  }
+]

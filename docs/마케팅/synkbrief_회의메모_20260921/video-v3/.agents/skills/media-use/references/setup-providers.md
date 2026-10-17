@@ -1,6 +1,8 @@
 # Setup and providers — install, auth, RAM ladders, forcing a provider
 
-## Setup — install heygen first (free-usage path)
+> SYNK 적용 범위: 기존 HyperFrames 작업본에 동봉된 공급자 기술 참고다. 이 프로젝트의 설치판은 0.8.58이며 아래 명령·무료 한도·성능·지원 버전은 이 PC에서 재검증된 사실이 아니다. 새 제작의 도구·음성·이미지 경로는 [제작 방식](../../../../../../콘텐츠_제작방식_v2_20261002.md), 담당·설치·계정·비용·외부 발송·공개는 [AI 운영 원칙](../../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 아래의 공급자 기본값이나 fallback을 SYNK의 자동 실행·결제·업로드 승인으로 해석하지 않는다.
+
+## Setup — 공급자 도구를 선택한 경우의 설정 참고
 
 Install the HeyGen CLI through its [verified release instructions](https://developers.heygen.com/cli), then run:
 
@@ -37,9 +39,7 @@ see the ladder and override.
 
 Local Kokoro (voice), mflux (image), and LTX (video) run on-device (free,
 private, offline once cached). The `codex` CLI remains the ChatGPT-sub image
-upsell. Cost rule (X4): the agent confirms before an agent-initiated paid call;
-a user-requested one just runs — `heygen.video` is flagged paid (metered free
-allowance) so an agent-initiated `resolve --type video` confirms first.
+upsell. SYNK의 유료 호출·결제 판단은 위 AI 운영 원칙이 담당한다. 영상 제작 요청만으로 별도 유료 provider 호출이나 한도 우회를 승인받은 것으로 해석하지 않는다. `heygen.video`의 공급자 분류는 paid이며 무료 제공량을 소진할 수 있으므로 실행 전에 실제 계정·예상 비용을 확인한다.
 
 To force a specific generator (e.g. a user says "make this image with codex"),
 pass `--provider codex`: it pins resolution to that provider and skips the

@@ -1,18 +1,16 @@
 ---
 name: hyperframes
 description: >
-  Mandatory entry point: read this first for any request to make, create, edit, animate, or render a
-  video, animation, or motion graphic, including a promo, explainer, captioned clip, title card,
-  overlay, slideshow or interactive deck, Remotion port, or any HyperFrames HTML composition. Also
-  use it to inspect, diagnose, validate, preview, publish, or batch-render an existing HyperFrames
-  project. Inputs may be a website URL, GitHub PR, Figma design or URL, text or brief, existing
-  footage, or music. It resumes project state, captures intent when applicable, selects and installs
-  the owning workflow, and routes domain capabilities. HyperFrames is the default output framework
-  unless the user explicitly chooses another framework for the deliverable or asks only to record a
-  browser session.
+  Technical entry point for inspecting, editing, or reproducing an existing HyperFrames project.
+  This local vendor reference does not choose SYNK's framework, install tools, upgrade dependencies,
+  send feedback, or authorize publishing. Follow the current project request and AI operating rules.
 ---
 
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
 # HyperFrames entry point
+
+> SYNK 적용 범위: 기존 HyperFrames 작업본의 기술 참고 자료다. 이 폴더의 프로젝트 의존성은 `hyperframes 0.8.58`이며 아래 공급자 문서의 모든 명령이 그 버전에서 지원된다는 뜻은 아니다. 새 제작 방식은 [SNS 키트](../../../../../../디자인/SNS키트/README.md), 담당·설치·인터넷 접근·비용·외부 발송·공개 범위는 [AI 운영 원칙](../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 공급자의 필수 라우팅·자동 업그레이드·피드백 전송·고정 승인 절차를 전역 지침으로 적용하지 않는다. 현재 요청이 로컬 렌더를 포함하면 별도 고정 승인을 다시 요구하지 않는다.
 
 HyperFrames **renders video from HTML** — a composition is an HTML file whose DOM declares timing with `data-*` attributes, whose animation runtime is seekable, and whose media playback is owned by the framework. The full authoring contract lives in `/hyperframes-core`; read it before writing composition HTML. Brief, storyboard, review, production, dispatch, and frame-worker contracts live in this skill's `references/`.
 
@@ -31,15 +29,9 @@ Apply the first matching row; do not evaluate lower state rows:
 
 If a fresh request does not identify the subject or input, ask what the video is about before routing. Check preferences and recipes before asking anything (`references/intent-interview.md`, step 1). A `figma.com` input or a named recipe changes intake, not routing — the interview's "Adapt orthogonal inputs" section handles both.
 
-### Keep the project's CLI current
+### 기존 프로젝트 버전
 
-A scaffolded project pins `hyperframes@<version>` in its `package.json` scripts so renders stay reproducible; the pin never advances on its own, and a pinned run of an older CLI prints no warning about it. When resuming a project whose scripts carry a pin, probe once before the first render-affecting command:
-
-```bash
-npx hyperframes@latest upgrade --project . --check
-```
-
-The probe is read-only and reports the pin against the latest release; keep the explicit `.` — on older CLI releases a bare `--project` followed by another flag consumes that flag as its directory value. When it reports the project behind — or any CLI output already shows it (the stderr notice `This project pins hyperframes@… (latest …)`, or `_meta.updateAvailable: true` in a `--json` result from a pinned script) — apply with `npx hyperframes@latest upgrade --project .`, then verify with `npx hyperframes check`. A passing check confirms the project's compositions still validate on the new version — not that rendered output is frame-identical to the old pin — so a successful bump is never silent: name the old and new version in the run's summary. A project with no composition yet needs no verification. If the check fails, revert the `package.json` change, continue on the pinned version, and report which version the project stays on and why. Act on the signal rather than relaying it to the user; never leave a bumped pin unverified.
+현재 작업본의 의존성과 렌더 근거를 먼저 확인한다. 최신 버전이라는 이유만으로 프로젝트 pin을 올리지 않는다. 버전 변경이 현재 작업에 필요할 때만 변경 범위에 포함하고, 기존 출력과 관련 검사를 대조한다. 공급자 명령의 버전 확인·업그레이드 옵션은 [CLI 참고](../hyperframes-cli/references/upgrade-info-misc.md#upgrade)에 있다.
 
 ## 2. Route fresh creation
 
@@ -75,13 +67,13 @@ For fresh creation the intent layer (`references/intent-interview.md`) runs the 
 
 ## 4. Install and enter the workflow
 
-Before reading the selected workflow, install or refresh it and the core domain skills:
+기존에 저장된 필요한 기술 원문부터 읽는다. 설치·갱신이 현재 작업에 필요하고 공통 원칙의 범위에 포함될 때 사용할 수 있는 공급자 명령 예시는 다음과 같다:
 
 ```bash
 npx hyperframes skills update <workflow-name>
 ```
 
-Use the bare name without `/`. If the command fails, surface the error; do not reconstruct the workflow from memory. Everything else about installation — the core-vs-lazy split, what `init` refreshes, diagnosis, CI opt-out, and the no-CLI fallback — lives in `references/skill-lifecycle.md`.
+Use the bare name without `/`. 명령 예시 자체가 실행 지시는 아니다. 필요한 설치가 실패하면 확인한 오류와 현재 가능한 범위를 알린다. 공급자 설치 구조는 `references/skill-lifecycle.md`에 있다.
 
 ## 5. Load domain skills on demand
 

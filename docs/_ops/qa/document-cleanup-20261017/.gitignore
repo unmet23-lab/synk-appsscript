@@ -1,0 +1,2 @@
+# Local recovery copies are preserved, but must not become active guidance or Git content.
+/_archive/

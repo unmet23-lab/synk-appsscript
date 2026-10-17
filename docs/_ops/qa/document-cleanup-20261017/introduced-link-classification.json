@@ -1,0 +1,1326 @@
+{
+  "base": "b32ca0542bca08f6ffcb51802fbf26142413abd1",
+  "sourcePlanMtime": "2026-10-17T04:41:03.749Z",
+  "sourceFiles": 464,
+  "markdownFiles": 439,
+  "newBrokenOccurrences": 111,
+  "newBrokenTargets": 87,
+  "regressionsOfPreviouslyWorkingLinks": 0,
+  "baselineBrokenOccurrences": 1692,
+  "summary": {
+    "sibling-repository": {
+      "targets": 6,
+      "occurrences": 9
+    },
+    "originals-in-recovery-zip": {
+      "targets": 22,
+      "occurrences": 22
+    },
+    "owned-cleanup-qa-planned": {
+      "targets": 22,
+      "occurrences": 25
+    },
+    "owned-manuscript-archive-planned": {
+      "targets": 2,
+      "occurrences": 2
+    },
+    "other-session-video-rule": {
+      "targets": 1,
+      "occurrences": 15
+    },
+    "other-session-product-qa": {
+      "targets": 8,
+      "occurrences": 12
+    },
+    "local-transient-evidence": {
+      "targets": 23,
+      "occurrences": 23
+    },
+    "other-session-runtime-code": {
+      "targets": 2,
+      "occurrences": 2
+    },
+    "other-session-publication-note": {
+      "targets": 1,
+      "occurrences": 1
+    }
+  },
+  "targets": [
+    {
+      "target": "../SYNK-website/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/홈페이지_설계_v1.md",
+          "line": 3,
+          "href": "../../SYNK-website/README.md",
+          "text": "> 2026-10-17 정리. 아래는 당시 홈페이지 구성과 구현 기록을 보존한 자료다. 우주·지구 인트로, 흰 바탕, 질문 구체와 본문의 배치 지시를 현재 화면에 다시 적용하지 않는다. 현재 구성·원고·빌드·공개 상태는 [홈페이지 저장소 안내](../../SYNK-website/README.md)와 [검증 기록](../../SYNK-website/qa/RESULTS.md)을 따른다. 10-10 이후 홈페이지 변경의 근거는 [결정](_ops/결정.md)에 있다."
+        },
+        {
+          "source": "DESIGN.md",
+          "line": 44,
+          "href": "../SYNK-website/README.md",
+          "text": "유리를 쓰는 자리에서는 두께·가장자리 반사·접촉 그림자를 구분하고 글자와 로고를 선명하게 유지한다. 2026-09-19의 유리 방향을 모든 조작 요소의 고정 스킨으로 확대하지 않는다. 현재 기업 홈페이지 구현은 [SYNK-website](../SYNK-website/README.md), 플랫폼·WORLD는 위의 제품별 시그널 원문을 따른다."
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "../SYNK-website/qa/RESULTS.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/홈페이지_설계_v1.md",
+          "line": 3,
+          "href": "../../SYNK-website/qa/RESULTS.md",
+          "text": "> 2026-10-17 정리. 아래는 당시 홈페이지 구성과 구현 기록을 보존한 자료다. 우주·지구 인트로, 흰 바탕, 질문 구체와 본문의 배치 지시를 현재 화면에 다시 적용하지 않는다. 현재 구성·원고·빌드·공개 상태는 [홈페이지 저장소 안내](../../SYNK-website/README.md)와 [검증 기록](../../SYNK-website/qa/RESULTS.md)을 따른다. 10-10 이후 홈페이지 변경의 근거는 [결정](_ops/결정.md)에 있다."
+        },
+        {
+          "source": "docs/문서_지도.md",
+          "line": 43,
+          "href": "../../SYNK-website/qa/RESULTS.md",
+          "text": "| 홈페이지 구성 | [현재 원고·구현·빌드](../../SYNK-website/README.md), [검증 기록](../../SYNK-website/qa/RESULTS.md), [과거 구성 이력](홈페이지_설계_v1.md) |"
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/숙제서클_설계.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/숙제서클_설계.md",
+          "line": 46,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/숙제서클_설계.md",
+          "text": "08-13 활동 원문·레벨별 문장 예시·4인 모형·순회식·종이 높이 실측·긴 문장 잘림과 중복/실패 복구 사례·폐기안의 선택 이유는 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/숙제서클_설계.md)에 모두 보존한다. 구현 교훈은 다시 사용할 수 있지만 삭제된 GAS 조판·메일·출석 함수를 현행 실행 지시로 중복 유지하지 않는다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/inventory-pass4-start.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 18,
+          "href": "qa/document-cleanup-20261017/inventory-pass4-start.json",
+          "text": "같은 내용을 다시 읽은 횟수나 사본을 새 전문 독해로 부풀리지 않았다. [시작 목록](qa/document-cleanup-20261017/inventory-pass4-start.json), [파일별 장부](qa/document-cleanup-20261017/), [통합 검증](qa/document-cleanup-20261017/validation-pass4.json)에 범위·판단·해시·중복 대조를 남겼다. 장부는 `semantic-*-pass4.json`이며 직접 검토와 동등 사본을 따로 표시한다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 18,
+          "href": "qa/document-cleanup-20261017/",
+          "text": "같은 내용을 다시 읽은 횟수나 사본을 새 전문 독해로 부풀리지 않았다. [시작 목록](qa/document-cleanup-20261017/inventory-pass4-start.json), [파일별 장부](qa/document-cleanup-20261017/), [통합 검증](qa/document-cleanup-20261017/validation-pass4.json)에 범위·판단·해시·중복 대조를 남겼다. 장부는 `semantic-*-pass4.json`이며 직접 검토와 동등 사본을 따로 표시한다."
+        },
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 59,
+          "href": "qa/document-cleanup-20261017/",
+          "text": "- **전문 검토 777개(Markdown 754개·TXT 23개)**. 이전에 일부만 읽었던 긴 제품·서버·사업 원문도 포함한다. 파일별 범위·판단·근거·해시는 [차수별 검토 장부](qa/document-cleanup-20261017/)의 `semantic-*-pass3.json`에 있다."
+        },
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 134,
+          "href": "qa/document-cleanup-20261017/",
+          "text": "- 원문 백업 SHA, 210파일 이동 뒤 SHA, 공통 원본 링크·CLAUDE 가져오기, 생성기 구문, 변경 공백 검사를 확인했다. 전체 파일 목록·변경 목록·복구본은 [이번 검증 폴더](qa/document-cleanup-20261017/)에 둔다. 이 폴더는 복구·조사 증거이며 새 지침 원문이 아니다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass4.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 18,
+          "href": "qa/document-cleanup-20261017/validation-pass4.json",
+          "text": "같은 내용을 다시 읽은 횟수나 사본을 새 전문 독해로 부풀리지 않았다. [시작 목록](qa/document-cleanup-20261017/inventory-pass4-start.json), [파일별 장부](qa/document-cleanup-20261017/), [통합 검증](qa/document-cleanup-20261017/validation-pass4.json)에 범위·판단·해시·중복 대조를 남겼다. 장부는 `semantic-*-pass4.json`이며 직접 검토와 동등 사본을 따로 표시한다."
+        },
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 33,
+          "href": "qa/document-cleanup-20261017/validation-pass4.json",
+          "text": "- 원문 백업 SHA-256, 검토 장부와 현재 파일, 새 로컬 링크와 기존 절 연결, 변경 파일의 공백을 대조했다. 최종 수치와 결과는 [통합 검증](qa/document-cleanup-20261017/validation-pass4.json)에 있다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_원고/기록_202609_기획과조판.zip",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 23,
+          "href": "../_원고/기록_202609_기획과조판.zip",
+          "text": "- **옛 기획 원고:** 9월 본체 SYNK·채널 기획·룸조판 원고 3개를 핵심 결정과 보존 이유로 축약하고 해당 HTML 3개를 다시 생성했다. 고정 채널 수·시간표·말투·옛 예산을 현재 사업 운영 규칙으로 남기지 않았다. 원문과 당시 HTML 6개는 [압축 보관본](../_원고/기록_202609_기획과조판.zip)과 [목록·해시](../_원고/기록_202609_기획과조판.json)로 복구할 수 있다."
+        }
+      ],
+      "category": "owned-manuscript-archive-planned"
+    },
+    {
+      "target": "docs/_원고/기록_202609_기획과조판.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 23,
+          "href": "../_원고/기록_202609_기획과조판.json",
+          "text": "- **옛 기획 원고:** 9월 본체 SYNK·채널 기획·룸조판 원고 3개를 핵심 결정과 보존 이유로 축약하고 해당 HTML 3개를 다시 생성했다. 고정 채널 수·시간표·말투·옛 예산을 현재 사업 운영 규칙으로 남기지 않았다. 원문과 당시 HTML 6개는 [압축 보관본](../_원고/기록_202609_기획과조판.zip)과 [목록·해시](../_원고/기록_202609_기획과조판.json)로 복구할 수 있다."
+        }
+      ],
+      "category": "owned-manuscript-archive-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/archive-restore-pass4.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 34,
+          "href": "qa/document-cleanup-20261017/archive-restore-pass4.json",
+          "text": "- 압축 보관한 원본 6개는 읽어 낸 바이트의 SHA-256이 모두 같다. [복구 검증](qa/document-cleanup-20261017/archive-restore-pass4.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/manuscript-reproduction-pass4.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 35,
+          "href": "qa/document-cleanup-20261017/manuscript-reproduction-pass4.json",
+          "text": "- 다시 생성한 HTML 3개는 원고의 현재 생성 결과와 일치하고 구조 결함이 없다. [원고·출력 대조](qa/document-cleanup-20261017/manuscript-reproduction-pass4.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass4.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 36,
+          "href": "qa/document-cleanup-20261017/tests-pass4.json",
+          "text": "- 문서 지도·지식 관리·운영 홈·비전·결정·설계 계약의 관련 기존 검사 결과는 [검사 기록](qa/document-cleanup-20261017/tests-pass4.json)에 남겼다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass4.jsonl",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 37,
+          "href": "qa/document-cleanup-20261017/backups-pass4.jsonl",
+          "text": "- 수정 전 원문은 `qa/document-cleanup-20261017/_archive/pass4-originals/`에 원래 경로대로 보존했다. [백업 목록](qa/document-cleanup-20261017/backups-pass4.jsonl)의 해시로 확인할 수 있다. 이 복구본은 로컬·Git 제외 파일이며, 복원할 때 이후 변경을 덮어쓰지 않도록 필요한 부분만 골라 적용한다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 66,
+          "href": "qa/document-cleanup-20261017/tests-pass3.json",
+          "text": "- 문서 지도·지식 관리·운영 홈·비전·결정·설계 계약의 **기존 검사 80개 통과**. [명령·결과](qa/document-cleanup-20261017/tests-pass3.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 67,
+          "href": "qa/document-cleanup-20261017/validation-pass3.json",
+          "text": "- 원문 백업 SHA-256, 새 로컬 링크·절 연결, 공백을 검사했다. 누락·이번 변경으로 생긴 연결 단절은 0이다. 본문에 코드 형식으로 적은 새 원문 경로도 대조했다. [통합 검증](qa/document-cleanup-20261017/validation-pass3.json) · [본문 경로 대조](qa/document-cleanup-20261017/new-text-paths-pass3.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/new-text-paths-pass3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 67,
+          "href": "qa/document-cleanup-20261017/new-text-paths-pass3.json",
+          "text": "- 원문 백업 SHA-256, 새 로컬 링크·절 연결, 공백을 검사했다. 누락·이번 변경으로 생긴 연결 단절은 0이다. 본문에 코드 형식으로 적은 새 원문 경로도 대조했다. [통합 검증](qa/document-cleanup-20261017/validation-pass3.json) · [본문 경로 대조](qa/document-cleanup-20261017/new-text-paths-pass3.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/carousel-archive-guard-pass3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 68,
+          "href": "qa/document-cleanup-20261017/carousel-archive-guard-pass3.json",
+          "text": "- 캐러셀 보관 원고는 기본·강제 옵션·일괄 실행에서 새 제작 대상으로 넘어가지 않았고, 기존 출력 **81개 해시가 그대로**였다. 외부 생성 호출 없이 확인했다. [실행 확인](qa/document-cleanup-20261017/carousel-archive-guard-pass3.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-business-master-pass3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 69,
+          "href": "qa/document-cleanup-20261017/independent-business-master-pass3.json",
+          "text": "- 기업마스터의 가이드·성과 지원·조직 권리·AI 역할은 다른 담당자가 정본과 다시 대조했다. 새 약속이나 범위 확대 문제는 발견하지 못했다. [독립 대조 범위](qa/document-cleanup-20261017/independent-business-master-pass3.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass3.jsonl",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 70,
+          "href": "qa/document-cleanup-20261017/backups-pass3.jsonl",
+          "text": "- 원문은 `qa/document-cleanup-20261017/_archive/pass3-originals/`에 원래 경로대로 보존했다. [백업 목록](qa/document-cleanup-20261017/backups-pass3.jsonl)의 해시로 확인할 수 있다. 복구본은 이 노트북의 **로컬·Git 제외 파일**이며, 복원할 때는 필요한 변경만 골라 적용해 이후 동시 작업을 덮어쓰지 않는다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-operations.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 93,
+          "href": "qa/document-cleanup-20261017/semantic-operations.json",
+          "text": "- **전문 검토 160개**, 필요한 절·계약을 본 **부분 검토 156개**. 파일별로 읽은 범위와 남은 부분을 [운영](qa/document-cleanup-20261017/semantic-operations.json)·[사업](qa/document-cleanup-20261017/semantic-business.json)·[제품](qa/document-cleanup-20261017/semantic-product.json)·[제작](qa/document-cleanup-20261017/semantic-content.json) 장부에 적었다. 중복 경로는 합계에서 한 번만 센다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-business.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 93,
+          "href": "qa/document-cleanup-20261017/semantic-business.json",
+          "text": "- **전문 검토 160개**, 필요한 절·계약을 본 **부분 검토 156개**. 파일별로 읽은 범위와 남은 부분을 [운영](qa/document-cleanup-20261017/semantic-operations.json)·[사업](qa/document-cleanup-20261017/semantic-business.json)·[제품](qa/document-cleanup-20261017/semantic-product.json)·[제작](qa/document-cleanup-20261017/semantic-content.json) 장부에 적었다. 중복 경로는 합계에서 한 번만 센다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-product.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 93,
+          "href": "qa/document-cleanup-20261017/semantic-product.json",
+          "text": "- **전문 검토 160개**, 필요한 절·계약을 본 **부분 검토 156개**. 파일별로 읽은 범위와 남은 부분을 [운영](qa/document-cleanup-20261017/semantic-operations.json)·[사업](qa/document-cleanup-20261017/semantic-business.json)·[제품](qa/document-cleanup-20261017/semantic-product.json)·[제작](qa/document-cleanup-20261017/semantic-content.json) 장부에 적었다. 중복 경로는 합계에서 한 번만 센다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-content.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 93,
+          "href": "qa/document-cleanup-20261017/semantic-content.json",
+          "text": "- **전문 검토 160개**, 필요한 절·계약을 본 **부분 검토 156개**. 파일별로 읽은 범위와 남은 부분을 [운영](qa/document-cleanup-20261017/semantic-operations.json)·[사업](qa/document-cleanup-20261017/semantic-business.json)·[제품](qa/document-cleanup-20261017/semantic-product.json)·[제작](qa/document-cleanup-20261017/semantic-content.json) 장부에 적었다. 중복 경로는 합계에서 한 번만 센다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass2.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 101,
+          "href": "qa/document-cleanup-20261017/tests-pass2.json",
+          "text": "- 문서 지도·운영 홈·비전·결정 등 67개, 폰트 79개, 관리자 조사 지시문 9개, 설계 계약 13개로 **기존 검사 168개 통과**. 상세 명령은 [시험 기록](qa/document-cleanup-20261017/tests-pass2.json)에 있다. 검사 통과를 모든 본문의 사실 검증으로 확대하지 않는다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass2.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 102,
+          "href": "qa/document-cleanup-20261017/validation-pass2.json",
+          "text": "- 편집 전 백업 SHA-256, 새 상대 링크, 변경한 제목을 향하는 기존 절 링크, 공백 검사를 확인했다. 새 링크 누락·이번 변경으로 생긴 절 연결 단절은 0이다. 만족 사례 장부 S01 이후의 사례 전문도 보존했다. [통합 검증](qa/document-cleanup-20261017/validation-pass2.json)·[제작 검증](qa/document-cleanup-20261017/content-validation-pass2.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/content-validation-pass2.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 102,
+          "href": "qa/document-cleanup-20261017/content-validation-pass2.json",
+          "text": "- 편집 전 백업 SHA-256, 새 상대 링크, 변경한 제목을 향하는 기존 절 링크, 공백 검사를 확인했다. 새 링크 누락·이번 변경으로 생긴 절 연결 단절은 0이다. 만족 사례 장부 S01 이후의 사례 전문도 보존했다. [통합 검증](qa/document-cleanup-20261017/validation-pass2.json)·[제작 검증](qa/document-cleanup-20261017/content-validation-pass2.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-review-pass2.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 103,
+          "href": "qa/document-cleanup-20261017/independent-review-pass2.json",
+          "text": "- 위험도가 큰 문서의 수정 부분을 독립 재검토했고, 남아 있던 회사 단일 서버 설명도 고쳤다. 뒤에 정리한 기록장·관찰·Row ID도 실제 파일과 다시 대조했다. [재검토 범위·결과](qa/document-cleanup-20261017/independent-review-pass2.json)"
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass2.jsonl",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/시스템_경량화_20261010.md",
+          "line": 104,
+          "href": "qa/document-cleanup-20261017/backups-pass2.jsonl",
+          "text": "- 원문은 `qa/document-cleanup-20261017/_archive/pass2-originals/` 아래에 원래 경로 그대로 보존했고 [백업 목록](qa/document-cleanup-20261017/backups-pass2.jsonl)에 크기와 해시를 남겼다. 복구본은 **이 노트북의 로컬 파일이며 Git 제외 대상**이다. 원격 보관을 완료한 것으로 표시하지 않는다. 복원할 때는 필요한 파일의 변경 부분을 골라 적용하고 동시 작업을 덮어쓰지 않는다."
+        }
+      ],
+      "category": "owned-cleanup-qa-planned"
+    },
+    {
+      "target": "../SYNK-talk/docs/L0_데이터계약.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/출석체크인_설계_v1.md",
+          "line": 37,
+          "href": "../../SYNK-talk/docs/L0_데이터계약.md",
+          "text": "학생·교사 앱의 실제 출석 계약은 [SYNK-talk L0](../../SYNK-talk/docs/L0_데이터계약.md)·[C0](../../SYNK-talk/docs/C0_API계약.md) 및 해당 마이그레이션·코드에서 확인한다. 이 문서의 개념 표는 새로운 DB 필드나 배포 완료 선언이 아니다. 현재 경로와 다른 경우 계약·코드·소비자를 함께 정리한다."
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "../SYNK-talk/docs/C0_API계약.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/출석체크인_설계_v1.md",
+          "line": 37,
+          "href": "../../SYNK-talk/docs/C0_API계약.md",
+          "text": "학생·교사 앱의 실제 출석 계약은 [SYNK-talk L0](../../SYNK-talk/docs/L0_데이터계약.md)·[C0](../../SYNK-talk/docs/C0_API계약.md) 및 해당 마이그레이션·코드에서 확인한다. 이 문서의 개념 표는 새로운 DB 필드나 배포 완료 선언이 아니다. 현재 경로와 다른 경우 계약·코드·소비자를 함께 정리한다."
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출석체크인_설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/출석체크인_설계_v1.md",
+          "line": 43,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출석체크인_설계_v1.md",
+          "text": "08-08 선택의 상세 이유, 알림 네 안, 시각·시트·데이터 모형과 옛 시험 목록은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출석체크인_설계_v1.md)에 보존한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/포인트경제_재설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/포인트경제_재설계_v1.md",
+          "line": 28,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/포인트경제_재설계_v1.md",
+          "text": "07-31 지급 절반 조정, 08-03 295.4P/월 모형, 리그·레이드 제외와 포함 비교, 단가·재고·보스 HP의 관계는 당시 시스템을 이해하는 계산 기록이다. 현재 운영 수치나 복원 명세로 중복 유지하지 않는다. 수치·산식·선택 이유 전체는 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/포인트경제_재설계_v1.md)에 보존한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/궤적_원장기록_실행지.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/궤적_원장기록_실행지.md",
+          "line": 35,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/궤적_원장기록_실행지.md",
+          "text": "기존 실행지의 입력 예시·시트 열·주간 배치·원장 화면 구상은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/궤적_원장기록_실행지.md)에 보존한다. 현재 담당 원문과 중복되는 실행법은 이 입구에서 제거했다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "../SYNK-talk/lib/이벤트검증.js",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/성향추출_설계_v1.md",
+          "line": 34,
+          "href": "../../SYNK-talk/lib/이벤트검증.js",
+          "text": "물리 필드·값목록·스키마 판은 [수집·교정 계약](../계약/수집_교정_계약.json)과 talk [`lib/이벤트검증.js`](../../SYNK-talk/lib/이벤트검증.js)가 정본이다. 옛 c13→c14 개정 제안이나 한글 의사코드를 현재 JSON 규격으로 복사하지 않는다."
+        },
+        {
+          "source": "docs/코어엔진_설계.md",
+          "line": 267,
+          "href": "../../SYNK-talk/lib/이벤트검증.js",
+          "text": "학습용 `estimate.responded` 계약은 학생 확인을 별도 사건으로 남기며 원래 추정 행의 `user_confirmed`를 덮어쓰지 않는다. 부정한 주장은 다음 도움에서 제외하고 원관측과 정정 이력은 보존한다. 다만 옛 확인 카드와 `lib/성향확인.js`·`lib/과제요약.js`는 10-03 정리됐고, 현재 talk [`lib/이벤트검증.js`](../../SYNK-talk/lib/이벤트검증.js)는 `estimate.responded`와 `preference.stated`를 생산자 없음으로 등록한다(2026-10-17 로컬 대조). 과거 하루 두 장을 현재 화면의 상한으로 적용하지 않는다. 다시 연결할 때는 실제 화면·확인…"
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/성향추출_설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/성향추출_설계_v1.md",
+          "line": 73,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/성향추출_설계_v1.md",
+          "text": "2026-08-27 원안의 법·연구 메모, 비용 가정, 버전별 착수 판단은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/성향추출_설계_v1.md)에 보존한다. 출처·적용 범위를 다시 확인하지 않은 법·연구 요약을 현행 규칙이나 효과 증거로 쓰지 않는다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "experiences/synk-world-app/README.md",
+          "line": 34,
+          "href": "../../docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md",
+          "text": "검증 당시 계정에 남긴 정상 학습·복습 결과는 보존했고 임시 목표·선호는 정상 UI로 정리했다. 제품 상태·시간·결과를 합성해 완료시키지 않았다. 이력별 파일·커밋·화면은 위 QA 원문에 남아 있으며, 상세 진행 서술은 [정리 전 README](../../docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md)에서 확인할 수 있다. **Bluetooth 재연결 복구·사람의 실제 청취·실제 학생 학습 효과는 미검증**이다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "DESIGN.md",
+          "line": 59,
+          "href": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+          "text": "- SNS 영상: [만족 사례 장부](docs/마케팅/제작양식/만족사례_장부.md)의 가장 가까운 채택 사례에서 제작 통로를 고른다. [제작 도구 선택](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)에 따라 HyperFrames는 기존 영상 수정·재현에만 참고한다. 해당 키트 프로젝트를 수정할 때는 `node tools/SNS키트_영상연결.js <프로젝트>`와 키트 README §9를 사용한다. 10-13 채택된 LAB 퀴즈는 S16·S17의 Remotion 프로젝트·박자표가 출발점이다. 광고·홍보는 [AI 광고영상 제작 규칙](docs/마케팅/제작양식/AI광고영상_제작규칙.md)을 따…"
+        },
+        {
+          "source": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+          "line": 19,
+          "href": "제작양식/AI광고영상_제작규칙.md",
+          "text": "| **유호의 실제 얼굴과 목소리** | 실촬영 인터뷰는 v9가 기준이다. 실화·과정 공개에서는 실제 얼굴·육성·작업 근거를 활용한다. AI 광고·홍보영상은 [전용 제작 규칙](제작양식/AI광고영상_제작규칙.md)의 전부 AI 방식을 따른다. 얼굴 없는 라인도 “유호가 골라 설명한다”는 시점을 유지한다. | [승인된 인터뷰 스타일](제작양식/인터뷰.md), 육성 녹음은 사용자 일정 |"
+        },
+        {
+          "source": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+          "line": 19,
+          "href": "제작양식/AI광고영상_제작규칙.md",
+          "text": "[제작 양식](콘텐츠_제작양식.md)에서 유형을 고르고 [만족 사례 장부](제작양식/만족사례_장부.md)와 [SNS 키트](../디자인/SNS키트/README.md)의 해당 통로를 쓴다. AI 광고·홍보영상은 [전용 제작 규칙](제작양식/AI광고영상_제작규칙.md)을 따른다."
+        },
+        {
+          "source": "docs/마케팅/콘텐츠_제작양식.md",
+          "line": 15,
+          "href": "제작양식/AI광고영상_제작규칙.md",
+          "text": "새 영상의 도구는 [제작 도구 선택](콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다. AI 영상·이미지는 먼저 [만족 사례 장부](제작양식/만족사례_장부.md)에서 가장 가까운 사례를 찾아 그 방법으로 시작한다(2026-10-13 사용자 확정). AI 광고·홍보영상은 2026-10-16 [AI 광고영상 제작 규칙](제작양식/AI광고영상_제작규칙.md)을 우선한다. [최상의 퀄리티를 위한 AI 실사 영상 제작 가이드](제작양식/최상퀄리티_영상제작_가이드.md)는 실사 연출·검수 방법과 과거 제작 근거를 찾는 참고다(2026-10-07 사용자 요청 「두 문서를 통합해서 최상의 퀄리티를 위한 영상 …"
+        },
+        {
+          "source": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+          "line": 53,
+          "href": "제작양식/AI광고영상_제작규칙.md",
+          "text": "- **실제 근거:** 사용법·실화·제품 성과를 설명하는 편은 실제 화면·목소리·게임 플레이·결과물 등 확인 가능한 근거를 연결한다. AI로 만든 예시나 재구성을 실제 사용 결과처럼 말하지 않는다. AI 광고·홍보영상은 2026-10-16 [전용 제작 규칙](제작양식/AI광고영상_제작규칙.md)에 따라 전부 AI로 만들며, 실제 촬영·화면 녹화를 필수 컷으로 요구하지 않는다. 아래는 2026-10-02에 이 기준을 정할 때 참고한 조사 기록이다:"
+        },
+        {
+          "source": "docs/마케팅/제작양식/만족사례_장부.md",
+          "line": 22,
+          "href": "AI광고영상_제작규칙.md",
+          "text": "2. 그 사례의 모델·참고 그림·지시문·설정을 가져오되, 이후 사용자 결정과 [AI 운영 원칙](../../AI_운영원칙.md)이 우선한다. 사례 본문은 당시 실제 제작 기록으로 보존한다. AI 광고·홍보영상은 [전용 제작 규칙](AI광고영상_제작규칙.md)을 함께 적용한다."
+        },
+        {
+          "source": "docs/마케팅/제작양식/만족사례_장부.md",
+          "line": 33,
+          "href": "AI광고영상_제작규칙.md",
+          "text": "6. **실촬영을 섞은 작품을 이어갈 때는 S04·S06의 촬영·합성 방법을 참고한다.** 새 AI 광고·홍보영상은 10-16 [전용 제작 규칙](AI광고영상_제작규칙.md)의 전부 AI 방식을 따른다. 과거 사례의 실촬영을 필수 단계로 가져오지 않는다."
+        },
+        {
+          "source": "docs/디자인/SNS키트/README.md",
+          "line": 169,
+          "href": "../../마케팅/제작양식/AI광고영상_제작규칙.md",
+          "text": "**제작 통로:** HyperFrames와 아래 구현 순서는 기존 영상의 수정·재현에만 참고한다. 새 영상은 위 영상 도구 선택 기준과 [만족 사례 장부](../../마케팅/제작양식/만족사례_장부.md)의 해당 사례를 따른다. AI 광고·홍보영상은 [전용 제작 규칙](../../마케팅/제작양식/AI광고영상_제작규칙.md)을 우선한다."
+        },
+        {
+          "source": "tools/film-check/README.md",
+          "line": 26,
+          "href": "../../docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+          "text": "[실사 시네마틱 제작 원문](../../docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md)은 이 도구의 계획·검수 배경이다. 현재 광고·홍보 제작은 [AI 광고영상 제작 규칙](../../docs/마케팅/제작양식/AI광고영상_제작규칙.md)과 [만족 사례 장부](../../docs/마케팅/제작양식/만족사례_장부.md)를 먼저 따른다. 도구의 예시·옛 구독 비교·크레딧 입력칸을 현행 모델 선택이나 유료 실행 승인으로 사용하지 않는다."
+        },
+        {
+          "source": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+          "line": 3,
+          "href": "AI광고영상_제작규칙.md",
+          "text": "2026-10-07의 실사 연출·검수 방법과 Happy Gangster 제작 기록이다. 새 AI 광고·홍보영상의 제작 순서는 2026-10-16 [AI 광고영상 제작 규칙](AI광고영상_제작규칙.md)을 우선한다. 이 가이드의 실촬영·스톡 혼합과 당시 모델·요금을 광고의 필수 조건으로 가져오지 않는다."
+        },
+        {
+          "source": "docs/마케팅/PULSE.md",
+          "line": 3,
+          "href": "제작양식/AI광고영상_제작규칙.md",
+          "text": "새 AI 광고·홍보영상은 [AI 광고영상 제작 규칙](제작양식/AI광고영상_제작규칙.md)의 2026-10-16 전부 AI 제작 방향을 따른다. 장면·얼굴·편집의 채택 사례는 [만족 사례 장부](제작양식/만족사례_장부.md), 담당·이미지 생성·비용은 [AI 운영 원칙](../AI_운영원칙.md)에서 확인한다. 아래 날짜별 고객 공간 구현·포트폴리오 제안은 각 시점의 기록이며 새 제작 절차를 대신하지 않는다."
+        },
+        {
+          "source": "영상/README.md",
+          "line": 5,
+          "href": "../docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+          "text": "2026-10-01에는 SNS 양식을 [SNS 제작 키트](../docs/디자인/SNS키트/README.md)로 교체했다. 이후 채택한 제작 통로는 [만족 사례 장부](../docs/마케팅/제작양식/만족사례_장부.md)에서 확인하며, AI 광고·홍보영상은 [전용 제작 규칙](../docs/마케팅/제작양식/AI광고영상_제작규칙.md)을 따른다. [제작 도구 선택](../docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)에 따라 HyperFrames는 기존 영상 수정·재현에만 참고한다. 아래 프로젝트의 표지(`Cover.tsx`)·자막(`Caption.tsx`)·훅 장면은 기존 편 재현용이며, …"
+        },
+        {
+          "source": "docs/마케팅/크몽_등록준비_20260929/AI광고_레퍼런스10_20260929.md",
+          "line": 5,
+          "href": "../제작양식/AI광고영상_제작규칙.md",
+          "text": "사례·출처와 아래 프로그램 구성은 당시 조사·제안으로 보존한다. 새 광고 제작은 [AI 광고영상 제작 규칙](../제작양식/AI광고영상_제작규칙.md)과 [만족 사례 장부](../제작양식/만족사례_장부.md)를 먼저 따른다. 이 자료가 과거 모델 비교·설치·유료 생성을 매번 반복하라는 지시는 아니다."
+        },
+        {
+          "source": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+          "line": 5,
+          "href": "AI광고영상_제작규칙.md",
+          "text": "현재 AI 영상·이미지는 [만족 사례 장부](만족사례_장부.md)의 가장 가까운 채택 사례에서 시작하고 [AI 운영 원칙](../../AI_운영원칙.md)의 담당·도구·비용을 따른다. AI 광고·홍보영상은 10-16 [전용 제작 규칙](AI광고영상_제작규칙.md)의 전부 AI 방식을 적용한다. 아래 10-04·10-06의 실제 촬영/스톡 우선 절차를 새 광고에 강제하지 않는다."
+        },
+        {
+          "source": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+          "line": 3,
+          "href": "AI광고영상_제작규칙.md",
+          "text": "2026-10-01에 시작해 10-07까지 이어진 Happy, Happy Gangster의 얼굴·목소리·영상 제작 원문이다. 승인 얼굴을 만든 방법과 채택·거절된 실험을 함께 보존한다. **새 제작은 [만족 사례 장부](만족사례_장부.md)의 가장 가까운 최신 사례와 [AI 운영 원칙](../../AI_운영원칙.md#비용과-권한)에서 시작한다.** 광고·홍보영상에는 [10-16 AI 광고영상 제작 규칙](AI광고영상_제작규칙.md)이 우선한다. 아래의 당시 가격·계정 폴더·설치·브라우저·모델 비교는 현재 실행 지시나 현재 잔액이 아니다. [실사 시네마틱 기록](실사_시네마틱_영상_제작과_비용절감.md)은 관련 실험의 근거다."
+        }
+      ],
+      "category": "other-session-video-rule"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/명품브랜딩_v2.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/명품브랜딩_v2.md",
+          "line": 22,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/명품브랜딩_v2.md",
+          "text": "취소된 두 모집 무대의 날짜·판매 문구·코드 상태, 9개 실행표, 심문·검수 전문은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/명품브랜딩_v2.md)에 보존했다(로컬 복구 사본). Git의 이전 추적판은 `9e81330b4aac8759efefc5c5b9a19f3bc9aaddf6:docs/명품브랜딩_v2.md`다. 당시의 법률 판단·외부 사례·운영 수치·날짜는 현행 사실 검증 자료가 아니다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출시나라_지원언어_후보표_20261003.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/출시나라_지원언어_후보표_20261003.md",
+          "line": 43,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출시나라_지원언어_후보표_20261003.md",
+          "text": "10-03의 선택지·추천 이유·당시 나라별 언어 표·법률 확인 후보·비용 비교는 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출시나라_지원언어_후보표_20261003.md)에 보존한다. 현재 채택 결과와 대체된 예산안을 한 문서 안에서 다시 선택하게 만드는 중복을 제거했다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "../SYNK-talk/supabase/functions/deliver/index.ts",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/상태기반_과제선택_설계.md",
+          "line": 3,
+          "href": "../../SYNK-talk/supabase/functions/deliver/index.ts",
+          "text": "> 보존 설계 · 2026-10-17 실행 경계 대조. 이 문서는 8~9월에 설계한 c12 AI 문장 생성 트랙의 데이터·실패·멱등성 계약과 당시 판정 근거다. 해당 생성 트랙은 10-03 제거됐으며 현재 자동 생성의 실행 지침이 아니다. talk [`deliver/index.ts`](../../SYNK-talk/supabase/functions/deliver/index.ts)는 검수 문장 풀에서의 배정을 명시한다. 정리 결정은 [옛 시스템 정리 목록 §3](_ops/옛시스템_정리목록_20261002.md)에 있다. 다음 학습 선택은 [Core 담당 원문](코어엔진_설계.md)과 [현재 엔진 입구](엔진8종_상향설계_v3.md#engin…"
+        }
+      ],
+      "category": "sibling-repository"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/상태기반_과제선택_설계.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/상태기반_과제선택_설계.md",
+          "line": 5470,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/상태기반_과제선택_설계.md",
+          "text": "§14의 상세 비교표·사용자 인용·당시 모델 편성·조사 기록은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/상태기반_과제선택_설계.md)에 그대로 보존했다. 작업 방식·담당·모델·검토는 [AI 운영 원칙](AI_운영원칙.md)의 현재 기준을 적용한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/SHIFT/설계_v1.md",
+          "line": 35,
+          "href": "../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/설계_v1.md",
+          "text": "08~09월의 구술, 20년 사업 구상, 채용·인계·교육 아이디어, 자격 하나·등급 세 단계, 당시 제도 조사와 시행 순서, 상호 검색·제한시간 사례, 개원·설립 일정 가정은 [정리 전 원문](../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/설계_v1.md)에 모두 남겨 두었다. 고유 연구는 폐기하지 않았으며 현행 사업·권리·법률 상태와 구분해 재사용한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/VR직업체험_설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/SHIFT/VR직업체험_설계_v1.md",
+          "line": 160,
+          "href": "../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/VR직업체험_설계_v1.md",
+          "text": "제도 조문·직업별 표·배점 가정·등급 세 단계·기기 단계·옛 폼 명세 전체는 [정리 전 원문](../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/VR직업체험_설계_v1.md)에 보존한다. [SHIFT의 장기 연구 입구](설계_v1.md)와 연결하되 현재 사업 범위·개발 순서·법률 요건은 각 현행 원문에서 확인한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/엔진/atlas-constellation-20260921/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/엔진/atlas-constellation-20260921/README.md",
+          "line": 81,
+          "href": "../../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/엔진/atlas-constellation-20260921/README.md",
+          "text": "위 검사에는 실제 휴대전화·학습 효과 검증이 없다. 당시 홈페이지 통합 전후는 구분하며 최종 게시 근거는 웹사이트 [QA 원문](../../../../SYNK-website/qa/RESULTS.md)을 따른다. 반복된 제작 과정·픽셀/시간 수치·당시 미완료 서술은 [정리 전 README](../../_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/엔진/atlas-constellation-20260921/README.md)에 전량 보존했다. 새 작업의 브라우저·담당·비용 기준은 [AI 운영 원칙](../../AI_운영원칙.md)을 따른다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "experiences/path-travel/qa/production-20261009/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/PATH_개인화여행_설계.md",
+          "line": 5,
+          "href": "../experiences/path-travel/qa/production-20261009/README.md",
+          "text": "**현재 제공·공개 상태의 담당 원문은 [서울 개인화 여행 앱](../experiences/path-travel/README.md)이다.** 10-09 v4와 SYNK ID 운영 연결을 공개했고, 공개 파일·운영 합성 저장/복원·공개 브라우저를 확인한 범위는 [배포 증거](../experiences/path-travel/qa/production-20261009/README.md)에 있다. 이 문서의 개발 중 ‘원격 미배포·계정 미연결’ 기록은 후속 공개로 대체됐다. 실제 이용자 만족도·현장 여행 성공·물리 두 기기 검증을 완료했다는 뜻은 아니다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/관찰태그_자동화_설계.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/관찰태그_자동화_설계.md",
+          "line": 10,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/관찰태그_자동화_설계.md",
+          "text": "> 08~09월 판정·실측·검수 과정의 중복 설명은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/관찰태그_자동화_설계.md)에 보존한다. 당시 시험 수·학생 수·다음 계약 번호는 현재 운영 상태나 새 승인 절차가 아니다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/시트_RowID_정리_설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/시트_RowID_정리_설계_v1.md",
+          "line": 21,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/시트_RowID_정리_설계_v1.md",
+          "text": "갈래 A/B/C의 비교, 사용자 선택, 구현 순서, 라이브 관찰, 회귀 결함과 복구 과정은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/시트_RowID_정리_설계_v1.md)에 전부 보존했다. 관련 과거 코드 수리는 Git `6303e648c`·`f93c9be54`, 배포 관찰은 v9.322·v9.329 기록이다. 현재 코드에는 옛 학원 헤더 보정·아침 정리 배치가 없다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/복습스케줄러_설계.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/복습스케줄러_설계.md",
+          "line": 7,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/복습스케줄러_설계.md",
+          "text": "> **판정 이력:** 08-22 계산기 다섯 판정·구현(`2e5c6e9`), 08-24 파생·병행 출력(`6e7e631`)과 태그↔기술 8쌍/15 대응 없음, 09-06 답장 꼬리 「잇자」가 이 설계의 근거다. 상세 진행·심문 서술은 [정리 전 원문](_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/복습스케줄러_설계.md)에 보존했다. 아래 §7~8의 계산·파생 규칙과 §10의 노출·재도전 계약은 유지한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "tools/synk-id/qa/path-travel-production-20261009/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "tools/synk-id/UNIFIED-CONFIG.md",
+          "line": 3,
+          "href": "qa/path-travel-production-20261009/README.md",
+          "text": "등록 도구의 계약과 10-06~09 실행 이력을 함께 보존한 문서다. 현재 등록 수·환경·적용 여부는 `registry.cjs`, `state/provision-환경.json` 및 제품별 최신 적용 기록으로 확인한다. 아래 최초 준비 단계의 미적용 설명을 이후 운영 상태로 읽지 않는다. 여행의 후속 등록·v23·공개 확인은 [10-09 운영 결과](qa/path-travel-production-20261009/README.md)에 있다. 당시 검수 담당·단계는 실행 이력이며 현재 공통 검수 절차를 새로 만들지 않는다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/함께한날_설계_v1.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/함께한날_설계_v1.md",
+          "line": 3,
+          "href": "_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/함께한날_설계_v1.md",
+          "text": "> 2026-10-17 정리. 2026-08-26 v1.1 전체 652줄은 [보존 원문](_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/함께한날_설계_v1.md)에 그대로 남겼다. 당시 Apps Script·Glide 구현과 08-27 배포 기록은 [2026-10-02 옛 시스템 정리](_ops/옛시스템_정리목록_20261002.md) 이전의 이력이다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": ".tmp/trend-automation-20261009/",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1224,
+          "href": "../../../../../.tmp/trend-automation-20261009/",
+          "text": "운영 수집 전체를 켜지 않으며 기존 `BACKGROUND0·AI0`, SNS/Drive 삭제 중지를 유지합니다. 새 화면은 로컬 구현으로 운영 적용 후 사용할 수 있습니다. [예약·첫 보고서·검증·검수 결과](../../../../../.tmp/trend-automation-20261009/)와 [Spark 지침](../../../../../tools/company-messenger/creative-research-spark-prompt.txt)을 보존합니다."
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-automation-20261009/review-overlay-v7/overlay-manifest.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1228,
+          "href": "../../../../../.tmp/trend-automation-20261009/review-overlay-v7/overlay-manifest.json",
+          "text": "최종 고정본은 [v7 후보](../../../../../.tmp/trend-automation-20261009/review-overlay-v7/overlay-manifest.json), manifest4031865aab078c6b6319f85443d0104bd9002c4ca5d9207d18d6fed9e7c45c74·497파일입니다. 최신6fb의 승인된 펠트CSS12·이미지44와 기존 메뉴/계정/Caddy를 보존했습니다. 코어/JS/서버/시험/CLI12개는 v4 검수 대상과 SHA가 동일하고, 연구CSS는 새 부모가 이미 포함한 바이트를 그대로 유지합니다. 예전 후보의 texture404와 수정 preview 증거는 보존하되 최종 부모의 …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/candidate-test-result.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1242,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/candidate-test-result.json",
+          "text": "**최초 제작 양식 후보 검증 이력:** v8 manifest e3d859a392ba4a668381c72a13dc12fb509efd8143ee93843a081b8d1a3ce1a0·499파일에서 Windows161/161, client56/56·격리 브라우저15검사·1440/390/320 넘침/오류0을 확인했습니다. 두 Worker의 동일 SQLite 원본 선택 경합과 두 직원 HTTP 선택 경합은 성공1/409거절1, 합성4일40가이드·재시작 지속·해제 후 기획 보존을 검증했습니다. [v8 시험](../../../../../.tmp/trend-template-pool-20261009/candidate-test-result.json)·[v…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/qa-v8/safe-receipt.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1242,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/qa-v8/safe-receipt.json",
+          "text": "**최초 제작 양식 후보 검증 이력:** v8 manifest e3d859a392ba4a668381c72a13dc12fb509efd8143ee93843a081b8d1a3ce1a0·499파일에서 Windows161/161, client56/56·격리 브라우저15검사·1440/390/320 넘침/오류0을 확인했습니다. 두 Worker의 동일 SQLite 원본 선택 경합과 두 직원 HTTP 선택 경합은 성공1/409거절1, 합성4일40가이드·재시작 지속·해제 후 기획 보존을 검증했습니다. [v8 시험](../../../../../.tmp/trend-template-pool-20261009/candidate-test-result.json)·[v…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v8/PORTABLE-OVERLAY.txt",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1246,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/review-overlay-v8/PORTABLE-OVERLAY.txt",
+          "text": "**v8 인수 당시의 운영 확인 이력:** 23:52KST 시작의 c1c28ac49729로 바뀌었습니다. v8은 저장6fb 부모를 보존한 로컬 검증 후보이며 현재 운영과 동일하다고 주장하지 않습니다. 당시 저장c1c476파일과 비교에서는 부모15변경/삭제0·우리 주요 대상6파일 겹침0을 확인했지만 원격 전체manifest는 미확인이었습니다. 이후 실제 부모와 최신 후보는 아래 v9 상태를 따릅니다. 선택 표와 원본 UNIQUE 인덱스의 정확한 추가만 허용하며 기존 표/자료·키/세션을 보존하고 만료된 작업 가드를 재사용하지 않는 계약은 유지합니다. [v8 인수 계약](../../../../../.tmp/trend-template-pool-…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/reliability-20261011/result.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1254,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/reliability-20261011/result.json",
+          "text": "이번 점검 중 예약된 20시 조사가 실제 20:09 시작·20:12 완료됐고 **20:21 신규 0·갱신 6건**이 수동 가져오기 없이 반영됐습니다. 반영 후 실제 유호 계정의 재로그인 없이 가이드 **16·참고자료 3·보고서 10개**, 문서 **3개·읽기 오류 0·조사 지연 0**을 확인했습니다. 펼친 문서 상태를 유지하면서 확인 시각이 21:04→21:05로 자동 갱신됐습니다. 전체 05시 / YouTube·TikTok 08·14·20시 / Meta·브랜드 11·17·23시의 기존 Spark 예약은 모두 활성입니다. PC와 독립된 클라우드 수집·서버 읽기·1분 상태 감시·자동 복구·정기 백업을 확인했으며, 물리적 PC 종료나 모든 …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1266,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json",
+          "text": "[실제 최종 반영 증거](../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json)·교정과 회색 사용중 화면(이전 캡처 경로, 현재 파일 없음: `../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/claimed-card-after.png`)·[12:40 운영 보존 기록](../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/deployment-summary.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1266,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/deployment-summary.json",
+          "text": "[실제 최종 반영 증거](../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json)·교정과 회색 사용중 화면(이전 캡처 경로, 현재 파일 없음: `../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/claimed-card-after.png`)·[12:40 운영 보존 기록](../../../../../.tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v9.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1272,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/candidate-test-result-v9.json",
+          "text": "**03:17 KST 현재 최신 고정본:** 실제 원격에서 확인한 부모92e7854bc156(전체 manifest479파일)을 기준으로 이번 서버20개 치환·추가 모듈·기존 승인 CSS 뒤 추가 선언만 합성했습니다. v9 manifest `6b0d8d2b5b1822f4b929e2608f92c64bedb6d8fde701b3b8b0df634ffea87193`·514파일에서 Windows243/243(client67 포함), 격리 두 창17검사·1440/390/320 넘침/예상 밖 오류0을 확인했습니다. 선택179ms·해제86ms는 합성 로컬 시험의 결과이고 운영 지연 보장은 아닙니다. 새 보고서가 두 열린 화면과 상세 본문에 반영되고 읽는 …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/summary.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1272,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/summary.json",
+          "text": "**03:17 KST 현재 최신 고정본:** 실제 원격에서 확인한 부모92e7854bc156(전체 manifest479파일)을 기준으로 이번 서버20개 치환·추가 모듈·기존 승인 CSS 뒤 추가 선언만 합성했습니다. v9 manifest `6b0d8d2b5b1822f4b929e2608f92c64bedb6d8fde701b3b8b0df634ffea87193`·514파일에서 Windows243/243(client67 포함), 격리 두 창17검사·1440/390/320 넘침/예상 밖 오류0을 확인했습니다. 선택179ms·해제86ms는 합성 로컬 시험의 결과이고 운영 지연 보장은 아닙니다. 새 보고서가 두 열린 화면과 상세 본문에 반영되고 읽는 …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v11.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1278,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/candidate-test-result-v11.json",
+          "text": "**04:30 KST 최신 후보는 v11입니다.** 그사이 실제 운영의 승인된 e01 교사 기능과 f1d 작업 행동 변경이 반영되어, 최신 f1d808a761db의510파일을 부모로 확인했습니다. 이번20hunk를 고유 치환하고 역적용으로 최신 부모 원문을 정확히 복원했습니다. v11 manifest `d5aca354cb985609cfbec848dc8effba7eb1fea23f43428d581c17e1a65acd2b`·558파일에서 정확후보255/255(client70), 두 창18검사·1440/390/320 넘침/예상 밖 오류0·전체SHA불변·프로세스 종료를 확인했습니다. 수동 화면의 세 실행 시각→201→DB보존과 기획201/해제 후…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/qa-v11-verified/summary.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1278,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/qa-v11-verified/summary.json",
+          "text": "**04:30 KST 최신 후보는 v11입니다.** 그사이 실제 운영의 승인된 e01 교사 기능과 f1d 작업 행동 변경이 반영되어, 최신 f1d808a761db의510파일을 부모로 확인했습니다. 이번20hunk를 고유 치환하고 역적용으로 최신 부모 원문을 정확히 복원했습니다. v11 manifest `d5aca354cb985609cfbec848dc8effba7eb1fea23f43428d581c17e1a65acd2b`·558파일에서 정확후보255/255(client70), 두 창18검사·1440/390/320 넘침/예상 밖 오류0·전체SHA불변·프로세스 종료를 확인했습니다. 수동 화면의 세 실행 시각→201→DB보존과 기획201/해제 후…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v11/claude-review-summary.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1280,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/review-overlay-v11/claude-review-summary.json",
+          "text": "v9의 다섯 검수 지적을 보완했고, 같은 원문을 SSE가 다시 읽는 것만으로 기획을 취소하던 추가 회귀도 재현해 수정했습니다. 현재는 실제 선택 자료·권한·사용 상태의 변경을 확인해 기획을 보호합니다. 고정 v11의 공식 Opus5.5/max delta 재검수는04:46 정상 완료·CODE PASS·새 P0/P1/P2 0·실제 모델 확인·source558SHA불변입니다. [공식 검수](../../../../../.tmp/trend-template-pool-20261009/review-overlay-v11/claude-review-summary.json)를 따릅니다."
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/image-v11/result-r3.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1282,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/image-v11/result-r3.json",
+          "text": "최종 이미지 `e466fc2866a80f376c7b8e349b4d1f2716793d2ae88c0398a7e9b090ddd857ca`는 실제 f1d 캐시만 사용해 만들었고, Linux255/255·UID1000/node·runtime7 SHA·image 자체322파일 읽기/승인된 host-only236제외·실제 격리 기동/시간API no-store·기본Doc연결꺼짐을 확인했습니다. 실제 데이터·env·키를 마운트하지 않았습니다. [이미지 인수](../../../../../.tmp/trend-template-pool-20261009/image-v11/result-r3.json)의 Config 메타 차이와 원 실패 영수증은 보존하며 실제 실행…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/production-handoff-result.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1286,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/production-handoff-result.json",
+          "text": "엄격 보존 비교와 사후 증명이 끝난 뒤05:41에 기존 단일 활성 관리자와 기존 Drive 연결로 같은 전용 Doc를 연결했습니다. Doc ID/MIME/전용표식·fresh계정/권한·export를 실제 운영 컨테이너에서 확인했고 설정2개만 추가하며 기존 자료·키·credentials·세션을 그대로 유지했습니다. 수동tick이나 추가 재시작 없이 실제main이05:41:48→05:42:18,30초 간격으로 읽고 waiting·오류0·마지막가져옴없음 상태를 유지했습니다. 세 번째 주기도 같습니다. [운영 인수와 실제 연결](../../../../../.tmp/trend-live-sync-20261010/production-handoff-re…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/public-operating-proof.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1286,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/public-operating-proof.json",
+          "text": "엄격 보존 비교와 사후 증명이 끝난 뒤05:41에 기존 단일 활성 관리자와 기존 Drive 연결로 같은 전용 Doc를 연결했습니다. Doc ID/MIME/전용표식·fresh계정/권한·export를 실제 운영 컨테이너에서 확인했고 설정2개만 추가하며 기존 자료·키·credentials·세션을 그대로 유지했습니다. 수동tick이나 추가 재시작 없이 실제main이05:41:48→05:42:18,30초 간격으로 읽고 waiting·오류0·마지막가져옴없음 상태를 유지했습니다. 세 번째 주기도 같습니다. [운영 인수와 실제 연결](../../../../../.tmp/trend-live-sync-20261010/production-handoff-re…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/actual-delivery/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1290,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/actual-delivery/README.md",
+          "text": "**06:08 후속:** 전용Doc에06:03 실제본문59,290bytes·자료20개·완료표시1개가 들어왔습니다. 준비된 제작가이드는0개이고,19개의publishedAt이날짜만있어SYNC_REPORT_INVALID로거절됐습니다. 임의게시시각을만들지않고원문을보존했습니다. 보고서의성공률/원문시청범위·제공이확인되지않은수업/입학서비스제안 등은근거와제공가능성을확인해야하며일부실제SourceURL만확인했습니다. 실제server는계속30초읽기를수행하고기존자료를보존하지만가져온보고서는0입니다. 최신producer지침저장/형식교정/10개가이드생산과실제전체흐름이남았습니다. [도착원문·진단](../../../../../.tmp/trend-live-sync-20…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/native-v12/operating-before-refill-receipt.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1292,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/native-v12/operating-before-refill-receipt.json",
+          "text": "**09:08 KST 최신 상태:** 위 시각별 후보·미완료 문단은 이력입니다. 제작 양식·동시 선택·회색 사용중·권한별 자동 갱신 기능은05:29 운영 반영 후 현재 부모 `d6579a536bdc`의558파일에도 유지됩니다. 실제 유호 계정의 회사 로그인과 기존 참고 자료3개·준비된 양식0개, 기존 광고의 수치/10월2일 확인 시각, 인증된 화면의 실시간 연결 시작을 확인했습니다. 실제 새 가이드 선택과 변경 데이터의 다른 직원 화면 반영은 아직 확인하지 않았습니다. [실계정 화면 근거](../../../../../.tmp/trend-live-sync-20261010/native-v12/operating-before-refill-rec…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/native-v12/saved-reopened-receipt-v14.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1294,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/native-v12/saved-reopened-receipt-v14.json",
+          "text": "Gemini의 매일05시·같은 전용Doc에 상세 가이드 지침28,403bytes/SHA `99a99b150d057dcdf37ed48a6be31cc9eca9cdd03871f1d4aeef4db12239ac68`을 저장하고 다시 열어 원문을 확인했습니다. 지금 실행은 한 번 눌렀지만 실제 새 조사 시작/완료는 미확인입니다. 최종 보완 지침28,775bytes/SHA `b25f8e942203c22b4a9c93619ca00095e2a1d90373bfba7fe0d65c1ff5d6807a`의 보조 best-practice/insight JSON 제외 수정은 아직 실제 예약에 저장하지 못했습니다. 사용자가 메모리 부족을 알렸고, 올바른 유호 프로필의 …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/result.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1296,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/result.json",
+          "text": "게시일을 날짜로만 받은 경우 임의의 정확한 시각을 만들지 않고 원문 날짜와 한계를 보존하는 추가 후보v15는559파일·manifest `0e6de41da896bce5da6a2f243a622d4807c2cdd2e3bbf39f360dceead9ad81dd`입니다. 공식 Opus5.5/max가08:33 정상 완료·CODE PASS·P0/P1/P2 0, Windows/Linux262/262·UID1000·격리 기동을 통과했습니다. 화면18검사와 날짜 정밀도 화면 시험은 실제 실행한v14와 runtime/UI/시험557파일이 동일한 근거로 재사용하며 v15에서 새로 실행했다고 쓰지 않습니다. 시험은 정상 종료했고 제 시험 프로세스 잔류0입니다. …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v15/claude-review-summary.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1296,
+          "href": "../../../../../.tmp/trend-template-pool-20261009/review-overlay-v15/claude-review-summary.json",
+          "text": "게시일을 날짜로만 받은 경우 임의의 정확한 시각을 만들지 않고 원문 날짜와 한계를 보존하는 추가 후보v15는559파일·manifest `0e6de41da896bce5da6a2f243a622d4807c2cdd2e3bbf39f360dceead9ad81dd`입니다. 공식 Opus5.5/max가08:33 정상 완료·CODE PASS·P0/P1/P2 0, Windows/Linux262/262·UID1000·격리 기동을 통과했습니다. 화면18검사와 날짜 정밀도 화면 시험은 실제 실행한v14와 runtime/UI/시험557파일이 동일한 근거로 재사용하며 v15에서 새로 실행했다고 쓰지 않습니다. 시험은 정상 종료했고 제 시험 프로세스 잔류0입니다. …"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/evening-source-settings/handoff.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1298,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/evening-source-settings/handoff.json",
+          "text": "**20:04 KST 최신 서버 연결 인수:** 기존 전체 조사 Doc와 새 YouTube·TikTok / Meta·브랜드 비공개 Doc를 합쳐3개를20:01에 실제 자동 읽기에 연결했습니다. 현재 확인한 운영 부모는 `3dab2091631c`의561파일이며 승인된 다른 변경과 기존 제작 UI/코어/SDK를 보존했습니다. 같은 관리자·원문서·연결·enabled=true를 유지하고 설정 버전1→2와 정확한 설정4개(새 진행 기록2개 포함)만 바꿨습니다. 기존 업무 자료·원문·메모·보관·사용·스키마·암호키·세션·Drive credentials와 원래 파일을 비교해 보존했으며 코드 배포·새 권한·본문 쓰기·강제 가져오기·서버 재시작은 하지 않…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": ".tmp/trend-live-sync-20261010/native-role-preparation/preparation-receipt.json",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+          "line": 1300,
+          "href": "../../../../../.tmp/trend-live-sync-20261010/native-role-preparation/preparation-receipt.json",
+          "text": "원래 서버의 자연 읽기3회 표본에서 두 새 문서는 waiting·오류0이고 원문서는 기존13c9 보고서의 형식 오류를 유지합니다. 각 nextCheck는30초 뒤이며 표본 간 실제 확인시각 차이는60초로, 연속30초 두 표본을 확보했다고 쓰지 않습니다. 현재 실제 저장 보고서/제작 가이드는0개이고 기존 참고 자료3개와 직원 세션2개는 보존됐습니다. 문서 연결이 끝난 사실을 실제 가이드 생산·업로드·직원 선택 완료로 확대하지 않습니다. 추가 역할 지침2개는 [로컬 준비와 검증](../../../../../.tmp/trend-live-sync-20261010/native-role-preparation/preparation-receipt.js…"
+        }
+      ],
+      "category": "local-transient-evidence"
+    },
+    {
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/LAB_한글날_내이름한글로_20261002/README.md",
+          "line": 3,
+          "href": "게시/게시결과_20261006.md",
+          "text": "2026-10-06 페이스북 synkworld와 인스타 @synk.mn에서 공개를 확인했다. [게시 결과와 당시 남은 확인](게시/게시결과_20261006.md)을 따른다. 아래는 10-02~03의 [제작 방식 v2](../콘텐츠_제작방식_v2_20261002.md) 첫 제작 기록이며 새 게시 지시가 아니다."
+        },
+        {
+          "source": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시_체크리스트.md",
+          "line": 3,
+          "href": "게시결과_20261006.md",
+          "text": "**후속 결과:** 10-06 두 릴스의 실제 공개를 확인했다. [게시 결과](게시결과_20261006.md)에 AI 표시·고정 댓글·프로필 링크의 당시 미완료 상태와 이유를 기록했다. 아래 체크박스는 10-03 예약 당시 기록이며 현재 미게시 목록이나 새 예약 지시가 아니다."
+        },
+        {
+          "source": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+          "line": 6,
+          "href": "게시결과_20261006.md",
+          "text": "- 두 게시 주소와 공개 확인, 당시 남은 AI 표시·고정 댓글·프로필 링크: [10-06 게시 결과](게시결과_20261006.md). 여기의 미완료 상태는 확인 당시 값이며 이후 완료 여부는 새 증거로 확인한다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-host.py",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+          "line": 522,
+          "href": "deploy/ha/node-host.py",
+          "text": "[노드 에이전트](deploy/ha/node-agent.mjs)의 최신 소유권·기동 허가와 [호스트 검사](deploy/ha/node-host.py)를 통과한 소유자만 regional 데이터 디스크를 쓰고 앱을 실행한다. 비소유자는 앱을 정지하며 옛 zonal 사본을 대신 마운트하지 않는다. [감시 정책](deploy/ha/failover-policy.mjs)의180초는 연속 장애 확인 기준이며 복구 완료시간 보장이 아니다. 자동 원복은 하지 않고 불명확한 작업 결과는 기존 operation/영수증으로 확인한다."
+        }
+      ],
+      "category": "other-session-runtime-code"
+    },
+    {
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/failover-policy.mjs",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+          "line": 522,
+          "href": "deploy/ha/failover-policy.mjs",
+          "text": "[노드 에이전트](deploy/ha/node-agent.mjs)의 최신 소유권·기동 허가와 [호스트 검사](deploy/ha/node-host.py)를 통과한 소유자만 regional 데이터 디스크를 쓰고 앱을 실행한다. 비소유자는 앱을 정지하며 옛 zonal 사본을 대신 마운트하지 않는다. [감시 정책](deploy/ha/failover-policy.mjs)의180초는 연속 장애 확인 기준이며 복구 완료시간 보장이 아니다. 자동 원복은 하지 않고 불명확한 작업 결과는 기존 operation/영수증으로 확인한다."
+        }
+      ],
+      "category": "other-session-runtime-code"
+    },
+    {
+      "target": "experiences/synk-town/qa/DAY.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "line": 30,
+          "href": "../../experiences/synk-town/qa/DAY.md",
+          "text": "10/8에 확인한 FT10·FT51은 자리·안내판 선택, 순차 주민 이용, 현재 배치에 맞는 반응과 재방문을 제공하는 네 자리 턴 방식의 로컬 제작판이었다. 이후 10/9에는 세 주민 일과와 직접 걷기 등을 일부 연결했다. 실제 범위와 한계는 [첫 하루 검증](../../experiences/synk-town/qa/DAY.md)과 [현재 실행 입구](../../experiences/synk-town/README.md)를 따른다. 이 설계 전체의 구현이나 물리 경로 탐색·공유 마을까지 완료했다는 뜻은 아니다."
+        },
+        {
+          "source": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+          "line": 364,
+          "href": "../../experiences/synk-town/qa/DAY.md",
+          "text": "첫 제작 배역은 [메인 구현 준비의 등장표](싱크타운_메인콘텐츠_구현준비.md#cast)를 따른다. **찻집 주인·공방 주인·연구원**은 역할명이며 아래는 연구원까지 확장했을 때의 검증 시나리오다. 이 표 자체는 세 명의 하루를 구현했다는 증거가 아니다. 뒤에 일부 연결한 일과는 [10/9 첫 하루 검증](../../experiences/synk-town/qa/DAY.md)의 범위로 구분한다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/_ops/qa/platform-convenience-20261009/README.md",
+      "excluded": true,
+      "occurrences": [
+        {
+          "source": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+          "line": 53,
+          "href": "../../_ops/qa/platform-convenience-20261009/README.md#조사-후보와-구현-범위",
+          "text": "당시 추천 실행 순서는 **창·위치 복원 → 빠른 호출과 Ctrl+K → 트레이 메뉴와 시작·닫기 설정 → 알림 세부 제어 → 재시작 초안 복구**였다. 이후 같은 날 창·작업 위치 복원, 빠른 검색, 트레이·시작·전역 호출 설정, 실제 설치 결과 알림, 동의·암호화 기반 초안 복구 등을 구현했다. 후보 16종의 실제 적용·축소·미구현 범위는 [구현 대조표](../../_ops/qa/platform-convenience-20261009/README.md#조사-후보와-구현-범위)를 따른다. 아래 원래 제안을 전부 남은 할 일로 다시 등록하지 않는다. 자동 업데이트·후속 설치와 공개 상태는 [데스크톱 원문](../../../desktop/R…"
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/마케팅/맞춤도구/move/게시연결.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/마케팅/맞춤도구/README.md",
+          "line": 64,
+          "href": "move/게시연결.md",
+          "text": "| `move/` | 내 PC 이사 목록(2026-10-17, yuhobuilds 「노트북 이사, AI한테 통째로 맡겨 봤어요」, `/builds/move/`). 싱ㅋ 시그널 + 카타나 2판 요소, 질문 정확히 3개(옮기는 방법 · 하는 일 여럿 · 옛 컴퓨터), 결과는 00 OneDrive 확인(모두) → ① 절대 두고 가면 안 되는 것 → ② 두고 와도 되는 것 → ③ 옮긴 뒤 다시 할 것 → ④ 끝났는지 확인 + AI에게 붙여 넣을 요청문. 항목 은행은 `content.js`의 `ITEMS`, 고르기·순서·요청문은 `rules.js`. 펠트 그림 10장(GPT 이미지 2.5로 청금석 판 3장 구워 오림, 판·지시문·오리기 `.tmp…"
+        }
+      ],
+      "category": "other-session-publication-note"
+    },
+    {
+      "target": "experiences/beginner-games/qa/account-sync/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "experiences/story-classroom/README.md",
+          "line": 45,
+          "href": "../beginner-games/qa/account-sync/README.md",
+          "text": "브라우저 진행과 Atlas 연습 기록을 저장한다. 4280의 공통 입구에서는 다른 게임과 같은 기기 기록을 쓴다. 5213 독립 미리보기는 다른 origin이므로 기록이 별도다. WORLD 안에서는 기존 계정·동의·동기화 호스트를 통해 기록하며 비회원 기록을 계정에 자동으로 합치지 않는다. 실제 OAuth/학습 API 설정과 로그인·동의가 준비돼야 서버에 연결된다. 공개·계정 연결의 확인 범위는 [공통 계정 운영 기록](../beginner-games/qa/account-sync/README.md)을 따른다. 로컬 `synk-account/config.json`의 존재만으로 이 게임의 실계정 왕복을 확인했다고 보고하지 않는다. 공유를 끈…"
+        },
+        {
+          "source": "experiences/synk-world-app/qa/V5.md",
+          "line": 39,
+          "href": "../../beginner-games/qa/account-sync/README.md",
+          "text": "이 절은 10월 9일 v5 로컬 시점의 제약과 후속 후보를 보존한다. 이후 공통 게임 계정·코인·구매품 연결은 [운영 결과](../../beginner-games/qa/account-sync/README.md), 현재 제품 범위는 [제품 README](../README.md)에서 확인한다. 아래 후보를 현재 구현이나 새 실행 지시로 간주하지 않는다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/_ops/qa/workroom-practice-removal-20261009/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+          "line": 10,
+          "href": "../workroom-practice-removal-20261009/README.md",
+          "text": "이 패치는 같은 날 `a43bf2b12`에 포함됐다([보존 커밋 결과](../../아틀라스검토_인계_20261008.md)). 더 이상 적용 대기 작업이 아니다. 10-09에는 [AI 업무 연습 메뉴·진입 제거](../workroom-practice-removal-20261009/README.md)가 공개 반영됐고 저장 원본·API는 보존됐다. 이 패치를 재적용하거나 실습 입구를 복구하는 지시로 사용하지 않는다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "experiences/synk-account/qa/cleanup-20261008/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+          "line": 3,
+          "href": "cleanup-20261008/README.md",
+          "text": "> 10월 6일 후보 검수·한도 중단·수정 근거를 보존한 인계 원본이다. 아래 기존 세션 재개, 고정 모델, 등록·배포 순서는 당시 요청이며 현재 실행 지시가 아니다. 이후 [공개·실제 계정 결과](../../relationship-care/qa/PUBLIC-WEB.md), [운영 왕복](../../relationship-care/qa/ops-roundtrip-20261008/README.md), [개인자료 정리 검증](cleanup-20261008/README.md)을 이어 본다. 현재 역할·검수 기준은 [AI 운영 원칙](../../../docs/AI_운영원칙.md)을 따른다."
+        }
+      ],
+      "category": "other-session-product-qa"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+          "line": 13,
+          "href": "qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+          "text": "[2차 인계 원문](qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md)에 사용자 발언, 5개 소스·기준선, 소리 API, 화면별 브리프, 시험 실패, texture clone 갱신·CSP·줄끝 주의와 당시 실행 명령을 그대로 보존했다. 현재 원칙은 [AI 운영 원칙](../AI_운영원칙.md), 현재 미술·학습 계약은 [월드 시그널](../디자인/월드_시그널/README.md)을 따른다. 과거 말투 규칙과 모델·담당·공개 순서를 공통 지침으로 되살리지 않는다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+          "line": 12,
+          "href": "qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+          "text": "[중단 당시 인계 원문](qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md)에 원본 경로·지문·승인·실패/복구·브라우저 게시 과정·옛 커밋 명령을 보존했다. 새 작업의 도구·권한·모델은 [AI 운영 원칙](../AI_운영원칙.md)과 현재 요청을 따른다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/게임문구_받침_인계_20261008.md",
+          "line": 16,
+          "href": "qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md",
+          "text": "[전체 인계·후속 완료 기록](qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md)에 재현 문장·파일별 변경·사용자 승인·당시 공개 원본·시험 한계·모듈 복사 주의를 그대로 보존했다. 옛 커밋 재배치·고정 공개 원본·화면 확인 목록은 현재 실행 절차가 아니다. 새 작업은 [AI 운영 원칙](../AI_운영원칙.md)과 해당 제품 원문을 따른다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/아틀라스2단계_인계_20260918.md",
+          "line": 132,
+          "href": "qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md",
+          "text": "설계 반영 → 계정 기억 → 기존 학습 신호 → 편지 경험 → 결과 비교 → 다른 엔진/경험 연결 순으로 제안했던 이력이다. 이후 9월 19일 재설계로 대체됐으며 당시 12월 리허설·2월 첫 자료 날짜를 현재 확정 일정으로 적용하지 않는다. 지금의 엔진 정의·범위는 [Atlas 설계](../아틀라스_설계.md)와 [8개 담당 엔진 원문](../엔진8종_상향설계_v3.md)을 따른다. 일곱 단계와 옛 날짜의 전체 문장은 [당시 원문 보관본](qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md)에 보존한다."
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/qa/platform-signal2-20261010/README.md",
+          "line": 28,
+          "href": "../document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md",
+          "text": "당시에는 앱 종료 뒤 보존한 `app.asar`를 복원하는 계획을 적었다. 원래 v4 설치 파일에는 2차 화면이 없었고 WORLD 펠트 책을 담은 worldbook 후보로 이어졌다([당시 재설치 기록](../platform-reinstall-worldbook-20261010/README.md)). 그 경로를 현재 최신 설치본으로 사용하지 않는다. 현재 설치·업데이트의 대상과 보존 조건은 [자동 업데이트 원문](../platform-auto-update-20261014/README.md)과 [실제 설치·계정 확인](../platform-real-account-20261010/README.md)에서 확인한다. 옛 복사 명령과 후보 경로는 […"
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    },
+    {
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md",
+      "excluded": false,
+      "occurrences": [
+        {
+          "source": "docs/_ops/아틀라스검토_인계_20261007.md",
+          "line": 34,
+          "href": "qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md",
+          "text": "당시에는 진행 작업을 보존한 뒤 엔진 경계·단일 소비처 파일·동결 평가 자료를 정리하고, 실사용 효과와 실험의 공개 범위를 구분하도록 제안했다. 이후 원천 보존·수정·배포는 [10-08 후속 인계](아틀라스검토_인계_20261008.md)와 [후속 배포 결과](qa/atlas-eight-deploy-20261008/README.md)에 있다. 지금 진행 중인 작업을 멈추거나 옛 인덱스/후보로 다시 커밋하는 지시가 아니다. 원래 여섯 제안과 세부 파일 목록은 [당시 원문 보관본](qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md)에 그대…"
+        }
+      ],
+      "category": "originals-in-recovery-zip"
+    }
+  ],
+  "note": "Source-stage-only snapshot; planned owned QA and manuscript artifacts will resolve their categories. Original paths are retained inside the recovery archive and require restoration. Other dependencies are intentionally omitted from this backup branch."
+}

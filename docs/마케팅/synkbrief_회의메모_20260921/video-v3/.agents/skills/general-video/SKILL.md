@@ -1,26 +1,25 @@
 ---
 name: general-video
-description: >
-  Author or edit a custom HyperFrames composition when no specialized workflow fits, or when
-  BRIEF.md sets flow: companion. Use for longer or multi-scene pieces, brand and sizzle reels,
-  montages, static loops, static title cards, footage remixes, and freeform builds. Use
-  motion-graphics instead for a short unnarrated motion-first unit, including an animated title.
-  Route fresh creation through hyperframes before using this skill.
+description: "Technical reference for editing or reproducing an existing HyperFrames composition with a companion flow or custom multi-scene layout. Do not route new SYNK video requests to HyperFrames; choose the production method from the current canonical source first."
 ---
+
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
 
 # General video
 
-Before relying on this workflow, run:
+> SYNK 적용 범위: 기존 HyperFrames 작업본의 기술 참고 자료다. 이 폴더의 프로젝트 의존성은 `hyperframes 0.8.58`이며 아래 공급자 문서의 모든 명령이 그 버전에서 지원된다는 뜻은 아니다. 새 제작 방식은 [SNS 키트](../../../../../../디자인/SNS키트/README.md), 담당·설치·인터넷 접근·비용·외부 발송·공개 범위는 [AI 운영 원칙](../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 공급자의 필수 라우팅·자동 업그레이드·피드백 전송·고정 승인 절차를 전역 지침으로 적용하지 않는다. 현재 요청이 로컬 렌더를 포함하면 별도 고정 승인을 다시 요구하지 않는다.
+
+기존 프로젝트 수정에 필요한 원문을 먼저 사용한다. 현재 작업상 설치·갱신이 필요한 경우에만 공통 운영 원칙에 따라 아래 공급자 명령을 검토한다:
 
 ```bash
 npx hyperframes skills update general-video
 ```
 
-A successful no-op means the skill is current. Surface an update failure instead of continuing from memory.
+갱신을 실행했다면 결과와 실패 범위를 확인한다. 이 안내를 읽는 것만으로 자동 설치·업그레이드하지 않는다.
 
 ## 1. Apply cross-cutting source adapters
 
-- **Media:** For any audio, image, icon, logo, voice, grade, LUT, treatment/effect, caption, or media-operation need, load `/media-use` and follow `../media-use/references/resolve.md` (resolve, adopt, reuse) and `../media-use/references/setup-providers.md` (providers, auth). Vague footage feedback and named styles use `../media-use/references/media-treatments.md` before editing; do not improvise supported media effects with CSS/SVG/opacity. Before the first authenticated provider action, run `npx hyperframes auth status` and relay its output verbatim. If signed out, apply the gate in `../hyperframes/references/brief-contract.md`: collaborative waits for sign-in or an explicit offline choice; autonomous states the status and continues through an available offline provider. Surface a blocker when no offline provider can satisfy a required capability. Local adoption alone does not require an auth gate.
+- **Media:** For any audio, image, icon, logo, voice, grade, LUT, treatment/effect, caption, or media-operation need, load `/media-use` and follow `../media-use/references/resolve.md` (resolve, adopt, reuse) and `../media-use/references/setup-providers.md` (providers, auth). Vague footage feedback and named styles use `../media-use/references/media-treatments.md` before editing; do not improvise supported media effects with CSS/SVG/opacity. Before the first authenticated provider action, 필요한 인증 상태만 확인하고 자격증명·개인 식별 정보가 담긴 출력을 그대로 전달하지 않는다. 공급자 인증 확인 명령은 `npx hyperframes auth status`다. If signed out, apply the gate in `../hyperframes/references/brief-contract.md`: collaborative waits for sign-in or an explicit offline choice; autonomous states the status and continues through an available offline provider. Surface a blocker when no offline provider can satisfy a required capability. Local adoption alone does not require an auth gate.
 - **Figma:** If any input is a `figma.com` URL, run `/figma` first. Build from its exported assets, tokens, components, or storyboard frames. Do not use raw Figma connector calls because they skip SVG sanitization, media provenance, and brand-token binding.
 
 These adapters do not change the workflow selected by `/hyperframes`.
@@ -144,7 +143,7 @@ Timed elements use `class="clip"`; the root and relevant ancestors are sized; ea
 
 ### Borrow workflows safely
 
-When the piece resembles a shipped workflow, borrow its genre references as examples. First run `npx hyperframes skills update <workflow-name>`. Borrow its story shape and taste, not its private scripts, pipeline state, or directory contract. The generic build remains owned by this skill.
+When the piece resembles a shipped workflow, borrow its genre references as examples. 기존 원문을 먼저 읽고, 설치가 현재 작업 범위에 필요할 때만 `npx hyperframes skills update <workflow-name>`를 검토한다. Borrow its story shape and taste, not its private scripts, pipeline state, or directory contract. The generic build remains owned by this skill.
 
 ## 7. Done
 

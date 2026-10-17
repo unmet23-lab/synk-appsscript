@@ -1,0 +1,12 @@
+[
+  {
+    "path": "experiences/synk-town/qa/graphics-v10/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "그래픽 v10 99행 전문을 잘림 없이 읽었다. v9 기준 실패2개·미수집9개, 반려 수관/normal 제외0 후보, 모바일 FPS 악화, 공용 의상 drift/404와 CPU 원인 미분리, 최종65/65의 범위와 사용자 미술 만족·실물기기 미확인까지 보존한다. 고유 실패·교정·검증 경계가 있어 다른 버전 요약으로 대체하지 않는다. v10 로컬 기록임이 이미 명확하므로 본문 수정 없음.",
+    "evidence": "Get-Content -Raw 전체 출력 3746 tokens, 잘림 없음. 99행·14981바이트 시작부터 끝까지 직접 검토.",
+    "originalSha256": "1fb28d78515bc38b7b9f1fc9bf529eed908b136069897898f5aab5fe5739e189",
+    "currentSha256": "1fb28d78515bc38b7b9f1fc9bf529eed908b136069897898f5aab5fe5739e189",
+    "reviewedBytes": 14981
+  }
+]

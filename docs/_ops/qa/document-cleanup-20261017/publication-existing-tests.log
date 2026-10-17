@@ -1,0 +1,59 @@
+✔ 현행 안내·기준·정본 선언은 명시 확정과 구분한다 (1.7291ms)
+✔ 옛 명시 상태와 별표 변형은 호환한다 (91.8272ms)
+✔ 코드 펜스·인라인·닫히지 않은 예시는 선언이 아니다 (1.6768ms)
+✔ 일반 파일 링크는 코드·이미지·외부·주석·범위 밖 링크와 구별한다 (0.721ms)
+✔ Git 무시 자료는 읽지 않고 작업 중 문서는 구별한다 (485.881ms)
+✔ 검색은 이름·절 제목을 찾고 원문 줄 위치를 반환한다 (415.793ms)
+✔ 실패·삭제·너무 큰 파일은 빈 성공이 아니다 (426.4509ms)
+✖ 디렉터리 심볼릭 링크를 따라 저장소 밖 자료를 읽지 않는다 (170.8062ms)
+✔ 그래프는 단순 링크·이름 언급·명시 파생·작업 중 색인을 분리한다 (295.5736ms)
+✔ 버전 미기입은 최신으로 바뀌지 않으며 틸드 예시의 엣지는 세지 않는다 (219.3428ms)
+✔ 큰 HTML 이미지 검색 생략은 문서 머리의 줄 위치를 바꾸지 않는다 (213.6682ms)
+✔ 실제 Git 제외 규칙은 브라우저 프로필과 09-17 포괄 규칙 자리만 가리고 정본 자리의 원본·렌더 결과는 남긴다 (182.6241ms)
+✔ 기존 지도: 본문 파일명 표기와 정렬된 누락 결과를 유지한다 (1.2304ms)
+✔ 명시적으로 연결한 상세 색인은 지도와 합쳐 읽는다 (0.2018ms)
+✔ 상세 색인이 존재해도 지도에서 연결하지 않으면 누락을 숨기지 않는다 (0.096ms)
+✔ 상세 색인 링크만 있고 읽힌 색인 파일이 없으면 누락을 유지한다 (0.085ms)
+✔ 지도 자체가 없으면 상세 색인으로 대신 통과시키지 않는다 (0.0859ms)
+✔ 누락 검사 범위는 기존 최상위 docs/*.md이며 다른 확장자·하위 폴더는 넓히지 않는다 (0.0962ms)
+✔ 동일 위치의 ./ 상대경로 링크도 상세 색인으로 인정한다 (0.0911ms)
+✔ 허용한 상세 색인 상대경로 밖의 링크는 따라가지 않는다: 자료안내/상세_색인.txt (0.0846ms)
+✔ 허용한 상세 색인 상대경로 밖의 링크는 따라가지 않는다: 자료안내/다른_색인.md (0.0846ms)
+✔ 허용한 상세 색인 상대경로 밖의 링크는 따라가지 않는다: ../자료안내/상세_색인.md (0.1108ms)
+✔ 허용한 상세 색인 상대경로 밖의 링크는 따라가지 않는다: /자료안내/상세_색인.md (0.0638ms)
+✔ 허용한 상세 색인 상대경로 밖의 링크는 따라가지 않는다: https://example.invalid/자료안내/상세_색인.md (0.074ms)
+✔ 상세 색인이 다시 가리킨 다른 문서·옛 보관 색인은 재귀로 읽지 않는다 (0.0661ms)
+✔ 코드 예시·주석 속 링크는 실제 연결로 오인하지 않는다: `[상세 문서  (0.5776ms)
+✔ 코드 예시·주석 속 링크는 실제 연결로 오인하지 않는다: ```md
+[상 (0.2608ms)
+✔ 코드 예시·주석 속 링크는 실제 연결로 오인하지 않는다: <!-- [상세 (0.0686ms)
+✔ 이미지 표기·이스케이프된 텍스트는 문서 링크로 인정하지 않는다: ![상세 문서  (0.0892ms)
+✔ 이미지 표기·이스케이프된 텍스트는 문서 링크로 인정하지 않는다: \[상세 문서  (0.047ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 29
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2578.9587
+
+✖ failing tests:
+
+test at tests\knowledge-management.test.js:107:1
+✖ 디렉터리 심볼릭 링크를 따라 저장소 밖 자료를 읽지 않는다 (170.8062ms)
+  Error: EPERM: operation not permitted, symlink 'C:\Users\q1212\Documents\SYNK-appsscript\.tmp\document-cleanup-publish\verify-tree\.scratch\synk-knowledge-QlYtaI' -> 'C:\Users\q1212\Documents\SYNK-appsscript\.tmp\document-cleanup-publish\verify-tree\.scratch\synk-knowledge-MZRKoP\linked'
+      at Object.symlinkSync (node:fs:1938:11)
+      at TestContext.<anonymous> (C:\Users\q1212\Documents\SYNK-appsscript\.tmp\document-cleanup-publish\verify-tree\tests\knowledge-management.test.js:111:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    errno: -4048,
+    code: 'EPERM',
+    syscall: 'symlink',
+    path: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\document-cleanup-publish\\verify-tree\\.scratch\\synk-knowledge-QlYtaI',
+    dest: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\document-cleanup-publish\\verify-tree\\.scratch\\synk-knowledge-MZRKoP\\linked'
+  }

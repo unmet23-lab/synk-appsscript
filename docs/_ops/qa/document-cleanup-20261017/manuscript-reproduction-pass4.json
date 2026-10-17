@@ -1,0 +1,20 @@
+[
+  {
+    "source": "docs/_원고/룸조판_1보_실측.md",
+    "output": "docs/룸조판_1보_실측.html",
+    "exact": true,
+    "defects": []
+  },
+  {
+    "source": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+    "output": "docs/본체SYNK_자리_2026-09-07.html",
+    "exact": true,
+    "defects": []
+  },
+  {
+    "source": "docs/_원고/채널마다_창_2026-09-07.md",
+    "output": "docs/채널마다_창_2026-09-07.html",
+    "exact": true,
+    "defects": []
+  }
+]

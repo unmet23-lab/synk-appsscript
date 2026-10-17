@@ -1,0 +1,3726 @@
+[
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/source/README.after.md",
+    "coverage": "equivalent",
+    "decision": "retain-input",
+    "reason": "3차에서 전문 검토한 주문폭주159행의 정정 전 원문과 SHA가 동일하다. 10-09 재방문 변경의 source after 시험증거로 보존.",
+    "evidence": [
+      "semantic-product-pass3.json full originalSha256 02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682와 동일."
+    ],
+    "originalSha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "currentSha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/experiences/order-rush/README.md"
+  },
+  {
+    "path": "experiences/word-magic/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-shared-copy",
+    "reason": "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+    "evidence": [
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/play-common/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/story-classroom/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/korean-runner/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/korean-racing/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/talk-rally/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/order-rush/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/korean-rhythm/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/entry-check/kit/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 공용키트 사본과 동일 SHA. 빌드가 같은 바이트를 배포하는 키트의 안내 원본 연결로 유지.",
+      "semantic-product-assets-pass3.json full sha256와 현재 양쪽 파일 일치 확인."
+    ],
+    "originalSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "currentSha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/blank-slice/kit/README.md"
+  },
+  {
+    "path": "experiences/relationship-care/qa/source-close-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "10-08 소스 종료9행 전문. 403검사·범위별 커밋·공개별도·사용자 보류를 입증하는 종료 기록이라 보존.",
+    "evidence": [
+      "completion.json/verification.json 연결. 당시 Claude 한도 예외는 역사이며 현행 검수 관문으로 적용하지 않음."
+    ],
+    "originalSha256": "a13f7d2c967c2972d87d38db47f82db327d03dd47546687a9189c0f7e22b086b",
+    "currentSha256": "a13f7d2c967c2972d87d38db47f82db327d03dd47546687a9189c0f7e22b086b",
+    "readRange": "1-8, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-stitch-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "15행 전문. 거절한 까몽 후보와 승인 스티치 눈 교체, 픽셀/URL해시/20화면 근거를 보존.",
+    "evidence": [
+      "로컬1817파일·계정미변경·공개/실폰미검증 및 재현명령이 명확해 삭제/축약하지 않음."
+    ],
+    "originalSha256": "16ef08170e04eae250f68fde2c30a15f3df5646205189d1a60b661f8afd78091",
+    "currentSha256": "16ef08170e04eae250f68fde2c30a15f3df5646205189d1a60b661f8afd78091",
+    "readRange": "1-15, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-operations-note.md",
+    "coverage": "full",
+    "decision": "retain-operational-contract",
+    "reason": "9행 전문. 무료컬렉션 bootstrap revision409 초안 보호와 새14ID 롤백 호환의 고유 계약이다.",
+    "evidence": [
+      "과거 공식 검토 결과·push SHA·배포0 범위를 명시. 승인 절차를 재적용하지 않고 복구조건 보존."
+    ],
+    "originalSha256": "fb034b69a1dcd9d5374167de747bea5d4bd2a921f0b80e4be3198df8c6345f04",
+    "currentSha256": "fb034b69a1dcd9d5374167de747bea5d4bd2a921f0b80e4be3198df8c6345f04",
+    "readRange": "1-9, entire body"
+  },
+  {
+    "path": "experiences/story-classroom/qa/felt-RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "13행 전문. 10-02 세폭21장 실버튼 흐름·UI수치·자산 SHA와 음질/계정/학생효과 제외 범위가 담겨 보존.",
+    "evidence": [
+      "felt-verify-ui.mjs/felt-verification.json 입력/결과를 다시 찾는 입구이며 최신 화면 지시가 아닌 날짜별 QA."
+    ],
+    "originalSha256": "92064f83f0c7c3fa61e8aedc6968038c94b1a74acaddfb0d3cc8ac48ceb306a5",
+    "currentSha256": "92064f83f0c7c3fa61e8aedc6968038c94b1a74acaddfb0d3cc8ac48ceb306a5",
+    "readRange": "1-13, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/starbook-account-copy-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-failure-proof",
+    "reason": "계정 별노트 저장 대기·게스트 브라우저 저장의 차이와 첫 문법 실패까지 남긴 QA 재현 근거. 실제 계정·휴대폰 검증과 분리되어 보존한다.",
+    "evidence": [
+      "before/after.json, browser-proof.cjs, source-change.json, starbook.patch와 실패 mjs의 역할 확인"
+    ],
+    "originalSha256": "e7f8045a823f9b5260f0cb1fb3b2a517931547db803c3f2be30f163eabda9b42",
+    "currentSha256": "e7f8045a823f9b5260f0cb1fb3b2a517931547db803c3f2be30f163eabda9b42",
+    "readRange": "1-10, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/IN-PROGRESS.md",
+    "coverage": "full",
+    "decision": "retain-release-proof",
+    "reason": "이름은 IN-PROGRESS지만 본문은 공개 완료와 승인 예외를 기록하며 옛 대기를 명시적으로 해제한다. 배포 재실행 지시가 아닌 완료 기록으로 보존한다.",
+    "evidence": [
+      "78파일 SHA/MIME, commit7b749a647, Pages37856679649, CI37856679674와 미검증 범위 확인"
+    ],
+    "originalSha256": "47351542a42fb53e7679666695b51f2cab6d4cec07b1af804bd9233f55fa29a9",
+    "currentSha256": "47351542a42fb53e7679666695b51f2cab6d4cec07b1af804bd9233f55fa29a9",
+    "readRange": "1-14, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-consumer-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-consumer-proof",
+    "reason": "격리된 소비자·서버·실제 WebGL 검증과 canvas 캡처 한계를 구체적으로 담은 재현 근거로 보존한다.",
+    "evidence": [
+      "18 wardrobe/town bridge, 2 server, 16 Edge headless; 운영 DB·실계정·실기기와 분리"
+    ],
+    "originalSha256": "b88406e4efbb695ac8b1c5d304d6e21c560e9be0d442cde80263b06152e55046",
+    "currentSha256": "b88406e4efbb695ac8b1c5d304d6e21c560e9be0d442cde80263b06152e55046",
+    "readRange": "1-14, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-release-chronology",
+    "reason": "상단 공개 완료와 하단 당시 측정·준비 기록의 범위를 본문이 명시한다. 고유 실패·성능 측정 조건·보호된 미커밋 상태·SHA 공개 근거를 보존한다.",
+    "evidence": [
+      "79파일 SHA/MIME, 20 pixel checks, 44 CPU checks, 95 freeze checks, 25 synthetic fixtures; FPS 향상 과장 없음"
+    ],
+    "originalSha256": "b38f11923d785257cc4fa17a8630395a239f7f56e076911c60d375a190e8b802",
+    "currentSha256": "b38f11923d785257cc4fa17a8630395a239f7f56e076911c60d375a190e8b802",
+    "readRange": "1-56, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/asset-audit/README.md",
+    "coverage": "full",
+    "decision": "retain-asset-audit",
+    "reason": "표정 자산 수정 전후와 얼굴 밖 RGBA 동일성·축소 필터 경계의 고유 근거로 보존한다.",
+    "evidence": [
+      "4K/480 exact pixel alpha/ROI 판정과 lossy WebP·브라우저 결과의 경계 확인"
+    ],
+    "originalSha256": "fc0b20d99f3cba2db93d5ee4d0aba375f93c39aa2e109f3004942dc55ecb7b03",
+    "currentSha256": "fc0b20d99f3cba2db93d5ee4d0aba375f93c39aa2e109f3004942dc55ecb7b03",
+    "readRange": "1-12, entire body"
+  },
+  {
+    "path": "experiences/order-rush/qa/ATLAS-LEARNING.md",
+    "coverage": "full",
+    "decision": "retain-learning-proof",
+    "reason": "주문 조각 맞춤·첫 오답·도움 이력과 독립 시도 구분을 담은 당시 학습 소비 검증이다.",
+    "evidence": [
+      "16 tests, o03 추천, 두 화면폭, 실제 사람 듣기·학습 효과·기기 간 연속성 미검증을 명시"
+    ],
+    "originalSha256": "767c080228cfcc36f5ae3ba071f6bca0a2dca0c6ba8900cc87dbc16da6bda773",
+    "currentSha256": "767c080228cfcc36f5ae3ba071f6bca0a2dca0c6ba8900cc87dbc16da6bda773",
+    "readRange": "1-13, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-close-proof",
+    "reason": "사용자 승인 범위와 공개 31파일 근거, 첫 실패 테스트 및 차단된 임시팩 삭제를 기록하므로 재현·권한 증거로 보존한다.",
+    "evidence": [
+      "10493b5 공개, 173 tests, 4/5 첫 실패와 5/5 재검사 구분; 차단 삭제 재시도 금지 유지"
+    ],
+    "originalSha256": "235222a4ca525941c01012e49ff4ba971f16991f91f11ae71fcf06aa786b9e90",
+    "currentSha256": "235222a4ca525941c01012e49ff4ba971f16991f91f11ae71fcf06aa786b9e90",
+    "readRange": "1-12, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/citypop-20261001/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-audio-provenance",
+    "reason": "Suno 생성 6개·게임 공개곡 3개와 감상용 신곡을 구별한 자산 출처·승인 범위 기록이다.",
+    "evidence": [
+      "creation-brief/generation-results/audio-verification와 공개 4파일 SHA; 주관적 청취 검증과 분리"
+    ],
+    "originalSha256": "cf59ef8c1c0e6e3b98b534c761b656dc24cb151d36d7f3271ac0423f2ba0251c",
+    "currentSha256": "cf59ef8c1c0e6e3b98b534c761b656dc24cb151d36d7f3271ac0423f2ba0251c",
+    "readRange": "1-9, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/account-static-r3/failure-observation.md",
+    "coverage": "full",
+    "decision": "retain-failure-observation",
+    "reason": "로그아웃 이중 세대 증가에 따른 guest 진도 guard 실패 원인과 timeout을 보존한 고유 실패 기록이다.",
+    "evidence": [
+      "성공한 것처럼 JSON을 꾸미지 않았으며 후속 수정 출력에서 최종 판단하도록 경계를 둠"
+    ],
+    "originalSha256": "cc1a6734318d33b5653ada3853904c338d6102ce50b959e9ef79d20cf5e7aab3",
+    "currentSha256": "cc1a6734318d33b5653ada3853904c338d6102ce50b959e9ef79d20cf5e7aab3",
+    "readRange": "1-12, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-stage-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-stage-api-proof",
+    "reason": "당시 코스튬 무대 API·염색 제한·카메라 복원·PNG 실패 복구 검증 계약을 보존한다.",
+    "evidence": [
+      "4 tests, 18 WebGL checks; 서버·홈/타운·물리기기·배포 검증과 분리"
+    ],
+    "originalSha256": "c596dc1d269cc67c94d557015afcc976efa039bc064cba317eddcf49ce5f4121",
+    "currentSha256": "c596dc1d269cc67c94d557015afcc976efa039bc064cba317eddcf49ce5f4121",
+    "readRange": "1-13, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-data-review-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-data-loss-reproduction",
+    "reason": "다른 기기의 완료 6개를 옛 값 0개로 덮는 P1 전후 재현과 동결 SHA 검사 코드를 연결한 고유 증거다.",
+    "evidence": [
+      "before/after-reproduction.json 및 review.cjs; 누락 VM 변수를 수정 성공으로 오인하지 않는 조건 확인"
+    ],
+    "originalSha256": "0bc4565227f0ccb16d7d435b35f6577605db9b9c47be8b6ff96bd75ae0d554e8",
+    "currentSha256": "0bc4565227f0ccb16d7d435b35f6577605db9b9c47be8b6ff96bd75ae0d554e8",
+    "readRange": "1-12, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/ATLAS-LEARNING.md",
+    "coverage": "full",
+    "decision": "retain-assessment-boundary",
+    "reason": "행동형 바람길 결과를 언어 능력 평가로 전이하지 않는 학습 계약과 실제 공통 API 재현 근거다.",
+    "evidence": [
+      "24 tests, cup-compose 독립근거와 action 평가제외 분리, 다른 포트·기기·학습효과 미검증"
+    ],
+    "originalSha256": "98bbfc96807bf3b48dc9e3abec5a563eb91cb79e177581a9ef10e382d86d3f62",
+    "currentSha256": "98bbfc96807bf3b48dc9e3abec5a563eb91cb79e177581a9ef10e382d86d3f62",
+    "readRange": "1-13, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-release-review-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-replaced-session-proof",
+    "reason": "SSE replaced 뒤 입구 복습이 막힌 회귀와 정상 진행 중 차단 유지, 시험 harness 첫 실패까지 보존한다.",
+    "evidence": [
+      "원문 before SHA, focused 1 test와 Chrome 8 checks, 7 MP3 승인 SHA; 공개 증거 아님"
+    ],
+    "originalSha256": "3d47ceb48c1e2966ee76e8301dc1a1abaddb2ba509ce1a87afe81b549a540aa3",
+    "currentSha256": "3d47ceb48c1e2966ee76e8301dc1a1abaddb2ba509ce1a87afe81b549a540aa3",
+    "readRange": "1-13, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/release-path.md",
+    "coverage": "full",
+    "decision": "clarify-completed-preparation",
+    "reason": "생성된 중간 준비 경로를 현재 미완료·고정모델 재검수 지시로 읽지 않도록 당시 상태와 최종 공개 기록을 연결했다. 후보·해시·입출력 수치는 보존했다.",
+    "evidence": [
+      "prepare-release(-boot/-assets).cjs는 이 문서의 생성자이며 소비 입력 참조 없음. 동봉 README의 공개 완료·79파일 해시 근거와 대조"
+    ],
+    "originalSha256": "029647b235f95d9425e17aba99e8a605ad9c9110280e7b95b208a8c247b41ef4",
+    "currentSha256": "3921d8db555865167c52facbb210feae2e09790624d3815b7f35d14738333d3e",
+    "readRange": "1-19, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/SHOP-20261008.md",
+    "coverage": "full",
+    "decision": "retain-shop-proof",
+    "reason": "상점 저장 실패·사진 PNG 픽셀·키보드·보상 중복 방지를 실제 조작으로 확인한 QA다.",
+    "evidence": [
+      "24 흐름과 18퍼즐+6확인; QA 주입 코인과 실제 완주45코인 분리, Web Locks 완료값 확인"
+    ],
+    "originalSha256": "3c021f1cce11cb68904d9097f63ad3cbfb426d30c566f80d26e9b4f35fd49bc3",
+    "currentSha256": "3c021f1cce11cb68904d9097f63ad3cbfb426d30c566f80d26e9b4f35fd49bc3",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/r3/README.md",
+    "coverage": "full",
+    "decision": "retain-focus-regression",
+    "reason": "실제 pointer 클릭 뒤 지연 초점 복구가 Space 중복 POST를 만든 전후 재현 및 별도 PNG 보존 결정을 기록한다.",
+    "evidence": [
+      "사진/POST 1→2에서 1 유지, listener 종료0, source SHA와 후속 공개 결과 연결"
+    ],
+    "originalSha256": "8d263f890f3184ea1deb5f21891fb87b559f80d2b9feb641c44bbe5dfcb69554",
+    "currentSha256": "8d263f890f3184ea1deb5f21891fb87b559f80d2b9feb641c44bbe5dfcb69554",
+    "readRange": "1-24, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/SHOP-20261008.md",
+    "coverage": "full",
+    "decision": "retain-coop-shop-proof",
+    "reason": "협동 완주 보상과 상점 쓰기 실패·같은 origin 탭 동기화의 구체적 검증 근거다.",
+    "evidence": [
+      "11 tests,18 shop checks,79 UI checks; 80 QA코인과 실제 양쪽15 보상 구분"
+    ],
+    "originalSha256": "a7dd6dda7a2f572fd55b1c49a93dfa156ac60e34b60d673e6ad97eb73a376130",
+    "currentSha256": "a7dd6dda7a2f572fd55b1c49a93dfa156ac60e34b60d673e6ad97eb73a376130",
+    "readRange": "1-18, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r3/README.md",
+    "coverage": "full",
+    "decision": "retain-sse-recovery-proof",
+    "reason": "종료 확인 도중 expired/shutdown으로 상태가 사라진 경우 목적지 이동이 지워지는 P2 전후 재현을 보존한다.",
+    "evidence": [
+      "Node0/1→17/17, Chrome0/2→2/2; 목적지404는 URL 복구만 확인했다는 한계 명시"
+    ],
+    "originalSha256": "2b930165e528db0dde57741a7ba53cccfc9567ca6eaf141bcc003e194ed01ad9",
+    "currentSha256": "2b930165e528db0dde57741a7ba53cccfc9567ca6eaf141bcc003e194ed01ad9",
+    "readRange": "1-14, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/GRAPHICS-20261009.md",
+    "coverage": "full",
+    "decision": "retain-visual-comparison",
+    "reason": "원본 자산·축척·정답 노출 방지와 세 화면폭의 전후 렌더를 연결하는 고유 시각 QA다.",
+    "evidence": [
+      "visual-before/after, chest-art-source, 24 shop flows 및 18+6 플레이; 실기기·효과·라이브 제외"
+    ],
+    "originalSha256": "149e322aa3861a8dcf8db255ccee630e37ae44a4dfc2467b1edebdacbe8e04c5",
+    "currentSha256": "149e322aa3861a8dcf8db255ccee630e37ae44a4dfc2467b1edebdacbe8e04c5",
+    "readRange": "1-19, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/CLOSE-20261002.md",
+    "coverage": "full",
+    "decision": "retain-session-close",
+    "reason": "당시 사용자의 종료 요청과 공개 리듬·감상곡·미공개 주문 시제품의 범위를 구분하며 현행 원문으로 재개를 안내한다.",
+    "evidence": [
+      "263d75b 공개,74파일,21+278 검사; 미커밋 보존 및 같은 날 후속 변경으로 전체 현황 아님 명시"
+    ],
+    "originalSha256": "b64bba700ab0913cd45a90315b282b2f739fb094cdb1a303e684c030cf2c480b",
+    "currentSha256": "b64bba700ab0913cd45a90315b282b2f739fb094cdb1a303e684c030cf2c480b",
+    "readRange": "1-21, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-foliage/README.md",
+    "coverage": "full",
+    "decision": "retain-geometry-contract",
+    "reason": "잎 UV 고정점·인스턴스 소유권·dispose 계약과 v5 대비 기하량을 담은 독립 모듈 근거다.",
+    "evidence": [
+      "24 geometry/UV/budget checks, triangles41/51% 감소는 실제 FPS 주장과 분리; v6 당시 통합 방법 보존"
+    ],
+    "originalSha256": "2b0467537a630e8da9be7bf3d0cb91372706be96fedbd8b7056d942d47fe7349",
+    "currentSha256": "2b0467537a630e8da9be7bf3d0cb91372706be96fedbd8b7056d942d47fe7349",
+    "readRange": "1-15, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/crowd-v9-notes.md",
+    "coverage": "full",
+    "decision": "retain-crowd-contract",
+    "reason": "관중 접근당 반응·발 고정·정지재개·품질별 반응 한도와 수치 시뮬레이션을 보존한다.",
+    "evidence": [
+      "11 tests,44명·draw9 수치와 실제 브라우저/FPS 분리, 기존 update 인자 유지"
+    ],
+    "originalSha256": "6d68d78d2e00dba6a61790e1d72888cb38026c2cfd4b31a1db157d6bd72ab240",
+    "currentSha256": "6d68d78d2e00dba6a61790e1d72888cb38026c2cfd4b31a1db157d6bd72ab240",
+    "readRange": "1-16, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/felt-v6/camera-shake/README.md",
+    "coverage": "full",
+    "decision": "retain-video-diagnosis",
+    "reason": "원본과 웹 영상의 흔들림 상관과 DOM 위치 고정을 대조한 진단이며 추적 실패를 증거에서 제외한다.",
+    "evidence": [
+      "240프레임 및 1279샘플, 새 생성/코드 변경0; 보정 후보는 실행 완료 아님"
+    ],
+    "originalSha256": "938d3b9830d0af36848fd5755ca25ab82b503be5a70649dd9677f45c951bcbe6",
+    "currentSha256": "938d3b9830d0af36848fd5755ca25ab82b503be5a70649dd9677f45c951bcbe6",
+    "readRange": "1-14, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md",
+    "coverage": "full",
+    "decision": "retain-frozen-contract",
+    "reason": "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+    "evidence": [
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/AI_운영원칙.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "당시 고정 Claude 검수·펠트 우선·이미지 경로 등 폐지/변경된 지침을 포함하지만 Town QA의 동결 계약 원본이다. 현재 AI 지침으로 적용하지 않으며 SHA 재현 입력을 보존한다.",
+      "baseline/contracts 및 동일 SHA 16개는 당시 원문 복사. 현행 docs/AI_운영원칙.md는 별도 정본; 과거 모델·절차 복원 금지"
+    ],
+    "originalSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/WALK.md",
+    "coverage": "full",
+    "decision": "retain-walk-contract",
+    "reason": "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+    "evidence": [
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/qa/WALK.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "10-09 걷기 구현 시점의 입력·서버 이동 예산·fence·비소유 창·원격 상호작용 계약과 209+36 검증을 보존한다.",
+      "같은 SHA 계약 사본17개는 재현 입력. 배포 없음은 당일 상태이며 이후 공개 완료는 현재 Town README/10-10 release QA에서 관리"
+    ],
+    "originalSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "currentSha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/WALK.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md",
+    "coverage": "full-diff",
+    "decision": "retain-frozen-contract",
+    "reason": "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+    "evidence": [
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "1-218, unchanged body from fully read base plus complete diff",
+    "basePath": "experiences/synk-town/README.md",
+    "baseSha256": "24d89796bc05e25e6ca2af5aef902694aa88d81602607e45aba459ab65b91837",
+    "completeDiffReviewed": true
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차 전문 검토된 현재 Town README와 전체 diff를 확인했다. QA 최종 동결 시점에는 10-10 운영/공개/그래픽 v20 후속이 없고 초기 미배포 범위를 현재형으로 적었다. 당시 계약 SHA를 보존한다.",
+      "semantic-content-pass3.json full SHA24d89796; 전체 git diff --no-index 3개 hunks(상단 운영/공개/그래픽 후속 및 하단 해금·미구현 경계)를 잘림 없이 검토"
+    ],
+    "originalSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "currentSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/README.md",
+    "coverage": "full-diff",
+    "decision": "retain-frozen-contract",
+    "reason": "전문 비교 완료한 최종 계약에서 Workspace 연결 6줄이 없는 단일 차이만 확인한 기준 동결본이다. QA 재현을 위해 보존한다.",
+    "evidence": [
+      "전체 git diff --no-index 단일 hunk; 10-09 Workspace 연결·공유 경계 추가 전 상태"
+    ],
+    "originalSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "currentSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "readRange": "1-212, unchanged body from fully read base plus complete diff",
+    "basePath": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md",
+    "baseSha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "completeDiffReviewed": true
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "전문 비교 완료한 최종 계약에서 Workspace 연결 6줄이 없는 단일 차이만 확인한 기준 동결본이다. QA 재현을 위해 보존한다.",
+      "전체 git diff --no-index 단일 hunk; 10-09 Workspace 연결·공유 경계 추가 전 상태"
+    ],
+    "originalSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "currentSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/README.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "전문 비교 완료한 최종 계약에서 Workspace 연결 6줄이 없는 단일 차이만 확인한 기준 동결본이다. QA 재현을 위해 보존한다.",
+      "전체 git diff --no-index 단일 hunk; 10-09 Workspace 연결·공유 경계 추가 전 상태"
+    ],
+    "originalSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "currentSha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/README.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-frozen-contract",
+    "reason": "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+    "evidence": [
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "3차에서 전문 읽고 보관한 디자인 원문과 SHA가 같다. 이후 바뀐 펠트/2D 지침을 적용할 정본이 아니라 Town 당시 미술 QA 계약으로 보존한다.",
+      "semantic-business-design-pass3.json full 원문 SHA534635af와 실제 백업 및 대상 SHA 직접 일치 확인"
+    ],
+    "originalSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "currentSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "full-diff",
+    "decision": "retain-frozen-contract",
+    "reason": "전문 확인된 미술 계약에서 살고 싶은 마을 10차례 개선의 사용자 후속 요구 1문단이 없는 단일 차이를 확인했다. 이전 QA 기준 원본으로 보존한다.",
+    "evidence": [
+      "전체 git diff --no-index 단일 hunk; 벽·권위 이동·저장·근접권한 보존 요구를 추가하기 전 상태"
+    ],
+    "originalSha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "currentSha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "readRange": "1-110, unchanged body from fully read base plus complete diff",
+    "basePath": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/디자인/게임_풍경과_재질.md",
+    "baseSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "completeDiffReviewed": true
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/디자인/게임_풍경과_재질.md",
+    "coverage": "equivalent",
+    "decision": "retain-identical-evidence",
+    "reason": "동일 SHA의 검증용 사본. 대표 전문과 같은 내용이며 독립 전독으로 세지 않는다.",
+    "evidence": [
+      "전문 확인된 미술 계약에서 살고 싶은 마을 10차례 개선의 사용자 후속 요구 1문단이 없는 단일 차이를 확인했다. 이전 QA 기준 원본으로 보존한다.",
+      "전체 git diff --no-index 단일 hunk; 벽·권위 이동·저장·근접권한 보존 요구를 추가하기 전 상태"
+    ],
+    "originalSha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "currentSha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "readRange": "SHA-256 identical to fully read representative",
+    "representativePath": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/디자인/게임_풍경과_재질.md"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-http-recovery-proof",
+    "reason": "입장 응답 유실의 동일 요청 ID 복구와 종료 실패 후 자리 보존을 실제 HTTP/SSE로 확인한 전후 근거다.",
+    "evidence": [
+      "10 recovery+8 server+10 Chrome, redacted token 로그; 음성·실계정·배포 제외"
+    ],
+    "originalSha256": "b1bda31f649832fe35953f548e1afc8ec4a3f9a36c8e9768cd56a5dca196b5b3",
+    "currentSha256": "b1bda31f649832fe35953f548e1afc8ec4a3f9a36c8e9768cd56a5dca196b5b3",
+    "readRange": "1-14, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/signup-feedback-20261007/README.md",
+    "coverage": "full",
+    "decision": "retain-mail-feedback-release",
+    "reason": "가입 안내 누락·영문 재요청 오류의 수정과 공개 단일 번들 SHA를 보존한다. 콘솔 미보존 46검사와 별도22 재현을 구분한다.",
+    "evidence": [
+      "5f6d8e98 공개,368895bytes SHA, 합성 SDK/실메일/기기간 검증 범위 별도"
+    ],
+    "originalSha256": "b0195bca9ecd2d1a8a2f7bb5255cb5014844fef3becc7e569bed24b407eaab36",
+    "currentSha256": "b0195bca9ecd2d1a8a2f7bb5255cb5014844fef3becc7e569bed24b407eaab36",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v2/README.md",
+    "coverage": "full",
+    "decision": "retain-render-disposal-proof",
+    "reason": "v2 비교안의 캔버스·인스턴스·그림자 자원 해제 및 full-page 빈 캡처 실패를 보존한다.",
+    "evidence": [
+      "43화면,4dispose cycle; draw/triangles와 실제 FPS/발열/기기 검증 분리"
+    ],
+    "originalSha256": "7e418e7b52c3777ef08a5ab6f9fabb3c5b0fe6e8501e6bd4770e1a2263d051ae",
+    "currentSha256": "7e418e7b52c3777ef08a5ab6f9fabb3c5b0fe6e8501e6bd4770e1a2263d051ae",
+    "readRange": "1-24, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-expressions-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-expression-pixel-proof",
+    "reason": "당시 까몽 표정 마스크와 양 눈 픽셀 원본 일치, 학습 첫 오답 보존 검증 기록이다.",
+    "evidence": [
+      "158 checks,22반응 RGBdiff0,1817파일 빌드; 공개·실계정 쓰기0"
+    ],
+    "originalSha256": "e78638a0afa0e1f8fe17c071e309b7e8ae5e9dd944748dc2a02c7ca6aad97124",
+    "currentSha256": "e78638a0afa0e1f8fe17c071e309b7e8ae5e9dd944748dc2a02c7ca6aad97124",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/COMPANY-ROUTE.md",
+    "coverage": "full",
+    "decision": "retain-unapplied-route-candidate",
+    "reason": "r4 444파일 기준 및 drift 거부·lock·권한 보존을 담은 미적용 HTTPS 후보다. 적용 승인이 아니라는 경계와 plan SHA 재확인 절차를 보존한다.",
+    "evidence": [
+      "443파일 동일/Caddy만 변경, 기존 회사 manifest·container·image 지문; 환경값 출력 없음"
+    ],
+    "originalSha256": "b7b3435d684a483d22717cf8fae828d88c52d63173840f0935b5c40aa17e175e",
+    "currentSha256": "b7b3435d684a483d22717cf8fae828d88c52d63173840f0935b5c40aa17e175e",
+    "readRange": "1-27, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-home-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-platform-home-proof",
+    "reason": "10-08 내 홈·계정 오류·검색 복귀·native bridge의 합성 검증과 당시 공개404 경계를 기록한다.",
+    "evidence": [
+      "46회귀+37Chrome, ok:true일 때만 최근기록, 웹링크 선택을 완료/성과로 확대하지 않음"
+    ],
+    "originalSha256": "c15cfd9eb8563f359e0c2181dc491c57ac4c653efc9c10ecbb9e4c958661ed54",
+    "currentSha256": "c15cfd9eb8563f359e0c2181dc491c57ac4c653efc9c10ecbb9e4c958661ed54",
+    "readRange": "1-23, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/review-resume-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-review-plan",
+    "reason": "고정 모델과 다음 실행의 미래형을 당시 검토 준비로 한정하고 현재 역할 원문을 연결했다. SHA·한도응답·미실행과 완료검수 범위는 보존한다.",
+    "evidence": [
+      "세검토 입력 대조, CRLF 정규화차이, 옷장 view 검수와 서버/SQL 검수 분리; 새모델호출0"
+    ],
+    "originalSha256": "4f4b8a24e4899f78a47702d8ca5fe51c99244b1a6a1b438cb2f741b93ba06e27",
+    "currentSha256": "4b493b2b10e875b6fd96c7653f9a65ebef29001b4e9577bd460ccaf0f0e7f1b0",
+    "readRange": "1-18, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r2/README.md",
+    "coverage": "full",
+    "decision": "retain-protocol-recovery-proof",
+    "reason": "429 뒤 원 요청 ID 유지와 CLOSED410/ROOM_MISSING404만 종료 성공으로 받는 r2 경계, 최초 fixture 실패를 보존한다.",
+    "evidence": [
+      "0/2→16/16, Chrome16/16; 실제429와 다른5응답fixture 구분, r1검사 재사용 주장 없음"
+    ],
+    "originalSha256": "9e1bf20b7ec6fe44f7a262659b2486b6d3af50d7d13c9175e80b69f88960367e",
+    "currentSha256": "9e1bf20b7ec6fe44f7a262659b2486b6d3af50d7d13c9175e80b69f88960367e",
+    "readRange": "1-16, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-combo-20261014/README.md",
+    "coverage": "full",
+    "decision": "retain-award-release-proof",
+    "reason": "bestCombo 누락의 공개2파일 수정·중복보상 방지와 CI 취소를 성공으로 바꾸지 않은 배포 근거다.",
+    "evidence": [
+      "26tests,26a36647,Pages38442710891,site-check concurrency 취소; 실제PC칭호 획득 별도"
+    ],
+    "originalSha256": "a1686b21c52b307967af131136fa6a61fc2f45efe3d3020c4582308770cce4e0",
+    "currentSha256": "a1686b21c52b307967af131136fa6a61fc2f45efe3d3020c4582308770cce4e0",
+    "readRange": "1-19, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/oauth-return-20261007/README.md",
+    "coverage": "full",
+    "decision": "retain-oauth-safety-proof",
+    "reason": "정확한 loopback document 반환 허용과 API/POST 차단, 특정 PID 재시작 및 정책차단으로 미실행된 HTTP 검증을 보존한다.",
+    "evidence": [
+      "46tests+8/8씩 합성Chrome, PKCE/state 유지; blocked by policy를 우회하거나 실로그인 완료로 주장하지 않음"
+    ],
+    "originalSha256": "92518a4326b25fca8a69a8fa456754567eb81f5b7ccda20b3737e1530ef327ab",
+    "currentSha256": "92518a4326b25fca8a69a8fa456754567eb81f5b7ccda20b3737e1530ef327ab",
+    "readRange": "1-20, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-results-refresh-20261014/README.md",
+    "coverage": "full",
+    "decision": "retain-results-release-proof",
+    "reason": "듣기확인 뒤 결과 학습정보만 갱신하고 보상 재실행을 막은 회귀와 Pages/사이트CI 상태 차이를 기록한다.",
+    "evidence": [
+      "13tests,ec7b38fe 공개2파일, 후속503 두자산 재확인; CI전체성공 주장 없음"
+    ],
+    "originalSha256": "ee534acc40cf62b4f46be8f32d3ee0d6217bce4899218463c4269c612b794641",
+    "currentSha256": "ee534acc40cf62b4f46be8f32d3ee0d6217bce4899218463c4269c612b794641",
+    "readRange": "1-25, entire body"
+  },
+  {
+    "path": "experiences/story-classroom/qa/PLAYTEST.md",
+    "coverage": "full",
+    "decision": "retain-unperformed-playtest",
+    "reason": "실제 참가자 미확인을 명시한 관찰표와 교원·실물기기·청취·동의 왕복 인수 조건은 여전히 검증 범위 구분에 필요하다.",
+    "evidence": [
+      "모든 결과 미확인,이름/학생번호/녹음 미수집, 합성테스트를 실계정·학습효과로 확대하지 않음"
+    ],
+    "originalSha256": "d375ea96879560d176dc53564c43a522253cd8b7a735210e8d52bd00378b0ec1",
+    "currentSha256": "d375ea96879560d176dc53564c43a522253cd8b7a735210e8d52bd00378b0ec1",
+    "readRange": "1-35, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-initial-rhythm-proof",
+    "reason": "10-01 초기 읽기형 리듬의 입력·정지·오류복구 결과로 후속 듣기판과 구별되는 역사다.",
+    "evidence": [
+      "14tests,리듬65.6/한국어2/5는 QA값, 직접청취·실기기·학습효과·게시 미확인"
+    ],
+    "originalSha256": "6321a220f80a3b2b42a3691d02053f495e3c2fbf49ee90e81b8f52ca150b17ca",
+    "currentSha256": "6321a220f80a3b2b42a3691d02053f495e3c2fbf49ee90e81b8f52ca150b17ca",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-account-save-20261014/README.md",
+    "coverage": "full",
+    "decision": "retain-account-isolation-release",
+    "reason": "공개 바람길이 공용 localStorage에서 다른 계정 거리를 읽던 문제의 최소패치·계정격리·배포 근거다.",
+    "evidence": [
+      "46tests,지연fixture 첫실패 보존,4dddedd8 2파일 Pages/CI/SHA성공; 실제계정·설치본 UI 별도"
+    ],
+    "originalSha256": "f2b3cc257ec6b42c891e72461ab6a8db8a980962fded9f8ac87e2e924de2ae3a",
+    "currentSha256": "f2b3cc257ec6b42c891e72461ab6a8db8a980962fded9f8ac87e2e924de2ae3a",
+    "readRange": "1-22, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/member-benefits-20261005.md",
+    "coverage": "full",
+    "decision": "retain-member-introduction-proof",
+    "reason": "첫 회원혜택 소개와 같은 날 후속 MVP를 구별한 기록으로 권한 부여·실제 클라이언트 실행을 합성 UI와 혼동하지 않는다.",
+    "evidence": [
+      "95/6/159 tests,19native checks; 후속 MVP 결과에 연결되어 초기 준비중을 현행으로 강제하지 않음"
+    ],
+    "originalSha256": "0977370f8b81b62e40e4e2caa21968c452bf93c3787faead97abae9acaf776fc",
+    "currentSha256": "0977370f8b81b62e40e4e2caa21968c452bf93c3787faead97abae9acaf776fc",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/backend-README.md",
+    "coverage": "full",
+    "decision": "retain-materials-migration-proof",
+    "reason": "14종 카탈로그의 기존계정 일회 무료 추가·재시도·revision·계정격리 검증과 두 준비 실패가 고유 근거다.",
+    "evidence": [
+      "20Node+18HTTP, 첫 checksum 혼동·DB15초 timeout 보존; C18기존22검증 SHA 보존"
+    ],
+    "originalSha256": "f03cfd4e84f75b480b899696bae61e2f89543786cf416704feae4c0d70917500",
+    "currentSha256": "f03cfd4e84f75b480b899696bae61e2f89543786cf416704feae4c0d70917500",
+    "readRange": "1-25, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v5-landscape/README.md",
+    "coverage": "full",
+    "decision": "retain-landscape-comparison",
+    "reason": "같은 조명/아바타에서 원경만 비교한 v5 기하·draw·CPU 제출시간과 실패/정식자산 한계를 보존한다.",
+    "evidence": [
+      "13checks,PC2.35%/작은화면2.92% triangles 증가,draw2감소; GPU/FPS/실기기 주장 없음"
+    ],
+    "originalSha256": "423856e31668a156be839a9024c49103ff476d19280c7523aab91c8cde9c8a62",
+    "currentSha256": "423856e31668a156be839a9024c49103ff476d19280c7523aab91c8cde9c8a62",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/RESULT.md",
+    "coverage": "full",
+    "decision": "retain-account-contract-proof",
+    "reason": "10-02 PKCE·state·계정격리·동의철회·rollout 잠금의 초기 합성 화면과 앱 통합 검증 근거다.",
+    "evidence": [
+      "7core/14fixture/45common/242app; 실제로그인·메일·공개·기기간왕복 미검증 및 차단탭 우회 안함"
+    ],
+    "originalSha256": "c6724f9c8ffc895bce963755bf3ed0985f6814bcce75276e35d5f1212f1126da",
+    "currentSha256": "c6724f9c8ffc895bce963755bf3ed0985f6814bcce75276e35d5f1212f1126da",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/PACING-V10.md",
+    "coverage": "full",
+    "decision": "retain-pacing-contract",
+    "reason": "부스터 보존·발문 간격·완주후 자유주행의 시간측정과 패키지가 다른 WIP Atlas변경을 포함했다는 출처 경계를 보존한다.",
+    "evidence": [
+      "186tests,100ms 관측,5.305~5.368초 간격; 로컬 ZIP과 커밋산출물 차이·시연보상 제외"
+    ],
+    "originalSha256": "a8d48ab239357ca46e2d8ab103689a149aeecddfa83c60dca04171419537ea02",
+    "currentSha256": "a8d48ab239357ca46e2d8ab103689a149aeecddfa83c60dca04171419537ea02",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-user-deferred-notification",
+    "reason": "활성cron과 구독0의 읽기집계, 실제알림 나중에라는 사용자 보류와 gateway수락/OS수신 경계를 보존한다.",
+    "evidence": [
+      "02:11:09 SELECT-only,새발송/권한변경0; 향후4단계는 현재 실행아님을 명시"
+    ],
+    "originalSha256": "637a1b47bb12ff8d893507ebe9f9e208506a4260f337e630dab17a009a49341d",
+    "currentSha256": "637a1b47bb12ff8d893507ebe9f9e208506a4260f337e630dab17a009a49341d",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/MOBILE-CHECK.md",
+    "coverage": "full",
+    "decision": "clarify-standalone-playtest",
+    "reason": "미수행 실기기 확인표는 보존하되 독립 v6/LAN판 저장 조건을 공개 WORLD 계정 저장과 구분하고 포트 충돌시 다른 작업 서버를 종료하라는 모호한 절차를 고쳤다.",
+    "evidence": [
+      "전항목 미확인; PC소화면/시뮬레이션을 실기기·직접청취·경제체감 증거로 쓰지 않음"
+    ],
+    "originalSha256": "2b5010359f7745195d84d30f15e439138b5e09c243684e75bde1b0659d2dc86f",
+    "currentSha256": "97dc6350fb7d0d3ae68d894dfd6bab56fc2cd672a2c2871ebae086c20ca0990c",
+    "readRange": "1-38, entire body"
+  },
+  {
+    "path": "experiences/order-rush/qa/nonvoice-shop-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-late-response-proof",
+    "reason": "구매 중 닫기/재열기 후 다른상품을 샀다는 거짓 안내와 초점탈취를 재현한 원문·패치·실패 자료를 보존한다.",
+    "evidence": [
+      "10Chrome checks,100→85 fixture,선택/요청ID 고정,body가정 fixture실패도 별도 보존"
+    ],
+    "originalSha256": "29ef098a1c55899a04751b241d7c99f45d2c99fb84879dfecabaf035307d2170",
+    "currentSha256": "29ef098a1c55899a04751b241d7c99f45d2c99fb84879dfecabaf035307d2170",
+    "readRange": "1-37, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/README.md",
+    "coverage": "full",
+    "decision": "retain-unapplied-r4-evidence",
+    "reason": "이전 e696와 다른 운영 baseline444파일을 읽고 검증한 미적용 r4 후보·전송목록·Linux fixture 근거다.",
+    "evidence": [
+      "433동일/7변경/4추가,18Linux 및17Windows+1권한skip,운영apply미실행; IMAGE재시험 주장없음"
+    ],
+    "originalSha256": "01011bd3b31571927c95715eef0449b1cfe4518c8537b606f35fd4de5cbe5dc6",
+    "currentSha256": "01011bd3b31571927c95715eef0449b1cfe4518c8537b606f35fd4de5cbe5dc6",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/family-media-cache-20261006.md",
+    "coverage": "full",
+    "decision": "retain-media-reference-proof",
+    "reason": "삭제/되돌리기와 늦은 ACK의 사진참조 유실을 막는 캐시·재업로드 최소화·계정전환 계약의 고유 회귀다.",
+    "evidence": [
+      "76Chrome/22media/48native,3x5MiB→10→15MiB, 정상2assetId유지; 원격업로드·운영아님"
+    ],
+    "originalSha256": "e084e7a5daf49502b5ae90171ad10a5df20fed6f0fedfcf96debe4cf1c7bd78c",
+    "currentSha256": "e084e7a5daf49502b5ae90171ad10a5df20fed6f0fedfcf96debe4cf1c7bd78c",
+    "readRange": "1-31, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-onboarding-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-tutor-onboarding-proof",
+    "reason": "초기 세튜터 선택·기기별저장·반응복귀·작은가로 화면검증과 서버가 모듈을 제공하지 못한 첫실패를 보존한다.",
+    "evidence": [
+      "62browser+9tests,서버4314격리,새생성0;유료AI대화·운영동기화·공개 제외"
+    ],
+    "originalSha256": "3fe25658cb9cb7f60be052efd47355c22f6017cb4dd6ee7304c5b7e85069d8c9",
+    "currentSha256": "3fe25658cb9cb7f60be052efd47355c22f6017cb4dd6ee7304c5b7e85069d8c9",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/GRAPHICS-V2-20261008.md",
+    "coverage": "full",
+    "decision": "retain-rocket-visual-proof",
+    "reason": "승인 원본에서 파생한 로켓과 설명서/조종판/상점 전후캡처·역할분리·보상중복 방지 근거다.",
+    "evidence": [
+      "13tests,79UI,18shop; before를 현행코드로 다시굽지 않는 원본보존 조건 유지"
+    ],
+    "originalSha256": "9625240a31134f25d6a974321b573b9fc4bd0a66ebd18d0e00d47595dbf712bb",
+    "currentSha256": "9625240a31134f25d6a974321b573b9fc4bd0a66ebd18d0e00d47595dbf712bb",
+    "readRange": "1-35, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/suno-20261001/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-music-provenance-release",
+    "reason": "임시음악을 승인 Suno3곡 원본으로 교체한 SHA·전곡박자추정·공개14파일 이력이다. 후속 제목변경 전 원제는 역사로 유지한다.",
+    "evidence": [
+      "16tests,202.68초 완주,59741ae9/Pages36846311936,출력신호와 직접청취·학생효과 분리"
+    ],
+    "originalSha256": "4ddb50ca195aa731d62221405a7af656d76c1dcbbdd14722849b1a83abf403f9",
+    "currentSha256": "4ddb50ca195aa731d62221405a7af656d76c1dcbbdd14722849b1a83abf403f9",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-completed-costume-release",
+    "reason": "서버v3·정적9파일·공개26파일·실제익명3조건·CI 완료를 고유 실패·수리·보호범위와 함께 보존한다.",
+    "evidence": [
+      "115b1d5/a017221d, 첫TS문자열비교 실패와 토큰대조수리, 최종P3네줄, v1브라우저성공0을 합산하지 않음"
+    ],
+    "originalSha256": "af668fb9807a7b63687e6138c0cc98d9e7ef7d6f0af4745668667c61e83c317d",
+    "currentSha256": "af668fb9807a7b63687e6138c0cc98d9e7ef7d6f0af4745668667c61e83c317d",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-plan.md",
+    "coverage": "full",
+    "decision": "clarify-predeployment-audit",
+    "reason": "배포전v2 상태와 고정모델 실행계획을 당시 이력으로 한정하고 후속v3 완료기록을 연결했다. 운영대상·DB무변경·runtime비교·dirty보존 계약은 유지한다.",
+    "evidence": [
+      "최종README와 backend-postflight, catalog-only77afa4a6 및 원격0e50bf 이전값을 당일 전후로 구분"
+    ],
+    "originalSha256": "4fb9e8c3bbfe875f5d32a265780e1a538569a18ae67f3d5db5042f4b9987724c",
+    "currentSha256": "20e51afe5c658342134cae7b104d8a4b262e79efaad2c9f64eef7828c1f729ce",
+    "readRange": "1-25, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README-pre-deploy.md",
+    "coverage": "full",
+    "decision": "consolidate-superseded-draft",
+    "reason": "최종완료 README가 대체한 미완료표·빈 인수 양식을 짧은 당시 상태와 최종기록·복구원문 링크로 통합했다. 원본 SHA와 전문은 백업에 보존한다.",
+    "evidence": [
+      "이름참조는 최종README뿐이며 입력 코드 참조 없음; 3최종증거파일과 실제 완료표 존재,배포전push완료/공개미완료 핵심이력 유지"
+    ],
+    "originalSha256": "0bd1ef1a68a25c76d66765da9cc9c6a4c643458dc18c2525cf67308b36050f43",
+    "currentSha256": "3d07f2e9efadded0de043ff1c8a4787531a50de77e132c858be8d0cf484a547c",
+    "readRange": "1-31, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-plan/README.md",
+    "coverage": "full",
+    "decision": "clarify-v1-preparation",
+    "reason": "v1후보의 미게시·고정검수 미래형을 당시준비로 한정하고 v2공개완료기록 연결. rawblob보존·archive실패·localhost검증0은 그대로 둔다.",
+    "evidence": [
+      "537파일/overlay9/preserve528,부분archive302MB,93EOL복원; v1성공0을 공개성공으로 세지 않음"
+    ],
+    "originalSha256": "6f9681df2782573f39c946572378e230847ba7bc1cb5f75fd76a1aa9416211aa",
+    "currentSha256": "beb8afd297fe689a308cf992d2816832ddd6b650e8b5456d782cb92a92b3a0cf",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-review-README.md",
+    "coverage": "full",
+    "decision": "retain-frozen-review-input",
+    "reason": "backend-opus-prompt.txt가 직접 읽도록 지정한 당시 검수 입력이다. 준비시점의미완료·고정모델 문구도 재현용 원문으로 보존하며 현재상태는 동봉최종README를 따른다.",
+    "evidence": [
+      "37SHA동결,제품2파일/20tests,catalog-onlyruntime77afa4a6; 후속115b1d5/v3완료는 별도기록"
+    ],
+    "originalSha256": "5452e9305c41eedec5d5efd92040a14aa3874fe713e2e86d71722231ee98808f",
+    "currentSha256": "5452e9305c41eedec5d5efd92040a14aa3874fe713e2e86d71722231ee98808f",
+    "readRange": "1-19, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/README.md",
+    "coverage": "full",
+    "decision": "retain-versioned-listening-proof",
+    "reason": "v1시각단서문제와 v2반대정답쌍 동일화면·첫응답·도움기록,후속복원 검증을 구분하는 입구다.",
+    "evidence": [
+      "5polish flows,18+6완주,15tests; BFCache실제미적중/합성이벤트를 구분하고 예전결과를 덮지 않음"
+    ],
+    "originalSha256": "7f3d5c997fc7c9155a98100aeb30363fc4084efd1262ddd0110cc38bcf6382f7",
+    "currentSha256": "7f3d5c997fc7c9155a98100aeb30363fc4084efd1262ddd0110cc38bcf6382f7",
+    "readRange": "1-29, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-avatar/README.md",
+    "coverage": "full",
+    "decision": "retain-avatar-material-contract",
+    "reason": "기존형태·눈·API를 보존한 v4재질과 로딩실패/늦은texture해제·COLOR0 내보내기 계약이다.",
+    "evidence": [
+      "20contract+6loading,18captures,packedmaps16→13;기하/생성ms를FPS·실기기완료로 표현하지 않음"
+    ],
+    "originalSha256": "09dab7392c9ae83ef104fb209f0da6c6c734fca7bd5300e48ca8ebe0485f231a",
+    "currentSha256": "09dab7392c9ae83ef104fb209f0da6c6c734fca7bd5300e48ca8ebe0485f231a",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-contract-reviewer-files.md",
+    "coverage": "full",
+    "decision": "retain-frozen-review-index",
+    "reason": "v2동결9개SHA와 보호11·그래프52/102·callback ABI의 검수입구로 현재제품문서 사본이 아니다.",
+    "evidence": [
+      "v1 10조건/v2 4조건의범위 분리,studio외536동일,배포상태 판정아님 명시"
+    ],
+    "originalSha256": "a9a5e7a55f3726ffb7f9227212b63eff435df6789b879c453f0adc4d0635aaf8",
+    "currentSha256": "a9a5e7a55f3726ffb7f9227212b63eff435df6789b879c453f0adc4d0635aaf8",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-listening-release-proof",
+    "reason": "읽기형을 음성O/X로 변경한45클립·AudioContext공유·판정분리와74파일공개 근거를 보존한다.",
+    "evidence": [
+      "21tests,세곡실제완주,263d75b/Pages36860120740;실기기·강사·사람청취효과 별도"
+    ],
+    "originalSha256": "bcad80922ad93539e95ef1ec822e9cd7a99d104549a97804ea4292e445ef9918",
+    "currentSha256": "bcad80922ad93539e95ef1ec822e9cd7a99d104549a97804ea4292e445ef9918",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/learning-hub/qa/collection-summary-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-unavailable-vs-zero-proof",
+    "reason": "저장소읽기실패를0코인으로 보인오류의10조건 전후와 최신요청우선·복귀재읽기 계약이다.",
+    "evidence": [
+      "before6실패→after10통과,두모드45코인+칭호1,sourceSHA·fixture·음성0·계정쓰기0"
+    ],
+    "originalSha256": "f6ddbc12fe0fbc604a3af71a9c0e8207684762bc688338949460e1ceab97dd98",
+    "currentSha256": "f6ddbc12fe0fbc604a3af71a9c0e8207684762bc688338949460e1ceab97dd98",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/PERSONALIZATION-20261002.md",
+    "coverage": "full",
+    "decision": "retain-format-assessment-proof",
+    "reason": "binary-choice와박자·무응답·반복문항군을 분리한 실제추천/최초응답 계약과 검증한계를 보존한다.",
+    "evidence": [
+      "43두게임통합/리듬24,브라우저39초 일시정지;전체완주·직접청취 재검증하지 않은범위 명시"
+    ],
+    "originalSha256": "8e0be0693b75d6fd8ad1fe40f51b3be96307f2c65d45a204b85262425a87ab35",
+    "currentSha256": "8e0be0693b75d6fd8ad1fe40f51b3be96307f2c65d45a204b85262425a87ab35",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/city-v9-notes.md",
+    "coverage": "full",
+    "decision": "retain-city-geometry-proof",
+    "reason": "18개 실제 개구부·지형밀착 정원·품질별 기하예산·raycast 검사로 도시 v9의 고유 구현을 기록한다.",
+    "evidence": [
+      "12tests,기하+2998/draw유지;GPU시간·실기기미감 검증아님"
+    ],
+    "originalSha256": "cc5a6541f54651bd61cc4c4d91f1456c061e961ced3f081ccad1f210e683d664",
+    "currentSha256": "cc5a6541f54651bd61cc4c4d91f1456c061e961ced3f081ccad1f210e683d664",
+    "readRange": "1-37, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/PERSONALIZATION-20261002.md",
+    "coverage": "full",
+    "decision": "retain-racing-format-proof",
+    "reason": "60문항의 single-choice 형식·도움·음소거읽기·불명확조작 분리와 첫맞춤문항 화면검증을 보존한다.",
+    "evidence": [
+      "43통합/레이싱19,6패키지SHA,첫읽기문항까지만 검증;HDR404수정/완주미검증 구분"
+    ],
+    "originalSha256": "9ac2c516abe25fc71e5fe0a88e3491bb5b6776cd648425a764a1aadcf369d986",
+    "currentSha256": "9ac2c516abe25fc71e5fe0a88e3491bb5b6776cd648425a764a1aadcf369d986",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-return-loop-proof",
+    "reason": "축제재방문 seed와 기억놀이의 도움표현·첫답숨김·본편보존·보상없는무료경로를 검증한 고유기록이다.",
+    "evidence": [
+      "49tests/6browser/4route/10shop;locator/재로드카운터 fixture실패2회 보존,합성코인·실제계정 구분"
+    ],
+    "originalSha256": "7c298e4a9a6835583cd50b6d9a30b5e8717b3e64b42b365c5d459af1619b160f",
+    "currentSha256": "7c298e4a9a6835583cd50b6d9a30b5e8717b3e64b42b365c5d459af1619b160f",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/living-home-20261012/README.md",
+    "coverage": "full",
+    "decision": "retain-rejected-art-proof",
+    "reason": "기능검증 성공을 사용자가 기각한 캐릭터 조형 승인으로 오인하지 않도록 이미 후속 정정과 새정본을 연결한다.",
+    "evidence": [
+      "53tests/1933파일 빌드,사진·계정알림순서 수리,실기기/운영/배포 제외"
+    ],
+    "originalSha256": "8f39b3faae2ae413427dde19abaccbcb516f448f694bf93a8186dadbb03ff469",
+    "currentSha256": "8f39b3faae2ae413427dde19abaccbcb516f448f694bf93a8186dadbb03ff469",
+    "readRange": "1-42, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-completion-20261014/README.md",
+    "coverage": "full",
+    "decision": "retain-synthetic-completion-proof",
+    "reason": "공개10파일을 고정해 정상 물리9000프레임에서 실제finish·보상·기억·다음추천을 연결한 고유 통합검증이다.",
+    "evidence": [
+      "3tests,1392m/25coins/10combo,무입력27.69초실패;실제90초PC·청취·학생능력 증거아님 명시"
+    ],
+    "originalSha256": "dfd2e23e116192af939537dff806d53e7510567128f166f7690a1263406d4ce9",
+    "currentSha256": "dfd2e23e116192af939537dff806d53e7510567128f166f7690a1263406d4ce9",
+    "readRange": "1-29, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/graphics/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-graphics-integration-proof",
+    "reason": "세 입문게임·허브의 전후 그래픽과상점/복귀/공통지갑 통합 결과를 연결하는 고유 결과입구다.",
+    "evidence": [
+      "114tests/50shop/79coop/6hub/6wallet,승인자산원천·확인불가모델설정·실기기효과미검증 구분"
+    ],
+    "originalSha256": "4a872a803fa16f7a27e55aa3a0fbea89d6210b4e7b3ebe268ef97c7b26662ab1",
+    "currentSha256": "4a872a803fa16f7a27e55aa3a0fbea89d6210b4e7b3ebe268ef97c7b26662ab1",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-tutor-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-home-tutor-proof",
+    "reason": "실제미해결표현 추천과 도움정답의독립근거 제외·소유자·수명주기·같은중단복귀 검증을 보존한다.",
+    "evidence": [
+      "61source/15account/19lifecycle/118regression/57Node;동시media timeout과단독통과 분리"
+    ],
+    "originalSha256": "fe3e6d16845aa213515caaf302067a2aa53613baab5139b38cdaa3fcc0554984",
+    "currentSha256": "fe3e6d16845aa213515caaf302067a2aa53613baab5139b38cdaa3fcc0554984",
+    "readRange": "1-35, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_대기_측정_20261003.md",
+    "coverage": "full",
+    "decision": "retain-first-load-baseline",
+    "reason": "10-03공개판 cold-start18.4/19초와셰이더7초 병목,후속로컬변동을 속도향상률로 과장하지 않은 기준측정이다.",
+    "evidence": [
+      "PC와390터치흉내 동일하드웨어,CDP1ms/longtask,공개판과warmlocal 조건차이 명시"
+    ],
+    "originalSha256": "87f665c6cbc77ba420d95377491a542cbc01c9234be64c2a69af3cd20b3d4142",
+    "currentSha256": "87f665c6cbc77ba420d95377491a542cbc01c9234be64c2a69af3cd20b3d4142",
+    "readRange": "1-36, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-tutor-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-life-tutor-proof",
+    "reason": "세튜터의 생활·카페·복습동행과첫답/도움/중단보존의합성계정·실제MP3흐름을 기록한다.",
+    "evidence": [
+      "118source/10account/76Node,source-r1~r4실패보존,새TTS/유료AI/운영쓰기0"
+    ],
+    "originalSha256": "b55deb285277c5d873ea04c79bebd761ef3b8359a2c9e17e232846f1b5dbd676",
+    "currentSha256": "b55deb285277c5d873ea04c79bebd761ef3b8359a2c9e17e232846f1b5dbd676",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-switch-20261011/games/README.md",
+    "coverage": "full",
+    "decision": "retain-switch-replay-proof",
+    "reason": "실제설정에서네차례튜터교체·12게임진입·닫힌화면리스너해제와잘못된QA비교식 수정근거다.",
+    "evidence": [
+      "210checks,46정본반응음;URL인코딩/파일접두사오류,기존기록재검증을 새브라우저실행으로 세지않음"
+    ],
+    "originalSha256": "0e877f79851056ddac5d42c2d78079ad291702a4833db8ab00057e67f80833d9",
+    "currentSha256": "0e877f79851056ddac5d42c2d78079ad291702a4833db8ab00057e67f80833d9",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/nonvoice-shop-focus-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-shop-focus-proof",
+    "reason": "지연구매·목표·재입장 응답이새미리보기/초점을 덮던오류의3/12→12/12전후와fixture실패를 보존한다.",
+    "evidence": [
+      "정확원문SHA/patch,초기audioRequests0고정값을주근거에서제외,이미지decode/비활성버튼 fixture경계"
+    ],
+    "originalSha256": "ecf167e5e78bb21bce4474c7c7f81ddc2ceff4a8c3223eecca6f84405b091cbd",
+    "currentSha256": "ecf167e5e78bb21bce4474c7c7f81ddc2ceff4a8c3223eecca6f84405b091cbd",
+    "readRange": "1-17, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-play/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-return-play-integration",
+    "reason": "소풍변주·보관탐험·보유품직행과없어진7모듈오류를실제컬렉션으로 고친통합검증기록이다.",
+    "evidence": [
+      "86회귀,95협동,8허브;12탐험fixture주입을사람완주로세지않음,공통경제55재사용/로컬저장한계"
+    ],
+    "originalSha256": "2704f23b45562ee3a251932fec988db51afd982ef48a28a38851eb6a512927a2",
+    "currentSha256": "2704f23b45562ee3a251932fec988db51afd982ef48a28a38851eb6a512927a2",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/return-recall-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-recall-cleanup-proof",
+    "reason": "별지도PNG직접저장·늦은생성무시·완주기반복습·원래탐험보존 검증과종료단계잔류를 분리한 증거다.",
+    "evidence": [
+      "36+16Node,31+4Chrome/95coop;4프로세스Ctrl-C종료를exit0로 보고하지 않음,중괄호/null/timeout실패 보존"
+    ],
+    "originalSha256": "01deca862b835c238ff6a846d04f9de346fdc3e4e2688560223b6a6336792d79",
+    "currentSha256": "01deca862b835c238ff6a846d04f9de346fdc3e4e2688560223b6a6336792d79",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-wardrobe-focus-proof",
+    "reason": "옷장화면재생성의초점유실과PNG다운로드차단 후 명시링크를 전후비교한12조건 및fixture실패를 보존한다.",
+    "evidence": [
+      "공유/공개준비12조건,원본SHA60f8bcea,기존49+14미재실행;사용자음성/휴대폰보류 유지"
+    ],
+    "originalSha256": "8ec8111ba0c17e094efc4673904e9a87013f83fa96765c0e64956f9fd51d64b7",
+    "currentSha256": "8ec8111ba0c17e094efc4673904e9a87013f83fa96765c0e64956f9fd51d64b7",
+    "readRange": "1-36, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/coast-radio-notes.md",
+    "coverage": "full",
+    "decision": "retain-audio-lifecycle-contract",
+    "reason": "승인해안선MP3동일SHA와shared AudioContext·지연로딩·늦은play·dispose계약의고유모듈기록이다.",
+    "evidence": [
+      "9unit+7appVM,231.6초/4633256B/SHA4580f5e5;mock시험과실제청취/재생정책분리"
+    ],
+    "originalSha256": "46dd6eaa29ee9882eeb31669e0b3c8089e5aad4d1e457e3ef4ae84871206d38c",
+    "currentSha256": "46dd6eaa29ee9882eeb31669e0b3c8089e5aad4d1e457e3ef4ae84871206d38c",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/stable-scene-20261012/README.md",
+    "coverage": "full",
+    "decision": "retain-stabilization-provenance",
+    "reason": "v9캐릭터영역왜곡을v10첫프레임고정으로줄인실제방법과정지캐릭터/새리깅차이를 보존한다.",
+    "evidence": [
+      "양방향240프레임/9브라우저/21표본,강루프완전동일아님;새생성·배포·설치없음"
+    ],
+    "originalSha256": "af7dc89db9fd434ad6a77f718ba2a040c1bff10043240869333ab5a6f1bbc4f5",
+    "currentSha256": "af7dc89db9fd434ad6a77f718ba2a040c1bff10043240869333ab5a6f1bbc4f5",
+    "readRange": "1-38, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-ui-recovery-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-exception-release-proof",
+    "reason": "공식검수한도미완료를숨기지않고 사용자의좁은예외승인으로알림UI만공개한증거다.",
+    "evidence": [
+      "363tests,48공개SHA,3b3aacf/Pages·CI성공;실제알림발송/구독변경0과PC·휴대폰보류"
+    ],
+    "originalSha256": "6ee530a02a0e1d88b09a320359b29035be6a008c53e39bf229350657bbdfac63",
+    "currentSha256": "6ee530a02a0e1d88b09a320359b29035be6a008c53e39bf229350657bbdfac63",
+    "readRange": "1-33, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-coop-r4.md",
+    "coverage": "full",
+    "decision": "retain-scoped-review",
+    "reason": "r4세상수/계획지문 변경에만 묶인 독립검토로SHA재계산·운영실행미검증과검토중문서변경을명시한다.",
+    "evidence": [
+      "읽기승인≠배포승인,review-input 고정SHA,10파일목록890B,env이미지apply시확인;미확인범위 유지"
+    ],
+    "originalSha256": "e83e4ca1617db15c74e9cf8719f4ef7b59525e972abc993a5daed387238df7e0",
+    "currentSha256": "e83e4ca1617db15c74e9cf8719f4ef7b59525e972abc993a5daed387238df7e0",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-landscape/README.md",
+    "coverage": "full",
+    "decision": "retain-landscape-v6-proof",
+    "reason": "v6원경만교체한 A/B와 산만 재분할한 동일기하 비교를 각각 보존한다.",
+    "evidence": [
+      "15checks두종류,windows2872→1270,전체패스+3.31/3.49%;단일beauty통계와혼합금지·실기기미측정"
+    ],
+    "originalSha256": "822c24cdf06d98c75c41d21e61e4b3830974dfc56953d43ce229dfe539833539",
+    "currentSha256": "822c24cdf06d98c75c41d21e61e4b3830974dfc56953d43ce229dfe539833539",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/game-tutors-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-game-tutor-proof",
+    "reason": "세튜터×세게임과서버첫문장 결과의실제반응·조작중시계정지·프레임메시지검증을 기록한다.",
+    "evidence": [
+      "77browser/95Node/기존62재실행,qa운전·silent한글한계,유료AI대화·실기기효과·공개 제외"
+    ],
+    "originalSha256": "6d3fb3af5b1b16cd0894298636f815998193b95a1333b9ba9b6068648780ed35",
+    "currentSha256": "6d3fb3af5b1b16cd0894298636f815998193b95a1333b9ba9b6068648780ed35",
+    "readRange": "1-43, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/personalization-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-travel-personalization-proof",
+    "reason": "19취향조건·도보구간상한·휴식·결과를바꾸는Core질문과공식메뉴자료의확인한계가고유계약이다.",
+    "evidence": [
+      "228tests+7build+21backend,8곳17출처19메뉴9가격,2023메뉴/미확인회피명시,사용자4304보존"
+    ],
+    "originalSha256": "796195820640d49f4ebca160bf707112d4c8b825e8dad1c1dd0237e40edd31ad",
+    "currentSha256": "796195820640d49f4ebca160bf707112d4c8b825e8dad1c1dd0237e40edd31ad",
+    "readRange": "1-29, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/motivation/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-use-value-proof",
+    "reason": "상품실사용이구매후재방문으로이어지는세게임의보상·소유·무료경로 검증입구다.",
+    "evidence": [
+      "132tests/8통합/6기존상점,마법18+6/주문7/협동95;자발재방문·지연기억·효과미검증"
+    ],
+    "originalSha256": "5d58bd8ee4b8949a39c2515c1a2a12a3e158ef1973147abca9d51b9bd8852093",
+    "currentSha256": "5d58bd8ee4b8949a39c2515c1a2a12a3e158ef1973147abca9d51b9bd8852093",
+    "readRange": "1-25, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r14/README.md",
+    "coverage": "full",
+    "decision": "retain-rejected-r14-history",
+    "reason": "r14비율조정과앞선v8기각·정본측정오차·남은털/자기그림자차이를기록한재조형중간판이다.",
+    "evidence": [
+      "244geometry,PC22%/세로29%축소,1936파일2런타임변경;최종미술승인·실기기성능 아님"
+    ],
+    "originalSha256": "768e56ff0f42cf251f6ff19d60bbd4cc909d0125fdd740070a6f601a53f09b07",
+    "currentSha256": "768e56ff0f42cf251f6ff19d60bbd4cc909d0125fdd740070a6f601a53f09b07",
+    "readRange": "1-31, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/rendering-review.md",
+    "coverage": "full",
+    "decision": "retain-renderer-failure-proof",
+    "reason": "AO상태복구·framebuffer소유·실제drawing buffer 및3번의검사보정근거를보존한다.",
+    "evidence": [
+      "26checks,기본scratch3과추가자원분리,nearest필터146diff vslinear,계산39.55/22.06MiB는드라이버실측아님"
+    ],
+    "originalSha256": "30a3f2813257fb258204943c2b086fd5e1833352331ae83bfe950f31f95c077b",
+    "currentSha256": "30a3f2813257fb258204943c2b086fd5e1833352331ae83bfe950f31f95c077b",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-coop-integration-proof",
+    "reason": "두Chrome컨텍스트의18수리·정상음성잠금·역할분리·재접속·개인회상·키보드 검증과후속79→95범위를보존한다.",
+    "evidence": [
+      "8HTTP/SSE+95UI,실제BFCache아님/합성hidden구분,실제두기기·사람대화·효과·배포미검증"
+    ],
+    "originalSha256": "48b5a4c5484fe99042703c86f7e5de5d9ceae814c507b82dc976b9b52a8a16ca",
+    "currentSha256": "48b5a4c5484fe99042703c86f7e5de5d9ceae814c507b82dc976b9b52a8a16ca",
+    "readRange": "1-24, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/final/README.md",
+    "coverage": "full",
+    "decision": "retain-expression-roi-proof",
+    "reason": "17표정직접주입검사와자연반응을구분하고79화면의눈/몸ROI동일성과영역밖차이를기록한다.",
+    "evidence": [
+      "575checks,RGB눈0/몸0/외곽max18,1819파일;로컬소스검증≠동결빌드서비스검증"
+    ],
+    "originalSha256": "ebff74216acd9a237078a24f1e45c94f57d97cfd73513d4e388c3095ecdb74e3",
+    "currentSha256": "ebff74216acd9a237078a24f1e45c94f57d97cfd73513d4e388c3095ecdb74e3",
+    "readRange": "1-35, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V7.md",
+    "coverage": "full",
+    "decision": "retain-startup-v7-proof",
+    "reason": "암반UV·수면·shader마감과병렬자산/첫렌더가드의구현·로컬변동측정·패키지무결성기록이다.",
+    "evidence": [
+      "133tests,실제4K,2738파일ZIPCRC/SHA,6.183→11.754→6.330초로안정향상결론을내리지않음"
+    ],
+    "originalSha256": "f69e59f38330b2ac91131ef21575bc2a70bedefecfe417cb67ba04657438aa28",
+    "currentSha256": "f69e59f38330b2ac91131ef21575bc2a70bedefecfe417cb67ba04657438aa28",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/README.md",
+    "coverage": "full",
+    "decision": "retain-r16-canon-comparison",
+    "reason": "기각v8와r14/r15를보존하며r16몸통/솜흐름을정본측정과크기불변으로비교한고유미술기록이다.",
+    "evidence": [
+      "244검사,162000/53000가닥,1936파일1모델변경,완벽복원·최종승인·실기기성능아님"
+    ],
+    "originalSha256": "f599387ce635f9c1b24c45a8de89df43b601d1acb43ee512bcbb95c21da0394b",
+    "currentSha256": "f599387ce635f9c1b24c45a8de89df43b601d1acb43ee512bcbb95c21da0394b",
+    "readRange": "1-31, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-library-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-library-release-proof",
+    "reason": "문구보관함운영45왕복·계정격리·tombstone·캐시혼합수리와좁은검수예외승인을보존한다.",
+    "evidence": [
+      "291/55/49tests,63146086 공개48파일,본문검수완료/캐시검수한도미완료분리,CI503/미러지연과재시도이력"
+    ],
+    "originalSha256": "9cc71d96f9c0b586e07452240147707f10efda2615a218920341eba66ebdaa6f",
+    "currentSha256": "9cc71d96f9c0b586e07452240147707f10efda2615a218920341eba66ebdaa6f",
+    "readRange": "1-15, entire body"
+  },
+  {
+    "path": "experiences/learning-hub/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-atlas-consumer-proof",
+    "reason": "교육응답형식별독립근거·도움·실패·계정격리와4게임/앱소비를검증한초기Atlas통합원문이다.",
+    "evidence": [
+      "249tests,노트북단일15ms측정,전달ZIP76파일,바람길행동진단아님·실계정/기기효과 미검증"
+    ],
+    "originalSha256": "58cda4f5852385882067afa07bec5929cb8c990e40c830e67fbb408872cfc09d",
+    "currentSha256": "58cda4f5852385882067afa07bec5929cb8c990e40c830e67fbb408872cfc09d",
+    "readRange": "1-46, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-pack-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-cafe-receipt-proof",
+    "reason": "카페완료는음료수령까지이며첫답/도움/복습/계정분리를보존한PGlite·브라우저검증과여섯fixture실패가고유근거다.",
+    "evidence": [
+      "38unit/34source/31standalone/9static,1781파일,65초시계모의·운영OAuth미검증;현재입력읽기선택범위"
+    ],
+    "originalSha256": "4f81e445791a72563b99f07a70f094c744779440e5ca10b74bdafdaed0b40e5c",
+    "currentSha256": "4f81e445791a72563b99f07a70f094c744779440e5ca10b74bdafdaed0b40e5c",
+    "readRange": "1-37, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-shop-finish-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-shop-release-proof",
+    "reason": "네UI모듈의실제오류·수리·검수한도미완료/사용자유예·선별공개와10화면검증을연결하는완료기록이다.",
+    "evidence": [
+      "d9b48d4c공개4파일/Pages37918543494/CI37918544347,공용index보존,기존r3CI실패미덮음"
+    ],
+    "originalSha256": "fb088f30d0f0fa1c797a25358a90e4b58d4fcbd2c67ee027204e262d67b51f13",
+    "currentSha256": "fb088f30d0f0fa1c797a25358a90e4b58d4fcbd2c67ee027204e262d67b51f13",
+    "readRange": "1-23, entire body"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-environment/README.md",
+    "coverage": "full",
+    "decision": "retain-render-lifecycle-contract",
+    "reason": "v4환경512atlas·quality/DPR/사진finally복귀·shader/contextloss·늦은texture해제계약과동일아바타비교를보존한다.",
+    "evidence": [
+      "1476x1760사진,CPU2.5→2.1/3.4→3.5는GPU/FPS아님,최종자산/실기기승인아님"
+    ],
+    "originalSha256": "7627f2c35978f3602b7b8e29b484107b54790dda4809733f61e5f94d43479173",
+    "currentSha256": "7627f2c35978f3602b7b8e29b484107b54790dda4809733f61e5f94d43479173",
+    "readRange": "1-44, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/SUPPORT-BAZAAR.md",
+    "coverage": "full",
+    "decision": "retain-support-scenario-proof",
+    "reason": "18읽기응답과선택수락기반설명지원·두손님예약/제공·가판생활사실을분리한초기Town계약이다.",
+    "evidence": [
+      "189unit/26UI,반복/힌트독립분리,생활선택≠언어정답,그날개발체험·참가자0/휴대폰0"
+    ],
+    "originalSha256": "060c0d129149cf6da50e46640ab5651cafd0d7fbf90d139b699646e69a4cf3b5",
+    "currentSha256": "060c0d129149cf6da50e46640ab5651cafd0d7fbf90d139b699646e69a4cf3b5",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/learning-hub/qa/GRAPHICS-TWO-GAMES-20261005.md",
+    "coverage": "full",
+    "decision": "retain-two-game-visual-proof",
+    "reason": "두게임실제풍경·카페컵수령·가로화면·재질해제와공통원문/패키지일치를연결한QA다.",
+    "evidence": [
+      "100browser/94Node/ZIP181항목,90프레임16.7ms를실제휴대폰FPS로일반화하지않음"
+    ],
+    "originalSha256": "f11cd0526a242ca0e85200267c35eee4e27bdbd151821577e30bb17e6a860769",
+    "currentSha256": "f11cd0526a242ca0e85200267c35eee4e27bdbd151821577e30bb17e6a860769",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/LISTENING-V4.md",
+    "coverage": "full",
+    "decision": "retain-listening-action-contract",
+    "reason": "달리기중읽기를없애고사전/사후글도움만두는사용자요청,음성실패/정지/재개/직접입력의원증거다.",
+    "evidence": [
+      "19tests/16MP3/실제90초자동시연,봇정답지식을학생이해로세지않음,학습효과·계정·공개미검증"
+    ],
+    "originalSha256": "e9fa8ac37c47994bd3d5b570e6a098ab2e5a72b9b0413cc97257480d5c9d2baf",
+    "currentSha256": "e9fa8ac37c47994bd3d5b570e6a098ab2e5a72b9b0413cc97257480d5c9d2baf",
+    "readRange": "1-38, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-listening-scope-20261014/README.md",
+    "coverage": "full",
+    "decision": "retain-listening-scope-release",
+    "reason": "독립응답0을전체응답없음으로읽지않게한한문구수리와CI실패/후속성공·재현불가추정의경계를보존한다.",
+    "evidence": [
+      "17tests,be77072c3파일,503최초failure→동일CI2차success;도움정답supported기존정상·추정로직수정없음"
+    ],
+    "originalSha256": "a3b824814b52e90ff7b0aa440b7b72a4faca3e48360f7817a80ed3f4cf8f9a7a",
+    "currentSha256": "a3b824814b52e90ff7b0aa440b7b72a4faca3e48360f7817a80ed3f4cf8f9a7a",
+    "readRange": "1-21, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/return-memory-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-optional-recall-proof",
+    "reason": "장이어하기·소개된표현만기억놀이·첫응답/코인/Atlas불변계약과음성timeout/정규화fixture실패를보존한다.",
+    "evidence": [
+      "23Node/12focus/18+6본편사본,소리완료timeout원인미확정,참가자0/기기0/음질평가0"
+    ],
+    "originalSha256": "edb332d385f97827e6dd0fc75f5ac233223a68bcbda81c54b5b7ab3c1ec7dd31",
+    "currentSha256": "edb332d385f97827e6dd0fc75f5ac233223a68bcbda81c54b5b7ab3c1ec7dd31",
+    "readRange": "1-29, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/progress-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-travel-replanning-proof",
+    "reason": "명시현재시각·출발점·예산의남은일정비교수락과취소/종료/정정복원계약을실제입력으로검증했다.",
+    "evidence": [
+      "246tests/16controller/7build72파일,가상여행9흐름,자기보고를만족도/취향/GPS로만들지않음"
+    ],
+    "originalSha256": "46030a66430a940a04293f56f331b284b310a7566f355a5f8816379dbffa030e",
+    "currentSha256": "46030a66430a940a04293f56f331b284b310a7566f355a5f8816379dbffa030e",
+    "readRange": "1-47, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/context-20261007/README.md",
+    "coverage": "full",
+    "decision": "retain-care-context-release",
+    "reason": "실제챙김·후속·기억·복사를분리한초안보존과epoch/fingerprint검사,후속동일Caretree CI완료를기록한다.",
+    "evidence": [
+      "228tests,eb9e55b3 6파일/48SHA,원503·취소/후속ba3b77a성공구분,실제메시지전송0"
+    ],
+    "originalSha256": "9e2e4deb33deca912bec589e74a71c09c1c1671551ca87d7627893f764aed23d",
+    "currentSha256": "9e2e4deb33deca912bec589e74a71c09c1c1671551ca87d7627893f764aed23d",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/vehicle-v9-notes.md",
+    "coverage": "full",
+    "decision": "retain-vehicle-loader-proof",
+    "reason": "실제GLTFLoader중복이름에서누락된휠3개최적화와원본버퍼/캐시/preview보존의고유근거다.",
+    "evidence": [
+      "8tests,6mm격자최대이동7.829mm,실제그림자194880→156504;손복원QA수치폐기/FPS주장없음"
+    ],
+    "originalSha256": "c0470b6cfed243daf533b4e3ebc28d2a5e996f67faa92a46a05fbf42bfe2f4b8",
+    "currentSha256": "c0470b6cfed243daf533b4e3ebc28d2a5e996f67faa92a46a05fbf42bfe2f4b8",
+    "readRange": "1-54, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-hints-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-hint-evidence-contract",
+    "reason": "실패동작/타이밍/언어응답/소리전달을분리한힌트와이미답한문항재연습은독립정답으로세지않는계약이다.",
+    "evidence": [
+      "43+19browser/129Node,기존VM하네스실패미포함,최근12도움은기기범위,원인추측금지"
+    ],
+    "originalSha256": "e30fd38fef360ecf77e4dd5016732e272253c7905f6aa863ba059041418137fc",
+    "currentSha256": "e30fd38fef360ecf77e4dd5016732e272253c7905f6aa863ba059041418137fc",
+    "readRange": "1-37, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-finish-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-return-reward-integration",
+    "reason": "지갑영수증/서울날짜/계정복원에따른가능보상경로와세게임무료복습의고유통합증거다.",
+    "evidence": [
+      "147tests,11생성사본byte일치,복습은Atlas/코인/숙달추가없음,timeout과소유프로세스정리한계 보존"
+    ],
+    "originalSha256": "280531f2826108f536e8ad52aa0be2956405d9770f8c905fed7716cbcefa2fe2",
+    "currentSha256": "280531f2826108f536e8ad52aa0be2956405d9770f8c905fed7716cbcefa2fe2",
+    "readRange": "1-36, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-weight-20261013/README.md",
+    "coverage": "full",
+    "decision": "retain-weight-benchmark",
+    "reason": "동일망제한교차5회·글리프전체입력·그림재압축과공개10파일대조를기록한성능근거다.",
+    "evidence": [
+      "68e631a공개,1369→438KB,3348→975KB,570/572기존CSP2실패구분,폰트OFL예약이름처리"
+    ],
+    "originalSha256": "018731ebbba11b8b8a339c7c00fc21c7743b3471ef0569bfe2614d7415c4b8bc",
+    "currentSha256": "018731ebbba11b8b8a339c7c00fc21c7743b3471ef0569bfe2614d7415c4b8bc",
+    "readRange": "1-40, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V7.md",
+    "coverage": "full",
+    "decision": "retain-v7-optics-proof",
+    "reason": "정적원경반사와잎투광근사·기와기하의v7구현 및반사자원해제/실패검증을보존한다.",
+    "evidence": [
+      "43/44/27/20/21서로다른검증범위,0.33MiB/기하6%증가,실시간반사·GPUFPS·품질승인아님"
+    ],
+    "originalSha256": "1fa850edf8114d39de559c2a1d42fb90ec79672e2d38d6968a98284adfbab611",
+    "currentSha256": "1fa850edf8114d39de559c2a1d42fb90ec79672e2d38d6968a98284adfbab611",
+    "readRange": "1-36, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-visits-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-cafe-visits-proof",
+    "reason": "네방문과최근중단복귀·품절컵0·수령완료·기존18레슨SHA·per-key CAS를검증한고유기록이다.",
+    "evidence": [
+      "46unit/64source/64standalone/34regression/22static,세컵잘림·빌드5의존누락첫실패보존,듣기평가아님"
+    ],
+    "originalSha256": "81c12f9dcc13b7c7d0c7a8fcc45afa514d04a8f06f9418e083157ef5a2bf7223",
+    "currentSha256": "81c12f9dcc13b7c7d0c7a8fcc45afa514d04a8f06f9418e083157ef5a2bf7223",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/playtest-readiness-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-dated-readiness",
+    "reason": "실제관찰0·기기0의유용한양식과4줄음성대장·검토준비를보존하되10-09한도/고정순서/공개버전이현재지시가아님을명시했다.",
+    "evidence": [
+      "21UI/23원문/22가격/28음성SHA,not-confirmed/null상태,참가자없음·휴대폰불가·음성마지막 사용자경계"
+    ],
+    "originalSha256": "c908fd0c0ef8074ee9fa00ed3cdaf325825dedc75900b51d0d4948069a50a4c6",
+    "currentSha256": "f8bb813ada8b253ba502cfbe7c9fa60d9f3b2b0d161454c27acb8a12b9ccde18",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/rhythm-RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-rhythm-rotation-proof",
+    "reason": "실제202.68초전체곡과회전중AudioContext/iframe/응답/보상유지를확인하고최종CSS후짧은재검증을구분한다.",
+    "evidence": [
+      "255전체+76probe,34unit,기존top-level-await6실패보존;5/5정답은정답알고입력한기능시험"
+    ],
+    "originalSha256": "02996ada34cb9b30b099c97a9350de06a8b3fa98714623394fe083e64936d9ca",
+    "currentSha256": "02996ada34cb9b30b099c97a9350de06a8b3fa98714623394fe083e64936d9ca",
+    "readRange": "1-53, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/contacts-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-selected-contact-proof",
+    "reason": "CSV/백업에서최소이름·관계·분류만명시선택하고계정변경/중복재확인하는가져오기계약의근거다.",
+    "evidence": [
+      "440tests,4MiB/1000명,합성UI한명추가,전화/메일미수집;gateway수락과OS수신구분"
+    ],
+    "originalSha256": "2fab2c5d247ec4a55d9fddc43cbbe32f1fad7ee6603290c582b65117c2a9e9f3",
+    "currentSha256": "2fab2c5d247ec4a55d9fddc43cbbe32f1fad7ee6603290c582b65117c2a9e9f3",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-practice-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-practice-lifecycle-proof",
+    "reason": "9튜터게임조합의실제녹음종료잠금·중단재개·계정분리·연습완료저장과known-harness실패를보존한다.",
+    "evidence": [
+      "141+15+6browser/102Node/62choice,6기존VM실패미합산;실제학생효과·급수·코인아님"
+    ],
+    "originalSha256": "7d5c9a1b2fd075f3541d9a511cbcb6a97474dad0c3d7aa0db29def2ff050adf1",
+    "currentSha256": "7d5c9a1b2fd075f3541d9a511cbcb6a97474dad0c3d7aa0db29def2ff050adf1",
+    "readRange": "1-44, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/daily-tutor-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-daily-tutor-proof",
+    "reason": "한국날짜별독립/도움/재확인표현중복제거·성공즉시저장·재방문·소유자·복습간격검증이다.",
+    "evidence": [
+      "88source/30account/127regression/92Node(PGlite4포함),중복경로합산안함,1817파일준비≠배포"
+    ],
+    "originalSha256": "dc80f11ddbe2ce0fd3bfbc3338533525f611a67d2e8b1e1aad7b3e61d10b447f",
+    "currentSha256": "dc80f11ddbe2ce0fd3bfbc3338533525f611a67d2e8b1e1aad7b3e61d10b447f",
+    "readRange": "1-38, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V8.md",
+    "coverage": "full",
+    "decision": "retain-river-lifecycle-proof",
+    "reason": "v8배노선/정지/사진시간보존·러그접촉·normal방향과실제선체가시성의고유렌더증거다.",
+    "evidence": [
+      "62/26/42/27/21/16각범위,5calls1324triangles,평면반사근사/실기기성능아님"
+    ],
+    "originalSha256": "f00ca556524a7bc826e107f6cedd3b5250bec3b77d42ef5e19673975dcf3670f",
+    "currentSha256": "f00ca556524a7bc826e107f6cedd3b5250bec3b77d42ef5e19673975dcf3670f",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/first-use-library-search-20261008/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-review-rule",
+    "reason": "공개승인·한도미완료증거는보존하고현행AI운영원칙에없는고정Claude규정인용을당시규정으로한정했다.",
+    "evidence": [
+      "344tests,b4791ae4변경/48SHA,Pages·CI성공,429토큰0·사용자진행해석원문보존"
+    ],
+    "originalSha256": "f084de995e8e3faf7eaa7c59e9e68dd4360b613f1ef35fe6673345536c366a49",
+    "currentSha256": "87e010d5f3045bbd3d53f8fb0e055d34cd4f1f5cc1f6c05413d1702fd0fddf4d",
+    "readRange": "1-43, entire body"
+  },
+  {
+    "path": "experiences/order-rush/qa/BEGINNER-20261008.md",
+    "coverage": "full",
+    "decision": "retain-beginner-learning-proof",
+    "reason": "10시범+27실전과첫오답/도움/family반복분리·복원·실제60초·음성손상복구를기록한입문모드고유증거다.",
+    "evidence": [
+      "39tests,37단계실제음성/무음fixture분리,10독립관측9정답1오답,후속8항목은전체재완주아님"
+    ],
+    "originalSha256": "5b1ac86bbfc4acc3d572739bb6166c6826cc0df0d4538c26911f814070d1eaa3",
+    "currentSha256": "5b1ac86bbfc4acc3d572739bb6166c6826cc0df0d4538c26911f814070d1eaa3",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-finish-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-recovery-publication-proof",
+    "reason": "옷장r3와협동r3최소변경의공개·검수후완료·첫CI503/수동복구경계를입증하는최종기록이다.",
+    "evidence": [
+      "44e05a95 3파일,전체CI결론failure유지,두검수PASS시각을push전으로소급않음,휴대폰·음성보류"
+    ],
+    "originalSha256": "9dec1506901ae4e7c57c3fd714a46733cdff798144bae5d88ffe2169c760018a",
+    "currentSha256": "9dec1506901ae4e7c57c3fd714a46733cdff798144bae5d88ffe2169c760018a",
+    "readRange": "1-20, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-PLAYTEST.md",
+    "coverage": "full",
+    "decision": "retain-unperformed-town-observation",
+    "reason": "참가자0/기기0인실행관찰표로자율선택·주민이유·지원/역할·읽기/생활구분·기기성능의실제인수에필요하다.",
+    "evidence": [
+      "6~8형성평가≠학습효과,체류시간·무응답자동해석금지,검사자만든과거를추억으로표현하지않음"
+    ],
+    "originalSha256": "5d0038d07bb559ad4ef6e0abd155848c8462a239c6392fc3205e752afb5fbded",
+    "currentSha256": "5d0038d07bb559ad4ef6e0abd155848c8462a239c6392fc3205e752afb5fbded",
+    "readRange": "1-47, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-usability-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-costume-callback-proof",
+    "reason": "재시도성공후새초안보존·삭제코디차단·기존ID수정·작은PC첫옷노출과덮인QAJSON의복구출력을보존한다.",
+    "evidence": [
+      "12시나리오22조건/16+4배치,성공stdout/exit0/SHA와덮인JSON분리,이전101/71/29검사를재실행합산않음"
+    ],
+    "originalSha256": "e522f1bdf64200d65c8d13c9297a92067f10ac207004df0c822c8e401c6aef9a",
+    "currentSha256": "e522f1bdf64200d65c8d13c9297a92067f10ac207004df0c822c8e401c6aef9a",
+    "readRange": "1-43, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/RESIDENTS.md",
+    "coverage": "full",
+    "decision": "retain-resident-model-proof",
+    "reason": "6주민모델과게임소비·pose/headHeight·134인스턴스해제·동시소스변경실패를보존한다.",
+    "evidence": [
+      "18portrait+18game,기존36/37소스드리프트 보존,209runtime,512x640PNG실제렌더/최종승인·실계정아님"
+    ],
+    "originalSha256": "dc905b0c7e726ea55c8bd204aea5b02cd14878b2bf502da04bd391beeffff5ba",
+    "currentSha256": "dc905b0c7e726ea55c8bd204aea5b02cd14878b2bf502da04bd391beeffff5ba",
+    "readRange": "1-54, entire body"
+  },
+  {
+    "path": "experiences/teacher-world/qa/completion-20261004.md",
+    "coverage": "full",
+    "decision": "retain-classroom-integration-proof",
+    "reason": "개인기억과반공유분리·지연조회후게임시작·9활동수행·교사Electron계정격리/DPAPI의로컬완료근거다.",
+    "evidence": [
+      "21memory/156resume+97complete/26native/315+71+151회귀/74SQL,새컨텍스트≠물리두기기"
+    ],
+    "originalSha256": "bd1e7c34781f2a9e4d99ae87cc1ca80bb729b6c6e35a869d375df0885c4375d2",
+    "currentSha256": "bd1e7c34781f2a9e4d99ae87cc1ca80bb729b6c6e35a869d375df0885c4375d2",
+    "readRange": "1-30, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-graphics-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-costume-render-proof",
+    "reason": "161몸단면맞춤·V형뜨개·재료별PBR·24조합72시점·contextloss와사진복원검증을보존한다.",
+    "evidence": [
+      "21browser/10store,의상+조명동시변경은단일변수실험아님,웹rev6≠nativeGLB/최종승인"
+    ],
+    "originalSha256": "cc832eb53bf025d3219b72573b1db4326971eff77c460bce43d9b38daf2eec0c",
+    "currentSha256": "cc832eb53bf025d3219b72573b1db4326971eff77c460bce43d9b38daf2eec0c",
+    "readRange": "1-46, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/REDESIGN-V3.md",
+    "coverage": "full",
+    "decision": "retain-superseded-v3-proof",
+    "reason": "단어런에서16지시동작으로바꾼v3의초기읽기/듣기전환·타이밍·기록제외 증거이며후속v4와구별한다.",
+    "evidence": [
+      "16tests/16MP3/33HTTP/90초시연,도구timeout과제품오류분리,읽기모드는당시v3이력"
+    ],
+    "originalSha256": "b7e6449a6e1d7a6ed2deca423cd430c6b4d28f42bc1a40fc7214b3bde66d149e",
+    "currentSha256": "b7e6449a6e1d7a6ed2deca423cd430c6b4d28f42bc1a40fc7214b3bde66d149e",
+    "readRange": "1-37, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/scene-keepsake-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-keepsake-concurrency-proof",
+    "reason": "6작품무료보관·계정소유·늦은지갑·최신진도덮어쓰기방지와정상전송대조를보존한다.",
+    "evidence": [
+      "38tests/11Chrome,과거위험분기축약본≠frozen원문,VMinitialProgress누락실패를제품수리로세지않음"
+    ],
+    "originalSha256": "c871ece475258827e47780d5b794d71f5a497122b79d12964615c66d865f1e4b",
+    "currentSha256": "c871ece475258827e47780d5b794d71f5a497122b79d12964615c66d865f1e4b",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/member-mvp-20261005/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-personal-mvp-proof",
+    "reason": "Core명시응답재사용의3턴리허설·가족원본참조·실제JSON다운로드/동일SHA 왕복에대한초기MVP고유기록이다.",
+    "evidence": [
+      "291tests,앨범음성6.864초,가상자료/실제가족미사용,이전Electron소개검증을새앱native완료로세지않음"
+    ],
+    "originalSha256": "a1b1c2ea07ee9a9605dccb34a57a315c733c2a2eb727157e7dcadb89e7665fdf",
+    "currentSha256": "a1b1c2ea07ee9a9605dccb34a57a315c733c2a2eb727157e7dcadb89e7665fdf",
+    "readRange": "1-52, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-expressions-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "눈·몸 ROI와 화면 배경 회귀, 수명주기 타이머 취소·재활성화 실패를 분리한 검증 기록. 전역 화면 변화·실기기 증거로 확대하지 않아 원본 보존.",
+    "evidence": [
+      "206/206, 62 eye ROI pairs, 6 sequences, 36 frames; active cancellation and reduced-motion recovery; local guest GET/HEAD only"
+    ],
+    "originalSha256": "0190b1e597fcc076c8b7a447c42573d872bfc44d70c16498851e586fab254e14",
+    "currentSha256": "0190b1e597fcc076c8b7a447c42573d872bfc44d70c16498851e586fab254e14",
+    "readRange": "1-49, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "운영 합성 계정 왕복·정리와 시간창 재검증 결함 및 배포 근거를 보존한다. 실기기·OS 수신·완전 바이트 대조 미확인을 명시한다.",
+    "evidence": [
+      "pre/post 36 checks; synthetic cleanup; worker clock recheck after lock/before send; v5; static comparison exit 2"
+    ],
+    "originalSha256": "037d5057bdc3c11960afd3c52d2700c9841ce0c3f0f0d3c3655caee08e592b92",
+    "currentSha256": "037d5057bdc3c11960afd3c52d2700c9841ce0c3f0f0d3c3655caee08e592b92",
+    "readRange": "1-40, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v3·v4 이전 초기 단어 달리기의 보기 모호성·비동기 음성·중복 키입력 실패와 회귀 증거이다. 당시 1차 시제품 문맥이 명확하여 보존한다.",
+    "evidence": [
+      "100 seeds; water/milk correction; TTS 1.6s fallback; keyup/blur alias tracking; automated demo separate from learner result"
+    ],
+    "originalSha256": "8da059ac967a08259f74b0b85589aa6fff8564c1b3f58279c3c44d04ab156700",
+    "currentSha256": "8da059ac967a08259f74b0b85589aa6fff8564c1b3f58279c3c44d04ab156700",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "명시적 사용자 공개 승인·검수 보류·OAuth 경계·합성 계정 정리와 안정적인 place ID 계약의 고유 근거라 보존한다.",
+    "evidence": [
+      "7b749a647 public; 78 HTTP/MIME/SHA; v23; final C quota failure not pass; 13 synthetic tests; place ID archive eligibility contract"
+    ],
+    "originalSha256": "6e7363d8ae858cf87da3ff3593dceebb377cf2d6de5deb10f52ffeedb1d17a62",
+    "currentSha256": "6e7363d8ae858cf87da3ff3593dceebb377cf2d6de5deb10f52ffeedb1d17a62",
+    "readRange": "1-29, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/TEXTILES.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "PBR 텍스처 채널·복제 소유권·원본 body SHA와 퀼트 X 무늬 수정 전후를 재현하는 계약·증거로 보존한다.",
+    "evidence": [
+      "10 textiles; CPU channel means not GPU brightness; 74 initial PNG; 12 delta PNG; AO min 194 to 250; no API/deploy"
+    ],
+    "originalSha256": "1cd864924a9563e2edabfde081a52bc721daa19eb3bd190d7737a6104c8ba236",
+    "currentSha256": "1cd864924a9563e2edabfde081a52bc721daa19eb3bd190d7737a6104c8ba236",
+    "readRange": "1-44, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/cleanup-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "실제 운영 Auth·DB·Storage의 삭제와 보존, 예약 dispatcher 경로 및 합성 요청 시각 조정 한계를 기록한다. 원본 QA재현과 삭제 증거로 보존한다.",
+    "evidence": [
+      "worker24 dispatcher25 local21; official purge waiting/completed; no cron actual wait claim; durable journals"
+    ],
+    "originalSha256": "0e76bbca096c2953d8f144114ed0f3d8e01ea71df04ee48568570d8d24aac401",
+    "currentSha256": "0e76bbca096c2953d8f144114ed0f3d8e01ea71df04ee48568570d8d24aac401",
+    "readRange": "1-47, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "로컬 기능·입력보호·JSONB 한도 시험을 보존하되 마지막 미완료 운영 범위와 고정 검수 모델을 당시 이력으로 한정하고 후속 운영 결과를 연결했다.",
+    "evidence": [
+      "187 tests, 35 browser, 9 races, 14 backend; 4MiB HTTP and 5MiB DB; ops-roundtrip-20261008/README.md"
+    ],
+    "originalSha256": "a9d4f5d834a312de457de51f750cf102de75280361a557a9234b6cb2f9d3fdeb",
+    "currentSha256": "da103334701f6ea7e9d1b3a4a683ec43b5d96b98c5f39feb25f9c0a1d6c562b6",
+    "readRange": "1-57, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/checkin-interval-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "사람별 주기 필드·구버전426 보호와 사용자별 검수 예외 및 실제 운영61왕복·48파일 공개 증거를 보존한다.",
+    "evidence": [
+      "checkinIntervalDays0-365; revision409 before426; separate explicit exception; real device/OS receipt deferred"
+    ],
+    "originalSha256": "a1c79fe88439cc47b067d862607ab4f9f851de5e3dd8be44fe5df480723dc029",
+    "currentSha256": "a1c79fe88439cc47b067d862607ab4f9f851de5e3dd8be44fe5df480723dc029",
+    "readRange": "1-50, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/release/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "맞춤학습19파일 공개, 실제계정 복원·PC재실행·후속runner저장 수정과 오디오 한계의 구체 근거를 보존한다.",
+    "evidence": [
+      "a36a46f public 19/1471; actual preference reset only; installed PC 0.4.2; 4dddedd runner save; Bluetooth cause unconfirmed"
+    ],
+    "originalSha256": "7e5f37dcffc9761cb13794211956a5225890ea3e4968e093fec04394d01da147",
+    "currentSha256": "7e5f37dcffc9761cb13794211956a5225890ea3e4968e093fec04394d01da147",
+    "readRange": "1-28, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/LIFE-C1.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "첫 자율생활 C1의 역할·관람ACK·원자저장·전경시간 합집합 계약과 미구현 범위를 보존한다. 로컬개발 시제품이며 실제참가0명을 명시한다.",
+    "evidence": [
+      "100 node, 23 UI; lifeSeatRevision; 1.2s view ACK; fence; RH20/H00/LS incomplete"
+    ],
+    "originalSha256": "18bd2f7db56a33223b04d8bb716ee28d8cbb5581292f4bebff5c9c002a207c88",
+    "currentSha256": "18bd2f7db56a33223b04d8bb716ee28d8cbb5581292f4bebff5c9c002a207c88",
+    "readRange": "1-46, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/redesign-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "실제 장소·OSM 길망·미확인 가격·제약·파일복원 원본 증거를 보존하고 공개 전 미등록 상태를 같은 날 후속 완료 기록과 연결했다.",
+    "evidence": [
+      "200 tests; 71-file local build; 20 real places, 18 day plan; OSM20428nodes; production-20261009/README.md"
+    ],
+    "originalSha256": "f73639169fcb0542b21acbf3bbf43e5cae7d2ab52a76ffbdc14d1f6ef199e056",
+    "currentSha256": "7143ee27c9431ca1ee20e546423f6100acda4a4bb91e72effebed1b16d078187",
+    "readRange": "1-43, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r13/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "기각된v8과 r13 측정몸통·털LOD·한계 및 미술미승인 이력을 보존한다. history-r13 경로와 기각/미승인 범위가 명확하다.",
+    "evidence": [
+      "244 geometry checks; 162000 vs53000 strands; 33.77MB vs11.35MB CPU only; profile/validation/source SHA; no public/art approval"
+    ],
+    "originalSha256": "736c6804a7fff774862a41fed3503b8c640e2e6925e8d65377ae0e929068c717",
+    "currentSha256": "736c6804a7fff774862a41fed3503b8c640e2e6925e8d65377ae0e929068c717",
+    "readRange": "1-35, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/EVENING-V8.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "이동선박·정지렌더 최적화·해안주택의141회귀와 4K직접캡처·v8 ZIP 동일성 증거를 보존한다.",
+    "evidence": [
+      "city+boats budget not full FPS; paused renderedFrames fixed18843; no live publication; package CRC/SHA"
+    ],
+    "originalSha256": "671ac76cded3b4b6a0819bca095cf63c1f17b7372e8d1f9ae943cd480af0f93a",
+    "currentSha256": "671ac76cded3b4b6a0819bca095cf63c1f17b7372e8d1f9ae943cd480af0f93a",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "동행별 필수조건·최소반영 우선 비교·JSON/TXT 개인정보 경계와 실제 참가미실시 기록은 보존한다. 당시 배포미완료·고정검수 문구를 후속 공개결과와 구분했다.",
+    "evidence": [
+      "322 travel,38 backend,7 site; max6; normalized preference counts; stable archive place check; production-20261009/README.md"
+    ],
+    "originalSha256": "8333d6bb3b84ca999e1cfb78ac3e0decb08dd9992fdf5a68749bd22762ed5283",
+    "currentSha256": "336f0fe66cbc01def78b0b9ae22198e77628bb4df678f1576fe2032588b6760e",
+    "readRange": "1-45, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/wardrobe-production-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "옷장 운영 활성화 실패·긴급닫기·전체29묶음 전후 대조·실제 계정 두탭 복원 및 사용자 검수유예의 고유 근거를 보존한다.",
+    "evidence": [
+      "11/11 runtime; 29ESZIP stable metadata secrets fingerprints no values; first flag failure retained; GET starter write not read-only"
+    ],
+    "originalSha256": "321b4a5a54f99d77873d1432a73ddf4bf15d5c73e226be106aa21a6094318429",
+    "currentSha256": "321b4a5a54f99d77873d1432a73ddf4bf15d5c73e226be106aa21a6094318429",
+    "readRange": "1-26, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v3/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v3 재질·후처리 개선 전후와 모바일 시간초과 원인 미확정 및 별도 재실행 증거를 보존한다.",
+    "evidence": [
+      "30 browser/18 residents/209 logic; 25 source hashes;2 resource cases; first-pass and mobile timeout retained; no approval/deploy"
+    ],
+    "originalSha256": "bdf8f679c78f3b976c16f1980caa9887ac50ffe8b1b59f08e439d9ab41b4dfed",
+    "currentSha256": "bdf8f679c78f3b976c16f1980caa9887ac50ffe8b1b59f08e439d9ab41b4dfed",
+    "readRange": "1-58, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/first-final-review/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v7 최초 최종검토의 v6기준·27소스·고정시점·프레임 표본·GPU해제 원본을 보존한다. 후속판과 비교기준으로 쓸 수 있다.",
+    "evidence": [
+      "53 final/42 baseline;14screens each; headless59fps not phone; 24 frozen unchanged; GPU buffer1 context released"
+    ],
+    "originalSha256": "f444f561e84179bbe85559e4a8f1129bbe303a1602464b2c57a71241b10bb8cc",
+    "currentSha256": "f444f561e84179bbe85559e4a8f1129bbe303a1602464b2c57a71241b10bb8cc",
+    "readRange": "1-51, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V6.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v6 근경·원경·접촉음영·로딩중 그래픽손실 회귀와 패스 비용 경계의 고유 증거를 보존한다.",
+    "evidence": [
+      "43/44 visual prefinal;27scene+20regression after fix; mobile balanced no extra buffer;39.6MiB AO; not full FPS or final art"
+    ],
+    "originalSha256": "d41b10fbb8d262268909da9a0c0c59d7f90bd09f60df2c2e51d2b6ce5df59120",
+    "currentSha256": "d41b10fbb8d262268909da9a0c0c59d7f90bd09f60df2c2e51d2b6ce5df59120",
+    "readRange": "1-44, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "세 게임 회전 중 입력·AudioContext·진도·보상 보존과862브라우저 검사 및 기존6시험 하네스 실패를 구분한 증거를 보존한다.",
+    "evidence": [
+      "runner221/rhythm255+76/hangul129+181; actual MP3 time; rotation not restart; physical phone/audio quality unverified"
+    ],
+    "originalSha256": "b19bce7566f8d7c4c54f4d5dea3311562e684c171d1878d7db2fb50fe4eb7b95",
+    "currentSha256": "b19bce7566f8d7c4c54f4d5dea3311562e684c171d1878d7db2fb50fe4eb7b95",
+    "readRange": "1-50, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V4.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "v4의 GPU복구·사진·자산내보내기·비용 측정은 보존한다. 현행 결과와 다음 우선순위를 당시 v4 결과로 한정하고 후속 제품상태를 연결했다.",
+    "evidence": [
+      "43visual19regression24scene20avatar6loading82export; 12mesh9image Blender; CPU not GPU; product README"
+    ],
+    "originalSha256": "abe11da4c58bca9939e56b0b7ccf1501d7e085071f0eaa08a0ffaac8fe547a33",
+    "currentSha256": "a975ef555f18576a8bcdd3ec466765685436c91fe99481e2e43208a6d2ceb21f",
+    "readRange": "1-45, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/GRAPHICS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "근접가림·생활창 양쪽 얼굴·소유권초점 복구63검사와 전후25화면·기존저장보존 근거를 보존한다.",
+    "evidence": [
+      "209runtime36walk; before/after sourceSHA; bench14percent vs fullyhidden close; synthetic memory server"
+    ],
+    "originalSha256": "137c37cc502d0a4954e093ce39347ca9c99556725024f6e728cdcba784355ed0",
+    "currentSha256": "137c37cc502d0a4954e093ce39347ca9c99556725024f6e728cdcba784355ed0",
+    "readRange": "1-45, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "첫하루141/28검사와 후속189의 시점을 분리하고 역할·관람·명시선택·예약충돌·원자저장 계약을 남긴다. 실제관찰0명 기록은 필요하다.",
+    "evidence": [
+      "3s lease;30s authorized prepare only; oneprocess virtual record; support-bazaar later; no actualphone/public"
+    ],
+    "originalSha256": "b22ca26006789d3f4720ec85736baf8b4b7ae83f04d73769a2255d02f000a199",
+    "currentSha256": "b22ca26006789d3f4720ec85736baf8b4b7ae83f04d73769a2255d02f000a199",
+    "readRange": "1-49, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "대안선택·출발점·25장소·합성계정 연결의273검증과 원래한도실패를 보존한다. 옛 공개전 순서를 당시 준비로 한정하고 실제후속 공개로 연결한다.",
+    "evidence": [
+      "273travel38backend76files94+66tooling;5traveler field tests notperformed; production-20261009/README.md"
+    ],
+    "originalSha256": "1e23dcdff94a736150df75efc6a18f01660ce8f64870cded17939e9db178c80a",
+    "currentSha256": "33154e93e322d589aef022d2f167f557bdb28b6a2f113db8881940d79b8c2036",
+    "readRange": "1-49, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "공통게임·옷장 운영과 실계정 새탭 복원, 공개협동96검사·검수유예·과거후보 반복금지 기록이 명확하여 보존한다.",
+    "evidence": [
+      "359/359 SHA MIME; synk-play13DB; 744e9f28; coop two contexts not twohumans; account a26 installer separate owner; no repeat commands"
+    ],
+    "originalSha256": "6e5b153b6ce81ee11480f9a235311d3555919b34d0f77db62826e6b735bd387f",
+    "currentSha256": "6e5b153b6ce81ee11480f9a235311d3555919b34d0f77db62826e6b735bd387f",
+    "readRange": "1-32, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V5.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "v5 환경·카메라·보상거절17검사 원본을 보존한다. 3문항 보상과4단계 후속안은 당시계약으로 한정하고 이후 공통게임 운영 결과를 연결했다.",
+    "evidence": [
+      "43/44/24/20/13 graphics; CPU notFPS; fixed tick proposal not implementation; account-sync/README.md; anchor retained"
+    ],
+    "originalSha256": "4ae8ec1383e96c28609bdbba8f0003b22bed62c124c92316b57cd803960212af",
+    "currentSha256": "90eabcb94230a33eaccbde40f3f4ff2bf52d3869c96105b621b998dd94d8b585",
+    "readRange": "1-49, entire body"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/STARBOOK-20261009.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "30코인 별지도와 실제수리18기록·보관키·WebLocks·다운로드 실패·합성잔액 경계를 보존한다.",
+    "evidence": [
+      "24node95UI18shop12starbook25favorites;15real+15fixture coins;12completed fixtures not humanplay;kept key independent"
+    ],
+    "originalSha256": "57a4d259e637c5068b63f8f72e68084bfbbf8fd29c506f9560d54e175a904050",
+    "currentSha256": "57a4d259e637c5068b63f8f72e68084bfbbf8fd29c506f9560d54e175a904050",
+    "readRange": "1-42, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/README.md",
+    "coverage": "full-diff",
+    "decision": "retain-evidence",
+    "reason": "전문 완료한 최초 최종검토와 전체diff2구간을 읽었다. 네 잎의 크기·색 수정 후 재측정60fps와 후속53검사·14화면·GPU해제 재실행 근거가 추가되어 양판을 보존한다.",
+    "evidence": [
+      "git diff --no-index entire output: frame table/interpretation and four-leaf correction paragraph; all remaining body identical"
+    ],
+    "originalSha256": "13aa0c1bfe7b7739adffec88920412239ba860181f091f534e9a9f3d25d12b94",
+    "currentSha256": "13aa0c1bfe7b7739adffec88920412239ba860181f091f534e9a9f3d25d12b94",
+    "readRange": "1-53, unchanged body from fully read base plus complete diff",
+    "basePath": "experiences/synk-town/qa/graphics-v7/first-final-review/README.md",
+    "baseSha256": "f444f561e84179bbe85559e4a8f1129bbe303a1602464b2c57a71241b10bb8cc",
+    "completeDiffReviewed": true
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V3.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v3 로컬계정·타운bridge·정적경로 우회차단·차림 비동기·Unity원자저장 및 미술미승인을 명시한 통합 증거를 보존한다.",
+    "evidence": [
+      "35browser29graphics20avatar21API12iframe27unit17static34C#5preflight; old105not new; no live/physicaldevice"
+    ],
+    "originalSha256": "14fb01f40934f210e6729a36a7ac3ce0ac99139135588ae041ad56038fc1e0e4",
+    "currentSha256": "14fb01f40934f210e6729a36a7ac3ce0ac99139135588ae041ad56038fc1e0e4",
+    "readRange": "1-50, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/account-desktop-20261012/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "실계정 생활저장·PC설치·로그인창 후속수정 근거는 보존한다. 같은날 뒤에 계정튜터동기화가 추가돼 이 문서의 기기전용 저장 범위를 최초검증 당시로 한정했다.",
+    "evidence": [
+      "tutor-selection-20261012/README.md full read; 3929ca8+5c79e12 sync live; 1ce4365d and24c360f prior installer/public evidence"
+    ],
+    "originalSha256": "7f5b69aa6a7fa48ef40a4695c055ff8890980324aaa4c96c0f9865ff71064b5a",
+    "currentSha256": "9b15111e88a1601f56fba57b1763608a57eff693568f1c1dc0b8473d0b981dda",
+    "readRange": "1-34, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/self-audit-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-resolved-followups",
+    "reason": "당시3개P2와 제품제안의 재현·한계를 보존하되 뒤에 구현·공개된 마감 항목이 현행 미해결로 재등록되지 않도록 후속원문을 연결했다.",
+    "evidence": [
+      "10fileSHA source checks; return-finish README+beginner README126/128; scene-keepsake-release; no broadPASS"
+    ],
+    "originalSha256": "70f7e1f6faa845f3f7632802f33d03f72600f69e9b2b1610354a0bd138f87b15",
+    "currentSha256": "66546a7b995c938a8034ef9d3d2085d53335fddf739ba5809eb08812141de93c",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-quality-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "문구9시나리오 전후·명시선호·조문/기일·사용자기억 경계와254시험·최종검수·48파일 공개 증거를 보존한다. 제품사용자 설정이며 폐지된 작업말투 규칙이 아니다.",
+    "evidence": [
+      "scenarios invokedOptions; surface rules not semantic/relationship inference; 0f0c9a7 public; user message copy not actualcare"
+    ],
+    "originalSha256": "08f6a983b9b5042c915b10929a57726ceb3a419791a87007260c563cb871c06a",
+    "currentSha256": "08f6a983b9b5042c915b10929a57726ceb3a419791a87007260c563cb871c06a",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/FIELD-TEST.md",
+    "coverage": "full",
+    "decision": "retain-test-protocol",
+    "reason": "미실시 S6~S8 예약제약·식사 시작창·최종도착점 관찰 입력과 빈기록지를 보존한다. 예약 생성·가격·현장정시 증거로 오인하지 않도록 충분히 명시한다.",
+    "evidence": [
+      "max3appointments; start window not finish; returnwalk included; voluntary cancel/apply; no recruitment/booking/payment"
+    ],
+    "originalSha256": "28459b80c13c3dd90c4ac87075939732ad1272996e3afae490984473b286fd27",
+    "currentSha256": "28459b80c13c3dd90c4ac87075939732ad1272996e3afae490984473b286fd27",
+    "readRange": "1-40, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/FIELD-TEST.md",
+    "coverage": "full",
+    "decision": "retain-test-protocol",
+    "reason": "미실시 S9~S11 동행선호·필수조건 충돌·삭제복원의 고유 관찰 시나리오와 개인정보 최소화 양식을 보존한다.",
+    "evidence": [
+      "virtual aliases; no sensitive need inference; unknown not satisfied; not learned satisfaction; file consent; max6 optional"
+    ],
+    "originalSha256": "ff2f537becaaf03b5fde765595f086c1c0746191b148bf4040c01d6d76956f9f",
+    "currentSha256": "ff2f537becaaf03b5fde765595f086c1c0746191b148bf4040c01d6d76956f9f",
+    "readRange": "1-40, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-release-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "튜터843파일 공개·852SHA·게스트입구와 독립게임214 검증 경계·픽셀실패복구·일회성publish재실행금지 증거를 보존한다.",
+    "evidence": [
+      "b21305b7;17opening141switch206home214components; no real login; PC installation separate; oldattempts not overwritten"
+    ],
+    "originalSha256": "12e2d526b9b0c880ce3b29b440900ac0eb538a2cdb41f70c4aed73600ea48ddf",
+    "currentSha256": "12e2d526b9b0c880ce3b29b440900ac0eb538a2cdb41f70c4aed73600ea48ddf",
+    "readRange": "1-66, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-20261007/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "하루1평가·90분창·중복방지·최소잠금화면·구독해제·실제운영 합성검증과 후속v5 경계를 보존한다.",
+    "evidence": [
+      "213frontend44backend;47publicfiles; gatewaynotOSreceipt;9b68b62 followup; dispatch key names only no secret values"
+    ],
+    "originalSha256": "cc9b08d37fb44e84ebf09ae45c1ea77a7c30c0e1df8184c4e913ffa7ec207871",
+    "currentSha256": "cc9b08d37fb44e84ebf09ae45c1ea77a7c30c0e1df8184c4e913ffa7ec207871",
+    "readRange": "1-41, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "예약·식사시작·최종도착 계산 및73변조거절·302검증을 보존하고 이후 동행구현과 공개완료가 당시 미완료 목록과 혼동되지 않도록 연결했다.",
+    "evidence": [
+      "302travel38backend76files;52+21 tamper reject; 39shared regressions; source+export evidence; companions/production followups"
+    ],
+    "originalSha256": "e7ada8ebae5c6de7c25354d95c60a05419acbfb802abcca59d08249070b5b192",
+    "currentSha256": "016060a05385faa2e2c6d7d7bb67ba8334fe18b031dbb1039b81ac9e3bb37c75",
+    "readRange": "1-52, entire body"
+  },
+  {
+    "path": "experiences/word-magic/qa/MOTIVATION-20261009.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "소풍소품·명시목표·실제음성3쌍 복습코인·하루한도·무료그림체험 제외 및 딥링크 원본재개 계약을 보존한다.",
+    "evidence": [
+      "17then18node;fixture15/100coins explicit; no restored audio proof; Atlas0 for lab; actual18events6MP3; manifest503 rollback"
+    ],
+    "originalSha256": "751b414d239ce1485883d54667a0cbe3d5ba1dd320db08cfeb30bce3da094869",
+    "currentSha256": "751b414d239ce1485883d54667a0cbe3d5ba1dd320db08cfeb30bce3da094869",
+    "readRange": "1-45, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/takehome-20261006/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "앨범ZIP·리허설HTML·손맛자료의 원본바이트/CRC와322검사·실제다운로드·인쇄수정전 증거 및 도구실패 한계를 보존한다.",
+    "evidence": [
+      "1023099byteZIP;873849then873945HTML;5/3page prefinalPDF; unsavedinput dialog limitation; synthetic family not real"
+    ],
+    "originalSha256": "9807b49279167f8e680c978cd9bc48cb7f09151ae52658931386989e575bb25f",
+    "currentSha256": "9807b49279167f8e680c978cd9bc48cb7f09151ae52658931386989e575bb25f",
+    "readRange": "1-53, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/SHOP-V5.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "바람상점13상품·독립별지갑·무료미리보기·자동시연 무보상과 원본/후속13부품 ZIP변경을 구분하는 증거를 보존한다.",
+    "evidence": [
+      "37tests44HTTP;fixture1000to605 restored60;90.0012s1392m demo nothuman;103ZIPentries unchanged"
+    ],
+    "originalSha256": "aebc4a880efa3b3e04311089faecf3ccfa9d0c7902683b4e85a9436754c2e9cc",
+    "currentSha256": "aebc4a880efa3b3e04311089faecf3ccfa9d0c7902683b4e85a9436754c2e9cc",
+    "readRange": "1-52, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "14의상60조합·원단지도와 실크/섬유/퀼트 수정단계별 검증·checksum경합 한행정리·기존계정보존 근거를 보존한다.",
+    "evidence": [
+      "180frames priorfinal;10focus8silk12UI20node18HTTP; whole avatar source unchanged; no remoteDB/public; TEXTILES full reviewed"
+    ],
+    "originalSha256": "07ceab83cc96f7b1080aebba2458bf9127eedfb90df1a96bb8ea13d78ae862c6",
+    "currentSha256": "07ceab83cc96f7b1080aebba2458bf9127eedfb90df1a96bb8ea13d78ae862c6",
+    "readRange": "1-48, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/focus-20261007/README.md",
+    "coverage": "full",
+    "decision": "clarify-completed-status",
+    "reason": "계정최초조회/충돌/미루기 회귀179와 공개완료 근거는 보존한다. 본문끝의 공개대기와 푸시미제공을 당시상태로 한정하고 문서상단 완료·같은날 후속알림을 연결했다.",
+    "evidence": [
+      "public41SHA,68b4cc3;15transition included179; BFCache unitonly; push-20261007 README full read"
+    ],
+    "originalSha256": "80d3b68a96503ee930735baf5bf75053c1ed9bc26e435222e60af2ccbc39e314",
+    "currentSha256": "bee97df45265277cd47168fb908b22efdabb306353bccbef19e76c1e513c5505",
+    "readRange": "1-40, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-selection-20261012/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "튜터선택의 서버우선·계정격리·선호외학습불변 계약과44합성/86회귀·실제웹PC자동복원의 고유근거를 보존한다.",
+    "evidence": [
+      "3929ca8e and5c79e12;8SHA; original1/22 retained; no navigation/timeOriginstable; device-only practice distinct"
+    ],
+    "originalSha256": "fe9ddee67568ff76765ee45e4149a127c300b93064455d3faa542f9b71f3e31b",
+    "currentSha256": "fe9ddee67568ff76765ee45e4149a127c300b93064455d3faa542f9b71f3e31b",
+    "readRange": "1-53, entire body"
+  },
+  {
+    "path": "experiences/story-classroom/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "이야기v1→v2의90합성음성·55/80검사·9부탁 읽기/듣기분리·synthetic transport와14회 timing수리 근거를 보존한다.",
+    "evidence": [
+      "542.86s maxpeak-2.86;90HTTP/hash/decode not listeningquality; carried vs500ms QA fix; no operational auth claims"
+    ],
+    "originalSha256": "4662b9932fd4c8ec75ba4500c275bb3cb6278f79afaffc90dfea99c99213fff8",
+    "currentSha256": "4662b9932fd4c8ec75ba4500c275bb3cb6278f79afaffc90dfea99c99213fff8",
+    "readRange": "1-53, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-switch-20261011/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "새튜터가 타튜터 경험을 자기경험으로 말하던 오류와141검사·기억귀속·카페선택보존·6복습버튼 검증을 보존한다.",
+    "evidence": [
+      "tutorId preserved; assisted unknown; 128before141after;210games separate;46node62staged; localfrozen1819 no live"
+    ],
+    "originalSha256": "968ff51fd246b47ac8a297b01faa51369fbec3c2d3ad129bf68768f2c38de5aa",
+    "currentSha256": "968ff51fd246b47ac8a297b01faa51369fbec3c2d3ad129bf68768f2c38de5aa",
+    "readRange": "1-58, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/login-polish-20261007/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "OAuth 지연초기화·이른이벤트·null콜백·제출잠금 회귀와 실제공개계정복원·SSO읽기확인·배포후3SHA근거를 보존한다.",
+    "evidence": [
+      "85root70public;7+3+2 added cases;12s no prematureconnect;8239752c; no real expiredOAuth/physicalphone"
+    ],
+    "originalSha256": "ad41969250861639d63943b2bc78f68b64a643ee35644dcbc9c3600cf798d7bf",
+    "currentSha256": "ad41969250861639d63943b2bc78f68b64a643ee35644dcbc9c3600cf798d7bf",
+    "readRange": "1-51, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "열차례 실제변경·외부소스변경/ENOSPC/닫기 실패·수리·최종167과 낮은FPS를 숨기지 않은 고유 감사근거로 보존한다.",
+    "evidence": [
+      "122roundledger;39source9assets; walk125232points;476522triangles;54.0/56.4fps not all60; profile deletion0"
+    ],
+    "originalSha256": "97fd9f8a379aa8135554c8c257ccf4b53c6d3b8ae0f8fbf6248c84e661a388ec",
+    "currentSha256": "97fd9f8a379aa8135554c8c257ccf4b53c6d3b8ae0f8fbf6248c84e661a388ec",
+    "readRange": "1-39, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/maru-integration-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "마루통합142·CAS409·늦은응답·방향회전·완료멱등·서버소유권과 r1~r6 소스경합 기록을 보존한다.",
+    "evidence": [
+      "111+5+10+16 unique;41unit46account; syntheticA/B; no sourcechangingfinal; runtime reward integration not physicaldevices"
+    ],
+    "originalSha256": "dfabc451cfe1358ad53f1205e907c90018ebfdae5c85b0b4cdb0b52456935d0d",
+    "currentSha256": "dfabc451cfe1358ad53f1205e907c90018ebfdae5c85b0b4cdb0b52456935d0d",
+    "readRange": "1-55, entire body"
+  },
+  {
+    "path": "experiences/teacher-world/qa/content-review-20261003.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "83문항검토와 영역오분류·보기모호성의 후속정정, 베기동작오답과 언어약점 단정금지 계약의 고유근거를 보존한다.",
+    "evidence": [
+      "16runner18town36slice13teacher;50initial271later;32UI; second versions samefamily not independentnew; no teacherfield/student outcomes"
+    ],
+    "originalSha256": "32116b5f8605a92cf3f4cf8197c4cda1705f088d27077608abf26f270c889f5d",
+    "currentSha256": "32116b5f8605a92cf3f4cf8197c4cda1705f088d27077608abf26f270c889f5d",
+    "readRange": "1-54, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/scene-keepsake-release-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "장면보관함·재방문31파일 공개와 읽기가 CAS기준을 전진시키던 오류·공유저장보존·공간부족 실패·승인검토거절 기록을 보존한다.",
+    "evidence": [
+      "10493b5;173tests11modules268links;6free scenes; no newDB/prices; diskfailure no delete;31SHA CI"
+    ],
+    "originalSha256": "bc14b684cd711d9e91f66a075495e2a440ab9069b2f1f146d5682e2e6b9c75ae",
+    "currentSha256": "bc14b684cd711d9e91f66a075495e2a440ab9069b2f1f146d5682e2e6b9c75ae",
+    "readRange": "1-42, entire body"
+  },
+  {
+    "path": "experiences/path-vr/qa/signal-redesign-20261012/README.md",
+    "coverage": "full",
+    "decision": "clarify-completed-status",
+    "reason": "시그널재설계267/45검증·실제4K지연 실패와 재시도는 보존한다. 상단 로컬미공개를 문서후반23:10공개완료와 맞추고 옛후보경로를 출처기록으로 한정했다.",
+    "evidence": [
+      "071f40f8files SHA+Pages CI;4Kstall preserved;18c0363 later optimization; Quest untested"
+    ],
+    "originalSha256": "73f30307b907dffeff1e3e47be993c399e0a99f610d9aee3c2aa2f41d9bebe2c",
+    "currentSha256": "e4f3b3a2fd35c26eeca6b542d331f46b2289f6104db12f3c7baf2da31f3f539e",
+    "readRange": "1-49, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "카페15실제음성·310자사용승인·57시험·원본표기·처음인식실패를 보존한다. 당시커밋종료와 미공개범위를 후속공개로 연결했다.",
+    "evidence": [
+      "15MP3 650100bytes; no humanlisteningclaim;57SQL32source32standalone64prior26account; tutor-release later full read"
+    ],
+    "originalSha256": "6f5575412fc121755582ce78b80ce5ec269786098fbc13be4baa5e5e98c61d5a",
+    "currentSha256": "73eef67e4dfd556d8d17bd372ba72e3635cd425cc4b1962ce0f3accea2b4db27",
+    "readRange": "1-54, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-studio-20261009/README.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "8종24조합·룩북12·사진·소유권·79분리실행 실패기록을 보존한다. 옛 C17적용필요와 로컬후보를 당시범위로 한정하고 실제공개완료를 연결했다.",
+    "evidence": [
+      "25DB17client13town;79notonegreenrun;10lifecycle;11HTTP; costume-release README previously fullread"
+    ],
+    "originalSha256": "b165e52d9d6f1c466239a302b7edf9c107a68da450bc0cbe075fae25d44e3c42",
+    "currentSha256": "4a9af4566923dc6efff1c9c90aebead5eaeaf740901a0d6681c878c73362dcd5",
+    "readRange": "1-65, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v4/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v4 카메라지연제거·주민머리가림0.45px·서로다른프레임계측실패와93최종·10compact·209회귀 및 자원반환 증거를 보존한다.",
+    "evidence": [
+      "25sourceSHA; camera18.33/18.47; no humanmotionsicknessclaim; before original retained;165instances context return notallbufferdelete"
+    ],
+    "originalSha256": "04b200197d2f1d4dd3ac584318c842a6b2579191f608fc3701f1117317876095",
+    "currentSha256": "04b200197d2f1d4dd3ac584318c842a6b2579191f608fc3701f1117317876095",
+    "readRange": "1-64, entire body"
+  },
+  {
+    "path": "experiences/order-rush/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "주문폭주10-01초기와10-06펠트판의 실제주문·첫응답·글도움·음성경합/멈춤·Atlas변화 및 가상조작 경계를 보존한다.",
+    "evidence": [
+      "30tests;8orders7first/8;6independent;9.5s watchdog; pause race2of6to0; no humanhearing/physicaldevice"
+    ],
+    "originalSha256": "5971eb6348c952bbd3c9e975240cb2f72ee3f78c555d5c0f38c6980fb7a0c297",
+    "currentSha256": "5971eb6348c952bbd3c9e975240cb2f72ee3f78c555d5c0f38c6980fb7a0c297",
+    "readRange": "1-52, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-20261009-0530.md",
+    "coverage": "full",
+    "decision": "retain-frozen-review",
+    "reason": "레이싱복습400으로 outbox 영구막힘·진도먼저저장 보상누락 P1두건과5xx계정종료 오분류의 실제 검수 원문이다. 판정·미검토범위를 보존해야 하므로 후속수정과 별도 유지한다.",
+    "evidence": [
+      "7ca49f5 frozen candidate;2P1/P2/P3; read-only reviewer no tests executed; corrections sibling and final account README authoritative"
+    ],
+    "originalSha256": "838b1cd1eb9ef47c36a7f73faaf8e4d2417be5be5bd8ca9b3de1cbe38d476cf0",
+    "currentSha256": "838b1cd1eb9ef47c36a7f73faaf8e4d2417be5be5bd8ca9b3de1cbe38d476cf0",
+    "readRange": "1-99, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-endpoint-20261008/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "공식Google푸시주소 누락·37회귀·별도사용자예외·v12반영·gateway수락과 실제미수신 보류·09시복원 고유근거를 보존한다.",
+    "evidence": [
+      "d4acb2933files;24maliciousURL;08:18:53sent1notOSreceipt;09:14cleanup; endpointfull/keyvalues notlogged; no broader exception"
+    ],
+    "originalSha256": "2849e08ba5f1853b79c9f1bb59be632c77bdbd11086bd2cdff0b47cfc6d7160f",
+    "currentSha256": "2849e08ba5f1853b79c9f1bb59be632c77bdbd11086bd2cdff0b47cfc6d7160f",
+    "readRange": "1-53, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "FT10/FT51 최초생활실행·관람ACK·영수증·JSON자세직렬화 실패와88→103검증·320미완료후복구를 보존한다.",
+    "evidence": [
+      "1.2sarrival2.4sstatic; explicitloopback gate; life notpractice/TOPIK; actualpermission notconnected; synthetic receipts only"
+    ],
+    "originalSha256": "6240fdca569f959376c99937a7a31724ddd7741980028d054590288d5d20f7e9",
+    "currentSha256": "6240fdca569f959376c99937a7a31724ddd7741980028d054590288d5d20f7e9",
+    "readRange": "1-73, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-performance-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "합성200행과 실제8옷 성능·캐시·heap지표 범위 및 즉시뒤사진 각도불일치의 한줄수정·PNG완전동일 근거를 보존한다.",
+    "evidence": [
+      "96items16MiBUTF16notheap; firstobservedframe notvisibility; warmtabdifferent no speedratio;4sourceSHA;18WebGLclosefailure vs angleexit0"
+    ],
+    "originalSha256": "3cc09fbd37fe89bb5f584b264c2035f2859038e6382b04f2eee90ce00647edf2",
+    "currentSha256": "3cc09fbd37fe89bb5f584b264c2035f2859038e6382b04f2eee90ce00647edf2",
+    "readRange": "1-60, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "생활18학습54본문항·54변형복습의 최초답/도움 보존·189기능후자산실패67재검수·세대guard와종료도구실패 원본을 보존한다.",
+    "evidence": [
+      "189+67 notunique sum;23static categories; guestgeneration guard; launchServer/connect exit1 notproduct failure;0orphan ownworkers"
+    ],
+    "originalSha256": "7fb7e5a347490cbfda0622d9bb5a55fb961823d1bb90b30eb018752c6aa52698",
+    "currentSha256": "7fb7e5a347490cbfda0622d9bb5a55fb961823d1bb90b30eb018752c6aa52698",
+    "readRange": "1-77, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v8/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v8 브랜드재료·실제완료표식·범위AST대조·520.5ms지연 원시값·초상원본/새판 및 GPU해제 증거를 보존한다.",
+    "evidence": [
+      "truncated last paragraph recovered tail22;67UI47layout64memory62guard148logic;122collector;35HTTP; fixturemark notrealcompletion"
+    ],
+    "originalSha256": "1a27490d486bb2bc5689b0cceb304225e767d39768a3c60b80be5718d9b43e7c",
+    "currentSha256": "1a27490d486bb2bc5689b0cceb304225e767d39768a3c60b80be5718d9b43e7c",
+    "readRange": "1-90, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-3D-ASSETS.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "첫하루3D 출처·라이브러리·프레임serial과관람ACK 분리·NPC수정·자산ready/실패 구분을 담은 기술계약을 보존한다.",
+    "evidence": [
+      "initialroles superseded explicitly; sharedMongle factory;260ms interpolation notstoredfact; player/npc ownership; no newmedia"
+    ],
+    "originalSha256": "3ff47f270e43b0a96f48536491a4085eb971cb9b8ab8b1bcfe6a2e5532e277bf",
+    "currentSha256": "3ff47f270e43b0a96f48536491a4085eb971cb9b8ab8b1bcfe6a2e5532e277bf",
+    "readRange": "1-57, entire body"
+  },
+  {
+    "path": "experiences/korean-runner/qa/SCENERY-GOALS-V6.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "풍경·찜·누적목표의48회귀·90합성전략·인공Pointer오류와별도실플레이/시연·ZIP원본보존을 구분한 근거를 보존한다.",
+    "evidence": [
+      "1200themechanges stablebuffers;96HTTP;fixture1490m/29stars;90simulations notpeople;13UIasset whiteborder correction"
+    ],
+    "originalSha256": "30a13ee0e54083017f6b3684bd752b4fb40a1db75d8bef9552be67eaf9e1e1c6",
+    "currentSha256": "30a13ee0e54083017f6b3684bd752b4fb40a1db75d8bef9552be67eaf9e1e1c6",
+    "readRange": "1-54, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "clarify-historical-status",
+    "reason": "초기개발·음력55122일왕복·받아쓰기·원문보존전환·201계정회귀 등 고유이력은 보존하고 당시운영미완료·검수한도를 후속완료와 분리했다.",
+    "evidence": [
+      "10-05 to10-06;6.408s syntheticSTT;201regression23cache24tabs; PRIVATE original preserve; PUBLIC-WEB and ops-roundtrip fullread"
+    ],
+    "originalSha256": "46481a771a0725c83c6a5f11b2722174e83d45a5eb049d44288e12b207bd7963",
+    "currentSha256": "c94e68442abccf04cc7c4de5345189d871d4a611da981f0d96c38cd0785481d1",
+    "readRange": "1-71, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/PUBLIC-WEB.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "초기공개39·후속추천41파일과 실제메일/계정복원·합성PKCE13·미실시 물리왕복절차·후속푸시를 명확히 구분한 근거를 보존한다.",
+    "evidence": [
+      "7bd9b70 and68b4cc3;179tests15transition;28public76personal; buildnoPublish; physicaldevice deferred no secrets"
+    ],
+    "originalSha256": "b2debc2620e10a038cf16ce3c62c1d757b001bf71aefc81df3105a1eaa9839f2",
+    "currentSha256": "b2debc2620e10a038cf16ce3c62c1d757b001bf71aefc81df3105a1eaa9839f2",
+    "readRange": "1-59, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-corrections-20261009.md",
+    "coverage": "full",
+    "decision": "retain-frozen-review",
+    "reason": "앞선4지적 해소와 새맞춤문항목록 불일치·회사후보 CURRENT_DRIFT를 구분한 읽기전용 검수 원문을 보존한다.",
+    "evidence": [
+      "r7/f54cdb/v4 frozen; dynamic questionBank vsselectedStage; company e696to1fa drift; no rerunSHA/test claim; final accountREADME later"
+    ],
+    "originalSha256": "0b2a89ea421c03eb78537a14f756a90d92215eb5219f2e25a0a1f56a14a45036",
+    "currentSha256": "0b2a89ea421c03eb78537a14f756a90d92215eb5219f2e25a0a1f56a14a45036",
+    "readRange": "1-113, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v6/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v6 표현60Hz·거리보행·자동ACK 키손실·원인미확정충돌·최종116와pre-fix26동영상 해시 경계를 보존한다.",
+    "evidence": [
+      "44CPU+26passiveACK;150msdelay166.7budget;38iframe;170instances;209rawlog absent explicitly;25sourceSHA"
+    ],
+    "originalSha256": "0958032b640ee4aa85a9e693b4d1aa39fc28404583fc8d99760dc1821b83940b",
+    "currentSha256": "0958032b640ee4aa85a9e693b4d1aa39fc28404583fc8d99760dc1821b83940b",
+    "readRange": "1-67, entire body"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-convenience-20261009/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "22기능91/101/71/29검사의 실제범위·염색준비guard·사진한도·동일계정 보존을 설명하고 후속10-10판을 상단에서 구분하여 원본보존한다.",
+    "evidence": [
+      "22matrix; actual21/23 sourcebytebridge;40photos40MB;96cache16MBstrings; no allscenariosum; usability followup alreadylinked"
+    ],
+    "originalSha256": "1482809ee69c3b8cd14ea117fff32730b0b768f3dd65455d89973da718af6ff7",
+    "currentSha256": "1482809ee69c3b8cd14ea117fff32730b0b768f3dd65455d89973da718af6ff7",
+    "readRange": "1-92, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v5 동일시점111·AO26·연결지연13·iframe38과409원인미확정/별도stale-surface 재현·24공개파일/서버404 정정을 보존한다.",
+    "evidence": [
+      "25sourcebaseline;49.44MiB AO only;160instances contextrelease;3.5s latency; fullfinal same source not partialsuccesssum"
+    ],
+    "originalSha256": "60ce7675dff31bf1849304ce2d9b72b17559dea6d13b33816d010b152b033625",
+    "currentSha256": "60ce7675dff31bf1849304ce2d9b72b17559dea6d13b33816d010b152b033625",
+    "readRange": "1-74, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V9.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "완주후드라이브/시티팝수명·차량GLB/지형동일SHA·해안표본과176검증·전달ZIP 근거를 보존한다.",
+    "evidence": [
+      "42m/s no extra rewards;44crowd13react;327929GTtri;terrain identical209472tri;media clock not humanhearing;63821017byteZIP"
+    ],
+    "originalSha256": "291e9be69f0090d9b0d0a2e031a2b869d7c33e036ee1680d4be8841499c938e2",
+    "currentSha256": "291e9be69f0090d9b0d0a2e031a2b869d7c33e036ee1680d4be8841499c938e2",
+    "readRange": "1-65, entire body"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/README.md",
+    "coverage": "full",
+    "decision": "retain-rejected-art-evidence",
+    "reason": "5차와v8 까몽 기각·측정경계오류·4실땀·2D후보미교체·3D미승인 기록이 명시돼 반복실험을 승인자산으로 오인하지 않도록 원본보존한다.",
+    "evidence": [
+      "v8 rejected header;rebuild canonical link;1254PNG not4Kreplacement;53tests notartscore;1936local package;no public"
+    ],
+    "originalSha256": "2abaa16cbeb95dacfa29253073d646378f6dfe69734cd523d1f9f4069c06f89c",
+    "currentSha256": "2abaa16cbeb95dacfa29253073d646378f6dfe69734cd523d1f9f4069c06f89c",
+    "readRange": "1-66, entire body"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v9/README.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "v9큰형태·차양반려·65GPU69guard123material·원인미분리40.69fps 실패와기준선재사용 경계를 보존한다.",
+    "evidence": [
+      "773002tri;24unchangedsource;35collector notscenario;57.66fps390; firstartreject; originalx-3.34; tabdisplayunconfirmed"
+    ],
+    "originalSha256": "ceab36680c5a7a553c54fe2946f6c9ab7135d9939ee0a426b44f1b6a0bb8fd1e",
+    "currentSha256": "ceab36680c5a7a553c54fe2946f6c9ab7135d9939ee0a426b44f1b6a0bb8fd1e",
+    "readRange": "1-111, entire body"
+  },
+  {
+    "path": "experiences/path-vr/qa/media-hosting-20261013/README.md",
+    "coverage": "full",
+    "decision": "clarify-cost-and-action-boundaries",
+    "reason": "GCS전용프로젝트·v2 private캐시·가짜예산차단 시험·실제알림미확인 증거는 보존한다. 당시비용추산과 초과액/재생 보장의 오해를 바로잡고 옛객체삭제를 실행지시에서 분리했다.",
+    "evidence": [
+      "2484a0a7files;26assets147260779bytes;281PATH8cap;realbudgetevent unobserved; delayedbilling no strictcap; no remote actions thisaudit"
+    ],
+    "originalSha256": "98419e0294ceb2e490ac9b888c8b3853046187a75c485b2971cffb243c6615f6",
+    "currentSha256": "00487487e777dae380ccfedce10a03128b99d96bda6b22faee115aad3b48a64d",
+    "readRange": "1-58, entire body"
+  },
+  {
+    "path": "experiences/path-vr/qa/optimize-20261013/README.md",
+    "coverage": "full",
+    "decision": "clarify-resolved-followup",
+    "reason": "글꼴분할·지연3D·같은조건LCP·270시험·음성중방열기P2와5공개 이력을 보존한다. 영상호스팅 미결정 항목을 같은날 승인된GCS후속으로 연결했다.",
+    "evidence": [
+      "071f40f to457bf90;7mobile5PC trials;badperfcomparison excluded; realQuestnotchecked; media-hosting fullread"
+    ],
+    "originalSha256": "96771db302099431f93075af474db08a7678201468ba5ab40ce5c9f89c38be84",
+    "currentSha256": "0a872d0d5b4e3533e727c739c65184627f6e094d232fc55f6181c7ce82135ef0",
+    "readRange": "1-79, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+    "coverage": "full",
+    "decision": "clarify-historical-instructions",
+    "reason": "공통계정 캐시손실·CAS/원본수명·JSONB상한·고정검수 실제모델오표기 방지 근거는 보존한다. 기존세션재개와 고정모델/등록배포순서를 당시인계로 한정해 후속운영정리와 연결했다.",
+    "evidence": [
+      "201regression24cacheChrome;syntheticmodel noexec quota;20MiB quota;4702190JSONB; PUBLIC-WEB ops-roundtrip cleanup fullread"
+    ],
+    "originalSha256": "5d3d8d8d98a0daef20de47cf301377e2195595e2ecb599185f99d32bad868472",
+    "currentSha256": "10e5aa821a30152dea0ebd0a4f16aa6f143075058b7fc099210c4c9288df4344",
+    "readRange": "1-72, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/FIELD-TEST.md",
+    "coverage": "full",
+    "decision": "retain-test-protocol",
+    "reason": "미실시 실제이용자5상황·동의·개인정보 최소화·조건이해/오해/도움 관찰·화면의향과실여행만족 분리의 고유 프로토콜로 보존한다.",
+    "evidence": [
+      "S1-5;adult5target notactual;20-25min; no recruitment/logins; exactdenominator; Temper insufficient evidence"
+    ],
+    "originalSha256": "834fe93dd93f868cedc07aa54e872290b3cc240f9b41997443b86f31432dac63",
+    "currentSha256": "834fe93dd93f868cedc07aa54e872290b3cc240f9b41997443b86f31432dac63",
+    "readRange": "1-92, entire body"
+  },
+  {
+    "path": "experiences/relationship-care/qa/PERSONALIZATION.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "명시선택기억·500건준비·원문철회·JSONB문자/한도·리허설실패/복구/PKCE와운영후속을 구분한 근거를 보존한다.",
+    "evidence": [
+      "215beforelastUI33+43last;5002314maxJSONB;32failedthen32isolated;9PKCE;10-08cleanup header resolves earlier; no relationshipeffect"
+    ],
+    "originalSha256": "c78332b8eeacf3e9abc0d4a863eab7ff6e719ae8c7821191d169adfb3c65075c",
+    "currentSha256": "c78332b8eeacf3e9abc0d4a863eab7ff6e719ae8c7821191d169adfb3c65075c",
+    "readRange": "1-75, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_공개판_재측정_20261003.md",
+    "coverage": "full",
+    "decision": "retain-evidence",
+    "reason": "공개최초측정→로컬워커3회→공개각1회의 조건·66지형396버퍼 동일성·복구5시나리오와7파일실제배포를 분리한 성능근거를 보존한다.",
+    "evidence": [
+      "10-03 vs10-04 vs10-05 not mixed;199tests;8c363c69 Pages CI; longest1855msnotfixed; no phoneguarantee"
+    ],
+    "originalSha256": "1f6c0e457b3da4f9c7e9572c4fa2afaeb5195f8bc1179b94490eace9098a404f",
+    "currentSha256": "1f6c0e457b3da4f9c7e9572c4fa2afaeb5195f8bc1179b94490eace9098a404f",
+    "readRange": "1-107, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/SERVICE-APPLY-PLAN.md",
+    "coverage": "full",
+    "decision": "retain-frozen-review-input",
+    "reason": "181줄 전체 설치·잠금·SHA·헬스·복구 계약을 확인했다. 최초 적용 후보에 고정된 QA 입력으로 현재 실행 지침이 아니며 명령 변경은 검수 입력을 훼손하므로 보존한다.",
+    "evidence": [
+      "r4/review-input.json·release-review-coop-r4-prompt.txt가 이 원문을 검수 입력으로 참조. r4/README 및 최종 account-sync README의 완료 이력과 구분."
+    ],
+    "originalSha256": "1b5f1955715291180d22b558cdb4f13dc691b9a163caa9f994cc8db65188582f",
+    "currentSha256": "1b5f1955715291180d22b558cdb4f13dc691b9a163caa9f994cc8db65188582f",
+    "readRange": "1-181, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/SERVICE-APPLY-PLAN.md",
+    "coverage": "full-diff",
+    "decision": "retain-frozen-review-input",
+    "reason": "r4 계획 전문과 전체 diff를 대조했다. e696/440파일 기준·payload 목록·릴리스 경로·컨테이너 지문이 다른 최초 후보라 대체 가능한 사본이 아니다.",
+    "evidence": [
+      "git diff --no-index 출력의 모든 hunk를 잘림 없이 확인. release-review-corrections-prompt.txt가 e696 계획을 직접 참조."
+    ],
+    "originalSha256": "6061c31c21771957b467d9b88c7d8913586335bb2d1c3ebc0b11a4151570afaa",
+    "currentSha256": "6061c31c21771957b467d9b88c7d8913586335bb2d1c3ebc0b11a4151570afaa",
+    "readRange": "1-179, unchanged body from fully read base plus complete diff",
+    "basePath": "experiences/beginner-games/qa/account-sync/coop-release/r4/SERVICE-APPLY-PLAN.md",
+    "baseSha256": "1b5f1955715291180d22b558cdb4f13dc691b9a163caa9f994cc8db65188582f",
+    "completeDiffReviewed": true
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/review-context.md",
+    "coverage": "full",
+    "decision": "retain-review-scope-evidence",
+    "reason": "66줄 전체 기능·보안·계정·옷 조합·실패 복구·동결 소스·시험 범위를 읽었다. 최종 검수 전 입력 범위와 미검증 경계를 기록한 독립 근거라 보존한다.",
+    "evidence": [
+      "costume-release-20261010/README.md의 실제 완료와 구분. 이 문서의 고정 검수 모델/순서는 10-10 당시 진행 기록이며 현행 공통 역할 지침으로 사용하지 않는다."
+    ],
+    "originalSha256": "a03b6a6fb5f651a31e2d1494bf79c55071f3b317a501968d4fb7fa6392de20da",
+    "currentSha256": "a03b6a6fb5f651a31e2d1494bf79c55071f3b317a501968d4fb7fa6392de20da",
+    "readRange": "1-66, entire body"
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-20261006.md",
+    "coverage": "full",
+    "decision": "clarify-historical-procedure",
+    "reason": "93줄 전체 가입·보존·정리·리허설·운영·실사용자 경계를 확인했다. 폐지된 고정 검수 절차를 현재 운영 원칙으로 인용한 한 문장을 당시 이력으로 정정했다.",
+    "evidence": [
+      "본문의 10-07·08 후속 완료, 실패 원본과 계정 정리 증거를 유지. AI_운영원칙 현행 역할·확인 절과 대조."
+    ],
+    "originalSha256": "09456201f8f71acf050568134ae78bf3df22ef63763813246fec34c9b0f3faea",
+    "currentSha256": "ee4982f3631ac02359a778bfa8bf7af0ff4df0d624110fc956375254e39002a2",
+    "readRange": "1-93, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md",
+    "coverage": "full",
+    "decision": "clarify-historical-state",
+    "reason": "76줄 전체 운영 경계·등록·C16·개인자료·회귀·제한 응답을 확인. 당시 현재형 결론과 폐지된 검수 의무를 과거 계획으로 한정하고 실제 배포 완료를 연결했다.",
+    "evidence": [
+      "production-20261009/README.md 전체 대조: 사용자 지시에 따라 후행 검수와 배포를 구분, 78파일·v23·PKCE13 검증 근거."
+    ],
+    "originalSha256": "12a5f37ef1ff791355bc2708cddff1283d460d6c6b386cc982ba2dfafbcab0e9",
+    "currentSha256": "74e9af75e0ecd9140ce8557cb89887e629173cdc8e553328d0ef8abdc4c980d1",
+    "readRange": "1-76, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/preparation-history-before-publication-20261009.md",
+    "coverage": "full",
+    "decision": "clarify-historical-state",
+    "reason": "93줄 전체 r1~r8·서버·협동·PC·공개 후보 이력을 확인. 단계별 미완료 수치를 최신 상태로 읽지 않도록 역사 범위와 최종 README를 명시했다.",
+    "evidence": [
+      "원래 후보 SHA·운영 재기준화·합성/실물 경계·실패/복구 입력은 보존. account-sync/README.md 후속 완료와 연결."
+    ],
+    "originalSha256": "fa8ce2bd5a3068796fabcbf75f980bcaff650d9fcd2b82987014752c74365384",
+    "currentSha256": "f30d814d287cda57008d0e2664951ca80ce103e43b9ea974e3753e5adb0870cd",
+    "readRange": "1-93, entire body"
+  },
+  {
+    "path": "experiences/entry-check/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-distinct-qa-evidence",
+    "reason": "182줄 전체 1·2·3차 입력·연수·음성·영상·펠트·학습 증거를 확인했다. 같은 수치 반복에도 실패·재촬영·추천 변화·과금 방지·접근성 원인이 서로 달라 필요한 역사 기록이다.",
+    "evidence": [
+      "초기·후속 시험과 실제 학생/실기기/교원/공개 검증 경계를 명시. 147음성의 ASR 한계·미청취, 영상 반복 결함과 재굽기 미승인 등 미완료 증거 보존."
+    ],
+    "originalSha256": "64bd878badb6adeffb8ae3286ff9e52b6a341bdf4e1d19ee770f3475f31bbdf9",
+    "currentSha256": "64bd878badb6adeffb8ae3286ff9e52b6a341bdf4e1d19ee770f3475f31bbdf9",
+    "readRange": "1-182, entire body"
+  },
+  {
+    "path": "experiences/blank-slice/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "clarify-historical-state",
+    "reason": "163줄 전체 음량·프레임·터치·원고·학습·공개 역사를 확인. 후속 공개 및 사용자 손맛·소리 확정과 충돌하는 첫 머리말·마지막 미완료 목록을 최초 MVP 시점으로 한정했다.",
+    "evidence": [
+      "본문 2차 사용자 A 확정과 3차 선택/공개, synk-policy 5410299·f04c76a·d2b14eb·5c316da의 개별 범위 보존. 고유 실패·복구·합성 측정 한계 유지."
+    ],
+    "originalSha256": "5e468cd38fe6fd6fb1421264e11fdcbb8e176be56b3d9fea0647d807964dde94",
+    "currentSha256": "2854b94d2cce6abe4de40a1005d5894c5aaf0333568ea86085b6e6b7ec00dc82",
+    "readRange": "1-163, entire body"
+  },
+  {
+    "path": "experiences/path-vr/qa/public-release-20261012/README.md",
+    "coverage": "full",
+    "decision": "clarify-release-chronology",
+    "reason": "130줄 전체 프레임 복구·Escape·음성 스트림·Vosk/Whisper·소음·부정 의미·공개 증거를 확인했다. 단계별 최종/CI 대기 표현을 날짜별 역사로 한정하고 마지막 공개 및 현행 제품 안내를 연결했다.",
+    "evidence": [
+      "각 실패 원본·캐시 오판 정정·255/255 최종검사·합성32음성/실마이크/Quest 미검증 경계를 보존. 실제 디코더 측정과 강제 confidence 시험을 구분하는 고유 근거라 통합 삭제하지 않음."
+    ],
+    "originalSha256": "00ce72c68e66ce9d31bdc56a71850b37f0c7ed30304a84321b59b28dbe922993",
+    "currentSha256": "35703cc6663c15a0f69d1cc701bcd9507eed93654e8d4576f774440abb2d3a6d",
+    "readRange": "1-130, entire body"
+  },
+  {
+    "path": "experiences/path-travel/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "clarify-version-boundaries",
+    "reason": "250줄 전체 가상 v1~3·실제 장소8/11곳·조건·반나절·실제 v4·계정 공개의 근거를 확인. 구판을 현재 계약으로 가리키던 부분을 당시 기준으로 한정했다.",
+    "evidence": [
+      "초기 자기보고·Core 해석·원문 계보·동의·철회·필수 미확인·시간/가격 추정 경계와 실패 CI 원본은 각 판의 고유 재현 증거. 최신 v4 공개와 현행 README를 입구에 연결."
+    ],
+    "originalSha256": "61bcba711b9ff152b5c2927e11310129f82bd4e5329c03b966c3147046d47829",
+    "currentSha256": "7d71fc5ce6bc4189140bc5cbc82273b7fc19e060079164e341f7670523b701e6",
+    "readRange": "1-250, entire body"
+  },
+  {
+    "path": "experiences/talk-rally/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "clarify-qa-scope",
+    "reason": "235줄을 1~120/121~끝 두 조각으로 전독. 사용자 난도 피드백·기다리는 공 채택·문항 공급 부족·코인·음성 장치 실패·키트/음량 측정과 공개를 확인했다. 모두 로컬이라는 첫 문장만 날짜별 공개와 맞췄다.",
+    "evidence": [
+      "기계가 0.3~0.6초에 선택하여 인간의 난도 문제를 놓친 원인, 40→46문항 근거, 음성 장치 fallback의 학습 평가 제외, 동시 배포 CI 취소와 실제 공개 바이트 등 고유 증거 유지."
+    ],
+    "originalSha256": "4e0c874a6fbbdd2829598bb15277f0c2f0f139dc8e0a23eeba654955f200644d",
+    "currentSha256": "14f4a3a4fe0151684f2495972ba2d18c1b6ae5041e46a70cb6268f65f059aead",
+    "readRange": "1-235, entire body"
+  },
+  {
+    "path": "experiences/korean-racing/qa/RESULTS.md",
+    "coverage": "full",
+    "decision": "retain-distinct-version-evidence",
+    "reason": "324줄을 1~90/91~170/171~250/251~끝 네 조각으로 전독했다. 10-01~04 그래픽·음성·조작·튜토리얼·보상·전달 v1~10의 각 실패 원인과 고유 수치·SHA가 있어 통합 삭제하지 않는다.",
+    "evidence": [
+      "공개/로컬/정적ZIP·합성시연/직접조작/실물·GPU제출량/FPS·미완주/완주·재생/청취·QA화면/실게임을 구분한 기록. 후속 v7~10은 별도 상세 원문 링크로 이미 축약돼 있음."
+    ],
+    "originalSha256": "bb23f9f447f419415424c634bb3f03b64449fffd824f56a74f3e6f4a790fbb4b",
+    "currentSha256": "bb23f9f447f419415424c634bb3f03b64449fffd824f56a74f3e6f4a790fbb4b",
+    "readRange": "1-324, entire body"
+  },
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/track.staged.md",
+    "coverage": "full",
+    "decision": "retain-frozen-staging-input",
+    "reason": "60,626자 전체를 0~10000/10000~20000/20000~30000/30000~40000/40000~50000/50000~끝의 잘림 없는 조각으로 읽었다. 종료 커밋의 트랙 대체 입력으로 SHA가 봉인되어 있으므로 낡은 절차·사업상태를 현재 지침으로 고치지 않고 원형 보존한다.",
+    "evidence": [
+      "selected-files.json overrides의 docs/_ops/트랙.md → track.staged.md 및 work/stagedSHA 812ec23f77d8e33cc897f71b71e0279a1ae022f50ce322ddfc06240972142066. source-push.cjs가 각 입력 SHA를 검증하고 임시 index에 넣는 실제 소비 코드. 현행 트랙이 아닌 10-10 QA 스냅샷; 원래 docs/_ops 기준 상대링크도 재현 입력으로 보존."
+    ],
+    "originalSha256": "812ec23f77d8e33cc897f71b71e0279a1ae022f50ce322ddfc06240972142066",
+    "currentSha256": "812ec23f77d8e33cc897f71b71e0279a1ae022f50ce322ddfc06240972142066",
+    "readRange": "1-149, entire body"
+  }
+]

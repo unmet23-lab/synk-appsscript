@@ -1,0 +1,32 @@
+[
+  {
+    "path": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 완료 사실은 보존하고 상세 원문 위치만 갱신.",
+    "originalSha256": "013a1631e7002f2f5dd69aca249140348b41ac7e3ebb129a0231f89da64db57e",
+    "currentSha256": "8acc853b2ea5169c9b09a376339ba97b28202e07bfc48b07bbb45514ad3d60a9",
+    "reviewedBytes": 19726,
+    "evidence": "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+  },
+  {
+    "path": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 머리말은 그대로 보존.",
+    "originalSha256": "37721ea96924cd0f7771bcc20f5c50456eb50452ed72ce62eede74812a86c7e6",
+    "currentSha256": "90646f8530a9f04d7e9eaefcca79742cb0eb2b457f47c3a13398ee277e05791e",
+    "reviewedBytes": 11173,
+    "evidence": "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+  },
+  {
+    "path": "docs/_ops/게임문구_받침_인계_20261008.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 머리말은 그대로 보존.",
+    "originalSha256": "3cdc4cf594a1bdf15d7153c3bcc0c7e00f566cfb717afe0a5c1c51a93d6cc877",
+    "currentSha256": "eb48a2e1ba8849775d0bce44b2a18a1f0264382b622091bca134da9ee4ec64f7",
+    "reviewedBytes": 12386,
+    "evidence": "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+  }
+]

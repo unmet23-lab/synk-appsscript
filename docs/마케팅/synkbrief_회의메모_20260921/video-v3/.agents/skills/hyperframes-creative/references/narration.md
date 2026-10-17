@@ -1,5 +1,7 @@
 # Narration & Script
 
+> **영어 예제 보관본.** 아래 단어/초와 축약형은 영어 영상의 참고이며 SYNK 한국어 말투 지침이 아니다. 한국어는 자연스러운 원고와 실제 녹음·TTS 길이로 확인한다. 수치의 정밀도가 의미를 바꾸면 반올림하지 않는다. [적용 범위](../SKILL.md).
+
 How to write narration scripts for video compositions. Read when the composition includes voiceover or TTS.
 
 ## Pacing
@@ -26,7 +28,7 @@ Write what you want the voice to say. TTS reads literally.
 | -------------- | --------------------------------- |
 | 135+           | more than one hundred thirty five |
 | $1.9T          | nearly two trillion dollars       |
-| 99.999%        | ninety nine point nine percent    |
+| 99.999%        | ninety nine point nine nine nine percent |
 | 200M+          | over two hundred million          |
 | 10x            | ten times                         |
 | API            | A P I                             |

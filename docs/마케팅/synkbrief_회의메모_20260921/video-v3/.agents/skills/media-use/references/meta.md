@@ -1,5 +1,7 @@
 # Ownership matrix, usage stats, telemetry, privacy
 
+> SYNK 적용 범위: 기존 HyperFrames 작업본에 동봉된 공급자 기술 참고다. 이 프로젝트의 설치판은 0.8.58이며 아래 명령·무료 한도·성능·지원 버전은 이 PC에서 재검증된 사실이 아니다. 새 제작의 도구·음성·이미지 경로는 [제작 방식](../../../../../../콘텐츠_제작방식_v2_20261002.md), 담당·설치·계정·비용·외부 발송·공개는 [AI 운영 원칙](../../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 아래의 공급자 기본값이나 fallback을 SYNK의 자동 실행·결제·업로드 승인으로 해석하지 않는다.
+
 Maintainer-facing reference. Nothing here changes how you resolve or operate on media.
 
 ## What it owns (the gaps HyperFrames leaves)
@@ -36,10 +38,10 @@ node <SKILL_DIR>/scripts/resolve.mjs --stats --project . --days 7
 ## Telemetry
 
 `resolve` and the edit tools (transcribe / transcript-cut / audio-duck) send an
-anonymous usage event to PostHog (`scripts/lib/telemetry.mjs`), so we can see
+usage event to PostHog (`scripts/lib/telemetry.mjs`), so we can see
 which capabilities are actually used. It records only the media TYPE, the
 resolution SOURCE, and the winning PROVIDER: never the intent text, file names,
-or paths, and `$ip:null` so no IP is stored. Best-effort and non-blocking (a
+or paths. 이 공급자 설명의 `$ip:null` 설정만으로 네트워크 수신자의 모든 로그에 IP가 남지 않는다고 보장하지 않는다. 아래 Privacy처럼 로그인 뒤 계정과 연결될 수 있다. Best-effort and non-blocking (a
 resolve never waits on or fails from telemetry).
 
 Opt out with `DO_NOT_TRACK=1` or `HYPERFRAMES_NO_TELEMETRY=1` (also off in CI and

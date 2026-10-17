@@ -1,5 +1,7 @@
 # SYNK Platform Preview — Signal Windows installer
 
+> This document preserves the Signal engine contract and dated package baselines. Current shared release inputs and publication steps are in [LIFECYCLE](../LIFECYCLE.md#platform-release-reproduction); current publication and PC receipts are in the [platform source](../../docs/SYNK_플랫폼_계정과_연결_설계.md). The 0.4.3 URLs and homepage statements below describe their recorded release, not the latest download or a new laptop verification.
+
 ## 2026-10-14 common installer update
 
 The Platform, WORLD and Workspace wrappers all compile the same engine. The NSIS stage now has a **10-minute wall-clock limit**. `BackendProcess.cs` starts the verified backend suspended, attaches it to a private Windows Job with kill-on-close and no breakaway permission, and resumes it only after attachment. Success means every process in the job has exited. A deadline stops the job and waits up to 15 seconds for all descendants to leave before restoring files. This follows [Microsoft's Job Objects contract](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects), checked 2026-10-14.

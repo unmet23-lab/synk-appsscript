@@ -1,7 +1,11 @@
 ---
 name: hyperframes-animation
-description: "All animation knowledge for HyperFrames — atomic motion rules, multi-phase scene blueprints, scene transitions, broader motion-design techniques, AND the seven runtime adapters (GSAP default, plus Lottie, Three.js, Anime.js, CSS keyframes, Web Animations API, TypeGPU). Use for any motion or animation task: pick 2-4 rules and compose, or load a blueprint, or look up runtime-specific API (e.g. GSAP eases / Lottie player / Three.js mixer). Also covers auditing an existing composition's choreography (animation map) and 24 named text-animation effects. HyperFrames-native: single paused timeline, seek-safe, deterministic."
+description: "Motion rules, blueprints, transitions, and runtime adapters preserved for this existing HyperFrames project. Use only when relevant to the current authorized work; this is not the default tool for all SYNK animation."
 ---
+
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
+> SYNK 적용 범위: 기존 HyperFrames 0.8.58 video-v3에 동봉된 공급자 참고다. 현재 모든 영상의 기본 절차가 아니다. 새 작업의 도구·담당·비용·계정·승인 범위는 [제작 방식](../../../../../콘텐츠_제작방식_v2_20261002.md)과 [AI 운영 원칙](../../../../../../AI_운영원칙.md) 및 현재 요청을 따른다. 아래의 고정 인터뷰/승인 횟수·자동 설치·외부 생성·하위 실행기 규칙은 이미 승인된 작업에 새 관문이나 실행 권한을 만들지 않는다. 기술 스키마와 옵션은 보존하되 실제 설치판 지원 여부를 확인한다.
 
 # HyperFrames Animation
 
@@ -60,12 +64,12 @@ Multiple runtimes can coexist in one composition. Each registers its instances o
 
 ## Critical Constraints
 
-**Prerequisite: `hyperframes-core` → Non-Negotiable Rules** (single paused timeline, `data-duration` governs length, no `Math.random` / `Date.now` / `performance.now`, no `repeat: -1`, no page-load `gsap.set` on later-scene clips, no `display` or raw `visibility` tweens, and no timeline construction inside `async` / `setTimeout` / `Promise`). GSAP `autoAlpha` and zero-duration visibility sets at explicit timeline boundaries remain allowed by core. Use those exceptions only on non-clip elements or wrappers inside a clip; the framework owns `.clip` lifecycle. Don't restate the full contract here.
+**Composition contract:** [hyperframes-core](../hyperframes-core/SKILL.md)와 [determinism rules](../hyperframes-core/references/determinism-rules.md)를 담당 원문으로 읽는다. 이 사본에 별도의 async/속성 허용 목록을 복제하지 않는다. 실제 0.8.58 지원 여부는 해당 설치판에서 확인한다.
 
 Animation-craft additions on top of core's contract:
 
 - **Pre-calculated layout constants** — never derive positions from `getBoundingClientRect()` at tween time. Tween-time DOM measurements desync because the renderer samples in parallel; compute coordinates once at composition setup and reuse.
-- **Spatial motion uses GSAP transform aliases only** (`x`, `y`, `scale`, `rotation`). Core's allowlist also permits `opacity` / `color` / `backgroundColor` / `borderRadius` for non-spatial property tweens — but never `width` / `height` / `top` / `left` for layout changes.
+- **Spatial motion:** prefer GSAP transform aliases (`x`, `y`, `scale`, `rotation`) for performance. Property support and asynchronous setup follow the core contract above; a performance preference is not a fixed property allowlist.
 
 ## Scripts
 

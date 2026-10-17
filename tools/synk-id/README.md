@@ -27,7 +27,7 @@ SYNK 계정(synk.im/id/)을 talk 프로젝트(Supabase)에 여는 데 쓴 스크
 
 ## 회사 클라우드 로그인 준비
 
-`node tools/synk-id/company-public-provision.cjs --운영 --public <운영공개설정.json> --portal <현재게시-config.json>`은 읽기 계획만 만든다. 공식 검수·원격 적용 승인 뒤에만 같은 명령에 `--apply`를 붙인다. 실행 직전에 현재 포털을 다시 받아 사용하고 다른 운영 OAuth·secret 편집과 겹치지 않게 한다. 로컬 journal 잠금과 최신 지문 확인은 외부 관리자의 동시 편집까지 원자적으로 막지는 않는다.
+`node tools/synk-id/company-public-provision.cjs --운영 --public <운영공개설정.json> --portal <현재게시-config.json>`은 읽기 계획만 만든다. 현재 요청에서 원격 적용이 승인된 범위에서 변경 관련 검증을 마친 뒤 `--apply`를 붙인다. 과거의 고정 모델 검수는 새 필수 관문이 아니며 [AI 운영 원칙](../../docs/AI_운영원칙.md)을 따른다. 실행 직전에 현재 포털을 다시 받아 사용하고 다른 운영 OAuth·secret 편집과 겹치지 않게 한다. 로컬 journal 잠금과 최신 지문 확인은 외부 관리자의 동시 편집까지 원자적으로 막지는 않는다.
 
 - 직원은 기존 `messenger-browser` ID·제품·모든 콜백을 보존하고 `https://workspace.synk.im/api/synk-id/callback`만 추가한다. 고객은 `platform`의 별도 public/none 클라이언트와 `https://workspace.synk.im/api/customer/synk-id/callback`을 사용한다.
 - 완료된 공통 journal을 요구하고 Care·운세·기존 매핑·포털 항목을 보존한다. 아직 공통 journal에 연결되지 않은 새 catalogue 항목은 `deferredRegistrations`로만 보고하며 이 도구에서 등록하지 않는다.

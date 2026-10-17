@@ -1,0 +1,4670 @@
+[
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/src/content/assets/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "생성된 보고서의 자산·공용 컴포넌트·퍼널 표시 계약을 전문 확인. 보고서 내부 구성에 쓰는 고유 문서이며 SYNK 공통 작업 지침으로 승격하지 않고 원위치 보존.",
+    "evidence": "보고서 content 경계, 공개 import 경로, 퍼널의 크기별 레이아웃·값/0·키보드/터치·내보내기 계약 전부 확인",
+    "원문해시": "1a17117302d00a4301c95b0562c12a244e38efe35aa508831ea404e7051556d7",
+    "currentSha256": "1a17117302d00a4301c95b0562c12a244e38efe35aa508831ea404e7051556d7",
+    "readRanges": [
+      [
+        0,
+        179
+      ]
+    ],
+    "reviewedBytes": 179,
+    "reviewedLines": 4
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/src/content/shared/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "생성된 보고서의 자산·공용 컴포넌트·퍼널 표시 계약을 전문 확인. 보고서 내부 구성에 쓰는 고유 문서이며 SYNK 공통 작업 지침으로 승격하지 않고 원위치 보존.",
+    "evidence": "보고서 content 경계, 공개 import 경로, 퍼널의 크기별 레이아웃·값/0·키보드/터치·내보내기 계약 전부 확인",
+    "원문해시": "36ae02985b054edb3e526dd75d89d019c4ac6ec14d70f58b40c83d439c6dbf8f",
+    "currentSha256": "36ae02985b054edb3e526dd75d89d019c4ac6ec14d70f58b40c83d439c6dbf8f",
+    "readRanges": [
+      [
+        0,
+        192
+      ]
+    ],
+    "reviewedBytes": 192,
+    "reviewedLines": 5
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/funnels.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "생성된 보고서의 자산·공용 컴포넌트·퍼널 표시 계약을 전문 확인. 보고서 내부 구성에 쓰는 고유 문서이며 SYNK 공통 작업 지침으로 승격하지 않고 원위치 보존.",
+    "evidence": "보고서 content 경계, 공개 import 경로, 퍼널의 크기별 레이아웃·값/0·키보드/터치·내보내기 계약 전부 확인",
+    "원문해시": "bc6f858194ad820b4b62123191d9603847f4f860ca3428d08816457323f79ed3",
+    "currentSha256": "bc6f858194ad820b4b62123191d9603847f4f860ca3428d08816457323f79ed3",
+    "readRanges": [
+      [
+        0,
+        1409
+      ]
+    ],
+    "reviewedBytes": 1417,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/native-v2-owner-delta/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "ef923cd0de6e51bcdde0c78657d78a373e7c947d5c01e50ae02ac3605ddce9d9",
+    "currentSha256": "ef923cd0de6e51bcdde0c78657d78a373e7c947d5c01e50ae02ac3605ddce9d9",
+    "readRanges": [
+      [
+        0,
+        253
+      ]
+    ],
+    "reviewedBytes": 479,
+    "reviewedLines": 4
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/official-p3-excerpt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0",
+    "currentSha256": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0",
+    "readRanges": [
+      [
+        0,
+        341
+      ]
+    ],
+    "reviewedBytes": 599,
+    "reviewedLines": 8
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/native-retry-ux/official-p3-excerpt.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/official-p3-excerpt.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/official-p3-excerpt.md",
+    "원문해시": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0",
+    "currentSha256": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0",
+    "readRanges": [],
+    "representativeSha256": "d08a94432895e8ce31c1d751698421ffcbbf597cf4b9c72a02feb36acad663f0"
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/prior-product-review-excerpt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "16826009e5dfd1b76622df3e2cd0a396279bbd2c6b1585a791867d0b3aedf528",
+    "currentSha256": "16826009e5dfd1b76622df3e2cd0a396279bbd2c6b1585a791867d0b3aedf528",
+    "readRanges": [
+      [
+        0,
+        500
+      ]
+    ],
+    "reviewedBytes": 795,
+    "reviewedLines": 6
+  },
+  {
+    "path": "docs/_ops/qa/platform-care-push-timeouts-20261009/copy-followup/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "4d3b138af81fa414402b3436384105ef79dd231a8398cb6ad1a8f33f5ce524b4",
+    "currentSha256": "4d3b138af81fa414402b3436384105ef79dd231a8398cb6ad1a8f33f5ce524b4",
+    "readRanges": [
+      [
+        0,
+        712
+      ]
+    ],
+    "reviewedBytes": 1221,
+    "reviewedLines": 10
+  },
+  {
+    "path": "docs/_ops/qa/platform-current-install-check-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "1257f5a0b53505f8bc380f38fe40a96a6f8c6d20fdb8da79f665c0464c3e1463",
+    "currentSha256": "1257f5a0b53505f8bc380f38fe40a96a6f8c6d20fdb8da79f665c0464c3e1463",
+    "readRanges": [
+      [
+        0,
+        815
+      ]
+    ],
+    "reviewedBytes": 1441,
+    "reviewedLines": 10
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/notice-review/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "1507fd34ac469fb6359c45333a5924e5b42e5ff1697bf1ce694c40597f10ac7e",
+    "currentSha256": "1507fd34ac469fb6359c45333a5924e5b42e5ff1697bf1ce694c40597f10ac7e",
+    "readRanges": [
+      [
+        0,
+        871
+      ]
+    ],
+    "reviewedBytes": 1730,
+    "reviewedLines": 4
+  },
+  {
+    "path": "docs/_ops/qa/pulse-followthrough-20261012/samples.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "해당 날짜의 실제 검수 범위·고유 실패/수정·보존 조건·미검증 경계가 있어 원문 보존. 과거 검수 모델·명령은 당시 입력 기록이며 현재 필수 절차로 적용하지 않음.",
+    "evidence": "네이티브 3파일 소유권, 저장 로그인 손실 P3와 중복 종료 대조, 알림 문구/12초 제한, 설치 SHA 무변경 확인, 안내 수명 검수 입력, 22개 승인 모델 자산의 출처/재생 한계 전문 확인",
+    "원문해시": "0ece9de8656bffa7e144ebbf9884da51e9a43ec9dc73298f8b3d9d0b3472832a",
+    "currentSha256": "0ece9de8656bffa7e144ebbf9884da51e9a43ec9dc73298f8b3d9d0b3472832a",
+    "readRanges": [
+      [
+        0,
+        939
+      ]
+    ],
+    "reviewedBytes": 1818,
+    "reviewedLines": 11
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/user-logout-and-ownership-exception.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "사용자 한정 승인과 실제 실패·보류의 고유 근거여서 보존. 승인 범위를 미래 배포·키 생성·전 작업 검수 면제로 확대하지 않으며 실패한 트랙 수정안을 현행 완료 기록으로 승격하지 않음.",
+    "evidence": "당시 frontend/ownership 예외, 사용량 한도로 미완료인 검수와 별도 동의/키 생성, UNKNOWN open 오류로 미적용된 트랙 문안 전문 확인",
+    "원문해시": "5fa2649a94c875d4cf52ec0629fa0e31a943fa78d3b8c81ed54b61bb723f2a47",
+    "currentSha256": "5fa2649a94c875d4cf52ec0629fa0e31a943fa78d3b8c81ed54b61bb723f2a47",
+    "readRanges": [
+      [
+        0,
+        495
+      ]
+    ],
+    "reviewedBytes": 531,
+    "reviewedLines": 6
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/user-delta-review-exception.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "사용자 한정 승인과 실제 실패·보류의 고유 근거여서 보존. 승인 범위를 미래 배포·키 생성·전 작업 검수 면제로 확대하지 않으며 실패한 트랙 수정안을 현행 완료 기록으로 승격하지 않음.",
+    "evidence": "당시 frontend/ownership 예외, 사용량 한도로 미완료인 검수와 별도 동의/키 생성, UNKNOWN open 오류로 미적용된 트랙 문안 전문 확인",
+    "원문해시": "513aa57192f764f1d72cb66d69ecf10df9f9001e7272379f18a46735ea6408b1",
+    "currentSha256": "513aa57192f764f1d72cb66d69ecf10df9f9001e7272379f18a46735ea6408b1",
+    "readRanges": [
+      [
+        0,
+        729
+      ]
+    ],
+    "reviewedBytes": 1283,
+    "reviewedLines": 10
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/track-first-line-proposal.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "사용자 한정 승인과 실제 실패·보류의 고유 근거여서 보존. 승인 범위를 미래 배포·키 생성·전 작업 검수 면제로 확대하지 않으며 실패한 트랙 수정안을 현행 완료 기록으로 승격하지 않음.",
+    "evidence": "당시 frontend/ownership 예외, 사용량 한도로 미완료인 검수와 별도 동의/키 생성, UNKNOWN open 오류로 미적용된 트랙 문안 전문 확인",
+    "원문해시": "d717538a741fd03fa6d7b6594547e2a396fdb49d593a5662802f9f095229340f",
+    "currentSha256": "d717538a741fd03fa6d7b6594547e2a396fdb49d593a5662802f9f095229340f",
+    "readRanges": [
+      [
+        0,
+        903
+      ]
+    ],
+    "reviewedBytes": 1719,
+    "reviewedLines": 4
+  },
+  {
+    "path": "docs/_ops/qa/app-compaction-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "56deec62b7f3f560463a6e71097fb5f2a90753806f560a718551fccbf7210bc8",
+    "currentSha256": "56deec62b7f3f560463a6e71097fb5f2a90753806f560a718551fccbf7210bc8",
+    "readRanges": [
+      [
+        0,
+        1075
+      ]
+    ],
+    "reviewedBytes": 1856,
+    "reviewedLines": 17
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/os-integration.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "0b4a6fb4e22fa2ebd0b5f1188f978563b4f0eefc9893df597b7d65fe4be0a350",
+    "currentSha256": "0b4a6fb4e22fa2ebd0b5f1188f978563b4f0eefc9893df597b7d65fe4be0a350",
+    "readRanges": [
+      [
+        0,
+        996
+      ]
+    ],
+    "reviewedBytes": 1860,
+    "reviewedLines": 12
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/launcher-race/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "f135179d917caebe26eb9721ab074bc22160d70d8a00d41c9f9aa6453ec9d85f",
+    "currentSha256": "f135179d917caebe26eb9721ab074bc22160d70d8a00d41c9f9aa6453ec9d85f",
+    "readRanges": [
+      [
+        0,
+        998
+      ]
+    ],
+    "reviewedBytes": 1862,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함. 이미 보존 커밋에 포함되고 UI도 후속 폐지된 패치의 재적용 지시를 제거하되 패치 원본·의존성과 고유 시험 근거 유지. 자동 생성이 불확실한 절 앵커 대신 확인한 담당 파일 링크를 사용했다.",
+    "evidence": [
+      "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+      "아틀라스검토_인계_20261008.md §7 a43bf2b12",
+      "workroom-practice-removal-20261009/README.md"
+    ],
+    "원문해시": "485d49c37088e571842e9903f7d037fda46f7c5dd6f54868ef701ffc83090945",
+    "currentSha256": "07a145e54f19352c4e88f3d51a7ef7259b5d301086bba2f0e308205f320fe7c4",
+    "readRanges": [
+      [
+        0,
+        983
+      ]
+    ],
+    "reviewedBytes": 1881,
+    "reviewedLines": 13,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/backend/postdeploy-followup.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "e4b9385db22c0f114b6515488e80db398633f883b471a44cafa3e1d5f22d2fdb",
+    "currentSha256": "e4b9385db22c0f114b6515488e80db398633f883b471a44cafa3e1d5f22d2fdb",
+    "readRanges": [
+      [
+        0,
+        1186
+      ]
+    ],
+    "reviewedBytes": 1901,
+    "reviewedLines": 19
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/RELEASE-COMMANDS.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함. 이미 v3까지 게시된 v1/v2의 중복 실행 명령을 복구 가능한 원문 보관 링크로 통합하고 고유 CR·blob 검증 근거를 보존.",
+    "evidence": [
+      "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+      "google-release-20261009/README.md 최종 공개판 및 실제 Google 확인",
+      "frontend/v2/README.md 후보 이력"
+    ],
+    "원문해시": "7083bc8dac45a9eb551b2521dd761bc335217315d2e4fd4a9ec9fda992cbfe92",
+    "currentSha256": "15853e7b5ba5e1a1bfde14e2fdc6ee41ee0693163233288e7d2db9abae24755c",
+    "readRanges": [
+      [
+        0,
+        1436
+      ]
+    ],
+    "reviewedBytes": 1930,
+    "reviewedLines": 21,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/frontend/v2/RELEASE-COMMANDS.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/sdk-browser/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "95e4e47a1f1f9b0a402494d7b564f11b8b8865e3d2579cdcdd0c4631bb6a67a8",
+    "currentSha256": "95e4e47a1f1f9b0a402494d7b564f11b8b8865e3d2579cdcdd0c4631bb6a67a8",
+    "readRanges": [
+      [
+        0,
+        1102
+      ]
+    ],
+    "reviewedBytes": 1973,
+    "reviewedLines": 15
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-library-20261012/fullbody/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "5516c851ebb8912d181ba40a727bdc9db3c5bbfb5273996115f07b1e243229c1",
+    "currentSha256": "5516c851ebb8912d181ba40a727bdc9db3c5bbfb5273996115f07b1e243229c1",
+    "readRanges": [
+      [
+        0,
+        1115
+      ]
+    ],
+    "reviewedBytes": 1976,
+    "reviewedLines": 17
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/ci/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "282fc0d389766775ca0da841308f45cf4c4641c5fd71614e6e6eb2b6e27368e5",
+    "currentSha256": "282fc0d389766775ca0da841308f45cf4c4641c5fd71614e6e6eb2b6e27368e5",
+    "readRanges": [
+      [
+        0,
+        1232
+      ]
+    ],
+    "reviewedBytes": 1977,
+    "reviewedLines": 15
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-db-release.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 통합 경계·원인 분석·사용자 승인·실측·첫 실패와 후속 성공·미검증 범위를 전문 확인해 보존. 과거 배포 명령과 보류 패치는 재실행 권한으로 쓰지 않으며 현재 코드/담당 결과를 먼저 대조해야 함.",
+    "evidence": "공유 6파일 패치, OS23검사 한계, 렌더러 경합 재현, Atlas 보류 패치, ESZIP 한글 경로 및 필수 제품 헤더, 공개 blob CR 검증, 실제 SDK/합성 Auth 경계, 채택 모델7명, transient-recovered CI, 단일 증분 SQL 사용자 승인 근거 전문 확인",
+    "원문해시": "183c5403832a92a27c887bda22076c4f146025b830627ffb164cf567ba3020d8",
+    "currentSha256": "183c5403832a92a27c887bda22076c4f146025b830627ffb164cf567ba3020d8",
+    "readRanges": [
+      [
+        0,
+        1283
+      ]
+    ],
+    "reviewedBytes": 2064,
+    "reviewedLines": 23
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/sources.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "보고서의 출처 메타데이터 표시 규격을 전문 확인. 관측 기간·0과 미확인·신뢰 표시의 의미를 구분하는 고유 컴포넌트 설명으로 보존하며 제품 외부의 새 조사 지시로 실행하지 않음.",
+    "evidence": "source.tables trust 필드와 usage snapshot/freshness 구분 전부 확인",
+    "원문해시": "2e6efcd576ec195c64895ded0aa29d629d94154fcc437828d2288a9440c31202",
+    "currentSha256": "2e6efcd576ec195c64895ded0aa29d629d94154fcc437828d2288a9440c31202",
+    "readRanges": [
+      [
+        0,
+        1923
+      ]
+    ],
+    "reviewedBytes": 1923,
+    "reviewedLines": 20
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/browser/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "829edd0aa4051ab019617a69f96682bb1f73b850f27b8d7401d98a2b9375ef6b",
+    "currentSha256": "829edd0aa4051ab019617a69f96682bb1f73b850f27b8d7401d98a2b9375ef6b",
+    "readRanges": [
+      [
+        0,
+        1073
+      ]
+    ],
+    "reviewedBytes": 2129,
+    "reviewedLines": 15
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/key-safety-README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "d5dcca993e34a51eaa4ada0a922b619b1ee971d5107ddd7c43f4a70276d1bbf2",
+    "currentSha256": "d5dcca993e34a51eaa4ada0a922b619b1ee971d5107ddd7c43f4a70276d1bbf2",
+    "readRanges": [
+      [
+        0,
+        1037
+      ]
+    ],
+    "reviewedBytes": 2174,
+    "reviewedLines": 12
+  },
+  {
+    "path": "tools/synk-id/qa/운영재개-리허설완료-20261007.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "c163e066ec179c8a1c2e2fd9467731dbbae8369f6e4f3bc7e546901c778e6a23",
+    "currentSha256": "c163e066ec179c8a1c2e2fd9467731dbbae8369f6e4f3bc7e546901c778e6a23",
+    "readRanges": [
+      [
+        0,
+        1438
+      ]
+    ],
+    "reviewedBytes": 2270,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/official-p2-excerpt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "8df9c8ebe627838d1a68e2f74948bfc4a8954d4e774c6ce533c622c60280c6a6",
+    "currentSha256": "8df9c8ebe627838d1a68e2f74948bfc4a8954d4e774c6ce533c622c60280c6a6",
+    "readRanges": [
+      [
+        0,
+        1315
+      ]
+    ],
+    "reviewedBytes": 2407,
+    "reviewedLines": 30
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/feedback-review/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "05e7213b4d2e01f363066aa1c98659fc0ca2be10883db68ae2f0f95d0f04fffd",
+    "currentSha256": "05e7213b4d2e01f363066aa1c98659fc0ca2be10883db68ae2f0f95d0f04fffd",
+    "readRanges": [
+      [
+        0,
+        1229
+      ]
+    ],
+    "reviewedBytes": 2409,
+    "reviewedLines": 5
+  },
+  {
+    "path": "docs/_ops/qa/platform-tray-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "e629f31abbf807ba2b5b1e0cab3100ec8c3ce4d1651c99fcfe6bf4275ac2c92a",
+    "currentSha256": "e629f31abbf807ba2b5b1e0cab3100ec8c3ce4d1651c99fcfe6bf4275ac2c92a",
+    "readRanges": [
+      [
+        0,
+        1339
+      ]
+    ],
+    "reviewedBytes": 2414,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/PERSISTENCE.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "과거 검증의 고유 재현·권한·보존·사용자 중단·실제/합성 구분을 전문 확인해 보존. 검사 수·승인·실계정 결과를 현재 제품 전체의 완료나 상시 작업 관문으로 확대하지 않음.",
+    "evidence": "Google-only 9화면/합성 범위, 원키 누락 시 DB 불변14시험, 리허설15client/18mapping 한계, 패널 재확인의 로그인 손실 재현, P3 안내 소유권, 트레이 Esc 중단·기존 smoke 실패, 단일 가입행 boolean receipt 전문 확인",
+    "원문해시": "a3ed963ff929093d7f0145f533d87803dd2292c1a14defc619f6cd169e999f6d",
+    "currentSha256": "a3ed963ff929093d7f0145f533d87803dd2292c1a14defc619f6cd169e999f6d",
+    "readRanges": [
+      [
+        0,
+        1495
+      ]
+    ],
+    "reviewedBytes": 2499,
+    "reviewedLines": 12
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/tables.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "보고서 표 컴포넌트의 고유 사용 계약을 전문 확인. 표시와 원본 자료의 분리·검색/정렬·접근성을 보존하며 전사 디자인 지침으로 확대하지 않음.",
+    "evidence": "sourceRows/displayRows, renderCell 비영속, deltaTone, 8행 pagination, 접근성 행 동작 전부 확인",
+    "원문해시": "bad26c41789c621c24e25748111e20c6a100533477ef582c175a1edca12380f3",
+    "currentSha256": "bad26c41789c621c24e25748111e20c6a100533477ef582c175a1edca12380f3",
+    "readRanges": [
+      [
+        0,
+        2137
+      ]
+    ],
+    "reviewedBytes": 2137,
+    "reviewedLines": 22
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/backend-review.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "484913a86644cac0de8aaf8bab261168b03c56751bafdd2b2cf8292eb0144441",
+    "currentSha256": "484913a86644cac0de8aaf8bab261168b03c56751bafdd2b2cf8292eb0144441",
+    "readRanges": [
+      [
+        0,
+        1451
+      ]
+    ],
+    "reviewedBytes": 2546,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/CLOSE.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "4ba9ad12258d8c08feecb529b1a32763cdcf58156ca0adadc98b5380b59dc621",
+    "currentSha256": "4ba9ad12258d8c08feecb529b1a32763cdcf58156ca0adadc98b5380b59dc621",
+    "readRanges": [
+      [
+        0,
+        1379
+      ]
+    ],
+    "reviewedBytes": 2546,
+    "reviewedLines": 19
+  },
+  {
+    "path": "docs/_ops/qa/workspace-ui-polish-20261009/exact-candidate/messenger/verification.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "6f032bea02ad9435afabe8bbe036890090f0b8c121130c29306b76c153692ddd",
+    "currentSha256": "6f032bea02ad9435afabe8bbe036890090f0b8c121130c29306b76c153692ddd",
+    "readRanges": [
+      [
+        0,
+        1522
+      ]
+    ],
+    "reviewedBytes": 2562,
+    "reviewedLines": 29
+  },
+  {
+    "path": "docs/_ops/qa/platform-notification-copy-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "b9afab22e502f176771d581dc7156f92cae82b85d0813c69c3a5d54245d0e3d8",
+    "currentSha256": "b9afab22e502f176771d581dc7156f92cae82b85d0813c69c3a5d54245d0e3d8",
+    "readRanges": [
+      [
+        0,
+        1504
+      ]
+    ],
+    "reviewedBytes": 2574,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/frontend-read-review.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "365031140491e1311ec28dc9c7aaac4250b35b5ed976f18e77b1ec6876560f31",
+    "currentSha256": "365031140491e1311ec28dc9c7aaac4250b35b5ed976f18e77b1ec6876560f31",
+    "readRanges": [
+      [
+        0,
+        1315
+      ]
+    ],
+    "reviewedBytes": 2585,
+    "reviewedLines": 18
+  },
+  {
+    "path": "docs/_ops/qa/classroom-release-20261009/rehearsal-index-ast-compare.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "bd493238deba4da671451aed5d3a6275b64e0ae42f59d8316940117651a0e752",
+    "currentSha256": "bd493238deba4da671451aed5d3a6275b64e0ae42f59d8316940117651a0e752",
+    "readRanges": [
+      [
+        0,
+        1503
+      ]
+    ],
+    "reviewedBytes": 2721,
+    "reviewedLines": 23
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/PUBLIC-CHECK.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 기능 계약·실패 재현·실제 확인과 미확인·보류를 전문 확인해 보존. 날짜별 증거를 현재 릴리스의 통과로 재사용하지 않음.",
+    "evidence": "학습 동의/삭제 FK, Google 후속 중단과 키 취소, 320px 업무명 가시 한계, Care 알림 공개와 OS 미검증, 낮은 공유 revision 역전·비선택 cache, ESZIP AST 전체 비교 한계, Google-off 공개 후보와 CI503 이후 HTTP200의 차이 전문 확인",
+    "원문해시": "6e404c32ea2e48b28425d6f7cd3b497ca69b83a021d5d579e22b11844664afe0",
+    "currentSha256": "6e404c32ea2e48b28425d6f7cd3b497ca69b83a021d5d579e22b11844664afe0",
+    "readRanges": [
+      [
+        0,
+        1757
+      ]
+    ],
+    "reviewedBytes": 2725,
+    "reviewedLines": 19
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/comparison-formatting.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "보고서 비교 수치 표시의 고유 규격을 전문 확인해 보존. 부호·단위·목적별 의미 색과 비교 기간·결측을 분리하며 다른 제품의 강제 시각 규칙으로 확대하지 않음.",
+    "evidence": "signed percentage points, deltaTone, chart sign, periodComparison, 전체 history/gaps 계약 전문 확인",
+    "원문해시": "35faa7cc51b5e7f3a00ee2b155343589b62c645cf9ae4f053118c72c528959e9",
+    "currentSha256": "35faa7cc51b5e7f3a00ee2b155343589b62c645cf9ae4f053118c72c528959e9",
+    "readRanges": [
+      [
+        0,
+        2723
+      ]
+    ],
+    "reviewedBytes": 2727,
+    "reviewedLines": 29
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/album-0.4.13/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "ff2d359176abe630c2286b1c343c0dc63a054edea62a19354c5cdb6b27e35f25",
+    "currentSha256": "ff2d359176abe630c2286b1c343c0dc63a054edea62a19354c5cdb6b27e35f25",
+    "readRanges": [
+      [
+        0,
+        1835
+      ]
+    ],
+    "reviewedBytes": 2731,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4",
+    "currentSha256": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4",
+    "readRanges": [
+      [
+        0,
+        1532
+      ]
+    ],
+    "reviewedBytes": 2768,
+    "reviewedLines": 17
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/native-retry-ux/README.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/README.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-retry-ux/README.md",
+    "원문해시": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4",
+    "currentSha256": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4",
+    "readRanges": [],
+    "representativeSha256": "2ae689c95e600d0e2b29a8639fc515de993a82bce9750600386aef10de5057c4"
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/sdk-browser/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "08d6cc0a57ab2cbf09e16576d8d013397fd24fc68cd132ad6231e9f66f6006fa",
+    "currentSha256": "08d6cc0a57ab2cbf09e16576d8d013397fd24fc68cd132ad6231e9f66f6006fa",
+    "readRanges": [
+      [
+        0,
+        1522
+      ]
+    ],
+    "reviewedBytes": 2769,
+    "reviewedLines": 17
+  },
+  {
+    "path": "docs/_ops/qa/platform-care-push-timeouts-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "0bb8e9ce9f3bf318c9fa9a8bdd411ac6af2667a83a89415cd49e765746941f3b",
+    "currentSha256": "0bb8e9ce9f3bf318c9fa9a8bdd411ac6af2667a83a89415cd49e765746941f3b",
+    "readRanges": [
+      [
+        0,
+        1566
+      ]
+    ],
+    "reviewedBytes": 2775,
+    "reviewedLines": 23
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-personal-runtime-release.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "ddb1f1bfc9ba3b70d2f60f4c2369454be54003fbc12f26cb4f107d70cb8a130b",
+    "currentSha256": "ddb1f1bfc9ba3b70d2f60f4c2369454be54003fbc12f26cb4f107d70cb8a130b",
+    "readRanges": [
+      [
+        0,
+        1823
+      ]
+    ],
+    "reviewedBytes": 2788,
+    "reviewedLines": 24
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/ops-review-prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "c58ce35b8670291e82f9b6f690763da412ec600eae6ebd4642f9c709502bd818",
+    "currentSha256": "c58ce35b8670291e82f9b6f690763da412ec600eae6ebd4642f9c709502bd818",
+    "readRanges": [
+      [
+        0,
+        1839
+      ]
+    ],
+    "reviewedBytes": 2821,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-rehearsal-copy-release.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "5d2ebda9a4fe873df606ff2a45faf4fd5c4db4ed0d0a8f6c069d6c3c4d8a0073",
+    "currentSha256": "5d2ebda9a4fe873df606ff2a45faf4fd5c4db4ed0d0a8f6c069d6c3c4d8a0073",
+    "readRanges": [
+      [
+        0,
+        1946
+      ]
+    ],
+    "reviewedBytes": 2828,
+    "reviewedLines": 25
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/panel-retry/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·동결 후보·실패 후 보완·비공개/실제/합성 경계를 담은 고유 기록을 전문 확인해 보존. 옛 모델 강제 검수 문구는 당시 입력 이력이고 현재 의무가 아님.",
+    "evidence": "앨범0.4.13 공개와 PC0.4.10 차이, 계정 창 및 라이브러리의 저장 로그인 보존 회귀, 엄격 phone PKCE 합성 SDK, Care12초 대기, v19 단일 runtime 승인, opaque Secret 교체 확인 검수 입력, 리허설 문구 CI 실패/정적 복구, dirty Notebook 보존 전문 확인",
+    "원문해시": "7c66eef61cb3e2a812cd4327ad35ddf4d772bb8b6a7973f4c595083d9db8a375",
+    "currentSha256": "7c66eef61cb3e2a812cd4327ad35ddf4d772bb8b6a7973f4c595083d9db8a375",
+    "readRanges": [
+      [
+        0,
+        1715
+      ]
+    ],
+    "reviewedBytes": 2854,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/코스튬_20261008/자산검수.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "28548debe4c8fbb3d8fbd232ecaaebe0ceda2ef7f4323ff247256cb1855332aa",
+    "currentSha256": "28548debe4c8fbb3d8fbd232ecaaebe0ceda2ef7f4323ff247256cb1855332aa",
+    "readRanges": [
+      [
+        0,
+        1394
+      ]
+    ],
+    "reviewedBytes": 2965,
+    "reviewedLines": 24
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/browser/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "2cde341c484260d716eb76d89127eaee11fb3b226f442ec1283564d7bf8f967d",
+    "currentSha256": "2cde341c484260d716eb76d89127eaee11fb3b226f442ec1283564d7bf8f967d",
+    "readRanges": [
+      [
+        0,
+        1539
+      ]
+    ],
+    "reviewedBytes": 2989,
+    "reviewedLines": 21
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-provision-review.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "fd5af0de1796206db159122ae35e3a6dae2810009336851d6f8e19b30223ef2f",
+    "currentSha256": "fd5af0de1796206db159122ae35e3a6dae2810009336851d6f8e19b30223ef2f",
+    "readRanges": [
+      [
+        0,
+        2081
+      ]
+    ],
+    "reviewedBytes": 3040,
+    "reviewedLines": 29
+  },
+  {
+    "path": "docs/_ops/qa/platform-native-logout-install-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "35854bc59648b0c47636dcabb5ca806335f660dc54814158257f81965f1340fb",
+    "currentSha256": "35854bc59648b0c47636dcabb5ca806335f660dc54814158257f81965f1340fb",
+    "readRanges": [
+      [
+        0,
+        1840
+      ]
+    ],
+    "reviewedBytes": 3062,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음. 본문의 과거 환경 준비와 폐기된 고정 모델 검수 의무를 당시 기록으로 정정하고 현행 운영 원문에 연결.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인; docs/AI_운영원칙.md 역할 및 공식 하네스, company/CLOUD-OPERATIONS.md 최신 운영 계약",
+    "원문해시": "117e83f16bb324f565a300cef7f216efcaa48f5ef2d84e6653c8aa98478f4cd8",
+    "currentSha256": "dfc5de1fcc57888e67e61056ab74acd7283e23f5f309c6cbb80cbc9988d287fd",
+    "readRanges": [
+      [
+        0,
+        1509
+      ]
+    ],
+    "reviewedBytes": 3075,
+    "reviewedLines": 16,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-pc-web-conflict-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "bd3ce69b65b0eb94b74f57381754a192dea8abb1ab2fb7bba9429ca9eb6c08d5",
+    "currentSha256": "bd3ce69b65b0eb94b74f57381754a192dea8abb1ab2fb7bba9429ca9eb6c08d5",
+    "readRanges": [
+      [
+        0,
+        1495
+      ]
+    ],
+    "reviewedBytes": 3088,
+    "reviewedLines": 27
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/ops-delta-review-prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문의 자산 채택 범위·계정/키 보존·사용자 승인/중단·오류와 후속 성공을 전문 확인. 고유 증거는 원위치 보존하며 과거 환경/검수 절차를 현행 운영 지시로 재사용하지 않음.",
+    "evidence": "코스튬 기본5차림·밝은 테와 표정 반려, 엄격 phone 합성 화면, provision pending/unknown guard, 설치108프로필 보존·UI보류, 10-07 PC/운영 미정, 실제 PC웹 CAS 충돌/복구본, Secret rotation P2/P3 조건 전문 확인",
+    "원문해시": "780e253a4726bf25fb7353c21de88d02cea305af0ed2becf05494fa346230ba7",
+    "currentSha256": "780e253a4726bf25fb7353c21de88d02cea305af0ed2becf05494fa346230ba7",
+    "readRanges": [
+      [
+        0,
+        2025
+      ]
+    ],
+    "reviewedBytes": 3104,
+    "reviewedLines": 12
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-cleanup-fix/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 수정 원인·검증 상태·권한/개인기록 보존 조건을 전문 확인해 유지. 합성 회귀와 실제 PC·웹·운영 범위를 구분하며 후속 완료를 소급하지 않음.",
+    "evidence": "cleanup 예외와 인증결과 분리, hidden 새세대/교체CSRF 및 잘못된 최초 시험 기대, clientKey/ASAR 실제 설치 오류와 왕복, 교사별 frame/권한 보존, 로컬 GET만36검사 및 검사전용세션 폐기 전문 확인",
+    "원문해시": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7",
+    "currentSha256": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7",
+    "readRanges": [
+      [
+        0,
+        1723
+      ]
+    ],
+    "reviewedBytes": 3121,
+    "reviewedLines": 25
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/native-cleanup-fix/README.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-cleanup-fix/README.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/native-cleanup-fix/README.md",
+    "원문해시": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7",
+    "currentSha256": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7",
+    "readRanges": [],
+    "representativeSha256": "e672a7e678a1d306358c29a66d40c80761b509e2ddf535071f99adbe4222e7a7"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/company-generation-fix/attempt2/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 수정 원인·검증 상태·권한/개인기록 보존 조건을 전문 확인해 유지. 합성 회귀와 실제 PC·웹·운영 범위를 구분하며 후속 완료를 소급하지 않음.",
+    "evidence": "cleanup 예외와 인증결과 분리, hidden 새세대/교체CSRF 및 잘못된 최초 시험 기대, clientKey/ASAR 실제 설치 오류와 왕복, 교사별 frame/권한 보존, 로컬 GET만36검사 및 검사전용세션 폐기 전문 확인",
+    "원문해시": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313",
+    "currentSha256": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313",
+    "readRanges": [
+      [
+        0,
+        1786
+      ]
+    ],
+    "reviewedBytes": 3153,
+    "reviewedLines": 18
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/evidence/company-generation-fix/attempt2/README.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/company-generation-fix/attempt2/README.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/company-generation-fix/attempt2/README.md",
+    "원문해시": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313",
+    "currentSha256": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313",
+    "readRanges": [],
+    "representativeSha256": "8e55793cca349aaa56a59f5486528f151dfdfc7b52980c452742b95e49a46313"
+  },
+  {
+    "path": "docs/_ops/qa/platform-live-roundtrip-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 수정 원인·검증 상태·권한/개인기록 보존 조건을 전문 확인해 유지. 합성 회귀와 실제 PC·웹·운영 범위를 구분하며 후속 완료를 소급하지 않음.",
+    "evidence": "cleanup 예외와 인증결과 분리, hidden 새세대/교체CSRF 및 잘못된 최초 시험 기대, clientKey/ASAR 실제 설치 오류와 왕복, 교사별 frame/권한 보존, 로컬 GET만36검사 및 검사전용세션 폐기 전문 확인",
+    "원문해시": "922904869d6960735d3ef0230e125bec2dfe02602c3ddd0e8344fc0019fb18e6",
+    "currentSha256": "922904869d6960735d3ef0230e125bec2dfe02602c3ddd0e8344fc0019fb18e6",
+    "readRanges": [
+      [
+        0,
+        1740
+      ]
+    ],
+    "reviewedBytes": 3155,
+    "reviewedLines": 22
+  },
+  {
+    "path": "docs/_ops/qa/messenger-teaching-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 수정 원인·검증 상태·권한/개인기록 보존 조건을 전문 확인해 유지. 합성 회귀와 실제 PC·웹·운영 범위를 구분하며 후속 완료를 소급하지 않음.",
+    "evidence": "cleanup 예외와 인증결과 분리, hidden 새세대/교체CSRF 및 잘못된 최초 시험 기대, clientKey/ASAR 실제 설치 오류와 왕복, 교사별 frame/권한 보존, 로컬 GET만36검사 및 검사전용세션 폐기 전문 확인",
+    "원문해시": "61e55c3fc61ee8237b8b1ed8525e8cabbb1a543db1bfc4974271d02258461554",
+    "currentSha256": "61e55c3fc61ee8237b8b1ed8525e8cabbb1a543db1bfc4974271d02258461554",
+    "readRanges": [
+      [
+        0,
+        1926
+      ]
+    ],
+    "reviewedBytes": 3273,
+    "reviewedLines": 19
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/pc-live/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고유 수정 원인·검증 상태·권한/개인기록 보존 조건을 전문 확인해 유지. 합성 회귀와 실제 PC·웹·운영 범위를 구분하며 후속 완료를 소급하지 않음.",
+    "evidence": "cleanup 예외와 인증결과 분리, hidden 새세대/교체CSRF 및 잘못된 최초 시험 기대, clientKey/ASAR 실제 설치 오류와 왕복, 교사별 frame/권한 보존, 로컬 GET만36검사 및 검사전용세션 폐기 전문 확인",
+    "원문해시": "2e5e042d187cd766ee39478384312c0a0712d650ddd94ff4ca4a77129384edd6",
+    "currentSha256": "2e5e042d187cd766ee39478384312c0a0712d650ddd94ff4ca4a77129384edd6",
+    "readRanges": [
+      [
+        0,
+        1695
+      ]
+    ],
+    "reviewedBytes": 3326,
+    "reviewedLines": 35
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "생성 보고서에 복사된 보호 runtime과 맞는 문서 입구임을 본문으로 확인. 고유 데이터/편집/출처 API 연결을 보존하며 설치 runtime의 최신 문서와 혼동하지 않음.",
+    "evidence": "snapshot matched copied protected source, data-app-public 단일 import, stable id/queryId, reviewed read-only와 authored narrative 경계 전문 확인",
+    "원문해시": "c24c56d48a2b491a0a648ec0beee10f43d12c8d7fe2b5e74d89879fd31879419",
+    "currentSha256": "c24c56d48a2b491a0a648ec0beee10f43d12c8d7fe2b5e74d89879fd31879419",
+    "readRanges": [
+      [
+        0,
+        3109
+      ]
+    ],
+    "reviewedBytes": 3109,
+    "reviewedLines": 33
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/benefits-0.4.12/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "배포별 고유 범위·과거 호환 제한·원격 읽기 감사·콜백 변경·사용자 전달 승인을 전문 확인해 보존. 당시 최신 설치와 미검증을 현재 상태로 재사용하지 않고 해당 공개/설치 증거로만 읽음.",
+    "evidence": "0.4.12 혜택23줄/CI취소와 후속성공/인증서 진단, Mac0.4.1 Rosetta 비지원·소프트웨어GPU 한계, v18 runtime 전체 보안구간 대조, 앨범 콜백1줄·공개27파일·실계정미검증, native중복logout 한파일 전달 승인 전문 확인",
+    "원문해시": "bd8298acd5c16ac8d09d21e9eadab976c59dff98016a6168d85023079d6d1b4a",
+    "currentSha256": "bd8298acd5c16ac8d09d21e9eadab976c59dff98016a6168d85023079d6d1b4a",
+    "readRanges": [
+      [
+        0,
+        2203
+      ]
+    ],
+    "reviewedBytes": 3375,
+    "reviewedLines": 17
+  },
+  {
+    "path": "docs/_ops/qa/platform-macos-preview-20261012/release-notes.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "배포별 고유 범위·과거 호환 제한·원격 읽기 감사·콜백 변경·사용자 전달 승인을 전문 확인해 보존. 당시 최신 설치와 미검증을 현재 상태로 재사용하지 않고 해당 공개/설치 증거로만 읽음.",
+    "evidence": "0.4.12 혜택23줄/CI취소와 후속성공/인증서 진단, Mac0.4.1 Rosetta 비지원·소프트웨어GPU 한계, v18 runtime 전체 보안구간 대조, 앨범 콜백1줄·공개27파일·실계정미검증, native중복logout 한파일 전달 승인 전문 확인",
+    "원문해시": "92cebb487e1e2f0e291794faa6b972f6552d45bc91e915389e35e71b041c4a06",
+    "currentSha256": "92cebb487e1e2f0e291794faa6b972f6552d45bc91e915389e35e71b041c4a06",
+    "readRanges": [
+      [
+        0,
+        2064
+      ]
+    ],
+    "reviewedBytes": 3558,
+    "reviewedLines": 36
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/completion-personal-runtime-review.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "배포별 고유 범위·과거 호환 제한·원격 읽기 감사·콜백 변경·사용자 전달 승인을 전문 확인해 보존. 당시 최신 설치와 미검증을 현재 상태로 재사용하지 않고 해당 공개/설치 증거로만 읽음.",
+    "evidence": "0.4.12 혜택23줄/CI취소와 후속성공/인증서 진단, Mac0.4.1 Rosetta 비지원·소프트웨어GPU 한계, v18 runtime 전체 보안구간 대조, 앨범 콜백1줄·공개27파일·실계정미검증, native중복logout 한파일 전달 승인 전문 확인",
+    "원문해시": "a57f6bbd3ef69f6103fc145a0f326d836ee8f0530582d3e6bd2c7d1e79957944",
+    "currentSha256": "a57f6bbd3ef69f6103fc145a0f326d836ee8f0530582d3e6bd2c7d1e79957944",
+    "readRanges": [
+      [
+        0,
+        2149
+      ]
+    ],
+    "reviewedBytes": 3624,
+    "reviewedLines": 28
+  },
+  {
+    "path": "docs/_ops/qa/album-public-20261014/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "배포별 고유 범위·과거 호환 제한·원격 읽기 감사·콜백 변경·사용자 전달 승인을 전문 확인해 보존. 당시 최신 설치와 미검증을 현재 상태로 재사용하지 않고 해당 공개/설치 증거로만 읽음.",
+    "evidence": "0.4.12 혜택23줄/CI취소와 후속성공/인증서 진단, Mac0.4.1 Rosetta 비지원·소프트웨어GPU 한계, v18 runtime 전체 보안구간 대조, 앨범 콜백1줄·공개27파일·실계정미검증, native중복logout 한파일 전달 승인 전문 확인",
+    "원문해시": "f5ae0643ab2460c9f652c45b074222649f1fbbf9e0f1fd6f5c0915bfdef2466b",
+    "currentSha256": "f5ae0643ab2460c9f652c45b074222649f1fbbf9e0f1fd6f5c0915bfdef2466b",
+    "readRanges": [
+      [
+        0,
+        2172
+      ]
+    ],
+    "reviewedBytes": 3632,
+    "reviewedLines": 22
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/native-install-handoff.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "배포별 고유 범위·과거 호환 제한·원격 읽기 감사·콜백 변경·사용자 전달 승인을 전문 확인해 보존. 당시 최신 설치와 미검증을 현재 상태로 재사용하지 않고 해당 공개/설치 증거로만 읽음.",
+    "evidence": "0.4.12 혜택23줄/CI취소와 후속성공/인증서 진단, Mac0.4.1 Rosetta 비지원·소프트웨어GPU 한계, v18 runtime 전체 보안구간 대조, 앨범 콜백1줄·공개27파일·실계정미검증, native중복logout 한파일 전달 승인 전문 확인",
+    "원문해시": "5bac5db27f684a9a78ed4a459465ae3b203f1fb30d0c222bb2b9b9923908e2f2",
+    "currentSha256": "5bac5db27f684a9a78ed4a459465ae3b203f1fb30d0c222bb2b9b9923908e2f2",
+    "readRanges": [
+      [
+        0,
+        2179
+      ]
+    ],
+    "reviewedBytes": 3644,
+    "reviewedLines": 12
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/bar-presentations.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "보고서 막대형 시각화 API의 고유 규격을 전문 확인해 보존. 리뷰된 자료·표시 단위·범위/목표·결측과 계산값의 경계를 설명하는 artifact 내부 문서임.",
+    "evidence": "barChartSpec, bullet/progress/rangePosition/composition, outside range 원값 유지, missing≠zero, 타입 변경 제한 전문 확인",
+    "원문해시": "3ec11931b0d05ec75282d3b23f77b348a271fff4dfad3379890cea35fff9309a",
+    "currentSha256": "3ec11931b0d05ec75282d3b23f77b348a271fff4dfad3379890cea35fff9309a",
+    "readRanges": [
+      [
+        0,
+        3348
+      ]
+    ],
+    "reviewedBytes": 3350,
+    "reviewedLines": 33
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/google-console-actions.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·실제 공개 작업·검수 입력·미반영 후보·물리 PC 측정의 고유 근거를 전문 확인해 보존. 이미 끝난 설치/검수 지시를 새 실행 요청으로 쓰지 않음.",
+    "evidence": "Google 콘솔 승인과 Secret 노출 이력/브랜드 검증 대기, NSIS taskkill 내재 경로·실행0 경계, 메모60개/임시 undo·초안 보존 후보, 메모리 압박8표본과 10분주기 원인 미확정 전문 확인",
+    "원문해시": "15408fa70d0aabf717a1a7a2239b5ad62c3492be1c2254f3ad46913d51601061",
+    "currentSha256": "15408fa70d0aabf717a1a7a2239b5ad62c3492be1c2254f3ad46913d51601061",
+    "readRanges": [
+      [
+        0,
+        1971
+      ]
+    ],
+    "reviewedBytes": 3676,
+    "reviewedLines": 19
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/initial-inputs/scope.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·실제 공개 작업·검수 입력·미반영 후보·물리 PC 측정의 고유 근거를 전문 확인해 보존. 이미 끝난 설치/검수 지시를 새 실행 요청으로 쓰지 않음.",
+    "evidence": "Google 콘솔 승인과 Secret 노출 이력/브랜드 검증 대기, NSIS taskkill 내재 경로·실행0 경계, 메모60개/임시 undo·초안 보존 후보, 메모리 압박8표본과 10분주기 원인 미확정 전문 확인",
+    "원문해시": "d8effb381cd2a0e177ad689e6fa21d8f4107af6c3d777d198bdce66ad80f0304",
+    "currentSha256": "d8effb381cd2a0e177ad689e6fa21d8f4107af6c3d777d198bdce66ad80f0304",
+    "readRanges": [
+      [
+        0,
+        2099
+      ]
+    ],
+    "reviewedBytes": 3686,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/initial-inputs/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·실제 공개 작업·검수 입력·미반영 후보·물리 PC 측정의 고유 근거를 전문 확인해 보존. 이미 끝난 설치/검수 지시를 새 실행 요청으로 쓰지 않음.",
+    "evidence": "Google 콘솔 승인과 Secret 노출 이력/브랜드 검증 대기, NSIS taskkill 내재 경로·실행0 경계, 메모60개/임시 undo·초안 보존 후보, 메모리 압박8표본과 10분주기 원인 미확정 전문 확인",
+    "원문해시": "a7c96cde0ba59b9f1f28755e8858a4e6532f9f1b64c6a36dd371299488b74228",
+    "currentSha256": "a7c96cde0ba59b9f1f28755e8858a4e6532f9f1b64c6a36dd371299488b74228",
+    "readRanges": [
+      [
+        0,
+        2217
+      ]
+    ],
+    "reviewedBytes": 3698,
+    "reviewedLines": 12
+  },
+  {
+    "path": "docs/_ops/qa/platform-note-management-20261009/pre-integration/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·실제 공개 작업·검수 입력·미반영 후보·물리 PC 측정의 고유 근거를 전문 확인해 보존. 이미 끝난 설치/검수 지시를 새 실행 요청으로 쓰지 않음.",
+    "evidence": "Google 콘솔 승인과 Secret 노출 이력/브랜드 검증 대기, NSIS taskkill 내재 경로·실행0 경계, 메모60개/임시 undo·초안 보존 후보, 메모리 압박8표본과 10분주기 원인 미확정 전문 확인",
+    "원문해시": "ced3f126d2809fb74922ff332e66c09b59b5ad6c36b011d969de54a39e91dc2d",
+    "currentSha256": "ced3f126d2809fb74922ff332e66c09b59b5ad6c36b011d969de54a39e91dc2d",
+    "readRanges": [
+      [
+        0,
+        1820
+      ]
+    ],
+    "reviewedBytes": 3727,
+    "reviewedLines": 25
+  },
+  {
+    "path": "docs/_ops/qa/pulse-independent-20261011/pc-performance.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "당시 사용자 승인·실제 공개 작업·검수 입력·미반영 후보·물리 PC 측정의 고유 근거를 전문 확인해 보존. 이미 끝난 설치/검수 지시를 새 실행 요청으로 쓰지 않음.",
+    "evidence": "Google 콘솔 승인과 Secret 노출 이력/브랜드 검증 대기, NSIS taskkill 내재 경로·실행0 경계, 메모60개/임시 undo·초안 보존 후보, 메모리 압박8표본과 10분주기 원인 미확정 전문 확인",
+    "원문해시": "ac701009b606f1d7dd3151ee3120759511ba3115ea65e5ee91e8465244859c85",
+    "currentSha256": "ac701009b606f1d7dd3151ee3120759511ba3115ea65e5ee91e8465244859c85",
+    "readRanges": [
+      [
+        0,
+        1997
+      ]
+    ],
+    "reviewedBytes": 3802,
+    "reviewedLines": 18
+  },
+  {
+    "path": "docs/_ops/결정.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "2026-09-18부터 10-17까지 390줄 승인·정정·실행 범위 원문을 15개 연속 문자 청크로 끝까지 검토했다. 날짜별 승인 예외와 후속 변경의 선후를 입증하는 유일 장부이므로 원문 보존하며 현행 실행 지침으로 재작성하지 않는다. 전문 검토 뒤 문서 정리의 4차 완료 행만 갱신; 다른 결정 행 보존.",
+    "evidence": "전체 0–179061자; 10-09 작업실 실습 제거, 10-10 검수 체제 개편, 10-17 역할 변경 등 후속 결정과 이전 승인 경계를 대조. 편집 권한은 root.",
+    "원문해시": "aca566dd075179629098dd79d13a2650718cbcad0cedebadbbedee1db1e612d2",
+    "currentSha256": "76c5fe75709a35b1fe3cb6e65ffc1ac035fc52add4bda7afd3923b417ed60b0c",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        24000
+      ],
+      [
+        24000,
+        36000
+      ],
+      [
+        36000,
+        48000
+      ],
+      [
+        48000,
+        60000
+      ],
+      [
+        60000,
+        72000
+      ],
+      [
+        72000,
+        84000
+      ],
+      [
+        84000,
+        96000
+      ],
+      [
+        96000,
+        108000
+      ],
+      [
+        108000,
+        120000
+      ],
+      [
+        120000,
+        132000
+      ],
+      [
+        132000,
+        144000
+      ],
+      [
+        144000,
+        156000
+      ],
+      [
+        156000,
+        168000
+      ],
+      [
+        168000,
+        179061
+      ]
+    ],
+    "reviewedBytes": 357254,
+    "reviewedLines": 390
+  },
+  {
+    "path": "docs/_ops/qa/workroom-practice-removal-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 실습 제거의 실행·실패 증거, Google 가입의 SMS 보류 경계, 원격 브랜치와 실제 배포의 차이를 보존한다. 옛 게시·패치 명령은 후속 완료 문서와 대조 후 역사 경계를 정리할 후보로 분리했다.",
+    "evidence": "결정.md 10-09 작업실 AI 업무 연습 제거·Google 로직 우선; 10-08 Atlas 실제 배포 결정. 해당 문서 내부 candidate/원본/실패/한정 승인 자료.",
+    "원문해시": "f1f67387d9a646aad18f42d199599c52287aabc264a8124a793edbbcf2ada4eb",
+    "currentSha256": "f1f67387d9a646aad18f42d199599c52287aabc264a8124a793edbbcf2ada4eb",
+    "readRanges": [
+      [
+        0,
+        3672
+      ]
+    ],
+    "reviewedBytes": 6039,
+    "reviewedLines": 36
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/RELEASE-COMMANDS.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "본문 전체 검토. 실습 제거의 실행·실패 증거, Google 가입의 SMS 보류 경계, 원격 브랜치와 실제 배포의 차이를 보존한다. 옛 게시·패치 명령은 후속 완료 문서와 대조 후 역사 경계를 정리할 후보로 분리했다. 이미 v3까지 게시된 v1/v2의 중복 실행 명령을 복구 가능한 원문 보관 링크로 통합하고 고유 CR·blob 검증 근거를 보존.",
+    "evidence": [
+      "결정.md 10-09 작업실 AI 업무 연습 제거·Google 로직 우선; 10-08 Atlas 실제 배포 결정. 해당 문서 내부 candidate/원본/실패/한정 승인 자료.",
+      "google-release-20261009/README.md 최종 공개판 및 실제 Google 확인",
+      "frontend/v2/README.md 후보 이력"
+    ],
+    "원문해시": "476475627587516f5ec85024dacb3a0ec52c47ed6f0c97021889bc2d8a8523e8",
+    "currentSha256": "103f861fe45162805ed1e43dc160a69d7e271b7a70b7d9b0f2605860e3b67569",
+    "readRanges": [
+      [
+        0,
+        2919
+      ]
+    ],
+    "reviewedBytes": 4325,
+    "reviewedLines": 54,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/frontend/RELEASE-COMMANDS.md"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/PUSH.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 실습 제거의 실행·실패 증거, Google 가입의 SMS 보류 경계, 원격 브랜치와 실제 배포의 차이를 보존한다. 옛 게시·패치 명령은 후속 완료 문서와 대조 후 역사 경계를 정리할 후보로 분리했다. 보존 커밋 때 포함하라는 미완료 지시를 실제 후속 커밋 결과로 연결. 소개팅 별도 패치와 원격 보존 경계는 유지. 자동 생성이 불확실한 절 앵커 대신 확인한 담당 파일 링크를 사용했다.",
+    "evidence": [
+      "결정.md 10-09 작업실 AI 업무 연습 제거·Google 로직 우선; 10-08 Atlas 실제 배포 결정. 해당 문서 내부 candidate/원본/실패/한정 승인 자료.",
+      "아틀라스검토_인계_20261008.md §7"
+    ],
+    "원문해시": "92f55145877f9274ebcf38f8b821981cd6246f3cf70759304aa4f9aa3eeb8684",
+    "currentSha256": "9c807a3b85231665ff1b005f3d6cd860fcca78fed92b1e28e484cb7b5d7c87c4",
+    "readRanges": [
+      [
+        0,
+        2272
+      ]
+    ],
+    "reviewedBytes": 4044,
+    "reviewedLines": 28,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-eight-fix-20261008/PUSH.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/GOOGLE-REGISTRATION-NOTICE.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 실습 제거의 실행·실패 증거, Google 가입의 SMS 보류 경계, 원격 브랜치와 실제 배포의 차이를 보존한다. 옛 게시·패치 명령은 후속 완료 문서와 대조 후 역사 경계를 정리할 후보로 분리했다.",
+    "evidence": "결정.md 10-09 작업실 AI 업무 연습 제거·Google 로직 우선; 10-08 Atlas 실제 배포 결정. 해당 문서 내부 candidate/원본/실패/한정 승인 자료.",
+    "원문해시": "198bd52a1b9a9a914d9db1a381c470a6a431fcd432d37fc93c77d1afc930412b",
+    "currentSha256": "198bd52a1b9a9a914d9db1a381c470a6a431fcd432d37fc93c77d1afc930412b",
+    "readRanges": [
+      [
+        0,
+        1701
+      ]
+    ],
+    "reviewedBytes": 3832,
+    "reviewedLines": 25
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체에서 실제 게시·검수 예외·실패 원문·동결 후보를 확인했다. Google 최종 v3 및 Atlas 당일 완료가 앞쪽의 대기형 실행 안내를 이미 대체했고 고유 검증 증거는 보존한다.",
+    "evidence": "결정.md 10-08 Atlas 반영, 10-09 Google 후속 승인; google-release/README 최종 v3; atlas-eight-deploy/README 마지막 완료 절.",
+    "원문해시": "5c13768764f030d08a9d9e1b16357d54eab06d752d0b8d77f8fb5b38bf0af063",
+    "currentSha256": "5c13768764f030d08a9d9e1b16357d54eab06d752d0b8d77f8fb5b38bf0af063",
+    "readRanges": [
+      [
+        0,
+        3843
+      ]
+    ],
+    "reviewedBytes": 6600,
+    "reviewedLines": 26
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체에서 실제 게시·검수 예외·실패 원문·동결 후보를 확인했다. Google 최종 v3 및 Atlas 당일 완료가 앞쪽의 대기형 실행 안내를 이미 대체했고 고유 검증 증거는 보존한다. 같은 문서 말미의 10-08 실제 완료와 앞쪽 대기 지시가 충돌하므로 당시 계획·자료로 명확히 구분. 모든 수치·실패·범위 보존.",
+    "evidence": [
+      "결정.md 10-08 Atlas 반영, 10-09 Google 후속 승인; google-release/README 최종 v3; atlas-eight-deploy/README 마지막 완료 절.",
+      "본문 마지막 2026-10-08 Claude 최종 검수 결과",
+      "결정.md 10-08 Atlas 배포 완료"
+    ],
+    "원문해시": "db4331d4feb36d38e39803617fa208617059b1d87a631b6185825af8500addc0",
+    "currentSha256": "c9f6cf722ff08588a2160c41563b8605d38b8dd25e35edbabbc8b11b0216fb7d",
+    "readRanges": [
+      [
+        0,
+        3690
+      ]
+    ],
+    "reviewedBytes": 6243,
+    "reviewedLines": 38,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-eight-deploy-20261008/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v2/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체에서 실제 게시·검수 예외·실패 원문·동결 후보를 확인했다. Google 최종 v3 및 Atlas 당일 완료가 앞쪽의 대기형 실행 안내를 이미 대체했고 고유 검증 증거는 보존한다. v2의 미게시 상태와 재실행 안내를 당시 후보 기록으로 바로잡고 최종 v3 완료 원문을 연결.",
+    "evidence": [
+      "결정.md 10-08 Atlas 반영, 10-09 Google 후속 승인; google-release/README 최종 v3; atlas-eight-deploy/README 마지막 완료 절.",
+      "google-release-20261009/README.md"
+    ],
+    "원문해시": "944227072ab939570471d071d274a33ee82d94f07a85b98a580b64f0d4c5c43f",
+    "currentSha256": "786fb3c7ca7ed236d7e931624968e9b3d125f56af5ed5a5201afe1b2be505d61",
+    "readRanges": [
+      [
+        0,
+        3754
+      ]
+    ],
+    "reviewedBytes": 5665,
+    "reviewedLines": 31,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/frontend/v2/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/product-web-logout-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체에서 실제 게시·검수 예외·실패 원문·동결 후보를 확인했다. Google 최종 v3 및 Atlas 당일 완료가 앞쪽의 대기형 실행 안내를 이미 대체했고 고유 검증 증거는 보존한다.",
+    "evidence": "결정.md 10-08 Atlas 반영, 10-09 Google 후속 승인; google-release/README 최종 v3; atlas-eight-deploy/README 마지막 완료 절.",
+    "원문해시": "136557508a926feab2a8354fc376d401e22ac7a174c2e84a7d998848f8b9fe26",
+    "currentSha256": "136557508a926feab2a8354fc376d401e22ac7a174c2e84a7d998848f8b9fe26",
+    "readRanges": [
+      [
+        0,
+        2178
+      ]
+    ],
+    "reviewedBytes": 3900,
+    "reviewedLines": 19
+  },
+  {
+    "path": "docs/_ops/아틀라스검토_인계_20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 12,296자 인계의 초기 계획과 같은 날 10:50·18:50 완료를 대조. 업무실 패치는 a43bf2b12로 보존되고 8종은 18:03 라이브 완료되었으며 원격에만 있던 소개팅 트리 복원과 유일 실패 사례를 보존한다. 완료 후 남은 옛 세션 우선 입구와 공유 인덱스 갱신 절차를 역사·재현 자료로 한정. 상세 고유 실패·복원·승인 이력 보존.",
+    "evidence": [
+      "본문 §7·§8, atlas-eight-deploy/README 완료 절, 결정.md 10-08 실제 배포 승인.",
+      "본문 §7·§8 완료 결과",
+      "AI_운영원칙.md"
+    ],
+    "원문해시": "05fcd58e3babd3b6b3bbe6c56376a070b37889930b798a77692eac28782e04e6",
+    "currentSha256": "03ebdaed726c9e92e25e1fbc00796dafa6e35609e385cd3d7054f4cd6631cc84",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        12296
+      ]
+    ],
+    "reviewedBytes": 19649,
+    "reviewedLines": 96,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261008.md"
+  },
+  {
+    "path": "docs/_ops/qa/native-followup-corrections-20261010/final-review/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 고정 검수 입력·H3 접수와 승인 미확정·0.4.14와 0.4.15 후속·native 최초 후보의 설치 드리프트 거부 증거를 보존. report/async-data는 해당 생성 보고서에 딸린 컴포넌트 문서이고 공통 SYNK 지침이 아니다.",
+    "evidence": "문서별 동결 입력·한정 검사·후속 결과 링크; 결정.md 10-09/10-10 승인 이력. H3 신청을 라이선스 승인으로 확대하지 않음.",
+    "원문해시": "61ab1b4d8a39e0e66ddd0ef51e983c1c9739d338da12ce68082edc559e35f744",
+    "currentSha256": "61ab1b4d8a39e0e66ddd0ef51e983c1c9739d338da12ce68082edc559e35f744",
+    "readRanges": [
+      [
+        0,
+        2096
+      ]
+    ],
+    "reviewedBytes": 3903,
+    "reviewedLines": 16
+  },
+  {
+    "path": "docs/_ops/qa/ai-media-20261007/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 고정 검수 입력·H3 접수와 승인 미확정·0.4.14와 0.4.15 후속·native 최초 후보의 설치 드리프트 거부 증거를 보존. report/async-data는 해당 생성 보고서에 딸린 컴포넌트 문서이고 공통 SYNK 지침이 아니다.",
+    "evidence": "문서별 동결 입력·한정 검사·후속 결과 링크; 결정.md 10-09/10-10 승인 이력. H3 신청을 라이선스 승인으로 확대하지 않음.",
+    "원문해시": "713e5e635b19d585f0eea3cd231ef2c7d54287193866abdde9cf9f1ebba224f3",
+    "currentSha256": "713e5e635b19d585f0eea3cd231ef2c7d54287193866abdde9cf9f1ebba224f3",
+    "readRanges": [
+      [
+        0,
+        2263
+      ]
+    ],
+    "reviewedBytes": 3900,
+    "reviewedLines": 42
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/async-data.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 고정 검수 입력·H3 접수와 승인 미확정·0.4.14와 0.4.15 후속·native 최초 후보의 설치 드리프트 거부 증거를 보존. report/async-data는 해당 생성 보고서에 딸린 컴포넌트 문서이고 공통 SYNK 지침이 아니다.",
+    "evidence": "문서별 동결 입력·한정 검사·후속 결과 링크; 결정.md 10-09/10-10 승인 이력. H3 신청을 라이선스 승인으로 확대하지 않음.",
+    "원문해시": "ddd293d4e1200a3c4814e520443dd9e22c1214b102deef877e0eb7da132cfb7d",
+    "currentSha256": "ddd293d4e1200a3c4814e520443dd9e22c1214b102deef877e0eb7da132cfb7d",
+    "readRanges": [
+      [
+        0,
+        3910
+      ]
+    ],
+    "reviewedBytes": 3910,
+    "reviewedLines": 66
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/insight-0.4.14/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 고정 검수 입력·H3 접수와 승인 미확정·0.4.14와 0.4.15 후속·native 최초 후보의 설치 드리프트 거부 증거를 보존. report/async-data는 해당 생성 보고서에 딸린 컴포넌트 문서이고 공통 SYNK 지침이 아니다.",
+    "evidence": "문서별 동결 입력·한정 검사·후속 결과 링크; 결정.md 10-09/10-10 승인 이력. H3 신청을 라이선스 승인으로 확대하지 않음.",
+    "원문해시": "5ec229f4b9aca8ba10c14e88debd4ba127bf9377e49791356a1794fc073709a4",
+    "currentSha256": "5ec229f4b9aca8ba10c14e88debd4ba127bf9377e49791356a1794fc073709a4",
+    "readRanges": [
+      [
+        0,
+        2423
+      ]
+    ],
+    "reviewedBytes": 3922,
+    "reviewedLines": 20
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r1/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 고정 검수 입력·H3 접수와 승인 미확정·0.4.14와 0.4.15 후속·native 최초 후보의 설치 드리프트 거부 증거를 보존. report/async-data는 해당 생성 보고서에 딸린 컴포넌트 문서이고 공통 SYNK 지침이 아니다.",
+    "evidence": "문서별 동결 입력·한정 검사·후속 결과 링크; 결정.md 10-09/10-10 승인 이력. H3 신청을 라이선스 승인으로 확대하지 않음.",
+    "원문해시": "15f9efd790d0d393e39450e4b7d516d2ac7fdfa38882e7cbfad6b5f624ebb59a",
+    "currentSha256": "15f9efd790d0d393e39450e4b7d516d2ac7fdfa38882e7cbfad6b5f624ebb59a",
+    "readRanges": [
+      [
+        0,
+        2522
+      ]
+    ],
+    "reviewedBytes": 3970,
+    "reviewedLines": 29
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문을 읽고 PULSE 초기 기능/실패 로그, Google 브랜드 미게시 원인과 범위, 고정 검수 입력, 통합 인수의 후속 실계정 결과, Workspace 로그인 익명 화면과 HA 복구 증거를 구분했다. 날짜별 증거 보존.",
+    "evidence": "각 문서의 시간·고정 원문·영수증; 결정.md의 같은 날짜 승인. Google 브랜드 향후 절차의 고정 모델 의무는 현행 AI 운영 원칙과 대조 대상.",
+    "원문해시": "4a8a9e4f14d1f74010313d889b2d53c3da3f9f4053667c71c8a9903c50cf86f1",
+    "currentSha256": "4a8a9e4f14d1f74010313d889b2d53c3da3f9f4053667c71c8a9903c50cf86f1",
+    "readRanges": [
+      [
+        0,
+        2287
+      ]
+    ],
+    "reviewedBytes": 4069,
+    "reviewedLines": 39
+  },
+  {
+    "path": "docs/_ops/qa/google-brand-label-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 본문을 읽고 PULSE 초기 기능/실패 로그, Google 브랜드 미게시 원인과 범위, 고정 검수 입력, 통합 인수의 후속 실계정 결과, Workspace 로그인 익명 화면과 HA 복구 증거를 구분했다. 날짜별 증거 보존. 미완료 브랜드 공개 절차에 남은 폐지된 고정 검수 관문을 현행 담당 원문 링크로 바꿈. 브랜드 공개 완료를 새로 주장하지 않음.",
+    "evidence": [
+      "각 문서의 시간·고정 원문·영수증; 결정.md의 같은 날짜 승인. Google 브랜드 향후 절차의 고정 모델 의무는 현행 AI 운영 원칙과 대조 대상.",
+      "AI_운영원칙.md 역할 및 과거 절차 경계",
+      "결정.md 10-02 Atlas 정의 및 후속 날짜별 결정"
+    ],
+    "원문해시": "391d7b0ab539fd3a5405d84acb6a61b90f5f915d4f1f0275e4e777339d24cf13",
+    "currentSha256": "f051a18d21921976eb29bc1ee63c928645b8072f3d074fe39ebd713b1f1a33c4",
+    "readRanges": [
+      [
+        0,
+        2235
+      ]
+    ],
+    "reviewedBytes": 4135,
+    "reviewedLines": 27,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-brand-label-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/combined-review-prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문을 읽고 PULSE 초기 기능/실패 로그, Google 브랜드 미게시 원인과 범위, 고정 검수 입력, 통합 인수의 후속 실계정 결과, Workspace 로그인 익명 화면과 HA 복구 증거를 구분했다. 날짜별 증거 보존.",
+    "evidence": "각 문서의 시간·고정 원문·영수증; 결정.md의 같은 날짜 승인. Google 브랜드 향후 절차의 고정 모델 의무는 현행 AI 운영 원칙과 대조 대상.",
+    "원문해시": "734363813f05cae461c3bedc549a9c905da8fe5bbeec95bb3ed9b465941716ca",
+    "currentSha256": "734363813f05cae461c3bedc549a9c905da8fe5bbeec95bb3ed9b465941716ca",
+    "readRanges": [
+      [
+        0,
+        2728
+      ]
+    ],
+    "reviewedBytes": 4167,
+    "reviewedLines": 8
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문을 읽고 PULSE 초기 기능/실패 로그, Google 브랜드 미게시 원인과 범위, 고정 검수 입력, 통합 인수의 후속 실계정 결과, Workspace 로그인 익명 화면과 HA 복구 증거를 구분했다. 날짜별 증거 보존.",
+    "evidence": "각 문서의 시간·고정 원문·영수증; 결정.md의 같은 날짜 승인. Google 브랜드 향후 절차의 고정 모델 의무는 현행 AI 운영 원칙과 대조 대상.",
+    "원문해시": "2c145416a6fd0123da56a1babcd98038f568e07d8ab077752bea656a66ed3a2b",
+    "currentSha256": "2c145416a6fd0123da56a1babcd98038f568e07d8ab077752bea656a66ed3a2b",
+    "readRanges": [
+      [
+        0,
+        2500
+      ]
+    ],
+    "reviewedBytes": 4233,
+    "reviewedLines": 20
+  },
+  {
+    "path": "docs/_ops/qa/workspace-login-v3-20261013/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문을 읽고 PULSE 초기 기능/실패 로그, Google 브랜드 미게시 원인과 범위, 고정 검수 입력, 통합 인수의 후속 실계정 결과, Workspace 로그인 익명 화면과 HA 복구 증거를 구분했다. 날짜별 증거 보존.",
+    "evidence": "각 문서의 시간·고정 원문·영수증; 결정.md의 같은 날짜 승인. Google 브랜드 향후 절차의 고정 모델 의무는 현행 AI 운영 원칙과 대조 대상.",
+    "원문해시": "6cd0f26348316ed366655cb1f06ccd72b75cc6c43581d964ef2036510c804500",
+    "currentSha256": "6cd0f26348316ed366655cb1f06ccd72b75cc6c43581d964ef2036510c804500",
+    "readRanges": [
+      [
+        0,
+        2412
+      ]
+    ],
+    "reviewedBytes": 4264,
+    "reviewedLines": 43
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/migration-checksum-audit.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. migration CR 1바이트/체크섬 원인, 공개 CI 503 재검사 범위, 재설치 정적 검수 입력과 표준 NSIS 종료 경로, 실제 재설치 및 백업 삭제 후 복구 불가 증거를 보존한다.",
+    "evidence": "각 문서 전체; 결정.md 10-08~10-10 범위. 재설치 파일 버전과 현재 설치 상태를 혼동하지 않으며 초안 검수 입력은 역사 원문이다.",
+    "원문해시": "28173eb0eaa06d57aff5bd7cf670e06b2488fc29c8413ff622130880e4b6175e",
+    "currentSha256": "28173eb0eaa06d57aff5bd7cf670e06b2488fc29c8413ff622130880e4b6175e",
+    "readRanges": [
+      [
+        0,
+        3025
+      ]
+    ],
+    "reviewedBytes": 4301,
+    "reviewedLines": 36
+  },
+  {
+    "path": "docs/_ops/qa/platform-site-check-recovery-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. migration CR 1바이트/체크섬 원인, 공개 CI 503 재검사 범위, 재설치 정적 검수 입력과 표준 NSIS 종료 경로, 실제 재설치 및 백업 삭제 후 복구 불가 증거를 보존한다.",
+    "evidence": "각 문서 전체; 결정.md 10-08~10-10 범위. 재설치 파일 버전과 현재 설치 상태를 혼동하지 않으며 초안 검수 입력은 역사 원문이다.",
+    "원문해시": "1cdf80f6ca136d9c401b1591104f38f3758b1edc0e60778d7565a298d470df46",
+    "currentSha256": "1cdf80f6ca136d9c401b1591104f38f3758b1edc0e60778d7565a298d470df46",
+    "readRanges": [
+      [
+        0,
+        2369
+      ]
+    ],
+    "reviewedBytes": 4320,
+    "reviewedLines": 31
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/scope.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. migration CR 1바이트/체크섬 원인, 공개 CI 503 재검사 범위, 재설치 정적 검수 입력과 표준 NSIS 종료 경로, 실제 재설치 및 백업 삭제 후 복구 불가 증거를 보존한다.",
+    "evidence": "각 문서 전체; 결정.md 10-08~10-10 범위. 재설치 파일 버전과 현재 설치 상태를 혼동하지 않으며 초안 검수 입력은 역사 원문이다.",
+    "원문해시": "bfb2f1741209f715ec572ae44ae3cc1027687293dbab8bf45453653b250b59c9",
+    "currentSha256": "bfb2f1741209f715ec572ae44ae3cc1027687293dbab8bf45453653b250b59c9",
+    "readRanges": [
+      [
+        0,
+        2432
+      ]
+    ],
+    "reviewedBytes": 4337,
+    "reviewedLines": 18
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/review/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. migration CR 1바이트/체크섬 원인, 공개 CI 503 재검사 범위, 재설치 정적 검수 입력과 표준 NSIS 종료 경로, 실제 재설치 및 백업 삭제 후 복구 불가 증거를 보존한다.",
+    "evidence": "각 문서 전체; 결정.md 10-08~10-10 범위. 재설치 파일 버전과 현재 설치 상태를 혼동하지 않으며 초안 검수 입력은 역사 원문이다.",
+    "원문해시": "bdde30e1ff85c6ddf59c3ffab7c4f94cdbc20f895c9bb64a583e6f3824b84018",
+    "currentSha256": "bdde30e1ff85c6ddf59c3ffab7c4f94cdbc20f895c9bb64a583e6f3824b84018",
+    "readRanges": [
+      [
+        0,
+        2550
+      ]
+    ],
+    "reviewedBytes": 4349,
+    "reviewedLines": 14
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-worldbook-20261010/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. migration CR 1바이트/체크섬 원인, 공개 CI 503 재검사 범위, 재설치 정적 검수 입력과 표준 NSIS 종료 경로, 실제 재설치 및 백업 삭제 후 복구 불가 증거를 보존한다. 새 노트북에서 옛 개인 0.4.0 설치본을 현행 권장본으로 오인할 수 있는 쓸 폴더 지시를 당시 이력으로 바꿈. 삭제된 복구 백업의 경계 유지.",
+    "evidence": [
+      "각 문서 전체; 결정.md 10-08~10-10 범위. 재설치 파일 버전과 현재 설치 상태를 혼동하지 않으며 초안 검수 입력은 역사 원문이다.",
+      "AI_운영원칙.md 역할 및 과거 절차 경계",
+      "결정.md 10-02 Atlas 정의 및 후속 날짜별 결정"
+    ],
+    "원문해시": "683246129c664fabe7b393cdd4859ae74ec28a45c079d3ca6e6657f7080f6c10",
+    "currentSha256": "01068076fd8f845d6821d44ea70b1511623403408d8159d2172b6c045115accc",
+    "readRanges": [
+      [
+        0,
+        2828
+      ]
+    ],
+    "reviewedBytes": 4389,
+    "reviewedLines": 38,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-reinstall-worldbook-20261010/README.md"
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/reports.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. PULSE 가상 체험의 실제 API 0과 실제 게시, WORLD 공개 패키지의 범위·개인 설치 미실행, Atlas 표기 교체의 고유 산출물/실패, native OAuth의 실제와 합성 원인 구분을 보존. 보고서 컴포넌트 문서는 산출물 내부 재사용 설명이다.",
+    "evidence": "결정.md의 10-02 Atlas 정의; 후속 배포·검수 문서 연결과 각 문서 한계.",
+    "원문해시": "a698727d6993ce703ca4b33749cce9313aece525ce91132f2433f39fe3894cf0",
+    "currentSha256": "a698727d6993ce703ca4b33749cce9313aece525ce91132f2433f39fe3894cf0",
+    "readRanges": [
+      [
+        0,
+        4446
+      ]
+    ],
+    "reviewedBytes": 4446,
+    "reviewedLines": 36
+  },
+  {
+    "path": "docs/_ops/qa/pulse-demo-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. PULSE 가상 체험의 실제 API 0과 실제 게시, WORLD 공개 패키지의 범위·개인 설치 미실행, Atlas 표기 교체의 고유 산출물/실패, native OAuth의 실제와 합성 원인 구분을 보존. 보고서 컴포넌트 문서는 산출물 내부 재사용 설명이다.",
+    "evidence": "결정.md의 10-02 Atlas 정의; 후속 배포·검수 문서 연결과 각 문서 한계.",
+    "원문해시": "c55545415b1c9e7e8f3e7603a2c4e486a16113619bfe6c1511544f4bf83649ad",
+    "currentSha256": "c55545415b1c9e7e8f3e7603a2c4e486a16113619bfe6c1511544f4bf83649ad",
+    "readRanges": [
+      [
+        0,
+        2323
+      ]
+    ],
+    "reviewedBytes": 4448,
+    "reviewedLines": 28
+  },
+  {
+    "path": "docs/_ops/qa/world-cloud-preview-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. PULSE 가상 체험의 실제 API 0과 실제 게시, WORLD 공개 패키지의 범위·개인 설치 미실행, Atlas 표기 교체의 고유 산출물/실패, native OAuth의 실제와 합성 원인 구분을 보존. 보고서 컴포넌트 문서는 산출물 내부 재사용 설명이다.",
+    "evidence": "결정.md의 10-02 Atlas 정의; 후속 배포·검수 문서 연결과 각 문서 한계.",
+    "원문해시": "a0616768933e3ea6dc44ca56b9ba80c5ab2ea750e7daa5ed5e44768e70b9d129",
+    "currentSha256": "a0616768933e3ea6dc44ca56b9ba80c5ab2ea750e7daa5ed5e44768e70b9d129",
+    "readRanges": [
+      [
+        0,
+        2560
+      ]
+    ],
+    "reviewedBytes": 4474,
+    "reviewedLines": 39
+  },
+  {
+    "path": "docs/_ops/엔진8종표기정리_20260921/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. PULSE 가상 체험의 실제 API 0과 실제 게시, WORLD 공개 패키지의 범위·개인 설치 미실행, Atlas 표기 교체의 고유 산출물/실패, native OAuth의 실제와 합성 원인 구분을 보존. 보고서 컴포넌트 문서는 산출물 내부 재사용 설명이다. 현재 기준 절의 상위 시스템 정의를 10-02 확정된 8개 엔진 총칭으로 정정. 표기 작업 당시 Strata 준비 상태와 이후 구현을 분리.",
+    "evidence": [
+      "결정.md의 10-02 Atlas 정의; 후속 배포·검수 문서 연결과 각 문서 한계.",
+      "AI_운영원칙.md 역할 및 과거 절차 경계",
+      "결정.md 10-02 Atlas 정의 및 후속 날짜별 결정"
+    ],
+    "원문해시": "44931618f74984c462aa49063e95aaebefefb83ecb2cd8368de9eb106ca82f4a",
+    "currentSha256": "0343b3d5b68dd737123b36e9787aab605ec2162eb62fb977c2fa27c6ce0346a6",
+    "readRanges": [
+      [
+        0,
+        2113
+      ]
+    ],
+    "reviewedBytes": 4513,
+    "reviewedLines": 35,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/엔진8종표기정리_20260921/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-oauth-logout-analysis.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. PULSE 가상 체험의 실제 API 0과 실제 게시, WORLD 공개 패키지의 범위·개인 설치 미실행, Atlas 표기 교체의 고유 산출물/실패, native OAuth의 실제와 합성 원인 구분을 보존. 보고서 컴포넌트 문서는 산출물 내부 재사용 설명이다.",
+    "evidence": "결정.md의 10-02 Atlas 정의; 후속 배포·검수 문서 연결과 각 문서 한계.",
+    "원문해시": "9685b522faa6d2c34770193b883ea51c028c607e07207a12f210cf3afd489d3f",
+    "currentSha256": "9685b522faa6d2c34770193b883ea51c028c607e07207a12f210cf3afd489d3f",
+    "readRanges": [
+      [
+        0,
+        2768
+      ]
+    ],
+    "reviewedBytes": 4544,
+    "reviewedLines": 23
+  },
+  {
+    "path": "docs/_ops/qa/company-cloud-release-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 회사 초기 릴리스와 소스 후속 수정·실행 전 정기 백업, 0.4.4 공통 배포 계약, 실제 계정 메모 충돌/복구 증거를 보존. 보고서 controls는 산출물 내부 라이브러리 설명이며 사업 지침 범위 밖. 현재 배포/오늘 예약처럼 남은 초기 인수 문구를 날짜가 있는 준비 이력으로 정리. 최신 운영 계약 링크 유지.",
+    "evidence": [
+      "회사 현재 원문 CLOUD-OPERATIONS.md와 초기 10-09 기록을 구분; 실제·합성 인수의 범위 및 날짜별 결정.",
+      "CLOUD-OPERATIONS.md 현재 계약·시간순 인수 이력"
+    ],
+    "원문해시": "406151c5b00ce6329f8ccc72c6392b8767e6cf3ae0683c1e6ec21d5d3fab6933",
+    "currentSha256": "5331b968622e5e226bf9c507fa6ea253938f79dcea31e7265dea9de41d7f162b",
+    "readRanges": [
+      [
+        0,
+        2301
+      ]
+    ],
+    "reviewedBytes": 4617,
+    "reviewedLines": 30,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/company-cloud-release-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-20261014/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 회사 초기 릴리스와 소스 후속 수정·실행 전 정기 백업, 0.4.4 공통 배포 계약, 실제 계정 메모 충돌/복구 증거를 보존. 보고서 controls는 산출물 내부 라이브러리 설명이며 사업 지침 범위 밖.",
+    "evidence": "회사 현재 원문 CLOUD-OPERATIONS.md와 초기 10-09 기록을 구분; 실제·합성 인수의 범위 및 날짜별 결정.",
+    "원문해시": "9a75c01b3d668724fbe5d3569e39e918069c230549517cdc4503169ba46ca25b",
+    "currentSha256": "9a75c01b3d668724fbe5d3569e39e918069c230549517cdc4503169ba46ca25b",
+    "readRanges": [
+      [
+        0,
+        2884
+      ]
+    ],
+    "reviewedBytes": 4682,
+    "reviewedLines": 29
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/controls.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 회사 초기 릴리스와 소스 후속 수정·실행 전 정기 백업, 0.4.4 공통 배포 계약, 실제 계정 메모 충돌/복구 증거를 보존. 보고서 controls는 산출물 내부 라이브러리 설명이며 사업 지침 범위 밖.",
+    "evidence": "회사 현재 원문 CLOUD-OPERATIONS.md와 초기 10-09 기록을 구분; 실제·합성 인수의 범위 및 날짜별 결정.",
+    "원문해시": "697c4e56b377e535c263220acbf4a4b4c05f8b072a47126051aa85dff8f3ea99",
+    "currentSha256": "697c4e56b377e535c263220acbf4a4b4c05f8b072a47126051aa85dff8f3ea99",
+    "readRanges": [
+      [
+        0,
+        4703
+      ]
+    ],
+    "reviewedBytes": 4703,
+    "reviewedLines": 48
+  },
+  {
+    "path": "docs/_ops/qa/platform-recovery-default-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 회사 초기 릴리스와 소스 후속 수정·실행 전 정기 백업, 0.4.4 공통 배포 계약, 실제 계정 메모 충돌/복구 증거를 보존. 보고서 controls는 산출물 내부 라이브러리 설명이며 사업 지침 범위 밖.",
+    "evidence": "회사 현재 원문 CLOUD-OPERATIONS.md와 초기 10-09 기록을 구분; 실제·합성 인수의 범위 및 날짜별 결정.",
+    "원문해시": "385ec4371e2569b1cb65ce55c61ad30f4a511df9e789c9daf0af99e56a67a1c6",
+    "currentSha256": "385ec4371e2569b1cb65ce55c61ad30f4a511df9e789c9daf0af99e56a67a1c6",
+    "readRanges": [
+      [
+        0,
+        2564
+      ]
+    ],
+    "reviewedBytes": 4708,
+    "reviewedLines": 28
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/desktop/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 검토. 성능 측정은 지연/메모리 개선과 전체 시간 증가를 함께 남기고, 모델 선택은 로컬 구현과 고객 실운영을 구분하며, 합성 프로젝트 운영 왕복을 외부 고객 실증으로 과장하지 않는다. 고정 검수 프롬프트는 당시 입력 증거로 보존.",
+    "evidence": "각 문서 측정·동결 입력·같은 SHA 사본 대조. PULSE 실제 초대 인수와 상업 성과 미측정 구분.",
+    "원문해시": "46486fb737bb9ba0525b05f3f25fed08ed436a69d7b2eb76f199460f97448fec",
+    "currentSha256": "46486fb737bb9ba0525b05f3f25fed08ed436a69d7b2eb76f199460f97448fec",
+    "readRanges": [
+      [
+        0,
+        2686
+      ]
+    ],
+    "reviewedBytes": 4788,
+    "reviewedLines": 31
+  },
+  {
+    "path": "docs/_ops/qa/pulse-casting-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 검토. 성능 측정은 지연/메모리 개선과 전체 시간 증가를 함께 남기고, 모델 선택은 로컬 구현과 고객 실운영을 구분하며, 합성 프로젝트 운영 왕복을 외부 고객 실증으로 과장하지 않는다. 고정 검수 프롬프트는 당시 입력 증거로 보존.",
+    "evidence": "각 문서 측정·동결 입력·같은 SHA 사본 대조. PULSE 실제 초대 인수와 상업 성과 미측정 구분.",
+    "원문해시": "aec06e6f2cdd5d6a1ff9e4e1051de949caf1ad85f16dade4bae1d43be39bbea4",
+    "currentSha256": "aec06e6f2cdd5d6a1ff9e4e1051de949caf1ad85f16dade4bae1d43be39bbea4",
+    "readRanges": [
+      [
+        0,
+        2432
+      ]
+    ],
+    "reviewedBytes": 4829,
+    "reviewedLines": 30
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/attempt2-interruption-retry/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 검토. 성능 측정은 지연/메모리 개선과 전체 시간 증가를 함께 남기고, 모델 선택은 로컬 구현과 고객 실운영을 구분하며, 합성 프로젝트 운영 왕복을 외부 고객 실증으로 과장하지 않는다. 고정 검수 프롬프트는 당시 입력 증거로 보존.",
+    "evidence": "각 문서 측정·동결 입력·같은 SHA 사본 대조. PULSE 실제 초대 인수와 상업 성과 미측정 구분.",
+    "원문해시": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6",
+    "currentSha256": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6",
+    "readRanges": [
+      [
+        0,
+        2803
+      ]
+    ],
+    "reviewedBytes": 4890,
+    "reviewedLines": 20
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/prompt.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/followup-review/attempt2-interruption-retry/prompt.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/followup-review/attempt2-interruption-retry/prompt.md",
+    "원문해시": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6",
+    "currentSha256": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6",
+    "readRanges": [],
+    "representativeSha256": "370e6bad22a40622635c7f78f6d870f6598920c42bf88e6a618bb3aad04127d6"
+  },
+  {
+    "path": "docs/_ops/qa/pulse-invite-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 검토. 성능 측정은 지연/메모리 개선과 전체 시간 증가를 함께 남기고, 모델 선택은 로컬 구현과 고객 실운영을 구분하며, 합성 프로젝트 운영 왕복을 외부 고객 실증으로 과장하지 않는다. 고정 검수 프롬프트는 당시 입력 증거로 보존.",
+    "evidence": "각 문서 측정·동결 입력·같은 SHA 사본 대조. PULSE 실제 초대 인수와 상업 성과 미측정 구분.",
+    "원문해시": "495c4f0f36282581c764b3b9e491e98633c3b7f1981b6de375d327ab3b196101",
+    "currentSha256": "495c4f0f36282581c764b3b9e491e98633c3b7f1981b6de375d327ab3b196101",
+    "readRanges": [
+      [
+        0,
+        2531
+      ]
+    ],
+    "reviewedBytes": 4965,
+    "reviewedLines": 48
+  },
+  {
+    "path": "tools/synk-id/qa/운영등록-공개반영-완료-20261007.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 통합 로그인 등록과 CI 취소/후속 성공, 최초 네이티브 연결 정책 거절, 수업 개인학습 데이터의 동의·삭제 경계, Google 브랜드 조사에서 직접 확인과 전달받은 상태를 구분한 고유 근거를 보존.",
+    "evidence": "각 문서의 실행 시각·후속/한계; Google 가격·규정은 10-09 조사 자료로 유지하고 이번 법률/정책 최신 판정으로 확대하지 않음.",
+    "원문해시": "ed749d575d031e4a0ff87f644eb50da1d594922b7e5078eb2d5277f1f4502099",
+    "currentSha256": "ed749d575d031e4a0ff87f644eb50da1d594922b7e5078eb2d5277f1f4502099",
+    "readRanges": [
+      [
+        0,
+        3025
+      ]
+    ],
+    "reviewedBytes": 4977,
+    "reviewedLines": 33
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/desktop-clients/HANDOFF.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 통합 로그인 등록과 CI 취소/후속 성공, 최초 네이티브 연결 정책 거절, 수업 개인학습 데이터의 동의·삭제 경계, Google 브랜드 조사에서 직접 확인과 전달받은 상태를 구분한 고유 근거를 보존.",
+    "evidence": "각 문서의 실행 시각·후속/한계; Google 가격·규정은 10-09 조사 자료로 유지하고 이번 법률/정책 최신 판정으로 확대하지 않음.",
+    "원문해시": "caf288d62b6e4ee1b84a3e4e069de450048b1336cbe395c6f249334395357430",
+    "currentSha256": "caf288d62b6e4ee1b84a3e4e069de450048b1336cbe395c6f249334395357430",
+    "readRanges": [
+      [
+        0,
+        3205
+      ]
+    ],
+    "reviewedBytes": 5122,
+    "reviewedLines": 46
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/backend.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 통합 로그인 등록과 CI 취소/후속 성공, 최초 네이티브 연결 정책 거절, 수업 개인학습 데이터의 동의·삭제 경계, Google 브랜드 조사에서 직접 확인과 전달받은 상태를 구분한 고유 근거를 보존.",
+    "evidence": "각 문서의 실행 시각·후속/한계; Google 가격·규정은 10-09 조사 자료로 유지하고 이번 법률/정책 최신 판정으로 확대하지 않음.",
+    "원문해시": "0987bda2ab5163702fbce1e9c69d1c374644f52b8bdd6bbb7527519aeabe3426",
+    "currentSha256": "0987bda2ab5163702fbce1e9c69d1c374644f52b8bdd6bbb7527519aeabe3426",
+    "readRanges": [
+      [
+        0,
+        2954
+      ]
+    ],
+    "reviewedBytes": 5135,
+    "reviewedLines": 36
+  },
+  {
+    "path": "docs/_ops/qa/google-brand-label-20261009/research.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 통합 로그인 등록과 CI 취소/후속 성공, 최초 네이티브 연결 정책 거절, 수업 개인학습 데이터의 동의·삭제 경계, Google 브랜드 조사에서 직접 확인과 전달받은 상태를 구분한 고유 근거를 보존.",
+    "evidence": "각 문서의 실행 시각·후속/한계; Google 가격·규정은 10-09 조사 자료로 유지하고 이번 법률/정책 최신 판정으로 확대하지 않음.",
+    "원문해시": "a543234411e1b360c8994612c4ce8b2b108a3c811ee9974b9afe26fe6e5c2cc9",
+    "currentSha256": "a543234411e1b360c8994612c4ce8b2b108a3c811ee9974b9afe26fe6e5c2cc9",
+    "readRanges": [
+      [
+        0,
+        2948
+      ]
+    ],
+    "reviewedBytes": 5195,
+    "reviewedLines": 28
+  },
+  {
+    "path": "docs/_ops/사내메신저_Google_AI_검토_20260927.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 구독 검토는 09-27 미확정 견적·보관 제안으로 유지하고 이후 회사 구현으로 소급하지 않는다. 계정 3차의 경합/취소·백업의 삭제 이전 복원 반례·Google 문자 유예 계약은 고유 개발/권한 증거라 보존.",
+    "evidence": "Google 운영 연결 최종 README와 로컬 구현 단계를 구분; SHIFT 백업 후속 키 누락 보호가 본문에서 이미 명시됨.",
+    "원문해시": "c69c2f82976ce4f5329e3a8d042aa68ac8ce50a9b3f20e9fef0c7af92883b9a9",
+    "currentSha256": "c69c2f82976ce4f5329e3a8d042aa68ac8ce50a9b3f20e9fef0c7af92883b9a9",
+    "readRanges": [
+      [
+        0,
+        2945
+      ]
+    ],
+    "reviewedBytes": 5256,
+    "reviewedLines": 70
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND3.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 구독 검토는 09-27 미확정 견적·보관 제안으로 유지하고 이후 회사 구현으로 소급하지 않는다. 계정 3차의 경합/취소·백업의 삭제 이전 복원 반례·Google 문자 유예 계약은 고유 개발/권한 증거라 보존.",
+    "evidence": "Google 운영 연결 최종 README와 로컬 구현 단계를 구분; SHIFT 백업 후속 키 누락 보호가 본문에서 이미 명시됨.",
+    "원문해시": "2c9f0a5b03b837ed7d9a35ce8be0de7dfc795a8071e480475e29765b05a26d99",
+    "currentSha256": "2c9f0a5b03b837ed7d9a35ce8be0de7dfc795a8071e480475e29765b05a26d99",
+    "readRanges": [
+      [
+        0,
+        2697
+      ]
+    ],
+    "reviewedBytes": 5269,
+    "reviewedLines": 40
+  },
+  {
+    "path": "docs/_ops/qa/shift-release-preparation-20261007/backup-README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 구독 검토는 09-27 미확정 견적·보관 제안으로 유지하고 이후 회사 구현으로 소급하지 않는다. 계정 3차의 경합/취소·백업의 삭제 이전 복원 반례·Google 문자 유예 계약은 고유 개발/권한 증거라 보존.",
+    "evidence": "Google 운영 연결 최종 README와 로컬 구현 단계를 구분; SHIFT 백업 후속 키 누락 보호가 본문에서 이미 명시됨.",
+    "원문해시": "1e02861094a93f609853380efe5ddbf75cca6bfa4553beada847d9ba2c3a9407",
+    "currentSha256": "1e02861094a93f609853380efe5ddbf75cca6bfa4553beada847d9ba2c3a9407",
+    "readRanges": [
+      [
+        0,
+        2630
+      ]
+    ],
+    "reviewedBytes": 5328,
+    "reviewedLines": 42
+  },
+  {
+    "path": "docs/_ops/qa/google-only-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 구독 검토는 09-27 미확정 견적·보관 제안으로 유지하고 이후 회사 구현으로 소급하지 않는다. 계정 3차의 경합/취소·백업의 삭제 이전 복원 반례·Google 문자 유예 계약은 고유 개발/권한 증거라 보존.",
+    "evidence": "Google 운영 연결 최종 README와 로컬 구현 단계를 구분; SHIFT 백업 후속 키 누락 보호가 본문에서 이미 명시됨.",
+    "원문해시": "9e5b0fa637d234a865e059ef89e2daef9f1f5a65169c1fe9937eefa6fd36f226",
+    "currentSha256": "9e5b0fa637d234a865e059ef89e2daef9f1f5a65169c1fe9937eefa6fd36f226",
+    "readRanges": [
+      [
+        0,
+        2798
+      ]
+    ],
+    "reviewedBytes": 5384,
+    "reviewedLines": 33
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND7.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 전환 경합의 고유 반례, v2 추가 검수 입력, migration 선행 그래프와 기존 실패 분리, 수업 라이브 로컬 검증의 실장비/운영 경계를 보존한다. 검수 입력은 재실행 지침이 아닌 당시 고정 증거로 유지.",
+    "evidence": "각 문서 원문 전체와 linked 결과; 실제 배포/현장 인수는 해당 후속 완료 기록에서 별도 판정.",
+    "원문해시": "b94906d6d8f0dac10dc3386ea0686e64e6db0c289cea36eb2e8562929033d34f",
+    "currentSha256": "b94906d6d8f0dac10dc3386ea0686e64e6db0c289cea36eb2e8562929033d34f",
+    "readRanges": [
+      [
+        0,
+        2850
+      ]
+    ],
+    "reviewedBytes": 5385,
+    "reviewedLines": 40
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/review-prompt-v2.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 전환 경합의 고유 반례, v2 추가 검수 입력, migration 선행 그래프와 기존 실패 분리, 수업 라이브 로컬 검증의 실장비/운영 경계를 보존한다. 검수 입력은 재실행 지침이 아닌 당시 고정 증거로 유지.",
+    "evidence": "각 문서 원문 전체와 linked 결과; 실제 배포/현장 인수는 해당 후속 완료 기록에서 별도 판정.",
+    "원문해시": "56d7d2ea0c38f42d35d39a1337fa5fa8d807f984819e1f8e20bda6cfcdf42983",
+    "currentSha256": "56d7d2ea0c38f42d35d39a1337fa5fa8d807f984819e1f8e20bda6cfcdf42983",
+    "readRanges": [
+      [
+        0,
+        3553
+      ]
+    ],
+    "reviewedBytes": 5422,
+    "reviewedLines": 27
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/migration-platform-final.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 전환 경합의 고유 반례, v2 추가 검수 입력, migration 선행 그래프와 기존 실패 분리, 수업 라이브 로컬 검증의 실장비/운영 경계를 보존한다. 검수 입력은 재실행 지침이 아닌 당시 고정 증거로 유지.",
+    "evidence": "각 문서 원문 전체와 linked 결과; 실제 배포/현장 인수는 해당 후속 완료 기록에서 별도 판정.",
+    "원문해시": "c8f51c09f82fe2c728fd083f588961de3ac9c9b581e5a98e4dd7dcd6c1df8317",
+    "currentSha256": "c8f51c09f82fe2c728fd083f588961de3ac9c9b581e5a98e4dd7dcd6c1df8317",
+    "readRanges": [
+      [
+        0,
+        3512
+      ]
+    ],
+    "reviewedBytes": 5442,
+    "reviewedLines": 51
+  },
+  {
+    "path": "docs/_ops/qa/classroom-followup-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 전환 경합의 고유 반례, v2 추가 검수 입력, migration 선행 그래프와 기존 실패 분리, 수업 라이브 로컬 검증의 실장비/운영 경계를 보존한다. 검수 입력은 재실행 지침이 아닌 당시 고정 증거로 유지.",
+    "evidence": "각 문서 원문 전체와 linked 결과; 실제 배포/현장 인수는 해당 후속 완료 기록에서 별도 판정.",
+    "원문해시": "815f4f0090c87da930c1c0f477f325c060fbb0506ffcd1f9029637641876805a",
+    "currentSha256": "815f4f0090c87da930c1c0f477f325c060fbb0506ffcd1f9029637641876805a",
+    "readRanges": [
+      [
+        0,
+        3130
+      ]
+    ],
+    "reviewedBytes": 5462,
+    "reviewedLines": 49
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-oauth-api-plan.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 실제 OAuth API 준비의 메모리 저장소/정리 경계, Electron ASAR 결함 재현과 설치 결과, PULSE 12시간 당시 조건과 30일 후속, 교실 OBS 실패·미확인 현장 조건을 보존한다.",
+    "evidence": "native-oauth-logout-analysis 후속 실제 결과; pulse-persistent 후속 링크; classroom-followup의 L0 후속. 이전 실패와 후속 성공을 소급 합치지 않음.",
+    "원문해시": "aec952d62b3cb888d952887be8c0d5c75728a1b3e613d6f4a03f1521656cada4",
+    "currentSha256": "aec952d62b3cb888d952887be8c0d5c75728a1b3e613d6f4a03f1521656cada4",
+    "readRanges": [
+      [
+        0,
+        3412
+      ]
+    ],
+    "reviewedBytes": 5481,
+    "reviewedLines": 43
+  },
+  {
+    "path": "docs/_ops/qa/platform-installation-asar-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 실제 OAuth API 준비의 메모리 저장소/정리 경계, Electron ASAR 결함 재현과 설치 결과, PULSE 12시간 당시 조건과 30일 후속, 교실 OBS 실패·미확인 현장 조건을 보존한다.",
+    "evidence": "native-oauth-logout-analysis 후속 실제 결과; pulse-persistent 후속 링크; classroom-followup의 L0 후속. 이전 실패와 후속 성공을 소급 합치지 않음.",
+    "원문해시": "0e84efc902cbf3da08b31165584eef896744a9a9efa3a59e00854617d4795070",
+    "currentSha256": "0e84efc902cbf3da08b31165584eef896744a9a9efa3a59e00854617d4795070",
+    "readRanges": [
+      [
+        0,
+        3516
+      ]
+    ],
+    "reviewedBytes": 5484,
+    "reviewedLines": 45
+  },
+  {
+    "path": "docs/_ops/qa/pulse-live-20261012/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 실제 OAuth API 준비의 메모리 저장소/정리 경계, Electron ASAR 결함 재현과 설치 결과, PULSE 12시간 당시 조건과 30일 후속, 교실 OBS 실패·미확인 현장 조건을 보존한다. 상단 후속만으로 남아 있던 본문의 12시간 재등록 지시를 당시 조건으로 정리.",
+    "evidence": [
+      "native-oauth-logout-analysis 후속 실제 결과; pulse-persistent 후속 링크; classroom-followup의 L0 후속. 이전 실패와 후속 성공을 소급 합치지 않음.",
+      "본문 01:24 KST 후속 30일 지속 연결 명시"
+    ],
+    "원문해시": "39fac19e70bb6a0ce49bc3f26e2db370b329c6ffdf9db8f0e318dd55ca0a822b",
+    "currentSha256": "460ca563843a405bc79ab99a03856c39dc10596dded7b35cd2a50b1ae090e0af",
+    "readRanges": [
+      [
+        0,
+        2670
+      ]
+    ],
+    "reviewedBytes": 5650,
+    "reviewedLines": 42,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/pulse-live-20261012/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/classroom-reliability-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 실제 OAuth API 준비의 메모리 저장소/정리 경계, Electron ASAR 결함 재현과 설치 결과, PULSE 12시간 당시 조건과 30일 후속, 교실 OBS 실패·미확인 현장 조건을 보존한다.",
+    "evidence": "native-oauth-logout-analysis 후속 실제 결과; pulse-persistent 후속 링크; classroom-followup의 L0 후속. 이전 실패와 후속 성공을 소급 합치지 않음.",
+    "원문해시": "9e12591a0a681c07c6cddb6bfe7ba18630f42405142c7a2866780a3677abbfe2",
+    "currentSha256": "9e12591a0a681c07c6cddb6bfe7ba18630f42405142c7a2866780a3677abbfe2",
+    "readRanges": [
+      [
+        0,
+        3079
+      ]
+    ],
+    "reviewedBytes": 5755,
+    "reviewedLines": 53
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND6.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 6차의 입력·토큰 경합, 교실 PC 게시와 검수 연기 승인, 옷장 픽셀 동일성/시작시간 측정, PULSE 가안 상품조건과 실제 기획 배포를 보존한다.",
+    "evidence": "결정.md 10-09 교실 한정 검수 연기; 10-11 PULSE 가안 범위. 과거 모델 검수 재개 문구는 현행 AI 운영 원칙 연결로 정리할 대상.",
+    "원문해시": "e8e192b34f4d0fc19529f0051f1eaac1a5e7a0d5b7643f634b800474557ba10a",
+    "currentSha256": "e8e192b34f4d0fc19529f0051f1eaac1a5e7a0d5b7643f634b800474557ba10a",
+    "readRanges": [
+      [
+        0,
+        3042
+      ]
+    ],
+    "reviewedBytes": 5768,
+    "reviewedLines": 44
+  },
+  {
+    "path": "docs/_ops/qa/classroom-pc-recovery-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 계정 6차의 입력·토큰 경합, 교실 PC 게시와 검수 연기 승인, 옷장 픽셀 동일성/시작시간 측정, PULSE 가안 상품조건과 실제 기획 배포를 보존한다. 사용자의 검수 연기와 증거 범위는 보존하되 폐지된 고정 모델 의무를 재개 전제에서 분리.",
+    "evidence": [
+      "결정.md 10-09 교실 한정 검수 연기; 10-11 PULSE 가안 범위. 과거 모델 검수 재개 문구는 현행 AI 운영 원칙 연결로 정리할 대상.",
+      "AI_운영원칙.md 역할·과거 고정 검수 관문 폐지",
+      "결정.md 10-09 교실 한정 연기"
+    ],
+    "원문해시": "bbe5ba10b8b86a8e5338eb9973bc68cd09c9b947a964be5a3dc80f1ad820a4e5",
+    "currentSha256": "71db9172ca1ff1c45031f6b1863fc2b5ce297a09f37adabf79fa344036db3776",
+    "readRanges": [
+      [
+        0,
+        3368
+      ]
+    ],
+    "reviewedBytes": 5774,
+    "reviewedLines": 31,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/classroom-pc-recovery-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/wardrobe-startup/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 6차의 입력·토큰 경합, 교실 PC 게시와 검수 연기 승인, 옷장 픽셀 동일성/시작시간 측정, PULSE 가안 상품조건과 실제 기획 배포를 보존한다.",
+    "evidence": "결정.md 10-09 교실 한정 검수 연기; 10-11 PULSE 가안 범위. 과거 모델 검수 재개 문구는 현행 AI 운영 원칙 연결로 정리할 대상.",
+    "원문해시": "a5784d08c7a215113483011e8bd0dc44fa335d114561cd423d0d27c630741d3c",
+    "currentSha256": "a5784d08c7a215113483011e8bd0dc44fa335d114561cd423d0d27c630741d3c",
+    "readRanges": [
+      [
+        0,
+        3422
+      ]
+    ],
+    "reviewedBytes": 5787,
+    "reviewedLines": 39
+  },
+  {
+    "path": "docs/_ops/qa/pulse-planning-20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 계정 6차의 입력·토큰 경합, 교실 PC 게시와 검수 연기 승인, 옷장 픽셀 동일성/시작시간 측정, PULSE 가안 상품조건과 실제 기획 배포를 보존한다.",
+    "evidence": "결정.md 10-09 교실 한정 검수 연기; 10-11 PULSE 가안 범위. 과거 모델 검수 재개 문구는 현행 AI 운영 원칙 연결로 정리할 대상.",
+    "원문해시": "3efec224f241344edad819077976255815d2191e9179f0833622875e88bfa2c7",
+    "currentSha256": "3efec224f241344edad819077976255815d2191e9179f0833622875e88bfa2c7",
+    "readRanges": [
+      [
+        0,
+        2919
+      ]
+    ],
+    "reviewedBytes": 5829,
+    "reviewedLines": 40
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND5.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 5차 로그아웃/취소 반례, Google 최초 공개 후보 입력 재현, 메신저 좁은 화면 실측과 UI 제안, 현대 Town JSON과 학원 수업 투영의 실제 분리 경계를 보존한다.",
+    "evidence": "Google 최종 운영 결과와 최초 후보 구분; WORKSPACE 계열의 시각 감사와 운영/실사용 증거 구분; 당시 runtime hash.",
+    "원문해시": "cedd7b2101f9fa793518084fa39fbdb75378d0060b3794fc710c2f4f17f14edb",
+    "currentSha256": "cedd7b2101f9fa793518084fa39fbdb75378d0060b3794fc710c2f4f17f14edb",
+    "readRanges": [
+      [
+        0,
+        3081
+      ]
+    ],
+    "reviewedBytes": 5895,
+    "reviewedLines": 44
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 5차 로그아웃/취소 반례, Google 최초 공개 후보 입력 재현, 메신저 좁은 화면 실측과 UI 제안, 현대 Town JSON과 학원 수업 투영의 실제 분리 경계를 보존한다. 최종 v3가 있는 최초 후보의 검수/게시 실행 지시를 당시 계획으로 바로잡고 정확 입력·합성 검증을 보존.",
+    "evidence": [
+      "Google 최종 운영 결과와 최초 후보 구분; WORKSPACE 계열의 시각 감사와 운영/실사용 증거 구분; 당시 runtime hash.",
+      "google-release-20261009/README.md"
+    ],
+    "원문해시": "43a97845189a97b0082523c86cf4d5b6a0222191f1430af9adb1764182662d59",
+    "currentSha256": "4fbb3c8a8cd539785c546e90756bd52251eaaeb7ca40b0a05e673b773e6fc57b",
+    "readRanges": [
+      [
+        0,
+        3691
+      ]
+    ],
+    "reviewedBytes": 5912,
+    "reviewedLines": 38,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/frontend/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/workspace-ui-polish-20261009/audit/messenger/findings.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 5차 로그아웃/취소 반례, Google 최초 공개 후보 입력 재현, 메신저 좁은 화면 실측과 UI 제안, 현대 Town JSON과 학원 수업 투영의 실제 분리 경계를 보존한다.",
+    "evidence": "Google 최종 운영 결과와 최초 후보 구분; WORKSPACE 계열의 시각 감사와 운영/실사용 증거 구분; 당시 runtime hash.",
+    "원문해시": "3186701e499c681bbc5e1777d844f43ccea2963df05224fe788d5dbd04f6c364",
+    "currentSha256": "3186701e499c681bbc5e1777d844f43ccea2963df05224fe788d5dbd04f6c364",
+    "readRanges": [
+      [
+        0,
+        3118
+      ]
+    ],
+    "reviewedBytes": 5964,
+    "reviewedLines": 49
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/modern-runtime.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 5차 로그아웃/취소 반례, Google 최초 공개 후보 입력 재현, 메신저 좁은 화면 실측과 UI 제안, 현대 Town JSON과 학원 수업 투영의 실제 분리 경계를 보존한다.",
+    "evidence": "Google 최종 운영 결과와 최초 후보 구분; WORKSPACE 계열의 시각 감사와 운영/실사용 증거 구분; 당시 runtime hash.",
+    "원문해시": "f100e6b9be4698d2a02d092c483df80a3f1cf561a7e0b82e168b6b7d6d30fc10",
+    "currentSha256": "f100e6b9be4698d2a02d092c483df80a3f1cf561a7e0b82e168b6b7d6d30fc10",
+    "readRanges": [
+      [
+        0,
+        3743
+      ]
+    ],
+    "reviewedBytes": 6058,
+    "reviewedLines": 43
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r2/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. native r2의 설치 드리프트·API 실인증과 UI 미검증, 초기 통합 초안의 신규 가입/조회 근거, 계정 2차의 기록·연결 복구를 확인했다. 통합 초안의 Secret 교체 남은 일은 최신 취소 결정과 비교해 정리할 후보. 이미 완료된 검수/설치를 현재 진행 중으로 읽지 않도록 후보 시점과 최종 결과 연결. API-only와 Windows 실사용 경계 보존.",
+    "evidence": [
+      "google-brand-label/README의 사용자 키 교체 취소; google-followups 최종 README 대조 예정. 각 원문 실패/보존 근거 유지.",
+      "google-followups-20261009/README.md 네이티브 수정·설치 결과"
+    ],
+    "원문해시": "7217dcdee42d25f8fbdb9965d755549434fd2e802b82ee0bea09949bdb2513b3",
+    "currentSha256": "54f69b198a4f85c0e7d32a927b3554c73161b53f76f613e7ce2cf410e1e44e6d",
+    "readRanges": [
+      [
+        0,
+        4086
+      ]
+    ],
+    "reviewedBytes": 6103,
+    "reviewedLines": 42,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r2/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/summary-draft.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "본문 전체 검토. native r2의 설치 드리프트·API 실인증과 UI 미검증, 초기 통합 초안의 신규 가입/조회 근거, 계정 2차의 기록·연결 복구를 확인했다. 통합 초안의 Secret 교체 남은 일은 최신 취소 결정과 비교해 정리할 후보. 최종 README가 명시적으로 대체한 통합 초안의 중복 진행보고를 보관 입구로 통합. 취소된 키 교체 재개 지시를 제거하고 원문 보존.",
+    "evidence": [
+      "google-brand-label/README의 사용자 키 교체 취소; google-followups 최종 README 대조 예정. 각 원문 실패/보존 근거 유지.",
+      "google-followups-20261009/README.md 키 교체 취소 및 summary-draft 이전 초안 문구",
+      "summary-draft를 가리키는 MD 참조 전수 검색 1건"
+    ],
+    "원문해시": "3eb60d34aebf8629ec148cbd89018e00733b7d449ce8e2589096f780c417cb85",
+    "currentSha256": "34c7aa5212bd9265bf7524dbfbb1755aaa65e563248515b9a6b609f75873e066",
+    "readRanges": [
+      [
+        0,
+        3523
+      ]
+    ],
+    "reviewedBytes": 6116,
+    "reviewedLines": 36,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-followups-20261009/summary-draft.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND2.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. native r2의 설치 드리프트·API 실인증과 UI 미검증, 초기 통합 초안의 신규 가입/조회 근거, 계정 2차의 기록·연결 복구를 확인했다. 통합 초안의 Secret 교체 남은 일은 최신 취소 결정과 비교해 정리할 후보.",
+    "evidence": "google-brand-label/README의 사용자 키 교체 취소; google-followups 최종 README 대조 예정. 각 원문 실패/보존 근거 유지.",
+    "원문해시": "c432b76fd7e0c439e350356d776f2e468d9901358658b312eb3b9410e67b37bd",
+    "currentSha256": "c432b76fd7e0c439e350356d776f2e468d9901358658b312eb3b9410e67b37bd",
+    "readRanges": [
+      [
+        0,
+        3340
+      ]
+    ],
+    "reviewedBytes": 6185,
+    "reviewedLines": 46
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/layout.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 생성 보고서 레이아웃 API 설명, PULSE 독립창의 쿠키/로그아웃 경계와 실제 설치 증거, 회사 초기가입/서버 후보의 읽기 대조와 당시 비용 근거를 보존한다.",
+    "evidence": "CLOUD-READONLY의 모든 수치에 10-08 기존 기록이라는 경계 존재; PULSE 실제 설치와 정상 프로필 확인 제한 구분.",
+    "원문해시": "da9013b89a528bfee18235581de33da73d6aefd5695851f3e808d84b53446bd1",
+    "currentSha256": "da9013b89a528bfee18235581de33da73d6aefd5695851f3e808d84b53446bd1",
+    "readRanges": [
+      [
+        0,
+        6138
+      ]
+    ],
+    "reviewedBytes": 6138,
+    "reviewedLines": 57
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-app-20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 생성 보고서 레이아웃 API 설명, PULSE 독립창의 쿠키/로그아웃 경계와 실제 설치 증거, 회사 초기가입/서버 후보의 읽기 대조와 당시 비용 근거를 보존한다.",
+    "evidence": "CLOUD-READONLY의 모든 수치에 10-08 기존 기록이라는 경계 존재; PULSE 실제 설치와 정상 프로필 확인 제한 구분.",
+    "원문해시": "3f02ca15bc77ed74d1d1a563524243d8098aea73732534d9d25a97b4b724543b",
+    "currentSha256": "3f02ca15bc77ed74d1d1a563524243d8098aea73732534d9d25a97b4b724543b",
+    "readRanges": [
+      [
+        0,
+        3641
+      ]
+    ],
+    "reviewedBytes": 6206,
+    "reviewedLines": 43
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/CLOUD-READONLY.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 생성 보고서 레이아웃 API 설명, PULSE 독립창의 쿠키/로그아웃 경계와 실제 설치 증거, 회사 초기가입/서버 후보의 읽기 대조와 당시 비용 근거를 보존한다.",
+    "evidence": "CLOUD-READONLY의 모든 수치에 10-08 기존 기록이라는 경계 존재; PULSE 실제 설치와 정상 프로필 확인 제한 구분.",
+    "원문해시": "7dc49fb30687df08e7cf6d83dc476ea253f1ba41fbdf5049ee4f80353567aeec",
+    "currentSha256": "7dc49fb30687df08e7cf6d83dc476ea253f1ba41fbdf5049ee4f80353567aeec",
+    "readRanges": [
+      [
+        0,
+        3307
+      ]
+    ],
+    "reviewedBytes": 6240,
+    "reviewedLines": 54
+  },
+  {
+    "path": "docs/_ops/qa/workroom-desk-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "본문 전체 검토. 제작 데스크 한정 검수 예외와 최신 부모 보존, PULSE 기획실/런웨이 교체의 실제 배포·장애/세션 한계, Google 신규 가입/네이티브 설치/키 교체 취소를 확인했다. summary-draft의 교체·검수 대기는 이 최종 결과로 대체됨.",
+    "evidence": "Google README 마지막 summary-draft 이전 초안 명시; 사용자 키 교체 취소 원문; CLOUD 최신 HA 계약은 별도 원문.",
+    "원문해시": "af8c05b5b438b31a9979b589962dd9832d09c9b38a399619754467e0884d9f09",
+    "currentSha256": "af8c05b5b438b31a9979b589962dd9832d09c9b38a399619754467e0884d9f09",
+    "readRanges": [
+      [
+        0,
+        3615
+      ]
+    ],
+    "reviewedBytes": 6264,
+    "reviewedLines": 38
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-library-20261012/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 제작 데스크 한정 검수 예외와 최신 부모 보존, PULSE 기획실/런웨이 교체의 실제 배포·장애/세션 한계, Google 신규 가입/네이티브 설치/키 교체 취소를 확인했다. summary-draft의 교체·검수 대기는 이 최종 결과로 대체됨. 10-12 당시 HA 보류를 현행 운영 상태로 오인하지 않게 현재 담당 원문으로 연결. 뒤의 당시 배포 수치는 그대로 보존.",
+    "evidence": [
+      "Google README 마지막 summary-draft 이전 초안 명시; 사용자 키 교체 취소 원문; CLOUD 최신 HA 계약은 별도 원문.",
+      "CLOUD-OPERATIONS.md 10-16 A epoch7·B standby·armed=true",
+      "workspace-login-v3-20261013/README.md HA 재활성화"
+    ],
+    "원문해시": "8a345a890ffa09836b2c49ff331b839db2514b4f930d11b14538975ce15a06df",
+    "currentSha256": "fe19e204e65d5c8d4378cfeb2fe1c5608bfde31bd4893c7c0b62264c0b8ab333",
+    "readRanges": [
+      [
+        0,
+        3452
+      ]
+    ],
+    "reviewedBytes": 6411,
+    "reviewedLines": 54,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/pulse-production-library-20261012/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문 전체 검토. 제작 데스크 한정 검수 예외와 최신 부모 보존, PULSE 기획실/런웨이 교체의 실제 배포·장애/세션 한계, Google 신규 가입/네이티브 설치/키 교체 취소를 확인했다. summary-draft의 교체·검수 대기는 이 최종 결과로 대체됨. 동일 최종 문서 안의 키 교체 취소와 현재형 필수 실행 지시 충돌 해소.",
+    "evidence": [
+      "Google README 마지막 summary-draft 이전 초안 명시; 사용자 키 교체 취소 원문; CLOUD 최신 HA 계약은 별도 원문.",
+      "같은 문서 키 교체 취소"
+    ],
+    "원문해시": "cf40d236ca860cff8fa66c9d9f33bcc6f23a798b3ab7f892049fc30f370d3bd7",
+    "currentSha256": "d7bf5b3aa79cd77726ac021d98e44eadbb9639f341d39dc2a41dea4e6ebce218",
+    "readRanges": [
+      [
+        0,
+        3796
+      ]
+    ],
+    "reviewedBytes": 6805,
+    "reviewedLines": 37,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-followups-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/release-readiness/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 본문 확인. 재설치 준비 당시 서명·업데이터 제안, 합성 복구의 증거 한계, 워크트리 정리의 승인·복구 참조를 보존한다. release-readiness의 후속 실행 문구는 실제 후속 릴리스 기록과 추가 대조한다. 완료된 후속 Preview 업데이트와 다른 옛 electron-updater 도입안을 현재 필수 실행 지시에서 분리. 인증서/미서명/프로필 차이의 원본 관찰은 유지.",
+    "evidence": [
+      "각 파일 전체; 후속 2026-10-14 자동 업데이트 기록과 현재 desktop/LIFECYCLE.md 대조 예정",
+      "platform-auto-update-20261014/README.md 전체 전독: 공통 feed·Signal 설치 엔진·정식 서명 유예"
+    ],
+    "원문해시": "14f498e1b049c7efbf5bd652fafba917391ce1eaf53ce8c3c1947dae8a40670e",
+    "currentSha256": "e1f035baa3077d8278fec7687bfdb6cc868616e4fa56549f9955958d431c613c",
+    "readRanges": [
+      [
+        0,
+        3717
+      ]
+    ],
+    "reviewedBytes": 6449,
+    "reviewedLines": 37,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-reinstall-20261010/release-readiness/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/recovery-README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 재설치 준비 당시 서명·업데이터 제안, 합성 복구의 증거 한계, 워크트리 정리의 승인·복구 참조를 보존한다. release-readiness의 후속 실행 문구는 실제 후속 릴리스 기록과 추가 대조한다.",
+    "evidence": "각 파일 전체; 후속 2026-10-14 자동 업데이트 기록과 현재 desktop/LIFECYCLE.md 대조 예정",
+    "원문해시": "bb2a9f4c18d00c357096b620148a2c1fa243f2f2bbf35fbbc73d55ea6b48eaf4",
+    "currentSha256": "bb2a9f4c18d00c357096b620148a2c1fa243f2f2bbf35fbbc73d55ea6b48eaf4",
+    "readRanges": [
+      [
+        0,
+        3288
+      ]
+    ],
+    "reviewedBytes": 6450,
+    "reviewedLines": 59
+  },
+  {
+    "path": "docs/_ops/qa/worktree-cleanup-20261010/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 재설치 준비 당시 서명·업데이터 제안, 합성 복구의 증거 한계, 워크트리 정리의 승인·복구 참조를 보존한다. release-readiness의 후속 실행 문구는 실제 후속 릴리스 기록과 추가 대조한다.",
+    "evidence": "각 파일 전체; 후속 2026-10-14 자동 업데이트 기록과 현재 desktop/LIFECYCLE.md 대조 예정",
+    "원문해시": "a8ea688b0587c8ba5c47937df67e584b4ecbaee3cde99f974356602533495989",
+    "currentSha256": "a8ea688b0587c8ba5c47937df67e584b4ecbaee3cde99f974356602533495989",
+    "readRanges": [
+      [
+        0,
+        4190
+      ]
+    ],
+    "reviewedBytes": 6462,
+    "reviewedLines": 80
+  },
+  {
+    "path": "docs/_ops/qa/platform-auto-update-20261014/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "0.4.5부터 0.4.14까지 모든 본문·표를 전독. 소스·패키지·공개·실계정·실제 PC 적용을 분리하며, 중단과 미확인 및 복구 증거를 유지한다. 0.4.7 최종 표는 해당 버전 이력임을 더 명시한다. 문서 하단의 0.4.7 인수표를 현재 설치 버전으로 오인하지 않도록 시점을 본문에 명시.",
+    "evidence": [
+      "전체 20,688자, 두 연속 청크; desktop/LIFECYCLE.md 업데이트 계약, 각 릴리스 원문 링크",
+      "같은 파일 상단 0.4.9~0.4.14 후속 공개·중단 기록"
+    ],
+    "원문해시": "8e58b63aa69f29e84bd9a5efbfbe8101bc8454a5c95c9a03e8a22cd7deb79f9c",
+    "currentSha256": "1ce30d61bf76cf968949b68280b81098fa3c6e087d3c392394a4c4b2ef9dfc3d",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        20688
+      ]
+    ],
+    "reviewedBytes": 34271,
+    "reviewedLines": 194,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-auto-update-20261014/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-pulse-workflow-20261011/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. PULSE 최초 세션과 설치 경계, 8차 계정 회귀의 고유 실패·성공, Google 가입 전 사용자 선택/동의 제한을 보존. PULSE 종료 후 재연결 및 가입 미완료 표현은 후속 기록과 대조 대상으로 남긴다. 앱 종료 후 매번 초대를 요구하던 초기 상태를 후속 연결 유지와 구분. 앱/브라우저 보존 조건을 혼합하지 않음.",
+    "evidence": [
+      "각 파일 전체; 후속 pulse-persistent 및 signup-fields 최종 기록 대조 예정",
+      "독립 PULSE 및 지속 연결 후속"
+    ],
+    "원문해시": "e86c9290d3820ff22fdd5b370050edc919535f2190c84260630679b6bd6d7bb3",
+    "currentSha256": "0911dc329d627ac51152cd0fa310a85e75f5b38b521e4a04389f3c59d78dd83b",
+    "readRanges": [
+      [
+        0,
+        3671
+      ]
+    ],
+    "reviewedBytes": 6558,
+    "reviewedLines": 45,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-pulse-workflow-20261011/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND8.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PULSE 최초 세션과 설치 경계, 8차 계정 회귀의 고유 실패·성공, Google 가입 전 사용자 선택/동의 제한을 보존. PULSE 종료 후 재연결 및 가입 미완료 표현은 후속 기록과 대조 대상으로 남긴다.",
+    "evidence": "각 파일 전체; 후속 pulse-persistent 및 signup-fields 최종 기록 대조 예정",
+    "원문해시": "fd1fc1ae0fa81e74d7232c212ba82914d568e2569b25c95eda793d7203c3f3f5",
+    "currentSha256": "fd1fc1ae0fa81e74d7232c212ba82914d568e2569b25c95eda793d7203c3f3f5",
+    "readRanges": [
+      [
+        0,
+        3387
+      ]
+    ],
+    "reviewedBytes": 6584,
+    "reviewedLines": 42
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README-before-user-fixture.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "전문 확인. PULSE 최초 세션과 설치 경계, 8차 계정 회귀의 고유 실패·성공, Google 가입 전 사용자 선택/동의 제한을 보존. PULSE 종료 후 재연결 및 가입 미완료 표현은 후속 기록과 대조 대상으로 남긴다. 후속 준비와 중복되는 초기 준비 본문을 복구 가능한 원문 입구로 통합. 사용자 지정 전/후 차이를 명시.",
+    "evidence": [
+      "각 파일 전체; 후속 pulse-persistent 및 signup-fields 최종 기록 대조 예정",
+      "README 후속 사용자 지정 및 ../README 최종 완료; MD 참조 검색에서 초기 파일 실행 참조 없음"
+    ],
+    "원문해시": "33c3b65129847c5904fb6ce14a10ed9f05b7e534fdc0242dd6d0e3c143873055",
+    "currentSha256": "621f8fd491735a77042f2ca3b125052fc42106fee63b9616efe5d6fa236fb4a3",
+    "readRanges": [
+      [
+        0,
+        3227
+      ]
+    ],
+    "reviewedBytes": 6660,
+    "reviewedLines": 32,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-followups-20261009/signup-fields/README-before-user-fixture.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-macos-preview-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Mac 두 CPU별 실제 패키지 및 Rosetta 실패, DB 번호 충돌의 적용 전 원격 카탈로그·checksum, 9차 저장/계정 회귀의 고유 증거를 보존한다. 설치·배포 준비는 해당 날짜의 후보 상태로 읽는다.",
+    "evidence": "파일 전체; 97은 10-14 자동 업데이트 기록과 구분; 96은 후속 COMPLETION 대조 대상",
+    "원문해시": "9c86466f660395f5a73908fd7b13575070ed83a239fc6ae879243906a8dbbaf5",
+    "currentSha256": "9c86466f660395f5a73908fd7b13575070ed83a239fc6ae879243906a8dbbaf5",
+    "readRanges": [
+      [
+        0,
+        4354
+      ]
+    ],
+    "reviewedBytes": 6718,
+    "reviewedLines": 49
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/collision-audit.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Mac 두 CPU별 실제 패키지 및 Rosetta 실패, DB 번호 충돌의 적용 전 원격 카탈로그·checksum, 9차 저장/계정 회귀의 고유 증거를 보존한다. 설치·배포 준비는 해당 날짜의 후보 상태로 읽는다. 증분 적용 전 audit을 후속 완료 기록에 연결. 전체 합본 재적용 금지와 체크섬 원문 유지.",
+    "evidence": [
+      "파일 전체; 97은 10-14 자동 업데이트 기록과 구분; 96은 후속 COMPLETION 대조 대상",
+      "COMPLETION 실제 증분 적용"
+    ],
+    "원문해시": "be0aaed317196c918e1edc778f7f2fdd3c6bfacd3936e325e65d7d9a52d1462e",
+    "currentSha256": "2259f42ca1cbb54cac7793349edcb1221e7222a0ce29ab52fd1b3cb562a8c3af",
+    "readRanges": [
+      [
+        0,
+        4552
+      ]
+    ],
+    "reviewedBytes": 6735,
+    "reviewedLines": 59,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-account-audit-20261008/collision-audit.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND9.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Mac 두 CPU별 실제 패키지 및 Rosetta 실패, DB 번호 충돌의 적용 전 원격 카탈로그·checksum, 9차 저장/계정 회귀의 고유 증거를 보존한다. 설치·배포 준비는 해당 날짜의 후보 상태로 읽는다.",
+    "evidence": "파일 전체; 97은 10-14 자동 업데이트 기록과 구분; 96은 후속 COMPLETION 대조 대상",
+    "원문해시": "d4558efb88cbfac2c06c82ccff5ab3f3ece3dcf5199f5ab6fe12dab2eb644b1b",
+    "currentSha256": "d4558efb88cbfac2c06c82ccff5ab3f3ece3dcf5199f5ab6fe12dab2eb644b1b",
+    "readRanges": [
+      [
+        0,
+        3445
+      ]
+    ],
+    "reviewedBytes": 6858,
+    "reviewedLines": 56
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.before-input-binding.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 불투명 Secret 응답의 검증 한계·합성 40개 회귀, 두 설치 후보의 원본/ASAR/설치 대조 및 첫 캡처 실패를 보존한다. 옛 키 교체 절차와 최신 개인 설치본 안내는 후속 완료·취소 기록과 연결할 대상이다.",
+    "evidence": "각 파일 전체; 93 이후 Google followups 키 교체 취소; 92 이후 10-14 공개 업데이트",
+    "원문해시": "9669cf553b5c820d3850b89ac0aa3427280b89f50fe7361a464080ef70621cf0",
+    "currentSha256": "9669cf553b5c820d3850b89ac0aa3427280b89f50fe7361a464080ef70621cf0",
+    "readRanges": [
+      [
+        0,
+        3838
+      ]
+    ],
+    "reviewedBytes": 6868,
+    "reviewedLines": 43
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/delivery/resume/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 불투명 Secret 응답의 검증 한계·합성 40개 회귀, 두 설치 후보의 원본/ASAR/설치 대조 및 첫 캡처 실패를 보존한다. 옛 키 교체 절차와 최신 개인 설치본 안내는 후속 완료·취소 기록과 연결할 대상이다. 0.4.0을 현재 최신 설치 파일로 지시하던 문장을 해당 날짜 실행 증거로 제한.",
+    "evidence": [
+      "각 파일 전체; 93 이후 Google followups 키 교체 취소; 92 이후 10-14 공개 업데이트",
+      "자동 업데이트·실제 설치 후속"
+    ],
+    "원문해시": "8d730e16f7fc6ef731a242d852d4a850f3c085dbacb77b38a3fed07d8d3d8b40",
+    "currentSha256": "dd0d483a547d666daed2007371c097e931fc8cd36897e2efacee379059e08384",
+    "readRanges": [
+      [
+        0,
+        4684
+      ]
+    ],
+    "reviewedBytes": 6972,
+    "reviewedLines": 58,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-convenience-20261009/delivery/resume/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/delivery/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 불투명 Secret 응답의 검증 한계·합성 40개 회귀, 두 설치 후보의 원본/ASAR/설치 대조 및 첫 캡처 실패를 보존한다. 옛 키 교체 절차와 최신 개인 설치본 안내는 후속 완료·취소 기록과 연결할 대상이다.",
+    "evidence": "각 파일 전체; 93 이후 Google followups 키 교체 취소; 92 이후 10-14 공개 업데이트",
+    "원문해시": "e7acb15cf3841034c6fb3130a039e106972d95b7adf988ecd401b61c1a5ffbf3",
+    "currentSha256": "e7acb15cf3841034c6fb3130a039e106972d95b7adf988ecd401b61c1a5ffbf3",
+    "readRanges": [
+      [
+        0,
+        4675
+      ]
+    ],
+    "reviewedBytes": 7052,
+    "reviewedLines": 59
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/review-prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 검토. 당시 정확한 후보·권한·실패를 재현하기 위한 고정 검수 입력이므로 원문을 보존한다. 당시 모델/관문은 현재 공통 지침으로 적용하지 않는다.",
+    "evidence": "전체 본문; AI_운영원칙 고정 모델 관문 폐지; 각 문서 후속 근거 링크",
+    "원문해시": "f2975f88f0ef36fb345b4d0ef1f9b52a3fb1c62dbc4a9ba7ed235c7a8e9dede9",
+    "currentSha256": "f2975f88f0ef36fb345b4d0ef1f9b52a3fb1c62dbc4a9ba7ed235c7a8e9dede9",
+    "readRanges": [
+      [
+        0,
+        4644
+      ]
+    ],
+    "reviewedBytes": 7053,
+    "reviewedLines": 39
+  },
+  {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 고정 검수 입력은 재현 증거로 보존. SHIFT 준비의 도구와 실제 고객 실적 경계, Workspace 합성 학생/공유·실패·복구 증거를 유지한다. SHIFT 본문 고정 모델 지시는 현행 원문과 충돌해 정정했다. 상단 이력 주석 뒤에도 남던 고정 모델 의무와 미정 운영 서버의 현재형을 본문에서 정정. 외부 고객 실증 미확정은 보존.",
+    "evidence": [
+      "전체 본문; AI_운영원칙 고정 모델 관문 폐지; 각 문서 후속 근거 링크",
+      "현행 AI 운영 원칙·CLOUD-OPERATIONS 후속 구축 기록"
+    ],
+    "원문해시": "88221522473f050e06287482b94b76de12f6a131fa5287353365b21b587d548c",
+    "currentSha256": "63e5c2ab75e56821d5649ce54320b65982fe4c9f858ba486d362b5f04a79e68a",
+    "readRanges": [
+      [
+        0,
+        3431
+      ]
+    ],
+    "reviewedBytes": 7203,
+    "reviewedLines": 48,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/shift-operational-acceptance-20261007/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/workspace-care-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 고정 검수 입력은 재현 증거로 보존. SHIFT 준비의 도구와 실제 고객 실적 경계, Workspace 합성 학생/공유·실패·복구 증거를 유지한다. SHIFT 본문 고정 모델 지시는 현행 원문과 충돌해 정정했다. 초기 미적용과 이후 연결 완료를 구분해 옛 migration/등록 실행 순서가 반복되지 않도록 정정.",
+    "evidence": [
+      "전체 본문; AI_운영원칙 고정 모델 관문 폐지; 각 문서 후속 근거 링크",
+      "workspace-connect와 마감 기록"
+    ],
+    "원문해시": "482944eae937d5edc1ceac7df4bcdb7d7c5ef98f4c0735366ec8f5baf2f199ab",
+    "currentSha256": "bab9916aa3dfd980873650cd9a9a151b6d365606d5493dc70579c2c962d09411",
+    "readRanges": [
+      [
+        0,
+        4269
+      ]
+    ],
+    "reviewedBytes": 7266,
+    "reviewedLines": 51,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/workspace-care-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 검수 입력 원본과 개인 재설치·설치 한계 및 Secret helper의 고유 입력 결합 보완/검수 차이를 보존한다. 취소된 키 교체의 현재 지시 형태는 보관 입구로 통합할 대상이다.",
+    "evidence": "각 파일 전체; Google followups 최종 키 교체 취소와 두 helper 후보의 전체 차이 확인",
+    "원문해시": "14a90d6001c5a4506371ec70ffe1227e8373a12806b2a4221acb5f25cccecea7",
+    "currentSha256": "14a90d6001c5a4506371ec70ffe1227e8373a12806b2a4221acb5f25cccecea7",
+    "readRanges": [
+      [
+        0,
+        3825
+      ]
+    ],
+    "reviewedBytes": 7386,
+    "reviewedLines": 28
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 검수 입력 원본과 개인 재설치·설치 한계 및 Secret helper의 고유 입력 결합 보완/검수 차이를 보존한다. 취소된 키 교체의 현재 지시 형태는 보관 입구로 통합할 대상이다.",
+    "evidence": "각 파일 전체; Google followups 최종 키 교체 취소와 두 helper 후보의 전체 차이 확인",
+    "원문해시": "964af9e5cfa8d94fa7e39428f217de28596918f40d1ae2958c3fe0cff086ce4e",
+    "currentSha256": "964af9e5cfa8d94fa7e39428f217de28596918f40d1ae2958c3fe0cff086ce4e",
+    "readRanges": [
+      [
+        0,
+        4615
+      ]
+    ],
+    "reviewedBytes": 7461,
+    "reviewedLines": 37
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 검수 입력 원본과 개인 재설치·설치 한계 및 Secret helper의 고유 입력 결합 보완/검수 차이를 보존한다. 취소된 키 교체의 현재 지시 형태는 보관 입구로 통합할 대상이다. 사용자가 취소한 키 교체 절차를 당시 helper 설계로 명확히 제한하고 고유 기술·검수 근거 유지.",
+    "evidence": [
+      "각 파일 전체; Google followups 최종 키 교체 취소와 두 helper 후보의 전체 차이 확인",
+      "google-followups 최종 키 교체 취소"
+    ],
+    "원문해시": "76544c262b3fe6ca3194b933ea27062a0f217baa82e63dae4256c65614ded316",
+    "currentSha256": "fe6ef173542d46504e138c18cdd2f53eeb0ff84b5f3d66bd9adfd34a8cbde047",
+    "readRanges": [
+      [
+        0,
+        4173
+      ]
+    ],
+    "reviewedBytes": 7476,
+    "reviewedLines": 43,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.md"
+  },
+  {
+    "path": "tools/synk-id/qa/path-travel-production-20261009/BACKEND-CANDIDATE.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PATH v21/v23의 승인·검수 예외·정확 배포 입력과 합성 검증, 4차 계정 회귀, 개발 카탈로그의 충돌 조율·실제 설치 및 미확인 로그인 범위를 보존한다. 날짜별 과거 성과를 현재의 추가 실행 승인으로 해석하지 않는다.",
+    "evidence": "각 파일 전체; 관련 이전/후속 기록 링크와 단계별 상태 대조",
+    "원문해시": "dca9823c8691b4c270f877a79c24c8a848798a04ea6c8eadfb17c9c3efbcb2ab",
+    "currentSha256": "dca9823c8691b4c270f877a79c24c8a848798a04ea6c8eadfb17c9c3efbcb2ab",
+    "readRanges": [
+      [
+        0,
+        4734
+      ]
+    ],
+    "reviewedBytes": 7485,
+    "reviewedLines": 39
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/ROUND4.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PATH v21/v23의 승인·검수 예외·정확 배포 입력과 합성 검증, 4차 계정 회귀, 개발 카탈로그의 충돌 조율·실제 설치 및 미확인 로그인 범위를 보존한다. 날짜별 과거 성과를 현재의 추가 실행 승인으로 해석하지 않는다.",
+    "evidence": "각 파일 전체; 관련 이전/후속 기록 링크와 단계별 상태 대조",
+    "원문해시": "0132988f05b09c406f24e2a354b75cd9bed25e8aebc4959830bfa69199f433ad",
+    "currentSha256": "0132988f05b09c406f24e2a354b75cd9bed25e8aebc4959830bfa69199f433ad",
+    "readRanges": [
+      [
+        0,
+        3946
+      ]
+    ],
+    "reviewedBytes": 7541,
+    "reviewedLines": 52
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/DEVELOPMENT-CATALOG.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PATH v21/v23의 승인·검수 예외·정확 배포 입력과 합성 검증, 4차 계정 회귀, 개발 카탈로그의 충돌 조율·실제 설치 및 미확인 로그인 범위를 보존한다. 날짜별 과거 성과를 현재의 추가 실행 승인으로 해석하지 않는다.",
+    "evidence": "각 파일 전체; 관련 이전/후속 기록 링크와 단계별 상태 대조",
+    "원문해시": "b708a9006c6a21791d7ebb41df65136d639e244c8c14fdf2d67554bde1d919d8",
+    "currentSha256": "b708a9006c6a21791d7ebb41df65136d639e244c8c14fdf2d67554bde1d919d8",
+    "readRanges": [
+      [
+        0,
+        4232
+      ]
+    ],
+    "reviewedBytes": 7631,
+    "reviewedLines": 47
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 계정 검수 입구·UX 통합 설치와 첫 실패, 사용자가 지정한 Google 시험 예외와 일반 수집 원칙을 보존. 가입 준비의 미완료/재입력 지시는 후속 최종 완료 기록과 연결해 정정한다.",
+    "evidence": "각 파일 전체; google-followups 최종 신규 가입 완료 및 계정 복원 기록",
+    "원문해시": "0548753d26da265c49cbeb33bc662c80319fcd7780368ec775d5dcfc3f382457",
+    "currentSha256": "0548753d26da265c49cbeb33bc662c80319fcd7780368ec775d5dcfc3f382457",
+    "readRanges": [
+      [
+        0,
+        4109
+      ]
+    ],
+    "reviewedBytes": 7876,
+    "reviewedLines": 47
+  },
+  {
+    "path": "docs/_ops/qa/platform-ux-refinement-20261008/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 계정 검수 입구·UX 통합 설치와 첫 실패, 사용자가 지정한 Google 시험 예외와 일반 수집 원칙을 보존. 가입 준비의 미완료/재입력 지시는 후속 최종 완료 기록과 연결해 정정한다.",
+    "evidence": "각 파일 전체; google-followups 최종 신규 가입 완료 및 계정 복원 기록",
+    "원문해시": "4196e4c3fe8794dd0f8d36ea80e15a3370cc29c39ee69293dc9d8d713775cec5",
+    "currentSha256": "4196e4c3fe8794dd0f8d36ea80e15a3370cc29c39ee69293dc9d8d713775cec5",
+    "readRanges": [
+      [
+        0,
+        4766
+      ]
+    ],
+    "reviewedBytes": 7927,
+    "reviewedLines": 53
+  },
+  {
+    "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 계정 검수 입구·UX 통합 설치와 첫 실패, 사용자가 지정한 Google 시험 예외와 일반 수집 원칙을 보존. 가입 준비의 미완료/재입력 지시는 후속 최종 완료 기록과 연결해 정정한다. 완료된 시험 앞의 준비 문서를 현재 대기 작업으로 읽지 않도록 본문 시점과 최종 기록 명시. 사용자 예외/일반 계약 모두 유지.",
+    "evidence": [
+      "각 파일 전체; google-followups 최종 신규 가입 완료 및 계정 복원 기록",
+      "google-followups 최종 신규 가입 20항목 및 계정 복원"
+    ],
+    "원문해시": "3088a67432daae1adb230e9ac03cfd9fe1154025b6d5582f3cce2a87d2ac1d35",
+    "currentSha256": "52e5ee5aad7003c5ccff98d243117e91e1821ecaf9dbb2846c74ae0e99cd7d67",
+    "readRanges": [
+      [
+        0,
+        4039
+      ]
+    ],
+    "reviewedBytes": 8197,
+    "reviewedLines": 36,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-followups-20261009/signup-fields/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-fix-20261008/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Atlas F1~F8 수정·질문 평가·사본 검사, Google 운영 기준/복구 정확 입력, 성능 측정의 수치와 한계 및 실패 이력을 보존한다. Atlas 문서 말미 push 미실행과 Google 옛 배포 실행 단계는 후속 완료와 연결해 시점 정정했다. 첫 문장의 push 보존 완료와 말미 push 미실행의 단계 충돌을 해소.",
+    "evidence": [
+      "각 파일 전체; Atlas PUSH 및 10-08 후속 배포; Google 최종 운영 기록; 각 측정 원문",
+      "PUSH.md 및 atlas-eight-deploy 후속 완료"
+    ],
+    "원문해시": "fe9fe9c951302b0e48e7ccd6542224e89588adfdbf42efbd2960f6b547cb8946",
+    "currentSha256": "3f920d65d9aacb2882f4a42ec976c459bf94f81ebd93434275127c3cfa933759",
+    "readRanges": [
+      [
+        0,
+        4565
+      ]
+    ],
+    "reviewedBytes": 8354,
+    "reviewedLines": 61,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-eight-fix-20261008/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/backend/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Atlas F1~F8 수정·질문 평가·사본 검사, Google 운영 기준/복구 정확 입력, 성능 측정의 수치와 한계 및 실패 이력을 보존한다. Atlas 문서 말미 push 미실행과 Google 옛 배포 실행 단계는 후속 완료와 연결해 시점 정정했다. 완료된 초기 backend 후보의 provider false·재배포/롤백 실행문을 당시 재현·복구 기준으로 제한. 고유 원천/바이트/복구 해시는 보존.",
+    "evidence": [
+      "각 파일 전체; Atlas PUSH 및 10-08 후속 배포; Google 최종 운영 기록; 각 측정 원문",
+      "통합 Google 릴리스 및 Google followups 실제 인증 완료"
+    ],
+    "원문해시": "b4f7f72065766baef9281a956f3922c07ab18004c81a652f2c570edba6955037",
+    "currentSha256": "181f949aefa5629dd56cb3217edad2783ed251ee86768c63ee113606f27e6523",
+    "readRanges": [
+      [
+        0,
+        5349
+      ]
+    ],
+    "reviewedBytes": 8607,
+    "reviewedLines": 84,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/backend/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-performance-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 검토. 실제 측정 조건·수치·비교 한계와 실패 이력이 고유하므로 보존한다. 다른 날짜의 구현/운영 성과로 확대하지 않는다.",
+    "evidence": "각 파일 전체; Atlas PUSH 및 10-08 후속 배포; Google 최종 운영 기록; 각 측정 원문",
+    "원문해시": "0ac1d78e2c807bc15cf485fc88700debbecfa98e1e8d6690183697ea81ae4470",
+    "currentSha256": "0ac1d78e2c807bc15cf485fc88700debbecfa98e1e8d6690183697ea81ae4470",
+    "readRanges": [
+      [
+        0,
+        4941
+      ]
+    ],
+    "reviewedBytes": 8634,
+    "reviewedLines": 50
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 문자 필수 초기 가입 후보는 후속 유예 정책으로 대체됨을 본문 실행절차에도 반영할 대상. Atlas 검수·배포 완료 원본은 보존하되 말미 운영 미반영과 파일 삭제 재받기 지시의 시점/격리 범위를 바로잡을 대상. Workspace 원본·실패·핫픽스·사용자 보류는 유지. 상단 범위 변경 뒤 본문에 남아 있던 Google 전 SMS 필수 조건과 완료된 공개 대기 상태를 날짜 있는 초기안으로 정정.",
+    "evidence": [
+      "각 파일 전체; Google-only/최종 릴리스, Atlas 같은 파일 5절 완료, Workspace 06:30 실제 인수 기록",
+      "Google-only 구현·google-release/후속 실제 가입"
+    ],
+    "원문해시": "2f4edb39a1a8b5993c21142a7fa535488f2a23f5d6cf093d8650288842079255",
+    "currentSha256": "b50015cc0edb9619bb1b7cdc8d1b426873a067b1c277adbd7a1c80114ed73b68",
+    "readRanges": [
+      [
+        0,
+        4775
+      ]
+    ],
+    "reviewedBytes": 8814,
+    "reviewedLines": 48,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-signup-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-eight-deploy-20261008/claude-review-20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 문자 필수 초기 가입 후보는 후속 유예 정책으로 대체됨을 본문 실행절차에도 반영할 대상. Atlas 검수·배포 완료 원본은 보존하되 말미 운영 미반영과 파일 삭제 재받기 지시의 시점/격리 범위를 바로잡을 대상. Workspace 원본·실패·핫픽스·사용자 보류는 유지. 같은 기록 5절 완료와 6절 미완료를 시점별로 정리하고 옛 파일 삭제 재받기 조언을 격리 사본의 관찰로 제한. 검수 실패/수치/승인 보존.",
+    "evidence": [
+      "각 파일 전체; Google-only/최종 릴리스, Atlas 같은 파일 5절 완료, Workspace 06:30 실제 인수 기록",
+      "동일 파일 2절 검수 사본·5절 실제 배포"
+    ],
+    "원문해시": "21f35b491f6fae68f08af5e70a80de13e5b4d55c15a71dc78461db53e7f59f09",
+    "currentSha256": "46ed9c5f1f39be4bc8b067c3cafa934e20f97e2c31d99b560a83ffd7e4467036",
+    "readRanges": [
+      [
+        0,
+        5541
+      ]
+    ],
+    "reviewedBytes": 8839,
+    "reviewedLines": 60,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-eight-deploy-20261008/claude-review-20261008.md"
+  },
+  {
+    "path": "docs/_ops/qa/workspace-connect-close-20261010/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 문자 필수 초기 가입 후보는 후속 유예 정책으로 대체됨을 본문 실행절차에도 반영할 대상. Atlas 검수·배포 완료 원본은 보존하되 말미 운영 미반영과 파일 삭제 재받기 지시의 시점/격리 범위를 바로잡을 대상. Workspace 원본·실패·핫픽스·사용자 보류는 유지.",
+    "evidence": "각 파일 전체; Google-only/최종 릴리스, Atlas 같은 파일 5절 완료, Workspace 06:30 실제 인수 기록",
+    "원문해시": "d54a58f7e1cb710732bb41dc224334f64258e3bba4db24827de10f7372cc810f",
+    "currentSha256": "d54a58f7e1cb710732bb41dc224334f64258e3bba4db24827de10f7372cc810f",
+    "readRanges": [
+      [
+        0,
+        5009
+      ]
+    ],
+    "reviewedBytes": 8864,
+    "reviewedLines": 44
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-signal2-20261010/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 개인 재설치/설치 등록 복구·이미 승인 삭제된 백업 한계와 메모 수정/되돌리기/충돌의 실제 증거를 보존. 남아 있는 백업으로 복구하라는 앞부분 지시는 같은 문서 말미의 삭제 완료와 맞추어 정정했다. 같은 문서 말미의 승인 삭제와 충돌하는 현재 백업 복원 안내를 바로잡음. 별도 ASAR 경로는 당시 보존 증거로 유지.",
+    "evidence": [
+      "각 파일 전체; 72 말미 10-10 20:25 삭제 이력; 70 실제 PC/웹 충돌 및 후속 CI",
+      "같은 파일 작업 폴더 정리 2026-10-10 20:25"
+    ],
+    "원문해시": "8f6d1d94f8ff3ba02dd6f5d63b47bfeefc42a90caed9406d905aa62fa902e14e",
+    "currentSha256": "dfb2961181c05ecad7e9f98066935e52718a4254cb254262c8145d0a7f5390ac",
+    "readRanges": [
+      [
+        0,
+        5634
+      ]
+    ],
+    "reviewedBytes": 8901,
+    "reviewedLines": 58,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-reinstall-signal2-20261010/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-note-management-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 검토. 계정 메모 수정·되돌리기·충돌 및 복구본의 실제 검증 증거를 보존한다. 보존/폐기할 실행 절차의 새로운 충돌은 없다.",
+    "evidence": "각 파일 전체; 72 말미 10-10 20:25 삭제 이력; 70 실제 PC/웹 충돌 및 후속 CI",
+    "원문해시": "aed8c8ad7d87b738c712cdc90d3befcd55badc0e58e82e6ed7e23d98fa579759",
+    "currentSha256": "aed8c8ad7d87b738c712cdc90d3befcd55badc0e58e82e6ed7e23d98fa579759",
+    "readRanges": [
+      [
+        0,
+        5015
+      ]
+    ],
+    "reviewedBytes": 9036,
+    "reviewedLines": 38
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/sortable-layout.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 그래픽 연구 산출물에 동봉된 sortable UI 런타임 사용법으로 SYNK의 공통 사업/작업 지침이 아니다. 고유 구성·접근성·저장 규약을 해당 산출물 범위에 보존한다.",
+    "evidence": "9,000자 전체; output/.../report/docs/components 내부 전용 문서",
+    "원문해시": "fd0f9bfae34a9aa1563e17699a8591f1c24f7579303c176dcb27f45e6dc7bf96",
+    "currentSha256": "fd0f9bfae34a9aa1563e17699a8591f1c24f7579303c176dcb27f45e6dc7bf96",
+    "readRanges": [
+      [
+        0,
+        9000
+      ]
+    ],
+    "reviewedBytes": 9002,
+    "reviewedLines": 90
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/filtering.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 그래픽 연구 산출물의 필터·공유 URL·데이터 범위 동작을 설명하는 동봉 런타임 문서다. 공통 사업 지침으로 승격하지 않고 해당 산출물의 재현에 필요한 고유 설명을 보존한다.",
+    "evidence": "9,173자 전체; report/docs/components 전용 사용법",
+    "원문해시": "7820b3d916b4c3c74243d98be96e819f7bd0a828e466e9621127a32c2bf6c1b9",
+    "currentSha256": "7820b3d916b4c3c74243d98be96e819f7bd0a828e466e9621127a32c2bf6c1b9",
+    "readRanges": [
+      [
+        0,
+        9173
+      ]
+    ],
+    "reviewedBytes": 9179,
+    "reviewedLines": 79
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-next/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 두 번째 검수 입력에는 첫 후보의 잘못된 회귀 기대와 실제 9개 실패/24개 수정 경로가 추가되어 고유 재현 가치가 있다. 날짜가 고정된 검수 입력을 현재 모델 의무로 재사용하지 않고 원문 보존한다.",
+    "evidence": "4,875자 전체; 동일 사본 SHA 대조, 첫 initial-inputs와 실제 추가 본문 대조",
+    "원문해시": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18",
+    "currentSha256": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18",
+    "readRanges": [
+      [
+        0,
+        4875
+      ]
+    ],
+    "reviewedBytes": 9223,
+    "reviewedLines": 32
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-root-v2/prompt.md",
+    "coverage": "equivalent",
+    "representative": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-next/prompt.md",
+    "decision": "retained",
+    "reason": "전문 검토한 대표와 SHA-256 및 바이트가 동일한 사본. 고유 증거 없음.",
+    "evidence": "docs/_ops/qa/platform-account-integration-20261009/followup-review/initial-inputs-next/prompt.md",
+    "원문해시": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18",
+    "currentSha256": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18",
+    "readRanges": [],
+    "representativeSha256": "baab43caf251698c3634264a5a63e9cd1b52383c195b36c6d4eb4b0f62a41f18"
+  },
+  {
+    "path": "docs/_ops/qa/pulse-independent-20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PULSE 독립 앱의 합성/공개/실사용 한계와 최초 배포 중단, 입력 흐름/ASAR/실계정 왕복의 층별 증거, SHIFT 준비/원가 미확정/삭제 복구 한계를 보존한다. SHIFT 고정 모델 및 옛 운영 절차는 당시 준비로 정정한다.",
+    "evidence": "각 파일 전체; AI_운영원칙, 회사 운영 후속 원문, PULSE 및 계정 담당 후속 기록",
+    "원문해시": "91527c90a9bc75ce5a563c1a02059d65431fc8671c2bcafa8dafcef31f38b550",
+    "currentSha256": "91527c90a9bc75ce5a563c1a02059d65431fc8671c2bcafa8dafcef31f38b550",
+    "readRanges": [
+      [
+        0,
+        5062
+      ]
+    ],
+    "reviewedBytes": 9422,
+    "reviewedLines": 55
+  },
+  {
+    "path": "docs/_ops/qa/platform-input-continuity-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. PULSE 독립 앱의 합성/공개/실사용 한계와 최초 배포 중단, 입력 흐름/ASAR/실계정 왕복의 층별 증거, SHIFT 준비/원가 미확정/삭제 복구 한계를 보존한다. SHIFT 고정 모델 및 옛 운영 절차는 당시 준비로 정정한다.",
+    "evidence": "각 파일 전체; AI_운영원칙, 회사 운영 후속 원문, PULSE 및 계정 담당 후속 기록",
+    "원문해시": "e3a079045604d8563c3f5bfc00cfb70717ce3a3f3339919ff4b38b5a46d3c79f",
+    "currentSha256": "e3a079045604d8563c3f5bfc00cfb70717ce3a3f3339919ff4b38b5a46d3c79f",
+    "readRanges": [
+      [
+        0,
+        5475
+      ]
+    ],
+    "reviewedBytes": 9486,
+    "reviewedLines": 49
+  },
+  {
+    "path": "docs/_ops/qa/shift-release-preparation-20261007/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. PULSE 독립 앱의 합성/공개/실사용 한계와 최초 배포 중단, 입력 흐름/ASAR/실계정 왕복의 층별 증거, SHIFT 준비/원가 미확정/삭제 복구 한계를 보존한다. SHIFT 고정 모델 및 옛 운영 절차는 당시 준비로 정정한다. 폐지된 고정 모델 관문을 본문 의무에서 제거하고 준비 절차의 날짜와 현재 운영 원문 연결.",
+    "evidence": [
+      "각 파일 전체; AI_운영원칙, 회사 운영 후속 원문, PULSE 및 계정 담당 후속 기록",
+      "AI_운영원칙 및 CLOUD-OPERATIONS"
+    ],
+    "원문해시": "4fdbe6808928f7c3518dacba5bdf839d75366a5239b9f71e8718cb47dbed58dd",
+    "currentSha256": "46601d6ca101a711d477d761a44f3391edfa3e708ceb83695a522707b3366a48",
+    "readRanges": [
+      [
+        0,
+        4532
+      ]
+    ],
+    "reviewedBytes": 9520,
+    "reviewedLines": 60,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/shift-release-preparation-20261007/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/final-review/review-suite-followup.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 정적 검수의 읽은/안 읽은 범위·새 지적과 남은 경합, PULSE 모바일 실제 배포/HA 재무장 및 실물 갤럭시 보류를 고유 증거로 유지한다. 당시 epoch5는 날짜가 있는 관찰이며 현재 HA 값으로 승격하지 않는다.",
+    "evidence": "각 파일 전체; 읽기 전용 검수 원문 및 10-12 r3/r4/r5 단계별 실패·재검증",
+    "원문해시": "f4f03f83980cf995530a6e15035b35e6733f30fa01a5714df9c9abf3764369d8",
+    "currentSha256": "f4f03f83980cf995530a6e15035b35e6733f30fa01a5714df9c9abf3764369d8",
+    "readRanges": [
+      [
+        0,
+        5655
+      ]
+    ],
+    "reviewedBytes": 9574,
+    "reviewedLines": 113
+  },
+  {
+    "path": "docs/_ops/qa/pulse-mobile-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 정적 검수의 읽은/안 읽은 범위·새 지적과 남은 경합, PULSE 모바일 실제 배포/HA 재무장 및 실물 갤럭시 보류를 고유 증거로 유지한다. 당시 epoch5는 날짜가 있는 관찰이며 현재 HA 값으로 승격하지 않는다.",
+    "evidence": "각 파일 전체; 읽기 전용 검수 원문 및 10-12 r3/r4/r5 단계별 실패·재검증",
+    "원문해시": "7cb4a4921d74b581d3a8bd7c81ddace924d8935c969d47e9fcb8cf85bbe2808a",
+    "currentSha256": "7cb4a4921d74b581d3a8bd7c81ddace924d8935c969d47e9fcb8cf85bbe2808a",
+    "readRanges": [
+      [
+        0,
+        5021
+      ]
+    ],
+    "reviewedBytes": 9640,
+    "reviewedLines": 51
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/frontend/v3/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Google v3의 실계정 원인 미확정·합성 순서 회귀·사용자 한정 예외·공개 결과와, 초안 종료 보호의 실제 계정/합성 검증·출시 조율을 보존한다. 후속 절이 앞선 준비 시점을 직접 구분하므로 이력 재작성 없이 유지한다.",
+    "evidence": "각 파일 전체; v3 사용자 승인 뒤 공개 절, continuity 23:31 공개 후속 절",
+    "원문해시": "ed36c9f2f60ad648c984312b5a1cb4e9b81690bc4675edac93b1a30ebb160d6e",
+    "currentSha256": "ed36c9f2f60ad648c984312b5a1cb4e9b81690bc4675edac93b1a30ebb160d6e",
+    "readRanges": [
+      [
+        0,
+        6609
+      ]
+    ],
+    "reviewedBytes": 9702,
+    "reviewedLines": 51
+  },
+  {
+    "path": "docs/_ops/qa/platform-continuity-exit-20261008/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Google v3의 실계정 원인 미확정·합성 순서 회귀·사용자 한정 예외·공개 결과와, 초안 종료 보호의 실제 계정/합성 검증·출시 조율을 보존한다. 후속 절이 앞선 준비 시점을 직접 구분하므로 이력 재작성 없이 유지한다.",
+    "evidence": "각 파일 전체; v3 사용자 승인 뒤 공개 절, continuity 23:31 공개 후속 절",
+    "원문해시": "42a20629d64a930c22349f477c1e33b9eb55440a45d8cb94804db923ec83c276",
+    "currentSha256": "42a20629d64a930c22349f477c1e33b9eb55440a45d8cb94804db923ec83c276",
+    "readRanges": [
+      [
+        0,
+        5323
+      ]
+    ],
+    "reviewedBytes": 9756,
+    "reviewedLines": 67
+  },
+  {
+    "path": "docs/_ops/아틀라스검토_인계_20261007.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Atlas 10-07 독립 검수의 사용자 발언·수치·미커밋 상태·당시 제안, Workspace 최초 운영 조사·스키마/권한/명부 합계·정확 적용 경계를 보존한다. 최신 인계처럼 보이는 다음 할 일 및 폐지된 모델 관문은 후속 원문으로 연결할 정정했다. 10-07의 타 작업 중단·보존 커밋 재실행 순서를 완료된 후속 입구로 통합. 사용자 원문·검수 실패·고유 근거 유지.",
+    "evidence": [
+      "각 파일 전체; Atlas 10-08 인계/배포 완료 및 현행 AI_운영원칙; workspace-connect/close 후속 완료",
+      "10-08 인계와 배포 완료"
+    ],
+    "원문해시": "6c574331882b097e8069bbc4b3e0dc636bae07cb71023a1dc6a05a401fde3165",
+    "currentSha256": "90d6393306aaff90e2f229bde08ff3a94e084269f1702afb7bf1e24d3efa51de",
+    "readRanges": [
+      [
+        0,
+        5850
+      ]
+    ],
+    "reviewedBytes": 9757,
+    "reviewedLines": 58,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md"
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/operations-readiness.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Atlas 10-07 독립 검수의 사용자 발언·수치·미커밋 상태·당시 제안, Workspace 최초 운영 조사·스키마/권한/명부 합계·정확 적용 경계를 보존한다. 최신 인계처럼 보이는 다음 할 일 및 폐지된 모델 관문은 후속 원문으로 연결할 정정했다. 후속 적용 완료와 충돌한 네 migration 재적용 지시 및 폐지된 고정 CLI 검수 의무를 본문 정리.",
+    "evidence": [
+      "각 파일 전체; Atlas 10-08 인계/배포 완료 및 현행 AI_운영원칙; workspace-connect/close 후속 완료",
+      "workspace-connect 및 AI 운영 원칙"
+    ],
+    "원문해시": "a36de16626be13dc225100feab2475283c8a00a230ee84fca949569d5a16f88d",
+    "currentSha256": "e7a6e7172f38074134c984c177413fcbdb0ff1b7b7a3370bce71408834553775",
+    "readRanges": [
+      [
+        0,
+        6559
+      ]
+    ],
+    "reviewedBytes": 10022,
+    "reviewedLines": 62,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/workspace-data-audit-20261009/operations-readiness.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-signal2-20261010/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. Signal2 개인 ASAR 교체·후속 재설치·공개 CSS·승인 자산 변경과 계정 공개 전 조사/미설치/미등록 근거를 보존한다. 옛 직접 패치·백업 복구·최신 재설치 경로는 현재 배포 계약과 분리할 대상이다. 오래된 ASAR 복원/최신 worldbook 재설치 안내를 당시 계획으로 정리.",
+    "evidence": [
+      "각 파일 전체; platform-auto-update 후속 설치 계약 및 COMPLETION 공개 인수",
+      "후속 자동 업데이트 및 실제 설치"
+    ],
+    "원문해시": "11758a7cca966ce313d11a7dec6e9c440c5b0251966416027ad1bce94af0bd6d",
+    "currentSha256": "77d997bb94964053a03550f1b411e18fbe4e07f2c24e1baa10d58e5f916d2933",
+    "readRanges": [
+      [
+        0,
+        6335
+      ]
+    ],
+    "reviewedBytes": 10488,
+    "reviewedLines": 83,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/release-inventory.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Signal2 개인 ASAR 교체·후속 재설치·공개 CSS·승인 자산 변경과 계정 공개 전 조사/미설치/미등록 근거를 보존한다. 옛 직접 패치·백업 복구·최신 재설치 경로는 현재 배포 계약과 분리할 대상이다.",
+    "evidence": "각 파일 전체; platform-auto-update 후속 설치 계약 및 COMPLETION 공개 인수",
+    "원문해시": "197d1e8931310ba43426d68f9a410eaad5a3ebad3c76835c461b93c31e26b105",
+    "currentSha256": "197d1e8931310ba43426d68f9a410eaad5a3ebad3c76835c461b93c31e26b105",
+    "readRanges": [
+      [
+        0,
+        6941
+      ]
+    ],
+    "reviewedBytes": 10704,
+    "reviewedLines": 72
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/desktop/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 설치 런처 당시 읽기 조사·API-only/실제 Windows 경계·제품8개 통합 전 상태와, 펠트 v1~v4의 고유 검수·한정 승인·운영 보존/실패 증거를 유지한다. a26c 최신 후보와 서버 시작 대기 문구는 후속 실제 설치/공개 기록과 연결할 대상. 옛 a26c 최신 설치 지시와 고정 검수 의무를 당시 준비로 제한.",
+    "evidence": [
+      "각 파일 전체; google-followups 최종 설치, 플랫폼 후속 공개 기록, 펠트22:42 인수",
+      "Google 후속·자동 업데이트·실제 설치 원문"
+    ],
+    "원문해시": "f10afb91021cdf5bead7efa8fd0fa9d9c3e3e21246561a1c3f776c8c2c055b55",
+    "currentSha256": "f804ac8340b84f5a06373b4f68a0dd194c2587fbddc977e10177144ed6ba9393",
+    "readRanges": [
+      [
+        0,
+        6280
+      ]
+    ],
+    "reviewedBytes": 10727,
+    "reviewedLines": 75,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/desktop/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/messenger-felt-upgrade-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 설치 런처 당시 읽기 조사·API-only/실제 Windows 경계·제품8개 통합 전 상태와, 펠트 v1~v4의 고유 검수·한정 승인·운영 보존/실패 증거를 유지한다. a26c 최신 후보와 서버 시작 대기 문구는 후속 실제 설치/공개 기록과 연결할 대상.",
+    "evidence": "각 파일 전체; google-followups 최종 설치, 플랫폼 후속 공개 기록, 펠트22:42 인수",
+    "원문해시": "56752a21e6e24072e4790047e566c454e16f7a2be7f49e186fd5b37891ac347d",
+    "currentSha256": "56752a21e6e24072e4790047e566c454e16f7a2be7f49e186fd5b37891ac347d",
+    "readRanges": [
+      [
+        0,
+        6430
+      ]
+    ],
+    "reviewedBytes": 10923,
+    "reviewedLines": 65
+  },
+  {
+    "path": "docs/_ops/qa/workspace-data-audit-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 공통 계정 식별과 실제 저장소 연결을 구분한 감사, 학습 근거/삭제/철회 반례와 수정·중간 실패·합성 검사 한계를 유지한다. 최초 공개 미완료와 남은 연동은 후속 workspace-connect/close 완료 기록을 연결할 대상이다. 초기 미공개·미적용 판정을 후속 운영 연결과 구분. 실제 사용자 검증으로 확대하지 않음.",
+    "evidence": [
+      "5,645자 전체; 운영/실계정 증거 없는 로컬 감사 범위 보존",
+      "workspace-connect 및 마감 기록"
+    ],
+    "원문해시": "375a20e46d93121348b22fb887fa4345440185549c3dfcc62a0f4031fe7d5033",
+    "currentSha256": "c47b08527cb52924769fbc5152dc471a4df8a1d99bcccd5b20f9e1ee6f8c1c0d",
+    "readRanges": [
+      [
+        0,
+        5645
+      ]
+    ],
+    "reviewedBytes": 10928,
+    "reviewedLines": 56,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/workspace-data-audit-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/pulse-followthrough-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 실제 크기 영상 93.5초 납품 왕복과 5초 모델 샘플, 676/678 릴리스별 백업·장애 시험/호환 인수 차이·실물 미확인을 보존한다. 실제 생성 크레딧 정산과 추정 견적도 구분되어 있어 변경 불필요.",
+    "evidence": "6,215자 전체; 시간순 운영 인수 및 샘플 영상/공개 검증 근거",
+    "원문해시": "df831decb791f1d9e3239058bed8191849cdec6e7203eb5b93ba64f5ea03e659",
+    "currentSha256": "df831decb791f1d9e3239058bed8191849cdec6e7203eb5b93ba64f5ea03e659",
+    "readRanges": [
+      [
+        0,
+        6215
+      ]
+    ],
+    "reviewedBytes": 10987,
+    "reviewedLines": 38
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/docs/components/charts.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 산출물에 동봉된 차트 런타임의 데이터 근거·필드·접근성·내보내기 계약으로 보존한다. SYNK 사업 정책이나 범용 시각 말투 규칙으로 적용하지 않는다.",
+    "evidence": "11,029자 전체; report/docs/components 전용 사용법",
+    "원문해시": "85f8c4106b1693994590f11d2fc4ef557c8ee00502c3bef1d831171b2cd74217",
+    "currentSha256": "85f8c4106b1693994590f11d2fc4ef557c8ee00502c3bef1d831171b2cd74217",
+    "readRanges": [
+      [
+        0,
+        11029
+      ]
+    ],
+    "reviewedBytes": 11033,
+    "reviewedLines": 109
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/claude-delta-review.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Google delta 검수는 실제 지적/읽기 한계가 있는 원본 증거라 보존한다. 옷장 상태 수정·실패/중간flag보류·29함수 바이트 대조·실계정 탭 왕복은 단계별 한계가 명확하고 고유하므로 유지한다.",
+    "evidence": "각 파일 전체; 정적 검수 입력과 실제 운영/동일 브라우저 탭 인수 분리",
+    "원문해시": "9cacf1ee1df01cb1c55ac43b7f38044e1b243891bf0524b2849a7830b43beca2",
+    "currentSha256": "9cacf1ee1df01cb1c55ac43b7f38044e1b243891bf0524b2849a7830b43beca2",
+    "readRanges": [
+      [
+        0,
+        6256
+      ]
+    ],
+    "reviewedBytes": 11048,
+    "reviewedLines": 133
+  },
+  {
+    "path": "docs/_ops/qa/wardrobe-save-state-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. Google delta 검수는 실제 지적/읽기 한계가 있는 원본 증거라 보존한다. 옷장 상태 수정·실패/중간flag보류·29함수 바이트 대조·실계정 탭 왕복은 단계별 한계가 명확하고 고유하므로 유지한다.",
+    "evidence": "각 파일 전체; 정적 검수 입력과 실제 운영/동일 브라우저 탭 인수 분리",
+    "원문해시": "9146a632ee966c7ab693a08e58155a56a836fd8f46316d244039c5744d2eddb8",
+    "currentSha256": "9146a632ee966c7ab693a08e58155a56a836fd8f46316d244039c5744d2eddb8",
+    "readRanges": [
+      [
+        0,
+        6597
+      ]
+    ],
+    "reviewedBytes": 11084,
+    "reviewedLines": 44
+  },
+  {
+    "path": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 머리말은 그대로 보존.",
+    "evidence": [
+      "6,451자 전체; 같은 문서 최상단 10-14 12:30 게시 완료 및 기획 담당 원문",
+      "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+    ],
+    "원문해시": "37721ea96924cd0f7771bcc20f5c50456eb50452ed72ce62eede74812a86c7e6",
+    "currentSha256": "90646f8530a9f04d7e9eaefcca79742cb0eb2b457f47c3a13398ee277e05791e",
+    "readRanges": [
+      [
+        0,
+        6451
+      ]
+    ],
+    "reviewedBytes": 11173,
+    "reviewedLines": 71,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md"
+  },
+  {
+    "path": "output/synk-world-graphics-research-20261008/report/AGENTS.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. 복사된 Data App의 보호된 런타임/콘텐츠 경계와 빌드 사용법이며 해당 산출물에 한정된 AGENTS다. 저장소 공통 작업 지침이 아니고 동봉 참조와 일치하므로 변경하지 않는다.",
+    "evidence": "11,323자 전체; plugin-owned reference 및 copied app 범위 명시",
+    "원문해시": "215baf947a82508f9aa349acce5fb747e43aaf874ddf7b9b11436b80fab50240",
+    "currentSha256": "215baf947a82508f9aa349acce5fb747e43aaf874ddf7b9b11436b80fab50240",
+    "readRanges": [
+      [
+        0,
+        11323
+      ]
+    ],
+    "reviewedBytes": 11327,
+    "reviewedLines": 84
+  },
+  {
+    "path": "docs/_ops/qa/google-release-20261009/ops/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 불투명 Secret/빈 write 응답 실패, 한정 예외, 실제 인증과 브랜드 인증 분리, helper의 당시 보호 계약을 보존한다. 초기 helper/신규 가입 미확인을 현행으로 읽지 않도록 후속 helper40개·가입완료를 연결할 대상이다. 이미 끝난 helper 적용 조건을 당시 실행 계약으로 제한하고 후속 키 교체 취소/현행 운영 원칙 연결.",
+    "evidence": [
+      "6,860자 전체; Google followups 최종 기록과 opaque 후보 후속",
+      "Google 후속 검증·AI 운영 원칙"
+    ],
+    "원문해시": "26f88f5deb1a82c08d20fdd37342fd8bbed2372f313f2a0763fec8a839c3cf7f",
+    "currentSha256": "73711567a4412ac6a5a490040f2c00cb9ef3ecf9b64a1d5d6a4b594e3842c65e",
+    "readRanges": [
+      [
+        0,
+        6860
+      ]
+    ],
+    "reviewedBytes": 11502,
+    "reviewedLines": 61,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-release-20261009/ops/README.md"
+  },
+  {
+    "path": "tools/synk-id/qa/운영재개-실행준비-20261006.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 본문 확인. SYNK ID 초기 등록의 기존 매핑 보존/지문/재개 경계와 static 검수의 실제 결함/읽기 범위를 고유 증거로 보존한다. 10-06 적용 명령은 이후 완료 상태와 연결할 역사 절차이며 새로운 원격 변경 지시가 아니다. 완료된 초기 OAuth 등록/배포 절차를 후속 실제 적용으로 연결하고 재실행 지시 해소.",
+    "evidence": [
+      "각 파일 전체; 운영적용 최종준비와 Google/플랫폼 실제 적용 후속 대조 예정",
+      "운영적용-최종준비-20261007.md"
+    ],
+    "원문해시": "30a549281355a2424ae25e988b07d64f21c948ac4d750af504107f9c40be7e38",
+    "currentSha256": "c135485cdcefdd757e58996f512b99124e31d6260920237676cbea4fb70c40cd",
+    "readRanges": [
+      [
+        0,
+        7434
+      ]
+    ],
+    "reviewedBytes": 11707,
+    "reviewedLines": 88,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/tools/synk-id/qa/운영재개-실행준비-20261006.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/previous-findings.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 확인. SYNK ID 초기 등록의 기존 매핑 보존/지문/재개 경계와 static 검수의 실제 결함/읽기 범위를 고유 증거로 보존한다. 10-06 적용 명령은 이후 완료 상태와 연결할 역사 절차이며 새로운 원격 변경 지시가 아니다.",
+    "evidence": "각 파일 전체; 운영적용 최종준비와 Google/플랫폼 실제 적용 후속 대조 예정",
+    "원문해시": "241081b32e8e197b2aaaba60a442065ad2dd6c99e9c1a362c665f6e3952a7bd1",
+    "currentSha256": "241081b32e8e197b2aaaba60a442065ad2dd6c99e9c1a362c665f6e3952a7bd1",
+    "readRanges": [
+      [
+        0,
+        7230
+      ]
+    ],
+    "reviewedBytes": 12010,
+    "reviewedLines": 101
+  },
+  {
+    "path": "docs/_ops/qa/platform-reinstall-20261010/acceptance/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 실사용 인수의 보류/참여자 동의/실물 한계·후속 실제 PC 증거를 유지한다. 받침 인계는 1~6 후속이 모두 날짜별 완료/판단으로 갱신돼 있어 옛 재실행·push 절차를 현재 입구에서 압축하고 고유 예문·회귀·실패는 원문 보관할 대상이다.",
+    "evidence": "각 파일 전체; 44 후속 실제 인수 링크; 43 각 항목 10-08 완료와 공통 josa 키트",
+    "원문해시": "2574735dedb3b1b591ca34426e2faa97650ff7d36ff3219ed790ef0dd8d1e23f",
+    "currentSha256": "2574735dedb3b1b591ca34426e2faa97650ff7d36ff3219ed790ef0dd8d1e23f",
+    "readRanges": [
+      [
+        0,
+        6072
+      ]
+    ],
+    "reviewedBytes": 12080,
+    "reviewedLines": 60
+  },
+  {
+    "path": "docs/_ops/게임문구_받침_인계_20261008.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 머리말은 그대로 보존.",
+    "evidence": [
+      "각 파일 전체; 44 후속 실제 인수 링크; 43 각 항목 10-08 완료와 공통 josa 키트",
+      "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+    ],
+    "원문해시": "3cdc4cf594a1bdf15d7153c3bcc0c7e00f566cfb717afe0a5c1c51a93d6cc877",
+    "currentSha256": "eb48a2e1ba8849775d0bce44b2a18a1f0264382b622091bca134da9ee4ec64f7",
+    "readRanges": [
+      [
+        0,
+        6747
+      ]
+    ],
+    "reviewedBytes": 12386,
+    "reviewedLines": 45,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/AI_운영원칙.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 옛 AI 운영 원칙은 고정 검수 context 사본으로 원문/SHA 보존하며 현행 지침으로 적용하지 않는다. 운영 연결의 실제 OAuth/DB/API/공개/PC 인수와 실학생 미검증 경계를 날짜별로 유지한다.",
+    "evidence": "각 파일 전체; context는 현행 docs/AI_운영원칙.md와 구분; workspace 실제 완료 및 실계정 제외",
+    "원문해시": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "currentSha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "readRanges": [
+      [
+        0,
+        5827
+      ]
+    ],
+    "reviewedBytes": 12531,
+    "reviewedLines": 41
+  },
+  {
+    "path": "docs/_ops/qa/workspace-connect-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 옛 AI 운영 원칙은 고정 검수 context 사본으로 원문/SHA 보존하며 현행 지침으로 적용하지 않는다. 운영 연결의 실제 OAuth/DB/API/공개/PC 인수와 실학생 미검증 경계를 날짜별로 유지한다.",
+    "evidence": "각 파일 전체; context는 현행 docs/AI_운영원칙.md와 구분; workspace 실제 완료 및 실계정 제외",
+    "원문해시": "1d6ea703bef922c152945687e3ba90304944b870bd8e7497cff405e4280e1a5e",
+    "currentSha256": "1d6ea703bef922c152945687e3ba90304944b870bd8e7497cff405e4280e1a5e",
+    "readRanges": [
+      [
+        0,
+        7114
+      ]
+    ],
+    "reviewedBytes": 12533,
+    "reviewedLines": 53
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/COMPLETION-before-release.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 공개 전 동결 후보는 실패한 검수 호출·DB 충돌·실제 조사 범위를 담은 역사 사본으로 유지. 예산 원장 독립 검수는 당시 계산·결정과 코드의 차이·후속 수정 추적을 보존하고 현재 요금/확정 예산으로 재사용하지 않는다.",
+    "evidence": "각 파일 전체; COMPLETION-before-release는 후속 COMPLETION과 구분; 예산 검수는 10-03 고정 후보/제안과 10-04 이후 MVP 비용 결정 구분",
+    "원문해시": "7aecc338ac3d5d782250dc8efa8e4905bcd32f999ccf9631c9e75261fdb4e61a",
+    "currentSha256": "7aecc338ac3d5d782250dc8efa8e4905bcd32f999ccf9631c9e75261fdb4e61a",
+    "readRanges": [
+      [
+        0,
+        7587
+      ]
+    ],
+    "reviewedBytes": 12927,
+    "reviewedLines": 76
+  },
+  {
+    "path": "docs/_ops/검수_AI예산원장_20261003.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 공개 전 동결 후보는 실패한 검수 호출·DB 충돌·실제 조사 범위를 담은 역사 사본으로 유지. 예산 원장 독립 검수는 당시 계산·결정과 코드의 차이·후속 수정 추적을 보존하고 현재 요금/확정 예산으로 재사용하지 않는다.",
+    "evidence": "각 파일 전체; COMPLETION-before-release는 후속 COMPLETION과 구분; 예산 검수는 10-03 고정 후보/제안과 10-04 이후 MVP 비용 결정 구분",
+    "원문해시": "19280e8f02c6fda14ab2a6242a5d7b20d0b50ad995b62a03e394639cd8226a20",
+    "currentSha256": "19280e8f02c6fda14ab2a6242a5d7b20d0b50ad995b62a03e394639cd8226a20",
+    "readRanges": [
+      [
+        0,
+        7126
+      ]
+    ],
+    "reviewedBytes": 13057,
+    "reviewedLines": 117
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-integration-20261009/prompt.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고정 검토 입력과 독립 검토 결과의 전체 본문을 읽었다. 당시 후보·실제 코드 지적·미확인 UI 범위를 보존하며, 특정 모델 설정은 현재 실행 지시로 적용하지 않는 역사 증거다.",
+    "evidence": "2026-10-09 고정 검토 입력과 review-v8-22b의 P2/P3 전체; 이후 platform-unified-followup 결과 및 현재 AI_운영원칙과 구분.",
+    "원문해시": "affbba2fb0fbd69ed215e2be2f1d6c8b9c2cebf0218fa4d5e04c023d29f64105",
+    "currentSha256": "affbba2fb0fbd69ed215e2be2f1d6c8b9c2cebf0218fa4d5e04c023d29f64105",
+    "readRanges": [
+      [
+        0,
+        7447
+      ]
+    ],
+    "reviewedBytes": 13450,
+    "reviewedLines": 68
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/final-review/review-v8-22b.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고정 검토 입력과 독립 검토 결과의 전체 본문을 읽었다. 당시 후보·실제 코드 지적·미확인 UI 범위를 보존하며, 특정 모델 설정은 현재 실행 지시로 적용하지 않는 역사 증거다.",
+    "evidence": "2026-10-09 고정 검토 입력과 review-v8-22b의 P2/P3 전체; 이후 platform-unified-followup 결과 및 현재 AI_운영원칙과 구분.",
+    "원문해시": "00359a5b3dc51c87e6212815c3962168a141b663207a884cda07294adf10918b",
+    "currentSha256": "00359a5b3dc51c87e6212815c3962168a141b663207a884cda07294adf10918b",
+    "readRanges": [
+      [
+        0,
+        8323
+      ]
+    ],
+    "reviewedBytes": 13477,
+    "reviewedLines": 160
+  },
+  {
+    "path": "docs/_ops/qa/pulse-persistent-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "30일 기기 연결·명시 허용과 실제 Windows 수신의 전체 근거를 확인했다. 단계별 대기에서 사용자 최종 수신 확인으로 이어지는 역사이며 시뮬레이션·HTTP 수락·실기기 확인을 구분하므로 보존한다.",
+    "evidence": "13시간 합성 시험과 실제 OS 수신 구분; 03:02 승인 이벤트 이후 제작자 알림함 복귀 사용자 확인. 현행 PULSE 연결 설명의 근거.",
+    "원문해시": "d1447830a2a1e142c2864fc8e8c63d32cf063cea4c037174e44eed94ca89dd16",
+    "currentSha256": "d1447830a2a1e142c2864fc8e8c63d32cf063cea4c037174e44eed94ca89dd16",
+    "readRanges": [
+      [
+        0,
+        6769
+      ]
+    ],
+    "reviewedBytes": 13551,
+    "reviewedLines": 77
+  },
+  {
+    "path": "docs/_ops/qa/platform-experience-20261008/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "공개·설치·OAuth 시작과 실제 회원 로그인 미확인을 구분한 전체 기록을 보존한다. 첫 문단에 이후 회원 흐름 완료 기록이 연결되어 현재 작업을 되살리는 지시가 없다.",
+    "evidence": "2026-10-08 고정 후보 설치/45파일 공개 결과, 사용자의 당시 검수 예외 승인 원문, 후속 continuity-exit 연결.",
+    "원문해시": "353f14d1ebc6b45eacd94da6aedc3abb9f135b599398a6f9d545c00ea17e9586",
+    "currentSha256": "353f14d1ebc6b45eacd94da6aedc3abb9f135b599398a6f9d545c00ea17e9586",
+    "readRanges": [
+      [
+        0,
+        8247
+      ]
+    ],
+    "reviewedBytes": 13553,
+    "reviewedLines": 77
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/SERVER-CONSUMERS.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "12개 서버 소비처·개인정보 projection·SMS 유예 계약을 전문 확인하고 보존한다. 뒤의 Google 실제 배포·가입 완료보다 앞선 현지 준비 상태가 현재형으로 반복되어 날짜와 후속 완료 입구를 본문에서 명확히 했다. 고유 12개 의존 계약은 보존하고 Google 미공개/향후 활성화 실행 지시만 당시 범위로 정정.",
+    "evidence": [
+      "SERVER-CONSUMERS 전체 의존성 표와 당시 미실행 범위; google-release/backend 및 google-release/followups의 이후 운영 완료와 비교.",
+      "Google 릴리스·후속 실제 가입"
+    ],
+    "원문해시": "1975652579450f7644d0af2ea2fec22f2d20ba5df2e5d281de72dafba8512b5e",
+    "currentSha256": "e51fb4347b01e125ea6e76847fc17b02a4ae76f5c76e32fb2285dd2fe1e17463",
+    "readRanges": [
+      [
+        0,
+        9119
+      ]
+    ],
+    "reviewedBytes": 14844,
+    "reviewedLines": 92,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-signup-20261009/SERVER-CONSUMERS.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-convenience-20261009/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 기능·초안 보존·실측과 합성 한계를 전문 확인했다. 고유 구현 근거는 보존하되 최신 설치본 표현과 자동 업데이트 미구현을 10월 9일 당시 상태로 분명히 하고 현행 배포 기록으로 연결할 대상이다. 자동 업데이트 미구현을 현재 제품 상태로 고정한 본문을 후속 구현과 연결. 새 담당 링크의 날짜를 실제 파일 경로로 교정.",
+    "evidence": [
+      "platform-auto-update-20261014의 이후 엔진·채널·설치 결과; 이 기록의 0.4.0 후보/100파일/463시험은 과거 실측.",
+      "자동 업데이트 및 실제 설치 후속",
+      "큐 index6 자동 업데이트 원문"
+    ],
+    "원문해시": "c3576f3fed15cf1b94cf1bd88fdd5e204ad87187c021fccb81c815d5f56de27f",
+    "currentSha256": "16559a9eb2cb4f582afb807ec09fcaceea154588603f968c6b0b73079ce7ea03",
+    "readRanges": [
+      [
+        0,
+        7711
+      ]
+    ],
+    "reviewedBytes": 14971,
+    "reviewedLines": 99,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-convenience-20261009/README.md"
+  },
+  {
+    "path": "docs/_ops/복구보고_20260918.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "복원 대상 48개와 삭제 원인·사용자 채택 카피·말투 복원 제외·확인하지 않은 실행 범위를 끝까지 읽었다. 소실된 설계 및 캐릭터 원본 복구의 고유 증거로 그대로 보존한다.",
+    "evidence": "2026-09-18 복구 보고 전체; 원본 커밋과 별도 백업 위치, 당시 문서 크기·홈페이지 미공개는 역사 기록이며 현재 배포 상태와 구분.",
+    "원문해시": "c59abbd22bac5edd773fba4ec1ea4a0bf41f7cea74bdb9570b0009bbdefbedc2",
+    "currentSha256": "c59abbd22bac5edd773fba4ec1ea4a0bf41f7cea74bdb9570b0009bbdefbedc2",
+    "readRanges": [
+      [
+        0,
+        8917
+      ]
+    ],
+    "reviewedBytes": 15318,
+    "reviewedLines": 95
+  },
+  {
+    "path": "docs/_ops/아틀라스교육_20260930/평가기준.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "합성 평가의 E01/E02와 A01~A12·분모·시간창·원본 실패와 최종 결과까지 전문 확인했다. 실학생 효과와 모듈 검증을 구분하는 고유 교육 평가 근거이므로 보존한다.",
+    "evidence": "3→0 오류 재현, 15문항 원문 보존, 175/177 실패와 181/181 최종 로그, 미검증 후행·실기기 범위.",
+    "원문해시": "8277b29dfd362579fef8de3aa4e0d6f4000270789b7543114c81913b41f3fbe1",
+    "currentSha256": "8277b29dfd362579fef8de3aa4e0d6f4000270789b7543114c81913b41f3fbe1",
+    "readRanges": [
+      [
+        0,
+        7675
+      ]
+    ],
+    "reviewedBytes": 15411,
+    "reviewedLines": 94
+  },
+  {
+    "path": "docs/_ops/LAB게임_목소리_인계_20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "완료 이력·실제 실패·승인·소리 원본과 도구 위치를 끝까지 읽었다. 같은 문서 안에서 10월 10일 공개 완료와 10월 8일 미공개 지시가 직접 충돌하므로 이미 대체된 다음 공개 기준/실행 절차를 역사로 정리했다. 동일 문서에서 이미 공개로 정정한 76af를 미공개로 재지시하던 옛 후보/다음 공개 기준 해소. 키 노출 대응과 실제 청취·실물 미확인은 유지.",
+    "evidence": [
+      "끝낸 것 6·7과 지금 상태 첫 항목이 후속 공개를 입증한다. 구 기준 4913b90e5/6a6f2caa4 및 미공개 76af859be 지시는 최신 단락이 명시적으로 정정했다.",
+      "같은 문서10-10 공개 정정 및 받침 완료 인계"
+    ],
+    "원문해시": "dcaa30a0fd832f90dd0f8014b93931f088ad19002b5ec2efc9f568e165948ae5",
+    "currentSha256": "a84c261b73610ef7c29d0aa78fa287399274fd157fde2b7d29924788dddc83f1",
+    "readRanges": [
+      [
+        0,
+        9316
+      ]
+    ],
+    "reviewedBytes": 15735,
+    "reviewedLines": 64,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB게임_목소리_인계_20261008.md"
+  },
+  {
+    "path": "docs/_ops/말투강제_정리_20260921.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "말투 강제 폐지의 사용자 요청·삭제 원고/퀴즈 범위·시험 실패·메모 처리 한계를 전문 확인했다. 현재 지침이 아니라 당시 정리 증거라고 명시되어 있고 새 보편 문체 규칙을 요구하지 않아 그대로 보존한다.",
+    "evidence": "9월 21~22일 역사: 45편/40문항 폐기와 백업, 코드·캐릭터 계약 보존, 전독 완료 오인 금지 및 당시 미완료 범위.",
+    "원문해시": "5a712d85038c37a62f908f0a77cff4f5f6da36aea1b269250db13c8af12f7342",
+    "currentSha256": "5a712d85038c37a62f908f0a77cff4f5f6da36aea1b269250db13c8af12f7342",
+    "readRanges": [
+      [
+        0,
+        7717
+      ]
+    ],
+    "reviewedBytes": 16564,
+    "reviewedLines": 107
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-web-release-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "통합 로그인 공개의 모든 후보·실패·사용자 유예 승인·실계정 인수 범위를 끝까지 확인했다. 각 과거 미완료가 상단의 완료 증거와 시점으로 구분되어 재실행 지시로 오인할 실질 충돌은 없다.",
+    "evidence": "f10/e696/22b→744/a26/2eb 과정, 최초 옷장 GET 쓰기 가능성·두 탭≠두 기기·취소 CI와 후행 성공 구분. 원문 보존.",
+    "원문해시": "3d7c0befa2aa537fc8e40749665cba3ca6fc806af0a0132679808dd2ec7b5008",
+    "currentSha256": "3d7c0befa2aa537fc8e40749665cba3ca6fc806af0a0132679808dd2ec7b5008",
+    "readRanges": [
+      [
+        0,
+        9668
+      ]
+    ],
+    "reviewedBytes": 16963,
+    "reviewedLines": 49
+  },
+  {
+    "path": "docs/_ops/협업장치_정리_20260921.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "9월 협업 장치 정리의 전체 본문·비활성 확인·실제 보존 helper·복구 자료를 읽었다. 사용자 승인과 장치 실패/제거 이력은 고유 증거다. 당시 앞으로 작업하는 방식 절은 현행 역할 정본과 분리된 역사임을 본문에서도 분명히 했다. 상단 역사 표시 뒤 본문에 남던 현행 역할표와 충돌하는 일반 지침 정정.",
+    "evidence": [
+      "상단 10월 이후 AI 운영 원칙 우선; 9월 역할 비고정과 당시 훅/8,000자 상한은 실제 현재 지침이 아닌 조사 기록.",
+      "현행 AI 운영 원칙 역할표"
+    ],
+    "원문해시": "5561190d48533271df5a3aa858d63de21705de09ec0968362e4eaa0602da514d",
+    "currentSha256": "7587210bbe1971faf3e1930ba8be9905340661316c8d166736f228a1711ca0bb",
+    "readRanges": [
+      [
+        0,
+        9104
+      ]
+    ],
+    "reviewedBytes": 17422,
+    "reviewedLines": 109,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/협업장치_정리_20260921.md"
+  },
+  {
+    "path": "docs/_ops/qa/pulse-workspace-integration-20261013/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "PULSE·Workspace 통합 릴리스의 실사용·자료 보존·복원·HA 전체 기록을 확인했다. 실패·HOLD와 최종 인수가 날짜별로 연결되고 실물 휴대폰·연속 무중단을 주장하지 않아 고유 운영 증거를 그대로 보존한다.",
+    "evidence": "7b2 seq12/A epoch7/B standby/armed=true 최종 인수, 첫 자료 hash 차이와 모바일 요청 불적용, 28.622초 관측과 강제 장애 미시험 등 한계 보존.",
+    "원문해시": "24bf87f7a140637ec32a5a33fb02ae1ec1dcead900898a76e10031c4dcd43fe1",
+    "currentSha256": "24bf87f7a140637ec32a5a33fb02ae1ec1dcead900898a76e10031c4dcd43fe1",
+    "readRanges": [
+      [
+        0,
+        11875
+      ]
+    ],
+    "reviewedBytes": 18921,
+    "reviewedLines": 92
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-platform.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "시작·개인화·글로벌 감사 본문 전체와 원문을 옮길 때의 오류를 읽었다. 9월 21일 당시 소스 상태·사용자 방향·미정을 보존하되 현재/다음 표시가 후속 공개 및 계정 구현의 현재 상태로 혼동되지 않도록 본문 시점을 정리했다. 기능별 실제 조사·사용자 경험은 보존하고 오래된 상태/제작 지시의 적용 시점을 해당 본문 절에서 명시.",
+    "evidence": [
+      "Google 가입/플랫폼 홈/계정 연결은 이후 10월 운영 기록에 완료 근거가 있다. 과거 미구현 판정을 오늘 상태로 유지하지 않고 원문 사실은 보존.",
+      "현재 문서 지도 및 날짜별 후속 구현"
+    ],
+    "원문해시": "f490d82ae575a484899f841401999a062f29fe24dca76c3d4e7fdcc7b3450731",
+    "currentSha256": "1cb5da4bceafbfc10e34127c685c849ad7207c5183ca3e31255a792ca67e358a",
+    "readRanges": [
+      [
+        0,
+        8820
+      ]
+    ],
+    "reviewedBytes": 19058,
+    "reviewedLines": 168,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/앱로드맵_20260921/audit-platform.md"
+  },
+  {
+    "path": "docs/_ops/qa/pulse-production-20261012/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "기획부터 최종 납품·왕복·HA 인수·실패 수정의 전체 본문을 확인했다. 운영 합성 프로젝트와 실고객 효과를 분리하고 초기 armed=false를 후속 true로 직접 연결하여 고유 인수 증거로 보존한다.",
+    "evidence": "07:14 epoch5 배포→08:22 arm→10:36 고객 전체 흐름→10:41 재활성화; 실제 다운로드 bytes와 50.162초 관측, 새 장애 시험/실고객 성과 제외.",
+    "원문해시": "a7b047b049200f28d4c9f9a100fad30e1366013f3e1e7fb7ff00fb9bdb9dc5a9",
+    "currentSha256": "a7b047b049200f28d4c9f9a100fad30e1366013f3e1e7fb7ff00fb9bdb9dc5a9",
+    "readRanges": [
+      [
+        0,
+        10202
+      ]
+    ],
+    "reviewedBytes": 19476,
+    "reviewedLines": 122
+  },
+  {
+    "path": "docs/_ops/qa/atlas-review-20261006/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "Atlas 2.4 검수·모든 재현·SHIFT 후속·동결 평가 미열람 범위를 전문 확인했다. 고유 결함·수치는 보존하되 서버 배포 순서와 이미 고친 유료 평가 전 수정 목록을 현재 할 일로 읽히지 않게 본문에서 역사와 잔여를 구분할 대상이다. 이미 진행된 배포·수정 목록을 날짜 있는 검수 이력으로 제한.",
+    "evidence": [
+      "10월 8일 후속 보완 공지 및 atlas-eight-fix/deploy 실제 완료. 유료 모델 실평가·첫 응답 모델 확인은 별도 미실행 상태를 보존.",
+      "10-08 Atlas 후속 배포"
+    ],
+    "원문해시": "520bba4fdf62c07144fab777e46abee7589a61e6276a704d6ced879f9b38f2bd",
+    "currentSha256": "6ff55aff84d578540525494416696c9d2aa8b7c87c0388785ba816f4ba2b01a5",
+    "readRanges": [
+      [
+        0,
+        10064
+      ]
+    ],
+    "reviewedBytes": 19544,
+    "reviewedLines": 110,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/atlas-review-20261006/README.md"
+  },
+  {
+    "path": "tools/synk-id/qa/운영적용-최종준비-20261007.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "통합 계정 운영 적용·SMTP 실제 수신·가입 확인·플레저 저장·복구 경계를 전문 확인했다. 고유 승인/실측은 보존하되 20개 등록과 이전 적용 명령을 오늘 재실행 안내로 읽히지 않도록 본문에 당시 시점과 실행 완료를 명확히 했다. 이미 수행한 등록/배포 명령과 후보를 현재 재실행 대상으로 읽지 않도록 해당 절 정정.",
+    "evidence": [
+      "10월 7일 완료 영수증과 로그인 polish 후속; 이후 10월 9일 Google/SSO 운영 기록. 물리 휴대폰 보류 사용자 결정 유지.",
+      "같은 문서 실제 적용 완료·추가 로그인 마감"
+    ],
+    "원문해시": "c8cb5e32a31b7ef2ecaae58821ef2ed6d4ad068c92c2738153aaa76bd6abbcc7",
+    "currentSha256": "bf28668f0a3e2af0672a2704adc1e738ee2642714fef4768c9b3b8d4814097bf",
+    "readRanges": [
+      [
+        0,
+        11836
+      ]
+    ],
+    "reviewedBytes": 19554,
+    "reviewedLines": 125,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/tools/synk-id/qa/운영적용-최종준비-20261007.md"
+  },
+  {
+    "path": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "운영 담당과 root가 전체 본문 확인. 완료/중단/실패/승인과 현재 후속 입구를 남기고 끝난 재실행 지침을 복구 가능한 원문으로 보관. WORLD의 동시 작업 완료 완료 사실은 보존하고 상세 원문 위치만 갱신.",
+    "evidence": [
+      "WORLD 상단 3~5차 공개 및 10월 17일 53+4파일 바이트 동등 확인; 학습 감사의 서버/실기기 미조회 범위와 이후 공개 가입·한글·게임 운영 기록.",
+      "root 원문 전체 읽기; 첫 합본 출력에서 잘린 WORLD 끝/ TOPIK 앞부분은 별도 출력으로 재확인. 이전 원문은 pass4-originals SHA 백업."
+    ],
+    "원문해시": "013a1631e7002f2f5dd69aca249140348b41ac7e3ebb129a0231f89da64db57e",
+    "currentSha256": "8acc853b2ea5169c9b09a376339ba97b28202e07bfc48b07bbb45514ad3d60a9",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        12250
+      ]
+    ],
+    "reviewedBytes": 19726,
+    "reviewedLines": 94,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md"
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-learning.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "각 고유 본문을 끝까지 읽었다. WORLD는 이미 완료된 2차 인계가 새 실행 순서를 반복하므로 완료 입구와 원본 보관으로 통합할 대상이다. 학습 감사는 9월 21일 코드 근거와 검증 한계를 보존하고 당시 상태·제작 예시임을 본문에서 분리할 대상이다. 기능별 실제 조사·사용자 경험은 보존하고 오래된 상태/제작 지시의 적용 시점을 해당 본문 절에서 명시.",
+    "evidence": [
+      "WORLD 상단 3~5차 공개 및 10월 17일 53+4파일 바이트 동등 확인; 학습 감사의 서버/실기기 미조회 범위와 이후 공개 가입·한글·게임 운영 기록.",
+      "현재 문서 지도 및 날짜별 후속 구현"
+    ],
+    "원문해시": "8313e4065c4a530d16ba189ef2922c0995106a23df76560e418fad85f8974a40",
+    "currentSha256": "b5408677f626850d373923ef0aa29dfeb9304410738d3c8a4928dda70be84399",
+    "readRanges": [
+      [
+        0,
+        10185
+      ]
+    ],
+    "reviewedBytes": 20267,
+    "reviewedLines": 159,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/앱로드맵_20260921/audit-learning.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-unified-followup-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "통합 로그인 전체 후보·설치 실패·후속 공개·사용자 실제 계정 보존·한글/알림 관찰 한계를 읽었다. 상단 최신 설치와 이전 단계 이력을 명시적으로 분리하므로 고유 검증 증거를 유지한다.",
+    "evidence": "afe3 설치와 실제 로그아웃 미검증, a26/22b/f9d 역사, Supabase flag 전후 전체 body 미측정 한계, 실제 계정 2탭≠2기기.",
+    "원문해시": "4b86b4d94c24d9abb7eaa098f0f6daa9932473edad1d3d173e5b346a3e4e7f5a",
+    "currentSha256": "4b86b4d94c24d9abb7eaa098f0f6daa9932473edad1d3d173e5b346a3e4e7f5a",
+    "readRanges": [
+      [
+        0,
+        10626
+      ]
+    ],
+    "reviewedBytes": 20414,
+    "reviewedLines": 105
+  },
+  {
+    "path": "docs/_ops/트랙정리_20261002.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "234개 옛 트랙 항목과 후속 4개 이관, 지움/남김 판정 268줄 전체를 읽었다. 이전 정리 범위와 원본 커밋을 복원하는 고유 색인으로 보존한다.",
+    "evidence": "5a1b62302 원본, 174지움/60남김과 새 트랙9절32줄; 남김은 당시 잔여 판정이며 현재 작업 지시가 아님.",
+    "원문해시": "5f1f45062205ba07d08a11980b270029d1e7767cd50a1c0738d7459750b41ad1",
+    "currentSha256": "5f1f45062205ba07d08a11980b270029d1e7767cd50a1c0738d7459750b41ad1",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        13753
+      ]
+    ],
+    "reviewedBytes": 21741,
+    "reviewedLines": 268
+  },
+  {
+    "path": "docs/_ops/아틀라스2단계_인계_20260918.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "사용자 채택·코드 사실·초기 설계 제안과 미확인 한계를 전문 확인했다. 고유 9월 18일 승인/설계는 보존하되 이미 대체된 §3/§5 실행 순서·옛 일정·작업본 지시를 본문에서도 역사로 분리할 대상이다. 대체된 2단계 실행 순서와 미확정 옛 시한을 현재 지시에서 제거하고 원문 백업으로 연결. 사용자 채택 인용·고유 설계 보존.",
+    "evidence": [
+      "상단이 9월 19일 아틀라스 설계/구현명세로 §4·§5 대체를 명시; 계정 지속 기억·후속 엔진 및 운영 배포 근거는 현재 담당 원문으로 연결.",
+      "본문 9월19일 재설계 기록 및 현행 Atlas/8종 원문"
+    ],
+    "원문해시": "b96eb6410452619c1f31eb03b46ae28adc747dee7f776f47e911778102bdd22e",
+    "currentSha256": "ffbfac66116a4a544a8d0b1f4e0d79c01d089f64e07d4a8a0e26ac443f003753",
+    "readRanges": [
+      [
+        0,
+        11201
+      ]
+    ],
+    "reviewedBytes": 22088,
+    "reviewedLines": 160,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md"
+  },
+  {
+    "path": "docs/_ops/qa/google-signup-20261009/GOOGLE-SMS-SETUP.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "Google/SMS 준비안·서버 정책·국가/가격 가정·미확정 비용 조건을 전문 확인했다. SMS 미선정 조사는 보존하되 이후 Google 운영 공개/실계정 성공을 반영해 본문 이전 Google 미활성 상태와 완료 여부를 구분할 대상이다. 초기 Google 미활성 상태를 후속 공개 완료와 분리. SMS/국가/비용 조사 보존.",
+    "evidence": [
+      "10월 9일 조사 단가·KR/MN 후보·미실문자 유지; 후속 google-release/backend와 followups 운영 완료 및 SMS 유예 구분.",
+      "후속 Google 공개·실사용 결과"
+    ],
+    "원문해시": "3538d2421db00c2dff6945dbf89cc695a96e8344e44bc87e815659f9d8621652",
+    "currentSha256": "37bf9f9565f94a1c2f2b70a8fa514e4d4b6eb6d8cb212568bc46d1a9433af632",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        12862
+      ]
+    ],
+    "reviewedBytes": 22428,
+    "reviewedLines": 162,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/google-signup-20261009/GOOGLE-SMS-SETUP.md"
+  },
+  {
+    "path": "docs/앱로드맵_20260921/audit-village.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "17개 마을 경험과 그래픽/실물/문서 충돌을 전문 확인했다. 9월 21일 조사 기반의 구상·코드 상태는 고유 자료로 보존하되 각 현재 상태 표기가 이후 WORLD 구현 현황으로 오해되지 않게 당시 시점으로 명확히 했다. 기능별 실제 조사·사용자 경험은 보존하고 오래된 상태/제작 지시의 적용 시점을 해당 본문 절에서 명시.",
+    "evidence": [
+      "dokkaebi/남산 옛 시제품과 현재 synk-town/WORLD 정본 분리; 실제16인·실기기·학습효과 미확인은 근거 없이 완료로 바꾸지 않음.",
+      "현재 문서 지도 및 날짜별 후속 구현"
+    ],
+    "원문해시": "1e6214cf9039e82874fd8ffcfb350fceadcbe42b4fb6d8615b87a51336184c6a",
+    "currentSha256": "efd10de7604a99533d6d0f74c6e1ab8e9190dae5efe61f0170c95dd848d220f8",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        12527
+      ]
+    ],
+    "reviewedBytes": 25567,
+    "reviewedLines": 172,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/앱로드맵_20260921/audit-village.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-account-audit-20261008/COMPLETION.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "출시 전후 계정/PC/웹 실증과 모든 실패·프로필 보존 한계를 끝까지 읽었다. 상단 22b 완료와 추가 후속의 f9d 유지/22b 미설치 문장이 직접 충돌하므로 본문 옛 대기 상태를 날짜별 이력으로 정정했다. 같은 문서의 22b 설치/로그인 완료와 과거 후보 보류·미확인의 직접 충돌 해소.",
+    "evidence": [
+      "같은 문서 상단 실제 PC 복원 링크와 platform-unified-followup 후속 인수; 오래된 배포 대기·Messenger 미확인은 해당 단계 당시 상태로 한정.",
+      "같은 문서 10-09 최신 후속"
+    ],
+    "원문해시": "3ec474bae91a344f1cdbe1da3df84059e41161b0bc3a5f9114e662b97589976c",
+    "currentSha256": "c4cdc3deeda8a3c27cbabe2d90dd4bb84b76693d7d6837d2bcc5e34b3d3cac0b",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        15096
+      ]
+    ],
+    "reviewedBytes": 25977,
+    "reviewedLines": 102,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-account-audit-20261008/COMPLETION.md"
+  },
+  {
+    "path": "docs/_ops/옛시스템_정리목록_20261002.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "옛 시스템 254줄 전체·사용자 폐기 선택·배포와 트리거 실측·삭제 대상/유지 근거를 전문 확인했다. 실제 삭제 승인을 복원할 고유 근거는 보존한다. 이미 결정된 질문과 이미 삭제된 시스템을 지우라는 현재형 반복 절차는 완료·당시 제안으로 본문에서 정리했다. 현재 Strata 원천 파일 삭제 제안을 철회 상태로 제한하고 이미 끝난 삭제 절차/판단 항목을 당시 이력으로 표시. 승인 원문과 삭제 증거 보존.",
+    "evidence": [
+      "상단 v9.346/고정@57/diag-retro 삭제 완료와 §1/§2-5/§4/§7/§8의 앞선 제안 대조. Strata 원천 엔진_콘텐츠AI.js는 현재 AGENTS가 보존 원천으로 지목하므로 삭제 재개 지시 금지.",
+      "현행 AGENTS.md 엔진_콘텐츠AI.js 지정 및 문서 내부 날짜별 후속 완료"
+    ],
+    "원문해시": "257ded51fdce5782d1ea037ab967a1781ca8c74af9612997756860d64c4876c5",
+    "currentSha256": "973394921691e3976df681d092b4e76f7f72dc7e931b5c3af18e2051f3ffba68",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        14508
+      ]
+    ],
+    "reviewedBytes": 26502,
+    "reviewedLines": 254,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/옛시스템_정리목록_20261002.md"
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "여섯 프로그램 전체의 사용자 승인·기능 계약·실제 공개·로컬/운영 검사와 실패를 전문 확인했다. 10월 9일의 현재 서버/예정 백업/최신 설치 및 이어서 확인할 일을 당시 단계로 명확히 하고 이후 담당 원문을 연결할 대상이다. 지난 예약 시각과 완료된 로그인 후속을 현행 실행 지시와 분리.",
+    "evidence": [
+      "CLOUD-OPERATIONS 및 platform-unified-followup, PULSE 10월12~13일 실제 고객 합성 흐름 후속. 실제 고객 성과·휴대폰 미확인은 새 완료로 확대하지 않음.",
+      "CLOUD-OPERATIONS 및 실제 설치·계정 확인"
+    ],
+    "원문해시": "4fddcca2e4dece67540cb9bdf7f34aa1c9466b94b6d8a4c0cc937378a1c96148",
+    "currentSha256": "95e69659e7f2cb914b12caa51c0ce98a6819022597608d0bdcd8f8b99aa65fdf",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        15363
+      ]
+    ],
+    "reviewedBytes": 28129,
+    "reviewedLines": 108,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/brand-experience-20261008/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/classroom-release-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "수업 API·APK/PC 준비부터 실패·재개·배포 후속 155줄을 전문 확인했다. 최신 07:47 수정본과 이전 실패·권한·현장 미검증이 단계별로 구분되어 전체를 고유 운영/재현 증거로 보존한다.",
+    "evidence": "96bbfc169 PC120시험/새 비공개5파일 및 이전d932/85시험 구분, 실제 장비·반·학생 미정, 실송출·학생시청 미확인.",
+    "원문해시": "0306a5d28a32c00f71b6049f236d1b668ec2233bf2cdacf462bae5bab7c1a026",
+    "currentSha256": "0306a5d28a32c00f71b6049f236d1b668ec2233bf2cdacf462bae5bab7c1a026",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        17273
+      ]
+    ],
+    "reviewedBytes": 30563,
+    "reviewedLines": 155
+  },
+  {
+    "path": "docs/_ops/qa/workspace-signal-20261010/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "3~8판의 디자인·운영 스크립트·실패·사용자 승인·냉복사 정리 증거를 전문 확인했다. 지금 운영/다음 판 수정 값은 후속 HA·durable 운영 계약보다 앞선 지시라 역사로 제한하고 현행 CLOUD 원문에 연결할 대상이다. 8판을 현재 운영으로 고정하던 제목과 옛 후속 실행 안내를 날짜별 이력으로 정정.",
+    "evidence": [
+      "8판 10월11일 인수와 고유 19흐름 재현 보존; 10월12~16일 CLOUD의 현재 A epoch7/B standby/controller 계약과 구분.",
+      "현재 CLOUD-OPERATIONS"
+    ],
+    "원문해시": "edd0710055ebe3266c561fc24b3ed8a2263898aedf276435e549b8d6af7ea50b",
+    "currentSha256": "9becfd556b13b238bf531d4a34bd2503b375c5e4e5bfc64a49105a708a92c022",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        18022
+      ]
+    ],
+    "reviewedBytes": 31831,
+    "reviewedLines": 136,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/workspace-signal-20261010/README.md"
+  },
+  {
+    "path": "docs/_ops/qa/platform-single-sign-on-20261009/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "SSO 계정 경계·고정 후보·실패와 실제 인수의 전체 136줄을 읽었다. 최상단 후속 인수와 이전 후보/실패 이력이 구분되어 고유 인증·데이터 보존 근거로 유지한다.",
+    "evidence": "토큰 복사/이메일 병합/직원 권한 확대 금지, r6 48출력·359공개파일·a26 실계정 인수, 실물기기/추가최종검수 미확인 구분.",
+    "원문해시": "030764b4b8c8406726d0c1e751d74ea0b51faa48ad4fb37590af92cd51f88792",
+    "currentSha256": "030764b4b8c8406726d0c1e751d74ea0b51faa48ad4fb37590af92cd51f88792",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        19038
+      ]
+    ],
+    "reviewedBytes": 32576,
+    "reviewedLines": 136
+  },
+  {
+    "path": "docs/_ops/qa/platform-real-account-20261010/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "최신 설치·실계정 확인과 과거 실패를 날짜별로 구분한 전문을 검토했다. 저장 오류 원본 보존, 실제 UI와 합성 검증의 구별 및 미검증 범위가 유지되어 원문을 보존한다.",
+    "evidence": "2026-10-15 0.4.15 설치 결과와 10-14/12/10 이력의 후속 완료 범위 대조",
+    "원문해시": "af7ce1e68d735a8f9ace6566338045c0fb004c03c9f1ea7cacc3fd713291898b",
+    "currentSha256": "af7ce1e68d735a8f9ace6566338045c0fb004c03c9f1ea7cacc3fd713291898b",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        17577
+      ]
+    ],
+    "reviewedBytes": 33337,
+    "reviewedLines": 177
+  },
+  {
+    "path": "tools/company-messenger/QA.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "메신저의 실패 재현·권한·키와 자료 보존·사용자 한정 승인 및 날짜별 공개/PC 적용 이력을 전문 검토했다. 9월 로컬 시험과 10월 공개 결과의 범위를 구별하고 있어 증거 원문을 보존한다.",
+    "evidence": "2026-10-09 첨부 초점·전송 복구·세션 재시작·기기 푸시의 실제 반영과 합성/실물 미검증 구분; 과거 검수 예외는 해당 날짜 한정 이력",
+    "원문해시": "218cd74b3fa0f2d2339184dfeae22bf90951775e70b40cee6401d7636444b490",
+    "currentSha256": "218cd74b3fa0f2d2339184dfeae22bf90951775e70b40cee6401d7636444b490",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        24000
+      ],
+      [
+        24000,
+        33849
+      ]
+    ],
+    "reviewedBytes": 60418,
+    "reviewedLines": 277
+  },
+  {
+    "path": "docs/_ops/qa/brand-experience-20261008/RELEASE.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "브랜드 공개·PC 설치·계정 보강·서버 이전의 전문 시각별 증거와 한정 승인 원문을 확인했다. 고유 증거는 보존하며 10-09 상태를 최신처럼 지시하는 남은 일과 폐지된 고정 검수 원칙은 당시 이력으로 정정했다. 10-09 후보·백업 대기와 폐지된 검수 의무를 당시 범위로 정정. 실제 고객 인수 미검증은 유지.",
+    "evidence": [
+      "10-09 현황 갱신과 현재 CLOUD-OPERATIONS, platform-real-account-20261010 및 AI_운영원칙의 역할/검수 원문 대조",
+      "CLOUD-OPERATIONS, 후속 설치 기록, AI 운영 원칙"
+    ],
+    "원문해시": "ac760a98cae68ef18939ac0072c45d8dd3d97c24fc88cd0c1ae556557832cc31",
+    "currentSha256": "b175f15a9b9055a944b84b22d69894e04490977a82ca5b1f3ca41cb121914857",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        24000
+      ],
+      [
+        24000,
+        30888
+      ]
+    ],
+    "reviewedBytes": 51149,
+    "reviewedLines": 203,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/brand-experience-20261008/RELEASE.md"
+  },
+  {
+    "path": "docs/_ops/검수_AI예산원장_튜터_20261003.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "예산·튜터 오류와 사용자 한도 선택 및 10-05 운영 튜터 끔까지 전문 확인했다. 고유 실패/수정표와 승인 원문은 보존한다. 초기 결론·10-04 상태는 후속 완료와 혼동하지 않게 날짜 표기를 정정했다. 최초 오류/결론과 10-05 수정·운영 튜터 끔 완료를 구별하도록 본문 제목을 날짜 있는 이력으로 정정. 수치·승인·정책 원문 유지.",
+    "evidence": [
+      "본문 마지막 PR #5 합침·전사 문지기·운영 튜터 끔: 시험용 한도 복원, 원장 잔여 없음, 운영 튜터 활성화는 별도 사용자 결정",
+      "동일 문서 마지막 PR 합침·문지기·운영 튜터 끔"
+    ],
+    "원문해시": "36de3d94a1dfe6ded9b6b317e61162fc56f24e39ed9f04c497726536d2d38a7e",
+    "currentSha256": "0aafdc0d99518f85b2d2d398acbfe226443aea193ae2acc785ee2a545c99262b",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        24000
+      ],
+      [
+        24000,
+        25159
+      ]
+    ],
+    "reviewedBytes": 46592,
+    "reviewedLines": 171,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/검수_AI예산원장_튜터_20261003.md"
+  },
+  {
+    "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 223214자를 전독했다. 담당 [0,180000)와 root [180000,223214)를 동일 SHA·CRLF 유지 UTF-16 좌표로 연결했다. 날짜별 고유 구현/실패/실측·권한·사용자 승인·미검증 범위를 보존하며 과거 실행 계획과 현재 운영 입구를 구분할 대상으로 확인했다. 날짜별 검증 이력 입구를 명확히 하고 대체된 Postiz 선행 설치·옛 핸드북 시행일의 현재형을 본문에서 정정했다.",
+    "evidence": [
+      "workspace-qa-tail-read-pass4.json; SNS 10-16 최종 인증·예약, 10-13 작업실 운영 완료와 그 전 로컬/이전/권한 이력 대조",
+      "동일 파일 SNS 직접 게시/10-16 최종 점검, 현재 WORKSPACE 및 AI 운영 원칙"
+    ],
+    "원문해시": "a4e39cb682cb99fbaafe88f68a6fa773182d9944e165e9d0b41c92672ac52366",
+    "currentSha256": "7fb94db719dacbb06853acc2a6b688302c66235bd9a3495613fb252b14766ef5",
+    "readRanges": [
+      [
+        0,
+        12000
+      ],
+      [
+        12000,
+        24000
+      ],
+      [
+        24000,
+        36000
+      ],
+      [
+        36000,
+        48000
+      ],
+      [
+        48000,
+        60000
+      ],
+      [
+        60000,
+        72000
+      ],
+      [
+        72000,
+        84000
+      ],
+      [
+        84000,
+        96000
+      ],
+      [
+        96000,
+        108000
+      ],
+      [
+        108000,
+        120000
+      ],
+      [
+        120000,
+        132000
+      ],
+      [
+        132000,
+        144000
+      ],
+      [
+        144000,
+        156000
+      ],
+      [
+        156000,
+        168000
+      ],
+      [
+        168000,
+        180000
+      ],
+      [
+        180000,
+        192000
+      ],
+      [
+        192000,
+        204000
+      ],
+      [
+        204000,
+        216000
+      ],
+      [
+        216000,
+        223214
+      ]
+    ],
+    "reviewedBytes": 402173,
+    "reviewedLines": 1299,
+    "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md"
+  }
+]

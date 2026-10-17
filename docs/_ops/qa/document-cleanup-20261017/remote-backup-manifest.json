@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-17",
+  "archive": "docs/_ops/qa/document-cleanup-20261017/recovery-20261017.zip",
+  "bytes": 16734372,
+  "sha256": "f88e162aa01ba883d0218ae2249c7f296e0366ef93422dbf14ea063505cc172c",
+  "baseCommit": "b32ca0542bca08f6ffcb51802fbf26142413abd1",
+  "targetBranch": "codex/document-cleanup-20261017",
+  "entries": 1203,
+  "uncompressedBytes": 54086110,
+  "verifiedEntries": 1203,
+  "crcErrors": 0,
+  "sha256Errors": 0,
+  "untrackedDocumentPairs": 55,
+  "globalChangedFilesBeforeAndAfter": 26,
+  "retiredSkillFiles": 210,
+  "restoreInstructions": [
+    "Extract into a new empty folder, never directly over the working repository or global skills.",
+    "qa/_archive contains original snapshots and retired duplicate skills; they are historical recovery data, not active guidance.",
+    "global-after contains only the 26 edited global skill entry/UI files. Restore onto the matching existing skill version after comparing hashes; other referenced skill files are not included as a full installation.",
+    "untracked-before and untracked-after preserve 55 pre-existing untracked documents without adopting their unrelated baseline contents into active repository source.",
+    "Use the before/after hashes and phase ledgers to apply only needed changes; preserve later or concurrent edits."
+  ],
+  "publicationState": "prepared; the remote branch and archive are verified after push in a separate local receipt"
+}

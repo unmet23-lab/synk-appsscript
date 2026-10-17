@@ -23,10 +23,10 @@
 - 숨김 Electron 화면 점검 도구 10개 통과(renderer-responsive · member-home · convenience · convenience-home · benefits · platform-library · platform-input · platform-note-management · connection · desktop-preferences). 다른 5개(app-compaction · development-catalog · experience · fortune-platform · continuity-exit)는 **바꾸기 전 원본에서도 같은 항목에서 실패**한다(앱 9→8개 통합·Ctrl+K 동작 변경 뒤의 옛 기대값). 2개(personal · world-play)는 점검용 작업본에 없는 폴더를 읽어 돌지 않았다. → 10-10 저녁 유호님 「점검 도구 5개도 고쳐줘」로 다섯 개의 기대값을 지금 동작에 맞췄다: 앱 8개(교사는 Workspace로 통합), Ctrl+K는 빠른 검색 창, 계정이 바뀌면 앞 계정의 상세를 닫음, 웹 운세 상세의 「라이브러리에 담기」 단추, 웹 검색 주소의 검색어(`#discover?q=`), 게임 그림은 WORLD 콘텐츠 창에서만. 확인창·초안 보관을 고정 시간으로 기다려 흔들리던 곳은 조건 기다림으로 바꿨다(convenience-home 포함). 공용 작업본에서 16개 모두 통과(experience 4회·convenience-home 3회 연속). world-play는 WORLD 묶음 후보를 받아야 도는 출시 확인 도구라 그대로다.
 - 실제 계정으로 로그인한 화면, 설치본을 직접 켠 화면은 확인하지 않았다. 다음에 앱을 켜면 새 화면으로 열린다.
 
-## 되돌리기와 주의
+## 당시 되돌리기 계획과 주의
 
-- 되돌리려면 앱을 끈 뒤 백업 `app.asar`를 같은 자리에 다시 복사한다.
-- `desktop/artifacts/platform-reinstall-20261010/`의 Platform 재설치 파일은 **바꾸기 전(v4) 화면**을 담고 있다. 그 파일로 다시 설치하면 2차 화면이 사라진다. 최신 재설치 파일은 WORLD 펠트 책까지 넣은 `desktop/artifacts/platform-reinstall-worldbook-20261010/`이다([기록](../platform-reinstall-worldbook-20261010/README.md)).
+당시에는 앱 종료 뒤 보존한 `app.asar`를 복원하는 계획을 적었다. 원래 v4 설치 파일에는 2차 화면이 없었고 WORLD 펠트 책을 담은 worldbook 후보로 이어졌다([당시 재설치 기록](../platform-reinstall-worldbook-20261010/README.md)). 그 경로를 현재 최신 설치본으로 사용하지 않는다. 현재 설치·업데이트의 대상과 보존 조건은 [자동 업데이트 원문](../platform-auto-update-20261014/README.md)과 [실제 설치·계정 확인](../platform-real-account-20261010/README.md)에서 확인한다. 옛 복사 명령과 후보 경로는 [당시 원문 보관본](../document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md)에 보존한다.
+
 
 ## 웹 공개(synk.im)
 
