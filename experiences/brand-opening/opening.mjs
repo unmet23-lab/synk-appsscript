@@ -77,8 +77,8 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   soundButton.addEventListener('click',()=>{soundOn=!soundOn;updateSound();if(soundOn)playSound();else stopAudio();if(video.paused)playVideo();});
   const enterWorld=()=>finish(stage==='company'?'skip':'start');
   enter.addEventListener('click',enterWorld);
-  // 누르는 동안 시작 알약이 쏙 들어갔다 통 튀어나온다(알약은 가운데 맞춤에 translateX를 쓴다).
-  bindPress(dialog,'.opening-enter',{target:()=>hint.hidden?null:hint,base:()=>'translateX(-50%)'});
+  // 누르는 동안 시작 알약이 쏙 들어갔다 통 튀어나온다. 세로는 가운데 맞춤에 translateX(-50%)를, 가로는 transform 없이 놓이니 누르는 순간의 값을 기준으로 둔다.
+  bindPress(dialog,'.opening-enter',{target:()=>hint.hidden?null:hint,base:b=>{const t=getComputedStyle(b).transform;return t&&t!=='none'?t:'';}});
   dialog.addEventListener('keydown',event=>{
     if(event.key==='Tab')dialog.dataset.keyboard='true';
     if(event.target===dialog&&['Enter',' '].includes(event.key)){event.preventDefault();enterWorld();}

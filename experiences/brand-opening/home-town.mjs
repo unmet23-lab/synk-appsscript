@@ -72,7 +72,8 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
  const pinBase=b=>`translate(${b.style.getPropertyValue('--pin-x')||'-50%'},-50%)`;
  bindPress(pins,'.town-pin',{base:pinBase});
  function shine(id){const zone=zones.get(id);if(!zone)return;const n=v=>parseFloat(v)||0;glow(frame,n(zone.style.left)+n(zone.style.width)/2,n(zone.style.top)+n(zone.style.height)/2);}
- function arrive(){if(!motionOn())return;frame.classList.remove('w-drift');void frame.offsetWidth;frame.classList.add('w-drift');popIn(TOWN_PLACES.map(p=>buttons.get(p.id)),{delay:350,gap:85,base:pinBase});}
+ let arrived=false;
+ function arrive(){if(arrived||!motionOn())return;arrived=true;frame.classList.add('w-drift');popIn(TOWN_PLACES.map(p=>buttons.get(p.id)),{delay:350,gap:85,base:pinBase});}
  // 처음 온 사람에게만 한 번: 장소를 누르면 배운다는 것. 닫거나 장소를 한 번 누르면 다시 나오지 않는다.
  let seen=false;try{seen=localStorage.getItem(HINT_KEY)==='1';}catch{}
  const hint=document.createElement('div');hint.className='town-hint';hint.hidden=seen;
@@ -166,11 +167,11 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
  observer?.observe(container);if(obstacle)observer?.observe(obstacle);
  window.addEventListener('resize',fit);
  document.addEventListener('visibilitychange',visible);timer=setInterval(()=>setTime(),300000);
- setTime();arrange();render();requestAnimationFrame(arrive);
+ setTime();arrange();render();
  return {
   setLayout(value){layout=value==='landscape'?'landscape':'portrait';arrange();},
   setProgress(summary){progress=summary||null;render();},
-  setActive(value){const was=active;active=!!value;container.inert=!active;if(active)fit();if(active&&!was)arrive();},
+  setActive(value){active=!!value;container.inert=!active;if(active){fit();arrive();}},
   focus(){buttons.get(progress?.nextLesson?.packId?TOWN_PLACES.find(p=>p.pack===progress.nextLesson.packId)?.id:'home')?.focus({preventScroll:true});},
   dispose(){clearInterval(timer);observer?.disconnect();window.removeEventListener('resize',fit);document.removeEventListener('visibilitychange',visible);},
   metrics:()=>({layout,active,time,hint:!hint.hidden,fit:frame.dataset.fit,compact,frame:{left:Math.round(parseFloat(frame.style.left)),top:Math.round(parseFloat(frame.style.top)),width:Math.round(parseFloat(frame.style.width)),height:Math.round(parseFloat(frame.style.height))},places:TOWN_PLACES.map(p=>({id:p.id,pack:p.pack,state:buttons.get(p.id).dataset.state,count:buttons.get(p.id).querySelector('.town-pin-count').textContent}))})
