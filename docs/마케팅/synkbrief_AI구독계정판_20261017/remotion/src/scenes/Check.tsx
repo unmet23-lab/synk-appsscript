@@ -6,7 +6,9 @@ import { clamp, ramp } from '../lib/anim';
 import { Board, Caption, Cursor, Head, Mark, Paper, Screen, Title } from '../parts';
 import { C, F, L } from '../theme';
 
-export const CHECK_T = { click: 20, first: 30, gap: 9, len: 120 };
+import { CHK as CHECK_T } from '../timeline';
+
+export { CHECK_T };
 
 const BW = 520;
 const SCALE = (L.W - L.X - L.R - 52) / BW;
@@ -14,7 +16,7 @@ const SCALE = (L.W - L.X - L.R - 52) / BW;
 export const Check: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const doneAt = (i: number) => CHECK_T.first + i * CHECK_T.gap;
+  const doneAt = (i: number) => CHECK_T.done[i];
   const done = ACCOUNTS.filter((_, i) => f >= doneAt(i)).length;
   const reading = f >= CHECK_T.click + 1 && done < ACCOUNTS.length;
   const finished = done === ACCOUNTS.length;

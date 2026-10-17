@@ -1,5 +1,5 @@
-// 모션 시험판(약 11초): 01A 훅 → 덮개 전환 → 04 지금 확인 → 실땀 전환 → 05 급한 것만 맨 위에.
-// 소리는 키트 효과음만(내레이션·배경음은 시험판 확인 뒤).
+// 모션 시험판(약 12초): 01A 훅 → 덮개 전환 → 04 지금 확인 → 실땀 전환 → 05 급한 것만 맨 위에.
+// 소리는 배경음 「Building Momentum」 + 키트 효과음(내레이션은 아직).
 import { Audio } from '@remotion/media';
 import React from 'react';
 import { AbsoluteFill, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
@@ -8,12 +8,12 @@ import { Attention, ATT } from './scenes/Attention';
 import { Check, CHECK_T } from './scenes/Check';
 import { Hook, HOOK } from './scenes/Hook';
 import { C } from './theme';
+import { ATT_START, CHECK_START, END, T } from './timeline';
 
-const T = 12; // 전환 길이
 const A0 = 0;
-const B0 = HOOK.len - T; // 96
-const C0 = B0 + CHECK_T.len - T; // 204
-export const TOTAL = C0 + ATT.len;
+const B0 = CHECK_START;
+const C0 = ATT_START;
+export const TOTAL = END;
 
 /** 덮개(patch): 청금석 펠트 띠가 앞서고 흰 종이가 아래에서 덮으며 올라온다 */
 const Patch: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -56,14 +56,13 @@ const Seam: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 type Hit = { at: number; src: string; v: number };
 const HITS: Hit[] = [
-  { at: A0 + 0, src: 'sfx/thud.wav', v: 0.45 },
   { at: A0 + HOOK.click, src: 'sfx/tok.wav', v: 0.7 },
-  ...Array.from({ length: 6 }, (_, i) => ({ at: A0 + HOOK.rows + i * HOOK.rowGap, src: 'sfx/tick.wav', v: 0.35 })),
+  ...HOOK.rows.map((r) => ({ at: A0 + r, src: 'sfx/tick.wav', v: 0.3 })),
   { at: A0 + HOOK.mark, src: 'sfx/snap.wav', v: 0.5 },
   { at: B0, src: 'sfx/swish.wav', v: 0.5 },
   { at: B0 + CHECK_T.click, src: 'sfx/tok.wav', v: 0.7 },
-  ...Array.from({ length: 6 }, (_, i) => ({ at: B0 + CHECK_T.first + i * CHECK_T.gap, src: 'sfx/pop.wav', v: 0.3 })),
-  { at: B0 + CHECK_T.first + 5 * CHECK_T.gap, src: 'sfx/earn.wav', v: 0.5 },
+  ...CHECK_T.done.slice(0, 5).map((d) => ({ at: B0 + d, src: 'sfx/pop.wav', v: 0.35 })),
+  { at: B0 + CHECK_T.done[5], src: 'sfx/earn.wav', v: 0.45 },
   { at: C0, src: 'sfx/swish.wav', v: 0.5 },
   ...ATT.chips.map((c) => ({ at: C0 + c, src: 'sfx/pop.wav', v: 0.35 })),
   { at: C0 + ATT.pop, src: 'sfx/thud.wav', v: 0.6 },
@@ -72,6 +71,8 @@ const HITS: Hit[] = [
 
 export const Film: React.FC = () => (
   <AbsoluteFill style={{ background: '#fff' }}>
+    {/* 배경음: 박 격자의 원곡 그대로(0초부터), 끝 0.5초 줄임 */}
+    <Audio src={staticFile('bgm.mp3')} volume={(fr) => 0.5 * Math.min(1, (TOTAL - fr) / 15)} />
     <Sequence from={A0} durationInFrames={HOOK.len}>
       <Hook />
     </Sequence>
