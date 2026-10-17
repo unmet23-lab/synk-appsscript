@@ -19,6 +19,8 @@ export const WORLD_GAMES = Object.freeze([
   { path: 'entry-check', slug: 'entry-check', label: '입장 검사', situations: ['sit-life-notice'] },
   { path: 'story-classroom', slug: 'story-classroom', label: '선생님이 돌아왔다', situations: [] },
   { path: 'blank-slice', slug: 'blank-slice', label: '빈칸 베기', situations: [] },
+  // 2026-10-17: LAB 여덟 번째 게임. 기록 키(synk.talk-rally.*)는 원래 계정 저장에 들어 있었고, 이제 목록에서도 연다.
+  { path: 'talk-rally', slug: 'talk-rally', label: '말 랠리', situations: [] },
 ].map(game => Object.freeze({ ...game, situations: Object.freeze([...game.situations]) })));
 
 // Practice picked for the declared reasons (at most three): serve as many reasons as possible, each
