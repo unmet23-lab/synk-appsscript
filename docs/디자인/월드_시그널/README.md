@@ -69,7 +69,7 @@
 - **소리**: `brand-opening/world-sound.mjs` 하나(파일 없는 WebAudio 합성, 목소리보다 작게). 단추 `bindTaps`, 고르기 `select`, 판정 `verdict`(소리 + 진동 + 「친구들의 반응」이 켜졌을 때만 튜터 자세 한 번), 완료 `done`, 보상 `reward`. 설정에서 효과음·진동·보상 연출·친구들의 반응을 따로 끈다. 게임 iframe은 WORLD 안에서만 동적으로 부른다.
 - **PC(가로 틀, 화면 폭 1100px 이상)**: 둘러보기 시트는 방 오른쪽에 떠 있는 680px 패널, 집중 화면(레슨·문제·카페·결과·이야기·옷장·마을·보상 — `home.mjs` `openPanel`의 `is-wide`)은 가운데 최대 1120px, 게임·튜터 고르기는 틀 전체. 안쪽 배치는 컨테이너 쿼리로 짠다.
 - **시트 전환(유호님 10-14 B안)**: 열 때 200ms 투명·97% → 원래, 닫을 때 160ms → 투명·98%, 바탕 막도 같은 시간, 위치는 움직이지 않는다. 기기 「동작 줄이기」·WORLD 「움직임 줄이기」, 게임·튜터 고르기에서는 바로 열고 닫는다.
-- **문구**: 해요체 하나. 제목은 화면 이름(「배우기」「놀이」「설정」「내 계정」「AI 튜터 고르기」), 단추는 동사, 설명은 쓸모 있는 한 줄. 시적 명사형 제목(「나의 작은 세계」「편안하게 머물러요.」)·꾸밈말 금지. 캐릭터 대사·자기소개·학습 내용은 정본이라 고치지 않는다.
+- **문구**: 이용자가 화면의 목적과 다음 행동을 알 수 있게 자연스럽게 쓴다. 위 화면 이름과 10-14 문구 수정은 당시 결과이며 전사 말투·금칙어 규칙으로 삼지 않는다. 캐릭터 대사·자기소개는 캐릭터 정본, 학습 내용은 해당 콘텐츠 원문을 따른다.
 
 ## 펠트 사진 — `experiences/brand-opening/assets/world-felt/*.webp`
 
@@ -99,7 +99,7 @@ GPT 이미지 2.5(ChatGPT 구독 Codex CLI)로 SYNK 펠트 판과 같은 재질�
 | `account` | 열쇠와 꼬리표 | 계정 연결 |
 | `dayend` | 잠든 달과 별 | 하루 마무리 |
 
-한 화면에 같은 사진을 두 번 쓰지 않는다. 캐릭터 정본(`assets/tutors`)은 튜터 말·표정 자리에만 쓴다.
+한 화면에 같은 사진을 두 번 쓰지 않는다. 기존 `assets/tutors`는 당시 튜터 반응 구현의 자료다. 새 마스코트 그림은 10-14 사용자 결정대로 정본을 생김새 참고로 넣어 그 장면과 한 장으로 만들며, 생성 경로는 [AI 운영 원칙](../../AI_운영원칙.md)을 따른다.
 
 ## 화면별 구조
 
@@ -119,7 +119,7 @@ GPT 이미지 2.5(ChatGPT 구독 Codex CLI)로 SYNK 펠트 판과 같은 재질�
 - 전후 비교: [WORLD 리디자인 3차 전후](https://claude.ai/artifact/ANNZZAWVU9m2tsFqwrxq2f) · [시트 전환 시안](https://claude.ai/artifact/1UPy1Lv9q4KBL9BxFDy8WP) · 원본 사진 `.tmp/world-redesign-20261014/r2/{lead,life,games,hangul-tutor,wardrobe-town/r3}/`.
 - 확인: WORLD 시험 537개 중 526 통과·1 건너뜀, 실패 10개는 작업 전부터 같은 것(말의 리듬 `app-learning` 6, 고정 빌드가 없는 「frozen /world」 4). 계정 통합 시험 통과. 얹은 뒤 공용 작업본에서 static·계정 통합을 뺀 532개 중 525 통과(실패 6 = 말의 리듬). 생활·계정 묶음 `--check` 일치. 390·320·844×390·1440 가로 넘침·13px 밑 한글·44px 밑 단추·콘솔 오류 0. LAB 단독 바람길·말의 리듬은 바꾸기 전과 차이 0(`r2/games/standalone-proof.cjs`). 공개 빌드는 `social-conversion.mjs`(두 게임이 부르는 익명 SNS 유입 기록)를 복사 목록에 더해 빠진 참조 0. 공개 때 다른 세션의 미커밋 `scene-v3.mjs` 수정과 그 소품·로더는 커밋된 판으로 두고 뺐고, 진입 페이지에 `?v=redesign-20261014`. 공개 전 배포 점검(로컬)·공개 뒤 바이트 대조·GitHub 배포 점검 통과(run 38530603831, 재검사 없이).
 - 남은 일: 실기기 확인(휴대폰·PC WORLD 앱 — 같은 주소를 읽어 재설치 불필요. 새 노트북에는 PC WORLD 앱이 아직 깔려 있지 않다).
-- 정리 거리 셋은 10-17에 끝냈다(커밋 `5d13ff848`, synk.im/world·LAB 공개는 아직): ① 계정 없는 생활 묶음이 소리·움직임 모듈을 따로 묶지 않고 홈이 부른 `brand-opening/world-{sound,motion}.mjs`를 같이 쓴다(`tools/build-world-life.mjs` 플러그인 — 묶음 29KB 줄고, 카페 첫 문제까지 AudioContext 2 → 1). ② LAB 단독 말의 리듬 가로(844×390)의 「딱!」 보정을 `world-skin.css`에서 공통 `style.css` 가로 블록으로 옮겼다(O/X 단추와 어긋남 379 → 0px, WORLD 안은 전후 같음). ③ 옛 미리보기 `synk-world-home/index.html`이 `../brand-opening/world-ui.css`를 읽고, 4295 서버가 `brand-opening/`을 내준다(옷장 글자 겹침·소리 모듈 404가 없어짐. 바깥 흰 판은 옛 미리보기 그대로). 묶음은 다른 세션의 미커밋 `atlas/` 수정이 섞이지 않게 커밋된 판을 꺼내 만들었다 — 이 노트북은 `core.autocrlf=true`라 작업본에서는 `build-world-life.mjs --check`가 줄끝만으로도 실패한다.
+- 정리 거리 셋은 10-17에 끝냈다(커밋 `5d13ff848`. synk.im/world 공개 synk-policy `3d08bed` — 생활 묶음·말의 리듬 CSS 둘, 말의 리듬 입구만 `?v=cleanup-20261017`, 바이트 4/4 일치, 배포 점검 통과 run 38995948356): ① 계정 없는 생활 묶음이 소리·움직임 모듈을 따로 묶지 않고 홈이 부른 `brand-opening/world-{sound,motion}.mjs`를 같이 쓴다(`tools/build-world-life.mjs` 플러그인 — 묶음 29KB 줄고, 카페 첫 문제까지 AudioContext 2 → 1. 공개 WORLD는 손님도 계정 셸에 붙어 이 묶음을 부르지 않으므로, 쓰이는 곳은 셸이 못 붙을 때의 예비 길과 로컬 미리보기다). ② LAB 단독 말의 리듬 가로(844×390)의 「딱!」 보정을 `world-skin.css`에서 공통 `style.css` 가로 블록으로 옮겼다(O/X 단추와 어긋남 379 → 0px, WORLD 안은 전후 같음. 공개 주소 844×390에서도 0px). ③ 옛 미리보기 `synk-world-home/index.html`이 `../brand-opening/world-ui.css`를 읽고, 4295 서버가 `brand-opening/`을 내준다(옷장 글자 겹침·소리 모듈 404가 없어짐. 바깥 흰 판은 옛 미리보기 그대로). 묶음은 다른 세션의 미커밋 `atlas/` 수정이 섞이지 않게 커밋된 판을 꺼내 만들었다 — 이 노트북은 `core.autocrlf=true`라 작업본에서는 `build-world-life.mjs --check`가 줄끝만으로도 실패한다.
 - 정한 것(10-17): 마을 「끝낸 팩만큼 자라기」에 잠금 칸을 두지 않는다 — 팩·장소는 모두 열어 두고, 자라는 모습은 [우리 동네](#firstrun-town-20261014) 이름표의 진행 표시(새로 · 하는 중 · 마침 체크 · 지금 하나)가 맡는다. 싱크타운 서버 장소 데이터는 그대로. 한글 만나기 옛 `assets/kit/*.webp` 12장(약 600KB)은 지웠다(원본 저장소 `cd96c7254`, 공개본 synk-policy `33bf81e`, 배포 점검 통과 run 38992697742). 게임 결과의 「우리 동네로」는 4차부터 홈의 `goTown()`을 부르고, 모를 때만 `#panel-close`를 누른다.
 
 <a id="firstrun-town-20261014"></a>
