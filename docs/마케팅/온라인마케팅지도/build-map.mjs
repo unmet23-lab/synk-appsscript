@@ -126,7 +126,7 @@ const countries = production.countries.map(country => ({
   publishStatus:'새 콘텐츠 게시 미확인',appStatus:'출시 계획 · 공개 출시 미확인',
   nextAction:country.code === 'MN' ? '기존 5개 채널 유지. 한국어 L2 한 편을 먼저 완성하고 몽골어 현지 검수를 진행한다.' : '확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.',
   condition:country.localConditionsStatus,
-  sourceLabel:'2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님'
+  sourceLabel:country.sourceType === 'previous-conversation-plan' ? '2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님' : `${country.planStatus} · 수요 순위 아님`
 }));
 const brandSeed = [...plan.brands.slice(0,3),{id:'YUHO',name:'유호 · 제작 기록',role:'SYNK를 만드는 유호의 제작·협업 기록',market:'한국어 중심 · 여러 브랜드를 다루는 개인 트랙',channelPolicy:'브랜드와 분리한 탐색용 트랙 · 기존 계정 유지',nextAction:'L1·S1 출연 영상은 다른 세션에서 제작',legalEntity:'사람·제작 기록 트랙'},...plan.brands.slice(3)];
 const brands = brandSeed.map(brand => ({...brand,brand:brand.id,
@@ -176,7 +176,7 @@ const identities = plan.identities.map(row => ({...row,
 const baseFiles=['docs/마케팅/sns-계정.json','docs/마케팅/SNS_계정_전체목록_20260919.md','docs/마케팅/프로필최신화_20260919/반영_v6.json','docs/마케팅/프로필최신화_20260919/실행상태.json'];
 const expansionFiles=['docs/마케팅/온라인마케팅지도/account-setup-proposal.json','docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json','docs/마케팅/온라인마케팅지도/intl-youtube/publication.json','docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json',brMxRecordPath];
 const generatedAt=new Date().toISOString();
-function query(label,rows,files,definitions=[]){return {rows,source:{label,files,executedAt:generatedAt,classification:'로컬 계정·제작 기록 및 확장 계획',filters:['2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님'],metricDefinitions:definitions,caveats:['미확인은 0·미존재·실패가 아니다.','계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다.'],evidenceFlow:[{title:'입력 자료',detail:files.join(' / ')},{title:'대조 방법',detail:'기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결.'}]},methods:[{language:'javascript',code:'docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성'}]};}
+function query(label,rows,files,definitions=[]){return {rows,source:{label,files,executedAt:generatedAt,classification:'로컬 계정·제작 기록 및 확장 계획',filters:[`2026-09-19~${brMx.asOf.slice(5,10)} 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님`],metricDefinitions:definitions,caveats:['미확인은 0·미존재·실패가 아니다.','계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다.'],evidenceFlow:[{title:'입력 자료',detail:files.join(' / ')},{title:'대조 방법',detail:`기존 ${existing.length}행과 확장 ${newSlots.length}자리를 ID로 대조하고 확인된 ${expansion.length}곳만 확보로 표시. ${countries.length}개국 계획은 LAB에만 연결.`}]},methods:[{language:'javascript',code:'docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성'}]};}
 const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케팅 지도',generatedAt,status:'reviewed-local-records',buildStatus:process.argv.includes('--complete')?'complete':'updating',
   filters:[
     {id:'brand',label:'브랜드·트랙',field:'brand',defaultValue:'all',queryIds:['channels']},
@@ -186,7 +186,7 @@ const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케�
     {id:'platform',label:'플랫폼',field:'platform',defaultValue:'all',queryIds:['channels']},
     {id:'contentBrand',label:'콘텐츠 브랜드',field:'brand',defaultValue:'all',queryIds:['contents']}
   ],queries:{
-    brands:query('회사·브랜드 원문과 확보 계정의 탐색 분류',brands,['docs/마케팅_정본.md',...baseFiles,...expansionFiles],[{label:'기존 운영 채널',definition:'2026-09-19 계정 목록의 23개를 주 분류에 한 번씩 집계한다. YUHO는 별도 법인이 아닌 제작 기록 트랙.'},{label:'확장 확보',definition:'몽골 외 LAB 44자리 중 계정 레지스트리에 실재 확인된 24곳. 게시·성과 수가 아니다.'},{label:'공유 연결',definition:'LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계한다.'}]),
+    brands:query('회사·브랜드 원문과 확보 계정의 탐색 분류',brands,['docs/마케팅_정본.md',...baseFiles,...expansionFiles],[{label:'기존 운영 채널',definition:'2026-09-19 계정 목록의 23개를 주 분류에 한 번씩 집계한다. YUHO는 별도 법인이 아닌 제작 기록 트랙.'},{label:'확장 확보',definition:`몽골 외 LAB ${newSlots.length}자리 중 계정 레지스트리에 실재 확인된 ${expansion.length}곳. 게시·성과 수가 아니다.`},{label:'공유 연결',definition:'LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계한다.'}]),
     summary:query('기존 운영 대상과 LAB 확장 확인 상태',summary,[...baseFiles,...expansionFiles],[{label:'LAB 전체 계획',definition:`${countries.length}개국 우선 ${countries.length*2}자리 + 몽골 추가 3자리 = ${countries.length*2+3}자리. 그중 기존 몽골 5자리, 확장 확보 ${expansion.length}자리, 확장 미확인 ${unconfirmedExpansionCount}자리.`}]),
     countries:query(`LAB ${countries.length}개국별 확보 상태와 제작 계획`,countries,['docs/마케팅/온라인마케팅지도/inputs/content-status.json',...expansionFiles]),
     channels:query(`기존 ${existing.length}개 등록 항목과 LAB ${newSlots.length}개 확장 자리`,channels,[...baseFiles,...expansionFiles]),
