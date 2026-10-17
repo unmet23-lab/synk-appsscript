@@ -4,7 +4,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('./',import.meta.url));
 const port=Number(process.env.SYNK_HOME_PORT||4295);
-const games=new Set(['korean-runner','korean-rhythm','hangul-stage']);
+// 이웃 폴더를 그대로 내준다: 세 게임 + WORLD 토큰(world-ui.css)·소리 모듈이 있는 brand-opening(옷장이 쓴다).
+const games=new Set(['korean-runner','korean-rhythm','hangul-stage','brand-opening']);
 const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp3':'audio/mpeg','.wav':'audio/wav','.mp4':'video/mp4','.hdr':'application/octet-stream'};
 http.createServer((req,res)=>{
   try {

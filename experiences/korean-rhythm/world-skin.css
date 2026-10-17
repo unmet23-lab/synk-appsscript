@@ -480,7 +480,6 @@
   :root[data-host=world] .q-hint{font-size:13px}
   :root[data-host=world] .game .tip{font-size:13px;padding:9px 12px}
   :root[data-host=world] .count{width:64px;height:64px;margin:-32px 0 0 -32px}
-  :root[data-host=world] .game .pop{margin-left:45%}   /* 판정 글자: 무대 캔버스가 45% 오른쪽에 있어 그 자리로(judgeAt은 캔버스 좌표) */
   :root[data-host=world] .count b{font-size:30px}
   :root[data-host=world] .pad{border-radius:18px}
   :root[data-host=world] .pad .glyph{font-size:28px}
