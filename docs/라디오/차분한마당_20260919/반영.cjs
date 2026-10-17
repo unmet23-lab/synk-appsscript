@@ -8,7 +8,7 @@ const asset=path.join(dir,p.localAsset);if(hash(fs.readFileSync(asset))!==p.asse
 p.changes=p.changes.map(c=>{const b=fs.readFileSync(path.join(dir,c.local));if(hash(b)!==c.afterSha256)throw Error('candidate hash');return{...c,base64:b.toString('base64'),backup:c.target+'.before-calm-courtyard-20260919-'+c.beforeSha256.slice(0,12)}});
 
 const key=path.join(os.homedir(),'.ssh','synk_radio');
-const sshArgs=['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20','synk@34.71.111.97','node'];
+const sshArgs=['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20','synk-radio','node'];
 const remote=String.raw`
 const fs=require('fs'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
 const p=globalThis.p;
@@ -49,5 +49,5 @@ function run(payload){return JSON.parse(cp.execFileSync('ssh',sshArgs,{input:'gl
 const checked=run({...p,mode:'--check'});fs.writeFileSync(path.join(dir,'반영전확인.json'),JSON.stringify(checked,null,2));
 if(p.mode==='--check'){console.log(JSON.stringify(checked,null,2));process.exit(0);}
 p.uploadPath=p.remoteAsset+'.upload-'+p.id;
-cp.execFileSync('scp',['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20',asset,'synk@34.71.111.97:'+p.uploadPath],{timeout:180000,windowsHide:true,stdio:'pipe'});
+cp.execFileSync('scp',['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20',asset,'synk-radio:'+p.uploadPath],{timeout:180000,windowsHide:true,stdio:'pipe'});
 const result=run(p);fs.writeFileSync(path.join(dir,'라이브반영.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

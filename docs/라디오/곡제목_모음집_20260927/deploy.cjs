@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto'),cp=require('child_process');
-const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97';
+const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio';
 const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 const base='/opt/synk-radio/지면/bots/오버레이/';
 const files=[['server-stream-after.js',base+'겹쳐송출.js','server-stream-before.js'],['server-judge-after.js',base+'전광판판정.js','server-judge-before.js'],['server-board-after.html',base+'전광판.html','server-board-before.html'],['../../../bots/오버레이/현재곡.js',base+'현재곡.js',null],['now-playing.json','/opt/synk-radio/소리/now-playing.json',null]].map(([file,target,before])=>({local:path.resolve(dir,file),target,old:before?hash(path.join(dir,before)):null}));

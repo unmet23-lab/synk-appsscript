@@ -27,7 +27,7 @@ const exactRemote = { ...runtimeHashes, ...marineHashes };
 const remotePaths = Object.keys(exactRemote);
 const remoteCode = `const fs=require('fs'),crypto=require('crypto');const paths=${JSON.stringify(remotePaths)};const out={};for(const p of paths){const b=fs.readFileSync(p);out[p]={sha256:crypto.createHash('sha256').update(b).digest('hex'),base64:b.toString('base64')}}process.stdout.write(JSON.stringify(out));`;
 const remoteJson = execFileSync('ssh', [
-  '-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 'synk@34.71.111.97', 'node',
+  '-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 'synk-radio', 'node',
 ], { input: remoteCode, encoding: 'utf8', timeout: 90000, maxBuffer: 12 * 1024 * 1024, windowsHide: true });
 const remote = JSON.parse(remoteJson);
 const remoteAssets = new Map();

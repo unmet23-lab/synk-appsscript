@@ -10,6 +10,6 @@ cp.execFileSync('sudo',['-n','systemctl','stop','radio-live']);
 const after=read();
 console.log(JSON.stringify({at:new Date().toISOString(),action:'stop radio-live',before,after,recoverableWith:'sudo systemctl start radio-live'}));
 `;
-const result=JSON.parse(execFileSync('ssh',['-i',key,'synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:60000,windowsHide:true}));
+const result=JSON.parse(execFileSync('ssh',['-i',key,'synk-radio','node'],{input:code,encoding:'utf8',timeout:60000,windowsHide:true}));
 assert.equal(result.after.ActiveState,'inactive');assert.equal(result.after.SubState,'dead');assert.equal(result.after.MainPID,'0');
 fs.writeFileSync(path.join(dir,'종료확인.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));
