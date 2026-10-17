@@ -213,3 +213,94 @@ export function dust(host,{count=22,after=null}={}){
  if(g){size();raf=requestAnimationFrame(draw);}
  return()=>{cancelAnimationFrame(raf);cv.remove();};
 }
+
+// 문 열림 전환(10-17 팁 장부 7행, Motion 「Curtains: Doors」의 원리만 옮김). 문 두 짝은 새 그림이 아니라 지금 장면(face)을 가운데에서 가른 복제다.
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+/** 장면 복제: 아이디·읽기 이름을 빼고, 사진은 첫 프레임에 바로 그려지게(decoding=sync) 한다. 스크립트로 돌던 움직임(누른 자리 불빛·톡톡)은 복제에 같은 시각으로 다시 건다(끝나면 끝 모습에 머문다). */
+function cloneFace(face){
+ const copy=face.cloneNode(true),from=[face,...face.querySelectorAll('*')],to=[copy,...copy.querySelectorAll('*')];
+ from.forEach((el,i)=>{const twin=to[i];if(!twin)return;twin.removeAttribute('id');
+  if(el instanceof HTMLCanvasElement&&el.width&&el.height){try{twin.getContext('2d')?.drawImage(el,0,0);}catch{}}
+  for(const a of el.getAnimations?.()||[]){if(a.animationName||a.transitionProperty||!a.effect||a.currentTime==null)continue;
+   try{twin.animate(a.effect.getKeyframes().map(({computedOffset,...frame})=>frame),{...a.effect.getTiming(),fill:'both'}).currentTime=a.currentTime;}catch{}}
+ });
+ for(const img of copy.querySelectorAll('img'))img.decoding='sync';
+ copy.removeAttribute('aria-label');copy.inert=true;
+ Object.assign(copy.style,{position:'absolute',left:'0',top:'0',width:'100%',height:'100%',margin:'0',visibility:'visible'});
+ return {copy,from,to};
+}
+/** 복제에 붙은 CSS 움직임(「지금」 빛 고리·천천히 다가가기)을 원래 장면과 같은 시각으로 맞춘다 — 문이 걷혀도 이어진다. */
+function syncFace({from,to}){
+ const place=list=>{const index=new Map(list.map((el,i)=>[el,i]));return a=>`${index.get(a.effect?.target)}|${a.effect?.pseudoElement||''}|${a.animationName}`;};
+ const key=place(to),twins=new Map((to[0].getAnimations?.({subtree:true})||[]).filter(a=>a.animationName).map(a=>[key(a),a])),own=place(from);
+ for(const a of from[0].getAnimations?.({subtree:true})||[]){if(!a.animationName||a.currentTime==null)continue;const twin=twins.get(own(a));if(twin)try{twin.currentTime=a.currentTime;}catch{}}
+}
+/**
+ * 문 열림: 지금 보이는 장면(face)을 가운데에서 둘로 가른 면이 문 두 짝이 된다(새 그림 없음). 돌려주는 약속은 문을 걷은 뒤 {animated,swapped,aborted}로 풀린다.
+ * open — 닫힌 문(= 지금 화면)으로 덮고 swap({start})으로 뒤를 바꾼 다음, 다음 장면의 첫 그림(ready — 함수면 문이 화면에 오른 뒤 부른다)을 최대 wait만큼 기다려 양옆으로 연다(0.45초).
+ *        열림은 처음부터 wait 뒤로 걸어 둔다 — 첫 그림을 그리느라 화면 일이 멈춰도 합성기에서 제때 열린다. 첫 그림이 일찍 되면 그때로 당긴다.
+ *        열기 시작할 때 opened()를 부르고 title을 잉크로 번지게 하며, reveal(드러나는 장면)은 살짝 넘쳤다 제자리. swap 안에서 start(el,frames,options)로 건 움직임도 같이 시작한다.
+ * close — 양옆에서 들어와 가운데서 맞물린다(0.35초). 맞물린 모습이 곧 face라 swap()으로 뒤를 face 장면으로 바꾸면 그대로 이어진다(지금 장면을 따로 찍지 않는다). title은 닫히는 동안 비켰다가 다시 번진다.
+ * 기기 「동작 줄이기」·WORLD 「움직임 줄이기」에서는 기다리지 않고 swap()(열 때는 opened()도)만 한다. 누르기 막기는 부르는 쪽이 맡는다(문이 덮인 동안 아래 장면은 눌리지 않는다).
+ */
+export async function doors(face,{mode='open',host=face?.parentElement,ready=null,wait:limit=1200,duration=mode==='close'?350:450,swap=()=>{},opened=()=>{},reveal=null,title=[],signal=null}={}){
+ const result={animated:false,swapped:false,aborted:false},close=mode==='close',titles=[...title].filter(Boolean),born=performance.now();
+ let live=false,hold=0,overlay=null;const begun=[],moves=[];
+ // 문이 열리기 시작할 때 같이 시작하는 움직임. 열기를 기다리는 동안(hold)은 첫 모습에 머문다.
+ const start=(el,frames,{delay=0,...options}={})=>{if(!live)return null;const a=animate(el,frames,{fill:'backwards',...options,delay:delay+hold});if(a)begun.push(a);return a;};
+ const doSwap=()=>{if(result.swapped)return;result.swapped=true;swap({start});};
+ const instant=()=>{doSwap();if(!close)opened();return result;};
+ const abort=()=>{begun.forEach(a=>a.cancel());overlay?.remove();result.aborted=true;return result;};
+ // 앞 전환의 잉크가 아직 번지는 중이면 걷고 새로 번진다(남은 굵기를 목표로 읽지 않게).
+ const settle=el=>el.getAnimations?.().forEach(a=>a.cancel()),reink=(el,delay)=>{settle(el);ink(el,{delay});};
+ if(!face||!host||!motionOn())return instant();
+ const stopped=new Promise(resolve=>signal?.addEventListener('abort',resolve,{once:true}));
+ // 사진을 미리 풀어 둔다(숨어 있던 장면도). 복제 사진이 빈 채로 한 프레임 보이지 않게.
+ await Promise.race([Promise.all([...face.querySelectorAll('img')].map(img=>img.decode?.().catch(()=>{}))),wait(close?160:120),stopped]);
+ if(signal?.aborted)return abort();
+ if(!motionOn())return instant();
+ const hostBox=host.getBoundingClientRect(),box=face.getBoundingClientRect(),travel=box.width/2+44;
+ overlay=document.createElement('div');overlay.className='w-doors';overlay.dataset.mode=close?'close':'open';overlay.setAttribute('aria-hidden','true');
+ Object.assign(overlay.style,{left:`${box.left-hostBox.left-host.clientLeft}px`,top:`${box.top-hostBox.top-host.clientTop}px`,width:`${box.width}px`,height:`${box.height}px`});
+ const faces=[],leaves=['left','right'].map(side=>{
+  const leaf=document.createElement('div');leaf.className='w-door';leaf.dataset.side=side;
+  const surface=document.createElement('div');surface.className='w-door-face';const clone=cloneFace(face);faces.push(clone);surface.append(clone.copy);
+  const edge=document.createElement('i');edge.className='w-door-edge';leaf.append(surface,edge);overlay.append(leaf);return leaf;
+ });
+ host.append(overlay);
+ // 문 모양(world-motion.css)이 아직 옛 판이면(공개 직후 캐시) 덮개가 제자리에 못 서니 걷고 바로 바꾼다.
+ if(getComputedStyle(overlay).position!=='absolute'){overlay.remove();overlay=null;return instant();}
+ faces.forEach(syncFace);result.animated=live=true;
+ const shut=leaf=>`translateX(${leaf.dataset.side==='left'?-travel:travel}px)`;
+ if(!close){
+  hold=Math.max(0,born+limit-performance.now());
+  doSwap();
+  moves.push(...leaves.map(leaf=>start(leaf,[{transform:'none'},{transform:shut(leaf)}],{duration,easing:'cubic-bezier(.7,0,.2,1)',fill:'both'})));
+  leaves.forEach(leaf=>start(leaf.lastChild,[{opacity:0},{opacity:1,offset:.25},{opacity:1}],{duration,fill:'both'}));
+  // 들어선 장면은 조금 가까이서 시작해 살짝 넘쳤다 제자리로(자리는 그대로, 크기만).
+  if(reveal)start(reveal,[{scale:'1.06'},{scale:'.994',offset:.7},{scale:'1'}],{duration:Math.round(duration*1.5),easing:'cubic-bezier(.22,.7,.3,1)'});
+  // 닫힌 문이 화면에 오른 뒤에 다음 장면 준비를 시작한다(그 전에 무거운 일이 끼면 문이 화면에 못 오른다).
+  await nextFrame();await wait(0);
+  const first=typeof ready==='function'?Promise.resolve().then(ready):Promise.resolve(ready);
+  await Promise.race([first.catch(()=>{}),wait(Math.max(0,born+limit-performance.now())),stopped]);
+  if(signal?.aborted)return abort();
+  // 첫 그림이 일찍 됐으면 걸어 둔 열림을 지금으로 당긴다(각자 더 늦게 시작하는 몫은 그대로).
+  for(const a of begun)if((a.currentTime??0)<hold)a.currentTime=hold;
+  opened();titles.forEach((el,i)=>reink(el,110+i*70));
+ }else{
+  moves.push(...leaves.map(leaf=>start(leaf,[{transform:shut(leaf)},{transform:'none'}],{duration,easing:'cubic-bezier(.6,0,.25,1)',fill:'both'})));
+  leaves.forEach(leaf=>start(leaf.lastChild,[{opacity:1},{opacity:1,offset:.7},{opacity:0}],{duration,fill:'both'}));
+  // 제목은 닫히는 동안 비켜 둔다(앞 장면 제목이 다음 장면 사진 위에 남지 않게). 바꾼 뒤 다시 번진다.
+  titles.forEach(settle);titles.forEach(el=>start(el,[{opacity:1},{opacity:0}],{duration:Math.round(duration*.4),easing:'ease-out',fill:'forwards'}));
+ }
+ await Promise.race([Promise.all(moves.map(a=>a?.finished.catch(()=>{}))),stopped]);
+ if(signal?.aborted)return abort();
+ if(close){
+  doSwap();titles.forEach((el,i)=>reink(el,i*70));
+  // 바뀐 장면이 한 번 그려진 뒤에 문을 걷는다(같은 그림이라 이음매가 보이지 않는다).
+  await nextFrame();await nextFrame();
+ }
+ overlay.remove();
+ return result;
+}
