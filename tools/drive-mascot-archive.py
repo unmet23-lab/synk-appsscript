@@ -39,7 +39,8 @@ def source_path(relative):
     for ancestor in [p, *p.parents]:
         if ancestor == SOURCE.parent:
             break
-        if ancestor.exists() and ancestor.lstat().st_file_attributes & 1024:
+        # 1024 = FILE_ATTRIBUTE_REPARSE_POINT (Windows only); a symlink is the same hazard on other systems.
+        if ancestor.is_symlink() or (ancestor.exists() and getattr(ancestor.lstat(), 'st_file_attributes', 0) & 1024):
             raise ValueError('Reparse point in local source path')
     return p
 
