@@ -18,7 +18,7 @@
 | [그림 굽기·오리기](그림_굽기_오리기.md) | GPT 그림 굽기 주간 한도·계정 돌려쓰기, 펠트 오리기의 흰 띠·바닥 그림자, sharp 위치 |
 | [Higgsfield](higgsfield.md) | 계정·잔액·제출 거절, 올리기, Nano Banana Pro, Seedance·Wan·Kling |
 | [영상·소리](영상_ffmpeg_자막.md) | ffmpeg xfade·자르기·음량, 자막, HyperFrames·GSAP 렌더, TTS·받아쓰기, 렌더 장비 |
-| [배포·공개](배포_공개.md) | talk 함수 배포·설정값·마이그레이션, 깨끗한 사본 빌드, synk.im(synk-policy)·배포 점검, LAB·WORLD 공개 묶음, GCS, 회사 VM SSH·릴리스, Platform Mac DMG |
+| [배포·공개](배포_공개.md) | talk 함수 배포·설정값·마이그레이션, 깨끗한 사본 빌드, synk.im(synk-policy)·배포 점검, LAB·WORLD 공개 묶음, GCS, 회사 VM SSH·릴리스, Platform Mac DMG, Apps Script 라이브(클라우드 세션의 막다른 길) |
 | [브라우저·게시](브라우저_게시.md) | 크롬 확장(프로필 로그인, 네이티브 창, 파일 올리기 10MB, 팝업), Meta·인스타 웹, 유튜브 스튜디오·API 한도·예약 읽기, Suno, Google Flow, 특허로 |
 | [AI CLI·구독 통로](AI_CLI.md) | agy(Gemini 구독)·몽골어 검문 429·훅 UTF-8, Hermes 팁 봇(64K 창·Git Bash 경로·yaml), Codex 세션 기록(수정 시각·보관·한글 경로) |
 | [한글(HWP) 양식](한글_HWP.md) | 한컴 없이 HWP·HWPX 읽기(`tools/hwp읽기.py`, 배포용 포함), 한컴 없이 채우기의 막다른 길, 옛 한글 2024 COM 길(첫 실행·보안 창·작업 서버, 모아 찍기, 체크 글머리표, 쪽 나눔) |
