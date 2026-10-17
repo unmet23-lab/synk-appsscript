@@ -15,21 +15,23 @@ function environment(t,workroom){
 async function fixture(t,options={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-workroom-schedule-'));let calls=0;
   const deny=async()=>{calls++;throw Error('Unexpected external collector');};
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,collector:deny,dailyTrendsCollector:deny,contentFetch:deny,...options});
+  const {seed,...appOptions}=options;
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,collector:deny,dailyTrendsCollector:deny,contentFetch:deny,...appOptions});
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(directory.includes('synk-workroom-schedule-'));await rm(directory,{recursive:true,force:true});});
   const user=app.store.createUser({name:'Synthetic scheduler',email:'scheduler@example.test',role:'member'});
   const session=app.store.mint('session',user.id,{csrfToken:'scheduler'},30);
+  await seed?.({app,user});
   await app.start();await app.waitForIdle();
   async function get(route){const response=await fetch(`http://127.0.0.1:${app.server.address().port}`+route,{headers:{Cookie:'synk_company_session='+session}});assert.equal(response.status,200);return response.json();}
   return {app,user,get,calls:()=>calls};
 }
 const card=(report,id)=>report.cards.find(row=>row.id===id);
 
-test('workroom opt-in starts local scheduled checks and SNS runtime while unconnected collectors stay off',async t=>{
+test('workroom opt-in starts scheduled checks, 24/72-hour observation and SNS runtime while unconnected collectors stay off',async t=>{
   environment(t,'1');const f=await fixture(t);const report=await f.get('/api/automation-health');
   assert.equal(report.monitor.enabled,true);assert.ok(report.monitor.lastScanAt);
   for(const id of ['links','weekly']){assert.notEqual(card(report,id).status,'paused');assert.ok(card(report,id).lastSuccessAt,id);}
-  assert.equal(card(report,'performance').status,'paused');
+  assert.notEqual(card(report,'performance').status,'paused');assert.ok(card(report,'performance').lastSuccessAt);
   const weekly=await f.get('/api/weekly-summary');assert.equal(weekly.schedule.enabled,true);assert.ok(f.app.store.all('weeklyWorkSummaries').length);
   const social=await f.get('/api/social/workspace');assert.equal(social.runtime.enabled,true);assert.ok(social.runtime.lastAttemptAt);assert.equal(social.provider.provider,'direct');assert.equal(social.provider.configured,true);assert.ok(social.provider.channels.every(channel=>channel.enabled===false&&channel.connected===false));assert.equal(social.ai.canUse,false);
   await f.app.scheduledTick();assert.equal(f.calls(),0);
@@ -47,8 +49,30 @@ test('schedule false suppresses environment defaults and explicit job options st
   assert.equal(report.monitor.enabled,false);assert.equal(card(report,'links').status,'paused');assert.equal(card(report,'performance').status,'paused');
   assert.equal((await f.get('/api/weekly-summary')).schedule.enabled,true);assert.ok(card(report,'weekly').lastSuccessAt);assert.equal(f.calls(),0);
 });
+test('workroom opt-in collects a due 24-hour checkpoint while broad background stays off',async t=>{
+  environment(t,'1');let collected=0,entryId;
+  const publishedAt=new Date(Date.now()-24*3600000-2*60000).toISOString();
+  const f=await fixture(t,{
+    postPerformanceCollector:async()=>{collected++;return {posts:[{url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt,metrics:{views:13,likes:0,comments:2}}],coverage:{source:'youtube-data-api-v3',unavailableMetrics:['shares','saves','reach']}};},
+    seed({app,user}){
+      const channel={id:'synthetic-youtube',platform:'youtube',externalId:'UC'+'a'.repeat(22),displayName:'Synthetic YouTube',ownerIds:[user.id],active:true};
+      app.store.put('channels',channel.id,channel);app.store.setSecret('channel:'+channel.id,{apiKey:'synthetic-test-key'});
+      entryId=app.postPerformance.register(user,{channelId:channel.id,url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt,title:'Synthetic video'}).entry.id;
+    }
+  });
+  const report=await f.get('/api/automation-health');
+  assert.notEqual(card(report,'performance').status,'paused');assert.ok(card(report,'performance').lastSuccessAt);
+  assert.notEqual(card(report,'links').status,'paused');assert.notEqual(card(report,'weekly').status,'paused');
+  assert.equal(f.calls(),0);assert.equal(collected,1);
+  const row=f.app.store.get('postPerformanceEntries',entryId),checkpoint=row.checkpoints.find(item=>item.hours===24);
+  assert.equal(checkpoint.status,'recorded');assert.equal(checkpoint.metrics.views,13);assert.equal(checkpoint.metrics.likes,0);
+  assert.equal(checkpoint.metricProvenance.views.source,'api:youtube-data-api-v3');
+  assert.equal(row.checkpoints.find(item=>item.hours===72).status,'pending');
+});
 test('individual false options disable workroom opt-in and invalid flags fail before opening data',async t=>{
-  environment(t,'1');const f=await fixture(t,{publicationLinkSchedule:false,weeklySummarySchedule:false,automationHealthSchedule:false});const report=await f.get('/api/automation-health');
-  assert.equal(report.monitor.enabled,false);for(const id of ['links','weekly'])assert.equal(card(report,id).status,'paused');assert.equal(f.calls(),0);
+  environment(t,'1');const f=await fixture(t,{publicationLinkSchedule:false,publicationPerformanceSchedule:false,weeklySummarySchedule:false,automationHealthSchedule:false});const report=await f.get('/api/automation-health');
+  assert.equal(report.monitor.enabled,false);for(const id of ['links','performance','weekly'])assert.equal(card(report,id).status,'paused');assert.equal(f.calls(),0);
   for(const value of ['true','', '2']){process.env[keys[1]]=value;assert.throws(()=>createCompanyApp(),/SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED/);}
+  process.env[keys[1]]='0';
+  assert.throws(()=>createCompanyApp({publicationPerformanceSchedule:'yes'}),/게시 후 성과 자동 수집 설정/);
 });
