@@ -18,6 +18,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import ntpath
 import os
 from pathlib import Path
 import shutil
@@ -170,7 +171,8 @@ def setting_matches(key: str, actual: Any, expected: Any) -> bool:
     if actual is None:
         return False
     if key.endswith("Location"):
-        return os.path.normcase(os.path.normpath(str(actual))) == os.path.normcase(os.path.normpath(str(expected)))
+        # Resolve reports Windows paths; compare them the Windows way on any host (os.path here only on Windows).
+        return ntpath.normcase(ntpath.normpath(str(actual))) == ntpath.normcase(ntpath.normpath(str(expected)))
     try:
         return abs(float(actual) - float(expected)) < 0.00001
     except (TypeError, ValueError):
