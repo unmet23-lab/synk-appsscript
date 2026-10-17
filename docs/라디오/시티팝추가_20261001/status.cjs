@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');
-const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97',name=process.argv[2]||'status';
+const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio',name=process.argv[2]||'status';
 const script=String.raw`
 const fs=require('fs'),cp=require('child_process'),crypto=require('crypto');
 const root='/opt/synk-radio/',hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');

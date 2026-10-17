@@ -28,7 +28,7 @@ const { execFileSync } = require('child_process');
 
 const talk환경 = path.join(os.homedir(), 'Documents', 'SYNK-talk', '.env');
 const ssh열쇠 = path.join(os.homedir(), '.ssh', 'synk_radio');
-const 서버 = 'synk@34.71.111.97';
+const 서버 = 'synk-radio';
 const 스트림이름 = 'SYNK 라디오24 상시';
 /* 🆕 09-08 이름 교체(유호 지시 · 커밋 e3c5ac1c9) — 「24시간 한국어 라디오」·「SYNK FM」은 옛 이름이다.
    lofi 는 세계가 실제로 검색하는 낱말이고, K- 가 한국어를 로마자로 세워 준다. */
@@ -75,7 +75,7 @@ async function yt(tok, 방법, 길, 몸) {
 }
 
 function ssh(명령, 넣을것) {
-  return execFileSync('ssh', ['-i', ssh열쇠, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 서버, 명령],
+  return execFileSync('ssh', ['-i', ssh열쇠, '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 서버, 명령],
     { input: 넣을것 || '', encoding: 'utf8' });
 }
 

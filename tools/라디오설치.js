@@ -23,11 +23,11 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const 열쇠 = path.join(os.homedir(), '.ssh', 'synk_radio');
-const 서버 = 'synk@34.71.111.97';
+const 서버 = 'synk-radio';
 
 function ssh(명령, 조용히) {
   try {
-    return execFileSync('ssh', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=30', 서버, 명령],
+    return execFileSync('ssh', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=30', 서버, 명령],
       { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
   } catch (e) {
     if (조용히) return (e.stdout || '') + (e.stderr || '');
@@ -58,7 +58,7 @@ function ssh(명령, 조용히) {
     ssh('cd /opt/synk-radio/팩 && f=$(ls *.ts | head -1) && ffmpeg -y -loglevel error -i "$f" -frames:v 1 /tmp/첫화면.png && echo "뽑았다: $f"', true);
     const 받을곳 = path.join(os.homedir(), 'Documents', 'SYNK-appsscript', 'docs', '라디오', '첫화면.png');
     try {
-      execFileSync('scp', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=no', `${서버}:/tmp/첫화면.png`, 받을곳], { encoding: 'utf8' });
+      execFileSync('scp', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=accept-new', `${서버}:/tmp/첫화면.png`, 받을곳], { encoding: 'utf8' });
       console.log(`   받았다 → ${받을곳}`);
     } catch (e) { console.log(`   🔴 못 받았다: ${e.message.slice(0, 200)}`); }
   }

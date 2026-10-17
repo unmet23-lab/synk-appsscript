@@ -9,7 +9,7 @@ const root = path.resolve(dir, '..', '..', '..');
 const durationMinutes = Number(process.argv[2] || 9);
 if (!Number.isFinite(durationMinutes) || durationMinutes < 2 || durationMinutes > 20) throw new Error('감시 시간은 2~20분');
 const healthScript = path.join(root, 'tools/라디오방송건강.js');
-const sshArgs = ['-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 'synk@34.71.111.97', 'node'];
+const sshArgs = ['-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 'synk-radio', 'node'];
 const remoteCode = String.raw`
 const cp=require('child_process'),fs=require('fs'),crypto=require('crypto');
 const props=n=>Object.fromEntries(cp.execFileSync('systemctl',['show',n,'--property=MainPID,ActiveState,SubState,NRestarts,UnitFileState'],{encoding:'utf8'}).trim().split('\n').map(x=>{const i=x.indexOf('=');return[x.slice(0,i),x.slice(i+1)];}));

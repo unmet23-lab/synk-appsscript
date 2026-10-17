@@ -19,7 +19,7 @@ const opened=[];for(const pid of pids)try{for(const fd of fs.readdirSync('/proc/
 const progress=cp.execFileSync('journalctl',['-u','radio-live','-n','12','-o','cat','--no-pager'],{encoding:'utf8'}).split(/\r?\n/).filter(x=>x.includes('층 ')&&x.includes('방송시각')).slice(-4);
 process.stdout.write(JSON.stringify({service:s,radioStream:rs,ffmpeg,opened,progress}));`;
 const remote = JSON.parse(execFileSync('ssh', [
-  '-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 'synk@34.71.111.97', 'node',
+  '-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 'synk-radio', 'node',
 ], { input: code, encoding: 'utf8', timeout: 30000, maxBuffer: 2 * 1024 * 1024, windowsHide: true }));
 const live = health.match(/방송 중 ([A-Za-z0-9_-]+)\s*\|\s*(.*?)\s*\|\s*(private|unlisted|public)\s*\|/);
 const stream = health.match(/받는 중\?\s*(\S+)\s*\|\s*건강\s*(\S+)/);

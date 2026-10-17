@@ -16,7 +16,7 @@ const descend=p=>{let a=[];try{a=cp.execFileSync('pgrep',['-P',String(p)],{encod
 const opened=[];if(service.MainPID!=='0')for(const p of [service.MainPID,...descend(service.MainPID)])try{for(const f of fs.readdirSync('/proc/'+p+'/fd'))try{const t=fs.readlinkSync('/proc/'+p+'/fd/'+f);if(t.startsWith(base+'/무대차례/')||t.startsWith(base+'/소리/'))opened.push({pid:p,file:t})}catch{}}catch{}
 const recent=cp.execFileSync('journalctl',['-u','radio-live','-n','160','--no-pager','-o','cat'],{encoding:'utf8'}).split('\n').filter(x=>/실시간대비|frame=|재시작|장면|fps|무대|조율/.test(x)).map(x=>x.replace(/rtmps?:\/\/\S+/gi,'[stream-address-omitted]').replace(/https?:\/\/\S+/gi,'[url-omitted]')).slice(-12);
 console.log(JSON.stringify({at:new Date().toISOString(),service,radioStream:props('radio-stream'),tuning,hashes:Object.fromEntries(files.map(f=>[base+f,hash(base+f)])),stageListEntries:list.trim().split('\n').length,stagePaths:[...new Set(list.trim().split('\n'))],opened,recent,overlay,parent},null,2));`;
-const raw=cp.execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','BatchMode=yes','-o','ConnectTimeout=20','synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:60000,maxBuffer:4*1024*1024,windowsHide:true});
+const raw=cp.execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','BatchMode=yes','-o','ConnectTimeout=20','synk-radio','node'],{input:code,encoding:'utf8',timeout:60000,maxBuffer:4*1024*1024,windowsHide:true});
 const result=JSON.parse(raw);
 fs.writeFileSync(path.join(__dirname,'서버현황.json'),JSON.stringify({...result,overlay:undefined,parent:undefined},null,2));
 fs.writeFileSync(path.join(__dirname,'before-마스코트.html'),result.overlay);
