@@ -155,7 +155,7 @@ HTTP 200만으로 모든 행이 반영됐다고 결론 내리지 않는다. 응�
 
 관련 기존 검사: Apps Script `tests/safety.test.js`·`tests/학생ID종단.test.js`·`tests/입학시즌.test.js`·`tests/반출통로.test.js`, SYNK-talk `tests/명부통로.test.js`. 문서 수정만으로 시험 통과나 운영 데이터 반영을 새로 주장하지 않는다.
 
-현재 원격 설정·실행 증거는 [자동화 검증 결과](_ops/AI_자동화_키통일_20260911.md)와 [자격증명 작업 결과](_ops/자격증명_교체_완료_20260911.md)의 확인 범위를 읽는다. 과거 보고의 서비스 목록보다 현재 실행 코드와 담당 정본을 먼저 대조한다.
+현재 원격 설정·실행 증거는 [자동화 검증 결과](_ops/AI_자동화_키통일_20260911.md)와 [자격증명 작업 결과](https://github.com/unmet23-lab/synk-appsscript/blob/683e33fcdddc1f00a7eb6bc24d7a4200ceb8978a/docs/_ops/자격증명_교체_완료_20260911.md)의 확인 범위를 읽는다. 과거 보고의 서비스 목록보다 현재 실행 코드와 담당 정본을 먼저 대조한다.
 
 ## 7. 궤적 레일 — 의도 × 결과 (`outcome_log` · `trajectory`)
 

@@ -93,7 +93,7 @@ Felt의 섬유·두께·접촉 그림자, Glass의 투과·반사, Resin의 내�
 
 - 기존 렌더 부품: `룸굽기.js → 룸장면.py → 룸자산화.py → docs/Loom_자산/구운재질.json`.
 - 생성 자산·의상: 용도별 제작기 → 누끼·표정·치수 처리 → 실제 자산 소비자.
-- 살아 있는 장면: [정원 실물](../experiences/loom-living/README.md)과 공통 움직임 → 매체별 표시·출력.
+- 살아 있는 장면: [정원 실물](https://github.com/unmet23-lab/synk-appsscript/blob/683e33fcdddc1f00a7eb6bc24d7a4200ceb8978a/experiences/loom-living/README.md)과 공통 움직임 → 매체별 표시·출력.
 
 기존 3D 부품은 `룸굽기.js`·`룸장면.py`, 공방은 `요소굽기.py` 등 담당 제작기를 쓴다. 필요하면 `재굽기값.js`로 해당 원천 변경을 확인한다. 지원 플래그·출력 대상은 실행 코드에서 읽는다.
 

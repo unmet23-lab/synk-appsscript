@@ -1,6 +1,7 @@
 // 저장소의 추적된 .md 전부에서 상대 링크(파일·#앵커)를 검사한다.
 // 사용: node docs/_ops/qa/cloud-docs-cleanup-20261017/링크검사.mjs [--json 출력.json]
 // 외부 주소(http·mailto 등)와 형제 저장소(저장소 밖) 경로는 검사하지 않고 따로 센다.
+// git에 없지만 작업본에 있는 대상(로컬 증거·.tmp 등)은 깨짐으로 세지 않고 「작업본에만 있음」으로 따로 센다.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,12 +10,18 @@ const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: '
 const tracked = execFileSync('git', ['-C', ROOT, 'ls-files', '-z'], { encoding: 'utf8', maxBuffer: 1 << 28 })
   .split('\0').filter(Boolean);
 const trackedSet = new Set(tracked);
+const trackedLower = new Map(tracked.map((f) => [f.toLowerCase(), f]));
 const trackedDirs = new Set();
 for (const f of tracked) {
   let d = path.posix.dirname(f);
   while (d !== '.' && !trackedDirs.has(d)) { trackedDirs.add(d); d = path.posix.dirname(d); }
 }
 const mdFiles = tracked.filter((f) => f.toLowerCase().endsWith('.md'));
+// 원래 자리 기준 링크를 일부러 그대로 둔 사본. 깨짐 대신 「고정 사본」으로 센다.
+const FROZEN = new Map([
+  ['docs/SHIFT/내부시범_20261007/input/canonical.md', '해시로 고정된 시험 입력(protocol.json) — 고치면 입력 해시가 바뀐다'],
+  ['docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md', '원래 자리에서 옮겨 온 보존 사본'],
+]);
 
 // 지난 커밋에 있던 경로(얕은 복제면 일부만 보인다)와 2026-10-17 Release 보관 목록
 const historyPaths = new Set();
@@ -80,8 +87,19 @@ function anchorsOf(rel) {
   return set;
 }
 
-function isIgnored(rel) {
-  try { execFileSync('git', ['-C', ROOT, 'check-ignore', '-q', '--no-index', '--', rel]); return true; } catch { return false; }
+// .gitignore 대상인지 한 번에 묻는다(경로마다 git을 띄우면 Windows에서 느리다).
+function ignoredSet(rels) {
+  const out = new Set();
+  if (!rels.length) return out;
+  try {
+    const res = execFileSync('git', ['-C', ROOT, '-c', 'core.quotepath=off', 'check-ignore', '--no-index', '--stdin', '-z'],
+      { input: rels.join('\0') + '\0', maxBuffer: 1 << 28 });
+    for (const f of res.toString('utf8').split('\0')) if (f) out.add(f);
+  } catch (e) {
+    // 하나도 걸리지 않으면 종료 코드 1로 끝난다.
+    if (e.status !== 1) throw e;
+  }
+  return out;
 }
 
 // 비슷한 이름의 실제 파일
@@ -169,7 +187,9 @@ const LINK_RE = /(!?)\[((?:[^\[\]]|\[[^\]]*\])*)\]\(\s*(<[^>]*>|[^\s)]*(?:\([^)]
 const REF_RE = /^\s{0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)/;
 
 const broken = [];
-const stats = { files: mdFiles.length, links: 0, external: 0, outside: 0, ok: 0 };
+const missing = [];
+const localOnly = [];
+const stats = { files: mdFiles.length, links: 0, external: 0, outside: 0, ok: 0, localOnly: 0 };
 const outsideTargets = new Map();
 
 for (const md of mdFiles) {
@@ -211,19 +231,22 @@ for (const md of mdFiles) {
       }
       const item = { file: md, line: i + 1, link: t };
       const exists = rel === '' || trackedSet.has(rel) || trackedDirs.has(rel);
+      if (!exists && FROZEN.has(md)) {
+        broken.push({ ...item, target: rel, reason: `고정 사본 — ${FROZEN.get(md)}`, kind: 'frozen', candidates: [] });
+        continue;
+      }
       if (!exists) {
-        let kind;
-        if (archived.has(rel) || archiveDirs.has(rel)) kind = 'archived';
-        else if (isIgnored(rel)) kind = 'ignored';
-        else if (historyPaths.has(rel) || historyDirs.has(rel)) kind = 'history';
-        else kind = 'never';
-        const reasons = {
-          archived: '파일 없음 — 2026-10-17 Release 보관본에 있음(tools/git-storage-restore.py로 복원)',
-          ignored: '파일 없음 — .gitignore 대상(로컬 PC에만 있을 수 있음)',
-          history: '파일 없음 — 예전 커밋에는 있었음(지워지거나 옮겨짐)',
-          never: shallow ? '파일 없음(얕은 복제라 이력 미확인)' : '파일 없음 — 커밋된 적 없음(로컬 전용·오타)',
-        };
-        broken.push({ ...item, target: rel, reason: reasons[kind], kind, candidates: candidatesFor(rel) });
+        const caseHit = trackedLower.get(rel.toLowerCase());
+        if (caseHit) {
+          broken.push({ ...item, target: rel, reason: `대소문자만 다름(실제 ${caseHit}) — Windows에서는 열리고 GitHub·Linux에서는 깨짐`, kind: 'case', candidates: [caseHit] });
+          continue;
+        }
+        if (fs.existsSync(path.join(ROOT, rel))) {
+          stats.localOnly++;
+          localOnly.push({ ...item, target: rel, archived: archived.has(rel) || archiveDirs.has(rel) });
+          continue;
+        }
+        missing.push({ ...item, target: rel });
         continue;
       }
       if (anchor && rel.toLowerCase().endsWith('.md') && trackedSet.has(rel)) {
@@ -239,7 +262,25 @@ for (const md of mdFiles) {
   });
 }
 
+const ignored = ignoredSet([...new Set(missing.filter((m) => !archived.has(m.target) && !archiveDirs.has(m.target)).map((m) => m.target))]);
+const reasons = {
+  archived: '파일 없음 — 2026-10-17 Release 보관본에 있음(tools/git-storage-restore.py로 복원)',
+  ignored: '파일 없음 — .gitignore 대상(로컬 PC에만 있을 수 있음)',
+  history: '파일 없음 — 예전 커밋에는 있었음(지워지거나 옮겨짐)',
+  never: shallow ? '파일 없음(얕은 복제라 이력 미확인)' : '파일 없음 — 커밋된 적 없음(로컬 전용·오타)',
+};
+for (const m of missing) {
+  const rel = m.target;
+  let kind;
+  if (archived.has(rel) || archiveDirs.has(rel)) kind = 'archived';
+  else if (ignored.has(rel)) kind = 'ignored';
+  else if (historyPaths.has(rel) || historyDirs.has(rel)) kind = 'history';
+  else kind = 'never';
+  broken.push({ ...m, reason: reasons[kind], kind, candidates: candidatesFor(rel) });
+}
+broken.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.line - b.line));
+
 const jsonOut = process.argv.indexOf('--json');
-if (jsonOut >= 0) fs.writeFileSync(process.argv[jsonOut + 1], JSON.stringify({ stats, outside: Object.fromEntries(outsideTargets), broken }, null, 2));
+if (jsonOut >= 0) fs.writeFileSync(process.argv[jsonOut + 1], JSON.stringify({ stats, shallow, outside: Object.fromEntries(outsideTargets), broken, localOnly }, null, 2));
 console.log(JSON.stringify(stats), '깨짐', broken.length,
   Object.entries(broken.reduce((a, b) => ((a[b.kind] = (a[b.kind] || 0) + 1), a), {})));
