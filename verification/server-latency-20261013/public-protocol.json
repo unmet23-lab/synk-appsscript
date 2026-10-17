@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-13T04:55:05.182Z",
+  "authority": "workspace.synk.im",
+  "checks": [
+    {
+      "protocol": "h1",
+      "path": "/",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 86.8288
+    },
+    {
+      "protocol": "h1",
+      "path": "/pulse-app/",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 16.29219999999998
+    },
+    {
+      "protocol": "h1",
+      "path": "/api/health",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 24.284400000000005
+    },
+    {
+      "protocol": "h2",
+      "path": "/",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 51.23660000000001
+    },
+    {
+      "protocol": "h2",
+      "path": "/pulse-app/",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 40.99550000000002
+    },
+    {
+      "protocol": "h2",
+      "path": "/api/health",
+      "status": 200,
+      "altSvc": "clear",
+      "ms": 34.42669999999998
+    }
+  ],
+  "status": "passed"
+}

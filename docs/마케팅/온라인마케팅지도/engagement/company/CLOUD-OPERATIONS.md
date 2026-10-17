@@ -517,7 +517,7 @@ GCS는 공개 접근 금지·균일 권한·7일 soft delete를 유지한다. VM
 
 ## 실행 계약
 
-현재 구조는 A/B 업무 노드와 별도 세 번째 감시 노드의 단일 writer HA다. 최신10-16 저장 기록은 A owner epoch7·B 정상 대기·controller armed=true이며, 이번 문서 검토에서 서버를 새로 조회하지 않았다. owner·epoch·loaded plan·원문·복제 상태는 다음 작업 직전 다시 확인한다. 저장소의 [plan.json](deploy/ha/plan.json)은 초기 준비 스냅샷(`armed=false`)이므로 현재 서버 설정이나 시작 허가로 복사하지 않는다.
+현재 구조는 A/B 업무 노드와 별도 세 번째 감시 노드의 단일 writer HA다. 최신10-16 저장 기록은 A owner epoch7·B 정상 대기·controller armed=true이며, 이번 문서 검토에서 서버를 새로 조회하지 않았다. owner·epoch·loaded plan·원문·복제 상태는 다음 작업 직전 다시 확인한다. 저장소의 [plan.json](deploy/ha/plan.json)은 초기 준비 스냅샷(`armed=false`)이므로 현재 서버 설정이나 시작 허가로 복사하지 않는다. `deploy/ha/`의 감시기·노드 에이전트·정책·호스트 검사·plan과 시험 3개는 10-17에 `codex/workspace-latency-fix-20261013`(`9c7c80429`, 10-13 판)에서 옮긴 원본이다. 서버 `/opt/synk/ha/`의 현재 판과 대조하기 전에는 배포 원본으로 쓰지 않는다.
 
 [노드 에이전트](deploy/ha/node-agent.mjs)의 최신 소유권·기동 허가와 [호스트 검사](deploy/ha/node-host.py)를 통과한 소유자만 regional 데이터 디스크를 쓰고 앱을 실행한다. 비소유자는 앱을 정지하며 옛 zonal 사본을 대신 마운트하지 않는다. [감시 정책](deploy/ha/failover-policy.mjs)의180초는 연속 장애 확인 기준이며 복구 완료시간 보장이 아니다. 자동 원복은 하지 않고 불명확한 작업 결과는 기존 operation/영수증으로 확인한다.
 

@@ -1,0 +1,95 @@
+{
+  "status": "complete",
+  "releaseManifestSha256": "e6ecc48f099246125de0d750db3266a84bdcda1aab7db88a6b84e11a474f92cf",
+  "imageSha256": "84512a28d8f280d219aa23fc87f7fa0c83c71019e26b96d041dd741a65402310",
+  "releaseVerifiedAt": "2026-10-13T04:55:37Z",
+  "historicalTimeout": {
+    "ms": 8033,
+    "cause": "undetermined",
+    "evidence": "timeout-correlation.json"
+  },
+  "verifiedProtocolRepair": "Publish only h1/h2 over the existing TCP-only load balancer and clear previously cached HTTP/3 alternatives while preserving both existing upstreams.",
+  "causalityLimit": "The protocol misconfiguration is confirmed, but it is not proven to have caused the historical Node fetch timeout.",
+  "publicSamples": {
+    "before": {
+      "file": "public-phase-before.jsonl",
+      "count": 120,
+      "kinds": {
+        "fetch-original": 90,
+        "cold-h1": 30
+      },
+      "errors": 0,
+      "medianMs": 26.21534999999858,
+      "maxMs": 222.9591999999975,
+      "firstAt": "2026-10-13T04:38:07.724Z",
+      "lastAt": "2026-10-13T04:40:25.446Z"
+    },
+    "after": {
+      "file": "public-phase-after.jsonl",
+      "count": 120,
+      "kinds": {
+        "fetch-original": 90,
+        "cold-h1": 30
+      },
+      "errors": 0,
+      "medianMs": 28.58675000000403,
+      "maxMs": 615.0647999999928,
+      "firstAt": "2026-10-13T04:55:37.574Z",
+      "lastAt": "2026-10-13T04:57:56.998Z"
+    }
+  },
+  "latencySpeedupClaimed": false,
+  "protocolChecks": {
+    "passed": 6,
+    "evidence": "public-protocol.json"
+  },
+  "isolatedTests": {
+    "passed": 129,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "isolated-qa.json"
+  },
+  "remaining": [],
+  "completedAt": "2026-10-13T05:23:02.120Z",
+  "finalOperation": {
+    "evidence": "final-operation.json",
+    "armed": true,
+    "activeEpoch": 7,
+    "primaryRole": "single-writer",
+    "standbyRole": "standby",
+    "replicas": "healthy",
+    "controlGeneration": "1791867223426270",
+    "controllerObservationMs": 18280,
+    "controllerStatus": "RECOVERED",
+    "controllerRestarts": 0,
+    "natural": {
+      "durationMs": 1101000,
+      "samples": 18,
+      "regions": 3,
+      "errorSamples": 0
+    },
+    "backup": {
+      "bytes": 414305963,
+      "generation": "1791867792428622"
+    },
+    "isolatedRestore": {
+      "keyUnchanged": true,
+      "accountSessionTablesUnchanged": 9,
+      "tokensBefore": 7,
+      "tokensAfter": 7,
+      "tokensRemoved": 0
+    },
+    "managementAccess": {
+      "restoredRules": 2,
+      "publicReady": true,
+      "altSvc": "clear"
+    },
+    "newForcedOutageTest": false
+  },
+  "limitations": [
+    "Historical 8033ms Node fetch timeout cause remains undetermined.",
+    "The protocol mismatch is fixed but not established as the cause of that historical timeout.",
+    "Before/after samples do not establish a latency speedup or uninterrupted availability.",
+    "No new forced outage/failback drill was performed for this release."
+  ]
+}

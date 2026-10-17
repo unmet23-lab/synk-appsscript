@@ -1,0 +1,29 @@
+{
+  "startedAt": "2026-10-13T04:37:56.273Z",
+  "endedAt": "2026-10-13T04:38:12.018Z",
+  "node": "v24.18.0",
+  "command": [
+    "node",
+    "--test",
+    "docs/마케팅/온라인마케팅지도/engagement/company/automation-notifications.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/post-performance.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent-transport.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-stop-recovery.test.mjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "tests": 129,
+    "suites": 0,
+    "pass": 129,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 15689.8314
+  },
+  "rawOutputFormat": "node-spec"
+}
