@@ -6,8 +6,22 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic']);
-const TOOL_OUTPUTS = Object.freeze({ computer: 'brief/computer', meeting: 'brief/meeting', manual: 'builds/manual' });
+// Every tool in docs/마케팅/맞춤도구/build.mjs ships atlas/engine.js as atlas-engine.js next to its dist/<name>.manifest.json.
+const TOOL_OUTPUTS = Object.freeze({ computer: 'brief/computer', meeting: 'brief/meeting', katana: 'brief/katana', skills: 'brief/skills', move: 'builds/move', manual: 'builds/manual' });
 const WEBSITE_GAMES = Object.freeze({ racing: 'korean-racing', runner: 'korean-runner', rhythm: 'korean-rhythm', 'order-rush': 'order-rush', 'story-classroom': 'story-classroom', 'entry-check': 'entry-check', 'blank-slice': 'blank-slice', 'talk-rally': 'talk-rally' });
+// WORLD inlines atlas/ into three esbuild bundles. Each builder owns its output and verifies it with --check.
+// The builders resolve esbuild from experiences/synk-account first and fall back to the repo root's, so a
+// clean CI checkout (npm ci at the root) checks them like the learning bundles.
+const WORLD_BUNDLES = Object.freeze([
+  { label: 'WORLD life bundle', build: 'tools/build-world-life.mjs', output: 'experiences/brand-opening/content/life-standalone.mjs' },
+  { label: 'WORLD account bundle', build: 'tools/build-world-account.mjs', output: 'experiences/synk-world-app/world-account.bundle.mjs' },
+  { label: 'WORLD learning profile core', build: 'tools/build-world-learning-profile.mjs', output: 'experiences/synk-world-app/world-learning-profile-core.mjs' },
+]);
+// Product modules whose canonical source lives in the product, not in atlas/. They keep an Atlas-style
+// global for stored records, so the marker scan would otherwise report them as copies.
+const PRODUCT_OWNED = Object.freeze([
+  'experiences/relationship-care/care-followup.js', // SynkTrailFollowup: moved out of atlas/trail-followup.js on 2026-10-08 (docs/아틀라스_설계.md §1)
+]);
 const text = bytes => bytes.toString('utf8').replace(/\r\n/g, '\n');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.replace(/\\/g, '/');
@@ -27,11 +41,19 @@ function rawCopies(root, websiteRoot) {
     for (const [slug, game] of Object.entries(WEBSITE_GAMES)) if (fs.existsSync(path.join(websiteRoot, 'dist/try', slug))) {
       add(`experiences/${game}/atlas-learning.js`, `dist/try/${slug}/atlas-learning.js`, websiteRoot);
     }
-    if (fs.existsSync(path.join(websiteRoot, 'dist/try/travel'))) for (const name of ['engine', 'personalization', 'domain', 'interpretation', 'ask', 'travel']) {
+    // planner-feedback.mjs also imports trail-life and temper-outcomes (served live at synk.im/try/travel/).
+    if (fs.existsSync(path.join(websiteRoot, 'dist/try/travel'))) for (const name of ['engine', 'personalization', 'domain', 'interpretation', 'ask', 'travel', 'trail-life', 'temper-outcomes']) {
       add(`atlas/${name}.js`, `dist/try/travel/atlas/${name}.js`, websiteRoot);
     }
   }
   return pairs;
+}
+
+// Every file the scan may skip: registered raw copies, generated bundles and product-owned modules.
+function ownedFiles(root, pairs) {
+  const files = [...pairs.map(row => row.destination), ...GAMES.map(game => `experiences/${game}/atlas-learning.js`), 'experiences/hangul-stage/atlas-learning.js',
+    ...WORLD_BUNDLES.map(bundle => bundle.output), ...PRODUCT_OWNED];
+  return new Set(files.map(file => path.resolve(root, file)));
 }
 
 function unknownCopies(root, owned, { website = false } = {}) {
@@ -102,7 +124,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
     throw new Error('Missing Talk server generator: the full copy check requires tools/synk-server-build.js');
   }
   const pairs = rawCopies(root, local ? null : websiteRoot);
-  const owned = new Set([...pairs.map(row => path.resolve(row.destination)), ...GAMES.map(game => path.join(root, 'experiences', game, 'atlas-learning.js')), path.join(root, 'experiences/hangul-stage/atlas-learning.js')]);
+  const owned = ownedFiles(root, pairs);
   const unknown = [...unknownCopies(root, owned), ...(!local ? unknownCopies(websiteRoot, owned, { website: true }).map(file => `website/${file}`) : [])];
   // Unknown consumers must be classified before a write can silently omit them.
   if (unknown.length) return { ok: false, scope: local ? 'local' : 'local+talk+website-staging', problems: unknown.map(file => `Unregistered Atlas copy: ${file}`), results };
@@ -113,6 +135,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
   };
   run('learning: 9 games', ['tools/build-game-learning.js', ...(check ? ['--check'] : [])]);
   run('learning: Hangul', ['tools/build-hangul-stage.js', ...(check ? ['--check'] : [])]);
+  for (const bundle of WORLD_BUNDLES) run(bundle.label, [bundle.build, ...(check ? ['--check'] : [])]);
   // Avoid copying stale bundles when a producer could not rebuild.
   if (!check && problems.length) return { ok: false, scope: local ? 'local' : 'local+talk+website-staging', problems, results };
   const raw = syncRaw(root, pairs, { check });
@@ -121,7 +144,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
     run('Talk app and server', ['tools/sync-atlas.js', '--consumer', 'talk', ...(check ? ['--check'] : [])], { SYNK_TALK_ROOT: talkRoot });
     run('Strata source map', ['tools/strata-build.js', '--check', '--talk-root', talkRoot]);
   }
-  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: 10, rawCopies: raw.copies, problems, results,
+  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: 10 + WORLD_BUNDLES.length, rawCopies: raw.copies, problems, results,
     excluded: ['historical QA/release archives', 'retired website letter', ...(local ? ['Talk checkout', 'website staging', 'Strata sibling source validation'] : []), 'deployed servers and public pages'] };
 }
-module.exports = { GAMES, TOOL_OUTPUTS, WEBSITE_GAMES, rawCopies, unknownCopies, syncRaw, runAll };
+module.exports = { GAMES, TOOL_OUTPUTS, WEBSITE_GAMES, WORLD_BUNDLES, PRODUCT_OWNED, rawCopies, ownedFiles, unknownCopies, syncRaw, runAll };
