@@ -192,3 +192,17 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 정리 목록이 `git ls-files`를 거르지 않았다. 추적 파일은 이미 `.git`에 있어 지워도 백업이 늘지 않는데, 작업본이 「삭제됨」으로 남아 누가 `git add -A`·`commit -a`를 하면 그 삭제가 저장소에 들어간다. 맨 위 `.git`만 보고 거르면 한 단계 안의 클론은 못 거른다.
 - 고침: 정리 목록에서 `git ls-files` 경로를 뺀다. 추적 파일이 정말 크면 지우지 말고 sparse-checkout으로 작업본에서만 뺀다. 폴더를 통째로 지우기 전에 그 안 어디에든 `.git`(폴더든 파일이든)이 있는지 보고, 있으면 그 아래는 빼고 따로 본다. 지워진 추적 파일은 `git status --porcelain | grep '^ D'` 목록을 `GIT_LITERAL_PATHSPECS=1 git restore --worktree --pathspec-from-file=<목록>`으로 되살린다(공용 인덱스는 그대로). 정리 기록(`removed*.jsonl`의 경로·sha256)이 있으면 바이트까지 맞춘다: 별도 인덱스(`read-tree HEAD`)의 `checkout-index`(체크아웃 판, autocrlf 적용)와 HEAD blob(LF) 가운데 기록된 해시와 같은 쪽을 쓴다(10-10 349개). 내용이 같아도 인덱스에 적힌 크기와 다르면 status가 ` M`으로 남으니, 지우기 직전 바이트 그대로 되살린다(`git ls-files --debug`의 size로 확인). 단 낡은 것을 일부러 없앤 정리라면 되살리지 않는다 — 정리 기록·커밋·진행 중인 GPT 작업으로 가리고, 헷갈리면 유호님께 여쭌다.
 - 다시 확인: 정리 뒤 `GIT_OPTIONAL_LOCKS=0 git ls-files --deleted | wc -l`이 0이다(10-17 0). 정리가 아직 돌고 있을 수 있으니 정리 기록 파일의 수정 시각이 멈췄는지도 본다.
+
+## 클라우드 세션(부분 복제)
+
+### 클라우드에서 `npm run check:storage`가 「lazy fetching disabled」로 멈추고, 파이프가 실패를 가린다
+- 증상: 클라우드 세션에서 `npm run check:storage`(`--cached`)가 `Git inspection failed (rev-list): warning: lazy fetching disabled … could not fetch <oid> from promisor remote`로 끝났다. 검사를 `… | tail -2`로 받아 `&&`로 이은 탓에 실패가 가려져, 다음 `git commit`이 그대로 돌았다(10-17 `23fc6ca2f`, 뒤에 범위 검사로 통과 확인).
+- 원인: 이력 조사를 하려고 `git fetch --filter=blob:none --unshallow`로 옛 커밋을 내용 없이 받아 두면, `--cached` 검사가 기준(HEAD)의 이력 전체를 `rev-list --objects`로 훑다가 없는 blob을 만난다(검사는 일부러 lazy fetch를 끈다). `git fetch --depth 1 origin master`로 다시 얕게 해도, 그사이 master가 앞으로 나갔으면 얕은 경계가 새 master에만 생겨 내 브랜치 조상은 다시 끝까지 훑어진다. 파이프의 종료 코드는 마지막 명령(`tail`)의 것이다.
+- 고침: 커밋 전에는 `node tools/git-storage-check.cjs --base origin/master --head HEAD`(범위 검사)를 돌린다. 내 커밋이 새로 만든 blob만 보므로 옛 blob이 없어도 된다. 검사 결과는 파이프 없이 받거나 `set -o pipefail`을 켠 뒤 잇는다.
+- 다시 확인: 같은 상태에서 범위 검사가 `PASS`이고, 파이프 없이 돌린 뒤 `echo $?`가 0이다.
+
+### 클라우드 복제에서 커밋 대상 `git grep`·작업본 전체 `rg`가 수백 초를 넘긴다
+- 증상: `git grep -n '…' origin/master -- ':!*.md'`가 200초 제한을 넘겨 멈췄다. 작업본 전체에 돌린 `rg -g '!*.md'`도 120초를 넘겼다(10-17, 작업본 3.8GB).
+- 원인: 커밋을 대상으로 한 `git grep`은 그 트리의 blob을 모두 풀어 읽는다(부분 복제면 없는 blob을 받으러 가기도 한다). 영상·이미지가 많은 이 저장소는 작업본 전체를 훑는 것만으로도 오래 걸린다.
+- 고침: 찾을 폴더를 좁혀 `rg -n -g '!*.md' '…' <폴더…>`로 찾는다. 다른 커밋의 파일 하나는 `git show <커밋>:<경로> | grep`으로 본다.
+- 다시 확인: 좁힌 폴더의 `timeout 120 rg -n '…' <폴더>`가 몇 초 안에 끝난다.
