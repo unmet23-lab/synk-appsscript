@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
+// 줄끝(CRLF/LF)은 체크아웃마다 달라지므로 원자료는 LF로 맞춘 바이트로 잰다(Windows 작업본과 리눅스·CI가 같은 값을 낸다).
+const sourceHash = bytes => crypto.createHash('sha256').update(bytes.toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
 
 // Read-only contract tests: never import the generator, which writes output files.
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -272,7 +274,7 @@ test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.counts.expansionConfirmed,24);
   assert.equal(verification.counts.expansionUnconfirmed,20);
   for(const item of verification.files) {
-    const actual=crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,item.file))).digest('hex');
+    const actual=sourceHash(fs.readFileSync(path.join(dir,item.file)));
     assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);
   }
 });

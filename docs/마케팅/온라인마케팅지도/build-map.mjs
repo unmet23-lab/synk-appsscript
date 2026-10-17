@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
+// 줄끝(CRLF/LF)은 체크아웃마다 달라지므로 원자료는 LF로 맞춘 바이트로 잰다(Windows 작업본과 리눅스·CI가 같은 값을 낸다).
+const sourceHash = bytes => crypto.createHash('sha256').update(bytes.toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(dir,'../../..');
@@ -197,6 +199,6 @@ assert(channels.filter(row=>row.accountStatus==='planned').every(row=>row.brand=
 assert(newSlots.filter(row=>row.platform==='YouTube' && row.accountStatus==='confirmed-expansion').length===confirmedYouTubeCount && confirmedYouTubeCount===youtube.completionAudit.newChannelsComplete+jpVnYoutube.channels.length,'YouTube 확장 확보 대조 실패');
 for(const file of new Set(inventory.accounts.flatMap(row=>row.sourcePaths)))assert(fs.existsSync(path.join(repo,file)),`원자료 없음: ${file}`);
 fs.writeFileSync(path.join(dir,'dashboard/src/data.json'),JSON.stringify(snapshot,null,2)+'\n');
-const manifest={generatedAt,sourceAsOf:{registry:registry.updatedAt,social:social.asOf,latestContent:'2026-09-27'},counts:{operating:operating.length,mongolia:5,plannedCountries:23,prioritySlots:46,newSlots:44,expansionConfirmed:expansion.length,expansionUnconfirmed:unconfirmedExpansionCount,channelRows:channels.length,contents:contents.length,identities:6},files:['inputs/plan.json','inputs/existing-accounts.json','inputs/content-status.json','inputs/content-lines.json','../콘텐츠_운영체계_20260927.md','account-setup-proposal.json','../sns-계정.json','../SNS_계정_전체목록_20260919.md','../프로필최신화_20260919/반영_v6.json','intl-social/execution-20260920.json','intl-youtube/publication.json','jp-vn-profile/publication.json','../yuhobuilds_1편_쇼츠수정_20260922/README.md','../synkbrief_회의메모_20260921/video-v12/README.md'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex')}))};
+const manifest={generatedAt,sourceAsOf:{registry:registry.updatedAt,social:social.asOf,latestContent:'2026-09-27'},counts:{operating:operating.length,mongolia:5,plannedCountries:23,prioritySlots:46,newSlots:44,expansionConfirmed:expansion.length,expansionUnconfirmed:unconfirmedExpansionCount,channelRows:channels.length,contents:contents.length,identities:6},files:['inputs/plan.json','inputs/existing-accounts.json','inputs/content-status.json','inputs/content-lines.json','../콘텐츠_운영체계_20260927.md','account-setup-proposal.json','../sns-계정.json','../SNS_계정_전체목록_20260919.md','../프로필최신화_20260919/반영_v6.json','intl-social/execution-20260920.json','intl-youtube/publication.json','jp-vn-profile/publication.json','../yuhobuilds_1편_쇼츠수정_20260922/README.md','../synkbrief_회의메모_20260921/video-v12/README.md'].map(file=>({file,sha256:sourceHash(fs.readFileSync(path.join(dir,file)))}))};
 fs.writeFileSync(path.join(dir,'verification-data.json'),JSON.stringify(manifest,null,2)+'\n');
 console.log(JSON.stringify(manifest.counts));
