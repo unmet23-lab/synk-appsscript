@@ -1,0 +1,360 @@
+{
+  "date": "2026-10-17",
+  "scope": "자산·시험실·독립 키트 설명 31개. 라이선스 원문과 복제 배포 계약은 보존.",
+  "files": [
+    {
+      "path": "experiences/blank-slice/kit/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/word-magic/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/mascot-render-lab/three/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "84cc2f2d6580a46ac9f2ba521c3bfbd10951f783fd97309bf47f3ab84367223b"
+    },
+    {
+      "path": "experiences/mascot-render-lab/README.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "28eef15373cb3c4e702d59c60aa1d61e814d59fb87a469fdf2f9b459c0e118b0"
+    },
+    {
+      "path": "experiences/namsan-engine-comparison.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "f52ca241b24a49ba760b9f9607316ffe17791d29008c09d2c3a8d41ae3f83ffb"
+    },
+    {
+      "path": "experiences/play-common/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/mascot-render-lab/live2d/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "533f62552762e14c3ab1479a0435ffdd50b942e64fc4dcdcfd01c51267e62270"
+    },
+    {
+      "path": "experiences/story-classroom/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/korean-runner/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/korean-racing/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/path-vr/models/whisper-tiny/UPSTREAM-MODEL-CARD.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "dc9a0879b11fb43db2c220466352b235f7cdb7af791c57c0ed47f0a4028d9267"
+    },
+    {
+      "path": "experiences/path-vr/models/whisper-tiny/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "44207461db2003045f3512adea52f67ba5473a39dceaff698ab78fc4c670975f"
+    },
+    {
+      "path": "experiences/path-vr/models/whisper-base/UPSTREAM-MODEL-CARD.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "60a378018182c57cf382866ddfbf0fb2b4031b3895ae932aa34ecb8ff7065a13"
+    },
+    {
+      "path": "experiences/path-vr/models/whisper-base/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19"
+    },
+    {
+      "path": "experiences/path-vr/models/README.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "5a5ab201c2696cca29a0f705a948bde84a75829445f8ce7258e359f89fbaff1e"
+    },
+    {
+      "path": "experiences/talk-rally/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/order-rush/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/README.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "a568903f1f94f5bf5fbafb42d2cad1626f5245e5f33b5acf633f1be9c3347ba0"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/props/bench-v2-cushion/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "a156b6cce30efc75c60e8b6b09b860222857a4df63a8cea9b75feef3ceff8d58"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/props/bench-v2/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "1b282772e85159f97ec6a745e9adc65df64d32f7c65e8de5fa6cbebcc8265b8f"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/props/bench-v1/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "6c1a9874471c4871ba0344aa146870f9562381025178a0fb9041103204a7b800"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/graphics-v4/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "136f29d6f8c62bd3a4e08cd0dc41e0b1dd4e85463904e876512bb96af3e88d01"
+    },
+    {
+      "path": "experiences/korean-rhythm/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/graphics-v3/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "6bf25358bdeed49bdb818f5173b6184fcd3cefa404313f98b08975939299568d"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/graphics-v2/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "d30fd79618545cb305d456b1d90972140a764dbf1c7aa7680e44007a8c350f8f"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/companion-textiles/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "063d8ef0146ab570e8e44fbae230046a4b3ed5732273de2fbdf5ced16653def2"
+    },
+    {
+      "path": "experiences/entry-check/kit/README.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "전문 읽은 blank-slice kit README와 SHA-256 동일. 독립 실행 묶음의 자산 설명이므로 복제본 보존.",
+      "evidence": [
+        "experiences/blank-slice/kit/README.md"
+      ],
+      "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a"
+    },
+    {
+      "path": "experiences/brand-opening/delivery/package/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "169ecbe4dc7435bc4eac587895dd55bcdfb959a7ab39871b910e6f5758fe0761"
+    },
+    {
+      "path": "experiences/20260909/pulse/scene-assets/ssao/SOURCES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "15a5119e430bb562ca6b475834e7297d5f4548ffc6937215935fdc21942d970e"
+    },
+    {
+      "path": "experiences/20260909/pulse/THIRD_PARTY_NOTICES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "3a3120e020ab82ae1b977f78f79274581cd686efb3f3833d3e638688f9a72032"
+    },
+    {
+      "path": "experiences/synk-town/assets/residents/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전체 열람. 자산 출처·라이선스·시제품 검증 계약을 보존하고 현재 2D 화면·공개 음성 엔진과 과거 실험의 범위를 구분.",
+      "evidence": [
+        "docs/디자인/게임_풍경과_재질.md",
+        "docs/디자인/월드_시그널/README.md",
+        "experiences/path-vr/README.md"
+      ],
+      "sha256": "13481ac0aca8da1879843afa5e955689697ebab319b1ce84dc71b892b61fb9a9"
+    }
+  ]
+}

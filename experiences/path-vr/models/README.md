@@ -1,5 +1,7 @@
 # 한국어 로컬 음성 인식 자산
 
+이 문서는 **이전 3D 면접 시제품에 쓰는 Vosk 자산**의 출처와 재현 안내다. 현재 공개 실사 면접실은 [Whisper Base q8](whisper-base/README.md)를 사용한다. 실제 공개 상태·모델 호스팅·검증 한계는 [PATH VR 안내](../README.md)를 따른다. 두 모델을 면접 시작 때 모두 내려받는다는 뜻은 아니다.
+
 - 모델: Alpha Cephei `vosk-model-small-ko-0.22`, Apache-2.0. [공식 모델 목록](https://alphacephei.com/vosk/models).
 - 원본 ZIP 86,914,329 bytes를 디렉터리 항목을 포함한 USTAR gzip으로 변환했다. 브라우저 파일은 89,103,045 bytes이며 `speech-assets.json`에 출처·SHA-256을 기록한다.
 - `python tools/prepare-interview-speech.py`로 다운로드·검증·동일 형식 패키징을 재현한다. 모델 `.tar.gz`는 저장소의 기존 대용량 파일 제외 규칙에 따라 Git 밖에 있다. 배포 시 별도 복사해야 한다.

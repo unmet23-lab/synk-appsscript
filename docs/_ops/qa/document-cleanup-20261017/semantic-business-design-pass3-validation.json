@@ -1,0 +1,53 @@
+{
+  "scope": "design and character queue",
+  "queueCount": 69,
+  "ledgerCount": 69,
+  "coverage": {
+    "full": 59,
+    "retained-evidence": 10
+  },
+  "decisions": {
+    "retained": 41,
+    "corrected": 28
+  },
+  "pending": [],
+  "duplicatePaths": [],
+  "missingFiles": [],
+  "originalHashMismatch": [],
+  "backupMissing": [],
+  "changedAfterReview": [],
+  "newLocalLinkIssues": [],
+  "modifiedSourceFiles": [
+    "docs/디자인/SNS키트/모션견본/BRIEF.md",
+    "docs/디자인/SNS키트/모션견본/design.md",
+    "docs/디자인/게임_시작화면과_브랜드오프닝.md",
+    "docs/디자인/게임_풍경과_재질.md",
+    "docs/디자인/앱시안_20261002/README.md",
+    "docs/캐릭터/가이드_정본.md",
+    "docs/캐릭터/마스코트_말할순간_설계.md",
+    "docs/캐릭터/마스코트_치수_정본_v1.md",
+    "docs/캐릭터/이야기기계_상황집.md",
+    "docs/디자인/워크스페이스_시그널/README.md",
+    "docs/디자인/플랫폼_시그널/README.md",
+    "docs/디자인/월드_시그널/README.md",
+    "docs/디자인/마을_플레이경험과_준비사항_20260921.md",
+    "docs/디자인/미래한국_마을_풍경.md",
+    "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+    "docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md",
+    "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+    "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+    "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+    "docs/디자인/교육게임_콘텐츠구성_TOP10_20261009.md",
+    "docs/디자인/마을_생활경영_스팀조사_20260921.md",
+    "docs/디자인/코스튬방_Steam10종_편의성조사_20261009.md",
+    "docs/디자인/싱크타운_생활사건_설계.md",
+    "docs/디자인/싱크타운_재방문_콘텐츠와_원고.md",
+    "docs/디자인/플랫폼_시그널/조사_20261013.md",
+    "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+    "docs/디자인/워크스페이스_시그널/조사_20261013_고객관리.md",
+    "docs/디자인/월드_시그널/조사_20261014.md"
+  ],
+  "retainedEvidenceScope": "10 originals: head, headings, tail and current-owner SHA comparison only; not full reading",
+  "diffCheckExit": 0,
+  "diffCheckOutput": ""
+}

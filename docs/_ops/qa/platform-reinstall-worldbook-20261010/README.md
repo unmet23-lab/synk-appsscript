@@ -2,7 +2,7 @@
 
 유호님 「웅 재설치 파일 만들어서 재설치해줘」에 따라, WORLD 대표 그림을 펠트 책으로 바꾼 변경(appsscript `6974907b5`)을 Platform 재설치 파일에 넣고 이 PC에 다시 설치했다.
 
-**쓸 폴더: `desktop/artifacts/platform-reinstall-worldbook-20261010/`** (git 밖, 이 PC 전용). 앞선 [시그널 2 재설치 파일](../platform-reinstall-signal2-20261010/README.md)은 WORLD가 장면 그림인 판이라 이제 쓰지 않는다.
+**당시 사용한 폴더: `desktop/artifacts/platform-reinstall-worldbook-20261010/`** (git 밖, 당시 PC 전용). 이 0.4.0은 앞선 [시그널 2 재설치 파일](../platform-reinstall-signal2-20261010/README.md)의 WORLD 장면 그림을 책으로 바꾼 역사 패키지다. 새 PC의 현재 설치 파일로 지정하는 안내가 아니며 이후 공개판·자동 업데이트 결과는 [공통 배포 기록](../platform-auto-update-20261014/README.md)에서 확인한다.
 
 | 제품 | 설치 파일 | 바이트 | SHA-256 | 앞 판과 |
 | --- | --- | ---: | --- | --- |

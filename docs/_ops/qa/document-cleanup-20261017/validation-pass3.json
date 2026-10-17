@@ -1,0 +1,1786 @@
+{
+  "date": "2026-10-17",
+  "scope": "third pass: local content review and archived-carousel build guard; no deployment or live service revalidation",
+  "originalsVerified": 241,
+  "changed": [
+    {
+      "path": "docs/코어엔진_설계.md",
+      "beforeBytes": 54925,
+      "afterBytes": 55995,
+      "beforeSha256": "f554e04359ea4066f9dbb30e828aca71229a1feabbcae801a7fdd49c41aef950",
+      "afterSha256": "d56cfe0378040ebca69c8d35885714c21955151797730f6f9d06ae1c375efe42"
+    },
+    {
+      "path": "docs/SYNK_철학.md",
+      "beforeBytes": 49346,
+      "afterBytes": 50009,
+      "beforeSha256": "db94ace81bdc3a53a9b8c2ac94ea202d8d0482d8de07250625a03169d474169f",
+      "afterSha256": "cdbb0415ec88bfa09fde62eb7c3656af6df3cdc2ddbac6be3bf6409241d65a44"
+    },
+    {
+      "path": "docs/철학_적용기준.md",
+      "beforeBytes": 20604,
+      "afterBytes": 20792,
+      "beforeSha256": "93eb6552b605bab920ef99669df6410a51a89ffb12bb76571fd937ce095a1c50",
+      "afterSha256": "770f19664863a7e1db32ee01da00b0c457872738e859d8058e892175103d9469"
+    },
+    {
+      "path": "docs/BM_목록.md",
+      "beforeBytes": 50173,
+      "afterBytes": 50317,
+      "beforeSha256": "52fa52953f706cac2aef847ffab5a2c22d26301f54a34b512217a1ca38897935",
+      "afterSha256": "72807deda0c80534f8c8a92d4f34ce725b2c4bb46be908df04c74a9c8c9e2d13"
+    },
+    {
+      "path": "docs/엔진8종_상향설계_v3.md",
+      "beforeBytes": 110574,
+      "afterBytes": 111517,
+      "beforeSha256": "eaadc8e2895d92223866954ffc75b683110abe6f0fe91cb825d97fad5602c0f9",
+      "afterSha256": "57e8f435b10f7e0b6e217227658dd4bbbfbd1a3bd8a9101b8ce63b651468bc5d"
+    },
+    {
+      "path": "README.md",
+      "beforeBytes": 977,
+      "afterBytes": 914,
+      "beforeSha256": "c2d211d3a5a24bca6aa1ef397099ac77917b0b251c026d0a495d9b14d562831c",
+      "afterSha256": "2c8f1cc5fc72212680166e1dbc80f105e6af6dbca9026f2b74c0d1eaf1ca603a"
+    },
+    {
+      "path": "영상/README.md",
+      "beforeBytes": 5054,
+      "afterBytes": 5193,
+      "beforeSha256": "7612a965c1fd2e182b9aefb1f158566449e3a2801fc3e5ff18dafb8825ec2be3",
+      "afterSha256": "4318e6d7870d0e28b5d321ee50d219a109a057651d24742a1ad894c976113058"
+    },
+    {
+      "path": "캐러셀/README.md",
+      "beforeBytes": 5885,
+      "afterBytes": 4291,
+      "beforeSha256": "2856e03ceaa5085b306191b66010dc93dde8d2d9821532821ce5dd0378671d0f",
+      "afterSha256": "0f46622c43e1f775ad7900a8926949ec1e17cdfb6b403e0563206c03b67e6501"
+    },
+    {
+      "path": "캐러셀/굽기.js",
+      "beforeBytes": 15510,
+      "afterBytes": 16079,
+      "beforeSha256": "388afbaaaf75f59b00128960c434daf3caeda10f5d953f5c8e657cf18acc4977",
+      "afterSha256": "6c07b59fe8761e45f445946c309ed393bad183033aa0f1461f4bc0161d31c0e2"
+    },
+    {
+      "path": "캐러셀/수집.js",
+      "beforeBytes": 8568,
+      "afterBytes": 8625,
+      "beforeSha256": "10cb92e6b8029cb5148dfbe9987a3986ae9313dffd13593d9e83fdfcb60bd68d",
+      "afterSha256": "0fa44fa08381fbe5972e4fe120e6df6dcb5a2584bf54d78118c46930b55ec45c"
+    },
+    {
+      "path": "캐러셀/원고/001_새AI가나오면.md",
+      "beforeBytes": 972,
+      "afterBytes": 1192,
+      "beforeSha256": "c410a4a88be497ff425976442cec50f73bf6ef0158e29e183e7238da12d8f885",
+      "afterSha256": "c917a67444c434bda9633b2fdd485da499c8de8b9cdec8a3b173eaffb8e1137a"
+    },
+    {
+      "path": "캐러셀/원고/002_외국인직원_첫30일.md",
+      "beforeBytes": 1619,
+      "afterBytes": 1839,
+      "beforeSha256": "6ca1fe5540f44b848d9b9008befc7d6d59d097a6424d7e39ce401dbae69a46a0",
+      "afterSha256": "d95d697d895f6b87419a68a2e637aa3308967d6ec99ee9a144e904c6f60428c7"
+    },
+    {
+      "path": "캐러셀/원고/LAB001_гурван_хуch.md",
+      "beforeBytes": 1841,
+      "afterBytes": 2061,
+      "beforeSha256": "3f0d736bb4e6af67e19dff24a9927c13b054c1c3ceec595c2cad2ff1c61d64f3",
+      "afterSha256": "cb4a11997ba3f954535d0bef05be42c62c9a1d118d48e8fd73306511c865ef8d"
+    },
+    {
+      "path": "캐러셀/원고/LAB001_гурван_хуch.한국어.md",
+      "beforeBytes": 1257,
+      "afterBytes": 1477,
+      "beforeSha256": "a9a995b426bdf52ab02de80745fb9dca1902272d76ddbfe9ddb99657c3e33d8e",
+      "afterSha256": "894eeb15f84c9de2fff29d4b746e71e13febd196fa9e8b86f648a4a386b7749a"
+    },
+    {
+      "path": "캐러셀/원고/LAB002_AI_заах.md",
+      "beforeBytes": 1788,
+      "afterBytes": 2008,
+      "beforeSha256": "ec844c521a40c0b8b9a68b6a54eec16ecb047c87410dc6717ebf80c757b44f93",
+      "afterSha256": "d13e6ae364e256afcec6d71422aa806b206f98c4b270295f947f4cb8abe7ba86"
+    },
+    {
+      "path": "캐러셀/원고/LAB002_AI_заах.한국어.md",
+      "beforeBytes": 1292,
+      "afterBytes": 1512,
+      "beforeSha256": "f15be1014cdcc1554fbb01b427a13d252e92f11dad848012ecf8aecf73414bbe",
+      "afterSha256": "c272f135a091763f7f9bc5811f5e72d61895e22830f7d9d46147ad9344c22690"
+    },
+    {
+      "path": "캐러셀/원고/LAB003_hamt_butooh.md",
+      "beforeBytes": 1676,
+      "afterBytes": 1896,
+      "beforeSha256": "64d3c5fa1dff585a1448b404777e8985b3736d490fbf7a317daab05099a6c259",
+      "afterSha256": "64f9ab9434ef783e925a14e74939b50ec5e8f9906decde6e844153028e12bb4a"
+    },
+    {
+      "path": "캐러셀/원고/LAB003_hamt_butooh.한국어.md",
+      "beforeBytes": 1212,
+      "afterBytes": 1432,
+      "beforeSha256": "de2a795edf7746590a05aae60a8e39a90bbb3903c3f48b9e17ef8300235a2036",
+      "afterSha256": "9adc248512a9801a74409964b34a34aa04c5b9d210961bb1b7e972838e591434"
+    },
+    {
+      "path": "캐러셀/원고/LAB004_dorow_tuvshin.md",
+      "beforeBytes": 2231,
+      "afterBytes": 2451,
+      "beforeSha256": "62120bedbb425210ae4de4a172e372c22afaf85c1ae675cc97b01a480c19c0bb",
+      "afterSha256": "a781dd15a1e15379211b028c5f679dec38f8fb7329449893864b9905b7591629"
+    },
+    {
+      "path": "캐러셀/원고/LAB004_dorow_tuvshin.한국어.md",
+      "beforeBytes": 1610,
+      "afterBytes": 1832,
+      "beforeSha256": "57b04b3619c495b4e9c849ab76b9f84fc6e616e2199294d39a6ef24e2ffa173b",
+      "afterSha256": "fe7446ee282a635d8a88ddf9e99d5eebc569a43626340395a65728d4935db0e2"
+    },
+    {
+      "path": "캐러셀/원고/LAB005_1jil_zardal.md",
+      "beforeBytes": 1927,
+      "afterBytes": 2147,
+      "beforeSha256": "857594d44ffc60a9998b4de2dc7eff1224f74c189bbbdf5993e78b1b7eb14f87",
+      "afterSha256": "a48fd7101645f25f6dd34a41cf9e8632417c49ce9d331e3c687822074a65a770"
+    },
+    {
+      "path": "캐러셀/원고/LAB005_1jil_zardal.한국어.md",
+      "beforeBytes": 1111,
+      "afterBytes": 1331,
+      "beforeSha256": "774a6077df32e36bf2b7de08bbb23fe84a55bf10447f352aabc4a3dc988e8082",
+      "afterSha256": "548aa81c6983b5229c5cc2fed44ebc92cb389e72643b9c25fae869686e66774c"
+    },
+    {
+      "path": "캐러셀/원고/LAB006_tavan_asuult.md",
+      "beforeBytes": 1621,
+      "afterBytes": 1841,
+      "beforeSha256": "171eef355c34760b4661cd951ae7f739a3442b44b367bc23a1b87931dc0d87a5",
+      "afterSha256": "db101db5cc5926daf62f42c090f97f2223f4172681a6b21dadc3a5f41a0e381e"
+    },
+    {
+      "path": "캐러셀/원고/LAB006_tavan_asuult.한국어.md",
+      "beforeBytes": 887,
+      "afterBytes": 1107,
+      "beforeSha256": "2536b64f94ed9fd6090325623c7e62814e2a321f9ebcef1e46d72fc5abda36db",
+      "afterSha256": "52e5c025402c9ea8b22394c79df46303e4ecb5052277b32d5467ce53122eb5f5"
+    },
+    {
+      "path": "docs/아틀라스_설계.md",
+      "beforeBytes": 118318,
+      "afterBytes": 121429,
+      "beforeSha256": "b6580fb957f4e070e61fcdbf6b3d1b8f2807596efd22d64df23944d7192874d8",
+      "afterSha256": "39de529daf5cc90d487b80165e463dac02588fc40bb84ea89cb06178a1f57be4"
+    },
+    {
+      "path": "tools/company-messenger/API.md",
+      "beforeBytes": 55008,
+      "afterBytes": 55493,
+      "beforeSha256": "a59a68a2dd26af4991b3843fff8a9c5aba9c1c073087cd0ca458be409b3b99f9",
+      "afterSha256": "fa50032d4a4044d792a774f2c6e4c94525b1cbfd53401de4483ed841fc174f53"
+    },
+    {
+      "path": "tools/company-messenger/DRIVE.md",
+      "beforeBytes": 7895,
+      "afterBytes": 8393,
+      "beforeSha256": "34c54a2b8bf67ce8719eda0360690ef7983398c92dc964c8d8bfc84e726d1846",
+      "afterSha256": "3b300842b7ff91eaf45bc1449c9d64c6b955d4735331bca593b651baa1d72231"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SOURCES.md",
+      "beforeBytes": 4407,
+      "afterBytes": 4800,
+      "beforeSha256": "863105c35beee9e9679580574ed7c37dd14134f725a614f2fcedd9a25d362011",
+      "afterSha256": "837010ca3b1615efb944c445830670dace2c45452323035246e73b2e3d859687"
+    },
+    {
+      "path": "tools/synk-id/UNIFIED-CONFIG.md",
+      "beforeBytes": 16789,
+      "afterBytes": 17403,
+      "beforeSha256": "b1328627b82b89d8392c12e792a3f71b56bba76e81042234c01569f18afcd59b",
+      "afterSha256": "ba46846aa89c427e864e3d5f40a8f52db203377dd3d828ff3af77ca6f17b3ec0"
+    },
+    {
+      "path": "docs/사업발전_정본.md",
+      "beforeBytes": 25340,
+      "afterBytes": 25617,
+      "beforeSha256": "fbd3f1fef7beb6410b122872c4a168011446560873a15966a8f3196b06711dc8",
+      "afterSha256": "41d15e7f7551c014376808aca86378cd16174ce292b5e8c3813d893c3ff01472"
+    },
+    {
+      "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+      "beforeBytes": 19357,
+      "afterBytes": 19476,
+      "beforeSha256": "598a40b64dac484b97bf804a78ff4f267722a2a110fcd3f6b8612f2c8c8630ef",
+      "afterSha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d"
+    },
+    {
+      "path": "docs/_원고/채널마다_창_2026-09-07.md",
+      "beforeBytes": 16138,
+      "afterBytes": 16196,
+      "beforeSha256": "783871ffb2f23cf9154c55e2abeba780e82258f16e7cc871312d5f593a16b91a",
+      "afterSha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836"
+    },
+    {
+      "path": "docs/본체SYNK_자리_2026-09-07.html",
+      "beforeBytes": 1361111,
+      "afterBytes": 1361230,
+      "beforeSha256": "0821687d8a5f15382de5ab00b0ed32211f42d7ce0d7a83876c4b3c1c5dc81f75",
+      "afterSha256": "da2fca5f5018d40e832e17520c32dd27ae449d67b455454a0365884b19ef0e32"
+    },
+    {
+      "path": "docs/채널마다_창_2026-09-07.html",
+      "beforeBytes": 1356861,
+      "afterBytes": 1356930,
+      "beforeSha256": "9aa59b16599a076d66e904ba094f6bb1502333e96fe3a572259b3d3d1caef9e2",
+      "afterSha256": "e217b5526316380cbb354485b12fe3f04259e7838f63aab23e5ef2d28475ad13"
+    },
+    {
+      "path": "docs/개인정보처리방침_초안_v1.md",
+      "beforeBytes": 39206,
+      "afterBytes": 39776,
+      "beforeSha256": "a538c8070ad45eee4dae962aeece3043d96e2c12242a5ebebcf3f3fe9c4ace6f",
+      "afterSha256": "58452734f7176b68fc486a5daf604fe31bd036c2687a05fddd37c287d37ca00f"
+    },
+    {
+      "path": "docs/개인정보처리방침_초안_v2.md",
+      "beforeBytes": 50590,
+      "afterBytes": 51097,
+      "beforeSha256": "0042d71315f8b8dbe7319166f30a9fd981a9b44454b606736c474b26be7c9624",
+      "afterSha256": "15e0f8dccb6fde6ab06aaee2fc6656642fa0bdec0958db9460f61799e764c10e"
+    },
+    {
+      "path": "docs/아틀라스_구현명세.md",
+      "beforeBytes": 225550,
+      "afterBytes": 227315,
+      "beforeSha256": "25a02c9f3f791dfc392286655e3550c120b45066c6fbc4b24ff7f0325e0c2bb7",
+      "afterSha256": "541b0c1bf26387b98334099e91e61946dfb8de74b0496ef13f1f82141d6070f5"
+    },
+    {
+      "path": "docs/급수진단_설계_v1.md",
+      "beforeBytes": 52197,
+      "afterBytes": 52940,
+      "beforeSha256": "39f1baa56a1651ef2ef4547bef2db191137c67ca55f77715388f0ab150db1767",
+      "afterSha256": "10571dce218aaba622f5c077b4a482775536eb0c67c25033210b067dd57bb78c"
+    },
+    {
+      "path": "docs/앱이용약관_초안_v1.md",
+      "beforeBytes": 25716,
+      "afterBytes": 26137,
+      "beforeSha256": "1f6f1c5cb33ddb8c602890bc45dd3d4d9c6b4eb052830e0d1ebede5e90c1e8da",
+      "afterSha256": "2ba9d3879bbf19b07b1b2ae410084b0ba3c5d3462180d8ee785ebb54d71a7da3"
+    },
+    {
+      "path": "evals/README.md",
+      "beforeBytes": 21392,
+      "afterBytes": 5305,
+      "beforeSha256": "60d23c04c3e44f33ccd37098c44feb6250b40b227c55c7a4505013fceb961690",
+      "afterSha256": "e976706e2a122e15c00812ae8cc1f1972ca888e25582ec37a72401e863998b11"
+    },
+    {
+      "path": "docs/음악자산_장부.md",
+      "beforeBytes": 15959,
+      "afterBytes": 17132,
+      "beforeSha256": "88af53be4232d73e20bad19b4a6118a02ffa33f90a6865af07d8d488c117a70c",
+      "afterSha256": "afc88ef2d568995b1618af38968ac263e8984bf7f6f9c30d1a5cc6e2964eb8cd"
+    },
+    {
+      "path": "docs/철학_실물현황.md",
+      "beforeBytes": 37787,
+      "afterBytes": 37927,
+      "beforeSha256": "aa889e4694d531fe7a8ee9d86d302746cb2a4705d68768a100071fe92be20c6d",
+      "afterSha256": "c7fae43abe9869c1f98e785b43c4ca46d9b93d1a57dcc0426c85e71283f0a4fc"
+    },
+    {
+      "path": "bots/오버레이/README.md",
+      "beforeBytes": 27785,
+      "afterBytes": 28371,
+      "beforeSha256": "923927ee85f7fea6507a781e8b3342ee0c1baa2333002b22fca5efc18e5d72ef",
+      "afterSha256": "1b9c0a7083e0f10c5f496286c72a2ddeb0ad08779b09e453cfccb3d7a0126f2b"
+    },
+    {
+      "path": "docs/유지비_BM/법인설립_비용_20261001.md",
+      "beforeBytes": 27859,
+      "afterBytes": 28064,
+      "beforeSha256": "9fb61138d11a0c84b80b87ec4cf2918563ceaca3511a6002e054d0ad82998179",
+      "afterSha256": "b969db5b53145d4d3d269cc19f13defa6a59c8883ea2bf746ba74dce7a547a4f"
+    },
+    {
+      "path": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "beforeBytes": 46842,
+      "afterBytes": 47278,
+      "beforeSha256": "a6b9e05570048c7cfe1082cf724cd65f3af329d0494fdf1a9c9020e2957534c2",
+      "afterSha256": "787553368c9c6b4a2f0efc3a17958055ab811a3c1106e39bb01202d11beb0850"
+    },
+    {
+      "path": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+      "beforeBytes": 92123,
+      "afterBytes": 92381,
+      "beforeSha256": "5cbededfda5c8494e1119abe740030a706a5b7dc890d4d273bc438873b22fe7e",
+      "afterSha256": "9cc3ba4508f8726827a7b737c3b754e4ba28f36edf690dde486dfd935b7617fa"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/README.md",
+      "beforeBytes": 3313,
+      "afterBytes": 506,
+      "beforeSha256": "aacc8318d31758f3b437ee2050244c58b1bc66d0c3f2257b993028534b98000f",
+      "afterSha256": "5dea084170431a59cb0ac55ba7de69da911ead80ded992060d484a6456e76d32"
+    },
+    {
+      "path": "docs/마케팅/포트폴리오_회사소개_20260926/README.md",
+      "beforeBytes": 3612,
+      "afterBytes": 3614,
+      "beforeSha256": "7b8a99c665d540a906a0f3a8a5f2fe1cdd66d1360f1a2db83c24bd5b27433109",
+      "afterSha256": "4f198b9cc1f5d4a67b0cec7c0bbff5d6036f6797bcd29884d35618acaabfdc8d"
+    },
+    {
+      "path": "docs/지분설계_헌장.md",
+      "beforeBytes": 74756,
+      "afterBytes": 74961,
+      "beforeSha256": "ab0379777a543e41a0ab6c20ed7a9860cc17f3faf6932c088f4ffa7d9bf20c7b",
+      "afterSha256": "2b3448dc9d578e30027b16405fecea165a49b5121e82f8c81ccffb730c9b9bc2"
+    },
+    {
+      "path": "docs/커리큘럼_정본_v1.md",
+      "beforeBytes": 51805,
+      "afterBytes": 53703,
+      "beforeSha256": "ceec57c6b5afb3e7dac3745475044d1ba840e5b027d28fb9899aca8a74d39c53",
+      "afterSha256": "0bcfdc9eee624ca19489aa2b3ddab2c2a3369392c9553fb0efad3932a7dad3a2"
+    },
+    {
+      "path": "unity/SynkWorld/README.md",
+      "beforeBytes": 10688,
+      "afterBytes": 11034,
+      "beforeSha256": "e2851b1432ab244e39628e37cbfb54f5b60d1611fe1bbb7c1d83bee6ccf7b09c",
+      "afterSha256": "dff4964fbdae7f570ef9a79c568e3812c08504ebe5ffa6f1425580023528b387"
+    },
+    {
+      "path": "docs/상태기반_과제선택_설계.md",
+      "beforeBytes": 610724,
+      "afterBytes": 610810,
+      "beforeSha256": "df72ac0379b929a9ade3e92d2d274d7e420332e9977f6e9485eea02be000566f",
+      "afterSha256": "952b27c3757f7e3f3f3d04a8c1bc323ab322316b69ecb048696e15cc9ce43901"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/SYNK_ID.md",
+      "beforeBytes": 15168,
+      "afterBytes": 15585,
+      "beforeSha256": "f3c00d59ee909b46fe69e1c5a4620690daad89c6eaa3f5cb6ba7d7b381ad54e6",
+      "afterSha256": "7c0852b3ccb88c561c2385cd30b96c3a0d2f2cdcf7109adb23474f5db2f9e2b4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/SYSTEMD.md",
+      "beforeBytes": 14457,
+      "afterBytes": 14622,
+      "beforeSha256": "6b646732417e42cd72a4840078e729a38af31d3a0aebe76bd688af4a9c93dec5",
+      "afterSha256": "0710706f469e00ec7964b5dcb2c061696df170e516f7cdbbc63b0533452dc4a4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-DATA-MIGRATION.md",
+      "beforeBytes": 25882,
+      "afterBytes": 26645,
+      "beforeSha256": "45ee307176837adb3e1643fe29549274f0e51659bc5d2ce9be244c5b731f2f8b",
+      "afterSha256": "ae61571f077af729f09038dbc273e2b17e7324d7c97d2341f6122519b0cdb3ff"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/검증_20260927.md",
+      "beforeBytes": 10033,
+      "afterBytes": 10381,
+      "beforeSha256": "a373bb8dc7d6e94d9f4d7619d626a4f7f0f4d0ba0f5a24ba082aa13081e2b27d",
+      "afterSha256": "97581c117084261e3a6a1a0750b6bcd7e59be0cdd3da2d07f65e6fe9733a1ef3"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/video/real-actor-composite-4s-v1/README.md",
+      "beforeBytes": 5001,
+      "afterBytes": 5118,
+      "beforeSha256": "baa12a369913802a123620e396deb90b2978b56a7d82334e673b1b1b8b7a45b5",
+      "afterSha256": "d0874301348a84780c844629adec746e1d1d35519b5889bb17e16ecea0f1d912"
+    },
+    {
+      "path": "desktop/AUTH.md",
+      "beforeBytes": 10739,
+      "afterBytes": 11271,
+      "beforeSha256": "28efebd979371047c6753c6966384af5e0edc21842dfd708e9a7002e6ffb7528",
+      "afterSha256": "9d6fe8b3bfe78080f737d9b5b4a9dc0f2522d52817e3e83858b48466c451f0cb"
+    },
+    {
+      "path": "desktop/LIFECYCLE.md",
+      "beforeBytes": 28546,
+      "afterBytes": 29018,
+      "beforeSha256": "0356caafefbf33e30c6dc94cc7ddbcc11d7a4b29652ba9daf8475aa302648749",
+      "afterSha256": "6e352141436f935f6051d32aaece48736c1f452fb225f1a217a790685d462e1c"
+    },
+    {
+      "path": "desktop/README.md",
+      "beforeBytes": 87028,
+      "afterBytes": 87696,
+      "beforeSha256": "e8c219dbe51ae5e22f6b27911922132667eec93a43dd38fdc4e458098758f5a8",
+      "afterSha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101"
+    },
+    {
+      "path": "desktop/installer/README.md",
+      "beforeBytes": 16500,
+      "afterBytes": 16954,
+      "beforeSha256": "cfcca9fef436976420446d2489014737d5cc9bd97a309314414490b12a7eceb2",
+      "afterSha256": "0878960d8bde525f2745c7f3781c6d99d7e67f64a271605e877535528f2897a2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_아이디어_창고.md",
+      "beforeBytes": 5417,
+      "afterBytes": 5513,
+      "beforeSha256": "b599819537689eb4cf8641a4d24cd6e67ac7b471d052a0f4dabb9ed991099b09",
+      "afterSha256": "b58da3b3c2f9e1995ab443bfbbda1ab77a59c0e0146a7812c9af18f5a9c6fd58"
+    },
+    {
+      "path": "docs/함께한날_설계_v1.md",
+      "beforeBytes": 55974,
+      "afterBytes": 3741,
+      "beforeSha256": "2346877e9fcfab9aca13d8ce08c0cf6856ef9715005f5d95cb5635ad4d4064e9",
+      "afterSha256": "d70db874d5a7fe22e01296975b62815c75e9bdb52bcebd3ee9062eaf5a959bd8"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_AI구독계정판_20261017/기획.md",
+      "beforeBytes": 5632,
+      "afterBytes": 6136,
+      "beforeSha256": "c79fbf7c95f9f727db5eb90b0a2e2aef63fb77bd10a79a9e138ffbbf6ea6041b",
+      "afterSha256": "01ed548a34053bed83f2ee1658448d156aea8e1030ec26ce6bc59681b059a3f8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "beforeBytes": 287918,
+      "afterBytes": 258912,
+      "beforeSha256": "713dd8fe2632deb80381244fd23afdbe46cd1e34aea943aec30f3b628084be44",
+      "afterSha256": "f03ec4d0e51fcae67ffb640b7014ecc658239caaf1c14322c720b49f590e5fab"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "beforeBytes": 366261,
+      "afterBytes": 402173,
+      "beforeSha256": "aa97111f43c9891bd55f647fb1a55a2326aee91935187afa0c53dc0dc7752aab",
+      "afterSha256": "a4e39cb682cb99fbaafe88f68a6fa773182d9944e165e9d0b41c92672ac52366"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/운영가이드.md",
+      "beforeBytes": 5812,
+      "afterBytes": 6405,
+      "beforeSha256": "f2c6b356410730cd05ce9f4c485aa853f541c32309bf2674e3418013f0ecb7a2",
+      "afterSha256": "5cd2902c8a501e510c436f4404cee5c40d90be2764ebae9f44d67b321d39f447"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/README.md",
+      "beforeBytes": 9791,
+      "afterBytes": 10134,
+      "beforeSha256": "4ee6689c96e4255a6aacc98ddda6773aaa48b9b84d935a04ae48498a95455db7",
+      "afterSha256": "7be05d152c98043de4b94ce04cd12b49575f8e5760a9b7914460e9913e2d06e2"
+    },
+    {
+      "path": "docs/디자인/SNS키트/모션견본/BRIEF.md",
+      "beforeBytes": 1615,
+      "afterBytes": 1731,
+      "beforeSha256": "f0e07e3ea9f3cf02b4c169d1cbca109cf6b81f999b2c4d9b57e9255b35866eaf",
+      "afterSha256": "b811be72eace2e880a184976c5ba0e23036366ecaa7645ba91079fe183cbf44a"
+    },
+    {
+      "path": "docs/디자인/SNS키트/모션견본/design.md",
+      "beforeBytes": 668,
+      "afterBytes": 876,
+      "beforeSha256": "5618293f2e0161f6241850cff33502c050b631ce53926a15d757e0f1b33796f9",
+      "afterSha256": "ea71ebef93b1b7333cd92b65b9fedc2df4a45197848202c1bd7e58e1bdea63a1"
+    },
+    {
+      "path": "docs/디자인/게임_시작화면과_브랜드오프닝.md",
+      "beforeBytes": 9690,
+      "afterBytes": 508,
+      "beforeSha256": "e13173b8921489900b86f12a927dd033ec62d4e18e6e8bcb41325895df2f96cc",
+      "afterSha256": "1e33d5136231765307905ada1408ed373ee3b923190495a98718765e32c54fa5"
+    },
+    {
+      "path": "docs/디자인/게임_풍경과_재질.md",
+      "beforeBytes": 22538,
+      "afterBytes": 22732,
+      "beforeSha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+      "afterSha256": "fc14da61f37c2a14d97d6498f7d7ce1d318aeade18ea49f00c94e1a9e0e4ef0c"
+    },
+    {
+      "path": "docs/디자인/앱시안_20261002/README.md",
+      "beforeBytes": 6638,
+      "afterBytes": 7026,
+      "beforeSha256": "e007def2e5f154236e9fd74a47d7a64d1a8cf907f8ae4e7a122be3f5874de693",
+      "afterSha256": "6d28391bfbb1a4cfce6134f67779db72a96a80fa21afb5cae043146b0f706a93"
+    },
+    {
+      "path": "docs/마케팅/LAB_한글날_내이름한글로_20261002/README.md",
+      "beforeBytes": 6635,
+      "afterBytes": 6797,
+      "beforeSha256": "0d1c8562cd6222d0b41211738549345fabccc69966be13c87223d715964ee27a",
+      "afterSha256": "45b2a488e7ecf7380b2674c5e6f6954d7f977708ccbaaa795369d5f9c94cada5"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/반영_순서.md",
+      "beforeBytes": 6395,
+      "afterBytes": 6475,
+      "beforeSha256": "afff0a95bbeb4fe1bf9beb40a87457d842496c63fbf7488e54f783e870ad719e",
+      "afterSha256": "1144ad1d337256abd7db8eb95a943e1aa42188dbfb5cc34ea0f7556b493218f5"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/가입준비_브라질멕시코.md",
+      "beforeBytes": 6344,
+      "afterBytes": 6618,
+      "beforeSha256": "cd242c8440a4e07bc807d339f40248898653d06f64d4ecfaf065f1d7485697be",
+      "afterSha256": "bf387f42aec008318a03513bbda9e0d14245a3263a903d7f1343ba85f81af516"
+    },
+    {
+      "path": "docs/마케팅/첫콘텐츠_재작성_20260919/README.md",
+      "beforeBytes": 6550,
+      "afterBytes": 6608,
+      "beforeSha256": "781f4d6301856a4d09035e571d0c411f9d2aa7f4488f886f66fb96416ec7d555",
+      "afterSha256": "1d3970e178c9d6623e49c2c7e2d8c5d8d5fc2d56f0087f309718a22c9435318c"
+    },
+    {
+      "path": "docs/캐릭터/가이드_정본.md",
+      "beforeBytes": 107486,
+      "afterBytes": 107530,
+      "beforeSha256": "75c1b309cfe616fa4a9648eb3e89d4d41f64c5070a88c48d78906eeea8f9e986",
+      "afterSha256": "6595b803b4e76ec922c847b1f21db19a1f96d32c8228f03bd651e29acefd3621"
+    },
+    {
+      "path": "docs/캐릭터/마스코트_말할순간_설계.md",
+      "beforeBytes": 27075,
+      "afterBytes": 27505,
+      "beforeSha256": "03e7f0738e35c5fb2ad7996874ed4c34e7a1eee12201b5afd0531d554ff38b19",
+      "afterSha256": "df118f21b8af9f94107f5ae9dd5770750db27cd918922fe6dead5a7e6cf5ac71"
+    },
+    {
+      "path": "docs/캐릭터/마스코트_치수_정본_v1.md",
+      "beforeBytes": 22400,
+      "afterBytes": 23144,
+      "beforeSha256": "0c38c65b8f1795e3ba1b7ba45710a0d3f1eb10aa2a95cdd0708c9c066a3b4409",
+      "afterSha256": "ebe360970020ceb3a753730a2e930e2637d6872c6d567bfe822bea65e5b35e68"
+    },
+    {
+      "path": "docs/캐릭터/이야기기계_상황집.md",
+      "beforeBytes": 17837,
+      "afterBytes": 18446,
+      "beforeSha256": "41146f82a0e72e6403122127a655d9a871be578b89e3ec64f23b2d9777851401",
+      "afterSha256": "4a6385507b56d7039afb4d4abcb7f2974f8ee70250d2b180d06f7706c2d62f61"
+    },
+    {
+      "path": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시_체크리스트.md",
+      "beforeBytes": 6828,
+      "afterBytes": 7159,
+      "beforeSha256": "183fea528d52a27d6081434477b068fdb7aff5f71e76527d6f8b5d0fd2e2352c",
+      "afterSha256": "1a29089da513f684bb86b65e47a92712e01207b51b441417ae8970eb9d474a0f"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_카타나실험_20261013/기획.md",
+      "beforeBytes": 7068,
+      "afterBytes": 7203,
+      "beforeSha256": "caa119aea5760567da4baff0683a5148de551013d1d1c19940b7edc0c60345e1",
+      "afterSha256": "8ae39281215ac6cc14b9f3f909d88c8b337b703326faad658bf6430a70a3309d"
+    },
+    {
+      "path": "docs/마케팅/SHIFT_영상2편_제작계획_20260921.md",
+      "beforeBytes": 7622,
+      "afterBytes": 2246,
+      "beforeSha256": "7667bbc31aa43a77cf05e21c8e6cc916634598fd6486e695c53f87866fe46c41",
+      "afterSha256": "6d66d69aead594bc2f54e7796795557b8617f14e4c3ae5d30b1c568acc1d9005"
+    },
+    {
+      "path": "docs/디자인/워크스페이스_시그널/README.md",
+      "beforeBytes": 49408,
+      "afterBytes": 49594,
+      "beforeSha256": "4a43093267ce9c858528fe2419541dc4351f6efddc3a493f091dd46316825814",
+      "afterSha256": "6263c4b6a84a3bba2b4e9f989128970790bdbae029e6be2db95b62b23faf8497"
+    },
+    {
+      "path": "docs/디자인/플랫폼_시그널/README.md",
+      "beforeBytes": 66001,
+      "afterBytes": 66129,
+      "beforeSha256": "36a765032377f0f2b15004263530c6705bf6c05db4bd63ca68b0a222fb6d29fa",
+      "afterSha256": "d224c98a8ffe46ebb0f0ffdcbb7ec0ed371abc217bb6074e97e4ad2a30a7737c"
+    },
+    {
+      "path": "docs/디자인/월드_시그널/README.md",
+      "beforeBytes": 35334,
+      "afterBytes": 36102,
+      "beforeSha256": "2b09879850cc8999ff1df355f1f7367412acd70255eca9d0cfd6a3b8aa0b96df",
+      "afterSha256": "a8173c3dd6c454c076184a1a8863570e286d1c182342267868eb30b198f52466"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "beforeBytes": 195210,
+      "afterBytes": 198864,
+      "beforeSha256": "793ce4e77e00a5c4ea3e6debf2b740e3debf57817b382bdcdd2d06369e20cbf9",
+      "afterSha256": "659edbf4e9654aa51dda8a7e78f4d89a34bad3e3826b965c40d80e78cb5284a6"
+    },
+    {
+      "path": "docs/_ops/WORLD이야기화면_디테일_인계_20261015.md",
+      "beforeBytes": 18417,
+      "afterBytes": 18759,
+      "beforeSha256": "e42b58b82792c856092abaa8e4b99f870c1a493b0f04ec8050a60e2b82107e72",
+      "afterSha256": "3d49c62a9e5043f26393b8bfe4a7176cafd09fd1d203ece1cca5dbd4e8a41d37"
+    },
+    {
+      "path": "docs/_ops/고객관리_11판_릴리스_인계_20261014.md",
+      "beforeBytes": 21247,
+      "afterBytes": 21840,
+      "beforeSha256": "58fba3a5d75515b05f15015900249bc98951e0c04c2c9aec721bad061bd9af3f",
+      "afterSha256": "ab9ec49d97e1bb4c4cb018e54474ee1127cb740afc4cdb7a8c7432cc845857a5"
+    },
+    {
+      "path": "docs/마케팅/BGM과_목소리_제작안_20260919.md",
+      "beforeBytes": 8202,
+      "afterBytes": 8413,
+      "beforeSha256": "17fa2e3a2780323b1116a1129ee5f00608ca1baa6b46f4bc087aa98aec46403f",
+      "afterSha256": "e6c64b1fcc0e6c4014aaea05062c517970fefd66f04746af0d89be44c5363736"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/원고.md",
+      "beforeBytes": 8261,
+      "afterBytes": 8356,
+      "beforeSha256": "9ea9354112fa900eaec929d2baa74226f755755fae403e31518e9885f3821683",
+      "afterSha256": "6ebfa7085c125c4c3fe38f8c780aa7f33e0e0ab6d969624dbbf01ac10b235b43"
+    },
+    {
+      "path": "docs/마케팅/LAB_내이름한국어로_20261012/기획.md",
+      "beforeBytes": 8338,
+      "afterBytes": 8367,
+      "beforeSha256": "c0e7d51713c30da1cdf501231ef39a8b0c37047abd30fa890f3c8ec265a39277",
+      "afterSha256": "79cb4e4d87d2629dfb8f2a134500f573f4469540214f0e9953edfd22e78031e7"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "beforeBytes": 8577,
+      "afterBytes": 9026,
+      "beforeSha256": "73d30220a6ee79885fbb713672f61c3d5f9729dc6b86545a21ce6dccf9326765",
+      "afterSha256": "3cbab66f48df64511be2cfae154de49dbe8a2aa31bc3840ec85b40c00579ad7c"
+    },
+    {
+      "path": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/촬영준비_20260920.md",
+      "beforeBytes": 9176,
+      "afterBytes": 9621,
+      "beforeSha256": "5f1aa4dfa228eb6d371af5965e9719fcf6a39d18b30178f7eb7e29106ce6603b",
+      "afterSha256": "6eb53cfe021c1bb63bbc2074579738b2d99309c393e5ab8bb0d0c85685e652ba"
+    },
+    {
+      "path": "docs/_ops/용량확보_인계_20261015.md",
+      "beforeBytes": 13598,
+      "afterBytes": 14084,
+      "beforeSha256": "f4030d6c92821574ab9d11072a722400e1cf64c8a8d80a5ce4ba57e3e31bb54f",
+      "afterSha256": "78b04b9aef29fd0bbfa5ad0b529fb8398a0f6f0c5267bbff9331cce51088a42d"
+    },
+    {
+      "path": "docs/_ops/설치창_다운로드_저장소정리_인계_20261014.md",
+      "beforeBytes": 22292,
+      "afterBytes": 22892,
+      "beforeSha256": "8c22a69dc97859cdec0b1fb942038f3bee1cdf73b0b71a3e254d90680739302f",
+      "afterSha256": "8e7af39ab19adb44496c80db31490f5fa6b2506f096a97b6d7b49b27b2b34686"
+    },
+    {
+      "path": "docs/마케팅/SNS_계정_전체목록_20260919.md",
+      "beforeBytes": 10641,
+      "afterBytes": 11014,
+      "beforeSha256": "8d27e3a149f3438fd162b3d57769963b96176ec0b720c98f4edec161ac6f2d0a",
+      "afterSha256": "bf95d8aaa196d0e21428a0e8002fc761efbf144ff5fca231148c1af8e048c2b9"
+    },
+    {
+      "path": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/README.md",
+      "beforeBytes": 10672,
+      "afterBytes": 11240,
+      "beforeSha256": "09a1296b431d57e37df4c59e2676594f049703ea6a7d97d6f62fc5b1f591c9a9",
+      "afterSha256": "c97ca83a9cc704aca3ab839543414138e5e1bb8cc82ffa15eac98465ad96151a"
+    },
+    {
+      "path": "docs/마케팅/크몽_AI프로필_20261001/README.md",
+      "beforeBytes": 10842,
+      "afterBytes": 10975,
+      "beforeSha256": "7baeb2fa15175db6471675d074e1b0a4b21270834a7d94bae2103fad7c6b938d",
+      "afterSha256": "91cdd43d40b9a675b8395a76db691c133f84fe2535ccf471fc06fd92a7a34e68"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "beforeBytes": 11108,
+      "afterBytes": 11571,
+      "beforeSha256": "425f8796c40fc8a9ad1f3b92d203c16181fb5e5f3b86a2b6dcff114c06c967e0",
+      "afterSha256": "c913bdf69196578acfa49b4b7a10e323871b1d7f005e0c7d1054e4258943d3dd"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/1편_6월의시작_원고.md",
+      "beforeBytes": 11107,
+      "afterBytes": 11192,
+      "beforeSha256": "35d38aafa702e13e8aea823515e5ac6cdfb8a3554692b02cd637db6990c6a848",
+      "afterSha256": "1db3cdb7fc039a00e6dca7500a55dba07eb0ce849d98bf2b7a34002f3a5e3fcb"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/soul-id-20261001/README.md",
+      "beforeBytes": 11357,
+      "afterBytes": 11898,
+      "beforeSha256": "ae2c2978889c9ccf62ab156376a68a8ed4a36006165448dac8dcdc6a7225adae",
+      "afterSha256": "2574edf9ac7dd964ceb994fe9a51d849ac1b05bd8097ec92927f5de7e50bc4ab"
+    },
+    {
+      "path": "tools/patent-studio/INTEGRATION.md",
+      "beforeBytes": 13987,
+      "afterBytes": 14786,
+      "beforeSha256": "9c355c22f6884c94bc5ea466fa2eff4b069407468872e1ae582d866b6f428fc0",
+      "afterSha256": "e2c739dd5019ce7add2e8a48b02792d9a32d9b0cb38ba32ddf87a62ec27f23c8"
+    },
+    {
+      "path": "tools/patent-studio/PATENT-EVIDENCE.md",
+      "beforeBytes": 9226,
+      "afterBytes": 9691,
+      "beforeSha256": "44bf13379335678e3964fc0dd2e56d5e445a8f646929e734c2d8f08b2bb59f53",
+      "afterSha256": "a1eeca8c17ff7efb546fc48614e0c5c362b1bec9dc9eb373470589d1d3855e14"
+    },
+    {
+      "path": "tools/patent-studio/final-meeting-20260915/README.md",
+      "beforeBytes": 5318,
+      "afterBytes": 5729,
+      "beforeSha256": "1486975b1d5eba56616bd6f0e128f4c3c6ee9b53115480deb45774e42ce740e6",
+      "afterSha256": "408dae1a67351521d625e80c61af36208b465b87066bde7db029a9c065076508"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/1편_피드백과_다음제작기준.md",
+      "beforeBytes": 11474,
+      "afterBytes": 11757,
+      "beforeSha256": "e59cf95db97c812b0bea4bde7a39aac547f8094205e2c3f4f60f4503507eec21",
+      "afterSha256": "72e1c5cb3d411dd32b4fe25268e8a7c8ea6effcf06a09d6fe7070c2361c91c3b"
+    },
+    {
+      "path": "docs/디자인/마을_플레이경험과_준비사항_20260921.md",
+      "beforeBytes": 23436,
+      "afterBytes": 23888,
+      "beforeSha256": "8783d515329e85fc49880dda75fbf8c88711fca58d0abc7d4c99d83935f3f521",
+      "afterSha256": "5187d3071c4f5508a05d1bde0b9cb94caa0b02aeeecad381ed0c3a459b1abf4b"
+    },
+    {
+      "path": "docs/디자인/미래한국_마을_풍경.md",
+      "beforeBytes": 41261,
+      "afterBytes": 40526,
+      "beforeSha256": "77e312eb8c90a4ed05d91cdf8399466c26e7270679c1a5d6328abf6c2b2fe2be",
+      "afterSha256": "2477d1bef6ff60fbe47eae51b42f0ae657e2881c2a0d4fc51dfdb961830fd836"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "beforeBytes": 11518,
+      "afterBytes": 11907,
+      "beforeSha256": "122d093e1e1f82026b261d4a83fe669c69e5d081ef169293d70c4b360a8f8fe6",
+      "afterSha256": "563cecfe93ae6d65690adac04c8c247c6870bcbb49b6c8032d85bc5fe4cf1645"
+    },
+    {
+      "path": "docs/마케팅/후라보노패러디_포트폴리오_20261015/콘티_v1_20261015.md",
+      "beforeBytes": 11524,
+      "afterBytes": 11895,
+      "beforeSha256": "0c4c6b3ac0f516e6f2e43d587f5ae710d15682017c0ce9a9e884d63544cda4c8",
+      "afterSha256": "0a553be8de01fa5732d41de829695f4755e9668f5036ddcf26549bfee64bf600"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/실사판_제작준비.md",
+      "beforeBytes": 12112,
+      "afterBytes": 12644,
+      "beforeSha256": "dc11b3b1ac141178ceb1f520f7905a50d7c115460dc15b627df1fb2a4d740985",
+      "afterSha256": "42227b0b880cb47c1061132794a34707f3ee8bb26f5d72d507dde28e134fd49c"
+    },
+    {
+      "path": "docs/마케팅/LAB표현소개_아맞다_20260927/README.md",
+      "beforeBytes": 12294,
+      "afterBytes": 13137,
+      "beforeSha256": "54f823c010110de3884209eafc32c699afe0f90f228a4dd9662518d31252b1c4",
+      "afterSha256": "41113186075c8f2376713a9d3b99bbac42211e6c37b203c39efa4e200e17988c"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "beforeBytes": 52295,
+      "afterBytes": 6294,
+      "beforeSha256": "cb51f9e83cd578130b5e9052a3d83e854a90f31c3d0f917fd5e443642ae718ec",
+      "afterSha256": "26e7741863f7eef3b59050c4c97dc6fb64ca00449f540f48b249b8e521e3582d"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "beforeBytes": 23356,
+      "afterBytes": 23407,
+      "beforeSha256": "47b982cae7a371dda35c5e3133f789a2f0da16232b1843cd0f7db43c869dfaa0",
+      "afterSha256": "adb877cd779323a8bf32f1661949a38a3a574324a50326716cd993a75070a5ca"
+    },
+    {
+      "path": "docs/마케팅/클라이언트_발주서_20260930/버전비교_개선설계.md",
+      "beforeBytes": 12679,
+      "afterBytes": 12810,
+      "beforeSha256": "73bdebfde0bc2e8bac0e102c2e888a54c2bcca2a46d584136d8d71d5b6ed3394",
+      "afterSha256": "014544225a30ae72eec5fe6a5f179dd209a5b40ac31a34e7cf7bd74525d54953"
+    },
+    {
+      "path": "docs/마케팅/LAB표현소개_아맞다_20260927/kit-v1/README.md",
+      "beforeBytes": 12301,
+      "afterBytes": 12405,
+      "beforeSha256": "ef59b9b22defb53ebfe60a1a68a353e1bcd1f067c68263402508eaf13a277719",
+      "afterSha256": "d015e82247a138f2708b56a9c04b7d1732d3a7414c44a8f959bda8f344e58058"
+    },
+    {
+      "path": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "beforeBytes": 18157,
+      "afterBytes": 18835,
+      "beforeSha256": "1d83b750c12e5e29dc0995255ed2d14d5b5b9d0394177d76bb8763f1e03d5e6d",
+      "afterSha256": "69282edaa4eafb9bc48c579e29451f2447d5cab85ca9cd9a9d40d542003a071f"
+    },
+    {
+      "path": "docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md",
+      "beforeBytes": 6079,
+      "afterBytes": 6466,
+      "beforeSha256": "745ec4b812e7fa77e7dbe026925fdf851de3dcc864a0582851dd8bcfb7ac0534",
+      "afterSha256": "35d2538ffeba845287ab3a8d0037ace65d0c6f15cf2f4aaf619f34ac1082f894"
+    },
+    {
+      "path": "docs/마케팅/크몽_등록준비_20260929/AI광고_레퍼런스10_20260929.md",
+      "beforeBytes": 12777,
+      "afterBytes": 13161,
+      "beforeSha256": "7dbd7dd55b78f9294e63d0b0da0bc831e1587b74d4ddc97ac14ae305b5f7fb6f",
+      "afterSha256": "859d454dae2a22b2d1022d5e3e30035ff113e9add0879fcd7f7fa0fe8e10c146"
+    },
+    {
+      "path": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "beforeBytes": 13752,
+      "afterBytes": 2153,
+      "beforeSha256": "b6f73325b5f6ac4d75166aec4fd0bd7fb60078d04b920509c24e40a1415cf012",
+      "afterSha256": "26572bc30c5c7a6c8ddfb495f1554d6604a77df23614f29d199f56957d408503"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/남은반영_붙여넣기.md",
+      "beforeBytes": 14079,
+      "afterBytes": 14392,
+      "beforeSha256": "b4c163beb4132a6a91fd5c0591e674e667547660a6438aab37660fa356900bf7",
+      "afterSha256": "93389c00eaade43460b669741969718631c765876afb433a95b6691d0ec0ae38"
+    },
+    {
+      "path": "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+      "beforeBytes": 15273,
+      "afterBytes": 15671,
+      "beforeSha256": "1b6b4e6f45acfce2ab2fd87820bad3317adb6f511fd9323686884b532da86ed3",
+      "afterSha256": "9923f3c7379832eb0578bae8afbfb0d93cd46d0921eddc17e91ed02f5b8e8338"
+    },
+    {
+      "path": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "beforeBytes": 11354,
+      "afterBytes": 4447,
+      "beforeSha256": "115a3830ce182c058a9034ade398213ba1c50736421a8df069160a1f0f17ec1a",
+      "afterSha256": "437c4a51b1583c6dd3a04706c503ebbe312dcd9ff9feab6d9ba0f14c74edbcc7"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/soul-id-20261001/next-shot-draft.md",
+      "beforeBytes": 15576,
+      "afterBytes": 15901,
+      "beforeSha256": "2440d103c9e0251c5ecebd42b1f31bf4cf7b696c159373d76af51abae3d1f1d0",
+      "afterSha256": "2b72881c50f6caace907f749ee8d74aedf131aff3a8571f98716d86ad162fc54"
+    },
+    {
+      "path": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+      "beforeBytes": 69174,
+      "afterBytes": 69302,
+      "beforeSha256": "c5aafc729b9a6488f7576e1b2109a7bcca457e85b546b6406812093bd0acc2e4",
+      "afterSha256": "342a618208222b96d508b8049ad2a02d714f52aca7e83c6b20b43e9a0f263360"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
+      "beforeBytes": 15816,
+      "afterBytes": 16198,
+      "beforeSha256": "92ad381a729aa1fb9e40f4e777ca605335bd0d029a2a8d03db8bbbbbd35a1d7e",
+      "afterSha256": "9aeaeac1b083372ddae40b6d071e4a54a5bb01ea8506bd851125d2a9d8b4a238"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_한줄시켰더니_20261003/README.md",
+      "beforeBytes": 15945,
+      "afterBytes": 16400,
+      "beforeSha256": "b1148ca20be8ba265ee30f4a89c0ce5b5acd1ddd62c8ea75212f12f2d10c40c2",
+      "afterSha256": "f51cb8bf1bf260c74e1953e4085bc37013f9b100e8d7b2a343ef9718427ff301"
+    },
+    {
+      "path": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+      "beforeBytes": 94194,
+      "afterBytes": 94337,
+      "beforeSha256": "b355c49d2a7a15950e4bb6a938b448e79bd577c1dec2dee9ee3fd58a893adf41",
+      "afterSha256": "608caa987ff8a7173fc9f16d59d3fc86c89b83aadbfdf15eac2844352ab80520"
+    },
+    {
+      "path": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "beforeBytes": 79627,
+      "afterBytes": 80193,
+      "beforeSha256": "9a6a264aa3dd3f5cf25469f023e12ede8e361392de781f21c90301116b9d2f9c",
+      "afterSha256": "9cd790ab9e9e3ad9591e2f978b46eeaa97aeaff12bbeb53a0f57bada3f8c57e9"
+    },
+    {
+      "path": "docs/SYNK_공통계정_구현검증_20261002.md",
+      "beforeBytes": 23964,
+      "afterBytes": 24629,
+      "beforeSha256": "0e8d23466ecf5f6536f5784d4c6ed51adc548d692e0f882b3cf78ebb3a5289f2",
+      "afterSha256": "175db8547f0c64262510b4426080bc559fb364b85c849d22e8ccb7b4e5163198"
+    },
+    {
+      "path": "docs/마케팅/SNS_준비현황과_콘텐츠분류_20260921.md",
+      "beforeBytes": 16021,
+      "afterBytes": 16479,
+      "beforeSha256": "181fc64fd5d031af2831b566255b6d54fd6a90ecd6ba2a82a1856bbb050cbc29",
+      "afterSha256": "5e68489711603cbb43b3d9456f5c260257b40c68a333405a936e09d543f9cbef"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/가입준비_LAB해외.md",
+      "beforeBytes": 17460,
+      "afterBytes": 17823,
+      "beforeSha256": "c940df8ed3bc76914d0a23af395810d832c6cf9ba052a5823f8fc58720f88abe",
+      "afterSha256": "5a31205282e2ac5a3eb3253d7b2cb5efe7c23e618af5cad9216e9c98a693abd5"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/소개글_검토.md",
+      "beforeBytes": 18347,
+      "afterBytes": 18844,
+      "beforeSha256": "c88ee1caf6545f8c5af0e99cc9c8422ef11f93838473334a75583f5831c0c87f",
+      "afterSha256": "e5c73b2459ea68385d1cf91016c2f137ca5faa4da2125a09994b65b343127afc"
+    },
+    {
+      "path": "docs/마케팅/SNS_업로드설정_20260924/README.md",
+      "beforeBytes": 18956,
+      "afterBytes": 19420,
+      "beforeSha256": "49dbb9bc79fc93e5453e74eff1c84465fb32ffded288229c85c4d2ca8461dbbe",
+      "afterSha256": "78b0f63ece4a5a2a4b0bdaf4ab57496c1fa2543bcbf0d6cc9f67586725043a06"
+    },
+    {
+      "path": "docs/마케팅/크몽_3개서비스_등록초안_20260929.md",
+      "beforeBytes": 20427,
+      "afterBytes": 20790,
+      "beforeSha256": "5e09c7dacfe1f25ff40ab7142608d1bcc3e8bdf88fa288992815777811457122",
+      "afterSha256": "aa2a2303525dc49b3656d554333baa38a55ff2ffea271af9e8532156d2b98075"
+    },
+    {
+      "path": "docs/디자인/교육게임_콘텐츠구성_TOP10_20261009.md",
+      "beforeBytes": 26122,
+      "afterBytes": 26423,
+      "beforeSha256": "637cf4d3d57c1143cb2dad485ed09d4baf5a23480ba81a6fbdcb6a449b246c26",
+      "afterSha256": "19940813751aec46091d0a231c8dfdff8849c73a5f028f0b5d8a51159e30476c"
+    },
+    {
+      "path": "docs/마케팅/바이럴_검토와_보완_20260927.md",
+      "beforeBytes": 20774,
+      "afterBytes": 21251,
+      "beforeSha256": "15c83ce7d0985509a0a83dcc5efc3c4be99f4270ae2af868222c45dbe05111c2",
+      "afterSha256": "d6ba5175deee61d0fd47c74011e5e03dd926c1adcbaf2ed0553a904389916948"
+    },
+    {
+      "path": "docs/디자인/마을_생활경영_스팀조사_20260921.md",
+      "beforeBytes": 24797,
+      "afterBytes": 24983,
+      "beforeSha256": "07c8fc714189d33def7cdf79a5ebb0a83e02a25616d865c106cc66bf8ec81944",
+      "afterSha256": "00f1863ea6b2c86c8d32fa9960277912561282a7ed1a180d2d5f3530ca2356d4"
+    },
+    {
+      "path": "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+      "beforeBytes": 21070,
+      "afterBytes": 21951,
+      "beforeSha256": "1b6f94fc033d5f6e16d37e7518acb999fb8d7088cde555eb57472468a8686686",
+      "afterSha256": "eee0d6a53d86162bc55dd1e9f8a16641a288c28d9cc346d6e2e9a8b3780f4ace"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/계정설계_20260920.md",
+      "beforeBytes": 21816,
+      "afterBytes": 22249,
+      "beforeSha256": "c1db6afcc9562310b1fa469f166ceedbfc595428bb126dc480a2a1b52a4b796b",
+      "afterSha256": "052a1865acfa69570a3d0cf022363945969ae77382c058f816442ab52e0b0f7b"
+    },
+    {
+      "path": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "beforeBytes": 189171,
+      "afterBytes": 189854,
+      "beforeSha256": "96858686580168a69f45902414b146e95310aabe5d57fade5512ddbf368a250c",
+      "afterSha256": "a7b8b2858bedcb190226611d06f6695ee6cad97d142bc92b066dd46599d97181"
+    },
+    {
+      "path": "experiences/mascot-render-lab/README.md",
+      "beforeBytes": 6571,
+      "afterBytes": 6734,
+      "beforeSha256": "f2591f590a7d61e0e42bd905176b99f2673ca945d253ab8cbd04a3bba4399fd6",
+      "afterSha256": "28eef15373cb3c4e702d59c60aa1d61e814d59fb87a469fdf2f9b459c0e118b0"
+    },
+    {
+      "path": "experiences/namsan-engine-comparison.md",
+      "beforeBytes": 4899,
+      "afterBytes": 5750,
+      "beforeSha256": "55e08ab156331a02ede9022b32271a184e059a3192989405fab357ea1ff65070",
+      "afterSha256": "f52ca241b24a49ba760b9f9607316ffe17791d29008c09d2c3a8d41ae3f83ffb"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-assets/README.md",
+      "beforeBytes": 2704,
+      "afterBytes": 2930,
+      "beforeSha256": "7d37f564c46d865c89b2bbf1f72deb269d9dce6cac688d74b7e28fd622c3e0a4",
+      "afterSha256": "a568903f1f94f5bf5fbafb42d2cad1626f5245e5f33b5acf633f1be9c3347ba0"
+    },
+    {
+      "path": "experiences/path-vr/models/README.md",
+      "beforeBytes": 2113,
+      "afterBytes": 2483,
+      "beforeSha256": "69d5451a7177e296a4dec920a3a8786bf48cb18baa4b12757983d695cf0191f1",
+      "afterSha256": "5a5ab201c2696cca29a0f705a948bde84a75829445f8ce7258e359f89fbaff1e"
+    },
+    {
+      "path": "docs/마케팅/클라이언트_발주서_20260930/receiver/README.md",
+      "beforeBytes": 22411,
+      "afterBytes": 22754,
+      "beforeSha256": "838d9453bf85804a689d8430fdd8d4d4a894eaf81673e53a61bbdeeee96b2f38",
+      "afterSha256": "1262b3d209843a6af817429354680eef280db037400c4492bad3addf84840fe9"
+    },
+    {
+      "path": "docs/디자인/코스튬방_Steam10종_편의성조사_20261009.md",
+      "beforeBytes": 38994,
+      "afterBytes": 39252,
+      "beforeSha256": "16290046343591dfb0a6023f6219dbf51116f4055f26d0f41ef9dc933d3a41dd",
+      "afterSha256": "f103e10fbb5e7d5c32720a2670a8c8e16c7bc96b498b0fac4699174aea9fdfaa"
+    },
+    {
+      "path": "docs/마케팅/클라이언트_발주서_20260930/검증_기록.md",
+      "beforeBytes": 23646,
+      "afterBytes": 24105,
+      "beforeSha256": "764b5f6ed2d6f1b7c4c4ca03109431759adc1763bbfd7baed315df6b88f090ca",
+      "afterSha256": "9f438cfd02a622f2b12819cc99e2353526232c7678c7df673819b3ff83f6b2b5"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/실촬영_분할콘티_20261001.md",
+      "beforeBytes": 26143,
+      "afterBytes": 26273,
+      "beforeSha256": "f44d4a0c10c8e68245868f2b8d35a162b4d4b50bd73ab613f12ecdc5ee42dbb0",
+      "afterSha256": "72c4340e0ded2f8883f8d7ea78b21c77c4c076074da8ce06a874e5d2deaa9b2b"
+    },
+    {
+      "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "beforeBytes": 18065,
+      "afterBytes": 18225,
+      "beforeSha256": "d59c51ae7ad7b43538be1c0325cd142950fc6455a59da3ca975116577ad8e116",
+      "afterSha256": "339a85642ad5473faff8736af9b6f3b93113cf7f9f7c5e63e93097660090f897"
+    },
+    {
+      "path": "docs/아틀라스_교육업그레이드_20260930.md",
+      "beforeBytes": 20210,
+      "afterBytes": 20990,
+      "beforeSha256": "f94889ba4787dd9bbea52ce26924e7af940817cc79663f7a7991001f2525d559",
+      "afterSha256": "8232e3c4e2d7963df6e24c1f569f70a50e9c313fac95fb6619cc434819751711"
+    },
+    {
+      "path": "docs/아틀라스_검토_20261002.md",
+      "beforeBytes": 21750,
+      "afterBytes": 22165,
+      "beforeSha256": "ba17384724918deab00cebe8ebafdc7f6def45242f1bf08af29e8e0c00e49feb",
+      "afterSha256": "712825e5b73d9748a586256944f96f5f9805dafa904ec9f30ce16ed6aeae3b47"
+    },
+    {
+      "path": "docs/아틀라스_첫지속기억_20260921.md",
+      "beforeBytes": 24596,
+      "afterBytes": 25184,
+      "beforeSha256": "364c720f2c45d3e0287fad929c37451693ccd4fe9bb402e9d4f1208a703ca4b0",
+      "afterSha256": "a8b3edad3d2662c4cfba1305004fd7f533bf46165e3fbf9d1696c6263bbc50cf"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/README.md",
+      "beforeBytes": 27127,
+      "afterBytes": 27764,
+      "beforeSha256": "1fbf399d28206548b59a7b6b85eaeb8ebb2cbaf56672606f830827f5d7177276",
+      "afterSha256": "904791bd94dfc2c7211c9b4981be628fc84490f7ab26f387034a700d80feafa7"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "beforeBytes": 10845,
+      "afterBytes": 11099,
+      "beforeSha256": "1662a02ecbbd92aaff16e24af2a7acb44446de325ff86499cb78e8b4c21e5f36",
+      "afterSha256": "8a625e9c5e9f14d551b156493c568a036a9fd0615f8e1153132015068c30c502"
+    },
+    {
+      "path": "docs/디자인/싱크타운_생활사건_설계.md",
+      "beforeBytes": 65756,
+      "afterBytes": 66169,
+      "beforeSha256": "d73dedc16f179d135c1a218e3c10fd838ffc0df2bbb551ddfb909f82460bf71f",
+      "afterSha256": "22af2e0f7a0cc8f81e84eeb54a9da8c829458d37128d1e4dd36b9898b0d897e7"
+    },
+    {
+      "path": "docs/엔진/지도_20260921/audit-core-trail-temper.md",
+      "beforeBytes": 25927,
+      "afterBytes": 26451,
+      "beforeSha256": "002c944bc7e44084459f9bf78d9c48769a6eaea97f9334e6cb79ec0c454553ba",
+      "afterSha256": "470f5df863d809d249765791a8acf77f3a63a90f9ace45f3e6a520096fbf7e0a"
+    },
+    {
+      "path": "docs/엔진/지도_20260921/audit-prism-strata.md",
+      "beforeBytes": 19342,
+      "afterBytes": 19856,
+      "beforeSha256": "82bec88a1c9bfecd8ed8f45f5222d8387d9f41a56b0a8bae91d4cfb813496b98",
+      "afterSha256": "6cdfa5706c9b667c8c1318f4864c6bb5a7d5fca1635599a43f6f14a20044c06b"
+    },
+    {
+      "path": "docs/엔진/지도_20260921/audit-vellum-loom-reed.md",
+      "beforeBytes": 26649,
+      "afterBytes": 27204,
+      "beforeSha256": "ea224efb5b31eb612a90579220a38c421da2373bd446cbab0b87fb10e8fe9177",
+      "afterSha256": "0fa7264d2a04b0894a678917b0b6e35f675914e6bda9fa9f849dd0c515205535"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK FAQ.txt",
+      "beforeBytes": 22873,
+      "afterBytes": 23141,
+      "beforeSha256": "6f86072cadfeafc08eda79c552ea99f80fea688640495ad5d74f37325c6ae6d0",
+      "afterSha256": "a441a5c571e588eaeb45a0260775f918f404bd5c0e253233bc8805c0830d6387"
+    },
+    {
+      "path": "docs/마케팅/댓글DM_자료표.md",
+      "beforeBytes": 29313,
+      "afterBytes": 29892,
+      "beforeSha256": "f18aec67f1bb9e6a10196060287b88799aa5683abd3ac86e8c3521c129379706",
+      "afterSha256": "c2bc982dc844a38fd6dee3b72d75d40ed5cc660cdde30484c307a07c346b3457"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt",
+      "beforeBytes": 17557,
+      "afterBytes": 17584,
+      "beforeSha256": "c7cbda52cb4263b1d0236f1bb7205ac82de1b5b11d68b7430a77f71051665f28",
+      "afterSha256": "5454e22d48afe28b55c7fde564097a1541df046158c2bd063a1cacd5b42f2529"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "beforeBytes": 16454,
+      "afterBytes": 16601,
+      "beforeSha256": "16f292b6ab229b9004830cdf565a4a01d07887df18d306c965cd1d642f65b97e",
+      "afterSha256": "4572773e21fefa35a81b37dae8abe6bd0317930cacddd5e0409dfec83e233a75"
+    },
+    {
+      "path": "docs/아틀라스_순간맞춤_20261002.md",
+      "beforeBytes": 45075,
+      "afterBytes": 45756,
+      "beforeSha256": "277b3f9b773856efaa8a198669f7655173727a29a6ba037d5d2388e3c930814c",
+      "afterSha256": "062b2e87b032a27f983a44af6cf77b9d7371c915f4396bbb3654ce4858bd1df8"
+    },
+    {
+      "path": "docs/디자인/싱크타운_재방문_콘텐츠와_원고.md",
+      "beforeBytes": 105293,
+      "afterBytes": 105394,
+      "beforeSha256": "1b282f6d5039291c4c3076c56982b62d1610fe7a377086db04a7a55c46ee95d2",
+      "afterSha256": "ec2ed2ac9270616adf7be46c146493633744f575c93936bededdbd0bf09b8caf"
+    },
+    {
+      "path": "docs/한글단계_학습방식_조사_20261004.md",
+      "beforeBytes": 11074,
+      "afterBytes": 11764,
+      "beforeSha256": "a4704cbc4bd594a1c7576caae35f587fec54bcbe315329aeac229ced0aef469c",
+      "afterSha256": "d201438d5c2552cd704a564612ae69294daf9384ec4d5448d8dfb9e04763e045"
+    },
+    {
+      "path": "docs/한글단계_노래영상_근거점검_20261008.md",
+      "beforeBytes": 17735,
+      "afterBytes": 18414,
+      "beforeSha256": "11cac73fdb435f14fa3cc8108f9ea01ff53c059ad394a3fde3e9bdf4b1a4bca3",
+      "afterSha256": "6c93b798b7a2f9679f41f6134ada98ce02184eb59bcc74942da688392420c312"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/intl-social/가입후_붙여넣기.md",
+      "beforeBytes": 34406,
+      "afterBytes": 35017,
+      "beforeSha256": "a4e2d62ec0fc96a643b01184dc9625904121cfb07b0de70df05a93985c88aac0",
+      "afterSha256": "f2a8b536cb0d0927d33b36ea6a7d0631fc1ffdc3845be7b254392edbed809bb3"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 기업소개서.txt",
+      "beforeBytes": 36320,
+      "afterBytes": 36805,
+      "beforeSha256": "9f0c4c3326e36a1cadf3272532585161bff19b7850e71b2746b90907e7f84b5f",
+      "afterSha256": "c9501c7e3cf7c1ddf8e5eec711e92d4c061f4a65d0b3b2dbde46f0fa5447d197"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "beforeBytes": 35685,
+      "afterBytes": 36721,
+      "beforeSha256": "b0da64c264e41592f6a02825b669b3c7c50794f43d4b54000e73a2eaa9352407",
+      "afterSha256": "221959f03656c6d217faa2b82c9c6bd67e61c4d56b01aab15c80bdc9110067d8"
+    },
+    {
+      "path": "docs/한글단계_설계.md",
+      "beforeBytes": 41935,
+      "afterBytes": 43575,
+      "beforeSha256": "fcf945c98f7e4af305e15f899c5ca969c542dc5b8e3a9d644037191ee7ca5f95",
+      "afterSha256": "5035d59db655c84d2ad62885976cd9c275c7f975d9aee98b0afe1b70fe941ed7"
+    },
+    {
+      "path": "experiences/hangul-stage/README.md",
+      "beforeBytes": 37524,
+      "afterBytes": 38054,
+      "beforeSha256": "cb1e378c811e5e7ba9feb858732d85cdf73368da9a16cbb73def7618600d42e6",
+      "afterSha256": "fcab65827fc5ae75365bf2483eeb5250276262bd81121795cc66368216c549ad"
+    },
+    {
+      "path": "docs/마케팅/프로필_클로드판_20261002/소개글_검토_LAB해외.md",
+      "beforeBytes": 38162,
+      "afterBytes": 38865,
+      "beforeSha256": "7125546fa87dd7251912d55ba6f2d7e1ae1c5ac2b49159cf32c0af87c9b0b6ad",
+      "afterSha256": "9812b728d323dafdf4a224b6cda6ddd23b7e17280367c029ebaa20762ad0d72c"
+    },
+    {
+      "path": "docs/미니게임_게임층_설계.md",
+      "beforeBytes": 28092,
+      "afterBytes": 28308,
+      "beforeSha256": "ec789f790599bc99564b2b3746654c1c30a2d735fcd2ec88c2e696ebacee9d7d",
+      "afterSha256": "c55cf0fd207fb0e422155723bc5eb163163a235e651ee2e8f640f6b255ccdafb"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt",
+      "beforeBytes": 30255,
+      "afterBytes": 29363,
+      "beforeSha256": "0758876990375e3d81cc01f1975c0143723e9a24af48b90eec3a9481f96569f4",
+      "afterSha256": "fd56d82264ba7222be17a13db1ba93b1c866ee7b11eab5a1d18240482ec415a5"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "beforeBytes": 31092,
+      "afterBytes": 31030,
+      "beforeSha256": "b9421f4a97b7decd4a72c1100708b1811927757e450797cad363e77eed0cf3cf",
+      "afterSha256": "1ede948cd013a059d48159d0b6cec392149e8355b63bc57645c3a91800528115"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/intl-social/최종점검_20260920.md",
+      "beforeBytes": 41955,
+      "afterBytes": 42429,
+      "beforeSha256": "8946c23d8ae8d4d457e246e9c030462083ab4868063a6125e0387b51cc3bd2b5",
+      "afterSha256": "f21f9e2b1398a57832483126e30caae7f15b5aecd6a98c7d71d3def3480780f8"
+    },
+    {
+      "path": "docs/미니게임_TOPIK_I_학습기준.md",
+      "beforeBytes": 57771,
+      "afterBytes": 58285,
+      "beforeSha256": "3fb8145ce13616e34214320caee536ea4b0c9a7f429d007249cee6173b7cb114",
+      "afterSha256": "d99e5de27f0c65513d4c0e589405fd62a2da3edc2dbfc65630d257681c47c31f"
+    },
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/반영기록_20260919.md",
+      "beforeBytes": 42026,
+      "afterBytes": 42491,
+      "beforeSha256": "68f7c77fee90ff3a6f5887d21a9856e84f527274a20e785814c10f854645dc2c",
+      "afterSha256": "fa8774ff86f025ef50d9ac74ff3132db2771ae4a641b8b8793badeae70dcb40d"
+    },
+    {
+      "path": "docs/옷입히기_설계_v1.md",
+      "beforeBytes": 37410,
+      "afterBytes": 38226,
+      "beforeSha256": "26b38b49d0a717eb3d50d5d21c7e47f066d0973ca6b9382b1642539ad9b14e80",
+      "afterSha256": "70afcd31aa279421479d157270111261a3a6087c22dbb3461b8a612bbd3b1833"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티.md",
+      "beforeBytes": 43232,
+      "afterBytes": 43858,
+      "beforeSha256": "4caa5043ee14c6c148753318fa1e5044d0371eeb3fd65c747c52c160083a4b06",
+      "afterSha256": "7b2022fb3cbeaebf39f363b641dfa6dd66549cbd53aaa2b15247fd0b2a17cd56"
+    },
+    {
+      "path": "docs/디자인/플랫폼_시그널/조사_20261013.md",
+      "beforeBytes": 38755,
+      "afterBytes": 39278,
+      "beforeSha256": "c2e8b4c10ab5611962e55e2741f49b1bed95c5cf92b7aa0563a09a93c0a551dd",
+      "afterSha256": "a346d7aae61aeb6eca2aa9d6f75a14ae76adcf0e388b8c3bc5b08c386818df0b"
+    },
+    {
+      "path": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+      "beforeBytes": 52433,
+      "afterBytes": 53153,
+      "beforeSha256": "94dd0f1c63ba94067b2ecc47c7a1b2c2946ee57f35afad880e3ae642d72790c9",
+      "afterSha256": "ba1a1e49733c91ead5408476deacb017a6ea1a32ce28e4aa0c004f0742e0357f"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+      "beforeBytes": 11752,
+      "afterBytes": 11804,
+      "beforeSha256": "44561a320527f2510b0b5e7fd08edcf3f60d35971d67c7d0a12a76dcb76b8ee4",
+      "afterSha256": "bf3c920039690f2f5427178d91f1845f270bf8d79a9a44c6993c5a97d24b8c68"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+      "beforeBytes": 27015,
+      "afterBytes": 27277,
+      "beforeSha256": "8343a8a323bed3613da47d7bd5dd90e3b3dc9bca2cf8dadaac3c8cf6b6dd503e",
+      "afterSha256": "7109a078771fefad94eb22d34dc9838083bad3d64dea64022b44b446cf9a0ebf"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+      "beforeBytes": 25190,
+      "afterBytes": 25595,
+      "beforeSha256": "728d1c40ffce0b0ff911f2cd9c19fccc4f382d22d5c87f8c678bac47b0116491",
+      "afterSha256": "ab54d5cb62126346e1644c10d17782c5a8472ad57ad9308d68712d84a4c05e9e"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "beforeBytes": 65108,
+      "afterBytes": 66506,
+      "beforeSha256": "eda4b85dc34ebc4dc7ec3e2f23352a5bdacd82a8debe574831415db997cf45a3",
+      "afterSha256": "4d21927d362df3a3ec4fe05df2f2d66c93927329d3f314829332a7d026834a90"
+    },
+    {
+      "path": "docs/주민_설계.md",
+      "beforeBytes": 53714,
+      "afterBytes": 54321,
+      "beforeSha256": "8b83e4212675c3f69df32c6eac7b1875601671c1ffeacf619584015be6e00e65",
+      "afterSha256": "487e87c2f999b7eef9ba75eebcfaa2f9f4e42d1bc094d5179a54a3673d46b654"
+    },
+    {
+      "path": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "beforeBytes": 16275,
+      "afterBytes": 1910,
+      "beforeSha256": "704c187cf437da303114ba7de3b791481f3f24a2ea5c4e157d76209f361b641e",
+      "afterSha256": "ebe56b6163d547905ac0370f123916ba7729ea93a5ba274c68bf1d3fb8d2bda2"
+    },
+    {
+      "path": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "beforeBytes": 27676,
+      "afterBytes": 27924,
+      "beforeSha256": "314d3a85a9b2e4e5d4b5db6e47e54d770275dcb937d76c75fe5e794b458bfb8c",
+      "afterSha256": "aa19e92c5d7cb590154507c872b6110624f467e26a7643486615cc2beb405b5a"
+    },
+    {
+      "path": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+      "beforeBytes": 69688,
+      "afterBytes": 71070,
+      "beforeSha256": "ef41bf23879dd7634aea08097fb9f9bd02dd046fc173e9fea4c66ac069b5fcf6",
+      "afterSha256": "65856dbe52e53a85c5e171ada23a65e78e70d773f28a5bd4ec0ea63251bab42a"
+    },
+    {
+      "path": "docs/디자인/워크스페이스_시그널/조사_20261013_고객관리.md",
+      "beforeBytes": 56013,
+      "afterBytes": 56614,
+      "beforeSha256": "3820871f0925bf81c68480cb4b61709b440b0b8c629ff96e3c9e0a83ef4cb7f5",
+      "afterSha256": "e8103147b9eb548902c542304972932b3969f6971bba5eaf6ad759b385231503"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt",
+      "beforeBytes": 16546,
+      "afterBytes": 16346,
+      "beforeSha256": "0f0b41ca701d126e15cc0e74439c949cf185f6044ec8f0efc199fadd8bdd02b1",
+      "afterSha256": "a40dac99200bce7dac641d99b5c9fcb5876da7cebadf0b0fc40e90ac0f8e2a33"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티_v3_멀티캠_20261003.md",
+      "beforeBytes": 107495,
+      "afterBytes": 108134,
+      "beforeSha256": "fd9035f6bdf25ed04dfe4d6abdc883ac9dee9e720a02cd114d50b5f86ac56362",
+      "afterSha256": "be946fcfdee89d0898baf7e3599d9ca0e9b7c07bdfa6e9a2b6c84354b5234514"
+    },
+    {
+      "path": "docs/대화_설계.md",
+      "beforeBytes": 54572,
+      "afterBytes": 54894,
+      "beforeSha256": "5468ec30e467856dc9e2bec5b50bf6e22b4e54af287fe2d7aca4722912fe613c",
+      "afterSha256": "9e17346e05e4f589e0c6ace6e67d7aa9b693e2b7c38fc8c5fbce4606800c9366"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt",
+      "beforeBytes": 27511,
+      "afterBytes": 27571,
+      "beforeSha256": "8b9f80714498269d62c59758d2501dbaea407e01c0efd1422a843050dbfc8cdc",
+      "afterSha256": "536303ba14a561daac7595206e37a0a275ad3578d5a44cd4cc5560529700806c"
+    },
+    {
+      "path": "docs/공개판_설계.md",
+      "beforeBytes": 90605,
+      "afterBytes": 91686,
+      "beforeSha256": "724ad2a1a26d5ee09b4bd29e7b4f0c0fba65b9292f6841e49d7a1950a8575329",
+      "afterSha256": "ac73a94ce5f5bdcd2ea8f35b1c33d444b909c809eac8f770fa05080022b77ab5"
+    },
+    {
+      "path": "docs/세층합류_설계_v1.md",
+      "beforeBytes": 49489,
+      "afterBytes": 49721,
+      "beforeSha256": "6bdc15d513103ac2248df88a6fe051c1a4002bf60800df4e842e7ef6fec73fdd",
+      "afterSha256": "46cfce588313e5de12d753efff7f83188b67b59964bbd846804be4cd149db2f8"
+    },
+    {
+      "path": "docs/디자인/월드_시그널/조사_20261014.md",
+      "beforeBytes": 94316,
+      "afterBytes": 96846,
+      "beforeSha256": "e12e7f4b9c8ce2fb3503a99fea43f94ff28003d614c71895fa00bab8bf5871cb",
+      "afterSha256": "f4531c9fb59a9e924c06800e9c69e5c92d2d24653dfdea81c073c512f93cade9"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 기업마스터.txt",
+      "beforeBytes": 58389,
+      "afterBytes": 58600,
+      "beforeSha256": "5885d8f891f789541f75e080cd179b70ef8f2801b5af8e8e05e202841c409154",
+      "afterSha256": "5f3b4b7a643712d42fba840b68ac17bf2a8806e670ed3e30d69780bc116c3a68"
+    },
+    {
+      "path": "docs/마을_설계.md",
+      "beforeBytes": 124442,
+      "afterBytes": 125198,
+      "beforeSha256": "b7fde46fdca8e58acf4b8cbca16563f8be18e4b79a3cc9af5034ace1c402f76b",
+      "afterSha256": "1ef67d83588e7840ff308c40e8c3e810794407fdd9a162b3c648fbac8f4ac004"
+    },
+    {
+      "path": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "beforeBytes": 157547,
+      "afterBytes": 158019,
+      "beforeSha256": "11d7687f75109ba32085783ba64371f4e5345d31fa57198cc66ef84db8c99bc0",
+      "afterSha256": "f63740bf4c568b0c0f5aed94d8069c07e5ce32a4c6404d963562598ec860a7a4"
+    },
+    {
+      "path": "docs/발음데이터_규격.md",
+      "beforeBytes": 99887,
+      "afterBytes": 100449,
+      "beforeSha256": "9ae4a72e708db2fa69b33e96a23c41563d38909366a060119773a224551c39c4",
+      "afterSha256": "c705b1ffb58827d8c3ff40206b64ce67e461bcdcae1691466088c15623e9b98d"
+    },
+    {
+      "path": "experiences/atlas-lab/deploy/README.md",
+      "beforeBytes": 20885,
+      "afterBytes": 20986,
+      "beforeSha256": "b19792db516e0e607072e9a447e960c6b311dfb84a1e7c172bf17d05c23f9115",
+      "afterSha256": "1885880d6055ea7a4c1e7371c90c95e20b6fb834efecc309e22c6aa181c10f63"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/게시연결.md",
+      "beforeBytes": 2415,
+      "afterBytes": 2935,
+      "beforeSha256": "4f07c9eaa678946f4d0b6b91da5835b8054987ce678db397cc5b9e62e0833566",
+      "afterSha256": "b275aae322a45fda97b3d8767aa3a11a641d3719093e7e35c6e96e01dc56ce4e"
+    },
+    {
+      "path": "experiences/beginner-games/README.md",
+      "beforeBytes": 20427,
+      "afterBytes": 20857,
+      "beforeSha256": "daff0049c6e557c84b24fd75401c8bf629c5c83f648a85c97ad0a44ed408a561",
+      "afterSha256": "10d3db2f44f66c7fda0ef74ce7029763c9448a8030301a84f8aca06737171678"
+    },
+    {
+      "path": "experiences/blank-slice/README.md",
+      "beforeBytes": 21307,
+      "afterBytes": 21884,
+      "beforeSha256": "fd17ddfbd7726af9a7dfd4c499321e2fc697d66f0232762b902b2daa84cc4a04",
+      "afterSha256": "1559a7bc0ae883f4b5a5492c8797bd5195c8763cfecd5c8231186bdf75534de4"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "beforeBytes": 70082,
+      "afterBytes": 71974,
+      "beforeSha256": "6c5905069f50c7d84a910ed17333539cc853393c03ac8384ab5dd03e11e56858",
+      "afterSha256": "93a0f45853b0ee72a3f7779fbdf268f126b6c380e02b559061ff21311850d95f"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/meeting/게시연결.md",
+      "beforeBytes": 3246,
+      "afterBytes": 3467,
+      "beforeSha256": "2404d924a0fcfcd7074fd6555770878791e76e19544da5f07403dff1c1c020ab",
+      "afterSha256": "f599f4e1ac7c2be17dc1ec7b6cd8cf806ab42f2b82e175fe321e9d5e22e1912e"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/manual/게시연결.md",
+      "beforeBytes": 3846,
+      "afterBytes": 4170,
+      "beforeSha256": "597aba7046bead5baee0b994b6bf0fd5800f0454dea06591f2303d94d8e70c32",
+      "afterSha256": "0d93e36685b737ee87b6f2af9aa835f6a867c27d663923e94087e9a591fc8500"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/rl/탐색노트.md",
+      "beforeBytes": 6595,
+      "afterBytes": 6738,
+      "beforeSha256": "da857889efbb8a6c08351de8e320c217ed953acfd31c813dfcd20c2dd9474798",
+      "afterSha256": "158a692b31c2fa663d5d3b5097c26c8ffb893fce55327ebfd46224885bda591d"
+    },
+    {
+      "path": "experiences/brand-opening/HOME.md",
+      "beforeBytes": 31768,
+      "afterBytes": 32311,
+      "beforeSha256": "2ed1b949be6ed5038db22123babb0cc3f6ecef7ba7eaccbdb948e055aa1744e4",
+      "afterSha256": "ec4174319c258a51af8709d72e75ce958f756ae77d90cf358340a5ded5597aca"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/nombre/탐색노트.md",
+      "beforeBytes": 7743,
+      "afterBytes": 7873,
+      "beforeSha256": "a0aee930ea8150d6178a298806231539a53843cc6c0091e9d6b110453b3355fb",
+      "afterSha256": "30ca8559bf0ca762be420c29ae439c5c2c94a4503c7af35d6c14c7e27614d829"
+    },
+    {
+      "path": "experiences/conversation-rehearsal/README.md",
+      "beforeBytes": 21211,
+      "afterBytes": 21718,
+      "beforeSha256": "2a74620b3556cc2f8b5fe83e9ac040932b6114452c04f671494541ffd30f52c1",
+      "afterSha256": "3fea8fbfffc95018b81d19ea65f37eb49c483071b19ab89e865450a5bbfb7a08"
+    },
+    {
+      "path": "experiences/daily-fortune/README.md",
+      "beforeBytes": 26028,
+      "afterBytes": 26396,
+      "beforeSha256": "5bba7cb20caa2d1bbf556546b2652f4a1b39298e79f974f0556d7725c1af4f27",
+      "afterSha256": "1e5b4f30e7a3327419d89430729c33bb2a83b1207394eea7d33d3d7970900c69"
+    },
+    {
+      "path": "experiences/play-common/README.md",
+      "beforeBytes": 18048,
+      "afterBytes": 18196,
+      "beforeSha256": "dad271664e591fab6795bbb09cd58a64968d0749b8400d7f415a1fbb67a43b68",
+      "afterSha256": "a38b6fc47a3073226538d4e6af70b4f4343c762fe34931c7b6201c737ac8fee4"
+    },
+    {
+      "path": "experiences/entry-check/README.md",
+      "beforeBytes": 31724,
+      "afterBytes": 32297,
+      "beforeSha256": "351cf1d1952fc714176d22a6190dd651c5e3e0f87d0b48ceee261dfb53279695",
+      "afterSha256": "b64f24279667c7a94b193cf9c59fcad678911da4a53ef320d90519c76f516397"
+    },
+    {
+      "path": "experiences/family-album/README.md",
+      "beforeBytes": 21409,
+      "afterBytes": 21728,
+      "beforeSha256": "adf49baf22f93680af7c969bd31317c14064eb5c0c22d533869d8ac3a0d996a2",
+      "afterSha256": "922be60f7d47b59a06a51a8ecbbb7a50e47a16c26eedcfd0604cd418f1bc3bdf"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/README.md",
+      "beforeBytes": 26165,
+      "afterBytes": 27701,
+      "beforeSha256": "f36059e4d398492207b91a6da5d6ce505e5d29ed063a9285d87d6dc39bc1c36b",
+      "afterSha256": "14f4b083dc234c23cb2672769a60075e317bf45e607dd11622e8bc340b76009a"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/manual/추천기준.md",
+      "beforeBytes": 39579,
+      "afterBytes": 39766,
+      "beforeSha256": "7d7c81f88dc68255b49cb8d655ad758c9d2659225089c3c815285ea4249ef9fb",
+      "afterSha256": "73d87a862675a6493d40cc8756a5acbc6279ab07acfb575537f54a0d6692af51"
+    },
+    {
+      "path": "experiences/hangul-stage/songs/README.md",
+      "beforeBytes": 26002,
+      "afterBytes": 26286,
+      "beforeSha256": "a3d70056fda76118e4fe3243db6582fe02a972d004a1a61256e961b1d9224e78",
+      "afterSha256": "7848f4130c494984a06ea2fffef9614e9d3dc4a0cd3512f4481f98b2c58e432b"
+    },
+    {
+      "path": "experiences/hangul-stage/songs/노래영상_가이드.md",
+      "beforeBytes": 12506,
+      "afterBytes": 13105,
+      "beforeSha256": "df9c58006063a420371de29cfd990bb258965fa96111a4d0d84c6dda4c4eefa1",
+      "afterSha256": "3d1aa86c58e7c2caac4118a22afd4113062bb7bf6f077dbe9f6a09c6b14698e0"
+    },
+    {
+      "path": "experiences/korean-racing/DESIGN-PROGRESSION.md",
+      "beforeBytes": 5356,
+      "afterBytes": 5693,
+      "beforeSha256": "e8d449235e71192f4c4d57f6e2d39aedc7ff03b472babe7ba4be41b259a02fcb",
+      "afterSha256": "bdac356fbf217feb48c6ed2388f68fab7483fcd4f01ed2905179e7a56bd904ff"
+    },
+    {
+      "path": "docs/_ops/시스템_경량화_20261010.md",
+      "beforeBytes": 19063,
+      "afterBytes": 24183,
+      "beforeSha256": "a9f35de9b833a28f74afbc2eafb86c821cba94e524dad09a58a97fd75ccfd27d",
+      "afterSha256": "d97939fb6d70a122fcb2abf679707c51a6a17c3cb2ab5b3bc5b2f26aad06ae75"
+    },
+    {
+      "path": "docs/_ops/결정.md",
+      "beforeBytes": 355842,
+      "afterBytes": 357254,
+      "beforeSha256": "dc0932cc213b6ebe999443d91f3830f24dc52d0cb4849ad483b98fa69b4e1184",
+      "afterSha256": "aca566dd075179629098dd79d13a2650718cbcad0cedebadbbedee1db1e612d2"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "beforeBytes": 160080,
+      "afterBytes": 160507,
+      "beforeSha256": "e17e376d6f7fc72241f9e7d3891bdfd98852481c410b0d8374cd0a4c4d0dfc48",
+      "afterSha256": "7dbbfa0cdab3136b42983f742b61cf2e01f4382f61010b0d67a32f98d680f886"
+    },
+    {
+      "path": "experiences/korean-racing/README.md",
+      "beforeBytes": 55884,
+      "afterBytes": 56323,
+      "beforeSha256": "6f9bd8d5dd4b5ed04e1e91b1f82e10d34d78305f24105b5e14cb565434e99159",
+      "afterSha256": "8b35d62d4eaf81e4f0903bf47bcb70a581bcd4d902689a3eb27a8bfa6da22868"
+    },
+    {
+      "path": "experiences/korean-rhythm/README.md",
+      "beforeBytes": 24638,
+      "afterBytes": 25011,
+      "beforeSha256": "6a743dac1e66a49cb2d2d6457ec7e5dd3e4b25cfd572797b34348dbe484f7bdb",
+      "afterSha256": "8736d3f9b776c010bbf8a64314e72d72324865a8984d937908eeda2578bf64f9"
+    },
+    {
+      "path": "experiences/member-signal/조사_20261014.md",
+      "beforeBytes": 12128,
+      "afterBytes": 12357,
+      "beforeSha256": "300e9f0f65e35a9b035162bd524bec2a8f644bce192796d6499dfee96a3009d4",
+      "afterSha256": "6f5b7a0fed77eafb491849af4c72e831c9e7fc2c035194c57047e644f86b7002"
+    },
+    {
+      "path": "experiences/path-vr/README.md",
+      "beforeBytes": 45898,
+      "afterBytes": 46104,
+      "beforeSha256": "8812e3c4d03aca5534a148701a4f56e41ba57e3ab17ae7ca3ac3b91454026101",
+      "afterSha256": "6c90a4304e3d3d525edf7de6301fbafc3531302539829d4c4fff429242d824aa"
+    },
+    {
+      "path": "experiences/spaceship-coop/README.md",
+      "beforeBytes": 27152,
+      "afterBytes": 27935,
+      "beforeSha256": "9ab41fe2bb5be3640d01ba74d6ce5e3e6dc8e8b16952f03c1d0d5e2351332756",
+      "afterSha256": "f6a1b10128b70c8625a8b557192f25835a124db666268746e138dea24418762b"
+    },
+    {
+      "path": "experiences/spaceship-coop/deploy/COMPANY-ROUTE.md",
+      "beforeBytes": 8269,
+      "afterBytes": 8624,
+      "beforeSha256": "c063550205443ec3f29d7d07d58fe5c26bc10d927f20aeb173ee56622259d2b2",
+      "afterSha256": "be21e1677c867ee8e9e60a70c47bd06fad94d9b717aa4587d82b273adcc66319"
+    },
+    {
+      "path": "experiences/korean-runner/README.md",
+      "beforeBytes": 20647,
+      "afterBytes": 21089,
+      "beforeSha256": "fc7e0369d8788033c4907fa4e733e79a4dc0ae4fe031f6c5569704c038037407",
+      "afterSha256": "0bf35fb5ba3c0a56e9bec30a1049700f930a3cf7ac5ff74efca262cbbdd2ceed"
+    },
+    {
+      "path": "experiences/order-rush/README.md",
+      "beforeBytes": 34980,
+      "afterBytes": 35244,
+      "beforeSha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+      "afterSha256": "24f8cfc25b2febd83e0329175e8d1a12704afc6101f1a1e5764c9453fb7b81e9"
+    },
+    {
+      "path": "experiences/synk-world-app/LIFE-CONTENT.md",
+      "beforeBytes": 36177,
+      "afterBytes": 36564,
+      "beforeSha256": "ec5be1a0ebe465874bf0c15d5d3e42bee1f018a13adda959ffc8601b61b04aa1",
+      "afterSha256": "636d102986abc003a301aa1a198e746d399c4f6de78e29d4f6de01123a0a8630"
+    },
+    {
+      "path": "experiences/talk-rally/README.md",
+      "beforeBytes": 37220,
+      "afterBytes": 37639,
+      "beforeSha256": "846a09a45f08c21e7e348bec61f880dd2cce2185c70ee0bfda703199932942ca",
+      "afterSha256": "fdb92944e92ebfe0cb4658d7af21ad063b1a70b27d68183e6300e6760d724025"
+    },
+    {
+      "path": "experiences/word-magic/README.md",
+      "beforeBytes": 25214,
+      "afterBytes": 25638,
+      "beforeSha256": "1402099bc5bd7dba49b65ab6d099879ebf64f9f0767b114d078e697ad18e0a48",
+      "afterSha256": "bb7884d132f80410cb513b7e67ef059834e8a89d9e097a43ae009ba80cd35bb7"
+    },
+    {
+      "path": "experiences/story-classroom/README.md",
+      "beforeBytes": 18791,
+      "afterBytes": 19124,
+      "beforeSha256": "be0323fb29141f1fcbf5df4cbf72fee09bb1573979df67f198629a87c56dfefe",
+      "afterSha256": "9fb2dd7aaa9c8e2b9df5eef7468fcc178b9d8ab2502f015b28f4e48d5082e7ae"
+    },
+    {
+      "path": "experiences/synk-town/README.md",
+      "beforeBytes": 39732,
+      "afterBytes": 40067,
+      "beforeSha256": "686557b86ca2e42a55c40cc95f74caf53397e22c47b496fd14f24e39a2e2b2cd",
+      "afterSha256": "24d89796bc05e25e6ca2af5aef902694aa88d81602607e45aba459ab65b91837"
+    },
+    {
+      "path": "experiences/teacher-world/README.md",
+      "beforeBytes": 31465,
+      "afterBytes": 32363,
+      "beforeSha256": "fc2f0251886fd5ad52e21e51b2945ba6426703de62d44edc511393bea7a7e9bc",
+      "afterSha256": "f4050a6662cb48cf5705dc6806c933eed34e57a51318bd38bb92c30d9c9c246f"
+    }
+  ],
+  "pendingQueue": [],
+  "ledgerDrift": [],
+  "bytesBefore": 11421560,
+  "bytesAfter": 11371033,
+  "newLocalLinksChecked": 430,
+  "newLocalLinkFailures": [],
+  "incomingAnchorLinksChecked": 713,
+  "coverageByDomain": {
+    "operations": {
+      "full": 59,
+      "retained-evidence": 233,
+      "library": 16,
+      "targeted": 2,
+      "current-contract": 1
+    },
+    "business": {
+      "full": 19,
+      "retained-evidence": 4,
+      "equivalent": 1
+    },
+    "business-design": {
+      "full": 59,
+      "retained-evidence": 10
+    },
+    "business-patent": {
+      "full": 4,
+      "retained-evidence": 32
+    },
+    "business-text": {
+      "full": 22
+    },
+    "business-salary": {
+      "full": 1
+    },
+    "business-cloud": {
+      "full": 1
+    },
+    "business-track": {
+      "full": 1
+    },
+    "product": {
+      "full": 53
+    },
+    "product-evidence": {
+      "retained-evidence": 289
+    },
+    "product-assets": {
+      "full": 22,
+      "equivalent": 9
+    },
+    "content": {
+      "full": 536,
+      "retained-evidence": 85,
+      "equivalent": 27,
+      "library": 274
+    }
+  },
+  "coverageUnique": {
+    "full": 777,
+    "retained-evidence": 653,
+    "library": 290,
+    "targeted": 1,
+    "equivalent": 37
+  },
+  "coverageLedgers": [
+    "operations",
+    "business",
+    "business-design",
+    "business-patent",
+    "business-text",
+    "business-salary",
+    "business-cloud",
+    "business-track",
+    "product",
+    "product-evidence",
+    "product-assets",
+    "content"
+  ],
+  "unrelatedChangesSinceStart": [
+    "AGENTS.md",
+    "docs/AI_운영원칙.md",
+    "docs/마케팅/PULSE_AI모델_캐스팅_20260930/명세서/F02_하린.md",
+    "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+    "docs/마케팅/제작양식/만족사례_장부.md",
+    "docs/문서_지도.md"
+  ],
+  "failures": [],
+  "contentChanges": {
+    "files": 238,
+    "bytesBefore": 10886575,
+    "bytesAfter": 10829089
+  }
+}

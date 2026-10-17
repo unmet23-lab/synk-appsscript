@@ -1,0 +1,592 @@
+[
+  {
+    "path": "docs/BM_목록.md",
+    "bytes": 50173,
+    "sha256": "52fa52953f706cac2aef847ffab5a2c22d26301f54a34b512217a1ca38897935",
+    "lines": 316,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/SHIFT/VR직업체험_설계_v1.md",
+    "bytes": 33586,
+    "sha256": "095a095a4e4116a81bdc4d8b25083654a501c695f8ebc010dd7ea0c785299b18",
+    "lines": 161,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+    "bytes": 41550,
+    "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+    "lines": 190,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/SYNK_철학.md",
+    "bytes": 49346,
+    "sha256": "db94ace81bdc3a53a9b8c2ac94ea202d8d0482d8de07250625a03169d474169f",
+    "lines": 261,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/_원고/룸조판_1보_실측.md",
+    "bytes": 4300,
+    "sha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+    "lines": 75,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+    "bytes": 19357,
+    "sha256": "598a40b64dac484b97bf804a78ff4f267722a2a110fcd3f6b8612f2c8c8630ef",
+    "lines": 234,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/_원고/채널마다_창_2026-09-07.md",
+    "bytes": 16138,
+    "sha256": "783871ffb2f23cf9154c55e2abeba780e82258f16e7cc871312d5f593a16b91a",
+    "lines": 227,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/개인정보처리방침_초안_v1.md",
+    "bytes": 39206,
+    "sha256": "a538c8070ad45eee4dae962aeece3043d96e2c12242a5ebebcf3f3fe9c4ace6f",
+    "lines": 335,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/개인정보처리방침_초안_v2.md",
+    "bytes": 50590,
+    "sha256": "0042d71315f8b8dbe7319166f30a9fd981a9b44454b606736c474b26be7c9624",
+    "lines": 437,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/급수진단_설계_v1.md",
+    "bytes": 52197,
+    "sha256": "39f1baa56a1651ef2ef4547bef2db191137c67ca55f77715388f0ab150db1767",
+    "lines": 617,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/사업발전_정본.md",
+    "bytes": 25340,
+    "sha256": "fbd3f1fef7beb6410b122872c4a168011446560873a15966a8f3196b06711dc8",
+    "lines": 167,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/앱이용약관_초안_v1.md",
+    "bytes": 25716,
+    "sha256": "1f6f1c5cb33ddb8c602890bc45dd3d4d9c6b4eb052830e0d1ebede5e90c1e8da",
+    "lines": 234,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/오프라인_공간설계/SYNK_LAB_사업계획_오프라인_검수_20261002.md",
+    "bytes": 33419,
+    "sha256": "2ce3c535649c1240e412ffd519be3d55129d79631efb58a5e8094427abaa05ad",
+    "lines": 213,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+    "bytes": 92123,
+    "sha256": "5cbededfda5c8494e1119abe740030a706a5b7dc890d4d273bc438873b22fe7e",
+    "lines": 572,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+    "bytes": 5082,
+    "sha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+    "lines": 44,
+    "owner": "business",
+    "previousCoverage": "historical",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/유지비_BM/법인설립_비용_20261001.md",
+    "bytes": 27859,
+    "sha256": "9fb61138d11a0c84b80b87ec4cf2918563ceaca3511a6002e054d0ad82998179",
+    "lines": 226,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/유지비_BM/학원_개원_예산과_준비기간_20261001.md",
+    "bytes": 24234,
+    "sha256": "cce353bd77c657ef2f336e7bef190ac775dc7c93f99dbe23f75f2b32094b67f0",
+    "lines": 146,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+    "bytes": 46842,
+    "sha256": "a6b9e05570048c7cfe1082cf724cd65f3af329d0494fdf1a9c9020e2957534c2",
+    "lines": 310,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/정본/README.md",
+    "bytes": 892,
+    "sha256": "008f97e3292502371db5d9d59bb0e476b658fd25ff51daab5c2411c1dc9d0c6c",
+    "lines": 8,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/지분설계_헌장.md",
+    "bytes": 74756,
+    "sha256": "ab0379777a543e41a0ab6c20ed7a9860cc17f3faf6932c088f4ffa7d9bf20c7b",
+    "lines": 404,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/철학_적용기준.md",
+    "bytes": 20604,
+    "sha256": "93eb6552b605bab920ef99669df6410a51a89ffb12bb76571fd937ce095a1c50",
+    "lines": 84,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/커리큘럼_정본_v1.md",
+    "bytes": 51805,
+    "sha256": "ceec57c6b5afb3e7dac3745475044d1ba840e5b027d28fb9899aca8a74d39c53",
+    "lines": 501,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/함께한날_설계_v1.md",
+    "bytes": 55974,
+    "sha256": "2346877e9fcfab9aca13d8ce08c0cf6856ef9715005f5d95cb5635ad4d4064e9",
+    "lines": 652,
+    "owner": "business",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/API.md",
+    "bytes": 11795,
+    "sha256": "edabf81281cae9df22cbd9aa4da29330471e19f85400570cebaf7a0955b48089",
+    "lines": 72,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/INTEGRATION.md",
+    "bytes": 13987,
+    "sha256": "9c355c22f6884c94bc5ea466fa2eff4b069407468872e1ae582d866b6f428fc0",
+    "lines": 107,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/PATENT-EVIDENCE.md",
+    "bytes": 9226,
+    "sha256": "44bf13379335678e3964fc0dd2e56d5e445a8f646929e734c2d8f08b2bb59f53",
+    "lines": 75,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/advance-20260912/REPORT.md",
+    "bytes": 16024,
+    "sha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+    "lines": 178,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+    "bytes": 14885,
+    "sha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+    "lines": 124,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+    "bytes": 27051,
+    "sha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+    "lines": 334,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/final-meeting-20260915/README.md",
+    "bytes": 5318,
+    "sha256": "1486975b1d5eba56616bd6f0e128f4c3c6ee9b53115480deb45774e42ce740e6",
+    "lines": 49,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+    "bytes": 24307,
+    "sha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+    "lines": 167,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+    "bytes": 17419,
+    "sha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+    "lines": 122,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+    "bytes": 5823,
+    "sha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+    "lines": 54,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/README.md",
+    "bytes": 9665,
+    "sha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+    "lines": 62,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+    "bytes": 29467,
+    "sha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+    "lines": 198,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+    "bytes": 20113,
+    "sha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+    "lines": 158,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+    "bytes": 8240,
+    "sha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+    "lines": 48,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+    "bytes": 12507,
+    "sha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+    "lines": 112,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+    "bytes": 15942,
+    "sha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+    "lines": 111,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+    "bytes": 13895,
+    "sha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+    "lines": 85,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+    "bytes": 10421,
+    "sha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+    "lines": 56,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+    "bytes": 8623,
+    "sha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+    "lines": 52,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+    "bytes": 22102,
+    "sha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+    "lines": 232,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+    "bytes": 18487,
+    "sha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+    "lines": 149,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+    "bytes": 11209,
+    "sha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+    "lines": 97,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+    "bytes": 13066,
+    "sha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+    "lines": 141,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+    "bytes": 21619,
+    "sha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+    "lines": 255,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+    "bytes": 25405,
+    "sha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+    "lines": 373,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/README.md",
+    "bytes": 4852,
+    "sha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+    "lines": 45,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+    "bytes": 50165,
+    "sha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+    "lines": 406,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/README.md",
+    "bytes": 5008,
+    "sha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+    "lines": 42,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+    "bytes": 17344,
+    "sha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+    "lines": 150,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+    "bytes": 8225,
+    "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+    "lines": 79,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+    "bytes": 17112,
+    "sha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+    "lines": 97,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+    "bytes": 33753,
+    "sha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+    "lines": 206,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+    "bytes": 18227,
+    "sha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+    "lines": 125,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+    "bytes": 9794,
+    "sha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+    "lines": 104,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+    "bytes": 35773,
+    "sha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+    "lines": 277,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/README.md",
+    "bytes": 3035,
+    "sha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+    "lines": 29,
+    "owner": "business",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  }
+]

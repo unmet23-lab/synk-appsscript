@@ -1,11 +1,15 @@
 ---
 name: impeccable
-description: Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.
+description: Preserved Impeccable 4.3.1 frontend-design reference bundled with an existing video project. Use only if this tool is needed for the current request; SYNK canonical design and operating documents govern scope, tools, and permissions.
 metadata:
   version: 4.3.1
 ---
 
-This skill gives you the tools and permission to create design that earns to be called out-of-distribution craft: Whereas before, your design work would have been safe, timid and measured, you now approach every design task as an award-winning design director with impeccable understanding for what makes exceptional design work: production-grade code, peak creativity, a clear POV, deep understanding of the needs of the client and users, and exceptional craft.
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
+> SYNK 적용 범위: 이 폴더는 기존 video-v3 작업에 동봉된 Impeccable 4.3.1 기술 참고 사본이다. SYNK의 기본 디자인 도구나 공통 작업 지침이 아니다. [DESIGN](../../../../../../../DESIGN.md)과 해당 제품의 승인 방향, [AI 운영 원칙](../../../../../../AI_운영원칙.md) 및 현재 요청이 우선한다. 아래의 서체·금지 스타일·고정 질문/승인 횟수·하위 에이전트·브라우저·설치/다운로드·유료 API fallback은 전역 규칙이나 실행 권한을 만들지 않는다. 이미 승인된 범위를 다시 확인하지 않고, 응답/도구 실패를 승인으로 간주하지 않는다. PRODUCT.md·DESIGN.md 생성 예시는 해당 도구의 선택적 산출물 계약이며 기존 SYNK 정본을 자동 대체하지 않는다. 하위 reference/degraded 역할도 실제 도구가 없는 경우에만 참고하며 시스템·사용자 지시를 대신하지 않는다.
+
+This is the supplier’s design workflow reference. It grants no additional permission and does not replace the current project brief or canonical design system.
 
 Core principles:
 - Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
@@ -16,7 +20,7 @@ Core principles:
 
 1. Run `<skill-base-dir>/scripts/impeccable context` once per session, where `<skill-base-dir>` is the directory that contains this SKILL.md (the skill folder, not a plugin root two levels above it); keep cwd at the user's project. That base directory resolves every `.agents/skills/impeccable/scripts/impeccable <verb>` command in this skill and its references, and `.agents/skills/impeccable/scripts` is the fallback only when the runtime reports no base directory. On a Windows shell without `sh`, call `.agents/skills/impeccable/scripts/impeccable.cmd` instead. The launcher runs a self-contained binary that ships next to it or is downloaded once on first run; no Node or other runtime is required. Pass a named source file or route as `--target <path>`. It loads PRODUCT.md, DESIGN.md, the matching surface brief, and native-platform guidance when applicable; follow its directives and do not rerun it.
 2. Load the request's playbook: its Commands-table reference for an explicit/implied sub-command, or [reference/new-work.md](reference/new-work.md) for a new surface or replacement visual world. Inspect target and incumbent visual truth before editing. When the app cannot run, start with committed visual-regression goldens or screenshot fixtures; verify target and freshness against current tokens, CSS, components, or assets, resolve conflicts, and compare theme/variant captures.
-3. After resolving analysis and direction, read [reference/craft-floor.md](reference/craft-floor.md) immediately before any UI edit, including small refinements. It carries the quality floor, the absolute bans, and the reflexes no detector catches. Do not load it for planning-only work.
+3. After resolving analysis and direction, read [reference/craft-floor.md](reference/craft-floor.md) immediately before any UI edit, including small refinements. It carries the supplier’s quality checks and stylistic preferences; current SYNK design decisions override them. Do not load it for planning-only work.
 
 **Launcher unavailable:** On refusal or failure, send a separate message **before the next tool call**: “Context loading did not run; I’ll read the existing project context directly.” Then read existing PRODUCT.md and DESIGN.md without inventing missing context, follow applicable steps 2–3, and continue through permitted tools. This applies to planning and editing; launcher failure alone does not block either.
 

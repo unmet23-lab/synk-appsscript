@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-17",
+  "changes": [
+    {
+      "path": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "beforeSha256": "221959f03656c6d217faa2b82c9c6bd67e61c4d56b01aab15c80bdc9110067d8",
+      "afterSha256": "05316f654ca4a70ac534df6b900091a6d169ae1edaef3d4e845f46bf4e897d09",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/마케팅/콘텐츠_제작방식_v2_20261002.md"
+    },
+    {
+      "path": "AGENTS.md",
+      "beforeSha256": "54b171af047463a5981cc0aeb617883155d8acd0d0868bc943bddc6b24f1e27a",
+      "afterSha256": "789b11ee49bc0f5d53885814418886626c1a2090638855ebff0246c454b48e15",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/AGENTS.md"
+    },
+    {
+      "path": "docs/AI_운영원칙.md",
+      "beforeSha256": "064f8463076711f35c5c9ebcfe18f2aab37a9fdb68e9fb308413b131861944ac",
+      "afterSha256": "fa85e4e1c20ba41a3c89276b0e88c57ab6eecf9d17d45e8a41035ea809c56916",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/AI_운영원칙.md"
+    },
+    {
+      "path": "DESIGN.md",
+      "beforeSha256": "b92325bc124fef254333e04c918727e29219b5c57bed4100fe40427c52d21493",
+      "afterSha256": "18086ac2c4e6602bf58fc093417f194b411ee1c68494056788a5460f26726527",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/DESIGN.md"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_제작양식.md",
+      "beforeSha256": "01c40316b30a1489231d53a09bc3f0e3589590c2694a63a21cbbeee82b6a9e79",
+      "afterSha256": "93af0097652d11e2b179470165252a41264e8deb344b59d9609165f8363a1078",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/마케팅/콘텐츠_제작양식.md"
+    },
+    {
+      "path": "docs/마케팅/제작양식/만족사례_장부.md",
+      "beforeSha256": "c21da170609319f544f846649182d7c09ba7b200d12e9468493c84545fd30be1",
+      "afterSha256": "4528706f7d705f5c23948d657a1a8448c5d0bebeb6bf3cfb40974345464b697b",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/마케팅/제작양식/만족사례_장부.md"
+    },
+    {
+      "path": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "beforeSha256": "b703ec26e81ccba5c399fbc90e4e58039a6dd70695158a49bfd9f1b7f0ddba89",
+      "afterSha256": "9cf8b1d03ba60ba1074f66c89b5865e22f86e336070236f93a7675133cdcfede",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/마케팅/HyperFrames_기존영상_참고.md"
+    },
+    {
+      "path": "docs/현장노트/영상_ffmpeg_자막.md",
+      "beforeSha256": "34586463d1a4faa43f869b2be1c8a56544bf17292bde7671bd2198b203ed369c",
+      "afterSha256": "7f9f269d261e3cbe02ff6697fe5007cb88ce54160eae0e5d2dce7ea518621f37",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/현장노트/영상_ffmpeg_자막.md"
+    },
+    {
+      "path": "docs/_ops/결정.md",
+      "beforeSha256": "76c5fe75709a35b1fe3cb6e65ffc1ac035fc52add4bda7afd3923b417ed60b0c",
+      "afterSha256": "1a973db8f6d512c386c9ead6acc616e63ff859e69c46844525fc326deb782d97",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/_ops/결정.md"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "beforeSha256": "703ea338556e142e824221e3657c8d8587ffb836929f532a60e848c86eb2ee4d",
+      "afterSha256": "634ac8bc6268fa40c6d7890997758a063375b47cc11b8a9e8fd942365aaad54d",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/docs/_ops/트랙.md"
+    },
+    {
+      "path": "영상/README.md",
+      "beforeSha256": "4318e6d7870d0e28b5d321ee50d219a109a057651d24742a1ad894c976113058",
+      "afterSha256": "73ccb83fe11c24500728a8367bc1a95e31d06cb829c9745e1fc0c9a7c10de213",
+      "backup": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals/영상/README.md"
+    }
+  ]
+}

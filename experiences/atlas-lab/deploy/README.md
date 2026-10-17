@@ -80,7 +80,7 @@ sudo systemd-analyze verify /etc/systemd/system/synk-dating.service
 sudo caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 ```
 
-환경값을 적용한 앱의 `--check-config`는 unit의 `ExecStartPre`가 수행한다. 공개 callback 불일치·누락 설정이면 앱 기동 전에 멈춘다. 이 검사는 성인 모듈 실행·인증 호출·DB 생성·포트 열기를 하지 않는다. 서비스 기동은 별도의 공개 반영 단계이며 [공통 운영 원칙](../../../docs/AI_운영원칙.md)의 최종 검수 후 진행한다.
+환경값을 적용한 앱의 `--check-config`는 unit의 `ExecStartPre`가 수행한다. 공개 callback 불일치·누락 설정이면 앱 기동 전에 멈춘다. 이 검사는 성인 모듈 실행·인증 호출·DB 생성·포트 열기를 하지 않는다. 서비스 기동은 별도의 공개 반영 단계이며 현재 요청의 승인 범위와 [공통 운영 원칙](../../../docs/AI_운영원칙.md)에 따라 진행한다. 별도 모델의 최종 검수를 필수 관문으로 추가하지 않는다.
 
 기동 후 기본 응답 확인 경로는 `GET /api/atlas-dating/config`다. 공개 HTTPS 경유200, `mode=account`, `demoEnabled=false`, `labAvailable=false`, 정확한 callback을 대조한다. 이 경로는 로그인·DB 쓰기를 입증하는 health 검사가 아니다. 실제 계정의 로그인→동의→저장→새로고침과 물리 두 기기 왕복은 별도 확인한다.
 

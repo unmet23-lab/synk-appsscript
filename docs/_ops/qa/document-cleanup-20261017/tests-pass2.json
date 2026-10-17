@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-17",
+  "scope": "Local checks observed during the second document pass. No external service or deployment verification.",
+  "runs": [
+    {
+      "command": "node --test tests/문서지도.test.js tests/knowledge-management.test.js tests/운영홈.test.js tests/비전동기화.test.js tests/결정정본.test.js",
+      "passed": 67,
+      "failed": 0,
+      "skipped": 0,
+      "finalRunLog": "final-document-tests.txt",
+      "finalRunTiming": "After report, decision and track updates"
+    },
+    {
+      "command": "node --test tests/브랜드폰트.test.js",
+      "passed": 79,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node --test docs/마케팅/온라인마케팅지도/engagement/company/benchmarks.test.mjs",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node --test tests/설계문_폐기어휘.test.js tests/설계문DDL대조.test.js",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "executor": "instruction_audit"
+    }
+  ],
+  "uniqueTestsPassed": 168,
+  "otherChecks": [
+    {
+      "command": "node tools/시스템대장.js --check",
+      "rows": 6,
+      "sections": 2,
+      "issues": 0
+    }
+  ]
+}

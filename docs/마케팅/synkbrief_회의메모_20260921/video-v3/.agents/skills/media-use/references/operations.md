@@ -1,13 +1,14 @@
 # Media operations: agent guidance
 
+> SYNK 적용 범위: 기존 HyperFrames 작업본에 동봉된 공급자 기술 참고다. 이 프로젝트의 설치판은 0.8.58이며 아래 명령·무료 한도·성능·지원 버전은 이 PC에서 재검증된 사실이 아니다. 새 제작의 도구·음성·이미지 경로는 [제작 방식](../../../../../../콘텐츠_제작방식_v2_20261002.md), 담당·설치·계정·비용·외부 발송·공개는 [AI 운영 원칙](../../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 아래의 공급자 기본값이나 fallback을 SYNK의 자동 실행·결제·업로드 승인으로 해석하지 않는다.
+
 media-use resolves and remembers assets. For **operating** on them: cutting,
 reframing, stitching, transforming, it does not wrap every action as a bespoke
 command. Instead it points you at the right local tool (decision OP1). Run the
 tool, then register the output with `resolve --from <output> --type <type>` so the
 result lands in the ledger and the global cache like any other asset.
 
-All tools below are local and free. ffmpeg is assumed present (it backs the
-engine already).
+아래에는 로컬 처리와 외부 provider 호출이 함께 있다. 로컬 명령 예제도 해당 도구가 설치되어 있는지 먼저 확인한다. 외부 생성·검색의 실제 비용과 데이터 전송 범위는 provider별로 다르다.
 
 ## Cut / trim: keep a slice
 

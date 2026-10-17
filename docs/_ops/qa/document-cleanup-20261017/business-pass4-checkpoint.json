@@ -1,0 +1,4378 @@
+{
+  "completed": [
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+      "currentSha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+      "reviewedBytes": 5008,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+      "currentSha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+      "reviewedBytes": 4852,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+      "currentSha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+      "reviewedBytes": 3035,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "내부 시범 재현 입력. 3차 전문 검토 SHIFT 원문의 SHA와 동일하여 실제 입력 스냅샷 유지.",
+      "originalSha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+      "currentSha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+      "reviewedBytes": 41550,
+      "evidence": "semantic-business-pass3.json: docs/마케팅/SHIFT.md original SHA 23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "당시 A/B 수정 게이트·반론·검수 SHA와 과장 방지 경계가 고유 근거. 날짜가 명시되어 있으므로 원문 보존.",
+      "originalSha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+      "currentSha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+      "reviewedBytes": 5823,
+      "readRanges": [
+        [
+          0,
+          2968
+        ]
+      ],
+      "novelCharacters": 2968,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 41
+    },
+    {
+      "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "방별 수정 이유·생성 이미지 한계·실측 미확인·검수 원문 링크가 고유 근거. 현재 학원 개원/설치 완료와 분리된 날짜 기록 보존.",
+      "originalSha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+      "currentSha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+      "reviewedBytes": 5082,
+      "readRanges": [
+        [
+          0,
+          2507
+        ]
+      ],
+      "novelCharacters": 2507,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 42
+    },
+    {
+      "path": "docs/_원고/룸조판_1보_실측.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-01 조판 1보 원고이자 생성 입력. 히어로수 거절 경위와 구현 당시 범위·시험 방식 보존. 현행 새 작업 목록으로 사용하지 않도록 역사 입구 점검 대상. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+      "currentSha256": "a97fef96f2d7b2da47493ec92ddf782cc2c0045f09ae236436f709186bfdae09",
+      "reviewedBytes": 4300,
+      "readRanges": [
+        [
+          0,
+          2252
+        ]
+      ],
+      "novelCharacters": 2252,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 45,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "상담용 템플릿 생성 입력. 독립항 삽입 자리·선행 출처·합성 사례·검토 요청이 후속 상담 사실관계의 근거라 보존.",
+      "originalSha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+      "currentSha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+      "reviewedBytes": 8225,
+      "readRanges": [
+        [
+          0,
+          4141
+        ]
+      ],
+      "novelCharacters": 4141,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 37
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "확인일과 직접 읽은 공식 원문 범위·사용자 단독 설계 진술·메일 기술 설명의 확인 한계를 보존. 과거 법률 조사 기록이며 현재 요건/권리 확정으로 승격하지 않음.",
+      "originalSha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+      "currentSha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+      "reviewedBytes": 8240,
+      "readRanges": [
+        [
+          0,
+          4102
+        ]
+      ],
+      "novelCharacters": 4102,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 36
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "P1 문언 보충과 합성 A/B/C의 재현 입력·상태/철회 구분·복수 후보의 실패 한계를 보존. 현재 출원 청구 확정이나 일반 학습 효과로 오인할 표현 없음.",
+      "originalSha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+      "currentSha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+      "reviewedBytes": 8623,
+      "readRanges": [
+        [
+          0,
+          4323
+        ]
+      ],
+      "novelCharacters": 4323,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 35
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전체 결합 반론·직접 확인 선행 범위·공유 가중치 경계·후속 보충의 고유 기록. 법률 판단 새 확정 없이 날짜 근거로 보존.",
+      "originalSha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+      "currentSha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+      "reviewedBytes": 10421,
+      "readRanges": [
+        [
+          0,
+          5393
+        ]
+      ],
+      "novelCharacters": 5393,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 31
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전체 묶음 입구를 검토. 최종 09.15 미팅본 연결과 과거 보충 자료 구분을 보존하되 첫 교차검수의 미수령 안내는 뒤의 실제 답변 대조와 연결해 날짜 혼동을 정리할 대상.",
+      "originalSha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+      "currentSha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+      "reviewedBytes": 9665,
+      "readRanges": [
+        [
+          0,
+          5222
+        ]
+      ],
+      "novelCharacters": 5222,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 33
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "생성기 FIGS 데이터에서 나온 도면 설명 입력/출력. 여섯 도면의 기능 범위·기여 갱신·시각 불확실 경계와 당시 QA 결과를 보존.",
+      "originalSha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+      "currentSha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+      "reviewedBytes": 9794,
+      "readRanges": [
+        [
+          0,
+          5246
+        ]
+      ],
+      "novelCharacters": 5246,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 32
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "가까운 선행 발견으로 차별점 일부를 철회한 통합 판단과 P1/P2/P3의 구현/미구현·합성/실측 경계가 고유 기록. 실제 상담 의견·출원·등록 완료로 확대하지 않고 생성 원문 유지.",
+      "originalSha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+      "currentSha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+      "reviewedBytes": 29467,
+      "readRanges": [
+        [
+          0,
+          14603
+        ]
+      ],
+      "novelCharacters": 14603,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 6
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "명명 반례·재생/재송신 차이·수동 정렬과 실제 행동 경계·판본 SHA가 고유 시험 증거. 원문 보존.",
+      "originalSha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+      "currentSha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+      "reviewedBytes": 11209,
+      "readRanges": [
+        [
+          0,
+          6182
+        ]
+      ],
+      "novelCharacters": 6182,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 29
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "옛 합성 예비안의 실패 입력·누락/불일치 SHA·기존 출력 확인을 구분한 기록. 최신 장면 생성 규칙이 아닌 09-13 기술 비교 이력으로 보존.",
+      "originalSha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+      "currentSha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+      "reviewedBytes": 12507,
+      "readRanges": [
+        [
+          0,
+          6860
+        ]
+      ],
+      "novelCharacters": 6860,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 28
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "기존 실험 어댑터의 실제 입력/출력·fallback·거절·멱등·계산 한도 계약. 재현과 제품 통합 한계 설명에 필요하여 보존.",
+      "originalSha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+      "currentSha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+      "reviewedBytes": 13066,
+      "readRanges": [
+        [
+          0,
+          7539
+        ]
+      ],
+      "novelCharacters": 7539,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 27
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "수집 완결·순번 가설을 주안에 추가하지 않은 결정 근거와 반례 8종 보존. 과거 조사일과 원문 범위가 명시된 설계 이력.",
+      "originalSha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+      "currentSha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+      "reviewedBytes": 13895,
+      "readRanges": [
+        [
+          0,
+          7076
+        ]
+      ],
+      "novelCharacters": 7076,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 26
+    },
+    {
+      "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "기존 내보내기 7묶음·38판본·합성 WAV 보존 실측과 planner 귀속 한계가 후속 청구 설명 근거라 보존.",
+      "originalSha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+      "currentSha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+      "reviewedBytes": 14885,
+      "readRanges": [
+        [
+          0,
+          7990
+        ]
+      ],
+      "novelCharacters": 7990,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 25
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "현장 입력/서버 수집의 미구현 연결안과 순번을 주안에 추가하지 않은 결정. 현행 자동 수집 완료로 쓰지 않으며 참조용 설계 보존.",
+      "originalSha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+      "currentSha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+      "reviewedBytes": 15942,
+      "readRanges": [
+        [
+          0,
+          8132
+        ]
+      ],
+      "novelCharacters": 8132,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 24
+    },
+    {
+      "path": "tools/patent-studio/advance-20260912/REPORT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "Core 0.5 확장 당시 구현·시험·제약 및 기존 0.4 증거 재현을 설명하는 고유 발전 보고서. 코드 분량을 등록성으로 확대하지 않은 날짜 기록 보존.",
+      "originalSha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+      "currentSha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+      "reviewedBytes": 16024,
+      "readRanges": [
+        [
+          0,
+          8409
+        ]
+      ],
+      "novelCharacters": 8409,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 23
+    },
+    {
+      "path": "docs/_원고/채널마다_창_2026-09-07.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-07 비확정 마케팅 기획 원고 전문 검토. 주72분·18채널·SHIFT 제작자 브랜딩·전체 펠트 강제·낱말 대체는 현행 기준으로 재사용 불가. 현재 채널 정본 연결과 역사 요약 정리 대상. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+      "currentSha256": "888afcbc2e908ee6e3d27edb68879d52d3d67bc35709b166b4360d3776a56132",
+      "reviewedBytes": 16196,
+      "readRanges": [
+        [
+          0,
+          8253
+        ]
+      ],
+      "novelCharacters": 8253,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 22,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-07/08 본체 채널 제안과 사용자 계정 개설·자산 거절/수정 기록 전문 검토. 승인 이력과 자산은 보존하되 오래된 사업구분·강제말투·계정 조작 절차는 원본 묶음으로 옮기고 현행 입구를 역사 요약으로 정리. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+      "currentSha256": "cba58956fccf30a57294047941e287acdee8e08cd8d4c669bf6bf250259ddba7",
+      "reviewedBytes": 19476,
+      "readRanges": [
+        [
+          0,
+          10379
+        ]
+      ],
+      "novelCharacters": 10379,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 15,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "Studio/Talk 생산자와 소비자의 과거 코드 위치·미구현 연결·개발 착수 아님을 명시한 설계 근거. 당시 스냅샷으로 보존.",
+      "originalSha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+      "currentSha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+      "reviewedBytes": 17112,
+      "readRanges": [
+        [
+          0,
+          8833
+        ]
+      ],
+      "novelCharacters": 8833,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 21
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "실제 수신 답변의 잘못된 주장과 합성 재현 E1-E5를 대조한 고유 기록. 2차 심문 요청문은 과거 선택 절차이며 현재 외부 전송 지시로 적용하지 않도록 묶음 입구에서 구분.",
+      "originalSha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+      "currentSha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+      "reviewedBytes": 17344,
+      "readRanges": [
+        [
+          0,
+          9141
+        ]
+      ],
+      "novelCharacters": 9141,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 20
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "대표 8컷의 합성 결함·교정 코드·선행 대조·불리한 결과를 담은 예비 기술 연구. 09-13 당시 승인 범위이며 현재 장면 생성 방식을 대신하지 않도록 묶음 입구에 역사 범위 연결.",
+      "originalSha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+      "currentSha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+      "reviewedBytes": 17419,
+      "readRanges": [
+        [
+          0,
+          8937
+        ]
+      ],
+      "novelCharacters": 8937,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 19
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "근접 음성 정정 선행 발견으로 철회한 차별점과 동족/법적 상태 미확인 범위가 중요한 조사 이력. 원문 보존.",
+      "originalSha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+      "currentSha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+      "reviewedBytes": 18227,
+      "readRanges": [
+        [
+          0,
+          9335
+        ]
+      ],
+      "novelCharacters": 9335,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 17
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "교육용 POMDP·행동 영향 관련 기존 연구로 P3의 일반 차별점 주장을 보류한 조사 이력. 출처·읽은 범위·추론·미확인을 구분하므로 보존.",
+      "originalSha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+      "currentSha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+      "reviewedBytes": 18487,
+      "readRanges": [
+        [
+          0,
+          9811
+        ]
+      ],
+      "novelCharacters": 9811,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 16
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "09-13 공식 요건 조사와 명세서/보정/상담 준비의 날짜 근거 보존. 현재 법률 자문이나 사건별 기한 확정으로 사용하지 않음. 출력 잘린 첫 부분은 0..3000 추가 전독으로 보완.",
+      "originalSha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+      "currentSha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+      "reviewedBytes": 20113,
+      "readRanges": [
+        [
+          0,
+          11051
+        ],
+        [
+          0,
+          3000
+        ]
+      ],
+      "novelCharacters": 11051,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 14
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "P3 사례 1은 기존 실행, 2·3은 미실행 기대 명세라는 경계와 개발 보류 조건을 보존. 제품 필요와 특허 차별화의 구분이 고유 근거.",
+      "originalSha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+      "currentSha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+      "reviewedBytes": 22102,
+      "readRanges": [
+        [
+          0,
+          8500
+        ],
+        [
+          8500,
+          11949
+        ]
+      ],
+      "novelCharacters": 11949,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 12
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "10월 2일 이전 승인·반려·배포·로컬 검증 및 당시 미완료를 끝까지 읽었다. 현재 사업/역할/말투 지침으로 재사용하지 않는 raw 복구 원본이며 시간순 승인 근거가 고유하므로 원문 보존. 현재 작업 목록은 현행 트랙과 정본을 따른다.",
+      "originalSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+      "currentSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+      "reviewedBytes": 367054,
+      "readRanges": [
+        [
+          0,
+          8000
+        ],
+        [
+          8000,
+          24000
+        ],
+        [
+          24000,
+          40000
+        ],
+        [
+          40000,
+          56000
+        ],
+        [
+          56000,
+          72000
+        ],
+        [
+          72000,
+          88000
+        ],
+        [
+          88000,
+          104000
+        ],
+        [
+          104000,
+          120000
+        ],
+        [
+          120000,
+          136000
+        ],
+        [
+          136000,
+          152000
+        ],
+        [
+          152000,
+          168000
+        ],
+        [
+          168000,
+          184000
+        ],
+        [
+          184000,
+          190520
+        ]
+      ],
+      "novelCharacters": 190520,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 0
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_저녁반영전.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "222개 동일 문단은 전문 검토한 데스크톱 반영 전 원본과 SHA로 대조하고, 나머지 11개 문단 13,617자를 모두 읽었다. 배포 전후·흰띠 수정·소스/ZIP 차이 근거를 가진 시점별 복구 원본이므로 보존하며 현재 운영 지시로 쓰지 않는다.",
+      "originalSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+      "currentSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+      "reviewedBytes": 358920,
+      "readRanges": [
+        [
+          0,
+          13617
+        ]
+      ],
+      "novelCharacters": 13617,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 1
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "09월 14일 생성용 PACKET 템플릿 전문 검토. {{P1_CLAIMS}} 등 삽입 토큰, 질문·독립항 대조·합성/실측 한계·미구현 롤백 및 LOOM 원본 부재 설명은 생성물 재현에 필요하므로 보존. 모델 교차심문은 이력상의 특정 검토 절차이며 현재 전체 작업 의무가 아님을 상위 README에서 명시한다.",
+      "originalSha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+      "currentSha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+      "reviewedBytes": 50165,
+      "readRanges": [
+        [
+          0,
+          13000
+        ],
+        [
+          13000,
+          25704
+        ]
+      ],
+      "novelCharacters": 25704,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 2
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "생성 원문 DRAFT.json에 대응하는 09월12일 명세서/청구8항 전문. 현재 등록공보 아님·합성시험·조건부 기여 유지·시간불명·새시도 비소급 한계가 명확하며 고유 상담/생성 증거이므로 원문 보존. 과거 코드SHA/시점 표기는 현행 기능 확인으로 승격하지 않는다.",
+      "originalSha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+      "currentSha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+      "reviewedBytes": 35773,
+      "readRanges": [
+        [
+          0,
+          12000
+        ],
+        [
+          12000,
+          18801
+        ]
+      ],
+      "novelCharacters": 18801,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 4
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "P1/P2 구분·청구번호별 문안·종속한정·실시예·상담 빈칸을 전문 검토. 서로 다른 문제의 대안이고 등록확률/완성 코드/긴 한정을 등록성 증거로 만들지 않는 검토 기록이며 두 PACKET 생성의 원천으로 보존. 현행 사업지침이나 출원 실행 승인을 뜻하지 않는다.",
+      "originalSha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+      "currentSha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+      "reviewedBytes": 33753,
+      "readRanges": [
+        [
+          0,
+          10000
+        ],
+        [
+          10000,
+          17259
+        ]
+      ],
+      "novelCharacters": 17259,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 5
+    },
+    {
+      "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "09월15일 최종 상담 시연용 GUIDE 전문과 asset/페이지/삽입토큰 검토. 실제 합성 시연과 남은 시각 기본값 결함·운영 미통합을 구분한 사용자용 원고여서 보존. 제품 지침·출원 확정·실시간 실행 보장이 아니라 생성 근거/시점 기록이다.",
+      "originalSha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+      "currentSha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+      "reviewedBytes": 27051,
+      "readRanges": [
+        [
+          0,
+          15167
+        ]
+      ],
+      "novelCharacters": 15167,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 7
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "09월14일 15쪽 설명서 생성 원문 전체 검토. 다음날 최종본과 비슷해도 원래 발표문/관측범위 및 보충예제·다운로드 미검사 상태가 달라 보존한다. 4318 당시 실행 안내는 상위 README의 09월15일 전용 실행기 연결을 우선하며 원본을 현행시점으로 고치지 않는다.",
+      "originalSha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+      "currentSha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+      "reviewedBytes": 25405,
+      "readRanges": [
+        [
+          0,
+          14161
+        ]
+      ],
+      "novelCharacters": 14161,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 9
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "A안 전체 독해. 기존기술9쌍동일 출력과 법적진보성 구분·구현없는 계약확장·후보비용상한·반례를 고유 기술판단 근거로 보존한다. 09월13일 제안/조사이며 현재 제품 완성이나 개발 실행 지시로 재사용하지 않는다.",
+      "originalSha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+      "currentSha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+      "reviewedBytes": 24307,
+      "readRanges": [
+        [
+          0,
+          12237
+        ]
+      ],
+      "novelCharacters": 12237,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 10
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "변리사용 ATTORNEY 생성원고 전문 검토. 09월14일 코드/미수정결함/합성시험/권리관계/대안범위를 명시하고 청구원문 토큰을 유지한다. 후속최종본과 전달대상·기술설명이 달라 역사자료 및 재현원천으로 보존한다.",
+      "originalSha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+      "currentSha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+      "reviewedBytes": 21619,
+      "readRanges": [
+        [
+          0,
+          12061
+        ]
+      ],
+      "novelCharacters": 12061,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 13
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/desktop/0.4.0묶기전/README.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "현행 전문 검토 원문과 동일한 48문단은 SHA 대조, 다른 17문단 전체 읽음. 0.3.0 설치본/0.4.0 묶기전 시점의 제품목록·검사수·정식SSO 미완료를 담은 복구원본으로 보존. 현행desktop 및PATH 상태를 덮어쓰는 지침이 아니다.",
+      "originalSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+      "currentSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+      "reviewedBytes": 25882,
+      "readRanges": [
+        [
+          0,
+          4128
+        ]
+      ],
+      "novelCharacters": 4128,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 8
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "흰띠 제거 직후 저녁 추가 전 기술/승인/검사 원문 전문. 구형 마스코트 붙이기·전면펠트/모델가격 지침은 현재 디자인에 적용하지 않으며 실패재현과 승인인용·29자산검사 근거로만 보존. 현행 DESIGN과 자산 원문이 현재 입구다.",
+      "originalSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+      "currentSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+      "reviewedBytes": 10907,
+      "readRanges": [
+        [
+          0,
+          6311
+        ]
+      ],
+      "novelCharacters": 6311,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 30
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "전문 검토한 저녁추가전 판과 동일9문단 해시대조, 고유2,098자 모두 읽음. 흰띠 검출/알파복원 보강 이전 오리기 방식과 마감 기준의 재현 원본으로 보존하며 현행 생성 절차로 재사용하지 않는다.",
+      "originalSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+      "currentSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+      "reviewedBytes": 8799,
+      "readRanges": [
+        [
+          0,
+          2098
+        ]
+      ],
+      "novelCharacters": 2098,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 34
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/README_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기전 v6 README 전문. 실제 지시듣기/행동 오염으로 언어평가불가·꾸미기재화·로컬기록과 계정연결 차이·ZIP재현범위가 구체적이어서 보존. 이후 공개판/재묶음 상태와 다르므로 현재 업무입구가 아닌 원형보관이다.",
+      "originalSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+      "currentSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+      "reviewedBytes": 23116,
+      "readRanges": [
+        [
+          0,
+          12029
+        ]
+      ],
+      "novelCharacters": 12029,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 11
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/entry-check/qa_재촬영전/RESULTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "입장검사 재촬영전 결과 전문. 1·2차 실제 클릭/합성시험/음성자동전사와 사람청취 미확인·Veo 미채택 동작·알파검사 수정내역을 보존한다. 당시 클릭근거·비용오류회복 기록은 고유하고 후속새캡처와 다른 시점이므로 삭제하지 않는다.",
+      "originalSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+      "currentSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+      "reviewedBytes": 17749,
+      "readRanges": [
+        [
+          0,
+          9815
+        ]
+      ],
+      "novelCharacters": 9815,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 18
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SCENERY-GOALS-V6_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+      "currentSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+      "reviewedBytes": 8028,
+      "readRanges": [
+        [
+          0,
+          4488
+        ]
+      ],
+      "novelCharacters": 4488,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 38
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/story-classroom/qa_재촬영전/RESULTS_흔들림수정전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+      "currentSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+      "reviewedBytes": 6715,
+      "readRanges": [
+        [
+          0,
+          3838
+        ]
+      ],
+      "novelCharacters": 3838,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 39
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SHOP-V5_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+      "currentSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+      "reviewedBytes": 6124,
+      "readRanges": [
+        [
+          0,
+          3517
+        ]
+      ],
+      "novelCharacters": 3517,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 40
+    }
+  ],
+  "prepared": {
+    "0": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+      "originalSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+      "totalBlocks": 236,
+      "same": [],
+      "novelCharacters": 190520,
+      "readRanges": [
+        [
+          0,
+          8000
+        ],
+        [
+          8000,
+          24000
+        ],
+        [
+          24000,
+          40000
+        ],
+        [
+          40000,
+          56000
+        ],
+        [
+          56000,
+          72000
+        ],
+        [
+          72000,
+          88000
+        ],
+        [
+          88000,
+          104000
+        ],
+        [
+          104000,
+          120000
+        ],
+        [
+          120000,
+          136000
+        ],
+        [
+          136000,
+          152000
+        ],
+        [
+          152000,
+          168000
+        ],
+        [
+          168000,
+          184000
+        ],
+        [
+          184000,
+          190520
+        ]
+      ]
+    },
+    "1": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_저녁반영전.md",
+      "originalSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+      "totalBlocks": 233,
+      "same": [
+        {
+          "block": 2,
+          "chars": 2472,
+          "blockSha256": "099feb6ca097eb8f279d82639772c261fd948276a0d93fac39dbbd42fc435cb8",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 3,
+          "chars": 705,
+          "blockSha256": "38d64455a53977ca737e4014815c43f40c166240dd53b4a3056872acf036b887",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 4,
+          "chars": 725,
+          "blockSha256": "21c4114ad7c12d645757c8b8045569983181b0441808c55cae496ae724735124",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 5,
+          "chars": 2315,
+          "blockSha256": "a7967ad797ad50fdd46eaf25756c4d9de0dbc5bcf95595dea8a919f4b1aa736f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 6,
+          "chars": 918,
+          "blockSha256": "6cacab4b59e67f5d9134a2ae9199b5a52688b0b7649803c2f368ee213877a0df",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 8,
+          "chars": 798,
+          "blockSha256": "83a414f1fa4a4d3056478763cc97c4d09b004a9783d215281cccd2c9d145d597",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 9,
+          "chars": 958,
+          "blockSha256": "7d788f8ce460143c24a31478fda956e487423d65606babe03d80976a8ef50cdb",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 11,
+          "chars": 624,
+          "blockSha256": "e8f9416ab248cb3fb45a2d082f62fd6e3d55556f7edae4d274f13eee55bd6e2b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 12,
+          "chars": 1074,
+          "blockSha256": "97f96c59e6e31f1b259df88da955d2f69ae9398f09415c6addecbb75aa8a4f61",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 13,
+          "chars": 655,
+          "blockSha256": "fa94482186760a1bc58c8c24cf74ac247bae0b6cbb6784fe81a4231f5c4f441f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 14,
+          "chars": 438,
+          "blockSha256": "b5d271efa5dc73ebe9ae68fb34591606f9b876705afbcaeca98fe5b6b4bf49ae",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 16,
+          "chars": 1291,
+          "blockSha256": "f00c4129a23f64b8b32ed56a4d63a007fb49ba2da8bf7ea5acd505d44cfa62a7",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 17,
+          "chars": 620,
+          "blockSha256": "3b71580a67ff454460a65a323d5c4e704ac1bd58f2d649fa2866c5c9110beb00",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 18,
+          "chars": 724,
+          "blockSha256": "c7f6800aa9580c6b5cc8b940f77411746aa05448e3714019cbbc1c8ec0d1c6c5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 20,
+          "chars": 784,
+          "blockSha256": "20152b40cc93af64a27f9326b9a12dc9e99130669b609c3616009b8de7089bd9",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 22,
+          "chars": 815,
+          "blockSha256": "b4fd18fbeb9d671c07e0b69647529d68a45d6dc6c78690f5b4e56e41c59636a9",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 23,
+          "chars": 1462,
+          "blockSha256": "f09b5825f96c389c166927b95effeb0684806f0701ff2c6460f4e2741a2d39b8",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 25,
+          "chars": 729,
+          "blockSha256": "daafbe07bc93ae942a962ddcbfa8493fb150b65c7be1f54feede04b95e1568b1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 27,
+          "chars": 3026,
+          "blockSha256": "ae5cd83153b59e5eb5d5bdea9daada8751da17a573e5b7b865562c5e4467efb3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 28,
+          "chars": 533,
+          "blockSha256": "fef3c031ba916a87ba0acd524eaca430818d5ca868c18bcd5ba46959d71885ec",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 29,
+          "chars": 688,
+          "blockSha256": "ee58fee2cd08523707bb6c073a37c671c2fe6c2abf3dcb605683e82ea4ffef3c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 30,
+          "chars": 1894,
+          "blockSha256": "484cb58851558924274d8c7be53fe65f36fca4bb074f44b38597aa379aa41038",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 31,
+          "chars": 1533,
+          "blockSha256": "cddf8a783a954eeb058ad524a93cceb71610c0ad09f22b32996957050fbc9d12",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 32,
+          "chars": 488,
+          "blockSha256": "ae6d4b573e8bbc372e3e4e83520ac7cb64c5c59235fbd4667daee308d3748993",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 33,
+          "chars": 526,
+          "blockSha256": "462b1b9d0d4ca66728ee0321304052a8532a394c20bc074181f2f95ddef6220e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 34,
+          "chars": 602,
+          "blockSha256": "56fe6ba0dd6e7e34e8164cf4b2d476687c15e23d2f409eb30b4e28a20bae4c85",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 35,
+          "chars": 511,
+          "blockSha256": "e6cd34b53d9ec530a0f070addb957835419bc634f79d5cd3d7cd502dec0e215e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 36,
+          "chars": 343,
+          "blockSha256": "f3be7bbb27e052ba8c09a543b8e053abe26835c847427404be54e09874cc4706",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 37,
+          "chars": 345,
+          "blockSha256": "2449daa348e531f51ee96fd3cc8077d7ece412d8177f0abe8dc4e350ab6a4f20",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 38,
+          "chars": 391,
+          "blockSha256": "28a16fa2bb8a82e3b1df2d8af1366491e47c6459c6d4566dac0be79f1f21c2d9",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 39,
+          "chars": 400,
+          "blockSha256": "0c8055a66ef14b0a166be8d643cc789e18d5bfe544100e61614cf85dba6ddbdc",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 40,
+          "chars": 839,
+          "blockSha256": "fcf327e62f8099241556df5fad2d8a8a077b19402c4ac698af32ec85b786b28e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 41,
+          "chars": 782,
+          "blockSha256": "51e612425193fa01599652341bdca7ca2d9ceaa4796835e6488674e58416e827",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 42,
+          "chars": 829,
+          "blockSha256": "0592c78aab84e614ffbe62295cc7c9fdf371634d5b00269b04b5ae6a93b130b2",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 43,
+          "chars": 4393,
+          "blockSha256": "3b8857528de080fed3967efc3d5ff57c7f286e48729d1ed23b3070767cf2f4f6",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 44,
+          "chars": 4092,
+          "blockSha256": "66449d41fd0b57060d4afb57281824576f6e2aafeab812292cb1432d71ebfde9",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 45,
+          "chars": 829,
+          "blockSha256": "26fc19137119fb1e51a316e644f10fdbc350c1e90df9385d96f5e6e29d300525",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 46,
+          "chars": 1768,
+          "blockSha256": "62ebd85d5b60126bb6f5f854959ab06b81a5c7fbfa39f780f4a5721b1b681da3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 47,
+          "chars": 1741,
+          "blockSha256": "0c976f16643ed9bed03d4569d7602722e34d45d54d41b1ed40cec97c14c6d8b2",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 48,
+          "chars": 703,
+          "blockSha256": "923044fa9464949deef067e8fad8e9715fa3a44361003be14649169f207e3f4d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 49,
+          "chars": 519,
+          "blockSha256": "5bcddc48d377b5c8c3d2d679cc67598346bee763fe8af75676eeca8107a7b323",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 50,
+          "chars": 1081,
+          "blockSha256": "f211c16575c6d029d4d941628ef3cdbeb58ec9993e1c8ab086f025df42aeae5e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 51,
+          "chars": 574,
+          "blockSha256": "a69dba6d11b8cbb229b26edbc33ddd0da6a532d3facf1d84d5196c6a015fef81",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 52,
+          "chars": 662,
+          "blockSha256": "d20f897b7d02e6eb8bf13a9760536abe23bce7bc0cf1807fca631c48754d971f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 53,
+          "chars": 785,
+          "blockSha256": "f448e1e92220a0a5669f9d53883d266f3943057253e5aa399f75f9d130f77090",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 54,
+          "chars": 1795,
+          "blockSha256": "9f5cc0648c81876195a73c6ebbd5bc9bfa0bd3467f224d153fc11bf964877779",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 55,
+          "chars": 686,
+          "blockSha256": "d3e38280bfe4eab37105f67a33ea40d365a00855c79a3290ffa230c772a26942",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 56,
+          "chars": 450,
+          "blockSha256": "5320b2eea9dd8705040f3d27099851ca1d47bbbfb0c76ff086471fa0db5bd412",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 57,
+          "chars": 1007,
+          "blockSha256": "77c7d480de78292f608c1b5cd9c7287a5a763ba0d98234c63f19bb4e91745129",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 58,
+          "chars": 532,
+          "blockSha256": "1fbd1a770adf72579cea912333e6869eaa1f20731da5b4aefddd414b12a9a05d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 59,
+          "chars": 285,
+          "blockSha256": "932566739f9eed649f46a78ae36ca13db7c5bb443e29e13b0acb57779b6a85be",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 60,
+          "chars": 426,
+          "blockSha256": "91100b51d7ce609cf63689eb3310f4adcf7ead034b8be7173d5a90888b7c7202",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 61,
+          "chars": 411,
+          "blockSha256": "7ca3f072b2324981d15d365e819244ec24763985c238b9fea17e92cd0cf2f882",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 62,
+          "chars": 599,
+          "blockSha256": "0647012a075523fe71a3a3c536ccb6a63b75da797156ed50f7c3861286f7684e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 63,
+          "chars": 2696,
+          "blockSha256": "cf8237307d0b0a894d0cb1672e6541b91d91d33457206a66c0395d28f1c2d4e4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 64,
+          "chars": 695,
+          "blockSha256": "7da2a48805726960eae9e056c98ac87389d0cafcb6b98463a526017860c88120",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 65,
+          "chars": 948,
+          "blockSha256": "77714f58db378d64c48a3f5639e0946fcff793098b05fe2dd10bc9d5c97886be",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 66,
+          "chars": 14461,
+          "blockSha256": "773d9b7bdd33d7528954666583c52a97fdacb3adba2b2fe3349111ff02cae2ae",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 67,
+          "chars": 1226,
+          "blockSha256": "6b2943cb1bb58ce57bf8d5b55f6c3a3d85113bba42787cd04a5d1c924ba891ec",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 68,
+          "chars": 337,
+          "blockSha256": "fd0a07532ac02a03d685c259b6bd42fa8ea5d383cc0c34180f87e1f4d66ef621",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 69,
+          "chars": 1214,
+          "blockSha256": "005ef142f3f32a1966646c78ebe9e26dc723610726cc7eb6d542918da4d59b3d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 70,
+          "chars": 1840,
+          "blockSha256": "eeff86e9feaad6569ff5654417987b22a21fb765be052fd239344133bd0c221c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 71,
+          "chars": 662,
+          "blockSha256": "cdcd240296ddead46b923d9c2092e4b49d0d3e79cfcf415f602a459860b5576b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 72,
+          "chars": 647,
+          "blockSha256": "41f82ac07b800b1104013bbc6bdc0bdf10577b09c6b6864ef19afe7415f1ca31",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 73,
+          "chars": 327,
+          "blockSha256": "c589b35caf8ff0840ba158f1cb38865cf2183f1815af4bf4e9033b2f0f1b7fb4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 74,
+          "chars": 408,
+          "blockSha256": "465d48f1a5adf18df2f82e688f1ede1aec4621d5ed22ab4d1aa10f63d6fdca09",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 75,
+          "chars": 340,
+          "blockSha256": "851f7caa792198e195c41c2cf937e7a883ac9748ad8d0f8f7f27d4b66958555d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 76,
+          "chars": 378,
+          "blockSha256": "4d40e0443b85bd670f19ae348c7dfadf2452f5e6844c40503ce3242b57e966df",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 77,
+          "chars": 904,
+          "blockSha256": "a2c5631da0bcb87867b952310d759dbec356014947c2c53a6abd9bc99ac81700",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 78,
+          "chars": 412,
+          "blockSha256": "d2313c9367d8ed9c61242dd08d78b101d2b06c8e0849e7f5c0cebe7aea59f85b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 79,
+          "chars": 355,
+          "blockSha256": "18b32c460d0f6d5c5f322afa9efadea160e3e94cb0ba40ec759a17a41d6a9d56",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 80,
+          "chars": 1474,
+          "blockSha256": "7399061b48ab84bab05d99bf85446ca841d32063f91c0b9713a78749351be311",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 81,
+          "chars": 378,
+          "blockSha256": "8a2e3ae72d24899a02d2067e6cef49a381680536ac6c075300b6b129b067855f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 82,
+          "chars": 467,
+          "blockSha256": "9010cb1186c7300f5ace2e9d105e52f264173e1bc882f6c7958f68775afae8fe",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 83,
+          "chars": 536,
+          "blockSha256": "71209625e5c9eee171a2505699d825e5bfbb5932c270d9944f5fdf27c35035bc",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 84,
+          "chars": 475,
+          "blockSha256": "30c0c2b3b079b26aa1a27ba2d1cab40db219eb2785563fbf625d5aa79a6fdc64",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 85,
+          "chars": 525,
+          "blockSha256": "b89617ec82bcf527861a810f17741d6288e29b4da92c80aab88de56d61a4526a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 86,
+          "chars": 219,
+          "blockSha256": "8c60998a99979a4dd0ae45d5563557380bae6e5c57b0c03628afcdefaedd09ff",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 87,
+          "chars": 931,
+          "blockSha256": "60250d5a7c0584bd26041ce352eeb2db0f1ca101908dca70af4037054e15cc67",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 88,
+          "chars": 436,
+          "blockSha256": "fe898f59c075a25f849352fd2a1cc9f7d55b55d26252ce3b877823b6ea1cae3e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 89,
+          "chars": 1403,
+          "blockSha256": "e678a76b1970fff042ed2d15f420e59f702dcbbfbc736e307de0e1b92a4a93e1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 90,
+          "chars": 491,
+          "blockSha256": "57288ffa6a6ad9576b370668fa169c8edb8a4ca33a2a0000bdeebef958b51f99",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 91,
+          "chars": 388,
+          "blockSha256": "64bb82c44f89bd37e449e5473f6f6cc6e784fb9c23f095d0cfcb928e97e149c4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 92,
+          "chars": 334,
+          "blockSha256": "e92d0e709b25153417f5f69d0d1f3be109f75275c2abf5c0b8b077df84cefaa0",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 93,
+          "chars": 6308,
+          "blockSha256": "53ccabb7110fd6d2780d57ddc79925f1a3e95c75624575d37fd36814b4e8cb74",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 94,
+          "chars": 405,
+          "blockSha256": "e28d3ddee71349a384080a16ab423259f8f9462b3c9a2e83fb64495fda754243",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 95,
+          "chars": 553,
+          "blockSha256": "d40264b9ed8071a42902784de47b3f1b5bc1e9e01322c5f09e44e8887afc5303",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 96,
+          "chars": 648,
+          "blockSha256": "5cfe31a657b2f3f4eeff47d2893d6f1bb5765c98efabf538ce78947c8da20d12",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 97,
+          "chars": 613,
+          "blockSha256": "e4db5b7132799222084fe2ae06a3afd1f377cb7c373dd1cb21ed80fd8f9ac655",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 98,
+          "chars": 306,
+          "blockSha256": "775de6664f89deeb02dcd91d0f7070c1e227fa8b51a1faba70b1dca6122f747f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 99,
+          "chars": 1954,
+          "blockSha256": "f651054e22c0a6b9bb2c5a18158970216968e2260aeab3d88897b52057e92de1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 100,
+          "chars": 434,
+          "blockSha256": "1a39fe9271776a7dbe744950753d70907e8a82e87c65aa8cf5337b76c16d1d65",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 101,
+          "chars": 440,
+          "blockSha256": "4708646ab152c35697fb893dad83980696b725a4f0c3c380df0e3b6e8c93d8cc",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 102,
+          "chars": 466,
+          "blockSha256": "d6a34d935ea7d680f43130a0666ba1bd811764b01d2c5c00a9401710113086c3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 103,
+          "chars": 733,
+          "blockSha256": "149a0ebf90ab20bce681c2b917cc019711f2456411e002e57a886cee18386e7c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 104,
+          "chars": 281,
+          "blockSha256": "2cb993af3510edc3bef51029a243ce5493d08d61aa4ed8524e4bc0a36f62e793",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 105,
+          "chars": 726,
+          "blockSha256": "715f8a9b36f6d26f2c7089f41c344f9bae08c019a139e0747f19d65d08aeb2a1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 106,
+          "chars": 343,
+          "blockSha256": "20b91bfed1f99569ed828609286d4347f4d73f4c47cfe9957f6446cbb445aac4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 107,
+          "chars": 1010,
+          "blockSha256": "245e55428899fde94ce246d11c130db0a75eb7163cbdeaa207c7d7088d160b75",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 108,
+          "chars": 1743,
+          "blockSha256": "eca06dd23fe6359d2fbb92e5996b79d86763a090e97d52ef8b4490e06375822d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 109,
+          "chars": 352,
+          "blockSha256": "cfb8e4ba6e8e887517d4cd8ed0caffecfd72718d324622b66ff1d68e9ffbb92f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 110,
+          "chars": 292,
+          "blockSha256": "cc52ed30ec7216ba27b93c4dcfc4752bda4094773f10384fbabdd428d7d5c507",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 111,
+          "chars": 378,
+          "blockSha256": "31598f4d5952548dd395214ef895688fb6da8c7719b7a775007bcee8fce2f76a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 112,
+          "chars": 341,
+          "blockSha256": "84c33063ca74c4dd3e7a185aca16142ebe91521d1ec2724de6bc789ac7019b92",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 113,
+          "chars": 302,
+          "blockSha256": "5da7e990e48d1d20e3f573369c1402bf547df56aec83fcc7478d2fd21cc05326",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 114,
+          "chars": 504,
+          "blockSha256": "2a54e563d70bbce338da3fb868563a91780646e2af6ce26be89b87a006193d4a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 115,
+          "chars": 405,
+          "blockSha256": "906febd5551667407abdb644271b581d5898e50b378142a861027bfafb986ce9",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 116,
+          "chars": 729,
+          "blockSha256": "3b6041e2d4c9f329c0231b163decd4b958d07db50bf8a594a1c7d3ca8b19472d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 117,
+          "chars": 465,
+          "blockSha256": "bba5005e81201916cca80f99e025169715a66dd87794446d910af5c09408833d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 118,
+          "chars": 529,
+          "blockSha256": "e1203f7d3321f2920f696efcf9f537466e5dbc4b591d9c77a2152f53f4b6e895",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 119,
+          "chars": 635,
+          "blockSha256": "416adc96e410d00b33d0b23e9ee730652aeed1859ef2f9be655ff7baf5540a2e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 120,
+          "chars": 473,
+          "blockSha256": "de6122f3c11bc1df5664012ddaf59018d85e55098dc19f66c60b64dc27d0ef56",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 121,
+          "chars": 593,
+          "blockSha256": "69867fa13cfd4f37d1bd48f48d4cc390ffdbe08c0fe135e38fd22e4305e3e26b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 122,
+          "chars": 277,
+          "blockSha256": "9c2ef4e714f8c7ba2d7517e66b262153f5df0c020031858a2dceda069efaff2b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 123,
+          "chars": 554,
+          "blockSha256": "911b466f96eb0ebf120ae7ec728809118b92d1a87eee1bfc7519d17f861e2b62",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 124,
+          "chars": 326,
+          "blockSha256": "cf3e8840ac10530d7c90e56674436f44c536915b722a1ee9e2976ab8e000902a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 125,
+          "chars": 338,
+          "blockSha256": "84036767598be62099f54d53184571df357e51ebfe3e511b5abb815833bfb116",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 126,
+          "chars": 671,
+          "blockSha256": "55bf5c28c00cd69e291dec792cb848308ec3892acd758c3f90c2da33220312c4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 127,
+          "chars": 345,
+          "blockSha256": "553ad1b5128f15956d671d15b78d24333e38cf1d59b07c8a49adba8b80fae184",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 128,
+          "chars": 533,
+          "blockSha256": "ca8e62df618b2eca4d69e2e34febbf22b9ef6957db7b0635e0b24756849937cd",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 129,
+          "chars": 350,
+          "blockSha256": "5e3253fb55aa41b629965b8c9ad3b39852f0b82489bacffeb7e24ed671bf79ec",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 130,
+          "chars": 332,
+          "blockSha256": "08cd62f9550762066431320be0888ddcba15a2e650fb08232966fae3aa9f693e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 131,
+          "chars": 1371,
+          "blockSha256": "eaa9cff622ffefe26e8477e86673b5b9124cd8a5bd68287420dd2b6cd034b5e1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 132,
+          "chars": 354,
+          "blockSha256": "116e4b6bbb290c5cb1756afc7bb2a0493b8ecdedbbfd9e79afa00fe1c28c3001",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 133,
+          "chars": 359,
+          "blockSha256": "57017d0187475b0824f496e11a7291153e8a0eff5c42406eeb75c59ab715b11d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 134,
+          "chars": 355,
+          "blockSha256": "67f092e33af9a199117a3f48e88f9b2859a8321227f430c274e762e8d9a601e8",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 135,
+          "chars": 316,
+          "blockSha256": "6ee62613010fbfae4408074846f5878de5472a6ce49898c64253688848fb56ea",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 136,
+          "chars": 339,
+          "blockSha256": "3c953d7436e087e91ea62e6d44e2e0d534f75d66246031a852f986ac22fc7e46",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 137,
+          "chars": 200,
+          "blockSha256": "c61ec365ac4a9f7934a14757acc13b599f7554d43a46d4ccea117193bd1ecab7",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 138,
+          "chars": 549,
+          "blockSha256": "eb7bbfd937d0e9e4c3a2ec0cdb081ce2fe0c5a3845a131440a0fe639a614f73d",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 139,
+          "chars": 247,
+          "blockSha256": "06c3532da385c1ad009d0a5e4a53a9d2b8efe4df4f8bd62f586d1c1ca6accfdf",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 140,
+          "chars": 302,
+          "blockSha256": "347282e62444c92935ba8aeb6f013a998fee4f71738e1e47294c399ddc6032fe",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 141,
+          "chars": 345,
+          "blockSha256": "edf41420096c702a9b1ce5f51f9cb42c7b49c70274dfcf881e6d4256b6868b20",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 142,
+          "chars": 344,
+          "blockSha256": "ac5d7e918c5dcc42551bd36357aab667f486904eb275cc6ec2d3bfdbdf0fa46a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 143,
+          "chars": 345,
+          "blockSha256": "cfa5eb784176b21497827d66bac7a266571a5184d4290f10eac72aaa24e1574f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 144,
+          "chars": 416,
+          "blockSha256": "1120f4506b158441f2a302b1a60a6b26d8354c0a75fad051afb386937cace3ee",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 145,
+          "chars": 446,
+          "blockSha256": "200db534a629beffeb00c6d544eb8413d572192af24e37a05efb3ffe247e34bb",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 146,
+          "chars": 564,
+          "blockSha256": "7d92376c053b04bd20296040046f80adf49b518c29aa19e6f353ca625ef1d076",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 147,
+          "chars": 469,
+          "blockSha256": "8fb54eaf65ed90230b920f6ea8aa3ec76e0219c2065f7da4c602f2992f10fe4c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 148,
+          "chars": 409,
+          "blockSha256": "34b7f20ef1ab22dff65e4fe42417ace26981f3e0fdfaac4a389ac56e79b75197",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 149,
+          "chars": 329,
+          "blockSha256": "f6476ec1cd57ab62fecae87d2ea46e033fd95d7da97b1d2fd00a2843d606b59e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 150,
+          "chars": 302,
+          "blockSha256": "5e3d1e9ec7e5b4c218d9cb61ef4c9e649fd09b113a02ce65b019cbaa291c9b92",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 151,
+          "chars": 484,
+          "blockSha256": "3b9b315d19b5cdb5193b6395977810bec7172f3a7471fd1706c3cee44652ee62",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 152,
+          "chars": 324,
+          "blockSha256": "ee018a39d4197632956b1720a01f2319589993520a54672e7aca55cfbc9830de",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 153,
+          "chars": 515,
+          "blockSha256": "6dbcdf589bab51ca8093e3f9e5bcac5dd96e0fb70424a2e5f126cd209a31e0a7",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 154,
+          "chars": 582,
+          "blockSha256": "33379ee4201f551ddd5f499a383877463f9203ac6b66c06a63505eb12d87b95b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 155,
+          "chars": 634,
+          "blockSha256": "d8493e840b06c2ff9ceec68ca9d8079f229571d1e7c5d7c8903e3c73b6a0fbe1",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 156,
+          "chars": 527,
+          "blockSha256": "5673b181bdcfb458620277bd134e1a40e3cbeec0812883b37690f7fcebf090c6",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 157,
+          "chars": 499,
+          "blockSha256": "cbd67493c4942374a9dffff5b19b46933fe2e13828c1ecc6300681e474b7ea5f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 158,
+          "chars": 312,
+          "blockSha256": "f7b8b52ad3ece9a617e62cb14b52b8ca690f4f849a814abd8deedb14c6b1b262",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 159,
+          "chars": 436,
+          "blockSha256": "e7de2080628041f11bf57dce3ee459bb81f9e213b1b7e06a635c6240eabeaa88",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 160,
+          "chars": 257,
+          "blockSha256": "24f7844063bc731800f793dee1fe7adf9085446f701bb9b5d5963ae348ad3aa4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 161,
+          "chars": 356,
+          "blockSha256": "bb152a895c6310a35374c40165394e6308025b39ce4013ef8a54b038f7aa576b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 162,
+          "chars": 481,
+          "blockSha256": "202bc261e0f22e11b737038bfebdf73024f2b1159e5c8e9013d2d3bc09c57708",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 163,
+          "chars": 521,
+          "blockSha256": "373be448276d23ca5a1383d23d5db8926ad9092499e2929bdcf4a5812ab24226",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 164,
+          "chars": 395,
+          "blockSha256": "a713da203788ff1601cf5dd6cdbb87507958d4f4e545c5970ba8b78477737bdb",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 165,
+          "chars": 564,
+          "blockSha256": "876db27e88e5b92127704e622d108ae24361259129ac634089bb2964667cbef5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 166,
+          "chars": 536,
+          "blockSha256": "2b65e409ee8146a07cf9f1c4120d76c2bab2ec1bab44d80651f8d62f64bab002",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 167,
+          "chars": 395,
+          "blockSha256": "2c1b832b0e394814de4134ecd26da54e6a6d39298b80541f001b739c587fd30e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 168,
+          "chars": 269,
+          "blockSha256": "52f044a4598ae3d995d54fdb1dab8b47b1d6e340fdba7f0d1006c687f72889ef",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 169,
+          "chars": 341,
+          "blockSha256": "eaf37eb55ec4b468f167d08b77d484d3d03fffa6c3ec6cc5e1c3a9eac3428baf",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 170,
+          "chars": 274,
+          "blockSha256": "63d70fc4b302ab335e56fc518ebe78b85063b3116fc70c7b23b896719061063f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 171,
+          "chars": 258,
+          "blockSha256": "bb9f2254742bc4f30b008ebe9c13bfeafe2ffc40c92d852780bf027385bf07cb",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 172,
+          "chars": 421,
+          "blockSha256": "7f358e6ba04bce53fd6e1e7ba8912abcdd4e6f6ffa17df579cda9ef8b94fcbb2",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 173,
+          "chars": 484,
+          "blockSha256": "13fbf63a61c4fd18a921bdfc0c7d5c20887d70b57b21aa7f497f9966e691f272",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 174,
+          "chars": 219,
+          "blockSha256": "b65bdf97a974bf3a190917251c79efdd923930063e095413920f0f516030ff86",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 175,
+          "chars": 453,
+          "blockSha256": "f930e74ab349e6c5f938efae67fe73e77ed75afe4447c39d0fc799f8aa9dc622",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 176,
+          "chars": 619,
+          "blockSha256": "3aabb91aa89b317bece7bc37c38b824845ebe9fbc6cc0df5fc6e08daa7548422",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 177,
+          "chars": 228,
+          "blockSha256": "7647a0e2834da6aee19fdf1aef139f33fa1aff6f32e72ffc8f1fdb516ff2155f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 178,
+          "chars": 476,
+          "blockSha256": "7e61269cee907421c11d6053775601e9f97b1b91a7dc2d80815f7d64becc7b39",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 179,
+          "chars": 478,
+          "blockSha256": "d46b592b65a6b88472f04f9dfafda9166a5bfc90b0f7d4cddd743944f06b2f13",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 180,
+          "chars": 431,
+          "blockSha256": "7f390219ee0420b0ae1c484822abfac0753ad03d026994871adb99fe09278861",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 181,
+          "chars": 334,
+          "blockSha256": "ad23f23b8e054d72e61bb9cfe514570e6f5654c55a06354aa8ac2d74f8174cbc",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 182,
+          "chars": 492,
+          "blockSha256": "256c946cea48af6ad4482eb218ee17a1a624b6763eab22393c88b0417fa0d7ad",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 183,
+          "chars": 587,
+          "blockSha256": "ef8536fe852d6a392dc95da9155bcd415940738bc329bd0915bfd7e671bfea54",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 184,
+          "chars": 481,
+          "blockSha256": "bc47173f36089cfa5fabc3538f9b0bb80596cc8cb5efb6caaba60911cd6c2f85",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 185,
+          "chars": 660,
+          "blockSha256": "90dfbd73483fa497db2efa1c7b4da8be321e760d8b08876724c1a9c000d0b7a4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 186,
+          "chars": 538,
+          "blockSha256": "e2f03393abd105dab1fadeac7a0fb5a7ed71fdc2f4bd2432fb3aab1c47d1fb25",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 187,
+          "chars": 520,
+          "blockSha256": "6c5a05a7c3cb269d9f45f7b9b2212430680da897b433c96105b07bffd1f9fbaf",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 188,
+          "chars": 433,
+          "blockSha256": "58bc95cead36fb9fb070a0afd1010af8e640296e606a1bf70d4ffc6c1e8c96a7",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 189,
+          "chars": 416,
+          "blockSha256": "85e5065c852ff2e482a5293bbcbcc6a6b1bae754bebf5bc93b1089d60c908507",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 190,
+          "chars": 650,
+          "blockSha256": "e1ac7b353de51d0a0d1533d33b964b6b27f82f96502af4c8fca91869dc972e2c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 191,
+          "chars": 498,
+          "blockSha256": "ec7f00c971545924f512e543326093ee26ad87c81f50d2f9767790d0fa4acb09",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 192,
+          "chars": 557,
+          "blockSha256": "3f152886e0b0c6b99dc749b32f72756fba54132540cd78110c020bd60df9dbbf",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 193,
+          "chars": 492,
+          "blockSha256": "a463be13ed3641a108e726d4c35a71715155672b9e208b707417652d031d4649",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 194,
+          "chars": 291,
+          "blockSha256": "5738d40c835b0ee7729e54c8d15459144c56eb0ddd62686507c6f0eab5ebb608",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 195,
+          "chars": 362,
+          "blockSha256": "dd5af16f9ad164a72654ba4583b90b345af59e13d044a9ca5d61f7bec398fdfe",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 196,
+          "chars": 331,
+          "blockSha256": "8a2a66209bddd2c03c6fc3dfdc28d699e3459c8605bcfe9af5bd1cfe605d1221",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 197,
+          "chars": 587,
+          "blockSha256": "e1f8e21a7e440b985397ce376f6dba9a7df3373fb91d417000dfb078714cd1ce",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 198,
+          "chars": 449,
+          "blockSha256": "3d9f5cbcfd966166ce1ae07a2d8d6283471261ecddeea270eed13c7871f91741",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 199,
+          "chars": 542,
+          "blockSha256": "ee5f874ff12b6eb0195c08c7382083e1add09fb0e759b5bc9ce69d76b871b068",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 200,
+          "chars": 406,
+          "blockSha256": "b6cd924b0714cb91e4868d56a77f873e3ffcb3d4d2840eabe1c8e28596ed48a8",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 201,
+          "chars": 691,
+          "blockSha256": "49d7c7a237f2417e6931d03af0a62e7b63f0dc51a880a293dde2383f2171daa3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 202,
+          "chars": 671,
+          "blockSha256": "826cb0be2ed22c9dd44cc6b966f91bb90a4f31de7946529ab9ef144c2decc643",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 203,
+          "chars": 528,
+          "blockSha256": "82e365bbf68ed195fe646990666f90e6856b16ef9aacab4de847f0e36ac7955a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 204,
+          "chars": 581,
+          "blockSha256": "fdd62eb616030052a455645db0066f2151c33b649aca7da09ec92f801f67e875",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 205,
+          "chars": 356,
+          "blockSha256": "7b7926d8cb58eb759f0a182d25aa09c6a7adcc060f2da68d7912380361a06a95",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 206,
+          "chars": 691,
+          "blockSha256": "c71747ab73179efa6aeef2200317acce2b418970289316287dde920e674d30e3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 207,
+          "chars": 749,
+          "blockSha256": "020e917aa4bf05e621fab104641ca7cbb88dab8458a249801c6bd24a599c95e5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 208,
+          "chars": 1390,
+          "blockSha256": "2475bd2f7e552abf61015d4e8c4ad59e2db3a2b29add5d520a8b903a1a653000",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 209,
+          "chars": 1056,
+          "blockSha256": "348c27af64580405ed20b536abc9ddd2217fbd7cd4a863fb3a6326fd57ed6c9c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 210,
+          "chars": 426,
+          "blockSha256": "cc81363a2bb3aad75ab8dc527dd2e26e20b22869de8b62403571a6acd745865a",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 211,
+          "chars": 378,
+          "blockSha256": "32e2ffb81bdace98261def0184af54e3401bd3885b3fb098e436315494c27a30",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 212,
+          "chars": 532,
+          "blockSha256": "3a326c12e840bdf9f6494f412dace7868bbdb105982a9fe217bb3cf4049414fe",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 213,
+          "chars": 1288,
+          "blockSha256": "bdc1db831aa9141b6880745fcbac24ecbb2351d4797ec31cd0feb36edd5b17f5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 214,
+          "chars": 924,
+          "blockSha256": "c517ca3fd74842ccf35ba8230d652a71633888983e296a35df2315f0a91b3b9f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 215,
+          "chars": 717,
+          "blockSha256": "815f9c99af60ae54a49948f0302ff382a429cd784d8511eefe53d1f111350a9c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 217,
+          "chars": 34,
+          "blockSha256": "42ad2af8cf4e0f8735b067932f3f858f9da7514ac0617c33b7c702a482ba684e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 218,
+          "chars": 1360,
+          "blockSha256": "66e762f27d232d31ce2b704031ec17704cb8a75005ef5c177f9c8487b33ec09f",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 219,
+          "chars": 32,
+          "blockSha256": "071177a5f8f283d74fdb876d1c3a739fdd5b9b09af395b14b241cfa5af85ee9b",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 220,
+          "chars": 645,
+          "blockSha256": "6378ff78b7ee7db75db2d843adba3be6a8eff2a171e465c4154876cd1a6536c3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 221,
+          "chars": 38,
+          "blockSha256": "437418a133ea69ec7f8f0349798715e544bcf1d92f97e772a5fa973a95919936",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 222,
+          "chars": 1157,
+          "blockSha256": "0800c2b976f776d639e3b426a4e6c8a19ec60ac0891bfe6a28f440f767adbf9e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 223,
+          "chars": 679,
+          "blockSha256": "e3131553f4c04091eaa4280f049c1d314f8a12332989f8f4d313435623a58c62",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 224,
+          "chars": 503,
+          "blockSha256": "319f4412d3e0b72a355738f574fcd6b957aed56f91968b1b6ce9047b13a51373",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 225,
+          "chars": 40,
+          "blockSha256": "a514efb7f85ae25c1a1091df5f5491a37f23952ce385f699a7b829daa7fac331",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 226,
+          "chars": 1448,
+          "blockSha256": "3a19d2bc5cfe47c32395b64f3948e8e52571f07beffee14c529155279b874f6e",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 227,
+          "chars": 56,
+          "blockSha256": "85d3595cff537d3134ffe2372718a7da966fe546a36ee75332166982be9576e0",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 228,
+          "chars": 2892,
+          "blockSha256": "5d2742cf5df4f5eb8cd54864878c34894e3b681cbe3c27fbfd99a3b279d2a658",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 229,
+          "chars": 38,
+          "blockSha256": "3c97310e143707016fbc482b47cca721445ea1c2f7a281d50f0f39cdb69668f4",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 231,
+          "chars": 451,
+          "blockSha256": "7a539a7cf6b4c5cd6c2963c60cd8c859e74c7a0c9d39c6b7394277725a2ec2b5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 232,
+          "chars": 403,
+          "blockSha256": "0660572cb1ade011ecf4150a8adf8788c9824c5923311a08eb7abfe677d869c5",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+            "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 13617,
+      "readRanges": [
+        [
+          0,
+          13617
+        ]
+      ]
+    },
+    "2": {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+      "originalSha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+      "totalBlocks": 157,
+      "same": [
+        {
+          "block": 24,
+          "chars": 48,
+          "blockSha256": "e3b32df716f45775e7819880b45e58c8ff242700e945bef8a40e83920ce1a536",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 26,
+          "chars": 46,
+          "blockSha256": "c8e29822c4bd806e58880f05e5f68af9c41e39e4a3e5433b33a198a23196ee27",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 25704,
+      "readRanges": [
+        [
+          0,
+          13000
+        ],
+        [
+          13000,
+          25704
+        ]
+      ]
+    },
+    "4": {
+      "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+      "originalSha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+      "totalBlocks": 119,
+      "same": [],
+      "novelCharacters": 18801,
+      "readRanges": [
+        [
+          0,
+          12000
+        ],
+        [
+          12000,
+          18801
+        ]
+      ]
+    },
+    "5": {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+      "originalSha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+      "totalBlocks": 69,
+      "same": [
+        {
+          "block": 13,
+          "chars": 48,
+          "blockSha256": "e3b32df716f45775e7819880b45e58c8ff242700e945bef8a40e83920ce1a536",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 14,
+          "chars": 46,
+          "blockSha256": "c8e29822c4bd806e58880f05e5f68af9c41e39e4a3e5433b33a198a23196ee27",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 17259,
+      "readRanges": [
+        [
+          0,
+          10000
+        ],
+        [
+          10000,
+          17259
+        ]
+      ]
+    },
+    "6": {
+      "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+      "originalSha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+      "totalBlocks": 79,
+      "same": [],
+      "novelCharacters": 14603,
+      "readRanges": [
+        [
+          0,
+          14603
+        ]
+      ]
+    },
+    "7": {
+      "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+      "originalSha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+      "totalBlocks": 128,
+      "same": [
+        {
+          "block": 90,
+          "chars": 46,
+          "blockSha256": "c8e29822c4bd806e58880f05e5f68af9c41e39e4a3e5433b33a198a23196ee27",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 15167,
+      "readRanges": [
+        [
+          0,
+          15167
+        ]
+      ]
+    },
+    "8": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/desktop/0.4.0묶기전/README.md",
+      "originalSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+      "totalBlocks": 65,
+      "same": [
+        {
+          "block": 1,
+          "chars": 30,
+          "blockSha256": "a267011c1894c4d3c46d21f01a8b51152af8ebc5da89209c2c59052ce39e988c",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 3,
+          "chars": 400,
+          "blockSha256": "20bef466743138b78624efb8299e24f042360e8d4fa83970fb89bc49a7221fe5",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 4,
+          "chars": 386,
+          "blockSha256": "73023b9eb46798a0a2e2178f2bb2442781d769bd15c3be64e697486cca4e29ce",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 5,
+          "chars": 259,
+          "blockSha256": "7967ffa4f446d3840c3765b6c1131b2ca86e74ed90091fb692019b4d5cd1492a",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 8,
+          "chars": 71,
+          "blockSha256": "57023e39c6fc687758d0d5f61f96ef05fb1d7af1b189226c92aa01928c38b568",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 9,
+          "chars": 65,
+          "blockSha256": "a60ac13aadd78108033d1707ecd7c161e01facb233c58ec3568289bad09ce75a",
+          "base": {
+            "path": "experiences/path-vr/README.md",
+            "sha256": "6c90a4304e3d3d525edf7de6301fbafc3531302539829d4c4fff429242d824aa",
+            "ledger": "semantic-content-pass3.json"
+          }
+        },
+        {
+          "block": 10,
+          "chars": 187,
+          "blockSha256": "82bee767cb89ea9aaef14a92f1f2203e2d6583be29582c23a209bddd17f096e9",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 11,
+          "chars": 192,
+          "blockSha256": "e7a8c2c8597a30be093818bf89f7a636b4779346ecaca174b0aafc54cdafebd1",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 12,
+          "chars": 219,
+          "blockSha256": "33f96d739d43bcf68b5a5e03fc276f05a52a76a7e63b549cf9d5737768e73ce7",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 13,
+          "chars": 118,
+          "blockSha256": "7cffbb3770a95e075f071dcc20ab5e54835a45368c25661e94b5d4887617c462",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 14,
+          "chars": 419,
+          "blockSha256": "aa11d5daafb90fa211549fd188ac3f8b95349b82696916eb27f08a81b2ca1329",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 21,
+          "chars": 105,
+          "blockSha256": "1f313eebc3368b8efa28a44ff0aa0e8d8c2487dd40777a07628ef03e3c9e9a87",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 23,
+          "chars": 620,
+          "blockSha256": "a99a77672eee4a00c43843158e27bca2dd3098219a2fe92c074f0a1c69716d5e",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 24,
+          "chars": 202,
+          "blockSha256": "6219eb475e8999e28419bcb8fcf4807b663a405b36f141c9841291b4188ad5d7",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 25,
+          "chars": 105,
+          "blockSha256": "7a7bda618de6910888b4bc5bd96e3dab6aeeb611044a04eb990b9e8468c828d2",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 27,
+          "chars": 364,
+          "blockSha256": "268ebc7ef6e65aed430679b6bac433a5c4d1bee5cd75c0d387ee27e0b4422c9a",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 28,
+          "chars": 188,
+          "blockSha256": "f9dad2ab92e4fb14e7e2fae44dcee58c78d167937f5cfb74e57f7f86c037a24d",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 29,
+          "chars": 197,
+          "blockSha256": "c6fe9ae26e4bcf22d96b582dd64ad88304327726819306c7b81eb3fa44bc8c94",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 30,
+          "chars": 60,
+          "blockSha256": "bf4f491b141f7afcb6076e65bf4fb14f1c753b660074e068944c69efb6f5a5f8",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 31,
+          "chars": 549,
+          "blockSha256": "8589564b25c85997477a75676736e3de47cbb4e5711962e358274b4501d36215",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 32,
+          "chars": 349,
+          "blockSha256": "daa04c2f9f68a18248cc9862b77257ec2829fe768ec96a563ac664eff35b27f6",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 33,
+          "chars": 208,
+          "blockSha256": "aa9457b387e944d2cb15213ec545b440e4ba9a507a7c28e2a25619dfaa0846d4",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 36,
+          "chars": 307,
+          "blockSha256": "97cabcba23d51f4bb484be848a55e1eb854d9832ef8474938893eddb9e4f254d",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 37,
+          "chars": 70,
+          "blockSha256": "4f63d29cdce1eb073f26b82c2868e1389d05d50ee22057459c83192bc08d7414",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 39,
+          "chars": 246,
+          "blockSha256": "4d0750d493701cc76a090b1136ccc2664591a3d5e0b47b5a6de55e33035b8773",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 40,
+          "chars": 280,
+          "blockSha256": "f4ba3eaacb9080892c50ef73532fbe2847bba1308d0c9efce51f21997cd17d83",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 41,
+          "chars": 171,
+          "blockSha256": "60c0f3e4faac79f55cf5cf776fa5c315547d99ad1b499e1f0985549351dfacbf",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 43,
+          "chars": 33,
+          "blockSha256": "52c9c2a48c108a6e80192575e0de7410dda3cf24d6e2a3aab3aceed18f52aa08",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 44,
+          "chars": 294,
+          "blockSha256": "ac8f611a445ad8e865b4f3e3123e68d9e03e6e728dde218f000f9b04f428d638",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 45,
+          "chars": 146,
+          "blockSha256": "5b15569b932ae86f4cee909d027726c12d8909ab4674548e624441b80d8bc397",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 46,
+          "chars": 63,
+          "blockSha256": "d3187638b7387a213dc05fdf4b7ebdcc09b6dce70072782827d8c04658ab2db5",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 47,
+          "chars": 237,
+          "blockSha256": "7bb83a7e46dd63b1bbd1e7182bb389c47afbc3b62942f91a15c9081e837dbd21",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 48,
+          "chars": 179,
+          "blockSha256": "17426370619a7b6f8863923c7aeeb2a1f404d528c67e358cd42ea18a139931ea",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 49,
+          "chars": 222,
+          "blockSha256": "a85471913b769e033299ab1a7802fd0a8f9af7f1368a961cd28b70064cd486b6",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 50,
+          "chars": 250,
+          "blockSha256": "66a669ecc75895306326cb0101a41cf78be808fc29e2b424d5a48822ced8b82c",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 52,
+          "chars": 282,
+          "blockSha256": "25344ae4bbf56de56d69df601779225ce9362eeb9d14626191c807e011419ec1",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 53,
+          "chars": 318,
+          "blockSha256": "d05c5c4c0e45a8e93d741b73630c681aaff06bb0515e5f54a5435bbdbb4352b9",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 54,
+          "chars": 32,
+          "blockSha256": "13d2526c5a28aa473951468d52595f9d9a2ce935966b8033a87d4eb549d2e467",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 55,
+          "chars": 172,
+          "blockSha256": "03267f1d11d85eda4b5480b552607cf4520b8109c64f661aa6238b25010d57e3",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 56,
+          "chars": 379,
+          "blockSha256": "e211a20aceb410f2e9158f85d4940fbf527d7b049f2b8f8744cbb339dcc8bce0",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 57,
+          "chars": 463,
+          "blockSha256": "8d3c81e7fb3125cdd38f70afdb3ac334a829a631198b488b3b4b16e743f717c9",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 58,
+          "chars": 150,
+          "blockSha256": "444dc5e39b8fe68ffbc509297c3882a8db36009b933012b1131f4789cdeca89f",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 59,
+          "chars": 28,
+          "blockSha256": "13978705ca54f6e028200d5829065f73288c487e45d3165f90cd2c6c69ad3c37",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 60,
+          "chars": 143,
+          "blockSha256": "a69101550ecf549d165018701f04cfec913ea19a0c4cc6ed7b4f5cfb176cf759",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 61,
+          "chars": 676,
+          "blockSha256": "44896e58069825cff44100a48b20635d48f815dcac1a2498b434e1a93c1061b8",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 62,
+          "chars": 88,
+          "blockSha256": "64c1691394dbaf96f8ba727668fc7283e8a8412d4ef8d4a5bba0db7b9402d4c1",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 63,
+          "chars": 295,
+          "blockSha256": "5a26db02c3ce13306697f287527e0101e1caeeab7e1ac13575b1ab7b17a96f6a",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        },
+        {
+          "block": 64,
+          "chars": 465,
+          "blockSha256": "7ce0f63e63b88357a99467cf807d89cf824fd317614f546fea5fcd60bec70c1f",
+          "base": {
+            "path": "desktop/README.md",
+            "sha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101",
+            "ledger": "semantic-product-pass3.json"
+          }
+        }
+      ],
+      "novelCharacters": 4128,
+      "readRanges": [
+        [
+          0,
+          4128
+        ]
+      ]
+    },
+    "9": {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+      "originalSha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+      "totalBlocks": 153,
+      "same": [],
+      "novelCharacters": 14161,
+      "readRanges": [
+        [
+          0,
+          14161
+        ]
+      ]
+    },
+    "10": {
+      "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+      "originalSha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+      "totalBlocks": 60,
+      "same": [],
+      "novelCharacters": 12237,
+      "readRanges": [
+        [
+          0,
+          12237
+        ]
+      ]
+    },
+    "11": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/README_재묶기전.md",
+      "originalSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+      "totalBlocks": 50,
+      "same": [],
+      "novelCharacters": 12029,
+      "readRanges": [
+        [
+          0,
+          12029
+        ]
+      ]
+    },
+    "12": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+      "originalSha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+      "totalBlocks": 71,
+      "same": [],
+      "novelCharacters": 11949,
+      "readRanges": [
+        [
+          0,
+          8500
+        ],
+        [
+          8500,
+          11949
+        ]
+      ]
+    },
+    "13": {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+      "originalSha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+      "totalBlocks": 95,
+      "same": [
+        {
+          "block": 66,
+          "chars": 46,
+          "blockSha256": "c8e29822c4bd806e58880f05e5f68af9c41e39e4a3e5433b33a198a23196ee27",
+          "base": {
+            "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+            "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 12061,
+      "readRanges": [
+        [
+          0,
+          12061
+        ]
+      ]
+    },
+    "14": {
+      "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+      "originalSha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+      "totalBlocks": 62,
+      "same": [],
+      "novelCharacters": 11051,
+      "readRanges": [
+        [
+          0,
+          11051
+        ],
+        [
+          0,
+          3000
+        ]
+      ]
+    },
+    "15": {
+      "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+      "originalSha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+      "totalBlocks": 60,
+      "same": [],
+      "novelCharacters": 10379,
+      "readRanges": [
+        [
+          0,
+          10379
+        ]
+      ]
+    },
+    "16": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+      "originalSha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+      "totalBlocks": 58,
+      "same": [],
+      "novelCharacters": 9811,
+      "readRanges": [
+        [
+          0,
+          9811
+        ]
+      ]
+    },
+    "17": {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+      "originalSha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+      "totalBlocks": 51,
+      "same": [],
+      "novelCharacters": 9335,
+      "readRanges": [
+        [
+          0,
+          9335
+        ]
+      ]
+    },
+    "18": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/entry-check/qa_재촬영전/RESULTS.md",
+      "originalSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+      "totalBlocks": 44,
+      "same": [],
+      "novelCharacters": 9815,
+      "readRanges": [
+        [
+          0,
+          9815
+        ]
+      ]
+    },
+    "19": {
+      "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+      "originalSha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+      "totalBlocks": 44,
+      "same": [],
+      "novelCharacters": 8937,
+      "readRanges": [
+        [
+          0,
+          8937
+        ]
+      ]
+    },
+    "20": {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+      "originalSha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+      "totalBlocks": 56,
+      "same": [],
+      "novelCharacters": 9141,
+      "readRanges": [
+        [
+          0,
+          9141
+        ]
+      ]
+    },
+    "21": {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+      "originalSha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+      "totalBlocks": 26,
+      "same": [],
+      "novelCharacters": 8833,
+      "readRanges": [
+        [
+          0,
+          8833
+        ]
+      ]
+    },
+    "22": {
+      "path": "docs/_원고/채널마다_창_2026-09-07.md",
+      "originalSha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+      "totalBlocks": 65,
+      "same": [],
+      "novelCharacters": 8253,
+      "readRanges": [
+        [
+          0,
+          8253
+        ]
+      ]
+    },
+    "23": {
+      "path": "tools/patent-studio/advance-20260912/REPORT.md",
+      "originalSha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+      "totalBlocks": 57,
+      "same": [],
+      "novelCharacters": 8409,
+      "readRanges": [
+        [
+          0,
+          8409
+        ]
+      ]
+    },
+    "24": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+      "originalSha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+      "totalBlocks": 34,
+      "same": [],
+      "novelCharacters": 8132,
+      "readRanges": [
+        [
+          0,
+          8132
+        ]
+      ]
+    },
+    "25": {
+      "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+      "originalSha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+      "totalBlocks": 43,
+      "same": [],
+      "novelCharacters": 7990,
+      "readRanges": [
+        [
+          0,
+          7990
+        ]
+      ]
+    },
+    "26": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+      "originalSha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+      "totalBlocks": 28,
+      "same": [],
+      "novelCharacters": 7076,
+      "readRanges": [
+        [
+          0,
+          7076
+        ]
+      ]
+    },
+    "27": {
+      "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+      "originalSha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+      "totalBlocks": 46,
+      "same": [],
+      "novelCharacters": 7539,
+      "readRanges": [
+        [
+          0,
+          7539
+        ]
+      ]
+    },
+    "28": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+      "originalSha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+      "totalBlocks": 40,
+      "same": [],
+      "novelCharacters": 6860,
+      "readRanges": [
+        [
+          0,
+          6860
+        ]
+      ]
+    },
+    "29": {
+      "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+      "originalSha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+      "totalBlocks": 30,
+      "same": [],
+      "novelCharacters": 6182,
+      "readRanges": [
+        [
+          0,
+          6182
+        ]
+      ]
+    },
+    "30": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+      "originalSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+      "totalBlocks": 20,
+      "same": [],
+      "novelCharacters": 6311,
+      "readRanges": [
+        [
+          0,
+          6311
+        ]
+      ]
+    },
+    "31": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+      "originalSha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+      "totalBlocks": 23,
+      "same": [],
+      "novelCharacters": 5393,
+      "readRanges": [
+        [
+          0,
+          5393
+        ]
+      ]
+    },
+    "32": {
+      "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+      "originalSha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+      "totalBlocks": 39,
+      "same": [],
+      "novelCharacters": 5246,
+      "readRanges": [
+        [
+          0,
+          5246
+        ]
+      ]
+    },
+    "33": {
+      "path": "tools/patent-studio/grant-path-20260913/README.md",
+      "originalSha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+      "totalBlocks": 22,
+      "same": [],
+      "novelCharacters": 5222,
+      "readRanges": [
+        [
+          0,
+          5222
+        ]
+      ]
+    },
+    "34": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README.md",
+      "originalSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+      "totalBlocks": 19,
+      "same": [
+        {
+          "block": 0,
+          "chars": 28,
+          "blockSha256": "c5b7583cb2febd418f793411d39123f7ee4c2e8f1a897184aa730b116c0286ac",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 1,
+          "chars": 219,
+          "blockSha256": "0e7c47bbcee73e2ca1b2110be8852cdad76ce293eda052e46ef73a9522c062ee",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 3,
+          "chars": 101,
+          "blockSha256": "3b8ba7efcffa8db8c15d7b9d0df2637e29c973dc203d137a3d1090e940fec452",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 4,
+          "chars": 227,
+          "blockSha256": "b0dc300ddc344a971c6f5e18e34681ec5f0d5b3c36c3403aa58f64d5f1c18b43",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 5,
+          "chars": 144,
+          "blockSha256": "ae165f9153c7449516102ed96b6da41187d8f1e2a1e49050fc3bbe6b81886f3c",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 7,
+          "chars": 440,
+          "blockSha256": "35125c0247948a1b2b8358e62514c3cf98621294b203e3301d220b6b49604fdf",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 11,
+          "chars": 1038,
+          "blockSha256": "ef91b22d9a9ef6b5d398ec0a836aa785a48cc69b67a67c3bce4c6d85512ba221",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 12,
+          "chars": 259,
+          "blockSha256": "3208ce29360f2d1703370a6847d96f8fa0614ee3c35bc839431c19525fa7e4a3",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        },
+        {
+          "block": 16,
+          "chars": 618,
+          "blockSha256": "7793a7f80525b1782348cde5dbaea1847b490e8a1c7a3a1b29818746fbc33ce2",
+          "base": {
+            "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+            "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+            "ledger": "semantic-business-pass4.json"
+          }
+        }
+      ],
+      "novelCharacters": 2098,
+      "readRanges": [
+        [
+          0,
+          2098
+        ]
+      ]
+    },
+    "35": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+      "originalSha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+      "totalBlocks": 22,
+      "same": [],
+      "novelCharacters": 4323,
+      "readRanges": [
+        [
+          0,
+          4323
+        ]
+      ]
+    },
+    "36": {
+      "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+      "originalSha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+      "totalBlocks": 19,
+      "same": [],
+      "novelCharacters": 4102,
+      "readRanges": [
+        [
+          0,
+          4102
+        ]
+      ]
+    },
+    "37": {
+      "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+      "originalSha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+      "totalBlocks": 29,
+      "same": [],
+      "novelCharacters": 4141,
+      "readRanges": [
+        [
+          0,
+          4141
+        ]
+      ]
+    },
+    "38": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SCENERY-GOALS-V6_재묶기전.md",
+      "originalSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+      "totalBlocks": 16,
+      "same": [],
+      "novelCharacters": 4488,
+      "readRanges": [
+        [
+          0,
+          4488
+        ]
+      ]
+    },
+    "39": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/story-classroom/qa_재촬영전/RESULTS_흔들림수정전.md",
+      "originalSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+      "totalBlocks": 17,
+      "same": [],
+      "novelCharacters": 3838,
+      "readRanges": [
+        [
+          0,
+          3838
+        ]
+      ]
+    },
+    "40": {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SHOP-V5_재묶기전.md",
+      "originalSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+      "totalBlocks": 17,
+      "same": [],
+      "novelCharacters": 3517,
+      "readRanges": [
+        [
+          0,
+          3517
+        ]
+      ]
+    },
+    "41": {
+      "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+      "originalSha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+      "totalBlocks": 18,
+      "same": [],
+      "novelCharacters": 2968,
+      "readRanges": [
+        [
+          0,
+          2968
+        ]
+      ]
+    },
+    "42": {
+      "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+      "originalSha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+      "totalBlocks": 11,
+      "same": [],
+      "novelCharacters": 2507,
+      "readRanges": [
+        [
+          0,
+          2507
+        ]
+      ]
+    },
+    "45": {
+      "path": "docs/_원고/룸조판_1보_실측.md",
+      "originalSha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+      "totalBlocks": 22,
+      "same": [],
+      "novelCharacters": 2252,
+      "readRanges": [
+        [
+          0,
+          2252
+        ]
+      ]
+    }
+  }
+}

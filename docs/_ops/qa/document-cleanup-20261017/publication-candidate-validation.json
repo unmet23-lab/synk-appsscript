@@ -1,0 +1,5379 @@
+{
+  "base": "b32ca0542bca08f6ffcb51802fbf26142413abd1",
+  "planSha256": "810daae49958f28b99217f7d8e64c62e5b11422af4b117660d84e1990f29e551",
+  "syntax": [
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/prepare-revision-v2.cjs",
+      "exit": 0,
+      "error": ""
+    },
+    {
+      "path": "캐러셀/굽기.js",
+      "exit": 0,
+      "error": ""
+    },
+    {
+      "path": "캐러셀/수집.js",
+      "exit": 0,
+      "error": ""
+    }
+  ],
+  "hashErrors": [
+    "docs/_ops/시스템_경량화_20261010.md"
+  ],
+  "newLinks": [
+    {
+      "from": "docs/제품방향.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/홈페이지_설계_v1.md",
+      "target": "docs/_ops/결정.md",
+      "line": 3
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/커리큘럼_정본_v1.md",
+      "line": 5
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 5
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/반편성_정본_v2.md",
+      "line": 5
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 7
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/BM_목록.md",
+      "line": 7
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/시즌회고_설계.md",
+      "line": 40
+    },
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/숙제서클_설계.md",
+      "line": 46
+    },
+    {
+      "from": "docs/SYNK_철학.md",
+      "target": "docs/PATH_개인화여행_설계.md",
+      "line": 170
+    },
+    {
+      "from": "docs/급수진단_설계_v1.md",
+      "target": "docs/개원전판매_설계_v1.md",
+      "line": 3
+    },
+    {
+      "from": "docs/급수진단_설계_v1.md",
+      "target": "docs/마케팅/LAB.md",
+      "line": 3
+    },
+    {
+      "from": "docs/급수진단_설계_v1.md",
+      "target": "docs/공개판_설계.md",
+      "line": 290
+    },
+    {
+      "from": "docs/급수진단_설계_v1.md",
+      "target": "docs/마케팅/LAB.md",
+      "line": 418
+    },
+    {
+      "from": "docs/마케팅/약속과_실행.md",
+      "target": "docs/자주묻는질문_정본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/약속과_실행.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/약속과_실행.md",
+      "target": "docs/개원전판매_설계_v1.md",
+      "line": 4
+    },
+    {
+      "from": "docs/마케팅/약속과_실행.md",
+      "target": "docs/개인정보처리방침_초안_v2.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/AGENTS.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/AGENTS.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/synkbrief-ai-angles-20260927/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief-ai-angles-20260927/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/synkbrief-ai-angles-20260927/AGENTS.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/문서_지도.md",
+      "target": "docs/개인정보처리방침_초안_v1.md",
+      "line": 28
+    },
+    {
+      "from": "docs/가져가는것_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/가져가는것_설계_v1.md",
+      "target": "docs/출석체크인_설계_v1.md",
+      "line": 69
+    },
+    {
+      "from": "docs/가져가는것_설계_v1.md",
+      "target": "docs/궤적_원장기록_실행지.md",
+      "line": 97
+    },
+    {
+      "from": "docs/가져가는것_설계_v1.md",
+      "target": "docs/시즌회고_설계.md",
+      "line": 97
+    },
+    {
+      "from": "docs/Loom_실시간장면_표현기준.md",
+      "target": "experiences/loom-living/index.html",
+      "line": 3
+    },
+    {
+      "from": "docs/Loom_실시간장면_표현기준.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/Loom_실시간장면_표현기준.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 5
+    },
+    {
+      "from": "docs/Loom_엔진_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 131
+    },
+    {
+      "from": "docs/엔진8종_상향설계_v3.md",
+      "target": "experiences/loom-living/index.html",
+      "line": 293
+    },
+    {
+      "from": "docs/살아있는자리_설계_v1.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/살아있는자리_설계_v1.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/살아있는자리_설계_v1.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/살아있는자리_설계_v1.md",
+      "target": "experiences/loom-living/index.html",
+      "line": 13
+    },
+    {
+      "from": "docs/살아있는자리_설계_v1.md",
+      "target": "docs/성향추출_설계_v1.md",
+      "line": 23
+    },
+    {
+      "from": "docs/_ops/협업장치_정리_20260921.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/협업장치_정리_20260921.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 52
+    },
+    {
+      "from": "docs/_ops/qa/shift-release-preparation-20261007/README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 39
+    },
+    {
+      "from": "docs/_ops/qa/shift-operational-acceptance-20261007/README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 25
+    },
+    {
+      "from": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 15
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/recovery-20261017.zip",
+      "line": 7
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/remote-backup-manifest.json",
+      "line": 7
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/publication-scope.json",
+      "line": 7
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/inventory-pass4-start.json",
+      "line": 24
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 24
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass4.json",
+      "line": 24
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_원고/기록_202609_기획과조판.zip",
+      "line": 29
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_원고/기록_202609_기획과조판.json",
+      "line": 29
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 30
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass4.json",
+      "line": 39
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/archive-restore-pass4.json",
+      "line": 40
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/manuscript-reproduction-pass4.json",
+      "line": 41
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass4.json",
+      "line": 42
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass4.jsonl",
+      "line": 43
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 65
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/결정.md",
+      "line": 66
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass3.json",
+      "line": 72
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass3.json",
+      "line": 73
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/new-text-paths-pass3.json",
+      "line": 73
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/carousel-archive-guard-pass3.json",
+      "line": 74
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-business-master-pass3.json",
+      "line": 75
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass3.jsonl",
+      "line": 76
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-operations.json",
+      "line": 99
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-business.json",
+      "line": 99
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-product.json",
+      "line": 99
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-content.json",
+      "line": 99
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass2.json",
+      "line": 107
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass2.json",
+      "line": 108
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/content-validation-pass2.json",
+      "line": 108
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-review-pass2.json",
+      "line": 109
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass2.jsonl",
+      "line": 110
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/비전_정본.md",
+      "line": 117
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/제품방향.md",
+      "line": 117
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/사업발전_정본.md",
+      "line": 117
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 140
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/반편성_정본_v2.md",
+      "line": 3
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/BM_목록.md",
+      "line": 11
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/미성년_보호자기능_설계_20261002.md",
+      "line": 27
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 39
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출석체크인_설계_v1.md",
+      "line": 43
+    },
+    {
+      "from": "docs/포인트경제_재설계_v1.md",
+      "target": "docs/BM_목록.md",
+      "line": 3
+    },
+    {
+      "from": "docs/포인트경제_재설계_v1.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/포인트경제_재설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 11
+    },
+    {
+      "from": "docs/포인트경제_재설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/포인트경제_재설계_v1.md",
+      "line": 28
+    },
+    {
+      "from": "docs/학생일기_설계.md",
+      "target": "docs/_ops/결정.md",
+      "line": 28
+    },
+    {
+      "from": "docs/학생일기_설계.md",
+      "target": "docs/약관_처리방침_확인목록_20261003.md",
+      "line": 28
+    },
+    {
+      "from": "docs/학생일기_설계.md",
+      "target": "docs/개인정보처리방침_초안_v2.md",
+      "line": 28
+    },
+    {
+      "from": "docs/시즌회고_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 17
+    },
+    {
+      "from": "docs/시즌회고_설계.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 125
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/SYNK_철학.md",
+      "line": 9
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/사업발전_정본.md",
+      "line": 9
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 10
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 11
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/시즌회고_설계.md",
+      "line": 11
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/궤적_원장기록_실행지.md",
+      "line": 35
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/코어엔진_설계.md",
+      "line": 9
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/SYNK_전사용자_개인화_기반_20261002.md",
+      "line": 9
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 17
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "계약/수집_교정_계약.json",
+      "line": 34
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 61
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/SYNK_WORLD_AI_효율화_20261002.md",
+      "line": 61
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/성향추출_설계_v1.md",
+      "line": 73
+    },
+    {
+      "from": "docs/코어엔진_설계.md",
+      "target": "desktop/renderer/launcher.mjs",
+      "line": 86
+    },
+    {
+      "from": "docs/코어엔진_설계.md",
+      "target": "docs/성향추출_설계_v1.md",
+      "line": 267
+    },
+    {
+      "from": "docs/엔진/README.md",
+      "target": "docs/Strata_설계.md",
+      "line": 9
+    },
+    {
+      "from": "docs/엔진/README.md",
+      "target": "docs/문서_지도.md",
+      "line": 31
+    },
+    {
+      "from": "experiences/synk-world-app/README.md",
+      "target": "docs/_ops/결정.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/synk-world-app/README.md",
+      "target": "unity/SynkWorld/README.md",
+      "line": 9
+    },
+    {
+      "from": "experiences/synk-world-app/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md",
+      "line": 34
+    },
+    {
+      "from": "docs/SYNK_전사용자_개인화_기반_20261002.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/SYNK_전사용자_개인화_기반_20261002.md",
+      "target": "DESIGN.md",
+      "line": 70
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 11
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 50
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 59
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 59
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 59
+    },
+    {
+      "from": "docs/브랜드_폰트_정본.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 57
+    },
+    {
+      "from": "docs/브랜드_폰트_정본.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 57
+    },
+    {
+      "from": "docs/브랜드_폰트_정본.md",
+      "target": "docs/_ops/WORLD이야기화면_디테일_인계_20261015.md",
+      "line": 94
+    },
+    {
+      "from": "docs/명품_기준_v1.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 15
+    },
+    {
+      "from": "docs/명품_기준_v1.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 15
+    },
+    {
+      "from": "docs/명품_기준_v1.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 15
+    },
+    {
+      "from": "docs/디자인_컨셉_정본_v1.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/디자인_컨셉_정본_v1.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/디자인_컨셉_정본_v1.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/디자인_컨셉_정본_v1.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 71
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/비전_정본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/제품방향.md",
+      "line": 3
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/사업발전_정본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/급수진단_설계_v1.md",
+      "line": 10
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/성향추출_설계_v1.md",
+      "line": 10
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 11
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 16
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/마케팅/LAB.md",
+      "line": 18
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/자주묻는질문_정본.md",
+      "line": 18
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/명품브랜딩_v2.md",
+      "line": 22
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 19
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 50
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 93
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 93
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 97
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/채널과_발행.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/채널과_발행.md",
+      "line": 11
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 11
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 11
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/채널성과.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/콘텐츠_제작양식.md",
+      "line": 19
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 19
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 19
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 23
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/_ops/돈장부.json",
+      "line": 31
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 31
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "target": "DESIGN.md",
+      "line": 21
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 21
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 53
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 94
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/yuhobuilds_한줄시켰더니_20261003/README.md",
+      "line": 118
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/맞춤도구/README.md",
+      "line": 121
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 158
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 12
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 22
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 22
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 31
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 33
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 13
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 13
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 43
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 57
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 57
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "target": "DESIGN.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 13
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "target": "docs/마케팅/채널과_발행.md",
+      "line": 13
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 141
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 169
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 169
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 175
+    },
+    {
+      "from": "docs/디자인/펠트부품/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/디자인/펠트부품/README.md",
+      "target": "DESIGN.md",
+      "line": 22
+    },
+    {
+      "from": "docs/디자인/펠트부품/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 35
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "target": "docs/디자인/플랫폼_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "target": "docs/마케팅/콘텐츠_제작양식.md",
+      "line": 23
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "target": "docs/디자인/펠트부품/README.md",
+      "line": 155
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 155
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 134
+    },
+    {
+      "from": "docs/조직계보_정본_v1.md",
+      "target": "docs/가져가는것_설계_v1.md",
+      "line": 21
+    },
+    {
+      "from": "docs/조직계보_정본_v1.md",
+      "target": "docs/상표_출원준비_20261003.md",
+      "line": 30
+    },
+    {
+      "from": "docs/온라인학습자_20개국_확장방향_20260920.md",
+      "target": "docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 8
+    },
+    {
+      "from": "docs/온라인학습자_20개국_확장방향_20260920.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 14
+    },
+    {
+      "from": "docs/온라인학습자_20개국_확장방향_20260920.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 14
+    },
+    {
+      "from": "docs/온라인학습자_20개국_확장방향_20260920.md",
+      "target": "DESIGN.md",
+      "line": 14
+    },
+    {
+      "from": "docs/온라인학습자_20개국_확장방향_20260920.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 16
+    },
+    {
+      "from": "docs/출시나라_지원언어_후보표_20261003.md",
+      "target": "docs/SYNK_WORLD_AI_효율화_20261002.md",
+      "line": 33
+    },
+    {
+      "from": "docs/출시나라_지원언어_후보표_20261003.md",
+      "target": "docs/약관_처리방침_확인목록_20261003.md",
+      "line": 41
+    },
+    {
+      "from": "docs/출시나라_지원언어_후보표_20261003.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 43
+    },
+    {
+      "from": "docs/응급복구_런북.md",
+      "target": "docs/마케팅/댓글DM_자동화_실행안_20261007.md",
+      "line": 13
+    },
+    {
+      "from": "docs/응급복구_런북.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 13
+    },
+    {
+      "from": "docs/응급복구_런북.md",
+      "target": "tools/company-messenger/README.md",
+      "line": 14
+    },
+    {
+      "from": "docs/응급복구_런북.md",
+      "target": "docs/대용량자산_운영.md",
+      "line": 15
+    },
+    {
+      "from": "tools/film-check/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 26
+    },
+    {
+      "from": "tools/film-check/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 26
+    },
+    {
+      "from": "tools/world-mascot-photos/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 29
+    },
+    {
+      "from": "tools/synk-id/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 30
+    },
+    {
+      "from": "tools/synk-id/CARE-PUBLIC.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 14
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/STUDIO.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/PLATFORM_SETUP.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/PLATFORM_SETUP.md",
+      "target": "docs/마케팅/채널과_발행.md",
+      "line": 3
+    },
+    {
+      "from": "docs/상태기반_과제선택_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/상태기반_과제선택_설계.md",
+      "target": "docs/코어엔진_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/상태기반_과제선택_설계.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/상태기반_과제선택_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/상태기반_과제선택_설계.md",
+      "line": 5470
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 222
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 284
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 49
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 85
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 85
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_소식_도구추천.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 41
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_소식_도구추천.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 41
+    },
+    {
+      "from": "docs/마케팅/제작양식/제작여정_쇼츠.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 47
+    },
+    {
+      "from": "docs/마케팅/제작양식/제작여정_쇼츠.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 47
+    },
+    {
+      "from": "docs/마케팅/제작양식/인물클립.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 78
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_상황극.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 42
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_상황극.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 43
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_상황극.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 44
+    },
+    {
+      "from": "docs/캐릭터/의상제작_정본.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 21
+    },
+    {
+      "from": "docs/외부킷/uupm/출처.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 69
+    },
+    {
+      "from": "docs/외부킷/uupm/출처.md",
+      "target": "DESIGN.md",
+      "line": 69
+    },
+    {
+      "from": "docs/마케팅/SYNK.md",
+      "target": "docs/제품방향.md",
+      "line": 9
+    },
+    {
+      "from": "docs/마케팅/LAB.md",
+      "target": "docs/제품방향.md",
+      "line": 26
+    },
+    {
+      "from": "docs/마케팅/LAB.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 75
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/SHIFT/내부시범_20261007/README.md",
+      "line": 9
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/SHIFT/실증_20261007/README.md",
+      "line": 9
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 13
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/사업발전_정본.md",
+      "line": 14
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/PATH_개인화여행_설계.md",
+      "line": 14
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 16
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/제품방향.md",
+      "line": 27
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/궤적_원장기록_실행지.md",
+      "line": 28
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "line": 31
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "experiences/path-vr/README.md",
+      "line": 31
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/설계_v1.md",
+      "line": 35
+    },
+    {
+      "from": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 158
+    },
+    {
+      "from": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "target": "docs/궤적_원장기록_실행지.md",
+      "line": 158
+    },
+    {
+      "from": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/VR직업체험_설계_v1.md",
+      "line": 160
+    },
+    {
+      "from": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "target": "docs/SHIFT/설계_v1.md",
+      "line": 160
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CREATIVE-RESEARCH-PRODUCER.md",
+      "line": 37
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/README.md",
+      "target": "docs/디자인/워크스페이스_시그널/README.md",
+      "line": 70
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CONTENT_ENGINE.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CONTENT_ENGINE.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CREATIVE-RESEARCH-PRODUCER.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 33
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 90
+    },
+    {
+      "from": "docs/학생ID_종단_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 19
+    },
+    {
+      "from": "docs/엔진추천목표_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 13
+    },
+    {
+      "from": "docs/학습데이터_스키마감사.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/학습데이터_스키마감사.md",
+      "target": "docs/제품방향.md",
+      "line": 3
+    },
+    {
+      "from": "docs/학습데이터_스키마감사.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/README.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/앱로드맵_20260921/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/앱로드맵_20260921/README.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 5
+    },
+    {
+      "from": "docs/앱로드맵_20260921/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 11
+    },
+    {
+      "from": "experiences/brand-opening/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/brand-opening/README.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/namsan-launcher/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진도달_설계.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 26
+    },
+    {
+      "from": "docs/미성년_보호자기능_설계_20261002.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/미성년_보호자기능_설계_20261002.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "desktop/mac-dmg/README.md",
+      "target": "desktop/README.md",
+      "line": 3
+    },
+    {
+      "from": "desktop/mac-dmg/README.md",
+      "target": "desktop/LIFECYCLE.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/README.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/README.md",
+      "target": "docs/Strata_설계.md",
+      "line": 19
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/엔진/atlas-constellation-20260921/README.md",
+      "line": 81
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 81
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/feature-sources-20260922.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/feature-sources-20260922.md",
+      "target": "docs/Strata_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/커리큘럼_정본_v1.md",
+      "target": "docs/BM_목록.md",
+      "line": 64
+    },
+    {
+      "from": "docs/커리큘럼_정본_v1.md",
+      "target": "docs/포인트경제_재설계_v1.md",
+      "line": 64
+    },
+    {
+      "from": "docs/커리큘럼_정본_v1.md",
+      "target": "docs/포인트경제_재설계_v1.md",
+      "line": 479
+    },
+    {
+      "from": "docs/커리큘럼_정본_v1.md",
+      "target": "docs/BM_목록.md",
+      "line": 480
+    },
+    {
+      "from": "docs/커리큘럼_정본_v1.md",
+      "target": "docs/포인트경제_재설계_v1.md",
+      "line": 480
+    },
+    {
+      "from": "tools/company-messenger/DESIGN.md",
+      "target": "docs/디자인/워크스페이스_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "tools/company-messenger/DESIGN.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "line": 3
+    },
+    {
+      "from": "tools/company-messenger/DESIGN_UPGRADE_20261001.md",
+      "target": "docs/디자인/워크스페이스_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "tools/company-messenger/DESIGN_UPGRADE_20261001.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/상표_출원준비_20261003.md",
+      "line": 11
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/_ops/결정.md",
+      "line": 11
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/_ops/트랙.md",
+      "line": 11
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/_ops/트랙.md",
+      "line": 19
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 214
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 214
+    },
+    {
+      "from": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 214
+    },
+    {
+      "from": "docs/PATH_개인화여행_설계.md",
+      "target": "experiences/path-travel/qa/production-20261009/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/지분설계_헌장.md",
+      "target": "docs/제품방향.md",
+      "line": 8
+    },
+    {
+      "from": "docs/지분설계_헌장.md",
+      "target": "docs/_ops/트랙.md",
+      "line": 8
+    },
+    {
+      "from": "docs/관찰태그_자동화_설계.md",
+      "target": "docs/교실수집_목표왕복_설계_v1.md",
+      "line": 8
+    },
+    {
+      "from": "docs/관찰태그_자동화_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/관찰태그_자동화_설계.md",
+      "line": 10
+    },
+    {
+      "from": "docs/시트_RowID_정리_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/시트_RowID_정리_설계_v1.md",
+      "line": 21
+    },
+    {
+      "from": "docs/시트_RowID_정리_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 23
+    },
+    {
+      "from": "docs/시트_RowID_정리_설계_v1.md",
+      "target": "docs/응급복구_런북.md",
+      "line": 23
+    },
+    {
+      "from": "docs/세층합류_설계_v1.md",
+      "target": "docs/코어엔진_설계.md",
+      "line": 12
+    },
+    {
+      "from": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+      "target": "docs/오프라인_공간설계/평면도_20260929/SYNK_남녀화장실_6안.svg",
+      "line": 296
+    },
+    {
+      "from": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+      "target": "docs/오프라인_공간설계/평면도_20260929/SYNK_남녀화장실_6안.svg",
+      "line": 317
+    },
+    {
+      "from": "docs/SYNK_동기화_구조.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/SYNK_동기화_구조.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/SYNK_동기화_구조.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/관통왕복_명세.md",
+      "target": "docs/코어엔진_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/관통왕복_명세.md",
+      "target": "docs/엔진도달_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/복습스케줄러_설계.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 5
+    },
+    {
+      "from": "docs/복습스케줄러_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/복습스케줄러_설계.md",
+      "line": 7
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 7
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 32
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/철학_적용기준.md",
+      "line": 32
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/살아있는자리_설계_v1.md",
+      "line": 36
+    },
+    {
+      "from": "docs/앱재설계_v2.md",
+      "target": "docs/성향추출_설계_v1.md",
+      "line": 61
+    },
+    {
+      "from": "docs/앱재설계_재기_0905.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 5
+    },
+    {
+      "from": "docs/앱재설계_재기_0905.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/앱재설계_재기_0905.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/첫로그인_마스코트추천_개인화_설계_v1.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/첫로그인_첫만남_장면설계_v1.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/첫로그인_첫만남_장면설계_v1.md",
+      "target": "DESIGN.md",
+      "line": 39
+    },
+    {
+      "from": "docs/첫로그인_첫만남_장면설계_v1.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 39
+    },
+    {
+      "from": "docs/BM_목록.md",
+      "target": "docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 183
+    },
+    {
+      "from": "docs/BM_목록.md",
+      "target": "docs/개원전판매_설계_v1.md",
+      "line": 273
+    },
+    {
+      "from": "영상/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 5
+    },
+    {
+      "from": "영상/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5
+    },
+    {
+      "from": "영상/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 5
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/마케팅/채널과_발행.md",
+      "line": 3
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/비전_정본.md",
+      "line": 11
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/마케팅/SHIFT.md",
+      "line": 12
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 13
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/수강약관_초안_v1.md",
+      "line": 15
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 28
+    },
+    {
+      "from": "캐러셀/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 34
+    },
+    {
+      "from": "docs/아틀라스_설계.md",
+      "target": "experiences/hangul-stage/README.md",
+      "line": 328
+    },
+    {
+      "from": "docs/아틀라스_설계.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 604
+    },
+    {
+      "from": "docs/아틀라스_설계.md",
+      "target": "experiences/hangul-stage/README.md",
+      "line": 604
+    },
+    {
+      "from": "tools/company-messenger/API.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "tools/company-messenger/DRIVE.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "tools/company-messenger/public/assets/SOURCES.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "tools/synk-id/UNIFIED-CONFIG.md",
+      "target": "tools/synk-id/qa/path-travel-production-20261009/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/개인정보처리방침_초안_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 7
+    },
+    {
+      "from": "docs/개인정보처리방침_초안_v1.md",
+      "target": "docs/개인정보처리방침_초안_v2.md",
+      "line": 7
+    },
+    {
+      "from": "docs/개인정보처리방침_초안_v2.md",
+      "target": "docs/PATH_개인화여행_설계.md",
+      "line": 5
+    },
+    {
+      "from": "docs/아틀라스_구현명세.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 6
+    },
+    {
+      "from": "docs/아틀라스_구현명세.md",
+      "target": "experiences/hangul-stage/README.md",
+      "line": 498
+    },
+    {
+      "from": "docs/앱이용약관_초안_v1.md",
+      "target": "docs/BM_목록.md",
+      "line": 6
+    },
+    {
+      "from": "evals/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/음악자산_장부.md",
+      "target": "docs/마케팅/synkbrief_AI구독계정판_20261017/콘티.md",
+      "line": 22
+    },
+    {
+      "from": "docs/철학_실물현황.md",
+      "target": "experiences/path-travel/README.md",
+      "line": 42
+    },
+    {
+      "from": "bots/오버레이/README.md",
+      "target": "docs/음악자산_장부.md",
+      "line": 3
+    },
+    {
+      "from": "bots/오버레이/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/README.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/README.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/voice-timing.json",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/README.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/verification/",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v13/README.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/포트폴리오_회사소개_20260926/README.md",
+      "target": "docs/마케팅/포트폴리오_회사소개_20260927/README.md",
+      "line": 5
+    },
+    {
+      "from": "unity/SynkWorld/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/SYNK_ID.md",
+      "target": "docs/_ops/qa/platform-real-account-20261010/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/검증_20260927.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/검증_20260927.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/video/real-actor-composite-4s-v1/README.md",
+      "target": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "line": 44
+    },
+    {
+      "from": "desktop/LIFECYCLE.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "desktop/LIFECYCLE.md",
+      "target": "desktop/README.md",
+      "line": 3
+    },
+    {
+      "from": "desktop/installer/README.md",
+      "target": "desktop/LIFECYCLE.md",
+      "line": 3
+    },
+    {
+      "from": "desktop/installer/README.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_아이디어_창고.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/README.md",
+      "line": 33
+    },
+    {
+      "from": "docs/마케팅/synkbrief_아이디어_창고.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v20/README.md",
+      "line": 33
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/함께한날_설계_v1.md",
+      "line": 3
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/철학_적용기준.md",
+      "line": 18
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 18
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "line": 19
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/공개판_설계.md",
+      "line": 20
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/학생일기_설계.md",
+      "line": 21
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/개인정보처리방침_초안_v2.md",
+      "line": 21
+    },
+    {
+      "from": "docs/마케팅/synkbrief_AI구독계정판_20261017/기획.md",
+      "target": "desktop/src/ai-subscriptions.cjs",
+      "line": 46
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "target": "DESIGN.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "target": "docs/사업발전_정본.md",
+      "line": 357
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 643
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-DATA-MIGRATION.md",
+      "line": 810
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 1198
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-automation-20261009/",
+      "line": 1224
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": "tools/company-messenger/creative-research-spark-prompt.txt",
+      "line": 1224
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-automation-20261009/review-overlay-v7/overlay-manifest.json",
+      "line": 1228
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/candidate-test-result.json",
+      "line": 1242
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/qa-v8/safe-receipt.json",
+      "line": 1242
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v8/PORTABLE-OVERLAY.txt",
+      "line": 1246
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/reliability-20261011/result.json",
+      "line": 1254
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json",
+      "line": 1266
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/deployment-summary.json",
+      "line": 1266
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CREATIVE-RESEARCH-PRODUCER.md",
+      "line": 1270
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v9.json",
+      "line": 1272
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/summary.json",
+      "line": 1272
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v11.json",
+      "line": 1278
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/qa-v11-verified/summary.json",
+      "line": 1278
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v11/claude-review-summary.json",
+      "line": 1280
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/image-v11/result-r3.json",
+      "line": 1282
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/production-handoff-result.json",
+      "line": 1286
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/public-operating-proof.json",
+      "line": 1286
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/actual-delivery/README.md",
+      "line": 1290
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-v12/operating-before-refill-receipt.json",
+      "line": 1292
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-v12/saved-reopened-receipt-v14.json",
+      "line": 1294
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/result.json",
+      "line": 1296
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v15/claude-review-summary.json",
+      "line": 1296
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/evening-source-settings/handoff.json",
+      "line": 1298
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-role-preparation/preparation-receipt.json",
+      "line": 1300
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/운영가이드.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/운영가이드.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/README.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/instagram-delivery/README.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/SNS키트/모션견본/BRIEF.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 23
+    },
+    {
+      "from": "docs/디자인/SNS키트/모션견본/design.md",
+      "target": "docs/브랜드_폰트_정본.md",
+      "line": 6
+    },
+    {
+      "from": "docs/디자인/게임_시작화면과_브랜드오프닝.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/게임_풍경과_재질.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 14
+    },
+    {
+      "from": "docs/디자인/게임_풍경과_재질.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 29
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 42
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/README.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/반영_순서.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/반영_순서.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/가입준비_브라질멕시코.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/가입준비_브라질멕시코.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 39
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/브랜드_폰트_정본.md",
+      "line": 218
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/함께한날_설계_v1.md",
+      "line": 366
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/철학_적용기준.md",
+      "line": 590
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 590
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "line": 724
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 744
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 748
+    },
+    {
+      "from": "docs/캐릭터/가이드_정본.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 748
+    },
+    {
+      "from": "docs/캐릭터/이야기기계_상황집.md",
+      "target": "docs/캐릭터/가이드_정본.md",
+      "line": 83
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시_체크리스트.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/SHIFT_영상2편_제작계획_20260921.md",
+      "target": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/SHIFT_영상2편_제작계획_20260921.md",
+      "target": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/README.md",
+      "line": 14
+    },
+    {
+      "from": "docs/마케팅/SHIFT_영상2편_제작계획_20260921.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 16
+    },
+    {
+      "from": "docs/마케팅/SHIFT_영상2편_제작계획_20260921.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 16
+    },
+    {
+      "from": "docs/디자인/월드_시그널/README.md",
+      "target": "experiences/korean-runner/README.md",
+      "line": 68
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 4
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 200
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-host.py",
+      "line": 522
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/failover-policy.mjs",
+      "line": 522
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "line": 527
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/Caddyfile",
+      "line": 529
+    },
+    {
+      "from": "docs/_ops/고객관리_11판_릴리스_인계_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/BGM과_목소리_제작안_20260919.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/BGM과_목소리_제작안_20260919.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/원고.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/README.md",
+      "line": 1
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/촬영준비_20260920.md",
+      "target": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/촬영준비_20260920.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/촬영준비_20260920.md",
+      "target": "DESIGN.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/설치창_다운로드_저장소정리_인계_20261014.md",
+      "target": "desktop/LIFECYCLE.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/설치창_다운로드_저장소정리_인계_20261014.md",
+      "target": "desktop/installer/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/설치창_다운로드_저장소정리_인계_20261014.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 21
+    },
+    {
+      "from": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 55
+    },
+    {
+      "from": "docs/마케팅/크몽_AI프로필_20261001/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 47
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 66
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/1편_6월의시작_원고.md",
+      "target": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/soul-id-20261001/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/INTEGRATION.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/INTEGRATION.md",
+      "target": "DESIGN.md",
+      "line": 13
+    },
+    {
+      "from": "tools/patent-studio/PATENT-EVIDENCE.md",
+      "target": "tools/patent-studio/final-meeting-20260915/README.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/PATENT-EVIDENCE.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/final-meeting-20260915/README.md",
+      "target": "DESIGN.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/1편_피드백과_다음제작기준.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/1편_피드백과_다음제작기준.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/마을_플레이경험과_준비사항_20260921.md",
+      "target": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+      "line": 17
+    },
+    {
+      "from": "docs/디자인/마을_플레이경험과_준비사항_20260921.md",
+      "target": "docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 113
+    },
+    {
+      "from": "docs/디자인/미래한국_마을_풍경.md",
+      "target": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+      "line": 58
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "target": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/README.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 15
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_제작여정_202607-20260922/README.md",
+      "target": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/README.md",
+      "line": 30
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/실사판_제작준비.md",
+      "target": "docs/마케팅/LAB_카페_다시말해주세요_20260926/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/실사판_제작준비.md",
+      "target": "docs/마케팅/LAB_카페_다시말해주세요_20260926/performance-references/next-video-tests.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/실사판_제작준비.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_카페_다시말해주세요_20260926/실사판_제작준비.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB표현소개_아맞다_20260927/README.md",
+      "target": "docs/마케팅/LAB표현소개_아맞다_20260927/kit-v1/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB표현소개_아맞다_20260927/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 5
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/제품방향.md",
+      "line": 7
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/비전_정본.md",
+      "line": 7
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 8
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/코어엔진_설계.md",
+      "line": 9
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 10
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/개인정보처리방침_초안_v1.md",
+      "line": 11
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/개인정보처리방침_초안_v2.md",
+      "line": 11
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/AI_운영원칙.md",
+      "line": 12
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/캐릭터/가이드_정본.md",
+      "line": 26
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "line": 30
+    },
+    {
+      "from": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "target": "docs/비전_정본.md",
+      "line": 200
+    },
+    {
+      "from": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "target": "docs/캐릭터/가이드_정본.md",
+      "line": 206
+    },
+    {
+      "from": "docs/마케팅/클라이언트_발주서_20260930/버전비교_개선설계.md",
+      "target": "docs/마케팅/클라이언트_발주서_20260930/발주서_질문설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "target": "experiences/order-rush/README.md",
+      "line": 4
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 4
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "target": "DESIGN.md",
+      "line": 143
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 143
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md",
+      "target": "experiences/order-rush/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md",
+      "target": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/AI광고_레퍼런스10_20260929.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/AI광고_레퍼런스10_20260929.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시_체크리스트.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/원고.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/instagram_synk.mn.txt",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/facebook_synkworld.txt",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/대체텍스트.txt",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/고정댓글.txt",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 16
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/남은반영_붙여넣기.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/남은반영_붙여넣기.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/반영기록.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/남은반영_붙여넣기.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/계정별_문구.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/남은반영_붙여넣기.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/계정별_문구_LAB해외.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+      "target": "docs/마케팅/첫콘텐츠_재작성_20260919/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 27
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/SHIFT/내부시범_20261007/README.md",
+      "line": 29
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/SHIFT/실증_20261007/README.md",
+      "line": 29
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/SHIFT/설계_v1.md",
+      "line": 33
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "line": 37
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/soul-id-20261001/next-shot-draft.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
+      "target": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_한줄시켰더니_20261003/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 54
+    },
+    {
+      "from": "docs/마케팅/yuhobuilds_한줄시켰더니_20261003/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 54
+    },
+    {
+      "from": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+      "target": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+      "line": 19
+    },
+    {
+      "from": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "target": "experiences/synk-town/qa/DAY.md",
+      "line": 30
+    },
+    {
+      "from": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "target": "experiences/synk-town/qa/DAY.md",
+      "line": 364
+    },
+    {
+      "from": "docs/SYNK_공통계정_구현검증_20261002.md",
+      "target": "docs/SYNK_WORLD_AI_효율화_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/SNS_준비현황과_콘텐츠분류_20260921.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/SNS_준비현황과_콘텐츠분류_20260921.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/가입준비_LAB해외.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/가입준비_LAB해외.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/가입준비_LAB해외.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토.md",
+      "target": "docs/비전_정본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/SNS_업로드설정_20260924/README.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/SNS_업로드설정_20260924/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/크몽_3개서비스_등록초안_20260929.md",
+      "target": "docs/마케팅/크몽_등록준비_20260929/등록요건_확인.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/크몽_3개서비스_등록초안_20260929.md",
+      "target": "docs/마케팅/SHIFT.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/바이럴_검토와_보완_20260927.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/마을_생활경영_스팀조사_20260921.md",
+      "target": "docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 106
+    },
+    {
+      "from": "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 11
+    },
+    {
+      "from": "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 11
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/계정설계_20260920.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 2
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/계정설계_20260920.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 2
+    },
+    {
+      "from": "experiences/mascot-render-lab/README.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/namsan-engine-comparison.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/namsan-engine-comparison.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/synk-world-home/scene-assets/README.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-world-home/scene-assets/README.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/path-vr/models/README.md",
+      "target": "experiences/path-vr/models/whisper-base/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/path-vr/models/README.md",
+      "target": "experiences/path-vr/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/코스튬방_Steam10종_편의성조사_20261009.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 240
+    },
+    {
+      "from": "docs/마케팅/클라이언트_발주서_20260930/검증_기록.md",
+      "target": "docs/마케팅/클라이언트_발주서_20260930/발주서_질문설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/실촬영_분할콘티_20261001.md",
+      "target": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/실촬영_분할콘티_20261001.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/실촬영_분할콘티_20261001.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 99
+    },
+    {
+      "from": "docs/아틀라스_교육업그레이드_20260930.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/아틀라스_교육업그레이드_20260930.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/아틀라스_검토_20261002.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/아틀라스_검토_20261002.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/아틀라스_첫지속기억_20260921.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 5
+    },
+    {
+      "from": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "target": "docs/캐릭터/가이드_정본.md",
+      "line": 57
+    },
+    {
+      "from": "docs/디자인/싱크타운_생활사건_설계.md",
+      "target": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "line": 30
+    },
+    {
+      "from": "docs/디자인/싱크타운_생활사건_설계.md",
+      "target": "experiences/synk-town/README.md",
+      "line": 311
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-core-trail-temper.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-core-trail-temper.md",
+      "target": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-prism-strata.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-prism-strata.md",
+      "target": "docs/Strata_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-vellum-loom-reed.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/엔진/지도_20260921/audit-vellum-loom-reed.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK FAQ.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/댓글DM_자료표.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 29
+    },
+    {
+      "from": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "target": "docs/캐릭터/가이드_정본.md",
+      "line": 72
+    },
+    {
+      "from": "docs/아틀라스_순간맞춤_20261002.md",
+      "target": "docs/SYNK_철학.md",
+      "line": 3
+    },
+    {
+      "from": "docs/한글단계_학습방식_조사_20261004.md",
+      "target": "docs/한글단계_노래영상_근거점검_20261008.md",
+      "line": 3
+    },
+    {
+      "from": "docs/한글단계_학습방식_조사_20261004.md",
+      "target": "experiences/hangul-stage/songs/노래영상_가이드.md",
+      "line": 3
+    },
+    {
+      "from": "docs/한글단계_노래영상_근거점검_20261008.md",
+      "target": "experiences/hangul-stage/songs/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/가입후_붙여넣기.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/가입후_붙여넣기.md",
+      "target": "docs/마케팅/온라인마케팅지도/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/가입후_붙여넣기.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/가입후_붙여넣기.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 기업소개서.txt",
+      "target": "DESIGN.md",
+      "line": 148
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 기업소개서.txt",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 216
+    },
+    {
+      "from": "experiences/hangul-stage/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 95
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토_LAB해외.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토_LAB해외.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필_클로드판_20261002/소개글_검토_LAB해외.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/미니게임_게임층_설계.md",
+      "target": "docs/미니게임_TOPIK_I_학습기준.md",
+      "line": 3
+    },
+    {
+      "from": "docs/미니게임_게임층_설계.md",
+      "target": "docs/아틀라스_순간맞춤_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/미니게임_게임층_설계.md",
+      "target": "DESIGN.md",
+      "line": 80
+    },
+    {
+      "from": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 156
+    },
+    {
+      "from": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 208
+    },
+    {
+      "from": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 208
+    },
+    {
+      "from": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "target": "DESIGN.md",
+      "line": 215
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/최종점검_20260920.md",
+      "target": "docs/마케팅/온라인마케팅지도/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/intl-social/최종점검_20260920.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필최신화_20260919/반영기록_20260919.md",
+      "target": "docs/마케팅/sns-계정.json",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/프로필최신화_20260919/반영기록_20260919.md",
+      "target": "docs/마케팅/프로필_클로드판_20261002/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/옷입히기_설계_v1.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/옷입히기_설계_v1.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티.md",
+      "target": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/조사_20261013.md",
+      "target": "desktop/README.md",
+      "line": 146
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+      "target": "docs/_ops/qa/platform-convenience-20261009/README.md",
+      "line": 53
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+      "target": "desktop/README.md",
+      "line": 53
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "target": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 7
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 7
+    },
+    {
+      "from": "docs/주민_설계.md",
+      "target": "experiences/synk-town/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/주민_설계.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/_ops/트랙.md",
+      "line": 9
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/_ops/결정.md",
+      "line": 10
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+      "line": 11
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "line": 12
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/유지비_BM/학원_개원_예산과_준비기간_20261001.md",
+      "line": 13
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 14
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "line": 20
+    },
+    {
+      "from": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 167
+    },
+    {
+      "from": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "target": "docs/철학_실물현황.md",
+      "line": 211
+    },
+    {
+      "from": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티_v3_멀티캠_20261003.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/한강2126_포트폴리오_20260930/영상_콘티_v3_멀티캠_20261003.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/공개판_설계.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 3
+    },
+    {
+      "from": "docs/공개판_설계.md",
+      "target": "docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 5
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 12
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 12
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 19
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 22
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 22
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/싱크타운_첫생활구간_설계.md",
+      "line": 80
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "experiences/korean-runner/README.md",
+      "line": 123
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 206
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 245
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 251
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 271
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 327
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 334
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 361
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 361
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 361
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 362
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 374
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "experiences/korean-runner/README.md",
+      "line": 386
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/BM_목록.md",
+      "line": 393
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 406
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/BM_목록.md",
+      "line": 408
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 413
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 420
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/게임_풍경과_재질.md",
+      "line": 420
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 422
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 437
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 443
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "experiences/korean-runner/README.md",
+      "line": 445
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/싱크타운_첫생활구간_설계.md",
+      "line": 447
+    },
+    {
+      "from": "docs/디자인/월드_시그널/조사_20261014.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 448
+    },
+    {
+      "from": "docs/마을_설계.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "target": "docs/마케팅/제작양식/만족사례_장부.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/발음데이터_규격.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 3
+    },
+    {
+      "from": "docs/발음데이터_규격.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/발음데이터_규격.md",
+      "target": "docs/공개판_설계.md",
+      "line": 5
+    },
+    {
+      "from": "docs/발음데이터_규격.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 484
+    },
+    {
+      "from": "docs/발음데이터_규격.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 724
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/computer/게시연결.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 18
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/computer/게시연결.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 18
+    },
+    {
+      "from": "experiences/beginner-games/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/blank-slice/README.md",
+      "target": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+      "line": 5
+    },
+    {
+      "from": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "target": "docs/철학_적용기준.md",
+      "line": 946
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/meeting/게시연결.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 18
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/meeting/게시연결.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 18
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/manual/게시연결.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 25
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/manual/게시연결.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 25
+    },
+    {
+      "from": "experiences/brand-opening/HOME.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/conversation-rehearsal/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 17
+    },
+    {
+      "from": "experiences/daily-fortune/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/play-common/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 16
+    },
+    {
+      "from": "experiences/entry-check/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 14
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/댓글DM_자료표.md",
+      "line": 14
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/맞춤도구/manual/게시연결.md",
+      "line": 63
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/맞춤도구/move/게시연결.md",
+      "line": 64
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/맞춤도구/manual/게시연결.md",
+      "line": 103
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/댓글DM_제작게시연결.md",
+      "line": 119
+    },
+    {
+      "from": "experiences/hangul-stage/songs/노래영상_가이드.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/hangul-stage/songs/노래영상_가이드.md",
+      "target": "experiences/hangul-stage/README.md",
+      "line": 91
+    },
+    {
+      "from": "experiences/korean-racing/DESIGN-PROGRESSION.md",
+      "target": "experiences/korean-racing/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/korean-racing/DESIGN-PROGRESSION.md",
+      "target": "experiences/play-common/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/korean-racing/README.md",
+      "target": "experiences/play-common/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/korean-racing/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/korean-rhythm/README.md",
+      "target": "experiences/play-common/README.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/korean-rhythm/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/spaceship-coop/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 143
+    },
+    {
+      "from": "experiences/korean-runner/README.md",
+      "target": "experiences/play-common/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/korean-runner/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/order-rush/README.md",
+      "target": "experiences/beginner-games/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/order-rush/README.md",
+      "target": "experiences/play-common/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/order-rush/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-world-app/LIFE-CONTENT.md",
+      "target": "docs/디자인/월드_시그널/README.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/talk-rally/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 5
+    },
+    {
+      "from": "experiences/word-magic/README.md",
+      "target": "experiences/play-common/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/word-magic/README.md",
+      "target": "experiences/beginner-games/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/word-magic/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/story-classroom/README.md",
+      "target": "experiences/beginner-games/qa/account-sync/README.md",
+      "line": 45
+    },
+    {
+      "from": "experiences/story-classroom/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 70
+    },
+    {
+      "from": "experiences/teacher-world/README.md",
+      "target": "docs/_ops/qa/workspace-connect-20261009/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 9
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 13
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 13
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/upgrade-info-misc.md",
+      "line": 34
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/preview-render.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/preview-render.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 16
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 20
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 20
+    },
+    {
+      "from": "experiences/korean-runner/qa/MOBILE-CHECK.md",
+      "target": "experiences/korean-runner/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+      "target": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "line": 10
+    },
+    {
+      "from": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+      "target": "docs/_ops/qa/workroom-practice-removal-20261009/README.md",
+      "line": 10
+    },
+    {
+      "from": "docs/_ops/qa/atlas-eight-fix-20261008/PUSH.md",
+      "target": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "line": 24
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "target": "docs/_ops/트랙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/엔진8종표기정리_20260921/README.md",
+      "target": "docs/아틀라스_설계.md",
+      "line": 7
+    },
+    {
+      "from": "docs/_ops/qa/platform-reinstall-worldbook-20261010/README.md",
+      "target": "docs/_ops/qa/platform-auto-update-20261014/README.md",
+      "line": 5
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v14/낭독대본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v14/낭독대본.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v17/design.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v17/design.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/operations.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/operations.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/setup-providers.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/setup-providers.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/bgm.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/bgm.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/luts/README.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/luts/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/meta.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/meta.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/contributing.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/contributing.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+      "target": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+      "line": 54
+    },
+    {
+      "from": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+      "target": "experiences/relationship-care/README.md",
+      "line": 54
+    },
+    {
+      "from": "tools/patent-studio/grant-path-20260913/README.md",
+      "target": "docs/문서_지도.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/grant-path-20260913/README.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/grant-path-20260913/README.md",
+      "target": "DESIGN.md",
+      "line": 3
+    },
+    {
+      "from": "tools/patent-studio/grant-path-20260913/README.md",
+      "target": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+      "line": 63
+    },
+    {
+      "from": "docs/_ops/qa/atlas-eight-fix-20261008/README.md",
+      "target": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+      "line": 60
+    },
+    {
+      "from": "experiences/synk-world-app/qa/V4.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 40
+    },
+    {
+      "from": "experiences/synk-world-app/qa/V5.md",
+      "target": "experiences/beginner-games/qa/account-sync/README.md",
+      "line": 39
+    },
+    {
+      "from": "experiences/synk-world-app/qa/V5.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 39
+    },
+    {
+      "from": "experiences/relationship-care/qa/focus-20261007/README.md",
+      "target": "experiences/relationship-care/qa/push-20261007/README.md",
+      "line": 39
+    },
+    {
+      "from": "experiences/synk-world-app/qa/account-desktop-20261012/README.md",
+      "target": "experiences/synk-world-app/qa/tutor-selection-20261012/README.md",
+      "line": 23
+    },
+    {
+      "from": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+      "target": "experiences/synk-world-app/qa/tutor-release-20261011/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+      "target": "experiences/synk-world-app/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/relationship-care/qa/RESULTS.md",
+      "target": "experiences/relationship-care/qa/PUBLIC-WEB.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/relationship-care/qa/RESULTS.md",
+      "target": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/relationship-care/qa/RESULTS.md",
+      "target": "experiences/relationship-care/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "target": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/typography.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-picker.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/prompt-expansion.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/narration.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/path-vr/qa/optimize-20261013/README.md",
+      "target": "experiences/path-vr/qa/media-hosting-20261013/README.md",
+      "line": 78
+    },
+    {
+      "from": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "target": "experiences/relationship-care/qa/PUBLIC-WEB.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "target": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "target": "experiences/synk-account/qa/cleanup-20261008/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/intent-interview.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/brief-contract.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/review-loop.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/production-loop.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/subagent-dispatch.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/capability-menu.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/pitch-round.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "line": 67
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/determinism-rules.md",
+      "line": 67
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 8
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "target": "DESIGN.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 10
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/critique.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 1
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/live.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 1
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/generate.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 1
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/visualize.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/new-work.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/document.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 1
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/init.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/craft-floor.md",
+      "target": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/path-vr/qa/public-release-20261012/README.md",
+      "target": "experiences/path-vr/README.md",
+      "line": 3
+    },
+    {
+      "from": "experiences/talk-rally/qa/RESULTS.md",
+      "target": "experiences/talk-rally/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "line": 13
+    },
+    {
+      "from": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 13
+    },
+    {
+      "from": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "line": 12
+    },
+    {
+      "from": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 12
+    },
+    {
+      "from": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "target": "experiences/play-common/kit/josa.mjs",
+      "line": 9
+    },
+    {
+      "from": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md",
+      "line": 16
+    },
+    {
+      "from": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 16
+    },
+    {
+      "from": "docs/_ops/qa/workspace-signal-20261010/README.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "line": 130
+    },
+    {
+      "from": "docs/앱로드맵_20260921/audit-village.md",
+      "target": "docs/문서_지도.md",
+      "line": 7
+    },
+    {
+      "from": "docs/앱로드맵_20260921/audit-learning.md",
+      "target": "docs/문서_지도.md",
+      "line": 7
+    },
+    {
+      "from": "docs/앱로드맵_20260921/audit-platform.md",
+      "target": "docs/문서_지도.md",
+      "line": 7
+    },
+    {
+      "from": "docs/_ops/아틀라스2단계_인계_20260918.md",
+      "target": "docs/엔진8종_상향설계_v3.md",
+      "line": 132
+    },
+    {
+      "from": "docs/_ops/아틀라스2단계_인계_20260918.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md",
+      "line": 132
+    },
+    {
+      "from": "docs/_ops/qa/atlas-review-20261006/README.md",
+      "target": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+      "line": 39
+    },
+    {
+      "from": "docs/_ops/LAB게임_목소리_인계_20261008.md",
+      "target": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "line": 36
+    },
+    {
+      "from": "docs/_ops/qa/platform-signal2-20261010/README.md",
+      "target": "docs/_ops/qa/platform-auto-update-20261014/README.md",
+      "line": 28
+    },
+    {
+      "from": "docs/_ops/qa/platform-signal2-20261010/README.md",
+      "target": "docs/_ops/qa/platform-real-account-20261010/README.md",
+      "line": 28
+    },
+    {
+      "from": "docs/_ops/qa/platform-signal2-20261010/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md",
+      "line": 28
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261007.md",
+      "target": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "line": 34
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261007.md",
+      "target": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+      "line": 34
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261007.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md",
+      "line": 34
+    },
+    {
+      "from": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "target": "docs/디자인/SNS키트/README.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/HyperFrames_기존영상_참고.md",
+      "target": "docs/AI_운영원칙.md",
+      "line": 3
+    },
+    {
+      "from": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-keyframes/SKILL.md",
+      "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "line": 6
+    }
+  ],
+  "missingLinks": [
+    {
+      "from": "docs/숙제서클_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/숙제서클_설계.md",
+      "line": 46,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/recovery-20261017.zip",
+      "line": 7,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/remote-backup-manifest.json",
+      "line": 7,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/publication-scope.json",
+      "line": 7,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/inventory-pass4-start.json",
+      "line": 24,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 24,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass4.json",
+      "line": 24,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_원고/기록_202609_기획과조판.zip",
+      "line": 29,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_원고/기록_202609_기획과조판.json",
+      "line": 29,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass4.json",
+      "line": 39,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/archive-restore-pass4.json",
+      "line": 40,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/manuscript-reproduction-pass4.json",
+      "line": 41,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass4.json",
+      "line": 42,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass4.jsonl",
+      "line": 43,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 65,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass3.json",
+      "line": 72,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass3.json",
+      "line": 73,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/new-text-paths-pass3.json",
+      "line": 73,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/carousel-archive-guard-pass3.json",
+      "line": 74,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-business-master-pass3.json",
+      "line": 75,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass3.jsonl",
+      "line": 76,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-operations.json",
+      "line": 99,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-business.json",
+      "line": 99,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-product.json",
+      "line": 99,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/semantic-content.json",
+      "line": 99,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/tests-pass2.json",
+      "line": 107,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/validation-pass2.json",
+      "line": 108,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/content-validation-pass2.json",
+      "line": 108,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/independent-review-pass2.json",
+      "line": 109,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/backups-pass2.jsonl",
+      "line": 110,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/시스템_경량화_20261010.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/",
+      "line": 140,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/출석체크인_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출석체크인_설계_v1.md",
+      "line": 43,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/포인트경제_재설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/포인트경제_재설계_v1.md",
+      "line": 28,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/궤적_원장기록_실행지.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/궤적_원장기록_실행지.md",
+      "line": 35,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/성향추출_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/성향추출_설계_v1.md",
+      "line": 73,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "experiences/synk-world-app/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md",
+      "line": 34,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "DESIGN.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 59,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/명품브랜딩_v2.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/명품브랜딩_v2.md",
+      "line": 22,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 19,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 19,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 15,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 53,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 22,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 33,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 169,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/출시나라_지원언어_후보표_20261003.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/출시나라_지원언어_후보표_20261003.md",
+      "line": 43,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "tools/film-check/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 26,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/상태기반_과제선택_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/상태기반_과제선택_설계.md",
+      "line": 5470,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/SHIFT/설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/설계_v1.md",
+      "line": 35,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/SHIFT/VR직업체험_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/SHIFT/VR직업체험_설계_v1.md",
+      "line": 160,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/엔진/atlas-constellation-20260921/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/엔진/atlas-constellation-20260921/README.md",
+      "line": 81,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/PATH_개인화여행_설계.md",
+      "target": "experiences/path-travel/qa/production-20261009/README.md",
+      "line": 5,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/관찰태그_자동화_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/관찰태그_자동화_설계.md",
+      "line": 10,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/시트_RowID_정리_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/시트_RowID_정리_설계_v1.md",
+      "line": 21,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/복습스케줄러_설계.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/docs/복습스케줄러_설계.md",
+      "line": 7,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "영상/README.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "tools/synk-id/UNIFIED-CONFIG.md",
+      "target": "tools/synk-id/qa/path-travel-production-20261009/README.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/함께한날_설계_v1.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/함께한날_설계_v1.md",
+      "line": 3,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-automation-20261009/",
+      "line": 1224,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-automation-20261009/review-overlay-v7/overlay-manifest.json",
+      "line": 1228,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/candidate-test-result.json",
+      "line": 1242,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/qa-v8/safe-receipt.json",
+      "line": 1242,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v8/PORTABLE-OVERLAY.txt",
+      "line": 1246,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/reliability-20261011/result.json",
+      "line": 1254,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/resume-1918/result.json",
+      "line": 1266,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/primary-finish-20261011/guide-correction-release/deployment-summary.json",
+      "line": 1266,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v9.json",
+      "line": 1272,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/summary.json",
+      "line": 1272,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/candidate-test-result-v11.json",
+      "line": 1278,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/qa-v11-verified/summary.json",
+      "line": 1278,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v11/claude-review-summary.json",
+      "line": 1280,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/image-v11/result-r3.json",
+      "line": 1282,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/production-handoff-result.json",
+      "line": 1286,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/public-operating-proof.json",
+      "line": 1286,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/actual-delivery/README.md",
+      "line": 1290,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-v12/operating-before-refill-receipt.json",
+      "line": 1292,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-v12/saved-reopened-receipt-v14.json",
+      "line": 1294,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/result.json",
+      "line": 1296,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-template-pool-20261009/review-overlay-v15/claude-review-summary.json",
+      "line": 1296,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/evening-source-settings/handoff.json",
+      "line": 1298,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "target": ".tmp/trend-live-sync-20261010/native-role-preparation/preparation-receipt.json",
+      "line": 1300,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/README.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시_체크리스트.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-host.py",
+      "line": 522,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "target": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/failover-policy.mjs",
+      "line": 522,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "line": 30,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/마케팅/크몽_등록준비_20260929/AI광고_레퍼런스10_20260929.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/GPT_인계_게시.md",
+      "target": "docs/마케팅/LAB_한글날_내이름한글로_20261002/게시/게시결과_20261006.md",
+      "line": 6,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "line": 37,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "target": "experiences/synk-town/qa/DAY.md",
+      "line": 30,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+      "target": "experiences/synk-town/qa/DAY.md",
+      "line": 364,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+      "target": "docs/_ops/qa/platform-convenience-20261009/README.md",
+      "line": 53,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass3-originals/docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "line": 20,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 167,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/제작양식/실사_시네마틱_영상_제작과_비용절감.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 5,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/제작양식/실제얼굴_화보_뮤직비디오.md",
+      "target": "docs/마케팅/제작양식/AI광고영상_제작규칙.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/마케팅/맞춤도구/README.md",
+      "target": "docs/마케팅/맞춤도구/move/게시연결.md",
+      "line": 64,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "experiences/story-classroom/README.md",
+      "target": "experiences/beginner-games/qa/account-sync/README.md",
+      "line": 45,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+      "target": "docs/_ops/qa/workroom-practice-removal-20261009/README.md",
+      "line": 10,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "experiences/synk-world-app/qa/V5.md",
+      "target": "experiences/beginner-games/qa/account-sync/README.md",
+      "line": 39,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "target": "experiences/synk-account/qa/cleanup-20261008/README.md",
+      "line": 3,
+      "kind": "absent-from-base-and-source-stage"
+    },
+    {
+      "from": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "line": 13,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "line": 12,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/게임문구_받침_인계_20261008.md",
+      "line": 16,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/아틀라스2단계_인계_20260918.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스2단계_인계_20260918.md",
+      "line": 132,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/qa/platform-signal2-20261010/README.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/qa/platform-signal2-20261010/README.md",
+      "line": 28,
+      "kind": "recovery-package-pending"
+    },
+    {
+      "from": "docs/_ops/아틀라스검토_인계_20261007.md",
+      "target": "docs/_ops/qa/document-cleanup-20261017/_archive/pass4-originals/docs/_ops/아틀라스검토_인계_20261007.md",
+      "line": 34,
+      "kind": "recovery-package-pending"
+    }
+  ],
+  "anchorErrors": [],
+  "runtime": [
+    {
+      "case": "blocked",
+      "pass": true,
+      "rendererInvocations": 0,
+      "actualRendering": false
+    },
+    {
+      "case": "batch",
+      "pass": true,
+      "rendererInvocations": 1,
+      "actualRendering": false
+    },
+    {
+      "case": "reproduce",
+      "pass": true,
+      "rendererInvocations": 1,
+      "actualRendering": false
+    },
+    {
+      "case": "revision preserves child AGENTS while copying and retiming",
+      "pass": true,
+      "actualFfmpeg": false
+    },
+    {
+      "case": "news output links current authoring sources",
+      "pass": true,
+      "externalNetwork": false
+    }
+  ],
+  "limitations": [
+    "Runtime tests stub render/ffmpeg and RSS responses; no video encode, visual QA, external fetch, or publish executed.",
+    "Existing tests: 29/30 passed; symlink fixture blocked by Windows EPERM before assertions."
+  ],
+  "coreAnchorCount": 43,
+  "videoSelection": {
+    "anchorExists": true,
+    "ruleContainsApprovedResults": true,
+    "coreEntryLinks": [
+      {
+        "from": "AGENTS.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      },
+      {
+        "from": "DESIGN.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      },
+      {
+        "from": "docs/AI_운영원칙.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      },
+      {
+        "from": "docs/마케팅/콘텐츠_제작양식.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      },
+      {
+        "from": "docs/마케팅/제작양식/만족사례_장부.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      },
+      {
+        "from": "docs/마케팅/HyperFrames_기존영상_참고.md",
+        "target": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+        "anchor": "video-tool-selection"
+      }
+    ]
+  },
+  "sourcePlanUnchanged": true,
+  "documentMap": {
+    "baseMissing": 67,
+    "candidateMissing": 66,
+    "newMissing": [],
+    "resolved": [
+      "docs/개인정보처리방침_초안_v1.md"
+    ]
+  },
+  "existingTests": {
+    "source": "remote base b32ca0542bca08f6ffcb51802fbf26142413abd1",
+    "tests": 30,
+    "pass": 29,
+    "blocked": 1,
+    "blockedTest": "디렉터리 심볼릭 링크를 따라 저장소 밖 자료를 읽지 않는다",
+    "reason": "Windows EPERM while creating symlink, before assertions",
+    "log": "existing-tests.tap"
+  },
+  "publicationScope": "Parent confirmed this is a recovery branch, not a standalone executable release. Missing other-task dependencies are retained and documented; QA and manuscript archive are packaged separately.",
+  "concurrentReportUpdate": {
+    "paths": [
+      "docs/_ops/시스템_경량화_20261010.md"
+    ],
+    "explanation": "Parent edited publication-scope text in staged cleanup report after source-plan generation; final manifest refresh belongs to parent."
+  }
+}

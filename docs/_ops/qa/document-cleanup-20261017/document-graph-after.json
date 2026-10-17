@@ -1,0 +1,713 @@
+{
+  "summary": {
+    "documents": 3928,
+    "canons": 46,
+    "dependencies": 14,
+    "references": 8378,
+    "mentionPairs": 81,
+    "mentionDocuments": 47,
+    "broken": 0,
+    "stale": 3,
+    "unversioned": 10,
+    "canonUnknown": 0,
+    "mapAbsent": false,
+    "mapMissing": 66,
+    "workingMapMissing": 1,
+    "scanErrors": 0,
+    "scope": "Git tracked + non-ignored working files; docs md/txt/html + root js"
+  },
+  "scanErrors": [],
+  "workingMapGaps": [
+    "docs/SYNK_WORLD_앱구성안_20261009.md"
+  ],
+  "derivedOf": {
+    "docs/디자인_토큰.json": [
+      "docs/브랜드킷.html",
+      "docs/브랜드킷_색상.html"
+    ],
+    "docs/캐릭터/펠트패치_0815/라이브러리.json": [
+      "docs/브랜드킷.html"
+    ],
+    "docs/발표물/_브랜드킷.md": [
+      "docs/브랜드킷.html"
+    ],
+    "docs/SYNK_철학.md": [
+      "docs/세층합류_설계_v1.md",
+      "docs/엔진8종_상향설계_v3.md",
+      "docs/캐릭터/마스코트_말할순간_설계.md",
+      "docs/홈페이지_시안/시안.tpl.html"
+    ],
+    "docs/철학_적용기준.md": [
+      "docs/세층합류_설계_v1.md",
+      "docs/엔진8종_상향설계_v3.md"
+    ],
+    "docs/철학_실물현황.md": [
+      "docs/세층합류_설계_v1.md",
+      "docs/엔진8종_상향설계_v3.md"
+    ],
+    "docs/캐릭터/캐릭터_생명감_설계.md": [
+      "docs/캐릭터/마스코트_말할순간_설계.md"
+    ],
+    "docs/캐릭터/마스코트_말할순간_설계.md": [
+      "docs/캐릭터/마스코트_배선_설계.md"
+    ]
+  },
+  "broken": [],
+  "stale": [
+    {
+      "from": "docs/캐릭터/마스코트_말할순간_설계.md",
+      "target": "docs/SYNK_철학.md",
+      "cited": "v2.0",
+      "now": "v3.0"
+    },
+    {
+      "from": "docs/캐릭터/마스코트_말할순간_설계.md",
+      "target": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "cited": "v1.4",
+      "now": "v1.5"
+    },
+    {
+      "from": "docs/홈페이지_시안/시안.tpl.html",
+      "target": "docs/SYNK_철학.md",
+      "cited": "v2.0",
+      "now": "v3.0"
+    }
+  ],
+  "staleHeld": [],
+  "unversioned": [
+    {
+      "from": "docs/브랜드킷.html",
+      "target": "docs/디자인_토큰.json",
+      "now": null
+    },
+    {
+      "from": "docs/브랜드킷.html",
+      "target": "docs/캐릭터/펠트패치_0815/라이브러리.json",
+      "now": null
+    },
+    {
+      "from": "docs/브랜드킷.html",
+      "target": "docs/발표물/_브랜드킷.md",
+      "now": null
+    },
+    {
+      "from": "docs/브랜드킷_색상.html",
+      "target": "docs/디자인_토큰.json",
+      "now": null
+    },
+    {
+      "from": "docs/세층합류_설계_v1.md",
+      "target": "docs/SYNK_철학.md",
+      "now": "v3.0"
+    },
+    {
+      "from": "docs/세층합류_설계_v1.md",
+      "target": "docs/철학_적용기준.md",
+      "now": null
+    },
+    {
+      "from": "docs/세층합류_설계_v1.md",
+      "target": "docs/철학_실물현황.md",
+      "now": null
+    },
+    {
+      "from": "docs/엔진8종_상향설계_v3.md",
+      "target": "docs/SYNK_철학.md",
+      "now": "v3.0"
+    },
+    {
+      "from": "docs/엔진8종_상향설계_v3.md",
+      "target": "docs/철학_적용기준.md",
+      "now": null
+    },
+    {
+      "from": "docs/엔진8종_상향설계_v3.md",
+      "target": "docs/철학_실물현황.md",
+      "now": null
+    }
+  ],
+  "canonUnknown": [],
+  "mapGaps": {
+    "noMap": false,
+    "missing": [
+      "docs/1기_제안문안_v1.md",
+      "docs/1기_차시대응표_v1.md",
+      "docs/Loom_실시간장면_표현기준.md",
+      "docs/Loom_엔진_설계.md",
+      "docs/Reed_설계_v0.1.md",
+      "docs/SYNK_동기화_구조.md",
+      "docs/Temper_개입로그_규격_v1.md",
+      "docs/가져가는것_설계_v1.md",
+      "docs/개원전판매_설계_v1.md",
+      "docs/관찰태그_자동화_설계.md",
+      "docs/관통왕복_명세.md",
+      "docs/교실수집_목표왕복_설계_v1.md",
+      "docs/궤적_원장기록_실행지.md",
+      "docs/급수진단_설계_v1.md",
+      "docs/대용량자산_운영.md",
+      "docs/디자인_컨셉_정본_v1.md",
+      "docs/라디오24_설계.md",
+      "docs/로고_중립색_정본_v1.md",
+      "docs/명품_기준_v1.md",
+      "docs/명품브랜딩_v2.md",
+      "docs/미니게임_게임층_설계.md",
+      "docs/반편성_정본_v2.md",
+      "docs/발음데이터_규격.md",
+      "docs/버전_이력.md",
+      "docs/복습스케줄러_설계.md",
+      "docs/브랜드_폰트_정본.md",
+      "docs/상태기반_과제선택_설계.md",
+      "docs/상표_출원준비_20261003.md",
+      "docs/성향추출_설계_v1.md",
+      "docs/세층합류_설계_v1.md",
+      "docs/숙제서클_설계.md",
+      "docs/시스템_대장.md",
+      "docs/시즌회고_설계.md",
+      "docs/시트_RowID_정리_설계_v1.md",
+      "docs/싱크타운_행동과_세계변화_설계.md",
+      "docs/아틀라스_검토_20261002.md",
+      "docs/아틀라스_공통능력_고도화_20261005.md",
+      "docs/아틀라스_교육업그레이드_20260930.md",
+      "docs/아틀라스_첫지속기억_20260921.md",
+      "docs/앱이용약관_초안_v1.md",
+      "docs/앱재설계_재기_0905.md",
+      "docs/약관_처리방침_확인목록_20261003.md",
+      "docs/엔진7종_상향설계_v3.md",
+      "docs/엔진도달_설계.md",
+      "docs/엔진추천목표_설계_v1.md",
+      "docs/옷입히기_설계_v1.md",
+      "docs/음악자산_장부.md",
+      "docs/응급복구_런북.md",
+      "docs/자주묻는질문_정본.md",
+      "docs/지분설계_헌장.md",
+      "docs/철학_실물현황.md",
+      "docs/첫로그인_마스코트추천_개인화_설계_v1.md",
+      "docs/첫로그인_첫만남_장면설계_v1.md",
+      "docs/출석체크인_설계_v1.md",
+      "docs/출시나라_지원언어_후보표_20261003.md",
+      "docs/커리큘럼_정본_v1.md",
+      "docs/코어엔진_설계.md",
+      "docs/파일럿_체험2주_설계_v1.md",
+      "docs/포인트경제_재설계_v1.md",
+      "docs/포토부스_설계.md",
+      "docs/학생ID_종단_설계.md",
+      "docs/학생일기_설계.md",
+      "docs/학습데이터_스키마감사.md",
+      "docs/한글단계_노래영상_근거점검_20261008.md",
+      "docs/한글단계_학습방식_조사_20261004.md",
+      "docs/함께한날_설계_v1.md"
+    ]
+  },
+  "candidates": [
+    {
+      "doc": "docs/SHIFT/SYNK_SHIFT_소개서.html",
+      "canon": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt"
+    },
+    {
+      "doc": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "canon": "docs/마케팅_정본.md"
+    },
+    {
+      "doc": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "canon": "docs/비전_정본.md"
+    },
+    {
+      "doc": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "canon": "docs/사업발전_정본.md"
+    },
+    {
+      "doc": "docs/SHIFT/한차원_2026-09-02.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/SYNK_기억그물.html",
+      "canon": "docs/관찰태그_자동화_설계.md"
+    },
+    {
+      "doc": "docs/SYNK_기억그물.html",
+      "canon": "docs/세층합류_설계_v1.md"
+    },
+    {
+      "doc": "docs/SYNK_기억그물.html",
+      "canon": "docs/정본/SYNK 보안/SYNK_사업계획서.txt"
+    },
+    {
+      "doc": "docs/SYNK_로드맵.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/SYNK_로드맵.html",
+      "canon": "docs/정본/SYNK 보안/SYNK_사업계획서.txt"
+    },
+    {
+      "doc": "docs/_ops/qa/document-cleanup-20261017/git-status-before.txt",
+      "canon": "docs/비전_정본.md"
+    },
+    {
+      "doc": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/AI_운영원칙.md",
+      "canon": "docs/마케팅_정본.md"
+    },
+    {
+      "doc": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/AI_운영원칙.md",
+      "canon": "docs/사업발전_정본.md"
+    },
+    {
+      "doc": "docs/_ops/qa/platform-account-integration-20261009/followup-review/context/AI_운영원칙.md",
+      "canon": "docs/캐릭터/가이드_정본.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/관찰태그_자동화_설계.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/로고_중립색_정본_v1.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/세층합류_설계_v1.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/캐릭터/가이드_정본.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/캐릭터/마스코트_말할순간_설계.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/캐릭터/의상제작_정본.md"
+    },
+    {
+      "doc": "docs/_ops/복구보고_20260918.md",
+      "canon": "docs/캐릭터/캐릭터_생명감_설계.md"
+    },
+    {
+      "doc": "docs/tools/OG카드_마스터.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/tools/브랜드_포스터_컬러.html",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/tools/브랜드_포스터_폰트.html",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/tools/아이콘_AB_비교.html",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/교실수집_선택지_2026-08-26.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/교실수집_선택지_2026-08-26.html",
+      "canon": "docs/관찰태그_자동화_설계.md"
+    },
+    {
+      "doc": "docs/깃허브_정찰_2026-09-03.html",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/마스코트_동반자층.html",
+      "canon": "docs/캐릭터/마스코트_말할순간_설계.md"
+    },
+    {
+      "doc": "docs/마케팅/포트폴리오_회사소개_20260926/README.md",
+      "canon": "docs/마케팅_정본.md"
+    },
+    {
+      "doc": "docs/마케팅/포트폴리오_회사소개_20260926/README.md",
+      "canon": "docs/비전_정본.md"
+    },
+    {
+      "doc": "docs/명품갭_판정_2026-08-26.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/명품마케팅_회사별_v1.html",
+      "canon": "docs/마케팅_정본.md"
+    },
+    {
+      "doc": "docs/미니게임_게임층_설계.md",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/01_설명회_덱_16x9.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/01_설명회_덱_16x9.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt"
+    },
+    {
+      "doc": "docs/발표물/02_학부모_안내문_A4_kr.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/02_학부모_안내문_A4_kr.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt"
+    },
+    {
+      "doc": "docs/발표물/02_학부모_안내문_A4_mn.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt"
+    },
+    {
+      "doc": "docs/발표물/03_상담브로셔_A4_12쪽.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/03_상담브로셔_A4_12쪽.html",
+      "canon": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt"
+    },
+    {
+      "doc": "docs/발표물/11_AI활용_학부모안내_A4_kr.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/_src_01_설명회_덱_16x9.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/_src_01_설명회_덱_16x9.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt"
+    },
+    {
+      "doc": "docs/발표물/_src_02_학부모_안내문_A4_kr.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/_src_02_학부모_안내문_A4_kr.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt"
+    },
+    {
+      "doc": "docs/발표물/_src_02_학부모_안내문_A4_mn.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt"
+    },
+    {
+      "doc": "docs/발표물/_src_03_상담브로셔_A4_12쪽.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/발표물/_src_03_상담브로셔_A4_12쪽.html",
+      "canon": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt"
+    },
+    {
+      "doc": "docs/발표물/_src_11_AI활용_학부모안내_A4_kr.html",
+      "canon": "docs/SYNK_철학.md"
+    },
+    {
+      "doc": "docs/브랜드_목소리/20260910/index.html",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/브랜드_목소리/20260910/상큼한_비교.html",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/브랜드_폰트/_먼저 읽어주세요.txt",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/브랜드킷.html",
+      "canon": "docs/디자인_컨셉_정본_v1.md"
+    },
+    {
+      "doc": "docs/브랜드킷.html",
+      "canon": "docs/로고_중립색_정본_v1.md"
+    },
+    {
+      "doc": "docs/소개서_지면.html",
+      "canon": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt"
+    },
+    {
+      "doc": "docs/소개서_지면.html",
+      "canon": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt"
+    },
+    {
+      "doc": "docs/소개서_지면.html",
+      "canon": "docs/정본/SYNK/SYNK FAQ.txt"
+    },
+    {
+      "doc": "docs/소개서_지면.html",
+      "canon": "docs/정본/SYNK/SYNK 기업소개서.txt"
+    },
+    {
+      "doc": "docs/심문표식_판정_2026-09-01.html",
+      "canon": "docs/세층합류_설계_v1.md"
+    },
+    {
+      "doc": "docs/엔진/SYNK_Vellum_소개서.html",
+      "canon": "docs/캐릭터/마스코트_말할순간_설계.md"
+    },
+    {
+      "doc": "docs/엔진/SYNK_Vellum_소개서.html",
+      "canon": "docs/캐릭터/캐릭터_생명감_설계.md"
+    },
+    {
+      "doc": "docs/엔진/_원고/SYNK_Vellum_소개서.html",
+      "canon": "docs/캐릭터/마스코트_말할순간_설계.md"
+    },
+    {
+      "doc": "docs/엔진/_원고/SYNK_Vellum_소개서.html",
+      "canon": "docs/캐릭터/캐릭터_생명감_설계.md"
+    },
+    {
+      "doc": "docs/운영_한눈에.html",
+      "canon": "docs/반편성_정본_v2.md"
+    },
+    {
+      "doc": "docs/운영_한눈에.html",
+      "canon": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt"
+    },
+    {
+      "doc": "docs/캐릭터/이야기기계_상황집.md",
+      "canon": "docs/캐릭터/가이드_정본.md"
+    },
+    {
+      "doc": "docs/크루카드/크루카드_몽골어.html",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/크루카드/크루카드_한국어.html",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/허깅페이스_정찰_2026-09-02.html",
+      "canon": "docs/브랜드_폰트_정본.md"
+    },
+    {
+      "doc": "docs/홈페이지_시안/병합판.html",
+      "canon": "docs/자주묻는질문_정본.md"
+    },
+    {
+      "doc": "docs/홈페이지_시안/병합판_자립형.html",
+      "canon": "docs/자주묻는질문_정본.md"
+    },
+    {
+      "doc": "docs/홈페이지_시안/시안.tpl.html",
+      "canon": "docs/자주묻는질문_정본.md"
+    },
+    {
+      "doc": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "canon": "docs/마케팅_정본.md"
+    },
+    {
+      "doc": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "canon": "docs/사업발전_정본.md"
+    },
+    {
+      "doc": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "canon": "docs/조직계보_정본_v1.md"
+    },
+    {
+      "doc": "엔진_콘텐츠AI.js",
+      "canon": "docs/캐릭터/가이드_정본.md"
+    }
+  ],
+  "canons": [
+    {
+      "rel": "docs/SYNK_철학.md",
+      "version": "v3.0"
+    },
+    {
+      "rel": "docs/_ops/엔진7종_v3/델타_머리.txt",
+      "version": "v2.0"
+    },
+    {
+      "rel": "docs/reviews/philosophy-20260915-1327/claude-input.txt",
+      "version": "v2.1"
+    },
+    {
+      "rel": "docs/reviews/philosophy-20260915-1327/gemini-input.txt",
+      "version": "v2.1"
+    },
+    {
+      "rel": "docs/관찰태그_자동화_설계.md",
+      "version": "v1.3"
+    },
+    {
+      "rel": "docs/디자인_컨셉_정본_v1.md",
+      "version": null
+    },
+    {
+      "rel": "docs/로고_중립색_정본_v1.md",
+      "version": null
+    },
+    {
+      "rel": "docs/마케팅_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/반편성_정본_v2.md",
+      "version": "v2.4"
+    },
+    {
+      "rel": "docs/브랜드_폰트_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/비전_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/사업발전_정본.md",
+      "version": "v3.0"
+    },
+    {
+      "rel": "docs/세층합류_설계_v1.md",
+      "version": "v1.1"
+    },
+    {
+      "rel": "docs/자주묻는질문_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/README.md",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt",
+      "version": "v8"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "version": "v9"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt",
+      "version": "v7"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "version": "v7"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+      "version": "v4"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/07_SYNK_메인룸_인테리어.txt",
+      "version": "v7"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt",
+      "version": "v8"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "version": "v8"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt",
+      "version": "v6"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+      "version": "v5"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "version": "v4"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+      "version": "v3"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+      "version": "v4"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "version": "v4"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt",
+      "version": "v4"
+    },
+    {
+      "rel": "docs/정본/SYNK LAB/자료/_src_오프라인_신규_등록서.html",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "version": null
+    },
+    {
+      "rel": "docs/정본/SYNK/SYNK FAQ.txt",
+      "version": "v6"
+    },
+    {
+      "rel": "docs/정본/SYNK/SYNK 기업마스터.txt",
+      "version": "v3"
+    },
+    {
+      "rel": "docs/정본/SYNK/SYNK 기업소개서.txt",
+      "version": "v3"
+    },
+    {
+      "rel": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "version": null
+    },
+    {
+      "rel": "docs/조직계보_정본_v1.md",
+      "version": null
+    },
+    {
+      "rel": "docs/캐릭터/가이드_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/캐릭터/마스코트_말할순간_설계.md",
+      "version": "v1.1"
+    },
+    {
+      "rel": "docs/캐릭터/마스코트_치수_정본_v1.md",
+      "version": "v1"
+    },
+    {
+      "rel": "docs/캐릭터/의상제작_정본.md",
+      "version": null
+    },
+    {
+      "rel": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "version": "v1.5"
+    },
+    {
+      "rel": "docs/커리큘럼_정본_v1.md",
+      "version": "v1.3"
+    }
+  ]
+}

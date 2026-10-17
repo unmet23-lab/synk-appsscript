@@ -1,10 +1,14 @@
-# SYNK WORLD 앱 · 한강 마루와 계정 연결
+# SYNK WORLD 앱 · 우리 동네와 계정 연결
 
 > **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-app/qa/<필요한 파일>"`로 해당 원본을 복원한다.
 
-## 2026-10-14 화면 전면 리디자인 · 공용 작업본 반영(공개 전)
+## 현재 입구와 화면 기준
 
-처음 화면부터 모든 2D 화면을 「월드 시그널」로 다시 짰다. 디자인 규칙·토큰(`../brand-opening/world-ui.css`)·화면별 구조·전후 비교·시험 결과는 [월드 시그널 가이드](../../docs/디자인/월드_시그널/README.md)에 있다. 홈의 아래 탭은 **우리 방·배우기·놀이·옷장**이고 「나」(`data-view="me"`)는 왼쪽 위 캡슐이다. 3D 방에서 다음 학습의 주 행동은 튜터 카드의 흰 알약, 생활 팩의 「지금 할 일」은 배우기 탭 맨 위 포스터다(숨은 `#life-next-button`은 상태 글을 위해 남아 있다). 바람길·말의 리듬은 WORLD의 `.game-frame` 안에서만 `world-skin.css`가 걸린다. 학습·채점·저장·계정 계약과 `data-*` 고리는 바꾸지 않았다.
+공개 주소는 [SYNK WORLD](https://synk.im/world/)다. 2026-10-14 첫 화면·홈 공개 기록은 [결정 원장](../../docs/_ops/결정.md)의 WORLD 공개 항목에 있다. 이번 10-17 문서 정리는 현재 소스와 그 기록을 대조한 것이며 새 공개 실행 검증은 아니다.
+
+첫 화면은 **펠트 한글 놀이터**, 기본 홈은 **우리 동네**, 그 안의 **우리 집**은 3D 방 입구다. 여럿이 모이는 3D 마을 **싱크타운**과 구분한다. 아래 탭은 우리 동네·배우기·놀이·옷장, 내 계정은 왼쪽 위 캡슐이다. 첫 실행은 마린·까몽·몽글 중 함께할 튜터를 선택한다. 화면·움직임·PC 시트 계약과 전후 근거는 [월드 시그널](../../docs/디자인/월드_시그널/README.md#firstrun-town-20261014)을 따른다. 학습·채점·저장·계정 계약은 유지한다.
+
+현재 웹과 PC의 공개 화면은 brand-opening/home.html·home.mjs·opening.mjs를 사용한다. 3D 방은 우리 집에 들어갈 때만 그린다. 이전 v9 동영상 오프닝·한강 마루 기본 홈과 Unity 전환 구성안은 제작 이력이며 현재 첫 화면으로 복원하지 않는다. Unity의 별도 준비 상태는 [네이티브 README](../../unity/SynkWorld/README.md)를 따른다.
 
 ## 2026-10-13 목표에서 게임·복습까지 이어지는 맞춤 학습 · 공개 반영
 
@@ -16,33 +20,26 @@
 
 공통 능력은 [Core·Vellum 담당 원문](../../docs/미니게임_TOPIK_I_학습기준.md#world-activities-20261013)에 기록한다. 생활 기록의 도움·복습 일정은 출처를 구분한 제품 근거이며, 검증되지 않은 TOPIK 능력이나 독립 성공 사건으로 바꾸지 않는다. 실제 게임의 Trail 관측은 기존 능력×난도×응답 형식과 첫 노출·도움·음성 전달 구분을 그대로 사용한다. 성격 판정, 공식 급수 진단, 학생 효과 입증은 아니다.
 
-초기 로컬 검증: [관련 자동 시험](qa/world-personalization-20261013/unit-tests.txt), [실제 화면 52항목·19장](qa/world-personalization-20261013/acceptance/browser-result.json). 목표→실제 실행, 새 상황 복습→다음 추천, 320/390/1280 화면, 합성 계정 A/B 분리, 새 브라우저의 계정 복원을 확인했다. 추가로 [홈 튜터·320px 실제 클릭](qa/home-tutor-20261011/personalization-r4-320/report.json), [생활 튜터 계정 저장](qa/life-tutor-20261011/personalization-r3-menu/report.json), [카페 5방문과 복원](qa/cafe-pack-20261010/personalization-r4/report.json)을 고정된 `/world/` 계정 모드 빌드에서 확인했다. 신규 설정 회귀와 기존 계정 계약은 [37개](qa/world-personalization-20261013/account-ui-tests.txt), 홈·게임 튜터는 [25개](qa/world-personalization-20261013/tutor-tests.txt)가 통과했다. 초기 로컬 검증 묶음은 `.tmp/world-personalization-public-20261013-r5/world`(1,939파일, 누락·변경 중인 소스·비공개 파일 0)이며 기존 빌드는 보존했다. 게임 선호의 [별도 실제 화면 검사](qa/world-personalization-20261013/game-help/browser-result.json)에서는 혼자 시작·수동 도움/취소·일시정지/이어하기와 단계별 안내의 첫 4동작을 확인했다. 이 시점에는 마지막 듣기 안내의 완료→게임 시작을 미디어 재생 정지로 확인하지 못했다. 동일 MP3를 단독 재생해도 [Edge](qa/world-personalization-20261013/game-help/audio-probe.json)·[Chrome](qa/world-personalization-20261013/game-help/audio-probe-chrome.json) 모두 정상 206·디코드 뒤 약 0.023초에서 멈췄다. 완료를 우회하지 않았으며, 미완료/재시도와 원래 학습 기록을 유지했다. **이 문단은 로컬 검증 기록이며 공개 반영·실계정 후속은 아래를 따른다.** 유료 AI 호출·서버 정책 변경은 없다.
+### 10-13~14 검증 기록
 
-**10-13 공개 후속:** 기존 공개 마루를 보존한 교육 변경 19파일을 `a36a46f0545bfff985f9ebd14b11f9e2f235ec99`로 반영했다. HTTPS 19/19 원본 일치, 같은 커밋의 Pages·공개 CI 성공, 320/390/1280 화면의 대비·버튼과 홈/생활 계정 시험을 확인했다. [배포·설치 호환성](qa/world-personalization-20261013/release/README.md). 정상 SYNK ID 로그인으로 목표·도움 선호 저장→새로고침 복원→바람길 실제 시작/조작/일시정지→홈의 기존 복습 3문항 완료·서버 저장→TOPIK 목표의 바람길 재추천을 확인했다. 로그아웃하면 빈 게스트로 분리되고 재로그인하면 설정이 복원됐다. 여행+소리 끄기는 카페 표현을 추천했다. 검증용 목표·선호는 정상 삭제 UI로 정리했으며 기존 까몽·학습 1/22와 실제로 푼 복습 결과·다음 복습 일정을 보존했다. [실제 계정 관찰·화면](qa/world-personalization-20261013/release/real-account.json).
+| 확인한 범위 | 결과의 범위와 근거 |
+|---|---|
+| 목표·도움·시간·소리→실제 활동 | [로컬 화면 52항목](qa/world-personalization-20261013/acceptance/browser-result.json), 계정 격리·복원·중단 이어하기와 도움 선호. 합성 검증과 실제 학습 효과를 구분 |
+| 공개 반영·실제 계정 | [배포](qa/world-personalization-20261013/release/README.md)·[실계정](qa/world-personalization-20261013/release/real-account.json). 목표 저장·복습·바람길 추천·로그아웃 분리·재로그인 복원 |
+| 음성 종료와 조작 연습 | Bluetooth 정지와 내장 스피커의 정상 종료를 구분한 [진단](qa/world-personalization-20261013/game-help/audio-diagnosis.json)·[장치별 결과](qa/world-personalization-20261013/game-help/nonadmin/outcome.json). 사람의 실제 청취 증거는 아님 |
+| PC WORLD 0.4.2 | [실제 계정 결과](qa/world-personalization-20261013/pc-installed/result.json). 학습·복습·목표 저장과 종료 후 복원. 현재 플랫폼 최신 버전과 혼동하지 않음 |
+| 게임 기록의 계정 연결 | [최고 거리 수정](qa/world-personalization-20261013/runner-account-save-20261014/README.md)·[결과 뒤 추천 갱신](qa/world-personalization-20261013/runner-results-refresh-20261014/README.md). 결과 갱신은 보상을 다시 지급하지 않음 |
+| 공개 웹 90초 완주→듣기 확인→PC 복원 | [입력 기록](qa/world-personalization-20261013/runner-flow-20261014/public-completed-input-trace.json)·[결과](qa/world-personalization-20261013/runner-flow-20261014/result.json). 990m·25코인, 글 도움과 다시 듣기를 쓴 응답 2/3 |
+| PC 자체 90초 완주→추천→일반 재실행 | [실제 시간·입력](qa/world-personalization-20261013/runner-pc-cdp-20261014/run.json)·[흐름](qa/world-personalization-20261013/runner-pc-cdp-20261014/flow.json). 실제 92.657초, 990m·누적 50코인과 저장 복원. 도움 사용을 독립 듣기 숙달로 세지 않음 |
+| 같은 공개판의 전체 검사 | [CI 재실행](qa/world-personalization-20261013/runner-listening-scope-20261014/ci-rerun.json). 최초 별도 레이싱 자산 503 실패와 같은 판 재실행 성공을 구분 |
 
-**10-13 비관리자 음성 후속:** 당시 기본 출력이던 Bluetooth에서 실제 위치 0·미완료를 재확인했다. 검사 중 16:50:05에 Bluetooth가 연결 해제되고 기본 출력이 내장 스피커로 전환됐다. 이 전환은 에이전트가 수행하지 않아 원인은 단정하지 않는다. 새 장치 목록 기준 내장 스피커의 기본/직접 출력·44.1/48 kHz 4회 모두 실제 위치와 완료가 정상이다. 무음 옵션을 제거한 Edge의 HTMLAudio·WebAudio 3경로에서 실제 `ended`, 전체 조작 연습 22/22, 공개 실계정의 5단계(마지막 듣기 포함) 완료→‘바람길 시작’→게임 실행·일시정지를 확인했다. 제품 코드·서비스·드라이버·기본 출력 설정을 바꾸거나 완료를 합성하지 않았다. [이전 진단과 현재 결론](qa/world-personalization-20261013/game-help/audio-diagnosis.json) · [장치별 결과와 공개 화면](qa/world-personalization-20261013/game-help/nonadmin/outcome.json).
-
-**10-14 PC 설치본 후속:** 설치된 WORLD 0.4.2를 직접 실행해 정상 SYNK ID 재로그인→까몽·1/22 복원→추천 카페 학습 완료(도움 없이 2/3)→도움받은 표현의 새 상황 복습 1개 완료·계정 저장을 확인했다. TOPIK 시험 목표 저장 시 홈이 바람길을 추천했고, 5단계 실제 조작·음성 종료→게임 시작→일시정지/재개→382m 조기 종료까지 진행했다. 재실행 시 학습 2/22와 목표가 복원됐고 어려웠던 조작을 다시 안내했다. 시험 목표는 정상 UI로 정리했으며 이 검증 당시 웹·PC 홈은 까몽·2/22·‘계산대 앞 세 마디’였다. 다음 복습은 10-14 오후 4:21로 복원됐다. [PC 실제 계정 결과와 화면](qa/world-personalization-20261013/pc-installed/result.json).
-
-공개 runner 최고 거리가 공용 localStorage에만 저장되는 누락을 발견해 기존 계정 어댑터를 연결한 2파일을 `4dddedd8`로 반영했다. 회귀 46/46, Pages·공개 CI 성공, HTTPS 2/2 일치. 실제 PC에서 만든 최고 거리 382m가 앱 재실행과 독립 웹 화면 모두에 복원됐다. [수정·배포 근거](qa/world-personalization-20261013/runner-account-save-20261014/README.md). 같은 공개 주소를 읽으므로 설치 파일 교체는 필요 없었다.
-
-**10-14 바람길 완주·보상·복습 후속:** 공개 WORLD의 정상 로그인 계정에서 실제 화면 버튼으로 90초를 완주했다. 결과는 **990m·부탁 8개 중 8개·최대 연속 8·별 3개·공통 코인 +25**였고 계정 저장 안내를 확인했다. ‘글로 보기’를 8번 사용한 동작 수행 기록이며, 별도 듣기 능력의 독립 정답으로 취급하지 않는다. [완주·보상 화면](qa/world-personalization-20261013/runner-flow-20261014/web-90s-completed-25coins.png) · [실제 입력 기록](qa/world-personalization-20261013/runner-flow-20261014/public-completed-input-trace.json).
-
-결과에서 듣기 확인 3문항을 모두 다시 들은 뒤 **도움받은 응답 2/3**으로 마쳤다. 음성이 끝나야 선택지가 활성화됐고, 3번 문항의 첫 음성 실패 안내는 다시 듣기로 복구했다. 확인을 마친 뒤 코인은 25개로 유지됐다. 홈은 ‘계산대 앞 세 마디’에서 ‘바람길 · 짧은 지시 듣기’로 바뀌었고, ‘부정·변경 이해를 도움과 함께 해냈어요’라는 추천 이유와 버튼을 통한 실제 바람길 진입을 확인했다. [듣기 확인 결과](qa/world-personalization-20261013/runner-flow-20261014/web-assisted-review-2of3.png) · [다음 추천](qa/world-personalization-20261013/runner-flow-20261014/web-next-recommendation.png).
-
-설치된 PC 홈에서도 같은 추천·이유와 바람길의 **최고 거리 990m·코인 25개**를 확인했다. 앱을 정상 종료한 뒤 새 프로세스로 다시 실행해 로그인·까몽·학습 2/22·새 추천·990m·25코인이 그대로 복원되는 것도 확인했다([재실행 화면](qa/world-personalization-20261013/runner-flow-20261014/pc-relaunch-990m-25coins.png), [검증 결과](qa/world-personalization-20261013/runner-flow-20261014/result.json)). 이때의 PC 자체 조작 시도는 502m에서 끝났으며, 이 문단의 90초 완주는 공개 웹에서 수행한 결과다. [PC 추천](qa/world-personalization-20261013/runner-flow-20261014/pc-next-recommendation.png) · [PC의 계정 기록](qa/world-personalization-20261013/runner-flow-20261014/pc-restored-990m-25coins.png). 최고 거리 저장 수정(`4dddedd8`)에 이어 최대 콤보의 보상 요청 전달(`26a36647`), 듣기 확인 종료 후 결과 학습 기록·다음 추천만 갱신하는 수정(`ec7b38fe`)을 공개 반영했다. 결과 갱신은 보상을 다시 지급하지 않으며 관련 13검사·공개 후보 회귀·Pages·HTTPS 2/2를 확인했다. [결과 갱신 배포](qa/world-personalization-20261013/runner-results-refresh-20261014/README.md). 도움받은 기록과 혼자 답한 기록을 구분하는 안내 문구도 `be77072c`의 3파일로 공개 반영했다. 관련 회귀 17/17·Pages 성공·공개 HTTPS 3/3 원본 일치를 확인했다. 전체 사이트 CI의 최초 실행은 별도 `/try/racing/seascape-boats.js`의 503으로 실패했다. **10-14 08:52 KST 같은 공개 커밋의 전체 CI 재실행은 8분 15초 만에 성공**했다. 회귀 69/69·공개 변경 23파일 일치·32쪽과 8게임의 PC/모바일·질문창을 통과했고, 문제와 자동 재시도 복구는 모두 0건이다. 제품 수정·추가 배포 없이 마쳤다. [CI 재실행 근거](qa/world-personalization-20261013/runner-listening-scope-20261014/ci-rerun.json) · [문구 보완 배포](qa/world-personalization-20261013/runner-listening-scope-20261014/README.md).
-
-**10-14 PC 설치본 자체 90초 완주 후속:** 설치된 WORLD 0.4.2의 동일 EXE를 기존 계정으로 실행하고, 임시 loopback CDP 연결로 화면에 보이는 글·진행바를 읽어 정상 버튼만 눌렀다. 일시정지 없이 실제 **92.657초 동안 게임의 90초를 완주**해 **990m·부탁 7/7·최대 연속 7·바람막 2번·보호 1번·코인 +25, 보유 50개**를 확인했다. 결과에 집계된 7개 부탁 모두 글 도움을 사용했으며, 입력 기록의 글로 보기 클릭은 마지막 미집계 부탁까지 8회다. 모델·시간·보호·보상·저장·계정 조작이나 데모 모드 없이 진행했다. [설치본 완주·보상 화면](qa/world-personalization-20261013/runner-pc-cdp-20261014/pc-90s-completed-50coins.png) · [실제 입력·시간 기록](qa/world-personalization-20261013/runner-pc-cdp-20261014/run.json).
-
-같은 PC 결과 화면에서 듣기 확인 3문항을 다시 듣기 도움을 받아 **2/3**으로 마쳤고, 음성 종료 후에만 답이 활성화됐다. 종료 즉시 결과의 방향·동작 듣기 기록이 ‘도움을 받아 해냈어요’로 갱신됐으며 코인 50개를 유지했다. 홈은 ‘듣고 세부 정보 찾기를 도움과 함께 해냈어요’라는 이유로 바람길을 추천했고, 추천 버튼으로 실제 게임에 다시 들어가 최고 990m·코인 50개를 확인했다. [완주→복습→다음 추천 결과](qa/world-personalization-20261013/runner-pc-cdp-20261014/flow.json). 설치 ASAR 해시는 원본과 같고 제품 코드·공개 배포 변경은 없었다. 정상 창 닫기로 임시 CDP 실행을 종료한 뒤 프로세스와 포트가 모두 닫혔다. 이어 디버깅 인수 없이 설치본을 일반 실행해 로그인·까몽·학습 2/22·갱신된 추천 이유·틀린 문항의 복습 안내·최고 990m·코인 50개가 복원되는 것을 실제 PC 화면에서 확인했다([일반 재실행 저장 기록](qa/world-personalization-20261013/runner-pc-cdp-20261014/pc-normal-relaunch-990m-50coins.png), [복습 안내 복원](qa/world-personalization-20261013/runner-pc-cdp-20261014/pc-normal-relaunch-review-hint.png)). 이 검증은 PC 실제 게임·저장·추천 흐름 확인이며 독립 듣기 숙달이나 사람의 실제 청취를 입증하지 않는다.
-
-**남은 확인:** Bluetooth 재연결 후의 복구·사람의 실제 청취, 실제 학생의 학습 효과는 미검증이다.
+검증 당시 계정에 남긴 정상 학습·복습 결과는 보존했고 임시 목표·선호는 정상 UI로 정리했다. 제품 상태·시간·결과를 합성해 완료시키지 않았다. 이력별 파일·커밋·화면은 위 QA 원문에 남아 있으며, 상세 진행 서술은 [정리 전 README](../../docs/_ops/qa/document-cleanup-20261017/_archive/pass2-originals/experiences/synk-world-app/README.md)에서 확인할 수 있다. **Bluetooth 재연결 복구·사람의 실제 청취·실제 학생 학습 효과는 미검증**이다.
 
 ## 2026-10-12 실제 계정 저장 · PC WORLD 0.4.2
 
 실제 SYNK ID로 까몽 선택·첫 인사 완료·로그아웃/재로그인 복원을 확인했다. 운영 생활 기록 허용 키를 보완하고, PC WORLD 0.4.2와 플랫폼의 실행 등록을 이 PC에 반영했다. [PC 설치와 실제 계정 검증](qa/account-desktop-20261012/README.md). 후속 구현은 튜터 선택도 기존 생활 계정 기록에 함께 저장한다. 독립 브라우저의 변경·복원 44항목을 통과했으며, 공개 반영과 실제 웹·PC 양방향 확인 상태는 [튜터 선택 동기화 검증](qa/tutor-selection-20261012/README.md)을 따른다.
 
-2026-10-10. 실제 앱의 `/`, `/mobile.html`, `/desktop.html` 기본 홈을 [한강 마루](../brand-opening/HOME.md)로 연결했다. 오프닝 → 마루 → 게임 → 마루를 한 문서에서 이어가고, 플레이 중 회전은 iframe을 다시 만들지 않는다. 오프닝과 마루는 승인된 v9 영상을 재사용한다.
+10-10에는 `/`, `/mobile.html`, `/desktop.html`의 기본 홈을 [한강 마루](../brand-opening/HOME.md)로 연결했다. 그때의 v9 동영상 오프닝·마루는 제작 이력이며 10-14의 펠트 첫 화면·우리 동네로 대체됐다. 게임을 같은 문서에서 열고 닫으며 플레이 중 회전으로 iframe을 다시 만들지 않는 계약은 유지한다.
 
 계정별 첫 문장 놀이·선물·옷장·룩북·타운 연결은 기존 서버 계약을 유지한다. 계정 모드의 미니게임은 기존 공식 게임/학습 host를 앱 안에 설치한 뒤 연다. 인증 정보는 iframe에 전달하지 않는다. 로그인하지 않은 경우 계정 연결 화면으로 안내한다. 다른 기기와 진도가 충돌하면 마루 안에서 사용할 진도를 직접 고른 뒤 다시 게임에 들어간다. [통합 검수와 범위](qa/maru-integration-20261010/README.md).
 
@@ -60,7 +57,7 @@
 
 홈은 다음 학습·완료한 단계·돌아온 복습과 팩/이야기 입구를 표시한다. 이야기 장면과 질문의 중간 위치, 첫 답, 도움 사용은 새로고침 뒤에도 복원된다. 정답은 다음 날, 오답·도움 사용은 1분 뒤부터 변형 복습으로 돌아온다. 간격은 변형 복습 성공에서만 1·3·7·14·30일로 늘어나며 일반 레슨을 다시 하는 것으로 예정된 복습을 뒤로 미루지 않는다.
 
-진도는 전용 synk.life-korean.progress.v1 기록을 사용한다. 비회원은 해당 기기, 로컬 확인 계정은 실제 PGlite synk-play 서버에 저장한다. 계정 모드 소스는 검증된 SYNK ID 전용 port와 공식 CAS/outbox를 재사용한다. 계정 저장이 거절되거나 충돌하면 원본을 보존하고 상태를 표시하며 사용할 기록을 직접 선택한다. 새 허용 키의 원격 배포와 실제 운영 로그인 왕복은 별도다.
+진도는 전용 synk.life-korean.progress.v1 기록을 사용한다. 비회원은 해당 기기, 로컬 확인 계정은 실제 PGlite synk-play 서버에 저장한다. 계정 모드 소스는 검증된 SYNK ID 전용 port와 공식 CAS/outbox를 재사용한다. 계정 저장이 거절되거나 충돌하면 원본을 보존하고 상태를 표시하며 사용할 기록을 직접 선택한다. 새 허용 키 배포·실제 운영 로그인 왕복의 이후 결과는 위 10-12 계정 기록과 10-13~14 검증 표를 따른다. 개발 서버의 저장 성공을 운영 저장으로 바꾸어 세지 않는다.
 
 - [통합 앱](http://127.0.0.1:4312/mobile.html?opening=off) · [독립 마루](http://127.0.0.1:4307/brand-opening/home.html)
 - [콘텐츠 원고·교육 범위](LIFE-CONTENT.md) · [실제 UI 검수](qa/life-content-20261010/README.md)
@@ -81,13 +78,13 @@
 - 그래픽 세 버전 비교: http://127.0.0.1:4296/graphics.html
 - 독립 홈 미리보기: http://127.0.0.1:4295/mobile.html (별도 서버 실행 필요)
 
-처음에는 회사 오프닝 뒤 마루가 열리고, 계정은 `나` 또는 옷장·첫 문장 놀이에서 연결한다. `나의 테스트 계정`은 player-a, `다른 테스트 계정`은 player-b다. 실제 SYNK 계정·개인정보·운영 서버를 사용하지 않는다. 새 브라우저에서도 같은 시험 계정을 선택하면 동일한 서버 상태를 읽는다.
+현재는 펠트 첫 화면·튜터 선택 뒤 우리 동네가 열리고, 계정은 `내 계정` 또는 옷장·첫 문장 놀이에서 연결한다. 아래의 합성 계정 안내는 이 로컬 서버 모드에만 해당한다. `나의 테스트 계정`은 player-a, `다른 테스트 계정`은 player-b다. 실제 SYNK 계정·개인정보·운영 서버를 사용하지 않는다. 새 브라우저에서도 같은 시험 계정을 선택하면 동일한 서버 상태를 읽는다.
 
 로컬 PostgreSQL 호환 PGlite의 데이터는 `.local/db-v1`에 남는다. 기존 중간 버전 `.local/db`는 그대로 보존했다. `SYNK_WORLD_PORT`, `SYNK_WORLD_DATA_DIR`로 시험 포트·데이터 경로를 지정할 수 있다. 서버는 127.0.0.1에만 바인딩한다. 휴대폰용 링크는 PC 브라우저의 화면 배치이며 실제 휴대폰으로 접근 가능한 공개 주소가 아니다.
 
 ## 구현한 흐름
 
-1. 오프닝 → 한강 마루 → 놀이 선택 → 게임 → 닫기 → 마루. 방향 변경은 진행 중 문서를 유지한다.
+1. 펠트 첫 화면 → 튜터 선택 → 우리 동네 → 놀이 선택 → 게임 → 닫기 → 우리 동네. 방향 변경은 진행 중 문서를 유지한다.
 2. 서버가 발급한 초급 한국어 3문항 → 중단·이어하기 → 서버 채점.
 3. 첫 참여 완료 시 `첫 산책 목도리` 한 번 지급. 틀린 답도 복습할 수 있다.
 4. 초기 보유품 `나의 첫 앞치마`와 목도리를 함께 착용. 서버 확정 뒤 실제 3D 메시를 바꾼다.
@@ -108,7 +105,8 @@
 | `cafe-activity.mjs`, `cafe-ui.mjs`, `life-ui.css` | 생활 카페 팩의 실제 주문·수정·자리·음료 수령, 첫 응답/도움을 유지하는 재개 |
 | `world-client.mjs` | 서버 상태·판본·재시도·탭별 세션 |
 | `server.mjs` | localhost 정적 파일, 합성 시험 세션, 기존 서버 호출 연결 |
-| `../synk-world-home/app.mjs`, `scene-v3.mjs`, `avatar-v3.mjs` | 기본 홈, 공통 몽글·두 슬롯의 실제 3D 표시 |
+| `../brand-opening/home.html`, `home.mjs`, `opening.mjs` | 현재 첫 화면·우리 동네·우리 집과 메뉴 이동 |
+| `../synk-world-home/scene-v3.mjs`, `avatar-v3.mjs` | 보존된 3D 홈·옷장 계열의 공통 몽글과 장착 표현. 현재 첫 화면의 정본은 아님 |
 | `world-town-client.mjs`, `town-host.mjs` | 같은 출처 타운 연결, 차림 재확인, 시험 계정별 타운 저장 |
 | `SYNK-talk/lib/world-v1-*.js` | 인증된 계정의 플레이·소유품·장착·내보내기 |
 | `SYNK-talk/supabase/migrations/20261009180000_synk_world_v1_c16.sql` | WORLD 상태·실행·요청 기록, 계정 삭제 연결·접근 차단 |
@@ -119,9 +117,9 @@
 
 ## 검증과 남은 일
 
-[v8 그래픽 검수](qa/V8.md)가 최신 기록이다. 한강을 지나는 배·물살·근사 반사와 러그/화분·표면 요철의 마감을 보완했다. [v7 물/빛 검수](qa/V7.md), [v6 재질·접촉 음영 검수](qa/V6.md), [v5 그래픽·보상 계약 검수](qa/V5.md)는 이전 이력이다. [v4 그래픽·사용성 검수](qa/V4.md), 아래 [v3 통합 검수](qa/V3.md)와 [최초 통합 기록](qa/verification.json)의 수치는 각 작업의 이력으로 보존하며 새 실행 수치로 합산하지 않는다.
+10-09 3D 그래픽 계열의 마지막 기록은 [v8 검수](qa/V8.md)다. 현재 앱의 시그널 화면·계정·학습 검증은 위 입구와 각 QA 원문을 따른다. 한강을 지나는 배·물살·근사 반사와 러그/화분·표면 요철의 마감을 보완했다. [v7 물/빛 검수](qa/V7.md), [v6 재질·접촉 음영 검수](qa/V6.md), [v5 그래픽·보상 계약 검수](qa/V5.md)는 이전 이력이다. [v4 그래픽·사용성 검수](qa/V4.md), 아래 [v3 통합 검수](qa/V3.md)와 [최초 통합 기록](qa/verification.json)의 수치는 각 작업의 이력으로 보존하며 새 실행 수치로 합산하지 않는다.
 
-- 브라우저 실제 조작 35항목: `node experiences/synk-world-app/qa/browser.cjs`. 첫 진입·중단/이어하기·중복 보상 방지·동시 착용·PC 복원·통신 재시도·충돌·계정 분리·사진 PNG·320/390/1440px 점검. [결과](qa/browser-result.json), [현재 휴대폰](qa/v3-final-phone.png), [현재 PC](qa/v3-final-pc.png).
+- 브라우저 실제 조작 35항목: `node experiences/synk-world-app/qa/browser.cjs`. 첫 진입·중단/이어하기·중복 보상 방지·동시 착용·PC 복원·통신 재시도·충돌·계정 분리·사진 PNG·320/390/1440px 점검. [결과](qa/browser-result.json), [당시 휴대폰](qa/v3-final-phone.png), [당시 PC](qa/v3-final-pc.png).
 - 기본 그래픽 및 비교 29항목: [결과](qa/graphics-default.json). v3 기본 표시, 네 코스튬, 낮/노을, 움직임 감소, 연속 버전 전환, 실제 캔버스 색·불투명도 확인.
 - 브라우저 클라이언트: `node --test experiences/synk-world-app/qa/client.test.mjs`. 늦은 응답·계정 변경·오프라인 로그아웃·중복 요청 회귀. 실제 두 탭 검사까지 포함하려면 실행 전에 `$env:SYNK_WORLD_QA_URL='http://127.0.0.1:4296'`를 설정한다.
 - 실제 SQL 및 공유 계정 영향: [백엔드 105개 검증](../../../SYNK-talk/qa/world-v1-20261009/backend-verification.json).
@@ -129,8 +127,8 @@
 - 실제 타운 12항목: [결과](qa/town-connection-scene.json). 같은 몽글·동시 착용·열린 화면의 차림 갱신·A/B 분리·로그아웃·PC 복원·근접시점의 조이스틱/키보드 입력을 확인했다. [휴대폰](qa/town-connected-mobile390.png), [PC](qa/town-connected-desktop.png).
 - Unity: C# 핵심 흐름·문법 34항목 및 준비 검사 5항목. 종료 후 미전송 결과 복원·동일 요청 재시도·계정 격리·손상 파일 보존·공통 캐릭터 계약을 검사했다. [핵심 결과](../../unity/SynkWorld/qa/core-tests.json), [준비 결과](../../unity/SynkWorld/qa/preflight-checks.json).
 
-**아직 검증하지 않은 범위:** Unity Editor 가져오기·의미 컴파일·APK/EXE·네이티브 화면, 실제 Google/Apple 로그인과 OS 보안 저장, S25/iPhone 15의 지속 성능, iOS/macOS 서명·빌드, 원격 DB 마이그레이션·배포. 공통 GLB와 Blender 파일은 정적 원본 후보이며 Unity 장면에 이식된 결과가 아니다. Unity CLI는 준비했지만 이 PC의 Unity 로그인·라이선스·Editor가 없어 네이티브 빌드를 실행하지 못했다. `.NET` 검증은 Unity 빌드 성공을 뜻하지 않는다. 사용자는 이번에는 코드·브라우저까지만 진행하도록 선택했다.
+**Unity 리허설에서 아직 검증하지 않은 범위:** Editor 가져오기·의미 컴파일·네이티브 APK/EXE·화면, 해당 네이티브의 Google/Apple 로그인과 OS 보안 저장, S25/iPhone 15 지속 성능, iOS/macOS 네이티브 서명·빌드. 웹 WORLD의 후속 운영 DB·API·공개 반영은 위 계정·Workspace 기록과 구분한다. 공통 GLB와 Blender 파일은 정적 원본 후보이며 Unity 장면에 이식된 결과가 아니다. Unity CLI는 준비했지만 이 PC의 Unity 로그인·라이선스·Editor가 없어 네이티브 빌드를 실행하지 못했다. `.NET` 검증은 Unity 빌드 성공을 뜻하지 않는다. 사용자는 이번에는 코드·브라우저까지만 진행하도록 선택했다.
 
-다음은 Unity 환경 준비 → Editor 오류 수정·Windows 실행 → Android 기기 연결 → 실제 SYNK ID 인증 → 휴대폰 획득·PC 복원의 실물 두 기기 검증 순서다. 승인 홈의 비주얼 기준을 유지하며 최종 캐릭터·코스튬 마스터 제작과 성능 검증을 병행한다.
+Unity 전환을 다시 진행할 때는 환경 준비 → Editor 컴파일·Windows 실행 → Android 기기 → 실제 SYNK ID 인증 → 휴대폰 획득·PC 복원 순으로 별도 검증한다. 현재 웹·PC 제품의 계속 개발을 Unity 준비에 종속시키지 않는다. 화면·자산은 당시 테라스 시안이 아니라 최신 승인 기준을 따른다.
 
 **튜터 공개 반영(2026-10-12):** [공개 WORLD 앱](https://synk.im/world/)에 세 튜터 선택·게임 연습·생활 한국어·카페·홈 기억과 표정 교정을 반영했다. 공개 파일 852개 일치, 기본 진입17·교체141·홈 표정206·독립 게임 구성요소214 검사를 통과했다. 실제 계정 로그인·서버 저장·새 PC 설치본 검증은 포함하지 않는다. [공개 커밋·화면·검증 범위](qa/tutor-release-20261011/README.md).

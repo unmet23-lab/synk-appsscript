@@ -1,6 +1,6 @@
 # 회사 SNS 자동 수집 연결
 
-기준일: 2026-09-27. 이 문서는 현재 프로그램의 연결 범위와 관리자가 준비할 항목을 설명한다. 코드·mock 검증을 마쳤으며, 실제 개발자 앱 등록·심사·직원 계정 승인까지 완료됐다는 뜻은 아니다.
+기준일: 2026-09-27. 회사의 SNS 통계 수집 연결 설정을 설명한다. 아래 권한·API 버전·정책 근거는 해당 날짜의 확인 기록이며 실제 연결 작업에서 현재 제공자 설정과 다시 대조한다. 회사 서버의 이후 공개 상태는 [클라우드 운영 기록](CLOUD-OPERATIONS.md), 계정별 제작·발행 상태는 [채널 원문](../../../채널과_발행.md)을 따른다. 코드·mock 검증과 실제 앱 등록·심사·계정 승인은 구분한다.
 
 ## 관리자 최초 설정
 
@@ -47,7 +47,7 @@ Meta 앱의 Facebook Login을 준비한다. 직원이 승인한 사용자 토큰
 
 TikTok 개발자 앱에서 Login Kit와 Display API를 준비하고 제품·요청 권한 승인을 받는다. `user.info.stats`가 팔로워·총 좋아요, `user.info.profile`이 계정 주소 일치 확인, `video.list`가 공개 영상 목록·조회·좋아요·댓글·공유에 필요하다. 연결 계정이 승인한 영상만 수집한다. [공식 시작 안내](https://developers.tiktok.com/docs/en/display-api-get-started), [사용자 정보 권한](https://developers.tiktok.com/docs/en/tiktok-api-v2-get-user-info), [영상 목록](https://developers.tiktok.com/docs/en/tiktok-api-v2-video-list)
 
-액세스 토큰을 자동 갱신하며 응답에 새로운 refresh token이 오면 함께 교체한다. refresh token까지 만료되거나 권한을 철회하면 재연결이 필요하다. 현재 Web 연결은 Client Secret을 사용하는 서버 인증 흐름이다. 기존 SYNK TikTok 가입 보류를 자동으로 해제하거나 새로운 계정을 만들지 않는다. [공식 토큰 관리](https://developers.tiktok.com/docs/en/oauth-user-access-token-management), [Web Login](https://developers.tiktok.com/docs/en/login-kit-web)
+액세스 토큰을 자동 갱신하며 응답에 새로운 refresh token이 오면 함께 교체한다. refresh token까지 만료되거나 권한을 철회하면 재연결이 필요하다. 현재 Web 연결은 Client Secret을 사용하는 서버 인증 흐름이다. 계정 가입·통계 권한 연결·게시 권한은 별개이며, 옛 가입 보류 기록을 현재 계정 상태로 단정하지 않는다. [공식 토큰 관리](https://developers.tiktok.com/docs/en/oauth-user-access-token-management), [Web Login](https://developers.tiktok.com/docs/en/login-kit-web)
 
 ## 기록과 보관
 

@@ -1,0 +1,631 @@
+[
+  {
+    "path": "docs/코어엔진_설계.md",
+    "coverage": "full",
+    "decision": "현재 생산자·계정별 소비 정정, 고유 계약 보존",
+    "reason": "전체 본문을 1~160행 및 161행~끝으로 나누어 읽었다. 삭제된 성향확인 생산자를 현행 표에서 제외하고 플랫폼 기본 anonymous scope와 실제 계정별 launcher 소비를 구분했다. 개인화·기한·조건부 허용·여행 전문성·원본/동의·추정·효과 경계는 보존했다. 코드 대조는 수정한 생산자·현재 소비·회수 연결에 한정하며 전체 계약 구현을 재시험한 것은 아니다.",
+    "evidence": [
+      "SYNK-talk progress 성향확인 제거 주석, 동의율 계산기 및 deliver 회수요약 존재",
+      "desktop/renderer/launcher.mjs:62 library.owner를 scope와 저장 키에 적용",
+      "SYNK-talk 현재 lib/성향확인.js 없음, 이전 §10의 삭제 기록과 표 일치"
+    ],
+    "originalSha256": "f554e04359ea4066f9dbb30e828aca71229a1feabbcae801a7fdd49c41aef950",
+    "currentSha256": "d56cfe0378040ebca69c8d35885714c21955151797730f6f9d06ae1c375efe42"
+  },
+  {
+    "path": "docs/엔진8종_상향설계_v3.md",
+    "coverage": "full",
+    "decision": "고유 U·D·payload 계약 보존, 폐기된 실행 경로 3곳 정정",
+    "reason": "850행 전체를 1~200, 201~315, 316~475, 476~650, 651~끝으로 읽었고 첫 출력에서 잘린 86~116행도 다시 읽었다. 관통왕복의 옛 검증점·없어진 c12 생성회전·현재 생산자 없는 preference.stated를 현행 실행으로 읽지 않도록 정정했다. 엔진 책임·개인화와 효과·정정/철회·배포 경계 및 고유 U/D/필드 계약은 보존했다. 전체 코드와 원격 실행을 재검증한 것은 아니다.",
+    "evidence": [
+      "SYNK-talk deliver/index.ts:19-23 c12 제거; 이벤트검증 preference.stated 생산자 없음",
+      "관통왕복_명세는 V1~V5 역사 명세, 현재 도구 없음",
+      "추가 중앙 하네스·모델 역할 복제·고정 검토 회차를 재도입하지 않음"
+    ],
+    "originalSha256": "eaadc8e2895d92223866954ffc75b683110abe6f0fe91cb825d97fad5602c0f9",
+    "currentSha256": "57e8f435b10f7e0b6e217227658dd4bbbfbd1a3bd8a9101b8ce63b651468bc5d"
+  },
+  {
+    "path": "docs/아틀라스_설계.md",
+    "coverage": "full",
+    "decision": "현재 구현과 09-19 설계·상태표 구분, 삭제 경로와 공통 선호 계약 정정",
+    "reason": "679행을 1~145, 146~280, 281~415, 416~550, 551~끝으로 잘림 없이 전독했다. 초기 계정 제안·학습 API·확인 사건·생성 숙제·한글 미착수·Strata 주인 없음·현재 상태표를 이후 구현과 구분했다. 기한 없는 설정의 옛 전제를 현재 Core의 명시 기한/제품 시효로 한정했다. 고유 비교 회차·모형 승격·원신호·권한·수신/효과 계약은 보존했다.",
+    "evidence": [
+      "atlas/learning-sync.js의 인증된 계정별 어댑터·transport 계약, atlas/memory-sync.js의 synk-learning 전송 주석, atlas/engine.js:18 정책 atlas-2.4.0",
+      "world-learning-plan.mjs 및 WORLD 담당 README의 후속 활동추천",
+      "Strata_설계.md 현재 지도 구현·삭제된 교안/차시; 한글 README 실제 존재",
+      "라이브·학습 효과·전체 자동 승격 완료를 확인한 것은 아님"
+    ],
+    "originalSha256": "b6580fb957f4e070e61fcdbf6b3d1b8f2807596efd22d64df23944d7192874d8",
+    "currentSha256": "39de529daf5cc90d487b80165e463dac02588fc40bb84ea89cb06178a1f57be4",
+    "followupReview": "최종 동시 변경 확인: 10-17 다른 작업의 35개/6500줄 크기 상한 근거, WORLD 묶음·추가 소비처·PRODUCT_OWNED 등록 설명을 읽어 보존. 해당 구현의 병합·배포는 이 정리 작업이 실행하지 않음."
+  },
+  {
+    "path": "docs/아틀라스_구현명세.md",
+    "coverage": "full",
+    "decision": "고유 계약 보존, 09-19 현재형·삭제 생산자·완료된 목소리 선택 정정",
+    "reason": "1312행 원문을 1~155,156~320,321~480,481~640,641~800,801~970,971~1130,1131~끝으로 전독했다. 미착수/WP/미확인 목록의 시점과 현행 소비처를 분리하고 LAB 기록 입구를 전사 공통 기록 금지로 확대하지 않도록 수정했다. Town 소유·반응·복원 및 교사 왕복의 고유 계약은 보존했다. 전체 코드·원격 배포를 검증한 것은 아니다.",
+    "evidence": [
+      "Talk deliver/index.ts의 10-03 c12 제거 및 레거시 이벤트 생산자 부재",
+      "atlas/learning-sync.js 계정별 transport 계약; 현재 한글 README와 10-03 Typecast 혜리 결정",
+      "이전 09-19 생성 WP와 현재 WORLD·교사 로컬 구현의 구분"
+    ],
+    "originalSha256": "25a02c9f3f791dfc392286655e3550c120b45066c6fbc4b24ff7f0325e0c2bb7",
+    "currentSha256": "541b0c1bf26387b98334099e91e61946dfb8de74b0496ef13f1f82141d6070f5"
+  },
+  {
+    "path": "docs/상태기반_과제선택_설계.md",
+    "coverage": "full",
+    "decision": "현행 충돌 1문장 정정, 고유 계약 보존",
+    "reason": "본문 1~5509행 전독. c12 생성·회전이 현재 실행된다는 문장을 10-03 제거 이력으로 정정. SQL/RPC/fencing/멱등성/관측과 처치/평가 분모/비식별/역사 기각 근거 보존. 원격 운영과 과거 기술 주장 전체 재실행을 뜻하지 않음.",
+    "evidence": [
+      "SYNK-talk/supabase/functions/deliver/index.ts:19~23 c12 제거 및 현재 검수 문장 풀 배정",
+      "본문 1~5200행을 연속 조각으로 읽고 5201~5509행 출력 잘림은 5341~5361행 재독으로 보완",
+      "본문 §0~13 고유 계약, §14~16 pass2 보존·현행 경계 유지"
+    ],
+    "originalSha256": "df72ac0379b929a9ade3e92d2d274d7e420332e9977f6e9485eea02be000566f",
+    "currentSha256": "952b27c3757f7e3f3f3d04a8c1bc323ab322316b69ecb048696e15cc9ce43901"
+  },
+  {
+    "path": "desktop/AUTH.md",
+    "coverage": "full",
+    "decision": "현재 교사 입구·허용 API 정본 연결",
+    "reason": "78행 전문. 10-02·10-04 인증 경계·PKCE·DPAPI·세션 폐기·합성 증거 보존, 교사 기본 입구가 독립 앱이라는 과거 안내를 Workspace 내 수업/호환 경로로 한정.",
+    "evidence": [
+      "desktop/README.md 10-09 내 수업 통합",
+      "desktop/src/main.cjs sendTeachingView 및 src/account-requests.cjs:39,56~57 실제 추가 허용 API"
+    ],
+    "originalSha256": "28efebd979371047c6753c6966384af5e0edc21842dfd708e9a7002e6ffb7528",
+    "currentSha256": "9d6fe8b3bfe78080f737d9b5b4a9dc0f2522d52817e3e83858b48466c451f0cb"
+  },
+  {
+    "path": "desktop/LIFECYCLE.md",
+    "coverage": "full",
+    "decision": "최신 릴리스 원문 연결, 과거 PC 상태 분리",
+    "reason": "184행 전문. 설치·회복·서명·공통 릴리스 재현 고유 계약 유지. 10-14 0.4.10 중단을 현재 상태로 복사하지 않도록 10-15 후속 기록으로 연결.",
+    "evidence": [
+      "docs/SYNK_플랫폼_계정과_연결_설계.md:119~152의 0.4.15 및 0.4.16 공개·실계정 재실행 후속 기록"
+    ],
+    "originalSha256": "0356caafefbf33e30c6dc94cc7ddbcc11d7a4b29652ba9daf8475aa302648749",
+    "currentSha256": "6e352141436f935f6051d32aaece48736c1f452fb225f1a217a790685d462e1c"
+  },
+  {
+    "path": "desktop/README.md",
+    "coverage": "full",
+    "decision": "날짜별 이력과 현재 릴리스·재현 경계 정정",
+    "reason": "485행 전문. 1~130행 출력 잘림은 17~44행 재독으로 보완; 131~255,256~375,376~끝 확인. 10-09 설치파일을 최신으로 쓰라는 낡은 지시 제거. 초기 58개 시험·Mac 미검증·배포 전 할 일을 10-02 이력으로 명명. 모든 설치·계정·실제 사용 근거 보존.",
+    "evidence": [
+      "docs/SYNK_플랫폼_계정과_연결_설계.md:146~152 0.4.16 후속 공개·PC 인수",
+      "desktop/LIFECYCLE.md 공통 릴리스 재현 계약"
+    ],
+    "originalSha256": "e8c219dbe51ae5e22f6b27911922132667eec93a43dd38fdc4e458098758f5a8",
+    "currentSha256": "5cec6e9432ebcc8e5a527d3858a91490d9e30bd74eba6b69c4ad001a655b0101"
+  },
+  {
+    "path": "desktop/installer/README.md",
+    "coverage": "full",
+    "decision": "과거 패키지 baseline과 최신 배포 분리",
+    "reason": "122행 전문. Job Objects/NSIS timeout/회복/해시/실제 fixture 경계와 재현 명령 보존. signal.2 홈페이지 안내와 0.4.3 baseline을 최신 설치 지시로 오독하지 않도록 공통 릴리스 원문 연결.",
+    "evidence": [
+      "desktop/LIFECYCLE.md 공통 릴리스 재현",
+      "desktop/README.md 10-14~15 후속 공개·설치 이력"
+    ],
+    "originalSha256": "cfcca9fef436976420446d2489014737d5cc9bd97a309314414490b12a7eceb2",
+    "currentSha256": "0878960d8bde525f2745c7f3781c6d99d7e67f64a271605e877535528f2897a2"
+  },
+  {
+    "path": "docs/SYNK_공통계정_구현검증_20261002.md",
+    "coverage": "full",
+    "decision": "당시 구현·검증 근거 보존, 후속 운영 입구 연결",
+    "reason": "106행 전문. PKCE·동의 revision·사건 소유권·내보내기/삭제 요청·제품 경계·합성/실기기 범위 보존. 옛 미설정·Mac 부재·운영 전 순서와 20회 한도를 현재 상태로 복사하지 않도록 한정.",
+    "evidence": [
+      "desktop/README.md 10-09 Workspace 및 10-15 공개/PC 후속",
+      "docs/SYNK_플랫폼_계정과_연결_설계.md 실제 계정·릴리스 후속"
+    ],
+    "originalSha256": "0e8d23466ecf5f6536f5784d4c6ed51adc548d692e0f882b3cf78ebb3a5289f2",
+    "currentSha256": "175db8547f0c64262510b4426080bc559fb364b85c849d22e8ccb7b4e5163198"
+  },
+  {
+    "path": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "814행 본문 전독. 날짜별 구현·배포 상태에 후속 우선 범위를 부여하고 교사 기본값과 앱 압축 이력을 명료화. 고유 계정·인증·CAS·평가 원문 보존.",
+    "evidence": [
+      "본문 1~814행, 출력 잘림 152 및 648~700행 복구",
+      "같은 문서 member-language9-20261016 및 messenger-teaching-20261009 후속 근거"
+    ],
+    "originalSha256": "96858686580168a69f45902414b146e95310aabe5d57fade5512ddbf368a250c",
+    "currentSha256": "a7b8b2858bedcb190226611d06f6695ee6cad97d142bc92b066dd46599d97181"
+  },
+  {
+    "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "본문 102행 전독. 10-08 검증을 최신 전체 상태로 확대하지 않도록 날짜와 후속 원문 연결. 공통 Domain·Ask·Temper 계약과 결과 한계 보존.",
+    "evidence": [
+      "Core 2.4.0 및 담당 엔진 원문",
+      "플랫폼 계정 설계 ko9 후속"
+    ],
+    "originalSha256": "d59c51ae7ad7b43538be1c0325cd142950fc6455a59da3ca975116577ad8e116",
+    "currentSha256": "339a85642ad5473faff8736af9b6f3b93113cf7f9f7c5e63e93097660090f897"
+  },
+  {
+    "path": "docs/아틀라스_교육업그레이드_20260930.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "본문 130행 전독. G1/G4·동기화 미완료·당시 검사/잠금 이력을 현재 지시에서 분리. 수행·노출·recheck 계약 보존.",
+    "evidence": [
+      "옛시스템 정리목록 10-03 G1~G4 제거",
+      "미니게임 공통 학습 기준 및 플랫폼 계정 후속"
+    ],
+    "originalSha256": "f94889ba4787dd9bbea52ce26924e7af940817cc79663f7a7991001f2525d559",
+    "currentSha256": "8232e3c4e2d7963df6e24c1f569f70a50e9c313fac95fb6619cc434819751711"
+  },
+  {
+    "path": "docs/아틀라스_검토_20261002.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "본문 153행 전독·끝 135~153행 재확인. 성능/저장/회귀 원문 보존, 휴대폰 미측정 배율 단정 제거, 역사 실행 범위 표시.",
+    "evidence": [
+      "동일 문서 실제 휴대폰 미측정 명시",
+      "Atlas 2.4.0 및 현행 담당 엔진"
+    ],
+    "originalSha256": "ba17384724918deab00cebe8ebafdc7f6def45242f1bf08af29e8e0c00e49feb",
+    "currentSha256": "712825e5b73d9748a586256944f96f5f9805dafa904ec9f30ce16ed6aeae3b47"
+  },
+  {
+    "path": "docs/아틀라스_첫지속기억_20260921.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "본문 140행 전독·잘린 도입부 1~31행 복구. 제거된 G1/G4 producer 및 배포/옛 경로는 리허설 이력으로 한정, CAS·동의·실제 시험 증거 보존.",
+    "evidence": [
+      "플랫폼 계정 설계 10-03 G1/G4 삭제 및 현재 memory-sync 계약",
+      "원문 리허설/PC/Android 확인 한계"
+    ],
+    "originalSha256": "364c720f2c45d3e0287fad929c37451693ccd4fe9bb402e9d4f1208a703ca4b0",
+    "currentSha256": "a8b3edad3d2662c4cfba1305004fd7f533bf46165e3fbf9d1696c6263bbc50cf"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-core-trail-temper.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "164행 전독. 당시 감사/원격 미확인 근거 보존, 제거된 생산자와 현재형 다음 일을 09-21 범위로 한정.",
+    "evidence": [
+      "10-03 옛시스템 정리목록",
+      "현행 8개 담당 엔진/공통능력 고도화"
+    ],
+    "originalSha256": "002c944bc7e44084459f9bf78d9c48769a6eaea97f9334e6cb79ec0c454553ba",
+    "currentSha256": "470f5df863d809d249765791a8acf77f3a63a90f9ace45f3e6a520096fbf7e0a"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-prism-strata.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "133행 전독. Strata 없음/설계만 있음은 과거 감사 상태로 한정하고 현행 원문 연결. 집계·동의·표본·배포 경계와 확인 결과 보존.",
+    "evidence": [
+      "현행 Strata 지도 및 생성기/조회 구현",
+      "8개 엔진 정본"
+    ],
+    "originalSha256": "82bec88a1c9bfecd8ed8f45f5222d8387d9f41a56b0a8bae91d4cfb813496b98",
+    "currentSha256": "6cdfa5706c9b667c8c1318f4864c6bb5a7d5fca1635599a43f6f14a20044c06b"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-vellum-loom-reed.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "195행 전독. 옛 편지·자산·손잡이 미연결을 09-21 감사로 한정하고 현행 담당 원문 연결. 당시 실제 코드·검사·음원 근거 보존.",
+    "evidence": [
+      "현행 8개 엔진 정본",
+      "AI 운영 원칙 새 마스코트 장면 범위"
+    ],
+    "originalSha256": "ea224efb5b31eb612a90579220a38c421da2373bd446cbab0b87fb10e8fe9177",
+    "currentSha256": "0fa7264d2a04b0894a678917b0b6e35f675914e6bda9fa9f849dd0c515205535"
+  },
+  {
+    "path": "docs/아틀라스_순간맞춤_20261002.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "253행 전독. 10-02 초기 미배포·기기 전용 설명과 10-03 후속 연결의 시점 구분, 선택 채택 범위와 계산/운영 비용 구분. 고유 Flow·Ask·평가·게임 계약 보존.",
+    "evidence": [
+      "같은 문서 10~11절 후속 계정 동기화 및 배포",
+      "현행 8개 엔진 선택 재사용 경계"
+    ],
+    "originalSha256": "277b3f9b773856efaa8a198669f7655173727a29a6ba037d5d2388e3c930814c",
+    "currentSha256": "062b2e87b032a27f983a44af6cf77b9d7371c915f4396bbb3654ce4858bd1df8"
+  },
+  {
+    "path": "docs/한글단계_학습방식_조사_20261004.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "80행 전독. 조사 표본을 전체 인기/최신/효과 순위로 확대하던 결론과 연구 없음 단정을 관찰 범위로 정정. 날짜별 출처 원문 보존.",
+    "evidence": [
+      "동일 문서 5절 미확인 범위",
+      "10-08 후속 근거점검과 현행 가이드"
+    ],
+    "originalSha256": "a4704cbc4bd594a1c7576caae35f587fec54bcbe315329aeac229ced0aef469c",
+    "currentSha256": "d201438d5c2552cd704a564612ae69294daf9384ec4d5448d8dfb9e04763e045"
+  },
+  {
+    "path": "docs/한글단계_노래영상_근거점검_20261008.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "143행 전독. 같은 날 거절된 쇼츠·과거 예약/비용을 현재 지시에서 분리, 제한 연구의 일반화/영상 효과 단정 축소. 청취·후보·연구 근거 보존.",
+    "evidence": [
+      "동일 문서 4-1 사용자 결정과 5절 원문 미확인",
+      "노래 README/가이드 담당 원문"
+    ],
+    "originalSha256": "11cac73fdb435f14fa3cc8108f9ea01ff53c059ad394a3fde3e9bdf4b1a4bca3",
+    "currentSha256": "6c93b798b7a2f9679f41f6134ada98ce02184eb59bcc74942da688392420c312"
+  },
+  {
+    "path": "docs/한글단계_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "290행 전문 전독. 초기 설계와 U1~U9/음성 승인 후속 구분. DIVE/혜리 재생성·구운 글자·기존컷 합성·옛 사건 producer 지시를 현행과 정합화. 단원/졸업/근거/오프라인 계약 보존.",
+    "evidence": [
+      "hangul-stage README 10-10 하나/진희/재영/범수 승인",
+      "tools/한글단계_목소리.cjs 28~31 현재 하나 기본값",
+      "strata/hangul.json core false는 U8/U9"
+    ],
+    "originalSha256": "fcf945c98f7e4af305e15f899c5ca969c542dc5b8e3a9d644037191ee7ca5f95",
+    "currentSha256": "5035d59db655c84d2ad62885976cd9c275c7f975d9aee98b0afe1b70fe941ed7"
+  },
+  {
+    "path": "experiences/hangul-stage/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "100행 전문 전독. 완료된 하나 음성/단원/WORLD 진입을 남은 일에서 정리. U5 졸업 누락 및 계산/호스트 비용 구분. QA 원문 보존.",
+    "evidence": [
+      "tools/한글단계_목소리.cjs 31, voices.json 및 talkers.json 승인",
+      "core.mjs 137 및 strata/hangul.json core 범위",
+      "synk-world-app/app-shell.mjs 337, server.mjs 31, qa/account-browser.test.mjs 185"
+    ],
+    "originalSha256": "cb1e378c811e5e7ba9feb858732d85cdf73368da9a16cbb73def7618600d42e6",
+    "currentSha256": "fcab65827fc5ae75365bf2483eeb5250276262bd81121795cc66368216c549ad"
+  },
+  {
+    "path": "docs/미니게임_게임층_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "138행 전독. 제거된 G1~G4의 게이트/금지/승인대기를 역사 범위로 한정, 폐지된 심문 표식과 필수 스킬 지시 제거. 고유 NPC/소리/데이터 판정 근거 보존.",
+    "evidence": [
+      "10-03 옛시스템 정리목록 G1~G4 제거",
+      "현재 AI 운영 원칙 및 순간 맞춤 계약"
+    ],
+    "originalSha256": "ec789f790599bc99564b2b3746654c1c30a2d735fcd2ec88c2e696ebacee9d7d",
+    "currentSha256": "c55cf0fd207fb0e422155723bc5eb163163a235e651ee2e8f640f6b255ccdafb"
+  },
+  {
+    "path": "docs/미니게임_TOPIK_I_학습기준.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "321행 전문 전독. 첫 감사의 미구현/설계안과 뒤의 문형87개·계정·WORLD 후속을 구분. 정책/관측/평가/학생 효과 계약과 공개 증거 보존.",
+    "evidence": [
+      "동일 문서 9-1~9-8 구현/검증/공개 기록",
+      "현재 WORLD 활동 선택 및 엔진 원문"
+    ],
+    "originalSha256": "3fb8145ce13616e34214320caee536ea4b0c9a7f429d007249cee6173b7cb114",
+    "currentSha256": "d99e5de27f0c65513d4c0e589405fd62a2da3edc2dbfc65630d257681c47c31f"
+  },
+  {
+    "path": "docs/옷입히기_설계_v1.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "215행 전문 전독, 잘림 55~77행 복구. 현재 3D/공개와 09-05 흥정/보상 초안 분리, 제거된 부모알림 생산자·옛 유료 이미지 생성 재실행 방지. 고유 거래/보유/CAS/검증 유지.",
+    "evidence": [
+      "같은 문서 10-10 코스튬 공개 및 후속 날짜 근거",
+      "10-02 엔진_운영배치 제거와 AI 운영 원칙",
+      "WORLD README 현재 화면/진입"
+    ],
+    "originalSha256": "26b38b49d0a717eb3d50d5d21c7e47f066d0973ca6b9382b1642539ad9b14e80",
+    "currentSha256": "70afcd31aa279421479d157270111261a3a6087c22dbb3461b8a612bbd3b1833"
+  },
+  {
+    "path": "docs/주민_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "269행 전문 전독, 잘린 180~211행 주민 설정 복구. 고유 세계/3인 서사/인지·기억·동의/모바일 검증 기준 보존. 전체 미구현을 실제 FT10·3D 공개와 구분.",
+    "evidence": [
+      "synk-town README 10-10 공개 및 Workspace 공유 범위",
+      "월드_시그널 README firstrun-town-20261014 첫화면/싱크타운 구분"
+    ],
+    "originalSha256": "8b83e4212675c3f69df32c6eac7b1875601671c1ffeacf619584015be6e00e65",
+    "currentSha256": "487e87c2f999b7eef9ba75eebcfaa2f9f4e42d1bc094d5179a54a3673d46b654"
+  },
+  {
+    "path": "docs/대화_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "408행 본문 전독. API 없는 장면 대화와 별도 AI 튜터를 구분하고 무제한 대화 표현을 실제 활성 상태·계정·일일 한도로 정정. 고유 언어 처리·개인정보·세계 상태 계약 보존.",
+    "evidence": [
+      "본문 1–408행; 151–278 및 279–408행 이어 읽기",
+      "docs/SYNK_WORLD_AI_효율화_20261002.md; §3 답변 방식과 §15 비용의 무제한 표현 충돌"
+    ],
+    "originalSha256": "5468ec30e467856dc9e2bec5b50bf6e22b4e54af287fe2d7aca4722912fe613c",
+    "currentSha256": "9e17346e05e4f589e0c6ace6e67d7aa9b693e2b7c38fc8c5fbce4606800c9366"
+  },
+  {
+    "path": "docs/공개판_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "425행 전문 확인. 모바일 공개판 당시 한 앱·역할·정책 조사와 현재 회사 플랫폼 범위를 구분하고 나이대 선택응답 구현 완료 및 후속 결정과 충돌하는 미정 표현 정리. 기존 인증·개인정보·인수 계약 보존.",
+    "evidence": [
+      "본문 1–105,106–210,211–315,316–425행 전독",
+      "docs/SYNK_플랫폼_계정과_연결_설계.md; AI_운영원칙.md; 본문 §2 10-02 운영 적용·§7 10-05 원격 읽기 기록"
+    ],
+    "originalSha256": "724ad2a1a26d5ee09b4bd29e7b4f0c0fba65b9292f6841e49d7a1950a8575329",
+    "currentSha256": "ac73a94ce5f5bdcd2ea8f35b1c33d444b909c809eac8f770fa05080022b77ab5"
+  },
+  {
+    "path": "docs/세층합류_설계_v1.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "467행 전독. 부모의 현행 철학 정정을 보존하고 10-03 폐기 생산자와 과거 이벤트 호환 구분 추가, 폐지된 작업용 심문 도구 표식 제거. 고유 reads·노출·동의율·Vellum 전달 계약 유지.",
+    "evidence": [
+      "본문 1–120,121–250,251–380,381–EOF 전독",
+      "SYNK-talk/lib/이벤트검증.js legacy preference.stated/estimate.responded; docs/코어엔진_설계.md; docs/아틀라스_구현명세.md"
+    ],
+    "originalSha256": "6bdc15d513103ac2248df88a6fe051c1a4002bf60800df4e842e7ef6fec73fdd",
+    "currentSha256": "46cfce588313e5de12d753efff7f83188b67b59964bbd846804be4cd149db2f8"
+  },
+  {
+    "path": "docs/싱크타운_행동과_세계변화_설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "390행 전독. 날짜가 명시된 설계·후속 방향이며 실제 런타임·저장·전달·학습효과를 구별한다. TOPIK 1급+는 3D 싱크타운 계약이며 WORLD 우리동네 팩 개방과 구분하므로 유지. 고유 상태/취소/재개/개인화/체감 기준 보존.",
+    "evidence": [
+      "본문 1–100,101–200,201–300,301–EOF 전독",
+      "docs/아틀라스_구현명세.md#town-world-contract; §2 10-02 확인 범위; §13 설계 완료·실기기/효과 미검증 경계"
+    ],
+    "originalSha256": "230906187dd49920b7402093f93599e6499d539c2d03a2372d88432ca1bfccf9",
+    "currentSha256": "230906187dd49920b7402093f93599e6499d539c2d03a2372d88432ca1bfccf9"
+  },
+  {
+    "path": "docs/마을_설계.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "701행 전독. 현재 공개 3D 및 WORLD 2D 우리동네와 장기 설계를 구분, 10-09 직접 걷기와 충돌한 장소 탭 이동 정정, 한글 단일 음성 규칙을 주민 전부에 확대하던 문장 정리. NPC·여행·펫·비서·낚시·세계 상태 고유 계약 보존.",
+    "evidence": [
+      "본문 1–100,101–200,201–300,301–400,401–500,501–600,601–EOF 전독",
+      "본문 §4-8 직접 걷기; experiences/synk-town/README.md; docs/디자인/월드_시그널/README.md#firstrun-town-20261014; docs/한글단계_설계.md §10"
+    ],
+    "originalSha256": "b7fde46fdca8e58acf4b8cbca16563f8be18e4b79a3cc9af5034ace1c402f76b",
+    "currentSha256": "1ef67d83588e7840ff308c40e8c3e810794407fdd9a162b3c648fbac8f4ac004"
+  },
+  {
+    "path": "docs/발음데이터_규격.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "1005행 전문 전독. 고유 발음 축·표본·스냅샷·불변 라벨/전달 원장 계약 보존. 폐기 생산자·원음 무기한 보관·미확인 활용처 단정·2세션 강제검산의 현행 오용 차단, 후반 3축 목록을 확정 본문과 일치시킴.",
+    "evidence": [
+      "본문 1–125,126–250,251–375,376–500,501–625,626–750,751–875,876–EOF 전독",
+      "공개판_설계.md §7-1; AI_운영원칙.md; 본문 §2-1·2-3 확정 3축 및 §3 원장 분리; 엔진8종_상향설계_v3.md D11"
+    ],
+    "originalSha256": "9ae4a72e708db2fa69b33e96a23c41563d38909366a060119773a224551c39c4",
+    "currentSha256": "c705b1ffb58827d8c3ff40206b64ce67e461bcdcae1691466088c15623e9b98d"
+  },
+  {
+    "path": "experiences/atlas-lab/deploy/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "173행 전독. 미배포 소개팅 서버 구성·최신 원장 복구·백업 무결성·권한 계약 보존. 폐지된 별도 최종 검수 관문 표현만 현재 요청 승인·운영 원칙으로 정정.",
+    "evidence": [
+      "본문 1–173행 잘림 없이 전독",
+      "docs/AI_운영원칙.md 역할·최종 검수 폐지; Caddy/SQLite/정합 검사는 제품 계약으로 보존"
+    ],
+    "originalSha256": "b19792db516e0e607072e9a447e960c6b311dfb84a1e7c172bf17d05c23f9115",
+    "currentSha256": "1885880d6055ea7a4c1e7371c90c95e20b6fb834efecc309e22c6aa181c10f63"
+  },
+  {
+    "path": "experiences/beginner-games/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "127행 전독. 최신 10-10 공개 후속과 초기 로컬 단계 구분, 옛 공식 추가 검토 유예를 현재 필수 관문으로 재사용하지 않게 정리. 코인·계정·입문 듣기·실참가자 효과 경계 유지.",
+    "evidence": [
+      "본문 1–127행 전독",
+      "본문 마지막 10-10 공개 후속 173검사·31파일SHA 증거; AI_운영원칙.md"
+    ],
+    "originalSha256": "daff0049c6e557c84b24fd75401c8bf629c5c83f648a85c97ad0a44ed408a561",
+    "currentSha256": "10d3db2f44f66c7fda0ef74ce7029763c9448a8030301a84f8aca06737171678"
+  },
+  {
+    "path": "experiences/blank-slice/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "145행 전문. 손맛·소리·읽기 독립응답·목표 과제 계약 보존. 10-02~07 로컬 계정 설명을 이후 공통 계정/교사 입구와 구분해 현재 소비 원문 링크 추가.",
+    "evidence": [
+      "본문 1–145행 전독",
+      "experiences/play-common/README.md; teacher-world/README.md; 플랫폼 계정 설계"
+    ],
+    "originalSha256": "fd17ddfbd7726af9a7dfd4c499321e2fc697d66f0232762b902b2daa84cc4a04",
+    "currentSha256": "1559a7bc0ae883f4b5a5492c8797bd5195c8763cfecd5c8231186bdf75534de4"
+  },
+  {
+    "path": "experiences/brand-opening/HOME.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "171행 전문 전독. 10-10~12 3D 홈·오프닝·튜터 연결 이력을 보존하고 10-14 이후 WORLD 시그널 현재 화면과 분리. 자산·동행·힌트·계정 선택·실기기 한계 유지.",
+    "evidence": [
+      "본문 1–90,91–EOF 전독",
+      "docs/디자인/월드_시그널/README.md; 본문 10-12 및 10-10 제작/검증 범위"
+    ],
+    "originalSha256": "2ed1b949be6ed5038db22123babb0cc3f6ecef7ba7eaccbdb948e055aa1744e4",
+    "currentSha256": "ec4174319c258a51af8709d72e75ce958f756ae77d90cf358340a5ded5597aca"
+  },
+  {
+    "path": "experiences/conversation-rehearsal/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "119행 전문 검토. 10-06~08 schema 1 이력과 10-14 schema 2 현재 로컬 계약의 경계를 명료화했다.",
+    "evidence": [
+      "README 전체와 마지막 코치·새 상황·schema 2 절 대조. 운영 배포는 별도 증거로 판단하며 당시 계정 보호·검증 기록 보존."
+    ],
+    "originalSha256": "2a74620b3556cc2f8b5fe83e9ac040932b6114452c04f671494541ffd30f52c1",
+    "currentSha256": "3fea8fbfffc95018b81d19ea65f37eb49c483071b19ab89e865450a5bbfb7a08"
+  },
+  {
+    "path": "experiences/daily-fortune/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "120행 전문 검토. 잘린 출력은 68~120행 재열람으로 복구. 초기 펠트·v1 연결 이력과 10-14 시그널 v2 로컬 계약 분리.",
+    "evidence": [
+      "당시 공개·합성 검증·실회원 미확인 범위, 역법 계산과 풀이 구분, 명시 저장·삭제·계정 보호 고유 계약 보존."
+    ],
+    "originalSha256": "5bba7cb20caa2d1bbf556546b2652f4a1b39298e79f974f0556d7725c1af4f27",
+    "currentSha256": "1e5b4f30e7a3327419d89430729c33bb2a83b1207394eea7d33d3d7970900c69"
+  },
+  {
+    "path": "experiences/play-common/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "64행 전문 검토. 잘린 도입부는 1~32행 재열람 복구. 과거 공식 검토 유예를 현행 필수 관문으로 되살리지 않게 정정.",
+    "evidence": [
+      "계정 synk-play와 브라우저 지갑의 범위, 명시 이전·동시 구매·보상·코인 비평가 계약 보존. 목소리 변경은 준비 기록 그대로 유지."
+    ],
+    "originalSha256": "dad271664e591fab6795bbb09cd58a64968d0749b8400d7f415a1fbb67a43b68",
+    "currentSha256": "a38b6fc47a3073226538d4e6af70b4f4343c762fe34931c7b6201c737ac8fee4"
+  },
+  {
+    "path": "experiences/entry-check/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "183행 전문 검토. 직접 체험·WORLD 학습 기록·10-09 계정 지갑 범위와 당시 제작 도구/비용을 분리했다.",
+    "evidence": [
+      "학습 정오와 도움·문항 노출·조건 범위·합성 커버리지의 고유 계약 보존. 음성 합성 추가 호출 0과 전체 운영비를 구분."
+    ],
+    "originalSha256": "351cf1d1952fc714176d22a6190dd651c5e3e0f87d0b48ceee261dfb53279695",
+    "currentSha256": "b64f24279667c7a94b193cf9c59fcad678911da4a53ef320d90519c76f516397"
+  },
+  {
+    "path": "experiences/family-album/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "127행 전문 검토. 10-14 공개 기록까지 읽어 초기 MVP 미공개 설명을 과거 이력으로 정정.",
+    "evidence": [
+      "공개 기록의 synk-policy 63186643·27파일·로그인 화면 도달과 실제 회원 저장 미검증 구분. 원본 SHA·소장·동의·삭제·계정 보호 계약 보존."
+    ],
+    "originalSha256": "adf49baf22f93680af7c969bd31317c14064eb5c0c22d533869d8ac3a0d996a2",
+    "currentSha256": "922be60f7d47b59a06a51a8ecbbb7a50e47a16c26eedcfd0604cd418f1bc3bdf"
+  },
+  {
+    "path": "experiences/hangul-stage/songs/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "394행 가사·제작 이력까지 전문 검토. 연구 최상 효과와 20개국 보편 효과 단정을 실제 검증 범위로 한정.",
+    "evidence": [
+      "승인 가사·후보·귀 확인·박자·다운로드 출처·원본 재현 보존. 당시 Suno 모델·요금제는 현재 보장과 구분."
+    ],
+    "originalSha256": "a3d70056fda76118e4fe3243db6582fe02a972d004a1a61256e961b1d9224e78",
+    "currentSha256": "7848f4130c494984a06ea2fffef9614e9d3dc4a0cd3512f4481f98b2c58e432b"
+  },
+  {
+    "path": "experiences/hangul-stage/songs/노래영상_가이드.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "127행 전문 검토. 영상 끝 화면 혜리와 앱 기본 하나·듣기 구별 목소리의 소비 범위를 분리.",
+    "evidence": [
+      "과제별 연구와 실제 영상 효과 구분. 사용자 귀 확인·타이밍·가사·소리 대비·기존 소스 재현 계약 보존."
+    ],
+    "originalSha256": "df9c58006063a420371de29cfd990bb258965fa96111a4d0d84c6dda4c4eefa1",
+    "currentSha256": "3d1aa86c58e7c2caac4118a22afd4113062bb7bf6f077dbe9f6a09c6b14698e0"
+  },
+  {
+    "path": "experiences/korean-racing/DESIGN-PROGRESSION.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "35행 전문 검토. 초기 브라우저 저장·문항 수와 후속 README/계정 진도 계약 연결.",
+    "evidence": [
+      "4/5 진행·학습과 주행 분리·도움/시연·물리접촉·풍경·실기기 미확인 계약 보존."
+    ],
+    "originalSha256": "e8d449235e71192f4c4d57f6e2d39aedc7ff03b472babe7ba4be41b259a02fcb",
+    "currentSha256": "bdac356fbf217feb48c6ed2388f68fab7483fcd4f01ed2905179e7a56bd904ff"
+  },
+  {
+    "path": "experiences/korean-racing/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "243행 전문 검토. 잘린 21~45행 재열람 복구. 10-07 키트 화면과 10-02 옛 화면·계정 지갑·제작 경로의 우선순위를 정정.",
+    "evidence": [
+      "문항·학습/주행 분리·합성/실기기·풍경/GLB/렌더 예산·원본 출처·튜토리얼 계약 보존. 공개 상태를 날짜별로 한정."
+    ],
+    "originalSha256": "6f9bd8d5dd4b5ed04e1e91b1f82e10d34d78305f24105b5e14cb565434e99159",
+    "currentSha256": "8b35d62d4eaf81e4f0903bf47bcb70a581bcd4d902689a3eb27a8bfa6da22868"
+  },
+  {
+    "path": "experiences/korean-rhythm/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "133행 전문 검토. 초기 로컬 기록과 10-09 계정 저장·WORLD 학습 연결의 범위 명료화.",
+    "evidence": [
+      "박자와 듣기 정오 분리·같은 문항군 즉시 재확인·도움·음성 실패·재생 시계·실기기 미확인·자산 출처 보존."
+    ],
+    "originalSha256": "6a743dac1e66a49cb2d2d6457ec7e5dd3e4b25cfd572797b34348dbe484f7bdb",
+    "currentSha256": "8736d3f9b776c010bbf8a64314e72d72324865a8984d937908eeda2578bf64f9"
+  },
+  {
+    "path": "experiences/member-signal/조사_20261014.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "89행 전문 검토. 불만의 보편적 최상 순위·한국 무료 서비스 부재 단정을 표본 범위로 낮췄다.",
+    "evidence": [
+      "조사일·자료 접근 실패·직접/2차 출처·채택안 보존. 네 무료 혜택의 잠금 없음과 전사 유료 AI 권한/예산 분리. 최신 온라인 재조사는 하지 않음."
+    ],
+    "originalSha256": "300e9f0f65e35a9b035162bd524bec2a8f644bce192796d6499dfee96a3009d4",
+    "currentSha256": "6f5b7a0fed77eafb491849af4c72e831c9e7fc2c035194c57047e644f86b7002"
+  },
+  {
+    "path": "experiences/korean-runner/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "101행 전문 검토. 10-07 v7 역사와 10-09 계정 지갑/진도 연결을 분리.",
+    "evidence": [
+      "달리기 듣기 전용·음성 없으면 정지·조작 결과 평가 제외·12개 별도 듣기 확인·종료 바람상점 보존 경계 유지."
+    ],
+    "originalSha256": "fc7e0369d8788033c4907fa4e733e79a4dc0ae4fe031f6c5569704c038037407",
+    "currentSha256": "0bf35fb5ba3c0a56e9bec30a1049700f930a3cf7ac5ff74efca262cbbdd2ceed"
+  },
+  {
+    "path": "experiences/order-rush/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "159행 전문 검토. 미공개·브라우저 전용 상단을 입문판 10-10 공개/10-09 계정 후속 원문으로 정정.",
+    "evidence": [
+      "본게임과 입문판·음성15개·첫 제출/재시도·소풍 변주·목표·코인/평가 분리·시간/수량 고유 계약 보존."
+    ],
+    "originalSha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "currentSha256": "24f8cfc25b2febd83e0329175e8d1a12704afc6101f1a1e5764c9453fb7b81e9"
+  },
+  {
+    "path": "experiences/synk-world-app/LIFE-CONTENT.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "159행 전문 검토. 잘린 튜터 변경/하루 마무리 구간 111~131행 복구. 생활 계약과 10-14 시그널 화면·마스코트 방향 분리.",
+    "evidence": [
+      "22레슨132문항·카페행동/수령·입력모드·첫답/도움·복습·소유자·하루기록 계약 보존. 원고기반 튜터와 유료AI 운영 활성화 구분."
+    ],
+    "originalSha256": "ec5be1a0ebe465874bf0c15d5d3e42bee1f018a13adda959ffc8601b61b04aa1",
+    "currentSha256": "636d102986abc003a301aa1a198e746d399c4f6de78e29d4f6de01123a0a8630"
+  },
+  {
+    "path": "experiences/talk-rally/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "171행 전문 검토. 잘린 16~28행 재열람 복구. 초기 계정 미연결 현재형을 공통 10-09 계약과 실제 계정 포트로 정정.",
+    "evidence": [
+      "app.mjs18~19 ready/storage 확인. 기다리는 공·보너스/학습분리·음성/표시/도움·사운드/공개 SHA 역사 보존. 교사과제 완료는 추정하지 않음."
+    ],
+    "originalSha256": "846a09a45f08c21e7e348bec61f880dd2cce2185c70ee0bfda703199932942ca",
+    "currentSha256": "fdb92944e92ebfe0cb4658d7af21ad063b1a70b27d68183e6300e6760d724025"
+  },
+  {
+    "path": "experiences/word-magic/README.md",
+    "coverage": "full",
+    "decision": "revised",
+    "reason": "124행 전문 검토. 과거 브라우저 상점 설명과 현재 계정 작품 보관함/10-10 공개를 연결.",
+    "evidence": [
+      "18사건6듣기확인·그림체험격리·최초응답·다른탭충돌·PNG/원본·명시보관/삭제·코인평가 분리 계약 보존."
+    ],
+    "originalSha256": "1402099bc5bd7dba49b65ab6d099879ebf64f9f0767b114d078e697ad18e0a48",
+    "currentSha256": "bb7884d132f80410cb513b7e67ef059834e8a89d9e097a43ae009ba80cd35bb7"
+  }
+]

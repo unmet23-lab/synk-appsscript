@@ -1,0 +1,10 @@
+{
+  "coverage": "full",
+  "sourceUnchanged": true,
+  "currentSha256": "e17e376d6f7fc72241f9e7d3891bdfd98852481c410b0d8374cd0a4c4d0dfc48",
+  "reviewedBytes": 160080,
+  "reviewedCharacters": 90050,
+  "reviewedLines": 194,
+  "findings": 2,
+  "remoteActions": 0
+}
