@@ -44,9 +44,9 @@
 
 ### GPT 대화 창이 64K로 묶여 2분마다 압축한다
 - 증상: GPT(openai-codex)가 판정하는 동안 대화 압축이 2분마다 돌았고, 한 번에 1.5분이 걸렸다. agent.log에는 `Compressor window clamped to Ollama num_ctx: 500000 -> 65536`이 찍혀 있었다(10-16·10-17).
-- 원인: `config.yaml` model 묶음의 `ollama_num_ctx: 65536`이 로컬 Ollama 모델이 아닌 모델에도 그대로 걸린다.
-- 고침: 10-17에 그 줄만 뺐다. 로컬 qwen3.8-64k는 Modelfile의 num_ctx 65536과 `model.context_length: 65536` 상한 때문에 그대로 64K다.
-- 다시 확인: 다음 공유를 처리한 뒤 `grep "clamped to Ollama" "$LOCALAPPDATA/hermes/logs/agent.log" | tail -1`의 시각이 10-17 06:23(줄을 빼기 전 마지막)에 머물러 있는지 본다. 10-17 15:50까지는 그 뒤 GPT 판정이 없어 아직 확인하지 못했다.
+- 원인: `config.yaml` model 묶음의 `ollama_num_ctx: 65536`이 로컬 Ollama 모델이 아닌 모델에도 그대로 걸린다. `hermes-agent/agent/agent_init.py`는 이 값이 있으면 서버가 로컬인지 보지 않고 num_ctx로 쓰고, 압축기 창을 그 값으로 줄인다(`_clamp_compressor_to_ollama_num_ctx`). 값이 없으면 로컬 서버일 때만 Ollama에 물어 정한다.
+- 고침: 10-17 11:31에 그 줄만 뺐고, 게이트웨이도 그 직후 다시 떴다. 로컬 qwen3.8-64k는 Modelfile의 num_ctx 65536과 `model.context_length: 65536` 상한 때문에 그대로 64K다.
+- 다시 확인: `hermes chat -q "Reply with the single word OK." --oneshot --provider openai-codex -m gpt-6.1-sol --reasoning low --max-turns 1`을 한 번 돌리고, agent.log에서 그 실행의 `OpenAI client created (agent_init…)` 뒤에 `clamped to Ollama` 줄이 없는지 본다(10-17 16:26 없음, 입력 1.6만 토큰 한 번). 설정을 바꿨으면 게이트웨이 시작 시각(`%LOCALAPPDATA%\hermes\gateway-starts.log` 마지막 줄, 유닉스 초)이 config.yaml 수정 시각보다 뒤인지도 본다.
 
 ### Hermes 터미널에서 `/c/...` 경로를 넘긴 명령이 실패한다
 - 증상: `git -C /c/Users/...`나 `node /tmp/a.js`가 「cannot change to」·「not found」로 실패한다. `cd /c/...`는 된다.
