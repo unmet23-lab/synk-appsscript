@@ -16,7 +16,7 @@ test('only problems reach the top layer, ordered by urgency',async()=>{
     row({email:'calm@example.com',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+864e5}}}),
   ];
   const items=attention(rows,NOW);
-  assert.deepEqual(items.map(i=>i.text.split(' · ')[0]),['다시 로그인 필요','소진','주간 7% 남음','크레딧 부족','결제 D-2']);
+  assert.deepEqual(items.map(i=>i.text.split(' · ')[0]),['다시 로그인 필요','소진','거의 소진','크레딧 부족','결제 D-2']);
   assert.ok(!items.some(i=>i.text.includes('calm')));
   // 5시간 한도를 다 쓴 계정은 「5시간 소진」과 풀리는 때로 올라온다.
   const session=attention([row({email:'busy@example.com',live:{readAt:NOW,weekly:{usedPercent:51,resetsAt:NOW+4*864e5},session:{usedPercent:100,resetsAt:NOW+36*60e3}}})],NOW);
@@ -73,15 +73,17 @@ test('the board draws one ring per service and rolls the number only when it fir
     assert.equal((el.innerHTML.match(/class="ms-meter /g)||[]).length,2);
     assert.match(el.innerHTML,/<strong>roomy<\/strong><\/span><span class="ms-meter-note">계정 2개 중 가장 여유<\/span>/);
     assert.match(el.innerHTML,/data-roll="m-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
-    assert.match(el.innerHTML,/data-roll="m-gpt">51<small>%/);assert.match(el.innerHTML,/초기화까지 <b>1일 20시간<\/b>/);
+    assert.match(el.innerHTML,/data-roll="m-gpt">51<small>%/);assert.match(el.innerHTML,/주간 초기화까지 <b>1일 20시간<\/b>/);
     assert.ok(!el.innerHTML.includes('ms-bar'));
+    // 서비스 줄은 「주간 한도」 구획이라 작은 고리와 글 모두 주간 기준이다.
+    assert.match(el.innerHTML,/<b>roomy<\/b> <span class="ms-gauge ms-gauge-mini" data-level="ok">.*?<\/span>주간 <b class="ms-num">22%<\/b> 남음/);
     assert.deepEqual(drawn.sort(),['m-claude:is-drawing','m-gpt:is-drawing']);
     // 1분마다 다시 그려도 값이 같으면 가만히 있다.
     drawn.length=0;listeners.forEach(cb=>cb(snapshot));assert.deepEqual(drawn,[]);
     // 펼친 계정 고리는 처음 보일 때 한 번, 소진 계정은 0%로 코랄이다.
     await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
     assert.equal(drawn.length,2);assert.match(el.innerHTML,/class="ms-gauge" data-level="out">/);
-    assert.match(el.innerHTML,/5시간 <b class="ms-alert-text">소진<\/b> <span class="ms-soft">· 36분\u00a0뒤\u00a0풀림/);
+    assert.match(el.innerHTML,/5시간 <b class="ms-alert-text">소진<\/b> <span class="ms-soft">·\u00a036분\u00a0뒤\u00a0풀림/);
     // 값이 바뀌면 그 고리만 다시 굴린다.
     drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},credit]};listeners.forEach(cb=>cb(snapshot));
     assert.deepEqual(drawn,['m-gpt:is-drawing']);
@@ -149,7 +151,7 @@ test('the board asks members to sign in, then guides first-time users before sho
   // 계정이 생기면 세 층 화면으로 바뀐다.
   snapshot={...snapshot,rows:[row({live:{readAt:NOW,weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
   listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/지금 볼 것/);assert.match(el.innerHTML,/주간 4% 남음/);assert.match(el.innerHTML,/앞으로 7일/);assert.match(el.innerHTML,/마지막 확인/);
+  assert.match(el.innerHTML,/지금 볼 것/);assert.match(el.innerHTML,/거의 소진 · 주간 4% 남음/);assert.match(el.innerHTML,/앞으로 7일/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
