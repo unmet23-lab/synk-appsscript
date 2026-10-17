@@ -173,6 +173,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
+### 워크트리 세션 가지를 push하면 남의 미푸시 커밋이 새 원격 가지로 올라간다
+- 증상: 「이 세션 가지에 보고서만 push」했는데 원격 새 가지에 다른 세션의 로컬 전용 커밋 10여 개가 함께 올라갔다. `npm run check:storage`·`git-storage-check.cjs`의 ERROR도 `… | tail -1 && git push`로 묶어 그냥 지나갔다(10-17 비밀값 점검).
+- 원인: 앱이 만든 워크트리 가지는 origin/master가 아니라 **로컬 master**에서 갈라진다. 파이프 끝 `tail`의 종료 코드가 0이라 앞 명령의 실패가 `&&`를 막지 못한다.
+- 고침: push 전에 `git log --oneline origin/master..HEAD`를 본다. 남의 것이 섞였으면 별도 인덱스로 `git read-tree origin/master` → 내 파일만 `update-index --cacheinfo` → `commit-tree -p origin/master`로 다시 쌓아 그 커밋만 올린다. 검사 명령은 파이프 없이 돌리거나 `set -o pipefail`을 건다. 또 올리기 전에 같은 경로가 이미 origin/master에 있는지(`git cat-file -e origin/master:<경로>`) 본다. 다른 세션이 같은 일을 먼저 끝냈을 수 있다.
+- 다시 확인: `git log --oneline origin/master..<올릴 커밋>`이 내 커밋 하나이고, `git diff --stat origin/master <커밋>`에 내 파일만 나온다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
