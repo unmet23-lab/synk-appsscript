@@ -46,8 +46,9 @@ export function createHomeScene({container,onAction=()=>{},onStatus=()=>{}}){
   for(const point of engine?.getAnchors?.()||[]){const button=buttons.get(point.id);if(!button)continue;button.style.left=`${Math.max(.07,Math.min(.93,point.x))*100}%`;button.style.top=`${Math.max(.06,Math.min(.94,point.y))*100}%`;button.hidden=point.visible===false;if(point.id.startsWith('tutor:'))button.setAttribute('aria-pressed',String(point.id===`tutor:${tutor}`));}
  }
  function showStatus(message,retry=false){status.replaceChildren();const p=document.createElement('p');p.textContent=message;status.append(p);if(retry){const b=document.createElement('button');b.type='button';b.textContent='방 다시 열기';b.addEventListener('click',()=>{engine?.dispose();engine=null;void load();});status.append(b);}status.hidden=!message;}
- async function load(){
-  if(disposed||engine||loading||!tutor||!active)return;
+ // warm: 방이 아직 숨어 있어도 미리 불러 첫 그림을 그려 둔다(prepare). 그린 뒤에는 setActive(active)로 멈춰 있다.
+ async function load(warm=false){
+  if(disposed||engine||loading||!tutor||!active&&!warm)return;
   showStatus('방을 불러오고 있어요.');onStatus('loading');
   loading=(async()=>{
    try{
@@ -66,6 +67,8 @@ export function createHomeScene({container,onAction=()=>{},onStatus=()=>{}}){
   setEquipment(nextSlots={},nextDyes={}){slots={...nextSlots};dyes={...nextDyes};engine?.setEquipment(slots,dyes);},
   setMemory(value={}){memory={...value};engine?.setMemory(memory);},
   setReducedMotion(value){reduced=!!value;engine?.setReducedMotion(reduced);},
+  // 우리 집 문이 열리기 전에(home.mjs go) 첫 그림을 준비한다. 다 그렸으면 true, 못 그렸으면 false(튜터 없음·오류).
+  prepare(){if(!engine&&!loading)void load(true);return Promise.resolve(loading).then(()=>!!engine);},
   async capture(){await load();if(!engine)throw Error('방을 연 다음 사진을 찍어 주세요.');return engine.capture();},
   metrics:()=>({active,tutor,loaded:!!engine,loading:!!loading,scene:engine?.metrics?.()||null}),
   dispose(){disposed=true;abort.abort();clearTimeout(timer);resize.disconnect();engine?.dispose();engine=null;targets.replaceChildren();}

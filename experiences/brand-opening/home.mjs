@@ -8,7 +8,7 @@ import {createHomeMemory} from './home-memory.mjs';
 import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
 import {play,bindTaps,getPref,setPref,hapticAvailable,PREF_LABELS} from './world-sound.mjs';
-import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
+import {motionOn,slidePill,spring,bindPress,doors} from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const asset=path=>new URL(path,import.meta.url).href;
@@ -27,7 +27,8 @@ let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastT
 let orientationTask=Promise.resolve();
 let tutorUI,homeTutor;
 // 홈의 자리: 'town'(우리 동네, 첫 장면) 또는 'room'(우리 집 안 3D 방). 3D 방은 들어갔을 때만 그린다.
-let place='town';
+// trip: 지금 도는 문 열림 전환(go). 한 번에 하나만 돈다.
+let place='town',trip=null;
 const living=createHomeScene({container:scene,onAction:sceneAction,onStatus:status=>{scene.dataset.status=status;}});
 const town=createHomeTown({container:$('.town-scene'),asset,onPlace:openPlace,obstacle:$('.lobby-action')});
 const memory=createHomeMemory({onChange:data=>living.setMemory(data)});
@@ -60,21 +61,48 @@ function syncScene(){
  // 시트 전환(home.css)과 world-motion(튜터 깜빡임·숨쉬기 등)도 앱의 「움직임 줄이기」를 따른다 — 튜터·동네가 이 값을 읽으니 먼저 둔다.
  document.documentElement.dataset.motion=reduced.matches||manualReduced?'reduced':'full';
  const active=entryPhase==='ready'&&sceneActive&&!document.hidden&&!panel.open&&inView;
- homeTutor?.setActive(active);living.setReducedMotion(reduced.matches||manualReduced);living.setActive(active&&place==='room');
- town.setActive(entryPhase==='ready'&&!panel.open&&place==='town');
+ homeTutor?.setActive(active);living.setReducedMotion(reduced.matches||manualReduced);living.setActive(active&&place==='room'&&!trip?.hold);
+ town.setActive(entryPhase==='ready'&&!panel.open&&place==='town'&&!trip);
 }
-// 동네 ↔ 우리 집(3D 방). 방에 들어갈 때만 3D를 불러 그리고, 나오면 멈춘다.
-function setPlace(next,{focus=false}={}){
+// 동네 ↔ 우리 집(3D 방)을 바로 바꾼다. 방에 들어갈 때만 3D를 불러 그리고, 나오면 멈춘다. 초점은 방에서 「동네로」, 동네에서 다음 장소.
+// title=false면 넓은 화면 제목은 그대로 둔다(문이 열리기 시작할 때 setTitle).
+function setPlace(next,{focus=false,title=true}={}){
  place=next==='room'?'room':'town';
  const shell=$('.world-shell');shell.dataset.place=place;
- $('.place-kicker').textContent=place==='room'?'OUR ROOM':'OUR TOWN';$('.place-heading h1').textContent=place==='room'?'우리 방':'우리 동네';
- document.title=`${place==='room'?'우리 방':'우리 동네'} · SYNK WORLD`;
+ if(title)setTitle(place);
  scene.inert=place!=='room';
  syncScene();
- if(focus)(place==='room'?$('.room-back'):null)?.focus({preventScroll:true});
+ if(focus){if(place==='room')$('.room-back')?.focus({preventScroll:true});else town.focus();}
+}
+// 넓은 화면의 장소 제목과 그 색(home-town.css data-title), 창 제목.
+function setTitle(where){
+ $('.world-shell').dataset.title=where;
+ $('.place-kicker').textContent=where==='room'?'OUR ROOM':'OUR TOWN';$('.place-heading h1').textContent=where==='room'?'우리 방':'우리 동네';
+ document.title=`${where==='room'?'우리 방':'우리 동네'} · SYNK WORLD`;
+}
+// 문 열림 전환(10-17 팁 장부 7행): 동네 사진을 가운데에서 가른 두 짝이 열리며(3D 첫 그림은 최대 1.2초만 기다림) 방이 되고, 맞물리며 동네가 된다.
+// 들어갈 때는 닫힌 문 뒤에서 바로 방으로 바꾸되, 문이 화면에 오른 뒤에야 3D를 그리기 시작한다(hold) — 3D가 화면 일을 오래 붙잡아도 문은 제때 열린다.
+// 사람이 누른 것(user)은 전환 중이면 무시하고, 코드가 부른 길(goTown·enterRoom 등)은 앞 전환을 걷고 새로 간다.
+// 기기 「동작 줄이기」·WORLD 「움직임 줄이기」, 홈이 아직 안 보일 때, 사진 찍기(instant)는 지금처럼 바로 바꾼다. 소리는 sound 한 번.
+function go(next,{user=false,focus=false,sound='',instant=false}={}){
+ next=next==='room'?'room':'town';
+ if(trip){if(user||trip.to===next&&!instant)return trip.done;trip.stop.abort();trip=null;delete $('.world-shell').dataset.moving;setTitle(place);syncScene();}
+ if(next===place)return Promise.resolve();
+ if(sound)play(sound);
+ if(instant||!motionOn()||entryPhase!=='ready'||document.hidden){setPlace(next,{focus});return Promise.resolve();}
+ const room=next==='room',t={to:next,stop:new AbortController(),hold:room},shell=$('.world-shell');trip=t;shell.dataset.moving=next;syncScene();
+ // 나갈 때 「동네로」는 문이 닫히는 동안 비킨다(맞물리면 어차피 사라진다). 걷을 때 되돌린다.
+ const leave=room?null:$('.room-back').animate([{opacity:1},{opacity:0}],{duration:140,easing:'ease-out',fill:'forwards'});
+ t.done=doors($('.town-scene'),{mode:room?'open':'close',host:$('#home-main'),reveal:room?scene:null,title:$$('.place-heading>*'),signal:t.stop.signal,
+  ready:room?()=>{t.hold=false;syncScene();return living.prepare();}:null,
+  swap:({start})=>{setPlace(next,{title:!room});if(room)start($('.room-back'),[{opacity:0,scale:'.94'},{opacity:1,scale:'1'}],{duration:360,delay:160,easing:'cubic-bezier(.25,.9,.3,1)'});},
+  opened:()=>{setTitle(next);if(focus)$('.room-back')?.focus({preventScroll:true});}})
+  .catch(error=>{console.warn('Place transition failed',error);if(trip!==t)return;$$('.w-doors').forEach(el=>el.remove());setPlace(next,{focus});})
+  .finally(()=>{leave?.cancel();if(trip!==t)return;trip=null;delete shell.dataset.moving;syncScene();if(focus&&!room)town.focus();});
+ return t.done;
 }
 function openPlace(spot){
- if(spot.id==='home'){play('open');setPlace('room',{focus:true});return;}
+ if(spot.id==='home'){void go('room',{user:true,focus:true,sound:'open'});return;}
  void openPack(spot.pack);
 }
 // 장소 하나 = 생활 팩 하나. 튜터를 고른 뒤에 그 팩의 레슨 목록을 연다.
@@ -240,11 +268,11 @@ document.addEventListener('click',event=>{
  if(button.dataset.homeHost){callHost(button.dataset.homeHost);return;}
  if(button.dataset.world){if(['play','town','songs'].includes(button.dataset.world))callHost(button.dataset.world,button);return;}
  if(button.hasAttribute('data-close')){closePanel();return;}
- const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{if(panel.open)closePanel();if(place==='room')setPlace('town');window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
+ const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
 });
 content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));
-$('.room-back').addEventListener('click',()=>{play('close');setPlace('town');town.focus();});
+$('.room-back').addEventListener('click',()=>{void go('town',{user:true,focus:true,sound:'close'});});
 $('#panel-close').addEventListener('click',closePanel);panel.addEventListener('cancel',event=>{event.preventDefault();closePanel();});panel.addEventListener('click',event=>{if(event.target===panel){const r=panel.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closePanel();}});
 panel.addEventListener('close',()=>{if(!panel.open&&(content.childElementCount||panelResource))closePanel();});
 panel.addEventListener('close',()=>queueMicrotask(()=>{
@@ -279,12 +307,13 @@ export const home={
  setSceneActive(active){sceneActive=Boolean(active);syncScene();},setSceneTime,setEntryState,
  setEquipment(slots={},dyes={}){equipment={slots:{...slots},dyes:{...dyes}};living.setEquipment(equipment.slots,equipment.dyes);},
  connectHost(callbacks){host=callbacks||null;document.documentElement.dataset.connected=String(Boolean(host));},
- place:()=>place,goTown:()=>{if(panel.open)closePanel();setPlace('town');},
+ // 게임·레슨 결과의 「우리 동네로」: 방에 있었으면 문이 맞물리며 동네가 된다. 시트를 닫는 소리가 났으면 문 소리는 더하지 않는다.
+ place:()=>place,goTown:()=>{const closing=panel.open;if(closing)closePanel();return go('town',{sound:closing?'':'close'});},
  updateAccount,updateLearning,updateStudy,
- // 사진은 3D 방에서 찍는다. 동네에서 부르면 먼저 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
- photo:()=>{if(place!=='room')setPlace('room');return photo();},
+ // 사진은 3D 방에서 찍는다. 동네에서 부르면 문 열림 없이 바로 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
+ photo:()=>{if(place!=='room'||trip)void go('room',{instant:true});return photo();},
  connectEducation(value){education=value;},openLearningGame:launchGame,
- scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,...town.metrics()}),enterRoom:()=>setPlace('room'),leaveRoom:()=>setPlace('town'),
+ scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,moving:trip?.to||null,...town.metrics()}),enterRoom:()=>go('room'),leaveRoom:()=>go('town'),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
  applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
 };
