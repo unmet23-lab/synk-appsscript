@@ -458,8 +458,10 @@ function serve() {
       if (why) return reply(res, 403, { error: why });
       if (req.method === 'GET' && url === '/status') return reply(res, 200, { project: 'synk-minigame-voice', connected: !!key, plan: account?.plan || null, expiresAt, meter, state });
       if (req.method === 'GET' && url === '/') {
+        // 화면을 먼저 만든다: 머리를 보낸 뒤 page()가 실패하면 catch의 reply가 머리를 다시 써서 서버가 죽는다.
+        const html = await page();
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${NONCE}'; connect-src 'self'; media-src 'self' https://static2.typecast.ai; form-action 'self'; frame-ancestors 'none'` });
-        return res.end(await page());
+        return res.end(html);
       }
       const sample = req.method === 'GET' && /^\/sample\/([a-z]+)\/(tc_[0-9a-f]{24})\/([a-z0-9-]+__[A-Za-z0-9._-]+\.(mp3|wav))$/.exec(url);
       if (sample) {
