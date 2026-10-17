@@ -157,7 +157,7 @@ let page = fs.readFileSync(path.join(here, 'site-src/template.html'), 'utf8');
 for (const [k, v] of Object.entries(rep)) page = page.replace(`@@${k}@@`, () => v);
 if (/@@\w+@@/.test(page)) throw Error('채우지 못한 자리표시가 있다');
 // 화면에 나가는 글에 만든 도구 이름이 섞이지 않았는지 본다(목소리 이름표는 VOICE_NOTE로 바꿔서 나간다)
-const banned = /Gemini|Nano ?Banana|Higgsfield|Soul 2|Vertex|LoRA|pls_f0|MediaPipe|Leda|Aoede|Laomedeia|SYNK-LoRA/i;
+const banned = /Gemini|Nano ?Banana|Higgsfield|Soul 2|Vertex|LoRA|pls_f0|MediaPipe|Leda|Aoede|Laomedeia|SYNK-LoRA|Typecast|타입캐스트|tc_[0-9a-f]{8}/i;
 const leak = JSON.stringify(data).match(banned);
 if (leak) throw Error('공개 자료에 도구 이름이 들어 있다: ' + leak[0]);
 const licenses = ['SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt', 'DM_Mono/OFL.txt']

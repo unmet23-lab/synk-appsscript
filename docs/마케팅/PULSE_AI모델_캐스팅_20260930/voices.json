@@ -85,24 +85,45 @@
  },
  {
   "name": "M30sa-voice-1",
-  "voice": "Algenib",
-  "label": "거칠고 묵직한",
-  "style": "30대 중반 남자가 낮고 거칠게, 묵직한 목소리로 천천히 말해 줘",
-  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향."
+  "engine": "typecast",
+  "voice": "범수",
+  "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+  "model": "ssfm-v30",
+  "emotion": "tonedown",
+  "tempo": 0.95,
+  "seed": 1018,
+  "label": "낮고 묵직한",
+  "note": "묵직하고 낮은 톤 · 향수·주류",
+  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향.",
+  "made": "2026-10-18 · .tmp/pulse-voice-audition-20261018/bake.mjs"
  },
  {
   "name": "M30sa-voice-2",
-  "voice": "Orus",
-  "label": "단단하고 깊은",
-  "style": "30대 중반 남자가 단단하고 깊은 목소리로 또박또박 말해 줘",
-  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향."
+  "engine": "typecast",
+  "voice": "범수",
+  "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "tempo": 1.0,
+  "seed": 1018,
+  "label": "단단하고 또렷한",
+  "note": "단단하고 또렷한 톤 · 자동차·기업",
+  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향.",
+  "made": "2026-10-18 · .tmp/pulse-voice-audition-20261018/bake.mjs"
  },
  {
   "name": "M30sa-voice-3",
-  "voice": "Algieba",
-  "label": "부드럽고 낮은",
-  "style": "30대 중반 남자가 부드럽고 낮게, 가까이서 말하듯 해 줘",
-  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향."
+  "engine": "typecast",
+  "voice": "범수",
+  "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+  "model": "ssfm-v30",
+  "emotion": "whisper",
+  "tempo": 0.95,
+  "seed": 1018,
+  "label": "가까이 속삭이는",
+  "note": "가까이서 속삭이는 톤 · 무드·향",
+  "script": "안녕하세요. 오늘 밤, 당신을 기억하게 할 단 하나의 향.",
+  "made": "2026-10-18 · .tmp/pulse-voice-audition-20261018/bake.mjs"
  },
  {
   "name": "F20fb-voice-1",
