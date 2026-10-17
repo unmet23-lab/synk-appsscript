@@ -6,7 +6,9 @@ import { clamp, ramp } from '../lib/anim';
 import { Board, Cursor, Field, Head, Mark, Title } from '../parts';
 import { L } from '../theme';
 
-export const HOOK = { click: 30, rows: 36, rowGap: 7, mark: 84, len: 108 };
+import { HOOK } from '../timeline';
+
+export { HOOK };
 
 const BW = 540; // 계정판 css 폭(휴대폰 폭)
 const SCALE = (L.W - L.X - L.R) / BW; // = 1.548
@@ -14,11 +16,11 @@ const SCALE = (L.W - L.X - L.R) / BW; // = 1.548
 export const Hook: React.FC = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const reading = f >= HOOK.click + 2 && f < HOOK.rows + HOOK.rowGap * 6 + 4;
-  const shown = ACCOUNTS.filter((_, i) => f >= HOOK.rows + i * HOOK.rowGap).length;
+  const reading = f >= HOOK.click + 2 && f < HOOK.rows[5] + 4;
+  const shown = ACCOUNTS.filter((_, i) => f >= HOOK.rows[i]).length;
   const cardIn = spring({ frame: f - 4, fps, config: { damping: 16, stiffness: 130 } });
-  const bump = (i: number) => interpolate(f, [HOOK.rows + i * HOOK.rowGap, HOOK.rows + i * HOOK.rowGap + 6], [1.18, 1], clamp);
-  const lastBump = Math.min(...ACCOUNTS.map((_, i) => (f >= HOOK.rows + i * HOOK.rowGap ? bump(i) : 1)));
+  const bump = (i: number) => interpolate(f, [HOOK.rows[i], HOOK.rows[i] + 6], [1.18, 1], clamp);
+  const lastBump = Math.min(...ACCOUNTS.map((_, i) => (f >= HOOK.rows[i] ? bump(i) : 1)));
   const punch = interpolate(f, [HOOK.click, HOOK.click + 4, HOOK.click + 16], [0, 0.04, 0], clamp);
   return (
     <Field>
@@ -48,7 +50,7 @@ export const Hook: React.FC = () => {
             </div>
             <div className="mt-list" style={{ marginTop: 6 }}>
               {ACCOUNTS.map((a, i) => {
-                const at = HOOK.rows + i * HOOK.rowGap;
+                const at = HOOK.rows[i];
                 const s = spring({ frame: f - at, fps, config: { damping: 15, stiffness: 190, mass: 0.7 } });
                 const fill = ramp(f, at + 2, 14);
                 if (f < at) return <div key={i} className="mt-row" style={{ visibility: 'hidden' }}><span className="ms-tag">.</span></div>;

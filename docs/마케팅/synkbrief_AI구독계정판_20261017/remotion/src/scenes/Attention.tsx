@@ -7,7 +7,9 @@ import { clamp, EASE_IN_OUT, ramp } from '../lib/anim';
 import { Board, Caption, Head, Mark, Paper, Screen, Title } from '../parts';
 import { C, F, L } from '../theme';
 
-export const ATT = { chips: [6, 13], pop: 28, back: 70, circle: 80, len: 105 };
+import { ATT } from '../timeline';
+
+export { ATT };
 
 const BW = 520;
 const SCALE = (L.W - L.X - L.R - 52) / BW;
