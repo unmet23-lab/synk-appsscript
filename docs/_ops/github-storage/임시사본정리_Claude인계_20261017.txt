@@ -1,0 +1,72 @@
+Claude 인계 — 검증용 임시 사본 삭제가 실행 전에 차단되는 문제
+작성: 2026-10-17, GPT/Codex
+
+작업본
+C:\Users\q1212\Documents\SYNK-appsscript
+
+요청
+유호님은 필요한 원본·복구본을 보존하면서 남은 검증용 사본 약 1.16GB와 오래된 불필요 자료를 정리하라고 명시적으로 승인했다. 아래 오류가 왜 발생하는지 실행기 정책과 Windows 파일 권한·점유를 구분해서 진단하고, 지원되는 승인·해결 절차가 있는지 확인해 달라. 이 문서는 사용자에게 전달하는 인계문이며 다른 세션에 자동 전송하지 않았다.
+
+원격에 함께 보관하는 검토 요약
+docs/_ops/github-storage/cleanup-review-20261017.json
+이 요약에 원본·복구본 검증 결과, 추가 9개 후보의 경로·해시, 문서 조사 결과를 포함했다. 아래 .tmp 경로는 같은 노트북에 남긴 상세 증거다.
+
+현재 결과
+- 이번 후속 작업에서 삭제한 파일은 0개다. 아래 두 폴더와 추가 후보 9개는 아직 남아 있다.
+- 원본 675개와 로컬 복구 ZIP 3개, GitHub 비공개 Release의 ZIP 3개를 다시 검증했다.
+- 사용자 재승인 후 정확한 절대경로로 삭제를 다시 요청했지만 Codex 실행 도구가 프로세스 시작 전에 거절했다.
+
+차단된 두 폴더
+1. C:\Users\q1212\Documents\SYNK-appsscript\.tmp\github-storage-20261017\packages
+   3 ZIP, 577,016,464바이트. 업로드용으로 만든 압축 사본.
+2. C:\Users\q1212\Documents\SYNK-appsscript\.tmp\github-storage-20261017\restore-check
+   675파일, 579,665,231바이트. 원격 ZIP의 실제 복원 시험으로 만든 사본.
+합계: 678파일, 1,156,681,695바이트(십진 약 1.16GB).
+
+반드시 보존할 자료
+- .tmp/github-storage-20261017/remote-download/ : 다시 내려받은 복구 ZIP 3개, 577,016,464바이트.
+- docs/_ops/github-storage/archive-20261017.json : 675개 원본 경로, 크기, SHA-256, Git blob 및 ZIP 대응표.
+- 위 목록의 실제 원본 675개, 승인 정본, 교정 입력·마스크, 앱이 쓰는 이미지.
+- 기존 문서 정리 복구본, Git 과거 이력·브랜치·태그 및 동시 작업의 미커밋 파일.
+- 원격: https://github.com/unmet23-lab/synk-appsscript/releases/tag/storage-artifacts-20261017
+  비공개 저장소, release ID 415592655.
+
+이번에 다시 확인한 보존 근거
+- 두 삭제 후보 폴더에 목록 밖 파일·폴더, reparse point, 경로 이탈이 없다.
+- packages 3개와 남길 remote-download 3개의 ZIP SHA-256 및 내부 675개 payload 해시가 일치한다.
+- 실제 원본 675개도 모두 목록의 크기·SHA-256과 일치한다.
+- GitHub API에서 저장소 private, release ID/tag, 3개 asset ID/name/size/digest, state=uploaded를 재확인했다.
+- 상세: .tmp/github-storage-20261017/temporary-copy-predelete-verification.json
+  readyForAuthorizedTemporaryCopyDeletion=true는 데이터 검증 통과를 뜻한다. 도구 실행 정책이 허용했다는 뜻은 아니다.
+
+실패 단계와 실제 오류
+도구: Codex exec_command, PowerShell.
+명령 구성: 검증 JSON 확인 → Resolve-Path로 두 절대경로 대조 → 두 경로에만 Remove-Item -LiteralPath ... -Recurse -Force -ErrorAction Stop.
+반환 오류의 핵심 원문:
+  exec_command failed: CreateProcess { message: "Rejected(... rejected: blocked by policy)" }
+
+이전 시도는 검증한 경로 배열을 순회했고, 이번 시도는 두 절대경로를 LiteralPath에 직접 적었다. 둘 다 같은 실행 전 거절이었다. 정책명·차단 조건·구체적 이유는 반환되지 않았다. Windows의 Access denied나 Sharing violation이 나온 기록이 아니다. 따라서 파일 잠금, 관리자 권한 부족, Git 추적 상태 때문이라고 확정하면 안 된다. 현재 기록만으로는 정확한 차단 조건을 알 수 없다.
+
+삭제 명령을 다른 인터프리터·앱·에이전트로 바꿔 우회하지 않았다. 지원되는 절차를 확인하기 전 같은 효과의 삭제를 반복하지 말고, 먼저 실행기 거절의 원인과 허용 가능한 해결 절차를 진단해 달라. 이후 정상적으로 정리할 수 있게 되더라도 경로·해시·동시 작업 여부는 실행 직전에 다시 확인해야 한다.
+
+추가로 확인한 정리 후보
+- 2026-10-10 Electron 검증 폴더의 icudtl.dat 복제 9개, 97,889,040바이트(약 98MB).
+- 현재 원본 desktop/node_modules/electron/dist/icudtl.dat와 SHA-256이 모두 같다.
+- 원본 SHA-256: 9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe
+- 후보는 Git 미추적·독립 파일이며 링크가 아니다. 조사 당시 해당 임시 경로의 실행 프로세스가 없고 상위 검증 폴더에 실행파일도 없었다.
+- 정확한 9개 경로·개별 해시·복원 근거는 .tmp/github-storage-20261017/additional-temp-audit.json의 finalCandidateFiles에 있다. 폴더 전체 삭제 목록이 아니다.
+- 해당 후보도 삭제하지 않았다. 기존 임시 사본과 합하면 후보는 687파일·1,254,570,735바이트다.
+
+추가 조사 범위와 보존 판단
+- .tmp 상위 571폴더를 분류하고 현재 작업·저장소·링크 등을 제외한 141,248파일, 약 4.88GB의 메타데이터를 조사했다. 전체 파일의 전문 검토는 아니다.
+- 최근 member-language 계열 배포 자료, junction 포함 폴더, 현재 작업과 고유 원본은 보존했다.
+- 과거 WORLD 빌드의 동일 소스 사본 657개(약 7.47MB)는 일부만 제거하면 과거 검증 묶음의 구성이 흐려져 이번 정리 권고에서 제외했다.
+- output/outputs/tmp/영상/out에서 원본과 같은 30파일(약 22.56MB)도 발견했지만, 전달 묶음·과거 작업에서의 참조 검토가 끝나지 않아 삭제 대상으로 확정하지 않았다. 목록: .tmp/github-storage-20261017/additional-exact-duplicates.json
+- artifacts/interview_20260925/scripts/picture_deps는 오래돼 보여도 prepare_picture.py가 OpenCV 4.12의 Haar 기능 때문에 명시적으로 쓰므로 보존했다.
+- 기존 문서 중복 목록에서 20그룹·81경로의 해시와 대표 본문·참조를 확인했다. SHIFT 동결 실험 입력, PLAY 키트 빌드 계약, 반복 실험 증거, 기존 영상 유지보수 지침이므로 추가 폐기 문서 0개. 미커밋·비추적 32경로도 보존했다. 상세: .tmp/github-storage-20261017/additional-doc-audit.json
+
+현재 결과와 남은 일
+- 인계문과 감사 기록 작성 완료. 삭제 0개, 회수 용량 0바이트.
+- 삭제 차단 원인 진단과 지원되는 해결 절차 확인이 남았다.
+- 다른 작업의 원본·미커밋 변경은 건드리지 않았다. 후속 조사 당시에는 커밋·푸시하지 않았으며, 종료 요청에 따라 이 인계문과 검토 요약을 별도로 커밋해 원격에 보관한다.
+- 직전 GitHub 정리는 별개로 완료돼 있다: 785b02203eca4bc7cb41051898ab30d2ce3e4711.
