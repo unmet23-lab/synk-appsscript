@@ -16,8 +16,80 @@ test('only problems reach the top layer, ordered by urgency',async()=>{
     row({email:'calm@example.com',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+864e5}}}),
   ];
   const items=attention(rows,NOW);
-  assert.deepEqual(items.map(i=>i.text.split(' · ')[0]),['다시 로그인 필요','소진','주간 93%','크레딧 부족','결제 D-2']);
+  assert.deepEqual(items.map(i=>i.text.split(' · ')[0]),['다시 로그인 필요','소진','주간 7% 남음','크레딧 부족','결제 D-2']);
   assert.ok(!items.some(i=>i.text.includes('calm')));
+  // 5시간 한도를 다 쓴 계정은 「5시간 소진」과 풀리는 때로 올라온다.
+  const session=attention([row({email:'busy@example.com',live:{readAt:NOW,weekly:{usedPercent:51,resetsAt:NOW+4*864e5},session:{usedPercent:100,resetsAt:NOW+36*60e3}}})],NOW);
+  assert.deepEqual([session[0].text,session[0].level],['5시간 소진 · busy Claude · 36분 뒤 풀림',0]);
+  // 주간이 거의 다 찼어도 5시간을 다 썼으면 「지금 못 씀」이 먼저다.
+  const both=attention([row({email:'both@example.com',live:{readAt:NOW,weekly:{usedPercent:95,resetsAt:NOW+864e5},session:{usedPercent:100,resetsAt:NOW+3600e3}}})],NOW);
+  assert.equal(both[0].text,'5시간 소진 · both Claude · 1시간 뒤 풀림');
+});
+
+test('the limit rings follow whichever window has less left, and past windows count as full again',async()=>{
+  const {limitGauge,roomiest,gaugeLevel,leftPercent}=await import('../renderer/subscriptions.mjs');
+  // 실제 계정판 세 상태(10-17): 5시간 소진 · 주간 99% · 여유.
+  const out=row({id:'out',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+36*60e3},weekly:{usedPercent:51,resetsAt:NOW+115*3600e3}}});
+  const low=row({id:'low',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:99,resetsAt:NOW+51*3600e3}}});
+  const roomy=row({id:'roomy',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW-24*60e3},weekly:{usedPercent:78,resetsAt:NOW+44*3600e3}}});
+  const a=limitGauge(out,NOW),b=limitGauge(low,NOW),c=limitGauge(roomy,NOW);
+  assert.deepEqual([a.focus,a.left,a.resetsAt,gaugeLevel(a.session),gaugeLevel(a.weekly)],['session',0,NOW+36*60e3,'out','ok']);
+  assert.deepEqual([b.focus,b.left,gaugeLevel(b.weekly),b.session.left],['weekly',1,'low',100]);
+  assert.deepEqual([c.focus,c.left,c.session.left,c.session.resetsAt],['weekly',22,100,null]);
+  assert.equal(roomiest([out,low,roomy],NOW).id,'roomy');
+  // 다시 로그인이 필요한 계정은 숫자가 커도 뒤로 간다.
+  assert.equal(roomiest([{...roomy,state:'needs-login'},low],NOW).id,'low');
+  // 주간 창만 있는 계정(Codex)은 고리 하나, 크레딧·월 구독은 고리가 없다.
+  const gpt=limitGauge(row({service:'gpt',live:{readAt:NOW,weekly:{usedPercent:49,resetsAt:NOW+145*3600e3}}}),NOW);
+  assert.deepEqual([gpt.session,gpt.focus,gpt.left],[null,'weekly',51]);
+  assert.equal(limitGauge(row({kind:'credit',live:{credits:3}}),NOW),null);
+  // 직접 넣은 주간 구독은 「소진 표시」만 고리로 보인다.
+  const manual=row({source:'manual',email:null,resetDay:5,resetHour:17,resetMinute:0,usedUpAt:NOW-3600e3});
+  assert.deepEqual([limitGauge(manual,NOW).left,limitGauge({...manual,usedUpAt:null},NOW)],[0,null]);
+  assert.deepEqual([leftPercent(99.6),leftPercent(0.5),leftPercent(48.7)],[0,99,51]);
+});
+
+test('the board draws one ring per service and rolls the number only when it first shows or changes',async()=>{
+  const prior={document:globalThis.document,matchMedia:globalThis.matchMedia,CSS:globalThis.CSS};
+  const drawn=[],rolledText=[];let reduced=false;
+  globalThis.document={activeElement:null,hidden:false,documentElement:{dataset:{}},createDocumentFragment:()=>({append(){}}),createElement:()=>({style:{setProperty(){}},setAttribute(){},append(){}})};
+  globalThis.matchMedia=()=>({matches:reduced});globalThis.CSS={escape:value=>String(value)};
+  try{
+    const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+    const fresh=Date.now();
+    const claude=[row({email:'out@example.com',live:{readAt:fresh,session:{usedPercent:100,resetsAt:fresh+36*60e3+30e3},weekly:{usedPercent:51,resetsAt:fresh+115*3600e3}}}),row({email:'roomy@example.com',live:{readAt:fresh,weekly:{usedPercent:78,resetsAt:fresh+44*3600e3+60e3}}})];
+    const gpt=row({service:'gpt',label:'ChatGPT · Codex',email:'gpt@example.com',live:{readAt:fresh,weekly:{usedPercent:49,resetsAt:fresh+145*3600e3}}});
+    const credit=row({service:'higgsfield',label:'Higgsfield',kind:'credit',live:{readAt:fresh,credits:1373},credits:1373,creditsAt:fresh});
+    let snapshot={ok:true,tools:{},rows:[...claude,gpt,credit],settings:{usdKrw:1400},check:{at:fresh,total:4,ok:4},login:null,checking:false};
+    const listeners=[];
+    const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
+    // 그려진 HTML에서 고리 숫자 칸을 찾아 가짜 요소로 돌려준다.
+    const el={dataset:{},innerHTML:'',handlers:new Map(),addEventListener(name,cb){this.handlers.set(name,cb);},querySelector:()=>null,contains:()=>false,
+      querySelectorAll(){return [...this.innerHTML.matchAll(/data-roll="([^"]+)">(\d+)<small>/g)].map(([,key,value])=>({dataset:{roll:key},textContent:value+'%',childNodes:[],closest:()=>({classList:{add:name=>drawn.push(key+':'+name)}})}));}};
+    const board=createSubscriptionsBoard({bridge});
+    board.render(el,{signedIn:true,native:true});
+    await new Promise(r=>setImmediate(r));
+    // 주간 한도가 있는 서비스마다 고리 하나(가장 여유 있는 계정), 크레딧 서비스는 없다. 옛 막대는 없다.
+    assert.equal((el.innerHTML.match(/class="ms-meter /g)||[]).length,2);
+    assert.match(el.innerHTML,/<strong>roomy<\/strong><\/span><span class="ms-meter-note">계정 2개 중 가장 여유<\/span>/);
+    assert.match(el.innerHTML,/data-roll="m-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
+    assert.match(el.innerHTML,/data-roll="m-gpt">51<small>%/);assert.match(el.innerHTML,/초기화까지 <b>1일 20시간<\/b>/);
+    assert.ok(!el.innerHTML.includes('ms-bar'));
+    assert.deepEqual(drawn.sort(),['m-claude:is-drawing','m-gpt:is-drawing']);
+    // 1분마다 다시 그려도 값이 같으면 가만히 있다.
+    drawn.length=0;listeners.forEach(cb=>cb(snapshot));assert.deepEqual(drawn,[]);
+    // 펼친 계정 고리는 처음 보일 때 한 번, 소진 계정은 0%로 코랄이다.
+    await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
+    assert.equal(drawn.length,2);assert.match(el.innerHTML,/class="ms-gauge" data-level="out">/);
+    assert.match(el.innerHTML,/5시간 <b class="ms-alert-text">소진<\/b> <span class="ms-soft">· 36분\u00a0뒤\u00a0풀림/);
+    // 값이 바뀌면 그 고리만 다시 굴린다.
+    drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},credit]};listeners.forEach(cb=>cb(snapshot));
+    assert.deepEqual(drawn,['m-gpt:is-drawing']);
+    // 움직임 줄이기(기기·SYNK 설정)에서는 숫자도 고리도 그대로 보인다.
+    board.setVisible(false);reduced=true;drawn.length=0;board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
+    reduced=false;document.documentElement.dataset.motion='reduced';board.setVisible(false);board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
+    board.dispose();
+  }finally{Object.assign(globalThis,prior);}
 });
 
 test('a reset week no longer counts as used up and live reset times win',async()=>{
@@ -77,7 +149,7 @@ test('the board asks members to sign in, then guides first-time users before sho
   // 계정이 생기면 세 층 화면으로 바뀐다.
   snapshot={...snapshot,rows:[row({live:{readAt:NOW,weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
   listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/지금 볼 것/);assert.match(el.innerHTML,/주간 96%/);assert.match(el.innerHTML,/앞으로 7일/);assert.match(el.innerHTML,/마지막 확인/);
+  assert.match(el.innerHTML,/지금 볼 것/);assert.match(el.innerHTML,/주간 4% 남음/);assert.match(el.innerHTML,/앞으로 7일/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
@@ -99,10 +171,10 @@ test('the Gemini guide walks through the console sign-in and the row shows both 
   assert.match(el.innerHTML,/ms-s-gemini/);assert.match(el.innerHTML,/Antigravity CLI/);
   const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
   await click({subs:'toggle',id:'g-gemini'});
-  assert.match(el.innerHTML,/Claude·GPT 모델 주간 <b class="ms-num">0%<\/b>/);assert.match(el.innerHTML,/<strong>Gemini<\/strong>/);
+  assert.match(el.innerHTML,/Claude·GPT 모델 주간 <b class="ms-num">100%<\/b> 남음/);assert.match(el.innerHTML,/<strong>Gemini<\/strong>/);
   // 하나도 안 쓴 한도는 밀리는 초기화 시각 대신 「아직 안 씀」으로 보인다.
   snapshot={...snapshot,rows:[{...gemini,live:{readAt:Date.now(),weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null},models:[]}}]};listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/아직 안 씀/);assert.ok(!el.innerHTML.includes('1분 안 뒤 풀림'));
+  assert.match(el.innerHTML,/아직 안 씀/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤.풀림/);
   snapshot={...snapshot,rows:[gemini]};listeners.forEach(cb=>cb(snapshot));
   await click({subs:'guide',service:'gemini'});
   assert.match(el.innerHTML,/Gemini 연결 가이드/);assert.match(el.innerHTML,/Gemini 로그인/);assert.ok(!el.innerHTML.includes('>새 계정 연결</button>'));

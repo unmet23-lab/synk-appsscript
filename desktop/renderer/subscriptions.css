@@ -1,4 +1,4 @@
-/* AI 구독 계정판: 초록 포스터 하나, 번호 붙은 열린 구획, 밤/낮 공통 토큰. 스스로 움직이는 효과는 두지 않는다. */
+/* AI 구독 계정판: 초록 포스터 하나, 번호 붙은 열린 구획, 밤/낮 공통 토큰. 늘 도는 효과는 두지 않고, 한도 고리만 처음 보일 때와 값이 바뀔 때 한 번 그린다. */
 .benefit-subscriptions,.brand-subscriptions{--face:#7DB45A;--on-face:#13240A;--glow:#7DB45A}
 .member-subs{--ms-face:#7DB45A;--ms-on-face:#13240A;--ms-alert:#F96859;--ms-warn:#F5C445;--ms-ok:#7DB45A;display:flex;flex-direction:column;width:100%;max-width:1160px;margin:0 auto;color:var(--ink,#FAFAF9);font-family:var(--sans,SUIT,system-ui,sans-serif)}
 .member-subs *{box-sizing:border-box;min-width:0}
@@ -84,6 +84,52 @@
 .member-subs .ms-l2 .ms-dot{background:var(--ms-face)}
 .member-subs .ms-clear{padding:16px 18px;border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);font-size:.9375rem;font-weight:600}
 
+/* 한도 고리(10-17, Bklit 여러 겹 게이지에서 원리만): 안 5시간 · 밖 주간, 남은 만큼 찬다. 가운데는 덜 남은 쪽의 %.
+   색은 계정판 면 색(메도우) · 90% 이상 쓰면 버터 · 소진이면 고리 바닥이 코랄. */
+.member-subs .ms-meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-bottom:14px}
+.member-subs .ms-meter{display:grid;grid-template-columns:136px minmax(0,1fr);align-items:center;gap:20px;width:100%;padding:18px 22px 18px 18px;border:0;border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);color:inherit;text-align:left}
+.member-subs .ms-meter:hover{background:var(--surface-2,#191A1F)}
+.member-subs .ms-meter-body{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.member-subs .ms-meter-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px}
+.member-subs .ms-meter-head strong{font-size:.9375rem;font-weight:600}
+.member-subs .ms-meter-note{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450}
+.member-subs .ms-legend{display:flex;flex-direction:column;gap:3px;margin-top:4px;font-size:.875rem;font-weight:450}
+.member-subs .ms-legend-row{display:flex;align-items:center;gap:7px;color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-legend-row>span{color:var(--ink,#FAFAF9)}
+.member-subs .ms-legend-row b{font-weight:600}
+.member-subs .ms-legend-row i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--ms-face)}
+.member-subs .ms-legend-row[data-ring=session] i{background:var(--ms-ring-in)}
+.member-subs .ms-legend-row[data-level=low] i{background:var(--ms-warn)}
+.member-subs .ms-legend-row[data-level=out] i{background:var(--ms-alert)}
+.member-subs .ms-reset{margin-top:2px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
+.member-subs .ms-reset b{color:var(--ink,#FAFAF9);font-weight:600}
+.member-subs{--ms-ring-in:color-mix(in srgb,var(--ms-face) 52%,var(--ink,#FAFAF9))}
+.member-subs .ms-gauge{position:relative;display:grid;place-items:center;width:136px;aspect-ratio:1}
+.member-subs .ms-gauge svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.member-subs .ms-track{fill:none;stroke:var(--line-2,rgba(255,255,255,.14))}
+.member-subs .ms-track[data-level=out]{stroke:color-mix(in srgb,var(--ms-alert) 42%,transparent)}
+.member-subs .ms-arc{fill:none;stroke:var(--ms-face);stroke-linecap:round}
+.member-subs .ms-arc[data-ring=session]{stroke:var(--ms-ring-in)}
+.member-subs .ms-arc[data-level=low]{stroke:var(--ms-warn)}
+.member-subs .ms-gauge-center{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
+.member-subs .ms-gauge-num{font-family:'Inter Tight',var(--sans,SUIT,sans-serif);font-size:1.875rem;font-weight:700;font-feature-settings:'tnum';letter-spacing:-.04em;line-height:1.15;white-space:nowrap}
+.member-subs .ms-gauge-num small{margin-left:1px;font-size:.5em;letter-spacing:0}
+.member-subs .ms-gauge-center>span{margin-top:1px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;white-space:nowrap}
+.member-subs .ms-gauge[data-level=low] .ms-gauge-num{color:var(--ms-warn)}
+.member-subs .ms-gauge[data-level=out] .ms-gauge-num{color:var(--ms-alert)}
+.member-subs .ms-gauge-mini{display:inline-grid;width:20px;margin:0 6px 0 2px;vertical-align:-4px}
+.member-subs .ms-gauge.is-drawing .ms-arc{animation:ms-arc .9s cubic-bezier(.2,.8,.2,1) both}
+.member-subs .ms-gauge.is-drawing .ms-arc[data-ring=session]{animation-delay:.12s}
+@keyframes ms-arc{from{stroke-dashoffset:100}}
+/* 숫자 굴림: WORLD world-motion.css의 .w-roll과 같은 띠·곡선·간격 */
+.member-subs .ms-roll{position:relative;display:inline-block;line-height:1.15}
+.member-subs .ms-roll>.ms-roll-t{color:transparent}
+.member-subs .ms-roll>i{position:absolute;left:0;right:0;top:0;height:1.15em;overflow:hidden;font-style:normal;text-align:center;line-height:1.15}
+.member-subs .ms-roll>i::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';display:block;white-space:pre;animation:ms-roll var(--rt,1s) cubic-bezier(.2,.8,.2,1) var(--rd,0s) both}
+@keyframes ms-roll{from{transform:translateY(0)}to{transform:translateY(calc((10 + var(--d)) * -1.15em))}}
+:root[data-motion=reduced] .member-subs .ms-roll>i{display:none}
+:root[data-motion=reduced] .member-subs .ms-roll>.ms-roll-t{color:inherit}
+
 /* 2층 서비스 표 */
 .member-subs .ms-group+.ms-group{margin-top:20px}
 .member-subs .ms-group h3{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;font-size:.875rem;font-weight:750}
@@ -91,7 +137,7 @@
 .member-subs .ms-table{border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);padding:0 18px}
 .member-subs .ms-block+.ms-block{border-top:1px solid var(--line,rgba(255,255,255,.075))}
 .member-subs .ms-row{display:grid;grid-template-columns:120px 58px minmax(0,1fr) 150px 120px 14px;align-items:center;gap:14px;width:100%;min-height:58px;padding:12px 0;border:0;background:none;color:inherit;text-align:left}
-.member-subs .ms-tag{display:inline-block;justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:2px 9px;border-radius:7px;background:color-mix(in srgb,var(--ms-svc) 18%,transparent);color:var(--ms-svc);font-size:.8125rem;font-weight:750;white-space:nowrap}
+.member-subs .ms-tag{display:inline-block;justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:2px 9px;border-radius:7px;background:color-mix(in srgb,var(--ms-svc) 18%,transparent);color:var(--ms-svc);font-size:.8125rem;font-weight:600;white-space:nowrap}
 .member-subs .ms-s-claude{--ms-svc:#F2895F}
 .member-subs .ms-s-gpt{--ms-svc:#7DB45A}
 .member-subs .ms-s-higgsfield{--ms-svc:#E05C97}
@@ -105,11 +151,14 @@
 .member-subs .ms-price{font-size:.875rem;text-align:right;white-space:nowrap}
 .member-subs .ms-chev{justify-self:center;width:8px;height:8px;border-right:1.5px solid var(--ink-3,rgba(250,250,249,.52));border-bottom:1.5px solid var(--ink-3,rgba(250,250,249,.52));transform:rotate(-45deg)}
 .member-subs .ms-block.open .ms-chev{transform:rotate(45deg)}
-.member-subs .ms-bar{display:inline-block;width:64px;height:6px;margin:0 6px 0 4px;border-radius:3px;background:var(--line-2,rgba(255,255,255,.14));vertical-align:middle;overflow:hidden}
-.member-subs .ms-bar>span{display:block;height:100%;border-radius:3px;background:var(--ms-svc,var(--ms-face))}
-.member-subs .ms-bar.hot>span{background:var(--ms-alert)}
 .member-subs .ms-detail{margin:0 0 12px;padding:4px 0 4px 14px;border-left:2px solid var(--line-2,rgba(255,255,255,.14));border-radius:0}
 .member-subs .ms-account{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:start;padding:12px 0}
+.member-subs .ms-account>.ms-form{grid-column:1/-1}
+.member-subs .ms-account.has-gauge{grid-template-columns:104px minmax(0,1fr) auto;column-gap:20px}
+.member-subs .ms-account.has-gauge>.ms-gauge{grid-column:1;grid-row:1/span 2;width:104px}
+.member-subs .ms-account.has-gauge>:is(.ms-account-name,.ms-account-info){grid-column:2}
+.member-subs .ms-account.has-gauge>.ms-account-actions{grid-column:3}
+.member-subs .ms-account .ms-gauge-num{font-size:1.5rem}
 .member-subs .ms-account+.ms-account{border-top:1px dashed var(--line-2,rgba(255,255,255,.14))}
 .member-subs .ms-account-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9375rem}
 .member-subs .ms-account-info{grid-column:1;display:flex;flex-direction:column;gap:3px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
@@ -192,8 +241,13 @@
   .member-subs .ms-row{grid-template-columns:minmax(0,1fr) auto 14px;grid-template-areas:"tag price chev" "status status status" "next next next";row-gap:4px}
   .member-subs .ms-row .ms-tag{grid-area:tag}.member-subs .ms-row .ms-count{display:none}.member-subs .ms-row .ms-status{grid-area:status;white-space:normal}.member-subs .ms-row .ms-next{grid-area:next}.member-subs .ms-row .ms-price{grid-area:price}.member-subs .ms-row .ms-chev{grid-area:chev}
   .member-subs .ms-account{grid-template-columns:minmax(0,1fr)}
+  .member-subs .ms-meter{gap:16px;padding:16px}
+  .member-subs .ms-account.has-gauge{grid-template-columns:88px minmax(0,1fr);column-gap:16px}
+  .member-subs .ms-account.has-gauge>.ms-gauge{width:88px}
+  .member-subs .ms-account.has-gauge>.ms-account-actions{grid-column:1/-1;grid-row:auto}
+  .member-subs .ms-account .ms-gauge-num{font-size:1.25rem}
   .member-subs .ms-account-actions{grid-column:1;grid-row:auto;justify-content:flex-start}
   .member-subs .ms-form{grid-template-columns:minmax(0,1fr)}
   .member-subs .ms-day{grid-template-columns:minmax(0,1fr)}
 }
-@media (prefers-reduced-motion:reduce){.member-subs *{scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){.member-subs *{scroll-behavior:auto!important}.member-subs .ms-roll>i{display:none}.member-subs .ms-roll>.ms-roll-t{color:inherit}}
