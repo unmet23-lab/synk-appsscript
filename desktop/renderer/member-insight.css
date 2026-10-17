@@ -27,10 +27,12 @@
 .member-insight .mi-led{width:6px;height:6px;border-radius:50%;background:#F5C445}
 .member-insight .mi-badge.is-integrated .mi-led{background:#7DB45A}
 .member-insight .mi-hero.has-art .mi-hero-title{margin:auto 0 20px}
-.member-insight .mi-hero.has-art h1{font-size:min(8.5rem,17cqw);line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em)}
+.member-insight .mi-hero.has-art h1{font-size:min(8.5rem,17cqw);line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em);white-space:nowrap;flex:none}
 .member-insight .mi-hero.has-art .mi-hero-title>p{flex:0 1 360px;font-size:clamp(1.25rem,2.2vw,1.625rem);font-weight:650;letter-spacing:-.03em}
 .member-insight .mi-hero.has-art .mi-hero-note{font-size:.9375rem;font-weight:550}
 .member-insight .mi-object{position:absolute;z-index:0;top:6%;right:4%;width:min(36%,380px);height:48%;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);transform-origin:50% 100%;filter:drop-shadow(0 16px 20px rgba(0,0,0,.2)) drop-shadow(0 3px 5px rgba(0,0,0,.12));pointer-events:none}
+/* 좁은 창: 다른 소개 머리(launcher.css)와 같은 자리 규칙 */
+@media (min-width:761px){@container (max-width:600px){.member-insight .mi-object{top:68px;height:calc(54% - 68px)}}}
 .member-insight .mi-summary{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:34px 2px}
 .member-insight .mi-summary>div{max-width:760px}
 .member-insight .mi-summary-label,.member-insight .mi-state-label{display:block;margin-bottom:9px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:650}

@@ -110,8 +110,8 @@ img.benefit-object{position:absolute;z-index:0;object-fit:contain;object-positio
 
 @media (prefers-reduced-motion:reduce){.benefit-card:hover{transform:none}.benefit-card:hover img.benefit-object{transform:rotate(-3deg)}}
 
-/* 본문이 좁은 창(왼쪽 메뉴가 남는 761~1100px 등)에서는 소개 머리 물건을 위 라벨·스티커 줄 아래에서 시작한다 */
-@media (min-width:761px){@container (max-width:700px){.benefit-detail-hero img.benefit-object{top:68px;height:calc(54% - 68px)}}}
+/* 소개 머리 안쪽 폭이 600px 이하인 넓은 틀(왼쪽 메뉴가 남는 좁은 창)에서는 물건을 위 라벨·스티커 줄 아래(68px)에서 시작한다 — PC launcher.css·member-insight.css·subscriptions.css와 같은 규칙 */
+@media (min-width:761px){@container (max-width:600px){.benefit-detail-hero img.benefit-object{top:68px;height:calc(54% - 68px)}}}
 @media (max-width:1100px){
   .benefit-hero{grid-template-columns:1fr}
 }
