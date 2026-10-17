@@ -18,12 +18,18 @@ body = open(os.path.join(ROOT, prompt_file), encoding='utf-8').read()
 common = open(os.path.join(ROOT, 'mascot_common.txt'), encoding='utf-8').read()
 text = HEAD + body.replace('{{MASCOTS}}', common)
 last = os.path.join(ROOT, 'log', name + '.last.txt')
-cmd = ['codex', 'exec', '--skip-git-repo-check', '-C', ROOT, '-s', 'read-only']
+# 굽기 계정 돌림(tools/codex계정.js): 한도에 막히면 다음 보조 계정으로 다시 부른다. 본 계정은 맨 마지막 예비로만 쓴다.
+# 저장소 밖 작업 폴더에 복사해 돌려도 저장소의 도구를 찾는다(SYNK_REPO로 바꿀 수 있다).
+ROTATE = next((p for p in (os.path.join(r, 'tools', 'codex계정.js') for r in (
+    os.environ.get('SYNK_REPO', ''), os.path.join(ROOT, '..', '..'), 'C:/Users/q1212/Documents/SYNK-appsscript')) if os.path.exists(p)), None)
+if not ROTATE:
+    sys.exit('tools/codex계정.js를 찾지 못했다 — SYNK_REPO에 저장소 뿌리를 준다')
+cmd = ['node', ROTATE, 'exec', '--skip-git-repo-check', '-C', ROOT, '-s', 'read-only']
 for r in refs:
     cmd += ['-i', os.path.join(ROOT, r)]
 cmd += ['-o', last, '-']
 t0 = time.time()
-p = subprocess.run(cmd, input=text.encode('utf-8'), capture_output=True, shell=(os.name == 'nt'))
+p = subprocess.run(cmd, input=text.encode('utf-8'), capture_output=True)
 log = p.stdout.decode('utf-8', 'replace') + '\n---stderr---\n' + p.stderr.decode('utf-8', 'replace')
 open(os.path.join(ROOT, 'log', name + '.txt'), 'w', encoding='utf-8').write(log)
 answer = open(last, encoding='utf-8').read() if os.path.exists(last) else ''

@@ -6,7 +6,7 @@ WORLD 앱의 튜터·친구 그림은 정본 누끼를 얹지 않고, 화면(자
 
 1. `make_refs.py` — 정본 4K에서 친구마다 본체 사진·표정표를 만든다(`ref/`). 생김새 참고로만 쓴다.
 2. `make_prompts.py`(튜터 표정 판) · `make_scenes.py`(프로필·환영·카페·이야기·한글 무대) — 지시문 `p_*.txt`와 `jobs_*.json`을 쓴다. 쓴 지시문은 `prompts/`에 옮겨 두었다.
-3. `run_jobs.py jobs_tutor.json [이름 앞부분] --par=3` — `bake.py`가 ChatGPT 구독 Codex CLI(GPT 이미지 2.5)로 판을 굽고 `split.py`가 칸을 나눈다. 표정 판은 첫 칸과 다른 칸의 정렬을 맞추고 얼굴 둘레만 바꿔 몸·배경을 같은 화소로 둔다(`cut/<판>/_check.jpg`에 바뀐 자리 표시).
+3. `run_jobs.py jobs_tutor.json [이름 앞부분] --par=3` — `bake.py`가 ChatGPT 구독 Codex CLI(GPT 이미지 2.5)로 판을 굽고(10-17부터 `tools/codex계정.js`를 거쳐 굽기용 보조 계정으로 부르고, 한도에 막히면 다음 보조 계정으로 바꾼다) `split.py`가 칸을 나눈다. 표정 판은 첫 칸과 다른 칸의 정렬을 맞추고 얼굴 둘레만 바꿔 몸·배경을 같은 화소로 둔다(`cut/<판>/_check.jpg`에 바뀐 자리 표시).
 4. `install.py <작업본 루트>` — 나눈 사진을 WebP로 줄여 `experiences/brand-opening/assets/tutor-photos/`에 넣고 `tutor-photos-data.mjs`를 다시 쓴다. 앱은 `tutor-photos.mjs`로 고른다.
 
 스크립트는 자기 폴더에 `boards/ cut/ log/ ref/`를 만든다. 저장소 밖 작업 폴더(10-14은 `C:/Users/q1212/Documents/synk-vendor/world-mascots-20261014/`)에 복사해 돌린다.
