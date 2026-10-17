@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { localBenefitPreview, publicBenefitEntry, filterBenefits, benefitDetail } from '../src/member-benefits.mjs';
+import { localBenefitPreview, publicBenefitEntry, filterBenefits, benefitDetail, benefitCards } from '../src/member-benefits.mjs';
 import { normalizeLibrary } from '../src/library.mjs';
 import { targetFor } from '../../learning-hub/server.mjs';
 import { memberBenefit } from '../../../desktop/renderer/benefits.mjs';
@@ -22,7 +22,11 @@ test('fixed benefit demos are available only in a local HTTP preview', () => {
 test('benefits are discoverable without being treated as installed or entitled applications', () => {
   assert.deepEqual(filterBenefits('가족').map(v => v.id), ['family-album']);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), ['rehearsal']);
-  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'care', 'fortune', 'rehearsal', 'family-album']);
+  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care', 'fortune', 'rehearsal', 'family-album']);
+  // The PC-only AI subscription board is discoverable on the web but has no web or local entry.
+  assert.equal(localBenefitPreview('subscriptions', 'http://localhost/'), null);
+  assert.equal(publicBenefitEntry('subscriptions'), null);
+  assert.match(benefitCards(), /benefit-subscriptions[\s\S]*?class="benefit-link"[^>]*>어떤 경험인가요\?/);
   assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);

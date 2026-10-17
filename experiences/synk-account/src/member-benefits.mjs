@@ -27,11 +27,12 @@ export function filterBenefits(query = '') {
   return MEMBER_BENEFITS.filter(item => [item.name, item.kicker, item.headline, item.description, '회원 무료 혜택'].join(' ').toLocaleLowerCase().includes(term));
 }
 
+// 웹에서 내 기록을 바로 보여 주는 혜택은 insight뿐이다. 같은 화면 안 혜택이라도 AI 구독 계정판은 PC 앱 안내 페이지다.
 export function benefitCards(query = '') {
   const benefits = filterBenefits(query);
   return benefits.length ? `<div class="benefit-grid">${benefits.map((item, index) => `<article class="benefit-card benefit-${item.id}">
     <a class="benefit-art" href="#benefits/${item.id}" aria-label="${esc(item.name)} 소개 보기"><span class="benefit-index">0${MEMBER_BENEFITS.indexOf(item) + 1}</span>${art(item)}<span class="benefit-status">${item.statusLabel}</span></a>
-    <div class="benefit-copy"><p class="benefit-kicker">${item.kicker}</p><h2><a href="#benefits/${item.id}">${item.name}</a></h2><p>${item.description}</p><a class="benefit-link" href="#benefits/${item.id}">${item.embedded ? '내 기록 살펴보기' : item.status === 'preview' ? '자세히 살펴보기' : '어떤 경험인가요?'} <span aria-hidden="true">↗</span></a></div>
+    <div class="benefit-copy"><p class="benefit-kicker">${item.kicker}</p><h2><a href="#benefits/${item.id}">${item.name}</a></h2><p>${item.description}</p><a class="benefit-link" href="#benefits/${item.id}">${item.id === 'insight' ? '내 기록 살펴보기' : item.status === 'preview' ? '자세히 살펴보기' : '어떤 경험인가요?'} <span aria-hidden="true">↗</span></a></div>
   </article>`).join('')}</div>` : '<p class="benefit-empty">검색어에 맞는 회원 혜택이 없어요.</p>';
 }
 
