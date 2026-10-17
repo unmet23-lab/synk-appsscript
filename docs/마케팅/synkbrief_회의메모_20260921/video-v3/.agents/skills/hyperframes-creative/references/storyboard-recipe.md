@@ -51,7 +51,7 @@ A sketch is a few dozen lines of HTML per cell; the whole sheet lands in minutes
 
 1. Present the chat proposal (`story-spine.md` § 3), then the sheet.
 2. Record the user's notes verbatim under `## Changes from v1` and unresolved questions under `## Still open` (above the first frame), then bump the version and revise **only the beats named**.
-3. Repeat until the user says the layout is locked, then list what is locked under `## Locked` (above the first frame, same reason as § 1). Build only after the lock.
+3. When a layout choice still needs the user’s decision, resolve it and record the agreed scope under `## Locked` (above the first frame, same reason as § 1). If the current request already authorizes the plan and build, proceed within that scope without adding another approval gate.
 4. When the build lands, the compositions are the truth: regenerate the timing table from `index.html` (and the transcript when there is voiceover) and update `STORYBOARD.md` and `storyboard.html` to match, because every launch film drifted from its storyboard. State the final length.
 
-Do not render until asked.
+Render locally when it is part of the authorized deliverable. Confirm only missing decisions or additional scope; a local render does not authorize publishing or external delivery.

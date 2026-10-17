@@ -208,6 +208,10 @@ ${장.join('\n\n')}
 }
 
 function 굽기(원고경로) {
+  if (/^상태:\s*보관\s*$/m.test(fs.readFileSync(원고경로, 'utf8')) && !args.includes('--기록재현')) {
+    console.error(`${path.basename(원고경로)}: 과거 보관 원고입니다. 새 게시에 사용하지 않습니다. 당시 출력을 확인할 때만 --기록재현을 지정하세요.`);
+    return false;
+  }
   const 원 = 원고읽기(원고경로);
   fs.mkdirSync(빌드폴더, { recursive: true });
   const html = path.join(빌드폴더, `${원.편이름}.kit.html`);
@@ -224,8 +228,9 @@ function 굽기(원고경로) {
 
 const 원고들 = args.includes('--전부')
   ? fs.readdirSync(path.join(__dirname, '원고')).filter((f) => f.endsWith('.md')).sort().map((f) => path.join(__dirname, '원고', f))
+    .filter((f) => args.includes('--기록재현') || !/^상태:\s*보관\s*$/m.test(fs.readFileSync(f, 'utf8')))
   : args.filter((a) => !a.startsWith('--')).map((a) => path.resolve(ROOT, a));
-if (!원고들.length) { console.error('쓰는 법: node 캐러셀/굽기.js 캐러셀/원고/001_이름.md [--pdf] [--webp]  |  --전부'); process.exit(2); }
+if (!원고들.length) { console.error(args.includes('--전부') ? '새로 굽는 대상이 없습니다. 보관 원고는 일괄 제작에서 제외합니다.' : '쓰는 법: node 캐러셀/굽기.js 캐러셀/원고/001_이름.md [--pdf] [--webp]  |  --전부'); process.exit(2); }
 if (!fs.existsSync(path.join(키트, 'kit.css'))) { console.error('SNS 키트를 못 찾았다: ' + 키트); process.exit(2); }
 let 실패 = 0;
 for (const f of 원고들) if (!굽기(f)) 실패++;

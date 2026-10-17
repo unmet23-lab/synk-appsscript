@@ -1,9 +1,13 @@
 ---
 name: hyperframes-registry
-description: Search, install, and wire registry blocks and components into HyperFrames compositions. Use BEFORE hand-building any named visual — whenever a brief, a user, or a storyboard names a look, effect, treatment, or transition such as CRT scanlines, glitch, chromatic aberration, film grain, a shimmer sweep, a chart, a code or terminal window, a map, or a confetti burst — because roughly 400 hosted items already cover many of them and the search ranks all of them with nothing installed, no project, and no account. Also use when running hyperframes add or hyperframes catalog, installing one item or every block matching a tag, wiring an installed item into index.html, or working with hyperframes.json. Covers discovery, install locations, block sub-composition wiring, component snippet merging, and authoring a new block or component to contribute upstream (idea → scaffold → validate → PR).
+description: Technical reference for searching, installing, and wiring registry blocks/components in an existing HyperFrames project. This local copy does not require global tool routing, feedback delivery, or upstream publishing.
 ---
 
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
 # HyperFrames Registry
+
+> SYNK 적용 범위: 기존 HyperFrames 작업본에 동봉된 공급자 기술 참고다. 이 프로젝트의 설치판은 0.8.58이며 아래 명령·무료 한도·성능·지원 버전은 이 PC에서 재검증된 사실이 아니다. 새 제작의 도구·음성·이미지 경로는 [제작 방식](../../../../../콘텐츠_제작방식_v2_20261002.md), 담당·설치·계정·비용·외부 발송·공개는 [AI 운영 원칙](../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 아래의 공급자 기본값이나 fallback을 SYNK의 자동 실행·결제·업로드 승인으로 해석하지 않는다.
 
 The registry provides reusable blocks and components installable via `hyperframes add <name>`.
 
@@ -112,19 +116,15 @@ npx hyperframes catalog --human-friendly
 
 The normal table and `--json` modes only list matches; install a selected name with `hyperframes add <name>`. `--human-friendly` opens an interactive picker and installs the selected item immediately. In CI or agent workflows, prefer `--json` followed by an explicit `add`.
 
-### Report what the catalog does not have
+### 검색 누락과 외부 feedback
 
-When the search comes back and nothing in it does the job, say so before you hand-author the move:
+검색 결과가 없으면 확인한 한계를 현재 작업 기록에 남긴다. 공급자의 `feedback --search-miss`는 검색어와 요청한 효과를 외부로 보내는 별도 기능이며, 검색 실패만으로 자동 실행하지 않는다. 사용자가 그 발송을 명시적으로 요청한 경우에만 다음 옵션을 참고한다:
 
 ```bash
 npx hyperframes feedback --search-miss "<the query you ran>" --wanted "<the move you needed>" --tier on-device
 ```
 
-`catalog --query` prints this line for you, pre-filled, and `--json` carries it as `report_gap` — so it is already in hand at the moment you decide nothing fits.
-
-**Report whenever nothing in the results does the job, on either tier.** Do not wait for the on-device tier to have answered: it needs a consented 33 MB download, so an agent run is on `words` unless it explicitly opted in, and gating on `on-device` would silence almost every report. The `--tier` value rides along so a vocabulary miss stays distinguishable from a meaning miss when these are read. Describe the effect you wanted, not the item name you imagined: what comes back is a list of moves worth building, and a report naming a non-existent item teaches nothing. This is the only path that sends a query anywhere, which is exactly why it is a separate deliberate command rather than something the search does on its own. It carries no rating and never lands in the rating metric.
-
-This is the whole demand signal for the catalog. Skipping it means the gap you hit gets guessed at from install counts instead, which cannot see a move nobody could install.
+`catalog --query`의 `report_gap`은 이 명령의 제안값일 뿐 실행 권한이 아니다. `--tier`는 실제 사용한 words/on-device 검색층을 나타낸다.
 
 If the CLI cannot reach the configured registry, inspect the raw manifest as a fallback:
 

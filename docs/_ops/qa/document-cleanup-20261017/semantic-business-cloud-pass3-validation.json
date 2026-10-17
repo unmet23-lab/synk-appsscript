@@ -1,0 +1,13 @@
+{
+  "ledgerEntries": 1,
+  "coverage": "full",
+  "reviewedBytes": 196118,
+  "reviewedLines": 677,
+  "backupExists": true,
+  "newLocalLinkIssues": [],
+  "diffCheckExit": 0,
+  "diffCheckOutput": "",
+  "remoteActions": 0,
+  "codeChanged": false,
+  "historyPreserved": true
+}

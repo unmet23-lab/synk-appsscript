@@ -1,0 +1,259 @@
+{
+  "reviewedPaths": 360,
+  "changedExisting": 49,
+  "changed": [
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/preview-render.md",
+      "originalBytes": 31532,
+      "currentBytes": 32371
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "originalBytes": 19067,
+      "currentBytes": 19004
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "originalBytes": 12153,
+      "currentBytes": 12884
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "originalBytes": 25578,
+      "currentBytes": 26309
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "originalBytes": 20864,
+      "currentBytes": 22020
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "originalBytes": 16760,
+      "currentBytes": 16041
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "originalBytes": 3980,
+      "currentBytes": 409
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "originalBytes": 3980,
+      "currentBytes": 409
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "originalBytes": 3980,
+      "currentBytes": 409
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "originalBytes": 3980,
+      "currentBytes": 409
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "originalBytes": 3974,
+      "currentBytes": 403
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "originalBytes": 3968,
+      "currentBytes": 397
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/capability-menu.md",
+      "originalBytes": 15611,
+      "currentBytes": 16258
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/intent-interview.md",
+      "originalBytes": 13899,
+      "currentBytes": 14546
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/brief-contract.md",
+      "originalBytes": 11889,
+      "currentBytes": 12536
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/production-loop.md",
+      "originalBytes": 8188,
+      "currentBytes": 8828
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/review-loop.md",
+      "originalBytes": 6122,
+      "currentBytes": 6769
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/pitch-round.md",
+      "originalBytes": 5550,
+      "currentBytes": 6197
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/subagent-dispatch.md",
+      "originalBytes": 3677,
+      "currentBytes": 4197
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v14/낭독대본.md",
+      "originalBytes": 2810,
+      "currentBytes": 3065
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md",
+      "originalBytes": 2810,
+      "currentBytes": 245
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md",
+      "originalBytes": 2810,
+      "currentBytes": 245
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+      "originalBytes": 1135,
+      "currentBytes": 270
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md",
+      "originalBytes": 1135,
+      "currentBytes": 270
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/operations.md",
+      "originalBytes": 14660,
+      "currentBytes": 15457
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts.md",
+      "originalBytes": 8783,
+      "currentBytes": 9336
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "originalBytes": 7982,
+      "currentBytes": 8316
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/bgm.md",
+      "originalBytes": 7958,
+      "currentBytes": 8519
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/setup-providers.md",
+      "originalBytes": 7278,
+      "currentBytes": 8072
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/meta.md",
+      "originalBytes": 6785,
+      "currentBytes": 7590
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/luts/README.md",
+      "originalBytes": 1087,
+      "currentBytes": 1726
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "originalBytes": 9643,
+      "currentBytes": 8874
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/contributing.md",
+      "originalBytes": 6684,
+      "currentBytes": 7323
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "originalBytes": 7924,
+      "currentBytes": 7840
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/new-work.md",
+      "originalBytes": 52769,
+      "currentBytes": 53732
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/critique.md",
+      "originalBytes": 45944,
+      "currentBytes": 46065
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/live.md",
+      "originalBytes": 36490,
+      "currentBytes": 37546
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/document.md",
+      "originalBytes": 27521,
+      "currentBytes": 28484
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/generate.md",
+      "originalBytes": 13219,
+      "currentBytes": 13866
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "originalBytes": 11868,
+      "currentBytes": 11890
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/visualize.md",
+      "originalBytes": 11757,
+      "currentBytes": 12783
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/init.md",
+      "originalBytes": 11536,
+      "currentBytes": 12499
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/craft-floor.md",
+      "originalBytes": 5500,
+      "currentBytes": 6511
+    }
+  ],
+  "totalOriginalBytes": 544684,
+  "totalCurrentBytes": 513338,
+  "newRelativeLinksChecked": 85,
+  "failures": [],
+  "notes": [
+    "기술 명령은 실행하지 않았으며 문서 검증만 수행",
+    "3차 장부는 변경하지 않음"
+  ]
+}

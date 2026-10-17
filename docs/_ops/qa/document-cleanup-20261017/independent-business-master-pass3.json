@@ -1,0 +1,34 @@
+{
+  "path": "docs/정본/SYNK/SYNK 기업마스터.txt",
+  "coverage": "targeted",
+  "sections": [
+    4,
+    5,
+    10,
+    11
+  ],
+  "lineRanges": [
+    [
+      206,
+      264
+    ],
+    [
+      375,
+      411
+    ]
+  ],
+  "decision": "retained",
+  "findings": [],
+  "reason": "요청한 네 절을 현재 정본의 해당 범위와 대조. 12개월 과정 뒤 첫 TOPIK4 미달 시6개월 앱·숙제 지원, LAB 상주 가이드의 비언어 소리와 텍스트 대사, SHIFT 도입·운영 및 계약·권리 구분, 교사 없는 공개 서비스와 실제 교실 관찰의 경계를 넘는 새 약속을 발견하지 못함. 전 문서 독립 재검토는 아님.",
+  "evidence": [
+    "docs/SYNK_철학.md:26,140,158-164,223-227",
+    "docs/자주묻는질문_정본.md:45-49",
+    "docs/정본/SYNK/SYNK FAQ.txt:65-67,108",
+    "docs/철학_적용기준.md:31-35",
+    "docs/캐릭터/가이드_정본.md:22-63",
+    "docs/조직계보_정본_v1.md:7,17-39"
+  ],
+  "currentSha256": "5f3b4b7a643712d42fba840b68ac17bf2a8806e670ed3e30d69780bc116c3a68",
+  "sourceModified": false,
+  "remoteActions": 0
+}

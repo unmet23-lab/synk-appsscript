@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-17",
+  "reviewer": "document_legacy_audit",
+  "scope": "Read-only review of high-impact current instructions and edited portions in 12 documents. Not a complete second reading of every source.",
+  "areas": ["company README and content research prompt", "SHIFT scope and launch countries", "student diary retention", "recovery runbook", "design and fonts"],
+  "findings": [
+    {
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/README.md",
+      "issue": "Existing single-server description conflicted with October 16 A-owner/B-standby operations records.",
+      "evidence": "CLOUD-OPERATIONS.md: sns-health-production-20261016 and latest October 16 release records",
+      "resolution": "Replaced single-machine claims with dated A/B evidence and a link to the operations source. Distinguished one writer from the number of nodes.",
+      "status": "corrected locally"
+    }
+  ],
+  "followupReview": {
+    "files": ["docs/가져가는것_설계_v1.md", "docs/관찰태그_자동화_설계.md", "docs/시트_RowID_정리_설계_v1.md"],
+    "result": "No actionable conflict. Confirmed removed GAS/record-book/circle/test paths, surviving certificate generator with missing dependencies, surviving talk observation code, and dated Row ID authority boundaries.",
+    "changedFiles": 0
+  },
+  "limits": "No new business decision or implementation overstatement was found in the inspected changed portions; this is not proof for uninspected text or current remote state."
+}

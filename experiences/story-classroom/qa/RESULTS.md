@@ -12,7 +12,7 @@
 - 실제 4280 게임 UI에서 기본 기기 기록은 과자 부탁을, 읽기 세부정보 독립 정답 4개의 **synthetic 프로필**은 부정 표현의 종이 부탁을 추천했다. 보이는 추천 문구와 이유가 바뀌었다. [learning-recommend.json](learning-recommend.json). 학생의 효과 검증은 아니다.
 - 기존 전체 UI 회귀 검사에서 실수·되돌림·순서·힌트·재개·새 글·9부탁 완주, 390px 포인터 드래그·음소거, 1024px 키보드 조작과 5폭 넘침/깨진 이미지/페이지 오류/자산 실패 **0**. [browser-results.json](browser-results.json).
 - 현재 진행 저장이 손상된 경우 이어 하기를 표시하지 않고 새 게임을 열었다. 실제 다른 페이지 이동→브라우저 뒤로→이어 하기 뒤 다음 응답까지 Atlas 기록이 계속 남았다. [navigation-results.json](navigation-results.json).
-- 1440/390/320px 실제 펠트 버튼·칩·번호·완료배지·대사 음성/계정 조작·엔딩/표현 수첩을 캡처했다. 읽는 면은 18px 흰 종이, 렌더된 글자 11px 미만 **0**. [felt-verification.json](felt-verification.json). 자산은 [원천/해시](../assets/ui/provenance.json)와 같다.
+- 1440/390/320px 실제 펠트 버튼·칩·번호·완료배지·대사 음성/계정 조작·엔딩/표현 수첩을 캡처했다. 읽는 면은 18px 흰 종이, 렌더된 글자 11px 미만 **0**. [felt-verification.json](felt-verification.json). 자산은 [원천/해시](https://github.com/unmet23-lab/synk-appsscript/blob/c9063107430819088427a606acf2f5c44b5fecb3/experiences/story-classroom/assets/ui/provenance.json)와 같다.
 - `build-game-learning.js --check`·`build-synk-account.js --check` 통과. 공통 4280의 `/story-classroom/` HTTP 200, 학습 허브와 WORLD 목록에 추가했다. 계정 OAuth/API 설정 파일은 없어 실제 인증·서버 동기화 완료를 주장하지 않는다.
 
 브라우저 재생은 음성을 직접 듣고 발음·연기·속도를 품평한 결과가 아니다. 실물 휴대폰·교원 검수·학생 재미/학습 효과·최종 사용자 품평·공개 배포는 남는다. [실행할 사람/기기 확인표](PLAYTEST.md).

@@ -1,0 +1,492 @@
+{
+  "date": "2026-10-17",
+  "scope": "historical business, patent and design sources; semantic retention review, not current legal assessment",
+  "files": [
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/code-editorial/FRAME.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "Code editorial 프리셋의 색·서체·프레임·가독성·허위 수치 금지·로컬 폰트 계약 전문 확인. SYNK 공통 브랜드가 아닌 선택형 외부 예제이므로 보존.",
+      "originalSha256": "b1c123526634e31a3e36cff9856e3b4322f2f778d2c7f573aa35a9ee1e90deb7",
+      "currentSha256": "b1c123526634e31a3e36cff9856e3b4322f2f778d2c7f573aa35a9ee1e90deb7",
+      "reviewedBytes": 20600,
+      "readRanges": [
+        [
+          0,
+          21033
+        ]
+      ],
+      "novelCharacters": 21033,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 0
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/typography.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "렌더러 폰트 포함·별칭·로컬/클라우드 차이·가독성·OpenType·검색 예제까지 전문 확인. 서체 금지/Latin 필터는 외부 예제 취향이며 SYNK 적용 제외 안내가 필요.",
+      "originalSha256": "2213319b8055285dbe5b6aeb923f27660355a04a1b27da1edda8fd0c91888ab2",
+      "currentSha256": "2213319b8055285dbe5b6aeb923f27660355a04a1b27da1edda8fd0c91888ab2",
+      "reviewedBytes": 14481,
+      "readRanges": [
+        [
+          0,
+          14897
+        ]
+      ],
+      "novelCharacters": 14897,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 13
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/beat-direction.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "장면 의도·동작 동사·CSS/셰이더 전환·깊이·SFX·리듬·속도 연결 전문 확인. 외부 영상 제작의 선택형 기법이며 현 사업 정의나 승인 상태를 덮어쓰는 내용 없음.",
+      "originalSha256": "312560b513e689aeda44956c9a883cf465a982b8efce9730722bfb8d147f94f9",
+      "currentSha256": "312560b513e689aeda44956c9a883cf465a982b8efce9730722bfb8d147f94f9",
+      "reviewedBytes": 13640,
+      "readRanges": [
+        [
+          0,
+          14079
+        ]
+      ],
+      "novelCharacters": 14079,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 14
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-picker.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "무드보드·프리뷰 JSON 계약·토큰·삽입 보안·배경 서버·디자인 저장 전체 검토. 구형 선택기 재현용 보존; 의무 외부 폰트 검색과 사용자 복사 단계는 현재 SYNK 공통 절차로 사용하지 않음.",
+      "originalSha256": "3b37cd0e9366b8f9c30b5e31a909193b23b58ada7f73675eab0fe7d2a74bbdf8",
+      "currentSha256": "3b37cd0e9366b8f9c30b5e31a909193b23b58ada7f73675eab0fe7d2a74bbdf8",
+      "reviewedBytes": 12221,
+      "readRanges": [
+        [
+          0,
+          12590
+        ]
+      ],
+      "novelCharacters": 12590,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 15
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/visual-styles.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "8개 외부 스타일의 전체 YAML·설명·선택표·커스텀 확장 읽음. 명시적 스타터이며 SYNK 브랜드 규칙이 아니고 각 예제 재현 값이 달라 보존.",
+      "originalSha256": "c22d2c3f0732398ff52cbb469cf17567706b4d6555ad4149cae950a7cb3867c6",
+      "currentSha256": "c22d2c3f0732398ff52cbb469cf17567706b4d6555ad4149cae950a7cb3867c6",
+      "reviewedBytes": 11967,
+      "readRanges": [
+        [
+          0,
+          12515
+        ]
+      ],
+      "novelCharacters": 12515,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 16
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-spec.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "frame/design YAML 형식·우선순위·13개 프리셋 매핑·showcase 제외·소비 계약 전문 확인. 하위 영상 프로젝트 내부 선택 규칙으로 보존하며 저장소 DESIGN 정본을 대체하지 않음.",
+      "originalSha256": "a583fe293facc2e6d242fa69f64c8cdc110c5cfe25f8ddb2429bfb445fcf8ad5",
+      "currentSha256": "a583fe293facc2e6d242fa69f64c8cdc110c5cfe25f8ddb2429bfb445fcf8ad5",
+      "reviewedBytes": 10498,
+      "readRanges": [
+        [
+          0,
+          10618
+        ]
+      ],
+      "novelCharacters": 10618,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 17
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/motion-principles.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "모션 감정·구도 제안과 GSAP 중복 transform/seekable timeline/clip lifecycle 실패 및 코드 전부 확인. 기술 재현 자료 보존; 모든 장면 2초점·3층 등 취향 규칙은 전사 강제 아님.",
+      "originalSha256": "43cb4193d2716bffde5a44f3740021f0b2eede83fe5c75d30e3f5398e2bf6d2e",
+      "currentSha256": "43cb4193d2716bffde5a44f3740021f0b2eede83fe5c75d30e3f5398e2bf6d2e",
+      "reviewedBytes": 9335,
+      "readRanges": [
+        [
+          0,
+          9681
+        ]
+      ],
+      "novelCharacters": 9681,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 18
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/storyboard-recipe.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "스토리보드 헤더·장면 필드·HTML frame ID·원문 사실성·실구현 시간 동기화 전체 확인. 과거 매 단계 승인/별도 렌더 요청 강제는 현재 이미 승인된 제작 범위보다 우선할 수 없어 입구에서 적용 범위 정정 예정.",
+      "originalSha256": "515b2016a1cd2760ec6e53e170752a3b111a5e9b7a123001374c479db4f73406",
+      "currentSha256": "515b2016a1cd2760ec6e53e170752a3b111a5e9b7a123001374c479db4f73406",
+      "reviewedBytes": 7242,
+      "readRanges": [
+        [
+          0,
+          7391
+        ]
+      ],
+      "novelCharacters": 7391,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 19
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 creative 스킬 frontmatter·라우팅·스크립트·범위 전문 확인. 선택 예제와 기술 참조는 보존하되 전사 정본 우선과 이미 승인된 범위의 추가 승인 불필요를 입구에 명시 예정.",
+      "originalSha256": "488782fc741a43e002b5c6ac0da69cc2b12abaa42b6c0056df2aa53bea553c16",
+      "currentSha256": "488782fc741a43e002b5c6ac0da69cc2b12abaa42b6c0056df2aa53bea553c16",
+      "reviewedBytes": 6354,
+      "readRanges": [
+        [
+          0,
+          6494
+        ]
+      ],
+      "novelCharacters": 6494,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 20
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/prompt-expansion.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "장면 확장·디자인 토큰·산출물 경로·승인 절차 전문 확인. 자동 장식 추가와 매번 승인 강제가 사용자 범위를 넓히므로 선택 절차로 정정 예정.",
+      "originalSha256": "3c428274da00f7809e93a2036454b2b9cba9a20b3ae3811d43f33a50501a36f6",
+      "currentSha256": "3c428274da00f7809e93a2036454b2b9cba9a20b3ae3811d43f33a50501a36f6",
+      "reviewedBytes": 5707,
+      "readRanges": [
+        [
+          0,
+          5928
+        ]
+      ],
+      "novelCharacters": 5928,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 21
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/composition-patterns.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "PiP wrapper·투명 WebM 동기화·opacity clip 소유권·타임라인 sentinel·자막 및 하위 composition 코드까지 전문 확인. 기술 재현 입력이라 보존.",
+      "originalSha256": "bb287bdaa4779698d8cb6541488335aacabef781ebca1fa661b3fd8f3462d034",
+      "currentSha256": "bb287bdaa4779698d8cb6541488335aacabef781ebca1fa661b3fd8f3462d034",
+      "reviewedBytes": 5685,
+      "readRanges": [
+        [
+          0,
+          6033
+        ]
+      ],
+      "novelCharacters": 6033,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 22
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/house-style.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 house-style 전체·팔레트 라우팅·장식·서체·움직임 기본안 확인. 내용 우선 예외가 있지만 2–5 장식 강제와 충돌하여 하위 예제의 선택적 제안임을 명확히 해야 함.",
+      "originalSha256": "3adc51745bfce9719b63ba74251fcf9e5b9eed56b1e0d8c3928f47c3703eba92",
+      "currentSha256": "3adc51745bfce9719b63ba74251fcf9e5b9eed56b1e0d8c3928f47c3703eba92",
+      "reviewedBytes": 5025,
+      "readRanges": [
+        [
+          0,
+          5255
+        ]
+      ],
+      "novelCharacters": 5255,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 23
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/video-composition.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "브랜드 토큰·영상 밀도·크기·컬러·모션·구도 전문 확인. 내용에 따른 밀도 조절과 사용자 범위 준수 유지; 뒤의 2초점·3 easing 수치는 전사 계약 아님.",
+      "originalSha256": "037a966583e4b5fc4c3385ef6217560d36237ec638d2b68b5808950c873e424b",
+      "currentSha256": "037a966583e4b5fc4c3385ef6217560d36237ec638d2b68b5808950c873e424b",
+      "reviewedBytes": 4298,
+      "readRanges": [
+        [
+          0,
+          4523
+        ]
+      ],
+      "novelCharacters": 4523,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 24
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/story-spine.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "시청자 가치·두번째 장면 메시지·근거·출처 추적·워크플로 예외까지 전문 확인. 시청자 가치 원칙과 부합; 별도 승인 정지는 현재 권한이 필요한 경우만.",
+      "originalSha256": "6c390b68004ffaaf3368e22a0355d914302d31921436c9a8fe79f9e0e096b4ef",
+      "currentSha256": "6c390b68004ffaaf3368e22a0355d914302d31921436c9a8fe79f9e0e096b4ef",
+      "reviewedBytes": 4154,
+      "readRanges": [
+        [
+          0,
+          4332
+        ]
+      ],
+      "novelCharacters": 4332,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 25
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/narration.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "영어 내레이션 속도·숫자 읽기·구조·62초 원문 예제 전문 확인. 99.999%를 99.9로 바꾸는 오류 정정 및 영어 예제를 한국어 공통 말투 규칙으로 사용하지 않게 범위 명시 예정.",
+      "originalSha256": "6002bb2a2270149a8955068d5952fc57cd22594649f576b3e8c38057846610b6",
+      "currentSha256": "6002bb2a2270149a8955068d5952fc57cd22594649f576b3e8c38057846610b6",
+      "reviewedBytes": 3482,
+      "readRanges": [
+        [
+          0,
+          3815
+        ]
+      ],
+      "novelCharacters": 3815,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 26
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/audio-reactive.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "오디오 bands 형식·주파수 매핑·프레임별 tl.call·textShadow 문제·결정적 데이터 계약 전체 확인. 로컬 재현에 필요한 고유 기술 자료 보존.",
+      "originalSha256": "ad93a0c588a702203a08ed909842570f010f041500aa33512d2b06f66d450c1c",
+      "currentSha256": "ad93a0c588a702203a08ed909842570f010f041500aa33512d2b06f66d450c1c",
+      "reviewedBytes": 3062,
+      "readRanges": [
+        [
+          0,
+          3285
+        ]
+      ],
+      "novelCharacters": 3285,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 27
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-adherence.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "색·서체·코너·간격·깊이와 선택한 디자인 대조 전체 확인. 특정 프로젝트 검증 체크로 보존.",
+      "originalSha256": "ff21deb80143c8e09092958a6f40bc712173a43d23c5ea88742566573a2a7241",
+      "currentSha256": "ff21deb80143c8e09092958a6f40bc712173a43d23c5ea88742566573a2a7241",
+      "reviewedBytes": 1423,
+      "readRanges": [
+        [
+          0,
+          1477
+        ]
+      ],
+      "novelCharacters": 1477,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 28
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/data-in-motion.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "수치 시각적 연속·비례 표현·짧은 영상의 차트 제약 전체 확인. 3초 영상용 선택적 권고이며 데이터 분석 전체의 차트 금지 규칙 아님.",
+      "originalSha256": "6066c79717156c4a41ef86f28e07c6bd35f18d6830b12893c58523063c788d7d",
+      "currentSha256": "6066c79717156c4a41ef86f28e07c6bd35f18d6830b12893c58523063c788d7d",
+      "reviewedBytes": 1274,
+      "readRanges": [
+        [
+          0,
+          1334
+        ]
+      ],
+      "novelCharacters": 1334,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 29
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/monochrome.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "fe8586f6d70707098859063bdef34d68084f02cf7d5aaa436d4c9915a7ae3748",
+      "currentSha256": "fe8586f6d70707098859063bdef34d68084f02cf7d5aaa436d4c9915a7ae3748",
+      "reviewedBytes": 454,
+      "readRanges": [
+        [
+          0,
+          484
+        ]
+      ],
+      "novelCharacters": 484,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 30
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/bold-energetic.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "17bc6b7889302151b4e5c84c0c6a33df676647078011d9decb2b68810e3baa7f",
+      "currentSha256": "17bc6b7889302151b4e5c84c0c6a33df676647078011d9decb2b68810e3baa7f",
+      "reviewedBytes": 417,
+      "readRanges": [
+        [
+          0,
+          447
+        ]
+      ],
+      "novelCharacters": 447,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 31
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/warm-editorial.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "c467ee3cc0bbf4b2bedccc8106e18293b8a06dbac8f092b10300492da0e0559a",
+      "currentSha256": "c467ee3cc0bbf4b2bedccc8106e18293b8a06dbac8f092b10300492da0e0559a",
+      "reviewedBytes": 411,
+      "readRanges": [
+        [
+          0,
+          441
+        ]
+      ],
+      "novelCharacters": 441,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 32
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/clean-corporate.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "d0c8c86838abb77985609629afe600d0ca365eccd835820f309959e8a85cba9d",
+      "currentSha256": "d0c8c86838abb77985609629afe600d0ca365eccd835820f309959e8a85cba9d",
+      "reviewedBytes": 410,
+      "readRanges": [
+        [
+          0,
+          440
+        ]
+      ],
+      "novelCharacters": 440,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 33
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/nature-earth.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "9710549b17487787fef3c7cb459cfd6e4ac28c1593bf471fcf55a3b4e546beed",
+      "currentSha256": "9710549b17487787fef3c7cb459cfd6e4ac28c1593bf471fcf55a3b4e546beed",
+      "reviewedBytes": 399,
+      "readRanges": [
+        [
+          0,
+          429
+        ]
+      ],
+      "novelCharacters": 429,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 34
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/jewel-rich.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "17c8f7506469f66bca4e27ef78c19f0bcbf250f88fe840e3043816b7041c4fc5",
+      "currentSha256": "17c8f7506469f66bca4e27ef78c19f0bcbf250f88fe840e3043816b7041c4fc5",
+      "reviewedBytes": 394,
+      "readRanges": [
+        [
+          0,
+          424
+        ]
+      ],
+      "novelCharacters": 424,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 35
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/pastel-soft.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "ed4e25bb5f4953c002e55a53320249621437e03b5a11d43e3c1bd32c869b6d95",
+      "currentSha256": "ed4e25bb5f4953c002e55a53320249621437e03b5a11d43e3c1bd32c869b6d95",
+      "reviewedBytes": 392,
+      "readRanges": [
+        [
+          0,
+          422
+        ]
+      ],
+      "novelCharacters": 422,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 36
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/dark-premium.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "abfecbf7e8dca3b674376590a0467aac3e13b2135022ae4ec519c4b27c2303b1",
+      "currentSha256": "abfecbf7e8dca3b674376590a0467aac3e13b2135022ae4ec519c4b27c2303b1",
+      "reviewedBytes": 389,
+      "readRanges": [
+        [
+          0,
+          419
+        ]
+      ],
+      "novelCharacters": 419,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 37
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/neon-electric.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "외부 선택형 팔레트의 용도와 전체 색상 코드를 읽음. 파일별 고유 조합이며 현재 SYNK 승인 색상을 대체하는 지침이 아니므로 보존.",
+      "originalSha256": "35225bf8d2cd37223e88e0bc59b0a96bc8adeda7225389b3df97b675cfd33dfb",
+      "currentSha256": "35225bf8d2cd37223e88e0bc59b0a96bc8adeda7225389b3df97b675cfd33dfb",
+      "reviewedBytes": 380,
+      "readRanges": [
+        [
+          0,
+          410
+        ]
+      ],
+      "novelCharacters": 410,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/creative-pass4-checkpoint.json",
+      "comparisonIndex": 38
+    }
+  ]
+}

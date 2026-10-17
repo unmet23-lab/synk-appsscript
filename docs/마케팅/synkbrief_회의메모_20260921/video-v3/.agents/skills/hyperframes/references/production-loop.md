@@ -1,5 +1,7 @@
 # Production loop — from an approved plan to a delivered video
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 The stages between a plan the user has agreed to and a video in their hands, written as **dependencies, not numbered steps**: order between independent stages is free — audio renders in the background while frames build; that is the standard trick — order inside a dependency chain is not. Nothing in this file addresses the user: every user-facing pause lives in `review-loop.md`, and this file only marks where those passes attach. Some routes bring their own spine (a beat grid, existing footage) — the stages compose around it. A stage whose need is absent simply doesn't run: no narration, no audio stage; a single scene, no transitions. An edit request enters at the artifact it touches and re-runs verify.
 
 The shipped narrative workflows implement these stages with their own scripts; a freeform build follows this file directly, borrowing tools where the capability menu says they live (`hyperframes/references/capability-menu.md`).
@@ -21,6 +23,6 @@ The Frames stage follows the plan's citations: a scene planned on a blueprint or
 ## Scheduling economics (facts you can't see from inside the session)
 
 - **External generations are independent work.** Image plates, TTS, BGM, video gen: fire every generation whose prompt is already known **concurrently or in the background**, and overlap the wait with reading or building. Three image plates generated one-after-another cost ~3× the wall time of firing them together.
-- **Attaching an image re-prices your whole context.** A mid-session image inspection (especially at original detail) invalidates the prompt cache — the next request re-sends your entire history at full price. Batch visual checks (one contact sheet beats N single-frame views) and schedule them at phase boundaries, not mid-build.
+- **Batch visual checks where useful.** Contact sheets can reduce repeated inspection. Image attachment alone does not establish cache invalidation or full-context billing; those depend on the actual provider and session. Use the current cost rules and do not skip a necessary visual check on this unverified cost assumption.
 
 Two attach points carry the user's voice into this loop: the plan that starts it was approved at `review-loop.md` § 1 (collaborative) or posted as a heads-up (autonomous), and nothing renders before the § 4 final look. Everything between those two is yours to schedule.

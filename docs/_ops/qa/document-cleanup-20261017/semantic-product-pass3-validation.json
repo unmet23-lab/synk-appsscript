@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-17",
+  "scope": "Product pass3 full body review; code comparison limited to corrected claims; no live service revalidation",
+  "files": 53,
+  "coverage": {
+    "full": 53
+  },
+  "changed": 52,
+  "retained": 1,
+  "newLinksChecked": 85,
+  "checks": [
+    {
+      "command": "node --test tests/설계문_폐기어휘.test.js tests/설계문DDL대조.test.js",
+      "result": "13 passed, 0 failed"
+    }
+  ],
+  "failures": []
+}

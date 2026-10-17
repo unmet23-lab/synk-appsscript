@@ -1,9 +1,13 @@
 ---
 name: hyperframes-core
-description: The HyperFrames composition contract — build one renderable project. Use for composition structure, the `data-*` timing attributes, `class="clip"`, tracks, sub-compositions, variables, framework-owned media playback, deterministic-render rules, and validation. Read before writing composition HTML.
+description: "Technical composition contract for maintaining or reproducing an existing HyperFrames project: timing attributes, clips, tracks, sub-compositions, variables, deterministic media playback, and validation. This is not a trigger for new SYNK video creation."
 ---
 
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
+
 # HyperFrames Core
+
+> SYNK 적용 범위: 기존 HyperFrames 작업본의 기술 참고 자료다. 이 폴더의 프로젝트 의존성은 `hyperframes 0.8.58`이며 아래 공급자 문서의 모든 명령이 그 버전에서 지원된다는 뜻은 아니다. 새 제작 방식은 [SNS 키트](../../../../../../디자인/SNS키트/README.md), 담당·설치·인터넷 접근·비용·외부 발송·공개 범위는 [AI 운영 원칙](../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 공급자의 필수 라우팅·자동 업그레이드·피드백 전송·고정 승인 절차를 전역 지침으로 적용하지 않는다. 현재 요청이 로컬 렌더를 포함하면 별도 고정 승인을 다시 요구하지 않는다.
 
 **Agent pitfalls (read first):**
 

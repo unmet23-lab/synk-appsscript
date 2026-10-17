@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-17",
+  "ledger": "semantic-product.json",
+  "reviewedFiles": 42,
+  "coverage": {"full": 38, "targeted": 4},
+  "editedFiles": 34,
+  "backupComparison": {"beforeBytes": 1302795, "afterBytes": 1271439, "savedBytes": 31356},
+  "checks": [
+    {"command": "node --test tests/설계문_폐기어휘.test.js tests/설계문DDL대조.test.js", "result": "13 passed, 0 failed; tests validate their own defined scope, not live DB or learner outcomes"},
+    {"command": "node .tmp/document-cleanup-20261017/verify-product-docs.cjs", "result": "ledger JSON parsed; all new local file links in edited docs exist; missingNewLinks=0"},
+    {"command": "$productPaths = (Get-Content -Raw 'docs/_ops/qa/document-cleanup-20261017/semantic-product.json' | ConvertFrom-Json).path; git -c core.safecrlf=false diff --check -- $productPaths", "result": "exit 0; no whitespace errors"},
+    {"command": "compare normalized original/current 상태기반_과제선택_설계.md from ## 0. to ## 14.", "result": "exact match, 331061 characters in both; unique technical sections 0-13 preserved"}
+  ],
+  "limits": [
+    "Coverage describes actual reading, not every referenced source or historical QA file. The final nine requested documents were read in full; code comparisons were limited to the specific current conflicts listed in the ledger.",
+    "Core, engine8, large state-selection contract and desktop README were targeted only; ledger lists reviewed and unread portions.",
+    "Remote AI limits/tutor setting, current legal requirements, public live screens and real learner effects were not rechecked.",
+    "No code deployment, account changes, media generation or historical QA deletion."
+  ]
+}

@@ -1,0 +1,784 @@
+TAP version 13
+# Subtest: no target, waiting and disabled states do not manufacture alerts
+ok 1 - no target, waiting and disabled states do not manufacture alerts
+  ---
+  duration_ms: 163.8367
+  type: 'test'
+  ...
+# Subtest: users without saved notification receipts skip source projection while scans still discover new issues
+ok 2 - users without saved notification receipts skip source projection while scans still discover new issues
+  ---
+  duration_ms: 214.8321
+  type: 'test'
+  ...
+# Subtest: one durable metadata record and one event per stable issue, even across restart
+ok 3 - one durable metadata record and one event per stable issue, even across restart
+  ---
+  duration_ms: 220.6985
+  type: 'test'
+  ...
+# Subtest: current text is projected, source link and title are never copied
+ok 4 - current text is projected, source link and title are never copied
+  ---
+  duration_ms: 294.8441
+  type: 'test'
+  ...
+# Subtest: reading is idempotent and does not resolve the source
+ok 5 - reading is idempotent and does not resolve the source
+  ---
+  duration_ms: 426.7715
+  type: 'test'
+  ...
+# Subtest: authoritatively observed recovery disappears and recurrence is a new unread episode
+ok 6 - authoritatively observed recovery disappears and recurrence is a new unread episode
+  ---
+  duration_ms: 268.7754
+  type: 'test'
+  ...
+# Subtest: deletion, permission loss and unobserved absence suppress without claiming recovery
+ok 7 - deletion, permission loss and unobserved absence suppress without claiming recovery
+  ---
+  duration_ms: 359.5164
+  type: 'test'
+  ...
+# Subtest: paused or partial sources cannot resolve old issues even with stale observed ids
+ok 8 - paused or partial sources cannot resolve old issues even with stale observed ids
+  ---
+  duration_ms: 354.4769
+  type: 'test'
+  ...
+# Subtest: whole source read failure is unavailable, preserves receipt, and never leaks error detail
+ok 9 - whole source read failure is unavailable, preserves receipt, and never leaks error detail
+  ---
+  duration_ms: 379.7983
+  type: 'test'
+  ...
+# Subtest: partial source error gets its own stable alert while old source issue remains unresolved
+ok 10 - partial source error gets its own stable alert while old source issue remains unresolved
+  ---
+  duration_ms: 467.3228
+  type: 'test'
+  ...
+# Subtest: permission changes are checked on every list and read, before scheduled scan
+ok 11 - permission changes are checked on every list and read, before scheduled scan
+  ---
+  duration_ms: 338.6483
+  type: 'test'
+  ...
+# Subtest: inactive users and viewers cannot receive or preserve visible notices
+ok 12 - inactive users and viewers cannot receive or preserve visible notices
+  ---
+  duration_ms: 479.9598
+  type: 'test'
+  ...
+# Subtest: user and automation are part of identity and readAll only marks currently visible records
+ok 13 - user and automation are part of identity and readAll only marks currently visible records
+  ---
+  duration_ms: 726.9267
+  type: 'test'
+  ...
+# Subtest: read-source malformed data fails closed and malformed issues do not create metadata
+ok 14 - read-source malformed data fails closed and malformed issues do not create metadata
+  ---
+  duration_ms: 375.94
+  type: 'test'
+  ...
+# Subtest: onChange is once per affected user batch and a failed callback cannot roll back metadata
+ok 15 - onChange is once per affected user batch and a failed callback cannot roll back metadata
+  ---
+  duration_ms: 409.2985
+  type: 'test'
+  ...
+# Subtest: scheduled scan produces the same durable issue transitions as the synchronous scan
+ok 16 - scheduled scan produces the same durable issue transitions as the synchronous scan
+  ---
+  duration_ms: 548.6601
+  type: 'test'
+  ...
+# Subtest: scheduled scan yields, coalesces overlapping calls and checks live permissions before each user
+ok 17 - scheduled scan yields, coalesces overlapping calls and checks live permissions before each user
+  ---
+  duration_ms: 394.8137
+  type: 'test'
+  ...
+# Subtest: scheduled cancellation stops before the next user and a later run can resume normally
+ok 18 - scheduled cancellation stops before the next user and a later run can resume normally
+  ---
+  duration_ms: 312.4977
+  type: 'test'
+  ...
+# Subtest: one transient GET reset recovers with the same generation and safe diagnostics
+ok 19 - one transient GET reset recovers with the same generation and safe diagnostics
+  ---
+  duration_ms: 153.5781
+  type: 'test'
+  ...
+# Subtest: persistent GET transport failure stops at two attempts with a phase code
+ok 20 - persistent GET transport failure stops at two attempts with a phase code
+  ---
+  duration_ms: 83.0752
+  type: 'test'
+  ...
+# Subtest: GET HTTP 408 retries once and cancels the failed response
+ok 21 - GET HTTP 408 retries once and cancels the failed response
+  ---
+  duration_ms: 77.3885
+  type: 'test'
+  ...
+# Subtest: GET HTTP 429 retries once and cancels the failed response
+ok 22 - GET HTTP 429 retries once and cancels the failed response
+  ---
+  duration_ms: 125.7505
+  type: 'test'
+  ...
+# Subtest: GET HTTP 500 retries once and cancels the failed response
+ok 23 - GET HTTP 500 retries once and cancels the failed response
+  ---
+  duration_ms: 62.4499
+  type: 'test'
+  ...
+# Subtest: GET HTTP 502 retries once and cancels the failed response
+ok 24 - GET HTTP 502 retries once and cancels the failed response
+  ---
+  duration_ms: 92.7075
+  type: 'test'
+  ...
+# Subtest: GET HTTP 503 retries once and cancels the failed response
+ok 25 - GET HTTP 503 retries once and cancels the failed response
+  ---
+  duration_ms: 142.3251
+  type: 'test'
+  ...
+# Subtest: GET HTTP 504 retries once and cancels the failed response
+ok 26 - GET HTTP 504 retries once and cancels the failed response
+  ---
+  duration_ms: 62.0747
+  type: 'test'
+  ...
+# Subtest: GET HTTP 400 fails closed without retry
+ok 27 - GET HTTP 400 fails closed without retry
+  ---
+  duration_ms: 0.9108
+  type: 'test'
+  ...
+# Subtest: GET HTTP 401 fails closed without retry
+ok 28 - GET HTTP 401 fails closed without retry
+  ---
+  duration_ms: 0.6868
+  type: 'test'
+  ...
+# Subtest: GET HTTP 403 fails closed without retry
+ok 29 - GET HTTP 403 fails closed without retry
+  ---
+  duration_ms: 0.4894
+  type: 'test'
+  ...
+# Subtest: GET 404 remains an absent object rather than a retry
+ok 30 - GET 404 remains an absent object rather than a retry
+  ---
+  duration_ms: 0.4436
+  type: 'test'
+  ...
+# Subtest: POST timeout is never retried
+ok 31 - POST timeout is never retried
+  ---
+  duration_ms: 1.5537
+  type: 'test'
+  ...
+# Subtest: POST 503 is never retried
+ok 32 - POST 503 is never retried
+  ---
+  duration_ms: 0.4355
+  type: 'test'
+  ...
+# Subtest: malformed body and unrecognized transport error are not transient
+ok 33 - malformed body and unrecognized transport error are not transient
+  ---
+  duration_ms: 5.0557
+  type: 'test'
+  ...
+# Subtest: numeric TimeoutError becomes a phase code and a late second response is rejected
+ok 34 - numeric TimeoutError becomes a phase code and a late second response is rejected
+  ---
+  duration_ms: 98.2417
+  type: 'test'
+  ...
+# Subtest: metadata read retries within its original four-second deadline
+ok 35 - metadata read retries within its original four-second deadline
+  ---
+  duration_ms: 77.9369
+  type: 'test'
+  ...
+# Subtest: external cancellation suppresses retry even when transport reports a timeout
+ok 36 - external cancellation suppresses retry even when transport reports a timeout
+  ---
+  duration_ms: 1.0094
+  type: 'test'
+  ...
+# Subtest: logging failure cannot change successful transport recovery
+ok 37 - logging failure cannot change successful transport recovery
+  ---
+  duration_ms: 76.1487
+  type: 'test'
+  ...
+# Subtest: agent remains fresh only on confirmed state and still stops after exhausted reads
+ok 38 - agent remains fresh only on confirmed state and still stops after exhausted reads
+  ---
+  duration_ms: 135.4014
+  type: 'test'
+  ...
+# Subtest: revoked permission in a retried generation-bound body is acted on immediately
+ok 39 - revoked permission in a retried generation-bound body is acted on immediately
+  ---
+  duration_ms: 110.0257
+  type: 'test'
+  ...
+# Subtest: first-attempt body timeout is retried using TimeoutError rather than numeric code 23
+ok 40 - first-attempt body timeout is retried using TimeoutError rather than numeric code 23
+  ---
+  duration_ms: 4126.1371
+  type: 'test'
+  ...
+# Subtest: persistent header stalls use one ten-second deadline across both attempts
+ok 41 - persistent header stalls use one ten-second deadline across both attempts
+  ---
+  duration_ms: 10006.4779
+  type: 'test'
+  ...
+# Subtest: actual local probes pass the public Host guard before health and authentication checks
+ok 42 - actual local probes pass the public Host guard before health and authentication checks
+  ---
+  duration_ms: 271.3612
+  type: 'test'
+  ...
+# Subtest: local probes preserve unhealthy and missing-auth-boundary responses
+ok 43 - local probes preserve unhealthy and missing-auth-boundary responses
+  ---
+  duration_ms: 141.3427
+  type: 'test'
+  ...
+# Subtest: invalid public origin stops both local probes without any request
+ok 44 - invalid public origin stops both local probes without any request
+  ---
+  duration_ms: 107.6067
+  type: 'test'
+  ...
+# Subtest: wrong node, disk or helper contract is rejected before access
+ok 45 - wrong node, disk or helper contract is rejected before access
+  ---
+  duration_ms: 1.085
+  type: 'test'
+  ...
+# Subtest: observe-only agent reads release but never stops or starts any service
+ok 46 - observe-only agent reads release but never stops or starts any service
+  ---
+  duration_ms: 0.8016
+  type: 'test'
+  ...
+# Subtest: standby cannot authorize boot with live primary owner
+ok 47 - standby cannot authorize boot with live primary owner
+  ---
+  duration_ms: 0.372
+  type: 'test'
+  ...
+# Subtest: standby stops any retained containers and remains unready
+ok 48 - standby stops any retained containers and remains unready
+  ---
+  duration_ms: 0.2725
+  type: 'test'
+  ...
+# Subtest: target requires START or later phase for writer authorization
+ok 49 - target requires START or later phase for writer authorization
+  ---
+  duration_ms: 0.2577
+  type: 'test'
+  ...
+# Subtest: fencing proof does not start or mount business data
+ok 50 - fencing proof does not start or mount business data
+  ---
+  duration_ms: 0.4815
+  type: 'test'
+  ...
+# Subtest: command cannot claim a different release or retain old boot permission
+ok 51 - command cannot claim a different release or retain old boot permission
+  ---
+  duration_ms: 0.2686
+  type: 'test'
+  ...
+# Subtest: GCE attachment failure prevents mount, start and receipt
+ok 52 - GCE attachment failure prevents mount, start and receipt
+  ---
+  duration_ms: 0.3173
+  type: 'test'
+  ...
+# Subtest: START executes only with current boot permission and never exposes readiness
+ok 53 - START executes only with current boot permission and never exposes readiness
+  ---
+  duration_ms: 0.2284
+  type: 'test'
+  ...
+# Subtest: lease renewal during a host action does not invalidate an unchanged command
+ok 54 - lease renewal during a host action does not invalidate an unchanged command
+  ---
+  duration_ms: 0.2241
+  type: 'test'
+  ...
+# Subtest: replaced command during a host action suppresses success receipt
+ok 55 - replaced command during a host action suppresses success receipt
+  ---
+  duration_ms: 0.2281
+  type: 'test'
+  ...
+# Subtest: revoked writer permission during START suppresses success receipt and readiness
+ok 56 - revoked writer permission during START suppresses success receipt and readiness
+  ---
+  duration_ms: 0.2629
+  type: 'test'
+  ...
+# Subtest: durable receipt is never resent and same-phase new generation is rechecked
+ok 57 - durable receipt is never resent and same-phase new generation is rechecked
+  ---
+  duration_ms: 0.2678
+  type: 'test'
+  ...
+# Subtest: expired state evidence closes readiness without inventing outage
+ok 58 - expired state evidence closes readiness without inventing outage
+  ---
+  duration_ms: 0.152
+  type: 'test'
+  ...
+# Subtest: cloud state loss stops an enabled writer and reports stop failure separately
+ok 59 - cloud state loss stops an enabled writer and reports stop failure separately
+  ---
+  duration_ms: 0.2382
+  type: 'test'
+  ...
+# Subtest: cloud failure in observe-only mode never stops production services
+ok 60 - cloud failure in observe-only mode never stops production services
+  ---
+  duration_ms: 0.1228
+  type: 'test'
+  ...
+# Subtest: release verification cache expires after sixty seconds
+ok 61 - release verification cache expires after sixty seconds
+  ---
+  duration_ms: 0.1284
+  type: 'test'
+  ...
+# Subtest: pending public routing keeps authorized readiness for LB health probes
+ok 62 - pending public routing keeps authorized readiness for LB health probes
+  ---
+  duration_ms: 0.2233
+  type: 'test'
+  ...
+# Subtest: authority lost while public route warms stops the writer
+ok 63 - authority lost while public route warms stops the writer
+  ---
+  duration_ms: 0.2228
+  type: 'test'
+  ...
+# Subtest: shutdown fences enabled writer and prevents subsequent ticks
+ok 64 - shutdown fences enabled writer and prevents subsequent ticks
+  ---
+  duration_ms: 0.1162
+  type: 'test'
+  ...
+# Subtest: revoking old owner stops containers and removes readiness on next observation
+ok 65 - revoking old owner stops containers and removes readiness on next observation
+  ---
+  duration_ms: 0.1085
+  type: 'test'
+  ...
+# Subtest: current owner recovers a stopped stack after a transient control failure
+ok 66 - current owner recovers a stopped stack after a transient control failure
+  ---
+  duration_ms: 0.4082
+  type: 'test'
+  ...
+# Subtest: owner recovery cannot restart after authority is revoked during stop
+ok 67 - owner recovery cannot restart after authority is revoked during stop
+  ---
+  duration_ms: 0.2628
+  type: 'test'
+  ...
+# Subtest: repeated owner start failures are rate limited and maintenance never restarts
+ok 68 - repeated owner start failures are rate limited and maintenance never restarts
+  ---
+  duration_ms: 0.4132
+  type: 'test'
+  ...
+# Subtest: candidate health failure during promotion never invokes owner recovery
+ok 69 - candidate health failure during promotion never invokes owner recovery
+  ---
+  duration_ms: 0.1896
+  type: 'test'
+  ...
+# Subtest: shutdown joins a cancelled start before its final stop and emits no receipt
+ok 70 - shutdown joins a cancelled start before its final stop and emits no receipt
+  ---
+  duration_ms: 0.2825
+  type: 'test'
+  ...
+# Subtest: cloud identity mismatch cannot read state or create a receipt
+ok 71 - cloud identity mismatch cannot read state or create a receipt
+  ---
+  duration_ms: 3.5053
+  type: 'test'
+  ...
+# Subtest: receipt upload is confined to own immutable prefix with generation zero
+ok 72 - receipt upload is confined to own immutable prefix with generation zero
+  ---
+  duration_ms: 4.3437
+  type: 'test'
+  ...
+# Subtest: owner requires confirmed stop and authority recheck before clearing a prior stop failure
+ok 73 - owner requires confirmed stop and authority recheck before clearing a prior stop failure
+  ---
+  duration_ms: 10.778
+  type: 'test'
+  ...
+# Subtest: failed recovery stop never reports ready or starts despite healthy retained application
+ok 74 - failed recovery stop never reports ready or starts despite healthy retained application
+  ---
+  duration_ms: 0.8099
+  type: 'test'
+  ...
+# Subtest: standby clears old stop-failure only after next actual stop succeeds and never becomes ready
+ok 75 - standby clears old stop-failure only after next actual stop succeeds and never becomes ready
+  ---
+  duration_ms: 0.6012
+  type: 'test'
+  ...
+# Subtest: revoked permission during confirmed recovery stop prevents a restart
+ok 76 - revoked permission during confirmed recovery stop prevents a restart
+  ---
+  duration_ms: 1.3626
+  type: 'test'
+  ...
+# Subtest: START_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+ok 77 - START_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+  ---
+  duration_ms: 5.5937
+  type: 'test'
+  ...
+# Subtest: START_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+ok 78 - START_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+  ---
+  duration_ms: 0.4485
+  type: 'test'
+  ...
+# Subtest: VERIFY_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+ok 79 - VERIFY_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+  ---
+  duration_ms: 0.4468
+  type: 'test'
+  ...
+# Subtest: VERIFY_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+ok 80 - VERIFY_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+  ---
+  duration_ms: 0.4507
+  type: 'test'
+  ...
+# Subtest: EXPOSE_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+ok 81 - EXPOSE_CANDIDATE recovers its own earlier failed stop with prior receipt=false
+  ---
+  duration_ms: 0.4589
+  type: 'test'
+  ...
+# Subtest: EXPOSE_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+ok 82 - EXPOSE_CANDIDATE recovers its own earlier failed stop with prior receipt=true
+  ---
+  duration_ms: 0.4753
+  type: 'test'
+  ...
+# Subtest: VERIFY recovers even when its earlier fail-closed stop succeeded
+ok 83 - VERIFY recovers even when its earlier fail-closed stop succeeded
+  ---
+  duration_ms: 0.3973
+  type: 'test'
+  ...
+# Subtest: promotion maintenance prevents recovery start
+ok 84 - promotion maintenance prevents recovery start
+  ---
+  duration_ms: 0.3204
+  type: 'test'
+  ...
+# Subtest: promotion replacement during confirmed stop cannot restart from old command
+ok 85 - promotion replacement during confirmed stop cannot restart from old command
+  ---
+  duration_ms: 0.4614
+  type: 'test'
+  ...
+# Subtest: promotion authority revoked during recovery start emits no receipt and stops again
+ok 86 - promotion authority revoked during recovery start emits no receipt and stops again
+  ---
+  duration_ms: 0.3628
+  type: 'test'
+  ...
+# Subtest: shutdown while recovery stop is pending cannot start a promotion
+ok 87 - shutdown while recovery stop is pending cannot start a promotion
+  ---
+  duration_ms: 0.511
+  type: 'test'
+  ...
+# Subtest: post URLs canonicalize aliases and reject profiles, credentials and foreign origins
+ok 88 - post URLs canonicalize aliases and reject profiles, credentials and foreign origins
+  ---
+  duration_ms: 5.2957
+  type: 'test'
+  ...
+# Subtest: registration requires current channel authority and real past publication time
+ok 89 - registration requires current channel authority and real past publication time
+  ---
+  duration_ms: 248.3834
+  type: 'test'
+  ...
+# Subtest: link source uses a single current post without loading analytics or credentials and rejects stale permissions
+ok 90 - link source uses a single current post without loading analytics or credentials and rejects stale permissions
+  ---
+  duration_ms: 253.5272
+  type: 'test'
+  ...
+# Subtest: duplicate aliases preserve original publication and survive restart; visibility follows current channel
+ok 91 - duplicate aliases preserve original publication and survive restart; visibility follows current channel
+  ---
+  duration_ms: 472.2878
+  type: 'test'
+  ...
+# Subtest: a legacy publication can link a verified format without resetting its original time or recorded metrics
+ok 92 - a legacy publication can link a verified format without resetting its original time or recorded metrics
+  ---
+  duration_ms: 380.5297
+  type: 'test'
+  ...
+# Subtest: format metadata must match a linked package and the publication platform
+ok 93 - format metadata must match a linked package and the publication platform
+  ---
+  duration_ms: 277.5178
+  type: 'test'
+  ...
+# Subtest: due collection uses exact post identity and retains zero, null reasons and server observation
+ok 94 - due collection uses exact post identity and retains zero, null reasons and server observation
+  ---
+  duration_ms: 350.8125
+  type: 'test'
+  ...
+# Subtest: late registration and missed windows do not manufacture historic checkpoint snapshots
+ok 95 - late registration and missed windows do not manufacture historic checkpoint snapshots
+  ---
+  duration_ms: 410.637
+  type: 'test'
+  ...
+# Subtest: manual observation distinguishes measured time and server recording time and prevents overwrites
+ok 96 - manual observation distinguishes measured time and server recording time and prevents overwrites
+  ---
+  duration_ms: 502.7493
+  type: 'test'
+  ...
+# Subtest: unconnected channels explicitly require manual input and do not fetch
+ok 97 - unconnected channels explicitly require manual input and do not fetch
+  ---
+  duration_ms: 400.0285
+  type: 'test'
+  ...
+# Subtest: automatic retries are bounded and do not expose provider error text
+ok 98 - automatic retries are bounded and do not expose provider error text
+  ---
+  duration_ms: 578.1639
+  type: 'test'
+  ...
+# Subtest: missing exact post and mismatched publication time never borrow another post metrics
+ok 99 - missing exact post and mismatched publication time never borrow another post metrics
+  ---
+  duration_ms: 450.1611
+  type: 'test'
+  ...
+# Subtest: shared persistent lease batches a channel and prevents two service instances from fetching together
+ok 100 - shared persistent lease batches a channel and prevents two service instances from fetching together
+  ---
+  duration_ms: 317.47
+  type: 'test'
+  ...
+# Subtest: connection change and permission revocation during a request discard fetched response
+ok 101 - connection change and permission revocation during a request discard fetched response
+  ---
+  duration_ms: 442.9198
+  type: 'test'
+  ...
+# Subtest: expired persisted lease resumes after restart and a recording completed after the window stays missed
+ok 102 - expired persisted lease resumes after restart and a recording completed after the window stays missed
+  ---
+  duration_ms: 672.0398
+  type: 'test'
+  ...
+# Subtest: an authorized user cannot collect or manually write another channel through broad collection
+ok 103 - an authorized user cannot collect or manually write another channel through broad collection
+  ---
+  duration_ms: 345.4857
+  type: 'test'
+  ...
+# Subtest: comparison uses only same-channel earlier posts with matching valid checkpoints and excludes missing metrics
+ok 104 - comparison uses only same-channel earlier posts with matching valid checkpoints and excludes missing metrics
+  ---
+  duration_ms: 409.6567
+  type: 'test'
+  ...
+# Subtest: existing official collector is reused read-only with bounded channel scope and exact returned video
+ok 105 - existing official collector is reused read-only with bounded channel scope and exact returned video
+  ---
+  duration_ms: 301.11
+  type: 'test'
+  ...
+# Subtest: session revocation while collecting discards provider result and releases lease
+ok 106 - session revocation while collecting discards provider result and releases lease
+  ---
+  duration_ms: 279.1063
+  type: 'test'
+  ...
+# Subtest: stop aborts the in-flight official request and waits for cleanup without recording metrics
+ok 107 - stop aborts the in-flight official request and waits for cleanup without recording metrics
+  ---
+  duration_ms: 232.4565
+  type: 'test'
+  ...
+# Subtest: paused entry is skipped and pausing during a fetch discards its response
+ok 108 - paused entry is skipped and pausing during a fetch discards its response
+  ---
+  duration_ms: 416.1988
+  type: 'test'
+  ...
+# Subtest: manual supplements fill only missing fields and preserve original API provenance with separate clocks
+ok 109 - manual supplements fill only missing fields and preserve original API provenance with separate clocks
+  ---
+  duration_ms: 348.9458
+  type: 'test'
+  ...
+# Subtest: manual percentages have bounded units and unsupported provider retention is never inferred
+ok 110 - manual percentages have bounded units and unsupported provider retention is never inferred
+  ---
+  duration_ms: 305.8935
+  type: 'test'
+  ...
+# Subtest: comparisons exclude mixed provenance, different observation delays and out-of-window supplements
+ok 111 - comparisons exclude mixed provenance, different observation delays and out-of-window supplements
+  ---
+  duration_ms: 337.216
+  type: 'test'
+  ...
+# Subtest: a caller losing channel access during collection cannot save another creators response
+ok 112 - a caller losing channel access during collection cannot save another creators response
+  ---
+  duration_ms: 310.1556
+  type: 'test'
+  ...
+# Subtest: GET reads only saved targets with current permission, and absent resource links return null without side effects
+ok 113 - GET reads only saved targets with current permission, and absent resource links return null without side effects
+  ---
+  duration_ms: 583.2636
+  type: 'test'
+  ...
+# Subtest: a stored response preserves URL, HTTP evidence and server time across restart; cooldown is separate from staleness
+ok 114 - a stored response preserves URL, HTTP evidence and server time across restart; cooldown is separate from staleness
+  ---
+  duration_ms: 418.5018
+  type: 'test'
+  ...
+# Subtest: same URL on another package and a changed saved URL do not inherit previous checks
+ok 115 - same URL on another package and a changed saved URL do not inherit previous checks
+  ---
+  duration_ms: 411.4687
+  type: 'test'
+  ...
+# Subtest: concurrent checks share one network job while every caller rechecks its own authorization
+ok 116 - concurrent checks share one network job while every caller rechecks its own authorization
+  ---
+  duration_ms: 418.1006
+  type: 'test'
+  ...
+# Subtest: late responses are discarded after source URL changes, deletion, archiving or current account deactivation
+ok 117 - late responses are discarded after source URL changes, deletion, archiving or current account deactivation
+  ---
+  duration_ms: 2745.549
+  type: 'test'
+  ...
+# Subtest: session authorization is checked again before persistence and failures do not save late results
+ok 118 - session authorization is checked again before persistence and failures do not save late results
+  ---
+  duration_ms: 552.8459
+  type: 'test'
+  ...
+# Subtest: post checks follow current channel ownership and active state, including changes while the request is running
+ok 119 - post checks follow current channel ownership and active state, including changes while the request is running
+  ---
+  duration_ms: 397.0708
+  type: 'test'
+  ...
+# Subtest: source-read access alone never permits a probe, and stale caller roles cannot elevate current authority
+ok 120 - source-read access alone never permits a probe, and stale caller roles cannot elevate current authority
+  ---
+  duration_ms: 370.3301
+  type: 'test'
+  ...
+# Subtest: aborting a request or stopping the service discards even probes that ignore cancellation and drains pending work
+ok 121 - aborting a request or stopping the service discards even probes that ignore cancellation and drains pending work
+  ---
+  duration_ms: 518.7324
+  type: 'test'
+  ...
+# Subtest: unexpected probe errors expose only sanitized connection evidence and histories retain the latest 50 observations
+ok 122 - unexpected probe errors expose only sanitized connection evidence and histories retain the latest 50 observations
+  ---
+  duration_ms: 1120.0469
+  type: 'test'
+  ...
+# Subtest: automatic scans check only the newest package per format of the newest video and respect six-hour staleness
+ok 123 - automatic scans check only the newest package per format of the newest video and respect six-hour staleness
+  ---
+  duration_ms: 462.1168
+  type: 'test'
+  ...
+# Subtest: a newer linkless package suppresses old resource checks, while inactive and unowned sources are skipped
+ok 124 - a newer linkless package suppresses old resource checks, while inactive and unowned sources are skipped
+  ---
+  duration_ms: 393.2464
+  type: 'test'
+  ...
+# Subtest: scans coalesce, process sequentially with a ten-request ceiling, and retry remaining work next run
+ok 125 - scans coalesce, process sequentially with a ten-request ceiling, and retry remaining work next run
+  ---
+  duration_ms: 1178.9049
+  type: 'test'
+  ...
+# Subtest: automatic scans resolve current owners instead of trusting saved assignment or the creator
+ok 126 - automatic scans resolve current owners instead of trusting saved assignment or the creator
+  ---
+  duration_ms: 204.8711
+  type: 'test'
+  ...
+# Subtest: fresh post scans read the history once and never assemble analytics or decrypt channel credentials
+ok 127 - fresh post scans read the history once and never assemble analytics or decrypt channel credentials
+  ---
+  duration_ms: 202.7382
+  type: 'test'
+  ...
+# Subtest: fresh-only scans yield to requests and honor cancellation before the next batch
+ok 128 - fresh-only scans yield to requests and honor cancellation before the next batch
+  ---
+  duration_ms: 218.1619
+  type: 'test'
+  ...
+# Subtest: scheduled post checks recheck ownership after yielding between skipped batches
+ok 129 - scheduled post checks recheck ownership after yielding between skipped batches
+  ---
+  duration_ms: 222.1614
+  type: 'test'
+  ...
+1..129
+# tests 129
+# suites 0
+# pass 129
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15638.6568

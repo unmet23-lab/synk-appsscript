@@ -1,0 +1,44 @@
+[
+  {
+    "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+    "expected": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+    "actual": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+    "exact": true,
+    "bytes": 19476
+  },
+  {
+    "path": "docs/_원고/채널마다_창_2026-09-07.md",
+    "expected": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+    "actual": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+    "exact": true,
+    "bytes": 16196
+  },
+  {
+    "path": "docs/_원고/룸조판_1보_실측.md",
+    "expected": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+    "actual": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+    "exact": true,
+    "bytes": 4300
+  },
+  {
+    "path": "docs/본체SYNK_자리_2026-09-07.html",
+    "expected": "da2fca5f5018d40e832e17520c32dd27ae449d67b455454a0365884b19ef0e32",
+    "actual": "da2fca5f5018d40e832e17520c32dd27ae449d67b455454a0365884b19ef0e32",
+    "exact": true,
+    "bytes": 1361230
+  },
+  {
+    "path": "docs/채널마다_창_2026-09-07.html",
+    "expected": "e217b5526316380cbb354485b12fe3f04259e7838f63aab23e5ef2d28475ad13",
+    "actual": "e217b5526316380cbb354485b12fe3f04259e7838f63aab23e5ef2d28475ad13",
+    "exact": true,
+    "bytes": 1356930
+  },
+  {
+    "path": "docs/룸조판_1보_실측.html",
+    "expected": "08611cb415ff4e8d8b2579d36e1a6dba7c69071156dcb45dbe01099439fbeafd",
+    "actual": "08611cb415ff4e8d8b2579d36e1a6dba7c69071156dcb45dbe01099439fbeafd",
+    "exact": true,
+    "bytes": 1343332
+  }
+]

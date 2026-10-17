@@ -1,0 +1,67 @@
+{
+  "prepared": {
+    "0": {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "originalSha256": "a4e39cb682cb99fbaafe88f68a6fa773182d9944e165e9d0b41c92672ac52366",
+      "sourceCharacters": 223214,
+      "bytes": 402173,
+      "totalBlocks": 429,
+      "same": [
+        {
+          "block": 283,
+          "chars": 30,
+          "blockSha256": "896ce4fa4f03c477874f968b58123959d0acec6d92b56758dbdf807bf190b68d",
+          "base": {
+            "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+            "sha256": "f03ec4d0e51fcae67ffb640b7014ecc658239caaf1c14322c720b49f590e5fab",
+            "ledger": "semantic-operations-pass3.json"
+          }
+        },
+        {
+          "block": 380,
+          "chars": 30,
+          "blockSha256": "0c87647712bf4e59c2cedac6d59a17c13b35aedadc4e9f3853d51675eaa909ce",
+          "base": {
+            "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+            "sha256": "f03ec4d0e51fcae67ffb640b7014ecc658239caaf1c14322c720b49f590e5fab",
+            "ledger": "semantic-operations-pass3.json"
+          }
+        },
+        {
+          "block": 393,
+          "chars": 30,
+          "blockSha256": "14082de805f8d530ac4b8de843c6a73df6f0af67f366429db3c4765f6886e36d",
+          "base": {
+            "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+            "sha256": "f03ec4d0e51fcae67ffb640b7014ecc658239caaf1c14322c720b49f590e5fab",
+            "ledger": "semantic-operations-pass3.json"
+          }
+        },
+        {
+          "block": 402,
+          "chars": 42,
+          "blockSha256": "47eed5d11d492b1fc54bbdb62e4774e2a9bece07c131d86f9040abe7d9d312f1",
+          "base": {
+            "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+            "sha256": "f03ec4d0e51fcae67ffb640b7014ecc658239caaf1c14322c720b49f590e5fab",
+            "ledger": "semantic-operations-pass3.json"
+          }
+        }
+      ],
+      "novelCharacters": 226773,
+      "readRanges": [],
+      "file": ".tmp/document-cleanup-pass4-operations/novel-0.txt"
+    },
+    "2": {
+      "path": "docs/_ops/qa/atlas-capability-history-20261005/README.md",
+      "originalSha256": "93a6ded5e901dfb8e8b7209fd7043429daa8e8e4505574466079c5f110d25bbe",
+      "sourceCharacters": 119296,
+      "bytes": 243843,
+      "totalBlocks": 381,
+      "same": [],
+      "novelCharacters": 123758,
+      "readRanges": [],
+      "file": ".tmp/document-cleanup-pass4-operations/novel-2.txt"
+    }
+  }
+}

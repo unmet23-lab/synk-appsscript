@@ -1,5 +1,7 @@
 # Subagent dispatch — harness adapter
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 The video workflows (`product-launch-video` / `faceless-explainer` / `pr-to-video` / `motion-graphics` / `general-video`) describe subagent dispatch in harness-neutral verbs. This file maps those verbs to the primitives of whatever agent harness you are running on. Read it once per run, before the first dispatch; everything else in the workflows (dispatch packets, file artifacts, exit-code gates, Resume tables) is harness-independent and needs no translation.
 
 ## The contract (identical on every harness)
@@ -24,9 +26,7 @@ Use the current harness's native delegation and waiting tools when they are avai
 - **WAIT** verifies the expected artifacts on disk, not only a completion notification.
 - **Re-dispatch** starts a fresh worker with the same context plus the gate failure.
 
-When native delegation is unavailable, use the existing fallback ladder: launch headless CLI workers that share the project filesystem, then fall back to inline serial execution.
-
-On Codex, native delegation requires the user's explicit permission. Fold a one-line request into the workflow's first existing user pause before dispatch; a standing grant in `AGENTS.md` or the kickoff prompt also counts. Without it, use the fallback ladder rather than silently skipping work.
+하위 에이전트는 현재 공식 하네스에 노출된 도구와 그 권한 규칙으로 실행한다. 이미 허용된 위임에 별도 확인을 추가하지 않는다. 도구가 없으면 같은 산출물 계약을 순차 실행하며, 이 문서를 이유로 별도 headless LLM 실행기를 만들거나 권한을 우회하지 않는다.
 
 ## Vocabulary mapping
 

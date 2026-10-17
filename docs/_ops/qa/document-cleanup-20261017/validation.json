@@ -1,0 +1,413 @@
+{
+  "date": "2026-10-17",
+  "scope": "local document and instruction cleanup; no deployment or service behavior verification",
+  "markdownBefore": 7130,
+  "markdownAfterExcludingAuditEvidence": 7055,
+  "gitVisibleMarkdownBefore": 2119,
+  "gitVisibleMarkdownAfter": 2044,
+  "originalsVerified": 54,
+  "changed": [
+    {
+      "path": "docs/제품방향.md",
+      "beforeBytes": 12853,
+      "afterBytes": 12868,
+      "beforeSha256": "c6bc5aa12015c26b68075bd51862b9eb89178282eb8fb4b8ab696e92831a520d",
+      "afterSha256": "13026d8f9672c24c7af968d9a606183dabde40f6c221359f211a61199f7936b1"
+    },
+    {
+      "path": "docs/홈페이지_설계_v1.md",
+      "beforeBytes": 14622,
+      "afterBytes": 15615,
+      "beforeSha256": "3962eeb3e313adfdb4ec1506f9d83277b5938ac2585c1443d32bc0a54b201849",
+      "afterSha256": "8ebd774c682341f09c89b03bc88467d5d9b40eebfe7d3ac5873b9b626ec39133"
+    },
+    {
+      "path": "docs/숙제서클_설계.md",
+      "beforeBytes": 42278,
+      "afterBytes": 43335,
+      "beforeSha256": "6389f16ce21d92985b806aaa00e503aed3dee3704cf1964035e87f69034848fc",
+      "afterSha256": "a506d66509b2624f5bab8e4a77fadd201c97fa8c18223a0d4cdeea0b2c97b383"
+    },
+    {
+      "path": "docs/철학_적용기준.md",
+      "beforeBytes": 20490,
+      "afterBytes": 20604,
+      "beforeSha256": "790beb4cc118df3156cd538d1e7327959092566b8e5aefd3c97b3b60a31add3f",
+      "afterSha256": "93eb6552b605bab920ef99669df6410a51a89ffb12bb76571fd937ce095a1c50"
+    },
+    {
+      "path": "docs/SYNK_철학.md",
+      "beforeBytes": 49174,
+      "afterBytes": 49346,
+      "beforeSha256": "2a251a6531a3ac36390f3a1b34f08cf4ad28bfa853e8e22231b376622fa502e7",
+      "afterSha256": "db94ace81bdc3a53a9b8c2ac94ea202d8d0482d8de07250625a03169d474169f"
+    },
+    {
+      "path": "docs/급수진단_설계_v1.md",
+      "beforeBytes": 51303,
+      "afterBytes": 52197,
+      "beforeSha256": "288a852f432e876c1f72f5ee2102fbbd845bec9635240967915c1d270d534444",
+      "afterSha256": "39f1baa56a1651ef2ef4547bef2db191137c67ca55f77715388f0ab150db1767"
+    },
+    {
+      "path": "docs/마케팅/약속과_실행.md",
+      "beforeBytes": 490,
+      "afterBytes": 1057,
+      "beforeSha256": "1eccfe6d33e9b3e45abc20e7138dd037c4ad173a56a64b6f66ad73bdc7b816d3",
+      "afterSha256": "d1ea8a6966fdfced27f8b2a96717ef55cd2913d18ce7a53ddda6c75d23a752c2"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/CLAUDE.md",
+      "beforeBytes": 8238,
+      "afterBytes": 11,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "beforeBytes": 8238,
+      "afterBytes": 3980,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/CLAUDE.md",
+      "beforeBytes": 8238,
+      "afterBytes": 11,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "beforeBytes": 8238,
+      "afterBytes": 3980,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/CLAUDE.md",
+      "beforeBytes": 8238,
+      "afterBytes": 11,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/AGENTS.md",
+      "beforeBytes": 8238,
+      "afterBytes": 3980,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/CLAUDE.md",
+      "beforeBytes": 8238,
+      "afterBytes": 11,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "beforeBytes": 8238,
+      "afterBytes": 3974,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/CLAUDE.md",
+      "beforeBytes": 8238,
+      "afterBytes": 11,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/AGENTS.md",
+      "beforeBytes": 8238,
+      "afterBytes": 3974,
+      "beforeSha256": "c59e72fc9090855ff01deecbdef7cb71d69c9db03d4ec690bca8be3d394b3b14",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3980,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/디자인/SNS키트/모션견본/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3948,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "48a410a5d064d295ae146c5d705dd5f46f3b8c626c9eb9350324d4ad64882bc2"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3968,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "5cb22f90c94261dec97b1989bb6155b4cb7c0d7eabf1eb4e6bf15072289aeab5"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "docs/마케팅/synkbrief-ai-angles-20260927/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/synkbrief-ai-angles-20260927/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3968,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "5cb22f90c94261dec97b1989bb6155b4cb7c0d7eabf1eb4e6bf15072289aeab5"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/CLAUDE.md",
+      "beforeBytes": 8002,
+      "afterBytes": 11,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3980,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "beforeBytes": 8002,
+      "afterBytes": 3974,
+      "beforeSha256": "6361e5d1b78020e6a17a9c31685104d78cb538a080907ca21fd6f88ec21b7fd3",
+      "afterSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f"
+    },
+    {
+      "path": "videos/synk-brand-opening/AGENTS.md",
+      "beforeBytes": 8626,
+      "afterBytes": 4366,
+      "beforeSha256": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "afterSha256": "34dc3d79c48285350161f77c36f2531989b1f09199da6afe13b0fe5017ea1a97"
+    },
+    {
+      "path": "videos/synk-brand-opening/CLAUDE.md",
+      "beforeBytes": 8626,
+      "afterBytes": 11,
+      "beforeSha256": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "afterSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/prepare-revision-v2.cjs",
+      "beforeBytes": 2060,
+      "afterBytes": 2048,
+      "beforeSha256": "dc6169939aa65be31e96713a7bfadc08247bc04d4f5b2bc29e2a38463f83ccf0",
+      "afterSha256": "e7179260cb8b972da21348e7391614541229b95f8e73678aefb2137a74efa643"
+    },
+    {
+      "path": "docs/문서_지도.md",
+      "beforeBytes": 7306,
+      "afterBytes": 7677,
+      "beforeSha256": "239fc33833472265e1ca6dc0f723804684e74bc2122c5363961b3e1e38c1dde9",
+      "afterSha256": "a911cff37035ef0df5a3aa7092fa93f37c6b87fe24697fcd44aa672778ea0e76"
+    },
+    {
+      "path": "docs/가져가는것_설계_v1.md",
+      "beforeBytes": 26092,
+      "afterBytes": 26515,
+      "beforeSha256": "651aeabab6d71b028854d7e3a7949be4ea849702536332f5bc1fb9ba0034c814",
+      "afterSha256": "7739d69eb2a4b587f06bb8675b4c17c13c9c0b7fd7e846e97479bda77a35fc99"
+    },
+    {
+      "path": "docs/Loom_실시간장면_표현기준.md",
+      "beforeBytes": 9111,
+      "afterBytes": 9546,
+      "beforeSha256": "6e46a75aa5a15e5e156ea6131e3a5194ed402f61bca1818afc0df6cad7bc513c",
+      "afterSha256": "1ed06e38264e08f300aa46faef42c3f698a5e982024783448d396960d307f780"
+    },
+    {
+      "path": "docs/Loom_엔진_설계.md",
+      "beforeBytes": 27865,
+      "afterBytes": 27866,
+      "beforeSha256": "5b47f800f862d5639b873f6d25c366212f7403778682581702b67e6f1aef929b",
+      "afterSha256": "10e13269116567177b0075a2749aae161e686cd3f8c1b160511341f69f00bcc0"
+    },
+    {
+      "path": "docs/엔진8종_상향설계_v3.md",
+      "beforeBytes": 110410,
+      "afterBytes": 110411,
+      "beforeSha256": "e66f2da1286b7a050b0bfe01acba0a8f9ac9caac1f2eafb3ecb6f74559c9657a",
+      "afterSha256": "f6184c613ad7d4c8158516d2fc3f5f352d402404c7b9fe85b081cb4c675195eb"
+    },
+    {
+      "path": "docs/살아있는자리_설계_v1.md",
+      "beforeBytes": 14034,
+      "afterBytes": 14035,
+      "beforeSha256": "6d904e38914eb9017bdff159415205ea93358ec45ad699c337ac1184d0fea5b4",
+      "afterSha256": "f6dbfbdb4f615b152b2b5f5e458f19cf8f6f382c5f468fed32d7719be72a8fd7"
+    },
+    {
+      "path": "docs/_ops/협업장치_정리_20260921.md",
+      "beforeBytes": 17055,
+      "afterBytes": 17422,
+      "beforeSha256": "bb2fc437a114c9e7b24bf811995626463aec285623bbc6526ff1dc51c05be947",
+      "afterSha256": "5561190d48533271df5a3aa858d63de21705de09ec0968362e4eaa0602da514d"
+    },
+    {
+      "path": "docs/_ops/qa/shift-release-preparation-20261007/README.md",
+      "beforeBytes": 9218,
+      "afterBytes": 9520,
+      "beforeSha256": "e3b895eb61515219679da88b05d37dd6cc6d2717f01089a1fb95bd04caa915a4",
+      "afterSha256": "4fdbe6808928f7c3518dacba5bdf839d75366a5239b9f71e8718cb47dbed58dd"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/README.md",
+      "beforeBytes": 6901,
+      "afterBytes": 7203,
+      "beforeSha256": "31b20169fcae3e41bf102a0e3cf91f0f2a5738305b1f2c53c2c163a6a1693b78",
+      "afterSha256": "88221522473f050e06287482b94b76de12f6a131fa5287353365b21b587d548c"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md",
+      "beforeBytes": 2788,
+      "afterBytes": 3075,
+      "beforeSha256": "12fd1223d6f657fc5d6c23b2f3f9fa16b4ba0164d5e7f12ef4d03c27d8310f57",
+      "afterSha256": "117e83f16bb324f565a300cef7f216efcaa48f5ef2d84e6653c8aa98478f4cd8"
+    },
+    {
+      "path": "docs/_ops/시스템_경량화_20261010.md",
+      "beforeBytes": 8716,
+      "afterBytes": 13557,
+      "beforeSha256": "eccf7b17288ac9ca1f4ffa802b11219d8751e317649a75dd8f20cd09a742bfaa",
+      "afterSha256": "569863d5acca02fcb9e06fb72bdfa80d7f6f381ea65d00b33d08f2cb5ec330fb"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "beforeBytes": 151272,
+      "afterBytes": 151565,
+      "beforeSha256": "bb400ef93767ebff9350a8ac6d48d806541b2febc6a970258de6e9e05523a6d8",
+      "afterSha256": "357ec43c20b5bac09b2c8d8646d31ad9e4d88fdb8f2f3e44458a4a3617431e97"
+    },
+    {
+      "path": "docs/_ops/결정.md",
+      "beforeBytes": 343773,
+      "afterBytes": 344606,
+      "beforeSha256": "088df9abc6ba48e47e51fb242e3d6d85d61bcf03ccf91bb1dc4c6cbb7556275a",
+      "afterSha256": "022678c800a882e183f03c9f2c689e9873f0404cc52bbb6348e2cfbdd8b0c00b"
+    }
+  ],
+  "archivedSkillFilesVerified": 210,
+  "archivedSkillMarkdown": 75,
+  "globalCanonicalSkillsVerified": 12,
+  "newLocalLinksChecked": 56,
+  "newLocalLinkFailures": [],
+  "missingLinksBefore": 5391,
+  "missingLinksAfter": 5385,
+  "unrelatedBaselineMarkdownChanges": [
+    "docs/_ops/WORLD화면_리디자인_인계_20261014.md"
+  ],
+  "tests": {
+    "files": [
+      "tests/문서지도.test.js",
+      "tests/knowledge-management.test.js",
+      "tests/운영홈.test.js",
+      "tests/비전동기화.test.js",
+      "tests/결정정본.test.js"
+    ],
+    "observedExitCode": 0,
+    "passed": 67,
+    "failed": 0,
+    "note": "Observed 48-test approved rerun and 19-test decision parser run; first sandboxed attempt blocked temporary Git writes and localhost."
+  },
+  "failures": []
+}

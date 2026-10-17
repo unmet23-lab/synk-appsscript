@@ -1,0 +1,471 @@
+{
+  "files": 26,
+  "backupVerified": [
+    "docs/마케팅/콘텐츠_운영체계_20260927.md",
+    "docs/마케팅/연결_MCP_필요목록_20260927.md",
+    "docs/마케팅/콘텐츠_제작양식.md",
+    "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+    "docs/마케팅/제작양식/만족사례_장부.md",
+    "docs/디자인/SNS키트/README.md",
+    "docs/디자인/펠트부품/README.md",
+    "docs/디자인/펠트스크랩북/README.md",
+    "docs/디자인/플랫폼_시그널/README.md",
+    "docs/마케팅/제작양식/LAB_표현소개.md",
+    "docs/마케팅/제작양식/회사소개_작업물.md",
+    "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+    "docs/마케팅/제작양식/AI_활용법.md",
+    "docs/마케팅/제작양식/AI_소식_도구추천.md",
+    "docs/마케팅/제작양식/제작여정_쇼츠.md",
+    "docs/마케팅/제작양식/인물클립.md",
+    "docs/마케팅/제작양식/LAB_상황극.md",
+    "docs/캐릭터/의상제작_정본.md",
+    "docs/캐릭터/캐릭터_생명감_설계.md",
+    "docs/캐릭터/마스코트_배선_설계.md",
+    "docs/외부킷/uupm/출처.md",
+    "docs/라디오/송출복구_20261005/README.md",
+    "docs/마케팅/SYNK.md",
+    "docs/마케팅/LAB.md",
+    "docs/마케팅/채널과_발행.md",
+    "docs/마케팅/PULSE.md"
+  ],
+  "addedLinks": [
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "콘텐츠_제작양식.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "콘텐츠_제작방식_v2_20261002.md#6-주간-리듬과-72시간-판정",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "댓글DM_자료표.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "댓글DM_제작게시연결.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "채널과_발행.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "댓글DM_자료표.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "댓글DM_제작게시연결.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "콘텐츠_제작방식_v2_20261002.md#6-주간-리듬과-72시간-판정",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "채널성과.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "콘텐츠_제작양식.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "제작양식/만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "../_ops/돈장부.json",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/연결_MCP_필요목록_20260927.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "url": "제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "url": "../../DESIGN.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작양식.md",
+      "url": "../디자인/플랫폼_시그널/README.md#custom-tools-20261013",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "url": "제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/콘텐츠_제작방식_v2_20261002.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "url": "../../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "url": "AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/만족사례_장부.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "url": "../../마케팅/제작양식/만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "url": "../../마케팅/제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/디자인/SNS키트/README.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/디자인/펠트부품/README.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/디자인/펠트부품/README.md",
+      "url": "../../../DESIGN.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "url": "../플랫폼_시그널/README.md#custom-tools-20261013",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "url": "../../마케팅/콘텐츠_제작양식.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "url": "../펠트부품/README.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/디자인/펠트스크랩북/README.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/디자인/플랫폼_시그널/README.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "url": "../콘텐츠_제작방식_v2_20261002.md#2-한-편의-공식--재미와-양질의-정보",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "url": "만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "url": "../콘텐츠_제작방식_v2_20261002.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "url": "../../../DESIGN.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "url": "../../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "url": "../콘텐츠_제작방식_v2_20261002.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "url": "../채널과_발행.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "url": "AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "url": "../../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/최상퀄리티_영상제작_가이드.md",
+      "url": "../../AI_운영원칙.md#공식-하네스",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "url": "../콘텐츠_제작방식_v2_20261002.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "url": "../댓글DM_제작게시연결.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/AI_활용법.md",
+      "url": "만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/제작양식/인물클립.md",
+      "url": "../콘텐츠_제작방식_v2_20261002.md#6-주간-리듬과-72시간-판정",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_상황극.md",
+      "url": "../../AI_운영원칙.md#역할",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/제작양식/LAB_상황극.md",
+      "url": "만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/캐릭터/의상제작_정본.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/캐릭터/캐릭터_생명감_설계.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/외부킷/uupm/출처.md",
+      "url": "../../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/외부킷/uupm/출처.md",
+      "url": "../../../DESIGN.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/SYNK.md",
+      "url": "../제품방향.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/LAB.md",
+      "url": "../제품방향.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/LAB.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "콘텐츠_제작방식_v2_20261002.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "sns-계정.json",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "댓글DM_자료표.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "댓글DM_제작게시연결.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "synkbrief_회의메모_20260921/README.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "콘텐츠_제작방식_v2_20261002.md#2-한-편의-공식--재미와-양질의-정보",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/채널과_발행.md",
+      "url": "../AI_운영원칙.md#비용과-권한",
+      "exists": true,
+      "anchor": true
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "url": "제작양식/AI광고영상_제작규칙.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "url": "제작양식/만족사례_장부.md",
+      "exists": true,
+      "anchor": null
+    },
+    {
+      "from": "docs/마케팅/PULSE.md",
+      "url": "../AI_운영원칙.md",
+      "exists": true,
+      "anchor": null
+    }
+  ],
+  "brokenAddedLinks": [],
+  "changedBytes": {
+    "before": 561819,
+    "after": 559048
+  },
+  "satisfactionCasesUnchanged": true,
+  "scope": "Only assigned Markdown sources; no assets, application runtime, deployment or paid generation touched.",
+  "introducedAnchorBreaks": [],
+  "validationCommands": [
+    "node docs/_ops/qa/document-cleanup-20261017/validate-content-pass2.cjs",
+    "git diff --check -- <assigned changed paths> (exit 0; existing line-ending normalization warnings only)"
+  ]
+}

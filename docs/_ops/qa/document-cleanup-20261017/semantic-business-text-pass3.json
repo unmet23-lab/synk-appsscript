@@ -1,0 +1,265 @@
+{
+  "date": "2026-10-17",
+  "scope": "Markdown 큐 밖의 주요 TXT 본문 추가 검토. 다른 TXT·PDF·XLSX 전체 검토로 확대하지 않음.",
+  "files": [
+    {
+      "path": "docs/정본/SYNK/SYNK 한국어 회화 AI 가이드라인.txt",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "TXT 원문 전체 열람. 현행 사업·제품·캐릭터 계약과 옛 시트판·연구 가정 구분. 법률·급여 계약 새 판정이나 원격 상태 검증 없음.",
+      "evidence": [
+        "docs/제품방향.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "26e7741863f7eef3b59050c4c97dc6fb64ca00449f540f48b249b8e521e3582d"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "TXT 원문 전체 열람. 현행 사업·제품·캐릭터 계약과 옛 시트판·연구 가정 구분. 법률·급여 계약 새 판정이나 원격 상태 검증 없음.",
+      "evidence": [
+        "docs/제품방향.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "adb877cd779323a8bf32f1661949a38a3a574324a50326716cd993a75070a5ca"
+    },
+    {
+      "path": "docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "127줄 전문 열람. 옛 교육/컨설팅 중심 신규사업과 현재 개인화 도입·운영/반복공급 범위 정합화. 비전 동기화 블록 보존, 장기자격 연구는 담당 원문과 복구본으로 연결.",
+      "evidence": [
+        "docs/SHIFT/설계_v1.md",
+        "docs/마케팅/SHIFT.md"
+      ],
+      "sha256": "437c4a51b1583c6dd3a04706c503ebbe312dcd9ff9feab6d9ba0f14c74edbcc7"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "127줄 전문 열람. 반려된 침묵형 까몽 설명을 현행 세 가이드의 성격·말풍선/비언어 반응으로 정정.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "8a625e9c5e9f14d551b156493c568a036a9fd0615f8e1153132015068c30c502"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/07_SYNK_메인룸_인테리어.txt",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 열람. 10월2일 현행 개원·공간·운영 범위와 미확정/현장검증 조건을 이미 반영해 유지. 견적/법적 적합성 새 판정 없음.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "46529ffb1d66524add0b466084efa11a340c21753d06f5d3cf8b03173b951c25"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/06_비품_체크리스트.txt",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 열람. 10월2일 현행 개원·공간·운영 범위와 미확정/현장검증 조건을 이미 반영해 유지. 견적/법적 적합성 새 판정 없음.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "a5d2b0b5ed3c01e213dbe683b0f86954ed22c1e4035aae4085f0ed96044f00bf"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/05_운영_시스템.txt",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 열람. 10월2일 현행 개원·공간·운영 범위와 미확정/현장검증 조건을 이미 반영해 유지. 견적/법적 적합성 새 판정 없음.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "3bf238dc83fc45609338d055fa4c6cac8b28a6b85c736fed1e3024d1989db813"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK FAQ.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 회사 전체를 교육으로 축소한 표현과 반려된 무언/침묵형 캐릭터 설명을 현행 정본에 맞춤. 승인된 혜택 조건 보존.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "a441a5c571e588eaeb45a0260775f918f404bd5c0e253233bc8805c0830d6387"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 회사 전체를 교육으로 축소한 표현과 반려된 무언/침묵형 캐릭터 설명을 현행 정본에 맞춤. 승인된 혜택 조건 보존.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "5454e22d48afe28b55c7fde564097a1541df046158c2bd063a1cacd5b42f2529"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 회사 전체를 교육으로 축소한 표현과 반려된 무언/침묵형 캐릭터 설명을 현행 정본에 맞춤. 승인된 혜택 조건 보존.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "4572773e21fefa35a81b37dae8abe6bd0317930cacddd5e0409dfec83e233a75"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "204줄 전문 열람. 승인된 혜택과 미확정 운영 기준/재원 구분 유지. 법률/급여 조건 재판정 없음.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "cb236fe0dab8abe3944acc918b2648b28c58b0294a383819bffc1dbda014dc4c"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 기업소개서.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 최근 현황 갱신 이후 본문에 남은 옛 자동화/무언 가이드/전면 펠트/정원·기간 확정/매일 문화수업/폐기된 원문 경로와 설계·공개 상태를 정합화. 연구 수치를 본원 효과로 제시하지 않음.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/제품방향.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "c9501c7e3cf7c1ddf8e5eec711e92d4c061f4a65d0b3b2dbde46f0fa5447d197"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/SYNK LAB 소개서.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 최근 현황 갱신 이후 본문에 남은 옛 자동화/무언 가이드/전면 펠트/정원·기간 확정/매일 문화수업/폐기된 원문 경로와 설계·공개 상태를 정합화. 연구 수치를 본원 효과로 제시하지 않음.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/제품방향.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "fd56d82264ba7222be17a13db1ba93b1c866ee7b11eab5a1d18240482ec415a5"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/SYNK LAB 상세서.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 최근 현황 갱신 이후 본문에 남은 옛 자동화/무언 가이드/전면 펠트/정원·기간 확정/매일 문화수업/폐기된 원문 경로와 설계·공개 상태를 정합화. 연구 수치를 본원 효과로 제시하지 않음. 최종 경로 대조에서 사라진 목차 골격과 중복 대응표를 현행 커리큘럼 정본 안내로 통합.",
+      "evidence": [
+        "docs/철학_실물현황.md",
+        "docs/제품방향.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "1ede948cd013a059d48159d0b6cec392149e8355b63bc57645c3a91800528115"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 90분·실제 출석별 과업 계약은 보존. 잔존 자동폼/오류톱10·무언 가이드·작업시간 보장·조별 점수/과업 조건의 내부 모순을 담당 기록·현행 피드백 방식으로 정정.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "bf3c920039690f2f5427178d91f1845f270bf8d79a9a44c6993c5a97d24b8c68"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 90분·실제 출석별 과업 계약은 보존. 잔존 자동폼/오류톱10·무언 가이드·작업시간 보장·조별 점수/과업 조건의 내부 모순을 담당 기록·현행 피드백 방식으로 정정.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "7109a078771fefad94eb22d34dc9838083bad3d64dea64022b44b446cf9a0ebf"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 90분·실제 출석별 과업 계약은 보존. 잔존 자동폼/오류톱10·무언 가이드·작업시간 보장·조별 점수/과업 조건의 내부 모순을 담당 기록·현행 피드백 방식으로 정정.",
+      "evidence": [
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "ab54d5cb62126346e1644c10d17782c5a8472ad57ad9308d68712d84a4c05e9e"
+    },
+    {
+      "path": "docs/정본/SYNK 보안/개원_뼈대_체크리스트.txt",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "전문 열람. 옛 일정·가격·삭제된 시트판 실행 지시의 중복을 담당 원문으로 통합하거나 SHIFT/PATH·AI 광고/홍보·출원 현황을 현행화. 법적 적합성/실계좌/원격 배포 새 검증 없음.",
+      "evidence": [
+        "docs/SHIFT/설계_v1.md",
+        "docs/철학_실물현황.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "ebe56b6163d547905ac0370f123916ba7729ea93a5ba274c68bf1d3fb8d2bda2"
+    },
+    {
+      "path": "docs/정본/SYNK 보안/SYNK_사업계획서.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 옛 일정·가격·삭제된 시트판 실행 지시의 중복을 담당 원문으로 통합하거나 SHIFT/PATH·AI 광고/홍보·출원 현황을 현행화. 법적 적합성/실계좌/원격 배포 새 검증 없음.",
+      "evidence": [
+        "docs/SHIFT/설계_v1.md",
+        "docs/철학_실물현황.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md"
+      ],
+      "sha256": "aa19e92c5d7cb590154507c872b6110624f467e26a7643486615cc2beb405b5a"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 침묵 가이드·자동 포인트/매일 문화수업·월말 즉시승급·폐기 가이드·고정 금칙어·급수 요건 일반화와 중복 안내를 현행 설계/제공 조건으로 정정. 숫자는 효과 실측으로 승격하지 않음.",
+      "evidence": [
+        "docs/커리큘럼_정본_v1.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "a40dac99200bce7dac641d99b5c9fcb5876da7cebadf0b0fc40e90ac0f8e2a33"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전문 열람. 침묵 가이드·자동 포인트/매일 문화수업·월말 즉시승급·폐기 가이드·고정 금칙어·급수 요건 일반화와 중복 안내를 현행 설계/제공 조건으로 정정. 숫자는 효과 실측으로 승격하지 않음.",
+      "evidence": [
+        "docs/커리큘럼_정본_v1.md",
+        "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+        "docs/캐릭터/가이드_정본.md"
+      ],
+      "sha256": "536303ba14a561daac7595206e37a0a275ad3578d5a44cd4cc5560529700806c"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK 기업마스터.txt",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "492줄 전문 열람. 10-17 동시 갱신 현황·12+7 출시 결정 보존. PATH v4 공개, LAB 조건부 지원, 가이드 말풍선, 3D/2D 적용 범위, 권리·SHIFT·AI 역할을 최신 담당 정본에 맞춤. 연구 수치 중복은 담당 원문으로 통합.",
+      "evidence": [
+        "docs/_ops/결정.md",
+        "docs/조직계보_정본_v1.md",
+        "docs/SYNK_철학.md",
+        "docs/캐릭터/가이드_정본.md",
+        "docs/PATH_개인화여행_설계.md"
+      ],
+      "sha256": "5f3b4b7a643712d42fba840b68ac17bf2a8806e670ed3e30d69780bc116c3a68"
+    }
+  ]
+}

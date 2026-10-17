@@ -1,0 +1,2350 @@
+[
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/track.staged.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 111202,
+    "lines": 149,
+    "sha256": "812ec23f77d8e33cc897f71b71e0279a1ae022f50ce322ddfc06240972142066",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 76940,
+    "lines": 324,
+    "sha256": "bb23f9f447f419415424c634bb3f03b64449fffd824f56a74f3e6f4a790fbb4b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/talk-rally/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 38751,
+    "lines": 235,
+    "sha256": "4e0c874a6fbbdd2829598bb15277f0c2f0f139dc8e0a23eeba654955f200644d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 36431,
+    "lines": 218,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/README.md"
+    ]
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 35354,
+    "lines": 212,
+    "sha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/README.md",
+      "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/README.md"
+    ]
+  },
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/source/README.after.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 34980,
+    "lines": 159,
+    "sha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 34747,
+    "lines": 250,
+    "sha256": "61bcba711b9ff152b5c2927e11310129f82bd4e5329c03b966c3147046d47829",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-vr/qa/public-release-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 28758,
+    "lines": 130,
+    "sha256": "00ce72c68e66ce9d31bdc56a71850b37f0c7ed30304a84321b59b28dbe922993",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/blank-slice/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 23772,
+    "lines": 163,
+    "sha256": "5e468cd38fe6fd6fb1421264e11fdcbb8e176be56b3d9fea0647d807964dde94",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/디자인/게임_풍경과_재질.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 22538,
+    "lines": 112,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+      "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/디자인/게임_풍경과_재질.md"
+    ]
+  },
+  {
+    "path": "experiences/entry-check/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 22497,
+    "lines": 182,
+    "sha256": "64bd878badb6adeffb8ae3286ff9e52b6a341bdf4e1d19ee770f3475f31bbdf9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/디자인/게임_풍경과_재질.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 21719,
+    "lines": 110,
+    "sha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/디자인/게임_풍경과_재질.md"
+    ]
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-20261006.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 16585,
+    "lines": 93,
+    "sha256": "09456201f8f71acf050568134ae78bf3df22ef63763813246fec34c9b0f3faea",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 16255,
+    "lines": 76,
+    "sha256": "12a5f37ef1ff791355bc2708cddff1283d460d6c6b386cc982ba2dfafbcab0e9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/preparation-history-before-publication-20261009.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 16166,
+    "lines": 93,
+    "sha256": "fa8ce2bd5a3068796fabcbf75f980bcaff650d9fcd2b82987014752c74365384",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v10/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 14981,
+    "lines": 99,
+    "sha256": "1fb28d78515bc38b7b9f1fc9bf529eed908b136069897898f5aab5fe5739e189",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/SERVICE-APPLY-PLAN.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 14781,
+    "lines": 181,
+    "sha256": "1b5f1955715291180d22b558cdb4f13dc691b9a163caa9f994cc8db65188582f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/SERVICE-APPLY-PLAN.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 14322,
+    "lines": 179,
+    "sha256": "6061c31c21771957b467d9b88c7d8913586335bb2d1c3ebc0b11a4151570afaa",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/review-context.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 14279,
+    "lines": 66,
+    "sha256": "a03b6a6fb5f651a31e2d1494bf79c55071f3b317a501968d4fb7fa6392de20da",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_공개판_재측정_20261003.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 14239,
+    "lines": 107,
+    "sha256": "1f6c0e457b3da4f9c7e9572c4fa2afaeb5195f8bc1179b94490eace9098a404f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/FIELD-TEST.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 13161,
+    "lines": 92,
+    "sha256": "834fe93dd93f868cedc07aa54e872290b3cc240f9b41997443b86f31432dac63",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/PERSONALIZATION.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 13046,
+    "lines": 75,
+    "sha256": "c78332b8eeacf3e9abc0d4a863eab7ff6e719ae8c7821191d169adfb3c65075c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 12942,
+    "lines": 56,
+    "sha256": "b38f11923d785257cc4fa17a8630395a239f7f56e076911c60d375a190e8b802",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-vr/qa/optimize-20261013/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 12892,
+    "lines": 79,
+    "sha256": "96771db302099431f93075af474db08a7678201468ba5ab40ce5c9f89c38be84",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 12864,
+    "lines": 72,
+    "sha256": "5d3d8d8d98a0daef20de47cf301377e2195595e2ecb599185f99d32bad868472",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v9/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 12838,
+    "lines": 111,
+    "sha256": "ceab36680c5a7a553c54fe2946f6c9ab7135d9939ee0a426b44f1b6a0bb8fd1e",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 12531,
+    "lines": 41,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/final/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/AI_운영원칙.md",
+      "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/AI_운영원칙.md"
+    ]
+  },
+  {
+    "path": "experiences/path-vr/qa/media-hosting-20261013/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 11252,
+    "lines": 58,
+    "sha256": "98419e0294ceb2e490ac9b888c8b3853046187a75c485b2971cffb243c6615f6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V9.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 11107,
+    "lines": 65,
+    "sha256": "291e9be69f0090d9b0d0a2e031a2b869d7c33e036ee1680d4be8841499c938e2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10762,
+    "lines": 66,
+    "sha256": "2abaa16cbeb95dacfa29253073d646378f6dfe69734cd523d1f9f4069c06f89c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-convenience-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10644,
+    "lines": 92,
+    "sha256": "1482809ee69c3b8cd14ea117fff32730b0b768f3dd65455d89973da718af6ff7",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10469,
+    "lines": 74,
+    "sha256": "60ce7675dff31bf1849304ce2d9b72b17559dea6d13b33816d010b152b033625",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-corrections-20261009.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10266,
+    "lines": 113,
+    "sha256": "0b2a89ea421c03eb78537a14f756a90d92215eb5219f2e25a0a1f56a14a45036",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v6/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10195,
+    "lines": 67,
+    "sha256": "0958032b640ee4aa85a9e693b4d1aa39fc28404583fc8d99760dc1821b83940b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10122,
+    "lines": 71,
+    "sha256": "46481a771a0725c83c6a5f11b2722174e83d45a5eb049d44288e12b207bd7963",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/PUBLIC-WEB.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 10053,
+    "lines": 59,
+    "sha256": "b2debc2620e10a038cf16ce3c62c1d757b001bf71aefc81df3105a1eaa9839f2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 9950,
+    "lines": 77,
+    "sha256": "7fb7e5a347490cbfda0622d9bb5a55fb961823d1bb90b30eb018752c6aa52698",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v8/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 9947,
+    "lines": 90,
+    "sha256": "1a27490d486bb2bc5689b0cceb304225e767d39768a3c60b80be5718d9b43e7c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-3D-ASSETS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 9465,
+    "lines": 57,
+    "sha256": "3ff47f270e43b0a96f48536491a4085eb971cb9b8ab8b1bcfe6a2e5532e277bf",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/SCENERY-GOALS-V6.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 9298,
+    "lines": 54,
+    "sha256": "30a13ee0e54083017f6b3684bd752b4fb40a1db75d8bef9552be67eaf9e1e1c6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-20261009-0530.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 9135,
+    "lines": 99,
+    "sha256": "838b1cd1eb9ef47c36a7f73faaf8e4d2417be5be5bd8ca9b3de1cbe38d476cf0",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-endpoint-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 8767,
+    "lines": 53,
+    "sha256": "2849e08ba5f1853b79c9f1bb59be632c77bdbd11086bd2cdff0b47cfc6d7160f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 8707,
+    "lines": 73,
+    "sha256": "6240fdca569f959376c99937a7a31724ddd7741980028d054590288d5d20f7e9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-performance-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 8556,
+    "lines": 60,
+    "sha256": "3cc09fbd37fe89bb5f584b264c2035f2859038e6382b04f2eee90ce00647edf2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 8516,
+    "lines": 54,
+    "sha256": "6f5575412fc121755582ce78b80ce5ec269786098fbc13be4baa5e5e98c61d5a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-studio-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 8019,
+    "lines": 65,
+    "sha256": "b165e52d9d6f1c466239a302b7edf9c107a68da450bc0cbe075fae25d44e3c42",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v4/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7960,
+    "lines": 64,
+    "sha256": "04b200197d2f1d4dd3ac584318c842a6b2579191f608fc3701f1117317876095",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/order-rush/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7721,
+    "lines": 52,
+    "sha256": "5971eb6348c952bbd3c9e975240cb2f72ee3f78c555d5c0f38c6980fb7a0c297",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/maru-integration-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7683,
+    "lines": 55,
+    "sha256": "dfabc451cfe1358ad53f1205e907c90018ebfdae5c85b0b4cdb0b52456935d0d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/teacher-world/qa/content-review-20261003.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7653,
+    "lines": 54,
+    "sha256": "32116b5f8605a92cf3f4cf8197c4cda1705f088d27077608abf26f270c889f5d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/scene-keepsake-release-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7187,
+    "lines": 42,
+    "sha256": "bc14b684cd711d9e91f66a075495e2a440ab9069b2f1f146d5682e2e6b9c75ae",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-vr/qa/signal-redesign-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7169,
+    "lines": 49,
+    "sha256": "73f30307b907dffeff1e3e47be993c399e0a99f610d9aee3c2aa2f41d9bebe2c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/story-classroom/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7127,
+    "lines": 53,
+    "sha256": "4662b9932fd4c8ec75ba4500c275bb3cb6278f79afaffc90dfea99c99213fff8",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-switch-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7079,
+    "lines": 58,
+    "sha256": "968ff51fd246b47ac8a297b01faa51369fbec3c2d3ad129bf68768f2c38de5aa",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/login-polish-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 7043,
+    "lines": 51,
+    "sha256": "ad41969250861639d63943b2bc78f68b64a643ee35644dcbc9c3600cf798d7bf",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6976,
+    "lines": 39,
+    "sha256": "97fd9f8a379aa8135554c8c257ccf4b53c6d3b8ae0f8fbf6248c84e661a388ec",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/SHOP-V5.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6917,
+    "lines": 52,
+    "sha256": "aebc4a880efa3b3e04311089faecf3ccfa9d0c7902683b4e85a9436754c2e9cc",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6912,
+    "lines": 48,
+    "sha256": "07ceab83cc96f7b1080aebba2458bf9127eedfb90df1a96bb8ea13d78ae862c6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/focus-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6887,
+    "lines": 40,
+    "sha256": "80d3b68a96503ee930735baf5bf75053c1ed9bc26e435222e60af2ccbc39e314",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-selection-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6814,
+    "lines": 53,
+    "sha256": "fe9ddee67568ff76765ee45e4149a127c300b93064455d3faa542f9b71f3e31b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6791,
+    "lines": 41,
+    "sha256": "cc9b08d37fb44e84ebf09ae45c1ea77a7c30c0e1df8184c4e913ffa7ec207871",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6775,
+    "lines": 52,
+    "sha256": "e7ada8ebae5c6de7c25354d95c60a05419acbfb802abcca59d08249070b5b192",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/MOTIVATION-20261009.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6761,
+    "lines": 45,
+    "sha256": "751b414d239ce1485883d54667a0cbe3d5ba1dd320db08cfeb30bce3da094869",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/takehome-20261006/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6706,
+    "lines": 53,
+    "sha256": "9807b49279167f8e680c978cd9bc48cb7f09151ae52658931386989e575bb25f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-quality-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6649,
+    "lines": 41,
+    "sha256": "08f6a983b9b5042c915b10929a57726ceb3a419791a87007260c563cb871c06a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/FIELD-TEST.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6622,
+    "lines": 40,
+    "sha256": "28459b80c13c3dd90c4ac87075939732ad1272996e3afae490984473b286fd27",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/FIELD-TEST.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6607,
+    "lines": 40,
+    "sha256": "ff2f537becaaf03b5fde765595f086c1c0746191b148bf4040c01d6d76956f9f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-release-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6566,
+    "lines": 66,
+    "sha256": "12e2d526b9b0c880ce3b29b440900ac0eb538a2cdb41f70c4aed73600ea48ddf",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/STARBOOK-20261009.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6563,
+    "lines": 42,
+    "sha256": "57a4d259e637c5068b63f8f72e68084bfbbf8fd29c506f9560d54e175a904050",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6540,
+    "lines": 53,
+    "sha256": "13aa0c1bfe7b7739adffec88920412239ba860181f091f534e9a9f3d25d12b94",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6522,
+    "lines": 50,
+    "sha256": "14fb01f40934f210e6729a36a7ac3ce0ac99139135588ae041ad56038fc1e0e4",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/account-desktop-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6482,
+    "lines": 34,
+    "sha256": "7f5b69aa6a7fa48ef40a4695c055ff8890980324aaa4c96c0f9865ff71064b5a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/self-audit-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6456,
+    "lines": 39,
+    "sha256": "70f7e1f6faa845f3f7632802f33d03f72600f69e9b2b1610354a0bd138f87b15",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/GRAPHICS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6456,
+    "lines": 45,
+    "sha256": "137c37cc502d0a4954e093ce39347ca9c99556725024f6e728cdcba784355ed0",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6454,
+    "lines": 49,
+    "sha256": "b22ca26006789d3f4720ec85736baf8b4b7ae83f04d73769a2255d02f000a199",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6346,
+    "lines": 49,
+    "sha256": "1e23dcdff94a736150df75efc6a18f01660ce8f64870cded17939e9db178c80a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6338,
+    "lines": 32,
+    "sha256": "6e5b153b6ce81ee11480f9a235311d3555919b34d0f77db62826e6b735bd387f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V5.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6329,
+    "lines": 49,
+    "sha256": "4ae8ec1383e96c28609bdbba8f0003b22bed62c124c92316b57cd803960212af",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v3/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6161,
+    "lines": 58,
+    "sha256": "bdf8f679c78f3b976c16f1980caa9887ac50ffe8b1b59f08e439d9ab41b4dfed",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/first-final-review/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6139,
+    "lines": 51,
+    "sha256": "f444f561e84179bbe85559e4a8f1129bbe303a1602464b2c57a71241b10bb8cc",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V6.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6120,
+    "lines": 44,
+    "sha256": "d41b10fbb8d262268909da9a0c0c59d7f90bd09f60df2c2e51d2b6ce5df59120",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6024,
+    "lines": 50,
+    "sha256": "b19bce7566f8d7c4c54f4d5dea3311562e684c171d1878d7db2fb50fe4eb7b95",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V4.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6012,
+    "lines": 45,
+    "sha256": "abe11da4c58bca9939e56b0b7ccf1501d7e085071f0eaa08a0ffaac8fe547a33",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/redesign-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6007,
+    "lines": 43,
+    "sha256": "f73639169fcb0542b21acbf3bbf43e5cae7d2ab52a76ffbdc14d1f6ef199e056",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r13/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 6006,
+    "lines": 35,
+    "sha256": "736c6804a7fff774862a41fed3503b8c640e2e6925e8d65377ae0e929068c717",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/EVENING-V8.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5984,
+    "lines": 39,
+    "sha256": "671ac76cded3b4b6a0819bca095cf63c1f17b7372e8d1f9ae943cd480af0f93a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5880,
+    "lines": 45,
+    "sha256": "8333d6bb3b84ca999e1cfb78ac3e0decb08dd9992fdf5a68749bd22762ed5283",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/wardrobe-production-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5840,
+    "lines": 26,
+    "sha256": "321b4a5a54f99d77873d1432a73ddf4bf15d5c73e226be106aa21a6094318429",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/cleanup-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5830,
+    "lines": 47,
+    "sha256": "0e76bbca096c2953d8f144114ed0f3d8e01ea71df04ee48568570d8d24aac401",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5790,
+    "lines": 57,
+    "sha256": "a9d4f5d834a312de457de51f750cf102de75280361a557a9234b6cb2f9d3fdeb",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/checkin-interval-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5788,
+    "lines": 50,
+    "sha256": "a1c79fe88439cc47b067d862607ab4f9f851de5e3dd8be44fe5df480723dc029",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/release/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5747,
+    "lines": 28,
+    "sha256": "7e5f37dcffc9761cb13794211956a5225890ea3e4968e093fec04394d01da147",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/LIFE-C1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5721,
+    "lines": 46,
+    "sha256": "18bd2f7db56a33223b04d8bb716ee28d8cbb5581292f4bebff5c9c002a207c88",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-expressions-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5715,
+    "lines": 49,
+    "sha256": "0190b1e597fcc076c8b7a447c42573d872bfc44d70c16498851e586fab254e14",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5681,
+    "lines": 40,
+    "sha256": "037d5057bdc3c11960afd3c52d2700c9841ce0c3f0f0d3c3655caee08e592b92",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5679,
+    "lines": 39,
+    "sha256": "8da059ac967a08259f74b0b85589aa6fff8564c1b3f58279c3c44d04ab156700",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5611,
+    "lines": 29,
+    "sha256": "6e7363d8ae858cf87da3ff3593dceebb377cf2d6de5deb10f52ffeedb1d17a62",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/TEXTILES.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5597,
+    "lines": 44,
+    "sha256": "1cd864924a9563e2edabfde081a52bc721daa19eb3bd190d7737a6104c8ba236",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5576,
+    "lines": 28,
+    "sha256": "af668fb9807a7b63687e6138c0cc98d9e7ef7d6f0af4745668667c61e83c317d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/teacher-world/qa/completion-20261004.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5570,
+    "lines": 30,
+    "sha256": "bd1e7c34781f2a9e4d99ae87cc1ca80bb729b6c6e35a869d375df0885c4375d2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-graphics-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5524,
+    "lines": 46,
+    "sha256": "cc832eb53bf025d3219b72573b1db4326971eff77c460bce43d9b38daf2eec0c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/REDESIGN-V3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5515,
+    "lines": 37,
+    "sha256": "b7e6449a6e1d7a6ed2deca423cd430c6b4d28f42bc1a40fc7214b3bde66d149e",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/scene-keepsake-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5510,
+    "lines": 32,
+    "sha256": "c871ece475258827e47780d5b794d71f5a497122b79d12964615c66d865f1e4b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/member-mvp-20261005/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5499,
+    "lines": 52,
+    "sha256": "a1b1c2ea07ee9a9605dccb34a57a315c733c2a2eb727157e7dcadb89e7665fdf",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-plan.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5456,
+    "lines": 25,
+    "sha256": "4fb9e8c3bbfe875f5d32a265780e1a538569a18ae67f3d5db5042f4b9987724c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/order-rush/qa/BEGINNER-20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5430,
+    "lines": 32,
+    "sha256": "5b1ac86bbfc4acc3d572739bb6166c6826cc0df0d4538c26911f814070d1eaa3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-finish-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5362,
+    "lines": 20,
+    "sha256": "9dec1506901ae4e7c57c3fd714a46733cdff798144bae5d88ffe2169c760018a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-PLAYTEST.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5342,
+    "lines": 47,
+    "sha256": "5d0038d07bb559ad4ef6e0abd155848c8462a239c6392fc3205e752afb5fbded",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-usability-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5318,
+    "lines": 43,
+    "sha256": "e522f1bdf64200d65c8d13c9297a92067f10ac207004df0c822c8e401c6aef9a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/RESIDENTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5312,
+    "lines": 54,
+    "sha256": "dc905b0c7e726ea55c8bd204aea5b02cd14878b2bf502da04bd391beeffff5ba",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/rhythm-RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5281,
+    "lines": 53,
+    "sha256": "02996ada34cb9b30b099c97a9350de06a8b3fa98714623394fe083e64936d9ca",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/contacts-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5249,
+    "lines": 41,
+    "sha256": "2fab2c5d247ec4a55d9fddc43cbbe32f1fad7ee6603290c582b65117c2a9e9f3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-practice-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5232,
+    "lines": 44,
+    "sha256": "7d5c9a1b2fd075f3541d9a511cbcb6a97474dad0c3d7aa0db29def2ff050adf1",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/first-use-library-search-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5220,
+    "lines": 43,
+    "sha256": "f084de995e8e3faf7eaa7c59e9e68dd4360b613f1ef35fe6673345536c366a49",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/daily-tutor-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5198,
+    "lines": 38,
+    "sha256": "dc80f11ddbe2ce0fd3bfbc3338533525f611a67d2e8b1e1aad7b3e61d10b447f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V8.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5189,
+    "lines": 39,
+    "sha256": "f00ca556524a7bc826e107f6cedd3b5250bec3b77d42ef5e19673975dcf3670f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/playtest-readiness-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5184,
+    "lines": 32,
+    "sha256": "c908fd0c0ef8074ee9fa00ed3cdaf325825dedc75900b51d0d4948069a50a4c6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-hints-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5166,
+    "lines": 37,
+    "sha256": "e30fd38fef360ecf77e4dd5016732e272253c7905f6aa863ba059041418137fc",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-finish-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5165,
+    "lines": 36,
+    "sha256": "280531f2826108f536e8ad52aa0be2956405d9770f8c905fed7716cbcefa2fe2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/WALK.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5151,
+    "lines": 41,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/qa/WALK.md",
+      "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/qa/WALK.md"
+    ]
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-weight-20261013/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5048,
+    "lines": 40,
+    "sha256": "018731ebbba11b8b8a339c7c00fc21c7743b3471ef0569bfe2614d7415c4b8bc",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V7.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 5014,
+    "lines": 36,
+    "sha256": "1fa850edf8114d39de559c2a1d42fb90ec79672e2d38d6968a98284adfbab611",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-visits-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4989,
+    "lines": 39,
+    "sha256": "81c12f9dcc13b7c7d0c7a8fcc45afa514d04a8f06f9418e083157ef5a2bf7223",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-listening-scope-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4982,
+    "lines": 21,
+    "sha256": "a3b824814b52e90ff7b0aa440b7b72a4faca3e48360f7817a80ed3f4cf8f9a7a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README-pre-deploy.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4931,
+    "lines": 31,
+    "sha256": "0bd1ef1a68a25c76d66765da9cc9c6a4c643458dc18c2525cf67308b36050f43",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/return-memory-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4927,
+    "lines": 29,
+    "sha256": "edb332d385f97827e6dd0fc75f5ac233223a68bcbda81c54b5b7ab3c1ec7dd31",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/progress-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4917,
+    "lines": 47,
+    "sha256": "46030a66430a940a04293f56f331b284b310a7566f355a5f8816379dbffa030e",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/context-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4875,
+    "lines": 30,
+    "sha256": "9e2e4deb33deca912bec589e74a71c09c1c1671551ca87d7627893f764aed23d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-plan/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4863,
+    "lines": 41,
+    "sha256": "6f9681df2782573f39c946572378e230847ba7bc1cb5f75fd76a1aa9416211aa",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/vehicle-v9-notes.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4798,
+    "lines": 54,
+    "sha256": "c0470b6cfed243daf533b4e3ebc28d2a5e996f67faa92a46a05fbf42bfe2f4b8",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-pack-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4771,
+    "lines": 37,
+    "sha256": "4f81e445791a72563b99f07a70f094c744779440e5ca10b74bdafdaed0b40e5c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-shop-finish-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4729,
+    "lines": 23,
+    "sha256": "fb088f30d0f0fa1c797a25358a90e4b58d4fcbd2c67ee027204e262d67b51f13",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-environment/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4714,
+    "lines": 44,
+    "sha256": "7627f2c35978f3602b7b8e29b484107b54790dda4809733f61e5f94d43479173",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/SUPPORT-BAZAAR.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4710,
+    "lines": 41,
+    "sha256": "060c0d129149cf6da50e46640ab5651cafd0d7fbf90d139b699646e69a4cf3b5",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/learning-hub/qa/GRAPHICS-TWO-GAMES-20261005.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4696,
+    "lines": 26,
+    "sha256": "f11cd0526a242ca0e85200267c35eee4e27bdbd151821577e30bb17e6a860769",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/LISTENING-V4.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4673,
+    "lines": 38,
+    "sha256": "e9fa8ac37c47994bd3d5b570e6a098ab2e5a72b9b0413cc97257480d5c9d2baf",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4605,
+    "lines": 24,
+    "sha256": "48b5a4c5484fe99042703c86f7e5de5d9ceae814c507b82dc976b9b52a8a16ca",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/final/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4558,
+    "lines": 35,
+    "sha256": "ebff74216acd9a237078a24f1e45c94f57d97cfd73513d4e388c3095ecdb74e3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V7.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4506,
+    "lines": 34,
+    "sha256": "f69e59f38330b2ac91131ef21575bc2a70bedefecfe417cb67ba04657438aa28",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4501,
+    "lines": 31,
+    "sha256": "f599387ce635f9c1b24c45a8de89df43b601d1acb43ee512bcbb95c21da0394b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-library-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4467,
+    "lines": 15,
+    "sha256": "9cc71d96f9c0b586e07452240147707f10efda2615a218920341eba66ebdaa6f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/learning-hub/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4463,
+    "lines": 46,
+    "sha256": "58cda4f5852385882067afa07bec5929cb8c990e40c830e67fbb408872cfc09d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-landscape/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4441,
+    "lines": 32,
+    "sha256": "822c24cdf06d98c75c41d21e61e4b3830974dfc56953d43ce229dfe539833539",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/game-tutors-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4438,
+    "lines": 43,
+    "sha256": "6d3fb3af5b1b16cd0894298636f815998193b95a1333b9ba9b6068648780ed35",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/personalization-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4263,
+    "lines": 29,
+    "sha256": "796195820640d49f4ebca160bf707112d4c8b825e8dad1c1dd0237e40edd31ad",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/motivation/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4180,
+    "lines": 25,
+    "sha256": "5d58bd8ee4b8949a39c2515c1a2a12a3e158ef1973147abca9d51b9bd8852093",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r14/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4172,
+    "lines": 31,
+    "sha256": "768e56ff0f42cf251f6ff19d60bbd4cc909d0125fdd740070a6f601a53f09b07",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/rendering-review.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4138,
+    "lines": 34,
+    "sha256": "30a3f2813257fb258204943c2b086fd5e1833352331ae83bfe950f31f95c077b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/return-recall-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4107,
+    "lines": 28,
+    "sha256": "01deca862b835c238ff6a846d04f9de346fdc3e4e2688560223b6a6336792d79",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4072,
+    "lines": 36,
+    "sha256": "8ec8111ba0c17e094efc4673904e9a87013f83fa96765c0e64956f9fd51d64b7",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/coast-radio-notes.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4029,
+    "lines": 28,
+    "sha256": "46dd6eaa29ee9882eeb31669e0b3c8089e5aad4d1e457e3ef4ae84871206d38c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/stable-scene-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 4003,
+    "lines": 38,
+    "sha256": "af7dc89db9fd434ad6a77f718ba2a040c1bff10043240869333ab5a6f1bbc4f5",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-ui-recovery-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3989,
+    "lines": 33,
+    "sha256": "6ee530a02a0e1d88b09a320359b29035be6a008c53e39bf229350657bbdfac63",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-coop-r4.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3968,
+    "lines": 28,
+    "sha256": "e83e4ca1617db15c74e9cf8719f4ef7b59525e972abc993a5daed387238df7e0",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-tutor-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3962,
+    "lines": 35,
+    "sha256": "fe3e6d16845aa213515caaf302067a2aa53613baab5139b38cdaa3fcc0554984",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_대기_측정_20261003.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3952,
+    "lines": 36,
+    "sha256": "87f665c6cbc77ba420d95377491a542cbc01c9234be64c2a69af3cd20b3d4142",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-tutor-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3948,
+    "lines": 30,
+    "sha256": "b55deb285277c5d873ea04c79bebd761ef3b8359a2c9e17e232846f1b5dbd676",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-switch-20261011/games/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3942,
+    "lines": 39,
+    "sha256": "0e877f79851056ddac5d42c2d78079ad291702a4833db8ab00057e67f80833d9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/nonvoice-shop-focus-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3911,
+    "lines": 17,
+    "sha256": "ecf167e5e78bb21bce4474c7c7f81ddc2ceff4a8c3223eecca6f84405b091cbd",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-play/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3880,
+    "lines": 26,
+    "sha256": "2704f23b45562ee3a251932fec988db51afd982ef48a28a38851eb6a512927a2",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/city-v9-notes.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3860,
+    "lines": 37,
+    "sha256": "cc5a6541f54651bd61cc4c4d91f1456c061e961ced3f081ccad1f210e683d664",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/PERSONALIZATION-20261002.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3785,
+    "lines": 32,
+    "sha256": "9ac2c516abe25fc71e5fe0a88e3491bb5b6776cd648425a764a1aadcf369d986",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3777,
+    "lines": 26,
+    "sha256": "7c298e4a9a6835583cd50b6d9a30b5e8717b3e64b42b365c5d459af1619b160f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/living-home-20261012/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3774,
+    "lines": 42,
+    "sha256": "8f39b3faae2ae413427dde19abaccbcb516f448f694bf93a8186dadbb03ff469",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-completion-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3752,
+    "lines": 29,
+    "sha256": "dfd2e23e116192af939537dff806d53e7510567128f166f7690a1263406d4ce9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/graphics/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3744,
+    "lines": 30,
+    "sha256": "4a872a803fa16f7a27e55aa3a0fbea89d6210b4e7b3ebe268ef97c7b26662ab1",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/kit/README.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-product-assets-pass3.json",
+    "bytes": 3719,
+    "lines": 32,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "owner": "product",
+    "sameContentPaths": [
+      "experiences/play-common/kit/README.md",
+      "experiences/story-classroom/kit/README.md",
+      "experiences/korean-runner/kit/README.md",
+      "experiences/korean-racing/kit/README.md",
+      "experiences/talk-rally/kit/README.md",
+      "experiences/order-rush/kit/README.md",
+      "experiences/korean-rhythm/kit/README.md",
+      "experiences/entry-check/kit/README.md"
+    ]
+  },
+  {
+    "path": "experiences/word-magic/qa/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3718,
+    "lines": 29,
+    "sha256": "7f3d5c997fc7c9155a98100aeb30363fc4084efd1262ddd0110cc38bcf6382f7",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-avatar/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3695,
+    "lines": 28,
+    "sha256": "09dab7392c9ae83ef104fb209f0da6c6c734fca7bd5300e48ca8ebe0485f231a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-contract-reviewer-files.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3682,
+    "lines": 30,
+    "sha256": "a9a5e7a55f3726ffb7f9227212b63eff435df6789b879c453f0adc4d0635aaf8",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3647,
+    "lines": 30,
+    "sha256": "bcad80922ad93539e95ef1ec822e9cd7a99d104549a97804ea4292e445ef9918",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/learning-hub/qa/collection-summary-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3641,
+    "lines": 39,
+    "sha256": "f6ddbc12fe0fbc604a3af71a9c0e8207684762bc688338949460e1ceab97dd98",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/PERSONALIZATION-20261002.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3630,
+    "lines": 34,
+    "sha256": "8e0be0693b75d6fd8ad1fe40f51b3be96307f2c65d45a204b85262425a87ab35",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/order-rush/qa/nonvoice-shop-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3600,
+    "lines": 37,
+    "sha256": "29ef098a1c55899a04751b241d7c99f45d2c99fb84879dfecabaf035307d2170",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3588,
+    "lines": 26,
+    "sha256": "01011bd3b31571927c95715eef0449b1cfe4518c8537b606f35fd4de5cbe5dc6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/family-media-cache-20261006.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3515,
+    "lines": 31,
+    "sha256": "e084e7a5daf49502b5ae90171ad10a5df20fed6f0fedfcf96debe4cf1c7bd78c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-onboarding-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3509,
+    "lines": 28,
+    "sha256": "3fe25658cb9cb7f60be052efd47355c22f6017cb4dd6ee7304c5b7e85069d8c9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/GRAPHICS-V2-20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3483,
+    "lines": 35,
+    "sha256": "9625240a31134f25d6a974321b573b9fc4bd0a66ebd18d0e00d47595dbf712bb",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/suno-20261001/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3456,
+    "lines": 28,
+    "sha256": "4ddb50ca195aa731d62221405a7af656d76c1dcbbdd14722849b1a83abf403f9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-review-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3435,
+    "lines": 19,
+    "sha256": "5452e9305c41eedec5d5efd92040a14aa3874fe713e2e86d71722231ee98808f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/member-benefits-20261005.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3415,
+    "lines": 30,
+    "sha256": "0977370f8b81b62e40e4e2caa21968c452bf93c3787faead97abae9acaf776fc",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/backend-README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3396,
+    "lines": 25,
+    "sha256": "f03cfd4e84f75b480b899696bae61e2f89543786cf416704feae4c0d70917500",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/MOBILE-CHECK.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3378,
+    "lines": 38,
+    "sha256": "2b5010359f7745195d84d30f15e439138b5e09c243684e75bde1b0659d2dc86f",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v5-landscape/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3315,
+    "lines": 34,
+    "sha256": "423856e31668a156be839a9024c49103ff476d19280c7523aab91c8cde9c8a62",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/RESULT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3312,
+    "lines": 26,
+    "sha256": "c6724f9c8ffc895bce963755bf3ed0985f6814bcce75276e35d5f1212f1126da",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/PACING-V10.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3311,
+    "lines": 32,
+    "sha256": "a8d48ab239357ca46e2d8ab103689a149aeecddfa83c60dca04171419537ea02",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3295,
+    "lines": 39,
+    "sha256": "637a1b47bb12ff8d893507ebe9f9e208506a4260f337e630dab17a009a49341d",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r2/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3192,
+    "lines": 16,
+    "sha256": "9e1bf20b7ec6fe44f7a262659b2486b6d3af50d7d13c9175e80b69f88960367e",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-combo-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3093,
+    "lines": 19,
+    "sha256": "a1686b21c52b307967af131136fa6a61fc2f45efe3d3020c4582308770cce4e0",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/oauth-return-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3077,
+    "lines": 20,
+    "sha256": "92518a4326b25fca8a69a8fa456754567eb81f5b7ccda20b3737e1530ef327ab",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-results-refresh-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3064,
+    "lines": 25,
+    "sha256": "ee534acc40cf62b4f46be8f32d3ee0d6217bce4899218463c4269c612b794641",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/story-classroom/qa/PLAYTEST.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3057,
+    "lines": 35,
+    "sha256": "d375ea96879560d176dc53564c43a522253cd8b7a735210e8d52bd00378b0ec1",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3021,
+    "lines": 30,
+    "sha256": "6321a220f80a3b2b42a3691d02053f495e3c2fbf49ee90e81b8f52ca150b17ca",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-account-save-20261014/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3004,
+    "lines": 22,
+    "sha256": "f2b3cc257ec6b42c891e72461ab6a8db8a980962fded9f8ac87e2e924de2ae3a",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 3003,
+    "lines": 14,
+    "sha256": "b1bda31f649832fe35953f548e1afc8ec4a3f9a36c8e9768cd56a5dca196b5b3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/review-resume-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2995,
+    "lines": 18,
+    "sha256": "4f4b8a24e4899f78a47702d8ca5fe51c99244b1a6a1b438cb2f741b93ba06e27",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/signup-feedback-20261007/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2905,
+    "lines": 34,
+    "sha256": "b0195bca9ecd2d1a8a2f7bb5255cb5014844fef3becc7e569bed24b407eaab36",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v2/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2834,
+    "lines": 24,
+    "sha256": "7e418e7b52c3777ef08a5ab6f9fabb3c5b0fe6e8501e6bd4770e1a2263d051ae",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-expressions-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2779,
+    "lines": 26,
+    "sha256": "e78638a0afa0e1f8fe17c071e309b7e8ae5e9dd944748dc2a02c7ca6aad97124",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/COMPANY-ROUTE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2774,
+    "lines": 27,
+    "sha256": "b7b3435d684a483d22717cf8fae828d88c52d63173840f0935b5c40aa17e175e",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-home-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2732,
+    "lines": 23,
+    "sha256": "c15cfd9eb8563f359e0c2181dc491c57ac4c653efc9c10ecbb9e4c958661ed54",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/SHOP-20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2722,
+    "lines": 28,
+    "sha256": "3c021f1cce11cb68904d9097f63ad3cbfb426d30c566f80d26e9b4f35fd49bc3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/r3/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2649,
+    "lines": 24,
+    "sha256": "8d263f890f3184ea1deb5f21891fb87b559f80d2b9feb641c44bbe5dfcb69554",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/SHOP-20261008.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2616,
+    "lines": 18,
+    "sha256": "a7dd6dda7a2f572fd55b1c49a93dfa156ac60e34b60d673e6ad97eb73a376130",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r3/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2424,
+    "lines": 14,
+    "sha256": "2b930165e528db0dde57741a7ba53cccfc9567ca6eaf141bcc003e194ed01ad9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/word-magic/qa/GRAPHICS-20261009.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2380,
+    "lines": 19,
+    "sha256": "149e322aa3861a8dcf8db255ccee630e37ae44a4dfc2467b1edebdacbe8e04c5",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/CLOSE-20261002.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2329,
+    "lines": 21,
+    "sha256": "b64bba700ab0913cd45a90315b282b2f739fb094cdb1a303e684c030cf2c480b",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-foliage/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2320,
+    "lines": 15,
+    "sha256": "2b0467537a630e8da9be7bf3d0cb91372706be96fedbd8b7056d942d47fe7349",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-racing/qa/crowd-v9-notes.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2299,
+    "lines": 16,
+    "sha256": "6d68d78d2e00dba6a61790e1d72888cb38026c2cfd4b31a1db157d6bd72ab240",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/felt-v6/camera-shake/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2113,
+    "lines": 14,
+    "sha256": "938d3b9830d0af36848fd5755ca25ab82b503be5a70649dd9677f45c951bcbe6",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/citypop-20261001/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2072,
+    "lines": 9,
+    "sha256": "cf59ef8c1c0e6e3b98b534c761b656dc24cb151d36d7f3271ac0423f2ba0251c",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/account-static-r3/failure-observation.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2059,
+    "lines": 12,
+    "sha256": "cc1a6734318d33b5653ada3853904c338d6102ce50b959e9ef79d20cf5e7aab3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-stage-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 2033,
+    "lines": 13,
+    "sha256": "c596dc1d269cc67c94d557015afcc976efa039bc064cba317eddcf49ce5f4121",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-data-review-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1918,
+    "lines": 12,
+    "sha256": "0bc4565227f0ccb16d7d435b35f6577605db9b9c47be8b6ff96bd75ae0d554e8",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/korean-runner/qa/ATLAS-LEARNING.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1910,
+    "lines": 13,
+    "sha256": "98bbfc96807bf3b48dc9e3abec5a563eb91cb79e177581a9ef10e382d86d3f62",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-release-review-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1889,
+    "lines": 13,
+    "sha256": "3d47ceb48c1e2966ee76e8301dc1a1abaddb2ba509ce1a87afe81b549a540aa3",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1876,
+    "lines": 12,
+    "sha256": "235222a4ca525941c01012e49ff4ba971f16991f91f11ae71fcf06aa786b9e90",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/order-rush/qa/ATLAS-LEARNING.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1838,
+    "lines": 13,
+    "sha256": "767c080228cfcc36f5ae3ba071f6bca0a2dca0c6ba8900cc87dbc16da6bda773",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/asset-audit/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1813,
+    "lines": 12,
+    "sha256": "fc0b20d99f3cba2db93d5ee4d0aba375f93c39aa2e109f3004942dc55ecb7b03",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-consumer-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1807,
+    "lines": 14,
+    "sha256": "b88406e4efbb695ac8b1c5d304d6e21c560e9be0d442cde80263b06152e55046",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/release-path.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1781,
+    "lines": 19,
+    "sha256": "029647b235f95d9425e17aba99e8a605ad9c9110280e7b95b208a8c247b41ef4",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/IN-PROGRESS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1763,
+    "lines": 14,
+    "sha256": "47351542a42fb53e7679666695b51f2cab6d4cec07b1af804bd9233f55fa29a9",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/starbook-account-copy-20261009/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1696,
+    "lines": 10,
+    "sha256": "e7f8045a823f9b5260f0cb1fb3b2a517931547db803c3f2be30f163eabda9b42",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/story-classroom/qa/felt-RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1446,
+    "lines": 13,
+    "sha256": "92064f83f0c7c3fa61e8aedc6968038c94b1a74acaddfb0d3cc8ac48ceb306a5",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-operations-note.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1376,
+    "lines": 9,
+    "sha256": "fb034b69a1dcd9d5374167de747bea5d4bd2a921f0b80e4be3198df8c6345f04",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-stitch-20261011/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1215,
+    "lines": 15,
+    "sha256": "16ef08170e04eae250f68fde2c30a15f3df5646205189d1a60b661f8afd78091",
+    "owner": "product",
+    "sameContentPaths": []
+  },
+  {
+    "path": "experiences/relationship-care/qa/source-close-20261008/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-product-evidence-pass3.json",
+    "bytes": 1155,
+    "lines": 8,
+    "sha256": "a13f7d2c967c2972d87d38db47f82db327d03dd47546687a9189c0f7e22b086b",
+    "owner": "product",
+    "sameContentPaths": []
+  }
+]

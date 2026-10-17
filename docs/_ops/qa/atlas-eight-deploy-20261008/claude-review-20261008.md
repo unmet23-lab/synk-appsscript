@@ -26,7 +26,7 @@
 
 ## 3. 메모(P3)
 
-- 공용 작업본(`C:/Users/q1212/Documents/SYNK-appsscript`)에서 `.gitattributes`의 새 `eol=lf` 대상이 CRLF로 남아 있으면 `desktop/tests/renderer-personalization.test.cjs`가 해시 불일치로 실패한다. `git checkout HEAD -- 파일`은 다시 쓰지 않으니 파일을 지운 뒤 `git checkout HEAD -- 파일`로 받는다.
+- 당시 검수 작업본의 `.gitattributes` 새 `eol=lf` 대상이 CRLF로 남아 `desktop/tests/renderer-personalization.test.cjs`가 해시 불일치로 실패했다. 변경 없는 검수 사본을 다시 받아 통과한 재현 기록이다. 공용 작업본에서는 현재 파일·미커밋 변경을 먼저 보존하고 차이를 확인해야 하며, 이 당시의 삭제·checkout 절차를 그대로 적용하지 않는다.
 - Talk 전체 시험의 기존 실패 20개는 별도 정리 대상이다(이번 수정과 무관).
 - 한글 단계(`experiences/hangul-stage`)는 공개 경로가 없어 이번 공개에 넣지 않았다(F1 수정은 저장소 번들에만).
 
@@ -55,5 +55,5 @@ push가 거절되면 `origin/main`이 또 움직인 것이니 `prepare-public-pu
 ## 6. 이 세션이 저장소에 한 것
 
 - SYNK-appsscript `origin/master`에 GPT 릴리스 `001d225cf`·증거 `0b4b41de2`와 이 기록을 올렸다(기본 가지 병합). 로컬 공용 master에는 다른 세션의 미푸시 커밋을 그대로 두고 병합 커밋으로 얹었다.
-- SYNK-talk `origin/master`에 후보 `1d6daa8`을 올렸다(운영 반영은 아직).
+- SYNK-talk `origin/master`에 후보 `1d6daa8`을 올렸다. 이 원천 push 시점에는 운영 반영 전이었으며, 이후 리허설·운영 배포 완료는 §5에 기록했다.
 - synk-policy `origin/main`에 공개 후보 `17122d771`을 올렸다(17:49).

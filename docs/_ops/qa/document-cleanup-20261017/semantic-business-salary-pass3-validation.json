@@ -1,0 +1,14 @@
+{
+  "ledgerEntries": 1,
+  "coverage": "full",
+  "reviewedBytes": 70082,
+  "originalLines": 976,
+  "backupSha256": "6c5905069f50c7d84a910ed17333539cc853393c03ac8384ab5dd03e11e56858",
+  "currentSha256": "93a0f45853b0ee72a3f7779fbdf268f126b6c380e02b559061ff21311850d95f",
+  "backupExists": true,
+  "missingLocalLinks": [],
+  "diffCheckExit": 0,
+  "diffCheckOutput": "",
+  "financialTermsRecalculated": false,
+  "legalEffectReviewed": false
+}

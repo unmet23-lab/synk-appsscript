@@ -1,13 +1,9 @@
 ---
 name: hyperframes-keyframes
-description: >
-  Use when a HyperFrames composition needs a punch-in, punch-out, zoom, reframe,
-  Ken Burns treatment, camera move, visual match/whip handoff, or other seek-safe
-  2D/3D keyframes; also for GSAP, CSS keyframes, Anime.js, WAAPI, FLIP, paths,
-  masks, SVG morph/draw, text trails, 3D depth, or `hyperframes keyframes` diagnostics.
-  Don't use for broad scene strategy, brand design, media sourcing, captions, or
-  general video planning.
+description: "Technical reference for motion and seek-safe keyframes inside an existing HyperFrames composition, including zoom, camera moves, GSAP, CSS, Anime.js, WAAPI, FLIP, masks, SVG, and keyframe diagnostics. Do not use as a general trigger for new video, animation, or design work."
 ---
+
+> 기존 영상 수정·재현용 사본이다. 새 영상은 [제작 방식 선택](../../../../../콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 먼저 따르며, 아래 공급자의 신규 제작·자동 라우팅 예시는 그 선택을 대신하지 않는다.
 
 # HyperFrames Keyframes
 

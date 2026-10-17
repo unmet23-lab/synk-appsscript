@@ -1,5 +1,7 @@
 # Craft floor
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 Load this after the direction is settled, and build without announcing the checklist. A pinned brief or the committed visual world overrides anything here; your own habit does not. When the design hook is active it already enforces the mechanical checks below as you edit: act on its findings instead of re-auditing each rule.
 
 ## Verify
@@ -24,7 +26,7 @@ Page scaffolds:
 
 - Same-size cards of icon plus heading plus text as the page structure. Cards are the lazy container; nested cards are always wrong.
 - The hero-metric template: big number, small label, supporting stats, accent.
-- A kicker or eyebrow above a heading. This one is a ban, not a default: no brief earns it back. The heading carries its own weight; delete the label and let the heading speak.
+- A kicker or eyebrow that merely repeats its heading. Remove redundant labels when that improves the actual surface; an approved project design may intentionally use a label. This supplier preference is not a universal ban.
 - Section numbers (01 / 02 / 03) unless the sequence itself carries information the reader needs.
 - A modal for a task that needs neither interruption nor protected focus.
 

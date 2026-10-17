@@ -2,7 +2,7 @@
 
 유호님 「재설치 파일 만들어줘」에 따라 현재 PC에 설치된 Platform(싱ㅋ 시그널 2 화면)과 같은 내용의 재설치 파일을 새로 만들었다. 10-10 새벽 재설치 파일([기록](../platform-reinstall-20261010/README.md))의 Platform 설치 파일에는 바꾸기 전 화면이 들어 있어서, 그걸로 다시 설치하면 새 화면이 사라지기 때문이다.
 
-**쓸 폴더: `desktop/artifacts/platform-reinstall-signal2-20261010/`** (git 밖, 이 PC 전용) → 같은 날 WORLD 펠트 책을 넣은 [다음 판](../platform-reinstall-worldbook-20261010/README.md)으로 바뀌었다.
+**당시 재설치 폴더: `desktop/artifacts/platform-reinstall-signal2-20261010/`** (git 밖, 이 PC 전용) → 같은 날 WORLD 펠트 책을 넣은 [다음 판](../platform-reinstall-worldbook-20261010/README.md)으로 바뀌었다.
 
 | 제품 | 설치 파일 | 바이트 | SHA-256 | 이전 재설치 파일과 |
 | --- | --- | ---: | --- | --- |
@@ -33,7 +33,7 @@
 - 설치 프로그램 종료 코드 0, 11:01:01~11:01:43. 위 확인 89개 통과.
 - `install.ps1`은 다음 단계에서 멈췄다. 제거 키의 `InstallLocation`을 읽게 짰는데, 이 빌더는 그 칸을 쓰지 않는다(설치 위치는 앱 키에 있다). 영수증 [installed-platform.json](installed-platform.json)은 `installed:false`로 그대로 두었다. 설치를 다시 하지 않고 [postcheck.ps1](postcheck.ps1)로 남은 확인을 마쳤다: **7/7**([installed-postcheck.json](installed-postcheck.json)). 등록(이름 「SYNK Platform Preview 0.4.0」, 버전 0.4.0, 제거 명령 `/currentuser`, 앱 키 설치 위치), HKLM 안 씀, 시작 메뉴·바탕화면 바로가기가 새 실행 파일을 가리킴, 설치 뒤 자동 실행 없음, 설치된 app.asar = 새 묶음.
 - **설치 전에 Windows 설치 등록이 빠져 있었다.** 06:17 기록에는 SYNK 세 앱(Platform `c4ee183e…`, WORLD `26232ff5…`, Messenger `953c4764…`)이 HKCU 제거 목록에 있었다. 이번 설치 직전에는 셋 다 없었다(프로그램 폴더·바로가기는 그대로). 샌드박스 밖에서 읽어도 같았다. 이번 설치로 Platform 등록이 다시 생겼고, WORLD·Workspace는 바로 아래처럼 이어서 다시 설치해 되살렸다. 언제 왜 빠졌는지는 찾지 못했다.
-- 되돌리기: 앱을 끈 뒤 백업 폴더를 프로그램 폴더로 되돌린다. 원래 v4 app.asar는 `%LOCALAPPDATA%\SYNK\platform-signal2-backup-20261010\app.asar`에도 있다.
+- 당시 되돌리기 계획은 앱을 끈 뒤 프로그램 백업을 복원하는 것이었다. 해당 `.tmp` 백업은 아래 20:25 정리에서 삭제됐으므로 현재 복원 경로로 사용하지 않는다. 별도 원래 v4 app.asar를 보존했던 위치는 `%LOCALAPPDATA%\SYNK\platform-signal2-backup-20261010\app.asar`였다. 이 별도 경로의 현재 존재·완전성은 새 복구 전에 확인해야 한다.
 - 실제 계정 로그인·실행 화면은 보지 않았다(앱을 켜지 않음).
 
 ## WORLD·Workspace 재설치 (2026-10-10 11:06~11:07)

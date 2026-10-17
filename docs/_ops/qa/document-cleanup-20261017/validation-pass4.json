@@ -1,0 +1,1195 @@
+{
+  "date": "2026-10-17",
+  "scope": "fourth pass: remaining 981 historical sources, evidence and vendor references; no deployment or live service revalidation",
+  "originalsVerified": 160,
+  "changed": [
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-README.md",
+      "beforeBytes": 3075,
+      "afterBytes": 3299,
+      "beforeSha256": "117e83f16bb324f565a300cef7f216efcaa48f5ef2d84e6653c8aa98478f4cd8",
+      "afterSha256": "dfc5de1fcc57888e67e61056ab74acd7283e23f5f309c6cbb80cbc9988d287fd"
+    },
+    {
+      "path": "experiences/synk-town/qa/town-optimize-release-20261010/release-path.md",
+      "beforeBytes": 1781,
+      "afterBytes": 2021,
+      "beforeSha256": "029647b235f95d9425e17aba99e8a605ad9c9110280e7b95b208a8c247b41ef4",
+      "afterSha256": "3921d8db555865167c52facbb210feae2e09790624d3815b7f35d14738333d3e"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "beforeBytes": 16760,
+      "afterBytes": 16041,
+      "beforeSha256": "49e0854d6142edb8b067c56bdedb711eca4fb828e944918b5a3f8422b74ec7ad",
+      "afterSha256": "6107715951e73a8478a2ba85891145d884ad3b47cc42767ccf8888b1267053e2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "beforeBytes": 19067,
+      "afterBytes": 19004,
+      "beforeSha256": "222e36aa7911a11e7850468d97efe2c38d63cb0b4c0394672020903a78483361",
+      "afterSha256": "2826432f24da764835bcf813b798390e89bef696e8e13e0a5123165f03a842cd"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/preview-render.md",
+      "beforeBytes": 31532,
+      "afterBytes": 32371,
+      "beforeSha256": "8faf5de843c2b6d8277d91767bc0c63f391b8b01289320fc05bfb8c58b1e408a",
+      "afterSha256": "9245573fc463d123c92724aa291ee80fbdf91d7b616d669ad6fa35306c69c607"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "beforeBytes": 20864,
+      "afterBytes": 22020,
+      "beforeSha256": "6d33b8c9c8636a86353826e3c438f8c8af6bba4e885b2f560e6fe36bf5f1466f",
+      "afterSha256": "f5e9a96bc580d11c2c61ebe09e45e469c375296178c9535318ab2b276c6cb8f7"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "beforeBytes": 12153,
+      "afterBytes": 12884,
+      "beforeSha256": "2b2893d5916a7b976f7b398c8efbc54bff0839f3460eb3a55e60d283a9e40a3d",
+      "afterSha256": "15722973ba59ccb3f2648431fca27757841a7646d146731d999c2ce4f6873061"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "beforeBytes": 25578,
+      "afterBytes": 26309,
+      "beforeSha256": "02ba8082a3654b7f8d8fc6d2d322b2828abb1e6dd455fb1ff14728e6e6c89a1e",
+      "afterSha256": "304e7af1ff22b149b7f99f77d06615ee23d304bf2d307405a2ff2622ffa882a5"
+    },
+    {
+      "path": "experiences/beginner-games/qa/review-resume-20261009/README.md",
+      "beforeBytes": 2995,
+      "afterBytes": 3333,
+      "beforeSha256": "4f4b8a24e4899f78a47702d8ca5fe51c99244b1a6a1b438cb2f741b93ba06e27",
+      "afterSha256": "4b493b2b10e875b6fd96c7653f9a65ebef29001b4e9577bd460ccaf0f0e7f1b0"
+    },
+    {
+      "path": "experiences/korean-runner/qa/MOBILE-CHECK.md",
+      "beforeBytes": 3378,
+      "afterBytes": 3796,
+      "beforeSha256": "2b5010359f7745195d84d30f15e439138b5e09c243684e75bde1b0659d2dc86f",
+      "afterSha256": "97dc6350fb7d0d3ae68d894dfd6bab56fc2cd672a2c2871ebae086c20ca0990c"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "beforeBytes": 3980,
+      "afterBytes": 409,
+      "beforeSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+      "afterSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "beforeBytes": 3980,
+      "afterBytes": 409,
+      "beforeSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+      "afterSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "beforeBytes": 3980,
+      "afterBytes": 409,
+      "beforeSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+      "afterSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "beforeBytes": 3980,
+      "afterBytes": 409,
+      "beforeSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+      "afterSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "beforeBytes": 3974,
+      "afterBytes": 403,
+      "beforeSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "afterSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "beforeBytes": 3968,
+      "afterBytes": 397,
+      "beforeSha256": "5cb22f90c94261dec97b1989bb6155b4cb7c0d7eabf1eb4e6bf15072289aeab5",
+      "afterSha256": "ed0bba2c18638753474d0f8250e949189f8d2d953ca1620bcbaa6b57d1378d2c"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/frontend/RELEASE-COMMANDS.md",
+      "beforeBytes": 4325,
+      "afterBytes": 878,
+      "beforeSha256": "476475627587516f5ec85024dacb3a0ec52c47ed6f0c97021889bc2d8a8523e8",
+      "afterSha256": "103f861fe45162805ed1e43dc160a69d7e271b7a70b7d9b0f2605860e3b67569"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/frontend/v2/RELEASE-COMMANDS.md",
+      "beforeBytes": 1930,
+      "afterBytes": 884,
+      "beforeSha256": "7083bc8dac45a9eb551b2521dd761bc335217315d2e4fd4a9ec9fda992cbfe92",
+      "afterSha256": "15853e7b5ba5e1a1bfde14e2fdc6ee41ee0693163233288e7d2db9abae24755c"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/frontend/v2/README.md",
+      "beforeBytes": 5665,
+      "afterBytes": 5828,
+      "beforeSha256": "944227072ab939570471d071d274a33ee82d94f07a85b98a580b64f0d4c5c43f",
+      "afterSha256": "786fb3c7ca7ed236d7e931624968e9b3d125f56af5ed5a5201afe1b2be505d61"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-eight-deploy-20261008/README.md",
+      "beforeBytes": 6243,
+      "afterBytes": 6658,
+      "beforeSha256": "db4331d4feb36d38e39803617fa208617059b1d87a631b6185825af8500addc0",
+      "afterSha256": "c9f6cf722ff08588a2160c41563b8605d38b8dd25e35edbabbc8b11b0216fb7d"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-eight-fix-20261008/integration-note.md",
+      "beforeBytes": 1881,
+      "afterBytes": 2046,
+      "beforeSha256": "485d49c37088e571842e9903f7d037fda46f7c5dd6f54868ef701ffc83090945",
+      "afterSha256": "07a145e54f19352c4e88f3d51a7ef7259b5d301086bba2f0e308205f320fe7c4"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-eight-fix-20261008/PUSH.md",
+      "beforeBytes": 4044,
+      "afterBytes": 4149,
+      "beforeSha256": "92f55145877f9274ebcf38f8b821981cd6246f3cf70759304aa4f9aa3eeb8684",
+      "afterSha256": "9c807a3b85231665ff1b005f3d6cd860fcca78fed92b1e28e484cb7b5d7c87c4"
+    },
+    {
+      "path": "docs/_ops/아틀라스검토_인계_20261008.md",
+      "beforeBytes": 19649,
+      "afterBytes": 20125,
+      "beforeSha256": "05fcd58e3babd3b6b3bbe6c56376a070b37889930b798a77692eac28782e04e6",
+      "afterSha256": "03ebdaed726c9e92e25e1fbc00796dafa6e35609e385cd3d7054f4cd6631cc84"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-plan.md",
+      "beforeBytes": 5456,
+      "afterBytes": 5757,
+      "beforeSha256": "4fb9e8c3bbfe875f5d32a265780e1a538569a18ae67f3d5db5042f4b9987724c",
+      "afterSha256": "20e51afe5c658342134cae7b104d8a4b262e79efaad2c9f64eef7828c1f729ce"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/costume-release-20261010/README-pre-deploy.md",
+      "beforeBytes": 4931,
+      "afterBytes": 1059,
+      "beforeSha256": "0bd1ef1a68a25c76d66765da9cc9c6a4c643458dc18c2525cf67308b36050f43",
+      "afterSha256": "3d07f2e9efadded0de043ff1c8a4787531a50de77e132c858be8d0cf484a547c"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-plan/README.md",
+      "beforeBytes": 4863,
+      "afterBytes": 5167,
+      "beforeSha256": "6f9681df2782573f39c946572378e230847ba7bc1cb5f75fd76a1aa9416211aa",
+      "afterSha256": "beb8afd297fe689a308cf992d2816832ddd6b650e8b5456d782cb92a92b3a0cf"
+    },
+    {
+      "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+      "beforeBytes": 19476,
+      "afterBytes": 2738,
+      "beforeSha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+      "afterSha256": "cba58956fccf30a57294047941e287acdee8e08cd8d4c669bf6bf250259ddba7"
+    },
+    {
+      "path": "docs/_원고/채널마다_창_2026-09-07.md",
+      "beforeBytes": 16196,
+      "afterBytes": 2577,
+      "beforeSha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+      "afterSha256": "888afcbc2e908ee6e3d27edb68879d52d3d67bc35709b166b4360d3776a56132"
+    },
+    {
+      "path": "docs/_원고/룸조판_1보_실측.md",
+      "beforeBytes": 4300,
+      "afterBytes": 2036,
+      "beforeSha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+      "afterSha256": "a97fef96f2d7b2da47493ec92ddf782cc2c0045f09ae236436f709186bfdae09"
+    },
+    {
+      "path": "docs/본체SYNK_자리_2026-09-07.html",
+      "beforeBytes": 1361230,
+      "afterBytes": 1339861,
+      "beforeSha256": "da2fca5f5018d40e832e17520c32dd27ae449d67b455454a0365884b19ef0e32",
+      "afterSha256": "8301d23d20df836eca13d4a52d893c491944211141e4cb2285cf7372c68660d9"
+    },
+    {
+      "path": "docs/채널마다_창_2026-09-07.html",
+      "beforeBytes": 1356930,
+      "afterBytes": 1339720,
+      "beforeSha256": "e217b5526316380cbb354485b12fe3f04259e7838f63aab23e5ef2d28475ad13",
+      "afterSha256": "10c46e41b58bc7c2e5a4507a16a152fd285ebe0f5a288f858b8b8338b99a13a4"
+    },
+    {
+      "path": "docs/룸조판_1보_실측.html",
+      "beforeBytes": 1343332,
+      "afterBytes": 1340055,
+      "beforeSha256": "08611cb415ff4e8d8b2579d36e1a6dba7c69071156dcb45dbe01099439fbeafd",
+      "afterSha256": "d97d935ca4eba692710c06a70fa42a9082d617427df00441701d588b004a038e"
+    },
+    {
+      "path": "docs/_ops/qa/google-brand-label-20261009/README.md",
+      "beforeBytes": 4135,
+      "afterBytes": 4169,
+      "beforeSha256": "391d7b0ab539fd3a5405d84acb6a61b90f5f915d4f1f0275e4e777339d24cf13",
+      "afterSha256": "f051a18d21921976eb29bc1ee63c928645b8072f3d074fe39ebd713b1f1a33c4"
+    },
+    {
+      "path": "docs/_ops/엔진8종표기정리_20260921/README.md",
+      "beforeBytes": 4513,
+      "afterBytes": 4629,
+      "beforeSha256": "44931618f74984c462aa49063e95aaebefefb83ecb2cd8368de9eb106ca82f4a",
+      "afterSha256": "0343b3d5b68dd737123b36e9787aab605ec2162eb62fb977c2fa27c6ce0346a6"
+    },
+    {
+      "path": "docs/_ops/qa/platform-reinstall-worldbook-20261010/README.md",
+      "beforeBytes": 4389,
+      "afterBytes": 4620,
+      "beforeSha256": "683246129c664fabe7b393cdd4859ae74ec28a45c079d3ca6e6657f7080f6c10",
+      "afterSha256": "01068076fd8f845d6821d44ea70b1511623403408d8159d2172b6c045115accc"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v14/낭독대본.md",
+      "beforeBytes": 2810,
+      "afterBytes": 3065,
+      "beforeSha256": "e3b235697a8ac209c06e65d46cd8c33c08128d6564380828f53aa7224abcf24b",
+      "afterSha256": "0b2129f6acf24e67318bcea7d340a388104823079b6d33571a629e3b1cf9fbd3"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md",
+      "beforeBytes": 2810,
+      "afterBytes": 245,
+      "beforeSha256": "e3b235697a8ac209c06e65d46cd8c33c08128d6564380828f53aa7224abcf24b",
+      "afterSha256": "f714702e4f6847d3e5610c82d9c681d5f08c592f3a6e58e293c91cefd1dbf54c"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md",
+      "beforeBytes": 2810,
+      "afterBytes": 245,
+      "beforeSha256": "e3b235697a8ac209c06e65d46cd8c33c08128d6564380828f53aa7224abcf24b",
+      "afterSha256": "f714702e4f6847d3e5610c82d9c681d5f08c592f3a6e58e293c91cefd1dbf54c"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+      "beforeBytes": 1135,
+      "afterBytes": 270,
+      "beforeSha256": "52f8b7f607adf036296ef7a1d0c6d6e5b25ab329119664b75b1512afb1e2892f",
+      "afterSha256": "409e4129952b1d3ebcf28557073381dced66342f1cb92d9af827897fcf10fed9"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md",
+      "beforeBytes": 1135,
+      "afterBytes": 270,
+      "beforeSha256": "52f8b7f607adf036296ef7a1d0c6d6e5b25ab329119664b75b1512afb1e2892f",
+      "afterSha256": "409e4129952b1d3ebcf28557073381dced66342f1cb92d9af827897fcf10fed9"
+    },
+    {
+      "path": "docs/_ops/qa/google-followups-20261009/summary-draft.md",
+      "beforeBytes": 6116,
+      "afterBytes": 846,
+      "beforeSha256": "3eb60d34aebf8629ec148cbd89018e00733b7d449ce8e2589096f780c417cb85",
+      "afterSha256": "34c7aa5212bd9265bf7524dbfbb1755aaa65e563248515b9a6b609f75873e066"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/desktop/native-logout-fix-r2/README.md",
+      "beforeBytes": 6103,
+      "afterBytes": 6333,
+      "beforeSha256": "7217dcdee42d25f8fbdb9965d755549434fd2e802b82ee0bea09949bdb2513b3",
+      "afterSha256": "54f69b198a4f85c0e7d32a927b3554c73161b53f76f613e7ce2cf410e1e44e6d"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/frontend/README.md",
+      "beforeBytes": 5912,
+      "afterBytes": 6118,
+      "beforeSha256": "43a97845189a97b0082523c86cf4d5b6a0222191f1430af9adb1764182662d59",
+      "afterSha256": "4fbb3c8a8cd539785c546e90756bd52251eaaeb7ca40b0a05e673b773e6fc57b"
+    },
+    {
+      "path": "docs/_ops/qa/pulse-production-library-20261012/README.md",
+      "beforeBytes": 6411,
+      "afterBytes": 6624,
+      "beforeSha256": "8a345a890ffa09836b2c49ff331b839db2514b4f930d11b14538975ce15a06df",
+      "afterSha256": "fe19e204e65d5c8d4378cfeb2fe1c5608bfde31bd4893c7c0b62264c0b8ab333"
+    },
+    {
+      "path": "docs/_ops/qa/classroom-pc-recovery-20261009/README.md",
+      "beforeBytes": 5774,
+      "afterBytes": 5972,
+      "beforeSha256": "bbe5ba10b8b86a8e5338eb9973bc68cd09c9b947a964be5a3dc80f1ad820a4e5",
+      "afterSha256": "71db9172ca1ff1c45031f6b1863fc2b5ce297a09f37adabf79fa344036db3776"
+    },
+    {
+      "path": "docs/_ops/qa/pulse-live-20261012/README.md",
+      "beforeBytes": 5650,
+      "afterBytes": 5753,
+      "beforeSha256": "39fac19e70bb6a0ce49bc3f26e2db370b329c6ffdf9db8f0e318dd55ca0a822b",
+      "afterSha256": "460ca563843a405bc79ab99a03856c39dc10596dded7b35cd2a50b1ae090e0af"
+    },
+    {
+      "path": "docs/_ops/qa/company-cloud-release-20261009/README.md",
+      "beforeBytes": 4617,
+      "afterBytes": 4769,
+      "beforeSha256": "406151c5b00ce6329f8ccc72c6392b8767e6cf3ae0683c1e6ec21d5d3fab6933",
+      "afterSha256": "5331b968622e5e226bf9c507fa6ea253938f79dcea31e7265dea9de41d7f162b"
+    },
+    {
+      "path": "experiences/beginner-games/qa/playtest-readiness-20261009/README.md",
+      "beforeBytes": 5184,
+      "afterBytes": 5540,
+      "beforeSha256": "c908fd0c0ef8074ee9fa00ed3cdaf325825dedc75900b51d0d4948069a50a4c6",
+      "afterSha256": "f8bb813ada8b253ba502cfbe7c9fa60d9f3b2b0d161454c27acb8a12b9ccde18"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "beforeBytes": 7982,
+      "afterBytes": 8316,
+      "beforeSha256": "1301ea7cb53a0a44f5c7d62c34cba7e00b9e69b31bed57dc8d645417cea0da7c",
+      "afterSha256": "7f2aec19581b0c885e974d4b3684ac542ce271083f610fa33b15e44d6c07c9d2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/operations.md",
+      "beforeBytes": 14660,
+      "afterBytes": 15457,
+      "beforeSha256": "dcc48461774a865d1e9d7a46a7ac02d5dd8b0775e1756eb4609bdbe216945dcb",
+      "afterSha256": "05c2fcfcecfb4cfdcccfef4fce8a65e03f875c0bff8e0cdba5d20f4503e6f142"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/setup-providers.md",
+      "beforeBytes": 7278,
+      "afterBytes": 8072,
+      "beforeSha256": "25d0c2ba7534dbcbcbb6d69bd29383c4918d700bb223d436364c09d48578e05d",
+      "afterSha256": "c3eb38137e9d3c3a760baca4bf418074212d9aa6859976d1c858e81a10ab176e"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts.md",
+      "beforeBytes": 8783,
+      "afterBytes": 9336,
+      "beforeSha256": "a1a4873b7d3f428272daeee60425d31691d76d858b515b3f2f2c8f051dbdcaf6",
+      "afterSha256": "53a443dc67ea235b5b767fee6eb9606e39fc6d02ad3624c49d9eeb4fa0a10e24"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/bgm.md",
+      "beforeBytes": 7958,
+      "afterBytes": 8519,
+      "beforeSha256": "59377dd15d537ed967a24733ea4246d2dfd502eb5a6d3eef6934a245533ddb39",
+      "afterSha256": "08d951d1ce7246dc8e89827565528459b8e0d1aca1eefd0d290dd223110a9e01"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/luts/README.md",
+      "beforeBytes": 1087,
+      "afterBytes": 1726,
+      "beforeSha256": "c06cbbf2aab80cbf8aa25c83497202a63107a61e083b6c199a89d513e8096a3b",
+      "afterSha256": "480975b6d6c1036b00aadead67c4d6d52faa853a23dd0dfdef25fa3c27ea825d"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/meta.md",
+      "beforeBytes": 6785,
+      "afterBytes": 7590,
+      "beforeSha256": "47e0391893b157705539129d0f9f071a2d7ced8cab272bb7b6d58117474fdbb3",
+      "afterSha256": "dea28e1fa52b95dc20b197f79697ec6dbaec16b9cf03519dc31f228a82d71be8"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "beforeBytes": 9643,
+      "afterBytes": 8874,
+      "beforeSha256": "0694f970b3613b9f0a63dc44c06404ea4f6506819f4afdbc9da3323b420cb9ae",
+      "afterSha256": "d7e87c8d9a4cb3fc6806e898fec2cb6eda3a87a54ea42d2d583231fb46f1cc4a"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/contributing.md",
+      "beforeBytes": 6684,
+      "afterBytes": 7323,
+      "beforeSha256": "8c3b0f71fde829ff6986a106e85e45e250324687846f2a16aadf1b47a126aede",
+      "afterSha256": "c2e9a1e1c7e17736270313d73f27f4d082dfffbb416b9b4d461ed92f5bec6afe"
+    },
+    {
+      "path": "experiences/relationship-care/qa/first-use-library-search-20261008/README.md",
+      "beforeBytes": 5220,
+      "afterBytes": 5338,
+      "beforeSha256": "f084de995e8e3faf7eaa7c59e9e68dd4360b613f1ef35fe6673345536c366a49",
+      "afterSha256": "87e010d5f3045bbd3d53f8fb0e055d34cd4f1f5cc1f6c05413d1702fd0fddf4d"
+    },
+    {
+      "path": "docs/_ops/qa/platform-reinstall-20261010/release-readiness/README.md",
+      "beforeBytes": 6449,
+      "afterBytes": 7384,
+      "beforeSha256": "14f498e1b049c7efbf5bd652fafba917391ce1eaf53ce8c3c1947dae8a40670e",
+      "afterSha256": "e1f035baa3077d8278fec7687bfdb6cc868616e4fa56549f9955958d431c613c"
+    },
+    {
+      "path": "docs/_ops/qa/platform-auto-update-20261014/README.md",
+      "beforeBytes": 34271,
+      "afterBytes": 34318,
+      "beforeSha256": "8e58b63aa69f29e84bd9a5efbfbe8101bc8454a5c95c9a03e8a22cd7deb79f9c",
+      "afterSha256": "1ce30d61bf76cf968949b68280b81098fa3c6e087d3c392394a4c4b2ef9dfc3d"
+    },
+    {
+      "path": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+      "beforeBytes": 5790,
+      "afterBytes": 6145,
+      "beforeSha256": "a9d4f5d834a312de457de51f750cf102de75280361a557a9234b6cb2f9d3fdeb",
+      "afterSha256": "da103334701f6ea7e9d1b3a4a683ec43b5d96b98c5f39feb25f9c0a1d6c562b6"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/README.md",
+      "beforeBytes": 9665,
+      "afterBytes": 10578,
+      "beforeSha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+      "afterSha256": "c09b2f864373c9b411ec3fdea3a19b3cb685b2a0fc5c6f3bde7041979dd57e14"
+    },
+    {
+      "path": "experiences/path-travel/qa/redesign-20261009/README.md",
+      "beforeBytes": 6007,
+      "afterBytes": 6278,
+      "beforeSha256": "f73639169fcb0542b21acbf3bbf43e5cae7d2ab52a76ffbdc14d1f6ef199e056",
+      "afterSha256": "7143ee27c9431ca1ee20e546423f6100acda4a4bb91e72effebed1b16d078187"
+    },
+    {
+      "path": "experiences/path-travel/qa/companions-20261009/README.md",
+      "beforeBytes": 5880,
+      "afterBytes": 6193,
+      "beforeSha256": "8333d6bb3b84ca999e1cfb78ac3e0decb08dd9992fdf5a68749bd22762ed5283",
+      "afterSha256": "336f0fe66cbc01def78b0b9ae22198e77628bb4df678f1576fe2032588b6760e"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/README.md",
+      "beforeBytes": 7203,
+      "afterBytes": 7602,
+      "beforeSha256": "88221522473f050e06287482b94b76de12f6a131fa5287353365b21b587d548c",
+      "afterSha256": "63e5c2ab75e56821d5649ce54320b65982fe4c9f858ba486d362b5f04a79e68a"
+    },
+    {
+      "path": "docs/_ops/qa/shift-release-preparation-20261007/README.md",
+      "beforeBytes": 9520,
+      "afterBytes": 9829,
+      "beforeSha256": "4fdbe6808928f7c3518dacba5bdf839d75366a5239b9f71e8718cb47dbed58dd",
+      "afterSha256": "46601d6ca101a711d477d761a44f3391edfa3e708ceb83695a522707b3366a48"
+    },
+    {
+      "path": "docs/_ops/qa/platform-reinstall-signal2-20261010/README.md",
+      "beforeBytes": 8901,
+      "afterBytes": 9154,
+      "beforeSha256": "8f6d1d94f8ff3ba02dd6f5d63b47bfeefc42a90caed9406d905aa62fa902e14e",
+      "afterSha256": "dfb2961181c05ecad7e9f98066935e52718a4254cb254262c8145d0a7f5390ac"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-eight-deploy-20261008/claude-review-20261008.md",
+      "beforeBytes": 8839,
+      "afterBytes": 9025,
+      "beforeSha256": "21f35b491f6fae68f08af5e70a80de13e5b4d55c15a71dc78461db53e7f59f09",
+      "afterSha256": "46ed9c5f1f39be4bc8b067c3cafa934e20f97e2c31d99b560a83ffd7e4467036"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-eight-fix-20261008/README.md",
+      "beforeBytes": 8354,
+      "afterBytes": 8542,
+      "beforeSha256": "fe9fe9c951302b0e48e7ccd6542224e89588adfdbf42efbd2960f6b547cb8946",
+      "afterSha256": "3f920d65d9aacb2882f4a42ec976c459bf94f81ebd93434275127c3cfa933759"
+    },
+    {
+      "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README-before-user-fixture.md",
+      "beforeBytes": 6660,
+      "afterBytes": 738,
+      "beforeSha256": "33c3b65129847c5904fb6ce14a10ed9f05b7e534fdc0242dd6d0e3c143873055",
+      "afterSha256": "621f8fd491735a77042f2ca3b125052fc42106fee63b9616efe5d6fa236fb4a3"
+    },
+    {
+      "path": "docs/_ops/qa/google-followups-20261009/signup-fields/README.md",
+      "beforeBytes": 8197,
+      "afterBytes": 8566,
+      "beforeSha256": "3088a67432daae1adb230e9ac03cfd9fe1154025b6d5582f3cce2a87d2ac1d35",
+      "afterSha256": "52e5ee5aad7003c5ccff98d243117e91e1821ecaf9dbb2846c74ae0e99cd7d67"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/ops/opaque-rotation-candidate.md",
+      "beforeBytes": 7476,
+      "afterBytes": 7795,
+      "beforeSha256": "76544c262b3fe6ca3194b933ea27062a0f217baa82e63dae4256c65614ded316",
+      "afterSha256": "fe6ef173542d46504e138c18cdd2f53eeb0ff84b5f3d66bd9adfd34a8cbde047"
+    },
+    {
+      "path": "docs/_ops/qa/google-followups-20261009/README.md",
+      "beforeBytes": 6805,
+      "afterBytes": 6937,
+      "beforeSha256": "cf40d236ca860cff8fa66c9d9f33bcc6f23a798b3ab7f892049fc30f370d3bd7",
+      "afterSha256": "d7bf5b3aa79cd77726ac021d98e44eadbb9639f341d39dc2a41dea4e6ebce218"
+    },
+    {
+      "path": "docs/_ops/qa/google-signup-20261009/README.md",
+      "beforeBytes": 8814,
+      "afterBytes": 9320,
+      "beforeSha256": "2f4edb39a1a8b5993c21142a7fa535488f2a23f5d6cf093d8650288842079255",
+      "afterSha256": "b50015cc0edb9619bb1b7cdc8d1b426873a067b1c277adbd7a1c80114ed73b68"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/backend/README.md",
+      "beforeBytes": 8607,
+      "afterBytes": 9159,
+      "beforeSha256": "b4f7f72065766baef9281a956f3922c07ab18004c81a652f2c570edba6955037",
+      "afterSha256": "181f949aefa5629dd56cb3217edad2783ed251ee86768c63ee113606f27e6523"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/V4.md",
+      "beforeBytes": 6012,
+      "afterBytes": 6249,
+      "beforeSha256": "abe11da4c58bca9939e56b0b7ccf1501d7e085071f0eaa08a0ffaac8fe547a33",
+      "afterSha256": "a975ef555f18576a8bcdd3ec466765685436c91fe99481e2e43208a6d2ceb21f"
+    },
+    {
+      "path": "experiences/path-travel/qa/expansion-20261009/README.md",
+      "beforeBytes": 6346,
+      "afterBytes": 6637,
+      "beforeSha256": "1e23dcdff94a736150df75efc6a18f01660ce8f64870cded17939e9db178c80a",
+      "afterSha256": "33154e93e322d589aef022d2f167f557bdb28b6a2f113db8881940d79b8c2036"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/V5.md",
+      "beforeBytes": 6329,
+      "afterBytes": 6691,
+      "beforeSha256": "4ae8ec1383e96c28609bdbba8f0003b22bed62c124c92316b57cd803960212af",
+      "afterSha256": "90eabcb94230a33eaccbde40f3f4ff2bf52d3869c96105b621b998dd94d8b585"
+    },
+    {
+      "path": "experiences/beginner-games/qa/self-audit-20261009/README.md",
+      "beforeBytes": 6456,
+      "afterBytes": 6894,
+      "beforeSha256": "70f7e1f6faa845f3f7632802f33d03f72600f69e9b2b1610354a0bd138f87b15",
+      "afterSha256": "66546a7b995c938a8034ef9d3d2085d53335fddf739ba5809eb08812141de93c"
+    },
+    {
+      "path": "experiences/path-travel/qa/schedule-20261009/README.md",
+      "beforeBytes": 6775,
+      "afterBytes": 7080,
+      "beforeSha256": "e7ada8ebae5c6de7c25354d95c60a05419acbfb802abcca59d08249070b5b192",
+      "afterSha256": "016060a05385faa2e2c6d7d7bb67ba8334fe18b031dbb1039b81ac9e3bb37c75"
+    },
+    {
+      "path": "experiences/relationship-care/qa/focus-20261007/README.md",
+      "beforeBytes": 6887,
+      "afterBytes": 7172,
+      "beforeSha256": "80d3b68a96503ee930735baf5bf75053c1ed9bc26e435222e60af2ccbc39e314",
+      "afterSha256": "bee97df45265277cd47168fb908b22efdabb306353bccbef19e76c1e513c5505"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/account-desktop-20261012/README.md",
+      "beforeBytes": 6482,
+      "afterBytes": 6797,
+      "beforeSha256": "7f5b69aa6a7fa48ef40a4695c055ff8890980324aaa4c96c0f9865ff71064b5a",
+      "afterSha256": "9b15111e88a1601f56fba57b1763608a57eff693568f1c1dc0b8473d0b981dda"
+    },
+    {
+      "path": "experiences/path-vr/qa/signal-redesign-20261012/README.md",
+      "beforeBytes": 7169,
+      "afterBytes": 7327,
+      "beforeSha256": "73f30307b907dffeff1e3e47be993c399e0a99f610d9aee3c2aa2f41d9bebe2c",
+      "afterSha256": "e4f3b3a2fd35c26eeca6b542d331f46b2289f6104db12f3c7baf2da31f3f539e"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+      "beforeBytes": 8516,
+      "afterBytes": 8903,
+      "beforeSha256": "6f5575412fc121755582ce78b80ce5ec269786098fbc13be4baa5e5e98c61d5a",
+      "afterSha256": "73eef67e4dfd556d8d17bd372ba72e3635cd425cc4b1962ce0f3accea2b4db27"
+    },
+    {
+      "path": "experiences/synk-world-app/qa/costume-studio-20261009/README.md",
+      "beforeBytes": 8019,
+      "afterBytes": 8369,
+      "beforeSha256": "b165e52d9d6f1c466239a302b7edf9c107a68da450bc0cbe075fae25d44e3c42",
+      "afterSha256": "4a9af4566923dc6efff1c9c90aebead5eaeaf740901a0d6681c878c73362dcd5"
+    },
+    {
+      "path": "experiences/relationship-care/qa/RESULTS.md",
+      "beforeBytes": 10122,
+      "afterBytes": 10497,
+      "beforeSha256": "46481a771a0725c83c6a5f11b2722174e83d45a5eb049d44288e12b207bd7963",
+      "afterSha256": "c94e68442abccf04cc7c4de5345189d871d4a611da981f0d96c38cd0785481d1"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "beforeBytes": 6354,
+      "afterBytes": 7157,
+      "beforeSha256": "488782fc741a43e002b5c6ac0da69cc2b12abaa42b6c0056df2aa53bea553c16",
+      "afterSha256": "2bcc83221d07c17f11914e52a57abf7670f5a839227870bd6c0e231a81a87675"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/typography.md",
+      "beforeBytes": 14481,
+      "afterBytes": 14926,
+      "beforeSha256": "2213319b8055285dbe5b6aeb923f27660355a04a1b27da1edda8fd0c91888ab2",
+      "afterSha256": "1ab3b691d1ddfb9fb9847de6e4265314533903b95302220726b1fa77879adf19"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-picker.md",
+      "beforeBytes": 12221,
+      "afterBytes": 12534,
+      "beforeSha256": "3b37cd0e9366b8f9c30b5e31a909193b23b58ada7f73675eab0fe7d2a74bbdf8",
+      "afterSha256": "662442a5c4358f7e657d8f207c13823c66549b5a80d78a576fa31eeb264fb57c"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/storyboard-recipe.md",
+      "beforeBytes": 7242,
+      "afterBytes": 7516,
+      "beforeSha256": "515b2016a1cd2760ec6e53e170752a3b111a5e9b7a123001374c479db4f73406",
+      "afterSha256": "b20129668833cfe7eb71d47644ea4d0e8dda7ed80164a0ad409b84407da253ed"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/prompt-expansion.md",
+      "beforeBytes": 5707,
+      "afterBytes": 2113,
+      "beforeSha256": "3c428274da00f7809e93a2036454b2b9cba9a20b3ae3811d43f33a50501a36f6",
+      "afterSha256": "579e91ae9073be4e5b1f3a3a4f4d525a62dd38cf57b301897245ec3b338f6b6c"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/narration.md",
+      "beforeBytes": 3482,
+      "afterBytes": 3810,
+      "beforeSha256": "6002bb2a2270149a8955068d5952fc57cd22594649f576b3e8c38057846610b6",
+      "afterSha256": "8feab0c5b04c860bce3c40e400850425932114a8fba91bd3738972df31afc6fe"
+    },
+    {
+      "path": "experiences/path-vr/qa/media-hosting-20261013/README.md",
+      "beforeBytes": 11252,
+      "afterBytes": 11712,
+      "beforeSha256": "98419e0294ceb2e490ac9b888c8b3853046187a75c485b2971cffb243c6615f6",
+      "afterSha256": "00487487e777dae380ccfedce10a03128b99d96bda6b22faee115aad3b48a64d"
+    },
+    {
+      "path": "experiences/path-vr/qa/optimize-20261013/README.md",
+      "beforeBytes": 12892,
+      "afterBytes": 12985,
+      "beforeSha256": "96771db302099431f93075af474db08a7678201468ba5ab40ce5c9f89c38be84",
+      "afterSha256": "0a872d0d5b4e3533e727c739c65184627f6e094d232fc55f6181c7ce82135ef0"
+    },
+    {
+      "path": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+      "beforeBytes": 12864,
+      "afterBytes": 13414,
+      "beforeSha256": "5d3d8d8d98a0daef20de47cf301377e2195595e2ecb599185f99d32bad868472",
+      "afterSha256": "10e5aa821a30152dea0ebd0a4f16aa6f143075058b7fc099210c4c9288df4344"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/intent-interview.md",
+      "beforeBytes": 13899,
+      "afterBytes": 14149,
+      "beforeSha256": "fea721c1034b8631baab4e30a1d3df1575aa3355cffdcdef79e951c409a0d03f",
+      "afterSha256": "761c244ecc8dd8666afff7e8a71735effdf7822360b0b79f041ff6af24ec5b54"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/brief-contract.md",
+      "beforeBytes": 11889,
+      "afterBytes": 12139,
+      "beforeSha256": "b74a9a6dd4e69a35d6b17407a90539d721bafe93186b5c078553cb0b4d936a1e",
+      "afterSha256": "6ff40537639b76aa53ef6f5cbf987a65125ef84e74cfa8caca97d63e8f729556"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/review-loop.md",
+      "beforeBytes": 6122,
+      "afterBytes": 6372,
+      "beforeSha256": "3a396bf70ca251a16969f85912ed3f6838c56e6c01a7faec889488a2edc9e582",
+      "afterSha256": "8e79f0bd8a98a3eb2d1c78cbb114ecccb1218b65255a4a72b84e5f2f59cd73b8"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/production-loop.md",
+      "beforeBytes": 8188,
+      "afterBytes": 8431,
+      "beforeSha256": "15020c02cc399e17c23ab461d879ea225caa39eb93381a4a9c18080c8b84bcc1",
+      "afterSha256": "91fc7fcf158a9122f73a2a0ed9a9eb0c899766571cd4685323f8f2592b46920d"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/subagent-dispatch.md",
+      "beforeBytes": 3677,
+      "afterBytes": 3800,
+      "beforeSha256": "979074196889d149fff53afebd6604258dbab777951f455c9a831ffb8576cab7",
+      "afterSha256": "e71c0bf3e838a6a0deba350c0e526f35c0daea65388c24230aaa9c204244e7d2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/capability-menu.md",
+      "beforeBytes": 15611,
+      "afterBytes": 15861,
+      "beforeSha256": "44b7c86d35d2b4430b00c7a114efcfd1537d62fac6879b0d07be9f021a1598ce",
+      "afterSha256": "f2cf392744ddbfe47bc4e2ee187f2bdb88de026c165a111f10cce4ef7dff5053"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/pitch-round.md",
+      "beforeBytes": 5550,
+      "afterBytes": 5800,
+      "beforeSha256": "2d9ceb09ff7be704ebe47b64152b8f6d5dd611925d405e9f87f47f24dd65775c",
+      "afterSha256": "b7101be72648933e893208d4ca8db58b0eb58732a51c31612a2fe857b4dfbe31"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "beforeBytes": 7924,
+      "afterBytes": 7840,
+      "beforeSha256": "653f1c48643b115dfb97c993ad2b31aabc35ac53b6033dfff33c35b0bb03a779",
+      "afterSha256": "9f2ad441358aa9568d697f219b6fd738baea14c17fbe29d06c9f381518d92f04"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "beforeBytes": 11868,
+      "afterBytes": 11890,
+      "beforeSha256": "fa0cb3ef01a25b9094266109a63c1d01d4b2d4973f75b324f5c4ad7e568d148f",
+      "afterSha256": "94872175cefd6cf88daa3711432dce896b82befd0f626eb17eb81e6dfacbe609"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/critique.md",
+      "beforeBytes": 45944,
+      "afterBytes": 45352,
+      "beforeSha256": "cb8caddbb3919e5bf7f252143b519fb16db28a244642d937b186cb89962d9201",
+      "afterSha256": "9d0f9707e91a82503ea813a36ca122c4d32bb9dc73bab6759a381ab8d261b99f"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/live.md",
+      "beforeBytes": 36490,
+      "afterBytes": 36833,
+      "beforeSha256": "68c5636a7858dd0b5137a9229c15e25fdc2ee40a0f8a4e9d809f78e809256262",
+      "afterSha256": "7754cbe7e0510adc187d4549981a2f50725b0f1415b9d462607c4b9b27f98110"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/generate.md",
+      "beforeBytes": 13219,
+      "afterBytes": 13153,
+      "beforeSha256": "53628d05b7eff0d4f48b95e48fad40266452fe1b42f398bd88dd9328353e0dd8",
+      "afterSha256": "4ccd347becdebe621ff514697d2231bc892f4aa587aa61618dbac67523dccfb2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/visualize.md",
+      "beforeBytes": 11757,
+      "afterBytes": 12070,
+      "beforeSha256": "896da399bafcffb0623bdd81bb18709d6eab25c9d5917e739c8798f31ff0d076",
+      "afterSha256": "c8312730d43fbb14402be34d1dd0f497a0c6a087fc3b652c873da7ed57b291f2"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/new-work.md",
+      "beforeBytes": 52769,
+      "afterBytes": 53019,
+      "beforeSha256": "85b9c2d051de94ee9129c58be111946f73035ca62bbd2a3936f4fa48768fe5cf",
+      "afterSha256": "1b66e685b2ceef08b9be5bfd1d393422670ea0d45e6f3a8fa1ce1ef3cda39fd8"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/document.md",
+      "beforeBytes": 27521,
+      "afterBytes": 27771,
+      "beforeSha256": "3673248740bcdd1122ccc610093ba2fe52f3943a61ce0b7170b74dc49e5b6098",
+      "afterSha256": "7a421019836ff1b0fce85094b8f13962f0b808093a7b45e9623a341cc3074f28"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/init.md",
+      "beforeBytes": 11536,
+      "afterBytes": 11786,
+      "beforeSha256": "bb069b43c09109d7031b0374e31955749fec657b252d39782f11e8985aca2b51",
+      "afterSha256": "fe7a0e1f6f6c743057c1614a75aa4c601d404355c0d6ac6386e2f494604ff1d0"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/craft-floor.md",
+      "beforeBytes": 5500,
+      "afterBytes": 5798,
+      "beforeSha256": "e802e4f7bdc89050a9c0f2ca506e1d493a2316e6e810c0336c57aa073717ef3e",
+      "afterSha256": "edd045f7428a9dddd3660f538d27390b73aaffa4b594b3c9040f83b130bc675d"
+    },
+    {
+      "path": "experiences/synk-account/qa/unified-account-20261006.md",
+      "beforeBytes": 16585,
+      "afterBytes": 16597,
+      "beforeSha256": "09456201f8f71acf050568134ae78bf3df22ef63763813246fec34c9b0f3faea",
+      "afterSha256": "ee4982f3631ac02359a778bfa8bf7af0ff4df0d624110fc956375254e39002a2"
+    },
+    {
+      "path": "experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md",
+      "beforeBytes": 16255,
+      "afterBytes": 16572,
+      "beforeSha256": "12a5f37ef1ff791355bc2708cddff1283d460d6c6b386cc982ba2dfafbcab0e9",
+      "afterSha256": "74e9af75e0ecd9140ce8557cb89887e629173cdc8e553328d0ef8abdc4c980d1"
+    },
+    {
+      "path": "experiences/beginner-games/qa/account-sync/preparation-history-before-publication-20261009.md",
+      "beforeBytes": 16166,
+      "afterBytes": 16589,
+      "beforeSha256": "fa8ce2bd5a3068796fabcbf75f980bcaff650d9fcd2b82987014752c74365384",
+      "afterSha256": "f30d814d287cda57008d0e2664951ca80ce103e43b9ea974e3753e5adb0870cd"
+    },
+    {
+      "path": "experiences/blank-slice/qa/RESULTS.md",
+      "beforeBytes": 23772,
+      "afterBytes": 23953,
+      "beforeSha256": "5e468cd38fe6fd6fb1421264e11fdcbb8e176be56b3d9fea0647d807964dde94",
+      "afterSha256": "2854b94d2cce6abe4de40a1005d5894c5aaf0333568ea86085b6e6b7ec00dc82"
+    },
+    {
+      "path": "experiences/path-vr/qa/public-release-20261012/README.md",
+      "beforeBytes": 28758,
+      "afterBytes": 29254,
+      "beforeSha256": "00ce72c68e66ce9d31bdc56a71850b37f0c7ed30304a84321b59b28dbe922993",
+      "afterSha256": "35703cc6663c15a0f69d1cc701bcd9507eed93654e8d4576f774440abb2d3a6d"
+    },
+    {
+      "path": "experiences/path-travel/qa/RESULTS.md",
+      "beforeBytes": 34747,
+      "afterBytes": 35294,
+      "beforeSha256": "61bcba711b9ff152b5c2927e11310129f82bd4e5329c03b966c3147046d47829",
+      "afterSha256": "7d71fc5ce6bc4189140bc5cbc82273b7fc19e060079164e341f7670523b701e6"
+    },
+    {
+      "path": "experiences/talk-rally/qa/RESULTS.md",
+      "beforeBytes": 38751,
+      "afterBytes": 38711,
+      "beforeSha256": "4e0c874a6fbbdd2829598bb15277f0c2f0f139dc8e0a23eeba654955f200644d",
+      "afterSha256": "14f4a3a4fe0151684f2495972ba2d18c1b6ae5041e46a70cb6268f65f059aead"
+    },
+    {
+      "path": "docs/_ops/WORLD화면_리디자인_인계_20261014.md",
+      "beforeBytes": 19726,
+      "afterBytes": 2518,
+      "beforeSha256": "013a1631e7002f2f5dd69aca249140348b41ac7e3ebb129a0231f89da64db57e",
+      "afterSha256": "8acc853b2ea5169c9b09a376339ba97b28202e07bfc48b07bbb45514ad3d60a9"
+    },
+    {
+      "path": "docs/_ops/LAB_TOPIK관용구퀴즈_인계_20261014.md",
+      "beforeBytes": 11173,
+      "afterBytes": 2074,
+      "beforeSha256": "37721ea96924cd0f7771bcc20f5c50456eb50452ed72ce62eede74812a86c7e6",
+      "afterSha256": "90646f8530a9f04d7e9eaefcca79742cb0eb2b457f47c3a13398ee277e05791e"
+    },
+    {
+      "path": "docs/_ops/게임문구_받침_인계_20261008.md",
+      "beforeBytes": 12386,
+      "afterBytes": 2803,
+      "beforeSha256": "3cdc4cf594a1bdf15d7153c3bcc0c7e00f566cfb717afe0a5c1c51a93d6cc877",
+      "afterSha256": "eb48a2e1ba8849775d0bce44b2a18a1f0264382b622091bca134da9ee4ec64f7"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE_QA.md",
+      "beforeBytes": 402173,
+      "afterBytes": 403012,
+      "beforeSha256": "a4e39cb682cb99fbaafe88f68a6fa773182d9944e165e9d0b41c92672ac52366",
+      "afterSha256": "7fb94db719dacbb06853acc2a6b688302c66235bd9a3495613fb252b14766ef5"
+    },
+    {
+      "path": "docs/_ops/qa/brand-experience-20261008/RELEASE.md",
+      "beforeBytes": 51149,
+      "afterBytes": 51844,
+      "beforeSha256": "ac760a98cae68ef18939ac0072c45d8dd3d97c24fc88cd0c1ae556557832cc31",
+      "afterSha256": "b175f15a9b9055a944b84b22d69894e04490977a82ca5b1f3ca41cb121914857"
+    },
+    {
+      "path": "docs/_ops/검수_AI예산원장_튜터_20261003.md",
+      "beforeBytes": 46592,
+      "afterBytes": 46684,
+      "beforeSha256": "36de3d94a1dfe6ded9b6b317e61162fc56f24e39ed9f04c497726536d2d38a7e",
+      "afterSha256": "0aafdc0d99518f85b2d2d398acbfe226443aea193ae2acc785ee2a545c99262b"
+    },
+    {
+      "path": "docs/_ops/qa/workspace-signal-20261010/README.md",
+      "beforeBytes": 31831,
+      "afterBytes": 32157,
+      "beforeSha256": "edd0710055ebe3266c561fc24b3ed8a2263898aedf276435e549b8d6af7ea50b",
+      "afterSha256": "9becfd556b13b238bf531d4a34bd2503b375c5e4e5bfc64a49105a708a92c022"
+    },
+    {
+      "path": "docs/_ops/qa/brand-experience-20261008/README.md",
+      "beforeBytes": 28129,
+      "afterBytes": 28629,
+      "beforeSha256": "4fddcca2e4dece67540cb9bdf7f34aa1c9466b94b6d8a4c0cc937378a1c96148",
+      "afterSha256": "95e69659e7f2cb914b12caa51c0ce98a6819022597608d0bdcd8f8b99aa65fdf"
+    },
+    {
+      "path": "docs/_ops/옛시스템_정리목록_20261002.md",
+      "beforeBytes": 26502,
+      "afterBytes": 26966,
+      "beforeSha256": "257ded51fdce5782d1ea037ab967a1781ca8c74af9612997756860d64c4876c5",
+      "afterSha256": "973394921691e3976df681d092b4e76f7f72dc7e931b5c3af18e2051f3ffba68"
+    },
+    {
+      "path": "docs/_ops/qa/platform-account-audit-20261008/COMPLETION.md",
+      "beforeBytes": 25977,
+      "afterBytes": 26191,
+      "beforeSha256": "3ec474bae91a344f1cdbe1da3df84059e41161b0bc3a5f9114e662b97589976c",
+      "afterSha256": "c4cdc3deeda8a3c27cbabe2d90dd4bb84b76693d7d6837d2bcc5e34b3d3cac0b"
+    },
+    {
+      "path": "docs/앱로드맵_20260921/audit-village.md",
+      "beforeBytes": 25567,
+      "afterBytes": 25868,
+      "beforeSha256": "1e6214cf9039e82874fd8ffcfb350fceadcbe42b4fb6d8615b87a51336184c6a",
+      "afterSha256": "efd10de7604a99533d6d0f74c6e1ab8e9190dae5efe61f0170c95dd848d220f8"
+    },
+    {
+      "path": "docs/앱로드맵_20260921/audit-learning.md",
+      "beforeBytes": 20267,
+      "afterBytes": 20611,
+      "beforeSha256": "8313e4065c4a530d16ba189ef2922c0995106a23df76560e418fad85f8974a40",
+      "afterSha256": "b5408677f626850d373923ef0aa29dfeb9304410738d3c8a4928dda70be84399"
+    },
+    {
+      "path": "docs/앱로드맵_20260921/audit-platform.md",
+      "beforeBytes": 19058,
+      "afterBytes": 19374,
+      "beforeSha256": "f490d82ae575a484899f841401999a062f29fe24dca76c3d4e7fdcc7b3450731",
+      "afterSha256": "1cb5da4bceafbfc10e34127c685c849ad7207c5183ca3e31255a792ca67e358a"
+    },
+    {
+      "path": "docs/_ops/qa/google-signup-20261009/GOOGLE-SMS-SETUP.md",
+      "beforeBytes": 22428,
+      "afterBytes": 22795,
+      "beforeSha256": "3538d2421db00c2dff6945dbf89cc695a96e8344e44bc87e815659f9d8621652",
+      "afterSha256": "37bf9f9565f94a1c2f2b70a8fa514e4d4b6eb6d8cb212568bc46d1a9433af632"
+    },
+    {
+      "path": "docs/_ops/아틀라스2단계_인계_20260918.md",
+      "beforeBytes": 22088,
+      "afterBytes": 21046,
+      "beforeSha256": "b96eb6410452619c1f31eb03b46ae28adc747dee7f776f47e911778102bdd22e",
+      "afterSha256": "ffbfac66116a4a544a8d0b1f4e0d79c01d089f64e07d4a8a0e26ac443f003753"
+    },
+    {
+      "path": "tools/synk-id/qa/운영적용-최종준비-20261007.md",
+      "beforeBytes": 19554,
+      "afterBytes": 19745,
+      "beforeSha256": "c8cb5e32a31b7ef2ecaae58821ef2ed6d4ad068c92c2738153aaa76bd6abbcc7",
+      "afterSha256": "bf28668f0a3e2af0672a2704adc1e738ee2642714fef4768c9b3b8d4814097bf"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-review-20261006/README.md",
+      "beforeBytes": 19544,
+      "afterBytes": 19986,
+      "beforeSha256": "520bba4fdf62c07144fab777e46abee7589a61e6276a704d6ced879f9b38f2bd",
+      "afterSha256": "6ff55aff84d578540525494416696c9d2aa8b7c87c0388785ba816f4ba2b01a5"
+    },
+    {
+      "path": "docs/_ops/협업장치_정리_20260921.md",
+      "beforeBytes": 17422,
+      "afterBytes": 17533,
+      "beforeSha256": "5561190d48533271df5a3aa858d63de21705de09ec0968362e4eaa0602da514d",
+      "afterSha256": "7587210bbe1971faf3e1930ba8be9905340661316c8d166736f228a1711ca0bb"
+    },
+    {
+      "path": "docs/_ops/LAB게임_목소리_인계_20261008.md",
+      "beforeBytes": 15735,
+      "afterBytes": 15921,
+      "beforeSha256": "dcaa30a0fd832f90dd0f8014b93931f088ad19002b5ec2efc9f568e165948ae5",
+      "afterSha256": "a84c261b73610ef7c29d0aa78fa287399274fd157fde2b7d29924788dddc83f1"
+    },
+    {
+      "path": "docs/_ops/qa/platform-convenience-20261009/README.md",
+      "beforeBytes": 14971,
+      "afterBytes": 15222,
+      "beforeSha256": "c3576f3fed15cf1b94cf1bd88fdd5e204ad87187c021fccb81c815d5f56de27f",
+      "afterSha256": "16559a9eb2cb4f582afb807ec09fcaceea154588603f968c6b0b73079ce7ea03"
+    },
+    {
+      "path": "docs/_ops/qa/google-signup-20261009/SERVER-CONSUMERS.md",
+      "beforeBytes": 14844,
+      "afterBytes": 15147,
+      "beforeSha256": "1975652579450f7644d0af2ea2fec22f2d20ba5df2e5d281de72dafba8512b5e",
+      "afterSha256": "e51fb4347b01e125ea6e76847fc17b02a4ae76f5c76e32fb2285dd2fe1e17463"
+    },
+    {
+      "path": "tools/synk-id/qa/운영재개-실행준비-20261006.md",
+      "beforeBytes": 11707,
+      "afterBytes": 11951,
+      "beforeSha256": "30a549281355a2424ae25e988b07d64f21c948ac4d750af504107f9c40be7e38",
+      "afterSha256": "c135485cdcefdd757e58996f512b99124e31d6260920237676cbea4fb70c40cd"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/ops/README.md",
+      "beforeBytes": 11502,
+      "afterBytes": 11719,
+      "beforeSha256": "26f88f5deb1a82c08d20fdd37342fd8bbed2372f313f2a0763fec8a839c3cf7f",
+      "afterSha256": "73711567a4412ac6a5a490040f2c00cb9ef3ecf9b64a1d5d6a4b594e3842c65e"
+    },
+    {
+      "path": "docs/_ops/qa/workspace-data-audit-20261009/README.md",
+      "beforeBytes": 10928,
+      "afterBytes": 11257,
+      "beforeSha256": "375a20e46d93121348b22fb887fa4345440185549c3dfcc62a0f4031fe7d5033",
+      "afterSha256": "c47b08527cb52924769fbc5152dc471a4df8a1d99bcccd5b20f9e1ee6f8c1c0d"
+    },
+    {
+      "path": "docs/_ops/qa/google-release-20261009/desktop/README.md",
+      "beforeBytes": 10727,
+      "afterBytes": 11302,
+      "beforeSha256": "f10afb91021cdf5bead7efa8fd0fa9d9c3e3e21246561a1c3f776c8c2c055b55",
+      "afterSha256": "f804ac8340b84f5a06373b4f68a0dd194c2587fbddc977e10177144ed6ba9393"
+    },
+    {
+      "path": "docs/_ops/qa/platform-signal2-20261010/README.md",
+      "beforeBytes": 10488,
+      "afterBytes": 10797,
+      "beforeSha256": "11758a7cca966ce313d11a7dec6e9c440c5b0251966416027ad1bce94af0bd6d",
+      "afterSha256": "77d997bb94964053a03550f1b411e18fbe4e07f2c24e1baa10d58e5f916d2933"
+    },
+    {
+      "path": "docs/_ops/qa/workspace-data-audit-20261009/operations-readiness.md",
+      "beforeBytes": 10022,
+      "afterBytes": 10102,
+      "beforeSha256": "a36de16626be13dc225100feab2475283c8a00a230ee84fca949569d5a16f88d",
+      "afterSha256": "e7a6e7172f38074134c984c177413fcbdb0ff1b7b7a3370bce71408834553775"
+    },
+    {
+      "path": "docs/_ops/아틀라스검토_인계_20261007.md",
+      "beforeBytes": 9757,
+      "afterBytes": 8291,
+      "beforeSha256": "6c574331882b097e8069bbc4b3e0dc636bae07cb71023a1dc6a05a401fde3165",
+      "afterSha256": "90d6393306aaff90e2f229bde08ff3a94e084269f1702afb7bf1e24d3efa51de"
+    },
+    {
+      "path": "docs/_ops/qa/workspace-care-20261009/README.md",
+      "beforeBytes": 7266,
+      "afterBytes": 7618,
+      "beforeSha256": "482944eae937d5edc1ceac7df4bcdb7d7c5ef98f4c0735366ec8f5baf2f199ab",
+      "afterSha256": "bab9916aa3dfd980873650cd9a9a151b6d365606d5493dc70579c2c962d09411"
+    },
+    {
+      "path": "docs/_ops/qa/platform-convenience-20261009/delivery/resume/README.md",
+      "beforeBytes": 6972,
+      "afterBytes": 7208,
+      "beforeSha256": "8d730e16f7fc6ef731a242d852d4a850f3c085dbacb77b38a3fed07d8d3d8b40",
+      "afterSha256": "dd0d483a547d666daed2007371c097e931fc8cd36897e2efacee379059e08384"
+    },
+    {
+      "path": "docs/_ops/qa/platform-account-audit-20261008/collision-audit.md",
+      "beforeBytes": 6735,
+      "afterBytes": 6916,
+      "beforeSha256": "be0aaed317196c918e1edc778f7f2fdd3c6bfacd3936e325e65d7d9a52d1462e",
+      "afterSha256": "2259f42ca1cbb54cac7793349edcb1221e7222a0ce29ab52fd1b3cb562a8c3af"
+    },
+    {
+      "path": "docs/_ops/qa/platform-pulse-workflow-20261011/README.md",
+      "beforeBytes": 6558,
+      "afterBytes": 6829,
+      "beforeSha256": "e86c9290d3820ff22fdd5b370050edc919535f2190c84260630679b6bd6d7bb3",
+      "afterSha256": "0911dc329d627ac51152cd0fa310a85e75f5b38b521e4a04389f3c59d78dd83b"
+    },
+    {
+      "path": "docs/_ops/시스템_경량화_20261010.md",
+      "beforeBytes": 24183,
+      "afterBytes": 29586,
+      "beforeSha256": "d97939fb6d70a122fcb2abf679707c51a6a17c3cb2ab5b3bc5b2f26aad06ae75",
+      "afterSha256": "463a047629a5b643d55cc71a6fc22918d95854e51d37165fc14214d8f09b4a0b"
+    },
+    {
+      "path": "docs/_ops/결정.md",
+      "beforeBytes": 357254,
+      "afterBytes": 357578,
+      "beforeSha256": "aca566dd075179629098dd79d13a2650718cbcad0cedebadbbedee1db1e612d2",
+      "afterSha256": "76c5fe75709a35b1fe3cb6e65ffc1ac035fc52add4bda7afd3923b417ed60b0c"
+    },
+    {
+      "path": "docs/_ops/트랙.md",
+      "beforeBytes": 160507,
+      "afterBytes": 160575,
+      "beforeSha256": "7dbbfa0cdab3136b42983f742b61cf2e01f4382f61010b0d67a32f98d680f886",
+      "afterSha256": "703ea338556e142e824221e3657c8d8587ffb836929f532a60e848c86eb2ee4d"
+    }
+  ],
+  "pendingQueue": [],
+  "ledgerDrift": [],
+  "bytesBefore": 6790190,
+  "bytesAfter": 6648724,
+  "newLocalLinksChecked": 215,
+  "newLocalLinkFailures": [],
+  "incomingAnchorLinksChecked": 114,
+  "coverageByDomain": {
+    "operations": {
+      "full": 243,
+      "equivalent": 6
+    },
+    "operations-atlas": {
+      "full": 1
+    },
+    "business": {
+      "full": 39,
+      "equivalent": 1,
+      "full-diff": 7
+    },
+    "product": {
+      "equivalent": 74,
+      "full": 218,
+      "full-diff": 5
+    },
+    "product-extra": {
+      "full": 1
+    },
+    "content": {
+      "full": 340,
+      "equivalent": 20
+    },
+    "content-creative": {
+      "full": 26,
+      "full-diff": 1
+    }
+  },
+  "coverageUnique": {
+    "full": 867,
+    "equivalent": 101,
+    "full-diff": 13
+  },
+  "coverageLedgers": [
+    "operations",
+    "operations-atlas",
+    "business",
+    "product",
+    "product-extra",
+    "content",
+    "content-creative"
+  ],
+  "unrelatedChangesSinceStart": [],
+  "failures": [],
+  "contentChanges": {
+    "files": 157,
+    "bytesBefore": 6248246,
+    "bytesAfter": 6100985
+  },
+  "reviewClassifications": {
+    "fullDirect": 782,
+    "priorFullRevalidated": 85,
+    "fullDiff": 13,
+    "exactEquivalent": 101
+  },
+  "extraNewReferenceFiles": [
+    "docs/마케팅/HyperFrames_기존영상_참고.md"
+  ],
+  "complete": true
+}

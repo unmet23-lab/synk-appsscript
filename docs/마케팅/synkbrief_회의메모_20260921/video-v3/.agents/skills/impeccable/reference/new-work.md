@@ -1,5 +1,7 @@
 # New visual work
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 Use this flow for a new surface or a replacement visual identity. PRODUCT.md owns product truth. DESIGN.md owns durable visual decisions. A surface brief keeps strategy that belongs to one route or artifact. Complete [init.md](init.md) first when PRODUCT.md is missing; a missing DESIGN.md does not route back to init.
 
 ## 1. Decide what is already true

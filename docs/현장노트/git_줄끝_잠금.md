@@ -167,6 +167,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 병합 전에 `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 본다. 번호만 바꿀 때는 「로컬 판 + 번호 문자열 바꾸기」로 blob을 만든다. 로컬과 origin이 크게 갈라졌을 때 합친 기록과 도구는 `.tmp/origin-merge-20261009/scripts/`(`apply3.cjs`: 병합 트리 → 공용 작업본 3방향 → master CAS → 그 경로만 인덱스)·`.tmp/origin-sync-20261010/README.md`. 작업 중 origin이 계속 움직이면 머리가 바뀔 때마다 처음부터 다시 계산하고, origin에 올리는 세션에 잠깐 멈춰 달라고 한다.
 - 다시 확인: 병합 커밋과 origin/master의 `git diff --stat`이 로컬에만 있는 커밋들의 변경뿐이다.
 
+### 용량 정책에 걸리는 파일(ZIP)이 든 브랜치를 합치면, 나중에 지워도 push 전 검사가 막는다
+- 증상: GPT 문서 정리 백업 브랜치 `codex/document-cleanup-20261017`(`86334dd99`)에 ZIP 2개(16.7MB·3.0MB)가 들어 있었다. 그대로 합치면 `node tools/git-storage-check.cjs --base origin/master --head HEAD`가 실패한다. 병합 뒤 ZIP을 지워도 마찬가지다(10-17 클라우드).
+- 원인: 범위 검사는 범위 안 모든 커밋의 새 blob을 본다. 병합하면 원 커밋과 그 ZIP blob이 이력에 들어온다.
+- 고침: 원 커밋과 같은 바탕에 ZIP만 뺀 트리로 커밋을 다시 만들어 합친다. 별도 인덱스(`GIT_INDEX_FILE`)에 `git read-tree <원 커밋>` → `git rm --cached -q <ZIP>` → `git write-tree` → 원 커밋의 작성자·시각을 `GIT_AUTHOR_*`로 주고 `git commit-tree <트리> -p <원 커밋의 부모>` → `git merge`. 원 브랜치는 지우지 않는다(ZIP은 거기에 남는다).
+- 다시 확인: `git diff --name-status <원 커밋> <새 커밋>`이 ZIP 두 줄의 `D`뿐이고, 범위 검사가 PASS다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
@@ -200,3 +206,17 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 경로를 주지 않으면 모든 경로의 바뀐 blob을 읽는다(`-S`는 내용 비교, 이름 바뀜 탐지도 내용을 읽는다). 받지 않은 큰 blob에서 멈춘다. 둘 중 어느 쪽이 먼저 막혔는지는 가르지 않았다.
 - 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
 - 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.
+
+## 클라우드 세션(부분 복제)
+
+### 클라우드에서 `npm run check:storage`가 「lazy fetching disabled」로 멈추고, 파이프가 실패를 가린다
+- 증상: 클라우드 세션에서 `npm run check:storage`(`--cached`)가 `Git inspection failed (rev-list): warning: lazy fetching disabled … could not fetch <oid> from promisor remote`로 끝났다. 검사를 `… | tail -2`로 받아 `&&`로 이은 탓에 실패가 가려져, 다음 `git commit`이 그대로 돌았다(10-17 `23fc6ca2f`, 뒤에 범위 검사로 통과 확인).
+- 원인: 이력 조사를 하려고 `git fetch --filter=blob:none --unshallow`로 옛 커밋을 내용 없이 받아 두면, `--cached` 검사가 기준(HEAD)의 이력 전체를 `rev-list --objects`로 훑다가 없는 blob을 만난다(검사는 일부러 lazy fetch를 끈다). `git fetch --depth 1 origin master`로 다시 얕게 해도, 그사이 master가 앞으로 나갔으면 얕은 경계가 새 master에만 생겨 내 브랜치 조상은 다시 끝까지 훑어진다. 파이프의 종료 코드는 마지막 명령(`tail`)의 것이다.
+- 고침: 커밋 전에는 `node tools/git-storage-check.cjs --base origin/master --head HEAD`(범위 검사)를 돌린다. 내 커밋이 새로 만든 blob만 보므로 옛 blob이 없어도 된다. 검사 결과는 파이프 없이 받거나 `set -o pipefail`을 켠 뒤 잇는다.
+- 다시 확인: 같은 상태에서 범위 검사가 `PASS`이고, 파이프 없이 돌린 뒤 `echo $?`가 0이다.
+
+### 클라우드 복제에서 커밋 대상 `git grep`·작업본 전체 `rg`가 수백 초를 넘긴다
+- 증상: `git grep -n '…' origin/master -- ':!*.md'`가 200초 제한을 넘겨 멈췄다. 작업본 전체에 돌린 `rg -g '!*.md'`도 120초를 넘겼다(10-17, 작업본 3.8GB).
+- 원인: 커밋을 대상으로 한 `git grep`은 그 트리의 blob을 모두 풀어 읽는다(부분 복제면 없는 blob을 받으러 가기도 한다). 영상·이미지가 많은 이 저장소는 작업본 전체를 훑는 것만으로도 오래 걸린다.
+- 고침: 찾을 폴더를 좁혀 `rg -n -g '!*.md' '…' <폴더…>`로 찾는다. 다른 커밋의 파일 하나는 `git show <커밋>:<경로> | grep`으로 본다.
+- 다시 확인: 좁힌 폴더의 `timeout 120 rg -n '…' <폴더>`가 몇 초 안에 끝난다.
