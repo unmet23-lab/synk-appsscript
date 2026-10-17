@@ -38,18 +38,22 @@ test('both real policies receive exactly the same scripted answers, without muta
   }
 });
 
-test('fewer questions alone cannot pass an authored mandatory-budget check, even with identical advice', () => {
-  const result = evaluateConsultation(only('web-new-light')), item = result.cases[0];
+test('fewer questions alone cannot pass an authored mandatory check, even with identical advice', () => {
+  // Since 001d225cf (10-08, computer-question-value-4) Atlas asks every unanswered product-required
+  // confirmation, so it now asks the budget here. The authored gate must still reject an answer the case
+  // author made mandatory that Atlas skips because it would not change the advice (multitask).
+  const data = only('web-new-light'); data.cases[0].requiredAnswers.push('multitask');
+  const result = evaluateConsultation(data), item = result.cases[0];
+  assert.ok(item.atlas.trace.some(row => row.about === 'budget'), 'the required budget is asked');
   assert.ok(item.atlas.questionCount < item.fixed.questionCount);
   assert.equal(item.comparison.finalDecisionsEqual, true); assert.equal(item.atlas.matchesCompleteScriptReference, true);
-  assert.ok(item.atlas.missingRequiredAnswers.includes('budget'));
+  assert.deepEqual(item.atlas.missingRequiredAnswers, ['multitask']);
   assert.equal(item.fixed.scriptedQualityGatePassed, true); assert.equal(item.atlas.scriptedQualityGatePassed, false);
   assert.equal(item.atlas.questionSelectionFinished, true);
-  assert.equal(item.atlas.productCompletion.status, 'provisional');
-  assert.deepEqual(item.atlas.productCompletion.budget, { state: 'missing', required: true });
-  assert.ok(item.atlas.productCompletion.unresolvedRequiredFields.includes('budget'));
-  assert.equal(item.atlas.decisionStatus, 'provisional-only'); assert.equal(item.atlas.productQualityGatePassed, false);
+  assert.equal(item.atlas.productCompletion.status, 'ready', 'the product requirements alone are met');
+  assert.equal(item.atlas.decisionStatus, 'requirements-confirmed'); assert.equal(item.atlas.productQualityGatePassed, false);
   assert.equal(item.fixed.productCompletion.status, 'ready'); assert.equal(item.fixed.decisionStatus, 'requirements-confirmed');
+  assert.equal(item.comparison.authoredQualityComparable, false);
   assert.equal(item.comparison.fewerQuestionsWithQualityMaintained, false); assert.equal(result.summary.qualityComparableCases, 0);
 });
 
@@ -133,16 +137,17 @@ test('reusing a sufficient existing computer does not manufacture a missing purc
 
 test('version 2 preserves the original question policies and authored gates while exposing product gaps', () => {
   const report = evaluateConsultation(dataset);
-  assert.equal(report.summary.fixed.questionCount, 53); assert.equal(report.summary.atlas.questionCount, 32);
-  assert.equal(report.summary.fixed.scriptedQualityGatePassed, 6); assert.equal(report.summary.atlas.scriptedQualityGatePassed, 5);
+  // 10-08 policy (001d225cf): Atlas still asks fewer questions but no longer skips product-required confirmations.
+  assert.equal(report.summary.fixed.questionCount, 53); assert.equal(report.summary.atlas.questionCount, 38);
+  assert.equal(report.summary.fixed.scriptedQualityGatePassed, 6); assert.equal(report.summary.atlas.scriptedQualityGatePassed, 6);
   assert.equal(report.summary.fixed.questionSelectionFinished, 7); assert.equal(report.summary.atlas.questionSelectionFinished, 7);
-  assert.equal(report.summary.authoredQualityComparableCases, 5);
-  assert.equal(report.summary.fewerQuestionsWithAuthoredQualityMaintained, 5);
-  assert.deepEqual(report.summary.authoredQualityComparableQuestionCounts, { fixed: 34, atlas: 21, reduced: 13 });
+  assert.equal(report.summary.authoredQualityComparableCases, 6);
+  assert.equal(report.summary.fewerQuestionsWithAuthoredQualityMaintained, 6);
+  assert.deepEqual(report.summary.authoredQualityComparableQuestionCounts, { fixed: 39, atlas: 30, reduced: 9 });
   const productComparable = report.cases.filter(item => item.comparison.qualityComparable);
-  assert.equal(productComparable.length, 1);
+  assert.equal(productComparable.length, 6);
   assert.equal(report.summary.qualityComparableCases, productComparable.length);
-  assert.equal(report.summary.fewerQuestionsWithQualityMaintained, 1);
+  assert.equal(report.summary.fewerQuestionsWithQualityMaintained, 6);
   for (const item of report.cases) {
     assert.equal(item.comparison.qualityComparable, item.comparison.authoredQualityComparable && item.fixed.productQualityGatePassed && item.atlas.productQualityGatePassed);
     assert.equal(item.comparison.fewerQuestionsWithQualityMaintained, item.comparison.qualityComparable && item.atlas.questionCount < item.fixed.questionCount);
@@ -156,7 +161,14 @@ test('version 2 preserves the original question policies and authored gates whil
     assert.equal(summary.productQualityGatePassed, report.cases.filter(item => item[policy].productQualityGatePassed).length);
     assert.equal(summary.productReady + summary.productProvisional + summary.productNotStarted, summary.cases);
   }
-  const provisionalAuthoredPasses = report.cases.filter(item => item.atlas.scriptedQualityGatePassed && item.atlas.productCompletion.status === 'provisional');
+  assert.ok(report.cases.filter(item => item.atlas.scriptedQualityGatePassed).every(item => item.atlas.productCompletion.status === 'ready'),
+    'Atlas asks product-required confirmations, so its authored passes are product-ready in this dataset');
+  // The authored and product gates stay independent: an author who does not require the memory the user
+  // explicitly cannot tell gets an authored pass while the product still keeps the advice provisional.
+  const variant = copy(dataset.cases.find(item => item.id === 'explicit-unknown-memory'));
+  variant.requiredAnswers = variant.requiredAnswers.filter(id => id !== 'current.ram');
+  const provisionalAuthoredPasses = evaluateConsultation({ ...copy(dataset), cases: [variant] }).cases
+    .filter(item => item.atlas.scriptedQualityGatePassed && item.atlas.productCompletion.status === 'provisional');
   assert.ok(provisionalAuthoredPasses.length > 0, 'independent authored criteria must not be silently replaced by product criteria');
   assert.ok(provisionalAuthoredPasses.every(item => !item.atlas.productQualityGatePassed));
   assert.ok(provisionalAuthoredPasses.every(item => item.comparison.authoredQualityComparable && !item.comparison.qualityComparable && !item.comparison.fewerQuestionsWithQualityMaintained));
