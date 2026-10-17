@@ -51,11 +51,15 @@ async function startTool(env) {
   const child = spawn(process.execPath, [TOOL, '--port', String(port)], { env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   child.stdout.on('data', d => { out += d; }); child.stderr.on('data', d => { out += d; });
-  for (let i = 0; i < 100 && !out.includes('미니게임 목소리:'); i++) await new Promise(r => setTimeout(r, 100));
-  assert.ok(out.includes('미니게임 목소리:'), '도구가 뜬다: ' + out);
   const base = 'http://127.0.0.1:' + port;
-  const page = await (await fetch(base + '/')).text();
-  const token = /const T='([0-9a-f]+)'/.exec(page)[1];
+  let page, token;
+  try {
+    for (let i = 0; i < 100 && !out.includes('미니게임 목소리:'); i++) await new Promise(r => setTimeout(r, 100));
+    assert.ok(out.includes('미니게임 목소리:'), '도구가 뜬다: ' + out);
+    page = await (await fetch(base + '/')).text();
+    token = /const T='([0-9a-f]+)'/.exec(page)?.[1];
+    assert.ok(token, '화면 토큰: ' + page.slice(0, 300));
+  } catch (error) { child.kill(); throw error; } // 아직 tools에 넣기 전이라 finally가 끄지 못한다.
   const call = async (url, body, browser = false) => {
     const res = await fetch(base + url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(browser ? { Origin: base, 'X-Local-Token': token } : {}) }, body: JSON.stringify(body || {}) });
     return { status: res.status, data: await res.json() };
