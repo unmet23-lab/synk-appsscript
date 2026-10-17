@@ -22,11 +22,11 @@ test('the card names every learning reason of the contract, and no other', () =>
   assert.deepEqual(Object.keys(REASON_WORDS).sort(), contract.배우는이유.보기.map(option => option.값).sort());
 });
 
-test('each WORLD game names only real Strata situations, and the learning hub and seven games stay listed', () => {
-  assert.deepEqual(WORLD_GAMES.map(game => game.path), ['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice']);
+test('each WORLD game names only real Strata situations, and the learning hub and eight games stay listed', () => {
+  assert.deepEqual(WORLD_GAMES.map(game => game.path), ['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally']);
   for (const game of WORLD_GAMES) for (const id of game.situations) assert.equal(map.getNode(id)?.kind, 'situation', `${game.path}: ${id}`);
   // The same games' folders under synk.im/try/ (published there, unlinked).
-  assert.deepEqual(WORLD_GAMES.map(game => game.slug), ['learning-hub', 'racing', 'runner', 'rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice']);
+  assert.deepEqual(WORLD_GAMES.map(game => game.slug), ['learning-hub', 'racing', 'runner', 'rhythm', 'order-rush', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally']);
   assert.equal(picksForReasons(forReasons(['life']))[0].slug, 'entry-check');
 });
 
