@@ -14,7 +14,7 @@
 .tutor-sound[aria-pressed=true]::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
 .tutor-intro{font-size:15.5px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
 .tutor-intro strong{color:var(--w-ink-2);font-weight:var(--wt-strong)}
-/* 무대: 말풍선이 위, 그 튜터의 방 한쪽에서 구운 사진이 아래(카드 아래를 꽉 채움). 스스로 움직이지 않는다(눈 깜빡임만). */
+/* 무대: 말풍선이 위, 그 튜터의 방 한쪽에서 구운 사진이 아래(카드 아래를 꽉 채움). 눈 깜빡임과 숨쉬기(10-17 world-motion)만 스스로 움직인다. */
 [data-tutor=mongle]{--tutor-glow:rgba(249,104,89,.26)}
 [data-tutor=kkamong]{--tutor-glow:rgba(176,124,84,.28)}
 [data-tutor=marin]{--tutor-glow:rgba(96,128,214,.30)}
@@ -61,6 +61,12 @@
 .tutor-speech[data-character=marin]{border-radius:12px 12px 12px 4px}
 .tutor-speech.speak{animation:tutor-bubble-in .3s var(--w-ease)}
 .tutor-speech[data-character=marin].speak p{animation:tutor-transmission var(--speech-duration,1s) steps(12,end)}
+/* 10-17 말투 글자가 켜지면 마린의 옛 가림막(clip-path)은 쓰지 않는다(글자 해독이 같은 일을 한다) */
+.tutor-speech.w-talking p{animation:none}
+.tutor-primary.w-sheen{position:relative}
+.tutor-touch.w-breathe{transform-origin:50% 100%}
+.tutor-portrait.large{transform-origin:50% 100%}
+#world-panel.tutor-panel .tutor-primary{--w-sheen:rgba(255,236,224,.3)}
 .tutor-about{padding-top:14px}
 .tutor-about h3{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:0 0 10px;font-size:var(--t-display);font-weight:var(--wt-display);letter-spacing:var(--track-display)}
 .tutor-about h3 span{font-size:14px;font-weight:var(--wt-label);letter-spacing:0;color:var(--w-ink-3)}

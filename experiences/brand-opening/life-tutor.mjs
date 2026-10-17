@@ -2,6 +2,7 @@ import {getTutor,tutorFace} from './game-tutor-lines.mjs';
 import {lifeTutorKind,lifeTutorLine,lifeTutorDifficulties,lifeTutorExercise} from './life-tutor-lines.mjs';
 import {getPref} from './world-sound.mjs';
 import {tutorPhoto,preloadTutorPhotos} from './tutor-photos.mjs';
+import {motionOn,talk,squish} from './world-motion.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL('assets/tutors/'+path,import.meta.url).href;
 export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],practised=[],getExercise,onHint=()=>{},onPause=()=>{},onPreparePractice=()=>{},onPracticeSuccess=null,onPracticeComplete=()=>{},onHelp=null,lineForState=lifeTutorLine,reduced=()=>false}){
@@ -17,12 +18,19 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b class="w-name" data-who="${tutor.id}">${tutor.name}</b><span class="life-tutor-role">함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
  container.prepend(element);
  const helpButton=element.querySelector('.life-tutor-help'),face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),body=element.querySelector('.game-tutor-portrait');
+ // 10-17 움직임: 사진은 아주 천천히 숨 쉬고(scale), 누르면 말랑하게 눌렸다 돌아오며 놀란 얼굴을 한 번 짓는다.
+ body.querySelectorAll('img').forEach(img=>img.classList.add('w-breathe'));
  const motion=matchMedia('(prefers-reduced-motion:reduce)'),isReduced=()=>reduced()||motion.matches;
  const stopSound=()=>{clip?.pause();clip=null;};
  function restFace(){face.src=photo();element.dataset.face='기본';element.dataset.reduced=String(isReduced());delete body.dataset.reaction;}
  function quiet(){clearTimeout(timer);clearTimeout(blink);stopSound();restFace();}
- // 기다리는 동안은 정지(스스로 깜박이거나 움직이지 않는다). 표정은 입력 직후에만 한 번 바뀌고 잠시 뒤 기본으로 돌아온다.
- function idle(){clearTimeout(timer);clearTimeout(blink);restFace();}
+ // 기다리는 동안은 3~5초마다 눈을 감았다 뜬다(10-15 유호님이 움직임 금지를 지움 · 10-17 「시안에 있는 움직임 전부」). 표정은 입력 직후 한 번 바뀌고 잠시 뒤 기본으로 돌아온다.
+ // 깜빡임은 늘 setTimeout 하나만 걸어 둔다(움직임 줄이기·숨김·도움 창에서는 0개).
+ function scheduleBlink(){
+  clearTimeout(blink);blink=null;if(disposed||!active||guide||practice||document.hidden||isReduced()||!motionOn())return;
+  blink=setTimeout(()=>{if(disposed)return;if(element.dataset.face!=='기본'){scheduleBlink();return;}face.src=photo('잔잔감음');blink=setTimeout(()=>{if(disposed)return;face.src=photo(element.dataset.face||'기본');scheduleBlink();},140);},2800+Math.random()*2400);
+ }
+ function idle(){clearTimeout(timer);clearTimeout(blink);restFace();scheduleBlink();}
  function playReaction(emotion){
   stopSound();if(!sound||!active||state.listening||state.requiresHearing||practice||guide||document.hidden)return;
   const bank=tutor.sounds[emotion]||tutor.sounds.기본;if(!bank?.length)return;
@@ -34,7 +42,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   quiet();kind=nextKind;const reaction=['success','assisted','complete','practiceSuccess'].includes(kind)?'success':kind==='retry'?'retry':kind==='listen'?'listening':'ready';
   // 「친구들의 반응」이 꺼져 있으면 정답·오답에도 자세를 바꾸지 않는다(설정 시트 스위치).
   const emotion=['success','retry'].includes(reaction)&&!getPref('reactions')?'기본':tutorFace(tutor.id,reaction);element.dataset.reaction=reaction;element.dataset.face=emotion;element.dataset.reduced=String(isReduced());body.dataset.reaction=reaction;
-  face.src=photo(emotion);line.textContent=text;
+  face.src=photo(emotion);talk(line,text,tutor.id,{delay:120});
   if(reaction==='success')playReaction('기쁨');else if(reaction==='retry')playReaction('안심');
   if(!active||document.hidden||guide||practice){quiet();return;}
   timer=setTimeout(()=>{if(disposed||!active||document.hidden)return;idle();},tutor.id==='kkamong'?2800:2300);
@@ -84,6 +92,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   practice.showModal();practice.querySelector('[data-expression-choice]')?.focus({preventScroll:true});
  }
  helpButton.addEventListener('click',()=>{if(onHelp)onHelp();else openGuide();});
+ body.addEventListener('pointerdown',()=>{if(disposed||!motionOn()||isReduced())return;squish(body);if(!getPref('reactions')||guide||practice)return;clearTimeout(timer);clearTimeout(blink);face.src=photo('놀람');element.dataset.face='놀람';timer=setTimeout(()=>{if(!disposed)idle();},900);});
  const visibility=()=>{quiet();if(!document.hidden)idle();};document.addEventListener('visibilitychange',visibility);motion.addEventListener('change',visibility);
  update(state);
  // 판정 직후 한 번(world-sound verdict가 「친구들의 반응」이 켜져 있을 때만 부른다): 자세를 바꾸고 잠시 뒤 기본으로.

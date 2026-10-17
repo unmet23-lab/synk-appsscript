@@ -8,6 +8,7 @@
 .town-frame[data-fit=tall]{-webkit-mask-image:linear-gradient(180deg,transparent,#000 9%);mask-image:linear-gradient(180deg,transparent,#000 9%)}
 .town-frame[data-fit=full]{-webkit-mask-image:linear-gradient(180deg,transparent,#000 3%,#000 95%,transparent);mask-image:linear-gradient(180deg,transparent,#000 3%,#000 95%,transparent)}
 .town-frame[data-fit=inset]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,#000 95%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,#000 95%,transparent);mask-composite:intersect}
+.town-frame.w-drift{--w-drift-to:1.04;transform-origin:50% 45%}
 .town-photo{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;user-select:none;-webkit-user-drag:none}
 .town-areas{position:absolute;inset:0;z-index:1}
 .town-area{position:absolute;border-radius:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}

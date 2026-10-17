@@ -122,6 +122,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   window.scrollTo(0, 0);
   if (id === 'lobby' && !WORLD) requestAnimationFrame(() => drawHeroRoad(byId('hero-road')));   // WORLD 입구는 펠트 사진 인화지(그림 캔버스는 숨김)
+  if (id === 'lobby' && WORLD) requestAnimationFrame(lobbyMotion);
   if (id === 'game') requestAnimationFrame(() => world?.resize());
 }
 const dialogs = ['pause-dialog', 'audio-dialog'];
@@ -521,8 +522,30 @@ const WORLD_COPY = [
   ['#result-listening-check', '듣기 확인'],
   ['.log>.tag', '오늘 들은 말'],
 ];
+/* ── WORLD 움직임(10-17 유호님 「시안에 있는 움직임 전부」): 입구 큰 글자는 아래에서 한 자씩 솟고, 90은 굴러 멈추고,
+   운동화 인화지는 몇 초마다 달릴 듯 들썩이고(world-skin.css), 시작 알약엔 빛이 스치고, 누르면 쏙 들어갔다 통 튀어나온다.
+   WORLD 「움직임 줄이기」(부모 문서 data-motion)와 기기 「동작 줄이기」에서는 모두 멈춘다. 이 게임 폴더는 혼자 서야 해서 WORLD 모듈을 가져오지 않는다. */
+function worldMotion() {
+  let parentReduced = false; try { parentReduced = window.parent !== window && window.parent.document.documentElement.dataset.motion === 'reduced'; } catch {}
+  const on = !reduced() && !parentReduced; document.documentElement.dataset.motion = on ? 'full' : 'reduced'; return on;
+}
+function lobbyMotion() {
+  if (!worldMotion()) return;
+  const title = document.querySelector('#lobby .hero h1');
+  if (title && !title.querySelector('.w-pop')) { const text = title.textContent; title.setAttribute('aria-label', text); title.textContent = ''; for (const ch of text) { const s = document.createElement('span'); s.className = 'w-pop'; s.setAttribute('aria-hidden', 'true'); s.textContent = ch; title.append(s); } }
+  title?.querySelectorAll('.w-pop').forEach((s, i) => s.animate([{ opacity: 0, transform: 'translateY(70%) scaleY(.45)', fontWeight: 400 }, { opacity: 1, transform: 'translateY(-9%) scaleY(1.1)', offset: .55, fontWeight: 900 }, { transform: 'translateY(2%) scaleY(.96)', offset: .8 }, { transform: 'none', fontWeight: 900 }], { duration: 700, delay: 380 + i * 110, easing: 'cubic-bezier(.25,.9,.3,1)', fill: 'backwards' }));
+  const lede = document.querySelector('#lobby .hero .lede');
+  if (lede) { const text = lede.textContent; lede.textContent = ''; let k = 0; for (const part of text.split(/(\d+)/)) { if (!/^\d+$/.test(part)) { lede.append(part); continue; } for (const ch of part) { const d = document.createElement('span'); d.className = 'w-roll'; d.style.setProperty('--d', ch); const t = document.createElement('span'); t.className = 'w-roll-t'; t.textContent = ch; const strip = document.createElement('i'); strip.setAttribute('aria-hidden', 'true'); strip.style.setProperty('--rd', `${700 + k * 120}ms`); strip.style.setProperty('--rt', `${1100 + k * 160}ms`); d.append(t, strip); lede.append(d); k++; } } }
+}
+function bindPressWorld(selector) {
+  let held = null;
+  document.addEventListener('pointerdown', e => { const b = e.target.closest?.(selector); if (!b || b.disabled || document.documentElement.dataset.motion !== 'full') return; held?.a?.cancel(); held = { b, a: b.animate([{ transform: 'scale(1)' }, { transform: 'scale(.93)' }], { duration: 110, easing: 'ease-out', fill: 'forwards' }) }; });
+  const up = () => { if (!held) return; const { b, a } = held; held = null; b.animate([{ transform: 'scale(.93)' }, { transform: 'scale(1.05)', offset: .45 }, { transform: 'scale(.985)', offset: .75 }, { transform: 'scale(1)' }], { duration: 480, easing: 'cubic-bezier(.3,.7,.3,1)' }); a.cancel(); };
+  for (const t of ['pointerup', 'pointercancel']) document.addEventListener(t, up);
+}
 function setupWorld() {
   for (const [sel, text] of WORLD_COPY) { const n = document.querySelector(sel); if (n) n.textContent = text; }
+  worldMotion(); bindPressWorld('#start,#listening-check,#w-room,#restart');
   document.querySelector('.start-card>.tag')?.classList.add('w-mono');
   byId('moves').dataset.sound = 'none';   // 움직이기 키는 게임 소리(점프·숙이기)가 맡는다 — 단추 탭 소리는 겹치지 않게 뺀다
   const hero = document.querySelector('.res-hero');
@@ -536,6 +559,7 @@ function setupWorld() {
   const bar = document.createElement('div'); bar.className = 'w-room-bar';
   bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
   bar.firstChild.addEventListener('click', backToRoom); byId('results').append(bar);
+  if (!byId('lobby').hidden) requestAnimationFrame(lobbyMotion);
 }
 /** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
 function backToRoom() {

@@ -39,10 +39,11 @@ async function release(context){await context.unrouteAll({behavior:'ignoreErrors
    await page.locator('#settings-open').click();pending=await timers(page);check('opening settings cancels every home tutor timer',pending.length===0,pending);
    await page.locator('#reduce-motion').check();await page.locator('#panel-close').click();
    await page.waitForTimeout(3000);pending=await timers(page);check('manual reduced motion keeps idle timers stopped',pending.length===0,pending);
-   await page.locator('#settings-open').click();await page.locator('#reduce-motion').uncheck();await page.locator('#panel-close').click();
+   // 움직임이 켜져 있으면 시트가 160ms 페이드로 닫힌 뒤(10-14 B안) 튜터가 다시 깨어난다 — 그만큼 기다린 뒤 센다.
+   await page.locator('#settings-open').click();await page.locator('#reduce-motion').uncheck();await page.locator('#panel-close').click();await page.waitForTimeout(400);
    pending=await timers(page);check('turning motion back on starts one idle timer',pending.length===1,pending);
    for(let index=0;index<3;index++){await page.locator('#settings-open').click();await page.locator('#panel-close').click();}
-   pending=await timers(page);check('repeated home activation never accumulates timers',pending.length===1,pending);
+   await page.waitForTimeout(400);pending=await timers(page);check('repeated home activation never accumulates timers',pending.length===1,pending);
   }finally{await release(context);}
  }
  const lesson=LESSONS.find(l=>l.id==='greetings-expressions'),question=lesson.questions[0];

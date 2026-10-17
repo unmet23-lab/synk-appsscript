@@ -1,0 +1,70 @@
+/* WORLD 움직임(2026-10-17 · world-motion.mjs와 짝). 스스로 도는 것(숨쉬기·맥박·빛 스침·천천히 다가가기·운동화 들썩)은 여기 CSS가,
+ * 한 번 일어나는 것(잉크·타이핑·말투 글자·숫자 굴림·도장·색종이)은 world-motion.mjs가 맡는다.
+ * 기기 「동작 줄이기」와 WORLD 「움직임 줄이기」(:root[data-motion=reduced])에서는 모두 멈춘다. */
+
+/* 라벨 타이핑 · 말투 글자 · 해독 */
+.w-typing .w-type-c{opacity:0}
+.w-typing .w-type-c.is-on{opacity:1}
+.w-typing::after{transform:scaleX(0)}
+.w-caret{display:inline-block;width:.6em;height:1.1em;margin-left:1px;vertical-align:-2px;background:currentColor;animation:w-caret .7s steps(1) infinite}
+@keyframes w-caret{50%{opacity:0}}
+.w-talk-w{white-space:nowrap}
+.w-talk-c{display:inline-block}
+.w-dc{position:relative}
+.w-dc.is-wait,.w-dc.is-scramble{color:transparent}
+.w-dc.is-scramble::after{content:attr(data-g);position:absolute;left:0;top:0;color:var(--w-dc,#5B86DB);opacity:.85}
+[data-tutor=marin] .w-dc,[data-character=marin] .w-dc{--w-dc:#5B86DB}
+
+/* 숫자 굴림: 숫자 글자는 투명하게 자리만 잡고, 그 위로 0~9 띠가 굴러 멈춘다 */
+.w-roll{position:relative;display:inline-block;line-height:1.15}
+.w-roll>.w-roll-t{color:transparent}
+.w-roll>i{position:absolute;left:0;right:0;top:0;height:1.15em;overflow:hidden;font-style:normal;text-align:center;line-height:1.15}
+.w-roll>i::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';display:block;white-space:pre;animation:w-roll var(--rt,1s) cubic-bezier(.2,.8,.2,1) var(--rd,0s) both}
+@keyframes w-roll{from{transform:translateY(0)}to{transform:translateY(calc((10 + var(--d)) * -1.15em))}}
+
+/* 숨쉬기 · 깜빡임 받침(튜터 사진) */
+/* transform이 아니라 scale 속성으로: 튜터 사진은 얼굴 확대(transform:scale(1.4))를 이미 쓰고 있어 둘이 겹쳐야 한다 */
+.w-breathe{animation:w-breathe 4.4s ease-in-out infinite}
+@keyframes w-breathe{0%,100%{scale:1 1}50%{scale:1.014 1.034}}
+
+/* 빛 스침: 주 알약 위로 빛 띠가 가끔 지나간다 */
+/* 빛 띠는 알약 안에서만 보인다. 알약이 자리 잡기에 쓰는 position은 건드리지 않으니, static인 알약은 그 화면 CSS에서 relative로 둔다. */
+.w-sheen{isolation:isolate;overflow:hidden}
+.w-sheen::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 32%,var(--w-sheen,rgba(249,104,89,.22)) 50%,transparent 68%);transform:translateX(-130%);animation:w-sheen 5.2s 1.6s cubic-bezier(.4,.1,.2,1) infinite}
+@keyframes w-sheen{0%{transform:translateX(-130%)}24%,100%{transform:translateX(130%)}}
+
+/* 천천히 다가가기: 큰 사진이 18초 동안 7% 다가오고 멈춘다(한 번) */
+.w-drift{animation:w-drift 18s cubic-bezier(.15,.55,.25,1) both}
+@keyframes w-drift{from{transform:scale(1)}to{transform:scale(var(--w-drift-to,1.07))}}
+
+/* 도장 · 색종이 · 빛 알갱이 · 불빛 · 고른 답 · 알약 미끄러짐 · 기울기 빛 */
+.w-stamp{position:absolute;z-index:6;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.15))}
+.w-confetti{position:absolute;inset:0;width:100%;height:100%;z-index:20;pointer-events:none}
+.w-dust{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.w-glow{position:absolute;z-index:1;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,206,130,.75),rgba(255,170,90,.32) 45%,rgba(255,160,80,0));mix-blend-mode:screen}
+.w-wash{position:absolute;inset:0;z-index:-1;border-radius:inherit;background:rgba(125,180,90,.24);pointer-events:none}
+.w-sliding{position:relative}
+.w-slide-pill{position:absolute;z-index:0;pointer-events:none}
+.w-sliding>:not(.w-slide-pill){position:relative;z-index:1}
+.w-sliding>[aria-pressed=true],.w-sliding>[aria-current=page]{background:transparent!important;box-shadow:none!important}
+.w-stitched{position:relative}
+.w-stitch{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.w-tilting{will-change:transform}
+.w-tilt-glare{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.6),rgba(255,255,255,0) 55%);mix-blend-mode:soft-light;opacity:0;transition:opacity .25s}
+.w-tilting .w-tilt-glare{opacity:1}
+.w-slam-w{display:inline-block;white-space:nowrap}
+.w-slam-c{display:inline-block;transform-origin:50% 70%}
+
+/* 동네: 「지금」 이름표에서 코랄 빛 고리가 퍼진다(이름표 ::after는 「지금」 글이라 그림자로 그린다) */
+.town-pin[data-state=now]{animation:w-ping 2.4s cubic-bezier(.2,.7,.3,1) 1.2s infinite}
+@keyframes w-ping{0%{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 26px rgba(174,50,42,.32),0 0 0 0 rgba(249,104,89,.6)}70%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 26px rgba(174,50,42,.32),0 0 0 16px rgba(249,104,89,0)}}
+
+/* 움직임 줄이기: 스스로 도는 것과 한 번 도는 것 모두 멈추고, 가렸던 글자는 바로 보인다 */
+:root[data-motion=reduced] :is(.w-caret,.w-breathe,.w-drift,.town-pin[data-state=now]),:root[data-motion=reduced] :is(.w-sheen,.w-roll>i)::before{animation:none!important}
+:root[data-motion=reduced] :is(.w-typing .w-type-c,.w-dc.is-wait,.w-dc.is-scramble,.w-roll>.w-roll-t){opacity:1;color:inherit}
+:root[data-motion=reduced] :is(.w-roll>i,.w-stamp,.w-confetti,.w-dust,.w-glow),:root[data-motion=reduced] .w-dc.is-scramble::after{display:none}
+@media(prefers-reduced-motion:reduce){
+ :is(.w-caret,.w-breathe,.w-drift,.town-pin[data-state=now]),:is(.w-sheen,.w-roll>i)::before{animation:none!important}
+ :is(.w-typing .w-type-c,.w-dc.is-wait,.w-dc.is-scramble,.w-roll>.w-roll-t){opacity:1;color:inherit}
+ :is(.w-roll>i,.w-stamp,.w-confetti,.w-dust,.w-glow),.w-dc.is-scramble::after{display:none}
+}

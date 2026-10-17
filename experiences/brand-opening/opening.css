@@ -63,6 +63,9 @@
  * 노을 그림·도는 영상·어두운 덮개는 쓰지 않는다. 로고는 먹색 펠트 글씨, 글자와 시작 알약은 먹색. 회사 구간(검정)은 그대로다. */
 .opening-title{background:#F8C6B3}
 .opening-title-video,.opening-title-shade{display:none}
+.opening-world-letter{display:inline-block}
+.opening-title-scene.w-drift{transform-origin:50% 78%}
+.opening-hint.w-sheen{--w-sheen:rgba(255,236,224,.34)}
 .opening-title-scene{inset:auto 0 0;height:auto;aspect-ratio:940/1672;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 8%);mask-image:linear-gradient(180deg,transparent 0,#000 8%)}
 .opening-title-copy{top:calc(9% + env(safe-area-inset-top));color:#2B1A14}
 .opening-title-logo{width:clamp(150px,42vw,200px)}

@@ -6747,7 +6747,7 @@ var require_engine2 = __commonJS({
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
-        let performance = false;
+        let performance2 = false;
         const performanceProof = [];
         const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
         const improved = (leverId, optionId, line) => {
@@ -6766,7 +6766,7 @@ var require_engine2 = __commonJS({
             const result = content ? improved(leverId, option.id, line) : null;
             if (result) {
               weight *= 0.5;
-              performance = true;
+              performance2 = true;
               notes.push("outcome.improved");
               const refs = [...result.evidence, ...line.evidence];
               proof.push(...refs);
@@ -6890,7 +6890,7 @@ var require_engine2 = __commonJS({
           reasons: reasons2,
           evidence: [...new Set(evidence)],
           alternatives: scored.slice(1).map((s) => s.item.id),
-          outcomeBasis: performance ? "performance" : recent ? "self_report" : "unobserved",
+          outcomeBasis: performance2 ? "performance" : recent ? "self_report" : "unobserved",
           arm,
           round,
           seed,
@@ -8447,17 +8447,17 @@ var require_temper_flow = __commonJS({
         const rng = seeded(`${seed}|${person.id}|${adaptive ? "adapted" : "fixed"}`);
         const self = { ...person };
         let at = Date.parse("2026-10-02T00:00:00.000Z");
-        const stamp = () => new Date(at).toISOString();
-        let flow = Flow.start({ spec, now: stamp(), declared: adaptive ? {} : { mode: "fixed" } });
+        const stamp2 = () => new Date(at).toISOString();
+        let flow = Flow.start({ spec, now: stamp2(), declared: adaptive ? {} : { mode: "fixed" } });
         const rows2 = [];
         let offered = -Infinity;
         for (let step = 1; step <= steps; step += 1) {
           if (self.pause && step === self.pause.at) {
-            const memory = flow.memory(stamp());
+            const memory = flow.memory(stamp2());
             at += self.pause.days * 864e5;
             self.content -= self.pause.forget;
             self.speed -= self.pause.forget / 2;
-            flow = Flow.start({ spec, memory, now: stamp(), declared: adaptive ? {} : { mode: "fixed" } });
+            flow = Flow.start({ spec, memory, now: stamp2(), declared: adaptive ? {} : { mode: "fixed" } });
           }
           const before = flow.settings(), chance = truth(spec, before.indices, self);
           let correct = chance.correct, assisted = false;
@@ -11502,7 +11502,7 @@ var require_engine = __commonJS2({
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
-        let performance = false;
+        let performance2 = false;
         const performanceProof = [];
         const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
         const improved = (leverId, optionId, line) => {
@@ -11521,7 +11521,7 @@ var require_engine = __commonJS2({
             const result = content ? improved(leverId, option.id, line) : null;
             if (result) {
               weight *= 0.5;
-              performance = true;
+              performance2 = true;
               notes.push("outcome.improved");
               const refs = [...result.evidence, ...line.evidence];
               proof.push(...refs);
@@ -11645,7 +11645,7 @@ var require_engine = __commonJS2({
           reasons: reasons2,
           evidence: [...new Set(evidence)],
           alternatives: scored.slice(1).map((s) => s.item.id),
-          outcomeBasis: performance ? "performance" : recent ? "self_report" : "unobserved",
+          outcomeBasis: performance2 ? "performance" : recent ? "self_report" : "unobserved",
           arm,
           round,
           seed,
@@ -13946,6 +13946,302 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
   };
 }
 
+// experiences/brand-opening/world-motion.mjs
+var motionOn = () => {
+  if (typeof document === "undefined" || typeof matchMedia !== "function") return false;
+  if (document.documentElement?.dataset?.motion === "reduced") return false;
+  return !matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+var EASE = "cubic-bezier(.22,.7,.2,1)";
+var animate = (el, frames, opts) => el && typeof el.animate === "function" ? el.animate(frames, opts) : null;
+var spring = (el, frames, opts = {}) => motionOn() ? animate(el, frames, { easing: "cubic-bezier(.25,.9,.3,1)", fill: "backwards", ...opts }) : null;
+function ink(el, { from = 200, delay = 0, duration = 950 } = {}) {
+  if (!el || !motionOn()) return;
+  const weight = getComputedStyle(el).fontWeight;
+  animate(el, [{ fontWeight: from, opacity: 0.2, filter: "blur(3px)" }, { fontWeight: weight, opacity: 1, filter: "blur(0px)" }], { duration, delay, easing: EASE, fill: "backwards" });
+}
+function typeLabel(el, { delay = 0 } = {}) {
+  if (!el || !motionOn() || el.dataset.wTyped) return;
+  el.dataset.wTyped = "1";
+  const nodes = [...el.childNodes].filter((n) => n.nodeType === 3);
+  if (!nodes.length) return;
+  const chars = [];
+  for (const node of nodes) {
+    const run = document.createElement("span");
+    run.className = "w-type-run";
+    for (const ch of node.textContent) {
+      const s = document.createElement("span");
+      s.className = "w-type-c";
+      s.textContent = ch;
+      run.append(s);
+      chars.push(s);
+    }
+    node.replaceWith(run);
+  }
+  const caret = document.createElement("i");
+  caret.className = "w-caret";
+  caret.setAttribute("aria-hidden", "true");
+  el.classList.add("w-typing");
+  let i = 0;
+  const step = () => {
+    if (!el.isConnected) return;
+    if (i < chars.length) {
+      chars[i].classList.add("is-on");
+      chars[i].after(caret);
+      i++;
+      setTimeout(step, 30 + Math.random() * 24);
+    } else setTimeout(() => {
+      caret.remove();
+      el.classList.remove("w-typing");
+    }, 240);
+  };
+  setTimeout(() => {
+    if (!el.isConnected) return;
+    chars[0]?.before(caret);
+    setTimeout(step, 110);
+  }, delay);
+}
+function roll(el, { delay = 0, duration = 1e3 } = {}) {
+  if (!el || !motionOn() || el.dataset.wRolled) return;
+  el.dataset.wRolled = "1";
+  const nodes = [];
+  const walk = (n) => {
+    for (const c of [...n.childNodes]) {
+      if (c.nodeType === 3) nodes.push(c);
+      else if (c.nodeType === 1) walk(c);
+    }
+  };
+  walk(el);
+  let k = 0;
+  for (const node of nodes) {
+    if (!/\d/.test(node.textContent)) continue;
+    const frag = document.createDocumentFragment();
+    for (const ch of node.textContent) {
+      if (!/\d/.test(ch)) {
+        frag.append(ch);
+        continue;
+      }
+      const d = document.createElement("span");
+      d.className = "w-roll";
+      d.style.setProperty("--d", ch);
+      const t = document.createElement("span");
+      t.className = "w-roll-t";
+      t.textContent = ch;
+      const strip = document.createElement("i");
+      strip.setAttribute("aria-hidden", "true");
+      strip.style.setProperty("--rd", `${delay + k * 120}ms`);
+      strip.style.setProperty("--rt", `${duration + k * 160}ms`);
+      d.append(t, strip);
+      frag.append(d);
+      k++;
+    }
+    node.replaceWith(frag);
+  }
+}
+function stamp(host, { size = 104, rot = -12, top = null, right = null, left = null, bottom = null, shake: shake2 = null, delay = 0 } = {}) {
+  if (!host || !motionOn()) return null;
+  const c = document.createElement("canvas");
+  c.className = "w-stamp";
+  c.setAttribute("aria-hidden", "true");
+  const px = Math.round(size * 2);
+  c.width = c.height = px;
+  Object.assign(c.style, { width: `${size}px`, height: `${size}px` });
+  for (const [k, v] of Object.entries({ top, right, left, bottom })) if (v != null) c.style[k] = typeof v === "number" ? `${v}px` : v;
+  const g = c.getContext("2d");
+  if (g) {
+    const r = px / 2, ink2 = "#EC4A3C";
+    g.strokeStyle = ink2;
+    g.fillStyle = ink2;
+    g.lineWidth = px * 0.04;
+    g.beginPath();
+    g.arc(r, r, r * 0.9, 0, Math.PI * 2);
+    g.stroke();
+    g.lineWidth = px * 0.013;
+    g.beginPath();
+    g.arc(r, r, r * 0.76, 0, Math.PI * 2);
+    g.stroke();
+    const font = `800 ${Math.round(px * 0.2)}px 'World SUIT','Apple SD Gothic Neo','Malgun Gothic',sans-serif`;
+    g.font = font;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText("\uCC38", r, r * 0.8);
+    g.font = `800 ${Math.round(px * 0.16)}px 'World SUIT','Apple SD Gothic Neo','Malgun Gothic',sans-serif`;
+    g.fillText("\uC798\uD588\uC5B4\uC694", r, r * 1.27);
+  }
+  if (getComputedStyle(host).position === "static") host.style.position = "relative";
+  host.append(c);
+  c.style.transform = `rotate(${rot}deg)`;
+  animate(c, [{ opacity: 0, transform: `scale(2.3) rotate(${rot - 16}deg)` }, { opacity: 1, transform: `scale(.9) rotate(${rot}deg)`, offset: 0.55 }, { transform: `scale(1.05) rotate(${rot}deg)`, offset: 0.75 }, { transform: `scale(1) rotate(${rot}deg)` }], { duration: 520, delay, easing: "cubic-bezier(.5,0,.3,1)", fill: "backwards" });
+  if (shake2) setTimeout(() => animate(shake2, [{ transform: "none" }, { transform: "translate(2px,1px)" }, { transform: "translate(-2px,-1px)" }, { transform: "none" }], { duration: 150 }), delay + 280);
+  return c;
+}
+function confetti(host, { x = 0.5, y = 0.3, count = 84, delay = 0 } = {}) {
+  if (!host || !motionOn()) return;
+  const box = host.getBoundingClientRect();
+  if (!box.width || !box.height) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = Math.round(box.width * dpr), H = Math.round(box.height * dpr);
+  const cv = document.createElement("canvas");
+  cv.className = "w-confetti";
+  cv.setAttribute("aria-hidden", "true");
+  cv.width = W;
+  cv.height = H;
+  host.append(cv);
+  const g = cv.getContext("2d");
+  if (!g) {
+    cv.remove();
+    return;
+  }
+  const C = ["#F96859", "#F5C445", "#7DB45A", "#5B86DB", "#F4E9DC", "#8B5E3C", "#FFB4A9"], s = dpr;
+  const ps = Array.from({ length: count }, () => {
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.9, v = (450 + Math.random() * 450) * s;
+    return { x: W * x + (Math.random() - 0.5) * 60 * s, y: H * y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, w: (7 + Math.random() * 8) * s, h: (4.5 + Math.random() * 5) * s, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 12, c: C[Math.random() * C.length | 0], round: Math.random() < 0.35, flip: Math.random() * 6.28 };
+  });
+  let t0 = null, last = null;
+  const step = (now) => {
+    if (!cv.isConnected) return;
+    if (t0 === null) {
+      t0 = now;
+      last = now;
+    }
+    const dt = Math.min(0.033, (now - last) / 1e3);
+    last = now;
+    const age = (now - t0) / 1e3;
+    g.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      p.vy += 900 * s * dt;
+      p.vx *= Math.pow(0.18, dt);
+      p.vy *= Math.pow(0.45, dt);
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.r += p.vr * dt;
+      p.flip += dt * 7;
+      g.save();
+      g.globalAlpha = Math.max(0, Math.min(1, (3.2 - age) / 0.8));
+      g.translate(p.x, p.y);
+      g.rotate(p.r);
+      g.scale(1, 0.35 + 0.65 * Math.abs(Math.cos(p.flip)));
+      g.fillStyle = p.c;
+      g.beginPath();
+      if (p.round) g.arc(0, 0, p.w * 0.42, 0, 6.283);
+      else {
+        const w = p.w, h = p.h, q = 2 * s;
+        g.moveTo(-w / 2 + q, -h / 2);
+        g.arcTo(w / 2, -h / 2, w / 2, h / 2, q);
+        g.arcTo(w / 2, h / 2, -w / 2, h / 2, q);
+        g.arcTo(-w / 2, h / 2, -w / 2, -h / 2, q);
+        g.arcTo(-w / 2, -h / 2, w / 2, -h / 2, q);
+      }
+      g.fill();
+      g.globalAlpha *= 0.22;
+      g.strokeStyle = "#000";
+      g.lineWidth = s;
+      g.stroke();
+      g.restore();
+    }
+    if (age < 3.4) requestAnimationFrame(step);
+    else cv.remove();
+  };
+  setTimeout(() => requestAnimationFrame(step), delay);
+}
+function stitch(el, { color = "rgba(249,104,89,.92)", delay = 300, duration = 1500, radius = null } = {}) {
+  if (!el || !motionOn() || el.querySelector(":scope>.w-stitch")) return;
+  const w = el.offsetWidth, h = el.offsetHeight;
+  if (!w || !h) return;
+  const r = radius ?? (parseFloat(getComputedStyle(el).borderTopLeftRadius) || 20), q = 1.5, id = `w-st-${Math.random().toString(36).slice(2, 8)}`;
+  const d = `M${r} ${q}H${w - r}A${r - q} ${r - q} 0 0 1 ${w - q} ${r}V${h - r}A${r - q} ${r - q} 0 0 1 ${w - r} ${h - q}H${r}A${r - q} ${r - q} 0 0 1 ${q} ${h - r}V${r}A${r - q} ${r - q} 0 0 1 ${r} ${q}Z`;
+  const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", "w-stitch");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.innerHTML = `<defs><mask id="${id}" maskUnits="userSpaceOnUse"><path d="${d}" fill="none" stroke="#fff" stroke-width="6" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></mask></defs><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-dasharray="7 6" mask="url(#${id})"/>`;
+  el.classList.add("w-stitched");
+  el.append(svg);
+  animate(svg.querySelector("mask path"), [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration, delay, easing: "cubic-bezier(.45,.05,.3,1)", fill: "both" });
+}
+function drop(el, { base = "rotate(-3deg)", delay = 500 } = {}) {
+  spring(el, [{ opacity: 0, transform: `translate(18px,-46px) rotate(-14deg) scale(1.18)` }, { opacity: 1, transform: `translate(0,3px) rotate(2deg) scale(.98)`, offset: 0.62 }, { transform: `rotate(-.6deg) scale(1.01)`, offset: 0.82 }, { transform: base }], { duration: 900, delay, easing: "cubic-bezier(.35,.05,.25,1)" });
+}
+function develop(el, { delay = 400 } = {}) {
+  if (!el || !motionOn()) return;
+  animate(el, [{ filter: "brightness(2.1) saturate(0) contrast(.45) blur(5px)" }, { filter: "brightness(1.35) saturate(.35) contrast(.8) blur(1.5px)", offset: 0.45 }, { filter: "none" }], { duration: 2200, delay, easing: "cubic-bezier(.3,.5,.3,1)", fill: "backwards" });
+}
+function bindTilt(surface, target, { base = "rotate(-3deg)", max = 16 } = {}) {
+  if (!surface || !target) return;
+  const move = (event) => {
+    if (!motionOn()) return;
+    const r = target.getBoundingClientRect(), nx = Math.max(-1, Math.min(1, ((event.clientX - r.left) / r.width - 0.5) * 2)), ny = Math.max(-1, Math.min(1, ((event.clientY - r.top) / r.height - 0.5) * 2));
+    target.classList.add("w-tilting");
+    target.style.transition = "transform .08s linear";
+    target.style.transform = `perspective(600px) ${base} rotateY(${nx * max}deg) rotateX(${-ny * max}deg) translateZ(10px)`;
+    target.style.setProperty("--gx", `${50 + nx * 45}%`);
+    target.style.setProperty("--gy", `${50 + ny * 45}%`);
+  };
+  const leave = () => {
+    if (!target.classList.contains("w-tilting")) return;
+    target.classList.remove("w-tilting");
+    target.style.transition = "transform .7s cubic-bezier(.3,1.5,.4,1)";
+    target.style.transform = "";
+  };
+  surface.addEventListener("pointermove", move);
+  surface.addEventListener("pointerdown", move);
+  for (const t of ["pointerleave", "pointerup", "pointercancel"]) surface.addEventListener(t, leave);
+}
+function wash(button, point) {
+  if (!button || !motionOn()) return;
+  const r = button.getBoundingClientRect(), x = point ? (point.x - r.left) / r.width * 100 : 50, y = point ? (point.y - r.top) / r.height * 100 : 50;
+  const tx = Number.isFinite(x) ? Math.max(0, Math.min(100, x)) : 50, ty = Number.isFinite(y) ? Math.max(0, Math.min(100, y)) : 50;
+  if (getComputedStyle(button).position === "static") button.style.position = "relative";
+  button.style.isolation = "isolate";
+  button.style.overflow = "hidden";
+  const w = document.createElement("span");
+  w.className = "w-wash";
+  w.setAttribute("aria-hidden", "true");
+  button.prepend(w);
+  animate(w, [{ clipPath: `circle(0px at ${tx}% ${ty}%)` }, { clipPath: `circle(160% at ${tx}% ${ty}%)` }], { duration: 620, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" });
+}
+function shake(el) {
+  if (!el || !motionOn()) return;
+  animate(el, [{ transform: "none" }, { transform: "translateX(-8px)" }, { transform: "translateX(7px)" }, { transform: "translateX(-5px)" }, { transform: "translateX(3px)" }, { transform: "none" }], { duration: 440, easing: "ease-out" });
+}
+function slam(el, { delay = 300, shakeEl = null } = {}) {
+  if (!el || !motionOn() || el.dataset.wSlam) return;
+  el.dataset.wSlam = "1";
+  let k = 0, lastDelay = 0;
+  const walk = (node) => {
+    for (const c of [...node.childNodes]) {
+      if (c.nodeType === 1) {
+        walk(c);
+        continue;
+      }
+      if (c.nodeType !== 3) continue;
+      const frag = document.createDocumentFragment();
+      String(c.textContent).split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) {
+          frag.append(part);
+          return;
+        }
+        const word = document.createElement("span");
+        word.className = "w-slam-w";
+        for (const ch of part) {
+          const s = document.createElement("span");
+          s.className = "w-slam-c";
+          s.textContent = ch;
+          word.append(s);
+          const big = ch === "!";
+          lastDelay = delay + k * (big ? 110 : 65);
+          animate(s, [{ opacity: 0, transform: `scale(${big ? 2.6 : 1.9})`, filter: "blur(4px)" }, { opacity: 1, transform: "scale(.92)", filter: "blur(0px)", offset: 0.55 }, { transform: "scale(1.04)", offset: 0.78 }, { transform: "scale(1)" }], { duration: big ? 560 : 420, delay: lastDelay, easing: "cubic-bezier(.5,0,.3,1)", fill: "backwards" });
+          k++;
+        }
+        frag.append(word);
+      });
+      c.replaceWith(frag);
+    }
+  };
+  walk(el);
+  if (shakeEl) setTimeout(() => animate(shakeEl, [{ transform: "none" }, { transform: "translate(0,3px)" }, { transform: "translate(0,-2px)" }, { transform: "none" }], { duration: 170 }), lastDelay + 300);
+}
+
 // experiences/synk-world-app/life-ui.mjs
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
@@ -13978,6 +14274,10 @@ var expressionOf = (lesson2, q) => lesson2?.expressions.find((e) => e.id === q?.
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
 }, onNext = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
+  let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
+  content?.addEventListener("pointerdown", (event) => {
+    lastPoint = { x: event.clientX, y: event.clientY };
+  }, { passive: true });
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
@@ -14158,6 +14458,72 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     content.dataset.reduced = String(!!home.state?.reduced);
     content.querySelector(focus)?.focus({ preventScroll: true });
     updateHome();
+    decorate(type, keepScroll);
+  }
+  const baseOf = (el) => {
+    const t = getComputedStyle(el).transform;
+    return t && t !== "none" ? t : "";
+  };
+  function decorate(type, again) {
+    const answered = justChose;
+    justChose = false;
+    if (!motionOn() || home.state?.reduced || /^life-(story|cafe)/.test(type)) return;
+    const reward = getPref("celebrate");
+    if (!again && !answered) {
+      [...content.querySelectorAll(".life-poster-label,.life-section-label,.life-pack-label,.life-pack-count")].slice(0, 10).forEach((el, i) => typeLabel(el, { delay: 260 + i * 130 }));
+      content.querySelectorAll(".life-meter>b,.life-library-note,.life-count").forEach((el) => roll(el, { delay: 700 }));
+      const poster = content.querySelector(".life-poster:not(.life-complete-poster)"), print2 = poster?.querySelector(":scope>.w-print");
+      if (poster) {
+        ink(poster.querySelector(".life-poster-word"), { delay: 480, from: 250, duration: 1100 });
+        if (print2) {
+          const base = baseOf(print2);
+          drop(print2, { base, delay: 520 });
+          if (getComputedStyle(print2).position === "static") print2.style.position = "relative";
+          if (!print2.querySelector(".w-tilt-glare")) {
+            const glare = document.createElement("span");
+            glare.className = "w-tilt-glare";
+            print2.append(glare);
+          }
+          bindTilt(poster, print2, { base });
+          poster.style.touchAction = "pan-y";
+        }
+      }
+      content.querySelectorAll(".life-pack-word").forEach((el, i) => ink(el, { delay: 900 + i * 70 }));
+      const cta = poster?.querySelector(".felt-button");
+      if (cta) {
+        cta.classList.add("w-sheen");
+        if (getComputedStyle(cta).position === "static") cta.style.position = "relative";
+      }
+      stitch(content.querySelector('.life-pack-card[data-current="true"]'), { delay: 1300 });
+    }
+    const meta = content.querySelector(".life-session-meta"), key = meta?.dataset.lifeLessonId || "";
+    if (meta) {
+      const bar = meta.querySelector(".life-progress>i"), cells = [...meta.querySelectorAll("i.is-done")], value = bar ? parseFloat(bar.style.width) || 0 : cells.length;
+      if (barMemo.key === key && value > barMemo.value) {
+        if (bar) spring(bar, [{ width: `${barMemo.value}%` }, { width: `${value}%` }], { duration: 900, easing: "cubic-bezier(.3,1.25,.4,1)", fill: "none" });
+        else cells.slice(Math.max(0, barMemo.value)).forEach((cell) => spring(cell, [{ transform: "scaleY(1)", filter: "brightness(1)" }, { transform: "scaleY(2.4)", filter: "brightness(1.8)", offset: 0.4 }, { transform: "none", filter: "none" }], { duration: 620, fill: "none" }));
+      }
+      barMemo = { key, value };
+    }
+    if (type === "life-question" && answered && lastFeedback) {
+      const chosen = content.querySelector(".life-choice.is-chosen"), band = content.querySelector(".life-feedback");
+      if (lastFeedback.correct) wash(chosen, lastPoint);
+      else shake(chosen);
+      spring(band, [{ opacity: 0, transform: "translateY(46px)" }, { opacity: 1, transform: "translateY(-6px)", offset: 0.62 }, { transform: "translateY(2px)", offset: 0.82 }, { transform: "none" }], { duration: 620, delay: 120 });
+      if (lastFeedback.correct && !lastFeedback.helped && reward && band) stamp(band, { size: 92, rot: -12, top: -40, right: 4, delay: 640, shake: content });
+    }
+    if (["life-complete", "life-review-complete"].includes(type)) {
+      const poster = content.querySelector(".life-complete-poster");
+      slam(poster?.querySelector(".life-poster-word"), { delay: 260, shakeEl: reward ? poster : null });
+      develop(poster?.querySelector(":scope>.w-print img"), { delay: 350 });
+      [...content.querySelectorAll(".life-section-label")].forEach((el, i) => typeLabel(el, { delay: 900 + i * 220 }));
+      content.querySelectorAll(".life-result-got strong").forEach((el) => roll(el, { delay: 1300 }));
+      if (reward) {
+        const got = content.querySelector(".life-result-got");
+        if (got?.querySelector(".w-led.ok")) stamp(got, { size: 70, rot: -10, top: "calc(50% - 35px)", right: 10, delay: 1700 });
+        confetti(panel || content, { x: 0.5, y: 0.28, delay: 650 });
+      }
+    }
   }
   const judge = (correct) => verdict(correct, { react: (value) => companion?.react?.(value) });
   function celebrate() {
@@ -14438,6 +14804,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const correct = choiceId === q.answerId;
     p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped });
     lastFeedback = { question: q, choiceId, correct, helped };
+    justChose = true;
     renderQuestion();
     judge(correct);
   }
