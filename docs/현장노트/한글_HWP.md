@@ -1,8 +1,24 @@
 # 현장 노트 · 한글(HWP) 공식 양식
 
-> 판: 한컴오피스 2024(COM `HWPFrame.HwpObject`, PowerShell `New-Object -ComObject`) · Python 3.14(zip·XML) · PyMuPDF
-> 마지막 확인: 2026-10-17 — **새 노트북에는 한컴오피스가 설치되어 있지 않다**(HNC 폴더도, `HWPFrame.HwpObject` 등록도 없음). 아래 항목은 10-14 옛 노트북 실측이다.
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-14 Claude 메모에서 옮김(10-17 2차)
+> 판: `tools/hwp읽기.py`(Python 3.14 · olefile 0.47, 한컴 없이 읽기) · 한컴오피스 2024(COM `HWPFrame.HwpObject`, PowerShell `New-Object -ComObject`) · PyMuPDF
+> 마지막 확인: 2026-10-17 — **새 노트북에는 한컴오피스가 설치되어 있지 않고, 설치하지 않는다**(유호님은 HWP를 쓰지 않는다). 읽기는 「한컴 없이 읽기」 절의 도구로 한다. 「설치·실행」·「양식 채우기」 절은 10-14 옛 노트북 실측이다.
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-14 Claude 메모에서 옮김(10-17 2차), 10-17 읽기 도구 더함
+
+## 한컴 없이 읽기
+
+### HWP로 온 문서를 읽어야 하는데 한컴오피스가 없다
+- 증상: 10-17 새 노트북에는 한컴오피스도, `HWPFrame.HwpObject` 등록도, pywin32도 없다. 지원사업 양식·공문·공고문이 HWP로 오면 열 프로그램이 없다.
+- 원인: 따로 프로그램이 필요한 것은 아니다. HWP 5.x는 OLE 복합 파일 안에 deflate로 눌린 레코드 스트림(`BodyText/Section*`)이고, HWPX는 zip 안의 XML(`Contents/section*.xml`)이다. 배포용 문서는 `ViewText/Section*`에 AES-128로 잠겨 있고, 열쇠는 그 스트림 머리 레코드(256바이트)에 들어 있다.
+- 고침: `python -X utf8 tools/hwp읽기.py <파일.hwp|.hwpx> [--out <글.txt>] [--정보] [--표없이]`를 쓴다. 이 PC 파이썬에 이미 있는 olefile만 쓰고, 원본은 읽기만 한다. 표는 「[표 행×열]」 아래 행마다 `| 칸 | 칸 |`으로 나오고, `--정보`는 판·압축·암호·배포용 여부와 스트림 목록을 보여 준다. 배포용 문서는 파이썬만으로 AES를 풀어 읽는다. 다만 10-17에는 시험할 배포용 파일이 없어서, 형식 문서대로 짠 열쇠 꺼내기는 실제 파일로 확인하지 못했다(풀기에 실패하면 zlib 오류로 멈춘다). 암호를 건 문서는 읽지 않는다.
+- 다시 확인: `python -X utf8 tools/hwp읽기.py .tmp/restart-hwp-20261014/template.hwp`와 같은 파일의 `.hwpx`가 둘 다 189줄·표 29개로 같게 나온다. 10-14에 한글 COM으로 뽑은 `template-text.txt`와 대조하면, 다른 줄은 띄어쓰기와 칸 안 줄바꿈 차이뿐이다(10-17). AES는 FIPS-197 시험값과 Node `aes-128-ecb` 결과로 맞췄고, 배포용 경로는 만든 시험 스트림으로 왕복해 일반 경로와 같은 글이 나왔다. 10-17 이 PC에서 찾은 HWP 12개(판 5.1.0.1·5.1.1.0)와 HWPX 12개가 모두 읽혔다(배포용·암호 문서는 0개).
+
+### 한컴 없이 양식을 채워 내야 한다
+- 증상: 채워서 제출할 양식이 HWP로 왔는데 한컴오피스가 없다(10-17 기준 아직 이런 일은 없었다).
+- 원인: 이 노트의 「양식 채우기」 길은 HWP → HWPX 변환과 마지막 HWP·PDF 저장을 한글이 했다. 한컴이 없으면 이 두 단계와 쪽 그림 확인을 할 수 없다.
+- 고침: 막다른 길: 아직 시험하지 않았다. 양식이 HWPX로 오면 zip 안 XML을 직접 고쳐 HWPX로 낼 수 있다(아래 「양식 채우기」 함정은 그대로 적용된다). HWP로만 오면 먼저 보낸 곳에 HWPX·DOCX 양식이 있는지 찾는다. 다음 후보는 이 PC에 있는 Java 17로 HWP를 읽고 쓰는 공개 라이브러리(hwplib·hwp2hwpx)를 쓰는 것이다(아직 받지 않음).
+- 다시 확인: `java -version`(10-17 OpenJDK 17.0.20.1).
+
+## 옛 노트북에서 쓴 길(한컴오피스 2024)
 
 지원사업 계획서 같은 공식 HWP 양식을 채울 때 쓴다. 10-14에 쓴 길은 이렇다. 원본 HWP를 한글로 열어 HWPX로 저장한다 → zip 안의 `Contents/section0.xml`을 파이썬으로 고친다(안내 상자 문단 지우기, ◦/- 자리 바꾸기, 표 칸 글자를 검정 charPr로 바꾸기, 남은 파란·빨간 글자 검사) → 한글로 다시 열어 표시 글자(`[[IMG1]]`)를 찾아 그림을 넣고 HWP·PDF로 저장한다 → PyMuPDF로 쪽 그림을 확인한다. 도구는 `.tmp/restart-hwp-20261014/`(`fill_hwpx.py`·`hwp_server.ps1`·`render_pdf.py`·`진행메모.md`)에 있다. 틀은 [README](README.md)를 따른다.
 
@@ -11,7 +27,7 @@
 ### HWP를 다룰 길을 못 찾아 LibreOffice·Word로 돌아간다
 - 증상: 10-14 이전 GPT 세션이 HWP 양식을 LibreOffice·Word로 우회하다가 「HWP 미완성」으로 남겼다.
 - 원인: 옛 노트북에는 한컴오피스 2024와 COM `HWPFrame.HwpObject`가 있었는데 찾아보지 않았다. 파이썬에는 pywin32가 없어서 파이썬으로는 COM을 부를 수 없다.
-- 고침: PowerShell `New-Object -ComObject HWPFrame.HwpObject`로 부른다. 새 노트북에서는 먼저 한컴오피스를 설치해야 한다(라이선스·계정이 걸리니 유호님께 여쭌다).
+- 고침: 한컴오피스가 있으면 PowerShell `New-Object -ComObject HWPFrame.HwpObject`로 부른다. 새 노트북에는 설치하지 않으니(10-17), 읽기는 위 「한컴 없이 읽기」의 도구로 하고 LibreOffice·Word로 돌아가지 않는다.
 - 다시 확인: `Test-Path "Registry::HKEY_CLASSES_ROOT\HWPFrame.HwpObject"`(10-17 새 노트북 False), `python -c "import win32com"`(10-17 ModuleNotFoundError).
 
 ### COM 만들기가 80080005로 실패한다
