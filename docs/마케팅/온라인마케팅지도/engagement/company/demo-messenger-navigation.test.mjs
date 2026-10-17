@@ -117,13 +117,22 @@ test('desktop context stays visible and preserves manual collapse around the men
   f.run('setWorkspaceSidebar(true)');assert.equal(f.renders.length,0);assert.equal(dom.get('workspace-sidebar-content').hidden,false);assert.equal(dom.get('workspace-sidebar-toggle').attrs['aria-expanded'],'true');
   f.run("shell('<p>갱신된 분석</p>')");assert.equal(f.state.workspaceSidebarOpen,true);assert.equal(dom.shell.attrs['data-sidebar-open'],'true');
   f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.run('workspaceSidebarExpanded()'),false,'the conversation list is the messenger menu, so no duplicated context menu exists');
-  assert.doesNotMatch(f.app.innerHTML,/id="workspace-sidebar/);assert.match(f.app.innerHTML,/<nav class="workspace-rail"[^>]*>(?:(?!<\/nav>)[\s\S])*data-tab="marketing"/,'desktop navigation remains available');assert.equal(dom.get('main').inert,false);
+  assert.doesNotMatch(f.app.innerHTML,/id="workspace-sidebar/);assert.match(f.app.innerHTML,/<nav class="workspace-rail"[^>]*>(?:(?!<\/nav>)[\s\S])*data-tab="social"/,'desktop navigation remains available');assert.equal(dom.get('main').inert,false);
   f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.tab,'history');assert.equal(f.run('workspaceSidebarExpanded()'),true,'the desktop context returns as the user left it');
   f.run("setWorkspaceSidebar(false);selectWorkspaceView('messenger');shell(messengerWorkspacePage());selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.run('workspaceSidebarExpanded()'),false,'desktop collapse survives the messenger');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
   f.run('setWorkspaceSidebar(true)');f.context.window.matchMedia=()=>({matches:true});f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'mobile defaults to a closed drawer');
   f.run("setWorkspaceSidebar(true);shell('<p>작업실 갱신</p>')");assert.equal(f.state.workspaceSidebarOpen,true,'refreshing the same workspace does not close the menu');assert.equal(dom.get('main').inert,true);
   f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(dom.get('main').inert,false,'entering the messenger closes the drawer and releases the page');
   f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.state.tab,'history');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
+});
+
+// 10-14 레일의 마케팅이 「SNS·마케팅」(social)으로 합쳐졌다. 작업실에서 연 휴대폰 메뉴는 분석으로 들어갈 때도 닫힌다.
+test('on mobile, entering the SNS·marketing analysis from an open workroom menu closes the drawer',()=>{
+  const f=fixture('http://localhost:4191/?tab=history'),dom=sidebarDom(f);f.installShell();f.context.window.matchMedia=()=>({matches:true});
+  f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>');setWorkspaceSidebar(true);shell('<p>작업실 갱신</p>')");
+  assert.equal(f.state.workspaceSidebarOpen,true);assert.equal(dom.get('main').inert,true);
+  f.run("selectWorkspaceView('marketing');shell('<p>분석</p>')");
+  assert.equal(f.run('workspacePrimaryView()'),'social');assert.equal(f.state.workspaceSidebarOpen,false,'workspace entry closes the mobile menu');assert.equal(dom.get('main').inert,false);
 });
 
 test('sidebar toggles retain the hidden messenger frame without rendering and a stale open state never blocks the menu-free messenger',()=>{

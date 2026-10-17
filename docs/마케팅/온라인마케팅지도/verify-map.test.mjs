@@ -271,8 +271,12 @@ test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.generatedAt,dashboard.generatedAt);
   assert.equal(verification.counts.expansionConfirmed,24);
   assert.equal(verification.counts.expansionUnconfirmed,20);
-  for(const item of verification.files) {
-    const actual=crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,item.file))).digest('hex');
-    assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);
-  }
+  // 10-17부터 build-map.mjs는 줄끝을 LF로 접어 잰다(hashFormat). 그 전에 만든 지도는 받은 바이트 그대로 쟀다.
+  if('hashFormat' in verification) assert.equal(verification.hashFormat,'sha256-utf8-lf');
+  const lf=verification.hashFormat==='sha256-utf8-lf';
+  const stale=verification.files.filter(item=>{
+    const body=fs.readFileSync(path.join(dir,item.file),lf?'utf8':undefined);
+    return item.sha256!==crypto.createHash('sha256').update(lf?body.replace(/\r\n/g,'\n'):body).digest('hex');
+  }).map(item=>item.file);
+  assert.deepEqual(stale,[],'changed after the map was built — rebuild with build-map.mjs --complete');
 });

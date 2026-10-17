@@ -8,6 +8,8 @@ const path = require('node:path');
 const R = require('./rules.js');
 const C = require('./content.js');
 const { checkContent, checkTipIds } = require('../core/content-check.js');
+const { CI에없는로컬자료 } = require('../../../../tests/_git밖.js');
+const 루트 = path.resolve(__dirname, '../../../..');
 
 const base = { meet: 'team', record: ['memo'], length: 'short', ai: { app: 'chatgpt', plan: 'free' }, freq: 'once', share: ['me'], sensitive: 'none' };
 const run = extra => R.compute({ ...base, ...extra });
@@ -17,8 +19,11 @@ test('제작 절차: 탐색노트·추천기준이 있고 질문·팁 은행이 
   assert.deepEqual(checkContent(C), []);
 });
 
-test('영상에서 약속한 자료(11쪽 PDF·ZIP)를 그대로 싣고 첫 화면에서 바로 받게 한다', () => {
-  for (const f of [C.guidePdf, C.kitZip]) assert.ok(fs.existsSync(path.join(__dirname, 'keep', f)), `${f} 없음`);
+test('영상에서 약속한 자료(11쪽 PDF·ZIP)를 그대로 싣고 첫 화면에서 바로 받게 한다', (t) => {
+  // ZIP은 .gitignore의 *.zip이라 깨끗한 체크아웃(CI)에는 없다. CI에서는 그 파일 확인만 건너뛴다(tests/_git밖.js).
+  const zip없음 = CI에없는로컬자료(path.relative(루트, path.join(__dirname, 'keep', C.kitZip)).split(path.sep).join('/'), '연습 자료 ZIP은 *.zip 무시 규칙으로 git 밖');
+  if (zip없음) t.diagnostic(zip없음);
+  for (const f of zip없음 ? [C.guidePdf] : [C.guidePdf, C.kitZip]) assert.ok(fs.existsSync(path.join(__dirname, 'keep', f)), `${f} 없음`);
   assert.deepEqual(C.intro.links.map(l => l.href), [C.guidePdf, C.kitZip]);
   assert.match(C.practiceMemo, /민호/);
 });

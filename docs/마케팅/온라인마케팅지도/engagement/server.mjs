@@ -78,9 +78,12 @@ async function catalog() {
     ready: (row.channelScope === '기존 운영' && row.publishable === true) || row.channelScope === '확장 확보'
   }));
   const stale = [];
+  // 10-17부터 지도 지문은 줄끝을 LF로 접어 잰다(hashFormat). 그 전에 만든 지도는 받은 바이트 그대로 쟀다.
+  const lf = verification.hashFormat === 'sha256-utf8-lf';
   for (const source of verification.files) {
     try {
-      const actual = createHash('sha256').update(await readFile(resolve(mapRoot, source.file))).digest('hex');
+      const body = await readFile(resolve(mapRoot, source.file), lf ? 'utf8' : undefined);
+      const actual = createHash('sha256').update(lf ? body.replace(/\r\n/g, '\n') : body).digest('hex');
       if (actual !== source.sha256) stale.push(source.file);
     } catch { stale.push(source.file); }
   }

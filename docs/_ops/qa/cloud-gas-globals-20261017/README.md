@@ -48,6 +48,23 @@
 - 전체(`node --test tests/*.test.js`, 클라우드 리눅스·Node 22·`TZ=UTC`, node_modules 없음): 전 `1676291a` 1722개 중 실패 20, 후 1723개 중 실패 20. 실패 20개는 이름까지 같다(새 실패 0, 아틀라스·서체·glob 등 Apps Script와 무관한 기존 실패). 늘어난 1개는 `배포표면` 회귀 시험이다.
 - `node tools/bump-version.js --check`는 `[vNEXT] 자리표가 남아 있다: Code.js`로 실패한다 — 의도한 상태다. 클라우드는 채번 태그를 origin에 못 올리므로 헤더를 `[vNEXT]`로 두고 PC 세션이 반입 때 채번한다(`tools/bump-version.js` F196 안내). 배포 때: `node tools/bump-version.js --desc "옛 학원 트리거 받이 14개와 트리거정리를 지웠다" --종류 수리` → `docs/버전_이력.md`에 같은 번호로 한 줄 → `--check`.
 
+## 전체 시험 실패 중 `docs/마케팅` 몫 (10-17)
+
+유호님 「1번은 이 세션에서 진행해」. 실패 정리 전체는 이미 다른 클라우드 세션(가지 `claude/determined-dijkstra-l3ygqn`, 보고서 `docs/_ops/qa/cloud-full-tests-20261017/README.md`)이 하고 있어서, 그 세션이 「문서 정리 세션과 겹칠 수 있어 고치지 않았다」고 남긴 `docs/마케팅` 9건만 맡았다. 맡은 파일 목록은 그 세션에 먼저 알렸다.
+
+| 시험 | 원인 | 한 일 |
+|---|---|---|
+| `맞춤도구/manual/rules.test.js` | 10-14 `build.mjs`의 manual 줄 앞에 `theme`가 들어와 시험이 그 줄을 못 찾았다 | 키 순서와 무관하게 줄을 찾고, 못 찾으면 바로 그렇게 알린다 |
+| `맞춤도구/meeting/rules.test.js` | 연습 자료 ZIP은 `*.zip` 무시 규칙으로 git 밖이다 | CI에서만 그 파일 확인을 건너뛴다(`tests/_git밖.js` 규칙). 로컬에서 없으면 그대로 빨갛다 |
+| `클라이언트_발주서_20260930/tests/receiver-build.test.cjs` | `dist/`는 `build.cjs` 산출물이고, 빌드도 git 밖 서체(`맞춤도구/dist/brief/computer/assets/InterTight-500.woff2`)를 읽어 깨끗한 체크아웃에서는 만들 수 없다 | CI에서만 건너뛴다. dist가 있을 때 통과하는지는 클라우드에서 보지 못했다 |
+| `engagement/company/growth-home-client`·`marin-home-client`·`demo-messenger-navigation` | 10-14 SNS 작업 공간 개편으로 레일의 「마케팅」이 「SNS·마케팅」(`data-tab="social"`)으로 합쳐졌다(`workspacePrimaryTabs`·`workspacePrimaryView`) | 기대값을 `social`로. 휴대폰 메뉴가 분석에 들어갈 때 닫히는지 보는 시험 하나를 더했다(닫는 줄을 사본에서 지우면 실패함을 확인) |
+| `verify-map.test.mjs`·`engagement/server.test.mjs` | 지도 지문 14개 중 5개가 안 맞는다. 2개(`inputs/content-lines.json`·`video-v12/README.md`)는 CRLF 작업본에서 잰 값이라 줄끝 탓이고, 3개(`콘텐츠_운영체계_20260927.md`·`sns-계정.json`·`yuhobuilds_1편_쇼츠수정_20260922/README.md`)는 지도를 만든 뒤 내용이 실제로 바뀌었다. 다시 만들려 하자 `build-map.mjs`가 자체 대조 「확장 확보 원장과 44자리 불일치」에서 멈췄다(아무것도 쓰지 않음) | **고치지 않음** — 원장 정리는 SNS 담당 몫이다. 대신 다음 재빌드부터 줄끝 탓이 없도록 `build-map.mjs`가 지문을 LF로 접어 재고(`hashFormat: sha256-utf8-lf`), 시험과 회사 서버(`engagement/server.mjs`)는 그 형식을 보고 고른다(옛 지도는 예전처럼 바이트로 잰다). 시험은 낡은 원천을 첫 하나가 아니라 전부 보여 준다. 지도를 다시 만들기 전까지 서버 동작은 그대로다 |
+| `engagement/company/server-client-startup-templates.test.mjs` | 본문을 받는 중 폐기된 세션이 401(다시 로그인) 대신 403(권한 없음)으로 나간다 | **고치지 않음** — 보안 응답 판단이라 보고만 한다 |
+
+- 관찰(P3): `engagement/company/public/app.js:258`의 `['marketing','messenger']`에서 `'marketing'`은 개편 뒤 나올 수 없는 값이다. 탭 전환은 모두 `selectWorkspaceView`를 거치고 거기서 메뉴를 닫으므로(`workspace.js:136`) 지금 동작에는 영향이 없어 고치지 않았다.
+- 시험(`docs/마케팅` 시험 파일 298개, 저장소 뿌리에서, `CI=true TZ=UTC`, Node 22): 고친 뒤 3,914개 중 실패 3·건너뜀 4. 실패 3은 위 「고치지 않음」 셋이다.
+- 고치기 전과 대조(같은 9개 파일, 고치기 전 커밋 `1d72063c`의 깨끗한 사본, 같은 조건): 전에는 9개 파일이 모두 실패 1씩(합 9), 고친 뒤 실패 3·건너뜀 1(발주서 dist)이다. 데모 메신저 시험은 새 시험 하나로 15→16개.
+
 ## 범위 — 실제로 올라가는 파일
 
 - `.claspignore`가 `**/*`로 모두 막고 `appsscript.json`·`Code.js`·`엔진_synkbrief.js`만 연다. 저장소에 `.html` 배포 파일은 없다.

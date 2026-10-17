@@ -5,11 +5,16 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const {htmlServiceClientHtml}=require('../receiver/build.cjs');
+const {CI에없는로컬자료}=require('../../../../tests/_git밖.js');
+const 루트=path.resolve(__dirname,'../../../..');
 const getScript=html=>{const found=/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i.exec(html);assert(found);return found[1];};
 const decode=bootstrap=>{const found=/atob\("([A-Za-z0-9_-]+)"/.exec(bootstrap);assert(found);return Buffer.from(found[1],'base64url').toString('utf8');};
 
-test('online HTML protects the real client source and preserves its exact UTF-8 bytes',()=>{
+test('online HTML protects the real client source and preserves its exact UTF-8 bytes',t=>{
   const file=path.join(__dirname,'../dist/SYNK_영상제작_발주서.html');
+  // dist는 build.cjs가 만드는 산출물이라 깨끗한 체크아웃(CI)에는 없다. CI에서는 이 시험만 건너뛴다(tests/_git밖.js).
+  const 없음=CI에없는로컬자료(path.relative(루트,file).split(path.sep).join('/'),'발주서 dist는 build.cjs 산출물');
+  if(없음)return t.skip(없음);
   const original=fs.readFileSync(file,'utf8'),source=getScript(original);
   const online=htmlServiceClientHtml(original),bootstrap=getScript(online);
   assert.equal(decode(bootstrap),source);
