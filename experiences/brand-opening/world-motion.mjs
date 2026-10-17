@@ -268,7 +268,10 @@ export async function doors(face,{mode='open',host=face?.parentElement,ready=nul
   const surface=document.createElement('div');surface.className='w-door-face';const clone=cloneFace(face);faces.push(clone);surface.append(clone.copy);
   const edge=document.createElement('i');edge.className='w-door-edge';leaf.append(surface,edge);overlay.append(leaf);return leaf;
  });
- host.append(overlay);faces.forEach(syncFace);result.animated=live=true;
+ host.append(overlay);
+ // 문 모양(world-motion.css)이 아직 옛 판이면(공개 직후 캐시) 덮개가 제자리에 못 서니 걷고 바로 바꾼다.
+ if(getComputedStyle(overlay).position!=='absolute'){overlay.remove();overlay=null;return instant();}
+ faces.forEach(syncFace);result.animated=live=true;
  const shut=leaf=>`translateX(${leaf.dataset.side==='left'?-travel:travel}px)`;
  if(!close){
   hold=Math.max(0,born+limit-performance.now());
