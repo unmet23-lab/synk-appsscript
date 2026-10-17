@@ -24,7 +24,7 @@ export const MEMBER_BENEFITS = [
     name: 'AI 구독 계정판',
     kicker: '흩어진 AI 구독을 한눈에',
     headline: 'AI 구독, 이번 주 얼마 남았는지 한 번에.',
-    description: 'Claude·ChatGPT(Codex)·Higgsfield 계정의 남은 한도와 초기화 시각, 결제일과 구독료를 한 화면에 모아요.',
+    description: 'Claude·ChatGPT(Codex)·Gemini·Higgsfield 계정의 남은 한도와 초기화 시각, 결제일과 구독료를 한 화면에 모아요.',
     status: 'integrated',
     statusLabel: 'PC 앱 · 회원 무료',
     embedded: true,
@@ -35,7 +35,7 @@ export const MEMBER_BENEFITS = [
       { title: '한 번 눌러 전부 확인', body: '이 PC에 연결한 여러 계정을 공식 프로그램으로 한꺼번에 읽어요. 계정마다 로그아웃했다 다시 들어갈 필요가 없어요.' },
       { title: '처음 연결은 따라 하기만', body: '설치 확인부터 로그인 코드 붙여넣기까지 단계마다 알려 줘요. 로그인 정보는 이 PC 밖으로 나가지 않아요.' },
     ],
-    availability: 'SYNK ID로 로그인한 회원이 PC 앱에서 무료로 써요. 자동으로 읽으려면 각 서비스의 공식 프로그램(Claude Code·Codex·Higgsfield CLI)이 이 PC에 설치·로그인돼 있어야 하고, Gemini·Suno처럼 공식 출력이 없는 서비스는 직접 넣어요. 기록은 이 PC에만 저장해요.',
+    availability: 'SYNK ID로 로그인한 회원이 PC 앱에서 무료로 써요. 자동으로 읽으려면 각 서비스의 공식 프로그램(Claude Code·Codex·Antigravity CLI·Higgsfield CLI)이 이 PC에 설치·로그인돼 있어야 하고, Suno처럼 공식 출력이 없는 서비스는 직접 넣어요. 기록은 이 PC에만 저장해요.',
   },
   {
     id: 'care',
