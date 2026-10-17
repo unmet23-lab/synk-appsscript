@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-17",
+  "scope": "추가 TXT 23개. full은 전문 열람한 수이며 나머지는 완료로 세지 않음.",
+  "total": 23,
+  "full": 23,
+  "notFull": [],
+  "ledgers": [
+    "semantic-business-text-pass3.json",
+    "semantic-business-salary-pass3.json"
+  ]
+}

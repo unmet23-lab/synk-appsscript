@@ -1,5 +1,7 @@
 # The review loop — plan, sketch, build
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 How a `storyboard: yes` run earns fidelity one pass at a time: the plan is reviewed as text in chat, the layouts as a sketched `storyboard.html` the user opens in a browser, and the finished piece as the assembled video. Collaborative mode waits at each checkpoint. Autonomous mode posts the same checkpoint summaries and continues, keeping exactly one question before render.
 
 This is the shared process for any workflow that plans on a storyboard. The contracts it leans on live next door: interaction mode and gate types in `brief-contract.md`; the `STORYBOARD.md` format and the `outline → built → animated` statuses in `storyboard-format.md`. How to make the storyboard itself, and the page it is reviewed on, is `hyperframes-creative/references/storyboard-recipe.md`. A workflow's SKILL.md says **when** its steps hit each pass and supplies its **sketch stand-ins** (what the plain blocks represent); how the loop runs is defined here, once. The stage mechanics between the passes — audio, frames, assembly, transitions, captions, verify — live in `production-loop.md`; this file owns only the user-facing pauses.

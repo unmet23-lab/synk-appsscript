@@ -11,6 +11,8 @@
 
 ## 등록 실행기와 복구
 
+이 문서의 모델별 검수·root 신호·19개에서 20개로의 등록 수는 2026-10-07 적용 기록이다. 다음 변경은 현재 journal·공급자 목록·포털과 현재 요청의 승인 범위를 기준으로 한다. 과거 모델 검수 절차를 새 필수 관문으로 적용하지 않는다([AI 운영 원칙](../../docs/AI_운영원칙.md)).
+
 `care-public-provision.cjs`는 이번 등록 하나만 처리한다. 인증/API 구현을 복제하지 않고 기존 `createProvider`의 canonical credential guard·공급자 목록·등록·secret 매핑 메서드를 호출한다. 기본은 dry-run이며 `--운영`, `--public`, `--portal`이 필수다. `--apply`가 있을 때만 등록·매핑 쓰기와 공개 산출물 생성이 가능하다.
 
 다중 journal 간 완료 상태가 어긋나지 않도록 기존 `journalStore` 및 `state/provision-production.json.lock`을 사용한다. lock을 잡은 후 journal을 다시 읽는다. 기존 journal의 `bindings`와 `attempted`를 보존하고, `publicCare`에 이 한 등록의 시도·실제 ID·완료를 기록한다. 전체 `mapping`과 `pendingMapping`은 같은 journal의 정본을 사용하므로 다음 일반 provision dry-run도 20개 매핑을 인지한다. generic 설정 생성 경로는 여전히 기존 19개만 사용한다.
@@ -23,7 +25,7 @@
 # SYNK-appsscript에서. portal 파일은 적용/게시 직전에 공개 원문으로 새로 대조한다.
 node tools/synk-id/care-public-provision.cjs --운영 --public .tmp/synk-id/public-production.json --portal .tmp/synk-id/care-public-current-portal.json
 
-# 공식 검수 완료 및 root의 적용 신호 뒤에만 실행.
+# 현재 요청에서 원격 적용이 승인되고 변경 관련 검증을 마친 범위에서만 실행.
 node tools/synk-id/care-public-provision.cjs --운영 --public .tmp/synk-id/public-production.json --portal .tmp/synk-id/care-public-current-portal.json --apply
 ```
 

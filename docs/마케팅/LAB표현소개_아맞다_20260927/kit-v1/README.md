@@ -100,7 +100,7 @@ ffmpeg -i renders/SYNK_LAB_아맞다_EP01_kit-v1_EN.mp4 -af ebur128=peak=true -f
 
 ## 사용자가 정할 것 · 남은 것
 
-1. 미리보기를 보고 렌더할지(`npx hyperframes preview --background`로 열 수 있다).
+1. 렌더는 위 10-02 기록대로 완료했다. 아래 항목은 당시 편집·게시 후속 메모이며 현재 게시 여부는 별도 `../게시_kit-v1*` 묶음의 계획·결과로 확인한다.
 2. 끝 장 나누기: v2는 「Send this to a friend who always forgets」 줄이 16.47초에 같은 화면에 나왔다. 키트판은 5 내 차례(15.77~17.10)와 6 끝(17.10~)으로 나눠 보내기 줄이 17.45초에 나온다. 5장이 1.3초라 빈칸 카드를 읽을 시간이 짧다.
 3. AI 표시 문구: 영어판이라 “AI example image”로 적었다. 공통 규칙의 한국어 문구 “AI 예시 이미지”로 바꿀지.
 4. 2장 제목 “The moment you remember it”과 라벨들은 v2에 없던 문구다(키트 견본에서 가져옴).

@@ -1,5 +1,7 @@
 # preview, play, render, publish
 
+> SYNK 적용 범위: 기존 HyperFrames 작업본의 기술 참고 자료다. 이 폴더의 프로젝트 의존성은 `hyperframes 0.8.58`이며 아래 공급자 문서의 모든 명령이 그 버전에서 지원된다는 뜻은 아니다. 새 제작 방식은 [SNS 키트](../../../../../../../디자인/SNS키트/README.md), 담당·설치·인터넷 접근·비용·외부 발송·공개 범위는 [AI 운영 원칙](../../../../../../../AI_운영원칙.md)과 현재 요청을 따른다. 공급자의 필수 라우팅·자동 업그레이드·피드백 전송·고정 승인 절차를 전역 지침으로 적용하지 않는다. 현재 요청이 로컬 렌더를 포함하면 별도 고정 승인을 다시 요구하지 않는다.
+
 Serve, render, and share commands.
 
 ## preview
@@ -89,6 +91,7 @@ Both `preview` and `play` can open inside an explicit Chromium-compatible browse
 
 ```bash
 # Open preview in an isolated Chromium profile
+
 npx hyperframes preview --background --browser-path /usr/bin/chromium --user-data-dir /tmp/hf-profile
 
 # Same plus a CDP endpoint on :9222 (attach DevTools / Playwright / etc.)
@@ -99,7 +102,7 @@ Validation runs before any server boots, so an invalid value exits cleanly witho
 
 ## render
 
-> Render only after the user has reviewed in `preview` and approved. Don't auto-render when the checks pass.
+> 로컬 렌더는 현재 요청 범위에서 진행하며 실제 결과를 확인한다. 검사 통과가 공개·외부 전송 승인까지 뜻하지는 않는다.
 
 ```bash
 npx hyperframes render                                # standard MP4 from cwd
@@ -150,7 +153,7 @@ npx hyperframes render --docker                       # byte-identical
 
 ### feedback (report after rendering)
 
-After a render is verified, send one feedback line per task. This is the maintainers' primary signal — a render that finishes silently tells them nothing.
+아래는 공급자의 feedback 기능 설명이다. 렌더 완료가 외부 보고 권한을 주지 않으며, 사용자에게 해당 발송을 명시적으로 요청받은 경우에만 실행한다.
 
 ```bash
 npx hyperframes feedback --rating 10                              # clean run, no notes

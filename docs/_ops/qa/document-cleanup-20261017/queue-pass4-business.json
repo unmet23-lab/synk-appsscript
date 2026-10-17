@@ -1,0 +1,472 @@
+[
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 367054,
+    "lines": 614,
+    "sha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_저녁반영전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 358920,
+    "lines": 608,
+    "sha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 50165,
+    "lines": 406,
+    "sha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-business-pass3.json",
+    "bytes": 41550,
+    "lines": 190,
+    "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 35773,
+    "lines": 277,
+    "sha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 33753,
+    "lines": 206,
+    "sha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 29467,
+    "lines": 198,
+    "sha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 27051,
+    "lines": 334,
+    "sha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/desktop/0.4.0묶기전/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 25882,
+    "lines": 191,
+    "sha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 25405,
+    "lines": 373,
+    "sha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 24307,
+    "lines": 167,
+    "sha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/README_재묶기전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 23116,
+    "lines": 146,
+    "sha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 22102,
+    "lines": 232,
+    "sha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 21619,
+    "lines": 255,
+    "sha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 20113,
+    "lines": 158,
+    "sha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-pass3.json",
+    "bytes": 19476,
+    "lines": 234,
+    "sha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 18487,
+    "lines": 149,
+    "sha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 18227,
+    "lines": 125,
+    "sha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/entry-check/qa_재촬영전/RESULTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 17749,
+    "lines": 166,
+    "sha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 17419,
+    "lines": 122,
+    "sha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 17344,
+    "lines": 150,
+    "sha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 17112,
+    "lines": 97,
+    "sha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_원고/채널마다_창_2026-09-07.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-pass3.json",
+    "bytes": 16196,
+    "lines": 227,
+    "sha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/advance-20260912/REPORT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 16024,
+    "lines": 178,
+    "sha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 15942,
+    "lines": 111,
+    "sha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 14885,
+    "lines": 124,
+    "sha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 13895,
+    "lines": 85,
+    "sha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 13066,
+    "lines": 141,
+    "sha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 12507,
+    "lines": 112,
+    "sha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 11209,
+    "lines": 97,
+    "sha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 10907,
+    "lines": 85,
+    "sha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 10421,
+    "lines": 56,
+    "sha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 9794,
+    "lines": 104,
+    "sha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 9665,
+    "lines": 62,
+    "sha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 8799,
+    "lines": 81,
+    "sha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 8623,
+    "lines": 52,
+    "sha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 8240,
+    "lines": 48,
+    "sha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 8225,
+    "lines": 79,
+    "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SCENERY-GOALS-V6_재묶기전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 8028,
+    "lines": 46,
+    "sha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/story-classroom/qa_재촬영전/RESULTS_흔들림수정전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 6715,
+    "lines": 51,
+    "sha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SHOP-V5_재묶기전.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-design-pass3.json",
+    "bytes": 6124,
+    "lines": 48,
+    "sha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 5823,
+    "lines": 54,
+    "sha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-pass3.json",
+    "bytes": 5082,
+    "lines": 44,
+    "sha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 5008,
+    "lines": 42,
+    "sha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 4852,
+    "lines": 45,
+    "sha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/_원고/룸조판_1보_실측.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-pass3.json",
+    "bytes": 4300,
+    "lines": 75,
+    "sha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+    "owner": "business",
+    "sameContentPaths": []
+  },
+  {
+    "path": "tools/patent-studio/registration-target-20260912/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-business-patent-pass3.json",
+    "bytes": 3035,
+    "lines": 29,
+    "sha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+    "owner": "business",
+    "sameContentPaths": []
+  }
+]

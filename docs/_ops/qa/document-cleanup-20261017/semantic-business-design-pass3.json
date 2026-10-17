@@ -1,0 +1,732 @@
+[
+  {
+    "path": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "프로젝트 전용 CLI/타임라인/검사 계약 전문 확인; 공동 역할·비용은 현행 원문으로 위임됨",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "48a410a5d064d295ae146c5d705dd5f46f3b8c626c9eb9350324d4ad64882bc2",
+    "reviewedBytes": 3948,
+    "currentSha256": "48a410a5d064d295ae146c5d705dd5f46f3b8c626c9eb9350324d4ad64882bc2"
+  },
+  {
+    "path": "docs/디자인/SNS키트/모션견본/BRIEF.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "17초 견본 목적·시각 기준 보존, 로컬 렌더의 불필요한 추가 승인 관문 제거",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "f0e07e3ea9f3cf02b4c169d1cbca109cf6b81f999b2c4d9b57e9255b35866eaf",
+    "reviewedBytes": 1615,
+    "currentSha256": "b811be72eace2e880a184976c5ba0e23036366ecaa7645ba91079fe183cbf44a"
+  },
+  {
+    "path": "docs/디자인/SNS키트/모션견본/CLAUDE.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "AGENTS 단일 입구 확인",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+    "reviewedBytes": 11,
+    "currentSha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+  },
+  {
+    "path": "docs/디자인/SNS키트/모션견본/design.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "견본의 당시 서체와 현행 한글/라틴/모노 역할 구분",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "5618293f2e0161f6241850cff33502c050b631ce53926a15d757e0f1b33796f9",
+    "reviewedBytes": 668,
+    "currentSha256": "ea71ebef93b1b7333cd92b65b9fedc2df4a45197848202c1bd7e58e1bdea63a1"
+  },
+  {
+    "path": "docs/디자인/미래한국_RPG_풍경.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "RPG 기각과 생활 마을 원문으로 이동 입구 유지",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "639c960a932e7c0cf7b5fd9691b6a8a76a92fc463a76c4fdf2c7d872a8abc34f",
+    "reviewedBytes": 639,
+    "currentSha256": "639c960a932e7c0cf7b5fd9691b6a8a76a92fc463a76c4fdf2c7d872a8abc34f"
+  },
+  {
+    "path": "docs/캐릭터/마린몽글표정교정_20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "생성/합성 원본과 실제 적용 범위·로컬 검수·미배포를 명시한 증거; 10/14 장면 생성 규칙의 대체 원문 아님",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "cb69878e61dc6769bae6a3b921f5a8f6e66cfb04b1298f6b672ea9f7c7f79db5",
+    "reviewedBytes": 5066,
+    "currentSha256": "cb69878e61dc6769bae6a3b921f5a8f6e66cfb04b1298f6b672ea9f7c7f79db5"
+  },
+  {
+    "path": "docs/캐릭터/표정교정_20261011/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "거절 눈 시안·승인 형태와 자산 정정 근거 보존, 실제 측정/배포 범위가 분리됨",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "ee66182f580acc9104921342131a0a8da61e0f46b85858a3fedf27ad308aa4b3",
+    "reviewedBytes": 5775,
+    "currentSha256": "ee66182f580acc9104921342131a0a8da61e0f46b85858a3fedf27ad308aa4b3"
+  },
+  {
+    "path": "docs/디자인/게임_시작화면과_브랜드오프닝.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "v9 현재형과 시작 후 옛 마루 흐름 정정; 당시 100개 검사와 생성 원본 이력 유지",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "e13173b8921489900b86f12a927dd033ec62d4e18e6e8bcb41325895df2f96cc",
+    "reviewedBytes": 9690,
+    "currentSha256": "1e33d5136231765307905ada1408ed373ee3b923190495a98718765e32c54fa5"
+  },
+  {
+    "path": "docs/디자인/게임_풍경과_재질.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "3D 형태·재질 승인과 NPC 개성 보존. 2D 모든 조작 펠트 지시는 10/14 월드 시그널로 갱신",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "reviewedBytes": 22538,
+    "currentSha256": "fc14da61f37c2a14d97d6498f7d7ce1d318aeade18ea49f00c94e1a9e0e4ef0c"
+  },
+  {
+    "path": "docs/디자인/앱시안_20261002/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "미채택 앱 시안과 유료API 생성 기록을 현재 제작·권한으로 재사용하지 않게 본문 정정",
+    "evidence": "DESIGN; AI 운영 원칙; 브랜드 폰트 정본; 파일 전문",
+    "원문해시": "e007def2e5f154236e9fd74a47d7a64d1a8cf907f8ae4e7a122be3f5874de693",
+    "reviewedBytes": 6638,
+    "currentSha256": "6d28391bfbb1a4cfce6134f67779db72a96a80fa21afb5cae043146b0f706a93"
+  },
+  {
+    "path": "docs/캐릭터/가이드_정본.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "51763자 전문 검토. 사용자 성격·대사·내력 보존. 폐지 출석 산식/게이지, 표정 제작 불가, 전면 채팅 금지, 08-26 미구현·미확정·옛 제작 순서의 현재형을 현행 성장·생명감·WORLD 3D 계약으로 정정",
+    "evidence": "철학 적용기준; 캐릭터 생명감; 10/12 canonical-measurements.json; AI 운영 원칙; 파일 전문",
+    "원문해시": "75c1b309cfe616fa4a9648eb3e89d4d41f64c5070a88c48d78906eeea8f9e986",
+    "reviewedBytes": 107486,
+    "currentSha256": "6595b803b4e76ec922c847b1f21db19a1f96d32c8228f03bd651e29acefd3621"
+  },
+  {
+    "path": "docs/캐릭터/마스코트_말할순간_설계.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "13470자 전문 검토. 55행 승인 목적 보존, 신호 체크/학부모 구현0·자유문자열·당시 다음 단계가 현행 배선/선행 승인이 아님을 본문 정정",
+    "evidence": "철학 적용기준; 캐릭터 생명감; 10/12 canonical-measurements.json; AI 운영 원칙; 파일 전문",
+    "원문해시": "03e7f0738e35c5fb2ad7996874ed4c34e7a1eee12201b5afd0531d554ff38b19",
+    "reviewedBytes": 27075,
+    "currentSha256": "df118f21b8af9f94107f5ae9dd5770750db27cd918922fe6dead5a7e6cf5ac71"
+  },
+  {
+    "path": "docs/캐릭터/마스코트_치수_정본_v1.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 치수·표정·색·사용자 결정·미측정 범위 확인. 상단 10-12 정정만 있고 체크표에 남은 잘못된 마린 높이/눈비율을 실제 재측정 JSON으로 정정; 옛 재생성 제안 보존",
+    "evidence": "철학 적용기준; 캐릭터 생명감; 10/12 canonical-measurements.json; AI 운영 원칙; 파일 전문",
+    "원문해시": "0c38c65b8f1795e3ba1b7ba45710a0d3f1eb10aa2a95cdd0708c9c066a3b4409",
+    "reviewedBytes": 22400,
+    "currentSha256": "ebe360970020ceb3a753730a2e930e2637d6872c6d567bfe822bea65e5b35e68"
+  },
+  {
+    "path": "docs/캐릭터/이야기기계_상황집.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "52편 전문 검토. 고유 대본·성격 보존, 몽글 입 벌리기 지문과 팔·손 묘사의 조형 해석을 승인 형태 기준으로 정리",
+    "evidence": "철학 적용기준; 캐릭터 생명감; 10/12 canonical-measurements.json; AI 운영 원칙; 파일 전문",
+    "원문해시": "41146f82a0e72e6403122127a655d9a871be578b89e3ec64f23b2d9777851401",
+    "reviewedBytes": 17837,
+    "currentSha256": "4a6385507b56d7039afb4d4abcb7f2974f8ee70250d2b180d06f7706c2d62f61"
+  },
+  {
+    "path": "docs/디자인/워크스페이스_시그널/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 시각·제품 흐름·승인·공개/로컬 상태 전독. 현재 시그널2/3D/장면 생성과 뒤에 남은 이중톤·공통 말투 강제·옛 합본 상태 혼동 정정. 날짜별 원본·검수 이력 보존",
+    "evidence": "DESIGN; AI 운영 원칙; 문서 내 최신 사용자 확정과 날짜별 결과",
+    "원문해시": "4a43093267ce9c858528fe2419541dc4351f6efddc3a493f091dd46316825814",
+    "reviewedBytes": 49408,
+    "currentSha256": "6263c4b6a84a3bba2b4e9f989128970790bdbae029e6be2db95b62b23faf8497"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 시각·제품 흐름·승인·공개/로컬 상태 전독. 현재 시그널2/3D/장면 생성과 뒤에 남은 이중톤·공통 말투 강제·옛 합본 상태 혼동 정정. 날짜별 원본·검수 이력 보존",
+    "evidence": "DESIGN; AI 운영 원칙; 문서 내 최신 사용자 확정과 날짜별 결과",
+    "원문해시": "36a765032377f0f2b15004263530c6705bf6c05db4bd63ca68b0a222fb6d29fa",
+    "reviewedBytes": 66001,
+    "currentSha256": "d224c98a8ffe46ebb0f0ffdcbb7ec0ed371abc217bb6074e97e4ad2a30a7737c"
+  },
+  {
+    "path": "docs/디자인/월드_시그널/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전체 시각·제품 흐름·승인·공개/로컬 상태 전독. 현재 시그널2/3D/장면 생성과 뒤에 남은 이중톤·공통 말투 강제·옛 합본 상태 혼동 정정. 날짜별 원본·검수 이력 보존; 10-17 동시 추가된 움직임/정리 결과까지 현재 전문 재확인. 공통 HUD 복제가 바람길 듣기 기본 숨김과 충돌해 예외를 원문 링크로 명시",
+    "evidence": "DESIGN; AI 운영 원칙; 문서 내 최신 사용자 확정과 날짜별 결과; 현재 README 전체 재확인(188줄), experiences/korean-runner/README.md:10",
+    "원문해시": "2b09879850cc8999ff1df355f1f7367412acd70255eca9d0cfd6a3b8aa0b96df",
+    "reviewedBytes": 35334,
+    "currentSha256": "a8173c3dd6c454c076184a1a8863570e286d1c182342267868eb30b198f52466"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/desktop/0.4.0묶기전/README.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "desktop/README.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+    "currentSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "docs/디자인/펠트부품/README.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+    "currentSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "docs/디자인/펠트부품/README.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+    "currentSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/entry-check/qa_재촬영전/RESULTS.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "experiences/entry-check/qa/RESULTS.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+    "currentSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/README_재묶기전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "experiences/korean-runner/README.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+    "currentSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SCENERY-GOALS-V6_재묶기전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "experiences/korean-runner/qa/SCENERY-GOALS-V6.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+    "currentSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SHOP-V5_재묶기전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "experiences/korean-runner/qa/SHOP-V5.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+    "currentSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/story-classroom/qa_재촬영전/RESULTS_흔들림수정전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "experiences/story-classroom/qa/RESULTS.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+    "currentSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "docs/_ops/트랙.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+    "currentSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67"
+  },
+  {
+    "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_저녁반영전.md",
+    "coverage": "retained-evidence",
+    "decision": "retained",
+    "reason": "10/2 흰띠 정리 전 원본의 목적·당시 결과/미확인 범위·현행 담당 관계 확인. 서로 다른 판의 고유 구현/운영 증거라 삭제·현행 지시로 통합하지 않음. 전문 의미검토 아님",
+    "evidence": {
+      "reviewedRange": "파일 첫 1100~1700자, 주요 제목, 마지막 700~1400자",
+      "currentOwner": "docs/_ops/트랙.md",
+      "ownerExists": true,
+      "sameShaAsCurrent": false
+    },
+    "원문해시": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+    "currentSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813"
+  },
+  {
+    "path": "docs/디자인/싱크타운_첫플레이_실행설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 이동·입장·과제·권한·미리보기·실제 이용을 구별한 제작 계약이며 구현/교육효과를 완료로 주장하지 않음",
+    "evidence": "마을_설계 현행 10/9 이동 기준; BM WORLD 입장; 원문 FP01-12 설계와 실제 시험 구분",
+    "원문해시": "29dc94a1d382bc992020a5efdbb511c5783d0dd14831fddfaa59833420ca3e10",
+    "reviewedBytes": 24593,
+    "currentSha256": "29dc94a1d382bc992020a5efdbb511c5783d0dd14831fddfaa59833420ca3e10"
+  },
+  {
+    "path": "docs/디자인/마을_NPC_성과인정_설계_20260921.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 확인한 사건·기여·NPC 인지와 생활/학습 성과 분리 설계 보존. Atlas 읽기 결과는 9/21 범위를 명시하며 실제 서버 구현 주장 없음",
+    "evidence": "싱크타운 행동/세계변화; 10/1 학습 난도·입장 계약; 원문",
+    "원문해시": "bdff24d85e59900179b3024a8921715174ff208a9b95333113ff91d31cc36c5c",
+    "reviewedBytes": 19051,
+    "currentSha256": "bdff24d85e59900179b3024a8921715174ff208a9b95333113ff91d31cc36c5c"
+  },
+  {
+    "path": "docs/디자인/마을_플레이경험과_준비사항_20260921.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 현재형 바닥 탭/먼 시점과 20개국 일괄 출시는 최신 확정으로 정정. 생활·NPC·재료/성과 원고는 보존",
+    "evidence": "마을_설계 10/9 직접 걷기; 첫플레이_실행설계; 출시나라_지원언어_후보표_20261003",
+    "원문해시": "8783d515329e85fc49880dda75fbf8c88711fca58d0abc7d4c99d83935f3f521",
+    "reviewedBytes": 23436,
+    "currentSha256": "5187d3071c4f5508a05d1bde0b9cb94caa0b02aeeecad381ed0c3a459b1abf4b"
+  },
+  {
+    "path": "docs/디자인/SNS키트/조사_20261001.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 조사일·일차/업계 자료·미확인 원본·수치 한계를 명시한 디자인 탐색 증거로 보존; 현재 플랫폼 규정 재조사 또는 정책 보장으로 확대하지 않음",
+    "evidence": "SNS키트 담당 README; 원문 조사범위/한계",
+    "원문해시": "d7ec7134eb90ba6e1bafd7535dcdfb233425a4d6ca8b5900cbadc8bd501ed250",
+    "reviewedBytes": 11509,
+    "currentSha256": "d7ec7134eb90ba6e1bafd7535dcdfb233425a4d6ca8b5900cbadc8bd501ed250"
+  },
+  {
+    "path": "docs/디자인/미래한국_마을_풍경.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 옛 이동 계약을 10/9 직접 걷기로 본문 정리하고 전면 펠트 재질·제작 대기·엔진 준비의 현행 오인을 바로잡음. 고유 사용자 승인/거절·시제품/성능 기록 보존",
+    "evidence": "마을_설계 10/9; 게임_풍경과_재질 공통3D; 원문 날짜별 근거",
+    "원문해시": "77e312eb8c90a4ed05d91cdf8399466c26e7270679c1a5d6328abf6c2b2fe2be",
+    "reviewedBytes": 41261,
+    "currentSha256": "2477d1bef6ff60fbe47eae51b42f0ae657e2881c2a0d4fc51dfdb961830fd836"
+  },
+  {
+    "path": "docs/디자인/싱크타운_제작패키지.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 원고/실행/실제 이용·학습 효과, 편수 중복, 무료/정액 설계안을 명확히 구별한 제작 입구 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "bd30604f3a612adc1b89d2dfb665c4e35b30c015f16a0d8838bd5488e8b77bb5",
+    "reviewedBytes": 16415,
+    "currentSha256": "bd30604f3a612adc1b89d2dfb665c4e35b30c015f16a0d8838bd5488e8b77bb5"
+  },
+  {
+    "path": "docs/디자인/앱시안_20261002/order-rush-kit/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 시안의 현재형 승인대기/적용 질문·부품 구현을 당시 기록으로 정리하고 현행 게임/UI/마스코트 원문 연결",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "1d83b750c12e5e29dc0995255ed2d14d5b5b9d0394177d76bb8763f1e03d5e6d",
+    "reviewedBytes": 18157,
+    "currentSha256": "69282edaa4eafb9bc48c579e29451f2447d5cab85ca9cd9a9d40d542003a071f"
+  },
+  {
+    "path": "docs/디자인/앱시안_20261002/order-rush-kit/README.원본.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 원래 경로 기준의 복사본임을 명시해 현재 실행/공개 명세 오인 방지. 실험 기능·검사 원문은 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "745ec4b812e7fa77e7dbe026925fdf851de3dcc864a0582851dd8bcfb7ac0534",
+    "reviewedBytes": 6079,
+    "currentSha256": "35d2538ffeba845287ab3a8d0037ace65d0c6f15cf2f4aaf619f34ac1082f894"
+  },
+  {
+    "path": "docs/디자인/싱크타운_메인콘텐츠_구현준비.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 10/8 준비 기준·55개 검사 범위를 명시하고 10/9 이동 변경·열 가지 설계/확장·계정/학습/구현의 경계가 맞아 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "429b7a4005067b2bd5b6d5fe606a715013bbb6a7eaa493cad8a7fbd76127e579",
+    "reviewedBytes": 43745,
+    "currentSha256": "429b7a4005067b2bd5b6d5fe606a715013bbb6a7eaa493cad8a7fbd76127e579"
+  },
+  {
+    "path": "docs/디자인/싱크타운_생활리듬_검증설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 예상 RH20개·정적 계산·실제 부분 실행·참가자/실기기0을 구별하고 관계/소진/편안함 검증 목적을 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "e911487a0e4b26bcb9b8fb3e80725ce22a8426f8a3ca26181bcfbd48754fdc09",
+    "reviewedBytes": 20840,
+    "currentSha256": "e911487a0e4b26bcb9b8fb3e80725ce22a8426f8a3ca26181bcfbd48754fdc09"
+  },
+  {
+    "path": "docs/디자인/싱크타운_첫생활구간_설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 네 경로 독립 완결·유한 지원·출처·생활/학습 구분·소비/관람·구현 예정 조건을 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "6a987802e5ff5fc7b7ca0465571520336ae33551850ca3cfc4ed845b9064bfdd",
+    "reviewedBytes": 34276,
+    "currentSha256": "6a987802e5ff5fc7b7ca0465571520336ae33551850ca3cfc4ed845b9064bfdd"
+  },
+  {
+    "path": "docs/디자인/싱크타운_출시와_후속콘텐츠_편성.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 현재 출시 실적이나 일정 약속 없이 단계/구성별 완성 근거와 고유 NEXT3 원고·의존성/중복집계 금지 보존",
+    "evidence": "파일 전문; 마을_설계; 제작패키지; 첫플레이/경제/생활 원문; AI_운영원칙·DESIGN 현행 범위",
+    "원문해시": "b119aa163a560a6d6c945bff31e4f346dbee54b2393a1a9d96d25f1a5545f318",
+    "reviewedBytes": 36218,
+    "currentSha256": "b119aa163a560a6d6c945bff31e4f346dbee54b2393a1a9d96d25f1a5545f318"
+  },
+  {
+    "path": "docs/디자인/싱크타운_생활경제와_상품_설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 가격/한도/오프라인 수치는 내부 검증안이며 확정 결제 약속이 아님. 재화·식품 출처·권리·지역 지원·동물/낚시 고유 설계 보존",
+    "evidence": "파일 전문; BM_목록; 첫플레이 실행설계; experiences/synk-town/qa/DAY.md; AI_운영원칙 현행 범위",
+    "원문해시": "5dab0364a7fc4d8380446d5886016508b88b6a807e0d58037447471c9e28ead2",
+    "reviewedBytes": 86417,
+    "currentSha256": "5dab0364a7fc4d8380446d5886016508b88b6a807e0d58037447471c9e28ead2"
+  },
+  {
+    "path": "docs/디자인/싱크타운_첫생활구간_원고.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 네 경로의 실제 대사/선택/중단/재방문과 인지·기여 경계를 보존. 구현/학습 효과 주장 없음",
+    "evidence": "파일 전문; BM_목록; 첫플레이 실행설계; experiences/synk-town/qa/DAY.md; AI_운영원칙 현행 범위",
+    "원문해시": "2dc924c8d09c3f3dfe18bfe5439a7cf541caa096cc52fb04676bbc9e3cd1cbc7",
+    "reviewedBytes": 37992,
+    "currentSha256": "2dc924c8d09c3f3dfe18bfe5439a7cf541caa096cc52fb04676bbc9e3cd1cbc7"
+  },
+  {
+    "path": "docs/디자인/싱크타운_생활재미와_성장콘텐츠_설계_20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 열두 축/세 연속생활/숙련 지원/학습 경계를 보존하고 현재 이동을 바닥 탭으로 지시하는 한 문장을 10/9 직접 걷기로 정정",
+    "evidence": "파일 전문; BM_목록; 첫플레이 실행설계; experiences/synk-town/qa/DAY.md; AI_운영원칙 현행 범위",
+    "원문해시": "c5aafc729b9a6488f7576e1b2109a7bcca457e85b546b6406812093bd0acc2e4",
+    "reviewedBytes": 69174,
+    "currentSha256": "342a618208222b96d508b8049ad2a02d714f52aca7e83c6b20b43e9a0f263360"
+  },
+  {
+    "path": "docs/디자인/싱크타운_10대생활콘텐츠_제작설계_20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 열 콘텐츠의 분기·거절·재방문·지원 원고와 실제 자원 계약 보존. 현재 이동의 바닥 탭 지시 한 곳 정정",
+    "evidence": "파일 전문; BM_목록; 첫플레이 실행설계; experiences/synk-town/qa/DAY.md; AI_운영원칙 현행 범위",
+    "원문해시": "b355c49d2a7a15950e4bb6a938b448e79bd577c1dec2dee9ee3fd58a893adf41",
+    "reviewedBytes": 94194,
+    "currentSha256": "608caa987ff8a7173fc9f16d59d3fc86c89b83aadbfdf15eac2844352ab80520"
+  },
+  {
+    "path": "docs/디자인/싱크타운_NPC자율생활_설계_20261008.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 주민 목적/자원/예약/인지/플레이어 선택 설계 보존. 10/8 기반의 현재형을 당시 상태로 한정하고 10/9 세 주민 부분 구현 근거 연결",
+    "evidence": "파일 전문; BM_목록; 첫플레이 실행설계; experiences/synk-town/qa/DAY.md; AI_운영원칙 현행 범위",
+    "원문해시": "9a6a264aa3dd3f5cf25469f023e12ede8e361392de781f21c90301116b9d2f9c",
+    "reviewedBytes": 79627,
+    "currentSha256": "9cd790ab9e9e3ad9591e2f978b46eeaa97aeaff12bbeb53a0f57bada3f8c57e9"
+  },
+  {
+    "path": "docs/디자인/싱크타운_TOPIK4_학습설계와_원고.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 24단원·20과제의 고유 대본/문항/답 근거/루브릭·검산과 PBT/IBT/말하기 경계 보존. 급수보장·생활권한·음원/교육검수/구현 완료를 주장하지 않음",
+    "evidence": "파일 전문; 첫생활/TOPIK 우선순위; 10/3 출시나라 후보표; HOME.md; costume-convenience-20261009/README.md; 월드 시그널",
+    "원문해시": "4ca8066505fd8e0f67907d093b370d992a40585d6c0e8466fc7e5713940fd7b4",
+    "reviewedBytes": 60316,
+    "currentSha256": "4ca8066505fd8e0f67907d093b370d992a40585d6c0e8466fc7e5713940fd7b4"
+  },
+  {
+    "path": "docs/디자인/교육게임_콘텐츠구성_TOP10_20261009.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 10제품의 기능·지원언어·수량 단위·조사 한계를 보존. 당시 마루 구조를 현재형에서 분리하고 언어 연습 조건이 Town 생활 전반의 보상/권한 조건으로 확대되지 않게 범위 정정",
+    "evidence": "파일 전문; 첫생활/TOPIK 우선순위; 10/3 출시나라 후보표; HOME.md; costume-convenience-20261009/README.md; 월드 시그널",
+    "원문해시": "637cf4d3d57c1143cb2dad485ed09d4baf5a23480ba81a6fbdcb6a449b246c26",
+    "reviewedBytes": 26122,
+    "currentSha256": "19940813751aec46091d0a231c8dfdff8849c73a5f028f0b5d8a51159e30476c"
+  },
+  {
+    "path": "docs/디자인/싱크타운_Steam생활게임_TOP10_조사_20261008.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 24후보/23유효·구매필터·Wilson하한·원자료/표본 한계와 각 게임 고유 참고점 보존. 실제 플레이·학습 효과·세계순위로 확대하지 않음",
+    "evidence": "파일 전문; 첫생활/TOPIK 우선순위; 10/3 출시나라 후보표; HOME.md; costume-convenience-20261009/README.md; 월드 시그널",
+    "원문해시": "474a5159411c878604907dfd497bcbde4dcde8ef6cafefef3cd6179a98e70b6a",
+    "reviewedBytes": 21741,
+    "currentSha256": "474a5159411c878604907dfd497bcbde4dcde8ef6cafefef3cd6179a98e70b6a"
+  },
+  {
+    "path": "docs/디자인/마을_생활경영_스팀조사_20260921.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 17후보와 고유 사용자 의견/공동체·경영 비교 보존. 약20개국 동시 가정을 9/21 기록으로 한정하고 10/3 확정 12+7 출시 원문 연결",
+    "evidence": "파일 전문; 첫생활/TOPIK 우선순위; 10/3 출시나라 후보표; HOME.md; costume-convenience-20261009/README.md; 월드 시그널",
+    "원문해시": "07c8fc714189d33def7cdf79a5ebb0a83e02a25616d865c106cc66bf8ec81944",
+    "reviewedBytes": 24797,
+    "currentSha256": "00f1863ea6b2c86c8d32fa9960277912561282a7ed1a180d2d5f3530ca2356d4"
+  },
+  {
+    "path": "docs/디자인/코스튬방_Steam10종_편의성조사_20261009.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 10게임 비교와 승인된22개 개선 설계 보존. 구현 전의 상태 초기화/염색 부재 등을 당시 기준으로 정정하고 후속 구현 기록 및 현행 WORLD 디자인 범위 연결",
+    "evidence": "파일 전문; 첫생활/TOPIK 우선순위; 10/3 출시나라 후보표; HOME.md; costume-convenience-20261009/README.md; 월드 시그널",
+    "원문해시": "16290046343591dfb0a6023f6219dbf51116f4055f26d0f41ef9dc933d3a41dd",
+    "reviewedBytes": 38994,
+    "currentSha256": "f103e10fbb5e7d5c32720a2670a8c8e16c7bc96b498b0fac4699174aea9fdfaa"
+  },
+  {
+    "path": "docs/디자인/싱크타운_공연과_생활학습_설계_20261008.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "공연 P01/M01의 모든 대사·48마디 초안·신호/개인/공유 계약·원고/구현/학습 효과 경계 전문 확인. 고유 창작과 동등 선택권 설계 보존",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "418743d34abb3ccc1cb18eead6094a3076aa542a3de6068b681186a276ac9d51",
+    "reviewedBytes": 76316,
+    "currentSha256": "418743d34abb3ccc1cb18eead6094a3076aa542a3de6068b681186a276ac9d51"
+  },
+  {
+    "path": "docs/디자인/워크스페이스_시그널/조사_20261010.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "업무/로그인 조사 전문 확인. 당시 자료수집·시안 채택 근거와 멀미/가독성의 제품별 적용 범위 보존. 현재 작업 역할이나 전사업 3D 금지 아님",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "4d3cffadc5bc956939019e833dfb2b7b121d09c4f5405bffe132efbdfc541036",
+    "reviewedBytes": 8631,
+    "currentSha256": "4d3cffadc5bc956939019e833dfb2b7b121d09c4f5405bffe132efbdfc541036"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/조사_20261006.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 1차 플랫폼 비교의 시점·표본/노출 수 한계·당시 이중톤 제안 보존. 후속 현재 기준은 상위 README가 담당",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "1283dd02c107d4d1b72222f7cb3ce2a96b838ad0fe5e17c54bc2b31062da750b",
+    "reviewedBytes": 4298,
+    "currentSha256": "1283dd02c107d4d1b72222f7cb3ce2a96b838ad0fe5e17c54bc2b31062da750b"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/조사_20261010.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 2차 플랫폼에서 실제 색 물건 채택과 실험 범위/확인 불가 자료 구분 보존. 1차와 중복만인 사본 아님",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "46ea5f4c85c71368ddb5b83296bcac5f74b3127b6bdd5b4fd734facdaecf32e5",
+    "reviewedBytes": 7929,
+    "currentSha256": "46ea5f4c85c71368ddb5b83296bcac5f74b3127b6bdd5b4fd734facdaecf32e5"
+  },
+  {
+    "path": "docs/디자인/워크스페이스_시그널/조사_20261013_SNS.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 제품별 실제 기능/후기·차단 자료·표본 한계와 SNS 상태/승인/미확인 분리 제안 보존. 외부 발송을 실제 승인하거나 완료했다고 주장하지 않음",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "300328d64fa6c6295620ed86c996a6000149362465d1b5dd4565a2778cf5ab8d",
+    "reviewedBytes": 34484,
+    "currentSha256": "300328d64fa6c6295620ed86c996a6000149362465d1b5dd4565a2778cf5ab8d"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_PULSE고객_20261013.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 29장+후속13장 당시 디자인 검수, 실제 수정/못본 범위·남은 지적을 구분한 고유 증거 보존. 현재 결함/현행 고정 검수 하네스로 확대하지 않음",
+    "evidence": "파일 전문; 생활/TOPIK/NPC 정본; 플랫폼·워크스페이스 시그널 README; AI_운영원칙 현재 역할/검증 범위",
+    "원문해시": "ac30e755b1f3ea2b108c47bc0e0e38bbb8bc16d47087b9b5d88c2f672b2ece26",
+    "reviewedBytes": 10170,
+    "currentSha256": "ac30e755b1f3ea2b108c47bc0e0e38bbb8bc16d47087b9b5d88c2f672b2ece26"
+  },
+  {
+    "path": "docs/디자인/싱크타운_생활사건_설계.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. C01~08 고유 원인/분기/취소/소유/보상과 실제 관람 경계 보존. 폐지된 Town 하루1회 자동접근을 10/8 접점 정책으로 정정, 초기 C01/C02 구현 순서안을 당시 기록으로 한정",
+    "evidence": "파일 전문; 싱크타운_행동과_세계변화_설계.md:179; NPC자율생활#approach; Town README; 첫생활/생활경제/주민 원문",
+    "원문해시": "d73dedc16f179d135c1a218e3c10fd838ffc0df2bbb551ddfb909f82460bf71f",
+    "reviewedBytes": 65756,
+    "currentSha256": "22af2e0f7a0cc8f81e84eeb54a9da8c829458d37128d1e4dd36b9898b0d897e7"
+  },
+  {
+    "path": "docs/디자인/싱크타운_주민관계와_연속생활_원고.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 관계5사실·LS12회차·주민쌍3·보답2·배경6·옛주민11장편 입구의 고유 대사/상태/동의/인지 설계 보존. 역할명·미확정 설정·원고/구현 구별 적절",
+    "evidence": "파일 전문; 싱크타운_행동과_세계변화_설계.md:179; NPC자율생활#approach; Town README; 첫생활/생활경제/주민 원문",
+    "원문해시": "a74b077f2853d78971372b54f141c8d68f03acf55055a86e558d022aaecb2593",
+    "reviewedBytes": 100953,
+    "currentSha256": "a74b077f2853d78971372b54f141c8d68f03acf55055a86e558d022aaecb2593"
+  },
+  {
+    "path": "docs/디자인/싱크타운_재방문_콘텐츠와_원고.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. RV24개/취향3묶음·익숙한생활9종·정적30세션·추천피로 설계 보존. 앞 계약의 하루1회 예산 복제를 뒤 본문과 일치하는 접점 정책 원문으로 정정",
+    "evidence": "파일 전문; 싱크타운_행동과_세계변화_설계.md:179; NPC자율생활#approach; Town README; 첫생활/생활경제/주민 원문",
+    "원문해시": "1b282f6d5039291c4c3076c56982b62d1610fe7a377086db04a7a55c46ee95d2",
+    "reviewedBytes": 105293,
+    "currentSha256": "ec2ed2ac9270616adf7be46c146493633744f575c93936bededdbd0bf09b8caf"
+  },
+  {
+    "path": "docs/디자인/워크스페이스_시그널/검수_20261013_고객관리_기능.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "10/13 기능 검수와 10/14 수정 결과 전문 확인. 고객관리 정보 구조·21개 모듈·당시 오류 및 수정 근거를 보존하며 로컬 시험과 실기기/공개 반영 범위가 분리되어 있음",
+    "evidence": "파일 전문; docs/디자인/플랫폼_시그널/README.md; docs/디자인/워크스페이스_시그널/README.md; docs/AI_운영원칙.md",
+    "원문해시": "9669ee043ef2b4680f91b57b6a93779e70e2d8b3e44cddbaabc9cd37b7035259",
+    "reviewedBytes": 18956,
+    "currentSha256": "9669ee043ef2b4680f91b57b6a93779e70e2d8b3e44cddbaabc9cd37b7035259"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_맞춤도구_20261013.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 맞춤 도구 11화면의 당시 CSS·대비·중복단추·누락 공통부품 제안과 화면 근거를 보존. 구현 완료나 현행 필수 검수 역할을 새로 주장하지 않음",
+    "evidence": "파일 전문; docs/디자인/플랫폼_시그널/README.md; docs/디자인/워크스페이스_시그널/README.md; docs/AI_운영원칙.md",
+    "원문해시": "a41ab7663680a08fdaf8cab1a85664d093c5f2c6512a415e759de87aeb1ac669",
+    "reviewedBytes": 16875,
+    "currentSha256": "a41ab7663680a08fdaf8cab1a85664d093c5f2c6512a415e759de87aeb1ac669"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_20261006.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 10/6 홈페이지·플랫폼의 당시 설계, 구현 확인과 원문 검수 판단 보존. 옛 이중톤/흰 종이 지도 제안은 날짜 있는 검수 이력이며 현재 플랫폼 README가 담당 원문. 공개 가능이라는 당시 의견은 공개 사실로 확대하지 않음",
+    "evidence": "파일 전문; docs/디자인/플랫폼_시그널/README.md; docs/디자인/워크스페이스_시그널/README.md; docs/AI_운영원칙.md",
+    "원문해시": "14b36b9c3e42ddce83cebddb32aef91fe650daba7d86f5565c3ec884e1ce3b2d",
+    "reviewedBytes": 42850,
+    "currentSha256": "14b36b9c3e42ddce83cebddb32aef91fe650daba7d86f5565c3ec884e1ce3b2d"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_20261010.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 1차 문제·CSS 제안과 2차 반영 확인, 검수자가 철회한 바닥 페이드 제안을 함께 보존. 당시 구현/캡처/미확인 범위가 구별됨",
+    "evidence": "파일 전문; 플랫폼_시그널/README.md; AI_운영원칙.md",
+    "원문해시": "7a221e44bba38f6c1aff34cfbd8ab77966b18d49e0ca69ffead8178d3def5fe8",
+    "reviewedBytes": 39757,
+    "currentSha256": "7a221e44bba38f6c1aff34cfbd8ab77966b18d49e0ca69ffead8178d3def5fe8"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_PULSE고객_글자2판_20261013.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 타이포그래피 2판·05 영상 확인의 반복 검수 전문 보존. 당시 말투/글자 제안은 현재 공통 규칙으로 확대하지 않으며 승인·의견 제출·수령의 구분 유지",
+    "evidence": "파일 전문; 플랫폼_시그널/README.md; AI_운영원칙.md",
+    "원문해시": "1802746a920edb59640f449d7a6cfd59cea5889ec881af474824e108d3cf327c",
+    "reviewedBytes": 38677,
+    "currentSha256": "1802746a920edb59640f449d7a6cfd59cea5889ec881af474824e108d3cf327c"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/Fable_검수_회원혜택_20261014.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 무료 회원 혜택4종 최초·재확인 전문 보존. 실제 오류/의심해제/코드만 확인/미확인과 공개 가능이라는 검수 의견을 구별하며 공개 완료 주장 없음",
+    "evidence": "파일 전문; 플랫폼_시그널/README.md; AI_운영원칙.md",
+    "원문해시": "99ae2989e34a89486e70f63c05e240fa425a2a812cbac4e12482ed5f6193e7d8",
+    "reviewedBytes": 44888,
+    "currentSha256": "99ae2989e34a89486e70f63c05e240fa425a2a812cbac4e12482ed5f6193e7d8"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/조사_20261013.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 설치·다운로드 표본 조사 전문 보존. SYNK 적용 전제를 당시 조사로 한정하고 Mac ad-hoc 서명과 정식 서명/공증 보류를 구분. 후속 Applications 이동/교체 구현 담당 원문 연결",
+    "evidence": "파일 전문; desktop/README.md:13,37,143; platform-convenience-20261009/README.md:7-48; 플랫폼_시그널/README.md:93",
+    "원문해시": "c2e8b4c10ab5611962e55e2741f49b1bed95c5cf92b7aa0563a09a93c0a551dd",
+    "reviewedBytes": 38755,
+    "currentSha256": "a346d7aae61aeb6eca2aa9d6f75a14ae76adcf0e388b8c3bc5b08c386818df0b"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/편의성_10개플랫폼_조사_20261009.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 10개 제품137항목과85출처 전문 확인. 창 복원/검색/트레이/알림/초안 등 같은 날 구현된 기능을 계속 남은 후보로 읽는 본문을 정정. 원래 후보·범위 보존하고 실제16종 대조표 및 최신 배포 원문 연결",
+    "evidence": "파일 전문; desktop/README.md:13,37,143; platform-convenience-20261009/README.md:7-48; 플랫폼_시그널/README.md:93",
+    "원문해시": "94dd0f1c63ba94067b2ecc47c7a1b2c2946ee57f35afad880e3ae642d72790c9",
+    "reviewedBytes": 52433,
+    "currentSha256": "ba1a1e49733c91ead5408476deacb017a6ea1a32ce28e4aa0c004f0742e0357f"
+  },
+  {
+    "path": "docs/디자인/플랫폼_시그널/조사_20261013_PULSE고객.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전문 확인. 고객 경험23서비스·반응44건·75출처와 원자료·타이포32쪽 조사까지 전문 확인. 실제 고객/제작자 전언/가설/게시 범위가 구별되어 있고 수정회차·권리·납기는 계약 확정과 분리한 제안이므로 고유 근거 보존",
+    "evidence": "파일 전문; 각 시그널 README 담당 링크; 고객관리 조사 상단 실제 채택/제외 기록; PULSE.md:5-10~5-15 부분 대조",
+    "원문해시": "5f0673f9fb55dbd39a73a3335f63d21ce32a01a084858313265ec80d792bd327",
+    "reviewedBytes": 123414,
+    "currentSha256": "5f0673f9fb55dbd39a73a3335f63d21ce32a01a084858313265ec80d792bd327"
+  },
+  {
+    "path": "docs/디자인/워크스페이스_시그널/조사_20261013_고객관리.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 기능/반응 조사와 Recent928개·Dribbble126개 표본 메모 전문 확인. 앞 확정 채택에서 제외한 즉시 단계변경·단계 체류일·고객별 묶음을 뒤 시각 조사에서 다시 실행 지시하는 충돌을 미채택 후보로 정정",
+    "evidence": "파일 전문; 각 시그널 README 담당 링크; 고객관리 조사 상단 실제 채택/제외 기록; PULSE.md:5-10~5-15 부분 대조",
+    "원문해시": "3820871f0925bf81c68480cb4b61709b440b0b8c629ff96e3c9e0a83ef4cb7f5",
+    "reviewedBytes": 56013,
+    "currentSha256": "e8103147b9eb548902c542304972932b3969f6971bba5eaf6ad759b385231503"
+  },
+  {
+    "path": "docs/디자인/월드_시그널/조사_20261014.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "전문 확인. 10-14 조사 사례·반응317건 및 Tolan250건·Recent41개 표본·미확인 범위 보존. 이후 폐지된 정지/250ms 제한, 바람길 달리는 중 글 노출, 레슨 보상만의 옷 획득, 학습 무제한 약속, 팩 점수로 마을을 여는 제안과 일률적 해요체를 현행 원문에 맞춰 정정. 다른 고유 후보는 당시 제안으로 구분",
+    "evidence": "파일 전문; 월드_시그널/README.md 움직임(2026-10-17) 및 10-15 폐지 결정; 게임_풍경과_재질.md#world-graphics-20261009; experiences/korean-runner/README.md:10; BM_목록.md:26,115; 싱크타운_첫생활구간_설계.md:124; AI_운영원칙.md",
+    "원문해시": "e12e7f4b9c8ce2fb3503a99fea43f94ff28003d614c71895fa00bab8bf5871cb",
+    "reviewedBytes": 94316,
+    "currentSha256": "f4531c9fb59a9e924c06800e9c69e5c92d2d24653dfdea81c073c512f93cade9"
+  }
+]

@@ -1,0 +1,3842 @@
+[
+  {
+    "path": "desktop/AUTH.md",
+    "bytes": 10739,
+    "sha256": "28efebd979371047c6753c6966384af5e0edc21842dfd708e9a7002e6ffb7528",
+    "lines": 78,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "desktop/LIFECYCLE.md",
+    "bytes": 28546,
+    "sha256": "0356caafefbf33e30c6dc94cc7ddbcc11d7a4b29652ba9daf8475aa302648749",
+    "lines": 184,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "desktop/README.md",
+    "bytes": 87028,
+    "sha256": "e8c219dbe51ae5e22f6b27911922132667eec93a43dd38fdc4e458098758f5a8",
+    "lines": 486,
+    "owner": "product",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "desktop/installer/README.md",
+    "bytes": 16500,
+    "sha256": "cfcca9fef436976420446d2489014737d5cc9bd97a309314414490b12a7eceb2",
+    "lines": 122,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/SYNK_공통계정_구현검증_20261002.md",
+    "bytes": 23964,
+    "sha256": "0e8d23466ecf5f6536f5784d4c6ed51adc548d692e0f882b3cf78ebb3a5289f2",
+    "lines": 106,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/SYNK_플랫폼_계정과_연결_설계.md",
+    "bytes": 188533,
+    "sha256": "7bf3fc1c40539f6236d31dc0062e786ffe6bc89c53d806db7be0aeba87ce73c7",
+    "lines": 814,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/공개판_설계.md",
+    "bytes": 90605,
+    "sha256": "724ad2a1a26d5ee09b4bd29e7b4f0c0fba65b9292f6841e49d7a1950a8575329",
+    "lines": 425,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/대화_설계.md",
+    "bytes": 54572,
+    "sha256": "5468ec30e467856dc9e2bec5b50bf6e22b4e54af287fe2d7aca4722912fe613c",
+    "lines": 408,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/마을_설계.md",
+    "bytes": 124442,
+    "sha256": "b7fde46fdca8e58acf4b8cbca16563f8be18e4b79a3cc9af5034ace1c402f76b",
+    "lines": 701,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/미니게임_TOPIK_I_학습기준.md",
+    "bytes": 57771,
+    "sha256": "3fb8145ce13616e34214320caee536ea4b0c9a7f429d007249cee6173b7cb114",
+    "lines": 321,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/미니게임_게임층_설계.md",
+    "bytes": 28092,
+    "sha256": "ec789f790599bc99564b2b3746654c1c30a2d735fcd2ec88c2e696ebacee9d7d",
+    "lines": 138,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/발음데이터_규격.md",
+    "bytes": 99887,
+    "sha256": "9ae4a72e708db2fa69b33e96a23c41563d38909366a060119773a224551c39c4",
+    "lines": 1005,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/상태기반_과제선택_설계.md",
+    "bytes": 610724,
+    "sha256": "df72ac0379b929a9ade3e92d2d274d7e420332e9977f6e9485eea02be000566f",
+    "lines": 5510,
+    "owner": "product",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/세층합류_설계_v1.md",
+    "bytes": 49489,
+    "sha256": "6bdc15d513103ac2248df88a6fe051c1a4002bf60800df4e842e7ef6fec73fdd",
+    "lines": 467,
+    "owner": "product",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/싱크타운_행동과_세계변화_설계.md",
+    "bytes": 55705,
+    "sha256": "230906187dd49920b7402093f93599e6499d539c2d03a2372d88432ca1bfccf9",
+    "lines": 390,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_검토_20261002.md",
+    "bytes": 21750,
+    "sha256": "ba17384724918deab00cebe8ebafdc7f6def45242f1bf08af29e8e0c00e49feb",
+    "lines": 153,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+    "bytes": 18065,
+    "sha256": "d59c51ae7ad7b43538be1c0325cd142950fc6455a59da3ca975116577ad8e116",
+    "lines": 102,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_교육업그레이드_20260930.md",
+    "bytes": 20210,
+    "sha256": "f94889ba4787dd9bbea52ce26924e7af940817cc79663f7a7991001f2525d559",
+    "lines": 130,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_구현명세.md",
+    "bytes": 225550,
+    "sha256": "25a02c9f3f791dfc392286655e3550c120b45066c6fbc4b24ff7f0325e0c2bb7",
+    "lines": 1313,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_설계.md",
+    "bytes": 118318,
+    "sha256": "b6580fb957f4e070e61fcdbf6b3d1b8f2807596efd22d64df23944d7192874d8",
+    "lines": 679,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_순간맞춤_20261002.md",
+    "bytes": 45075,
+    "sha256": "277b3f9b773856efaa8a198669f7655173727a29a6ba037d5d2388e3c930814c",
+    "lines": 253,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/아틀라스_첫지속기억_20260921.md",
+    "bytes": 24596,
+    "sha256": "364c720f2c45d3e0287fad929c37451693ccd4fe9bb402e9d4f1208a703ca4b0",
+    "lines": 140,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-core-trail-temper.md",
+    "bytes": 25927,
+    "sha256": "002c944bc7e44084459f9bf78d9c48769a6eaea97f9334e6cb79ec0c454553ba",
+    "lines": 164,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-prism-strata.md",
+    "bytes": 19342,
+    "sha256": "82bec88a1c9bfecd8ed8f45f5222d8387d9f41a56b0a8bae91d4cfb813496b98",
+    "lines": 133,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/엔진/지도_20260921/audit-vellum-loom-reed.md",
+    "bytes": 26649,
+    "sha256": "ea224efb5b31eb612a90579220a38c421da2373bd446cbab0b87fb10e8fe9177",
+    "lines": 195,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/엔진8종_상향설계_v3.md",
+    "bytes": 110574,
+    "sha256": "eaadc8e2895d92223866954ffc75b683110abe6f0fe91cb825d97fad5602c0f9",
+    "lines": 850,
+    "owner": "product",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/옷입히기_설계_v1.md",
+    "bytes": 37410,
+    "sha256": "26b38b49d0a717eb3d50d5d21c7e47f066d0973ca6b9382b1642539ad9b14e80",
+    "lines": 215,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/주민_설계.md",
+    "bytes": 53714,
+    "sha256": "8b83e4212675c3f69df32c6eac7b1875601671c1ffeacf619584015be6e00e65",
+    "lines": 269,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/코어엔진_설계.md",
+    "bytes": 54925,
+    "sha256": "f554e04359ea4066f9dbb30e828aca71229a1feabbcae801a7fdd49c41aef950",
+    "lines": 294,
+    "owner": "product",
+    "previousCoverage": "targeted",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/한글단계_노래영상_근거점검_20261008.md",
+    "bytes": 17735,
+    "sha256": "11cac73fdb435f14fa3cc8108f9ea01ff53c059ad394a3fde3e9bdf4b1a4bca3",
+    "lines": 143,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/한글단계_설계.md",
+    "bytes": 41935,
+    "sha256": "fcf945c98f7e4af305e15f899c5ca969c542dc5b8e3a9d644037191ee7ca5f95",
+    "lines": 290,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "docs/한글단계_학습방식_조사_20261004.md",
+    "bytes": 11074,
+    "sha256": "a4704cbc4bd594a1c7576caae35f587fec54bcbe315329aeac229ced0aef469c",
+    "lines": 80,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/20260909/pulse/THIRD_PARTY_NOTICES.md",
+    "bytes": 4320,
+    "sha256": "3a3120e020ab82ae1b977f78f79274581cd686efb3f3833d3e638688f9a72032",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/20260909/pulse/scene-assets/ssao/SOURCES.md",
+    "bytes": 766,
+    "sha256": "15a5119e430bb562ca6b475834e7297d5f4548ffc6937215935fdc21942d970e",
+    "lines": 10,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/atlas-lab/deploy/README.md",
+    "bytes": 20885,
+    "sha256": "b19792db516e0e607072e9a447e960c6b311dfb84a1e7c172bf17d05c23f9115",
+    "lines": 173,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/beginner-games/README.md",
+    "bytes": 20427,
+    "sha256": "daff0049c6e557c84b24fd75401c8bf629c5c83f648a85c97ad0a44ed408a561",
+    "lines": 127,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/README.md",
+    "bytes": 6338,
+    "sha256": "6e5b153b6ce81ee11480f9a235311d3555919b34d0f77db62826e6b735bd387f",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/SERVICE-APPLY-PLAN.md",
+    "bytes": 14322,
+    "sha256": "6061c31c21771957b467d9b88c7d8913586335bb2d1c3ebc0b11a4151570afaa",
+    "lines": 179,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/COMPANY-ROUTE.md",
+    "bytes": 2774,
+    "sha256": "b7b3435d684a483d22717cf8fae828d88c52d63173840f0935b5c40aa17e175e",
+    "lines": 27,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/README.md",
+    "bytes": 3588,
+    "sha256": "01011bd3b31571927c95715eef0449b1cfe4518c8537b606f35fd4de5cbe5dc6",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/coop-release/r4/SERVICE-APPLY-PLAN.md",
+    "bytes": 14781,
+    "sha256": "1b5f1955715291180d22b558cdb4f13dc691b9a163caa9f994cc8db65188582f",
+    "lines": 181,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/preparation-history-before-publication-20261009.md",
+    "bytes": 16166,
+    "sha256": "fa8ce2bd5a3068796fabcbf75f980bcaff650d9fcd2b82987014752c74365384",
+    "lines": 93,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-20261009-0530.md",
+    "bytes": 9135,
+    "sha256": "838b1cd1eb9ef47c36a7f73faaf8e4d2417be5be5bd8ca9b3de1cbe38d476cf0",
+    "lines": 99,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-coop-r4.md",
+    "bytes": 3968,
+    "sha256": "e83e4ca1617db15c74e9cf8719f4ef7b59525e972abc993a5daed387238df7e0",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/release-review-corrections-20261009.md",
+    "bytes": 10266,
+    "sha256": "0b2a89ea421c03eb78537a14f756a90d92215eb5219f2e25a0a1f56a14a45036",
+    "lines": 113,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/account-sync/wardrobe-production-20261009/README.md",
+    "bytes": 5840,
+    "sha256": "321b4a5a54f99d77873d1432a73ddf4bf15d5c73e226be106aa21a6094318429",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/README.md",
+    "bytes": 1876,
+    "sha256": "235222a4ca525941c01012e49ff4ba971f16991f91f11ae71fcf06aa786b9e90",
+    "lines": 12,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/close-20261010/track.staged.md",
+    "bytes": 111202,
+    "sha256": "812ec23f77d8e33cc897f71b71e0279a1ae022f50ce322ddfc06240972142066",
+    "lines": 149,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/graphics/RESULTS.md",
+    "bytes": 3744,
+    "sha256": "4a872a803fa16f7a27e55aa3a0fbea89d6210b4e7b3ebe268ef97c7b26662ab1",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/motivation/RESULTS.md",
+    "bytes": 4180,
+    "sha256": "5d58bd8ee4b8949a39c2515c1a2a12a3e158ef1973147abca9d51b9bd8852093",
+    "lines": 25,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-finish-20261009/README.md",
+    "bytes": 5362,
+    "sha256": "9dec1506901ae4e7c57c3fd714a46733cdff798144bae5d88ffe2169c760018a",
+    "lines": 20,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/nonvoice-shop-finish-20261009/README.md",
+    "bytes": 4729,
+    "sha256": "fb088f30d0f0fa1c797a25358a90e4b58d4fcbd2c67ee027204e262d67b51f13",
+    "lines": 23,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/playtest-readiness-20261009/README.md",
+    "bytes": 5184,
+    "sha256": "c908fd0c0ef8074ee9fa00ed3cdaf325825dedc75900b51d0d4948069a50a4c6",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-finish-20261009/README.md",
+    "bytes": 5165,
+    "sha256": "280531f2826108f536e8ad52aa0be2956405d9770f8c905fed7716cbcefa2fe2",
+    "lines": 36,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/return-play/RESULTS.md",
+    "bytes": 3880,
+    "sha256": "2704f23b45562ee3a251932fec988db51afd982ef48a28a38851eb6a512927a2",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/review-resume-20261009/README.md",
+    "bytes": 2995,
+    "sha256": "4f4b8a24e4899f78a47702d8ca5fe51c99244b1a6a1b438cb2f741b93ba06e27",
+    "lines": 18,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/scene-keepsake-release-20261009/README.md",
+    "bytes": 7187,
+    "sha256": "bc14b684cd711d9e91f66a075495e2a440ab9069b2f1f146d5682e2e6b9c75ae",
+    "lines": 42,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/beginner-games/qa/self-audit-20261009/README.md",
+    "bytes": 6456,
+    "sha256": "70f7e1f6faa845f3f7632802f33d03f72600f69e9b2b1610354a0bd138f87b15",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/blank-slice/README.md",
+    "bytes": 21307,
+    "sha256": "fd17ddfbd7726af9a7dfd4c499321e2fc697d66f0232762b902b2daa84cc4a04",
+    "lines": 145,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/blank-slice/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/blank-slice/qa/RESULTS.md",
+    "bytes": 23772,
+    "sha256": "5e468cd38fe6fd6fb1421264e11fdcbb8e176be56b3d9fea0647d807964dde94",
+    "lines": 163,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/HOME.md",
+    "bytes": 31768,
+    "sha256": "2ed1b949be6ed5038db22123babb0cc3f6ecef7ba7eaccbdb948e055aa1744e4",
+    "lines": 171,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/brand-opening/delivery/package/README.md",
+    "bytes": 1593,
+    "sha256": "169ecbe4dc7435bc4eac587895dd55bcdfb959a7ab39871b910e6f5758fe0761",
+    "lines": 16,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/README.md",
+    "bytes": 10762,
+    "sha256": "2abaa16cbeb95dacfa29253073d646378f6dfe69734cd523d1f9f4069c06f89c",
+    "lines": 66,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/README.md",
+    "bytes": 4501,
+    "sha256": "f599387ce635f9c1b24c45a8de89df43b601d1acb43ee512bcbb95c21da0394b",
+    "lines": 31,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r13/README.md",
+    "bytes": 6006,
+    "sha256": "736c6804a7fff774862a41fed3503b8c640e2e6925e8d65377ae0e929068c717",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/companion-canon-20261012/rebuild-kkamong/history-r14/README.md",
+    "bytes": 4172,
+    "sha256": "768e56ff0f42cf251f6ff19d60bbd4cc909d0125fdd740070a6f601a53f09b07",
+    "lines": 31,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/felt-v6/camera-shake/README.md",
+    "bytes": 2113,
+    "sha256": "938d3b9830d0af36848fd5755ca25ab82b503be5a70649dd9677f45c951bcbe6",
+    "lines": 14,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/game-tutors-20261010/README.md",
+    "bytes": 4438,
+    "sha256": "6d3fb3af5b1b16cd0894298636f815998193b95a1333b9ba9b6068648780ed35",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-expressions-20261011/README.md",
+    "bytes": 2779,
+    "sha256": "e78638a0afa0e1f8fe17c071e309b7e8ae5e9dd944748dc2a02c7ca6aad97124",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/kkamong-stitch-20261011/README.md",
+    "bytes": 1215,
+    "sha256": "16ef08170e04eae250f68fde2c30a15f3df5646205189d1a60b661f8afd78091",
+    "lines": 15,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/living-home-20261012/README.md",
+    "bytes": 3774,
+    "sha256": "8f39b3faae2ae413427dde19abaccbcb516f448f694bf93a8186dadbb03ff469",
+    "lines": 42,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/README.md",
+    "bytes": 6024,
+    "sha256": "b19bce7566f8d7c4c54f4d5dea3311562e684c171d1878d7db2fb50fe4eb7b95",
+    "lines": 50,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/maru-v4/rhythm-RESULTS.md",
+    "bytes": 5281,
+    "sha256": "02996ada34cb9b30b099c97a9350de06a8b3fa98714623394fe083e64936d9ca",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/asset-audit/README.md",
+    "bytes": 1813,
+    "sha256": "fc0b20d99f3cba2db93d5ee4d0aba375f93c39aa2e109f3004942dc55ecb7b03",
+    "lines": 12,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/mascot-expressions-20261011/final/README.md",
+    "bytes": 4558,
+    "sha256": "ebff74216acd9a237078a24f1e45c94f57d97cfd73513d4e388c3095ecdb74e3",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/stable-scene-20261012/README.md",
+    "bytes": 4003,
+    "sha256": "af7dc89db9fd434ad6a77f718ba2a040c1bff10043240869333ab5a6f1bbc4f5",
+    "lines": 38,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-hints-20261010/README.md",
+    "bytes": 5166,
+    "sha256": "e30fd38fef360ecf77e4dd5016732e272253c7905f6aa863ba059041418137fc",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-onboarding-20261010/README.md",
+    "bytes": 3509,
+    "sha256": "3fe25658cb9cb7f60be052efd47355c22f6017cb4dd6ee7304c5b7e85069d8c9",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-practice-20261010/README.md",
+    "bytes": 5232,
+    "sha256": "7d5c9a1b2fd075f3541d9a511cbcb6a97474dad0c3d7aa0db29def2ff050adf1",
+    "lines": 44,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/brand-opening/qa/tutor-switch-20261011/games/README.md",
+    "bytes": 3942,
+    "sha256": "0e877f79851056ddac5d42c2d78079ad291702a4833db8ab00057e67f80833d9",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/conversation-rehearsal/README.md",
+    "bytes": 21211,
+    "sha256": "2a74620b3556cc2f8b5fe83e9ac040932b6114452c04f671494541ffd30f52c1",
+    "lines": 119,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/daily-fortune/README.md",
+    "bytes": 26028,
+    "sha256": "5bba7cb20caa2d1bbf556546b2652f4a1b39298e79f974f0556d7725c1af4f27",
+    "lines": 120,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/entry-check/README.md",
+    "bytes": 31724,
+    "sha256": "351cf1d1952fc714176d22a6190dd651c5e3e0f87d0b48ceee261dfb53279695",
+    "lines": 183,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/entry-check/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/entry-check/qa/RESULTS.md",
+    "bytes": 22497,
+    "sha256": "64bd878badb6adeffb8ae3286ff9e52b6a341bdf4e1d19ee770f3475f31bbdf9",
+    "lines": 182,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/family-album/README.md",
+    "bytes": 21409,
+    "sha256": "adf49baf22f93680af7c969bd31317c14064eb5c0c22d533869d8ac3a0d996a2",
+    "lines": 127,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/hangul-stage/README.md",
+    "bytes": 37524,
+    "sha256": "cb1e378c811e5e7ba9feb858732d85cdf73368da9a16cbb73def7618600d42e6",
+    "lines": 100,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/hangul-stage/songs/README.md",
+    "bytes": 26002,
+    "sha256": "a3d70056fda76118e4fe3243db6582fe02a972d004a1a61256e961b1d9224e78",
+    "lines": 394,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/hangul-stage/songs/노래영상_가이드.md",
+    "bytes": 12506,
+    "sha256": "df9c58006063a420371de29cfd990bb258965fa96111a4d0d84c6dda4c4eefa1",
+    "lines": 127,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-racing/DESIGN-PROGRESSION.md",
+    "bytes": 5356,
+    "sha256": "e8d449235e71192f4c4d57f6e2d39aedc7ff03b472babe7ba4be41b259a02fcb",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-racing/README.md",
+    "bytes": 55884,
+    "sha256": "6f9bd8d5dd4b5ed04e1e91b1f82e10d34d78305f24105b5e14cb565434e99159",
+    "lines": 243,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-racing/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-racing/qa/EVENING-V8.md",
+    "bytes": 5984,
+    "sha256": "671ac76cded3b4b6a0819bca095cf63c1f17b7372e8d1f9ae943cd480af0f93a",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V7.md",
+    "bytes": 4506,
+    "sha256": "f69e59f38330b2ac91131ef21575bc2a70bedefecfe417cb67ba04657438aa28",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/GRAPHICS-V9.md",
+    "bytes": 11107,
+    "sha256": "291e9be69f0090d9b0d0a2e031a2b869d7c33e036ee1680d4be8841499c938e2",
+    "lines": 65,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/PACING-V10.md",
+    "bytes": 3311,
+    "sha256": "a8d48ab239357ca46e2d8ab103689a149aeecddfa83c60dca04171419537ea02",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/PERSONALIZATION-20261002.md",
+    "bytes": 3785,
+    "sha256": "9ac2c516abe25fc71e5fe0a88e3491bb5b6776cd648425a764a1aadcf369d986",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/RESULTS.md",
+    "bytes": 76940,
+    "sha256": "bb23f9f447f419415424c634bb3f03b64449fffd824f56a74f3e6f4a790fbb4b",
+    "lines": 324,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/city-v9-notes.md",
+    "bytes": 3860,
+    "sha256": "cc5a6541f54651bd61cc4c4d91f1456c061e961ced3f081ccad1f210e683d664",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/coast-radio-notes.md",
+    "bytes": 4029,
+    "sha256": "46dd6eaa29ee9882eeb31669e0b3c8089e5aad4d1e457e3ef4ae84871206d38c",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/crowd-v9-notes.md",
+    "bytes": 2299,
+    "sha256": "6d68d78d2e00dba6a61790e1d72888cb38026c2cfd4b31a1db157d6bd72ab240",
+    "lines": 16,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/vehicle-v9-notes.md",
+    "bytes": 4798,
+    "sha256": "c0470b6cfed243daf533b4e3ebc28d2a5e996f67faa92a46a05fbf42bfe2f4b8",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_공개판_재측정_20261003.md",
+    "bytes": 14239,
+    "sha256": "1f6c0e457b3da4f9c7e9572c4fa2afaeb5195f8bc1179b94490eace9098a404f",
+    "lines": 107,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-racing/qa/첫실행_대기_측정_20261003.md",
+    "bytes": 3952,
+    "sha256": "87f665c6cbc77ba420d95377491a542cbc01c9234be64c2a69af3cd20b3d4142",
+    "lines": 36,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/README.md",
+    "bytes": 24638,
+    "sha256": "6a743dac1e66a49cb2d2d6457ec7e5dd3e4b25cfd572797b34348dbe484f7bdb",
+    "lines": 133,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-rhythm/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/PERSONALIZATION-20261002.md",
+    "bytes": 3630,
+    "sha256": "8e0be0693b75d6fd8ad1fe40f51b3be96307f2c65d45a204b85262425a87ab35",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/RESULTS.md",
+    "bytes": 3021,
+    "sha256": "6321a220f80a3b2b42a3691d02053f495e3c2fbf49ee90e81b8f52ca150b17ca",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/citypop-20261001/RESULTS.md",
+    "bytes": 2072,
+    "sha256": "cf59ef8c1c0e6e3b98b534c761b656dc24cb151d36d7f3271ac0423f2ba0251c",
+    "lines": 9,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/CLOSE-20261002.md",
+    "bytes": 2329,
+    "sha256": "b64bba700ab0913cd45a90315b282b2f739fb094cdb1a303e684c030cf2c480b",
+    "lines": 21,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/listening-20261001/RESULTS.md",
+    "bytes": 3647,
+    "sha256": "bcad80922ad93539e95ef1ec822e9cd7a99d104549a97804ea4292e445ef9918",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-rhythm/qa/suno-20261001/RESULTS.md",
+    "bytes": 3456,
+    "sha256": "4ddb50ca195aa731d62221405a7af656d76c1dcbbdd14722849b1a83abf403f9",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/README.md",
+    "bytes": 20647,
+    "sha256": "fc7e0369d8788033c4907fa4e733e79a4dc0ae4fe031f6c5569704c038037407",
+    "lines": 101,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-runner/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/korean-runner/qa/ATLAS-LEARNING.md",
+    "bytes": 1910,
+    "sha256": "98bbfc96807bf3b48dc9e3abec5a563eb91cb79e177581a9ef10e382d86d3f62",
+    "lines": 13,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/LISTENING-V4.md",
+    "bytes": 4673,
+    "sha256": "e9fa8ac37c47994bd3d5b570e6a098ab2e5a72b9b0413cc97257480d5c9d2baf",
+    "lines": 38,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/MOBILE-CHECK.md",
+    "bytes": 3378,
+    "sha256": "2b5010359f7745195d84d30f15e439138b5e09c243684e75bde1b0659d2dc86f",
+    "lines": 38,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/REDESIGN-V3.md",
+    "bytes": 5515,
+    "sha256": "b7e6449a6e1d7a6ed2deca423cd430c6b4d28f42bc1a40fc7214b3bde66d149e",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/RESULTS.md",
+    "bytes": 5679,
+    "sha256": "8da059ac967a08259f74b0b85589aa6fff8564c1b3f58279c3c44d04ab156700",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/SCENERY-GOALS-V6.md",
+    "bytes": 9298,
+    "sha256": "30a13ee0e54083017f6b3684bd752b4fb40a1db75d8bef9552be67eaf9e1e1c6",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/korean-runner/qa/SHOP-V5.md",
+    "bytes": 6917,
+    "sha256": "aebc4a880efa3b3e04311089faecf3ccfa9d0c7902683b4e85a9436754c2e9cc",
+    "lines": 52,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/learning-hub/qa/GRAPHICS-TWO-GAMES-20261005.md",
+    "bytes": 4696,
+    "sha256": "f11cd0526a242ca0e85200267c35eee4e27bdbd151821577e30bb17e6a860769",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/learning-hub/qa/RESULTS.md",
+    "bytes": 4463,
+    "sha256": "58cda4f5852385882067afa07bec5929cb8c990e40c830e67fbb408872cfc09d",
+    "lines": 46,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/learning-hub/qa/collection-summary-20261009/README.md",
+    "bytes": 3641,
+    "sha256": "f6ddbc12fe0fbc604a3af71a9c0e8207684762bc688338949460e1ceab97dd98",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/mascot-render-lab/README.md",
+    "bytes": 6571,
+    "sha256": "f2591f590a7d61e0e42bd905176b99f2673ca945d253ab8cbd04a3bba4399fd6",
+    "lines": 62,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/mascot-render-lab/live2d/README.md",
+    "bytes": 6143,
+    "sha256": "533f62552762e14c3ab1479a0435ffdd50b942e64fc4dcdcfd01c51267e62270",
+    "lines": 61,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/mascot-render-lab/three/README.md",
+    "bytes": 4122,
+    "sha256": "84cc2f2d6580a46ac9f2ba521c3bfbd10951f783fd97309bf47f3ab84367223b",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/member-signal/조사_20261014.md",
+    "bytes": 12128,
+    "sha256": "300e9f0f65e35a9b035162bd524bec2a8f644bce192796d6499dfee96a3009d4",
+    "lines": 89,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/namsan-engine-comparison.md",
+    "bytes": 4899,
+    "sha256": "55e08ab156331a02ede9022b32271a184e059a3192989405fab357ea1ff65070",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/order-rush/README.md",
+    "bytes": 34980,
+    "sha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "lines": 159,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/order-rush/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/order-rush/qa/ATLAS-LEARNING.md",
+    "bytes": 1838,
+    "sha256": "767c080228cfcc36f5ae3ba071f6bca0a2dca0c6ba8900cc87dbc16da6bda773",
+    "lines": 13,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/order-rush/qa/BEGINNER-20261008.md",
+    "bytes": 5430,
+    "sha256": "5b1ac86bbfc4acc3d572739bb6166c6826cc0df0d4538c26911f814070d1eaa3",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/order-rush/qa/RESULTS.md",
+    "bytes": 7721,
+    "sha256": "5971eb6348c952bbd3c9e975240cb2f72ee3f78c555d5c0f38c6980fb7a0c297",
+    "lines": 52,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/order-rush/qa/nonvoice-shop-20261009/README.md",
+    "bytes": 3600,
+    "sha256": "29ef098a1c55899a04751b241d7c99f45d2c99fb84879dfecabaf035307d2170",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/README.md",
+    "bytes": 3777,
+    "sha256": "7c298e4a9a6835583cd50b6d9a30b5e8717b3e64b42b365c5d459af1619b160f",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/order-rush/qa/return-loop-20261009/source/README.after.md",
+    "bytes": 34980,
+    "sha256": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682",
+    "lines": 159,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/README.md",
+    "bytes": 45661,
+    "sha256": "b9fde940b576014869461aa6c358d5bf2bcaa8750cd68ce83ce6cc6bf363b9b9",
+    "lines": 213,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-travel/qa/RESULTS.md",
+    "bytes": 34747,
+    "sha256": "61bcba711b9ff152b5c2927e11310129f82bd4e5329c03b966c3147046d47829",
+    "lines": 250,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/FIELD-TEST.md",
+    "bytes": 6607,
+    "sha256": "ff2f537becaaf03b5fde765595f086c1c0746191b148bf4040c01d6d76956f9f",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/companions-20261009/README.md",
+    "bytes": 5880,
+    "sha256": "8333d6bb3b84ca999e1cfb78ac3e0decb08dd9992fdf5a68749bd22762ed5283",
+    "lines": 45,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md",
+    "bytes": 16255,
+    "sha256": "12a5f37ef1ff791355bc2708cddff1283d460d6c6b386cc982ba2dfafbcab0e9",
+    "lines": 76,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/FIELD-TEST.md",
+    "bytes": 13161,
+    "sha256": "834fe93dd93f868cedc07aa54e872290b3cc240f9b41997443b86f31432dac63",
+    "lines": 92,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/expansion-20261009/README.md",
+    "bytes": 6346,
+    "sha256": "1e23dcdff94a736150df75efc6a18f01660ce8f64870cded17939e9db178c80a",
+    "lines": 49,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/personalization-20261009/README.md",
+    "bytes": 4263,
+    "sha256": "796195820640d49f4ebca160bf707112d4c8b825e8dad1c1dd0237e40edd31ad",
+    "lines": 29,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/IN-PROGRESS.md",
+    "bytes": 1763,
+    "sha256": "47351542a42fb53e7679666695b51f2cab6d4cec07b1af804bd9233f55fa29a9",
+    "lines": 14,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/production-20261009/README.md",
+    "bytes": 5611,
+    "sha256": "6e7363d8ae858cf87da3ff3593dceebb377cf2d6de5deb10f52ffeedb1d17a62",
+    "lines": 29,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/progress-20261009/README.md",
+    "bytes": 4917,
+    "sha256": "46030a66430a940a04293f56f331b284b310a7566f355a5f8816379dbffa030e",
+    "lines": 47,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/redesign-20261009/README.md",
+    "bytes": 6007,
+    "sha256": "f73639169fcb0542b21acbf3bbf43e5cae7d2ab52a76ffbdc14d1f6ef199e056",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/FIELD-TEST.md",
+    "bytes": 6622,
+    "sha256": "28459b80c13c3dd90c4ac87075939732ad1272996e3afae490984473b286fd27",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-travel/qa/schedule-20261009/README.md",
+    "bytes": 6775,
+    "sha256": "e7ada8ebae5c6de7c25354d95c60a05419acbfb802abcca59d08249070b5b192",
+    "lines": 52,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-vr/README.md",
+    "bytes": 45898,
+    "sha256": "8812e3c4d03aca5534a148701a4f56e41ba57e3ab17ae7ca3ac3b91454026101",
+    "lines": 185,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/models/README.md",
+    "bytes": 2113,
+    "sha256": "69d5451a7177e296a4dec920a3a8786bf48cb18baa4b12757983d695cf0191f1",
+    "lines": 16,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/models/whisper-base/README.md",
+    "bytes": 1232,
+    "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+    "lines": 10,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/models/whisper-base/UPSTREAM-MODEL-CARD.md",
+    "bytes": 531,
+    "sha256": "60a378018182c57cf382866ddfbf0fb2b4031b3895ae932aa34ecb8ff7065a13",
+    "lines": 8,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/models/whisper-tiny/README.md",
+    "bytes": 1254,
+    "sha256": "44207461db2003045f3512adea52f67ba5473a39dceaff698ab78fc4c670975f",
+    "lines": 10,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/models/whisper-tiny/UPSTREAM-MODEL-CARD.md",
+    "bytes": 531,
+    "sha256": "dc9a0879b11fb43db2c220466352b235f7cdb7af791c57c0ed47f0a4028d9267",
+    "lines": 8,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/path-vr/qa/media-hosting-20261013/README.md",
+    "bytes": 11252,
+    "sha256": "98419e0294ceb2e490ac9b888c8b3853046187a75c485b2971cffb243c6615f6",
+    "lines": 58,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-vr/qa/optimize-20261013/README.md",
+    "bytes": 12892,
+    "sha256": "96771db302099431f93075af474db08a7678201468ba5ab40ce5c9f89c38be84",
+    "lines": 79,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-vr/qa/public-release-20261012/README.md",
+    "bytes": 28758,
+    "sha256": "00ce72c68e66ce9d31bdc56a71850b37f0c7ed30304a84321b59b28dbe922993",
+    "lines": 130,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/path-vr/qa/signal-redesign-20261012/README.md",
+    "bytes": 7169,
+    "sha256": "73f30307b907dffeff1e3e47be993c399e0a99f610d9aee3c2aa2f41d9bebe2c",
+    "lines": 49,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/play-common/README.md",
+    "bytes": 18048,
+    "sha256": "dad271664e591fab6795bbb09cd58a64968d0749b8400d7f415a1fbb67a43b68",
+    "lines": 64,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/relationship-care/README.md",
+    "bytes": 50838,
+    "sha256": "3a5052644813713ccb83298e384f59a723dfcca640671cb207c7734df8560db0",
+    "lines": 247,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/relationship-care/qa/ENGINE-UPGRADE.md",
+    "bytes": 5790,
+    "sha256": "a9d4f5d834a312de457de51f750cf102de75280361a557a9234b6cb2f9d3fdeb",
+    "lines": 57,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/PERSONALIZATION.md",
+    "bytes": 13046,
+    "sha256": "c78332b8eeacf3e9abc0d4a863eab7ff6e719ae8c7821191d169adfb3c65075c",
+    "lines": 75,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/PUBLIC-WEB.md",
+    "bytes": 10053,
+    "sha256": "b2debc2620e10a038cf16ce3c62c1d757b001bf71aefc81df3105a1eaa9839f2",
+    "lines": 59,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/RESULTS.md",
+    "bytes": 10122,
+    "sha256": "46481a771a0725c83c6a5f11b2722174e83d45a5eb049d44288e12b207bd7963",
+    "lines": 71,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/checkin-interval-20261008/README.md",
+    "bytes": 5788,
+    "sha256": "a1c79fe88439cc47b067d862607ab4f9f851de5e3dd8be44fe5df480723dc029",
+    "lines": 50,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/contacts-20261008/README.md",
+    "bytes": 5249,
+    "sha256": "2fab2c5d247ec4a55d9fddc43cbbe32f1fad7ee6603290c582b65117c2a9e9f3",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/context-20261007/README.md",
+    "bytes": 4875,
+    "sha256": "9e2e4deb33deca912bec589e74a71c09c1c1671551ca87d7627893f764aed23d",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/first-use-library-search-20261008/README.md",
+    "bytes": 5220,
+    "sha256": "f084de995e8e3faf7eaa7c59e9e68dd4360b613f1ef35fe6673345536c366a49",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/focus-20261007/README.md",
+    "bytes": 6887,
+    "sha256": "80d3b68a96503ee930735baf5bf75053c1ed9bc26e435222e60af2ccbc39e314",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-library-20261008/README.md",
+    "bytes": 4467,
+    "sha256": "9cc71d96f9c0b586e07452240147707f10efda2615a218920341eba66ebdaa6f",
+    "lines": 15,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/message-quality-20261008/README.md",
+    "bytes": 6649,
+    "sha256": "08f6a983b9b5042c915b10929a57726ceb3a419791a87007260c563cb871c06a",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/ops-roundtrip-20261008/README.md",
+    "bytes": 5681,
+    "sha256": "037d5057bdc3c11960afd3c52d2700c9841ce0c3f0f0d3c3655caee08e592b92",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-20261008/README.md",
+    "bytes": 3295,
+    "sha256": "637a1b47bb12ff8d893507ebe9f9e208506a4260f337e630dab17a009a49341d",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/pc-push-endpoint-20261008/README.md",
+    "bytes": 8767,
+    "sha256": "2849e08ba5f1853b79c9f1bb59be632c77bdbd11086bd2cdff0b47cfc6d7160f",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-20261007/README.md",
+    "bytes": 6791,
+    "sha256": "cc9b08d37fb44e84ebf09ae45c1ea77a7c30c0e1df8184c4e913ffa7ec207871",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/push-ui-recovery-20261008/README.md",
+    "bytes": 3989,
+    "sha256": "6ee530a02a0e1d88b09a320359b29035be6a008c53e39bf229350657bbdfac63",
+    "lines": 33,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/relationship-care/qa/source-close-20261008/README.md",
+    "bytes": 1155,
+    "sha256": "a13f7d2c967c2972d87d38db47f82db327d03dd47546687a9189c0f7e22b086b",
+    "lines": 8,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/shift-workbench/README.md",
+    "bytes": 25078,
+    "sha256": "92cfe62a118fe71edb9b8f6154c19187ba1c5883ca5a3de592c275a42b0c959a",
+    "lines": 119,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/spaceship-coop/README.md",
+    "bytes": 27152,
+    "sha256": "9ab41fe2bb5be3640d01ba74d6ce5e3e6dc8e8b16952f03c1d0d5e2351332756",
+    "lines": 182,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/spaceship-coop/deploy/COMPANY-ROUTE.md",
+    "bytes": 8269,
+    "sha256": "c063550205443ec3f29d7d07d58fe5c26bc10d927f20aeb173ee56622259d2b2",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/GRAPHICS-V2-20261008.md",
+    "bytes": 3483,
+    "sha256": "9625240a31134f25d6a974321b573b9fc4bd0a66ebd18d0e00d47595dbf712bb",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/RESULTS.md",
+    "bytes": 4605,
+    "sha256": "48b5a4c5484fe99042703c86f7e5de5d9ceae814c507b82dc976b9b52a8a16ca",
+    "lines": 24,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/SHOP-20261008.md",
+    "bytes": 2616,
+    "sha256": "a7dd6dda7a2f572fd55b1c49a93dfa156ac60e34b60d673e6ad97eb73a376130",
+    "lines": 18,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/STARBOOK-20261009.md",
+    "bytes": 6563,
+    "sha256": "57a4d259e637c5068b63f8f72e68084bfbbf8fd29c506f9560d54e175a904050",
+    "lines": 42,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r2/README.md",
+    "bytes": 3192,
+    "sha256": "9e1bf20b7ec6fe44f7a262659b2486b6d3af50d7d13c9175e80b69f88960367e",
+    "lines": 16,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009-r3/README.md",
+    "bytes": 2424,
+    "sha256": "2b930165e528db0dde57741a7ba53cccfc9567ca6eaf141bcc003e194ed01ad9",
+    "lines": 14,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/nonvoice-recovery-20261009/README.md",
+    "bytes": 3003,
+    "sha256": "b1bda31f649832fe35953f548e1afc8ec4a3f9a36c8e9768cd56a5dca196b5b3",
+    "lines": 14,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/return-recall-20261009/README.md",
+    "bytes": 4107,
+    "sha256": "01deca862b835c238ff6a846d04f9de346fdc3e4e2688560223b6a6336792d79",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-data-review-20261009/README.md",
+    "bytes": 1918,
+    "sha256": "0bc4565227f0ccb16d7d435b35f6577605db9b9c47be8b6ff96bd75ae0d554e8",
+    "lines": 12,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/scene-keepsake-release-review-20261009/README.md",
+    "bytes": 1889,
+    "sha256": "3d47ceb48c1e2966ee76e8301dc1a1abaddb2ba509ce1a87afe81b549a540aa3",
+    "lines": 13,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/spaceship-coop/qa/starbook-account-copy-20261009/README.md",
+    "bytes": 1696,
+    "sha256": "e7f8045a823f9b5260f0cb1fb3b2a517931547db803c3f2be30f163eabda9b42",
+    "lines": 10,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/story-classroom/README.md",
+    "bytes": 18791,
+    "sha256": "be0323fb29141f1fcbf5df4cbf72fee09bb1573979df67f198629a87c56dfefe",
+    "lines": 107,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/story-classroom/STORY-REVIEW.md",
+    "bytes": 9052,
+    "sha256": "289a937ff15f96bc0d18599e492925bccc240615331aa7bac0ecff4e411d9ea8",
+    "lines": 90,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/story-classroom/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/story-classroom/qa/PLAYTEST.md",
+    "bytes": 3057,
+    "sha256": "d375ea96879560d176dc53564c43a522253cd8b7a735210e8d52bd00378b0ec1",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/story-classroom/qa/RESULTS.md",
+    "bytes": 7127,
+    "sha256": "4662b9932fd4c8ec75ba4500c275bb3cb6278f79afaffc90dfea99c99213fff8",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/story-classroom/qa/felt-RESULTS.md",
+    "bytes": 1446,
+    "sha256": "92064f83f0c7c3fa61e8aedc6968038c94b1a74acaddfb0d3cc8ac48ceb306a5",
+    "lines": 13,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/README.md",
+    "bytes": 31356,
+    "sha256": "762d2830cf259f99d9e9f5562fc0996d33745dfceb8f901c90c1608bde9087e2",
+    "lines": 165,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-account/qa/RESULT.md",
+    "bytes": 3312,
+    "sha256": "c6724f9c8ffc895bce963755bf3ed0985f6814bcce75276e35d5f1212f1126da",
+    "lines": 26,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/cleanup-20261008/README.md",
+    "bytes": 5830,
+    "sha256": "0e76bbca096c2953d8f144114ed0f3d8e01ea71df04ee48568570d8d24aac401",
+    "lines": 47,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/family-media-cache-20261006.md",
+    "bytes": 3515,
+    "sha256": "e084e7a5daf49502b5ae90171ad10a5df20fed6f0fedfcf96debe4cf1c7bd78c",
+    "lines": 31,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/login-polish-20261007/README.md",
+    "bytes": 7043,
+    "sha256": "ad41969250861639d63943b2bc78f68b64a643ee35644dcbc9c3600cf798d7bf",
+    "lines": 51,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/member-benefits-20261005.md",
+    "bytes": 3415,
+    "sha256": "0977370f8b81b62e40e4e2caa21968c452bf93c3787faead97abae9acaf776fc",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/member-mvp-20261005/RESULTS.md",
+    "bytes": 5499,
+    "sha256": "a1b1c2ea07ee9a9605dccb34a57a315c733c2a2eb727157e7dcadb89e7665fdf",
+    "lines": 52,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/oauth-return-20261007/README.md",
+    "bytes": 3077,
+    "sha256": "92518a4326b25fca8a69a8fa456754567eb81f5b7ccda20b3737e1530ef327ab",
+    "lines": 20,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-home-20261008/README.md",
+    "bytes": 2732,
+    "sha256": "c15cfd9eb8563f359e0c2181dc491c57ac4c653efc9c10ecbb9e4c958661ed54",
+    "lines": 23,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/platform-weight-20261013/README.md",
+    "bytes": 5048,
+    "sha256": "018731ebbba11b8b8a339c7c00fc21c7743b3471ef0569bfe2614d7415c4b8bc",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/signup-feedback-20261007/README.md",
+    "bytes": 2905,
+    "sha256": "b0195bca9ecd2d1a8a2f7bb5255cb5014844fef3becc7e569bed24b407eaab36",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/takehome-20261006/RESULTS.md",
+    "bytes": 6706,
+    "sha256": "9807b49279167f8e680c978cd9bc48cb7f09151ae52658931386989e575bb25f",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-20261006.md",
+    "bytes": 16585,
+    "sha256": "09456201f8f71acf050568134ae78bf3df22ef63763813246fec34c9b0f3faea",
+    "lines": 93,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/unified-account-review-followup-20261006.md",
+    "bytes": 12864,
+    "sha256": "5d3d8d8d98a0daef20de47cf301377e2195595e2ecb599185f99d32bad868472",
+    "lines": 72,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/README.md",
+    "bytes": 4072,
+    "sha256": "8ec8111ba0c17e094efc4673904e9a87013f83fa96765c0e64956f9fd51d64b7",
+    "lines": 36,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-account/qa/wardrobe-use-20261009/r3/README.md",
+    "bytes": 2649,
+    "sha256": "8d263f890f3184ea1deb5f21891fb87b559f80d2b9feb641c44bbe5dfcb69554",
+    "lines": 24,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/README.md",
+    "bytes": 39732,
+    "sha256": "686557b86ca2e42a55c40cc95f74caf53397e22c47b496fd14f24e39a2e2b2cd",
+    "lines": 232,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-town/assets/residents/README.md",
+    "bytes": 1099,
+    "sha256": "13481ac0aca8da1879843afa5e955689697ebab319b1ce84dc71b892b61fb9a9",
+    "lines": 10,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-3D-ASSETS.md",
+    "bytes": 9465,
+    "sha256": "3ff47f270e43b0a96f48536491a4085eb971cb9b8ab8b1bcfe6a2e5532e277bf",
+    "lines": 57,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY-PLAYTEST.md",
+    "bytes": 5342,
+    "sha256": "5d0038d07bb559ad4ef6e0abd155848c8462a239c6392fc3205e752afb5fbded",
+    "lines": 47,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/DAY.md",
+    "bytes": 6454,
+    "sha256": "b22ca26006789d3f4720ec85736baf8b4b7ae83f04d73769a2255d02f000a199",
+    "lines": 49,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/GRAPHICS.md",
+    "bytes": 6456,
+    "sha256": "137c37cc502d0a4954e093ce39347ca9c99556725024f6e728cdcba784355ed0",
+    "lines": 45,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/LIFE-C1.md",
+    "bytes": 5721,
+    "sha256": "18bd2f7db56a33223b04d8bb716ee28d8cbb5581292f4bebff5c9c002a207c88",
+    "lines": 46,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/RESIDENTS.md",
+    "bytes": 5312,
+    "sha256": "dc905b0c7e726ea55c8bd204aea5b02cd14878b2bf502da04bd391beeffff5ba",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/RESULTS.md",
+    "bytes": 8707,
+    "sha256": "6240fdca569f959376c99937a7a31724ddd7741980028d054590288d5d20f7e9",
+    "lines": 73,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/SUPPORT-BAZAAR.md",
+    "bytes": 4710,
+    "sha256": "060c0d129149cf6da50e46640ab5651cafd0d7fbf90d139b699646e69a4cf3b5",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v10/README.md",
+    "bytes": 14981,
+    "sha256": "1fb28d78515bc38b7b9f1fc9bf529eed908b136069897898f5aab5fe5739e189",
+    "lines": 99,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v3/README.md",
+    "bytes": 6161,
+    "sha256": "bdf8f679c78f3b976c16f1980caa9887ac50ffe8b1b59f08e439d9ab41b4dfed",
+    "lines": 58,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v4/README.md",
+    "bytes": 7960,
+    "sha256": "04b200197d2f1d4dd3ac584318c842a6b2579191f608fc3701f1117317876095",
+    "lines": 64,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/README.md",
+    "bytes": 10469,
+    "sha256": "60ce7675dff31bf1849304ce2d9b72b17559dea6d13b33816d010b152b033625",
+    "lines": 74,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v5/rendering-review.md",
+    "bytes": 4138,
+    "sha256": "30a3f2813257fb258204943c2b086fd5e1833352331ae83bfe950f31f95c077b",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v6/README.md",
+    "bytes": 10195,
+    "sha256": "0958032b640ee4aa85a9e693b4d1aa39fc28404583fc8d99760dc1821b83940b",
+    "lines": 67,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/README.md",
+    "bytes": 6540,
+    "sha256": "13aa0c1bfe7b7739adffec88920412239ba860181f091f534e9a9f3d25d12b94",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v7/first-final-review/README.md",
+    "bytes": 6139,
+    "sha256": "f444f561e84179bbe85559e4a8f1129bbe303a1602464b2c57a71241b10bb8cc",
+    "lines": 51,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v8/README.md",
+    "bytes": 9947,
+    "sha256": "1a27490d486bb2bc5689b0cceb304225e767d39768a3c60b80be5718d9b43e7c",
+    "lines": 90,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/graphics-v9/README.md",
+    "bytes": 12838,
+    "sha256": "ceab36680c5a7a553c54fe2946f6c9ab7135d9939ee0a426b44f1b6a0bb8fd1e",
+    "lines": 111,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/README.md",
+    "bytes": 6976,
+    "sha256": "97fd9f8a379aa8135554c8c257ccf4b53c6d3b8ae0f8fbf6248c84e661a388ec",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 21719,
+    "sha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "lines": 110,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/README.md",
+    "bytes": 35354,
+    "sha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "lines": 212,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/baseline/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/final/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 21719,
+    "sha256": "1f46d500169f8e7303cf6c41d41bf7f7a4d931394519535f0280c2b986bb8772",
+    "lines": 110,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/README.md",
+    "bytes": 35354,
+    "sha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "lines": 212,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-01/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/README.md",
+    "bytes": 35354,
+    "sha256": "a828c2a02ab322268dbd96481753b5e1afae0e6a2b1ac73be5779d2c166eed26",
+    "lines": 212,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-02/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-03/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-04/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-05/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-06/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-07/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-08/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-09/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10-repair/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/AI_운영원칙.md",
+    "bytes": 12531,
+    "sha256": "7766307db724455d01cdeac04171d037cb7e4a681701c81b7b8f2acefc0144ca",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/docs/디자인/게임_풍경과_재질.md",
+    "bytes": 22538,
+    "sha256": "534635af58849dd68e8d19610826d9b65d6ce2d1fa9cef17cdbf5417a9683a8a",
+    "lines": 112,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/README.md",
+    "bytes": 36431,
+    "sha256": "0ae6a1539871b6f841a1954eac0394d4fb5db0e27d93b3805261fd81e0a001aa",
+    "lines": 218,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-livable-10/round-10/contracts/experiences/synk-town/qa/WALK.md",
+    "bytes": 5151,
+    "sha256": "2ff96abcd009c7587aadf4b41cca9cef9f27a4f4b71e16eb18f7e793ae1e7ac1",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/README.md",
+    "bytes": 12942,
+    "sha256": "b38f11923d785257cc4fa17a8630395a239f7f56e076911c60d375a190e8b802",
+    "lines": 56,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-town/qa/town-optimize-release-20261010/release-path.md",
+    "bytes": 1781,
+    "sha256": "029647b235f95d9425e17aba99e8a605ad9c9110280e7b95b208a8c247b41ef4",
+    "lines": 19,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/LIFE-CONTENT.md",
+    "bytes": 36177,
+    "sha256": "ec5be1a0ebe465874bf0c15d5d3e42bee1f018a13adda959ffc8601b61b04aa1",
+    "lines": 159,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V3.md",
+    "bytes": 6522,
+    "sha256": "14fb01f40934f210e6729a36a7ac3ce0ac99139135588ae041ad56038fc1e0e4",
+    "lines": 50,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V4.md",
+    "bytes": 6012,
+    "sha256": "abe11da4c58bca9939e56b0b7ccf1501d7e085071f0eaa08a0ffaac8fe547a33",
+    "lines": 45,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V5.md",
+    "bytes": 6329,
+    "sha256": "4ae8ec1383e96c28609bdbba8f0003b22bed62c124c92316b57cd803960212af",
+    "lines": 49,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V6.md",
+    "bytes": 6120,
+    "sha256": "d41b10fbb8d262268909da9a0c0c59d7f90bd09f60df2c2e51d2b6ce5df59120",
+    "lines": 44,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V7.md",
+    "bytes": 5014,
+    "sha256": "1fa850edf8114d39de559c2a1d42fb90ec79672e2d38d6968a98284adfbab611",
+    "lines": 36,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/V8.md",
+    "bytes": 5189,
+    "sha256": "f00ca556524a7bc826e107f6cedd3b5250bec3b77d42ef5e19673975dcf3670f",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/account-desktop-20261012/README.md",
+    "bytes": 6482,
+    "sha256": "7f5b69aa6a7fa48ef40a4695c055ff8890980324aaa4c96c0f9865ff71064b5a",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-complete-20261010/README.md",
+    "bytes": 8516,
+    "sha256": "6f5575412fc121755582ce78b80ce5ec269786098fbc13be4baa5e5e98c61d5a",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-pack-20261010/README.md",
+    "bytes": 4771,
+    "sha256": "4f81e445791a72563b99f07a70f094c744779440e5ca10b74bdafdaed0b40e5c",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/cafe-visits-20261010/README.md",
+    "bytes": 4989,
+    "sha256": "81c12f9dcc13b7c7d0c7a8fcc45afa514d04a8f06f9418e083157ef5a2bf7223",
+    "lines": 39,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-consumer-20261009/README.md",
+    "bytes": 1807,
+    "sha256": "b88406e4efbb695ac8b1c5d304d6e21c560e9be0d442cde80263b06152e55046",
+    "lines": 14,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-convenience-20261009/README.md",
+    "bytes": 10644,
+    "sha256": "1482809ee69c3b8cd14ea117fff32730b0b768f3dd65455d89973da718af6ff7",
+    "lines": 92,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-graphics-20261009/README.md",
+    "bytes": 5524,
+    "sha256": "cc832eb53bf025d3219b72573b1db4326971eff77c460bce43d9b38daf2eec0c",
+    "lines": 46,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/README.md",
+    "bytes": 6912,
+    "sha256": "07ceab83cc96f7b1080aebba2458bf9127eedfb90df1a96bb8ea13d78ae862c6",
+    "lines": 48,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/TEXTILES.md",
+    "bytes": 5597,
+    "sha256": "1cd864924a9563e2edabfde081a52bc721daa19eb3bd190d7737a6104c8ba236",
+    "lines": 44,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-materials-20261010/backend-README.md",
+    "bytes": 3396,
+    "sha256": "f03cfd4e84f75b480b899696bae61e2f89543786cf416704feae4c0d70917500",
+    "lines": 25,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-performance-20261009/README.md",
+    "bytes": 8556,
+    "sha256": "3cc09fbd37fe89bb5f584b264c2035f2859038e6382b04f2eee90ce00647edf2",
+    "lines": 60,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README-pre-deploy.md",
+    "bytes": 4931,
+    "sha256": "0bd1ef1a68a25c76d66765da9cc9c6a4c643458dc18c2525cf67308b36050f43",
+    "lines": 31,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/README.md",
+    "bytes": 5576,
+    "sha256": "af668fb9807a7b63687e6138c0cc98d9e7ef7d6f0af4745668667c61e83c317d",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-operations-note.md",
+    "bytes": 1376,
+    "sha256": "fb034b69a1dcd9d5374167de747bea5d4bd2a921f0b80e4be3198df8c6345f04",
+    "lines": 9,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-plan.md",
+    "bytes": 5456,
+    "sha256": "4fb9e8c3bbfe875f5d32a265780e1a538569a18ae67f3d5db5042f4b9987724c",
+    "lines": 25,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/backend-review-README.md",
+    "bytes": 3435,
+    "sha256": "5452e9305c41eedec5d5efd92040a14aa3874fe713e2e86d71722231ee98808f",
+    "lines": 19,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-contract-reviewer-files.md",
+    "bytes": 3682,
+    "sha256": "a9a5e7a55f3726ffb7f9227212b63eff435df6789b879c453f0adc4d0635aaf8",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/frontend-plan/README.md",
+    "bytes": 4863,
+    "sha256": "6f9681df2782573f39c946572378e230847ba7bc1cb5f75fd76a1aa9416211aa",
+    "lines": 41,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-release-20261010/review-context.md",
+    "bytes": 14279,
+    "sha256": "a03b6a6fb5f651a31e2d1494bf79c55071f3b317a501968d4fb7fa6392de20da",
+    "lines": 66,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-stage-20261009/README.md",
+    "bytes": 2033,
+    "sha256": "c596dc1d269cc67c94d557015afcc976efa039bc064cba317eddcf49ce5f4121",
+    "lines": 13,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-studio-20261009/README.md",
+    "bytes": 8019,
+    "sha256": "b165e52d9d6f1c466239a302b7edf9c107a68da450bc0cbe075fae25d44e3c42",
+    "lines": 65,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/costume-usability-20261010/README.md",
+    "bytes": 5318,
+    "sha256": "e522f1bdf64200d65c8d13c9297a92067f10ac207004df0c822c8e401c6aef9a",
+    "lines": 43,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/daily-tutor-20261011/README.md",
+    "bytes": 5198,
+    "sha256": "dc80f11ddbe2ce0fd3bfbc3338533525f611a67d2e8b1e1aad7b3e61d10b447f",
+    "lines": 38,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-expressions-20261011/README.md",
+    "bytes": 5715,
+    "sha256": "0190b1e597fcc076c8b7a447c42573d872bfc44d70c16498851e586fab254e14",
+    "lines": 49,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/home-tutor-20261011/README.md",
+    "bytes": 3962,
+    "sha256": "fe3e6d16845aa213515caaf302067a2aa53613baab5139b38cdaa3fcc0554984",
+    "lines": 35,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/README.md",
+    "bytes": 9950,
+    "sha256": "7fb7e5a347490cbfda0622d9bb5a55fb961823d1bb90b30eb018752c6aa52698",
+    "lines": 77,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-content-20261010/account-static-r3/failure-observation.md",
+    "bytes": 2059,
+    "sha256": "cc1a6734318d33b5653ada3853904c338d6102ce50b959e9ef79d20cf5e7aab3",
+    "lines": 12,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/life-tutor-20261011/README.md",
+    "bytes": 3948,
+    "sha256": "b55deb285277c5d873ea04c79bebd761ef3b8359a2c9e17e232846f1b5dbd676",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/maru-integration-20261010/README.md",
+    "bytes": 7683,
+    "sha256": "dfabc451cfe1358ad53f1205e907c90018ebfdae5c85b0b4cdb0b52456935d0d",
+    "lines": 55,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-release-20261011/README.md",
+    "bytes": 6566,
+    "sha256": "12e2d526b9b0c880ce3b29b440900ac0eb538a2cdb41f70c4aed73600ea48ddf",
+    "lines": 66,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-selection-20261012/README.md",
+    "bytes": 6814,
+    "sha256": "fe9ddee67568ff76765ee45e4149a127c300b93064455d3faa542f9b71f3e31b",
+    "lines": 53,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/tutor-switch-20261011/README.md",
+    "bytes": 7079,
+    "sha256": "968ff51fd246b47ac8a297b01faa51369fbec3c2d3ad129bf68768f2c38de5aa",
+    "lines": 58,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/release/README.md",
+    "bytes": 5747,
+    "sha256": "7e5f37dcffc9761cb13794211956a5225890ea3e4968e093fec04394d01da147",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-account-save-20261014/README.md",
+    "bytes": 3004,
+    "sha256": "f2b3cc257ec6b42c891e72461ab6a8db8a980962fded9f8ac87e2e924de2ae3a",
+    "lines": 22,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-combo-20261014/README.md",
+    "bytes": 3093,
+    "sha256": "a1686b21c52b307967af131136fa6a61fc2f45efe3d3020c4582308770cce4e0",
+    "lines": 19,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-completion-20261014/README.md",
+    "bytes": 3752,
+    "sha256": "dfd2e23e116192af939537dff806d53e7510567128f166f7690a1263406d4ce9",
+    "lines": 29,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-listening-scope-20261014/README.md",
+    "bytes": 4982,
+    "sha256": "a3b824814b52e90ff7b0aa440b7b72a4faca3e48360f7817a80ed3f4cf8f9a7a",
+    "lines": 21,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-app/qa/world-personalization-20261013/runner-results-refresh-20261014/README.md",
+    "bytes": 3064,
+    "sha256": "ee534acc40cf62b4f46be8f32d3ee0d6217bce4899218463c4269c612b794641",
+    "lines": 25,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v2/README.md",
+    "bytes": 2834,
+    "sha256": "7e418e7b52c3777ef08a5ab6f9fabb3c5b0fe6e8501e6bd4770e1a2263d051ae",
+    "lines": 24,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-avatar/README.md",
+    "bytes": 3695,
+    "sha256": "09dab7392c9ae83ef104fb209f0da6c6c734fca7bd5300e48ca8ebe0485f231a",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v4-environment/README.md",
+    "bytes": 4714,
+    "sha256": "7627f2c35978f3602b7b8e29b484107b54790dda4809733f61e5f94d43479173",
+    "lines": 44,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v5-landscape/README.md",
+    "bytes": 3315,
+    "sha256": "423856e31668a156be839a9024c49103ff476d19280c7523aab91c8cde9c8a62",
+    "lines": 34,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-foliage/README.md",
+    "bytes": 2320,
+    "sha256": "2b0467537a630e8da9be7bf3d0cb91372706be96fedbd8b7056d942d47fe7349",
+    "lines": 15,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/qa/graphics-v6-landscape/README.md",
+    "bytes": 4441,
+    "sha256": "822c24cdf06d98c75c41d21e61e4b3830974dfc56953d43ce229dfe539833539",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/README.md",
+    "bytes": 2704,
+    "sha256": "7d37f564c46d865c89b2bbf1f72deb269d9dce6cac688d74b7e28fd622c3e0a4",
+    "lines": 17,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/companion-textiles/README.md",
+    "bytes": 930,
+    "sha256": "063d8ef0146ab570e8e44fbae230046a4b3ed5732273de2fbdf5ced16653def2",
+    "lines": 6,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/graphics-v2/README.md",
+    "bytes": 5599,
+    "sha256": "d30fd79618545cb305d456b1d90972140a764dbf1c7aa7680e44007a8c350f8f",
+    "lines": 51,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/graphics-v3/README.md",
+    "bytes": 4743,
+    "sha256": "6bf25358bdeed49bdb818f5173b6184fcd3cefa404313f98b08975939299568d",
+    "lines": 45,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/graphics-v4/README.md",
+    "bytes": 2047,
+    "sha256": "136f29d6f8c62bd3a4e08cd0dc41e0b1dd4e85463904e876512bb96af3e88d01",
+    "lines": 20,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/props/bench-v1/README.md",
+    "bytes": 2997,
+    "sha256": "6c1a9874471c4871ba0344aa146870f9562381025178a0fb9041103204a7b800",
+    "lines": 37,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/props/bench-v2-cushion/README.md",
+    "bytes": 4188,
+    "sha256": "a156b6cce30efc75c60e8b6b09b860222857a4df63a8cea9b75feef3ceff8d58",
+    "lines": 40,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/synk-world-home/scene-assets/props/bench-v2/README.md",
+    "bytes": 2091,
+    "sha256": "1b282772e85159f97ec6a745e9adc65df64d32f7c65e8de5fa6cbebcc8265b8f",
+    "lines": 27,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/talk-rally/README.md",
+    "bytes": 37220,
+    "sha256": "846a09a45f08c21e7e348bec61f880dd2cce2185c70ee0bfda703199932942ca",
+    "lines": 171,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/talk-rally/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/talk-rally/qa/RESULTS.md",
+    "bytes": 38751,
+    "sha256": "4e0c874a6fbbdd2829598bb15277f0c2f0f139dc8e0a23eeba654955f200644d",
+    "lines": 235,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/teacher-world/CROSS_PLATFORM.md",
+    "bytes": 8881,
+    "sha256": "f11105d86f8d69a229436b6cb09f262683ba05390917314957801f09c677b249",
+    "lines": 59,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/teacher-world/README.md",
+    "bytes": 31465,
+    "sha256": "fc2f0251886fd5ad52e21e51b2945ba6426703de62d44edc511393bea7a7e9bc",
+    "lines": 165,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/teacher-world/qa/completion-20261004.md",
+    "bytes": 5570,
+    "sha256": "bd1e7c34781f2a9e4d99ae87cc1ca80bb729b6c6e35a869d375df0885c4375d2",
+    "lines": 30,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/teacher-world/qa/content-review-20261003.md",
+    "bytes": 7653,
+    "sha256": "32116b5f8605a92cf3f4cf8197c4cda1705f088d27077608abf26f270c889f5d",
+    "lines": 54,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/README.md",
+    "bytes": 25214,
+    "sha256": "1402099bc5bd7dba49b65ab6d099879ebf64f9f0767b114d078e697ad18e0a48",
+    "lines": 124,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/word-magic/kit/README.md",
+    "bytes": 3719,
+    "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "source"
+  },
+  {
+    "path": "experiences/word-magic/qa/GRAPHICS-20261009.md",
+    "bytes": 2380,
+    "sha256": "149e322aa3861a8dcf8db255ccee630e37ae44a4dfc2467b1edebdacbe8e04c5",
+    "lines": 19,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/MOTIVATION-20261009.md",
+    "bytes": 6761,
+    "sha256": "751b414d239ce1485883d54667a0cbe3d5ba1dd320db08cfeb30bce3da094869",
+    "lines": 45,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/README.md",
+    "bytes": 3718,
+    "sha256": "7f3d5c997fc7c9155a98100aeb30363fc4084efd1262ddd0110cc38bcf6382f7",
+    "lines": 29,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/SHOP-20261008.md",
+    "bytes": 2722,
+    "sha256": "3c021f1cce11cb68904d9097f63ad3cbfb426d30c566f80d26e9b4f35fd49bc3",
+    "lines": 28,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/nonvoice-shop-focus-20261009/README.md",
+    "bytes": 3911,
+    "sha256": "ecf167e5e78bb21bce4474c7c7f81ddc2ceff4a8c3223eecca6f84405b091cbd",
+    "lines": 17,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/return-memory-20261009/README.md",
+    "bytes": 4927,
+    "sha256": "edb332d385f97827e6dd0fc75f5ac233223a68bcbda81c54b5b7ab3c1ec7dd31",
+    "lines": 29,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  },
+  {
+    "path": "experiences/word-magic/qa/scene-keepsake-20261009/README.md",
+    "bytes": 5510,
+    "sha256": "c871ece475258827e47780d5b794d71f5a497122b79d12964615c66d865f1e4b",
+    "lines": 32,
+    "owner": "product",
+    "previousCoverage": "unread",
+    "status": "pending",
+    "kind": "evidence-or-tooling"
+  }
+]

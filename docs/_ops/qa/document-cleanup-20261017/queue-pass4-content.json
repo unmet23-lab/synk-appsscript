@@ -1,0 +1,3689 @@
+[
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/new-work.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 52769,
+    "lines": 146,
+    "sha256": "85b9c2d051de94ee9129c58be111946f73035ca62bbd2a3936f4fa48768fe5cf",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/critique.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 45944,
+    "lines": 829,
+    "sha256": "cb8caddbb3919e5bf7f252143b519fb16db28a244642d937b186cb89962d9201",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/live.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 36490,
+    "lines": 328,
+    "sha256": "68c5636a7858dd0b5137a9229c15e25fdc2ee40a0f8a4e9d809f78e809256262",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/media-treatment-recipes.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 35871,
+    "lines": 930,
+    "sha256": "e472e76571ee1498abe46e152c85fc0c5d0ae014b2ce9e634d5c041ae60ab9af",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/preview-render.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 31532,
+    "lines": 194,
+    "sha256": "8faf5de843c2b6d8277d91767bc0c63f391b8b01289320fc05bfb8c58b1e408a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/kinetic-type-beats.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 29151,
+    "lines": 134,
+    "sha256": "4515b7aa6284898117e8970b76c04fd350ec61c664f5b241deb81c7fdd655d8c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/document.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 27521,
+    "lines": 417,
+    "sha256": "3673248740bcdd1122ccc610093ba2fe52f3943a61ce0b7170b74dc49e5b6098",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/logo-assemble-lockup.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 26609,
+    "lines": 122,
+    "sha256": "53bff65b0b4b14566bceb061c71a9a987003273aa1f7ef711dc20c30b812ec55",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints-index.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 26512,
+    "lines": 203,
+    "sha256": "601228ddcfda89ed6add52bd08becf53296764e155126fb5e7100eb29caaa46e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 25578,
+    "lines": 477,
+    "sha256": "02ba8082a3654b7f8d8fc6d2d322b2828abb1e6dd455fb1ff14728e6e6c89a1e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules-index.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 21204,
+    "lines": 114,
+    "sha256": "21eba5fd57769b7560b846a0a9aca8e8f6cacb3130d76e9cd090b564f9e46679",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 20864,
+    "lines": 166,
+    "sha256": "6d33b8c9c8636a86353826e3c438f8c8af6bba4e885b2f560e6fe36bf5f1466f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/code-editorial/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 20600,
+    "lines": 278,
+    "sha256": "b1c123526634e31a3e36cff9856e3b4322f2f778d2c7f573aa35a9ee1e90deb7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/cursor-ui-demo.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 20276,
+    "lines": 90,
+    "sha256": "f4403a088e1358b59a21eabc4f5867f53b9179f5a4abf2f28e8e9982ef9fb479",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/creative-mode/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 19605,
+    "lines": 334,
+    "sha256": "c1a1359502d9fc79ef267305291fe0f651219c72d88088cee32327dd933dead8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 19067,
+    "lines": 165,
+    "sha256": "222e36aa7911a11e7850468d97efe2c38d63cb0b4c0394672020903a78483361",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/coral/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 18950,
+    "lines": 315,
+    "sha256": "8530ecb36d1bb2d53392d88d972df35beeba19a5bcb3260fc9b18a58de7cdfe8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/discovery.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 18647,
+    "lines": 234,
+    "sha256": "e647e213839f8badb286a2a25850656f65d4129fabb01740366313314540b3b5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/prompt-type-submit-generate.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 18636,
+    "lines": 86,
+    "sha256": "c94f17f6cccec12c7e8eac246d8b534e7cb4120a3f9b7c52dee049b9d228da1a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/3d-camera-flight.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 18137,
+    "lines": 181,
+    "sha256": "f88aa996dfff909ba780e0ace41dd7fe3cb2b275b6d87694470f26e78fbb13c1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/biennale-yellow/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17789,
+    "lines": 290,
+    "sha256": "76d22cced9c152b0edb520543cf34c4ce772a312caa7211c40d4315b53c053cf",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/creator-editing-recipes.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17738,
+    "lines": 492,
+    "sha256": "b270100faa6fcb4ab7df87d8cd201cd7af54eb16cd2284d9a5a8d241f637a611",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/daisy-days/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17445,
+    "lines": 275,
+    "sha256": "42d827dbd279990052e171d04380b5e6bbc111ae391dc283deb7a452e70b9b97",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/cartesian/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17294,
+    "lines": 279,
+    "sha256": "3dc6a31813a333b2a7a1509ddbd3b4dabbbd7e12e6479b6cff10d69c185fec95",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/cobalt-grid/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17286,
+    "lines": 266,
+    "sha256": "62a6c9e6e5188cc29b9c0098e9bb8e72c23f152d9a99dd92c58139d26b69b19f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/capsule/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17214,
+    "lines": 285,
+    "sha256": "f06dba67a3859f7c732b5177f7bcc58c94592caa5d6bbbcc6730a7876f5baa7a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/blue-professional/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17202,
+    "lines": 308,
+    "sha256": "62e9a445885f6057084493de385a8ce20c3b4a299ae36a553ef54884f06bad68",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/html-in-canvas-patterns.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17166,
+    "lines": 508,
+    "sha256": "5e7c801c65d8f34f38c535bc9ed6808ebb6f475f166347bf71a453eb87614e9a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/device-surface-showcase.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17151,
+    "lines": 69,
+    "sha256": "83d1c7b91b40ba24de324a14b50d023514c95b6b01a3c5bcf5c066a770e07fc8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/editorial-forest/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 17019,
+    "lines": 266,
+    "sha256": "ceeb2ab768367da1e1f3e1eca36ab9feeb3de3e4d15493319b0044c3d869329c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/frame-worker-core.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16832,
+    "lines": 81,
+    "sha256": "f03b211c80f0b8ed772ecf29bfadf89775e4b58f2d048ad1cb946cc0b06382ba",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16760,
+    "lines": 130,
+    "sha256": "49e0854d6142edb8b067c56bdedb711eca4fb828e944918b5a3f8422b74ec7ad",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/lambda.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16703,
+    "lines": 186,
+    "sha256": "73e681f3e5c6c3608b8d4f66b4b75628eed708803b4d2fd5532366659a0667c9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/component-quality-bar.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16390,
+    "lines": 251,
+    "sha256": "f0d4c3c44131bc0791f8a8cc3d2d7478d38045451775af7d20b2dd47cf5f91ac",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/broadside/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16303,
+    "lines": 285,
+    "sha256": "3af0a1e5e61bece19841671672d7732082f03d5699b713475e90323a21dbcc89",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/blockframe/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16292,
+    "lines": 276,
+    "sha256": "ef8d9d47a209bed4ccc2d928c14a81cdaecb5129f5dc0cdc0dc40afc7ef92931",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/agent-progress-theater.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 16091,
+    "lines": 77,
+    "sha256": "1939690276ebf41123126e40915c283b69d3b2fd7d563f774c96e6ff6a076d4b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/frame-presets/bold-poster/FRAME.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15984,
+    "lines": 276,
+    "sha256": "af756ef993099f9ac78328f676eb79a6572ff0e9c2aacf12787471cd4525b171",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-keyframes/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15901,
+    "lines": 263,
+    "sha256": "bf1c44010e4f1bd2e5df75c57abcd765eaa635d4ee8b39b41ef6707f130d73de",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/data-attributes.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15874,
+    "lines": 79,
+    "sha256": "9467fa4cb0dfb12cb2d052d7584f21b4ad5d32dc80d15188da19e1a1acc0f435",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/techniques.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15772,
+    "lines": 508,
+    "sha256": "59eca990aad2beade34e47b3c5ea7f03df894574bf9264dd2bd42188542420e7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/capability-menu.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15611,
+    "lines": 48,
+    "sha256": "44b7c86d35d2b4430b00c7a114efcfd1537d62fac6879b0d07be9f021a1598ce",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/grid-card-assemble.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15594,
+    "lines": 82,
+    "sha256": "c35349ce839aec1e279ec66b297553c3a9dd1f30fdf64ce8b768c9fafdb4e662",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/degraded/finish-reviewer.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 15397,
+    "lines": 38,
+    "sha256": "5f24c5a97b4ffcabc7c432b064cfdd04c7a2ad52f52e765be648dc0aadab8f38",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/zoom-out-workspace-reveal.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 14714,
+    "lines": 69,
+    "sha256": "30a6a396a72bcd37127100f6e4cb5f13f6ca1ea179df7001ce347a3b84c8b7ae",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/operations.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 14660,
+    "lines": 326,
+    "sha256": "dcc48461774a865d1e9d7a46a7ac02d5dd8b0775e1756eb4609bdbe216945dcb",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/dataviz-countup.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 14611,
+    "lines": 60,
+    "sha256": "9de0c34b44bcee7dda7371f8597df3421b4e6d46380237f76e815044f02e4a1f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/typography.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 14481,
+    "lines": 219,
+    "sha256": "2213319b8055285dbe5b6aeb923f27660355a04a1b27da1edda8fd0c91888ab2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/media-treatments.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13920,
+    "lines": 203,
+    "sha256": "13fceb2fb71b98048d923db3aa2ad35c1016e16b25f0c2115ed3a6a77e732ab4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/intent-interview.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13899,
+    "lines": 72,
+    "sha256": "fea721c1034b8631baab4e30a1d3df1575aa3355cffdcdef79e951c409a0d03f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/overview.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13857,
+    "lines": 154,
+    "sha256": "ec878d479d16addcd88c770b39fc88fa5219086478aee39e9f96a1096a58b084",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/camera-journey.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13648,
+    "lines": 62,
+    "sha256": "0508b034b4a1c30bf3cd37a25137987c435e7805f3d5a98f85921ce0e6f06d1e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/beat-direction.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13640,
+    "lines": 165,
+    "sha256": "312560b513e689aeda44956c9a883cf465a982b8efce9730722bfb8d147f94f9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/panel-edit-live-sync.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13394,
+    "lines": 74,
+    "sha256": "f864194c9a56ca7936df72b92b4806427437c1a09fab11cd27eb3d0499186644",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/4차_v4그림/쇼핑몰.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13334,
+    "lines": 118,
+    "sha256": "7dff77face0ae242d80b4c2d5557bbf912d955d2bf64278b4168f6890566c3ab",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/hooks.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13312,
+    "lines": 112,
+    "sha256": "12fefe52d80d25014e5f7e2f9b278275a675653d3d99ae8f0ecf344cdb9abbe6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/gsap-easing-and-stagger.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13270,
+    "lines": 200,
+    "sha256": "825e8d2524ad166d8c29d59d72caa9e81c3a0368bcfbe059c86371a64d3494d0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/generate.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13219,
+    "lines": 102,
+    "sha256": "53628d05b7eff0d4f48b95e48fad40266452fe1b42f398bd88dd9328353e0dd8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/references/presets.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 13155,
+    "lines": 217,
+    "sha256": "6878ef09982cb9cefb2d0148a22d8ed431806b3cef9f62e2d1d8cdbabec37917",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/references/motion-blur.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12792,
+    "lines": 134,
+    "sha256": "22d1b89734f0d91f2fdc071d509c23352ce8aca052229eb07d32db69efc8715a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/lint-validate-inspect.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12566,
+    "lines": 133,
+    "sha256": "f5b70a7f15dd63ad0249465cc9f10e13e639495e0a843630502a3819759787be",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/1차_v3/쇼핑몰.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12232,
+    "lines": 153,
+    "sha256": "5d8d1dae50643e83b178e23ba68a433ed8008fca0940278667fb495222764d1b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-picker.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12221,
+    "lines": 124,
+    "sha256": "3b37cd0e9366b8f9c30b5e31a909193b23b58ada7f73675eab0fe7d2a74bbdf8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12153,
+    "lines": 98,
+    "sha256": "2b2893d5916a7b976f7b398c8efbc54bff0839f3460eb3a55e60d283a9e40a3d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/references/diagnosis.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12080,
+    "lines": 277,
+    "sha256": "6496d8ba77e74adc48a81defe3c9c13310f6fca41ec17ca171dc851bc6e2b2e9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/4차_v4그림/꽃집.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 12072,
+    "lines": 106,
+    "sha256": "324a7933ebd7db8afbc5ebb00cda9fcb3b480c5693c84573bca584b4e4c37f1a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/visual-styles.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11967,
+    "lines": 458,
+    "sha256": "c22d2c3f0732398ff52cbb469cf17567706b4d6555ad4149cae950a7cb3867c6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/3차_v4둘째/쇼핑몰.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11894,
+    "lines": 130,
+    "sha256": "2a16f95c9eede351972c3f6b96041684c5ff451842a67efbe5a3565d837199db",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/brief-contract.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11889,
+    "lines": 109,
+    "sha256": "b74a9a6dd4e69a35d6b17407a90539d721bafe93186b5c078553cb0b4d936a1e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11868,
+    "lines": 85,
+    "sha256": "fa0cb3ef01a25b9094266109a63c1d01d4b2d4973f75b324f5c4ad7e568d148f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/visualize.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11757,
+    "lines": 47,
+    "sha256": "896da399bafcffb0623bdd81bb18709d6eab25c9d5917e739c8798f31ff0d076",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/transcript-scroll-artifact-reveal.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11666,
+    "lines": 46,
+    "sha256": "bb76b82b375ad919412fd201186c82950f636753608efd810ac4f32c5655de4b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/4차_v4그림/카페.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11620,
+    "lines": 98,
+    "sha256": "1ac15bc14217a5ba7059062ede0cd97436b7a87e209ccc4645f7c789f2d3337f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/init.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11536,
+    "lines": 132,
+    "sha256": "bb069b43c09109d7031b0374e31955749fec657b252d39782f11e8985aca2b51",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/templates.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11451,
+    "lines": 418,
+    "sha256": "98e1ef62d3c1264b28139d85a1c9b5a8b7438209914aebef6d9890e3f4275805",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/3차_v4둘째/꽃집.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11334,
+    "lines": 141,
+    "sha256": "142ec432bde805f6cacafd4fbeb75226234631920e5ed17f6b9ded3368f22cef",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/adapt.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11301,
+    "lines": 319,
+    "sha256": "871a8e4d749b807c693ebabd83defbd6c76e1bd2a0f53a28a460cb1308ba8634",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/cloud.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11029,
+    "lines": 164,
+    "sha256": "65d1a787a940ee360a07e492014c775a898a4b794e26f778e17dca659ffa7a1f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/1차_v3/꽃집.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11027,
+    "lines": 140,
+    "sha256": "c281ea5fba9a460d127fc772a980c91a4d62384528a12ab1d88ac86429d580e4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/2차_v4/쇼핑몰.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 11013,
+    "lines": 123,
+    "sha256": "199fc8b89312772a5c36d1439c8aa5b0ce7bae602cacd0cf303209a5f2576dad",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/composition-patterns.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10853,
+    "lines": 225,
+    "sha256": "bcdf548ba1fec8decce5ea22c7bed99c73ba268986b1bfefc837f2d7f70f55b0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/3차_v4둘째/카페.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10645,
+    "lines": 108,
+    "sha256": "bb64e0eb6d79db8d9372ca6d6e8a7942c087c2f0d8870adafbaf64817e9e7fd8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/motion-blur-streak.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10616,
+    "lines": 131,
+    "sha256": "a970baf9802c7239934a18696753d0c4ef6d70746889473c8b1316740d98a2d7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/multi-cursor-choreography.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10520,
+    "lines": 134,
+    "sha256": "6d4207d9a0dac8a9ec9d681a6bd30b5cb2707b76349c513f336701c8ea4b4c14",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-spec.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10498,
+    "lines": 56,
+    "sha256": "a583fe293facc2e6d242fa69f64c8cdc110c5cfe25f8ddb2429bfb445fcf8ad5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/chart-scrub-readout.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10348,
+    "lines": 152,
+    "sha256": "e0a0fb62a9ce7ca4ef535ee50328078dc8bb7cf63f1f3a8ee68844b4a5294f61",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/chromatic-glitch.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10339,
+    "lines": 151,
+    "sha256": "388eb6e8d7eb65c8ebca22c07538e7bd383184242a9dfcfe5561fad854551f28",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/anchored-layout-expand.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10313,
+    "lines": 149,
+    "sha256": "11eae6a4c3ca7c31ae41c068c577a960c76fd9714bea12a2bc9ec608f8b098c3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/control-target-sync.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10276,
+    "lines": 132,
+    "sha256": "7f82b8a64cca6759580b9c7ab1dd4373a7c03a474bd8cfc927e18b587614dc47",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/cursor-drag.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 10215,
+    "lines": 142,
+    "sha256": "c7c88d33ab9f7f1c6f0a93d984d4acb1b95698a2bd7a99ef306065da727445be",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/upgrade-info-misc.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9967,
+    "lines": 126,
+    "sha256": "f2aa9b36f5879650daadcae3e298bda138093f47312b17469b5f95758925af86",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/particle-burst.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9956,
+    "lines": 150,
+    "sha256": "b54113dc2d079ff49cd800b650e2c521cd4cf1af8aa125bfa2c9ff53fe5c88d1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/ambient-glow-bloom.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9840,
+    "lines": 134,
+    "sha256": "06cf000cd14dc72f92f4038114c21020ffc358efad921bcea05d85025d28a5e4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/2차_v4/꽃집.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9734,
+    "lines": 84,
+    "sha256": "3052adc043421683afff0c191d418ecf93d7828830b1dfae719a6fea4cb2c6a7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9643,
+    "lines": 146,
+    "sha256": "0694f970b3613b9f0a63dc44c06404ea4f6506819f4afdbc9da3323b420cb9ae",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/resolve.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9637,
+    "lines": 151,
+    "sha256": "e592f5ccb775cc674640ff515ecc2af5e2fc564061fff167a7f186431694f930",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/captions/authoring.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9545,
+    "lines": 164,
+    "sha256": "5efe83e8371721d52f29463fd87632a9a81f52bebda5fa40baedc341adb825ee",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/harden.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9450,
+    "lines": 346,
+    "sha256": "16ba7fca1973c5faf53dd2ca523559129c0fe9e5f8d50b645f527afa78186cd2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/theme-crossfade-morph.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9404,
+    "lines": 127,
+    "sha256": "d1855ee32b2b2a45f9b5dffd3d1edf96dd08b199d6aa8c685e302878ba8f0fef",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/motion-principles.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9335,
+    "lines": 152,
+    "sha256": "43cb4193d2716bffde5a44f3740021f0b2eede83fe5c75d30e3f5398e2bf6d2e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/overdrive.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9178,
+    "lines": 128,
+    "sha256": "fce6688138d2ceb1e3d2cde5231f54b1d8dc8748b4c95a7919aa83b6f924cf96",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/fixed-anchor-cycle.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9089,
+    "lines": 47,
+    "sha256": "1a49afda275f54c0383e8569b405175f2a2424a74574d935d1fdf3858f50eb89",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/placeholder-material.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 9006,
+    "lines": 150,
+    "sha256": "15adf4a40b26166f64df784aed065adb58051d9ccd5c0c52ad9b71e3b8367a09",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/viewport-change.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8974,
+    "lines": 149,
+    "sha256": "c1ac00dab35da2fe57fd11d460a96730c37f73d8b4d5e73a0ce85b18b9922a75",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/depth-of-field-blur.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8876,
+    "lines": 113,
+    "sha256": "d83b73641a8d5591ca1809bb0df21675537628e00ddb2a2d144fe562be1025df",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8783,
+    "lines": 166,
+    "sha256": "a1a4873b7d3f428272daeee60425d31691d76d858b515b3f2f2c8f051dbdcaf6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/gradient-text-sweep.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8751,
+    "lines": 137,
+    "sha256": "ee17df8644eea65f2751c97604db1546c17260ab054483579e221eba6a5257a1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/dynamic-content-sequencing.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8558,
+    "lines": 150,
+    "sha256": "7fd77bb18f989e31136338d383179beb2abe2da4b208a67ab7edb712607bc92d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/gsap-transforms-and-perf.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8552,
+    "lines": 130,
+    "sha256": "a73c1ea0af7dd782936dd5726e0ea6c1cdc98126c89c6aec4370624f4622ee67",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/audit.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8528,
+    "lines": 138,
+    "sha256": "d5f83912eda93d42f93522bb74aeff0ea04d9c559577ec52fcccc130dd03166d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/remove-background.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8465,
+    "lines": 144,
+    "sha256": "d5a8f2e21c4f0029a025a490dbc9ef6ace76dfe2d6c674a8ecd2f1484cfbe9c8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/audit.native.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8364,
+    "lines": 140,
+    "sha256": "960cb922bc934adbf9192e9428ff6bec1f382038166f02a785939c93b7391067",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/production-loop.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8188,
+    "lines": 27,
+    "sha256": "15020c02cc399e17c23ab461d879ea225caa39eb93381a4a9c18080c8b84bcc1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/live-setup.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8186,
+    "lines": 105,
+    "sha256": "2b5b2fbf5f658f34ea1997fb1aeebe01604d05187f75c6a4f1f55a5bc78520a4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/variables-and-media.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8160,
+    "lines": 108,
+    "sha256": "dd8404b7cdc251f88cf7221c367e6bb92480e5eca3b8a02f8de7772f5b9dbb50",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/TRANSITION-REGISTRY.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8135,
+    "lines": 169,
+    "sha256": "06633374b8dab684fe92bffb2b1e704aade9004676eb04ec04dda2ded0892c83",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/typegpu.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8100,
+    "lines": 183,
+    "sha256": "221d7aa6dc3007e0c9fc31f27e10aa979c0a25567d98540fc0d2e4e9a79bbd24",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/sub-compositions.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 8074,
+    "lines": 177,
+    "sha256": "7caf63046ea0d1915b51e4eb49897101e36dc716ea1195f9a34cef4ba9c18f64",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7982,
+    "lines": 97,
+    "sha256": "1301ea7cb53a0a44f5c7d62c34cba7e00b9e69b31bed57dc8d645417cea0da7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/bgm.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7958,
+    "lines": 75,
+    "sha256": "59377dd15d537ed967a24733ea4246d2dfd502eb5a6d3eef6934a245533ddb39",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7924,
+    "lines": 86,
+    "sha256": "653f1c48643b115dfb97c993ad2b31aabc35ac53b6033dfff33c35b0bb03a779",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/camera-cursor-tracking.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7911,
+    "lines": 134,
+    "sha256": "60dc50359c1cf60b96cee782a2ce11ec33c5e653c5f330df6ee270b280693235",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/multi-phase-camera.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7773,
+    "lines": 130,
+    "sha256": "ffdcd08f47ed49d52d31b27f11676435d45fb34581fabe1507bc59e79364e375",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/onboard.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7740,
+    "lines": 235,
+    "sha256": "ef2dde00030580ed2765cbf7be9b2ea4a6f64cb915b804fd6f6abcf38051c7b9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/svg-icon-enrichment.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7621,
+    "lines": 142,
+    "sha256": "f0209f4c4254281d1750bb5d4e963f5372361b1443ada43236a27a0e37bbb810",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/optimize.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7614,
+    "lines": 259,
+    "sha256": "f672ef8251a3ed4051a053d30819664951b17540b2899acd27d20e500c234abc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/coordinate-target-zoom.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7607,
+    "lines": 139,
+    "sha256": "b716cdceace2e34518bf77dae1e0f04e2bad3c0d181b0e4919843ca8ed2c957c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/gsap.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7504,
+    "lines": 106,
+    "sha256": "1e4fd8f99fcefedc53352828f1370fd06065fe1abd4762016e5365a5da017341",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/degraded/asset-producer.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7458,
+    "lines": 39,
+    "sha256": "a8547c8565979894f0c07f92a96ac2a38e681a31fbf155ffeefc7566e185d9c2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/titlecard-reveal.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7441,
+    "lines": 81,
+    "sha256": "39ebf47ec45da556a03d0521d028924c61a02e0c6d60cd194cc40a236af2f08e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/card-morph-anchor.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7411,
+    "lines": 135,
+    "sha256": "57ee55f0401026160808532dbfe4d060a412b1c2c603f8ce1f097913a556676b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/3d-page-scroll.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7406,
+    "lines": 136,
+    "sha256": "4afe02d1205513afc9fe669c739e9734f23057b15b92bf62dff6004f00c1650c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/setup-providers.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7278,
+    "lines": 81,
+    "sha256": "25d0c2ba7534dbcbcbb6d69bd29383c4918d700bb223d436364c09d48578e05d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/storyboard-recipe.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7242,
+    "lines": 58,
+    "sha256": "515b2016a1cd2760ec6e53e170752a3b111a5e9b7a123001374c479db4f73406",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/degraded/manual-edit-applier.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7196,
+    "lines": 92,
+    "sha256": "5fae7f8a2fc3ddd49ad0a413446dc44daedef5b6b7de5eb935bd2fbfad646d58",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/constellation-hub.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7144,
+    "lines": 64,
+    "sha256": "729357480806d512217f46155d7810537f0ab6f7f46ba47b0905e4c3ea4d59c0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/brief-format.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7090,
+    "lines": 73,
+    "sha256": "1e4f2f67989052fedd56fd1211e7a8c27f70aa5dba14ccd18e23cbd44d825adb",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/depth-scatter-assemble.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7054,
+    "lines": 140,
+    "sha256": "63689fce3df29c4eca02f83cebf578f6026935bb04f3b57dbf465c63b4d8ba1e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/press-release-spring.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 7041,
+    "lines": 109,
+    "sha256": "36947331983342c48470c6a685ce04175ada089b0370adbb62acc06dcc98f579",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/context-sensitive-cursor.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6938,
+    "lines": 141,
+    "sha256": "ba33d4d325d83e8e96905cfa24160f9d64a9ae36b831374f203436e790cd1951",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/references/fx-registry.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6928,
+    "lines": 85,
+    "sha256": "5c3d6f5e0037a1596fd2df70037d57e638f08492f58d8e75bf2225de52162adc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/gsap-effects.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6912,
+    "lines": 197,
+    "sha256": "63ee2ee5d9dcef1ecbd88b69526e1621f0ff7ce682ec7f2dbe553b5647656bbd",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/meta.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6785,
+    "lines": 62,
+    "sha256": "47e0391893b157705539129d0f9f071a2d7ced8cab272bb7b6d58117474fdbb3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/asr-keyword-glow.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6762,
+    "lines": 129,
+    "sha256": "30d60b09bfe977896b588f2ae53d2c02a6d45d65aeaa32e261c25cba0e26d4d8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/grading.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6748,
+    "lines": 161,
+    "sha256": "f329c584d69ac7f3c44ba617252d7e137e7cdf58e48940e2bf93a75268b69b3e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/3d-text-depth-layers.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6708,
+    "lines": 129,
+    "sha256": "e95234a6a42bdd25a555365d5978f7f3cf20305c5f1a3be46c39b9b5d34a49d9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-keyframes/references/keyframe-patterns.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6692,
+    "lines": 109,
+    "sha256": "727cbc8db92968e9a8c9e77434e6aa45ad4e938df577c86ba75d118aa7e6e88d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/physics-press-reaction.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6687,
+    "lines": 102,
+    "sha256": "858ebad87af7bc4e7d7141f7aea19ad62d67a6af0bda6e01c9e3e8e841f38483",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/contributing.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6684,
+    "lines": 175,
+    "sha256": "8c3b0f71fde829ff6986a106e85e45e250324687846f2a16aadf1b47a126aede",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/catalog.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6679,
+    "lines": 128,
+    "sha256": "3914ec091c1f16bfee5c53d38ed6af1dfab74caedf561788dc39e67c6d7ca239",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/determinism-rules.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6659,
+    "lines": 54,
+    "sha256": "ccd07ae7f9ef2d303c86735ca920267ac0882d10828ee5f188c67f1ed2fa0bc1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/polish.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6646,
+    "lines": 106,
+    "sha256": "81666fc7f783b4e3514db6554e713dc0479bd9cdedb06e93d15f8b579aae869a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/orbit-3d-entry.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6628,
+    "lines": 149,
+    "sha256": "2b24b8d92203e75faaef14c4bfdb216a70f700660056a6f77a9e5f035c5de94f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/avatar-cloud-network.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6578,
+    "lines": 146,
+    "sha256": "c29e0c58150e0056516c76c30932d93f9ac9a57bdb99ec6ff7327867d34a1a90",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/ai-tracking-box.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6562,
+    "lines": 140,
+    "sha256": "7e7b0433c58d95f468d65ae061beb3037f83442940aadfe89e32da8039ef5bfa",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/reactive-displacement.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6539,
+    "lines": 93,
+    "sha256": "7913e02dd6a303017993315045e0c3cd30aa2df9f09093b697e0396ecb7cfe51",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/spring-pop-entrance.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6533,
+    "lines": 108,
+    "sha256": "f6cfb58b967769900edc0a4b9ed2685127167a8e4f74f7047df07d4ca4a10fbf",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/three.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6473,
+    "lines": 146,
+    "sha256": "cf0082681b4cba66116fe091493db3d85e24c8b82620e0c5b01c58729aa35562",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/discrete-text-sequence.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6454,
+    "lines": 147,
+    "sha256": "d3eb00b0942f98eb30908f1b90f44c0bf9a4da1c2eb0dc6899b14accb75802cf",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/kinetic-beat-slam.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6445,
+    "lines": 138,
+    "sha256": "05ae130e17e6229bec8fb144bdf2ec43f8cd1105221af5246673d5d403f0451a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/cta-morph-press.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6407,
+    "lines": 64,
+    "sha256": "0f8ee56ff89af960cf2deb1da86994d5bb93186b85e71d601fb5c64b40deaaeb",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/cursor-click-ripple.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6397,
+    "lines": 105,
+    "sha256": "f3cfefe1c4d2ef61388bafd3ffbf09debc4596a7abf46fef6b9fa70dd013b1c1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6354,
+    "lines": 72,
+    "sha256": "488782fc741a43e002b5c6ac0da69cc2b12abaa42b6c0056df2aa53bea553c16",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/typewriter-reveal.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6276,
+    "lines": 52,
+    "sha256": "be324c142dc5bf89649df3c59aa8a7e218ca99d8afe1222f4028a314a237245c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/animejs.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6224,
+    "lines": 131,
+    "sha256": "ade4ebfdfe4bab62ef98ec4ebc83b84f0792faad5993ff5d398d67d1a499de93",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/references/attributes.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6216,
+    "lines": 139,
+    "sha256": "314cf04f277670c11bc3ede695b430f832d9df9d2eabb4aa645a9a299ae53e91",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/sine-wave-loop.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6163,
+    "lines": 86,
+    "sha256": "54f283f4a8915de5c3f6d7c668b97f416efad3df6b5baf4941254cea8831944b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/overwhelm-surround.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6140,
+    "lines": 59,
+    "sha256": "e35c5bff4db70574124db06122d79443cc0d3ab8238b52949548c4ba995c5b9e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/review-loop.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 6122,
+    "lines": 38,
+    "sha256": "3a396bf70ca251a16969f85912ed3f6838c56e6c01a7faec889488a2edc9e582",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/counting-dynamic-scale.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5977,
+    "lines": 116,
+    "sha256": "442d9f9a5cf8c10cc62fc5ece5732eca58f76aaa9724cebe92c1f91cc515fa62",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/init-and-scaffold.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5825,
+    "lines": 75,
+    "sha256": "905fa5e8e589c5edd0ce973b9f888a365317d610bd979a20f210863000af6b5d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/storyboard-format.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5781,
+    "lines": 100,
+    "sha256": "9005e7d4ca6741d88433021aa626dd92aec36cb82a5295bf0f68440ec0f66f9b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/distill.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5717,
+    "lines": 112,
+    "sha256": "ea8432c90c30ecb0426662a681ead5c0941113079704e1a766cda09e85b15b4f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/prompt-expansion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5707,
+    "lines": 69,
+    "sha256": "3c428274da00f7809e93a2036454b2b9cba9a20b3ae3811d43f33a50501a36f6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/css-marker-patterns.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5702,
+    "lines": 209,
+    "sha256": "8ac8dd360b4dc8d78d34c3846b834155ad2b482a2d1388cbbd2d3061c6e9d0c2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/composition-patterns.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5685,
+    "lines": 200,
+    "sha256": "bb287bdaa4779698d8cb6541488335aacabef781ebca1fa661b3fd8f3462d034",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/split-tilt-cards.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5669,
+    "lines": 124,
+    "sha256": "a50c135af38eb5a85f7f2f8753e5a8dcff3e6782392c2c6ee42bfafad9e41ab4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/captions/motion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5656,
+    "lines": 88,
+    "sha256": "20646595c341902877f31804d4ac6be54e1a261f7d34600660b0e9fcae964019",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/svg-path-draw.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5646,
+    "lines": 123,
+    "sha256": "38e304463abcde3ac88095d682f86a2ea30517d366683d09d6bccccc6752c304",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/tracks-and-clips.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5620,
+    "lines": 88,
+    "sha256": "4e6fdf6b74cc2ad788633dba510e9c8d6d47affd084c30dc156fdc2ce7829cf4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/hacker-flip-3d.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5586,
+    "lines": 124,
+    "sha256": "67a79e585996b4a58dfb778283d9431ce02ae6bb0150a474d5adb1c4d23d6951",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/pitch-round.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5550,
+    "lines": 41,
+    "sha256": "2d9ceb09ff7be704ebe47b64152b8f6d5dd611925d405e9f87f47f24dd65775c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/scale-swap-transition.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5517,
+    "lines": 89,
+    "sha256": "e527ce5e2614f5ef8dc0a4da8b97d2a015a85866f1d52d22d22c8411efdaa854",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/craft-floor.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5500,
+    "lines": 51,
+    "sha256": "e802e4f7bdc89050a9c0f2ca506e1d493a2316e6e810c0336c57aa073717ef3e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/vertical-spring-ticker.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5495,
+    "lines": 105,
+    "sha256": "44ca684601429932cc9667ee56e44c8473e591de9b29c0eef808fabb432cda88",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/stat-bars-and-fills.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5486,
+    "lines": 146,
+    "sha256": "2da2a14d1d040e6c7c3634745eb047cd2805090ad374900d07ada50ecbcf650e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/doctor.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5481,
+    "lines": 55,
+    "sha256": "a98b397cedeeaa1da57f3395b3d9b6c1fc477f4247fb9dc13e4da3da588283ff",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/captions/transcript-handling.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5439,
+    "lines": 98,
+    "sha256": "84c4d5181749022c00b6de62ffe95fe257598fb5f9111d9e8541d25a13836287",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/css-animations.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5407,
+    "lines": 144,
+    "sha256": "52a1a7fd8702cf8721bbe63e324f0492f3966c5b092925f5135839132a999012",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/typeset.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5256,
+    "lines": 81,
+    "sha256": "442749aed338f51c1a3ccfb182c6ade9b74b90590b67984062ac94a5b100e914",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/animate.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5236,
+    "lines": 90,
+    "sha256": "d658c48ffbe0031e8e3b318996cad6ceafe29e40aa50d5bb25e4bf1d6839dc7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/layout.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5161,
+    "lines": 85,
+    "sha256": "0bc7d7971b3edf2acd0580e847458dc6d84129d90715b452799ace3bed815c7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/house-style.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 5025,
+    "lines": 74,
+    "sha256": "3adc51745bfce9719b63ba74251fcf9e5b9eed56b1e0d8c3928f47c3703eba92",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/quieter.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4952,
+    "lines": 100,
+    "sha256": "190a4e642ca362d7499f3c3ab123e21f18f75457d11f072b545a183f296e6495",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/spatial-pan-stations.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4868,
+    "lines": 38,
+    "sha256": "6c044d1fbdb057aae80d46efd1e5fa7222ad3e294a249566f36c82221ba02386",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/clarify.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4590,
+    "lines": 95,
+    "sha256": "173dd66abe65633910dcb04a51f40d6ff2a793f87088f022a02fc4cad24dd133",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/waterfall-entry.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4582,
+    "lines": 82,
+    "sha256": "d9b8a3df6c59e0af6eef1f3f3d7ffb8058c8983976e4ce150566215770ff7c50",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/colorize.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4537,
+    "lines": 87,
+    "sha256": "bc5f71f1129d0f2c310d913d07c8dc609a1d25644121bd78c308f42d52a0b9e9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-destruction.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4484,
+    "lines": 96,
+    "sha256": "3f2fbbd561aacc8276f70cbee09ff420fc6e9c65b1e060c14e8399960d3bfbbc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/compare-and-batch.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4378,
+    "lines": 106,
+    "sha256": "d17fa5a16707d981fa6473b99a28aa45abf41bca0fd96c5157c632abd0bfc222",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/requirements.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4347,
+    "lines": 30,
+    "sha256": "1ebd23531306ca51a85623e82a1e25fd16814b8539fe9b69cabf9f418fff55b3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/video-composition.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4298,
+    "lines": 64,
+    "sha256": "037a966583e4b5fc4c3385ef6217560d36237ec638d2b68b5808950c873e424b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/center-outward-expansion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4263,
+    "lines": 89,
+    "sha256": "e8f95caa0060d015abce3c3dc422b9e05756bde5c2d5ce6a341360a14ec75217",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/waapi.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4248,
+    "lines": 102,
+    "sha256": "3e173bc484cd7daef9022c2c80e8e2091ab73321def54c2a100ddf738ee8d1e0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/telemetry-dashboard.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4200,
+    "lines": 50,
+    "sha256": "bdc30ad1ff84ebe7f5ca835acb9f47b33717e041ea79b41c6f0db489b86094a7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/story-spine.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4154,
+    "lines": 46,
+    "sha256": "6c390b68004ffaaf3368e22a0355d914302d31921436c9a8fe79f9e0e096b4ef",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/lottie.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4145,
+    "lines": 118,
+    "sha256": "287a330e1a08eeb051e8f4a2e251f1667d57ed980ccd7572f4a4a87a177cfd73",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/operate.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4145,
+    "lines": 62,
+    "sha256": "a9d2203acd45ca33a13d5c68b02b23ed512425ac15f0e8438318ed124b43729d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/android.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4093,
+    "lines": 47,
+    "sha256": "058f81f256134841875fd3183e06b37a023de0c877fd2b9eecd97011640791fe",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/tailwind.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4078,
+    "lines": 105,
+    "sha256": "bce2e8ae118f91df3a9790e99273f50942f12d1c345a149d6762c9411e3dfd2c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/animate-text.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 4069,
+    "lines": 65,
+    "sha256": "82f0e94d031480d186df792f0e2f8535276d805d699e5c84b9a7b736d107b10a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3980,
+    "lines": 79,
+    "sha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3974,
+    "lines": 79,
+    "sha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3968,
+    "lines": 79,
+    "sha256": "5cb22f90c94261dec97b1989bb6155b4cb7c0d7eabf1eb4e6bf15072289aeab5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/adapt.native.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3910,
+    "lines": 59,
+    "sha256": "6acc0bf221a4ddc6e5c6438348920b2ca2393b29c4314dbde2cdc23f2b1a9639",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/ios.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3812,
+    "lines": 52,
+    "sha256": "40c87038b5f75147a5952a96237acf312a327bf70c1bcd8e0a5f064625ae9668",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/adapters/gsap-timeline-and-labels.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3734,
+    "lines": 97,
+    "sha256": "96aaef95ff4e546dfff9d2090ca07d3d921d99b01348ef4adccae7686a515dca",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/delight.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3716,
+    "lines": 71,
+    "sha256": "098a891028ce59c212b747d3c70468dd750aff7053a703d1336045ed31e0da7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/subagent-dispatch.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3677,
+    "lines": 36,
+    "sha256": "979074196889d149fff53afebd6604258dbab777951f455c9a831ffb8576cab7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/cloudrun.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3583,
+    "lines": 63,
+    "sha256": "87ba98cc0db3721fb09776d44a5c8ef75fd95b6a74cea1376dc028907b98aeba",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/bolder.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3564,
+    "lines": 34,
+    "sha256": "f964506c0fae87b3c2c1db7016ddc9be9ef970bbcf5548d684b997b5d5991586",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/shape.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3547,
+    "lines": 60,
+    "sha256": "a55f016c046cb6a27c55bd7f346375aeb506a755c4fbca19a5f92dbd42309c23",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/sfx.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3503,
+    "lines": 43,
+    "sha256": "1f1cf76ba2ed9a01a18cc85db547a5da7cfe4607b162a75ac9ecdfeceb21f860",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/narration.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3482,
+    "lines": 93,
+    "sha256": "6002bb2a2270149a8955068d5952fc57cd22594649f576b3e8c38057846610b6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/extract.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3433,
+    "lines": 70,
+    "sha256": "31b90048c0b540daec46762a10c2b6b6434737a89af005054d8b848d829d003b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/routing.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3336,
+    "lines": 25,
+    "sha256": "77ae09542fbc10aa4e8b119d6fd19359908a47c13c30068d6a150bfdb50e3e10",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/memory.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3328,
+    "lines": 37,
+    "sha256": "b91127682d96e179bf7bb6592c78905d3d844e277d5fa34f550026dec3b207e3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/degraded/documenter.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3325,
+    "lines": 24,
+    "sha256": "bcc05ea92faebb5c74037a9d4263a5ce9a56f5ab07c8ab3c59ee704d8cade745",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/comparison-split.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3316,
+    "lines": 28,
+    "sha256": "af2af2ddf86aba21ed8b2016b7b1bd4b1ced52b4ac98f17eff487dca1097599a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/video-text-pivot.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3281,
+    "lines": 31,
+    "sha256": "6472224469cfb1801989510bec88a997819fa51cd4a5260bc23eee0fd7f086ed",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F4_v4_인스타.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3208,
+    "lines": 40,
+    "sha256": "4d89b550311cc038f5cfd4fd7dd181af2f95b7528fc8321ec519f8fd5f25528c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F_v3_답장.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3144,
+    "lines": 39,
+    "sha256": "b59ad280f9d40964068965a4453b789e8ca8637f2374a3ea2c03cda8153376b5",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F4_v4_답장.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_K4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3090,
+    "lines": 55,
+    "sha256": "1dc771544c66ded5a3be37bd1299da4b8acf8a25f7eef6c70cdcb30248ecb993",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/audio-reactive.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3062,
+    "lines": 77,
+    "sha256": "ad93a0c588a702203a08ed909842570f010f041500aa33512d2b06f66d450c1c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/blueprints/ticker-takeover.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3052,
+    "lines": 30,
+    "sha256": "58e7a19b1aca8f3a85affbc24005d1b26ffd9b953053166783afa428f524b5d8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/D_v2_답장.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3024,
+    "lines": 38,
+    "sha256": "4d621f9cf17828267ef6445c475650019f10240fb5928053bf118f29d35e91e4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_K4_4.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 3022,
+    "lines": 42,
+    "sha256": "8628e5e1c949b013e4e744195e33240db137435976c5f016e570ae65b95352a0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/D_v2_인스타.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2909,
+    "lines": 39,
+    "sha256": "8187080c83caf28bed80513805c5e5baef715184d167c34b8dcac07b4a82c014",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/full-screen-motion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2906,
+    "lines": 68,
+    "sha256": "4534cc717e94f9b7a83d5b86990d6af16594d18c4b9ddcb97950d919288f3994",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2865,
+    "lines": 22,
+    "sha256": "92ce6a568fb7afc401ef20ac464cb5b1b60f3f8212bb967a205d25e987aaafa6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_K4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2835,
+    "lines": 42,
+    "sha256": "86142c79ed5c92aaba9dc86f3b22a45d306a3ef05dbc01ce1ce227db3097e7bc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v14/낭독대본.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2810,
+    "lines": 76,
+    "sha256": "e3b235697a8ac209c06e65d46cd8c33c08128d6564380828f53aa7224abcf24b",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/C_첫판_인스타.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2804,
+    "lines": 39,
+    "sha256": "baaffd8c628b9f78ecfc3c8b5a988f4799dbe5bd91557c94939c45092c9c92e5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/transcribe.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2783,
+    "lines": 53,
+    "sha256": "e688fcb18ff58a4170f867c7c35bf5dfcfc5fd335d92bdb1a90e9fddcf26854c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/script-format.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2778,
+    "lines": 53,
+    "sha256": "7637028d866d3d4a21d0b7934d6db4f73585a28c28da060d00cecc39c47e2e3d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/doctor-browser.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2725,
+    "lines": 58,
+    "sha256": "7c8ab29ca563b288286fa3f5812e6badf3b36aea3641a0ef0197a1a8afba7527",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/rules/nudge-curve.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2689,
+    "lines": 48,
+    "sha256": "91084469a672c8c979e8f2e2f76f78526fdff8e1d647650a5f4a54e21df1b3ad",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/wiring-blocks.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2641,
+    "lines": 62,
+    "sha256": "397f9ad5a9244d173b97bb5a5dfe76ea3cbccfb8dde16cba8b3dabc6044b011a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/references/minimal-composition.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2507,
+    "lines": 70,
+    "sha256": "0884abd9feeeea48d0de3d517c3d074859b9c322318401a928b9d1f9ee2cf851",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-dissolve.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2462,
+    "lines": 67,
+    "sha256": "47c11ca0a715675c2788aa4a162a652b5dc5f1773b058ea93e9907af56a4eb7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-light.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2376,
+    "lines": 50,
+    "sha256": "53f0422d3f6dd2584a30501f84e4f09c9b515f605d51ed264a2061567dda15db",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_F4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2358,
+    "lines": 33,
+    "sha256": "d0a46d3ff473d04e8fe379a6b2d3b1dc04e216076a6b837a47ad11ece61505ad",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_J4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2333,
+    "lines": 37,
+    "sha256": "59e425f4bfed19674cde512e2916c83650ed217fc277208dc85af10121a7907e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_G4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2306,
+    "lines": 33,
+    "sha256": "6dccc9fe9999c7282407456fd73e857e17ff6d04c322abae9f993985220deae9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/sub-agents/frame-worker.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2304,
+    "lines": 35,
+    "sha256": "cafff87f4f1fa6c5a047d621b591c25b75a3282a5020a96868803094bd084d2e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_G4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2276,
+    "lines": 35,
+    "sha256": "bc0f96bf93e5070dda127739fa7261a30bddd52795f0c9d4b76096f4b49208a0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_F_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2269,
+    "lines": 43,
+    "sha256": "336ffb4e2a2a4596df052ee6d1f0eb0ebc9fd41ea5f0573a4e82ba8b399a417d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_J4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2254,
+    "lines": 34,
+    "sha256": "8116a73c8e0ccac03ab7d9e8887572ac4c2e662c5aa2d036dde4f288d4d4bd02",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_K4_5.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2234,
+    "lines": 33,
+    "sha256": "fd0820c91c263532ee3bf52e0d4727c0e310cf639d0e643f5b9e375eb4bf17af",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_F4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2206,
+    "lines": 34,
+    "sha256": "e4279db66ab45f7a9ae4a6ef1e3b9cff01582df3c6a2ef652ea8efade3717a98",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_D_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2143,
+    "lines": 36,
+    "sha256": "078efd6423f08c98d84f13fce3b7fdbf3ea3dda2c5b2b2a273810bd491b9de9c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_F4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2141,
+    "lines": 31,
+    "sha256": "2c5d73d5dcca1659a1ccf5ab0079e4867e1fe98549a756bfb1ff50272a6aeaa3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/pr-to-video.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2057,
+    "lines": 29,
+    "sha256": "179d31b24940f6ee80d833d03e7b9b4c012cede7cbc07f88b460637239d66a57",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_C_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2046,
+    "lines": 32,
+    "sha256": "0b950d8620af765bfa7aaf8b83ca0f15393e9ca09f82767cbcfd65df20c5f9a7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/README.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2030,
+    "lines": 22,
+    "sha256": "431a3a971e450e1d1c82de83b2e8e31d060de2e1c5a1587307635f4624ae8ad5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/product-launch-video.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 2006,
+    "lines": 14,
+    "sha256": "ed2cba0be42a1e34361f65f7c633110935ef53c47933584e7b9ffc2ff07c366f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/skill-lifecycle.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1901,
+    "lines": 34,
+    "sha256": "74cc697ac9171443043942cd9f61a126bfea1ee984b62f88382e4351d79e23c7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/demo-html-pattern.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1884,
+    "lines": 55,
+    "sha256": "dfc50cd33eff2c2be75437786fc3e851ab0085f7d453fb35b3380ecf9a6e9f04",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-distortion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1803,
+    "lines": 46,
+    "sha256": "7140650692926959bd5459ca5c478a9b4f137cc76fb92b9138e3b0d353677c06",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-blur.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1787,
+    "lines": 52,
+    "sha256": "fd3eef889a517e1dd985ca816f36f1abfb43420a4b664d4fcc453554cdf561f9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/references/audio.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1743,
+    "lines": 20,
+    "sha256": "0077128019f44bb2f86c7fed54180080e97a45455c88c76889e69cf988f45bc7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/wiring-components.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1723,
+    "lines": 40,
+    "sha256": "6c8341c29fdae6de4f9fd1560a668d11cf34731b81fe5a06c9aeb4a000047b2a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_A_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1687,
+    "lines": 34,
+    "sha256": "de32f5ea9d7c9f58de407cff259cba4efc976c19447978425c5162612d50f566",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_A4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1676,
+    "lines": 30,
+    "sha256": "59492587de6a361c0c06200dbe795fa27d7030a1a1b328cc491c18a429a9558d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_A_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1647,
+    "lines": 30,
+    "sha256": "8cf3496db747bfa2594bfdbac8df5b791232e67d673c0f6c96fd8c2fe21121d3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-mechanical.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1613,
+    "lines": 31,
+    "sha256": "4fed48fa659a4b215a996beeea619d244e6c893700178b1f969c17f2ee0a8612",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_K4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1601,
+    "lines": 18,
+    "sha256": "5570305fad4ae4fdffc80e333a650f46eb59f84d43f6e85bfa6db724ae845b86",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_B_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1576,
+    "lines": 26,
+    "sha256": "d749a0ad8fcc82891b933152ac9a9d934c7602885ce9022282f3346f496310a8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/references/install-locations.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1519,
+    "lines": 46,
+    "sha256": "83793e7d6aeea9a751755e4bd23ea48182ff9af082287b98a1192343d2571dd1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_B4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1492,
+    "lines": 28,
+    "sha256": "870cc45addc63eaba6047568d01ed3fa8988649ac6ff7b809aca099386abcc14",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_A4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1480,
+    "lines": 28,
+    "sha256": "d35a685b7d13198e4b5c82e3ec77a1c24afd3c9bc7b86b7ff6804fec196738cc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/examples/add-component.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1473,
+    "lines": 74,
+    "sha256": "d06992d31eec617a91f5c34630c9274c52dd07898bd24f10a869d0d1cab5af29",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_A4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1465,
+    "lines": 28,
+    "sha256": "9d10d6fd95fc63d24286410aac27fcf4c6e427a951381707363778928dfe8166",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_B4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1465,
+    "lines": 25,
+    "sha256": "4f575c301f8606eff8a9928cacb8024f548fc016785fdcdfc8fb8ab248a81ff2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_B_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1459,
+    "lines": 26,
+    "sha256": "93b0e2c22a14a77d6db1898dfe3894dc7f2f1b27103b304e327ebc753275dafa",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-cover.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1448,
+    "lines": 44,
+    "sha256": "ba4e5926791c9e6a0a069e20afc91324acb018903f43b4b3f2866d9654f5b7eb",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/design-adherence.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1423,
+    "lines": 20,
+    "sha256": "ff21deb80143c8e09092958a6f40bc712173a43d23c5ea88742566573a2a7241",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/general-video.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1374,
+    "lines": 13,
+    "sha256": "dda0e1559cb57e5ba8e589f0fa6eedadbef78030bd2dccb4172b3b496da9fef1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/references/data-in-motion.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1274,
+    "lines": 20,
+    "sha256": "6066c79717156c4a41ef86f28e07c6bd35f18d6830b12893c58523063c788d7d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_C_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1271,
+    "lines": 13,
+    "sha256": "6dbb12d60307f87617502bf3780fca253a48090aec4984ad7cd1e896cb49a1ca",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_B4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1257,
+    "lines": 23,
+    "sha256": "f977d54aa4459a14f107abcbd30b604864463876cb5187a07b2922855a5fbad9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/references/tts-to-captions.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1248,
+    "lines": 27,
+    "sha256": "cfc9b701b372ee95cd73bc97e13a181604089af01738400dead86df9293a8942",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/examples/add-block.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1232,
+    "lines": 52,
+    "sha256": "0e3353755c4ef55e53570d1266a4a43b2c5aef9bbe41276430e38cfa6580b83a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-push.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1195,
+    "lines": 42,
+    "sha256": "d526a9612483472de4d865ae27061c98842a5155973dd0cec37fac4998dc1b97",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/audio/assets/sfx/CREDITS.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1183,
+    "lines": 36,
+    "sha256": "79590c7738b0427b10f362f76b02cfd2643158a40e1d5fd787f9ac6b33bcf4ce",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1160,
+    "lines": 17,
+    "sha256": "1623cd483eb9b5e693864f86e8a7bd18c58e21ef24e0abaa332e13088d7de0c6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/사용성검토_20261006/인물.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1135,
+    "lines": 8,
+    "sha256": "31bb0e5ee3e3e1c56a8d3a0eef861a16193f926ed262dbcf421749e4fe5f8ffc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1135,
+    "lines": 12,
+    "sha256": "52f8b7f607adf036296ef7a1d0c6d6e5b25ab329119664b75b1512afb1e2892f",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_H4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1117,
+    "lines": 18,
+    "sha256": "b37ef2dce24bb29e6f8d9affacba7e8e66e60bff65c0c19d9b0d175411e45c59",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/music-to-video.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1114,
+    "lines": 13,
+    "sha256": "f0b8c86130ea1167f9c3116cae5b3440f86d184c6264cad1cb2dad0675e09dc2",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1101,
+    "lines": 17,
+    "sha256": "fe0261cc88785c8b5e20d2930451b91066984185b8a86189d2a464e84a52e600",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/luts/README.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1087,
+    "lines": 29,
+    "sha256": "c06cbbf2aab80cbf8aa25c83497202a63107a61e083b6c199a89d513e8096a3b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/slideshow.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1081,
+    "lines": 12,
+    "sha256": "8f81d2f8102dd257fd3b7730edbda618c2ec8e0c180e4494e89592aa7cc5cc5b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_G_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1066,
+    "lines": 16,
+    "sha256": "e7348ff66cedac587ae0f564eea2a3bcd6bd51a06228e3a7e31770c56348f8ff",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-radial.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1060,
+    "lines": 38,
+    "sha256": "5d8f20de439e3f2c8d45df11c8acbe31dc1b9342e2d54bbe66b451cf81ca0a1b",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_I4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1039,
+    "lines": 14,
+    "sha256": "fa09456a1066f643b2186ecc17564a3dc764bb4ed851b3600c1462122e983aa9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/faceless-explainer.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1020,
+    "lines": 13,
+    "sha256": "cd76f75e109e11c1bbda483b46791acd98103184a7102eb0365f966abec6b037",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_G4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1006,
+    "lines": 14,
+    "sha256": "06834ea092e46ae29c46120ea7f3cb508d58ee8652c17f4de86a8a718bbd05b6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_E_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 1001,
+    "lines": 17,
+    "sha256": "50138e5f72842bcde04fb21fbd309dc17561bb03d5f9a71e24b20c1e7268c5f1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_F_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 987,
+    "lines": 16,
+    "sha256": "f4fe4f9896549d20e9fe5d002d14a562dcbd7f97c121bcf622ac0e14f16530b6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_E_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 986,
+    "lines": 13,
+    "sha256": "afc7801c61fcc02a4401bf7072fdd0cbd9c69a61bcf74e501513e246273bd85d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_F4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 965,
+    "lines": 13,
+    "sha256": "61cf85d3c3dc6e88580a1129b48cc0907eb82a9cb9bdf7b22f00a03b61174f51",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_G4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 962,
+    "lines": 14,
+    "sha256": "2266febaf350960c16f8764e726b29c3dc1def4a20d40cabc76b3b80cb1fdede",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_G4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 959,
+    "lines": 14,
+    "sha256": "af7dac4ad5e687e6e4e11490bd8de135e48a24a85db14e8ccb533446b64c9eea",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_D_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 937,
+    "lines": 12,
+    "sha256": "c6a4d11551bd0908f23772541e54730f7dd60cdd4a46ae316a639968d6d4cb08",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/references/beats.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 921,
+    "lines": 20,
+    "sha256": "5b90e725a0a676cadfd597524e3abed77e80a5aca03a4d7bee2c3be44e5b85d6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_I4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 903,
+    "lines": 12,
+    "sha256": "ceac42d1e418de6cfde7455a1fa59d0f9ba11603dacdae40471ed55ac109bee5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 898,
+    "lines": 14,
+    "sha256": "06780a25575d6fbf8afce4e6f1d419de25675592dc00ad4d97e50bb7f732d005",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_H4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 895,
+    "lines": 13,
+    "sha256": "0c2a1ab3f15fdacf436ee073cadef6e2e6f8be969396cb443e53940cdaa7c107",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_F_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 892,
+    "lines": 14,
+    "sha256": "a6c4f742010708a5fc2bb1cdfb9f30b5a7c52ecd3844a5d3f532c477607e6802",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_I4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 883,
+    "lines": 12,
+    "sha256": "73f68c210864e67750ba353a978f26e4d54b778c1cc8453f485e89db5e6b8ca8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_H4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 872,
+    "lines": 14,
+    "sha256": "3d3016d8b02b3a979effd2aec061dc087940af2b549523e1ade51387af04841e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/motion-graphics.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 864,
+    "lines": 12,
+    "sha256": "b0388400c4da484ea383c6938df47db7d67d9194aa0ccb3e03c4e53d8691fb7c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_F4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 856,
+    "lines": 13,
+    "sha256": "e76bd4be6c628a36df073d4468ea6b31ddadabded998f64867f97a99a7b993e9",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_F4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 849,
+    "lines": 13,
+    "sha256": "d279dea54525c359ca7f072b7ddfe985fbda7a230ec9f4c2c433a3e99c4146df",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_C_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 847,
+    "lines": 10,
+    "sha256": "f795931c8443e55b64d99c48b2be646e0a6cf188487bc744bb21168e76f3ea59",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-other.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 838,
+    "lines": 26,
+    "sha256": "2156e4fcc3b42cba9e0d9e268944269057fb48ff15fc1983e3ff9386fa2a8cf8",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_G_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 820,
+    "lines": 12,
+    "sha256": "d21a67447cbba0df81657468fe597efc50549ec721a7303b2058ef60dd73bcc5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_C_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 807,
+    "lines": 9,
+    "sha256": "40495cd732ab34147d27849c4ae606363d0dca1f36b560dc3db8c7d24a1f6970",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_D_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 804,
+    "lines": 11,
+    "sha256": "67a64c2ae707547a6f9a2f318fc8bd1d89d6292268e58c065c59c95d91011880",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/talking-head-recut.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 765,
+    "lines": 12,
+    "sha256": "d027e04e427c358ca0182e55b0449c0256ad7828b13b6e760d64a60de01eb0cc",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/embedded-captions.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 739,
+    "lines": 12,
+    "sha256": "4e2f83a54caad625ae0dc4150b619f8b5afd65410965f53f6a40c430253207d1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-scale.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 715,
+    "lines": 25,
+    "sha256": "3c0cb33d6c844a7265379225f3241d8964afcc908ee757a1ebfb1700a5320ea7",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_B4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 674,
+    "lines": 9,
+    "sha256": "ec14db3d06127de6e88eb124c83814de3088dc657b9d08e7ed0be2dc536b02f3",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_B_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 672,
+    "lines": 8,
+    "sha256": "91aba3d8b53de1c4bb88884f21f32201c7e62a9122c8ade321bd5247bfadf92c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v15/.media/index.md",
+    "previousCoverage": "equivalent",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 668,
+    "lines": 8,
+    "sha256": "fd0912983ffe4ef55401ec8e3c43d8b564bacc3b5ce28ec44e00d66dd8233b61",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v16/.media/index.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v17/.media/index.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v18/.media/index.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v7/.media/index.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v8/.media/index.md",
+      "docs/마케팅/synkbrief_회의메모_20260921/video-v9/.media/index.md"
+    ]
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_B4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 650,
+    "lines": 11,
+    "sha256": "1629bf468bb8cd93f3f9d420e3036758888881319604d756085ff1134bf04f1d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_B4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 611,
+    "lines": 9,
+    "sha256": "821544896b231c88ff1094e1b452732d070b939b62e6afc8d2c7082c3564b247",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_B_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 584,
+    "lines": 6,
+    "sha256": "6a78e0e837526adbc82a75fbc6951ea97d9dcfb9039fcabc9e44a6b728db0860",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/route-briefs.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 579,
+    "lines": 12,
+    "sha256": "67f38ec0c8b4e009464657cfd87d886f46b24629fca91571d9efaa1dbe5280d0",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/reference/craft.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 555,
+    "lines": 6,
+    "sha256": "9205e222bc6565b37fb504ceec93233c2d2a456802b69d16e6b1c44723907c4c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/routes/remotion-to-hyperframes.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 545,
+    "lines": 10,
+    "sha256": "86cffe564eb4e92b12375f558aeb5d30e271f97416d3c5f32ee77bcf6b14e35c",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/references/workflow-catalog.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 458,
+    "lines": 11,
+    "sha256": "5f3e684ca26bc811c3c124e39633fbb685a410de1563f989b8a8cadab2680d8a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/monochrome.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 454,
+    "lines": 15,
+    "sha256": "fe8586f6d70707098859063bdef34d68084f02cf7d5aaa436d4c9915a7ae3748",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_A_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 424,
+    "lines": 6,
+    "sha256": "ed7019d9a82dc9618ad7dba0e3b01423db0061362fa718c8307f1848166b7cca",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_A_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 422,
+    "lines": 6,
+    "sha256": "2d0489e1dc5485eb4a71e6c5dffeb25d341b0b29180d538f98712cd6b1be99ff",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-3d.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 421,
+    "lines": 13,
+    "sha256": "e1c3888dd0a2d4b36d25200c1e5ef9038649ae63953865e4b2c4c40fb028d7dd",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/bold-energetic.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 417,
+    "lines": 15,
+    "sha256": "17bc6b7889302151b4e5c84c0c6a33df676647078011d9decb2b68810e3baa7f",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_A4_3.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 416,
+    "lines": 6,
+    "sha256": "b0076329f7785b988eafc6dabcc9750ec27db692a25ec70aa355c1b74017fbb6",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/warm-editorial.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 411,
+    "lines": 15,
+    "sha256": "c467ee3cc0bbf4b2bedccc8106e18293b8a06dbac8f092b10300492da0e0559a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/clean-corporate.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 410,
+    "lines": 15,
+    "sha256": "d0c8c86838abb77985609629afe600d0ca365eccd835820f309959e8a85cba9d",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/자료/B_인스타_흔한프롬프트.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 403,
+    "lines": 8,
+    "sha256": "8e049526aafe86a0f853259462942e02e2bf07db6b4cc9857d131df0e53c289a",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/nature-earth.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 399,
+    "lines": 15,
+    "sha256": "9710549b17487787fef3c7cb459cfd6e4ac28c1593bf471fcf55a3b4e546beed",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_A4_2.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 398,
+    "lines": 6,
+    "sha256": "817ff216719b06c5ebcc613130a8b2b233aea7255a223d36ea041edf06f65c6e",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/자료/B_답장_흔한프롬프트.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 397,
+    "lines": 7,
+    "sha256": "1d5b807b78caaf9fb318ce6b445f26b437096c4dfee9a92168872ace83afee28",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/jewel-rich.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 394,
+    "lines": 15,
+    "sha256": "17c8f7506469f66bca4e27ef78c19f0bcbf250f88fe840e3043816b7041c4fc5",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/pastel-soft.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 392,
+    "lines": 15,
+    "sha256": "ed4e25bb5f4953c002e55a53320249621437e03b5a11d43e3c1bd32c869b6d95",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_A4_1.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 389,
+    "lines": 6,
+    "sha256": "f9b6ad69b0ac29e963ac80ae8c153a0575a7f2b18ca4c103b93c9e410bee7171",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/dark-premium.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 389,
+    "lines": 15,
+    "sha256": "abfecbf7e8dca3b674376590a0467aac3e13b2135022ae4ec519c4b27c2303b1",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/palettes/neon-electric.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 380,
+    "lines": 15,
+    "sha256": "35225bf8d2cd37223e88e0bc59b0a96bc8adeda7225389b3df97b675cfd33dfb",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/transitions/css-grid.md",
+    "previousCoverage": "library",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 370,
+    "lines": 11,
+    "sha256": "c62b17058aa7ba42d34df29436b6b4233e47ff2b72f2c7ce0963c75bdec45144",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_J4_2_첫답.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 120,
+    "lines": 2,
+    "sha256": "5b50af9a009fb5d5d1969fb62fb2b50157aa25420a48a07866a20fb2680d8b55",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_J4_3_첫답.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 108,
+    "lines": 2,
+    "sha256": "e348fa2e335d7fbfedba9eca54e0c4505c63dd05398ea893ffea2c1b6a956dcd",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/S_J4_1_첫답.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 99,
+    "lines": 2,
+    "sha256": "8d57da4654369bd9859ffdfac8c38aa416e32288bb92aa91f8fbdd81949f7eb4",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_1_첫답.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 76,
+    "lines": 2,
+    "sha256": "1eb4d923c7f52a648fc8fb2f1503e4541a4e3bfbe0fd577c836a88b30d075841",
+    "owner": "content",
+    "sameContentPaths": []
+  },
+  {
+    "path": "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_2_첫답.md",
+    "previousCoverage": "retained-evidence",
+    "previousLedger": "semantic-content-pass3.json",
+    "bytes": 72,
+    "lines": 2,
+    "sha256": "672db66c39ef80680a75b60fdd49b2f2837df8bc606898b854aa0406bd647597",
+    "owner": "content",
+    "sameContentPaths": [
+      "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_3_첫답.md"
+    ]
+  }
+]

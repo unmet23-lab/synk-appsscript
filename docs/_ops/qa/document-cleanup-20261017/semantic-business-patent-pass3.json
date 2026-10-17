@@ -1,0 +1,402 @@
+{
+  "date": "2026-10-17",
+  "scope": "특허 폴더의 로컬 사용 계약 및 과거 근거 보존 판정. 법률 재심사 제외.",
+  "files": [
+    {
+      "path": "tools/patent-studio/API.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "본문 전문 확인. 시연과 제품 연결 구분·현행 엔진 귀속·후속 상담 원문을 보존하고, 삭제된 GAS 경로와 이전 노트북 환경은 과거 조사 범위로 구분. 법률·선행기술 최신 재검증 아님.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "edabf81281cae9df22cbd9aa4da29330471e19f85400570cebaf7a0955b48089"
+    },
+    {
+      "path": "tools/patent-studio/INTEGRATION.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전문 확인. 시연과 제품 연결 구분·현행 엔진 귀속·후속 상담 원문을 보존하고, 삭제된 GAS 경로와 이전 노트북 환경은 과거 조사 범위로 구분. 법률·선행기술 최신 재검증 아님.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "e2c739dd5019ce7add2e8a48b02792d9a32d9b0cb38ba32ddf87a62ec27f23c8"
+    },
+    {
+      "path": "tools/patent-studio/PATENT-EVIDENCE.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전문 확인. 시연과 제품 연결 구분·현행 엔진 귀속·후속 상담 원문을 보존하고, 삭제된 GAS 경로와 이전 노트북 환경은 과거 조사 범위로 구분. 법률·선행기술 최신 재검증 아님.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "a1eeca8c17ff7efb546fc48614e0c5c362b1bec9dc9eb373470589d1d3855e14"
+    },
+    {
+      "path": "tools/patent-studio/advance-20260912/REPORT.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7"
+    },
+    {
+      "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991"
+    },
+    {
+      "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a"
+    },
+    {
+      "path": "tools/patent-studio/final-meeting-20260915/README.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "본문 전문 확인. 시연과 제품 연결 구분·현행 엔진 귀속·후속 상담 원문을 보존하고, 삭제된 GAS 경로와 이전 노트북 환경은 과거 조사 범위로 구분. 법률·선행기술 최신 재검증 아님.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "408dae1a67351521d625e80c61af36208b465b87066bde7db029a9c065076508"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/README.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/README.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/README.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337"
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e"
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93"
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/README.md",
+      "coverage": "retained-evidence",
+      "decision": "retained",
+      "reason": "제목·날짜·도입부 및 자료 목적 확인. 서로 다른 선행 대조·청구 초안·독립 반론·실험·독자용 상담 원문이므로 보존. 전체 본문 법률/기술 재심사나 최신 법령 확인은 하지 않음.",
+      "evidence": [
+        "tools/patent-studio/final-meeting-20260915/README.md",
+        "docs/엔진8종_상향설계_v3.md"
+      ],
+      "sha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92"
+    }
+  ]
+}

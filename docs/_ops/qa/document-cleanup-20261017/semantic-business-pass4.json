@@ -1,0 +1,894 @@
+{
+  "date": "2026-10-17",
+  "scope": "historical business, patent and design sources; semantic retention review, not current legal assessment",
+  "files": [
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+      "currentSha256": "748f56f5e28e57aca34aae909faa0ca9229416823855da9930c8d968a93400fb",
+      "reviewedBytes": 5008,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+      "currentSha256": "1158c729f1a27f856a8a0667f4b015e5f81386b17cc26e247bc0d1cd35a807b7",
+      "reviewedBytes": 4852,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/README.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전문 읽음. 당시 독자별 전달·등록 초안·검수 결과와 생성 명령은 고유 재현 근거. 현재 출원·등록 완료로 읽히지 않으며 현행 최종 상담 입구는 별도로 보존되어 있음.",
+      "originalSha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+      "currentSha256": "a89061e00caac55f67f1beefcc52662e228a403d8d11ee7f1b93fcdcef8f9b92",
+      "reviewedBytes": 3035,
+      "readEvidence": "이번 차수 Get-Content 출력 전문, 출력 잘림 없음"
+    },
+    {
+      "path": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+      "coverage": "equivalent",
+      "decision": "retained",
+      "reason": "내부 시범 재현 입력. 3차 전문 검토 SHIFT 원문의 SHA와 동일하여 실제 입력 스냅샷 유지.",
+      "originalSha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+      "currentSha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+      "reviewedBytes": 41550,
+      "evidence": "semantic-business-pass3.json: docs/마케팅/SHIFT.md original SHA 23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/FACT_GATE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "당시 A/B 수정 게이트·반론·검수 SHA와 과장 방지 경계가 고유 근거. 날짜가 명시되어 있으므로 원문 보존.",
+      "originalSha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+      "currentSha256": "dd03b350d6d44c81e12b0751f10bb0ca47c0e2404e70cccc05c2ab57f97d58aa",
+      "reviewedBytes": 5823,
+      "readRanges": [
+        [
+          0,
+          2968
+        ]
+      ],
+      "novelCharacters": 2968,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 41
+    },
+    {
+      "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "방별 수정 이유·생성 이미지 한계·실측 미확인·검수 원문 링크가 고유 근거. 현재 학원 개원/설치 완료와 분리된 날짜 기록 보존.",
+      "originalSha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+      "currentSha256": "e508d56b5a1f06b0e2f2c546215392da8bcf831ccf52fe77c5521dd768d0a6d9",
+      "reviewedBytes": 5082,
+      "readRanges": [
+        [
+          0,
+          2507
+        ]
+      ],
+      "novelCharacters": 2507,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 42
+    },
+    {
+      "path": "docs/_원고/룸조판_1보_실측.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-01 조판 1보 원고이자 생성 입력. 히어로수 거절 경위와 구현 당시 범위·시험 방식 보존. 현행 새 작업 목록으로 사용하지 않도록 역사 입구 점검 대상. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "79ecd8cd2b78401a1a0c25cb562fd452ada957d2d4e4f8e1a809f29ed44ec37b",
+      "currentSha256": "a97fef96f2d7b2da47493ec92ddf782cc2c0045f09ae236436f709186bfdae09",
+      "reviewedBytes": 4300,
+      "readRanges": [
+        [
+          0,
+          2252
+        ]
+      ],
+      "novelCharacters": 2252,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 45,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/review-request/PACKET.template.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "상담용 템플릿 생성 입력. 독립항 삽입 자리·선행 출처·합성 사례·검토 요청이 후속 상담 사실관계의 근거라 보존.",
+      "originalSha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+      "currentSha256": "daa2d54efb7f402d08be31aca3b543657615ac0f8f93c70560310146fdb3af49",
+      "reviewedBytes": 8225,
+      "readRanges": [
+        [
+          0,
+          4141
+        ]
+      ],
+      "novelCharacters": 4141,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 37
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/INVENTOR_REQUIREMENTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "확인일과 직접 읽은 공식 원문 범위·사용자 단독 설계 진술·메일 기술 설명의 확인 한계를 보존. 과거 법률 조사 기록이며 현재 요건/권리 확정으로 승격하지 않음.",
+      "originalSha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+      "currentSha256": "8efad97a2fcf1f22e7123d2ba2bc4ea2efcded8a7b47c1769ed86c4b333aa111",
+      "reviewedBytes": 8240,
+      "readRanges": [
+        [
+          0,
+          4102
+        ]
+      ],
+      "novelCharacters": 4102,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 36
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_SUPPORT_REPAIR.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "P1 문언 보충과 합성 A/B/C의 재현 입력·상태/철회 구분·복수 후보의 실패 한계를 보존. 현재 출원 청구 확정이나 일반 학습 효과로 오인할 표현 없음.",
+      "originalSha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+      "currentSha256": "806cbeee3560b95471bf9b40feab8daed344ae0127a89363e88f58e3535f2600",
+      "reviewedBytes": 8623,
+      "readRanges": [
+        [
+          0,
+          4323
+        ]
+      ],
+      "novelCharacters": 4323,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 35
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P1_COMBINATION_AUDIT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "전체 결합 반론·직접 확인 선행 범위·공유 가중치 경계·후속 보충의 고유 기록. 법률 판단 새 확정 없이 날짜 근거로 보존.",
+      "originalSha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+      "currentSha256": "92d1e3504962f4a0007605f6747a3c425cf2f3450c982c094f631bc81e1abebd",
+      "reviewedBytes": 10421,
+      "readRanges": [
+        [
+          0,
+          5393
+        ]
+      ],
+      "novelCharacters": 5393,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 31
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/README.md",
+      "coverage": "full",
+      "decision": "corrected",
+      "reason": "전체 묶음 입구를 검토. 최종 09.15 미팅본 연결과 과거 보충 자료 구분을 보존하되 첫 교차검수의 미수령 안내는 뒤의 실제 답변 대조와 연결해 날짜 혼동을 정리할 대상. 과거 연구의 적용시점과 현행 입구를 명시하고 최초 패킷의 답변미수령 문구를 실제 후속 답변 대조 기록에 맞췄다.",
+      "originalSha256": "5bf7f63301431c40576b3d6e43f2910b1b2d8155dd0a2b4ec2d13433646ea28a",
+      "currentSha256": "c09b2f864373c9b411ec3fdea3a19b3cb685b2a0fc5c6f3bde7041979dd57e14",
+      "reviewedBytes": 9665,
+      "readRanges": [
+        [
+          0,
+          5222
+        ]
+      ],
+      "novelCharacters": 5222,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 33
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/FIGURES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "생성기 FIGS 데이터에서 나온 도면 설명 입력/출력. 여섯 도면의 기능 범위·기여 갱신·시각 불확실 경계와 당시 QA 결과를 보존.",
+      "originalSha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+      "currentSha256": "7e6a867d4cb680269397f9fc510d9a4654ecbfe5c58044c4dea5aaef5a18678e",
+      "reviewedBytes": 9794,
+      "readRanges": [
+        [
+          0,
+          5246
+        ]
+      ],
+      "novelCharacters": 5246,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 32
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REPORT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "가까운 선행 발견으로 차별점 일부를 철회한 통합 판단과 P1/P2/P3의 구현/미구현·합성/실측 경계가 고유 기록. 실제 상담 의견·출원·등록 완료로 확대하지 않고 생성 원문 유지.",
+      "originalSha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+      "currentSha256": "4241fb3928b22aff6d0d0a1db812725cc1a3f83ac70fd3958603b7b978cf3722",
+      "reviewedBytes": 29467,
+      "readRanges": [
+        [
+          0,
+          14603
+        ]
+      ],
+      "novelCharacters": 14603,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 6
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/ADVERSARIAL_REVIEW.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "명명 반례·재생/재송신 차이·수동 정렬과 실제 행동 경계·판본 SHA가 고유 시험 증거. 원문 보존.",
+      "originalSha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+      "currentSha256": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+      "reviewedBytes": 11209,
+      "readRanges": [
+        [
+          0,
+          6182
+        ]
+      ],
+      "novelCharacters": 6182,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 29
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/LOOM_COMPARISON.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "옛 합성 예비안의 실패 입력·누락/불일치 SHA·기존 출력 확인을 구분한 기록. 최신 장면 생성 규칙이 아닌 09-13 기술 비교 이력으로 보존.",
+      "originalSha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+      "currentSha256": "511d09ec9f16e32f1f89764754e0f48c8d8b04092512870d858839e01ef8c8c9",
+      "reviewedBytes": 12507,
+      "readRanges": [
+        [
+          0,
+          6860
+        ]
+      ],
+      "novelCharacters": 6860,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 28
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/lab/DESIGN.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "기존 실험 어댑터의 실제 입력/출력·fallback·거절·멱등·계산 한도 계약. 재현과 제품 통합 한계 설명에 필요하여 보존.",
+      "originalSha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+      "currentSha256": "ae7481367196fe5171dc9b7d19fdeccaa6436e6c331fb4e98f4e514d3544db5b",
+      "reviewedBytes": 13066,
+      "readRanges": [
+        [
+          0,
+          7539
+        ]
+      ],
+      "novelCharacters": 7539,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 27
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "수집 완결·순번 가설을 주안에 추가하지 않은 결정 근거와 반례 8종 보존. 과거 조사일과 원문 범위가 명시된 설계 이력.",
+      "originalSha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+      "currentSha256": "466918e746f7b8d283e20ff0a7a7c638ddbca90ef534f974ab07fad23ddfdf0e",
+      "reviewedBytes": 13895,
+      "readRanges": [
+        [
+          0,
+          7076
+        ]
+      ],
+      "novelCharacters": 7076,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 26
+    },
+    {
+      "path": "tools/patent-studio/audit-20260912/EVIDENCE_AUDIT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "기존 내보내기 7묶음·38판본·합성 WAV 보존 실측과 planner 귀속 한계가 후속 청구 설명 근거라 보존.",
+      "originalSha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+      "currentSha256": "bd44f23ab01d75ff3faee78423e6628d65f6033754a5c6546dd6cbe74181e991",
+      "reviewedBytes": 14885,
+      "readRanges": [
+        [
+          0,
+          7990
+        ]
+      ],
+      "novelCharacters": 7990,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 25
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/OBSERVATION_SCOPE_INTEGRATION.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "현장 입력/서버 수집의 미구현 연결안과 순번을 주안에 추가하지 않은 결정. 현행 자동 수집 완료로 쓰지 않으며 참조용 설계 보존.",
+      "originalSha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+      "currentSha256": "9d9ae754e3f99416811a40c2c2a1317db7d456418306f38744e31545193686e9",
+      "reviewedBytes": 15942,
+      "readRanges": [
+        [
+          0,
+          8132
+        ]
+      ],
+      "novelCharacters": 8132,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 24
+    },
+    {
+      "path": "tools/patent-studio/advance-20260912/REPORT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "Core 0.5 확장 당시 구현·시험·제약 및 기존 0.4 증거 재현을 설명하는 고유 발전 보고서. 코드 분량을 등록성으로 확대하지 않은 날짜 기록 보존.",
+      "originalSha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+      "currentSha256": "b3535edf483ce65abcb23a14d5d17a76b8620edec41fad776858dfd780d160d7",
+      "reviewedBytes": 16024,
+      "readRanges": [
+        [
+          0,
+          8409
+        ]
+      ],
+      "novelCharacters": 8409,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 23
+    },
+    {
+      "path": "docs/_원고/채널마다_창_2026-09-07.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-07 비확정 마케팅 기획 원고 전문 검토. 주72분·18채널·SHIFT 제작자 브랜딩·전체 펠트 강제·낱말 대체는 현행 기준으로 재사용 불가. 현재 채널 정본 연결과 역사 요약 정리 대상. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "d288171fbbdeffa4f9051ceb60b4ec6d3640229deb1cb4b931e29aa11df61836",
+      "currentSha256": "888afcbc2e908ee6e3d27edb68879d52d3d67bc35709b166b4360d3776a56132",
+      "reviewedBytes": 16196,
+      "readRanges": [
+        [
+          0,
+          8253
+        ]
+      ],
+      "novelCharacters": 8253,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 22,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+      "coverage": "full",
+      "decision": "consolidated",
+      "reason": "09-07/08 본체 채널 제안과 사용자 계정 개설·자산 거절/수정 기록 전문 검토. 승인 이력과 자산은 보존하되 오래된 사업구분·강제말투·계정 조작 절차는 원본 묶음으로 옮기고 현행 입구를 역사 요약으로 정리. 정리 직전 Markdown/HTML 6개 ZIP 원문 지문 검증 후 역사 요약으로 통합, 동일 생성기로 HTML 동기화.",
+      "originalSha256": "9eb38cda794aab3cba915dd2c5e1b9fb28f0c811367e6eb2e1e04b5e4dc4501d",
+      "currentSha256": "cba58956fccf30a57294047941e287acdee8e08cd8d4c669bf6bf250259ddba7",
+      "reviewedBytes": 19476,
+      "readRanges": [
+        [
+          0,
+          10379
+        ]
+      ],
+      "novelCharacters": 10379,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 15,
+      "archive": "docs/_원고/기록_202609_기획과조판.zip",
+      "archiveManifest": "docs/_원고/기록_202609_기획과조판.json"
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/ACTION_INTEGRATION.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "Studio/Talk 생산자와 소비자의 과거 코드 위치·미구현 연결·개발 착수 아님을 명시한 설계 근거. 당시 스냅샷으로 보존.",
+      "originalSha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+      "currentSha256": "3d2bf8e5fe7543625aab12815c2a87938175d867ca8acdcd935e6c46e3b86bc3",
+      "reviewedBytes": 17112,
+      "readRanges": [
+        [
+          0,
+          8833
+        ]
+      ],
+      "novelCharacters": 8833,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 21
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/SECOND_REVIEW.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "실제 수신 답변의 잘못된 주장과 합성 재현 E1-E5를 대조한 고유 기록. 2차 심문 요청문은 과거 선택 절차이며 현재 외부 전송 지시로 적용하지 않도록 묶음 입구에서 구분.",
+      "originalSha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+      "currentSha256": "0aa3e86cbe4e23a7d21077f6fbf557b8864d8be274e3d59a6bc4bf47c90fd123",
+      "reviewedBytes": 17344,
+      "readRanges": [
+        [
+          0,
+          9141
+        ]
+      ],
+      "novelCharacters": 9141,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 20
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/B_ALTERNATIVE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "대표 8컷의 합성 결함·교정 코드·선행 대조·불리한 결과를 담은 예비 기술 연구. 09-13 당시 승인 범위이며 현재 장면 생성 방식을 대신하지 않도록 묶음 입구에 역사 범위 연결.",
+      "originalSha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+      "currentSha256": "6494d1d98dfda71602e9fcaf2b5dbb70aea539bd3a934f23d753298c6ad9e0ac",
+      "reviewedBytes": 17419,
+      "readRanges": [
+        [
+          0,
+          8937
+        ]
+      ],
+      "novelCharacters": 8937,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 19
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "근접 음성 정정 선행 발견으로 철회한 차별점과 동족/법적 상태 미확인 범위가 중요한 조사 이력. 원문 보존.",
+      "originalSha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+      "currentSha256": "6190f7fb609eb7f6135baa2a93baf691da4fc6c39a46fd6729eb980b8227c337",
+      "reviewedBytes": 18227,
+      "readRanges": [
+        [
+          0,
+          9335
+        ]
+      ],
+      "novelCharacters": 9335,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 17
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_PRIOR_ART.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "교육용 POMDP·행동 영향 관련 기존 연구로 P3의 일반 차별점 주장을 보류한 조사 이력. 출처·읽은 범위·추론·미확인을 구분하므로 보존.",
+      "originalSha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+      "currentSha256": "0f8afb8240ab6e35a05ee8f7469ec9918101dba897b032119d41326ffd095abb",
+      "reviewedBytes": 18487,
+      "readRanges": [
+        [
+          0,
+          9811
+        ]
+      ],
+      "novelCharacters": 9811,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 16
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/REQUIREMENTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "09-13 공식 요건 조사와 명세서/보정/상담 준비의 날짜 근거 보존. 현재 법률 자문이나 사건별 기한 확정으로 사용하지 않음. 출력 잘린 첫 부분은 0..3000 추가 전독으로 보완.",
+      "originalSha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+      "currentSha256": "47725bb3a9fbbf74dde9555ea5a0930d50633f6119ab60e9c83684d6c1a667eb",
+      "reviewedBytes": 20113,
+      "readRanges": [
+        [
+          0,
+          11051
+        ],
+        [
+          0,
+          3000
+        ]
+      ],
+      "novelCharacters": 11051,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 14
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/decision/P3_DECISIVE_CASES.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "P3 사례 1은 기존 실행, 2·3은 미실행 기대 명세라는 경계와 개발 보류 조건을 보존. 제품 필요와 특허 차별화의 구분이 고유 근거.",
+      "originalSha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+      "currentSha256": "69c3aab80421ac944e8254fb2f98062e71fad803bdaec455dd1d84cd6ba007d4",
+      "reviewedBytes": 22102,
+      "readRanges": [
+        [
+          0,
+          8500
+        ],
+        [
+          8500,
+          11949
+        ]
+      ],
+      "novelCharacters": 11949,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 12
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_데스크톱반영전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "10월 2일 이전 승인·반려·배포·로컬 검증 및 당시 미완료를 끝까지 읽었다. 현재 사업/역할/말투 지침으로 재사용하지 않는 raw 복구 원본이며 시간순 승인 근거가 고유하므로 원문 보존. 현재 작업 목록은 현행 트랙과 정본을 따른다.",
+      "originalSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+      "currentSha256": "5e85dfaa86eb0b955244ab276cc5474e63f9c131f31fdd494c50e38a436c7d67",
+      "reviewedBytes": 367054,
+      "readRanges": [
+        [
+          0,
+          8000
+        ],
+        [
+          8000,
+          24000
+        ],
+        [
+          24000,
+          40000
+        ],
+        [
+          40000,
+          56000
+        ],
+        [
+          56000,
+          72000
+        ],
+        [
+          72000,
+          88000
+        ],
+        [
+          88000,
+          104000
+        ],
+        [
+          104000,
+          120000
+        ],
+        [
+          120000,
+          136000
+        ],
+        [
+          136000,
+          152000
+        ],
+        [
+          152000,
+          168000
+        ],
+        [
+          168000,
+          184000
+        ],
+        [
+          184000,
+          190520
+        ]
+      ],
+      "novelCharacters": 190520,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 0
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/트랙_저녁반영전.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "222개 동일 문단은 전문 검토한 데스크톱 반영 전 원본과 SHA로 대조하고, 나머지 11개 문단 13,617자를 모두 읽었다. 배포 전후·흰띠 수정·소스/ZIP 차이 근거를 가진 시점별 복구 원본이므로 보존하며 현재 운영 지시로 쓰지 않는다.",
+      "originalSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+      "currentSha256": "793a41ceb330e024c1edf47a03f3dc3208fe75e8ba71174045ee165fbb70f813",
+      "reviewedBytes": 358920,
+      "readRanges": [
+        [
+          0,
+          13617
+        ]
+      ],
+      "novelCharacters": 13617,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 1
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/model-review-20260914/PACKET.template.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "09월 14일 생성용 PACKET 템플릿 전문 검토. {{P1_CLAIMS}} 등 삽입 토큰, 질문·독립항 대조·합성/실측 한계·미구현 롤백 및 LOOM 원본 부재 설명은 생성물 재현에 필요하므로 보존. 모델 교차심문은 이력상의 특정 검토 절차이며 현재 전체 작업 의무가 아님을 상위 README에서 명시한다.",
+      "originalSha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+      "currentSha256": "711396d0ddcbc62d8fba0cb7865cc65e0f782965994cb7aa28a937b47088c60e",
+      "reviewedBytes": 50165,
+      "readRanges": [
+        [
+          0,
+          13000
+        ],
+        [
+          13000,
+          25704
+        ]
+      ],
+      "novelCharacters": 25704,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 2
+    },
+    {
+      "path": "tools/patent-studio/registration-target-20260912/PATENT_DRAFT.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "생성 원문 DRAFT.json에 대응하는 09월12일 명세서/청구8항 전문. 현재 등록공보 아님·합성시험·조건부 기여 유지·시간불명·새시도 비소급 한계가 명확하며 고유 상담/생성 증거이므로 원문 보존. 과거 코드SHA/시점 표기는 현행 기능 확인으로 승격하지 않는다.",
+      "originalSha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+      "currentSha256": "71984a01cf3e7a8322f326f5c2551773d83cb762f8f39914492764a1f85beb93",
+      "reviewedBytes": 35773,
+      "readRanges": [
+        [
+          0,
+          12000
+        ],
+        [
+          12000,
+          18801
+        ]
+      ],
+      "novelCharacters": 18801,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 4
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/targeted/CLAIM_DECISIONS.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "P1/P2 구분·청구번호별 문안·종속한정·실시예·상담 빈칸을 전문 검토. 서로 다른 문제의 대안이고 등록확률/완성 코드/긴 한정을 등록성 증거로 만들지 않는 검토 기록이며 두 PACKET 생성의 원천으로 보존. 현행 사업지침이나 출원 실행 승인을 뜻하지 않는다.",
+      "originalSha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+      "currentSha256": "129f7c6da7a50fab526e23a58150049b27daf07734bc3063b82f366bfec02294",
+      "reviewedBytes": 33753,
+      "readRanges": [
+        [
+          0,
+          10000
+        ],
+        [
+          10000,
+          17259
+        ]
+      ],
+      "novelCharacters": 17259,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 5
+    },
+    {
+      "path": "tools/patent-studio/final-meeting-20260915/GUIDE.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "09월15일 최종 상담 시연용 GUIDE 전문과 asset/페이지/삽입토큰 검토. 실제 합성 시연과 남은 시각 기본값 결함·운영 미통합을 구분한 사용자용 원고여서 보존. 제품 지침·출원 확정·실시간 실행 보장이 아니라 생성 근거/시점 기록이다.",
+      "originalSha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+      "currentSha256": "8c382e4a5da2b52ad98f8462f469deeca122c09882a80a94b4007c94532d232a",
+      "reviewedBytes": 27051,
+      "readRanges": [
+        [
+          0,
+          15167
+        ]
+      ],
+      "novelCharacters": 15167,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 7
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/GUIDE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "09월14일 15쪽 설명서 생성 원문 전체 검토. 다음날 최종본과 비슷해도 원래 발표문/관측범위 및 보충예제·다운로드 미검사 상태가 달라 보존한다. 4318 당시 실행 안내는 상위 README의 09월15일 전용 실행기 연결을 우선하며 원본을 현행시점으로 고치지 않는다.",
+      "originalSha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+      "currentSha256": "a27506168997833f41233b86f530209ebd4b5a05cb1c8d8a4016e3d695330305",
+      "reviewedBytes": 25405,
+      "readRanges": [
+        [
+          0,
+          14161
+        ]
+      ],
+      "novelCharacters": 14161,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 9
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/A_CORE.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "A안 전체 독해. 기존기술9쌍동일 출력과 법적진보성 구분·구현없는 계약확장·후보비용상한·반례를 고유 기술판단 근거로 보존한다. 09월13일 제안/조사이며 현재 제품 완성이나 개발 실행 지시로 재사용하지 않는다.",
+      "originalSha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+      "currentSha256": "f05090d51bed014fed5de04b15f7b9116dae9d59ee376c4e2710dfd952b25eff",
+      "reviewedBytes": 24307,
+      "readRanges": [
+        [
+          0,
+          12237
+        ]
+      ],
+      "novelCharacters": 12237,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 10
+    },
+    {
+      "path": "tools/patent-studio/grant-path-20260913/meeting-pair-20260914/ATTORNEY.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "변리사용 ATTORNEY 생성원고 전문 검토. 09월14일 코드/미수정결함/합성시험/권리관계/대안범위를 명시하고 청구원문 토큰을 유지한다. 후속최종본과 전달대상·기술설명이 달라 역사자료 및 재현원천으로 보존한다.",
+      "originalSha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+      "currentSha256": "982ba7e6d28b427c23c13e867713ebe482870711cede5fc37977d8f937a3101d",
+      "reviewedBytes": 21619,
+      "readRanges": [
+        [
+          0,
+          12061
+        ]
+      ],
+      "novelCharacters": 12061,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 13
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/desktop/0.4.0묶기전/README.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "현행 전문 검토 원문과 동일한 48문단은 SHA 대조, 다른 17문단 전체 읽음. 0.3.0 설치본/0.4.0 묶기전 시점의 제품목록·검사수·정식SSO 미완료를 담은 복구원본으로 보존. 현행desktop 및PATH 상태를 덮어쓰는 지침이 아니다.",
+      "originalSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+      "currentSha256": "6b9ed33b1e9c60785e74ccec864a43714f1e77e4e7662d768973f591b017022b",
+      "reviewedBytes": 25882,
+      "readRanges": [
+        [
+          0,
+          4128
+        ]
+      ],
+      "novelCharacters": 4128,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 8
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README_저녁추가전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "흰띠 제거 직후 저녁 추가 전 기술/승인/검사 원문 전문. 구형 마스코트 붙이기·전면펠트/모델가격 지침은 현재 디자인에 적용하지 않으며 실패재현과 승인인용·29자산검사 근거로만 보존. 현행 DESIGN과 자산 원문이 현재 입구다.",
+      "originalSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+      "currentSha256": "a964748b122b0b766bb6c93a8cd83b4ee979c1539b1e1dba85db4ea5f56be102",
+      "reviewedBytes": 10907,
+      "readRanges": [
+        [
+          0,
+          6311
+        ]
+      ],
+      "novelCharacters": 6311,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 30
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/docs/디자인/펠트부품/README.md",
+      "coverage": "full-diff",
+      "decision": "retained",
+      "reason": "전문 검토한 저녁추가전 판과 동일9문단 해시대조, 고유2,098자 모두 읽음. 흰띠 검출/알파복원 보강 이전 오리기 방식과 마감 기준의 재현 원본으로 보존하며 현행 생성 절차로 재사용하지 않는다.",
+      "originalSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+      "currentSha256": "4efb12cb53bb325e6dfb34c60a539c06f4bb3af4e6cdc7387082f5f0dc7c0092",
+      "reviewedBytes": 8799,
+      "readRanges": [
+        [
+          0,
+          2098
+        ]
+      ],
+      "novelCharacters": 2098,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 34
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/README_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기전 v6 README 전문. 실제 지시듣기/행동 오염으로 언어평가불가·꾸미기재화·로컬기록과 계정연결 차이·ZIP재현범위가 구체적이어서 보존. 이후 공개판/재묶음 상태와 다르므로 현재 업무입구가 아닌 원형보관이다.",
+      "originalSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+      "currentSha256": "b5f1d8edc0bfa5dc6ff9dd9ac4b14e4ca091a18a217751633c53471ebc891670",
+      "reviewedBytes": 23116,
+      "readRanges": [
+        [
+          0,
+          12029
+        ]
+      ],
+      "novelCharacters": 12029,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 11
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/entry-check/qa_재촬영전/RESULTS.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "입장검사 재촬영전 결과 전문. 1·2차 실제 클릭/합성시험/음성자동전사와 사람청취 미확인·Veo 미채택 동작·알파검사 수정내역을 보존한다. 당시 클릭근거·비용오류회복 기록은 고유하고 후속새캡처와 다른 시점이므로 삭제하지 않는다.",
+      "originalSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+      "currentSha256": "23895b9037179a67d82846158710b5e92cdb0967b3deac800a3e168791d1eddf",
+      "reviewedBytes": 17749,
+      "readRanges": [
+        [
+          0,
+          9815
+        ]
+      ],
+      "novelCharacters": 9815,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 18
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SCENERY-GOALS-V6_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+      "currentSha256": "522370f8ff35e882c013d8899651b627f26523d01c5042bea196ff5fe86de4fd",
+      "reviewedBytes": 8028,
+      "readRanges": [
+        [
+          0,
+          4488
+        ]
+      ],
+      "novelCharacters": 4488,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 38
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/story-classroom/qa_재촬영전/RESULTS_흔들림수정전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+      "currentSha256": "e00ec0fbc1e7864d6daebf7f6ccdb2dda4195a41c4582bd4ff6cebb49f2b7355",
+      "reviewedBytes": 6715,
+      "readRanges": [
+        [
+          0,
+          3838
+        ]
+      ],
+      "novelCharacters": 3838,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 39
+    },
+    {
+      "path": "docs/디자인/펠트부품/raw/흰띠정리_20261002_원본/experiences/korean-runner/qa_SHOP-V5_재묶기전.md",
+      "coverage": "full",
+      "decision": "retained",
+      "reason": "재묶기/재촬영 이전 QA 전문. 합성잔액·자동시연/실제입력·음성재생/청취·PCviewport/실기기 한계를 구분한 당시 검증 증거이며 고유 결과와 원본 자산 해시를 보존한다. 현행 버전 또는 재검증 완료로 간주하지 않는다.",
+      "originalSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+      "currentSha256": "3efb232745271e103243349b0798c65e61be91dd6b47d4228b591f94f7cde113",
+      "reviewedBytes": 6124,
+      "readRanges": [
+        [
+          0,
+          3517
+        ]
+      ],
+      "novelCharacters": 3517,
+      "comparisonProof": "docs/_ops/qa/document-cleanup-20261017/business-pass4-checkpoint.json",
+      "comparisonIndex": 40
+    }
+  ]
+}

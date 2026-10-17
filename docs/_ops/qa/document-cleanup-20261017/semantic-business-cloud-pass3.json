@@ -1,0 +1,14 @@
+[
+  {
+    "path": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "677줄 전문을0..118081자로9청크 확인. 날짜별 배포·실패·복원·계정 보존·비용 추정·미검증 이력 보존. 현재 실행 계약의 초기 단일서버/복구 경로 고정/수집 전체 중지/직접 DNS 설명을 현행 HA·독립 스케줄·TCP LB 계약으로 정정. 이미 완료된 고객11판/SNS12판 적용 꾸러미를 과거 재현 자료로 본문 구분. 원격조회·배포·설정변경 없음",
+    "evidence": "파일 전문; server.mjs:124-132,292,640,1663-1673; deploy/ha/failover-policy.mjs 전문; controller.mjs:51-60,315,525-546 부분; node-agent.mjs:159-229 부분; node-host.py:157-175,396-398 부분; deploy/Caddyfile 전문; 문서의10-16최종 HA 기록",
+    "원문해시": "2d2c47bf05f1332a7b78841c2ee20a07a22b65655945b6462992e1b304c6e8ff",
+    "backupSha256": "793ce4e77e00a5c4ea3e6debf2b740e3debf57817b382bdcdd2d06369e20cbf9",
+    "reviewedBytes": 196118,
+    "reviewedLines": 677,
+    "currentSha256": "659edbf4e9654aa51dda8a7e78f4d89a34bad3e3826b965c40d80e78cb5284a6"
+  }
+]

@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-17",
+  "owner": "hyperframes_origin",
+  "scope": "17 repository project AGENTS, 11 bundled skill entries, 1 historical selection record",
+  "originals": "docs/_ops/qa/document-cleanup-20261017/_archive/hyperframes-scope-originals",
+  "changed": 29,
+  "checks": {
+    "projectTechnicalBodiesPreserved": 17,
+    "skillTechnicalBodiesPreserved": 11,
+    "canonicalAnchorLinksVerified": 28,
+    "skillQuickValidatePassed": [
+      "general-video",
+      "hyperframes-cli",
+      "hyperframes-core",
+      "hyperframes-keyframes"
+    ],
+    "otherSkillFrontmatterUnchanged": 7
+  },
+  "files": [
+    {
+      "path": "videos/synk-brand-opening/AGENTS.md",
+      "originalSha256": "34dc3d79c48285350161f77c36f2531989b1f09199da6afe13b0fe5017ea1a97",
+      "currentSha256": "09b5f7c494636fc8e5777046d8c594522d58c68739387a40fb5f4e2506d808e1"
+    },
+    {
+      "path": "docs/디자인/SNS키트/모션견본/AGENTS.md",
+      "originalSha256": "48a410a5d064d295ae146c5d705dd5f46f3b8c626c9eb9350324d4ad64882bc2",
+      "currentSha256": "be84a28e69b2a652aa3f902bb6b9d190c2cbb214b9e4ae772b67cb6935973279"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md",
+      "originalSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac",
+      "currentSha256": "e5f0b13287df356ca9a8429bb542fac3e904ff8bf1aa3ddd90c40bcc5534cad9"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+      "originalSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac",
+      "currentSha256": "e5f0b13287df356ca9a8429bb542fac3e904ff8bf1aa3ddd90c40bcc5534cad9"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/AGENTS.md",
+      "originalSha256": "e05ce12ab4e89ce009e7da737a1002f86c91fc7e447a16adfc9dcf92fcadfe7f",
+      "currentSha256": "72b7eca2da04a96927929ce6e438c70836abba263fd35171d4d0be51c076d3c7"
+    },
+    {
+      "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/AGENTS.md",
+      "originalSha256": "ed0bba2c18638753474d0f8250e949189f8d2d953ca1620bcbaa6b57d1378d2c",
+      "currentSha256": "9859689288fc6f6d4dbbaaeba3a61cdeaff3ca63764bce3ca16e15a3ad8cd41b"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+      "originalSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac",
+      "currentSha256": "e5f0b13287df356ca9a8429bb542fac3e904ff8bf1aa3ddd90c40bcc5534cad9"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/AGENTS.md",
+      "originalSha256": "ff34b6727711348029259699059f0b760769cb08614ccb6a2bf8e1e8a841dd0f",
+      "currentSha256": "0dd6d4147c4db4eb0b720cc60faed68040c88de6a1bfac0c59a1d9df5128fcc7"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+      "originalSha256": "f7a0080841453e56d3434bf72ca7de78c1f6cb13b3d469566695d0f53b9e1aac",
+      "currentSha256": "e5f0b13287df356ca9a8429bb542fac3e904ff8bf1aa3ddd90c40bcc5534cad9"
+    },
+    {
+      "path": "docs/마케팅/synkbrief-ai-angles-20260927/AGENTS.md",
+      "originalSha256": "5cb22f90c94261dec97b1989bb6155b4cb7c0d7eabf1eb4e6bf15072289aeab5",
+      "currentSha256": "34465e39bcb76d3fd4688a38673eae9f791c1298a56025fbd77ae96a52c52c45"
+    },
+    {
+      "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+      "originalSha256": "993bb193d185656b9aff2606c6143734ef5910e38a6d58dacf6fa82af4bbc82d",
+      "currentSha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/general-video/SKILL.md",
+      "originalSha256": "f5e9a96bc580d11c2c61ebe09e45e469c375296178c9535318ab2b276c6cb8f7",
+      "currentSha256": "3e894cfc58a177fe296441bb974745bdaed6c84f13bc9ceffb6cbcf85e98b7ea"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes/SKILL.md",
+      "originalSha256": "6107715951e73a8478a2ba85891145d884ad3b47cc42767ccf8888b1267053e2",
+      "currentSha256": "b1f1bf8215e4d8740908aeaef3bf281cd6937c17c3d0a0d65999641f77446250"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-animation/SKILL.md",
+      "originalSha256": "9f2ad441358aa9568d697f219b6fd738baea14c17fbe29d06c9f381518d92f04",
+      "currentSha256": "2d95e5a000ffd22c0b24eee9f6ad358e95d445f6f6da032c0b5607b4948e2623"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-audio/SKILL.md",
+      "originalSha256": "304e7af1ff22b149b7f99f77d06615ee23d304bf2d307405a2ff2622ffa882a5",
+      "currentSha256": "c912d584179619aa69d3e8a797dc22cadb076c9243d24aa1e6c308caa408720d"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-cli/SKILL.md",
+      "originalSha256": "2826432f24da764835bcf813b798390e89bef696e8e13e0a5123165f03a842cd",
+      "currentSha256": "6e24714204d0ec0e75ac9b228d14871d626fe6822c7e51d3f00afb0483b71423"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-core/SKILL.md",
+      "originalSha256": "15722973ba59ccb3f2648431fca27757841a7646d146731d999c2ce4f6873061",
+      "currentSha256": "06a3ea9bba0a3f699116b9fc05285928974a45902e5f807e1e174f089f797040"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-creative/SKILL.md",
+      "originalSha256": "2bcc83221d07c17f11914e52a57abf7670f5a839227870bd6c0e231a81a87675",
+      "currentSha256": "7c693f859778048a4dad66350e8e9824ff990ab0c6692b4e43a4d70286adbadd"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-keyframes/SKILL.md",
+      "originalSha256": "bf1c44010e4f1bd2e5df75c57abcd765eaa635d4ee8b39b41ef6707f130d73de",
+      "currentSha256": "92ca79ee5f941bd96d1e71c45ca06b61f8af84f22390715bc0e6f1879f2b1750"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/hyperframes-registry/SKILL.md",
+      "originalSha256": "d7e87c8d9a4cb3fc6806e898fec2cb6eda3a87a54ea42d2d583231fb46f1cc4a",
+      "currentSha256": "921f04b04c032dfd4285b5880114536352fd26ee5d5d6dd396cf22d3383bb322"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/impeccable/SKILL.md",
+      "originalSha256": "94872175cefd6cf88daa3711432dce896b82befd0f626eb17eb81e6dfacbe609",
+      "currentSha256": "0d1696d157b3df87d53140c1b14907caa60bc567289b6c5e1399ab9ff3e3b0af"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/.agents/skills/media-use/SKILL.md",
+      "originalSha256": "7f2aec19581b0c885e974d4b3684ac542ce271083f610fa33b15e44d6c07c9d2",
+      "currentSha256": "82de52f22cd99fa583620e9abc852c81d3e2ba5bf4210b1938d31e0f0fa79440"
+    },
+    {
+      "path": "docs/마케팅/synkbrief_회의메모_20260921/디자인_영상도구_조사_20260922.md",
+      "originalSha256": "c913bdf69196578acfa49b4b7a10e323871b1d7f005e0c7d1054e4258943d3dd",
+      "currentSha256": "6a28e8687248c591dfad28d2944ae4ea828754ec0c8c62285db06e3e28bf5520"
+    }
+  ]
+}

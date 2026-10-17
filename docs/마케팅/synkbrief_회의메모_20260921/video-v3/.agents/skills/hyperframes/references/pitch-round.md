@@ -1,5 +1,7 @@
 # Pitch round — the intent layer's divergent step
 
+> 기존 영상에 동봉된 공급자 참고다. 현재 SYNK 정본·권한·승인·스타일의 적용 범위는 [이 폴더 안내](../SKILL.md)를 따른다. 이 원문이 별도 실행 권한이나 추가 승인 절차를 만들지 않는다.
+
 Everything else in the intent layer converges: recommended options, receipts, one question per field. This step diverges. An unformed request has nothing to converge on — "make us a video about the launch" answers no creative field, and asking `message` as a form question hands the user the very blank they came to have filled. So before the form, pitch: five concepts, sampled wide, offered once.
 
 ## When it runs

@@ -1,0 +1,10 @@
+{
+  "queueDocs": 23,
+  "extraCanonical": 1,
+  "ledgerEntries": 24,
+  "modifiedSourceFiles": 16,
+  "backupMissing": [],
+  "backupShaMismatch": [],
+  "diffCheckExit": 0,
+  "diffCheckOutput": "warning: in the working copy of 'docs/BM_목록.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/SYNK_철학.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/_원고/본체SYNK_자리_2026-09-07.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/_원고/채널마다_창_2026-09-07.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/개인정보처리방침_초안_v1.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/개인정보처리방침_초안_v2.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/급수진단_설계_v1.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/사업발전_정본.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/앱이용약관_초안_v1.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/유지비_BM/법인설립_비용_20261001.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/지분설계_헌장.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/철학_적용기준.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/커리큘럼_정본_v1.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/함께한날_설계_v1.md', LF will be replaced by CRLF the next time Git touches it\n"
+}

@@ -1,0 +1,472 @@
+[
+  {
+    "path": "docs/출석체크인_설계_v1.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "삭제된 GAS 시트·SMS 실행 지시를 제거하고 실제 출석/학습·보호자 권한·현장 검증 설계를 보존",
+    "evidence": "오프라인 운영기준 2026-10-02; BM 목록 숙제 포인트 보류; 옛시스템 정리"
+  },
+  {
+    "path": "docs/포인트경제_재설계_v1.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "보류된 숙제 포인트와 종료된 리그·상점 복원 명세를 담당 원문 입구로 통합; 과잠·장학 약속과 비용 원칙 보존",
+    "evidence": "BM 목록 2026-09-20; 오프라인 운영기준 2026-10-02"
+  },
+  {
+    "path": "docs/궤적_원장기록_실행지.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "옛 GAS 자동 원장·주간 배치를 현행 기록 원칙으로 통합; trail-life-runtime 이후 개발 본문 보존",
+    "evidence": "옛시스템 정리; atlas/trail-life.js; atlas/trail.js"
+  },
+  {
+    "path": "docs/학생일기_설계.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "무기한 원음·언어 전환=결손·음성 낱말 카드 상충 수정; 내부 확정과 미게시 법률 초안·실제 구현 상태 구분",
+    "evidence": "docs/_ops/결정.md 2026-09-19 일반 학습자 원음 30일 및 첫 녹음/월별 1개 예외; 2026-10-04 엔진 개선 동의 원음 30일 확정; 개인정보 v2 미게시"
+  },
+  {
+    "path": "docs/시즌회고_설계.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "종료된 GAS 편지·온라인1기·시트 이중관리 수정; 회고/장학/원답 이력 보존",
+    "evidence": "오프라인 운영기준; 개원전판매 종료; 옛시스템 정리"
+  },
+  {
+    "path": "docs/교실수집_목표왕복_설계_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "목표 확인·실제 결과의 연결 설계와 현재 소비 코드가 있어 보존",
+    "evidence": "SYNK-talk/lib/목표확인.js; src/목표카드.js"
+  },
+  {
+    "path": "docs/반편성_정본_v2.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "90분·실제 인원별 조 편성·공개 일정 미정이 현행 운영기준과 일치",
+    "evidence": "오프라인 운영기준 2026-10-02"
+  },
+  {
+    "path": "docs/1기_차시대응표_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "종료 상품의 이력 입구로 정리되어 현재 제공량과 구분됨",
+    "evidence": "개원전판매; 현행 FAQ"
+  },
+  {
+    "path": "docs/1기_제안문안_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "온라인1기 판매 종료와 기존 발급 조건 보존이 분리됨",
+    "evidence": "개원전판매; 현행 FAQ"
+  },
+  {
+    "path": "docs/개원전판매_설계_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "취소된 온라인 상품과 개원 조건을 구분하는 짧은 입구",
+    "evidence": "오프라인 운영기준"
+  },
+  {
+    "path": "docs/파일럿_체험2주_설계_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "날짜·가격 미확정과 실제 체험 전제 조건을 구분",
+    "evidence": "오프라인 운영기준; 현행 FAQ"
+  },
+  {
+    "path": "docs/약관_처리방침_확인목록_20261003.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "v2 승인 범위와 미게시/법률 확인을 구분; 계약 문구 변경 없음",
+    "evidence": "개인정보 v1/v2; 결정 2026-10-04"
+  },
+  {
+    "path": "docs/비전_정본.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "개인화 회사·브랜드별 현행 방향과 운영 상태가 구분됨",
+    "evidence": "사업발전; 마케팅 정본; 결정 2026-10-02/06"
+  },
+  {
+    "path": "docs/마케팅_정본.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "SHIFT 집중·PULSE 병행·PATH 확장·LAB 역할이 최신 결정과 일치",
+    "evidence": "비전; 결정 2026-10-02/06"
+  },
+  {
+    "path": "docs/조직계보_정본_v1.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "브랜드 담당과 실제 권리 분리; SHIFT 포괄 판매/검정 지시와 상표 위험 감소 단정 정정",
+    "evidence": "가져가는것; 마케팅 정본; 상표 출원준비"
+  },
+  {
+    "path": "docs/포토부스_설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "대표 월1회·친구 미차감과 현장 구현/검증 미완료가 구분됨",
+    "evidence": "오프라인 운영기준; 플랫폼 명칭 결정"
+  },
+  {
+    "path": "docs/온라인학습자_20개국_확장방향_20260920.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "순차 출시 금지 문장을 10-03 채택 순서로 수정; 현행 WORLD 미술·AI 역할 원문 연결",
+    "evidence": "결정 2026-10-03; 출시나라; AI운영원칙; WORLD 공통 미술 2026-10-09"
+  },
+  {
+    "path": "docs/출시나라_지원언어_후보표_20261003.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "채택된 12+7 공개 순서를 정리하고 이전 예산 선택지/번역 준비 완료 오독 제거",
+    "evidence": "결정 2026-10-03/04/05; BM 목록; AI 효율화"
+  },
+  {
+    "path": "docs/제품방향.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "현재 사업/앱/운영 범위·기존 약속·출시 검증 경계 확인",
+    "evidence": "비전; 사업발전; 오프라인 운영기준"
+  },
+  {
+    "path": "docs/자주묻는질문_정본.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "가격·일정 미정과 12개월 이후 첫 TOPIK4급 미도달 6개월 지원을 유지",
+    "evidence": "오프라인 운영기준; 수강약관"
+  },
+  {
+    "path": "docs/오프라인_공간설계/오프라인_운영기준_20261002.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "현행 시간표·공간·혜택·판매 종료·GAS 종료 범위 확인",
+    "evidence": "제품방향; FAQ"
+  },
+  {
+    "path": "docs/SHIFT/설계_v1.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "전문 전독 후 현행 사업 입구로 통합; PATH 보류/자격 즉시 실행/옛 GAS·정산·일정·말투 지시 제거, 장기 연구 원문 보존",
+    "evidence": "SHIFT 사업BM 2026-10-06; 제품방향; 조직계보; 옛시스템 정리"
+  },
+  {
+    "path": "docs/SHIFT/내부시범_20261007/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "고정 입력 AI 시범과 사람/고객 성과 미측정을 정확히 구분",
+    "evidence": "시범 결과/검증 파일; SHIFT BM"
+  },
+  {
+    "path": "docs/SHIFT/실증_20261007/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "빈 측정 도구와 실제 고객·성과의 구분 및 계산 의미 보존",
+    "evidence": "SHIFT BM; 실증 도구/QA"
+  },
+  {
+    "path": "docs/SHIFT/네이버_스타일/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "개별 채널의 자산 적용/가독성 기준이며 회사 말투 규칙이 아님",
+    "evidence": "네이버 스킨 생성기; DESIGN"
+  },
+  {
+    "path": "docs/SHIFT/VR직업체험_설계_v1.md",
+    "coverage": "targeted",
+    "decision": "corrected",
+    "reason": "현재 10월 연구·구현 기록을 보존하고 8~9월 자격/폰 우선/삭제된 폼 실행 명세를 보존 연구로 통합",
+    "evidence": "PATH README; SHIFT 사업BM; 옛시스템 정리",
+    "remaining_review": "현행부 일부 중복 출력 누락 구간의 연속 전독을 아직 보완하지 않아 full로 세지 않음"
+  },
+  {
+    "path": "docs/SYNK_철학.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "핵심 목적·대상·증거·약속 경계를 대조; 1차의 온라인1기 정정 보존",
+    "evidence": "비전; 제품방향; 오프라인 운영기준",
+    "remaining_review": "전체 세부 본문 재전독 남음"
+  },
+  {
+    "path": "docs/철학_적용기준.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "온라인1기 종료/6개월 지원/데이터 처리 핵심 범위 대조",
+    "evidence": "오프라인 운영기준; 개인정보 v1/v2",
+    "remaining_review": "나머지 상세 적용표 재전독 남음"
+  },
+  {
+    "path": "docs/BM_목록.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "현재 AI 시험한도·튜터OFF·숙제포인트 보류·TOWN 조건을 대조",
+    "evidence": "결정 2026-10-04/05; AI 효율화",
+    "remaining_review": "전체 BM별 구식 손익표의 중복/보존 판단은 남음"
+  },
+  {
+    "path": "docs/개인정보처리방침_초안_v2.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "미게시 상태/10-04 승인 범위/녹음30일·예외·학원계정·미구현 경계 확인; 법률문구 변경 없음",
+    "evidence": "약관 확인목록; 결정 2026-10-04",
+    "remaining_review": "전체 법률 조문·수탁자·국외 이전표 재검토 남음"
+  },
+  {
+    "path": "docs/사업발전_정본.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "최신 브랜드별 사업 범위·기존 약속·경영원칙을 대조",
+    "evidence": "비전; 제품방향; 마케팅 정본",
+    "remaining_review": "장기 확장 세부 전독 남음"
+  },
+  {
+    "path": "docs/수강약관_초안_v1.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 대조; 현행 LAB 범위와 승인 혜택·미확정 계약/게시 상태가 일치, 법률 문구 변경 없음",
+    "evidence": "오프라인 운영기준; FAQ; 약관 확인목록"
+  },
+  {
+    "path": "docs/상표_출원준비_20261003.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "10-05 결정과 비용 문장 완전 중복 제거; WORLD 보류·35류 작성/제출/납부 구분; 조사는 당시 기록으로 표시",
+    "evidence": "결정 2026-10-05; 트랙 법인·권리·약관"
+  },
+  {
+    "path": "docs/유지비_BM/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "10-06 전달본 최신 표현을 이력으로 정리; 포인트 보류와 승인 복지를 구분",
+    "evidence": "10-07 SHIFT 보완본; BM 목록; 오프라인 운영기준"
+  },
+  {
+    "path": "docs/유지비_BM/온라인_강의_촬영_설계_20261001.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "4교실 촬영·디지털 원본·장비 후보·동의·노동과 주말 녹화상품 종료가 일치",
+    "evidence": "공간 통합 설계; 오프라인 운영기준; 제품방향"
+  },
+  {
+    "path": "docs/유지비_BM/바탕화면_정리_20261005/README.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "10-06 자료를 최신본이라던 문장을 10-07 개정과 정렬; 제작 이력 보존",
+    "evidence": "10-07 출력 README; 유지비BM README"
+  },
+  {
+    "path": "docs/유지비_BM/바탕화면_정리_20261005/v2/output-20261007/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "현행 SHIFT 범위와 미확정 가격/효과·산출물 검증 범위를 구분",
+    "evidence": "SHIFT BM; 통합계산 README"
+  },
+  {
+    "path": "docs/유지비_BM/통합계산_20261007/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "신규3단위와 과거8단위를 분리; 미측정을0으로 처리하지 않고 가격/고객 실적 미확정을 유지",
+    "evidence": "SHIFT BM; 유지비BM README"
+  },
+  {
+    "path": "docs/오프라인_공간설계/소방과_필수설비_점검_20261001.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "이전81평6안/76명 비교를 현재A+B 공간의 소방설계로 오독하지 않게 본문 범위를 정정; 법규·안전판정 새로 만들지 않음",
+    "evidence": "공간·촬영 통합설계 2026-10-02"
+  },
+  {
+    "path": "docs/오프라인_공간설계/평면도_20260929/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "현행A+B모듈과 이전6안·미선정/미검증 범위가 구분됨",
+    "evidence": "공간·촬영 통합설계; 운영기준"
+  },
+  {
+    "path": "docs/오프라인_공간설계/평면도_20260929/공간과_촬영_통합설계.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "전체 본문 대조; 현행90분/25명/32세트 전환·무료자습·4교실 촬영·미확정면적/가격과 일치",
+    "evidence": "오프라인 운영기준; 포토부스; 촬영설계"
+  },
+  {
+    "path": "docs/오프라인_공간설계/입체개념_20260929/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "이전6안 모형·표시 검증과 현재 가변공간·실측의 차이를 본문에 명시; 고유 자산/검증 이력 보존",
+    "evidence": "평면 README; 공간·촬영 통합설계"
+  },
+  {
+    "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/README.md",
+    "coverage": "full",
+    "decision": "retained",
+    "reason": "마감 시안/좌표/실제 운영 경계와 이전 형상 보존 상태 확인; 생성 자산은 당시 이력",
+    "evidence": "공간 통합설계; DESIGN; 포토부스"
+  },
+  {
+    "path": "docs/오프라인_공간설계/인테리어_컨셉_20260929/마감점검_20260930.md",
+    "coverage": "historical",
+    "decision": "retained",
+    "reason": "전체 본문 읽음;9월30일5안 시각 검증의 고정 기록이며 현재 시공 지시가 아님",
+    "evidence": "컨셉 README의 현재/이전 범위"
+  },
+  {
+    "path": "docs/_원고/룸조판_1보_실측.md",
+    "coverage": "historical",
+    "decision": "retained",
+    "reason": "전체 원고 읽음;9월1일 지면 생성 원본과 당시 도구 실측 기록을 보존, 현행 공통 작업 절차로 승격하지 않음",
+    "evidence": "Loom 담당 원문; 원고 frontmatter 및 출력 이력"
+  },
+  {
+    "path": "docs/숙제서클_설계.md",
+    "coverage": "full",
+    "decision": "consolidated",
+    "reason": "현행 90분 수업의 그룹 30분 안에서 고유 활동 설계를 재사용하고 옛 GAS 출력/포인트/첫20분 의무·말투 제약 제거",
+    "evidence": "오프라인 운영기준 2026-10-02; BM 목록 숙제 포인트 보류; AI 운영원칙; 원문 백업"
+  },
+  {
+    "path": "docs/커리큘럼_정본_v1.md",
+    "coverage": "targeted",
+    "decision": "corrected",
+    "reason": "현재 수업 구조·평가/보상 절 대조. 자동 포인트 지급·C0 보상 연결과 리셋되지 않는 게임 포인트를 현행 확정으로 쓴 문장 정정",
+    "evidence": "BM 목록 숙제 포인트 보류; 포인트경제 재설계; 오프라인 운영기준",
+    "remaining_review": "단원별 학습 목표·급수 매핑·외부 교육 연구 전문은 이번에 전독하지 않음. 첫머리/구조/평가·보상 항목/§4·§7 중심 검토"
+  },
+  {
+    "path": "docs/유지비_BM/회사전체_권리등록_출시_제작비_20261001.md",
+    "coverage": "targeted",
+    "decision": "corrected",
+    "reason": "옛 WORLD/PULSE 동시 출원 지출 순서를 10-05 범위와 분리하고 몽골 실제 후속은 트랙으로 연결; SHIFT/PATH 역할 현행화; 기존 금액은 10-01 시나리오로 보존",
+    "evidence": "결정 2026-10-05 SYNK35 우선·WORLD 보류; 상표 출원 준비; 현재 트랙; 마케팅 정본",
+    "remaining_review": "1~36·50~121·142~167·282~끝 검토. 콘텐츠 권리·배급/플랫폼/구독 가격과 개별 법률·세금 산식은 재검증하지 않음"
+  },
+  {
+    "path": "docs/PATH_개인화여행_설계.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "본문의 v4 미배포·운영 계정 미완료 상태를 담당 제품 원문과 10-09 공개 증거에 맞춤; 48조건·제휴/수익/실제 여행 미검증 경계 보존",
+    "evidence": "experiences/path-travel/README.md; qa/production-20261009/README.md; 마케팅 정본"
+  },
+  {
+    "path": "docs/영업_명단.md",
+    "coverage": "full",
+    "decision": "corrected",
+    "reason": "실제 영업 행 없는 빈 대장임 확인. SHIFT 한 업무 도입·운영, PATH 정착·여행, PULSE 의뢰 제작을 현행 범위로 정정",
+    "evidence": "마케팅 정본 2026-10-05~06; 조직계보. 개인 연락처/계정 정보 출력·변경 없음"
+  },
+  {
+    "path": "docs/지분설계_헌장.md",
+    "coverage": "targeted",
+    "decision": "corrected",
+    "reason": "8/15 사용자 채택 조항을 보존하고 설계와 실제 법인/납입/계약 상태를 분리. 근거 없는 입금 추정과 현재 교육기업 소개만 정정",
+    "evidence": "제품방향; 마케팅 정본 2026-10-02; 트랙 법인·권리 진행; 원문 사용자 확정",
+    "remaining_review": "첫머리·§0·§1·§4~6·§10~11 대조. 사용자 픽/계약 조항·법률 및 세무 판단 전문은 재심사하지 않음"
+  },
+  {
+    "path": "docs/오프라인_공간설계/방별_인테리어_디자인_20260929.md",
+    "coverage": "targeted",
+    "decision": "corrected",
+    "reason": "현재 A+B와 미선정 공간 상태·학생/직원 동선·실물 인수·예산 절 대조. 벽 카드의 실제 위치를 옛6안 좌표로 고정한 문장 정정; 없는 화장실 PNG 4링크를 남은 SVG 비교 자료 및 미확인 시안 상태로 정정",
+    "evidence": "오프라인 운영기준; 같은 문서 서두; 공간과 촬영 통합설계",
+    "remaining_review": "첫머리·목차·§16~17·§19~25·소방 절 검토. §2~15/§18의 방별 재료·치수와 말미 환기·향 상세 전문은 재검증하지 않음"
+  },
+  {
+    "path": "docs/가져가는것_설계_v1.md",
+    "coverage": "targeted",
+    "decision": "reviewed_shared_edit",
+    "reason": "개인 기록·원천/순간수집·전달·과거 구현·인쇄경로·도구 절을 대조하고 남은 현재형 옛 구현 설명을 root에 전달; 동시 편집 보존",
+    "evidence": "옛시스템 정리; 실제 tools/증서조판.js 의존성; root의 현행화",
+    "remaining_review": "§7~9 및 §11의 규격·문안·색 상세는 이번 재검토에서 전독하지 않음"
+  },
+  {
+    "path": "docs/개인정보처리방침_초안_v1.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "게시 중인 v1과 미게시 v2/내부 확정을 분리해 보존. 공개 법률 본문 임의 변경 없음",
+    "evidence": "문서 지도; 문서 첫머리 공개상태; 약관 확인목록",
+    "remaining_review": "첫머리 약45줄과 공개/개정 상태 대조. 법률 본문 전체를 새로 검토하거나 법적 적합성을 판단하지 않음"
+  },
+  {
+    "path": "docs/급수진단_설계_v1.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "고유 진단 문항·분기·보정 설계를 보존. 첫머리의 종료된 GAS 구현 설명과 현행 자료 구분 확인",
+    "evidence": "옛시스템 정리; 문서 이력 표시",
+    "remaining_review": "첫머리 50줄 중심 검토. 600여 줄의 문항·분기·분석·보정과 나머지 옛 실행명세는 이번에 전독하지 않음"
+  },
+  {
+    "path": "docs/앱이용약관_초안_v1.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "미게시 초안·내부 선택 확정과 전문 승인/법무/게시를 구분한 상태 확인",
+    "evidence": "약관 확인목록; 문서 첫머리",
+    "remaining_review": "첫머리와 §1~6 확인. 후반 계약·면책·국외 운영 조항은 새 법률 검토하지 않음"
+  },
+  {
+    "path": "docs/철학_실물현황.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "10-17 현행 범위와 이전 현황 기록이 구분되는 첫머리 확인; 진행 중 타 작업 변경 보존",
+    "evidence": "문서 현재 상태 절; 제품방향",
+    "remaining_review": "최신 첫머리 약25줄만 대조. 각 제품 구현 증거와 과거 현황 표 전독/실행 검증은 하지 않음"
+  },
+  {
+    "path": "docs/함께한날_설계_v1.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "8/26 채택된 7단계 폐지·성장 증거 설계의 고유 근거 보존. 현재 앱·GAS 배선과 동일하다고 판단하지 않음",
+    "evidence": "문서 8/26 사용자 확정; 옛시스템 정리",
+    "remaining_review": "서두·§0 초반 약70줄만 읽음. 650여 줄 전체 성장 산식·이력·옛 엔진 배선 대조는 남음"
+  },
+  {
+    "path": "docs/SHIFT/내부시범_20261007/input/canonical.md",
+    "coverage": "historical",
+    "decision": "retained",
+    "reason": "내부시범의 고정 입력 스냅샷이며 현행 사업 원문 사본으로 갱신하지 않음",
+    "evidence": "내부시범 README; 입력 첫머리의 10-06 사업 범위",
+    "remaining_review": "표제·처음16줄·절 구조만 대조. 입력 전문/상대 링크는 현행 문서처럼 수정하지 않음"
+  },
+  {
+    "path": "docs/오프라인_공간설계/SYNK_LAB_사업계획_오프라인_검수_20261002.md",
+    "coverage": "historical",
+    "decision": "retained",
+    "reason": "조치 전 검수 이력과 미완료 실제 운영을 분리한 보존 자료. 옛 지적을 새 약속으로 승격하지 않음",
+    "evidence": "오프라인 운영기준; 문서 이력 표기",
+    "remaining_review": "처음16줄·목차·§이미 있는 준비~다음 작업 검토. 20개 지적의 원문별 재현은 이번 범위 아님"
+  },
+  {
+    "path": "docs/유지비_BM/법인설립_비용_20261001.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "날짜 있는 비용 가정·납입 자본과 비용·법인 선택 미확정 구분 확인. 계약/조세 문구와 숫자 임의 변경 없음",
+    "evidence": "문서 10-01 산정 기준; 현재 트랙의 법인 준비",
+    "remaining_review": "첫머리·절 구조·현재/확정/실행 상태 관련 문장만 검토. 수수료·세무·외국인 투자 조건 재조사 없음"
+  },
+  {
+    "path": "docs/유지비_BM/학원_개원_예산과_준비기간_20261001.md",
+    "coverage": "targeted",
+    "decision": "retained",
+    "reason": "현재 A+B와 이전81평·14주 조건부 비용 모델이 구분됨. 실제 공간·견적 미확정과 복지 약속 보존",
+    "evidence": "오프라인 운영기준; 문서 10-02 정정",
+    "remaining_review": "첫머리·절 구조·현행 조건/실행 상태 문장만 대조. XLSX 개별 산식과 전 비용 전문 재검증 없음"
+  },
+  {
+    "path": "docs/_원고/본체SYNK_자리_2026-09-07.md",
+    "coverage": "historical",
+    "decision": "retained_pending_source_pair",
+    "reason": "9/7~8 당시 계정·브랜드 구상 생성 원고. 현재 네 브랜드와 충돌하는 현행 표현을 root에 전달; 생성 HTML과 함께 다룰 대상",
+    "evidence": "frontmatter 내놔; 마케팅 정본; 해당 HTML",
+    "remaining_review": "frontmatter·첫절·목차 확인. 상세 원고 전독/HTML 재생성은 미수행"
+  },
+  {
+    "path": "docs/_원고/채널마다_창_2026-09-07.md",
+    "coverage": "historical",
+    "decision": "retained",
+    "reason": "9/7 미확정 채널 구상과 생성 HTML의 원고로 보존. 현재 제작 양식·채널 계획으로 적용하지 않음",
+    "evidence": "frontmatter의 1차 구상 확정 아님; 마케팅 제작방식v2",
+    "remaining_review": "frontmatter·첫절·목차 확인. 전체 내용과 파생 HTML 대조/재생성은 미수행"
+  }
+]
