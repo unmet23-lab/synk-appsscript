@@ -56,7 +56,7 @@ test('stale bundle, removed file and approval withdrawal never return an archive
 });
 test('session revoked during a slow native form body is rechecked before any file bytes',async t=>{
   const f=await fixture(t),p=await f.prepared(),body=new URLSearchParams({fingerprint:p.fingerprint,csrfToken:csrf}).toString();
-  let arrived;const gate=new Promise(done=>arrived=done);f.app.server.once('request',()=>queueMicrotask(arrived));
+  let arrived;const gate=new Promise(done=>arrived=done);f.app.server.once('request',()=>setImmediate(arrived));
   let req;const pending=new Promise((resolve,reject)=>{req=request(f.base+f.path,{method:'POST',headers:f.headers('owner','POST',{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)})},res=>{let text='';res.on('data',chunk=>text+=chunk);res.on('end',()=>resolve({status:res.statusCode,text}));});req.on('error',reject);});
   req.write(body.slice(0,10));await gate;f.app.store.revokeUser(f.users.owner.id);req.end(body.slice(10));const result=await pending;assert.equal(result.status,401);assert.doesNotMatch(result.text,/synthetic final video bytes/);
 });
