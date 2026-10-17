@@ -266,6 +266,7 @@ dialog.lab-dialog .fine{margin:0}
   .now{left:12px;top:12px;max-width:calc(45% - 24px);display:grid;gap:4px;padding:9px 12px}
   .game .tip{left:22.5%;top:58px;width:calc(45% - 20px);font-size:13px}
   .count{left:72.5%;width:62px;height:64px;margin:-32px 0 0 -31px}
+  .game .pop{margin-left:45%}   /* 판정 글자(딱!·좋아요): 무대 캔버스가 45% 오른쪽에 있어 그 자리로(judgeAt은 캔버스 좌표) */
   .count b{font-size:30px}
   #pause-dialog{width:min(680px,calc(100% - 24px));max-height:calc(100dvh - 16px);padding:10px 16px 12px;overflow:auto}
   #pause-dialog>.kicker{display:none}

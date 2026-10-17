@@ -6629,7 +6629,7 @@ var require_engine2 = __commonJS({
         if (!sorted) rows2.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
         const ordered = rows2.map((row) => row.e);
         const excluded = new Set(ordered.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
-        const context2 = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
+        const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
         for (const event of ordered) {
           if (event.type === "context.set") latest[event.field] = event;
           if (event.type === "signal.observed") latestSignal[`${event.kind}:${event.key}`] = event;
@@ -6641,7 +6641,7 @@ var require_engine2 = __commonJS({
             expired.push(field);
             continue;
           }
-          context2[field] = event.value;
+          context[field] = event.value;
           evidence[field] = event.id;
           lines.push({ key: `declared:${field}`, kind: "declared", source: "declared", value: event.value, at: event.at, until: event.until || null, evidence: [event.id], status: "confirmed", usable: true });
         }
@@ -6695,7 +6695,7 @@ var require_engine2 = __commonJS({
           scope: copy3(scope),
           asOf,
           recordedAsOf,
-          context: context2,
+          context,
           evidence,
           expired,
           feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
@@ -6747,7 +6747,7 @@ var require_engine2 = __commonJS({
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
-        let performance2 = false;
+        let performance = false;
         const performanceProof = [];
         const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
         const improved = (leverId, optionId, line) => {
@@ -6766,7 +6766,7 @@ var require_engine2 = __commonJS({
             const result = content ? improved(leverId, option.id, line) : null;
             if (result) {
               weight *= 0.5;
-              performance2 = true;
+              performance = true;
               notes.push("outcome.improved");
               const refs = [...result.evidence, ...line.evidence];
               proof.push(...refs);
@@ -6890,7 +6890,7 @@ var require_engine2 = __commonJS({
           reasons: reasons2,
           evidence: [...new Set(evidence)],
           alternatives: scored.slice(1).map((s) => s.item.id),
-          outcomeBasis: performance2 ? "performance" : recent ? "self_report" : "unobserved",
+          outcomeBasis: performance ? "performance" : recent ? "self_report" : "unobserved",
           arm,
           round,
           seed,
@@ -7052,9 +7052,9 @@ var require_education = __commonJS({
         mastery: null
       };
     }
-    function createPractice({ session: session2, decision, map, task, assess, firstExposure = null }) {
+    function createPractice({ session, decision, map, task, assess, firstExposure = null }) {
       const conceptIds = conceptsFor(map, task);
-      const presentation = session2.practice("presented", {
+      const presentation = session.practice("presented", {
         decisionId: decision.id,
         taskId: task.id,
         taskVersion: task.version,
@@ -7079,7 +7079,7 @@ var require_education = __commonJS({
           if (broken) throw new Error("Core: practice record incomplete");
           const selected = choice === void 0 ? null : choiceRecord(choice);
           const result = diagnose({ map, task, assessment: skipped ? { verdict: "skipped", errorTags: [] } : assess(response) });
-          const event = guarded(() => session2.practice("attempted", {
+          const event = guarded(() => session.practice("attempted", {
             presentationId: presentation.id,
             attemptNo: attempts + 1,
             verdict: result.verdict,
@@ -7097,7 +7097,7 @@ var require_education = __commonJS({
             if (!help || typeof help.id !== "string" || !["cue", "explanation", "answer"].includes(help.level) || typeof help.contentRef !== "string") throw new TypeError("Core: invalid delivered help");
             const key = `${help.id}|${help.level}|${help.contentRef}`;
             if (shown.has(key)) return null;
-            const event = session2.practice("helped", { presentationId: presentation.id, helpId: help.id, level: help.level, contentRef: help.contentRef });
+            const event = session.practice("helped", { presentationId: presentation.id, helpId: help.id, level: help.level, contentRef: help.contentRef });
             shown.add(key);
             if (help.level === "answer" && !met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: null };
             return event;
@@ -9347,7 +9347,7 @@ var require_game_learning = __commonJS({
       const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
       const key = `${KEY}.${learnerKey}`;
       let flowPort = null;
-      let epoch = null, session2, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
+      let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
       const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
       const settled = /* @__PURE__ */ new Set();
       let settledVersion = 0;
@@ -9381,7 +9381,7 @@ var require_game_learning = __commonJS({
         }
         return Atlas.createSession({ scope, events, clock: monotonicClock });
       };
-      const log = () => session2.snapshot ? session2.snapshot() : session2.events();
+      const log = () => session.snapshot ? session.snapshot() : session.events();
       const decode = (raw) => {
         if (raw == null) return null;
         const value = JSON.parse(raw);
@@ -9411,7 +9411,7 @@ var require_game_learning = __commonJS({
       const initial = readStored();
       epoch = initial?.epoch || uid();
       ledger = initial?.ledger || null;
-      session2 = newSession(initial?.events || []);
+      session = newSession(initial?.events || []);
       const settle = (ids, known) => {
         const before = settled.size;
         for (const id of ids) if (known.has(id)) settled.add(id);
@@ -9435,7 +9435,7 @@ var require_game_learning = __commonJS({
         if (stored.epoch !== epoch) {
           epoch = stored.epoch;
           ledger = stored.ledger || null;
-          session2 = newSession(stored.events);
+          session = newSession(stored.events);
           active.clear();
           settled.clear();
           settledVersion += 1;
@@ -9464,7 +9464,7 @@ var require_game_learning = __commonJS({
         if (order2 < 0) ledger = theirs;
         settle([...settled, ...stored.settled || []], known);
         takeDropped(stored.dropped || [], order2 > 0);
-        session2 = newSession(combined);
+        session = newSession(combined);
         for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
       }
       const serialised = /* @__PURE__ */ new WeakMap();
@@ -9478,7 +9478,7 @@ var require_game_learning = __commonJS({
       };
       let body = null;
       const snapshot = (events) => {
-        if (!(body && body.session === session2 && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session: session2, count: 0, last: null, text: "" };
+        if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: "" };
         for (; body.count < events.length; body.count += 1) body.text += (body.count ? "," : "") + entryJson(events[body.count]);
         body.last = body.count ? events[body.count - 1] : null;
         if (ledgerJson?.ledger !== ledger) ledgerJson = { ledger, text: ledger ? `,"ledger":${JSON.stringify(ledger)}` : "" };
@@ -9509,7 +9509,7 @@ var require_game_learning = __commonJS({
         }
         retryFold = null;
         ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
-        session2 = newSession(planned.kept);
+        session = newSession(planned.kept);
         for (const e of planned.folded) {
           if (e.type === "practice.presented") active.delete(e.id);
           settled.delete(e.id);
@@ -9545,7 +9545,7 @@ var require_game_learning = __commonJS({
         }
       }
       if (!initial && readable && storage) persist();
-      const practiceSession = { practice: (...args) => session2.practice(...args) };
+      const practiceSession = { practice: (...args) => session.practice(...args) };
       const VIEW_MS = 6e4;
       let cached = null, met = null;
       function view() {
@@ -9566,7 +9566,7 @@ var require_game_learning = __commonJS({
       }
       function provenance() {
         const events = log();
-        if (!met || met.session !== session2) met = { session: session2, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
+        if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
         for (; met.done < events.length; met.done += 1) {
           const row = met.index.add(events[met.done]);
           if (!row?.measure) continue;
@@ -9620,7 +9620,7 @@ var require_game_learning = __commonJS({
           events() {
             refresh();
             if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
-            return session2.events();
+            return session.events();
           },
           // The kept entries' ids, without copying the entries: a WORLD host compares them around a
           // game call to find what the call added (account/world-learning-host.js).
@@ -9687,7 +9687,7 @@ var require_game_learning = __commonJS({
             }
             if (combined.length === previousLength && !skipped.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0, skipped };
             const imported = newSession(combined);
-            session2 = imported;
+            session = imported;
             if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
             if (!persist("import")) throw Object.assign(new Error("Atlas: imported history could not be saved"), { code: "STORAGE_ERROR" });
             return { added: combined.length - previousLength, skipped };
@@ -9770,9 +9770,9 @@ var require_game_learning = __commonJS({
             target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent }
           };
         },
-        present(item, context2 = {}) {
+        present(item, context = {}) {
           refresh();
-          if (!context2 || typeof context2 !== "object" || Object.keys(context2).some((k) => k !== "flow") || context2.flow != null && (typeof context2.flow !== "object" || Array.isArray(context2.flow))) throw new TypeError("Atlas: invalid presentation context");
+          if (!context || typeof context !== "object" || Object.keys(context).some((k) => k !== "flow") || context.flow != null && (typeof context.flow !== "object" || Array.isArray(context.flow))) throw new TypeError("Atlas: invalid presentation context");
           const node = map.getNode(item?.skillId);
           if (!node || node.domain !== item.modality || !identifier(item.id) || !identifier(item.itemKey) || !identifier(item.familyKey || item.itemKey) || ![1, 2, 3].includes(item.difficulty) || !Learning.RESPONSE_FORMATS.includes(item.responseFormat ?? "unknown")) throw new TypeError("Atlas: invalid measured item");
           const measure = {
@@ -9786,7 +9786,7 @@ var require_game_learning = __commonJS({
           };
           const seen = provenance().index.met(item.itemKey, measure.familyKey);
           const basis = basisOf(measure);
-          const decision = session2.plan(gameId, [{
+          const decision = session.plan(gameId, [{
             id: item.id,
             minutes: 3,
             pace: "standard",
@@ -9798,7 +9798,7 @@ var require_game_learning = __commonJS({
               state: basis.status,
               evidence: basis.evidence
             },
-            ...context2.flow ? { flow: JSON.parse(JSON.stringify(context2.flow)) } : {}
+            ...context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}
           }]);
           const content = item.conceptIds ?? [];
           if (!Array.isArray(content) || content.length > 31 || new Set(content).size !== content.length || content.some((id) => !identifier(id) || !Learning.CONTENT.includes(map.getNode(id)?.kind))) throw new TypeError("Atlas: invalid measured item");
@@ -9825,7 +9825,7 @@ var require_game_learning = __commonJS({
         delivery(pid, { audio }) {
           const p = requireActive(pid);
           p.audio = audio;
-          const result = session2.practice("delivery", { presentationId: pid, audio });
+          const result = session.practice("delivery", { presentationId: pid, audio });
           persist();
           return result;
         },
@@ -9842,7 +9842,7 @@ var require_game_learning = __commonJS({
           const reason = p.measure.confounded ? result.reason || "visual" : p.measure.audioRequired && p.audio !== "completed" ? "audio" : !readable || !writable ? "storage" : result.reason;
           const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === "completed") && readable && writable;
           const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...choice ? { choice } : {} });
-          session2.complete(p.decision);
+          session.complete(p.decision);
           persist();
           const known = provenance(), row = known.index.attempt(attempt.eventId);
           const actual = known.index.exact ? row && !row.omitted ? row : void 0 : view().attempts.find((a) => a.eventId === attempt.eventId);
@@ -9858,13 +9858,13 @@ var require_game_learning = __commonJS({
         },
         exclude(eventId) {
           refresh();
-          const event = session2.exclude(eventId);
+          const event = session.exclude(eventId);
           persist();
           return event;
         },
         events() {
           refresh();
-          return session2.events();
+          return session.events();
         },
         // Before a tab closes or hides: another tab may have written an older history over this
         // one's entries in the meantime (tabs see each other's writes late), so join and write again.
@@ -9880,7 +9880,7 @@ var require_game_learning = __commonJS({
           settled.clear();
           settledVersion += 1;
           takeDropped([], false);
-          session2 = newSession([]);
+          session = newSession([]);
           active.clear();
           readable = true;
           writable = !!storage;
@@ -9980,8 +9980,8 @@ var require_ask = __commonJS({
         }
         return canonical(a) === canonical(b) ? 0 : 1;
       }
-      function decisionValue(evaluate, context2) {
-        const value = evaluate(context2);
+      function decisionValue(evaluate, context) {
+        const value = evaluate(context);
         if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
         const result = (value.utility ?? 0) - (value.loss ?? 0);
         if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
@@ -10015,8 +10015,8 @@ var require_ask = __commonJS({
             outcomes[option.id] = decided;
             impact += chances[index] * difference(current, decided);
             if (valued && chances[index] > 0) {
-              const context2 = { answers: scenario, question: q, option };
-              const gain = decisionValue(evaluate, { ...context2, decision: decided }) - decisionValue(evaluate, { ...context2, decision: current });
+              const context = { answers: scenario, question: q, option };
+              const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
               if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
               expectedGain += chances[index] * gain;
             }
@@ -10143,19 +10143,19 @@ var require_game_browser = __commonJS({
 var choices = (texts) => texts.map((text, index) => ({ id: ["a", "b", "c"][index], text }));
 var scene = (speaker, text) => ({ speaker, text });
 var expression = (id, korean, meaning) => ({ id, korean, meaning });
-var transfer = (prompt, context2, texts, answerId, explanation) => ({
+var transfer = (prompt, context, texts, answerId, explanation) => ({
   prompt,
-  context: context2,
+  context,
   choices: choices(texts),
   answerId,
   explanation
 });
-var question = (id, skillId, expressionId, prompt, context2, texts, answerId, explanation, review) => ({
+var question = (id, skillId, expressionId, prompt, context, texts, answerId, explanation, review) => ({
   id,
   skillId,
   expressionId,
   prompt,
-  context: context2,
+  context,
   choices: choices(texts),
   answerId,
   explanation,
@@ -11384,7 +11384,7 @@ var require_engine = __commonJS2({
         if (!sorted) rows2.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
         const ordered = rows2.map((row) => row.e);
         const excluded = new Set(ordered.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
-        const context2 = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
+        const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
         for (const event of ordered) {
           if (event.type === "context.set") latest[event.field] = event;
           if (event.type === "signal.observed") latestSignal[`${event.kind}:${event.key}`] = event;
@@ -11396,7 +11396,7 @@ var require_engine = __commonJS2({
             expired.push(field);
             continue;
           }
-          context2[field] = event.value;
+          context[field] = event.value;
           evidence[field] = event.id;
           lines.push({ key: `declared:${field}`, kind: "declared", source: "declared", value: event.value, at: event.at, until: event.until || null, evidence: [event.id], status: "confirmed", usable: true });
         }
@@ -11450,7 +11450,7 @@ var require_engine = __commonJS2({
           scope: copy3(scope),
           asOf,
           recordedAsOf,
-          context: context2,
+          context,
           evidence,
           expired,
           feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
@@ -11502,7 +11502,7 @@ var require_engine = __commonJS2({
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
-        let performance2 = false;
+        let performance = false;
         const performanceProof = [];
         const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
         const improved = (leverId, optionId, line) => {
@@ -11521,7 +11521,7 @@ var require_engine = __commonJS2({
             const result = content ? improved(leverId, option.id, line) : null;
             if (result) {
               weight *= 0.5;
-              performance2 = true;
+              performance = true;
               notes.push("outcome.improved");
               const refs = [...result.evidence, ...line.evidence];
               proof.push(...refs);
@@ -11645,7 +11645,7 @@ var require_engine = __commonJS2({
           reasons: reasons2,
           evidence: [...new Set(evidence)],
           alternatives: scored.slice(1).map((s) => s.item.id),
-          outcomeBasis: performance2 ? "performance" : recent ? "self_report" : "unobserved",
+          outcomeBasis: performance ? "performance" : recent ? "self_report" : "unobserved",
           arm,
           round,
           seed,
@@ -12221,7 +12221,7 @@ var require_personalization = __commonJS2({
         }
         return profile.consent ? copy3(events.filter((event) => event.scope.workspace === expected.workspace)) : [];
       }
-      function session2(profile, events, at) {
+      function session(profile, events, at) {
         let sequence = events.length;
         const ids = new Set(events.map((event) => event.id));
         return Core.createSession({ scope: coreScope(profile), events, clock: () => at, id: () => {
@@ -12252,7 +12252,7 @@ var require_personalization = __commonJS2({
         const prior = history(profile, scope, events, at);
         checkCandidates(candidates);
         if (!token(experienceId, 120)) fail2("invalid experience id");
-        const values = profile.consent ? copy3(profile.values) : {}, presentation = presentationFor2(values), current = session2(profile, prior, at);
+        const values = profile.consent ? copy3(profile.values) : {}, presentation = presentationFor2(values), current = session(profile, prior, at);
         const settings = {
           goal: declaredGoal(values),
           time: values.minutes == null ? null : values.minutes <= 5 ? "short" : "standard",
@@ -12278,7 +12278,7 @@ var require_personalization = __commonJS2({
         let ask = null;
         if (mixedGoals.length > 1 && eligible.length) {
           const outcomes = new Set(mixedGoals.map((goal) => {
-            const trial = session2(profile, copy3(prior), at);
+            const trial = session(profile, copy3(prior), at);
             apply(trial, { ...settings, goal });
             return trial.plan(experienceId, copy3(eligible)).selected?.id ?? null;
           }));
@@ -12332,7 +12332,7 @@ var require_personalization = __commonJS2({
         const prior = history(profile, scope, events, at);
         if (!profile.consent) fail2("feedback memory requires consent");
         if (scope.domain === "PULSE") fail2("PULSE does not learn a personal behavioral profile");
-        return session2(profile, prior, at);
+        return session(profile, prior, at);
       }
       function recordCompletion(options = {}) {
         const current = feedbackSession(options);
@@ -12455,9 +12455,9 @@ var require_personalization = __commonJS2({
           }
           return { values, provenance, ...expired2.length ? { expired: expired2 } : {} };
         };
-        const baseline = readLayer(ongoing), context2 = readLayer(once.get(encounterId) || []);
-        const effective = { values: { ...baseline.values, ...context2.values }, provenance: { ...baseline.provenance, ...context2.provenance } };
-        const expired = [...baseline.expired || [], ...context2.expired || []];
+        const baseline = readLayer(ongoing), context = readLayer(once.get(encounterId) || []);
+        const effective = { values: { ...baseline.values, ...context.values }, provenance: { ...baseline.provenance, ...context.provenance } };
+        const expired = [...baseline.expired || [], ...context.expired || []];
         if (expired.length) effective.expired = expired;
         const projection = {
           version: PREFERENCE_VERSION,
@@ -12475,7 +12475,7 @@ var require_personalization = __commonJS2({
         return { projection, layers: {
           version: "core-preference-layers-1",
           baseline,
-          context: { encounterId, ...context2, closed: closed.has(encounterId) },
+          context: { encounterId, ...context, closed: closed.has(encounterId) },
           effective: projection
         }, events: unique };
       }
@@ -12635,12 +12635,12 @@ function updateWorldLearningProfile(value, { owner, at, values = {}, consent, ex
   if (!exact(values, persistentFields)) throw TypeError("Session conditions and inferred traits cannot be persistent preferences");
   const update = { values, expectedRevision, ...consent === void 0 ? {} : { consent } };
   const profile = world_learning_profile_core_default.updateProfile(current.profile, update, iso(at));
-  let session2 = profile.consent ? current.today : null;
+  let session = profile.consent ? current.today : null;
   if (today !== void 0) {
     if (today !== null && !profile.consent) throw TypeError("Explicit consent required before remembering session conditions");
-    session2 = today === null ? null : { day: learningProfileDay(at), values: todayValues(today), updatedAt: iso(at) };
+    session = today === null ? null : { day: learningProfileDay(at), values: todayValues(today), updatedAt: iso(at) };
   }
-  return { version: 1, profile, today: session2 };
+  return { version: 1, profile, today: session };
 }
 function clearWorldLearningProfile(value, { owner, at, mode = "delete", expectedRevision } = {}) {
   const current = readWorldLearningProfile(value, { owner, at });
@@ -13302,372 +13302,8 @@ function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = 
   return `<div class="cafe-complete life-result cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}"><section class="life-poster life-complete-poster">${print("cafe")}<small class="life-poster-label">RESULT \xB7 VISIT ${two(visit.number)}</small><strong class="life-poster-word">\uCE74\uD398 \uC8FC\uBB38, \uB05D!</strong><span class="life-poster-sub">${esc(ending.title)} ${esc(ending.text)}</span></section><section class="cafe-receipt" aria-label="\uBC1B\uC740 \uC74C\uB8CC"><p class="life-section-label">GOT</p><div class="cafe-complete-orders ${ending.orders.length === 1 ? "is-single" : ""}">${ending.orders.map((o) => `<div data-cafe-drink="${o.drink}" data-cafe-count="${o.count}" data-cafe-received="true">${cafeDrink(o.drink, o.count)}<strong>${esc(o.label)}</strong><span>${esc(visit.seatStep === 2 ? receipt?.place || o.place : o.place)}</span></div>`).join("")}</div></section>${lesson2 ? `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">LEARNED</p><ul>${lesson2.expressions.map((e) => `<li><strong>${esc(e.korean)}</strong></li>`).join("")}</ul></section>` : ""}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${esc(againText)}</strong><small>\u300C${esc(again.step.name)}\u300D${fixes.length > 1 ? ` \uB4F1 ${fixes.length}\uACF3` : ""}\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB790\uC5B4\uC694. \uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uBCF5\uC2B5\uD574\uC694.</small></section>` : ""}${ending.lines ? `<div class="cafe-ending-lines">${ending.lines.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}</div><div class="life-actions cafe-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${next}</div>`;
 }
 
-// experiences/brand-opening/world-sound.mjs
-var PREF_KEYS = Object.freeze({ sound: "synk.world.sound", storyVoice: "synk.world.story-voice", haptic: "synk.world.haptic", celebrate: "synk.world.celebrate", reactions: "synk.world.reactions" });
-var PREF_LABELS = Object.freeze({
-  sound: { title: "\uD6A8\uACFC\uC74C", note: "\uB2E8\uCD94\xB7\uC815\uB2F5\xB7\uC644\uB8CC\uC758 \uC9E7\uC740 \uC18C\uB9AC\uC608\uC694. \uBAA9\uC18C\uB9AC\uBCF4\uB2E4 \uC791\uAC8C \uC6B8\uB824\uC694." },
-  storyVoice: { title: "\uC774\uC57C\uAE30 \uB9D0\uC18C\uB9AC", note: "\uC774\uC57C\uAE30 \uAE00\uC774 \uB098\uD0C0\uB0A0 \uB54C \uCE5C\uAD6C\uB9C8\uB2E4 \uB2E4\uB978 \uC9E7\uC740 \uB9D0\uC18C\uB9AC\uC640 \uD574\uC124 \uD0C0\uC790 \uC18C\uB9AC\uAC00 \uB098\uC694." },
-  haptic: { title: "\uC9C4\uB3D9", note: "\uB118\uAE30\uAE30\xB7\uC815\uB2F5\xB7\uC644\uB8CC \uB54C \uC544\uC8FC \uC9E7\uAC8C \uD55C \uBC88 \uC6B8\uB824\uC694." },
-  celebrate: { title: "\uBCF4\uC0C1 \uC5F0\uCD9C", note: "\uB05D\uB0AC\uC744 \uB54C \uD55C \uC7A5\uC73C\uB85C \uBCF4\uC5EC \uC8FC\uB294 \uC9E7\uC740 \uCD95\uD558\uC608\uC694. \uAEBC\uB3C4 \uACB0\uACFC\uB294 \uB611\uAC19\uC774 \uBCF4\uC5EC\uC694." },
-  reactions: { title: "\uCE5C\uAD6C\uB4E4\uC758 \uBC18\uC751", note: "\uC815\uB2F5\xB7\uC624\uB2F5\uC5D0 \uCE5C\uAD6C\uB4E4\uC774 \uC790\uC138\uB97C \uD55C \uBC88 \uBC14\uAFD4\uC694. \uB044\uBA74 \uAC00\uB9CC\uD788 \uC788\uC5B4\uC694." }
-});
-var DEFAULTS = { sound: true, storyVoice: true, haptic: true, celebrate: true, reactions: true };
-function getPref(name) {
-  if (!(name in DEFAULTS)) return true;
-  try {
-    const raw = localStorage.getItem(PREF_KEYS[name]);
-    if (raw === "true") return true;
-    if (raw === "false") return false;
-  } catch {
-  }
-  return DEFAULTS[name];
-}
-var noiseBuffers = /* @__PURE__ */ new WeakMap();
-function noise(ctx) {
-  let buffer = noiseBuffers.get(ctx);
-  if (!buffer) {
-    const length = Math.floor(ctx.sampleRate * 0.6);
-    buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
-    noiseBuffers.set(ctx, buffer);
-  }
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  return source;
-}
-var vary = (amount) => 1 + (Math.random() * 2 - 1) * amount;
-function envelope(gain, t, peak, attack, decay) {
-  gain.gain.setValueAtTime(1e-4, t);
-  gain.gain.exponentialRampToValueAtTime(Math.max(peak, 2e-4), t + attack);
-  gain.gain.exponentialRampToValueAtTime(1e-4, t + attack + decay);
-}
-function tone(ctx, dest, { type = "sine", f, f2 = 0, glide = 0.04, t, peak, att = 4e-3, dec = 0.08 }) {
-  const osc = ctx.createOscillator(), gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(f, t);
-  if (f2) osc.frequency.exponentialRampToValueAtTime(f2, t + glide);
-  envelope(gain, t, peak, att, dec);
-  osc.connect(gain);
-  gain.connect(dest);
-  osc.start(t);
-  osc.stop(t + att + dec + 0.03);
-}
-function burst(ctx, dest, { t, peak, att = 1e-3, dec = 0.03, filters = [] }) {
-  const source = noise(ctx), gain = ctx.createGain();
-  let node = source;
-  for (const [type, f, q = 0.7, f2 = 0, dur = 0] of filters) {
-    const filter = ctx.createBiquadFilter();
-    filter.type = type;
-    filter.frequency.setValueAtTime(f, t);
-    if (f2) filter.frequency.exponentialRampToValueAtTime(f2, t + dur);
-    filter.Q.value = q;
-    node.connect(filter);
-    node = filter;
-  }
-  node.connect(gain);
-  gain.connect(dest);
-  envelope(gain, t, peak, att, dec);
-  source.start(t, Math.random() * 0.3);
-  source.stop(t + att + dec + 0.03);
-}
-function marimba(ctx, dest, t, f, v = 1) {
-  tone(ctx, dest, { f, t, peak: 0.1 * v, att: 2e-3, dec: 0.42 });
-  tone(ctx, dest, { f: f * 3.99, t, peak: 0.025 * v, att: 1e-3, dec: 0.06 });
-  burst(ctx, dest, { t, peak: 0.18 * v, att: 8e-4, dec: 7e-3, filters: [["bandpass", 2200, 1]] });
-}
-function bell(ctx, dest, t, f, v = 1) {
-  tone(ctx, dest, { f, t, peak: 0.05 * v, att: 2e-3, dec: 0.7 });
-  tone(ctx, dest, { f: f * 1.0023, t, peak: 0.03 * v, att: 2e-3, dec: 0.6 });
-  tone(ctx, dest, { f: f * 2, t, peak: 0.012 * v, att: 1e-3, dec: 0.18 });
-}
-var FELT = {
-  // 단추: 펠트를 손끝으로 톡
-  tap(ctx, d, t) {
-    burst(ctx, d, { t, peak: 0.55 * vary(0.12), att: 15e-4, dec: 0.038, filters: [["bandpass", 1150 * vary(0.08), 0.9], ["lowpass", 2800]] });
-    tone(ctx, d, { f: 175 * vary(0.05), f2: 118, glide: 0.05, t, peak: 0.085, att: 2e-3, dec: 0.06 });
-  },
-  // 고르기: 펠트 톡 + 작은 나무 한 음
-  select(ctx, d, t) {
-    FELT.tap(ctx, d, t);
-    marimba(ctx, d, t + 0.02, 659.25 * vary(0.02), 0.55);
-  },
-  // 쪽 넘김: 종이가 스치고 탁 내려앉음
-  page(ctx, d, t) {
-    burst(ctx, d, { t, peak: 0.42, att: 0.05, dec: 0.16, filters: [["bandpass", 620 * vary(0.06), 0.8, 2600, 0.17], ["highpass", 300]] });
-    burst(ctx, d, { t: t + 0.14, peak: 0.3, att: 2e-3, dec: 0.05, filters: [["bandpass", 900, 0.9], ["lowpass", 2200]] });
-    tone(ctx, d, { f: 132, f2: 92, glide: 0.07, t: t + 0.14, peak: 0.08, att: 3e-3, dec: 0.07 });
-  },
-  // 이름표·안내판: 나무 패를 손톱으로 딱
-  sign(ctx, d, t) {
-    const f = 1240 * vary(0.03);
-    tone(ctx, d, { f, t, peak: 0.05, att: 1e-3, dec: 0.05 });
-    tone(ctx, d, { f: f * 2.76, t, peak: 0.018, att: 1e-3, dec: 0.018 });
-    burst(ctx, d, { t, peak: 0.32, att: 8e-4, dec: 0.01, filters: [["bandpass", 2600, 1.2]] });
-  },
-  open(ctx, d, t) {
-    burst(ctx, d, { t, peak: 0.5, att: 0.012, dec: 0.1, filters: [["lowpass", 1e3, 0.7, 1800, 0.08]] });
-    tone(ctx, d, { f: 220, f2: 330, glide: 0.09, t, peak: 0.05, att: 0.01, dec: 0.1 });
-  },
-  close(ctx, d, t) {
-    burst(ctx, d, { t, peak: 0.4, att: 6e-3, dec: 0.08, filters: [["lowpass", 1500, 0.7, 700, 0.07]] });
-    tone(ctx, d, { f: 300, f2: 215, glide: 0.08, t, peak: 0.045, att: 6e-3, dec: 0.08 });
-  },
-  // 정답: 나무 실로폰 두 음 · 다시: 부드러운 툭툭 · 끝: 오르골 네 음 · 선물: 실로폰 세 음 위에 오르골
-  ok(ctx, d, t) {
-    marimba(ctx, d, t, 523.25);
-    marimba(ctx, d, t + 0.09, 783.99);
-  },
-  miss(ctx, d, t) {
-    const low = ctx.createBiquadFilter();
-    low.type = "lowpass";
-    low.frequency.value = 900;
-    low.connect(d);
-    tone(ctx, low, { f: 196, f2: 160, glide: 0.1, t, peak: 0.09, att: 4e-3, dec: 0.12 });
-    tone(ctx, low, { f: 175, f2: 140, glide: 0.1, t: t + 0.13, peak: 0.08, att: 4e-3, dec: 0.14 });
-    burst(ctx, low, { t, peak: 0.25, att: 2e-3, dec: 0.04, filters: [["bandpass", 500, 0.8]] });
-  },
-  done(ctx, d, t) {
-    [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(ctx, d, t + i * 0.085, f, i === 3 ? 1.1 : 1));
-  },
-  reward(ctx, d, t) {
-    [523.25, 659.25, 783.99].forEach((f, i) => marimba(ctx, d, t + i * 0.1, f, 0.9));
-    bell(ctx, d, t + 0.3, 1568, 1.2);
-  },
-  // 시계 바늘 한 칸: 아주 작은 나무 딱
-  tick(ctx, d, t) {
-    tone(ctx, d, { f: 1480 * vary(0.02), t, peak: 0.04, att: 1e-3, dec: 0.03 });
-    burst(ctx, d, { t, peak: 0.2, att: 8e-4, dec: 8e-3, filters: [["bandpass", 3e3, 1.2]] });
-  }
-};
-var LEVEL = { tap: 0.25, select: 0.3, page: 0.21, sign: 0.56, open: 0.44, close: 0.5, ok: 0.4, miss: 0.83, done: 0.39, reward: 0.45, tick: 0.32 };
-var context = null;
-var master = null;
-function ensure() {
-  if (context) return context;
-  const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
-  if (!AC) return null;
-  try {
-    context = new AC({ latencyHint: "interactive" });
-  } catch {
-    return null;
-  }
-  master = context.createGain();
-  master.gain.value = 1;
-  master.connect(context.destination);
-  return context;
-}
-function unlock() {
-  const ctx = ensure();
-  if (!ctx || ctx.state === "running") return;
-  try {
-    const source = ctx.createBufferSource();
-    source.buffer = ctx.createBuffer(1, 1, 22050);
-    source.connect(ctx.destination);
-    source.start(0);
-  } catch {
-  }
-  ctx.resume().catch(() => {
-  });
-}
-for (const type of ["pointerdown", "touchend", "click", "keydown"]) {
-  try {
-    addEventListener(type, unlock, { capture: true, passive: true });
-  } catch {
-  }
-}
-var playingMedia = globalThis.__synkPlayingMedia || (globalThis.__synkPlayingMedia = /* @__PURE__ */ new Set());
-function session(type) {
-  try {
-    const value = navigator.audioSession;
-    if (value && value.type !== type) value.type = type;
-  } catch {
-  }
-}
-function guardMedia() {
-  const proto = globalThis.HTMLMediaElement?.prototype;
-  if (!proto || !globalThis.navigator?.audioSession || proto.__synkAudioSession) return;
-  const native = proto.play;
-  Object.defineProperty(proto, "__synkAudioSession", { value: true });
-  proto.play = function(...args) {
-    let done = null;
-    if (!this.muted) {
-      playingMedia.add(this);
-      session("playback");
-      done = () => {
-        for (const type of ["pause", "ended", "error"]) this.removeEventListener(type, done);
-        playingMedia.delete(this);
-      };
-      for (const type of ["pause", "ended", "error"]) this.addEventListener(type, done);
-    }
-    const result = native.apply(this, args);
-    if (done && result?.then) result.then(null, () => {
-      if (this.paused) done();
-    });
-    return result;
-  };
-}
-guardMedia();
-var ambient = () => {
-  if (!playingMedia.size) session("ambient");
-};
-function renderSound(name, ctx, dest, when = 0) {
-  const make = FELT[name];
-  if (!make) return false;
-  const out = ctx.createGain();
-  out.gain.value = LEVEL[name];
-  out.connect(dest);
-  make(ctx, out, when);
-  return true;
-}
-function play(name) {
-  if (!getPref("sound")) return false;
-  if (!FELT[name]) return false;
-  const ctx = ensure();
-  if (!ctx) return false;
-  if (ctx.state === "suspended") {
-    ctx.resume().catch(() => {
-    });
-    if (ctx.state === "suspended") return false;
-  }
-  ambient();
-  return renderSound(name, ctx, master, ctx.currentTime + 5e-3);
-}
-var JUNG_SEMI = [2, 3, 2, 3, 0, 3, 0, 3, -1, 2, 3, -1, -1, -3, 0, 3, -3, -3, -2, -2, 5];
-function hangul(ch) {
-  const code = ch?.codePointAt?.(0);
-  if (!(code >= 44032 && code <= 55203)) return null;
-  const i = code - 44032;
-  return { jung: Math.floor(i % 588 / 28), jong: i % 28 };
-}
-var VOICE = {
-  mongle: { base: 494, type: "sine", from: 0.9, glide: 0.03, att: 4e-3, dec: 0.075, peak: 0.03, lp: 1900, harm: 0.2, jit: 25 },
-  kkamong: { base: 587, type: "triangle", from: 1.12, glide: 0.025, att: 2e-3, dec: 0.05, peak: 0.044, lp: 2600, bp: 1300, jit: 55 },
-  marine: { base: 370, type: "square", from: 1, glide: 0, att: 1e-3, dec: 0.04, peak: 0.045, lp: 1500, step: 1.26, jit: 0 }
-};
-function blip(ctx, dest, t, who, info) {
-  const p = VOICE[who], semi = info.semi + (p.jit ? (Math.random() * 2 - 1) * p.jit / 100 : 0);
-  const f = p.base * Math.pow(2, semi / 12), closed = info.jong > 0, dec = p.dec * (closed ? 0.72 : 1), peak = p.peak * info.loud * (closed ? 0.9 : 1);
-  const low = ctx.createBiquadFilter();
-  low.type = "lowpass";
-  low.frequency.value = p.lp;
-  low.Q.value = 0.5;
-  low.connect(dest);
-  let out = low;
-  if (p.bp) {
-    const bump = ctx.createBiquadFilter();
-    bump.type = "peaking";
-    bump.frequency.value = p.bp;
-    bump.Q.value = 1.4;
-    bump.gain.value = 5;
-    bump.connect(low);
-    out = bump;
-  }
-  if (p.step) {
-    tone(ctx, out, { type: p.type, f, t, peak, att: p.att, dec: dec * 0.5 });
-    tone(ctx, out, { type: p.type, f: f * p.step, t: t + dec * 0.45, peak: peak * 0.8, att: p.att, dec: dec * 0.55 });
-    return;
-  }
-  tone(ctx, out, { type: p.type, f: f * p.from, f2: p.from !== 1 ? f : 0, glide: p.glide, t, peak, att: p.att, dec });
-  if (p.harm) tone(ctx, out, { type: "sine", f: f * 2 * p.from, f2: p.from !== 1 ? f * 2 : 0, glide: p.glide, t, peak: peak * p.harm, att: p.att, dec: dec * 0.6 });
-}
-function keyTick(ctx, dest, t) {
-  burst(ctx, dest, { t, peak: 0.112 * vary(0.15), att: 6e-4, dec: 0.014, filters: [["highpass", 1500, 0.7], ["bandpass", 3300 * vary(0.07), 1.3]] });
-  tone(ctx, dest, { f: 1900 * vary(0.04), t, peak: 5e-3, att: 5e-4, dec: 9e-3 });
-}
-function contour(chars) {
-  const n = chars.length, semi = new Array(n).fill(0), loud = new Array(n).fill(1);
-  let start = 0;
-  for (let k = 0; k < n; k++) {
-    const ch = chars[k];
-    if (!".!?\u2026".includes(ch) && k !== n - 1) continue;
-    const syllables = [];
-    for (let j = start; j <= k; j++) if (hangul(chars[j])) syllables.push(j);
-    const tail = (steps) => syllables.slice(-steps.length).forEach((j, q, list) => {
-      semi[j] += steps[q + steps.length - list.length];
-    });
-    if (ch === "?") tail([2, 4, 7]);
-    else if (ch === "!") {
-      for (const j of syllables) {
-        semi[j] += 1;
-        loud[j] = 1.15;
-      }
-      tail([2]);
-    } else if (ch === ".") tail([-1, -2, -3]);
-    else if (ch === "\u2026") tail([-1, -2]);
-    start = k + 1;
-  }
-  return { semi, loud };
-}
-function storyVoice(who, text, { cps = 23, render = null } = {}) {
-  const chars = Array.from(String(text ?? "")), { semi, loud } = contour(chars), every = Math.max(1, Math.round(cps / 11));
-  let syllables = 0;
-  const draw = (ctx, dest, t, k, h, n) => {
-    if (VOICE[who]) {
-      blip(ctx, dest, t, who, { jong: h.jong, semi: semi[k] + JUNG_SEMI[h.jung], loud: loud[k] });
-      return true;
-    }
-    if (n % every) return false;
-    keyTick(ctx, dest, t);
-    return true;
-  };
-  return { chars, at(k, when = null) {
-    const h = hangul(chars[k]);
-    if (!h) return false;
-    const n = syllables++;
-    if (render) return draw(render.ctx, render.dest, when ?? 0, k, h, n);
-    if (!getPref("sound") || !getPref("storyVoice")) return false;
-    const ctx = context;
-    if (!ctx || ctx.state !== "running") return false;
-    ambient();
-    return draw(ctx, master, ctx.currentTime + 4e-3, k, h, n);
-  } };
-}
-var canVibrate = () => typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
-function canSwitch() {
-  try {
-    return typeof document !== "undefined" && "switch" in HTMLInputElement.prototype && /iPhone/.test(navigator.userAgent || "");
-  } catch {
-    return false;
-  }
-}
-function haptic(kind = "ok") {
-  if (!getPref("haptic")) return false;
-  if (canVibrate()) {
-    const pattern = kind === "done" ? [14, 40, 18] : kind === "miss" ? [22] : kind === "tap" ? [8] : [10];
-    try {
-      return Boolean(navigator.vibrate(pattern));
-    } catch {
-      return false;
-    }
-  }
-  if (!canSwitch()) return false;
-  try {
-    const label = document.createElement("label"), input = document.createElement("input");
-    input.type = "checkbox";
-    input.setAttribute("switch", "");
-    label.setAttribute("aria-hidden", "true");
-    label.style.display = "none";
-    label.append(input);
-    label.addEventListener("click", (event) => event.stopPropagation());
-    document.head.append(label);
-    label.click();
-    label.remove();
-    return true;
-  } catch {
-    return false;
-  }
-}
-function verdict(correct, { react = null } = {}) {
-  play(correct ? "ok" : "miss");
-  haptic(correct ? "ok" : "miss");
-  if (react && getPref("reactions")) {
-    try {
-      react(correct);
-    } catch {
-    }
-  }
-}
+// experiences/synk-world-app/life-ui.mjs
+import { play, haptic, verdict, getPref } from "../world-sound.mjs";
 
 // experiences/brand-opening/story-signs.mjs
 var STORY_SIGNS = {
@@ -13690,6 +13326,7 @@ var STORY_SIGNS = {
 var storySigns = (pack) => STORY_SIGNS[pack] || [];
 
 // experiences/synk-world-app/life-story.mjs
+import { storyVoice } from "../world-sound.mjs";
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
 function storyLineMarkup(text, expressions = []) {
@@ -13946,303 +13583,8 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
   };
 }
 
-// experiences/brand-opening/world-motion.mjs
-var motionOn = () => {
-  if (typeof document === "undefined" || typeof matchMedia !== "function") return false;
-  if (document.documentElement?.dataset?.motion === "reduced") return false;
-  return !matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
-var EASE = "cubic-bezier(.22,.7,.2,1)";
-var animate = (el, frames, opts) => el && typeof el.animate === "function" ? el.animate(frames, opts) : null;
-var spring = (el, frames, opts = {}) => motionOn() ? animate(el, frames, { easing: "cubic-bezier(.25,.9,.3,1)", fill: "backwards", ...opts }) : null;
-function ink(el, { from = 200, delay = 0, duration = 950 } = {}) {
-  if (!el || !motionOn()) return;
-  const weight = getComputedStyle(el).fontWeight;
-  animate(el, [{ fontWeight: from, opacity: 0.2, filter: "blur(3px)" }, { fontWeight: weight, opacity: 1, filter: "blur(0px)" }], { duration, delay, easing: EASE, fill: "backwards" });
-}
-function typeLabel(el, { delay = 0 } = {}) {
-  if (!el || !motionOn() || el.dataset.wTyped) return;
-  el.dataset.wTyped = "1";
-  const nodes = [...el.childNodes].filter((n) => n.nodeType === 3);
-  if (!nodes.length) return;
-  const chars = [];
-  for (const node of nodes) {
-    const run = document.createElement("span");
-    run.className = "w-type-run";
-    for (const ch of node.textContent) {
-      const s = document.createElement("span");
-      s.className = "w-type-c";
-      s.textContent = ch;
-      run.append(s);
-      chars.push(s);
-    }
-    node.replaceWith(run);
-  }
-  const caret = document.createElement("i");
-  caret.className = "w-caret";
-  caret.setAttribute("aria-hidden", "true");
-  el.classList.add("w-typing");
-  let i = 0;
-  const step = () => {
-    if (!el.isConnected) return;
-    if (i < chars.length) {
-      chars[i].classList.add("is-on");
-      chars[i].after(caret);
-      i++;
-      setTimeout(step, 30 + Math.random() * 24);
-    } else setTimeout(() => {
-      caret.remove();
-      el.classList.remove("w-typing");
-    }, 240);
-  };
-  setTimeout(() => {
-    if (!el.isConnected) return;
-    chars[0]?.before(caret);
-    setTimeout(step, 110);
-  }, delay);
-}
-function roll(el, { delay = 0, duration = 1e3 } = {}) {
-  if (!el || !motionOn() || el.dataset.wRolled) return;
-  el.dataset.wRolled = "1";
-  const nodes = [];
-  const walk = (n) => {
-    for (const c of [...n.childNodes]) {
-      if (c.nodeType === 3) nodes.push(c);
-      else if (c.nodeType === 1) walk(c);
-    }
-  };
-  walk(el);
-  let k = 0;
-  for (const node of nodes) {
-    if (!/\d/.test(node.textContent)) continue;
-    const frag = document.createDocumentFragment();
-    for (const ch of node.textContent) {
-      if (!/\d/.test(ch)) {
-        frag.append(ch);
-        continue;
-      }
-      const d = document.createElement("span");
-      d.className = "w-roll";
-      d.style.setProperty("--d", ch);
-      const t = document.createElement("span");
-      t.className = "w-roll-t";
-      t.textContent = ch;
-      const strip = document.createElement("i");
-      strip.setAttribute("aria-hidden", "true");
-      strip.style.setProperty("--rd", `${delay + k * 120}ms`);
-      strip.style.setProperty("--rt", `${duration + k * 160}ms`);
-      d.append(t, strip);
-      frag.append(d);
-      k++;
-    }
-    node.replaceWith(frag);
-  }
-}
-function stamp(host, { size = 104, rot = -12, top = null, right = null, left = null, bottom = null, shake: shake2 = null, delay = 0 } = {}) {
-  if (!host || !motionOn()) return null;
-  const c = document.createElement("canvas");
-  c.className = "w-stamp";
-  c.setAttribute("aria-hidden", "true");
-  const px = Math.round(size * 2);
-  c.width = c.height = px;
-  Object.assign(c.style, { width: `${size}px`, height: `${size}px` });
-  for (const [k, v] of Object.entries({ top, right, left, bottom })) if (v != null) c.style[k] = typeof v === "number" ? `${v}px` : v;
-  const g = c.getContext("2d");
-  if (g) {
-    const r = px / 2, ink2 = "#EC4A3C";
-    g.strokeStyle = ink2;
-    g.fillStyle = ink2;
-    g.lineWidth = px * 0.04;
-    g.beginPath();
-    g.arc(r, r, r * 0.9, 0, Math.PI * 2);
-    g.stroke();
-    g.lineWidth = px * 0.013;
-    g.beginPath();
-    g.arc(r, r, r * 0.76, 0, Math.PI * 2);
-    g.stroke();
-    const font = `800 ${Math.round(px * 0.2)}px 'World SUIT','Apple SD Gothic Neo','Malgun Gothic',sans-serif`;
-    g.font = font;
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    g.fillText("\uCC38", r, r * 0.8);
-    g.font = `800 ${Math.round(px * 0.16)}px 'World SUIT','Apple SD Gothic Neo','Malgun Gothic',sans-serif`;
-    g.fillText("\uC798\uD588\uC5B4\uC694", r, r * 1.27);
-  }
-  if (getComputedStyle(host).position === "static") host.style.position = "relative";
-  host.append(c);
-  c.style.transform = `rotate(${rot}deg)`;
-  animate(c, [{ opacity: 0, transform: `scale(2.3) rotate(${rot - 16}deg)` }, { opacity: 1, transform: `scale(.9) rotate(${rot}deg)`, offset: 0.55 }, { transform: `scale(1.05) rotate(${rot}deg)`, offset: 0.75 }, { transform: `scale(1) rotate(${rot}deg)` }], { duration: 520, delay, easing: "cubic-bezier(.5,0,.3,1)", fill: "backwards" });
-  if (shake2) setTimeout(() => animate(shake2, [{ transform: "none" }, { transform: "translate(2px,1px)" }, { transform: "translate(-2px,-1px)" }, { transform: "none" }], { duration: 150 }), delay + 280);
-  return c;
-}
-function confetti(host, { x = 0.5, y = 0.3, count = 84, delay = 0 } = {}) {
-  if (!host || !motionOn()) return;
-  const box = host.getBoundingClientRect();
-  if (!box.width || !box.height) return;
-  const dpr = Math.min(2, window.devicePixelRatio || 1), W = Math.round(box.width * dpr), H = Math.round(box.height * dpr);
-  const cv = document.createElement("canvas");
-  cv.className = "w-confetti";
-  cv.setAttribute("aria-hidden", "true");
-  cv.width = W;
-  cv.height = H;
-  host.append(cv);
-  const g = cv.getContext("2d");
-  if (!g) {
-    cv.remove();
-    return;
-  }
-  const C = ["#F96859", "#F5C445", "#7DB45A", "#5B86DB", "#F4E9DC", "#8B5E3C", "#FFB4A9"], s = dpr;
-  const ps = Array.from({ length: count }, () => {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.9, v = (450 + Math.random() * 450) * s;
-    return { x: W * x + (Math.random() - 0.5) * 60 * s, y: H * y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, w: (7 + Math.random() * 8) * s, h: (4.5 + Math.random() * 5) * s, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 12, c: C[Math.random() * C.length | 0], round: Math.random() < 0.35, flip: Math.random() * 6.28 };
-  });
-  let t0 = null, last = null;
-  const step = (now) => {
-    if (!cv.isConnected) return;
-    if (t0 === null) {
-      t0 = now;
-      last = now;
-    }
-    const dt = Math.min(0.033, (now - last) / 1e3);
-    last = now;
-    const age = (now - t0) / 1e3;
-    g.clearRect(0, 0, W, H);
-    for (const p of ps) {
-      p.vy += 900 * s * dt;
-      p.vx *= Math.pow(0.18, dt);
-      p.vy *= Math.pow(0.45, dt);
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.r += p.vr * dt;
-      p.flip += dt * 7;
-      g.save();
-      g.globalAlpha = Math.max(0, Math.min(1, (3.2 - age) / 0.8));
-      g.translate(p.x, p.y);
-      g.rotate(p.r);
-      g.scale(1, 0.35 + 0.65 * Math.abs(Math.cos(p.flip)));
-      g.fillStyle = p.c;
-      g.beginPath();
-      if (p.round) g.arc(0, 0, p.w * 0.42, 0, 6.283);
-      else {
-        const w = p.w, h = p.h, q = 2 * s;
-        g.moveTo(-w / 2 + q, -h / 2);
-        g.arcTo(w / 2, -h / 2, w / 2, h / 2, q);
-        g.arcTo(w / 2, h / 2, -w / 2, h / 2, q);
-        g.arcTo(-w / 2, h / 2, -w / 2, -h / 2, q);
-        g.arcTo(-w / 2, -h / 2, w / 2, -h / 2, q);
-      }
-      g.fill();
-      g.globalAlpha *= 0.22;
-      g.strokeStyle = "#000";
-      g.lineWidth = s;
-      g.stroke();
-      g.restore();
-    }
-    if (age < 3.4) requestAnimationFrame(step);
-    else cv.remove();
-  };
-  setTimeout(() => requestAnimationFrame(step), delay);
-}
-function stitch(el, { color = "rgba(249,104,89,.92)", delay = 300, duration = 1500, radius = null } = {}) {
-  if (!el || !motionOn() || el.querySelector(":scope>.w-stitch")) return;
-  const w = el.offsetWidth, h = el.offsetHeight;
-  if (!w || !h) return;
-  const r = radius ?? (parseFloat(getComputedStyle(el).borderTopLeftRadius) || 20), q = 1.5, id = `w-st-${Math.random().toString(36).slice(2, 8)}`;
-  const d = `M${r} ${q}H${w - r}A${r - q} ${r - q} 0 0 1 ${w - q} ${r}V${h - r}A${r - q} ${r - q} 0 0 1 ${w - r} ${h - q}H${r}A${r - q} ${r - q} 0 0 1 ${q} ${h - r}V${r}A${r - q} ${r - q} 0 0 1 ${r} ${q}Z`;
-  const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("class", "w-stitch");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  svg.innerHTML = `<defs><mask id="${id}" maskUnits="userSpaceOnUse"><path d="${d}" fill="none" stroke="#fff" stroke-width="6" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></mask></defs><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-dasharray="7 6" mask="url(#${id})"/>`;
-  el.classList.add("w-stitched");
-  el.append(svg);
-  animate(svg.querySelector("mask path"), [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration, delay, easing: "cubic-bezier(.45,.05,.3,1)", fill: "both" });
-}
-function drop(el, { base = "rotate(-3deg)", delay = 500 } = {}) {
-  spring(el, [{ opacity: 0, transform: `translate(18px,-46px) rotate(-14deg) scale(1.18)` }, { opacity: 1, transform: `translate(0,3px) rotate(2deg) scale(.98)`, offset: 0.62 }, { transform: `rotate(-.6deg) scale(1.01)`, offset: 0.82 }, { transform: base }], { duration: 900, delay, easing: "cubic-bezier(.35,.05,.25,1)" });
-}
-function develop(el, { delay = 400 } = {}) {
-  if (!el || !motionOn()) return;
-  animate(el, [{ filter: "brightness(2.1) saturate(0) contrast(.45) blur(5px)" }, { filter: "brightness(1.35) saturate(.35) contrast(.8) blur(1.5px)", offset: 0.45 }, { filter: "none" }], { duration: 2200, delay, easing: "cubic-bezier(.3,.5,.3,1)", fill: "backwards" });
-}
-function bindTilt(surface, target, { base = "rotate(-3deg)", max = 16 } = {}) {
-  if (!surface || !target) return;
-  const move = (event) => {
-    if (!motionOn()) return;
-    const r = target.getBoundingClientRect(), nx = Math.max(-1, Math.min(1, ((event.clientX - r.left) / r.width - 0.5) * 2)), ny = Math.max(-1, Math.min(1, ((event.clientY - r.top) / r.height - 0.5) * 2));
-    target.classList.add("w-tilting");
-    target.style.transition = "transform .08s linear";
-    target.style.transform = `perspective(600px) ${base} rotateY(${nx * max}deg) rotateX(${-ny * max}deg) translateZ(10px)`;
-    target.style.setProperty("--gx", `${50 + nx * 45}%`);
-    target.style.setProperty("--gy", `${50 + ny * 45}%`);
-  };
-  const leave = () => {
-    if (!target.classList.contains("w-tilting")) return;
-    target.classList.remove("w-tilting");
-    target.style.transition = "transform .7s cubic-bezier(.3,1.5,.4,1)";
-    target.style.transform = "";
-  };
-  surface.addEventListener("pointermove", move);
-  surface.addEventListener("pointerdown", move);
-  for (const t of ["pointerleave", "pointerup", "pointercancel"]) surface.addEventListener(t, leave);
-}
-function wash(button, point) {
-  if (!button || !motionOn()) return;
-  const r = button.getBoundingClientRect(), x = point ? (point.x - r.left) / r.width * 100 : 50, y = point ? (point.y - r.top) / r.height * 100 : 50;
-  const tx = Number.isFinite(x) ? Math.max(0, Math.min(100, x)) : 50, ty = Number.isFinite(y) ? Math.max(0, Math.min(100, y)) : 50;
-  if (getComputedStyle(button).position === "static") button.style.position = "relative";
-  button.style.isolation = "isolate";
-  button.style.overflow = "hidden";
-  const w = document.createElement("span");
-  w.className = "w-wash";
-  w.setAttribute("aria-hidden", "true");
-  button.prepend(w);
-  animate(w, [{ clipPath: `circle(0px at ${tx}% ${ty}%)` }, { clipPath: `circle(160% at ${tx}% ${ty}%)` }], { duration: 620, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" });
-}
-function shake(el) {
-  if (!el || !motionOn()) return;
-  animate(el, [{ transform: "none" }, { transform: "translateX(-8px)" }, { transform: "translateX(7px)" }, { transform: "translateX(-5px)" }, { transform: "translateX(3px)" }, { transform: "none" }], { duration: 440, easing: "ease-out" });
-}
-function slam(el, { delay = 300, shakeEl = null } = {}) {
-  if (!el || !motionOn() || el.dataset.wSlam) return;
-  el.dataset.wSlam = "1";
-  let k = 0, lastDelay = 0;
-  const walk = (node) => {
-    for (const c of [...node.childNodes]) {
-      if (c.nodeType === 1) {
-        walk(c);
-        continue;
-      }
-      if (c.nodeType !== 3) continue;
-      const frag = document.createDocumentFragment();
-      String(c.textContent).split(/(\s+)/).forEach((part) => {
-        if (!part) return;
-        if (/^\s+$/.test(part)) {
-          frag.append(part);
-          return;
-        }
-        const word = document.createElement("span");
-        word.className = "w-slam-w";
-        for (const ch of part) {
-          const s = document.createElement("span");
-          s.className = "w-slam-c";
-          s.textContent = ch;
-          word.append(s);
-          const big = ch === "!";
-          lastDelay = delay + k * (big ? 110 : 65);
-          animate(s, [{ opacity: 0, transform: `scale(${big ? 2.6 : 1.9})`, filter: "blur(4px)" }, { opacity: 1, transform: "scale(.92)", filter: "blur(0px)", offset: 0.55 }, { transform: "scale(1.04)", offset: 0.78 }, { transform: "scale(1)" }], { duration: big ? 560 : 420, delay: lastDelay, easing: "cubic-bezier(.5,0,.3,1)", fill: "backwards" });
-          k++;
-        }
-        frag.append(word);
-      });
-      c.replaceWith(frag);
-    }
-  };
-  walk(el);
-  if (shakeEl) setTimeout(() => animate(shakeEl, [{ transform: "none" }, { transform: "translate(0,3px)" }, { transform: "translate(0,-2px)" }, { transform: "none" }], { duration: 170 }), lastDelay + 300);
-}
-
 // experiences/synk-world-app/life-ui.mjs
+import { motionOn, ink, typeLabel, roll, drop, bindTilt, stitch, wash, shake, spring, stamp, confetti, slam, develop } from "../world-motion.mjs";
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
   style.rel = "stylesheet";
@@ -14281,7 +13623,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context2 = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
+  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
   let sittingSince = Date.now(), hiddenSince = 0, restKey = null;
@@ -14302,7 +13644,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return restKey === key ? '<p class="life-rest" role="status">\uD55C \uC2DC\uAC04 \uB118\uAC8C \uD588\uC5B4\uC694. \uC7A0\uAE50 \uC26C\uC5B4\uB3C4 \uB3FC\uC694. \uD558\uB358 \uC790\uB9AC\uB294 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.</p>' : "";
   }
   const speech = createCafeSpeech({ asset, onChange() {
-    if (ended || !shown || context2?.phase !== "cafe") return;
+    if (ended || !shown || context?.phase !== "cafe") return;
     const metrics = speech.metrics(), button = content.querySelector("[data-life-cafe-speech]"), status = content.querySelector(".cafe-speech-status");
     if (button) {
       button.textContent = cafeSpeechLabel({ available: metrics.available, phase: metrics.phase, heard: cafeRun.listen?.heard });
@@ -14312,7 +13654,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     companion?.update(tutorState());
   } });
   void speech.prepare();
-  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context2?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index) => {
+  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index) => {
     if (!companion?.openGuide) return;
     play("open");
     haptic("tap");
@@ -14365,14 +13707,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return `<p class="life-save-status" data-save-phase="${escape2(s.phase)}" role="status">${escape2(s.message)}</p>`;
   }
   function tutorState() {
-    const l = lessonById(context2?.lessonId), cafe = context2?.phase === "cafe";
-    const original = context2?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context2.reviewQuestion?.id) : l?.questions[context2?.questionIndex];
-    const q = context2?.phase === "review" ? context2.reviewQuestion : original;
-    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context2?.phase);
+    const l = lessonById(context?.lessonId), cafe = context?.phase === "cafe";
+    const original = context?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
+    const q = context?.phase === "review" ? context.reviewQuestion : original;
+    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase);
     const requiresHearing = cafe && current && cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown;
     return {
       scope: place,
-      phase: cafe ? cafeRun.phase : context2?.phase,
+      phase: cafe ? cafeRun.phase : context?.phase,
       question: current ? q : null,
       questionId: original?.id,
       answered: cafe ? !!cafeRun.choiceId : !!lastFeedback,
@@ -14380,25 +13722,25 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped,
       requiresHearing,
       listening: cafe && speech.metrics().phase === "playing",
-      compose: cafe && context2.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0,
-      expressions: context2?.phase === "story" ? l?.expressions || null : null
+      compose: cafe && context.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0,
+      expressions: context?.phase === "story" ? l?.expressions || null : null
     };
   }
   function tutorHint() {
     speech.pause();
-    if (!context2) return;
-    if (context2.phase === "cafe") {
+    if (!context) return;
+    if (context.phase === "cafe") {
       if (tutorState().requiresHearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
       persistCafe();
       renderCafe();
       return;
     }
-    if (!["questions", "review"].includes(context2.phase)) return;
+    if (!["questions", "review"].includes(context.phase)) return;
     if (!lastFeedback) {
       helped = true;
-      if (context2.phase === "questions") persistStage();
-      else getProgress().markReviewHelp(context2.reviewId);
+      if (context.phase === "questions") persistStage();
+      else getProgress().markReviewHelp(context.reviewId);
     }
     const hint = content.querySelector(".life-hint");
     if (hint) hint.hidden = false;
@@ -14409,9 +13751,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const value = tutorState();
     if (value.questionId !== id || value.answered) return;
     helped = true;
-    if (context2.phase === "cafe") persistCafe();
-    else if (context2.phase === "questions") persistStage();
-    else if (context2.phase === "review") getProgress().markReviewHelp(context2.reviewId);
+    if (context.phase === "cafe") persistCafe();
+    else if (context.phase === "questions") persistStage();
+    else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
   }
   const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
@@ -14447,7 +13789,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
           });
         } catch {
         }
-        context2 = null;
+        context = null;
         reviewRun = null;
         lastFeedback = null;
       }
@@ -14576,7 +13918,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function packs() {
     if (!ensureReadable()) return;
     place = "life";
-    context2 = null;
+    context = null;
     const s = summary(), now = nowPoster(s), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt);
     const episodes = PACKS.filter((p) => p.lessons.some((l) => l.type === "story")).length;
     const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><small>\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC774 \uB098\uC624\uB294 \uC774\uC57C\uAE30 ${episodes}\uD3B8</small></span></button>`];
@@ -14597,7 +13939,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function stories() {
     if (!ensureReadable()) return;
     place = "life";
-    context2 = null;
+    context = null;
     const episodes = PACKS.map((p) => ({ pack: p, episode: p.lessons.find((l) => l.type === "story") })).filter((e) => e.episode);
     paint("\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30", `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><span class="life-poster-sub">\uC774\uC57C\uAE30\uB97C \uC77D\uACE0, \uC774\uC57C\uAE30 \uC18D \uD45C\uD604\uC744 \uACE8\uB77C\uC694.</span></section></div><section class="life-list" aria-label="\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: pack2.title, labels: ["\uB2E4\uC2DC \uC77D\uAE30", "\uC77D\uB294 \uC911", ""] })).join("")}</div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
   }
@@ -14606,7 +13948,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const value = packById(id);
     if (!value) return;
     place = id === "cafe" ? "cafe" : "life";
-    context2 = null;
+    context = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
     const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uBC29\uBB38 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? `${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694` : `\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88`}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
@@ -14631,7 +13973,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const p = getProgress();
     p.summary(PACKS, LESSONS);
     const previous = p.lessonState(id), state = p.startLesson(lesson2, { replay: previous.status === "completed" && previous.cursor === previous.total });
-    context2 = { lessonId: id, phase: state.stage.phase, sceneIndex: state.stage.sceneIndex, questionIndex: state.cursor };
+    context = { lessonId: id, phase: state.stage.phase, sceneIndex: state.stage.sceneIndex, questionIndex: state.cursor };
     reviewRun = null;
     lastFeedback = null;
     helped = state.stage.helped === true;
@@ -14641,33 +13983,33 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       cafeRun = resumeCafe(state, id);
       if (!cafeRun.listen) cafeRun = { ...cafeRun, listen: { mode: preferences().audio !== "off" && cafeRun.phase === "welcome" && speech.available() ? "listen" : "read", heard: false, textShown: false } };
       if (preferences().audio === "off") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, mode: "read" } };
-      context2.phase = "cafe";
+      context.phase = "cafe";
       if (cafeRun.phase === "complete") return finishCafe();
       persistCafe();
       return renderCafe();
     }
     if (state.cursor >= lesson2.questions.length) return finish();
-    if (state.cursor > 0) context2.phase = "questions";
+    if (state.cursor > 0) context.phase = "questions";
     renderLesson();
   }
   function cafeStage(value = cafeRun) {
     return { phase: "questions", sceneIndex: value.step, questionIndex: value.step, helped, cafe: value };
   }
   function persistCafe() {
-    getProgress().setStage(context2.lessonId, cafeStage());
+    getProgress().setStage(context.lessonId, cafeStage());
   }
   function renderCafe() {
-    context2.phase = "cafe";
-    context2.questionIndex = cafeRun.step;
-    const q = cafeQuestion(cafeRun.step, context2.lessonId), first = q ? getProgress().lessonState(context2.lessonId).answers[q.id] : null;
+    context.phase = "cafe";
+    context.questionIndex = cafeRun.step;
+    const q = cafeQuestion(cafeRun.step, context.lessonId), first = q ? getProgress().lessonState(context.lessonId).answers[q.id] : null;
     if (!first && !helped && preferences().support === "step" && ["choose", "repair", "response"].includes(cafeRun.phase)) {
       helped = true;
       if (cafeRun.listen?.mode === "listen") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       persistCafe();
     }
-    const view = `${context2.lessonId}:${cafeRun.step}:${["welcome", "break"].includes(cafeRun.phase) ? cafeRun.phase : "talk"}`, keepScroll = view === cafeView;
+    const view = `${context.lessonId}:${cafeRun.step}:${["welcome", "break"].includes(cafeRun.phase) ? cafeRun.phase : "talk"}`, keepScroll = view === cafeView;
     cafeView = view;
-    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, print, helped, firstAnswer: first, retryButton, lessonId: context2.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE", keepScroll });
+    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, print, helped, firstAnswer: first, retryButton, lessonId: context.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE", keepScroll });
   }
   function ensureHeard() {
     if (cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown) throw Error("\uC9C1\uC6D0 \uB9D0\uC744 \uB05D\uAE4C\uC9C0 \uB4E3\uAC70\uB098 \u300C\uAE00\uC790\uB85C \uBCF4\uAE30\u300D\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.");
@@ -14675,7 +14017,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function cafeChoose(choiceId) {
     ensureHeard();
     speech.stop();
-    const id = context2.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id), correct = choiceId === q.answerId;
+    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id), correct = choiceId === q.answerId;
     if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct, helped, stage: cafeStage(next2), input: cafeRun.listen });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
@@ -14684,7 +14026,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function cafeSubmit() {
     ensureHeard();
-    const id = context2.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
+    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
     speech.stop();
     if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId: next2.choiceId, correct: next2.choiceId === q.answerId, helped, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
     else p.setStage(id, cafeStage(next2));
@@ -14699,9 +14041,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       speech.pause();
       return;
     }
-    const id = context2.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`;
+    const id = context.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`;
     await speech.play(lineId, () => {
-      if (ended || !shown || context2?.phase !== "cafe" || context2.lessonId !== id || cafeRun.step !== step) return;
+      if (ended || !shown || context?.phase !== "cafe" || context.lessonId !== id || cafeRun.step !== step) return;
       try {
         cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, heard: true } };
         persistCafe();
@@ -14713,21 +14055,21 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function cafeNext() {
     speech.stop();
-    const next2 = advanceCafe(cafeRun, context2.lessonId);
+    const next2 = advanceCafe(cafeRun, context.lessonId);
     helped = false;
-    getProgress().setStage(context2.lessonId, cafeStage(next2));
+    getProgress().setStage(context.lessonId, cafeStage(next2));
     cafeRun = next2;
     if (next2.phase === "complete") finishCafe();
     else renderCafe();
   }
   function finishCafe() {
     const p = getProgress();
-    p.finishLesson(context2.lessonId);
-    context2.phase = "complete";
-    context2.questionIndex = 3;
+    p.finishLesson(context.lessonId);
+    context.phase = "complete";
+    context.questionIndex = 3;
     const nextId = CAFE_LESSON_IDS.find((id) => p.lessonState(id).status !== "completed"), nextLesson = nextId ? lessonById(nextId) : packById("cafe").lessons.find((l) => p.lessonState(l.id).status !== "completed");
     cafeView = "";
-    paint("\uCE74\uD398 \uBC29\uBB38 \uACB0\uACFC", cafeCompletionMarkup({ photo, print, nextLesson, lessonId: context2.lessonId, state: cafeRun, adaptive: !!onNext, answers: p.lessonState(context2.lessonId).answers }), { type: "life-cafe-complete", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
+    paint("\uCE74\uD398 \uBC29\uBB38 \uACB0\uACFC", cafeCompletionMarkup({ photo, print, nextLesson, lessonId: context.lessonId, state: cafeRun, adaptive: !!onNext, answers: p.lessonState(context.lessonId).answers }), { type: "life-cafe-complete", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
     celebrate();
     const ticket = generation;
     p.flush().catch(() => {
@@ -14736,13 +14078,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function persistStage() {
     const p = getProgress();
-    if (context2) p.setStage(context2.lessonId, { phase: context2.phase, sceneIndex: context2.sceneIndex, questionIndex: context2.questionIndex, helped });
+    if (context) p.setStage(context.lessonId, { phase: context.phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, helped });
   }
   function lessonHeader(l) {
-    const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context2.phase;
-    const done = phase === "story" ? context2.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context2.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
-    const count = phase === "questions" ? `${Math.min(context2.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context2.sceneIndex + 1, scenes)} / ${scenes}` : "";
-    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context2.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context2.sceneIndex, questionIndex: context2.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
+    const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context.phase;
+    const done = phase === "story" ? context.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
+    const count = phase === "questions" ? `${Math.min(context.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context.sceneIndex + 1, scenes)} / ${scenes}` : "";
+    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
   }
   const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC774\uBC88\uC5D0 \uBC30\uC6B8 \uD45C\uD604" : "\uBC30\uC6B4 \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape2(e.korean)}</strong><p>${escape2(e.meaning)}</p></div></article>`).join("")}</section>`;
   const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong>${escape2(e.korean)}</strong>${e.note ? `<small>${escape2(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
@@ -14751,23 +14093,23 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return `${escape2(words.join(" "))}${words.length ? " " : ""}<span class="life-nowrap">${escape2(tail)}, \uB05D!</span>`;
   };
   function renderLesson() {
-    if (!context2) return;
-    const l = lessonById(context2.lessonId);
+    if (!context) return;
+    const l = lessonById(context.lessonId);
     if (!l) return;
     const header = lessonHeader(l);
-    if (context2.phase === "intro") {
+    if (context.phase === "intro") {
       paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape2(l.goal)}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-lesson" });
       return;
     }
-    if (context2.phase === "story") {
-      const scene2 = l.scenes[context2.sceneIndex];
+    if (context.phase === "story") {
+      const scene2 = l.scenes[context.sceneIndex];
       if (!scene2) {
-        context2.phase = "questions";
+        context.phase = "questions";
         persistStage();
         renderLesson();
         return;
       }
-      const friend = friends[scene2.speaker], speaker = friend ? scene2.speaker : "narrator", last = context2.sceneIndex + 1 === l.scenes.length;
+      const friend = friends[scene2.speaker], speaker = friend ? scene2.speaker : "narrator", last = context.sceneIndex + 1 === l.scenes.length;
       if (hasStoryPhoto(l.packId)) for (const who of ["narrator", "mongle", "kkamong", "marine"]) {
         const img = new Image();
         img.src = asset(storyPhotoFile(l.packId, who));
@@ -14775,13 +14117,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const photo2 = hasStoryPhoto(l.packId), signs = photo2 ? storySigns(l.packId) : [];
       const previousSrc = content.querySelector(".life-session-meta")?.dataset.lifeLessonId === l.id ? content.querySelector(".life-story-photo>img")?.src || null : null;
       paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape2(s.text)} \uC18C\uB9AC \uB4E3\uAE30" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${storyLineMarkup(scene2.text, l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
-      story.enter({ who: speaker, previousSrc, first: context2.sceneIndex === 0, signs });
+      story.enter({ who: speaker, previousSrc, first: context.sceneIndex === 0, signs });
       return;
     }
     renderQuestion();
   }
   function renderQuestion() {
-    const l = lessonById(context2.lessonId), q = l.questions[context2.questionIndex];
+    const l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
     if (!q) return finish();
     const previous = getProgress().lessonState(l.id).answers[q.id];
     if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q, helped: previous.helped };
@@ -14802,7 +14144,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function choose(choiceId) {
     if (lastFeedback) return;
-    const p = getProgress(), l = lessonById(context2.lessonId), q = l.questions[context2.questionIndex];
+    const p = getProgress(), l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
     const correct = choiceId === q.answerId;
     p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped });
     lastFeedback = { question: q, choiceId, correct, helped };
@@ -14812,10 +14154,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   const nextLink = (nextLesson) => `<button class="quiet-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${onNext ? "\uB2E4\uC74C \uC5F0\uC2B5" : nextLesson ? "\uB2E4\uC74C \uB808\uC2A8" : "\uD329 \uBAA9\uB85D \uBCF4\uAE30"}</button>`;
   function finish() {
-    const p = getProgress(), l = lessonById(context2.lessonId);
+    const p = getProgress(), l = lessonById(context.lessonId);
     p.finishLesson(l.id);
     const s = summary(), done = p.lessonState(l.id);
-    context2.phase = "complete";
+    context.phase = "complete";
     const pack2 = packById(l.packId), packState = s.packs.find((x) => x.id === pack2.id), complete = packState.completed === packState.total, [word] = packWords[pack2.id] || [pack2.title];
     const missed = l.questions.find((q) => {
       const a = done.answers[q.id];
@@ -14835,7 +14177,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function review() {
     if (!ensureReadable()) return;
     place = "life";
-    context2 = null;
+    context = null;
     lastFeedback = null;
     helped = false;
     reviewRun = null;
@@ -14872,7 +14214,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q2) => q2.id === record2.questionId), q = original.review;
     if (!lastFeedback) helped = run.pendingHelp?.[id] === true;
-    context2 = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
+    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
     if (!lastFeedback && !helped && preferences().support === "step") {
       helped = true;
       getProgress().markReviewHelp(id);
@@ -14882,18 +14224,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function chooseReview(id) {
     if (lastFeedback) return;
-    const q = context2.reviewQuestion, p = getProgress(), correct = id === q.answerId;
-    p.answerReview({ id: context2.reviewId, runId: reviewRun.id, correct, helped });
-    helped = p.exportSnapshot().activeReview.answers[context2.reviewId].helped;
+    const q = context.reviewQuestion, p = getProgress(), correct = id === q.answerId;
+    p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct, helped });
+    helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
     lastFeedback = { question: q, choiceId: id, correct, helped };
-    const record2 = p.exportSnapshot().reviews[context2.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context2.reviewId}`) });
-    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context2.reviewId}" data-life-phase="review" data-life-step="${context2.questionIndex}">${progressLine(context2.questionIndex + 1, reviewRun.ids.length)}<span>${escape2(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context2.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context.reviewId}`) });
+    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${escape2(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
     judge(correct);
   }
   function turnScene(delta) {
-    if (context2?.phase !== "story") return;
-    const l = lessonById(context2.lessonId), target = context2.sceneIndex + delta;
+    if (context?.phase !== "story") return;
+    const l = lessonById(context.lessonId), target = context.sceneIndex + delta;
     if (target < 0) {
       play("tap");
       home.toast("\uCCAB \uC7A5\uBA74\uC774\uC5D0\uC694.");
@@ -14901,14 +14243,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     play("page");
     haptic("tap");
-    context2.sceneIndex = target;
-    if (target >= l.scenes.length) context2.phase = "questions";
+    context.sceneIndex = target;
+    if (target >= l.scenes.length) context.phase = "questions";
     persistStage();
     renderLesson();
   }
   function pause() {
-    if (context2?.phase === "cafe") persistCafe();
-    else if (context2 && ["intro", "story", "questions"].includes(context2.phase)) persistStage();
+    if (context?.phase === "cafe") persistCafe();
+    else if (context && ["intro", "story", "questions"].includes(context.phase)) persistStage();
     home.closePanel();
     updateHome();
     home.toast("\uD558\uB358 \uC790\uB9AC\uB97C \uC800\uC7A5\uD588\uC5B4\uC694.");
@@ -14926,20 +14268,20 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     pack: (el) => pack(el.dataset.lifePack),
     lesson: (el) => start(el.dataset.lifeLesson),
     begin: () => {
-      context2.phase = "story";
-      context2.sceneIndex = 0;
+      context.phase = "story";
+      context.sceneIndex = 0;
       persistStage();
       renderLesson();
     },
     "scene-next": () => turnScene(1),
-    choice: (el) => context2.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
+    choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
     "question-next": () => {
-      if (context2.phase === "review") {
+      if (context.phase === "review") {
         lastFeedback = null;
         helped = false;
         renderReview();
       } else {
-        context2.questionIndex++;
+        context.questionIndex++;
         lastFeedback = null;
         helped = false;
         persistStage();
@@ -14980,8 +14322,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       content.querySelector(".cafe-staff>p")?.focus({ preventScroll: true });
     },
     "cafe-seat": (el) => {
-      const next2 = chooseCafeSeat(cafeRun, el.dataset.lifeCafeSeat, context2.lessonId);
-      getProgress().setStage(context2.lessonId, cafeStage(next2));
+      const next2 = chooseCafeSeat(cafeRun, el.dataset.lifeCafeSeat, context.lessonId);
+      getProgress().setStage(context.lessonId, cafeStage(next2));
       cafeRun = next2;
       renderCafe();
       play("select");
@@ -15024,7 +14366,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   document.addEventListener("click", click);
   timer = setInterval(updateHome, 15e3);
   updateHome();
-  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context2?.lessonId || null, phase: context2?.phase || null, step: context2?.questionIndex ?? null, cafe: isCafeLesson(context2?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
+  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
     ended = true;
     speech.dispose();
     story.dispose();
@@ -15441,9 +14783,9 @@ function resumeCandidates(progress2, settings, now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
-  const session2 = progress2?.activeReview;
-  if (!session2 || !Array.isArray(session2.ids) || !time2(session2.startedAt) || session2.startedAt > now) return result;
-  const pending = session2.ids.filter((id) => !own(session2.answers, id)), reviews = verifiedReviews(progress2), first = reviews.find((review) => review.id === pending[0]);
+  const session = progress2?.activeReview;
+  if (!session || !Array.isArray(session.ids) || !time2(session.startedAt) || session.startedAt > now) return result;
+  const pending = session.ids.filter((id) => !own(session.answers, id)), reviews = verifiedReviews(progress2), first = reviews.find((review) => review.id === pending[0]);
   if (!first) return result;
   result.push({
     id: "world.resume.review",
@@ -15460,7 +14802,7 @@ function resumeCandidates(progress2, settings, now) {
     supports: [...supports],
     audioRequired: false,
     modality: "reading",
-    reviewAt: iso2(session2.startedAt),
+    reviewAt: iso2(session.startedAt),
     presentation: presentationFor(settings)
   });
   return result;
