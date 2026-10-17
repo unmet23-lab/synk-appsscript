@@ -715,7 +715,8 @@ if (QA) {
 }
 
 // Install only after account restoration and the game's pause/check state exist.
-if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
+// 도우미 연결은 WORLD 틀 안에서만 부른다 — 계정 페이지의 일반 틀(/try/)에는 그 파일이 없다(10-17).
+if(WORLD&&globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
  gameTutor=connectGameTutor('runner',{onHelp:()=>{pause();if(listeningCheck.open){listeningCheck.interrupt();tutorEvent('paused');}},onPracticeComplete:()=>{if(listeningCheck.open)return;if(screen==='game'&&running&&!model?.finished)void resume();else void start();},onResumeAfterHelp:()=>{if(screen==='game'&&running&&!model?.finished)void resume();}});
  if(screen==='game'&&running&&!model?.finished)tutorEvent(paused?'paused':'playing');else if(screen==='results')tutorEvent('finish',{completed:model?.reason==='tour'});else tutorEvent('lobby');
 }).catch(()=>{});
