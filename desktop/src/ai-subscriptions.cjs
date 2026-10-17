@@ -324,7 +324,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const folder=spec.folders?service+'-'+randomId():null;
     if(folder)fs.mkdirSync(path.join(accountsDir,folder),{recursive:true});
     const args=service==='claude'?['auth','login',...(email?['--email',String(email)]:[])]:service==='gpt'?['login']:['auth','login'];
-    const current={id:'l-'+randomId(),service,folder,stage:'starting',url:null,needsCode:false,message:'',console:useConsole,child:null,startedAt:now(),output:''};
+    const current={id:'l-'+randomId(),service,folder,email:email?String(email):null,stage:'starting',url:null,needsCode:false,message:'',console:useConsole,child:null,startedAt:now(),output:''};
     login=current;
     const {command,argv,verbatim}=commandFor(tools[service].path,args,{platform,env});
     try{
@@ -346,7 +346,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
         if(current.stage==='cancelled'||current.stage==='error'||current.stage==='done')return;
         current.stage='verifying';current.message='연결을 확인하고 있어요.';emit();
         const v=await verifyLogin(service,folder);
-        if(v.ok){const row=addRow(service,folder,v);finishLogin(current,'done',`${v.email||spec.label} 계정을 연결했어요.`);void check({ids:[row.id]});}
+        if(v.ok)connected(current,v);
         else finishLogin(current,'error',code===0?'로그인을 확인하지 못했어요. 브라우저에서 연결할 계정이 맞는지 보고 다시 시도해 주세요.':'로그인을 마치지 못했어요. 가이드의 「막혔을 때」를 확인해 주세요.');
       });
     }
@@ -358,10 +358,18 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const tick=async()=>{
       if(login!==current||['done','error','cancelled'].includes(current.stage))return;
       const v=await verifyLogin(current.service,current.folder);
-      if(v.ok){const row=addRow(current.service,current.folder,v);finishLogin(current,'done',`${v.email||SERVICES[current.service].label} 계정을 연결했어요.`);void check({ids:[row.id]});return;}
+      if(v.ok){connected(current,v);return;}
       current.poll=setTimeout(tick,4000);
     };
     current.poll=setTimeout(tick,6000);
+  }
+  // 이메일을 미리 채워도 브라우저에 이미 로그인된 계정으로 승인될 수 있다. 다르면 알려 준다(연결된 계정은 그대로 둔다).
+  function connected(current,v){
+    const row=addRow(current.service,current.folder,v);
+    const wanted=current.email?current.email.toLowerCase():null,got=v.email?String(v.email).toLowerCase():null;
+    if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인돼 있던 ${v.email} 계정으로 연결됐어요. ${current.email}를 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
+    else finishLogin(current,'done',`${v.email||SERVICES[current.service].label} 계정을 연결했어요.`);
+    void check({ids:[row.id]});
   }
   function finishLogin(current,stage,message){
     if(!current||['done','error','cancelled'].includes(current.stage))return;

@@ -154,3 +154,14 @@ test('help links and installers are fixed lists',async()=>{
   const install=f.calls.find(c=>c.command==='powershell.exe'&&c.argv.includes('-NoExit'));
   assert.match(install.argv.at(-1),/^irm https:\/\/claude\.ai\/install\.ps1 \| iex;/);assert.equal(install.options.shell,false);
 });
+
+test('a sign-in approved in the browser with a different account is reported, not hidden',async()=>{
+  const f=fakeSystem({claudeLoggedIn:false});
+  const started=await f.service.startLogin('claude',{email:'other@example.com'});
+  await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+  f.service.submitCode(started.id,'abcDEF123456#state');
+  for(let i=0;i<40&&!['done','error'].includes(f.changes.at(-1)?.login?.stage);i++)await new Promise(r=>setTimeout(r,5));
+  const last=f.changes.at(-1).login;
+  assert.equal(last.stage,'error');assert.match(last.message,/other@example.com 대신 브라우저에 로그인돼 있던 member@example.com/);
+  const snap=await f.service.snapshot();assert.equal(snap.rows.filter(r=>r.email==='member@example.com').length,1);
+});

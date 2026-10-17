@@ -353,7 +353,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     } else {
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
       loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. 다른 계정은 「새 계정 연결」로 하나씩 더해요.</p>
-        ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>적어 두면 로그인 페이지에 미리 채워져서 다른 계정으로 잘못 들어가는 일을 막아요.</small></label>` : ''}
+        ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>로그인 화면에 미리 채워져요. 다만 브라우저에 다른 Claude 계정이 이미 로그인돼 있으면 그 계정으로 연결되니, 먼저 브라우저(claude.ai)에서 연결할 계정으로 바꿔 두세요.</small></label>` : ''}
         <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button>${key === 'higgsfield' ? '' : `<button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>새 계정 연결</button>`}${key === 'higgsfield' ? `<button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>Higgsfield 로그인</button>` : ''}</div>
         ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
     }
@@ -365,7 +365,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const items = [
       ['설치했는데 「설치 필요」로 나와요', '「설치 끝났어요 · 다시 확인」을 눌러 주세요. 그래도 같으면 SYNK 앱을 완전히 껐다 켜거나 PC를 다시 시작해 주세요. Windows가 새 프로그램 위치를 아직 모를 때 생겨요.'],
       ['로그인 페이지가 열리지 않아요', '가이드의 「로그인 페이지 다시 열기」를 눌러 주세요. 회사·학교 네트워크, VPN, 백신의 웹 보호가 막을 수 있으니 잠시 끄거나 휴대폰 핫스팟으로 다시 해 보세요.'],
-      ['다른 계정으로 로그인돼요', '브라우저 오른쪽 위에서 계정을 바꾸거나 로그아웃한 뒤 다시 시도해 주세요. Claude는 「연결할 이메일」 칸에 이메일을 적으면 그 계정으로 시작해요.'],
+      ['다른 계정으로 로그인돼요', '브라우저 오른쪽 위에서 계정을 바꾸거나 로그아웃한 뒤 다시 시도해 주세요. 로그인은 브라우저에 지금 로그인된 계정으로 승인돼요. 계정을 여러 개 연결할 때는 하나 연결할 때마다 브라우저(claude.ai·chatgpt.com)에서 다음 계정으로 바꾼 뒤 「새 계정 연결」을 눌러 주세요.'],
       ['코드를 붙여 넣어도 넘어가지 않아요', '코드 앞뒤 공백 없이 한 번에 붙여 넣어 주세요. 계속 안 되면 「검은 창으로 로그인하기」를 눌러 검은 창에 직접 붙여 넣어 주세요(오른쪽 클릭으로 붙여넣기).'],
       ['「구독 한도가 없어요」라고 나와요', 'Claude Code는 Pro·Max 이상 요금제에서만 쓸 수 있어요. 무료 요금제 계정은 자동으로 읽을 수 없으니 「직접 넣기」로 결제일만 챙겨 주세요.'],
       ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
