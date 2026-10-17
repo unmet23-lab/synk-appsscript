@@ -4,7 +4,7 @@
 종류: AI 작업 팁
 대상: AI 작업 방식
 언제: 지금
-상태: 새로
+상태: 적용함 (7aea3db89)
 한줄: Claude 메모에만 있는 도구 함정을 저장소 공용 「현장 노트」로 옮겨, 10-17부터 그림 굽기·백엔드를 맡는 GPT도 같은 함정을 피하게
 링크: https://www.instagram.com/p/Dejs6cyD5RQ/?img_index=5&exln=NGY2ZHd1eWxieDhy
 게시물ID: Dejs6cyD5RQ
