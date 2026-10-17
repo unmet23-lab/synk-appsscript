@@ -403,7 +403,29 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,email:info.email,plan:info.plan});
     b.rows.push(row);persist();return row;
   }
-  function removeFolder(folder){if(!folder||!FOLDER.test(folder))return;try{fs.rmSync(path.join(accountsDir,folder),{recursive:true,force:true});}catch{}}
+  // 계정 폴더를 지운다. Higgsfield는 홈을 이 폴더로 바꿔 브라우저를 열어 Windows가 INetCache(숨김·시스템, Content.IE5 junction)를 만든다.
+  // 10-17 개발 창 실측: 로그인 실패 뒤 rmSync가 EPERM으로 멈춰 폴더가 남았다(그 순간 무언가 캐시 폴더를 잡고 있었다).
+  // 그래서 한 번에 지우기 → 아래부터 하나씩(링크는 따라가지 않고 링크만) → 잠시 뒤 몇 번 더 순으로 지운다.
+  function removeTree(dir){
+    let entries;
+    try{entries=fs.readdirSync(dir,{withFileTypes:true});}catch(error){if(error.code==='ENOENT')return;throw error;}
+    for(const entry of entries){
+      const item=path.join(dir,entry.name);
+      if(entry.isSymbolicLink()){try{fs.unlinkSync(item);}catch{fs.rmdirSync(item);}}
+      else if(entry.isDirectory())removeTree(item);
+      else{try{fs.unlinkSync(item);}catch(error){if(error.code!=='EPERM')throw error;fs.chmodSync(item,0o666);fs.unlinkSync(item);}}
+    }
+    fs.rmdirSync(dir);
+  }
+  function removeFolder(folder){
+    if(!folder||!FOLDER.test(folder))return;
+    const dir=path.join(accountsDir,folder);
+    const attempt=()=>{try{fs.rmSync(dir,{recursive:true,force:true});}catch{}if(fs.existsSync(dir))try{removeTree(dir);}catch{}return !fs.existsSync(dir);};
+    if(attempt())return;
+    let tries=0;
+    const again=()=>{if(attempt()||++tries>=10)return;setTimeout(again,1000).unref?.();};
+    setTimeout(again,1000).unref?.();
+  }
   async function useExisting(service){
     const spec=SERVICES[service];if(!spec||spec.apiKey)return {ok:false,code:'UNKNOWN_SERVICE'};
     await detectTools();if(!tools[service].path)return {ok:false,code:'TOOL_MISSING'};
