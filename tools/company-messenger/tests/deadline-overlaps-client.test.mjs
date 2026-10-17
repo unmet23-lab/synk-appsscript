@@ -33,7 +33,7 @@ async function load(f,result={data:report()},{background=false,clientError=null}
 }
 
 test('today displays existing projected overlaps without adding any request, timer, task or today-action count',async()=>{
-  const f=fixture(),html=await load(f);assert.match(html,/여러 프로젝트의 기한 겹침/);assert.match(html,/1일 · 2개 프로젝트/);assert.match(html,/2개 프로젝트 · 기한 항목 4개/);assert.match(html,/내가 처리할 일과 별도로/);assert.match(html,/현재 열람 권한이 있는 프로젝트 2개/);assert.match(html,/오늘 처리할 일이 없습니다/);assert.match(html,/고객 합의 기한/);assert.match(html,/내부 목표일/);assert.match(html,/실제 작업 시간이나 과부하를 뜻하지/);
+  const f=fixture(),html=await load(f);assert.match(html,/여러 프로젝트의 기한 겹침/);assert.match(html,/1일 · 2개 프로젝트/);assert.match(html,/2개 프로젝트 · 기한 항목 4개/);assert.match(html,/내가 처리할 일과 별도로/);assert.match(html,/현재 열람 권한이 있는 프로젝트 2개/);assert.match(html,/오늘 처리할 일이 없습니다/);assert.match(html,/합의한 전달일/);assert.match(html,/내부 목표일/);assert.match(html,/실제 작업 시간이나 과부하를 뜻하지/);
   assert.deepEqual(f.requests.map(request=>request.path),['/api/workday','/api/client-workflow','/api/publication-workflow']);assert.equal(f.timers.size,1);assert.equal([...f.timers.values()][0].delay,10000);assert.equal(f.state.personalItems.length,0);
 });
 
