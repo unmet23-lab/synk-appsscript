@@ -29,7 +29,7 @@
 |---|---|---|---|
 | 1 | 기술 30개 | talk `contents/토픽퀴즈문항.js` | `{skill_id, label_ko, domain}` — 문법 18 · 표현 5 · 어휘 7. 선행·난이도 칸 없음 |
 | 2 | 기술 → 문법 코드 | 같은 파일 | 예: `skill-ko-grammar-honorific` → `['G211']`. 한 기술이 두 급에 걸치는 경우가 있다(`connective-reason`: G308 1급 · G410 2급) |
-| 3 | 문법 코드와 도입급 | 정본 appsscript `엔진_콘텐츠AI.js`의 `GRAMMAR_BANK` → `tools/문법급수계약.js`·`tools/계약동기화.js`로 talk `lib/문법급수.js`에 사본 | 코드 91개. 문항 급수 = 딛는 문법들의 도입급 **최댓값**. 문법 축이 없는 기술(어휘 7 · 조사 2)은 급이 「없다」 — 이를 「밴드 밖」과 합치지 않는다 |
+| 3 | 문법 코드와 도입급 | 정본 appsscript `strata/grammar-bank.js`의 `GRAMMAR_BANK`(2026-10-17 옛 `엔진_콘텐츠AI.js`에서 바이트 그대로 옮김) → `tools/문법급수계약.js`·`tools/계약동기화.js`로 talk `lib/문법급수.js`에 사본 | 코드 91개. 문항 급수 = 딛는 문법들의 도입급 **최댓값**. 문법 축이 없는 기술(어휘 7 · 조사 2)은 급이 「없다」 — 이를 「밴드 밖」과 합치지 않는다 |
 | 4 | DB 표 | talk `supabase/L0_스키마.sql` `engine.skills` | `skill_id`·`label_ko`·`label_mn`·`domain`·**`parent_id`**·`superseded_by`·**`error_tags text[]`**·`schema_ver`. 상위 마디와 오류 태그를 담을 칸이 이미 있다 |
 | 5 | 오류 유형 23개(+오류없음) | appsscript `계약/수집_교정_계약.json` `오류태그` | 몽골어 화자를 겨냥한 축(조사·어미·높임·어휘·맞춤법·어순·누락·중복·화용) |
 | 6 | 오류 유형 ↔ 기술 | talk `lib/태그기술표.js` | **8쌍만** 잇고 15개는 「대응없음」. 원칙: 뜻이 온전히 겹칠 때만 잇는다. `tests/태그기술표.test.js`가 23개의 완전 분할을 잰다 |
@@ -147,7 +147,7 @@
 - AI 초안은 막는 데 쓰지 않는다(§5-4).
 - AI 초안 생성은 비용 안전장치의 한도 안에서 실행한다(구현 명세 §6-3). 한도를 넘으면 그날의 지도 갱신만 중단한다.
 - 학생에게 보이는 것은 자기 지도뿐이다.
-- 계약 JSON·`GRAMMAR_BANK`·문항 팩은 각자의 정본으로 남는다. Strata는 그것을 **읽어 모으고**, 거꾸로 덮어쓰지 않는다. 정본을 Strata로 옮길지는 첫 판이 돈 뒤에 정한다.
+- 계약 JSON·`GRAMMAR_BANK`·문항 팩은 각자의 정본으로 남는다. Strata는 그것을 **읽어 모으고**, 거꾸로 덮어쓰지 않는다. **2026-10-17:** `GRAMMAR_BANK`(+`LEVEL_TOPIK_BAND`)는 옛 학원 코드를 지우며 `strata/grammar-bank.js`로 옮겼다 — 자리만 Strata 폴더로 왔고 지도와는 여전히 따로인 원천이다(지도는 이 파일 전체의 LF 해시를 `sources.grammar_bank`에 적는다). 내용은 그대로이고 지도 판(`map_ver`)은 원천 경로·해시가 바뀐 만큼만 바뀌었다(`strata-ko-1-b91f23e62ef678cb` → `strata-ko-1-24a57ca32688379d`, 판은 빌더가 본문 해시로 정하므로 손으로 올리지 않는다).
 
 ## 10. 상태
 

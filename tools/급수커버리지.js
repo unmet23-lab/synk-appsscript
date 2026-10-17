@@ -58,7 +58,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const 뱅크파일 = path.join(ROOT, '엔진_콘텐츠AI.js');
+const 뱅크파일 = path.join(ROOT, 'strata', 'grammar-bank.js');
 const 커리큘럼파일 = path.join(ROOT, 'docs', '커리큘럼_정본_v1.md');
 
 /* 우리 과정 상한은 5급이다(커리큘럼 정본 v1.2 ⓪ 「6급 반은 열지 않는다」). 6급은 참조 절로만 산다. */
@@ -132,8 +132,8 @@ function 슬래시전개(문형) {
 }
 
 /* ══════════════════════════════════ ① 뱅크 읽기
- * `엔진_콘텐츠AI.js` 는 Apps Script 소스라 require 로 못 읽는다(전역 스코프·GAS 전용 심볼).
- * 그래서 `GRAMMAR_BANK` 배열 리터럴만 원문에서 떼어 판다 — 실행하지 않는다. */
+ * 뱅크 원천 `strata/grammar-bank.js`(10-17 옛 Apps Script 소스 `엔진_콘텐츠AI.js` 에서 바이트 그대로 옮김)에서
+ * `GRAMMAR_BANK` 배열 리터럴만 원문에서 떼어 판다 — 실행하지 않는다. */
 function 뱅크읽기() {
   let src;
   try { src = fs.readFileSync(뱅크파일, 'utf8'); }

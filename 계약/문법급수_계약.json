@@ -1,7 +1,7 @@
 {
   "이름": "문법 급수 계약 — TOPIK 도입급·재출현급",
   "판": "g1",
-  "정본": "SYNK-appsscript `엔진_콘텐츠AI.js` GRAMMAR_BANK · LEVEL_TOPIK_BAND",
+  "정본": "SYNK-appsscript `strata/grammar-bank.js` GRAMMAR_BANK · LEVEL_TOPIK_BAND",
   "생성": "node tools/문법급수계약.js — **손으로 고치지 않는다**(다음 생성에서 통째로 덮인다)",
   "근거뜻": {
     "요": "커리큘럼 정본 §3 문법 요목에 그 문형이 직접 있다",

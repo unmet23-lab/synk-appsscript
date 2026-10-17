@@ -1,7 +1,5 @@
 # 라이브(Apps Script)에는 실제 코드만 올린다. 테스트·문서·스킬은 GitHub 백업 전용.
 # 2026-10-02 학원 운영 시스템을 지운 뒤 남은 것은 @synkbrief 자료 DM(Code.js + 엔진_synkbrief.js)이다.
-# 엔진_콘텐츠AI.js는 올리지 않는다. Strata 지도(strata/maps/ko.json)가 이 파일 안의 문법 뱅크(GRAMMAR_BANK)를
-# 원천으로 읽고 파일 해시를 고정하고 있어서, 문법 뱅크를 따로 옮길 때까지 바이트 그대로 둔다.
 **/*
 !appsscript.json
 !Code.js

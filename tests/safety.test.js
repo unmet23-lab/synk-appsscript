@@ -21,9 +21,7 @@ const { ROOT, liveFiles } = require('./_engine-source');
 const 읽기 = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 // 라이브에 올리지 않고 저장소에만 두는 루트 Apps Script 파일. 이유가 있는 것만 적는다.
-const 올리지않는파일 = {
-  '엔진_콘텐츠AI.js': 'Strata 지도(strata/maps/ko.json)가 이 파일의 문법 뱅크를 원천으로 읽고 파일 해시를 고정한다',
-};
+const 올리지않는파일 = {};
 
 test('라이브에 올라가는 파일은 Code.js와 엔진_synkbrief.js 둘이고 구문이 정상이다', () => {
   const 전수 = liveFiles();

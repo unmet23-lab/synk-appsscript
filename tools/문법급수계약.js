@@ -3,7 +3,7 @@
  * `계약/문법급수_계약.json` 생성기 — 뱅크(정본) → 계약 파일(파생).
  *
  * ■ 왜 있나 — 급수를 **두 곳에 적지 않으려고**
- *   TOPIK 급수의 정본은 `엔진_콘텐츠AI.js` 의 `GRAMMAR_BANK` 칸 4·5·6 하나다(v9.218).
+ *   TOPIK 급수의 정본은 `strata/grammar-bank.js` 의 `GRAMMAR_BANK` 칸 4·5·6 하나다(v9.218 · 10-17 옛 `엔진_콘텐츠AI.js` 에서 옮김).
  *   그런데 그 값을 실제로 쓸 자리는 형제 저장소(SYNK-talk)의 문항팩·배정이다 —
  *   저장소가 둘이라 서로의 CI 가 상대를 못 본다(`tests/계약.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 머리말과 같은 층).
  *   손으로 옮기면 언젠가 한 급이 어긋나고, **어긋난 급수 태그는 화면에 아무 표시도 안 낸다**
@@ -46,7 +46,7 @@ function 계약짓기(소스) {
   return {
     이름: '문법 급수 계약 — TOPIK 도입급·재출현급',
     판,
-    정본: 'SYNK-appsscript `엔진_콘텐츠AI.js` GRAMMAR_BANK · LEVEL_TOPIK_BAND',
+    정본: 'SYNK-appsscript `strata/grammar-bank.js` GRAMMAR_BANK · LEVEL_TOPIK_BAND',
     생성: 'node tools/문법급수계약.js — **손으로 고치지 않는다**(다음 생성에서 통째로 덮인다)',
     근거뜻: { 요: '커리큘럼 정본 §3 문법 요목에 그 문형이 직접 있다', 표: '요목 밖 — 국제통용 표준 배정(교재 6권 확정 시 재검토 대상)' },
     읽는_법: '도입급 = 처음 다루는 TOPIK 급(1~5 · 6급 반은 열지 않는다) · 재출현급 = 상위 급 심화·복습(없으면 null)',

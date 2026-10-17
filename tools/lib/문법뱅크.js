@@ -1,6 +1,6 @@
 'use strict';
 /**
- * `GRAMMAR_BANK` · `LEVEL_TOPIK_BAND` 를 엔진 소스에서 **값으로** 꺼내는 유일한 통로.
+ * `GRAMMAR_BANK` · `LEVEL_TOPIK_BAND` 를 원천 파일(`strata/grammar-bank.js`)에서 **값으로** 꺼내는 유일한 통로.
  *
  * ■ 왜 통로가 하나여야 하나
  *   Apps Script 는 JSON 을 import 못 해 뱅크는 **소스 안 배열 리터럴**로만 존재한다
@@ -10,33 +10,37 @@
  *   (`tests/_engine-source.js` 머리말이 실측한 그 실패 모양). 회귀와 생성기가 같은 자를
  *   쓰게 두는 것이 이 파일의 전부다.
  *
- * ■ 기본 읽기 대상은 `엔진_콘텐츠AI.js` 하나다 — 못 찾으면 **던진다**
- *   회귀는 엔진 전량(`engineSource()`)을 넘겨 받으므로 파일이 쪼개져도 산다. 생성기는
- *   자기가 이름 댄 파일만 본다 — 뱅크가 다른 파일로 옮겨 가면 **소리 내며 죽는 것**이
+ * ■ 기본 읽기 대상은 `strata/grammar-bank.js` 하나다 — 못 찾으면 **던진다**
+ *   생성기는 자기가 이름 댄 파일만 본다 — 뱅크가 다른 파일로 옮겨 가면 **소리 내며 죽는 것**이
  *   맞다(조용히 빈 계약을 뱉으면 형제 저장소가 그 빈 값을 정본으로 믿는다).
+ *   2026-10-17 옛 학원 코드 `엔진_콘텐츠AI.js` 에서 바이트 그대로 옮겨 왔다(그 파일은 지웠다).
+ *   `require` 로 받지 않고 원문을 자르는 까닭: Strata 빌더가 해시를 잰 바로 그 원문에서 값을 펴야
+ *   해시와 값이 다른 판을 가리킬 수 없다.
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const 엔진파일 = '엔진_콘텐츠AI.js';
+const 뱅크파일 = path.join('strata', 'grammar-bank.js');
 
 /* 끝 표식은 주석 문구가 아니라 **코드 심볼**로 잡는다 — 문구 앵커는 그 문구를 다듬는
  * 순간 죽는다(`tests/문법급수.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 가 먼저 적어 둔 규칙 · 여기가 그 규칙의 집이다). */
 const 시작표식 = 'const GRAMMAR_BANK = [';
-const 끝표식 = 'function grammarStageOf_';
+const 끝표식 = 'module.exports = { GRAMMAR_BANK, LEVEL_TOPIK_BAND };';
 
 /**
- * @param {string} [소스] 엔진 소스 전문. 없으면 `엔진_콘텐츠AI.js` 를 읽는다.
+ * @param {string} [소스] 뱅크 원천 전문. 없으면 `strata/grammar-bank.js` 를 읽는다.
  * @returns {{GRAMMAR_BANK: any[][], LEVEL_TOPIK_BAND: Record<string, number[]>}}
  */
 function 뱅크읽기(소스) {
-  const code = 소스 != null ? String(소스) : fs.readFileSync(path.join(ROOT, 엔진파일), 'utf8');
+  const code = 소스 != null ? String(소스) : fs.readFileSync(path.join(ROOT, 뱅크파일), 'utf8');
   const s = code.indexOf(시작표식);
-  if (s === -1) throw new Error(`GRAMMAR_BANK 선언을 못 찾았다(${엔진파일}) — 상수명이 바뀌었으면 tools/lib/문법뱅크.js 부터 고쳐라`);
+  if (s === -1) throw new Error(`GRAMMAR_BANK 선언을 못 찾았다(${뱅크파일}) — 상수명이 바뀌었으면 tools/lib/문법뱅크.js 부터 고쳐라`);
+  /* 선언 글자가 두 번 나오면(주석에 그대로 적은 경우 등) 첫 자리에서 자르게 돼 엉뚱한 구간을 편다 — 10-17 머리 주석으로 밟았다. */
+  if (code.indexOf(시작표식, s + 1) !== -1) throw new Error(`GRAMMAR_BANK 선언 글자(${시작표식})가 두 번 나온다 — 주석에 그 글자를 그대로 적지 않는다`);
   const e = code.indexOf(끝표식, s);
-  if (e === -1) throw new Error(`GRAMMAR_BANK 블록 끝 표식(${끝표식})을 못 찾았다 — 뱅크와 게이트 사이에 다른 것이 끼었는지 본다`);
+  if (e === -1) throw new Error(`GRAMMAR_BANK 블록 끝 표식(${끝표식})을 못 찾았다 — 뱅크 원천 끝의 내보내기 줄이 바뀌었는지 본다`);
   return new Function(`${code.slice(s, e)}\n return { GRAMMAR_BANK, LEVEL_TOPIK_BAND };`)();
 }
 
-module.exports = { ROOT, 엔진파일, 시작표식, 끝표식, 뱅크읽기 };
+module.exports = { ROOT, 뱅크파일, 시작표식, 끝표식, 뱅크읽기 };
