@@ -73,11 +73,11 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>operation==='platformLoad'?{ok:true,scope:'synk-personal',resource:'platform-library',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-insight-view','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-insight-view','subscriptions','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-insight-view|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-insight-view|subscriptions|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
@@ -481,8 +481,9 @@ test('a late startup environment result cannot remove a recovered preview capabi
 });
 
 test('preview app information uses its own published availability instead of denying every account connection',async()=>{
-  const {MEMBER_BENEFITS}=await import('../renderer/benefits.mjs');
-  for(const item of MEMBER_BENEFITS){const f=await fixture({initialAuth:account('availability-'+item.id,[item.id])});assert.equal(await f.ready,'true');await f.action({detail:'info'});assert.ok(f.element('detail-content').innerHTML.includes(item.availability));assert.doesNotMatch(f.element('detail-content').innerHTML,/운영 SYNK ID 동기화는 아직 제공하지 않습니다/);}
+  const {MEMBER_BENEFITS}=await import('../renderer/benefits.mjs'),{APPS}=await import('../renderer/state.mjs');
+  // AI 구독 계정판처럼 회원 혜택 화면 안에서만 여는 혜택은 앱 정보 화면이 없다.
+  for(const item of MEMBER_BENEFITS.filter(benefit=>APPS[benefit.id])){const f=await fixture({initialAuth:account('availability-'+item.id,[item.id])});assert.equal(await f.ready,'true');await f.action({detail:'info'});assert.ok(f.element('detail-content').innerHTML.includes(item.availability));assert.doesNotMatch(f.element('detail-content').innerHTML,/운영 SYNK ID 동기화는 아직 제공하지 않습니다/);}
 });
 
 test('browser-only benefit previews retain public anchors and create no native launch history',async()=>{

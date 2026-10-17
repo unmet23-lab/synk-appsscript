@@ -8,6 +8,8 @@ export const APPS={
   pulse:{name:'SYNK PULSE',short:'PULSE',icon:'messenger.png',category:'CAST · CREATE · REVIEW',description:'모델 선택부터 시안 검토와 승인까지.',cover:'laptop.webp',alt:'고객과 작품 협업을 나타내는 승인 펠트 노트북',caption:'CLIENT STUDIO · PROJECT & REVIEW',stage:'preview',previewLabel:'모델·제작 진행',audience:'광고 제작 고객·창작자·파트너',keywords:'펄스 pulse partners 파트너 창작자 외부 고객 작품 프로젝트 발주 피드백 영상 브랜드 콘텐츠 포트폴리오 모델 캐스팅 광고 제작 진행 수정 의견 승인',summary:'모델과 작업을 고르고, 연결한 프로젝트의 진행 단계·수정 의견·시안 승인을 함께 확인합니다.',boundary:'초대 링크로 연결한 프로젝트의 의견과 승인은 담당자와 공유됩니다. 제작 요청 초안은 현재 기기에 저장하며 기존 상담 채널로 전달합니다.',features:[['모델·포트폴리오','공개 모델과 작업을 살펴보고 제작 요청에 담습니다.'],['제작 진행·수정 의견','초대한 프로젝트의 단계와 시안을 확인하고 버전·장면별 의견을 남깁니다.'],['시안 최종 승인','확인한 최신 시안의 승인 버전과 일시를 기록하고 최종 파일을 확인합니다.']]},
 };
 for(const benefit of MEMBER_BENEFITS){
+  // AI 구독 계정판은 회원 혜택 화면 안에서만 열리며 앱 목록·실행 권한과 연결하지 않는다.
+  if(benefit.id==='subscriptions')continue;
   if(benefit.id==='care'){
     APPS.care={name:'SYNK 플레저',short:'플레저',icon:benefit.asset,category:'REMEMBER · CARE · CONNECT',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'RELATIONSHIP CARE · LOCAL MVP',stage:'preview',previewLabel:'플레저 · 로컬 MVP',audience:'생일·경조사와 연락을 챙기고 싶은 사람',keywords:'플레저 챙김 관계 생일 경조사 기념일 결혼 부고 연락 말투 녹음 대화',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
     continue;

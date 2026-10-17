@@ -35,6 +35,7 @@ const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
 const {launchWindowsUpdate}=require('./platform-update-handoff.cjs');
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
+const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -90,6 +91,10 @@ function sendTeachingView(){if(pendingTeachingView&&runtime.clientId==='messenge
 const accountStatus=()=>suitePublisher?suitePublisher.project(auth.status()):auth?.status();
 const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.resolve({ok:false,code:'SUITE_UNAVAILABLE'}):operation();
 const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
+// AI 구독 계정판: 플랫폼 창에서 로그인한 회원만, 공식 프로그램 출력만 읽는다(ai-subscriptions.cjs).
+let aiSubscriptions=null;
+function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot)});return aiSubscriptions;}
+function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 function pulseResourceAllowed(value){
   try{const url=new URL(value);return url.origin===PULSE_ORIGIN&&!url.username&&!url.password&&(url.pathname.startsWith('/pulse/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}catch{return false;}
 }
@@ -125,6 +130,7 @@ function openPulseReview({session:isolated,url}){
   return review;
 }
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();});
+app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
     // will-quit runs only after the normal window/draft guards accepted. Hold
@@ -284,6 +290,16 @@ function createWindow(){
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
     'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
+    'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
+    'synk:subscriptions-check':()=>subscriptionCall(s=>s.check()),
+    'synk:subscriptions-use-existing':service=>subscriptionCall(s=>s.useExisting(service)),
+    'synk:subscriptions-login':(service,options)=>subscriptionCall(s=>s.startLogin(service,{email:options?.email,console:options?.console===true})),
+    'synk:subscriptions-code':(id,code)=>subscriptionCall(s=>s.submitCode(id,code)),
+    'synk:subscriptions-cancel':id=>subscriptionCall(s=>s.cancelLogin(id)),
+    'synk:subscriptions-open-url':id=>subscriptionCall(s=>s.openLoginUrl(id)),
+    'synk:subscriptions-install':service=>subscriptionCall(s=>s.openInstaller(service)),
+    'synk:subscriptions-help':key=>subscriptionCall(s=>s.openHelp(key)),
+    'synk:subscriptions-save':patch=>subscriptionCall(s=>s.save(patch)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

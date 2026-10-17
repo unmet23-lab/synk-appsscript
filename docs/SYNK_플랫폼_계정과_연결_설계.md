@@ -1,5 +1,36 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-ai-subscriptions-20261017"></a>
+## 2026-10-17 AI 구독 계정판 — PC 앱 회원 혜택
+
+사용자 요청 「디스트보 앱 회원 혜택으로 진행해줘. 비슷한 서비스 조사부터하고. 초보들에게 하기쉽게 가이드도 제대로 함께」. 유호님이 직접 쓰던 [개인 계정판](https://claude.ai/artifact/1RmxsyTDjso5vqPR3E6FuY)을 회원 누구나 쓰는 무료 혜택으로 옮긴다.
+
+**목적과 성공 기준.** 여러 AI 구독과 계정을 쓰는 사람(개발자가 아닌 사람 포함)이 한도·초기화 시각·결제일·월 구독료를 한 화면에서 본다. 처음 연결은 안내만 따라 10분 안, 그 뒤로는 「지금 확인」 한 번에 전부 갱신, 로그인 정보는 PC 밖으로 나가지 않는다.
+
+**조사(2026-10-17, 원문 확인).**
+
+| 사례 | 사용자 반응 | 가져올 점 |
+|---|---|---|
+| [CodexBar](https://github.com/steipete/CodexBar)(별 2.26만, macOS·Linux만) | 「무료 중 최고」(r/ClaudeCode 01-22). 불만: 키체인 암호 창 반복(#108·#340·#2115), 느려짐(#1274), 다계정 미지원(#81) | 여러 서비스 한 화면, 초기화까지 남은 시간, 공식 경로 우선 |
+| [Win-CodexBar](https://github.com/nesszer/Win-CodexBar)(별 1.2k) | `/usage`를 대화형 화면으로 긁다 Windows에서 깨짐(#760 글자 깨짐, #778 시작 안내 창) | 대화형 화면 대신 `claude -p "/usage"` 출력만 읽고 버전별로 시험 |
+| [Usage Monitor for Claude](https://github.com/jens-duttke/usage-monitor-for-claude)(Windows) | 계정마다 설정 폴더로 다계정. 불만: 백신 오탐(07~09월), 토큰 오류(#89) | 계정마다 설정 폴더를 나누는 방식 |
+| ccusage·Claude-Code-Usage-Monitor | 추정치가 실제 한도와 어긋남(ccusage #483) | 값마다 출처(공식값·직접 넣음·오래됨) 표시 |
+| Bobby·Rocket Money·왓섭 | 월 합계·다음 결제일 한 화면, 결제 3·1일 전 알림이 호평. 불만: 알림 안 옴, 조용한 연결 끊김, 해외 구독 누락 | 지금 볼 것(결제 임박), 마지막으로 읽은 시각, 손입력 구독 |
+| [Zapier 연결 관리](https://help.zapier.com/hc/en-us/articles/8496290788109)·[Claude Code 터미널 안내](https://code.claude.com/docs/en/terminal-guide) | 활성/만료 상태와 다시 연결 단추, 성공·오류 문구를 미리 보여 주는 단계 안내 | 연결 상태 칩, 단계별 초보 가이드 |
+
+수요 신호: Claude Code [다중 계정 전환 요청](https://github.com/anthropics/claude-code/issues/18435) 찬성 912. 비어 있는 자리: Windows에서 여러 계정을 한 화면에, 한국어로, 터미널 지식 없이 보는 도구가 거의 없다. 초보가 막히는 곳은 설치 뒤 명령을 못 찾음(PATH), 긴 로그인 주소 잘림, 코드 붙여넣기([#47699](https://github.com/anthropics/claude-code/issues/47699)), 브라우저의 다른 계정, Codex 휴대폰 인증([#20161](https://github.com/openai/codex/issues/20161)), VPN·백신이다. 한계: Reddit 원문은 일부 사본만, 앱스토어 리뷰는 최신 50건 단위로 봤다.
+
+**약관과 읽는 경로.** Anthropic [법률·준수 문서](https://code.claude.com/docs/en/legal-and-compliance)는 다른 개발자 도구가 Claude.ai 자격·세션 토큰을 수집·저장·중개하는 것을 금한다. 그래서 회원판은 토큰 파일을 열지 않고 각 서비스의 **공식 프로그램 출력만** 읽는다.
+
+- Claude: 공식 Claude Code의 `claude -p "/usage"` 출력(세션·주간·모델별 %와 초기화 시각). 계정마다 `CLAUDE_CONFIG_DIR` 폴더를 나눈다. 10-17 실측으로 비대화형 출력이 바로 나옴을 확인했다.
+- GPT: OpenAI 공식 [Codex app-server](https://learn.chatgpt.com/docs/app-server)의 `account/read`·`account/rateLimits/read`. 계정마다 `CODEX_HOME` 폴더를 나눈다.
+- Higgsfield: 공식 CLI `higgsfield account status --json`.
+- Gemini·Suno 등 공식 출력이 없는 서비스는 직접 넣는다.
+
+**SYNK 적용.** 설치된 플랫폼은 회원 혜택을 공개 웹으로 열기 때문에, PC 프로그램을 실행해야 하는 이 혜택만은 「내 성향 확인하기」처럼 플랫폼 앱 안의 화면(`embedded`)으로 둔다. 데스크톱 본체 모듈이 정해진 세 공식 명령만 고정 인자로 실행하고, 화면에는 결과 숫자만 넘긴다. 화면은 개인판의 세 층(지금 볼 것 → 한도 종류별 서비스 한 줄 표와 구독료 → 계정 상세·7일 일정)을 따른다. 처음 쓰는 사람에게는 점검 → 설치 → 로그인 → 첫 읽기의 단계 가이드와 막힘별 안내를 붙이고, 로그인 코드는 앱 안 칸에 붙여 넣게 한다. 기록은 이 PC에만 둔다. 회원 혜택이므로 SYNK ID 로그인 뒤에 쓴다.
+
+**경계와 확인할 결과.** 웹 플랫폼은 소개만 보여 준다. 공식 프로그램의 출력 모양이 바뀌면 고쳐야 하며, 설치본 배포·웹 공개는 별도 승인이다. 확인할 것은 처음 연결까지 걸린 시간과 막힌 단계, 「지금 확인」 성공률, 출력 해석 실패 빈도다.
+
 <a id="platform-always-on-20261011"></a>
 ## 2026-10-11 모든 플랫폼의 PC 독립 상시 운영
 

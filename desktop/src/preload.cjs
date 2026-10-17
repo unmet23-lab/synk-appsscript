@@ -1,6 +1,8 @@
 'use strict';
 const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
+const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install'];
+const unknownSubscription=code=>Promise.resolve({ok:false,code});
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   teacher:Object.freeze({
     getEnvironment:()=>ipcRenderer.invoke('synk:teacher-environment'),
@@ -48,6 +50,19 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   companyRequest:(operation,params={})=>ipcRenderer.invoke('synk:company-request',operation,params),
   pulseRequest:(operation,params={})=>ipcRenderer.invoke('synk:pulse-request',operation,params),
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
+  subscriptions:Object.freeze({
+    snapshot:(options={})=>ipcRenderer.invoke('synk:subscriptions-snapshot',{refreshTools:options?.refreshTools===true}),
+    check:()=>ipcRenderer.invoke('synk:subscriptions-check'),
+    useExisting:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-use-existing',service):unknownSubscription('UNKNOWN_SERVICE'),
+    login:(service,options={})=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-login',service,{email:typeof options?.email==='string'?options.email.trim().slice(0,254):undefined,console:options?.console===true}):unknownSubscription('UNKNOWN_SERVICE'),
+    submitCode:(id,code)=>typeof id==='string'&&typeof code==='string'?ipcRenderer.invoke('synk:subscriptions-code',id,code.slice(0,2048)):unknownSubscription('INVALID_CODE'),
+    cancel:id=>typeof id==='string'?ipcRenderer.invoke('synk:subscriptions-cancel',id):unknownSubscription('NO_LOGIN'),
+    openLoginUrl:id=>typeof id==='string'?ipcRenderer.invoke('synk:subscriptions-open-url',id):unknownSubscription('NO_URL'),
+    install:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-install',service):unknownSubscription('UNKNOWN_SERVICE'),
+    help:key=>SUBSCRIPTION_HELP.includes(key)?ipcRenderer.invoke('synk:subscriptions-help',key):unknownSubscription('UNKNOWN_LINK'),
+    save:patch=>patch&&typeof patch==='object'?ipcRenderer.invoke('synk:subscriptions-save',JSON.parse(JSON.stringify(patch))):unknownSubscription('INVALID_REQUEST'),
+    onChanged:callback=>subscribe('synk:subscriptions-changed',callback),
+  }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),
   onClientProgress:callback=>subscribe('synk:client-progress',callback),
