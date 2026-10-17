@@ -44,15 +44,30 @@
 | `plan-set-v2.cjs` → `gen-gemini.cjs` | 확정 모델의 15컷 세트 생성(`node plan-set-v2.cjs <key> > jobs/x.json`, `node gen-gemini.cjs jobs/x.json 2 --유료-api`) |
 | `plan-concept-v3.cjs` | 콘셉트별 새 얼굴 후보 |
 | `tts-test.cjs`, `voice-check.cjs` | 목소리 생성과 점검 |
-| `site-src/`, `build-site.cjs` | 홈페이지 원고와 빌드. `node build-site.cjs` → `site/index.html`(홈페이지용), `site/artifact.html`(claude.ai 보기용), `site/img`, `site/voice` |
+| `catalog.json` | 모델 고르기 설정(2026-10-17). 업종 10·분위기 7 분류와 브리프 낱말, 모델별 추가 자료(키 비교 띠 좌표·몸 비율 측정값·업종이 붙은 사진·장면 사진·움직임·얼굴 기준·연출). 아래 [모델 고르기](#model-picker-20261017) |
+| `site-src/`, `build-site.cjs` | 고르기 화면 원고와 빌드. `node build-site.cjs` → `site/index.html`(홈페이지용), `site/artifact.html`(claude.ai 보기용), `site/img`, `site/voice`, `site/video`. 판단 함수는 `site-src/casting-logic.js`(화면·빌드·시험이 같이 씀), 시험 `node --test tests/pulse-캐스팅고르기.test.js` |
 | `make-hover.py`, `hover-align.json` | 목록 카드에 마우스를 올리면 보이는 웃음 사진(`raw/<key>-hover.png` → `site/img/<코드>/hover-s.webp`). 웃음 컷을 대표 사진과 같은 눈 위치·얼굴 크기로 옮겨, 바뀌는 동안 두 얼굴이 겹쳐 다른 사람처럼 보이지 않게 한다(09-30에 이 문제로 뺐다가 10-02에 다시 넣음). 맞춤 값(두 눈 가운데·배율)은 얼굴 점 측정으로 재서 json에 적었다. 대표 사진이나 웃음 컷을 바꾸면 다시 재고 `python make-hover.py` → `node build-site.cjs`. hover 사진이 없는 모델은 카드가 바뀌지 않는다. 10-02부터 카드의 대표·웃음 사진은 `srcset`으로 고밀도 화면에서 큰 판(1600px)을 쓴다. 538px만 쓰면 2배 화면에서 늘어나 흐려 보였다(「화질이 좀 아쉽네」) |
 | `raw/` | 생성 원본(PNG 2K). 용량이 커서 Git에 넣지 않는다 |
 | `review/` | 사용자에게 보여 준 비교판 |
 | `roster.json`, `plan-set.cjs`, `run-jobs.cjs` | 처음 방향(40대 포함·자연스러운 인상)의 기록. F01 서아 세트가 여기서 나왔고 새 방향에서는 쓰지 않는다 |
 
+<a id="model-picker-20261017"></a>
+
+## 모델 고르기 (2026-10-17)
+
+유호님 「학습하고 나서 클라이언트가 이 모델 고르기 편하게 시스템도 하나 만들자」(하린 명세서 v1 작업 중). 새로 만들지 않고 이 캐스팅북을 키웠다. 모델 자료·빌드·목소리·문의 글 흐름이 이미 있었고, 빠진 것은 거르기 폭·비교·추천·명세서 자료·화면 틀이었다. 화면은 펠트 스크랩북 판을 버리고 PULSE 고객 화면의 10-17 밝은 스튜디오 판(결정 표 10-17) 토큰과 글자 단계(680·650·600·550·450, 한글 13px 이상)로 다시 짰다.
+
+- 흐름: 첫 화면 키 눈금(7명을 정수리~신발 바닥 cm 그대로 세움) → 브리프 추천(업종·제품·분위기·성별·나이대 → 3명, 고른 이유와 그 업종 사진) → 거르기(성별·나이대·콘셉트·키 구간·업종) → 카드 → 상세(기본 정보·얼굴 각도·전신 각도·표정·헤어·룩·디테일·장면 사진·움직임·몸과 비율·얼굴과 색·어울리는 연출, 오른쪽에 헤어·목소리 고르기) → 비교(3명까지, 같은 컷 바꿔 보기, 같은 눈금 키 비교, 수치·사이즈·헤어·목소리·업종·브리프와 맞는 점) → 내 선택(크몽 메시지·발주서 메모 두 모양으로 복사, 함께 비교한 모델과 손댄 브리프도 들어감).
+- 추천 규칙(`site-src/casting-logic.js`): 고른 업종 3점, 제품 설명 낱말로 찾은 업종 2점, 설명에 세부 분야(`catalog.json`의 `sub`, 예: 아이스크림 → 디저트)가 있으면 업종 문구에 그 분야가 든 모델 +1·없는 모델 -1, 고른 분위기 2점, 낱말로 찾은 분위기 1점, 그 업종 사진이 있으면 0.5점, 같은 점수는 명단 순. 성별·나이대는 거르기로만 쓰고, 성별을 안 골라도 설명에 「여성 니트」처럼 성별 낱말(`genderWords`)이 있으면 그 성별 안에서 찾는다. 확인한 예: 딸기 아이스크림 → 하린·지유·이안, 가계부 앱 → 서진·하린·이안, 남성 향수 → 이안·태준, 프리미엄 위스키 → 태준. 낱말은 긴 것부터 찾아 「아이스크림」 속 「크림」 같은 겹침을 막고, 영문은 낱말 경계에서만 찾는다. 모델 쪽 분류는 `roster-v2.json`의 `fits`·`impression`·`concept` 문구를 `catalog.json`의 분류 낱말에 맞춰 빌드 때 붙인다.
+- 정보가 일부만 있는 모델: 있는 칸만 그린다(「준비 중」 빈 칸을 두지 않음). 비교 표의 빈 값은 「—」, 고른 컷이 없으면 대표 사진과 안내 한 줄. 명세서가 있는 모델만 카드에 「상세 프로필」 꼬리표.
+- 모델 더하기: ① `roster-v2.json`에 한 줄(코드·이름·성별·나이대·콘셉트·인상·업종 문구·키·사이즈·헤어 3·룩 2)과 대표 사진을 더하면 카드·거르기·추천·비교에 나온다. ② 컷 세트(`raw/<key>-<컷>.png`)와 목소리(`voice/<key>-voice-N.wav`, `voices.json`)가 있으면 상세에 붙는다. ③ 키 비교·몸 비율은 정면 전신 사진을 `C:\SYNK-LoRA\tools\measure\measure_body.py`로 재서 `catalog.json`의 `models.<코드>.stand`(정수리·발바닥 px)와 `body`에 적는다. ④ 명세서(`명세서/<코드>_<이름>.json`)가 있으면 몸 비율·색 견본은 명세서에서 읽고, 장면 사진·얼굴 기준·연출은 `catalog.json`에 적는다. 그다음 `node build-site.cjs`. 나이대 칩은 자료에 있는 값으로 생겨서 10대·40대 모델을 더하면 저절로 늘어난다.
+- 사진 원본: 이 PC의 `raw/`에는 하린 것만 있다(10-17 노트북 교체 때 두고 옴). 나머지 6명의 화면용 webp 238장과 목소리 원본 21개는 10-17에 `Documents/PC_백업_20261003/되살리기.py`로 Drive 백업에서 sha256을 맞춰 되살렸다(`site/img`, `voice/`). 빌드는 원본이 없으면 이미 만든 `site/img`를 그대로 쓴다. 원본 PNG가 필요하면 같은 도구에 `docs/마케팅/PULSE_AI모델_캐스팅_20260930/raw/<key>-` 경로를 준다(6명 102장, 약 614MB). 하린 장면 사진은 `C:\SYNK-LoRA\datasets\F02_harin\v2\15~33.jpg`를 쓰고, 키 비교 띠와 움직임 영상은 PULSE 고객 앱의 `pulse-app/assets/casting/`(fullbody·video)을 읽기만 한다.
+- 빌드는 공개 자료에 도구 이름(Gemini·Nano Banana·Higgsfield·LoRA·목소리 이름 등)이 섞이면 멈춘다. PULSE 가상인물 고지는 남긴다.
+
 ## 남은 것
 
 - 모델을 더할 때: `plan-concept-v3.cjs` 후보에서 사용자가 고르면 `roster-v2.json`·`voices.json`에 더하고 `plan-set-v2.cjs` → `gen-gemini.cjs` → (웃음 컷 눈 위치를 재서 `hover-align.json`에 더하고 `python make-hover.py`) → `node build-site.cjs` 순서로 만든다. 10대 후보(상큼·지적)는 아직 아무도 고르지 않았다.
-- 보기용 링크: claude.ai 비공개 아티팩트 `https://claude.ai/artifact/T2j8VmLE4ULUmDKtG8mjA6`. 클라이언트에게 보내려면 공유 설정을 바꿔야 한다.
+- 보기용 링크(비공개): 최신판은 unmet27 계정 `https://claude.ai/artifact/4SisfvgiVZiEPtdwkAhSQC`(10-17 22시, 추천 세부 분야·접근성 점검 반영), 그 앞 1판은 unmet23 계정 `https://claude.ai/artifact/57TU8RBFetfKwAAuBbvruq`. 아티팩트는 올린 계정에만 묶여서, 세션 계정이 바뀌면 전역 훅이 그 계정 몫 사본(`site/artifact-accounts/<메일>/`)으로 새 주소를 만든다. 새 주소에는 사진·소리 파일을 따로 다시 올려야 한다(파일 306개, 한 번에 255개까지라 나눠서, 한 번에 많이 보내면 연결이 끊겨 110개 안팎씩 세 번에 올렸다). 페이지만 바뀌면 `site/artifact.html`만 다시 올리면 파일은 남는다. 10-02 캐스팅북 `https://claude.ai/artifact/T2j8VmLE4ULUmDKtG8mjA6`은 다른 계정에 올린 것이라 지금 계정에서는 열리지 않는다. 클라이언트에게 보내려면 공유 설정을 바꿔야 한다(유호님 확인 뒤).
+- 고르기 1판의 남은 일: Fable 검수(10-17 주간 한도로 중간에 멈춤, 10-19 12시 이후 이어서), 하린 외 6명의 명세서·장면 사진(하린과 같은 순서로 만들면 `catalog.json`에 적는 것만으로 화면에 붙는다), PULSE 고객 앱 「모델 선택」에서 이 페이지의 모델 상세로 잇기(고객 앱은 다른 세션의 리디자인이 확인 대기라 그 뒤에), 공개 위치.
 - 공개 위치(synk.im 하위 경로 등)는 사용자 결정 전이다. 배포하지 않았다.
 - 움직이는 영상 시안(걷기·말하기)은 아직 만들지 않았다.
