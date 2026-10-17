@@ -13,6 +13,9 @@
 
 **2026-10-02 추가 확인:** 미니게임의 TOPIK I 듣기·읽기 15개 연습 항목은 별도 원본 [topik-i.skills.json](../strata/topik-i.skills.json)에서 [topik-i.json](../strata/maps/topik-i.json)으로 생성한다. `node tools/build-game-learning.js --check`가 원본 해시와 게임용 공통 소비 사본의 일치를 확인한다. [game-browser.js](../atlas/game-browser.js)가 이 지도를 열고 Core의 형식·난이도별 요약과 추천에 전달한다. `ko.json`의 기술·문법 지도와 목적이 다른 자료이며 중급 전체 경로가 생긴 것은 아니다. [strata.test.js](../tests/strata.test.js)로 원본 재생성, 누락·순환·급수 역전 거부, 초안 선행의 비차단, 호출자 변경 격리를 확인했다. 현재 코드에 재현된 조회 오류는 없어 조회 모듈을 임의로 다시 나누지 않았다.
 
+<a id="topik-ii-map"></a>
+**2026-10-17 중급(TOPIK II) 지도:** TOPIK I 15개 능력 다음의 중급 능력 13개를 별도 원본 [topik-ii.skills.json](../strata/topik-ii.skills.json)에 두고 `node tools/build-topik-ii.js [--check]`로 [maps/topik-ii.json](../strata/maps/topik-ii.json)을 만든다. 능력과 이름은 [TOPIK 4급 학습 설계](디자인/싱크타운_TOPIK4_학습설계와_원고.md#atlas) §3의 「추가 지도·형식 필요」와 §6의 추가 중급 능력·쓰기 형식에서 그대로 가져왔다 — 듣기 셋(의도·태도, 긴 담화의 핵심·수치, 추론), 읽기 여섯(추론, 필자의 관점·사실/의견, 복수 자료, 문맥 속 어휘·문법, 문장 넣기·문단 순서, 여러 문단 요약), 쓰기 넷(메모·요약, 문맥 문장 완성, 자료 설명, 의견 전개). 같은 설계가 「핵심」 항목에 몰아넣지 말라고 했으므로 TOPIK I id를 다시 쓰지 않으며(빌드가 거절), 선행이 가리킬 수 있게 TOPIK I 능력 15개를 같은 id·이름으로 함께 싣는다. 마디마다 그 설계의 대표 과제(T05·T06·T11~T20)와 24단원 칸을 `design`으로, 제작 단계 A~D를 `stages`로 단다. 단계는 공식 급수가 아니어서 `level`은 `null`이고, 난이도는 비어 있다. 선행 25개는 모두 `ai_draft`·`reviewed: false`라 막지 않고(§5-4) 순서 제안에만 쓴다. 읽는 곳은 [topik-ii.js](../strata/topik-ii.js)의 `intermediateMap()` — 공통 조회에 더해 `leadsTo(id)`(이 능력 다음에 이어지는 중급 능력)와 `added()`. 문법 층은 문법 뱅크 정본 이전 뒤에 따로 붙이며 `ko.json`·`GRAMMAR_BANK`는 읽지 않는다. 시험은 [strata-topik-ii.test.js](../tests/strata-topik-ii.test.js)(재생성 일치·TOPIK I 보존·설계 과제/단원 실재·급수/학습자 칸 없음·초안 비차단·순환 거부). 아직 이 지도를 읽는 게임·화면은 없다(중급 문항이 아직 원고뿐). 평가(쓰기 채점)는 Strata의 일이 아니며(§9), 능력 구분·선행·이름은 교원 검수 전 초안이다.
+
 | Strata가 맡는 것 | 맡지 않는 것 |
 |---|---|
 | 학습 항목·관계·급수·난이도·콘텐츠 생성 자료 | 학생별 상태(아틀라스의 이해 요약에서 관리) |

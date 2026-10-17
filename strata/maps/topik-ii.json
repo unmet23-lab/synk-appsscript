@@ -1,0 +1,1023 @@
+{
+  "map_ver": "topik-ii-practice-1-975551c37db2",
+  "subject": "ko",
+  "sources": {
+    "practice-taxonomy": {
+      "path": "strata/topik-i.skills.json",
+      "sha256": "8923b769ed247dd6628df276fdd5e8ddf421d863b012f42aa34bce4e324c1513"
+    },
+    "intermediate-taxonomy": {
+      "path": "strata/topik-ii.skills.json",
+      "sha256": "fc488ab750a9c340569a0484b18d22599f937fcbd6fc76dcd0e99659eab30c26"
+    }
+  },
+  "nodes": [
+    {
+      "id": "ko.listening.word",
+      "kind": "skill",
+      "label_ko": "낱말 듣기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.detail",
+      "kind": "skill",
+      "label_ko": "듣고 세부 정보 찾기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.negation",
+      "kind": "skill",
+      "label_ko": "듣고 부정·변경 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.sequence",
+      "kind": "skill",
+      "label_ko": "듣고 순서 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.reason",
+      "kind": "skill",
+      "label_ko": "듣고 이유 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.condition",
+      "kind": "skill",
+      "label_ko": "듣고 조건 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.main",
+      "kind": "skill",
+      "label_ko": "듣고 핵심 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.vocabulary",
+      "kind": "skill",
+      "label_ko": "낱말 뜻 읽기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.grammar",
+      "kind": "skill",
+      "label_ko": "조사·문형 읽기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.detail",
+      "kind": "skill",
+      "label_ko": "읽고 세부 정보 찾기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.negation",
+      "kind": "skill",
+      "label_ko": "읽고 부정·변경 이해하기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.sequence",
+      "kind": "skill",
+      "label_ko": "읽고 순서 이해하기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.reason",
+      "kind": "skill",
+      "label_ko": "읽고 이유 이해하기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.condition",
+      "kind": "skill",
+      "label_ko": "읽고 조건 이해하기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.main",
+      "kind": "skill",
+      "label_ko": "읽고 핵심 이해하기",
+      "domain": "reading",
+      "level": null,
+      "stages": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.intent",
+      "kind": "skill",
+      "label_ko": "듣고 화자의 의도·태도 이해하기",
+      "domain": "listening",
+      "level": null,
+      "stages": [
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T05"
+        ],
+        "units": [
+          "C01",
+          "D01"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.intent"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.long",
+      "kind": "skill",
+      "label_ko": "긴 발표·담화의 핵심과 수치 잇기",
+      "domain": "listening",
+      "level": null,
+      "stages": [
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T06"
+        ],
+        "units": [
+          "C04",
+          "D02"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.long"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.inference",
+      "kind": "skill",
+      "label_ko": "설명·인터뷰를 듣고 추론하기",
+      "domain": "listening",
+      "level": null,
+      "stages": [
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [],
+        "units": [
+          "D03"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.inference"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.inference",
+      "kind": "skill",
+      "label_ko": "읽고 추론하기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "B",
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T11"
+        ],
+        "units": [
+          "C03",
+          "D03"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.inference"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.attitude",
+      "kind": "skill",
+      "label_ko": "필자의 관점·사실과 의견 구분하기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [],
+        "units": [
+          "D01",
+          "D04"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.attitude"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.multi_source",
+      "kind": "skill",
+      "label_ko": "여러 자료를 비교해 읽기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T12"
+        ],
+        "units": [
+          "C04",
+          "D02"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.multi_source"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.context",
+      "kind": "skill",
+      "label_ko": "문맥에 맞는 어휘·문법 고르기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [],
+        "units": [
+          "D03"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.context"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.structure",
+      "kind": "skill",
+      "label_ko": "문장 넣기·문단 순서 정하기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [],
+        "units": [
+          "D03"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.structure"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.long",
+      "kind": "skill",
+      "label_ko": "여러 문단을 이어 요약하기",
+      "domain": "reading",
+      "level": null,
+      "stages": [
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [],
+        "units": [
+          "C06",
+          "D03"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.long"
+        }
+      ]
+    },
+    {
+      "id": "ko.writing.note",
+      "kind": "skill",
+      "label_ko": "메모·요약 쓰기",
+      "domain": "writing",
+      "level": null,
+      "stages": [
+        "A",
+        "B",
+        "C"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T13",
+          "T14"
+        ],
+        "units": [
+          "A06",
+          "C01",
+          "C06"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.note"
+        }
+      ]
+    },
+    {
+      "id": "ko.writing.sentence",
+      "kind": "skill",
+      "label_ko": "문맥에 맞는 문장 완성하기",
+      "domain": "writing",
+      "level": null,
+      "stages": [
+        "B",
+        "C"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T15",
+          "T16"
+        ],
+        "units": [
+          "C05"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.sentence"
+        }
+      ]
+    },
+    {
+      "id": "ko.writing.data",
+      "kind": "skill",
+      "label_ko": "자료를 설명하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "stages": [
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T18"
+        ],
+        "units": [
+          "C04",
+          "D02"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.data"
+        }
+      ]
+    },
+    {
+      "id": "ko.writing.opinion",
+      "kind": "skill",
+      "label_ko": "근거를 들어 의견 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "stages": [
+        "C",
+        "D"
+      ],
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "design": {
+        "tasks": [
+          "T17",
+          "T19",
+          "T20"
+        ],
+        "units": [
+          "D01",
+          "D04"
+        ]
+      },
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.opinion"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "ko.listening.main",
+      "to": "ko.listening.intent",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.main>ko.listening.intent"
+        }
+      ]
+    },
+    {
+      "from": "ko.listening.reason",
+      "to": "ko.listening.intent",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.reason>ko.listening.intent"
+        }
+      ]
+    },
+    {
+      "from": "ko.listening.detail",
+      "to": "ko.listening.long",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.detail>ko.listening.long"
+        }
+      ]
+    },
+    {
+      "from": "ko.listening.main",
+      "to": "ko.listening.long",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.main>ko.listening.long"
+        }
+      ]
+    },
+    {
+      "from": "ko.listening.main",
+      "to": "ko.listening.inference",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.main>ko.listening.inference"
+        }
+      ]
+    },
+    {
+      "from": "ko.listening.reason",
+      "to": "ko.listening.inference",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.listening.reason>ko.listening.inference"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.main",
+      "to": "ko.reading.inference",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.main>ko.reading.inference"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.reason",
+      "to": "ko.reading.inference",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.reason>ko.reading.inference"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.main",
+      "to": "ko.reading.attitude",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.main>ko.reading.attitude"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.reason",
+      "to": "ko.reading.attitude",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.reason>ko.reading.attitude"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.detail",
+      "to": "ko.reading.multi_source",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.detail>ko.reading.multi_source"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.main",
+      "to": "ko.reading.multi_source",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.main>ko.reading.multi_source"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.grammar",
+      "to": "ko.reading.context",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.grammar>ko.reading.context"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.vocabulary",
+      "to": "ko.reading.context",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.vocabulary>ko.reading.context"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.main",
+      "to": "ko.reading.structure",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.main>ko.reading.structure"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.sequence",
+      "to": "ko.reading.structure",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.sequence>ko.reading.structure"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.main",
+      "to": "ko.reading.long",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.main>ko.reading.long"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.sequence",
+      "to": "ko.reading.long",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.sequence>ko.reading.long"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.detail",
+      "to": "ko.writing.note",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.detail>ko.writing.note"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.grammar",
+      "to": "ko.writing.sentence",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.grammar>ko.writing.sentence"
+        }
+      ]
+    },
+    {
+      "from": "ko.writing.note",
+      "to": "ko.writing.sentence",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.note>ko.writing.sentence"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.multi_source",
+      "to": "ko.writing.data",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.multi_source>ko.writing.data"
+        }
+      ]
+    },
+    {
+      "from": "ko.writing.sentence",
+      "to": "ko.writing.data",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.sentence>ko.writing.data"
+        }
+      ]
+    },
+    {
+      "from": "ko.reading.attitude",
+      "to": "ko.writing.opinion",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.reading.attitude>ko.writing.opinion"
+        }
+      ]
+    },
+    {
+      "from": "ko.writing.sentence",
+      "to": "ko.writing.opinion",
+      "type": "prerequisite",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "intermediate-taxonomy",
+          "selector": "ko.writing.sentence>ko.writing.opinion"
+        }
+      ]
+    }
+  ],
+  "tag_vocabulary": [],
+  "links": {
+    "tags": []
+  }
+}
