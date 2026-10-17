@@ -1,0 +1,1461 @@
+{
+  "version": "independent-complex-ko-20261016-v1",
+  "definitions": {
+    "directSuccess": "All expected field/value/polarity/condition tuples exactly once, no extra tuples, no question, valid schema and evidence, no runtime error.",
+    "safeWithholding": "No proposed meanings for a defer case, valid schema/evidence and no runtime error. A clarification is allowed.",
+    "threshold": {
+      "directSuccessRateAtLeast": 0.8,
+      "falsePositiveTuplesAtMost": 0,
+      "safeWithholdingRate": 1
+    },
+    "conditionScope": "Only explicitly licensed supported conditions; general means null. after-example is only an example-before-attempt sequence.",
+    "partialCredit": "Semantic recall is reported but never counted as direct success.",
+    "noAdaptiveChanges": "Corpus, gold, and scoring are frozen before candidate evaluation. No candidate outputs were seen."
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "expect": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "두 선호를 각각 명시."
+    },
+    {
+      "id": "D02",
+      "expect": [
+        [
+          "support",
+          "step",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "together",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "단계별 도움 선호와 함께 하기 비선호를 명시."
+    },
+    {
+      "id": "D03",
+      "expect": [
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ],
+        [
+          "practice-mode",
+          "listening",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "두 연습 지시 표현은 앞의 선호 대조를 재확인."
+    },
+    {
+      "id": "D04",
+      "expect": [
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ],
+        [
+          "communication",
+          "spoken",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "현재 글 소통 선호와 말 소통 비선호."
+    },
+    {
+      "id": "D05",
+      "expect": [
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          null
+        ],
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "서로 독립인 두 업무 선호에 공통 긍정 술어."
+    },
+    {
+      "id": "D06",
+      "expect": [
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          "decision"
+        ],
+        [
+          "decision",
+          "consult",
+          "prefer",
+          "decision"
+        ]
+      ],
+      "note": "판단 조건은 병렬된 두 판단 선호에 적용."
+    },
+    {
+      "id": "D07",
+      "expect": [
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "reasons-detail",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "개요를 먼저 보는 것과 근거 상세를 함께 원하는 명시문."
+    },
+    {
+      "id": "D08",
+      "expect": [
+        [
+          "topic",
+          "reading-books",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "독서와 음악 각각의 즐거움을 명시."
+    },
+    {
+      "id": "D09",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ]
+      ],
+      "note": "예시 선행과 이후 독립 시도를 각각 명시."
+    },
+    {
+      "id": "D10",
+      "expect": [
+        [
+          "support",
+          "step",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "explanation",
+          "detailed",
+          "prefer",
+          "first-try"
+        ]
+      ],
+      "note": "첫 시도 조건이 도움과 설명 둘에 적용."
+    },
+    {
+      "id": "D11",
+      "expect": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "note": "익숙한 내용 조건 두 가지."
+    },
+    {
+      "id": "D12",
+      "expect": [
+        [
+          "work-style",
+          "single-task",
+          "prefer",
+          "busy"
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          "busy"
+        ]
+      ],
+      "note": "바쁠 때의 업무 및 설명 선호."
+    },
+    {
+      "id": "D13",
+      "expect": [
+        [
+          "communication",
+          "listen-organize",
+          "prefer",
+          "meeting"
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          "meeting"
+        ]
+      ],
+      "note": "회의 조건의 두 독립 소통 선호."
+    },
+    {
+      "id": "D14",
+      "expect": [
+        [
+          "communication",
+          "share-first",
+          "prefer",
+          "teamwork"
+        ],
+        [
+          "decision",
+          "consult",
+          "prefer",
+          "teamwork"
+        ]
+      ],
+      "note": "함께 일하는 상황에서 소통과 판단 선호."
+    },
+    {
+      "id": "D15",
+      "expect": [
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          "planning"
+        ],
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          "planning"
+        ]
+      ],
+      "note": "계획 상황의 두 업무 선호."
+    },
+    {
+      "id": "D16",
+      "expect": [
+        [
+          "decision",
+          "compare-options",
+          "prefer",
+          "decision"
+        ],
+        [
+          "decision",
+          "experience",
+          "avoid",
+          "decision"
+        ]
+      ],
+      "note": "결정 조건에서 비교 선호와 경험 참고 비선호."
+    },
+    {
+      "id": "D17",
+      "expect": [
+        [
+          "practice-mode",
+          "mixed",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "혼합 연습과 예시 우선 도움."
+    },
+    {
+      "id": "D18",
+      "expect": [
+        [
+          "topic",
+          "exercise",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "photography",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "운동 선호와 촬영 관심을 직접 언급."
+    },
+    {
+      "id": "D19",
+      "expect": [
+        [
+          "topic",
+          "cooking",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "games",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "취미의 긍정과 부정을 분리."
+    },
+    {
+      "id": "D20",
+      "expect": [
+        [
+          "topic",
+          "nature",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "travel-stay",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "자연 산책 및 여행 숙소 관심."
+    },
+    {
+      "id": "D21",
+      "expect": [
+        [
+          "topic",
+          "travel-planning",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "travel-food",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "일정 동선 및 현지 음식 주문 관심."
+    },
+    {
+      "id": "D22",
+      "expect": [
+        [
+          "topic",
+          "career-interview",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "career-planning",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "현재 면접과 진로의 관심 병렬."
+    },
+    {
+      "id": "D23",
+      "expect": [
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "content-design",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "제작 활동 두 가지의 관심 극성."
+    },
+    {
+      "id": "D24",
+      "expect": [
+        [
+          "topic",
+          "ai-tools",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "work-collaboration",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "두 관심 분야 공통 술어."
+    },
+    {
+      "id": "D25",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "first-try-after-example"
+        ]
+      ],
+      "note": "첫 시도 범위 안에서 예시 전후 순서를 명시."
+    },
+    {
+      "id": "D26",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar-after-example"
+        ]
+      ],
+      "note": "익숙함 조건 아래 예시 후 독립 시도."
+    },
+    {
+      "id": "D27",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          "busy"
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "busy-after-example"
+        ]
+      ],
+      "note": "바쁠 때의 예시 선행 및 이후 독립."
+    },
+    {
+      "id": "D28",
+      "expect": [
+        [
+          "explanation",
+          "brief",
+          "avoid",
+          null
+        ],
+        [
+          "explanation-detail",
+          "reasons-detail",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "설명 길이 비선호와 근거 상세 선호는 별개."
+    },
+    {
+      "id": "D29",
+      "expect": [
+        [
+          "communication",
+          "spoken",
+          "prefer",
+          "meeting"
+        ],
+        [
+          "communication",
+          "listen-organize",
+          "prefer",
+          "meeting"
+        ]
+      ],
+      "note": "회의 조건을 공유하는 두 소통 선호."
+    },
+    {
+      "id": "D30",
+      "expect": [
+        [
+          "work-style",
+          "try-adjust",
+          "prefer",
+          null
+        ],
+        [
+          "work-style",
+          "single-task",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "시도 조정과 단일 과업 독립 선호."
+    },
+    {
+      "id": "D31",
+      "expect": [
+        [
+          "decision",
+          "experience",
+          "prefer",
+          null
+        ],
+        [
+          "decision",
+          "compare-options",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "두 판단 방법 공통 선호."
+    },
+    {
+      "id": "D32",
+      "expect": [
+        [
+          "explanation-detail",
+          "long-flow",
+          "avoid",
+          null
+        ],
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "연속 설명 비선호와 개요 우선 선호."
+    },
+    {
+      "id": "D33",
+      "expect": [
+        [
+          "practice-mode",
+          "listening",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "together",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "도움받을 때는 support 의미 범주 설명이며 별도 상황 제한 아님."
+    },
+    {
+      "id": "D34",
+      "expect": [
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "현재 연습과 도움 방식 각각 선호."
+    },
+    {
+      "id": "D35",
+      "expect": [
+        [
+          "topic",
+          "music",
+          "avoid",
+          null
+        ],
+        [
+          "topic",
+          "games",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "음악 부정과 게임 긍정."
+    },
+    {
+      "id": "D36",
+      "expect": [
+        [
+          "explanation",
+          "standard",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "choose",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "보통 길이 및 필요시 선택 도움."
+    },
+    {
+      "id": "D37",
+      "expect": [
+        [
+          "support",
+          "step",
+          "avoid",
+          null
+        ],
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "단계 도움 비선호와 예시 우선 선호 명시."
+    },
+    {
+      "id": "D38",
+      "expect": [
+        [
+          "communication",
+          "share-first",
+          "avoid",
+          null
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "먼저 말하기 비선호와 글 소통 선호."
+    },
+    {
+      "id": "D39",
+      "expect": [
+        [
+          "work-style",
+          "plan-first",
+          "avoid",
+          null
+        ],
+        [
+          "work-style",
+          "try-adjust",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "업무 순서에 대한 명시적 반대 극성."
+    },
+    {
+      "id": "D40",
+      "expect": [
+        [
+          "decision",
+          "consult",
+          "avoid",
+          null
+        ],
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "판단 영역 일반 선호 두 가지이며 특정 결정 상황 조건은 없음."
+    },
+    {
+      "id": "D41",
+      "expect": [
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "long-flow",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "개요 우선과 긴 연속 설명은 함께 선호 가능."
+    },
+    {
+      "id": "D42",
+      "expect": [
+        [
+          "practice-mode",
+          "listening",
+          "avoid",
+          "busy"
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          "busy"
+        ]
+      ],
+      "note": "바쁨 조건에서 연습 극성 대조."
+    },
+    {
+      "id": "D43",
+      "expect": [
+        [
+          "practice-mode",
+          "mixed",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "explanation",
+          "standard",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "note": "익숙함 조건의 연습 및 설명."
+    },
+    {
+      "id": "D44",
+      "expect": [
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          "decision"
+        ],
+        [
+          "decision",
+          "compare-options",
+          "prefer",
+          "decision"
+        ]
+      ],
+      "note": "결정 상황의 두 판단 과정 공통 선호."
+    },
+    {
+      "id": "D45",
+      "expect": [
+        [
+          "communication",
+          "spoken",
+          "avoid",
+          "meeting"
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          "meeting"
+        ]
+      ],
+      "note": "같은 회의 상황 지시어가 회의 조건을 재명시."
+    },
+    {
+      "id": "D46",
+      "expect": [
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          "planning"
+        ],
+        [
+          "work-style",
+          "try-adjust",
+          "avoid",
+          "planning"
+        ]
+      ],
+      "note": "계획 상황 아래 업무 극성 대조."
+    },
+    {
+      "id": "D47",
+      "expect": [
+        [
+          "support",
+          "together",
+          "prefer",
+          "teamwork"
+        ],
+        [
+          "work-style",
+          "single-task",
+          "prefer",
+          "teamwork"
+        ]
+      ],
+      "note": "협업 상황의 도움과 단일 과업 선호."
+    },
+    {
+      "id": "D48",
+      "expect": [
+        [
+          "support",
+          "example",
+          "avoid",
+          "familiar"
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "note": "익숙함 조건의 예시 비선호와 독립 선호."
+    },
+    {
+      "id": "D49",
+      "expect": [
+        [
+          "support",
+          "independent",
+          "avoid",
+          "first-try"
+        ],
+        [
+          "support",
+          "step",
+          "prefer",
+          "first-try"
+        ]
+      ],
+      "note": "첫 시도에서 도움 극성 대조."
+    },
+    {
+      "id": "D50",
+      "expect": [
+        [
+          "topic",
+          "nature",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "exercise",
+          "prefer",
+          null
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "관심 두 가지와 설명 길이를 명시."
+    },
+    {
+      "id": "D51",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "예시 도움과 개요 우선 선호."
+    },
+    {
+      "id": "D52",
+      "expect": [
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          null
+        ],
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          null
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "세 분야의 현재 선호 모두 명시."
+    },
+    {
+      "id": "D53",
+      "expect": [
+        [
+          "topic",
+          "photography",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "content-design",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "두 관심 긍정과 한 관심 부정의 범위가 명시적."
+    },
+    {
+      "id": "D54",
+      "expect": [
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ],
+        [
+          "practice-mode",
+          "listening",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "choose",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "음악 관심을 듣기 능력으로 추론하지 않고 독립 명시된 연습 선호만 포함."
+    },
+    {
+      "id": "D55",
+      "expect": [
+        [
+          "topic",
+          "career-planning",
+          "prefer",
+          null
+        ],
+        [
+          "decision",
+          "experience",
+          "prefer",
+          "decision"
+        ]
+      ],
+      "note": "관심은 일반, 경험 참고는 결정 상황 조건."
+    },
+    {
+      "id": "D56",
+      "expect": [
+        [
+          "topic",
+          "content-video",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "step",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "활동 관심과 도움 방식 각각 명시."
+    },
+    {
+      "id": "D57",
+      "expect": [
+        [
+          "topic",
+          "travel-stay",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "travel-food",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "여행 주제 안의 두 지원 관심을 명시."
+    },
+    {
+      "id": "D58",
+      "expect": [
+        [
+          "work-style",
+          "single-task",
+          "prefer",
+          null
+        ],
+        [
+          "work-style",
+          "prioritize",
+          "prefer",
+          null
+        ],
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "세 업무 선호의 공통 술어."
+    },
+    {
+      "id": "D59",
+      "expect": [
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ],
+        [
+          "communication",
+          "spoken",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "둘 다는 앞의 두 소통 선호 재확인으로 추가 의미 없음."
+    },
+    {
+      "id": "D60",
+      "expect": [
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "reasons-detail",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "long-flow",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "두 설명 구성 선호와 연속 설명 비선호."
+    },
+    {
+      "id": "D61",
+      "expect": [
+        [
+          "explanation",
+          "detailed",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "note": "서로 다른 조건을 명시하여 설명 길이 충돌 없음."
+    },
+    {
+      "id": "D62",
+      "expect": [
+        [
+          "communication",
+          "spoken",
+          "prefer",
+          "meeting"
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "회의 조건과 평소 일반 선호를 명시적으로 구분."
+    },
+    {
+      "id": "D63",
+      "expect": [
+        [
+          "support",
+          "independent",
+          "avoid",
+          "busy"
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "note": "조건별 같은 도움 값의 서로 다른 극성."
+    },
+    {
+      "id": "D64",
+      "expect": [
+        [
+          "decision",
+          "consult",
+          "prefer",
+          "teamwork"
+        ],
+        [
+          "decision",
+          "evidence",
+          "prefer",
+          "teamwork"
+        ]
+      ],
+      "note": "함께 일하는 상황의 두 판단 선호."
+    },
+    {
+      "id": "D65",
+      "expect": [
+        [
+          "practice-mode",
+          "mixed",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "long-flow",
+          "avoid",
+          null
+        ]
+      ],
+      "note": "연습 구성 선호와 설명 흐름 비선호."
+    },
+    {
+      "id": "D66",
+      "expect": [
+        [
+          "topic",
+          "reading-books",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "그 방식은 예시 우선 도움을 재확인하며 새 의미 없음."
+    },
+    {
+      "id": "D67",
+      "expect": [
+        [
+          "work-style",
+          "try-adjust",
+          "prefer",
+          null
+        ],
+        [
+          "communication",
+          "share-first",
+          "prefer",
+          null
+        ],
+        [
+          "decision",
+          "consult",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "업무 소통 판단의 세 독립 선호."
+    },
+    {
+      "id": "D68",
+      "expect": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          null
+        ],
+        [
+          "explanation",
+          "brief",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "그 방식은 독립 시도만 재지시."
+    },
+    {
+      "id": "D69",
+      "expect": [
+        [
+          "explanation-detail",
+          "overview-first",
+          "prefer",
+          null
+        ],
+        [
+          "explanation-detail",
+          "reasons-detail",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "개요 후 근거 확인 순서는 지원 설명 선호를 나타내며 after-example 조건 아님."
+    },
+    {
+      "id": "D70",
+      "expect": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ],
+        [
+          "communication",
+          "written",
+          "prefer",
+          null
+        ],
+        [
+          "work-style",
+          "plan-first",
+          "prefer",
+          null
+        ]
+      ],
+      "note": "네 분야의 선호를 모두 명시."
+    },
+    {
+      "id": "S01",
+      "expect": [],
+      "note": "조장의 선호이며 작성자 자기선호가 아님."
+    },
+    {
+      "id": "S02",
+      "expect": [],
+      "note": "동생에 대한 전언."
+    },
+    {
+      "id": "S03",
+      "expect": [],
+      "note": "선생님에 대한 현재 선호."
+    },
+    {
+      "id": "S04",
+      "expect": [],
+      "note": "옆자리 사람에 대한 관심 전언."
+    },
+    {
+      "id": "S05",
+      "expect": [],
+      "note": "명시된 과거 구간의 선호만 있음."
+    },
+    {
+      "id": "S06",
+      "expect": [],
+      "note": "지난 회사 재직 당시의 과거 선호만 명시."
+    },
+    {
+      "id": "S07",
+      "expect": [],
+      "note": "과거 취향 목록이며 현재 선호 추론 금지."
+    },
+    {
+      "id": "S08",
+      "expect": [],
+      "note": "과거 진술이며 현재 아님을 명시."
+    },
+    {
+      "id": "S09",
+      "expect": [],
+      "note": "대본 대사의 인용이며 실제 자기선호 아님."
+    },
+    {
+      "id": "S10",
+      "expect": [],
+      "note": "번역 대상 문장 인용."
+    },
+    {
+      "id": "S11",
+      "expect": [],
+      "note": "설문 예시 작성 사실이며 자기선호 선언 아님."
+    },
+    {
+      "id": "S12",
+      "expect": [],
+      "note": "소설 등장인물 인용."
+    },
+    {
+      "id": "S13",
+      "expect": [],
+      "note": "날씨 조건은 지원 조건에 없으므로 일반화 금지."
+    },
+    {
+      "id": "S14",
+      "expect": [],
+      "note": "수면 상태 조건은 지원하지 않음."
+    },
+    {
+      "id": "S15",
+      "expect": [],
+      "note": "상대 조건의 범위가 불분명하여 어느 지원 조건으로도 고정 금지."
+    },
+    {
+      "id": "S16",
+      "expect": [],
+      "note": "두 선호에 대응하는 상황을 알 수 없음."
+    },
+    {
+      "id": "S17",
+      "expect": [],
+      "note": "규정에 따른 의무를 선호로 승격 금지."
+    },
+    {
+      "id": "S18",
+      "expect": [],
+      "note": "지시로 하는 활동은 선호 또는 비선호를 확정하지 못함."
+    },
+    {
+      "id": "S19",
+      "expect": [],
+      "note": "업무 의무와 미진술 선호 구분."
+    },
+    {
+      "id": "S20",
+      "expect": [],
+      "note": "싫다는 발언을 하지 않았다는 사실은 선호도 비선호도 아님."
+    },
+    {
+      "id": "S21",
+      "expect": [],
+      "note": "긍정 단정의 부정은 반대 선호를 뜻하지 않음."
+    },
+    {
+      "id": "S22",
+      "expect": [],
+      "note": "중첩 부정과 확정 금지로 극성 결정 불가."
+    },
+    {
+      "id": "S23",
+      "expect": [],
+      "note": "온도와 조명 취향은 지원 의미 범위 밖."
+    },
+    {
+      "id": "S24",
+      "expect": [],
+      "note": "좌석 및 가구 취향은 지원 밖."
+    },
+    {
+      "id": "S25",
+      "expect": [],
+      "note": "알림 및 화면 접근성 설정을 지원 선호로 치환 금지."
+    },
+    {
+      "id": "S26",
+      "expect": [],
+      "note": "급여 지급 시기와 근무시간은 지원 의미 밖."
+    }
+  ]
+}

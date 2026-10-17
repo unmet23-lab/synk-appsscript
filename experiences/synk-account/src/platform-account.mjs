@@ -76,9 +76,13 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
   return Object.freeze({ status, identity, refresh, invalidate,
     subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);},
     async request(operation,params){
-      if(!['platformLoad','platformSave','platformDelete'].includes(operation)||!authenticatedClient||snapshot.status!=='signed-in')throw changed();
-      const expected=generation,result=await authenticatedClient[operation](params);
-      if(expected!==generation||disposed)throw changed();return result;
+      if(!['platformLoad','platformSave','platformDelete','atlasSummary','insightLoad','insightSave','insightDelete','understandingLoad','understandingSave','understandingDelete'].includes(operation)||!authenticatedClient||snapshot.status!=='signed-in')throw changed();
+      if(operation==='atlasSummary'&&params&&Object.keys(params).length)throw changed();
+      const expected=generation,owner=accountId,result=await authenticatedClient[operation](params);
+      if(expected!==generation||disposed)throw changed();
+      if(operation.startsWith('insight')&&result?.ok===true&&(result.scope!=='synk-personal'||result.resource!=='member-insight'||result.accountId!==owner)){invalidate();throw changed();}
+      if(operation.startsWith('understanding')&&result?.ok===true&&(result.scope!=='synk-personal'||result.resource!=='member-understanding'||result.accountId!==owner)){invalidate();throw changed();}
+      return result;
     },
     stop() { disposed = true;generation++;controller?.abort();controller = null;accountId=null;authenticatedClient=null;listeners.clear();snapshot = { status: 'signed-out', displayName: '', message: '' }; } });
 }

@@ -1,0 +1,2080 @@
+{
+  "provenance": {
+    "at": "2026-10-16T07:57:59.527Z",
+    "authorization": "Root explicitly converted prior60 to development for ko9. Prior original bytes and first scores remain immutable; next new independent corpus is not accessed.",
+    "files": [
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/corpus.json",
+        "sha256": "ac2d7b991190e9c343c22fa1ae0c19e3fefb4b06389d983502a736a279b2285a",
+        "bytes": 63382
+      },
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/freeze.json",
+        "sha256": "e218772509809611f9288417b61cf737ed1169d41fb4f5e1138c119e18be3992",
+        "bytes": 5513
+      },
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/candidate-first.json",
+        "sha256": "f92d880c79efdff2f421ea1d1cd54b9c7851a62fe4e4a0727f75d7f32424138c",
+        "bytes": 104066
+      },
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/candidate-summary.json",
+        "sha256": "6ecca97a92dea6d2e4240bcd1f2f16141a5c481cf71c3bb8a985317b1eef69e6",
+        "bytes": 1247
+      },
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/candidate5-followup.json",
+        "sha256": "5072700bdb8d2a461840f8e5004d18fe0058155ea27458f539da283af5a1e3e3",
+        "bytes": 104632
+      },
+      {
+        "path": ".tmp/member-language8-20261016/private-evaluation-4/final-evaluation-report.json",
+        "sha256": "1b544d9ea1e50e5b13d7e8895e277a0a07badae566288d1e2e910b2c75609102",
+        "bytes": 5737
+      }
+    ]
+  },
+  "originalFirstPass": {
+    "direct": 22,
+    "denominator": 40,
+    "questions": 17,
+    "falseAssertions": 0,
+    "defer": 20
+  },
+  "corpus": {
+    "version": "language8-independent-round4-v1",
+    "author": "/root/language8_unseen2",
+    "population": "Fresh evaluator-authored synthetic Korean only; not user data or a population accuracy estimate.",
+    "design": "40 unambiguous current self-preference cases: 20 without situation conditions and 20 with explicit conditions/scope, plus 20 abstention cases. Fresh wording combines clearly bounded propositions.",
+    "evidencePolicy": "Full original author spans preserve subject and condition scope. Every parser span is checked separately for exact original offsets.",
+    "cases": [
+      {
+        "id": "D001",
+        "split": "holdout",
+        "category": "general_reason",
+        "mode": "direct",
+        "text": "생각을 천천히 풀 수 있으니까 저는 글로 소통하는 게 좋고, 새로운 이야기를 만날 수 있어서 독서도 좋아해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "생각을 천천히 풀 수 있으니까 저는 글로 소통하는 게 좋고, 새로운 이야기를 만날 수 있어서 독서도 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "reading-books",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "생각을 천천히 풀 수 있으니까 저는 글로 소통하는 게 좋고, 새로운 이야기를 만날 수 있어서 독서도 좋아해요."
+          }
+        ],
+        "rationale": "조건을 붙이지 않은 현재 본인의 명시 선호다. 이유나 목적을 추가 선호로 추정하지 않는다."
+      },
+      {
+        "id": "D002",
+        "split": "holdout",
+        "category": "general_reason",
+        "mode": "direct",
+        "text": "반응을 바로 들을 수 있어서 저는 말로 소통하는 게 편해요. 결론을 납득하려고 여러 선택지를 비교하는 걸 좋아해요.",
+        "expect": [
+          [
+            "communication",
+            "spoken",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "spoken",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 64,
+            "quote": "반응을 바로 들을 수 있어서 저는 말로 소통하는 게 편해요. 결론을 납득하려고 여러 선택지를 비교하는 걸 좋아해요."
+          },
+          {
+            "tuple": [
+              "decision",
+              "compare-options",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 64,
+            "quote": "반응을 바로 들을 수 있어서 저는 말로 소통하는 게 편해요. 결론을 납득하려고 여러 선택지를 비교하는 걸 좋아해요."
+          }
+        ],
+        "rationale": "조건을 붙이지 않은 현재 본인의 명시 선호다. 이유나 목적을 추가 선호로 추정하지 않는다."
+      },
+      {
+        "id": "D003",
+        "split": "holdout",
+        "category": "general_reason",
+        "mode": "direct",
+        "text": "해야 할 일을 잊지 않으려고 저는 계획을 먼저 세우는 게 좋고, 집중이 끊기지 않게 한 번에 한 가지씩 처리하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "plan-first",
+            "prefer",
+            null
+          ],
+          [
+            "work-style",
+            "single-task",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "work-style",
+              "plan-first",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 69,
+            "quote": "해야 할 일을 잊지 않으려고 저는 계획을 먼저 세우는 게 좋고, 집중이 끊기지 않게 한 번에 한 가지씩 처리하는 게 좋아요."
+          },
+          {
+            "tuple": [
+              "work-style",
+              "single-task",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 69,
+            "quote": "해야 할 일을 잊지 않으려고 저는 계획을 먼저 세우는 게 좋고, 집중이 끊기지 않게 한 번에 한 가지씩 처리하는 게 좋아요."
+          }
+        ],
+        "rationale": "조건을 붙이지 않은 현재 본인의 명시 선호다. 이유나 목적을 추가 선호로 추정하지 않는다."
+      },
+      {
+        "id": "D004",
+        "split": "holdout",
+        "category": "general_reason",
+        "mode": "direct",
+        "text": "판단한 과정을 되짚기 위해 저는 직접 경험한 내용을 참고하는 게 좋아요. 확인할 수 있는 자료도 살펴보고 판단하고 싶어요.",
+        "expect": [
+          [
+            "decision",
+            "experience",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "experience",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 68,
+            "quote": "판단한 과정을 되짚기 위해 저는 직접 경험한 내용을 참고하는 게 좋아요. 확인할 수 있는 자료도 살펴보고 판단하고 싶어요."
+          },
+          {
+            "tuple": [
+              "decision",
+              "evidence",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 68,
+            "quote": "판단한 과정을 되짚기 위해 저는 직접 경험한 내용을 참고하는 게 좋아요. 확인할 수 있는 자료도 살펴보고 판단하고 싶어요."
+          }
+        ],
+        "rationale": "조건을 붙이지 않은 현재 본인의 명시 선호다. 이유나 목적을 추가 선호로 추정하지 않는다."
+      },
+      {
+        "id": "D005",
+        "split": "holdout",
+        "category": "general_reason",
+        "mode": "direct",
+        "text": "소리와 표기를 함께 확인할 수 있어서 저는 듣기와 읽기를 함께 연습하는 게 좋아요. 동선을 상상하는 과정이 재미있어서 여행 계획에도 관심이 있어요.",
+        "expect": [
+          [
+            "practice-mode",
+            "mixed",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "travel-planning",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "practice-mode",
+              "mixed",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 82,
+            "quote": "소리와 표기를 함께 확인할 수 있어서 저는 듣기와 읽기를 함께 연습하는 게 좋아요. 동선을 상상하는 과정이 재미있어서 여행 계획에도 관심이 있어요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "travel-planning",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 82,
+            "quote": "소리와 표기를 함께 확인할 수 있어서 저는 듣기와 읽기를 함께 연습하는 게 좋아요. 동선을 상상하는 과정이 재미있어서 여행 계획에도 관심이 있어요."
+          }
+        ],
+        "rationale": "조건을 붙이지 않은 현재 본인의 명시 선호다. 이유나 목적을 추가 선호로 추정하지 않는다."
+      },
+      {
+        "id": "D006",
+        "split": "holdout",
+        "category": "general_parallel",
+        "mode": "direct",
+        "text": "저는 음악과 사진 촬영과 독서를 좋아하고, 잘해야만 즐길 수 있다고 생각하지는 않아요.",
+        "expect": [
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "music",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "저는 음악과 사진 촬영과 독서를 좋아하고, 잘해야만 즐길 수 있다고 생각하지는 않아요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "photography",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "저는 음악과 사진 촬영과 독서를 좋아하고, 잘해야만 즐길 수 있다고 생각하지는 않아요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "reading-books",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "저는 음악과 사진 촬영과 독서를 좋아하고, 잘해야만 즐길 수 있다고 생각하지는 않아요."
+          }
+        ],
+        "rationale": "공동 서술어의 현재 선호가 병렬 대상 각각에 적용되며 특정 상황 조건은 없다."
+      },
+      {
+        "id": "D007",
+        "split": "holdout",
+        "category": "general_parallel",
+        "mode": "direct",
+        "text": "저는 자연 산책과 요리와 디자인에 관심이 있어요. 세 가지를 한꺼번에 시작하려는 뜻은 아니에요.",
+        "expect": [
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "cooking",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "content-design",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "nature",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 53,
+            "quote": "저는 자연 산책과 요리와 디자인에 관심이 있어요. 세 가지를 한꺼번에 시작하려는 뜻은 아니에요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "cooking",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 53,
+            "quote": "저는 자연 산책과 요리와 디자인에 관심이 있어요. 세 가지를 한꺼번에 시작하려는 뜻은 아니에요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "content-design",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 53,
+            "quote": "저는 자연 산책과 요리와 디자인에 관심이 있어요. 세 가지를 한꺼번에 시작하려는 뜻은 아니에요."
+          }
+        ],
+        "rationale": "공동 서술어의 현재 선호가 병렬 대상 각각에 적용되며 특정 상황 조건은 없다."
+      },
+      {
+        "id": "D008",
+        "split": "holdout",
+        "category": "general_parallel",
+        "mode": "direct",
+        "text": "저는 글로 소통하기와 말로 소통하기를 모두 좋아해요. 어느 한쪽만 편하다고 말하는 건 아니에요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ],
+          [
+            "communication",
+            "spoken",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 53,
+            "quote": "저는 글로 소통하기와 말로 소통하기를 모두 좋아해요. 어느 한쪽만 편하다고 말하는 건 아니에요."
+          },
+          {
+            "tuple": [
+              "communication",
+              "spoken",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 53,
+            "quote": "저는 글로 소통하기와 말로 소통하기를 모두 좋아해요. 어느 한쪽만 편하다고 말하는 건 아니에요."
+          }
+        ],
+        "rationale": "공동 서술어의 현재 선호가 병렬 대상 각각에 적용되며 특정 상황 조건은 없다."
+      },
+      {
+        "id": "D009",
+        "split": "holdout",
+        "category": "general_parallel",
+        "mode": "direct",
+        "text": "저는 여러 선택지를 비교하는 것과 자료를 확인하는 것을 선호해요. 빨리 정답을 내야 한다는 부담은 없어요.",
+        "expect": [
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "evidence",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "compare-options",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 59,
+            "quote": "저는 여러 선택지를 비교하는 것과 자료를 확인하는 것을 선호해요. 빨리 정답을 내야 한다는 부담은 없어요."
+          },
+          {
+            "tuple": [
+              "decision",
+              "evidence",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 59,
+            "quote": "저는 여러 선택지를 비교하는 것과 자료를 확인하는 것을 선호해요. 빨리 정답을 내야 한다는 부담은 없어요."
+          }
+        ],
+        "rationale": "공동 서술어의 현재 선호가 병렬 대상 각각에 적용되며 특정 상황 조건은 없다."
+      },
+      {
+        "id": "D010",
+        "split": "holdout",
+        "category": "general_parallel",
+        "mode": "direct",
+        "text": "저는 AI 도구 활용과 면접 준비와 영상 제작에 관심이 있고, 특정 강좌를 결제해 달라는 뜻은 아니에요.",
+        "expect": [
+          [
+            "topic",
+            "ai-tools",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "career-interview",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "content-video",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "ai-tools",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 58,
+            "quote": "저는 AI 도구 활용과 면접 준비와 영상 제작에 관심이 있고, 특정 강좌를 결제해 달라는 뜻은 아니에요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "career-interview",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 58,
+            "quote": "저는 AI 도구 활용과 면접 준비와 영상 제작에 관심이 있고, 특정 강좌를 결제해 달라는 뜻은 아니에요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "content-video",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 58,
+            "quote": "저는 AI 도구 활용과 면접 준비와 영상 제작에 관심이 있고, 특정 강좌를 결제해 달라는 뜻은 아니에요."
+          }
+        ],
+        "rationale": "공동 서술어의 현재 선호가 병렬 대상 각각에 적용되며 특정 상황 조건은 없다."
+      },
+      {
+        "id": "D011",
+        "split": "holdout",
+        "category": "general_contrast",
+        "mode": "direct",
+        "text": "저는 읽기 연습은 좋아하지만 듣기 연습은 좋아하지 않아요. 두 방식을 같은 선호로 묶고 싶지 않아요.",
+        "expect": [
+          [
+            "practice-mode",
+            "reading",
+            "prefer",
+            null
+          ],
+          [
+            "practice-mode",
+            "listening",
+            "avoid",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "practice-mode",
+              "reading",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 56,
+            "quote": "저는 읽기 연습은 좋아하지만 듣기 연습은 좋아하지 않아요. 두 방식을 같은 선호로 묶고 싶지 않아요."
+          },
+          {
+            "tuple": [
+              "practice-mode",
+              "listening",
+              "avoid",
+              null
+            ],
+            "start": 0,
+            "end": 56,
+            "quote": "저는 읽기 연습은 좋아하지만 듣기 연습은 좋아하지 않아요. 두 방식을 같은 선호로 묶고 싶지 않아요."
+          }
+        ],
+        "rationale": "본인의 명시적 선호/비선호를 대상별로 구분한다. 특정 조건은 없다."
+      },
+      {
+        "id": "D012",
+        "split": "holdout",
+        "category": "general_contrast",
+        "mode": "direct",
+        "text": "저는 한 번에 한 가지를 처리하는 걸 좋아하지만, 미리 계획을 세우는 방식은 선호하지 않아요.",
+        "expect": [
+          [
+            "work-style",
+            "single-task",
+            "prefer",
+            null
+          ],
+          [
+            "work-style",
+            "plan-first",
+            "avoid",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "work-style",
+              "single-task",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 52,
+            "quote": "저는 한 번에 한 가지를 처리하는 걸 좋아하지만, 미리 계획을 세우는 방식은 선호하지 않아요."
+          },
+          {
+            "tuple": [
+              "work-style",
+              "plan-first",
+              "avoid",
+              null
+            ],
+            "start": 0,
+            "end": 52,
+            "quote": "저는 한 번에 한 가지를 처리하는 걸 좋아하지만, 미리 계획을 세우는 방식은 선호하지 않아요."
+          }
+        ],
+        "rationale": "본인의 명시적 선호/비선호를 대상별로 구분한다. 특정 조건은 없다."
+      },
+      {
+        "id": "D013",
+        "split": "holdout",
+        "category": "general_contrast",
+        "mode": "direct",
+        "text": "저는 사진 촬영에는 관심이 없지만, 요리와 자연 산책은 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "photography",
+            "avoid",
+            null
+          ],
+          [
+            "topic",
+            "cooking",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "photography",
+              "avoid",
+              null
+            ],
+            "start": 0,
+            "end": 36,
+            "quote": "저는 사진 촬영에는 관심이 없지만, 요리와 자연 산책은 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "cooking",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 36,
+            "quote": "저는 사진 촬영에는 관심이 없지만, 요리와 자연 산책은 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "nature",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 36,
+            "quote": "저는 사진 촬영에는 관심이 없지만, 요리와 자연 산책은 좋아해요."
+          }
+        ],
+        "rationale": "본인의 명시적 선호/비선호를 대상별로 구분한다. 특정 조건은 없다."
+      },
+      {
+        "id": "D014",
+        "split": "holdout",
+        "category": "general_contrast",
+        "mode": "direct",
+        "text": "저는 다른 사람과 상의해 결정하는 게 좋고, 직접 경험한 것을 참고해 결정하는 건 선호하지 않아요.",
+        "expect": [
+          [
+            "decision",
+            "consult",
+            "prefer",
+            null
+          ],
+          [
+            "decision",
+            "experience",
+            "avoid",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "consult",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 55,
+            "quote": "저는 다른 사람과 상의해 결정하는 게 좋고, 직접 경험한 것을 참고해 결정하는 건 선호하지 않아요."
+          },
+          {
+            "tuple": [
+              "decision",
+              "experience",
+              "avoid",
+              null
+            ],
+            "start": 0,
+            "end": 55,
+            "quote": "저는 다른 사람과 상의해 결정하는 게 좋고, 직접 경험한 것을 참고해 결정하는 건 선호하지 않아요."
+          }
+        ],
+        "rationale": "본인의 명시적 선호/비선호를 대상별로 구분한다. 특정 조건은 없다."
+      },
+      {
+        "id": "D015",
+        "split": "holdout",
+        "category": "general_contrast",
+        "mode": "direct",
+        "text": "저는 짧은 설명보다 자세한 설명이 좋아요. 그렇다고 핵심 개요를 먼저 보는 걸 싫어한다는 뜻은 아니고, 전체 개요를 먼저 보는 것도 좋아해요.",
+        "expect": [
+          [
+            "explanation",
+            "detailed",
+            "prefer",
+            null
+          ],
+          [
+            "explanation-detail",
+            "overview-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "explanation",
+              "detailed",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 79,
+            "quote": "저는 짧은 설명보다 자세한 설명이 좋아요. 그렇다고 핵심 개요를 먼저 보는 걸 싫어한다는 뜻은 아니고, 전체 개요를 먼저 보는 것도 좋아해요."
+          },
+          {
+            "tuple": [
+              "explanation-detail",
+              "overview-first",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 79,
+            "quote": "저는 짧은 설명보다 자세한 설명이 좋아요. 그렇다고 핵심 개요를 먼저 보는 걸 싫어한다는 뜻은 아니고, 전체 개요를 먼저 보는 것도 좋아해요."
+          }
+        ],
+        "rationale": "본인의 명시적 선호/비선호를 대상별로 구분한다. 특정 조건은 없다."
+      },
+      {
+        "id": "D016",
+        "split": "holdout",
+        "category": "actor_boundary",
+        "mode": "direct",
+        "text": "제 동료는 운동을 좋아한다고 말했지만, 저는 평소에 음악을 좋아해요. 둘의 취향을 같은 것으로 적고 싶지는 않아요.",
+        "expect": [
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "music",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 64,
+            "quote": "제 동료는 운동을 좋아한다고 말했지만, 저는 평소에 음악을 좋아해요. 둘의 취향을 같은 것으로 적고 싶지는 않아요."
+          }
+        ],
+        "rationale": "타인에 관한 절은 저장 대상이 아니며 본인의 명시적 현재 선호만 채점한다."
+      },
+      {
+        "id": "D017",
+        "split": "holdout",
+        "category": "actor_boundary",
+        "mode": "direct",
+        "text": "저는 요리를 좋아하는 친구의 사진을 봤어요. 저는 평소에는 사진 촬영을 좋아해요.",
+        "expect": [
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "topic",
+              "photography",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 45,
+            "quote": "저는 요리를 좋아하는 친구의 사진을 봤어요. 저는 평소에는 사진 촬영을 좋아해요."
+          }
+        ],
+        "rationale": "타인에 관한 절은 저장 대상이 아니며 본인의 명시적 현재 선호만 채점한다."
+      },
+      {
+        "id": "D018",
+        "split": "holdout",
+        "category": "actor_boundary",
+        "mode": "direct",
+        "text": "계획부터 세우는 걸 좋아하는 팀장이 제게 질문했지만, 저는 평소에 일단 시도하면서 조정하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "try-adjust",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "work-style",
+              "try-adjust",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 57,
+            "quote": "계획부터 세우는 걸 좋아하는 팀장이 제게 질문했지만, 저는 평소에 일단 시도하면서 조정하는 게 좋아요."
+          }
+        ],
+        "rationale": "타인에 관한 절은 저장 대상이 아니며 본인의 명시적 현재 선호만 채점한다."
+      },
+      {
+        "id": "D019",
+        "split": "holdout",
+        "category": "actor_boundary",
+        "mode": "direct",
+        "text": "저는 읽기를 싫어하는 학생에게 시간표를 줬어요. 저는 평소에는 읽기 연습을 좋아해요.",
+        "expect": [
+          [
+            "practice-mode",
+            "reading",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "practice-mode",
+              "reading",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 47,
+            "quote": "저는 읽기를 싫어하는 학생에게 시간표를 줬어요. 저는 평소에는 읽기 연습을 좋아해요."
+          }
+        ],
+        "rationale": "타인에 관한 절은 저장 대상이 아니며 본인의 명시적 현재 선호만 채점한다."
+      },
+      {
+        "id": "D020",
+        "split": "holdout",
+        "category": "actor_boundary",
+        "mode": "direct",
+        "text": "제 가족은 말로 소통하는 걸 선호하지만, 저는 평소에 글로 소통하는 게 편해요.",
+        "expect": [
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 44,
+            "quote": "제 가족은 말로 소통하는 걸 선호하지만, 저는 평소에 글로 소통하는 게 편해요."
+          }
+        ],
+        "rationale": "타인에 관한 절은 저장 대상이 아니며 본인의 명시적 현재 선호만 채점한다."
+      },
+      {
+        "id": "D021",
+        "split": "holdout",
+        "category": "condition_insertion",
+        "mode": "direct",
+        "text": "처음 해보는 일에서는, 모든 답을 바로 알 수는 없더라도, 단계별 안내를 받고 싶어요.",
+        "expect": [
+          [
+            "support",
+            "step",
+            "prefer",
+            "first-try"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "step",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "처음 해보는 일에서는, 모든 답을 바로 알 수는 없더라도, 단계별 안내를 받고 싶어요."
+          }
+        ],
+        "rationale": "삽입된 사실·양보·이유가 앞의 명시된 지원 조건을 없애거나 넓히지 않는다."
+      },
+      {
+        "id": "D022",
+        "split": "holdout",
+        "category": "condition_insertion",
+        "mode": "direct",
+        "text": "바쁠 때는, 설명의 가치를 낮게 보는 건 아니지만, 간단한 설명을 선호해요.",
+        "expect": [
+          [
+            "explanation",
+            "brief",
+            "prefer",
+            "busy"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "explanation",
+              "brief",
+              "prefer",
+              "busy"
+            ],
+            "start": 0,
+            "end": 42,
+            "quote": "바쁠 때는, 설명의 가치를 낮게 보는 건 아니지만, 간단한 설명을 선호해요."
+          }
+        ],
+        "rationale": "삽입된 사실·양보·이유가 앞의 명시된 지원 조건을 없애거나 넓히지 않는다."
+      },
+      {
+        "id": "D023",
+        "split": "holdout",
+        "category": "condition_insertion",
+        "mode": "direct",
+        "text": "결정을 내릴 때는, 혼자 생각한 답이 이미 있어도, 다른 사람과 상의해 판단하는 게 좋아요.",
+        "expect": [
+          [
+            "decision",
+            "consult",
+            "prefer",
+            "decision"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "consult",
+              "prefer",
+              "decision"
+            ],
+            "start": 0,
+            "end": 51,
+            "quote": "결정을 내릴 때는, 혼자 생각한 답이 이미 있어도, 다른 사람과 상의해 판단하는 게 좋아요."
+          }
+        ],
+        "rationale": "삽입된 사실·양보·이유가 앞의 명시된 지원 조건을 없애거나 넓히지 않는다."
+      },
+      {
+        "id": "D024",
+        "split": "holdout",
+        "category": "condition_insertion",
+        "mode": "direct",
+        "text": "함께 일할 때는 (속도를 겨루려는 목적은 아니에요) 우선순위를 정해 처리하는 게 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "teamwork"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "work-style",
+              "prioritize",
+              "prefer",
+              "teamwork"
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "함께 일할 때는 (속도를 겨루려는 목적은 아니에요) 우선순위를 정해 처리하는 게 좋아요."
+          }
+        ],
+        "rationale": "삽입된 사실·양보·이유가 앞의 명시된 지원 조건을 없애거나 넓히지 않는다."
+      },
+      {
+        "id": "D025",
+        "split": "holdout",
+        "category": "condition_insertion",
+        "mode": "direct",
+        "text": "익숙한 일에서는, 다른 사람이 옆에 있다는 사실과 별개로, 혼자 시도하는 게 편해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "familiar"
+            ],
+            "start": 0,
+            "end": 47,
+            "quote": "익숙한 일에서는, 다른 사람이 옆에 있다는 사실과 별개로, 혼자 시도하는 게 편해요."
+          }
+        ],
+        "rationale": "삽입된 사실·양보·이유가 앞의 명시된 지원 조건을 없애거나 넓히지 않는다."
+      },
+      {
+        "id": "D026",
+        "split": "holdout",
+        "category": "condition_reason",
+        "mode": "direct",
+        "text": "처음 배우는 내용은 흐름을 놓치지 않으려고 예시를 먼저 보는 게 좋고, 처음 배우는 내용은 자세한 설명도 좋아해요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "explanation",
+            "detailed",
+            "prefer",
+            "first-try"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "example",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 64,
+            "quote": "처음 배우는 내용은 흐름을 놓치지 않으려고 예시를 먼저 보는 게 좋고, 처음 배우는 내용은 자세한 설명도 좋아해요."
+          },
+          {
+            "tuple": [
+              "explanation",
+              "detailed",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 64,
+            "quote": "처음 배우는 내용은 흐름을 놓치지 않으려고 예시를 먼저 보는 게 좋고, 처음 배우는 내용은 자세한 설명도 좋아해요."
+          }
+        ],
+        "rationale": "이유/목적과 명시된 상황 조건을 분리하고, 조건을 유지한 선호만 채점한다."
+      },
+      {
+        "id": "D027",
+        "split": "holdout",
+        "category": "condition_reason",
+        "mode": "direct",
+        "text": "바쁜 날에는 누락을 줄이기 위해 우선순위를 정하는 게 좋고, 바쁜 날에는 글로 소통하는 편이 좋아요.",
+        "expect": [
+          [
+            "work-style",
+            "prioritize",
+            "prefer",
+            "busy"
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            "busy"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "work-style",
+              "prioritize",
+              "prefer",
+              "busy"
+            ],
+            "start": 0,
+            "end": 56,
+            "quote": "바쁜 날에는 누락을 줄이기 위해 우선순위를 정하는 게 좋고, 바쁜 날에는 글로 소통하는 편이 좋아요."
+          },
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              "busy"
+            ],
+            "start": 0,
+            "end": 56,
+            "quote": "바쁜 날에는 누락을 줄이기 위해 우선순위를 정하는 게 좋고, 바쁜 날에는 글로 소통하는 편이 좋아요."
+          }
+        ],
+        "rationale": "이유/목적과 명시된 상황 조건을 분리하고, 조건을 유지한 선호만 채점한다."
+      },
+      {
+        "id": "D028",
+        "split": "holdout",
+        "category": "condition_reason",
+        "mode": "direct",
+        "text": "회의 중에는 서로의 관점을 알기 위해 다른 사람의 말을 듣고 정리하는 게 좋아요. 회의 중에는 글로 의견을 전하는 것도 편해요.",
+        "expect": [
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            "meeting"
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            "meeting"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "listen-organize",
+              "prefer",
+              "meeting"
+            ],
+            "start": 0,
+            "end": 71,
+            "quote": "회의 중에는 서로의 관점을 알기 위해 다른 사람의 말을 듣고 정리하는 게 좋아요. 회의 중에는 글로 의견을 전하는 것도 편해요."
+          },
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              "meeting"
+            ],
+            "start": 0,
+            "end": 71,
+            "quote": "회의 중에는 서로의 관점을 알기 위해 다른 사람의 말을 듣고 정리하는 게 좋아요. 회의 중에는 글로 의견을 전하는 것도 편해요."
+          }
+        ],
+        "rationale": "이유/목적과 명시된 상황 조건을 분리하고, 조건을 유지한 선호만 채점한다."
+      },
+      {
+        "id": "D029",
+        "split": "holdout",
+        "category": "condition_reason",
+        "mode": "direct",
+        "text": "일을 계획할 때는 선택의 이유를 설명할 수 있어야 해서 여러 대안을 비교하는 게 좋아요. 일을 계획할 때는 핵심 근거도 자세히 알고 싶어요.",
+        "expect": [
+          [
+            "decision",
+            "compare-options",
+            "prefer",
+            "planning"
+          ],
+          [
+            "explanation-detail",
+            "reasons-detail",
+            "prefer",
+            "planning"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "compare-options",
+              "prefer",
+              "planning"
+            ],
+            "start": 0,
+            "end": 78,
+            "quote": "일을 계획할 때는 선택의 이유를 설명할 수 있어야 해서 여러 대안을 비교하는 게 좋아요. 일을 계획할 때는 핵심 근거도 자세히 알고 싶어요."
+          },
+          {
+            "tuple": [
+              "explanation-detail",
+              "reasons-detail",
+              "prefer",
+              "planning"
+            ],
+            "start": 0,
+            "end": 78,
+            "quote": "일을 계획할 때는 선택의 이유를 설명할 수 있어야 해서 여러 대안을 비교하는 게 좋아요. 일을 계획할 때는 핵심 근거도 자세히 알고 싶어요."
+          }
+        ],
+        "rationale": "이유/목적과 명시된 상황 조건을 분리하고, 조건을 유지한 선호만 채점한다."
+      },
+      {
+        "id": "D030",
+        "split": "holdout",
+        "category": "condition_reason",
+        "mode": "direct",
+        "text": "예시를 본 다음에는 이해한 부분을 확인하려고 혼자 시도하는 게 좋아요. 저는 평소에는 운동과 독서를 좋아해요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "after-example"
+          ],
+          [
+            "topic",
+            "exercise",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "reading-books",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "after-example"
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "예시를 본 다음에는 이해한 부분을 확인하려고 혼자 시도하는 게 좋아요. 저는 평소에는 운동과 독서를 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "exercise",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "예시를 본 다음에는 이해한 부분을 확인하려고 혼자 시도하는 게 좋아요. 저는 평소에는 운동과 독서를 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "reading-books",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "예시를 본 다음에는 이해한 부분을 확인하려고 혼자 시도하는 게 좋아요. 저는 평소에는 운동과 독서를 좋아해요."
+          }
+        ],
+        "rationale": "이유/목적과 명시된 상황 조건을 분리하고, 조건을 유지한 선호만 채점한다."
+      },
+      {
+        "id": "D031",
+        "split": "holdout",
+        "category": "explicit_reset",
+        "mode": "direct",
+        "text": "회의에서는 제 생각을 먼저 말하는 게 좋아요. 저는 평소에는 다른 사람의 생각을 듣고 정리하는 편이 좋아요.",
+        "expect": [
+          [
+            "communication",
+            "share-first",
+            "prefer",
+            "meeting"
+          ],
+          [
+            "communication",
+            "listen-organize",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "communication",
+              "share-first",
+              "prefer",
+              "meeting"
+            ],
+            "start": 0,
+            "end": 60,
+            "quote": "회의에서는 제 생각을 먼저 말하는 게 좋아요. 저는 평소에는 다른 사람의 생각을 듣고 정리하는 편이 좋아요."
+          },
+          {
+            "tuple": [
+              "communication",
+              "listen-organize",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 60,
+            "quote": "회의에서는 제 생각을 먼저 말하는 게 좋아요. 저는 평소에는 다른 사람의 생각을 듣고 정리하는 편이 좋아요."
+          }
+        ],
+        "rationale": "조건부 선호와 평소 일반 선호를 독립 문장과 명시적 범위 전환으로 분리한다."
+      },
+      {
+        "id": "D032",
+        "split": "holdout",
+        "category": "explicit_reset",
+        "mode": "direct",
+        "text": "익숙한 일에서는 혼자 시도하고 싶어요. 저는 평소에는 요리와 사진 촬영에 관심이 있어요.",
+        "expect": [
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ],
+          [
+            "topic",
+            "cooking",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "photography",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "familiar"
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "익숙한 일에서는 혼자 시도하고 싶어요. 저는 평소에는 요리와 사진 촬영에 관심이 있어요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "cooking",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "익숙한 일에서는 혼자 시도하고 싶어요. 저는 평소에는 요리와 사진 촬영에 관심이 있어요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "photography",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "익숙한 일에서는 혼자 시도하고 싶어요. 저는 평소에는 요리와 사진 촬영에 관심이 있어요."
+          }
+        ],
+        "rationale": "조건부 선호와 평소 일반 선호를 독립 문장과 명시적 범위 전환으로 분리한다."
+      },
+      {
+        "id": "D033",
+        "split": "holdout",
+        "category": "explicit_reset",
+        "mode": "direct",
+        "text": "바쁜 날에는 보통 길이의 설명을 선호해요. 저는 평소에는 전체 개요를 먼저 보고 싶어요.",
+        "expect": [
+          [
+            "explanation",
+            "standard",
+            "prefer",
+            "busy"
+          ],
+          [
+            "explanation-detail",
+            "overview-first",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "explanation",
+              "standard",
+              "prefer",
+              "busy"
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "바쁜 날에는 보통 길이의 설명을 선호해요. 저는 평소에는 전체 개요를 먼저 보고 싶어요."
+          },
+          {
+            "tuple": [
+              "explanation-detail",
+              "overview-first",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 49,
+            "quote": "바쁜 날에는 보통 길이의 설명을 선호해요. 저는 평소에는 전체 개요를 먼저 보고 싶어요."
+          }
+        ],
+        "rationale": "조건부 선호와 평소 일반 선호를 독립 문장과 명시적 범위 전환으로 분리한다."
+      },
+      {
+        "id": "D034",
+        "split": "holdout",
+        "category": "explicit_reset",
+        "mode": "direct",
+        "text": "처음 할 때는 함께 하는 게 편해요. 저는 평소에는 음악과 자연 산책을 좋아해요.",
+        "expect": [
+          [
+            "support",
+            "together",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "topic",
+            "music",
+            "prefer",
+            null
+          ],
+          [
+            "topic",
+            "nature",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "together",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 45,
+            "quote": "처음 할 때는 함께 하는 게 편해요. 저는 평소에는 음악과 자연 산책을 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "music",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 45,
+            "quote": "처음 할 때는 함께 하는 게 편해요. 저는 평소에는 음악과 자연 산책을 좋아해요."
+          },
+          {
+            "tuple": [
+              "topic",
+              "nature",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 45,
+            "quote": "처음 할 때는 함께 하는 게 편해요. 저는 평소에는 음악과 자연 산책을 좋아해요."
+          }
+        ],
+        "rationale": "조건부 선호와 평소 일반 선호를 독립 문장과 명시적 범위 전환으로 분리한다."
+      },
+      {
+        "id": "D035",
+        "split": "holdout",
+        "category": "explicit_reset",
+        "mode": "direct",
+        "text": "결정할 때는 직접 경험한 것을 참고하는 게 좋아요. 저는 평소에는 다른 사람과 상의해 판단하는 것도 좋아해요.",
+        "expect": [
+          [
+            "decision",
+            "experience",
+            "prefer",
+            "decision"
+          ],
+          [
+            "decision",
+            "consult",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "decision",
+              "experience",
+              "prefer",
+              "decision"
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "결정할 때는 직접 경험한 것을 참고하는 게 좋아요. 저는 평소에는 다른 사람과 상의해 판단하는 것도 좋아해요."
+          },
+          {
+            "tuple": [
+              "decision",
+              "consult",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 61,
+            "quote": "결정할 때는 직접 경험한 것을 참고하는 게 좋아요. 저는 평소에는 다른 사람과 상의해 판단하는 것도 좋아해요."
+          }
+        ],
+        "rationale": "조건부 선호와 평소 일반 선호를 독립 문장과 명시적 범위 전환으로 분리한다."
+      },
+      {
+        "id": "D036",
+        "split": "holdout",
+        "category": "sequence_scope",
+        "mode": "direct",
+        "text": "저는 먼저 예시를 보고 싶어요. 예시를 살펴본 뒤에는 혼자 시도하는 게 편해요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            null
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "after-example"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "example",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 44,
+            "quote": "저는 먼저 예시를 보고 싶어요. 예시를 살펴본 뒤에는 혼자 시도하는 게 편해요."
+          },
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "after-example"
+            ],
+            "start": 0,
+            "end": 44,
+            "quote": "저는 먼저 예시를 보고 싶어요. 예시를 살펴본 뒤에는 혼자 시도하는 게 편해요."
+          }
+        ],
+        "rationale": "각 절의 선호와 예시 이후·처음·익숙함·바쁨 조건이 문장에 명시되어 있다."
+      },
+      {
+        "id": "D037",
+        "split": "holdout",
+        "category": "sequence_scope",
+        "mode": "direct",
+        "text": "처음 배우는 내용에서는 예시를 보고 싶어요. 처음 배우는 내용에서 예시를 본 다음에는 혼자 시도하는 걸 선호해요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "first-try-after-example"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "example",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 63,
+            "quote": "처음 배우는 내용에서는 예시를 보고 싶어요. 처음 배우는 내용에서 예시를 본 다음에는 혼자 시도하는 걸 선호해요."
+          },
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "first-try-after-example"
+            ],
+            "start": 0,
+            "end": 63,
+            "quote": "처음 배우는 내용에서는 예시를 보고 싶어요. 처음 배우는 내용에서 예시를 본 다음에는 혼자 시도하는 걸 선호해요."
+          }
+        ],
+        "rationale": "각 절의 선호와 예시 이후·처음·익숙함·바쁨 조건이 문장에 명시되어 있다."
+      },
+      {
+        "id": "D038",
+        "split": "holdout",
+        "category": "sequence_scope",
+        "mode": "direct",
+        "text": "익숙한 내용에서는 예시를 보는 게 좋아요. 익숙한 내용에서 예시를 본 뒤에는 혼자 시도하는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "familiar"
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar-after-example"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "example",
+              "prefer",
+              "familiar"
+            ],
+            "start": 0,
+            "end": 57,
+            "quote": "익숙한 내용에서는 예시를 보는 게 좋아요. 익숙한 내용에서 예시를 본 뒤에는 혼자 시도하는 게 좋아요."
+          },
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "familiar-after-example"
+            ],
+            "start": 0,
+            "end": 57,
+            "quote": "익숙한 내용에서는 예시를 보는 게 좋아요. 익숙한 내용에서 예시를 본 뒤에는 혼자 시도하는 게 좋아요."
+          }
+        ],
+        "rationale": "각 절의 선호와 예시 이후·처음·익숙함·바쁨 조건이 문장에 명시되어 있다."
+      },
+      {
+        "id": "D039",
+        "split": "holdout",
+        "category": "sequence_scope",
+        "mode": "direct",
+        "text": "바쁠 때는 예시를 보고 싶어요. 바쁠 때 예시를 본 다음에는 혼자 시도하는 게 좋아요.",
+        "expect": [
+          [
+            "support",
+            "example",
+            "prefer",
+            "busy"
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "busy-after-example"
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "example",
+              "prefer",
+              "busy"
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "바쁠 때는 예시를 보고 싶어요. 바쁠 때 예시를 본 다음에는 혼자 시도하는 게 좋아요."
+          },
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "busy-after-example"
+            ],
+            "start": 0,
+            "end": 48,
+            "quote": "바쁠 때는 예시를 보고 싶어요. 바쁠 때 예시를 본 다음에는 혼자 시도하는 게 좋아요."
+          }
+        ],
+        "rationale": "각 절의 선호와 예시 이후·처음·익숙함·바쁨 조건이 문장에 명시되어 있다."
+      },
+      {
+        "id": "D040",
+        "split": "holdout",
+        "category": "sequence_scope",
+        "mode": "direct",
+        "text": "처음 할 때는 단계별 안내를 원하지만, 익숙한 내용에서는 혼자 시도하고 싶어요. 저는 평소에는 글로 소통하는 게 편해요.",
+        "expect": [
+          [
+            "support",
+            "step",
+            "prefer",
+            "first-try"
+          ],
+          [
+            "support",
+            "independent",
+            "prefer",
+            "familiar"
+          ],
+          [
+            "communication",
+            "written",
+            "prefer",
+            null
+          ]
+        ],
+        "authorEvidence": [
+          {
+            "tuple": [
+              "support",
+              "step",
+              "prefer",
+              "first-try"
+            ],
+            "start": 0,
+            "end": 67,
+            "quote": "처음 할 때는 단계별 안내를 원하지만, 익숙한 내용에서는 혼자 시도하고 싶어요. 저는 평소에는 글로 소통하는 게 편해요."
+          },
+          {
+            "tuple": [
+              "support",
+              "independent",
+              "prefer",
+              "familiar"
+            ],
+            "start": 0,
+            "end": 67,
+            "quote": "처음 할 때는 단계별 안내를 원하지만, 익숙한 내용에서는 혼자 시도하고 싶어요. 저는 평소에는 글로 소통하는 게 편해요."
+          },
+          {
+            "tuple": [
+              "communication",
+              "written",
+              "prefer",
+              null
+            ],
+            "start": 0,
+            "end": 67,
+            "quote": "처음 할 때는 단계별 안내를 원하지만, 익숙한 내용에서는 혼자 시도하고 싶어요. 저는 평소에는 글로 소통하는 게 편해요."
+          }
+        ],
+        "rationale": "각 절의 선호와 예시 이후·처음·익숙함·바쁨 조건이 문장에 명시되어 있다."
+      },
+      {
+        "id": "H001",
+        "split": "holdout",
+        "category": "quote",
+        "mode": "withhold",
+        "question": "either",
+        "text": "동료가 “나는 사진 찍는 게 좋다”고 적은 카드를 건넸고, 저는 카드의 날짜를 확인했어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "타인의 말이나 작품 인용이며 본인의 현재 선호를 선언하지 않았다."
+      },
+      {
+        "id": "H002",
+        "split": "holdout",
+        "category": "quote",
+        "mode": "withhold",
+        "question": "either",
+        "text": "책에는 “나는 계획을 먼저 세우는 게 편하다”는 문장이 있고, 저는 그 문장의 맞춤법을 검토했어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "타인의 말이나 작품 인용이며 본인의 현재 선호를 선언하지 않았다."
+      },
+      {
+        "id": "H003",
+        "split": "holdout",
+        "category": "quote",
+        "mode": "withhold",
+        "question": "either",
+        "text": "“처음 배우는 내용은 혼자 하는 게 좋다”는 이야기를 친구에게 들었지만, 저는 제 방식을 말하지 않았어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "타인의 말이나 작품 인용이며 본인의 현재 선호를 선언하지 않았다."
+      },
+      {
+        "id": "H004",
+        "split": "holdout",
+        "category": "quote",
+        "mode": "withhold",
+        "question": "either",
+        "text": "선생님이 “음악보다 독서가 좋다”고 말한 장면을 설명하는 중이고, 제 선호를 적는 것은 아니에요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "타인의 말이나 작품 인용이며 본인의 현재 선호를 선언하지 않았다."
+      },
+      {
+        "id": "H005",
+        "split": "holdout",
+        "category": "relative_other",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 다른 사람과 상의하는 걸 선호하는 참가자의 이름을 적었고, 참가자는 다음 방으로 갔어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "선호 주체는 수식받는 다른 사람이다. 화자의 사건 서술을 선호로 만들지 않는다."
+      },
+      {
+        "id": "H006",
+        "split": "holdout",
+        "category": "relative_other",
+        "mode": "withhold",
+        "question": "either",
+        "text": "책 읽기를 좋아하는 동료가 자료를 놓고 갔고, 저는 자료에 적힌 날짜만 확인했어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "선호 주체는 수식받는 다른 사람이다. 화자의 사건 서술을 선호로 만들지 않는다."
+      },
+      {
+        "id": "H007",
+        "split": "holdout",
+        "category": "relative_other",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 예시를 먼저 보는 걸 좋아하는 친구에게 안내문을 보냈고, 친구는 읽었다고 답했어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "선호 주체는 수식받는 다른 사람이다. 화자의 사건 서술을 선호로 만들지 않는다."
+      },
+      {
+        "id": "H008",
+        "split": "holdout",
+        "category": "relative_other",
+        "mode": "withhold",
+        "question": "either",
+        "text": "말로 의견을 전하는 게 편한 이웃이 찾아왔고, 저는 이웃에게 우산을 돌려줬어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "선호 주체는 수식받는 다른 사람이다. 화자의 사건 서술을 선호로 만들지 않는다."
+      },
+      {
+        "id": "H009",
+        "split": "holdout",
+        "category": "past_uncertain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "한동안 게임을 좋아했어요. 지금도 좋아하는지는 아직 모르겠고 현재 선호로 기록하고 싶지는 않아요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "과거 선호만 분명하며 현재 선호는 명시적으로 유보했다."
+      },
+      {
+        "id": "H010",
+        "split": "holdout",
+        "category": "past_uncertain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "예전에는 자료를 확인하는 걸 선호했지만, 현재 판단 방식은 아직 정하지 못했어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "과거 선호만 분명하며 현재 선호는 명시적으로 유보했다."
+      },
+      {
+        "id": "H011",
+        "split": "holdout",
+        "category": "past_uncertain",
+        "mode": "withhold",
+        "question": "either",
+        "text": "작년에는 짧은 설명이 편했어요. 지금 원하는 설명 길이는 확실하게 말하지 못하겠어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "과거 선호만 분명하며 현재 선호는 명시적으로 유보했다."
+      },
+      {
+        "id": "H012",
+        "split": "holdout",
+        "category": "unsupported_context",
+        "mode": "withhold",
+        "question": "either",
+        "text": "비행기를 기다리는 동안에만 책 읽기가 좋고, 그 외의 상황에서 독서를 좋아한다고 말하지는 않았어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지원하지 않는 구체적 상황 한정 선호를 일반 선호로 저장하지 않는다."
+      },
+      {
+        "id": "H013",
+        "split": "holdout",
+        "category": "unsupported_context",
+        "mode": "withhold",
+        "question": "either",
+        "text": "목소리가 쉬어 있을 때만 글로 소통하는 게 편해요. 평소의 소통 선호는 아직 모르겠어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지원하지 않는 구체적 상황 한정 선호를 일반 선호로 저장하지 않는다."
+      },
+      {
+        "id": "H014",
+        "split": "holdout",
+        "category": "unsupported_context",
+        "mode": "withhold",
+        "question": "either",
+        "text": "점심을 먹고 난 직후에만 산책이 좋고, 다른 시간의 취향은 여기서 밝히지 않을게요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지원하지 않는 구체적 상황 한정 선호를 일반 선호로 저장하지 않는다."
+      },
+      {
+        "id": "H015",
+        "split": "holdout",
+        "category": "ambiguous_reference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 그 사람이 제안한 쪽이 좋지만 다른 쪽은 싫어요. 구체적으로 어떤 제안인지는 빠져 있어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지시 대상이 정의되지 않아 특정 지원 값으로 결정할 수 없다."
+      },
+      {
+        "id": "H016",
+        "split": "holdout",
+        "category": "ambiguous_reference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "저는 세 번째 방법이 편해요. 방법 이름이나 내용을 아직 한 번도 설명하지 않았어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지시 대상이 정의되지 않아 특정 지원 값으로 결정할 수 없다."
+      },
+      {
+        "id": "H017",
+        "split": "holdout",
+        "category": "ambiguous_reference",
+        "mode": "withhold",
+        "question": "either",
+        "text": "익숙할 때는 그걸 하고 싶어요. 여기서 그게 어떤 행동인지는 정하지 않았어요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "지시 대상이 정의되지 않아 특정 지원 값으로 결정할 수 없다."
+      },
+      {
+        "id": "H018",
+        "split": "holdout",
+        "category": "action_request",
+        "mode": "withhold",
+        "question": "either",
+        "text": "오늘 받은 문서를 읽기 쉽게 고쳐 주고, 빠진 제목도 채워 주세요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "단발성 산출물/작업 요청이며 본인의 현재 성향 선언이 아니다."
+      },
+      {
+        "id": "H019",
+        "split": "holdout",
+        "category": "action_request",
+        "mode": "withhold",
+        "question": "either",
+        "text": "이번 여행의 음식 주문 예시를 만들어 주고, 맨 아래에는 발음도 적어 주세요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "단발성 산출물/작업 요청이며 본인의 현재 성향 선언이 아니다."
+      },
+      {
+        "id": "H020",
+        "split": "holdout",
+        "category": "action_request",
+        "mode": "withhold",
+        "question": "either",
+        "text": "회의 의견을 먼저 정리해 주고, 결정되지 않은 항목에는 표시를 해 주세요.",
+        "expect": [],
+        "authorEvidence": [],
+        "rationale": "단발성 산출물/작업 요청이며 본인의 현재 성향 선언이 아니다."
+      }
+    ]
+  }
+}

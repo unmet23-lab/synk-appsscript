@@ -1,14 +1,17 @@
 'use strict';
 const {classroomRequestSpec}=require('./classroom-requests.cjs');
 const {worldRequestSpec}=require('./world-requests.cjs');
-const {PERSONAL_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
+const {PERSONAL_OPERATIONS,PLATFORM_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
-  if(['platformLoad','platformSave','platformDelete'].includes(operation)){
+  if(Object.hasOwn(PLATFORM_OPERATIONS,operation)){
     if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
-    return personalRequestSpec(operation.replace('platform','personal'),params,product,'platform-library');
+    return personalRequestSpec(operation.replace(/^(platform|insight|understanding)/,'personal'),params,product,PLATFORM_OPERATIONS[operation]);
   }
-  if(PERSONAL_OPERATIONS.includes(operation))return personalRequestSpec(operation,params,product,clientKey);
+  if(PERSONAL_OPERATIONS.includes(operation)){
+    if(['member-insight','member-understanding'].includes(clientKey))throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    return personalRequestSpec(operation,params,product,clientKey);
+  }
   const invalid=()=>{throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
   if(!params||typeof params!=='object'||Array.isArray(params))invalid();
   const keys=(allowed)=>{if(Object.keys(params).some(k=>!allowed.includes(k)))invalid();};

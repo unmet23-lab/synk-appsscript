@@ -3,6 +3,10 @@ import { benefitHero, benefitCards, benefitsPage, benefitDetail } from './member
 import { APPLICATIONS, messengerDestination, PATH_INTERVIEW_URL } from './applications.mjs';
 import { createLibrary, LIBRARY_KEY, LIBRARY_ITEMS, libraryItemRoute, filterApplications } from './library.mjs';
 import { createPlatformAccount } from './platform-account.mjs';
+import { createMemberInsight } from '../../../desktop/renderer/member-insight.mjs';
+import { createMemberActivity } from '../../../desktop/renderer/member-activity-controller.mjs';
+import { createMemberUnderstanding } from '../../../desktop/renderer/member-understanding-controller.mjs';
+import { bindMemberUnderstandingEditor, captureMemberUnderstandingFocus } from '../../../desktop/renderer/member-understanding-host.mjs';
 import { mountPlatformLibrary } from './platform-library-view.mjs';
 import { platformRoute, searchRoute, shortcutDestination } from './platform-home.mjs';
 import { platformPublicEntry, platformCompanyEntry } from './platform-entry.mjs';
@@ -20,6 +24,19 @@ let config = readConfig({ version: 1 }, location.href), messengerUrl = null, cli
 let category = 'all', collection = 'all', sort = 'default', query = platformRoute(location.hash).query, timer, detailTab = 'overview', downloadOS = 'windows', downloadPicked = false, downloadStarted = null, detectedOS = null;
 const launches = new Map();
 let browserAccount = null, startup = 0, startupPromise = null, pageActive = true, identity = { status: 'loading', displayName: '', message: '계정을 확인하고 있어요.' };
+let nativeIdentity = { status: 'loading' }, nativeIdentityVersion = 0;
+const insightIdentity=()=>typeof window.synkDesktop?.authStatus==='function'?nativeIdentity:browserAccount?.identity()||identity;
+const insightRequest=(operation,params)=>typeof window.synkDesktop?.authStatus==='function'?window.synkDesktop.accountRequest(operation,params):browserAccount.request(operation,params);
+const memberActivity=createMemberActivity({getIdentity:insightIdentity,request:insightRequest,getFavorites:()=>library.read().favorites});
+const memberUnderstanding=createMemberUnderstanding({getIdentity:insightIdentity,request:insightRequest});
+const memberInsight = createMemberInsight({
+ getIdentity: insightIdentity,
+ request: insightRequest,
+ activity:memberActivity,
+ understanding:memberUnderstanding,
+ onChange: () => { if (route().page === 'benefits' && route().id === 'insight') render(); },
+});
+bindMemberUnderstandingEditor(root,{controller:memberUnderstanding,getReport:()=>memberInsight.read().report});
 const labels = { home:'내 홈', benefits:'회원 혜택', discover:'둘러보기', library:'내 라이브러리', updates:'새소식', downloads:'다운로드', settings:'플랫폼 설정', help:'도움말', app:'앱 상세' };
 const news = [
  {id:'clients',app:'platform',label:'플랫폼',title:'하나의 시작점, 독립적인 두 클라이언트',body:'SYNK 플랫폼에서 WORLD와 워크스페이스를 관리해요. 두 앱은 각각 설치되고 별도 창에서 실행됩니다. 플랫폼을 설치해도 두 앱이 자동으로 설치되지는 않아요.'},
@@ -27,7 +44,24 @@ const news = [
  {id:'company',app:'messenger',label:'워크스페이스',title:'팀 대화와 공유 파일을 회사 공간에',body:'회사 초대·로그인을 거쳐 대화와 파일을 이용해요. 학습 기록과 회사 자료는 분리하고, 회사 직원의 접근 권한은 회사에서 관리합니다.'}
 ];
 function notice(text) { clearTimeout(timer);$('platform-message').textContent = text;$('platform-message').hidden = false;timer = setTimeout(() => $('platform-message').hidden = true, 6500); }
-function dispatch(action) { if(continuity?.connected()&&['favorite','launch','remember','clear-recent'].includes(action.type)){void continuity.dispatch(action).catch(error=>notice(error.message));return true;}try { deviceLibrary.dispatch(action);render();return true; } catch { render();notice('이 기기에 저장하지 못했어요. 저장 공간과 브라우저 설정을 확인해 주세요.');return false; } }
+function dispatch(action) { if(action.type==='launch')void memberActivity.trackLaunch(action.id);if(continuity?.connected()&&['favorite','launch','remember','clear-recent'].includes(action.type)){void continuity.dispatch(action).catch(error=>notice(error.message));return true;}try { deviceLibrary.dispatch(action);if(action.type==='favorite')void memberActivity.syncFavorites();render();return true; } catch { render();notice('이 기기에 저장하지 못했어요. 저장 공간과 브라우저 설정을 확인해 주세요.');return false; } }
+async function openInsightActivity(id){
+ if(!['world','messenger','path','pulse'].includes(id)||!accountEntryReady(id))return accountEntryUnavailable();
+ const host=window.synkDesktop,owner=JSON.stringify(insightIdentity());
+ if(host?.authStatus&&(id==='pulse'&&typeof host.openPulseApp==='function'||['world','messenger'].includes(id)&&clients.some(row=>row.id===id&&row.canLaunch))){
+  try{const result=await(id==='pulse'?host.openPulseApp():host.launch(id));if(owner!==JSON.stringify(insightIdentity()))return;if(result?.ok)dispatch({type:'launch',id,mode:'client'});else notice('앱 실행 상태를 확인하고 다시 열어 주세요.');}catch{notice('앱을 열지 못했어요. 다시 시도해 주세요.');}return;
+ }
+ const href=id==='world'?platformPublicEntry('world'):id==='path'?PATH_INTERVIEW_URL:id==='pulse'?'https://workspace.synk.im/pulse-app/':messengerUrl;
+ if(!href){location.hash=libraryItemRoute(id);notice('앱 연결 주소와 이용 권한을 확인해 주세요.');return;}
+ // Open synchronously with the user's click, then preserve the existing account
+ // handoff. A blocked popup is not recorded as an app opening.
+ openActivityWindow(publicEntry(id,href),id);
+}
+function openActivityWindow(href,id){
+ const popup=window.open('about:blank','_blank');if(!popup){notice('새 창이 차단됐어요. 브라우저에서 새 창을 허용한 뒤 다시 눌러 주세요.');return false;}
+ try{popup.opener=null;popup.location.replace(href);}catch{popup.close();notice('앱을 열지 못했어요. 다시 눌러 주세요.');return false;}
+ dispatch({type:'launch',id,mode:'web'});return true;
+}
 function route() { return platformRoute(location.hash); }
 // Do not open an account-connected app without a verified Platform state.
 // Native launches keep the main process's existing account handoff.
@@ -113,11 +147,20 @@ function downloads() {
 }
 function settings() { const state=library.read();return heading('PREFERENCES','내 방식으로 사용하는 SYNK','계정 라이브러리를 켠 동안 즐겨찾기와 최근 열기는 계정에 저장해요. 화면 설정·컬렉션은 이 기기에 보관해요.')+`<section class="content-panel"><h2>라이브러리</h2><label class="setting-row"><span><strong>최근 열기 기록 보관</strong><small>앱·서비스와 열기 요청 시각만 보관해요. 끄면 현재 목록도 지워요.</small></span><input type="checkbox" data-setting="remember" ${state.rememberRecent?'checked':''}></label><label class="setting-row"><span><strong>간결한 카드 보기</strong><small>라이브러리 그림을 작게 표시해요.</small></span><input type="checkbox" data-setting="compact" ${state.compact?'checked':''}></label></section><section class="content-panel"><h2>이 기기의 플랫폼 데이터</h2><p>이 기기의 바로가기·컬렉션·화면 설정을 관리해요. 계정에 연결한 즐겨찾기·최근 열기·메모는 위의 계정 라이브러리에서 관리하거나 삭제할 수 있어요.</p><div class="actions">${button('설정 내려받기','export')}${button('이 기기의 플랫폼 설정 지우기','reset-confirm','','plain danger')}</div></section><section class="content-panel"><h2>SYNK ID와 앱 데이터</h2><p>로그인 세션과 비공개 데이터는 클라이언트별로 나뉘어요. 회사 대화·파일과 WORLD의 학습 기록을 섞지 않아요.</p><a href="./index.html">공통 계정 관리 열기 ↗</a></section>`; }
 function help() { return heading('HELP','SYNK를 시작하는 방법')+`<section class="content-panel"><h2>1. SYNK 플랫폼을 설치해요.</h2><p>Windows와 Mac용 런처예요. 다운로드 화면에서 내 기기에 맞는 파일을 받아 설치하고, 앱을 찾아 라이브러리에 담아 관리해요.</p><h2>2. 필요한 앱을 따로 설치해요.</h2><p>WORLD와 사내 메신저는 각각의 클라이언트입니다. 플랫폼 설치가 두 앱 설치를 대신하지 않으며, 앱 데이터·로그인 세션·업데이트도 따로 관리합니다. 플랫폼에서 앱을 고르고 「설치 파일 준비」 → 「설치 시작」을 누르면 설치 창이 열려요.</p><h2>3. 같은 SYNK ID로 연결해요.</h2><p>SYNK ID로 계정을 연결해요. 서비스마다 저장·동의 상태를 확인하며, 메신저는 회사 초대·로그인과 회사가 확인한 이용 권한이 필요해요.</p><h2>라이브러리에 담으면 이용권이 생기나요?</h2><p>아니요. 라이브러리는 앱 바로가기를 정리하는 공간입니다. 설치 여부·구매·이용 자격은 각각 확인해요.</p><h2>현재 사용할 수 있는 것은 무엇인가요?</h2><p>플레저 공개 웹과 앱별 웹 체험, 앱·회원 혜택의 기기 라이브러리·즐겨찾기를 사용할 수 있어요. 개발 미리보기와 정식 공개 서비스를 구분해 안내해요. Windows·Mac용 플랫폼 Preview는 다운로드 화면에서 받을 수 있고, 자동 업데이트는 아직 없어요.</p><a href="#downloads" class="sb-btn soft">다운로드 열기</a></section>`; }
-function render() { const active = root.contains(document.activeElement) ? document.activeElement : null;const focus = active ? ['id','data-action','data-id','data-collection','data-setting','href','data-web'].map(key=>[key,active.getAttribute(key)]).filter(([,value])=>value!==null) : [];const {page,id}=route(), state=library.read();$('page-label').textContent=labels[page];$('library-count').textContent=state.saved.length;document.body.classList.toggle('compact-cards',state.compact);document.querySelectorAll('[data-route]').forEach(node=>{ if(node.dataset.route===page)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current'); });root.innerHTML=page==='home'?homePage():page==='benefits'?(id?benefitDetail(id,location.href,{library:state}):benefitsPage()):page==='discover'?discover():page==='library'?libraryPage():page==='app'?appPage(id):page==='downloads'?downloads():page==='settings'?settings():page==='updates'?heading('WHAT’S NEW','SYNK의 새로운 이야기','공개 출시 공지와 구분해 현재 개발 소식을 전해요.')+newsCards():help();for(const link of root.querySelectorAll('[data-web]'))updateWebLink(link);if(focus.length){const next=[...root.querySelectorAll('a,button,input,select')].find(node=>focus.every(([key,value])=>node.getAttribute(key)===value));next?.focus({preventScroll:true});} }
+function render() { const restoreInsightFocus=captureMemberUnderstandingFocus(root);memberActivity.read();memberInsight.setVisible(pageActive&&!document.hidden&&route().page==='benefits'&&route().id==='insight');const active = root.contains(document.activeElement) ? document.activeElement : null;const focus = active ? ['id','data-action','data-insight-action','data-insight-target','data-id','data-collection','data-setting','href','data-web'].map(key=>[key,active.getAttribute(key)]).filter(([,value])=>value!==null) : [];const {page,id}=route(), state=library.read();$('page-label').textContent=labels[page];$('library-count').textContent=state.saved.length;document.body.classList.toggle('compact-cards',state.compact);document.querySelectorAll('[data-route]').forEach(node=>{ if(node.dataset.route===page)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current'); });root.innerHTML=page==='home'?homePage():page==='benefits'?(id?benefitDetail(id,location.href,{library:state,insight:memberInsight.read()}):benefitsPage()):page==='discover'?discover():page==='library'?libraryPage():page==='app'?appPage(id):page==='downloads'?downloads():page==='settings'?settings():page==='updates'?heading('WHAT’S NEW','SYNK의 새로운 이야기','공개 출시 공지와 구분해 현재 개발 소식을 전해요.')+newsCards():help();for(const link of root.querySelectorAll('[data-web]'))updateWebLink(link);if(focus.length){const next=[...root.querySelectorAll('a,button,input,select')].find(node=>focus.every(([key,value])=>node.getAttribute(key)===value));next?.focus({preventScroll:true});}restoreInsightFocus(); }
 function modal(title,body,extra='') { $('dialog-content').innerHTML=`<h2>${title}</h2><p>${body}</p>${extra}`;$('platform-dialog').showModal(); }
 async function refreshClients() { if(!window.synkDesktop)return;const bounded=p=>{let t;return Promise.race([p,new Promise((_,reject)=>t=setTimeout(()=>reject(new Error('timeout')),5000))]).finally(()=>clearTimeout(t));};try { const [env,list]=await bounded(Promise.all([window.synkDesktop.getEnvironment(),window.synkDesktop.getClients()]));environment=env;clients=Array.isArray(list)?list.filter(v=>['platform','world','messenger'].includes(v.id)):[];$('environment-label').textContent=`${env.platform==='darwin'?'macOS':'Windows'} · ${env.mode==='development'?'개발 클라이언트':'플랫폼'}`;render(); } catch { clients=[];notice('설치 정보를 읽지 못했어요. 잠시 뒤 다시 확인해 주세요.');render(); } }
 root.addEventListener('click',async event=>{
- const link=event.target.closest('[data-web]');if(link) { if(!updateWebLink(link)){event.preventDefault();accountEntryUnavailable();return;}dispatch({type:'launch',id:link.dataset.web,mode:'web'});return; }
+ const insightAction = event.target.closest('[data-insight-action]')?.dataset.insightAction;
+ if(['enable-activity','disable-activity'].includes(insightAction)){await memberActivity.setConsent(insightAction==='enable-activity');return;}
+ if(insightAction==='activity'){await openInsightActivity(event.target.closest('[data-insight-target]')?.dataset.insightTarget);return;}
+ if(insightAction === 'account'){location.assign('./client.html?product=platform');return;}
+ if(insightAction === 'refresh') {
+  if(typeof window.synkDesktop?.authStatus === 'function') await refreshNativeInsight();
+  else await refreshBrowserAccount();
+  await memberInsight.refresh();render();return;
+ }
+ const link=event.target.closest('[data-web]');if(link) { event.preventDefault();if(!updateWebLink(link)){accountEntryUnavailable();return;}openActivityWindow(link.href,link.dataset.web);return; }
  const control=event.target.closest('[data-action]');if(!control)return;const {action,id}=control.dataset;
  if(action==='scroll-benefits')document.getElementById('benefit-collection')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   else if(action==='retry-account')await refreshBrowserAccount();
@@ -132,7 +175,7 @@ root.addEventListener('click',async event=>{
  else if(action==='news'){const item=news.find(v=>v.id===id);if(item)modal(item.title,item.body,'<p class="small">2026.10.02 · 개발 소식</p>');}
  else if(action==='install-info')modal('WORLD·사내 메신저 설치','두 앱의 설치 파일은 SYNK 플랫폼 안에 들어 있어요. 플랫폼에서 앱을 고르고 「설치 파일 준비」를 누르면 파일을 확인하고, 「설치 시작」을 누르면 설치 창이 열려요. 설치를 마친 뒤 「설치 상태 확인」을 누르면 바로 실행할 수 있어요.');
  else if(action==='refresh-clients'){if(!window.synkDesktop)notice('설치된 앱은 데스크톱 플랫폼에서 확인할 수 있어요. 지금은 웹 미리보기입니다.');else await refreshClients();}
- else if(action==='launch'){if(launches.get(id)==='loading')return;const launchRoute=location.hash;launches.set(id,'loading');control.disabled=true;render();try{if(!window.synkDesktop)throw new Error();const result=await window.synkDesktop.launch(id);if(!result?.ok)throw new Error();launches.delete(id);const saved=dispatch({type:'launch',id,mode:'client'});notice(saved?'별도 클라이언트에 실행을 요청했어요.':'클라이언트에 실행을 요청했지만, 최근 열기 기록은 저장하지 못했어요.');}catch{launches.set(id,'error');notice('클라이언트를 실행하지 못했어요. 설치 상태를 다시 확인해 주세요.');}finally{render();if(location.hash===launchRoute)root.querySelector(`[data-action="launch"][data-id="${id}"]`)?.focus({preventScroll:true});}}
+  else if(action==='launch'){if(launches.get(id)==='loading')return;const launchRoute=location.hash,owner=JSON.stringify(insightIdentity()),current=()=>owner===JSON.stringify(insightIdentity());launches.set(id,'loading');control.disabled=true;render();try{if(!window.synkDesktop)throw new Error();const result=await window.synkDesktop.launch(id);if(!current())return;if(!result?.ok)throw new Error();launches.delete(id);const saved=dispatch({type:'launch',id,mode:'client'});notice(saved?'별도 클라이언트에 실행을 요청했어요.':'클라이언트에 실행을 요청했지만, 최근 열기 기록은 저장하지 못했어요.');}catch{if(current()){launches.set(id,'error');notice('클라이언트를 실행하지 못했어요. 설치 상태를 다시 확인해 주세요.');}}finally{if(!current())launches.delete(id);render();if(current()&&location.hash===launchRoute)root.querySelector(`[data-action="launch"][data-id="${id}"]`)?.focus({preventScroll:true});}}
  else if(action==='export'){const url=URL.createObjectURL(new Blob([JSON.stringify(library.read(),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='synk-platform-device-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  else if(action==='reset-confirm')modal('이 기기의 설정을 지울까요?','라이브러리, 즐겨찾기, 컬렉션, 최근 열기와 화면 설정만 지워요. 계정·학습 기록·회사 자료·설치된 앱은 그대로입니다.',button('플랫폼 설정 지우기','reset','','sb-btn'));
 });
@@ -147,7 +190,7 @@ window.addEventListener('hashchange',()=>{detailTab='overview';query=route().que
 window.addEventListener('storage',event=>{if(event.key===LIBRARY_KEY||event.key===null){library.reload();render();}});
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');root.before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./src/platform-library.css';document.head.append(continuityStyle);
-continuity=mountPlatformLibrary(continuityRoot,{getHost:()=>browserAccount,ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),getDevice:()=>deviceLibrary.read(),onLogin:()=>location.assign('./client.html?product=platform'),onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}dispatch({type:'launch',id,mode:'web'});location.assign(publicEntry(id,destination.href));}else location.hash=libraryItemRoute(id);}});
+continuity=mountPlatformLibrary(continuityRoot,{getHost:()=>browserAccount,ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),onFavoritesChanged:()=>memberActivity.syncFavorites(),getDevice:()=>deviceLibrary.read(),onLogin:()=>location.assign('./client.html?product=platform'),onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}openActivityWindow(publicEntry(id,destination.href),id);}else location.hash=libraryItemRoute(id);}});
 render();
 async function loadStartup(){
  const attempt=++startup, browser=typeof window.synkDesktop?.authStatus!=='function';let failed=false;
@@ -174,9 +217,20 @@ function refreshBrowserAccount(){
  return !browserAccount||!config.configured||!client?.clientId||!client.redirectUri?start():browserAccount.refresh();
 }
 void start();
-window.addEventListener('pagehide',()=>{pageActive=false;browserAccount?.invalidate();});
-window.addEventListener('pageshow',event=>{pageActive=true;if(event.persisted)void refreshBrowserAccount();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)browserAccount?.invalidate();else void refreshBrowserAccount();});
+window.addEventListener('pagehide',()=>{pageActive=false;memberInsight.setVisible(false);browserAccount?.invalidate();render();});
+async function refreshNativeInsight(){
+ const expected=++nativeIdentityVersion;
+ memberInsight.invalidate();nativeIdentity={status:'loading'};render();
+ try{const next=await window.synkDesktop.authStatus();if(expected!==nativeIdentityVersion||!pageActive||document.hidden)return;nativeIdentity=next;}
+ catch{if(expected!==nativeIdentityVersion)return;nativeIdentity={status:'error'};}
+ render();
+}
+window.addEventListener('pageshow',event=>{pageActive=true;if(event.persisted){if(typeof window.synkDesktop?.authStatus==='function')void refreshNativeInsight();else void refreshBrowserAccount();}});
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){nativeIdentityVersion++;memberInsight.setVisible(false);browserAccount?.invalidate();render();}
+ else if(typeof window.synkDesktop?.authStatus==='function')void refreshNativeInsight();
+ else void refreshBrowserAccount();
+});
 window.addEventListener('online',()=>{void refreshBrowserAccount();});
 
 // Account identity is display-only here. Each application authenticates independently.
@@ -185,12 +239,14 @@ if (typeof window.synkDesktop?.authStatus === 'function') {
   const label = document.createElement('span');label.textContent = 'SYNK ID';
   entry.replaceChildren(...[entry.querySelector('img, .avatar'), label].filter(Boolean));
   const show = state => {
+    nativeIdentityVersion++;nativeIdentity=state;render();
     label.textContent = state.signedIn ? (state.account?.display_name || '내 SYNK ID') : 'SYNK ID 로그인';
     entry.setAttribute('aria-label', state.signedIn ? '연결된 SYNK ID 관리' : 'SYNK ID로 로그인');
   };
   const stop = window.synkDesktop.onAuthChanged(show);
-  void window.synkDesktop.authStatus().then(show).catch(() => { label.textContent = 'SYNK ID 확인'; });
-  window.addEventListener('pagehide', stop, { once: true });
+  const initialVersion=nativeIdentityVersion;
+  void window.synkDesktop.authStatus().then(state=>{if(initialVersion===nativeIdentityVersion&&pageActive&&!document.hidden)show(state);}).catch(() => { if(initialVersion===nativeIdentityVersion)label.textContent = 'SYNK ID 확인'; });
+  window.addEventListener('pagehide', event=>{if(!event.persisted)stop();});
 }
 void detectDownloadOS().then(os=>{detectedOS=os;if(!os||downloadPicked)return;downloadOS=os==='mac'?'mac-arm64':os;if(route().page==='downloads')render();});
 void refreshPlatformDownloads().then(changed=>{if(changed&&route().page==='downloads')render();});

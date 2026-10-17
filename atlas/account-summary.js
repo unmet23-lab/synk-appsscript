@@ -6,7 +6,9 @@
 // share. It describes practice; it is never an ability, a grade, a level or a personality.
 const Trail = require('./trail');
 const Learning = require('./learning');
-const { learningReason, situationLine } = require('./vellum');
+const { learningReason, situationLine, periodComparisonReason } = require('./vellum');
+const { practicePeriods } = require('./trail-periods');
+const { memberPracticeObservations } = require('./trail-member-observations');
 const VERSION = 'atlas-account-summary-1';
 // The account log's scope (game-learning.js account store, synk-learning).
 const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'learning', subject: 'device' });
@@ -28,6 +30,10 @@ function summarizeAccount({ events, map, asOf, presentation = null, reasons = nu
     .sort((a, b) => b.priority - a.priority || (Date.parse(b.lastAt || 0) - Date.parse(a.lastAt || 0)) || a.id.localeCompare(b.id));
   const lastAt = observed.attempts.reduce((at, a) => latest(at, a.at), null);
   const answered = observed.attempts.filter(a => a.verdict === 'correct' || a.verdict === 'incorrect');
+  // Keep the complete log's exposure/help/exclusion judgement, then group actual
+  // attempt times. Cutting the raw log first would lose earlier exposure.
+  const periods = practicePeriods(observed.attempts, new Date(asOf).toISOString());
+  periods.reason = periodComparisonReason({ source: 'practice', state: periods.sufficient ? 'ready' : 'empty' });
   // Where each declared reason leads (Strata links.goals), with the line a product shows beside
   // practice it picks for that situation. A reason without situations (exam, hobby, other) claims
   // nothing. A reason changes only where practice happens, never difficulty or a level.
@@ -49,6 +55,8 @@ function summarizeAccount({ events, map, asOf, presentation = null, reasons = nu
       independent: answered.filter(a => a.independent).length,
       assisted: answered.filter(a => a.assisted).length,
       lastAt,
+      periods,
+      observations: memberPracticeObservations({ attempts: observed.attempts, map, asOf: new Date(asOf).toISOString() }),
       skills: practiced.slice(0, SHOWN).map(s => ({ id: s.id, label: s.label, domain: s.domain, status: s.status,
         recent: s.n, correct: s.correct, assisted: s.assisted, lastAt: s.lastAt, line: learningReason({ status: s.status, label: s.label }) })),
       content: concepts.filter(c => c.status === 'practice' || c.status === 'review').slice(0, SHOWN)

@@ -1,0 +1,242 @@
+{
+  "at": "2026-10-16T06:47:02.886Z",
+  "authorization": "Root authorized disclosing these five safety findings and converting this 120 corpus to development after immutable first evaluation.",
+  "firstReportsPreserved": true,
+  "labelsUnchanged": true,
+  "findings": [
+    {
+      "id": "D017",
+      "text": "익숙해지기 전의 부담을 줄이려고 처음 배우는 내용은 단계별 안내를 받고 싶고, 저는 음악도 좋아해요.",
+      "expected": [
+        [
+          "support",
+          "step",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "step",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          "first-try"
+        ]
+      ],
+      "baselineActual": [
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-scope-error",
+      "reason": "A new explicit self subject starts the music preference clause. The initial learning condition belongs to the earlier step-help clause; assigning first-try to music changes the authored declaration."
+    },
+    {
+      "id": "D029",
+      "text": "처음 하는 일에서는, 분야가 무엇이든, 예시를 먼저 보고 싶고 저는 독서도 좋아해요.",
+      "expected": [
+        [
+          "support",
+          "example",
+          "prefer",
+          "first-try"
+        ],
+        [
+          "topic",
+          "reading-books",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "reading-books",
+          "prefer",
+          null
+        ]
+      ],
+      "baselineActual": [
+        [
+          "topic",
+          "reading-books",
+          "prefer",
+          null
+        ]
+      ],
+      "classification": "clear-condition-loss",
+      "reason": "The opening first-try condition scopes the example preference across a non-preference parenthetical. Dropping it and offering unconditional example preference is a broader claim than the sentence states."
+    },
+    {
+      "id": "D033",
+      "text": "익숙한 내용에서는 혼자 시도하는 게 편하고, 이건 잘한다는 뜻은 아니지만, 읽기 연습도 좋아해요.",
+      "expected": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ],
+        [
+          "practice-mode",
+          "reading",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "baselineActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "familiar"
+        ]
+      ],
+      "classification": "gold-scope-ambiguity",
+      "reason": "The second reading-practice clause has no explicit general reset. It can be read inside the familiar-content scope or as an additional general preference; original unconditional gold is not definitive."
+    },
+    {
+      "id": "D079",
+      "text": "저는 예시를 본 다음에는 혼자 시도하는 게 편하고, 음악 듣기도 좋아해요.",
+      "expected": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          "after-example"
+        ]
+      ],
+      "baselineActual": [
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "music",
+          "prefer",
+          "after-example"
+        ]
+      ],
+      "classification": "gold-scope-ambiguity",
+      "reason": "The music clause shares a sentence after the example-condition clause without an explicit scope reset. General preference is plausible but the condition can grammatically continue."
+    },
+    {
+      "id": "D081",
+      "text": "저는 예시를 먼저 보고 싶고, 그 예시를 본 뒤에는 혼자 해보는 게 좋으며, 사진 촬영에도 관심이 있어요.",
+      "expected": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "photography",
+          "prefer",
+          null
+        ]
+      ],
+      "candidateActual": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "support",
+          "independent",
+          "prefer",
+          "after-example"
+        ],
+        [
+          "topic",
+          "photography",
+          "prefer",
+          "after-example"
+        ]
+      ],
+      "baselineActual": [
+        [
+          "support",
+          "example",
+          "prefer",
+          null
+        ],
+        [
+          "topic",
+          "photography",
+          "prefer",
+          "after-example"
+        ]
+      ],
+      "classification": "gold-scope-ambiguity",
+      "reason": "Photography interest follows a conditioned clause without an explicit reset. The original general-interest gold is plausible but not uniquely forced by grammar."
+    }
+  ]
+}

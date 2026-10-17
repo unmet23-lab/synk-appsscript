@@ -2,6 +2,13 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {CLIENTS,identity}=require('../src/catalog.cjs');
 const {allowedUrl,safeEntry,assertSender,inside,preferences,allowedNavigation,externalDestination,allowedDownload,contentSecurityPolicy}=require('../src/security.cjs');
+
+test('member insight account settings permit only the fixed public destination',()=>{
+  const entry='synk-desktop://platform/index.html', url='https://synk.im/account/client.html?product=platform';
+  assert.equal(externalDestination(url,entry,'platform','release'),url);
+  for(const client of ['world','messenger'])assert.equal(externalDestination(url,entry,client,'release'),null);
+  for(const value of [url+'&account=other',url+'#token',url.replace('https:','http:'),url.replace('synk.im','user@synk.im'),url.replace('synk.im','synk.im.evil.invalid'),url.replace('platform','world')])assert.equal(externalDestination(value,entry,'platform','release'),null);
+});
 const {installationPaths,createInstallations}=require('../src/installations.cjs');
 const {configFor,prepare}=require('../tools/package.cjs');
 const {EventEmitter}=require('node:events');

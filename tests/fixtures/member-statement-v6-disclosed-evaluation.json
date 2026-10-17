@@ -1,0 +1,1800 @@
+{
+  "schema": "synk-private-language-evaluation-v1",
+  "frozenAt": "2026-10-16T03:00:28.318Z",
+  "provenance": {
+    "authoredIndependently": true,
+    "readSources": [
+      "docs/AI_운영원칙.md",
+      "experiences/synk-account/src/member-understanding-data.mjs",
+      ".tmp/member-free-language-20261016/public-meaning-contract.json"
+    ],
+    "forbiddenSourcesRead": false,
+    "publicContractSha256": "196fc067107cfe47589e6e675905390f7e4255465d8164d693389a9fc97d0bb0",
+    "sawParserOutputsBeforeFreeze": false
+  },
+  "counts": {
+    "total": 80,
+    "explicit": 60,
+    "hold": 20,
+    "explicitByDomain": {
+      "support": 8,
+      "explanation": 6,
+      "practice-mode": 6,
+      "topic": 12,
+      "communication": 8,
+      "work-style": 8,
+      "decision": 6,
+      "explanation-detail": 6
+    },
+    "holdByCategory": {
+      "negation-scope": 4,
+      "other-person": 4,
+      "past-only": 4,
+      "ambiguous": 4,
+      "unsupported": 4
+    }
+  },
+  "gradingPolicy": {
+    "meaningTuple": [
+      "field",
+      "value",
+      "polarity",
+      "condition"
+    ],
+    "explicitDirectSuccess": "Exact set of supported meaning tuples; no question or clarifications; evidence quote matches original string offsets and overlaps its fixed expected clause.",
+    "meaningAccuracyExcludesEvidenceBoundaryChoice": true,
+    "sourceEvidence": "Returned evidence.quote must equal text.slice(start,end), be nonempty, and overlap the predeclared source clause for the matched meaning. Exact clause boundaries are not required.",
+    "questionPolicy": {
+      "false": "No question and no nonempty clarification list expected.",
+      "true": "A question or nonempty clarification list expected.",
+      "optional": "Not scored as required or unnecessary for hold-only cases."
+    },
+    "holdSuccess": "No meanings; question behavior reported separately.",
+    "wrongInference": "Any returned field/value/polarity/condition tuple absent from the fixed expected set, including any meaning on hold cases.",
+    "explicitDenominator": 60,
+    "unnecessaryQuestionDenominator": 60,
+    "safeHoldDenominator": 20,
+    "target": {
+      "explicitDirectMinimumPercent": 90,
+      "unnecessaryQuestionMaximumPercent": 10,
+      "wrongInferenceMaximumCount": 0
+    },
+    "noPostOutputRelabeling": true,
+    "firstCandidateRunIsPrimary": true
+  },
+  "cases": [
+    {
+      "id": "S01",
+      "domain": "support",
+      "label": "explicit",
+      "text": "새로운 걸 처음 해 보는 날에는, 누가 옆에서 한 단계씩 알려 주면 좋겠어요.",
+      "construction": "생활 맥락을 앞에 둔 조건부 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "step",
+            "polarity": "prefer",
+            "condition": "first-try",
+            "exactTextSource": {
+              "quote": "새로운 걸 처음 해 보는 날에는, 누가 옆에서 한 단계씩 알려 주면 좋겠어요.",
+              "start": 0,
+              "end": 43
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "edabb3cf01fef8c4b0ea807f16483bd0b999abe9545d9e6878018adff93f810e"
+    },
+    {
+      "id": "S02",
+      "domain": "support",
+      "label": "explicit",
+      "text": "이건 익숙한 내용이니까 도움받기 전에 나 혼자 먼저 해 볼래요.",
+      "construction": "이유절과 구어체",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "independent",
+            "polarity": "prefer",
+            "condition": "familiar",
+            "exactTextSource": {
+              "quote": "이건 익숙한 내용이니까 도움받기 전에 나 혼자 먼저 해 볼래요.",
+              "start": 0,
+              "end": 35
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "4dedcc82398d1299e1ab50609d54506976a6d072fb786f254dae6847a8122a78"
+    },
+    {
+      "id": "S03",
+      "domain": "support",
+      "label": "explicit",
+      "text": "어떻게 하는지 예시 하나부터 보여 주세요. 저는 그쪽이 편해요.",
+      "construction": "요청 후 자기 선호 보충",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "example",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "어떻게 하는지 예시 하나부터 보여 주세요.",
+              "start": 0,
+              "end": 23
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "c861ca6c6e3c9724227d3013c0efc7d74b500bcfdfa4e87a78c3ae66e4cc4ac2"
+    },
+    {
+      "id": "S04",
+      "domain": "support",
+      "label": "explicit",
+      "text": "도움은 계속 켜 두기보다 내가 필요해졌을 때 골라서 받는 게 좋아.",
+      "construction": "비교 표현과 생략된 주어",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "choose",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "도움은 계속 켜 두기보다 내가 필요해졌을 때 골라서 받는 게 좋아.",
+              "start": 0,
+              "end": 37
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "ca9f97a6eef31aba6ce932e9ef40f5341c6508de18268317d1efb741e956aec2"
+    },
+    {
+      "id": "S05",
+      "domain": "support",
+      "label": "explicit",
+      "text": "처음 시도하는 건 혼자 해 보라고 두지 않았으면 해요.",
+      "construction": "명확한 비선호 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "independent",
+            "polarity": "avoid",
+            "condition": "first-try",
+            "exactTextSource": {
+              "quote": "처음 시도하는 건 혼자 해 보라고 두지 않았으면 해요.",
+              "start": 0,
+              "end": 30
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "d47fdf07e1a60dd793c9203ed9e1f83429ab35aa3f40d145014c8f70cdd5d6a9"
+    },
+    {
+      "id": "S06",
+      "domain": "support",
+      "label": "explicit",
+      "text": "예시를 보고 난 뒤라면, 그다음은 혼자 시도하는 쪽이 저한테 맞아요.",
+      "construction": "선행 경험 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "independent",
+            "polarity": "prefer",
+            "condition": "after-example",
+            "exactTextSource": {
+              "quote": "예시를 보고 난 뒤라면, 그다음은 혼자 시도하는 쪽이 저한테 맞아요.",
+              "start": 0,
+              "end": 38
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "38724820120a441a44bf8643c1c760e89141b658106cef331b2cb8da01053409"
+    },
+    {
+      "id": "S07",
+      "domain": "support",
+      "label": "explicit",
+      "text": "처음 해 보는 과제에서 예시까지 본 다음에는 단계별 도움을 받고 싶어요.",
+      "construction": "복합 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "step",
+            "polarity": "prefer",
+            "condition": "first-try-after-example",
+            "exactTextSource": {
+              "quote": "처음 해 보는 과제에서 예시까지 본 다음에는 단계별 도움을 받고 싶어요.",
+              "start": 0,
+              "end": 40
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "98cb52fb81296165a4d7d9aa4b3f265d0e5a81704ebb6b0bec10980b4b9d35a2"
+    },
+    {
+      "id": "S08",
+      "domain": "support",
+      "label": "explicit",
+      "text": "막막하게 혼자 앉아 있는 것보다 누군가와 함께 해 나가는 걸 원해요.",
+      "construction": "생활 정서 맥락과 비교 구문",
+      "expected": {
+        "proposals": [
+          {
+            "field": "support",
+            "value": "together",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "막막하게 혼자 앉아 있는 것보다 누군가와 함께 해 나가는 걸 원해요.",
+              "start": 0,
+              "end": 38
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "b0a76df5c1671b1ebac3902de4baa073063691df5f433afac1542fd31e62b46a"
+    },
+    {
+      "id": "E01",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "할 일이 몰려 바쁠 때는 설명을 짧게 해 주는 게 고마워요.",
+      "construction": "감사 표현을 통한 명시 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "brief",
+            "polarity": "prefer",
+            "condition": "busy",
+            "exactTextSource": {
+              "quote": "할 일이 몰려 바쁠 때는 설명을 짧게 해 주는 게 고마워요.",
+              "start": 0,
+              "end": 33
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "04cfedee87daaedc6ba93761748f1f06e1126c1a08d8fa9b2759221567ca74ee"
+    },
+    {
+      "id": "E02",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "나한테 설명할 땐 자세하게 풀어 줬으면 해. 그래야 편하더라.",
+      "construction": "구어체와 사후 이유",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "detailed",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "나한테 설명할 땐 자세하게 풀어 줬으면 해.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "8bf3d1574b38382840c520806e450e36b84f524f01746c6d7cfbb6219277bf78"
+    },
+    {
+      "id": "E03",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "설명 길이는 보통 정도가 좋아요.",
+      "construction": "길이 단일 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "standard",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "설명 길이는 보통 정도가 좋아요.",
+              "start": 0,
+              "end": 18
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "6194c08fd9a2af96bb54b672968410a750bc779b1e9661980e80c88d6eb133f9"
+    },
+    {
+      "id": "E04",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "익숙한 내용에서 예시를 본 뒤라면 짧은 설명을 원해요.",
+      "construction": "복합 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "brief",
+            "polarity": "prefer",
+            "condition": "familiar-after-example",
+            "exactTextSource": {
+              "quote": "익숙한 내용에서 예시를 본 뒤라면 짧은 설명을 원해요.",
+              "start": 0,
+              "end": 30
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "f4a24ea0b0c0bce8f2011c2b1609f2dcf7d063b1e41bc6ef789be194255ba861"
+    },
+    {
+      "id": "E05",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "바쁜 와중에 예시부터 확인한 다음에는 설명도 짧게 부탁해요.",
+      "construction": "구어적 복합 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "brief",
+            "polarity": "prefer",
+            "condition": "busy-after-example",
+            "exactTextSource": {
+              "quote": "바쁜 와중에 예시부터 확인한 다음에는 설명도 짧게 부탁해요.",
+              "start": 0,
+              "end": 33
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "ae7bb79573437367bfba29076c8eb52bb7f839dce1c8782dbbd2fdf941351bc8"
+    },
+    {
+      "id": "E06",
+      "domain": "explanation",
+      "label": "explicit",
+      "text": "아주 짧은 설명은 원하지 않아요.",
+      "construction": "직접 부정이며 반대값 추론 금지",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation",
+            "value": "brief",
+            "polarity": "avoid",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "아주 짧은 설명은 원하지 않아요.",
+              "start": 0,
+              "end": 18
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "83f6606cf890f4c235b77c2b3a38843974bb3f04c4d6d75a65fb696fa9b3c5ca"
+    },
+    {
+      "id": "P01",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "눈으로 읽는 연습보다 귀로 듣는 연습을 하고 싶어.",
+      "construction": "연습 매체 비교",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "listening",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "눈으로 읽는 연습보다 귀로 듣는 연습을 하고 싶어.",
+              "start": 0,
+              "end": 28
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "e2a60c19a8b3635a96b3b7021f081c1b7f8d765807220017aa8db68331c4eb6d"
+    },
+    {
+      "id": "P02",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "오늘도 연습 방식은 읽기로 할래요. 글을 읽으며 연습하는 게 좋아요.",
+      "construction": "선택과 선호 반복",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "reading",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "오늘도 연습 방식은 읽기로 할래요. 글을 읽으며 연습하는 게 좋아요.",
+              "start": 0,
+              "end": 38
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "9299f6a751b0097cd72d59a2141508e3cff79a4297f8132a1b97429b561b7d5a"
+    },
+    {
+      "id": "P03",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "연습할 때 듣기랑 읽기를 둘 다 같이 하고 싶어요.",
+      "construction": "두 매체 결합",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "mixed",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "연습할 때 듣기랑 읽기를 둘 다 같이 하고 싶어요.",
+              "start": 0,
+              "end": 28
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "97b9ab58f89d6e5bb34fd5cedc31f3e6c50bb6f36a5bc087d85fd68074743c27"
+    },
+    {
+      "id": "P04",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "듣기 연습이 나한테는 더 잘 맞는 편이야.",
+      "construction": "자기 적합성 표현",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "listening",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "듣기 연습이 나한테는 더 잘 맞는 편이야.",
+              "start": 0,
+              "end": 23
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "25621e85eed35ad15f4f9282996e632247a247d31c55decfa9a5914d6ee3de6e"
+    },
+    {
+      "id": "P05",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "읽기 연습 쪽으로 부탁할게요. 제가 원하는 방식이에요.",
+      "construction": "서비스 요청으로 명시",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "reading",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "읽기 연습 쪽으로 부탁할게요.",
+              "start": 0,
+              "end": 16
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "767d86f60905f36735b87dbe91744dff4d47dd37930a6fbf7ef128fdd3f6684c"
+    },
+    {
+      "id": "P06",
+      "domain": "practice-mode",
+      "label": "explicit",
+      "text": "바쁜 날에도 듣기와 읽기를 함께 연습하는 게 좋아요.",
+      "construction": "양보 표현과 적용 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "practice-mode",
+            "value": "mixed",
+            "polarity": "prefer",
+            "condition": "busy",
+            "exactTextSource": {
+              "quote": "바쁜 날에도 듣기와 읽기를 함께 연습하는 게 좋아요.",
+              "start": 0,
+              "end": 29
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "d53cca24e12216385635b24237ed3045edd6ed70bdb211f805c789ad15144884"
+    },
+    {
+      "id": "T01",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "여행 가기 전에 어디부터 돌지 동선을 짜는 이야기에 관심이 많아요.",
+      "construction": "생활 장면으로 관심 주제 서술",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "travel-planning",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "여행 가기 전에 어디부터 돌지 동선을 짜는 이야기에 관심이 많아요.",
+              "start": 0,
+              "end": 37
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "b54e4587adb635089b09b670a9bc60c95198ffe0ace36bc31eadb98d4d0466e1"
+    },
+    {
+      "id": "T02",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "다른 나라에 가서 먹을 음식이나 식당에서 주문하는 이야기를 더 배우고 싶어.",
+      "construction": "음식과 주문의 단일 주제",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "travel-food",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "다른 나라에 가서 먹을 음식이나 식당에서 주문하는 이야기를 더 배우고 싶어.",
+              "start": 0,
+              "end": 42
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "62bb9f97769f0f25c7f60dece627e369cec42f8152b9af4fa63788e32a9dadc8"
+    },
+    {
+      "id": "T03",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "여행 숙소를 고르고 예약하는 쪽에 관심 있어요.",
+      "construction": "구체적인 주제 활동",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "travel-stay",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "여행 숙소를 고르고 예약하는 쪽에 관심 있어요.",
+              "start": 0,
+              "end": 26
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "43d231a76300b24a7146842da90a02de3ef1ac10b205d6cc8930525a6a4bdf49"
+    },
+    {
+      "id": "T04",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "요즘 내가 배우고 싶은 주제는 면접 준비야.",
+      "construction": "현재 강조와 도치",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "career-interview",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "요즘 내가 배우고 싶은 주제는 면접 준비야.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "b287acef1b8bb65d7745a04070b7a0511432333c8a17fc82c94838d1838bf6a6"
+    },
+    {
+      "id": "T05",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "앞으로 어떤 진로를 택할지 탐색하는 이야기를 다뤄 줬으면 좋겠어요.",
+      "construction": "주제 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "career-planning",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "앞으로 어떤 진로를 택할지 탐색하는 이야기를 다뤄 줬으면 좋겠어요.",
+              "start": 0,
+              "end": 37
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "504577ff082be0e287dc39b9327e3d5b444ee755eec79bb4b7e1153c402e7c68"
+    },
+    {
+      "id": "T06",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "쉴 때도 영상 만드는 이야기를 찾아볼 만큼 영상 제작에 관심이 있어요.",
+      "construction": "행동 예시 뒤 명시 관심",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "content-video",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "쉴 때도 영상 만드는 이야기를 찾아볼 만큼 영상 제작에 관심이 있어요.",
+              "start": 0,
+              "end": 39
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "13c0d2098926229444fb0c3adbca99bec4c6c72a128ea5b3f176c6a75246e07a"
+    },
+    {
+      "id": "T07",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "디자인 제작을 배워 보고 싶은 마음이 커요.",
+      "construction": "의향을 통한 명시 관심",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "content-design",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "디자인 제작을 배워 보고 싶은 마음이 커요.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "fbdac10657ed801e2ccc879cf812c711d96312e2ba1026d291f2099b0e2e0bb8"
+    },
+    {
+      "id": "T08",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "AI 도구를 실제로 써먹는 방법을 주제로 배우고 싶습니다.",
+      "construction": "활용 목적 포함",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "ai-tools",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "AI 도구를 실제로 써먹는 방법을 주제로 배우고 싶습니다.",
+              "start": 0,
+              "end": 32
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "0f454ebfafb1d370cd0407c083c011f878b98149a0d81ca23e323810493b1fe3"
+    },
+    {
+      "id": "T09",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "책 읽는 얘기라면 좋아요. 독서를 주제로 더 알고 싶어요.",
+      "construction": "구어적 도입과 주제 확정",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "reading-books",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "책 읽는 얘기라면 좋아요. 독서를 주제로 더 알고 싶어요.",
+              "start": 0,
+              "end": 32
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "56ae6b476f19f71e75025f104d3aeaff438d88a8004e034917ee509fe19b893f"
+    },
+    {
+      "id": "T10",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "음악 이야기를 중심으로 배워 보고 싶어.",
+      "construction": "주제 중심 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "music",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "음악 이야기를 중심으로 배워 보고 싶어.",
+              "start": 0,
+              "end": 22
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "bb00058972c461cdef1353bd83f806cba1d9bf1c501154dc02a94d0e8f3f0200"
+    },
+    {
+      "id": "T11",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "집에서 요리하는 걸 좋아해서 요리를 다루는 내용에 관심이 있어요.",
+      "construction": "취미와 학습 관심 연결",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "cooking",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "집에서 요리하는 걸 좋아해서 요리를 다루는 내용에 관심이 있어요.",
+              "start": 0,
+              "end": 36
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "b9ab069902a2029a6a68d9b3007b743470bc5ade59dfe834b8b641e4d6e7353b"
+    },
+    {
+      "id": "T12",
+      "domain": "topic",
+      "label": "explicit",
+      "text": "사진을 찍는 걸 좋아해요. 사진 촬영을 주제로 다루면 좋겠어요.",
+      "construction": "생활 활동과 주제 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "topic",
+            "value": "photography",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "사진을 찍는 걸 좋아해요. 사진 촬영을 주제로 다루면 좋겠어요.",
+              "start": 0,
+              "end": 35
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "99648af8ce65e8e30fbfdfeb685e1ed6c13649e75c880bb1311f36c300a23bb2"
+    },
+    {
+      "id": "C01",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "회의에서는 다른 분들 생각부터 듣고 제가 정리하는 편이 더 편해요.",
+      "construction": "상황 조건과 역할 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "listen-organize",
+            "polarity": "prefer",
+            "condition": "meeting",
+            "exactTextSource": {
+              "quote": "회의에서는 다른 분들 생각부터 듣고 제가 정리하는 편이 더 편해요.",
+              "start": 0,
+              "end": 37
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "c67f19d52fce42e5b09d7968a5111e3682bbbec01db00e1c66e520af299caea7"
+    },
+    {
+      "id": "C02",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "내 의견은 내가 먼저 말하는 게 좋아. 다른 얘기는 그 뒤에 들을래.",
+      "construction": "순서가 있는 대화 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "share-first",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "내 의견은 내가 먼저 말하는 게 좋아.",
+              "start": 0,
+              "end": 21
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "f12358a792d2338ccba3968ae9ca1d605072d2bfd57b3aa01e98a72bc2940226"
+    },
+    {
+      "id": "C03",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "통화보다는 글로 주고받는 게 저한테 편합니다.",
+      "construction": "생활 소통 수단 비교",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "written",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "통화보다는 글로 주고받는 게 저한테 편합니다.",
+              "start": 0,
+              "end": 25
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "68b267a0859e5eada39d1dc77896e144f89fd93e292290a9b306b1e2c1b2d9fa"
+    },
+    {
+      "id": "C04",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "이야기를 주고받을 땐 말로 소통하고 싶어요.",
+      "construction": "대화 맥락과 수단 명시",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "spoken",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "이야기를 주고받을 땐 말로 소통하고 싶어요.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "8836907025fee870790af786a804ce7768c606cf3b80ef0986f4ee761b447849"
+    },
+    {
+      "id": "C05",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "다른 사람 말을 듣고 생각을 정리한 다음에 대화에 참여하는 걸 선호해요.",
+      "construction": "대화 순서 서술",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "listen-organize",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "다른 사람 말을 듣고 생각을 정리한 다음에 대화에 참여하는 걸 선호해요.",
+              "start": 0,
+              "end": 40
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "736cf0eec44f480845a5c593540085dc1fb34c627f56438d38253498a5b08df2"
+    },
+    {
+      "id": "C06",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "회의 중에는 글로 소통하는 방식이 좋겠어요.",
+      "construction": "회의 조건부 수단",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "written",
+            "polarity": "prefer",
+            "condition": "meeting",
+            "exactTextSource": {
+              "quote": "회의 중에는 글로 소통하는 방식이 좋겠어요.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "b10df7ff20f670a633593608f68ea14d7fe465eb25e1796622e9efb4796f4efb"
+    },
+    {
+      "id": "C07",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "말로 소통하는 건 피하고 싶어요.",
+      "construction": "명확한 단일 비선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "spoken",
+            "polarity": "avoid",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "말로 소통하는 건 피하고 싶어요.",
+              "start": 0,
+              "end": 18
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "cb295ec87d592c3810dacc1f5d0e52977334dff89fd2129604b758656fa661fd"
+    },
+    {
+      "id": "C08",
+      "domain": "communication",
+      "label": "explicit",
+      "text": "회의에서는 글로 소통하고 싶고, 함께 일할 때는 다른 사람의 생각을 듣고 정리하고 싶어요.",
+      "construction": "서로 다른 조건에 연결된 두 소통 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "communication",
+            "value": "written",
+            "polarity": "prefer",
+            "condition": "meeting",
+            "exactTextSource": {
+              "quote": "회의에서는 글로 소통하고 싶고",
+              "start": 0,
+              "end": 16
+            }
+          },
+          {
+            "field": "communication",
+            "value": "listen-organize",
+            "polarity": "prefer",
+            "condition": "teamwork",
+            "exactTextSource": {
+              "quote": "함께 일할 때는 다른 사람의 생각을 듣고 정리하고 싶어요.",
+              "start": 18,
+              "end": 50
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "f620196f48ceae1419cba6d27f7bb2ef3cd74a7c5b4fdd1683a467525bece5f2"
+    },
+    {
+      "id": "W01",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "일을 시작하기 전에 계획부터 세우는 게 마음 편해요.",
+      "construction": "자연스러운 일처리 순서",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "plan-first",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "일을 시작하기 전에 계획부터 세우는 게 마음 편해요.",
+              "start": 0,
+              "end": 29
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "7a8509d45dc68573bc6155dc73727360d43dc008f6017a897e829d5b86f3070e"
+    },
+    {
+      "id": "W02",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "일단 해 보고 어긋나는 부분을 고쳐 가는 방식이 좋아요.",
+      "construction": "행동을 풀어 쓴 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "try-adjust",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "일단 해 보고 어긋나는 부분을 고쳐 가는 방식이 좋아요.",
+              "start": 0,
+              "end": 31
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "121dcfe09e613d53c03f7e988f9ee709f4a0f78d3bf49823b7293fc0ceda97ab"
+    },
+    {
+      "id": "W03",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "이것저것 동시에 잡기보다는 한 번에 한 가지씩 끝내고 싶어.",
+      "construction": "동시 작업과 순차 작업 비교",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "single-task",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "이것저것 동시에 잡기보다는 한 번에 한 가지씩 끝내고 싶어.",
+              "start": 0,
+              "end": 33
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "c75e62f4703e239b965b92959df5f6359a9379760e109571fc209c6124243933"
+    },
+    {
+      "id": "W04",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "일이 몰려 바쁜 날에는 우선순위를 정해서 처리하는 게 좋아요.",
+      "construction": "생활 상황과 명시 조건",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "prioritize",
+            "polarity": "prefer",
+            "condition": "busy",
+            "exactTextSource": {
+              "quote": "일이 몰려 바쁜 날에는 우선순위를 정해서 처리하는 게 좋아요.",
+              "start": 0,
+              "end": 34
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "e17bafe24eb706bd5bc8787b547301928d5a98c9ce4d51a4fae3149ab71391e4"
+    },
+    {
+      "id": "W05",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "함께 일할 때는 먼저 계획을 세우고, 할 일은 한 번에 한 가지씩 처리하는 게 좋아요.",
+      "construction": "하나의 협업 조건에 연결된 두 처리 방식",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "plan-first",
+            "polarity": "prefer",
+            "condition": "teamwork",
+            "exactTextSource": {
+              "quote": "함께 일할 때는 먼저 계획을 세우고, 할 일은 한 번에 한 가지씩 처리하는 게 좋아요.",
+              "start": 0,
+              "end": 48
+            }
+          },
+          {
+            "field": "work-style",
+            "value": "single-task",
+            "polarity": "prefer",
+            "condition": "teamwork",
+            "exactTextSource": {
+              "quote": "함께 일할 때는 먼저 계획을 세우고, 할 일은 한 번에 한 가지씩 처리하는 게 좋아요.",
+              "start": 0,
+              "end": 48
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "2c6ac61d3325a0b5b813a6a202eceec08498add2cd19bfe53715b28cea730186"
+    },
+    {
+      "id": "W06",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "여러 일을 맡아도 처리 방식은 한 번에 한 가지가 좋아요.",
+      "construction": "양보 상황과 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "single-task",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "여러 일을 맡아도 처리 방식은 한 번에 한 가지가 좋아요.",
+              "start": 0,
+              "end": 32
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "29dba470de9f332c7d36c6cf70f9a78f2ac21b39b6cecc5e0da99eceff92f210"
+    },
+    {
+      "id": "W07",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "일의 우선순위를 먼저 정해 놓고 처리하는 쪽을 원해요.",
+      "construction": "명시적인 처리 방식",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "prioritize",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "일의 우선순위를 먼저 정해 놓고 처리하는 쪽을 원해요.",
+              "start": 0,
+              "end": 30
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "0dd72c2e72437f0e4a7faf255d0a27c42791de9e97588045a14ecfe7e4916b5e"
+    },
+    {
+      "id": "W08",
+      "domain": "work-style",
+      "label": "explicit",
+      "text": "익숙한 일이라면 해 보면서 조정하는 식으로 진행하고 싶어요.",
+      "construction": "숙련 조건과 행동 서술",
+      "expected": {
+        "proposals": [
+          {
+            "field": "work-style",
+            "value": "try-adjust",
+            "polarity": "prefer",
+            "condition": "familiar",
+            "exactTextSource": {
+              "quote": "익숙한 일이라면 해 보면서 조정하는 식으로 진행하고 싶어요.",
+              "start": 0,
+              "end": 33
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "2f974181615ff461378e821fa9737fa6d0e98c1611556bfb7c7c7f52361c9455"
+    },
+    {
+      "id": "D01",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "뭘 결정해야 할 때는 자료와 근거를 확인하고 판단하고 싶어요.",
+      "construction": "결정 상황의 증거 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "evidence",
+            "polarity": "prefer",
+            "condition": "decision",
+            "exactTextSource": {
+              "quote": "뭘 결정해야 할 때는 자료와 근거를 확인하고 판단하고 싶어요.",
+              "start": 0,
+              "end": 34
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "05f6ef2055dfb5910eb646d40b9262b993872409940675c8d06a3e355e687a39"
+    },
+    {
+      "id": "D02",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "어느 쪽을 고를지, 여러 선택지를 나란히 비교해 보는 게 좋아요.",
+      "construction": "선택 행위의 재서술",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "compare-options",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "어느 쪽을 고를지, 여러 선택지를 나란히 비교해 보는 게 좋아요.",
+              "start": 0,
+              "end": 36
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "ae4aa75dfde503ff17e019d66170027c3c8885de11520a406bf7488f0a8acdcd"
+    },
+    {
+      "id": "D03",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "판단할 때는 내가 직접 겪어 본 경험을 참고하는 쪽이 편해요.",
+      "construction": "판단 맥락과 자기 경험",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "experience",
+            "polarity": "prefer",
+            "condition": "decision",
+            "exactTextSource": {
+              "quote": "판단할 때는 내가 직접 겪어 본 경험을 참고하는 쪽이 편해요.",
+              "start": 0,
+              "end": 34
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "7c428ea0a0ed44027bbd885674b1f9c65f0e0f4251fe7ebb0e8741ae4741c04a"
+    },
+    {
+      "id": "D04",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "결정을 앞두면 여러 선택지를 비교해 보고 다른 사람과 상의하는 게 좋아요.",
+      "construction": "결정 상황에 함께 적용되는 두 방식",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "compare-options",
+            "polarity": "prefer",
+            "condition": "decision",
+            "exactTextSource": {
+              "quote": "결정을 앞두면 여러 선택지를 비교해 보고 다른 사람과 상의하는 게 좋아요.",
+              "start": 0,
+              "end": 41
+            }
+          },
+          {
+            "field": "decision",
+            "value": "consult",
+            "polarity": "prefer",
+            "condition": "decision",
+            "exactTextSource": {
+              "quote": "결정을 앞두면 여러 선택지를 비교해 보고 다른 사람과 상의하는 게 좋아요.",
+              "start": 0,
+              "end": 41
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "69d95b8345e7260f27c428f49870c344280e222726dd27be72644601e8b304ac"
+    },
+    {
+      "id": "D05",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "여러 선택지를 비교하는 방식은 원하지 않아요.",
+      "construction": "반대 방식 추론 없는 비선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "compare-options",
+            "polarity": "avoid",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "여러 선택지를 비교하는 방식은 원하지 않아요.",
+              "start": 0,
+              "end": 25
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "8c55b1f56a41cd710a71b4846a63634b50f3fe1de1f7198439d7e4fdd9e92233"
+    },
+    {
+      "id": "D06",
+      "domain": "decision",
+      "label": "explicit",
+      "text": "자료에 있는 근거를 살펴서 판단하는 방식을 선호합니다.",
+      "construction": "자료 확인과 판단 연결",
+      "expected": {
+        "proposals": [
+          {
+            "field": "decision",
+            "value": "evidence",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "자료에 있는 근거를 살펴서 판단하는 방식을 선호합니다.",
+              "start": 0,
+              "end": 30
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "6ce23abfc3f5171098b666c90be96a9d8e18e8c010071bd53d8f6e75a98629ee"
+    },
+    {
+      "id": "X01",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "설명을 들을 때 전체 개요부터 먼저 보여 주면 이해하기 편해요.",
+      "construction": "설명 순서 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "overview-first",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "설명을 들을 때 전체 개요부터 먼저 보여 주면 이해하기 편해요.",
+              "start": 0,
+              "end": 35
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "823e018f4c1756145e01e48553b8438bfe748cfcaf0c1810a01120c7b6d6ee66"
+    },
+    {
+      "id": "X02",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "왜 그런지 핵심 근거를 자세히 알고 싶어요.",
+      "construction": "근거에 한정한 자세함",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "reasons-detail",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "왜 그런지 핵심 근거를 자세히 알고 싶어요.",
+              "start": 0,
+              "end": 24
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "037d471ea0dbcf4d676bfc33b77d63d2d70c4233a0343c4ad2cdee0a9e9bf27f"
+    },
+    {
+      "id": "X03",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "중간중간 잘라 말하기보다 길게 이어지는 설명을 선호해요.",
+      "construction": "설명 흐름 비교",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "long-flow",
+            "polarity": "prefer",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "중간중간 잘라 말하기보다 길게 이어지는 설명을 선호해요.",
+              "start": 0,
+              "end": 31
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "9ad668f0cbf4d1a2e44da943edc93e5b0370184a52d4479dc0cab89a658183e6"
+    },
+    {
+      "id": "X04",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "처음 접하는 내용을 배울 때는 전체 개요를 먼저 보고 싶습니다.",
+      "construction": "새 학습 조건의 순서 선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "overview-first",
+            "polarity": "prefer",
+            "condition": "first-try",
+            "exactTextSource": {
+              "quote": "처음 접하는 내용을 배울 때는 전체 개요를 먼저 보고 싶습니다.",
+              "start": 0,
+              "end": 35
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "1a2c862581e022fe8da4d42711ff2a18bafd09f5bed8136d613c502e7178fd1d"
+    },
+    {
+      "id": "X05",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "일을 계획할 때는 핵심 근거를 자세히 알려 주는 설명이 좋아요.",
+      "construction": "계획 맥락의 근거 요청",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "reasons-detail",
+            "polarity": "prefer",
+            "condition": "planning",
+            "exactTextSource": {
+              "quote": "일을 계획할 때는 핵심 근거를 자세히 알려 주는 설명이 좋아요.",
+              "start": 0,
+              "end": 35
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "9ca966a3276af8ead2f375de9b3c256fa6675feb688bc290114be243de839103"
+    },
+    {
+      "id": "X06",
+      "domain": "explanation-detail",
+      "label": "explicit",
+      "text": "길게 이어지는 설명은 피하고 싶어요.",
+      "construction": "흐름의 단일 비선호",
+      "expected": {
+        "proposals": [
+          {
+            "field": "explanation-detail",
+            "value": "long-flow",
+            "polarity": "avoid",
+            "condition": null,
+            "exactTextSource": {
+              "quote": "길게 이어지는 설명은 피하고 싶어요.",
+              "start": 0,
+              "end": 20
+            }
+          }
+        ],
+        "clarificationExpected": false
+      },
+      "caseSha256": "04a5472438b9aefc543533113b2a069883493012941abd2a612a6f04391250b4"
+    },
+    {
+      "id": "H01",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "negation-scope",
+      "text": "설명이 짧지 않은 걸 싫어하지 않는 건 아닌 것 같아요.",
+      "reason": "중첩 부정과 유보로 현재 선호 방향을 확정할 수 없음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "60a0790a36c6a8da156e99da3621bf2f6ba0cea47c21d037496e8eff00bd8b3e"
+    },
+    {
+      "id": "H02",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "negation-scope",
+      "text": "혼자 하는 게 싫은 건 아닌데 좋다고 말하기도 어렵네요.",
+      "reason": "부정의 완화와 선호 유보",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "697101731299b76ce7cdb5b4b2578a5863223cb87bfe794f3f5d6ef8df98f134"
+    },
+    {
+      "id": "H03",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "negation-scope",
+      "text": "글로 소통하는 걸 피하고 싶지 않다고 단정할 수는 없어요.",
+      "reason": "부정 범위가 중첩되고 단정이 유보됨",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "b887ce48d8ae2265ef061fc6f63ac47ca7f1d22fa4defcb3da8f711b66b5c758"
+    },
+    {
+      "id": "H04",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "negation-scope",
+      "text": "계획 없이 하는 걸 원치 않는다는 말은 아니에요.",
+      "reason": "부정 주장에 대한 부정이며 긍정 선호가 아님",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "eb09a616432bb77051baab6e193b5055ce4178885ed9ad524441b664de0691c6"
+    },
+    {
+      "id": "H05",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "other-person",
+      "text": "우리 동생은 설명이 자세할수록 좋아해요.",
+      "reason": "타인의 설명 선호",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "7a119b35eedce50a1c3d6771f1c2e912487e4b951f550787f958af943fb412e8"
+    },
+    {
+      "id": "H06",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "other-person",
+      "text": "팀장이 회의에서는 자기 의견부터 먼저 말하고 싶대요.",
+      "reason": "타인의 발화를 전달",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "e5ca6d931dac05e7d9a3540ea6ff73baa795c27d0a2a99fca6a5816f7fc0e713"
+    },
+    {
+      "id": "H07",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "other-person",
+      "text": "친구가 자료와 근거를 보고 판단하는 게 좋다고 하더라고요.",
+      "reason": "타인의 판단 선호",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "69cfcd5e815268a8be3355e9ab97d9999eef194620a87ffba244d162322de42c"
+    },
+    {
+      "id": "H08",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "other-person",
+      "text": "엄마는 주말마다 요리하는 걸 좋아하세요.",
+      "reason": "타인의 취미",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "aacf90fbd86f05540f16d0b63d59850335698dba28c5afe32143b7e2ff2fcfd6"
+    },
+    {
+      "id": "H09",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "past-only",
+      "text": "예전에는 혼자 시도하는 게 좋았어요. 지금 선호는 아직 모르겠어요.",
+      "reason": "과거 선호이며 현재 선호는 명시적으로 미정",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "68b0c3ef607917d9eb09214a1e7e0d99bb3f2d913db03d49d6e7694099954a4f"
+    },
+    {
+      "id": "H10",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "past-only",
+      "text": "작년의 저는 글로 소통하는 게 편했죠. 요즘은 어떤지 생각해 봐야겠어요.",
+      "reason": "현재로 연장할 수 없는 과거 선호",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "7ef00f2136ef6fb58208e6fcfe4d84c702257942f441f61a33a137f7dd76a1bc"
+    },
+    {
+      "id": "H11",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "past-only",
+      "text": "학창 시절엔 음악을 좋아했지만 지금 취향은 따로 정리하지 않았어요.",
+      "reason": "과거 관심 주제와 현재 유보",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "ed63d09a8104e39abf1741e9d67522d4d60abf29010428d0ef8c1679df089fd7"
+    },
+    {
+      "id": "H12",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "past-only",
+      "text": "그때는 한 번에 한 가지씩 처리하고 싶었어요. 지금 얘기는 아닙니다.",
+      "reason": "현재 적용을 명시적으로 배제",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "53b7e8d415525c9cc939273da6259fbb79d2f49bc4c967b11b367d36ef350ce5"
+    },
+    {
+      "id": "H13",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "ambiguous",
+      "text": "도움은 적당히 있으면 좋겠어요.",
+      "reason": "도움 강도만 있고 지원 방식이 없음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "6e2f1d6c15ae327884eef0e43dcf64664453b3f574448ab7f47037e0135ce932"
+    },
+    {
+      "id": "H14",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "ambiguous",
+      "text": "설명은 너무 이쪽이나 저쪽으로 치우치지 않았으면 해요.",
+      "reason": "비교 대상이 빠져 길이나 구성 여부를 알 수 없음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "bcd060134ea33e5a79f206db68a1bb554ba737c95e886576de3cc5ddeed660c8"
+    },
+    {
+      "id": "H15",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "ambiguous",
+      "text": "상황을 봐 가면서 그때그때 편한 방식으로 이야기하고 싶어요.",
+      "reason": "소통 방식과 조건이 구체화되지 않음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "60efa98ebcf2231ddd7a05b009f50fe5a844079fa54154696a386e99574583ce"
+    },
+    {
+      "id": "H16",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "ambiguous",
+      "text": "결정은 좀 편하게 할 수 있으면 좋겠네요.",
+      "reason": "판단에 원하는 방식이 없음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": true
+      },
+      "caseSha256": "b4f4561fdea3a538a5e392d2e9ab747b24eed1491bc9b4f5377d0830fe73d77b"
+    },
+    {
+      "id": "H17",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "unsupported",
+      "text": "앱 화면은 어두운 색으로 바꿔 줬으면 해요.",
+      "reason": "시각 테마는 지원 의미 범위 밖",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "b6dcb3f0c194237c09f4a1823af0db41e576956c0694d8e07031cf68052160ea"
+    },
+    {
+      "id": "H18",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "unsupported",
+      "text": "알림은 저녁 여덟 시에 한 번만 보내 줘요.",
+      "reason": "알림 시각과 횟수는 지원 범위 밖",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "bed144eee06f6a53777a984412961d648b586537beb6ca93c5f02e0daf8ee1e0"
+    },
+    {
+      "id": "H19",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "unsupported",
+      "text": "아침마다 따뜻한 우유를 마시는 게 좋아요.",
+      "reason": "음료 취향을 요리 관심으로 일반화할 수 없음",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "e9b60dd71b963973cfab8ee3c1d92e51aeaeaa4e869bf33b597194d9dcc813d9"
+    },
+    {
+      "id": "H20",
+      "domain": "safety-hold",
+      "label": "hold",
+      "holdCategory": "unsupported",
+      "text": "의자는 등받이가 단단한 게 편합니다.",
+      "reason": "가구 취향은 지원 범위 밖",
+      "expected": {
+        "proposals": [],
+        "clarificationExpected": "optional"
+      },
+      "caseSha256": "ab52aadd0be48c57419b7b8551b956f84f670d101750bf0560b10419580d2edf"
+    }
+  ]
+}

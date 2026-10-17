@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mountPlatformLibrary } from '../src/platform-library-view.mjs';
+const { mountPlatformLibrary } = await import(process.env.SYNK_PLATFORM_LIBRARY_TEST_BUNDLE === 'desktop'
+  ? '../../../desktop/renderer/platform-continuity.mjs' : '../src/platform-library-view.mjs');
 import { emptyPlatformLibrary, validatePlatformLibrary } from '../src/platform-library-data.mjs';
 
 // Small DOM fixture for authored HTML and native events. No view, notebook or sync
@@ -62,7 +63,7 @@ const clickCloud = (f,action,id) => { const target=f.content.querySelector(`[dat
 const memoryStorage = () => { const data = new Map(); return { data, getItem: key => data.get(key) ?? null, setItem: (key,value) => data.set(key,value), removeItem: key => data.delete(key), key: i => [...data.keys()][i] ?? null, get length() { return data.size; } }; };
 let activeFixtures=0,originalGlobals;
 
-async function fixture(t, { records = new Map(), storage = memoryStorage(), device = {}, initial = signed(), onChange = () => {}, native=true, ensureReady=async()=>{},getAppIds,recoveryHost={} } = {}) {
+async function fixture(t, { records = new Map(), storage = memoryStorage(), device = {}, initial = signed(), onChange = () => {}, onFavoritesChanged = () => {}, native=true, ensureReady=async()=>{},getAppIds,recoveryHost={} } = {}) {
   if(activeFixtures++===0)originalGlobals=['document','addEventListener','removeEventListener','confirm'].map(key => [key,Object.getOwnPropertyDescriptor(globalThis,key)]);
   const lifecycle = new Map(), lifecycleListeners = new Map(), confirms = [], calls = [], holds = new Map(); let current = initial, listener, failSave = false;
   Object.assign(globalThis, { document: { createElement: tag => new Element(tag) }, addEventListener: (name, fn) => { if(!lifecycleListeners.has(name))lifecycleListeners.set(name,new Set());const listeners=lifecycleListeners.get(name);listeners.add(fn);lifecycle.set(name,event=>{for(const callback of listeners)callback(event);}); }, removeEventListener: (name,fn) => {const listeners=lifecycleListeners.get(name);listeners?.delete(fn);if(!listeners?.size){lifecycle.delete(name);lifecycleListeners.delete(name);}}, confirm: text => { confirms.push(text); return true; } });
@@ -84,7 +85,7 @@ async function fixture(t, { records = new Map(), storage = memoryStorage(), devi
   host.identity=()=>({...current,accountId:current.account?.synk_user_id});host.refresh=async()=>host.identity();host.request=host.accountRequest;
   Object.assign(host,recoveryHost);
   host.subscribe=fn=>host.onAuthChanged(value=>fn({...value,accountId:value.account?.synk_user_id}));
-  const opened=[],root = new Element(), view = mountPlatformLibrary(root, { native, ensureReady, getHost:() => host, getDevice:() => device,...(getAppIds?{getAppIds}:{}), storage, onChange, onOpen:id=>opened.push(id) });
+  const opened=[],root = new Element(), view = mountPlatformLibrary(root, { native, ensureReady, getHost:() => host, getDevice:() => device,...(getAppIds?{getAppIds}:{}), storage, onChange, onFavoritesChanged, onOpen:id=>opened.push(id) });
   const content = root.querySelector('[data-cloud-content]'), mount = root.querySelector('[data-notebook-mount]');
   t.after(() => { view.dispose(); if(--activeFixtures===0)for (const [key,descriptor] of originalGlobals) { if (descriptor) Object.defineProperty(globalThis,key,descriptor); else delete globalThis[key]; } });
   return { view, root, content, mount, records, storage, confirms, calls, lifecycle, opened, host,
@@ -112,6 +113,39 @@ test('note search and status filtering retain the live editor and make no accoun
   assert.deepEqual(f.content.querySelectorAll('article').map(row=>row.dataset.noteId),['b']);assert.equal(f.content.querySelector('[name=title]'),input);assert.equal(input.value,'계속 작성할 초안');assert.equal(f.writes().length,0);
   assert.deepEqual(f.view.searchNotes('path').map(row=>row.id),['a','b']);assert.equal(f.view.openNote('b'),true);assert.equal(f.content.querySelector('[data-completed-notes]').hidden,false);assert.equal(search.value,'');assert.equal(filter.value,'all');assert.equal(f.view.openNote('missing'),false);
   f.lifecycle.get('pagehide')();assert.deepEqual(f.view.searchNotes(''),[]);assert.equal(f.view.openNote('a'),false);
+});
+
+test('favorite observer sees only validated saved choices, for the panel and external dispatch alike', async t => {
+  const seen = [], f = await fixture(t, { records:new Map([['A',{revision:1,state:state()}]]),onFavoritesChanged:()=>seen.push(f.view.projection().favorites) });
+  await f.connect();assert.deepEqual(seen, []);
+  const gate = f.hold('platformSave');clickCloud(f, 'favorite', 'pulse');await until(()=>f.writes().length === 1);
+  assert.deepEqual(seen, []);gate.resolve();await until(()=>!f.view.hasPending());await settle();
+  assert.deepEqual(seen, [['pulse']]);
+  await f.view.dispatch({type:'favorite',id:'world'});await until(()=>!f.view.hasPending());await settle();
+  assert.deepEqual(seen, [['pulse'], ['pulse','world']]);
+  await f.view.dispatch({type:'launch',id:'world',mode:'client'});await until(()=>!f.view.hasPending());await settle();assert.equal(seen.length, 2);
+});
+
+test('failed favorite saves do not notify until successful retry, and delayed prior-session acknowledgements never notify', async t => {
+  let notified = 0;
+  const f = await fixture(t, { records:new Map([['A',{revision:1,state:state()}],['B',{revision:1,state:state(['care'])}]]),onFavoritesChanged:()=>notified++ });
+  await f.connect();f.setFail(true);await f.view.dispatch({type:'favorite',id:'world'});await until(()=>f.writes().length===1);await settle();
+  assert.equal(notified,0);f.setFail(false);await f.click('retry');await until(()=>!f.view.hasPending());await settle();assert.equal(notified,1);
+  const gate=f.hold('platformSave');await f.view.dispatch({type:'favorite',id:'pulse'});await until(()=>f.writes().length===3);
+  await f.auth(signed('B',2));gate.resolve();await settle();assert.equal(notified,1);assert.deepEqual(f.view.projection().favorites,['care']);
+});
+
+test('rapid favorite changes publish the latest committed selection once, not an intermediate or unsaved choice', async t => {
+  const seen=[],f=await fixture(t,{records:new Map([['A',{revision:1,state:state()}]]),onFavoritesChanged:()=>seen.push(f.view.projection().favorites)});
+  await f.connect();const gate=f.hold('platformSave');await f.view.dispatch({type:'favorite',id:'world'});await until(()=>f.writes().length===1);
+  await f.view.dispatch({type:'favorite',id:'pulse'});assert.deepEqual(seen,[]);gate.resolve();await until(()=>!f.view.hasPending());await settle();
+  assert.deepEqual(seen,[['world','pulse']]);
+});
+
+test('favorite observer errors cannot turn a successful library save into a failure', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:1,state:state()}]]),onFavoritesChanged:()=>Promise.reject(new Error('synthetic observer failure'))});
+  await f.connect();await f.view.dispatch({type:'favorite',id:'world'});await until(()=>!f.view.hasPending());await settle();
+  assert.deepEqual(f.records.get('A').state.favorites,['world']);assert.doesNotMatch(f.detail(),/실패|오류/);
 });
 
 test('favorite up and down controls persist actual display order without replacing note input', async t=>{

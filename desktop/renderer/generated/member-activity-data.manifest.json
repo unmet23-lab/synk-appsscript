@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "entry": "experiences/synk-account/src/member-activity-data.mjs",
+  "sha256": "2424d76f2c751ecc9d79d4479de31311cab105d4ee8f4551181b778958835d75",
+  "sources": {
+    "experiences/synk-account/src/member-activity-data.mjs": "03aba1b188c5860fdb14488bf21ff658705aedb6a26290c37338233ecf3b39dd"
+  }
+}

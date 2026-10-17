@@ -42,3 +42,10 @@ docs/마케팅/맞춤도구/dist/**/atlas-engine.js text eol=lf
 
 # 보존 패치의 빈 문맥 줄에는 형식상 한 칸이 필요하다.
 docs/_ops/qa/atlas-eight-fix-20261008/*.patch -whitespace
+
+tests/fixtures/member-statement-*.json text eol=lf
+experiences/synk-account/src/member-statement*.cjs text eol=lf
+
+# 플랫폼 연속성 번들은 생성기가 LF로 쓰고 --check와 네이티브 검사 도구가 바이트를 그대로 대조하므로 줄끝을 고정한다.
+desktop/renderer/platform-continuity.mjs text eol=lf
+desktop/renderer/platform-continuity.css text eol=lf

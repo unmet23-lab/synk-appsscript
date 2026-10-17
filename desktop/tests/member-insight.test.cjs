@@ -5,6 +5,83 @@ const controllerModule = import('../renderer/member-insight.mjs');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const settle = async () => { for (let i = 0; i < 4; i++) await tick(); };
 const signedIn = (accountId = 'synthetic-account-a', sessionGeneration = 1) => ({ signedIn: true, status: 'signed-in', accountId, sessionGeneration });
+
+test('only a changed RAM editor reuses analysis; identical refresh, document content, status and usage changes reproject', async t => {
+  const { createMemberInsight } = await controllerModule;
+  const Core = (await import('../renderer/generated/member-understanding.mjs')).default;
+  const original = Core.summarizeMemberUnderstanding;let analyses = 0, reads = 0, clock = Date.parse('2026-10-15T00:00:00.000Z');
+  Core.summarizeMemberUnderstanding = (...args) => { analyses++;return original(...args); };
+  t.after(() => { Core.summarizeMemberUnderstanding = original; });
+  let account = signedIn(), notify, usageNotify;
+  let feedback = { status: 'ready', revision: 1, document: { version: 1, reviews: [], overrides: [] }, editor: null, statementEditor: null, pending: false, message: '', error: null };
+  let usage = { status: 'unavailable', activity: null, pending: false };
+  const understanding = { read: () => structuredClone(feedback), subscribe(fn) { notify = fn;return () => {}; }, refresh: async () => {}, hide() {}, stop() {} };
+  const activity = { read() { reads++;return usage; }, subscribe(fn) { usageNotify = fn;return () => {}; }, refresh: async () => {} };
+  const controller = createMemberInsight({ getIdentity: () => account, request: async () => reply(), understanding, activity, now: () => clock });
+  t.after(() => controller.stop());controller.setVisible(true);await settle();
+  const initial = controller.read().report.understanding.asOf, count = analyses, activityReads = reads;
+  for (let i = 1; i <= 25; i++) {
+    clock += 1000;feedback.statementEditor = { stage: 'writing', text: '가'.repeat(i), acceptedIds: [], preview: null };notify();
+    assert.equal(controller.read().understandingStatementEditor.text.length, i);
+  }
+  assert.equal(analyses, count);assert.equal(reads, activityReads);
+  assert.equal(controller.read().report.understanding.asOf, initial);
+  notify(); // A completed fresh read can have exactly the same document and editor.
+  assert.equal(analyses, count + 1);assert.notEqual(controller.read().report.understanding.asOf, initial);
+  feedback.document.overrides.push({ id: 'fresh-content', facetId: 'support', values: ['independent'], note: '', at: new Date(clock).toISOString() });
+  feedback.statementEditor.text += '나';notify();
+  assert.equal(analyses, count + 2);assert.match(controller.read().report.understanding.facets.find(row => row.id === 'support').line, /혼자/);
+  usage = { status: 'error', activity: null, pending: true };usageNotify();
+  assert.equal(analyses, count + 3);assert.equal(controller.read().report.activity.status, 'error');assert.equal(controller.read().activityPending, true);
+  feedback.statementEditor.text += '다';notify();
+  assert.equal(analyses, count + 3);assert.equal(controller.read().activityPending, true);
+  feedback.status = 'error';notify();
+  assert.equal(controller.read().report.understanding.status, 'error');assert.deepEqual(controller.read().report.understanding.facets, []);
+  feedback.status = 'ready';notify();assert.equal(analyses, count + 4);
+  account = signedIn('synthetic-account-b', 2);feedback.statementEditor.text += '라';notify();
+  assert.equal(controller.read().report, null);assert.equal(analyses, count + 4);
+});
+
+test('editor reuse cannot consume a mutated public snapshot and is cleared on explicit refresh and hide', async t => {
+  const { createMemberInsight } = await controllerModule;
+  let notify, clock = Date.parse('2026-10-15T00:00:00.000Z'), requests = 0;
+  const feedback = { status: 'ready', revision: 1, document: { version: 1, reviews: [], overrides: [] }, pending: false, editor: null, statementEditor: null, message: '', error: null };
+  const understanding = { read: () => structuredClone(feedback), subscribe(fn) { notify = fn;return () => {}; }, refresh: async () => {}, hide() { feedback.statementEditor = null; }, stop() {} };
+  const controller = createMemberInsight({ getIdentity: () => signedIn(), request: async () => { requests++;return reply(); }, understanding, now: () => clock });
+  t.after(() => controller.stop());controller.setVisible(true);await settle();
+  const originalTime = controller.read().report.understanding.asOf, publicState = controller.read();
+  publicState.report.understanding.headline = 'external mutation';publicState.report.personal[0].value = 'external mutation';
+  feedback.statementEditor = { text: '가', stage: 'writing', preview: null, acceptedIds: [] };notify();
+  assert.doesNotMatch(JSON.stringify(controller.read()), /external mutation/);
+  clock += 1000;await controller.refresh();
+  assert.equal(requests, 2);assert.notEqual(controller.read().report.understanding.asOf, originalTime);
+  controller.setVisible(false);feedback.statementEditor = { text: 'hidden', stage: 'writing', preview: null, acceptedIds: [] };notify();
+  assert.equal(controller.read().report, null);
+  clock += 1000;controller.setVisible(true);await settle();
+  assert.equal(requests, 3);assert.equal(controller.read().report.understanding.asOf, new Date(clock).toISOString());
+});
+
+test('activity failures and later updates do not hide the independently authorized Atlas report', async t => {
+  const {createMemberInsight}=await controllerModule;
+  let listener,usage={status:'loading',activity:null,pending:false},refreshes=0;
+  const activity={read:()=>usage,subscribe(fn){listener=fn;return ()=>{listener=null;};},async refresh(){refreshes++;}};
+  const controller=createMemberInsight({getIdentity:()=>signedIn(),request:async()=>reply(),activity});t.after(()=>controller.stop());
+  controller.setVisible(true);await settle();
+  assert.equal(refreshes,1);assert.equal(controller.read().status,'ready');assert.equal(controller.read().report.activity.status,'loading');
+  usage={status:'error',activity:null,pending:false};listener();
+  assert.equal(controller.read().status,'ready');assert.equal(controller.read().report.activity.status,'error');
+  usage={status:'ready',activity:require('../../atlas/member-activity.js').summarizeMemberActivity({document:{version:1,consent:false,enabledAt:null,events:[],favorites:[]},asOf:'2026-10-14T03:00:00.000Z'}),pending:true};listener();
+  assert.equal(controller.read().report.activity.status,'disabled');assert.equal(controller.read().activityPending,true);
+  controller.setVisible(false);listener();assert.equal(controller.read().report,null);
+});
+
+test('activity notifications cannot publish a prior Atlas report after account replacement', async t=>{
+  const {createMemberInsight}=await controllerModule;let current=signedIn(),listener;
+  const activity={read:()=>({status:'unavailable',activity:null}),subscribe(fn){listener=fn;return ()=>{};},async refresh(){}};
+  const controller=createMemberInsight({getIdentity:()=>current,request:async()=>reply(),activity});t.after(()=>controller.stop());
+  controller.setVisible(true);await settle();assert.equal(controller.read().status,'ready');
+  current=signedIn('synthetic-account-b');assert.doesNotThrow(()=>listener());assert.equal(controller.read().report,null);
+});
 function reply(reason = 'travel') {
   return { ok: true, scope: 'synk-atlas-summary', learning: { enabled: true, revision: 2 }, shared: 'practice-and-settings', summary: {
     version: 'atlas-account-summary-1', asOf: '2026-10-14T03:00:00.000Z', presentation: null, reasons: [reason], forReasons: [],

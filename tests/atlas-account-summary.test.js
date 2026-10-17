@@ -17,7 +17,11 @@ test('an empty account says nothing about the person beyond what they chose', ()
   const empty = summarizeAccount({ events: [], map, asOf: '2026-10-02T12:00:00.000Z' });
   assert.equal(empty.version, VERSION);
   assert.equal(empty.basis, 'cold-start');
-  assert.deepEqual(empty.practice, { answered: 0, independent: 0, assisted: 0, lastAt: null, skills: [], content: [] });
+  const { periods, observations, ...practice } = empty.practice;
+  assert.deepEqual(practice, { answered: 0, independent: 0, assisted: 0, lastAt: null, skills: [], content: [] });
+  assert.equal(periods.sufficient, false);
+  assert.equal(periods.delta, null);
+  assert.deepEqual(observations, { from: periods.recent.from, to: periods.recent.to, total: 0, topics: [], modes: [], formats: [] });
   assert.deepEqual([empty.abilityClaim, empty.learningEffectClaim, empty.grade], [false, false, null]);
   const declared = summarizeAccount({ events: [], map, asOf: '2026-10-02T12:00:00.000Z', presentation: { support: 'step' }, reasons: ['travel'] });
   assert.equal(declared.basis, 'self-declared');

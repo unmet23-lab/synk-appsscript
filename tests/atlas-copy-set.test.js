@@ -55,7 +55,7 @@ test('a new unregistered consumer is detected while historical QA and dependenci
   write('experiences/new-product/qa/old.js', marker);
   write('experiences/new-product/node_modules/engine.js', marker);
   assert.deepEqual(unknownCopies(root, new Set([known])), ['experiences/new-product/atlas-learning.js', 'experiences/new-product/vendor/ask.js', 'experiences/new-product/vendor/flow.js']);
-  assert.equal(GAMES.length, 9);
+  assert.equal(GAMES.length, 10);
 });
 test('missing canonical files cannot cause a partial raw-copy write', t => {
   const { root, write } = fixture(t), existing = write('experiences/path-vr/vendor/engine.js', '// keep');

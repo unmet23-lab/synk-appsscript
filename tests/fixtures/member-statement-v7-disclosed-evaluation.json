@@ -1,0 +1,1518 @@
+{
+  "schema": "member-free-independent-gold-v1",
+  "corpusId": "fresh-independent-sealed80-3",
+  "predeclared": {
+    "clearCurrentSelf": 60,
+    "mustAbstain": 20,
+    "directSuccessMinPercent": 90,
+    "unnecessaryQuestionMaxPercent": 10,
+    "wrongMeaningMax": 0,
+    "questionMetric": "Boolean(output.question) only; clarifications are selected answers and never counted as questions",
+    "semanticMatch": "Exact multiset of field/value/polarity/condition tuples. No extra inferred tuples.",
+    "evidenceMetric": "Every output evidence must have nonempty quote and integer start/end, with text.slice(start,end) === quote. Gold spans record source support; semantic match does not require identical span boundaries.",
+    "abstainQuestionPolicy": "Either a clarification question or no question is acceptable; no meanings may be asserted.",
+    "noPosthocGoldChanges": true
+  },
+  "rows": [
+    {
+      "id": "E001",
+      "text": "혼자 해 보는 게 편해요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "independent",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "혼자 해 보는 게 편해요.",
+            "start": 0,
+            "end": 14
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E002",
+      "text": "예시부터 보여 주시면 좋겠어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "example",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "예시부터 보여 주시면 좋겠어요.",
+            "start": 0,
+            "end": 17
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E003",
+      "text": "한 단계씩 알려 주는 방식은 피하고 싶어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "step",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "한 단계씩 알려 주는 방식은 피하고 싶어요.",
+            "start": 0,
+            "end": 24
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E004",
+      "text": "여럿이 함께 풀어 가는 방식이 좋아요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "together",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "여럿이 함께 풀어 가는 방식이 좋아요.",
+            "start": 0,
+            "end": 21
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E005",
+      "text": "처음 해 보는 과제는 필요한 순간에 제가 도움을 고르고 싶어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "choose",
+          "polarity": "prefer",
+          "condition": "first-try",
+          "evidence": {
+            "quote": "처음 해 보는 과제는 필요한 순간에 제가 도움을 고르고 싶어요.",
+            "start": 0,
+            "end": 35
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E006",
+      "text": "익숙한 문제라면 예시를 본 다음에는 도움 없이 혼자 해 보고 싶어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "independent",
+          "polarity": "prefer",
+          "condition": "familiar-after-example",
+          "evidence": {
+            "quote": "익숙한 문제라면 예시를 본 다음에는 도움 없이 혼자 해 보고 싶어요.",
+            "start": 0,
+            "end": 38
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E007",
+      "text": "시간이 촉박하고 바쁠 때는 예시를 보고 난 뒤에도 한 단계씩 도와주는 방식은 싫어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "step",
+          "polarity": "avoid",
+          "condition": "busy-after-example",
+          "evidence": {
+            "quote": "시간이 촉박하고 바쁠 때는 예시를 보고 난 뒤에도 한 단계씩 도와주는 방식은 싫어요.",
+            "start": 0,
+            "end": 47
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E008",
+      "text": "처음 시도하는 일이면 예시를 본 다음에는 같이 풀어 주면 좋겠어요.",
+      "split": "explicit",
+      "domain": "support",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "support",
+          "value": "together",
+          "polarity": "prefer",
+          "condition": "first-try-after-example",
+          "evidence": {
+            "quote": "처음 시도하는 일이면 예시를 본 다음에는 같이 풀어 주면 좋겠어요.",
+            "start": 0,
+            "end": 37
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E009",
+      "text": "짧게 설명해 주는 게 좋아요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "brief",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "짧게 설명해 주는 게 좋아요.",
+            "start": 0,
+            "end": 16
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E010",
+      "text": "설명은 너무 짧지도 길지도 않은 보통 길이가 좋아요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "standard",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "설명은 너무 짧지도 길지도 않은 보통 길이가 좋아요.",
+            "start": 0,
+            "end": 29
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E011",
+      "text": "꼼꼼하고 자세한 설명을 선호해요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "detailed",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "꼼꼼하고 자세한 설명을 선호해요.",
+            "start": 0,
+            "end": 18
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E012",
+      "text": "짧은 설명은 원하지 않아요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "brief",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "짧은 설명은 원하지 않아요.",
+            "start": 0,
+            "end": 15
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E013",
+      "text": "바쁠 때는 빠뜨리는 부분이 생겨도 짧게 설명해 주셨으면 해요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "brief",
+          "polarity": "prefer",
+          "condition": "busy",
+          "evidence": {
+            "quote": "바쁠 때는 빠뜨리는 부분이 생겨도 짧게 설명해 주셨으면 해요.",
+            "start": 0,
+            "end": 34
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E014",
+      "text": "익숙한 내용이면 다시 길고 자세하게 설명하는 건 싫어요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "detailed",
+          "polarity": "avoid",
+          "condition": "familiar",
+          "evidence": {
+            "quote": "익숙한 내용이면 다시 길고 자세하게 설명하는 건 싫어요.",
+            "start": 0,
+            "end": 31
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E015",
+      "text": "예시를 보고 난 다음에는 설명을 자세하게 해 주면 좋겠어요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "detailed",
+          "polarity": "prefer",
+          "condition": "after-example",
+          "evidence": {
+            "quote": "예시를 보고 난 다음에는 설명을 자세하게 해 주면 좋겠어요.",
+            "start": 0,
+            "end": 33
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E016",
+      "text": "제 속도로 따라가려면 보통 길이의 설명이 편해요.",
+      "split": "explicit",
+      "domain": "explanation",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation",
+          "value": "standard",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "제 속도로 따라가려면 보통 길이의 설명이 편해요.",
+            "start": 0,
+            "end": 27
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E017",
+      "text": "듣기 연습이 좋아요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "listening",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "듣기 연습이 좋아요.",
+            "start": 0,
+            "end": 11
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E018",
+      "text": "읽기 연습은 피하고 싶어요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "reading",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "읽기 연습은 피하고 싶어요.",
+            "start": 0,
+            "end": 15
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E019",
+      "text": "듣기와 읽기를 함께 연습하고 싶어요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "mixed",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "듣기와 읽기를 함께 연습하고 싶어요.",
+            "start": 0,
+            "end": 20
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E020",
+      "text": "듣기 연습은 별로 하고 싶지 않아요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "listening",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "듣기 연습은 별로 하고 싶지 않아요.",
+            "start": 0,
+            "end": 20
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E021",
+      "text": "처음 공부하는 내용일 때는 소리부터 익힐 수 있도록 듣기 연습을 하고 싶어요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "listening",
+          "polarity": "prefer",
+          "condition": "first-try",
+          "evidence": {
+            "quote": "처음 공부하는 내용일 때는 소리부터 익힐 수 있도록 듣기 연습을 하고 싶어요.",
+            "start": 0,
+            "end": 43
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E022",
+      "text": "익숙한 내용이라면 눈으로 확인할 수 있게 읽기 연습을 하고 싶어요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "reading",
+          "polarity": "prefer",
+          "condition": "familiar",
+          "evidence": {
+            "quote": "익숙한 내용이라면 눈으로 확인할 수 있게 읽기 연습을 하고 싶어요.",
+            "start": 0,
+            "end": 37
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E023",
+      "text": "바쁠 때는 듣기와 읽기를 한꺼번에 연습하고 싶지 않아요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "mixed",
+          "polarity": "avoid",
+          "condition": "busy",
+          "evidence": {
+            "quote": "바쁠 때는 듣기와 읽기를 한꺼번에 연습하고 싶지 않아요.",
+            "start": 0,
+            "end": 31
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E024",
+      "text": "예시를 본 다음에는 글자와 소리를 연결할 수 있게 듣기와 읽기를 함께 연습하고 싶어요.",
+      "split": "explicit",
+      "domain": "practice-mode",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "practice-mode",
+          "value": "mixed",
+          "polarity": "prefer",
+          "condition": "after-example",
+          "evidence": {
+            "quote": "예시를 본 다음에는 글자와 소리를 연결할 수 있게 듣기와 읽기를 함께 연습하고 싶어요.",
+            "start": 0,
+            "end": 48
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E025",
+      "text": "여행 동선을 짜는 걸 좋아해요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "travel-planning",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "여행 동선을 짜는 걸 좋아해요.",
+            "start": 0,
+            "end": 17
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E026",
+      "text": "요리는 별로 좋아하지 않아요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "cooking",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "요리는 별로 좋아하지 않아요.",
+            "start": 0,
+            "end": 16
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E027",
+      "text": "책 읽는 걸 좋아해요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "reading-books",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "책 읽는 걸 좋아해요.",
+            "start": 0,
+            "end": 12
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E028",
+      "text": "게임은 좋아하지 않아요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "games",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "게임은 좋아하지 않아요.",
+            "start": 0,
+            "end": 13
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E029",
+      "text": "사진 찍는 걸 좋아해서 주말마다 카메라를 챙겨요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "photography",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "사진 찍는 걸 좋아해서 주말마다 카메라를 챙겨요.",
+            "start": 0,
+            "end": 27
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E030",
+      "text": "음악 듣는 걸 좋아하고, 잠들기 전에도 한 곡씩 들어요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "music",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "음악 듣는 걸 좋아하고, 잠들기 전에도 한 곡씩 들어요.",
+            "start": 0,
+            "end": 31
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E031",
+      "text": "몸을 움직이면 기분이 나아져서 운동하는 걸 좋아해요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "exercise",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "몸을 움직이면 기분이 나아져서 운동하는 걸 좋아해요.",
+            "start": 0,
+            "end": 29
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E032",
+      "text": "여행지에서 먹을 음식을 알아보고 주문하는 걸 좋아해서 메뉴판도 미리 찾아봐요.",
+      "split": "explicit",
+      "domain": "topic",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "topic",
+          "value": "travel-food",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "여행지에서 먹을 음식을 알아보고 주문하는 걸 좋아해서 메뉴판도 미리 찾아봐요.",
+            "start": 0,
+            "end": 43
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E033",
+      "text": "다른 사람 생각을 듣고 정리하는 게 편해요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "listen-organize",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "다른 사람 생각을 듣고 정리하는 게 편해요.",
+            "start": 0,
+            "end": 24
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E034",
+      "text": "제 의견부터 말하는 방식은 피하고 싶어요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "share-first",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "제 의견부터 말하는 방식은 피하고 싶어요.",
+            "start": 0,
+            "end": 23
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E035",
+      "text": "글로 소통하는 걸 선호해요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "written",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "글로 소통하는 걸 선호해요.",
+            "start": 0,
+            "end": 15
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E036",
+      "text": "말로 주고받는 건 싫어요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "spoken",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "말로 주고받는 건 싫어요.",
+            "start": 0,
+            "end": 14
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E037",
+      "text": "회의할 때는 제 생각이 흐려지기 전에 제 의견을 먼저 이야기하고 싶어요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "share-first",
+          "polarity": "prefer",
+          "condition": "meeting",
+          "evidence": {
+            "quote": "회의할 때는 제 생각이 흐려지기 전에 제 의견을 먼저 이야기하고 싶어요.",
+            "start": 0,
+            "end": 40
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E038",
+      "text": "같이 일할 때는 기록을 남길 수 있도록 글로 주고받는 게 좋아요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "written",
+          "polarity": "prefer",
+          "condition": "teamwork",
+          "evidence": {
+            "quote": "같이 일할 때는 기록을 남길 수 있도록 글로 주고받는 게 좋아요.",
+            "start": 0,
+            "end": 36
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E039",
+      "text": "회의할 때는 다른 사람 의견을 먼저 듣고 정리하면 이해가 잘돼서 그 방식이 좋아요.",
+      "split": "explicit",
+      "domain": "communication",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "communication",
+          "value": "listen-organize",
+          "polarity": "prefer",
+          "condition": "meeting",
+          "evidence": {
+            "quote": "회의할 때는 다른 사람 의견을 먼저 듣고 정리하면 이해가 잘돼서 그 방식이 좋아요.",
+            "start": 0,
+            "end": 46
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E040",
+      "text": "먼저 계획을 세워 놓는 게 좋아요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "plan-first",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "먼저 계획을 세워 놓는 게 좋아요.",
+            "start": 0,
+            "end": 19
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E041",
+      "text": "해 보면서 고쳐 가는 방식은 피하고 싶어요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "try-adjust",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "해 보면서 고쳐 가는 방식은 피하고 싶어요.",
+            "start": 0,
+            "end": 24
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E042",
+      "text": "한 번에 한 가지 일을 하는 게 편해요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "single-task",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "한 번에 한 가지 일을 하는 게 편해요.",
+            "start": 0,
+            "end": 22
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E043",
+      "text": "우선순위를 정해서 처리하는 건 싫어요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "prioritize",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "우선순위를 정해서 처리하는 건 싫어요.",
+            "start": 0,
+            "end": 21
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E044",
+      "text": "일을 계획할 때는 먼저 우선순위를 정해 두면 마음이 편해서 그렇게 하고 싶어요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "prioritize",
+          "polarity": "prefer",
+          "condition": "planning",
+          "evidence": {
+            "quote": "일을 계획할 때는 먼저 우선순위를 정해 두면 마음이 편해서 그렇게 하고 싶어요.",
+            "start": 0,
+            "end": 44
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E045",
+      "text": "함께 일할 때는 일단 시도해 보고 상황에 맞춰 고쳐 나가는 게 좋아요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "try-adjust",
+          "polarity": "prefer",
+          "condition": "teamwork",
+          "evidence": {
+            "quote": "함께 일할 때는 일단 시도해 보고 상황에 맞춰 고쳐 나가는 게 좋아요.",
+            "start": 0,
+            "end": 39
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E046",
+      "text": "바쁠 때는 일이 섞이지 않도록 한 번에 하나씩만 처리하고 싶어요.",
+      "split": "explicit",
+      "domain": "work-style",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "work-style",
+          "value": "single-task",
+          "polarity": "prefer",
+          "condition": "busy",
+          "evidence": {
+            "quote": "바쁠 때는 일이 섞이지 않도록 한 번에 하나씩만 처리하고 싶어요.",
+            "start": 0,
+            "end": 36
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E047",
+      "text": "자료와 근거를 확인해서 판단하는 게 좋아요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "evidence",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "자료와 근거를 확인해서 판단하는 게 좋아요.",
+            "start": 0,
+            "end": 24
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E048",
+      "text": "여러 선택지를 비교하는 건 피하고 싶어요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "compare-options",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "여러 선택지를 비교하는 건 피하고 싶어요.",
+            "start": 0,
+            "end": 23
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E049",
+      "text": "제가 직접 겪은 경험을 참고해서 판단하고 싶어요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "experience",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "제가 직접 겪은 경험을 참고해서 판단하고 싶어요.",
+            "start": 0,
+            "end": 27
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E050",
+      "text": "남과 상의해서 결정하는 건 싫어요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "consult",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "남과 상의해서 결정하는 건 싫어요.",
+            "start": 0,
+            "end": 19
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E051",
+      "text": "결정할 때는 후회를 줄이고 싶어서 후보들을 서로 비교해 보는 게 좋아요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "compare-options",
+          "polarity": "prefer",
+          "condition": "decision",
+          "evidence": {
+            "quote": "결정할 때는 후회를 줄이고 싶어서 후보들을 서로 비교해 보는 게 좋아요.",
+            "start": 0,
+            "end": 40
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E052",
+      "text": "결정할 때는 놓친 점을 알 수 있게 다른 사람과 상의하고 싶어요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "consult",
+          "polarity": "prefer",
+          "condition": "decision",
+          "evidence": {
+            "quote": "결정할 때는 놓친 점을 알 수 있게 다른 사람과 상의하고 싶어요.",
+            "start": 0,
+            "end": 36
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E053",
+      "text": "익숙한 내용일 때는 제가 직접 겪었던 경험을 바탕으로 판단하는 게 편해요.",
+      "split": "explicit",
+      "domain": "decision",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "decision",
+          "value": "experience",
+          "polarity": "prefer",
+          "condition": "familiar",
+          "evidence": {
+            "quote": "익숙한 내용일 때는 제가 직접 겪었던 경험을 바탕으로 판단하는 게 편해요.",
+            "start": 0,
+            "end": 41
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E054",
+      "text": "전체 개요부터 알려 주는 게 좋아요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "overview-first",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "전체 개요부터 알려 주는 게 좋아요.",
+            "start": 0,
+            "end": 20
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E055",
+      "text": "핵심 근거를 자세히 알려 주는 걸 원해요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "reasons-detail",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "핵심 근거를 자세히 알려 주는 걸 원해요.",
+            "start": 0,
+            "end": 23
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E056",
+      "text": "길게 이어지는 설명이 좋아요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "long-flow",
+          "polarity": "prefer",
+          "condition": null,
+          "evidence": {
+            "quote": "길게 이어지는 설명이 좋아요.",
+            "start": 0,
+            "end": 16
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E057",
+      "text": "긴 흐름으로 쭉 이어지는 설명은 싫어요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "single",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "long-flow",
+          "polarity": "avoid",
+          "condition": null,
+          "evidence": {
+            "quote": "긴 흐름으로 쭉 이어지는 설명은 싫어요.",
+            "start": 0,
+            "end": 22
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E058",
+      "text": "처음 접하는 내용이라면 어디로 가는지 알 수 있도록 전체 개요를 먼저 보고 싶어요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "overview-first",
+          "polarity": "prefer",
+          "condition": "first-try",
+          "evidence": {
+            "quote": "처음 접하는 내용이라면 어디로 가는지 알 수 있도록 전체 개요를 먼저 보고 싶어요.",
+            "start": 0,
+            "end": 46
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E059",
+      "text": "예시를 본 다음에는 왜 그런지 이해할 수 있도록 핵심 근거를 자세히 알고 싶어요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "reasons-detail",
+          "polarity": "prefer",
+          "condition": "after-example",
+          "evidence": {
+            "quote": "예시를 본 다음에는 왜 그런지 이해할 수 있도록 핵심 근거를 자세히 알고 싶어요.",
+            "start": 0,
+            "end": 45
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "E060",
+      "text": "익숙한 내용이라면 이미 아는 큰 그림을 다시 보게 되니 전체 개요부터 설명하는 건 원하지 않아요.",
+      "split": "explicit",
+      "domain": "explanation-detail",
+      "structure": "compound",
+      "meanings": [
+        {
+          "field": "explanation-detail",
+          "value": "overview-first",
+          "polarity": "avoid",
+          "condition": "familiar",
+          "evidence": {
+            "quote": "익숙한 내용이라면 이미 아는 큰 그림을 다시 보게 되니 전체 개요부터 설명하는 건 원하지 않아요.",
+            "start": 0,
+            "end": 54
+          }
+        }
+      ],
+      "questionExpectation": "none",
+      "rationale": "현재 본인의 분명한 선호 또는 회피를 명시했다."
+    },
+    {
+      "id": "A001",
+      "text": "동생은 읽기 연습을 하는 게 더 좋대요.",
+      "split": "must-abstain",
+      "category": "other",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "선호의 주체가 동생이다."
+    },
+    {
+      "id": "A002",
+      "text": "제 친구는 영상을 만드는 걸 무척 좋아해요.",
+      "split": "must-abstain",
+      "category": "other",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "선호의 주체가 친구다."
+    },
+    {
+      "id": "A003",
+      "text": "남편은 결정을 내리기 전에 자료부터 뒤져 보는 걸 좋아해요.",
+      "split": "must-abstain",
+      "category": "other",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "선호의 주체가 남편이다."
+    },
+    {
+      "id": "A004",
+      "text": "우리 팀장은 말로 보고받는 게 편하대요.",
+      "split": "must-abstain",
+      "category": "other",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "선호의 주체가 팀장이다."
+    },
+    {
+      "id": "A005",
+      "text": "어릴 때는 듣기 연습을 좋아했어요.",
+      "split": "must-abstain",
+      "category": "past",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "과거 선호만 언급했다."
+    },
+    {
+      "id": "A006",
+      "text": "작년에는 여행 일정 짜는 게 좋았는데 지금은 취향이 달라졌어요.",
+      "split": "must-abstain",
+      "category": "past",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "과거 선호가 끝났으며 현재 방향은 명시하지 않았다."
+    },
+    {
+      "id": "A007",
+      "text": "학생 때는 설명이 길수록 좋았어요.",
+      "split": "must-abstain",
+      "category": "past",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "학생 시절 선호만 언급했다."
+    },
+    {
+      "id": "A008",
+      "text": "지난 회사에서는 글로 소통하는 쪽을 선호했어요. 지금 제 방식은 아직 모르겠어요.",
+      "split": "must-abstain",
+      "category": "past",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "과거 환경의 선호이며 현재는 모른다고 밝혔다."
+    },
+    {
+      "id": "A009",
+      "text": "저한테 맞는 방식으로 해 주세요.",
+      "split": "must-abstain",
+      "category": "ambiguous",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "원하는 방식의 대상이나 값이 없다."
+    },
+    {
+      "id": "A010",
+      "text": "이 정도로 해 주면 좋겠어요.",
+      "split": "must-abstain",
+      "category": "ambiguous",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "정도가 가리키는 대상을 알 수 없다."
+    },
+    {
+      "id": "A011",
+      "text": "그 방식은 좀 피해 주세요.",
+      "split": "must-abstain",
+      "category": "ambiguous",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "피하려는 방식의 지시 대상이 없다."
+    },
+    {
+      "id": "A012",
+      "text": "그쪽이 더 마음에 들어요.",
+      "split": "must-abstain",
+      "category": "ambiguous",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "비교 대상과 선호 값이 제시되지 않았다."
+    },
+    {
+      "id": "A013",
+      "text": "저는 파란색 옷을 좋아해요.",
+      "split": "must-abstain",
+      "category": "out-of-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "의복 색 선호는 공개 의미 계약에 없다."
+    },
+    {
+      "id": "A014",
+      "text": "커피는 차갑게 마시는 게 좋아요.",
+      "split": "must-abstain",
+      "category": "out-of-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "음료 온도 선호는 공개 의미 계약에 없다."
+    },
+    {
+      "id": "A015",
+      "text": "저는 고양이를 더 좋아해요.",
+      "split": "must-abstain",
+      "category": "out-of-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "동물 선호는 공개 의미 계약에 없다."
+    },
+    {
+      "id": "A016",
+      "text": "베개는 낮은 게 편해요.",
+      "split": "must-abstain",
+      "category": "out-of-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "베개 높이 선호는 공개 의미 계약에 없다."
+    },
+    {
+      "id": "A017",
+      "text": "혼자 하는 걸 싫어한다고 말한 적은 없어요.",
+      "split": "must-abstain",
+      "category": "negation-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "발언 이력의 부정이며 혼자 하기에 대한 현재 선호를 긍정하거나 회피한 것이 아니다."
+    },
+    {
+      "id": "A018",
+      "text": "제가 긴 설명을 좋아한다는 얘기는 아니에요.",
+      "split": "must-abstain",
+      "category": "negation-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "선호한다고 말한 것으로 해석하지 말라는 진술이며 회피의 확정은 아니다."
+    },
+    {
+      "id": "A019",
+      "text": "글로 답하는 게 좋다는 뜻으로 한 말은 아니었어요.",
+      "split": "must-abstain",
+      "category": "negation-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "기존 발언의 해석을 부정하며 실제 선호는 제시하지 않았다."
+    },
+    {
+      "id": "A020",
+      "text": "선택지를 비교하기 싫다는 말이 맞는지는 아직 모르겠어요.",
+      "split": "must-abstain",
+      "category": "negation-scope",
+      "meanings": [],
+      "questionExpectation": "optional-clarification",
+      "rationale": "회피 진술 자체를 확정하지 않고 유보했다."
+    }
+  ]
+}

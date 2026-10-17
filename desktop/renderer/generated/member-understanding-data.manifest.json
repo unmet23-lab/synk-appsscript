@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "entry": "experiences/synk-account/src/member-understanding-data.mjs",
+  "sha256": "da69c67a96c563149465e5863eb676a2ef146d98c1e8c5adc5e785cdbaef9823",
+  "sources": {
+    "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "atlas/member-understanding-contract.js": "5abde8c31c430662b3995e5505beea986e85aa890d83efd58cfe0f994af0f5a3",
+    "experiences/synk-account/src/member-statement-contract.cjs": "ade5c0378e1697ecc3d8f8c315a956dc43471febbe2c34d14c8e25faafa799af",
+    "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
+    "experiences/synk-account/src/member-statement-v2.cjs": "7e26a5dd658f02951ea7ff3fe302e8992f1d547f07e76fda30e693a3cb37c220",
+    "experiences/synk-account/src/member-statement-v3.cjs": "8eadd4133d3474150d577c6b4e86286ed6370030956bccbdbfb248883d15f271",
+    "experiences/synk-account/src/member-statement-v4.cjs": "973796df567dc4fc8dd7c38dd0034406c7c82cb40c86cd33f5a5a3dd185b9b0c",
+    "experiences/synk-account/src/member-statement-v5.cjs": "d4da785c129f7533422c4ec17cfa6c6a124eb911d4ac7fe9442af3c7a6a98111",
+    "experiences/synk-account/src/member-statement-v6.cjs": "e20eda01490cb2627c88b9212baae47058f9831d1e8c3cab09f72f751167e2b5",
+    "experiences/synk-account/src/member-statement-v7.cjs": "9289ce1899c8fe0b847391a75c661628c898d862309344f60d8c71699b15aa5e",
+    "experiences/synk-account/src/member-statement-v8.cjs": "1c796568b36cb57f77a3143857b0389541aff036979a95f7fe44d77577ee5b69",
+    "experiences/synk-account/src/member-understanding-data.mjs": "02b693b5901aba5c9ed82650b9af1361f0c92bc9181258be025058d68f56c29d"
+  }
+}

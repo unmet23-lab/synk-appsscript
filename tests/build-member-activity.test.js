@@ -1,0 +1,46 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+const { buildMemberActivity } = require('../tools/build-member-activity');
+const { summarizeMemberActivity } = require('../atlas/member-activity');
+test('browser generation matches canonical Atlas behavior and check mode refuses stale content without overwriting', async t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-member-build-'));
+  t.after(() => { assert.equal(path.dirname(path.resolve(directory)), path.resolve(os.tmpdir()));assert.ok(path.basename(directory).startsWith('synk-member-build-'));fs.rmSync(directory, { recursive: true, force: true }); });
+  const outputFile = path.join(directory, 'member-activity.mjs');
+  assert.throws(() => buildMemberActivity({ outputFile, check: true }), /Stale member activity/);
+  buildMemberActivity({ outputFile });
+  assert.equal(buildMemberActivity({ outputFile, check: true }).checked, true);
+  const manifestFile = outputFile.replace(/\.mjs$/, '.manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  assert.ok(manifest.sources['atlas/member-activity.js']);assert.ok(manifest.sources['atlas/trail-periods.js']);assert.ok(manifest.sources['atlas/vellum.js']);
+  const browser = (await import(pathToFileURL(outputFile).href)).default;
+  const schemaFile = path.join(directory, 'member-activity-data.mjs'), schema = await import(pathToFileURL(schemaFile).href);
+  const canonicalSchema = await import('../experiences/synk-account/src/member-activity-data.mjs');
+  assert.deepEqual(schema.emptyMemberActivity(), canonicalSchema.emptyMemberActivity());
+  assert.deepEqual(schema.MEMBER_ACTIVITY_LIMITS, canonicalSchema.MEMBER_ACTIVITY_LIMITS);
+  const input = { document: { version: 1, consent: true, enabledAt: '2026-08-01T00:00:00.000Z', events: [], favorites: ['path'] }, asOf: '2026-10-14T00:00:00.000Z' };
+  assert.deepEqual(browser.summarizeMemberActivity(input), summarizeMemberActivity(input));
+  const stale = '// altered browser artifact\n';fs.writeFileSync(outputFile, stale);
+  assert.throws(() => buildMemberActivity({ outputFile, check: true }), /Stale member activity/);
+  assert.equal(fs.readFileSync(outputFile, 'utf8'), stale);
+});
+
+test('a frozen desktop-only package validates its bundled receipt without depending on the repository builder', t => {
+  const { verifyMemberActivity } = require('../desktop/tools/package.cjs');
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-member-build-'));
+  t.after(() => { assert.equal(path.dirname(path.resolve(directory)), path.resolve(os.tmpdir()));assert.ok(path.basename(directory).startsWith('synk-member-build-'));fs.rmSync(directory, { recursive: true, force: true }); });
+  const desktopRoot = path.join(directory, 'desktop'), outputFile = path.join(desktopRoot, 'renderer/generated/member-activity.mjs');
+  buildMemberActivity({ outputFile });
+  assert.doesNotThrow(() => verifyMemberActivity(desktopRoot));
+  const schemaFile=path.join(path.dirname(outputFile),'member-activity-data.mjs'),schemaSource=fs.readFileSync(schemaFile,'utf8');
+  fs.appendFileSync(schemaFile,'// changed schema\n');
+  assert.throws(() => verifyMemberActivity(desktopRoot), /differs from its build manifest/);
+  fs.writeFileSync(schemaFile,schemaSource);
+  assert.doesNotThrow(() => verifyMemberActivity(desktopRoot));
+  fs.appendFileSync(outputFile, '// changed\n');
+  assert.throws(() => verifyMemberActivity(desktopRoot), /differs from its build manifest/);
+});

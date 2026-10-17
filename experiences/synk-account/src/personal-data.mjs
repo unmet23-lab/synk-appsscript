@@ -2,11 +2,13 @@ import { validateState as validatePath } from '../../path-vr/model.mjs';
 import { validateArchive, MAX_IMPORT_BYTES } from '../../conversation-rehearsal/domain.mjs';
 import { validateAlbum, mediaBytes, LIMITS as ALBUM_LIMITS } from '../../family-album/model.mjs';
 import { validatePlatformLibrary } from './platform-library-data.mjs';
+import { validateMemberActivity, MEMBER_ACTIVITY_LIMITS } from './member-activity-data.mjs';
+import { validateMemberUnderstanding, MEMBER_UNDERSTANDING_LIMITS } from './member-understanding-data.mjs';
 import { validateTravelAccountDocument, TRAVEL_ACCOUNT_CONTRACT } from '../../path-travel/planner-account.mjs';
 
 // Product state stays product-owned. This contract never grants roles, creates
 // accounts, or treats a device's storage preference as account authorization.
-export const PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, 'path-travel': TRAVEL_ACCOUNT_CONTRACT.maxBytes, rehearsal: MAX_IMPORT_BYTES, 'family-album': ALBUM_LIMITS.export, 'platform-library':64 * 1024 });
+export const PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, 'path-travel': TRAVEL_ACCOUNT_CONTRACT.maxBytes, rehearsal: MAX_IMPORT_BYTES, 'family-album': ALBUM_LIMITS.export, 'platform-library':64 * 1024, 'member-insight': MEMBER_ACTIVITY_LIMITS.maxBytes, 'member-understanding': MEMBER_UNDERSTANDING_LIMITS.maxBytes });
 export const PERSONAL_RESOURCES = Object.freeze(Object.keys(PERSONAL_LIMITS));
 export const FAMILY_MANIFEST_FORMAT = 'synk-family-album-manifest';
 export const PERSONAL_MEDIA_LIMITS = Object.freeze({ image: ALBUM_LIMITS.photo, audio: ALBUM_LIMITS.audio, total: ALBUM_LIMITS.total });
@@ -61,9 +63,9 @@ function pathDocument(value) {
   return checked;
 }
 
-export function validatePersonalState(resource, value) {
+export function validatePersonalState(resource, value, options) {
   const limit = resourceLimit(resource), copy = jsonCopy(value, limit);
-  try { return resource === 'path-travel' ? validateTravelAccountDocument(copy) : resource === 'platform-library' ? validatePlatformLibrary(copy) : resource === 'path' ? pathDocument(copy) : resource === 'rehearsal' ? validateArchive(copy) : familyManifest(copy); }
+  try { return resource === 'member-understanding' ? validateMemberUnderstanding(copy, options) : resource === 'member-insight' ? validateMemberActivity(copy, options) : resource === 'path-travel' ? validateTravelAccountDocument(copy) : resource === 'platform-library' ? validatePlatformLibrary(copy) : resource === 'path' ? pathDocument(copy) : resource === 'rehearsal' ? validateArchive(copy) : familyManifest(copy); }
   catch (error) { if (error.code) throw error; invalid(); }
 }
 
