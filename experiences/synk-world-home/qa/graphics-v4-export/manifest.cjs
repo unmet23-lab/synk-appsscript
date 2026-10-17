@@ -1,6 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..'),out=path.join(root,'scene-assets/graphics-v4');
 const read=file=>JSON.parse(fs.readFileSync(file,'utf8')),hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+if(!fs.existsSync(path.join(__dirname,'roundtrip.png')))throw new Error('Archived QA image missing. From repository root run: python tools/git-storage-restore.py --path \"experiences/synk-world-home/qa/graphics-v4-export/roundtrip.png\"');
 const metadata=read(path.join(out,'mongle-v4.export.json')),blender=read(path.join(__dirname,'blender-import.json'));
 for(const source of metadata.source)assert.equal(hash(path.join(root,source.path)),source.sha256,'Source no longer matches the frozen export');
 assert.equal(hash(path.join(out,'mongle-v4.glb')),metadata.sha256);assert.equal(blender.sourceGlbSha256,metadata.sha256);assert.equal(blender.triangles,metadata.triangles);

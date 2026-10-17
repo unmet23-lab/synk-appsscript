@@ -1,5 +1,7 @@
 # 몽글 정적 제작 후보 v4
 
+> 아래 `roundtrip.png` 비교 원본은 [보관 목록](../../../../docs/_ops/github-storage/archive-20261017.json)에 있다. 새 체크아웃에서는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-home/qa/graphics-v4-export/roundtrip.png"`로 복원한 뒤 이미지 열기·과거 manifest 재산출을 진행한다.
+
 2026-10-09. 웹의 공통 `avatar-v3.mjs`와 `avatar-textiles.mjs`를 그대로 내보낸 정적 후보다. 캐릭터 API/ID는 v3와 호환되며 **재질 revision은 4**다. 최종 미술 승인·리깅·Unity 렌더를 완료한 자산은 아니다.
 
 - [GLB](mongle-v4.glb): 3,684,424B · 12 mesh · 11 material · 9 image · 44,940 triangles.

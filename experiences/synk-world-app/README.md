@@ -1,5 +1,7 @@
 # SYNK WORLD 앱 · 한강 마루와 계정 연결
 
+> **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-app/qa/<필요한 파일>"`로 해당 원본을 복원한다.
+
 ## 2026-10-14 화면 전면 리디자인 · 공용 작업본 반영(공개 전)
 
 처음 화면부터 모든 2D 화면을 「월드 시그널」로 다시 짰다. 디자인 규칙·토큰(`../brand-opening/world-ui.css`)·화면별 구조·전후 비교·시험 결과는 [월드 시그널 가이드](../../docs/디자인/월드_시그널/README.md)에 있다. 홈의 아래 탭은 **우리 방·배우기·놀이·옷장**이고 「나」(`data-view="me"`)는 왼쪽 위 캡슐이다. 3D 방에서 다음 학습의 주 행동은 튜터 카드의 흰 알약, 생활 팩의 「지금 할 일」은 배우기 탭 맨 위 포스터다(숨은 `#life-next-button`은 상태 글을 위해 남아 있다). 바람길·말의 리듬은 WORLD의 `.game-frame` 안에서만 `world-skin.css`가 걸린다. 학습·채점·저장·계정 계약과 `data-*` 고리는 바꾸지 않았다.

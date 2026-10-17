@@ -21,6 +21,24 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+      - name: check new Git storage payloads
+        env:
+          STORAGE_BEFORE: ${{ github.event.before }}
+          STORAGE_EVENT: ${{ github.event_name }}
+          STORAGE_DEFAULT: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          base="$STORAGE_BEFORE"
+          if [ "$STORAGE_EVENT" = "workflow_dispatch" ]; then
+            base=$(git rev-parse "$GITHUB_SHA^")
+          elif [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then
+            base=$(git merge-base "origin/$STORAGE_DEFAULT" "$GITHUB_SHA")
+          fi
+          node tools/git-storage-check.cjs --base "$base" --head "$GITHUB_SHA" --allow-lazy-fetch
+      - name: test Git storage guards and recovery
+        run: |
+          node --test tests/git-storage-check.test.cjs
+          python3 -B tests/git-storage-restore.test.py
       - name: install deterministic build dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: verify all local Atlas consumer copies
