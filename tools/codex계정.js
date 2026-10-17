@@ -86,22 +86,45 @@ function 끄기(child) {
   else child.kill();
 }
 
-/** codex를 한 번 부른다. 출력은 그대로 흘려보내고 끝부분만 남겨 한도·로그인 문구를 본다. */
+/** codex를 한 번 부른다. 출력은 그대로 흘려보내고 표준출력·표준오류의 끝부분만 따로 남겨 한도·로그인 문구를 본다. */
 function 실행(이름, args, 입력) {
   return new Promise((resolve) => {
     const { command, argv, verbatim } = codex(args);
-    let 끝글 = '';
-    const 담기 = (d) => { 끝글 = (끝글 + d).slice(-65536); };
+    const 끝 = { 출력: '', 오류: '' };
+    const 담기 = (곳, d) => { 끝[곳] = (끝[곳] + d).slice(-65536); };
     const child = spawn(command, argv, {
       env: 환경(이름), windowsVerbatimArguments: verbatim, windowsHide: true,
       stdio: [입력 == null ? 'inherit' : 'pipe', 'pipe', 'pipe'],
     });
-    child.stdout.on('data', (d) => { 담기(d); process.stdout.write(d); });
-    child.stderr.on('data', (d) => { 담기(d); process.stderr.write(d); });
-    child.on('error', (e) => resolve({ code: -1, 글: 끝글 + String(e) }));
-    child.on('close', (code) => resolve({ code, 글: 끝글 }));
+    child.stdout.on('data', (d) => { 담기('출력', d); process.stdout.write(d); });
+    child.stderr.on('data', (d) => { 담기('오류', d); process.stderr.write(d); });
+    child.on('error', (e) => resolve({ code: -1, 출력: 끝.출력, 오류: `${끝.오류}\n${e}` }));
+    child.on('close', (code) => resolve({ code, ...끝 }));
     if (입력 != null) child.stdin.end(입력);
   });
+}
+
+/**
+ * Codex 자신이 낸 오류 문장들(차례대로). 사람용 출력은 표준오류의 `ERROR: …`(시작 전 실패는 `Error: …`) 줄,
+ * `--json`이면 표준출력의 `error`·`turn.failed` 사건이다. 실패한 실행의 마지막 문장이 실패한 까닭이다
+ * (0.163은 그 문장을 맨 끝에 두 번 찍는다). 모델 답과 모델이 읽은 파일 내용은 보지 않는다 —
+ * 10-17 한도 문구를 인용한 현장 노트를 읽은 굽기가 성공하고도 세 계정을 모두 「막힘」으로 적었다.
+ */
+function 코덱스오류(r) {
+  const 문장 = [];
+  /* 색을 강제하면(FORCE_COLOR 등) `ERROR:` 앞뒤에 색 코드가 붙는다 — 벗기고 줄 맨 앞을 본다 */
+  for (const 줄 of (r.오류 || '').replace(/\x1b\[[0-9;]*m/g, '').split(/\r?\n/)) {
+    const m = /^(?:ERROR|Error):\s*(.+)$/.exec(줄);
+    if (m) 문장.push(m[1]);
+  }
+  for (const 줄 of (r.출력 || '').split(/\r?\n/)) {
+    if (!줄.startsWith('{')) continue;
+    let e;
+    try { e = JSON.parse(줄); } catch { continue; }
+    const 글 = e?.type === 'error' ? e.message : e?.type === 'turn.failed' ? e.error?.message : null;
+    if (typeof 글 === 'string') 문장.push(글);
+  }
+  return 문장;
 }
 
 /** app-server에 순서대로 묻고 결과 배열을 돌려준다(계정판 `codexSession`과 같은 주고받기). */
@@ -221,13 +244,15 @@ async function 굽기(args) {
     시도한.add(후보.이름);
     if (후보.예비) process.stderr.write(`[codex계정] 보조 계정이 모두 막혀 예비 ${후보.이름}(${후보.메일 || ''})로 굽는다\n`);
     const r = await 실행(후보.이름, ['exec', ...args], 입력);
-    if (한도문구.test(r.글)) {
-      const 풀림 = 풀리는시각(r.글) ?? (await 한도에서풀림(후보.이름)) ?? 지금 + 36e5;
+    /* 한도·로그인은 실패한 실행에서 Codex의 마지막 오류 문장으로만 본다. 풀리는 시각도 그 문장에서 읽는다 */
+    const 오류 = r.code !== 0 ? 코덱스오류(r).pop() : undefined;
+    if (오류 && 한도문구.test(오류)) {
+      const 풀림 = 풀리는시각(오류) ?? (await 한도에서풀림(후보.이름)) ?? 지금 + 36e5;
       계정고치기(후보.이름, { 막힘까지: 풀림, 막힌때: 지금 });
       process.stderr.write(`\n[codex계정] ${후보.이름} 한도 — ${시각(풀림)}에 풀림. 다음 계정으로 다시 부른다\n`);
       continue;
     }
-    if (r.code !== 0 && 로그인문구.test(r.글)) {
+    if (오류 && 로그인문구.test(오류)) {
       계정고치기(후보.이름, { 로그인필요: true });
       process.stderr.write(`\n[codex계정] ${후보.이름} 로그인이 풀렸다(--추가 ${후보.이름}로 다시). 다음 계정으로 다시 부른다\n`);
       continue;
@@ -314,7 +339,7 @@ async function main(argv) {
   return 2;
 }
 
-module.exports = { 풀리는시각, 한도문구, 로그인문구, 묻기 };
+module.exports = { 풀리는시각, 코덱스오류, 한도문구, 로그인문구, 묻기 };
 
 if (require.main === module) {
   main(process.argv.slice(2)).then(
