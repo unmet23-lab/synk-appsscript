@@ -86,11 +86,11 @@
 
 ## Codex 예약
 
-### 새 heartbeat의 RRULE 시각을 한국 시각으로 쓰면 9시간 밀린다
-- 증상: 10-17 `automation_update`로 새 heartbeat에 `BYHOUR=8,16`을 넣었을 때, 기대한 08:00 KST 대신 SQLite의 `next_run_nominal_at`이 17:00 KST를 가리켰다.
-- 원인: 이 도구가 새로 받은 RRULE의 `BYHOUR`를 UTC 시각으로 평가했다. 기존 `synk-synkbrief` 예약의 09:00 KST 표기만 보고 새 예약도 같은 방식이라고 가정하면 틀린다.
-- 고침: 10-18 08:00·16:00 KST 예약은 `FREQ=DAILY;BYHOUR=7,23;BYMINUTE=0;BYSECOND=0;COUNT=2`로, 10-19 10:20·19:20·21:20 KST 예약은 `BYHOUR=1,10,12`(UTC)로 고쳤다. 이 두 예약은 `ACTIVE`이고 각각 다음 명목 실행 시각이 10-18 08:00·10-19 10:20 KST인 것을 확인했다. 이후 실행 완료까지 확인한 뜻은 아니다.
-- 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 `Asia/Seoul`로 변환하고 의도한 현지 시각과 대조한다. 실행 여부는 `last_run_at`과 `automation_runs`를 별도로 본다.
+### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
+- 증상: 10-17 새 `COUNT=2` 일간 예약에 `BYHOUR=8,16`을 넣자 첫 명목 실행이 예상한 08:00 KST 대신 17:00 KST였다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`일 때 다음 명목 실행이 16:10 KST였고, 시험 삼아 `BYHOUR=7`로 바꾸자 07:10 KST가 됐다.
+- 원인: 내부 해석 차이의 원인은 미확정이다. 이 판에서 확인한 `COUNT=2` 일간 예약과 `COUNT=1`·`COUNT=3` 월간 예약의 `BYHOUR`는 UTC로, 기존 무기한 일간 예약의 `BYHOUR`는 한국 시각으로 반영됐다. RRULE 전체에 한 시간대를 가정하면 예약이 어긋난다.
+- 고침: 10-18 08:00·16:00 KST의 `COUNT=2` 일간 예약은 `BYHOUR=7,23`, 10-19 10:20·19:20·21:20 KST의 `COUNT=3` 월간 예약은 `BYHOUR=1,10,12`로 저장했다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`을 유지하고, 10-18·22 16:00 KST의 일회성 월간 예약 두 개는 `BYHOUR=7`로 고쳤다. 모두 `ACTIVE`와 의도한 다음 명목 실행 시각을 확인했으며 실제 예약 실행은 아직 미검증이다.
+- 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 UTC+09:00으로 변환해 일정별 의도한 시각과 대조한다. 실제 실행은 `last_run_at`과 `automation_runs`를 따로 본다.
 
 ## Codex 세션 기록
 
