@@ -7169,7 +7169,81 @@ var require_vellum = __commonJS({
       if (reasons2.includes("history.incomplete")) return "\uAE30\uB85D\uC744 \uBAA8\uB450 \uD655\uC778\uD558\uAE30 \uC804\uC774\uB77C \uAE30\uBCF8 \uD65C\uB3D9\uC73C\uB85C \uC2DC\uC791\uD574\uC694.";
       return "\uC544\uC9C1 \uC5F0\uC2B5 \uAE30\uB85D\uC774 \uC801\uC5B4\uC694. \uC9E7\uAC8C \uD574 \uBCF4\uBA70 \uB9DE\uCDB0 \uAC08\uAC8C\uC694.";
     }
-    module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason };
+    function memberActivityReason({ kind, action = false } = {}) {
+      if (!["favorite", "opened"].includes(kind)) throw new TypeError("Vellum: invalid member activity basis");
+      if (kind === "favorite") return action ? "\uC9C1\uC811 \uC990\uACA8\uCC3E\uAE30\uC5D0 \uACE0\uB978 \uC571\uC5D0\uC11C \uC774\uC5B4\uC11C \uC2DC\uC791\uD574\uC694." : "\uC9C1\uC811 \uC990\uACA8\uCC3E\uAE30\uC5D0 \uACE0\uB978 \uC571\uC774\uC5D0\uC694. \uC774\uC6A9 \uD69F\uC218\uC640\uB294 \uBCC4\uAC1C\uC758 \uC120\uD0DD\uC774\uC5D0\uC694.";
+      return action ? "\uCD5C\uADFC 60\uC77C\uC5D0 \uC5F4\uC5B4 \uBCF8 \uC571\uC5D0\uC11C \uC774\uC5B4\uC11C \uC2DC\uC791\uD574\uC694." : "\uC5F0\uACB0\uC744 \uD5C8\uC6A9\uD55C \uB4A4 \uCD5C\uADFC 60\uC77C\uC5D0 \uC571\uC744 \uC5F0 \uAE30\uB85D\uC774\uC5D0\uC694. \uC2E4\uC81C \uD65C\uB3D9 \uC644\uB8CC\uB098 \uC88B\uC544\uD558\uB294 \uC815\uB3C4\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694.";
+    }
+    function periodComparisonReason({ source, state } = {}) {
+      if (!["activity", "practice"].includes(source) || !["ready", "empty", "partial", "disabled"].includes(state)) throw new TypeError("Vellum: invalid period comparison");
+      if (state === "disabled") return "\uC571 \uC774\uC6A9 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4\uC694. \uC5F0\uACB0\uC744 \uD5C8\uC6A9\uD55C \uB4A4\uC758 \uAE30\uB85D\uBD80\uD130 \uBAA8\uC544\uC694.";
+      if (state === "partial") return "\uC5F0\uACB0 \uC2DC\uC791 \uC2DC\uC810\uC774\uB098 \uBCF4\uAD00 \uBC94\uC704 \uB54C\uBB38\uC5D0 \uB450 \uAE30\uAC04\uC758 \uAE30\uB85D\uC744 \uBAA8\uB450 \uD655\uC778\uD560 \uC218 \uC5C6\uC5B4\uC694. \uC788\uB294 \uAE30\uB85D\uB9CC \uBCF4\uC5EC\uB4DC\uB9AC\uACE0 \uCC28\uC774\uB294 \uACC4\uC0B0\uD558\uC9C0 \uC54A\uC544\uC694.";
+      if (state === "empty") return "\uB450 \uAE30\uAC04 \uBAA8\uB450\uC5D0 \uAE30\uB85D\uC774 \uC788\uC5B4\uC57C \uCC28\uC774\uB97C \uBE44\uAD50\uD574\uC694. \uAE30\uB85D\uC774 \uC5C6\uB294 \uAE30\uAC04\uC744 \uC131\uD5A5\uC774\uB098 \uC2E4\uB825\uC758 \uBCC0\uD654\uB85C \uD310\uB2E8\uD558\uC9C0 \uC54A\uC544\uC694.";
+      return source === "activity" ? "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uC571\uC744 \uC5F0 \uD69F\uC218\uC640 \uB0A0\uC9DC\uB97C \uBE44\uAD50\uD574\uC694. \uD65C\uB3D9 \uC644\uB8CC\uB098 \uAD00\uC2EC\uC758 \uAC15\uB3C4\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694." : "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uB2F5\uD55C \uD69F\uC218\uB97C \uBE44\uAD50\uD574\uC694. \uD63C\uC790 \uC751\uB2F5\uC5D0\uB294 \uC624\uB2F5\uB3C4 \uD3EC\uD568\uD558\uBA70, \uC2E4\uB825 \uC131\uC7A5\uC774\uB098 \uD559\uC2B5 \uD6A8\uACFC\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694.";
+    }
+    var memberDate = (value) => {
+      const time3 = typeof value === "string" ? Date.parse(value) : NaN;
+      if (!Number.isFinite(time3)) throw new TypeError("Vellum: invalid member evidence date");
+      const [year, month, day] = new Date(time3 + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
+      return `${year}\uB144 ${month}\uC6D4 ${day}\uC77C`;
+    };
+    function memberUnderstandingLine({ kind, label, count = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
+      if (typeof label !== "string" || !["observed", "agreed", "contextual", "disagreed", "declared", "empty", "disabled"].includes(state)) throw new TypeError("Vellum: invalid member understanding");
+      if (state === "disabled") return "\uC774 \uC790\uB8CC\uC758 \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uAD00\uCC30\uACFC \uADF8\uC5D0 \uB300\uD55C \uD655\uC778\uC744 \uC694\uC57D\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC544\uC694.";
+      if (state === "empty") return "\uC544\uC9C1 \uC5EC\uB7EC \uB0A0\uC758 \uAE30\uB85D\uC774 \uCDA9\uBD84\uD558\uC9C0 \uC54A\uC544\uC694. \uC9C0\uAE08 \uC120\uD638\uD558\uB294 \uBC29\uC2DD\uC744 \uC9C1\uC811 \uACE0\uB97C \uC218 \uC788\uC5B4\uC694.";
+      if (state === "declared") {
+        if (kind === "learning-topic") {
+          if (selection === "interested") return `${label}\uC5D0 \uAD00\uC2EC\uC774 \uC788\uB2E4\uACE0 \uC9C1\uC811 \uC54C\uB824 \uC92C\uC5B4\uC694. \uB2E4\uC74C \uC124\uBA85\uC5D0\uC11C\uB3C4 \uC774 \uC120\uD0DD\uC744 \uBA3C\uC800 \uCC38\uACE0\uD574\uC694.`;
+          if (selection === "practice-only") return `${label}${particle(label, "\uC740", "\uB294")} \uC5F0\uC2B5\uC5D0\uC11C \uB2E4\uB8EC \uB0B4\uC6A9\uC77C \uBFD0\uC774\uB77C\uACE0 \uC9C1\uC811 \uC54C\uB824 \uC92C\uC5B4\uC694.`;
+          if (selection === "not-now") return `${label}${particle(label, "\uC740", "\uB294")} \uC9C0\uAE08 \uAD00\uC2EC \uC788\uB294 \uB0B4\uC6A9\uC774 \uC544\uB2C8\uB77C\uACE0 \uC9C1\uC811 \uC54C\uB824 \uC92C\uC5B4\uC694.`;
+          throw new TypeError("Vellum: invalid member topic selection");
+        }
+        return `\uC9C1\uC811 \uACE0\uB978 \uB0B4\uC6A9: ${label}. \uB2E4\uC74C \uC124\uBA85\uC5D0\uC11C\uB3C4 \uC774 \uC120\uD0DD\uC744 \uBA3C\uC800 \uCC38\uACE0\uD574\uC694.`;
+      }
+      if (!Number.isSafeInteger(count) || !Number.isSafeInteger(activeDays)) throw new TypeError("Vellum: invalid member observation count");
+      const period = periodEnd ? `${memberDate(periodEnd)} \uAE30\uC900 \uCD5C\uADFC 30\uC77C` : "\uCD5C\uADFC 30\uC77C";
+      const fact = kind === "usage-repeat" ? `${period}\uC758 \uC5F0\uACB0\uB41C \uAE30\uB85D\uC5D0\uC11C ${label}${particle(label, "\uC744", "\uB97C")} ${activeDays}\uC77C\uC5D0 \uAC78\uCCD0 ${count}\uBC88 \uC5F4\uC5C8\uC5B4\uC694.` : kind === "learning-topic" ? `${period}\uC758 \uD559\uC2B5 \uAE30\uB85D\uC5D0\uC11C ${label}${particle(label, "\uC744", "\uB97C")} \uB2E4\uB8EC \uC751\uB2F5\uC774 ${activeDays}\uC77C\uC5D0 \uAC78\uCCD0 ${count}\uAC74 \uC788\uC5B4\uC694.` : `${period}\uC758 \uD559\uC2B5 \uAE30\uB85D\uC5D0\uC11C ${label} \uBC29\uC2DD\uC758 \uC751\uB2F5\uC774 ${activeDays}\uC77C\uC5D0 \uAC78\uCCD0 ${count}\uAC74 \uC788\uC5B4\uC694.`;
+      if (state === "agreed") return `${fact} ${kind === "learning-topic" ? "\uAD00\uC2EC \uC788\uB294 \uB0B4\uC6A9\uC774\uB77C\uACE0 \uC9C1\uC811 \uD655\uC778\uD588\uC5B4\uC694." : "\uC790\uC2E0\uC5D0\uAC8C \uB9DE\uB294 \uC774\uC6A9 \uBC29\uC2DD\uC774\uB77C\uACE0 \uC9C1\uC811 \uD655\uC778\uD588\uC5B4\uC694."}`;
+      if (state === "contextual") return `${fact} \uB2E4\uB9CC \uC0C1\uD669\uC5D0 \uB530\uB77C \uB2EC\uB77C\uC9C0\uB294 \uB0B4\uC6A9\uC774\uB77C\uACE0 \uC9C1\uC811 \uC54C\uB824 \uC92C\uC5B4\uC694.`;
+      if (state === "disagreed") return `${fact} \uC774 \uAE30\uB85D\uC744 \uC790\uC2E0\uC758 \uAD00\uC2EC\uC774\uB098 \uC120\uD638\uB85C \uD574\uC11D\uD558\uC9C0 \uC54A\uAE30\uB85C \uD588\uC5B4\uC694.`;
+      return `${fact} ${kind === "learning-topic" ? "\uB2E4\uB918\uB2E4\uB294 \uC0AC\uC2E4\uB9CC\uC73C\uB85C \uAD00\uC2EC\uC774\uB77C\uACE0 \uC815\uD558\uC9C0 \uC54A\uC544\uC694." : "\uAE30\uB85D\uB41C \uBC29\uC2DD\uC774\uBA70 \uC120\uD638\uB098 \uD6A8\uACFC\uB97C \uB73B\uD558\uC9C0\uB294 \uC54A\uC544\uC694."}`;
+    }
+    function memberUnderstandingSummary({ hasDeclaration, hasFeedback, practice = null, learning, usage, learningAt = null, usageAt = null }) {
+      if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning) || !["ready", "disabled", "unavailable"].includes(usage)) throw new TypeError("Vellum: invalid member summary");
+      let observation = "";
+      if (learning === "ready" && practice) {
+        const { answered, independent, assisted, activeDays, to } = practice;
+        if (![answered, independent, assisted, activeDays].every((n) => Number.isSafeInteger(n) && n >= 0) || independent + assisted > answered || activeDays > Math.min(answered, 31)) throw new TypeError("Vellum: invalid member practice summary");
+        const period = `${memberDate(to)} \uAE30\uC900 \uCD5C\uADFC 30\uC77C`;
+        observation = answered ? `\uD559\uC2B5 \uAE30\uB85D\uC740 ${period} \uC911 ${activeDays}\uC77C, \uC751\uB2F5 ${answered}\uAC74\uC774\uC5D0\uC694. \uADF8\uC911 \uB3C4\uC6C0 \uC5C6\uC774 \uB2F5\uD55C \uC751\uB2F5\uC740 ${independent}\uAC74, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uC751\uB2F5\uC740 ${assisted}\uAC74\uC774\uC5D0\uC694. ${activeDays === 1 ? "\uD558\uB8E8\uC758 \uAE30\uB85D\uB9CC\uC73C\uB85C \uBC18\uBCF5\uB418\uB294 \uACBD\uD5A5\uC774\uB098 \uC120\uD638\uB97C \uC815\uD558\uC9C0 \uC54A\uC544\uC694." : "\uC5F0\uC2B5\uC5D0\uC11C \uC0AC\uC6A9\uD55C \uBC29\uC2DD\uACFC \uBCF8\uC778\uC774 \uC6D0\uD558\uB294 \uBC29\uC2DD\uC740 \uB2E4\uB97C \uC218 \uC788\uC5B4\uC694."}` : `${period}\uC5D0\uB294 \uD559\uC2B5 \uC751\uB2F5 \uAE30\uB85D\uC774 \uC5C6\uC5B4\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uB294 \uC0AC\uC2E4\uC744 \uAD00\uC2EC\uC774\uB098 \uC2E4\uB825\uC774 \uC5C6\uB2E4\uB294 \uB73B\uC73C\uB85C \uBCF4\uC9C0 \uC54A\uC544\uC694.`;
+      }
+      const scope = [];
+      if (learning === "disabled") scope.push("\uD559\uC2B5 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (learning === "unavailable") scope.push("\uD559\uC2B5 \uAE30\uB85D\uC740 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC5F0\uACB0\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (!practice) scope.push(learningAt ? `\uD559\uC2B5 \uC790\uB8CC\uB294 ${memberDate(learningAt)} \uAE30\uC900\uC774\uBA70, \uAE30\uAC04\uBCC4 \uC751\uB2F5 \uC218\uB97C \uD568\uAED8 \uD655\uC778\uD560 \uC218 \uC5C6\uC5B4 \uC694\uC57D\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.` : "\uAE30\uAC04\uBCC4 \uD559\uC2B5 \uC751\uB2F5 \uC218\uB97C \uD655\uC778\uD560 \uC218 \uC5C6\uC5B4 \uC694\uC57D\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (hasDeclaration) scope.push(`\uD559\uC2B5 \uAE30\uB85D\uC740 ${memberDate(practice.to)} \uAE30\uC900 \uCD5C\uADFC 30\uC77C\uC758 \uC790\uB8CC\uC608\uC694. \uC9C1\uC811 \uC54C\uB824\uC900 \uC120\uD638\uC640 \uC5F0\uC2B5\uC5D0\uC11C \uAD00\uCC30\uD55C \uC0AC\uC2E4\uC744 \uAD6C\uBD84\uD574\uC694.`);
+      if (usage === "disabled") scope.push("\uC571 \uC774\uC6A9 \uAE30\uB85D \uC5F0\uACB0\uC774 \uAEBC\uC838 \uC788\uC5B4 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (usage === "unavailable") scope.push("\uC571 \uC774\uC6A9 \uAE30\uB85D\uC740 \uC774\uBC88 \uC124\uBA85\uC5D0 \uC5F0\uACB0\uB418\uC9C0 \uC54A\uC558\uC5B4\uC694.");
+      else if (usageAt) scope.push(`\uC571 \uC774\uC6A9 \uAE30\uB85D\uC740 ${memberDate(usageAt)} \uAE30\uC900\uC73C\uB85C \uD655\uC778\uD588\uC5B4\uC694. \uC571\uC744 \uC5F0 \uC0AC\uC2E4\uB9CC\uC73C\uB85C \uAD6C\uCCB4\uC801\uC778 \uAD00\uC2EC\uC744 \uC815\uD558\uC9C0 \uC54A\uC544\uC694.`);
+      return {
+        headline: hasDeclaration ? "\uB0B4\uAC00 \uD655\uC778\uD55C \uC120\uD638\uC640 \uC9C0\uAE08\uC758 \uAE30\uB85D" : "\uC544\uC9C1 \uB098\uC758 \uC120\uD638\uB97C \uC54C\uC544\uAC00\uB294 \uC911\uC774\uC5D0\uC694",
+        opening: hasDeclaration ? "" : hasFeedback ? "\uAE30\uB85D\uC5D0 \uB300\uD55C \uBCF8\uC778\uC758 \uD655\uC778\uC744 \uBA3C\uC800 \uBC18\uC601\uD588\uC5B4\uC694. \uC544\uC9C1 \uD655\uC778\uD558\uC9C0 \uC54A\uC740 \uAD00\uC2EC\uC774\uB098 \uD3B8\uD55C \uBC29\uC2DD\uC740 \uCD94\uCE21\uD558\uC9C0 \uC54A\uC544\uC694." : "\uC544\uC9C1 \uAD00\uC2EC\uC0AC\uC640 \uD3B8\uD55C \uBC29\uC2DD\uC744 \uC815\uB9AC\uD560 \uB9CC\uD07C \uC9C1\uC811 \uD655\uC778\uD55C \uB0B4\uC6A9\uC774 \uC5C6\uC5B4\uC694. \uC6D0\uD558\uB294 \uBC29\uC2DD\uC744 \uC9C1\uC811 \uC54C\uB824 \uC8FC\uBA74 \uB2E4\uC74C \uC124\uBA85\uC5D0 \uBA3C\uC800 \uBC18\uC601\uD574\uC694.",
+        observation,
+        scope: scope.join(" ")
+      };
+    }
+    function memberUnderstandingNote({ line, note }) {
+      if (typeof line !== "string" || typeof note !== "string" || [...note].length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(note)) throw new TypeError("Vellum: invalid member note");
+      return note.trim() ? `${line} \uC9C1\uC811 \uB0A8\uAE34 \uC124\uBA85: \u201C${note}\u201D` : line;
+    }
+    function memberUnderstandingActivityReason({ kind, labels }) {
+      if (!["topic", "learning", "app"].includes(kind) || !Array.isArray(labels) || !labels.length || labels.some((label) => typeof label !== "string")) throw new TypeError("Vellum: invalid member activity link");
+      const named = labels.join(" \xB7 ");
+      if (kind === "learning") return `\uAD00\uC2EC \uC788\uB2E4\uACE0 \uC9C1\uC811 \uD655\uC778\uD55C '${named}'\uC5D0\uC11C \uC774\uC5B4\uC11C \uD559\uC2B5\uC744 \uACE8\uB77C \uBCFC \uC218 \uC788\uC5B4\uC694.`;
+      if (kind === "app") return `\uC774\uC5B4\uC11C \uC774\uC6A9\uD560 \uC571\uC73C\uB85C ${named}${particle(named, "\uC744", "\uB97C")} \uC9C1\uC811 \uACE8\uB790\uC5B4\uC694.`;
+      return `\uC9C1\uC811 \uACE0\uB978 '${named}' \uAD00\uC2EC\uACFC \uC5F0\uACB0\uB418\uB294 \uC571\uC774\uC5D0\uC694.`;
+    }
+    module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason, memberActivityReason, periodComparisonReason, memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason };
   }
 });
 
