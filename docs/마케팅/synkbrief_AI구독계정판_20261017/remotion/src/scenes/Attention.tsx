@@ -6,16 +6,17 @@ import { ATTENTION } from '../data';
 import { clamp, EASE_IN_OUT, ramp } from '../lib/anim';
 import { Board, Caption, Head, Mark, Paper, Screen, Title } from '../parts';
 import { C, F, L } from '../theme';
-
 import { ATT } from '../timeline';
 
 export { ATT };
 
-const BW = 520;
+// 10-17 유호님 「이 단락 크기를 조금 키워보는건」: 판 css 폭을 520 → 380으로 줄여 2배 남짓으로 키운다(칩 글자 약 29px).
+const BW = 380;
 const SCALE = (L.W - L.X - L.R - 52) / BW;
 
-// 둘째 칩(주간 99%)의 화면 위 자리 — 렌더 정지컷으로 맞춘 값
-const CHIP = { x: L.X + 26 + 2 * SCALE, y: 650 + 26 + (22 + 30 + 22 + 6 + 44 + 8) * SCALE, w: 240 * SCALE, h: 44 * SCALE };
+const TOP = 640;
+// 둘째 칩(주간 99%)의 화면 위 자리 — 렌더 정지컷(10-17)에서 잰 값: 판 안 css 134에서 시작, 폭 222
+const CHIP = { x: L.X + 26 + 2 * SCALE, y: TOP + 26 + 134 * SCALE, w: 222 * SCALE, h: 44 * SCALE };
 
 export const Attention: React.FC = () => {
   const f = useCurrentFrame();
@@ -31,7 +32,8 @@ export const Attention: React.FC = () => {
       <Title size={64}>
         급한 것만 <Mark p={ramp(f, 6, 12)}>맨 위에</Mark>
       </Title>
-      <Screen top={650} height={360}>
+      <Screen top={TOP} height={440}>
+        <div style={{ opacity: 1 - 0.88 * big }}>
         <Board width={BW} scale={SCALE}>
           <section className="ms-section" style={{ borderTop: 0, padding: '4px 2px 0' }}>
             <div className="ms-section-heading">
@@ -59,14 +61,15 @@ export const Attention: React.FC = () => {
             </div>
           </section>
         </Board>
+        </div>
       </Screen>
-      {/* 칩에서 튀어나온 큰 숫자 */}
+      {/* 칩에서 튀어나온 큰 숫자: 어두워진 판 위 가운데로 */}
       {big > 0.001 ? (
         <div
           style={{
             position: 'absolute',
-            left: interpolate(big, [0, 1], [CHIP.x, L.X]),
-            top: interpolate(big, [0, 1], [CHIP.y - 40, 1034]),
+            left: interpolate(big, [0, 1], [CHIP.x, L.X + 48]),
+            top: interpolate(big, [0, 1], [CHIP.y, TOP + 92]),
             transformOrigin: '0 0',
             scale: String(interpolate(big, [0, 1], [0.18, 1])),
             opacity: interpolate(big, [0, 0.25], [0, 1], clamp),
@@ -75,14 +78,14 @@ export const Attention: React.FC = () => {
           <div style={{ font: `900 220px/0.9 ${F.ko}`, letterSpacing: '-.06em', color: C.crayon, fontVariantNumeric: 'tabular-nums' }}>
             {Math.round(99 * fill)}%
           </div>
-          <div style={{ marginTop: 18, width: 836, height: 26, borderRadius: 13, background: '#eceff4', overflow: 'hidden' }}>
+          <div style={{ marginTop: 18, width: 740, height: 26, borderRadius: 13, background: 'rgba(255,255,255,.16)', overflow: 'hidden' }}>
             <div style={{ width: `${99 * fill}%`, height: '100%', borderRadius: 13, background: C.crayon }} />
           </div>
-          <div style={{ marginTop: 18, font: `500 30px/1 ${F.mono}`, color: C.muted }}>founder · Claude 주간 한도</div>
+          <div style={{ marginTop: 18, font: `500 30px/1 ${F.mono}`, color: 'rgba(255,255,255,.72)' }}>founder · Claude 주간 한도</div>
         </div>
       ) : null}
       {/* 크레용 동그라미 */}
-      <svg width={CHIP.w + 80} height={150} viewBox="0 0 420 130" preserveAspectRatio="none" style={{ position: 'absolute', left: CHIP.x - 40, top: CHIP.y - 40, overflow: 'visible' }}>
+      <svg width={CHIP.w + 80} height={CHIP.h + 70} viewBox="0 0 420 130" preserveAspectRatio="none" style={{ position: 'absolute', left: CHIP.x - 40, top: CHIP.y - 35, overflow: 'visible' }}>
         <path
           d="M 30 60 C 30 15, 330 5, 380 50 C 420 95, 120 125, 40 95 C 10 85, 20 40, 60 30"
           fill="none"
