@@ -35,7 +35,10 @@ export function createDatingAccount({ fetcher = globalThis.fetch, storage = glob
     const current = epoch;
     refreshing = (async () => {
       if (!session?.refresh_token) throw new Error('SYNK ID로 다시 로그인해 주세요.');
-      const next = await tokenRequest(config, { grant_type: 'refresh_token', client_id: config.clients.platform.clientId, refresh_token: session.refresh_token }, async (...args) => {
+      // tokenRequest reports anything thrown by its fetcher as a network failure, so our own
+      // stale-session and AUTH_REQUIRED errors are kept here and rethrown unchanged.
+      let own = null;
+      const next = await tokenRequest(config, { grant_type: 'refresh_token', client_id: config.clients.platform.clientId, refresh_token: session.refresh_token }, async (...args) => { try {
         const response = await fetcher(...args); guard(current);
         let error; if (!response.ok && [400,401].includes(response.status)) { try { error = await response.clone().json(); } catch {} }
         if (response.status === 401 || response.status === 400 && ['invalid_grant','invalid_token'].includes(error?.error || error?.code)) {
@@ -43,7 +46,7 @@ export function createDatingAccount({ fetcher = globalThis.fetch, storage = glob
           throw Object.assign(new Error('로그인 연결이 만료됐어요. SYNK ID로 다시 로그인해 주세요.'), { status: 401, code: 'AUTH_REQUIRED' });
         }
         return response;
-      });
+      } catch (error) { if (!(error?.name === 'AbortError' || error instanceof TypeError)) own = error; throw error; } }).catch(error => { throw own || error; });
       guard(current); session = { ...next, refresh_token: next.refresh_token || session.refresh_token }; persist();
     })().finally(() => { refreshing = null; });
     return refreshing;
