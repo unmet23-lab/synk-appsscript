@@ -1,7 +1,7 @@
 export const VIEWS=['home','library','benefits','downloads','settings'];
 export function normalizeRoute(value={},appIds=[]){
   const view=VIEWS.includes(value?.view)?value.view:'home';
-  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','care','fortune','rehearsal','family-album'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
+  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','subscriptions','care','fortune','rehearsal','family-album'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
 }
 const routeIdentity=route=>JSON.stringify([route.view,route.appId,route.detail,route.benefitId]);
 export function createNavigation({storage,getAppIds=()=>[],read,apply,onChange=()=>{}}){

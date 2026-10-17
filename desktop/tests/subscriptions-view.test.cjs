@@ -45,6 +45,12 @@ test('the 7-day agenda groups resets and payments by day',async()=>{
   assert.deepEqual(days[0].items.map(i=>i.time),['결제','12:00']);
 });
 
+test('platform navigation keeps the board route instead of dropping it',async()=>{
+  const {normalizeRoute}=await import('../renderer/convenience-state.mjs');
+  assert.equal(normalizeRoute({view:'benefits',benefitId:'subscriptions'}).benefitId,'subscriptions');
+  assert.equal(normalizeRoute({view:'benefits',benefitId:'unknown'}).benefitId,null);
+});
+
 /* ---------- 화면 묶음 ---------- */
 function fakeContainer(){
   const handlers=new Map();
