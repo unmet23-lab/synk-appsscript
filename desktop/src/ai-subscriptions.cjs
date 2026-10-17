@@ -338,7 +338,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       const onData=data=>{
         current.output=(current.output+data).slice(-OUTPUT_LIMIT);
         const url=!current.url&&loginUrl(current.output);
-        if(url){current.url=url;current.stage='browser';current.needsCode=service==='claude';current.message=service==='claude'?'브라우저에서 승인하면 코드가 보여요. 그 코드를 아래 칸에 붙여 넣어 주세요.':'브라우저에서 로그인을 마치면 자동으로 넘어가요.';emit();}
+        if(url){current.url=url;current.stage='browser';current.needsCode=service==='claude';current.message=service==='claude'?'브라우저에서 승인하면 대부분 바로 연결돼요. 브라우저에 긴 코드가 보일 때만 아래 칸에 붙여 넣어 주세요.':'브라우저에서 로그인을 마치면 자동으로 넘어가요.';emit();}
         if(/port .*(in use|already)|address already in use|EADDRINUSE/i.test(current.output))finishLogin(current,'error','다른 로그인 창이 이미 열려 있어요. 그 창을 닫고 다시 시도해 주세요.');
       };
       current.child.stdout?.on('data',onData);current.child.stderr?.on('data',onData);
