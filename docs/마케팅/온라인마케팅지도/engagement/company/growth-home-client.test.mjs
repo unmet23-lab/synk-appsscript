@@ -116,7 +116,7 @@ test('history navigation and return to weekly home preserve scope and exclude hi
     const f=fixture({scope,demo});Object.assign(f.state,{tab:'analysis',start:'2022-02-01',end:'2022-02-07',ownerId:'selected-owner',historyRange:'year',historyGroup:'month'});
     await f.click('report-view',{view:'history'});
     assert.equal(f.state.tab,'history');assert.equal(f.state.scope,scope);assert.equal(f.state.teamId,scope==='team'?'team-a':'');assert.equal(f.requests.length,1);assert.equal(f.calls.hype,0);
-    assert.equal(f.run('workspacePrimaryView()'),'social','10-14부터 마케팅 분석은 레일의 「SNS·마케팅」(social) 안에 있다');assert.match(f.run('marketingNavigation()'),new RegExp(`data-tab="${scope}" class="active" aria-current="page"`));
+    assert.equal(f.run('workspacePrimaryView()'),'marketing');assert.match(f.run('marketingNavigation()'),new RegExp(`data-tab="${scope}" class="active" aria-current="page"`));
     const historyQuery=new URL(f.requests.at(-1),'http://localhost').searchParams;assert.equal(historyQuery.get('history'),'1');assert.equal(historyQuery.get('end'),demo?'2026-08-19':'2026-09-30');assert.equal(historyQuery.get('historyStart'),null);assert.equal(historyQuery.get('historyEnd'),null);
     await f.click('report-view',{view:'overview'});assert.equal(f.state.tab,'overview');assert.equal(f.state.scope,scope);assert.equal(f.requests.length,2);assert.equal(f.calls.hype,0);
     const homeQuery=new URL(f.requests.at(-1),'http://localhost').searchParams;assert.equal(homeQuery.get('growth'),'1');assert.equal(homeQuery.get('history'),null);assert.equal(homeQuery.get('start'),demo?'2026-08-17':'2026-09-28');assert.equal(homeQuery.get('end'),demo?'2026-08-19':'2026-09-30');

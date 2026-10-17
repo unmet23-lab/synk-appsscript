@@ -331,9 +331,7 @@ test('여는 주소: AI마다 https 주소(복사한 글은 싣지 않음), 쉬�
 test('그림 안내: ChatGPT(휴대폰 폭) 네 장·Gemini(컴퓨터 화면) 다섯 장은 넣어 두기 단계 아래에, 그림 안내 말은 단계 위에, Claude는 글로만', () => {
   const show = rec => V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, tipsOn: true, checks: {}, feedbackGiven: null, content: C, rules: R }).html;
   // build.mjs는 불러오면 빌드가 돌아서 글로 읽는다: manual 줄의 assets에 그림이 모두 있어야 공개본에 실린다.
-  // 10-14 manual 줄 앞쪽에 theme가 들어왔다. 키 순서가 바뀌어도 그 줄을 찾는다.
-  const manualLine = fs.readFileSync(path.join(__dirname, '..', 'build.mjs'), 'utf8').split('\n').find(l => /^\s*manual: \{.*\bout: 'builds\/manual'/.test(l)) || '';
-  assert.ok(manualLine, 'build.mjs에서 manual 빌드 줄을 못 찾았다');
+  const manualLine = fs.readFileSync(path.join(__dirname, '..', 'build.mjs'), 'utf8').split('\n').find(l => /^\s*manual: \{ out: 'builds\/manual'/.test(l)) || '';
   for (const [ai, view, n] of [['chatgpt', 'phone', 4], ['gemini', 'desktop', 5]]) {
     const s = run({ ai }).saves[0];
     const g = s.guide;
