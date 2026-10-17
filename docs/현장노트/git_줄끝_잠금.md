@@ -167,6 +167,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 병합 전에 `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 본다. 번호만 바꿀 때는 「로컬 판 + 번호 문자열 바꾸기」로 blob을 만든다. 로컬과 origin이 크게 갈라졌을 때 합친 기록과 도구는 `.tmp/origin-merge-20261009/scripts/`(`apply3.cjs`: 병합 트리 → 공용 작업본 3방향 → master CAS → 그 경로만 인덱스)·`.tmp/origin-sync-20261010/README.md`. 작업 중 origin이 계속 움직이면 머리가 바뀔 때마다 처음부터 다시 계산하고, origin에 올리는 세션에 잠깐 멈춰 달라고 한다.
 - 다시 확인: 병합 커밋과 origin/master의 `git diff --stat`이 로컬에만 있는 커밋들의 변경뿐이다.
 
+### 용량 정책에 걸리는 파일(ZIP)이 든 브랜치를 합치면, 나중에 지워도 push 전 검사가 막는다
+- 증상: GPT 문서 정리 백업 브랜치 `codex/document-cleanup-20261017`(`86334dd99`)에 ZIP 2개(16.7MB·3.0MB)가 들어 있었다. 그대로 합치면 `node tools/git-storage-check.cjs --base origin/master --head HEAD`가 실패한다. 병합 뒤 ZIP을 지워도 마찬가지다(10-17 클라우드).
+- 원인: 범위 검사는 범위 안 모든 커밋의 새 blob을 본다. 병합하면 원 커밋과 그 ZIP blob이 이력에 들어온다.
+- 고침: 원 커밋과 같은 바탕에 ZIP만 뺀 트리로 커밋을 다시 만들어 합친다. 별도 인덱스(`GIT_INDEX_FILE`)에 `git read-tree <원 커밋>` → `git rm --cached -q <ZIP>` → `git write-tree` → 원 커밋의 작성자·시각을 `GIT_AUTHOR_*`로 주고 `git commit-tree <트리> -p <원 커밋의 부모>` → `git merge`. 원 브랜치는 지우지 않는다(ZIP은 거기에 남는다).
+- 다시 확인: `git diff --name-status <원 커밋> <새 커밋>`이 ZIP 두 줄의 `D`뿐이고, 범위 검사가 PASS다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
