@@ -23,6 +23,7 @@ test('머리 정보: 키: 값 줄을 읽고, CRLF·BOM도 읽고, 머리가 없�
   assert.strictEqual(목록.머리읽기('---\n제목: 끝 표식 없음'), null);
   assert.deepStrictEqual(목록.대상나누기('WORLD 앱 · 싱크타운'), ['WORLD 앱', '싱크타운']);
   assert.deepStrictEqual(목록.대상나누기('홈페이지, LAB 게임'), ['홈페이지', 'LAB 게임']);
+  assert.deepStrictEqual(목록.대상나누기('SNS·영상 · 브랜드·디자인'), ['SNS·영상', '브랜드·디자인'], '이름 안의 ·는 나누지 않는다');
   assert.deepStrictEqual(목록.대상나누기(''), []);
 });
 

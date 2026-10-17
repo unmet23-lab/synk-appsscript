@@ -35,8 +35,9 @@ function 머리읽기(글) {
   return null;
 }
 
+/** 여러 대상은 앞뒤를 띄운 ` · `나 쉼표로 잇는다. 「SNS·영상」처럼 이름 안에 붙은 `·`는 나누지 않는다. */
 function 대상나누기(값) {
-  return String(값 || '').split(/\s*[·,]\s*/).map(s => s.trim()).filter(Boolean);
+  return String(값 || '').split(/\s+·\s+|\s*,\s*/).map(s => s.trim()).filter(Boolean);
 }
 
 function 카드들() {
