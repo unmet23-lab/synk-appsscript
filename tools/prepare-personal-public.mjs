@@ -5,6 +5,8 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { readConfig, isLoopback } from '../experiences/synk-account/src/core.mjs';
 import { signalPublicFiles, signalPublicHtml, cssUrlTargets, SIGNAL_SOURCE } from './lib/member-signal-public.mjs';
+import { MEMBER_ACTIVITY_LIMITS } from '../experiences/synk-account/src/member-activity-data.mjs';
+import { MEMBER_UNDERSTANDING_LIMITS } from '../experiences/synk-account/src/member-understanding-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -47,6 +49,16 @@ const TRAVEL_CONFIGURATION = Object.freeze({ client: 'path-travel', config: 'con
 function replaceOnce(text, old, replacement, name) {
   if (text.split(old).length !== 2) throw Error('Unexpected public source contract: ' + name);
   return text.replace(old, replacement);
+}
+
+// 회원 성향(활동·이해) 문서 검사기는 PC 앱과 계정 서버가 쓴다. 공개 제품 페이지는 그 문서를 읽거나 쓰지 않으므로
+// 문장 계약 전 판(약 870KB)을 싣지 않고, 같은 크기 한도로 그 문서를 거절하는 검사기로 바꾼다(2026-10-16 8ab56fb91 이후).
+function withoutMemberValidators(text) {
+  const unavailable = "() => { throw Object.assign(new TypeError('이 공개 페이지에서는 회원 성향 기록을 다루지 않아요.'), { code: 'PERSONAL_RESOURCE_UNAVAILABLE' }); }";
+  text = replaceOnce(text, "import { validateMemberActivity, MEMBER_ACTIVITY_LIMITS } from './member-activity-data.mjs';",
+    `const MEMBER_ACTIVITY_LIMITS = Object.freeze(${JSON.stringify(MEMBER_ACTIVITY_LIMITS)}), validateMemberActivity = ${unavailable};`, 'public member activity validator');
+  return replaceOnce(text, "import { validateMemberUnderstanding, MEMBER_UNDERSTANDING_LIMITS } from './member-understanding-data.mjs';",
+    `const MEMBER_UNDERSTANDING_LIMITS = Object.freeze(${JSON.stringify(MEMBER_UNDERSTANDING_LIMITS)}), validateMemberUnderstanding = ${unavailable};`, 'public member understanding validator');
 }
 
 async function destination(out, root) {
@@ -143,6 +155,7 @@ export async function preparePersonalPublic({ product, out, config, targetUrl, r
           text = "import SynkAsk from '../../atlas/ask.js';\nimport SynkAtlasDomain from '../../atlas/domain.js';\nglobalThis.SynkAsk = SynkAsk;\nglobalThis.SynkAtlasDomain = SynkAtlasDomain;\n" + text;
         if (product !== 'fortune' && file === 'experiences/synk-account/src/product-account.mjs')
           text = replaceOnce(text, "configUrl = '/api/account-config'", "configUrl = './config.json'", 'public account config URL');
+        if (product !== 'fortune' && file === 'experiences/synk-account/src/personal-data.mjs') text = withoutMemberValidators(text);
         return { contents: text, loader: 'js' };
       });
     } }],
