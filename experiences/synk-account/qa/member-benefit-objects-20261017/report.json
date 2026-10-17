@@ -1,0 +1,8715 @@
+{
+ "checkedOn": "2026-10-17T07:09:21.593Z",
+ "pageUrl": "http://127.0.0.1:4431/synk-account/platform.html",
+ "views": [
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 169,
+     "need": 366,
+     "needH": 426,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 24,
+     "need": 542,
+     "needH": 426,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 493,
+     "needH": 426,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 23,
+     "need": 340,
+     "needH": 426,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 311,
+     "needH": 426,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 40,
+     "need": 339,
+     "needH": 426,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 78,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 536,
+     "needH": 552,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "92px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 388,
+     "needH": 452,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 624,
+     "needH": 491,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 568,
+     "needH": 491,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 392,
+     "needH": 491,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 358,
+     "needH": 491,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 390,
+     "needH": 491,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 460,
+     "needH": 295,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 361,
+     "needH": 312,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 320,
+     "needH": 276,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 2560,
+   "height": 1440,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 169,
+     "need": 366,
+     "needH": 426,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 24,
+     "need": 542,
+     "needH": 426,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 493,
+     "needH": 426,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 23,
+     "need": 340,
+     "needH": 426,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 311,
+     "needH": 426,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 40,
+     "need": 339,
+     "needH": 426,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 87,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 562,
+     "needH": 579,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "92px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 169,
+     "need": 183,
+     "needH": 213,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 24,
+     "need": 271,
+     "needH": 213,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 247,
+     "needH": 213,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 23,
+     "need": 170,
+     "needH": 213,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 156,
+     "needH": 213,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 40,
+     "need": 170,
+     "needH": 213,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 78,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 268,
+     "needH": 276,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "92px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 194,
+     "needH": 226,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 312,
+     "needH": 246,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 284,
+     "needH": 246,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 196,
+     "needH": 246,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 179,
+     "needH": 246,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 195,
+     "needH": 246,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 230,
+     "needH": 148,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 181,
+     "needH": 156,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 160,
+     "needH": 138,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1920,
+   "height": 1080,
+   "scale": 1,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 169,
+     "need": 183,
+     "needH": 213,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 24,
+     "need": 271,
+     "needH": 213,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 247,
+     "needH": 213,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 23,
+     "need": 170,
+     "needH": 213,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 156,
+     "needH": 213,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 40,
+     "need": 170,
+     "needH": 213,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 87,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 281,
+     "needH": 290,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "92px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 101,
+     "need": 316,
+     "needH": 368,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 468,
+     "needH": 368,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": 145,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 426,
+     "needH": 368,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 8,
+     "need": 294,
+     "needH": 368,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 269,
+     "needH": 368,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 30,
+     "need": 292,
+     "needH": 368,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 59,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 521,
+     "needH": 537,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "86.4px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 342,
+     "needH": 398,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 556,
+     "needH": 437,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 506,
+     "needH": 437,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 349,
+     "needH": 437,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 319,
+     "needH": 437,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 347,
+     "needH": 437,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 454,
+     "needH": 291,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 361,
+     "needH": 312,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 320,
+     "needH": 276,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 101,
+     "need": 316,
+     "needH": 368,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 468,
+     "needH": 368,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": 145,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 426,
+     "needH": 368,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 8,
+     "need": 294,
+     "needH": 368,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 269,
+     "needH": 368,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 30,
+     "need": 292,
+     "needH": 368,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 68,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 547,
+     "needH": 564,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "86.4px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 23,
+     "need": 145,
+     "needH": 168,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 10,
+     "need": 214,
+     "needH": 168,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 195,
+     "needH": 168,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 7,
+     "need": 134,
+     "needH": 168,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 123,
+     "needH": 168,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 134,
+     "needH": 168,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 61,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 255,
+     "needH": 263,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "81.96px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "46.444px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 165,
+     "needH": 192,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 269,
+     "needH": 211,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "32.784px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 245,
+     "needH": 211,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "32.784px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 169,
+     "needH": 211,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "32.784px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 154,
+     "needH": 211,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "32.784px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 168,
+     "needH": 211,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "32.784px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 212,
+     "needH": 136,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 181,
+     "needH": 156,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 160,
+     "needH": 138,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1366,
+   "height": 768,
+   "scale": 1,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 23,
+     "need": 145,
+     "needH": 168,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 10,
+     "need": 214,
+     "needH": 168,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 195,
+     "needH": 168,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 7,
+     "need": 134,
+     "needH": 168,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 123,
+     "needH": 168,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 134,
+     "needH": 168,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 72,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 262,
+     "needH": 270,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "81.96px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 19,
+     "need": 129,
+     "needH": 150,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 8,
+     "need": 191,
+     "needH": 150,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 174,
+     "needH": 150,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 120,
+     "needH": 150,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 110,
+     "needH": 150,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 119,
+     "needH": 150,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 65,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 240,
+     "needH": 247,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "76.8px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "43.52px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 165,
+     "needH": 192,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 267,
+     "needH": 210,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "30.72px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 243,
+     "needH": 210,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "30.72px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 168,
+     "needH": 210,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "30.72px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 153,
+     "needH": 210,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "30.72px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 167,
+     "needH": 210,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 45,
+     "needH": 52,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 52,
+     "needH": 41,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 52,
+     "needH": 45,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 42,
+     "needH": 52,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 38,
+     "needH": 52,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "30.72px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 194,
+     "needH": 124,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 181,
+     "needH": 156,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 160,
+     "needH": 138,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1280,
+   "height": 720,
+   "scale": 1,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 19,
+     "need": 129,
+     "needH": 150,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 8,
+     "need": 191,
+     "needH": 150,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 174,
+     "needH": 150,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 120,
+     "needH": 150,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 110,
+     "needH": 150,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 119,
+     "needH": 150,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 75,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 240,
+     "needH": 248,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "76.8px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 186,
+     "needH": 217,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 276,
+     "needH": 217,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 251,
+     "needH": 217,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 173,
+     "needH": 217,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 158,
+     "needH": 217,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 172,
+     "needH": 217,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": null,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 422,
+     "needH": 436,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "61.44px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "34.816px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 330,
+     "needH": 384,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 412,
+     "needH": 324,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "22.528px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 375,
+     "needH": 324,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "22.528px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 259,
+     "needH": 324,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "22.528px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 237,
+     "needH": 324,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "22.528px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 257,
+     "needH": 324,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "22.528px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 306,
+     "needH": 196,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 306,
+     "needH": 265,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 306,
+     "needH": 265,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 1024,
+   "height": 800,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 186,
+     "needH": 217,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 276,
+     "needH": 217,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 251,
+     "needH": 217,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 173,
+     "needH": 217,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 158,
+     "needH": 217,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 172,
+     "needH": 217,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": null,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 422,
+     "needH": 436,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "61.44px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 173,
+     "need": 369,
+     "needH": 430,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 25,
+     "need": 547,
+     "needH": 430,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 6,
+     "need": 498,
+     "needH": 430,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 26,
+     "need": 344,
+     "needH": 430,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 314,
+     "needH": 430,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 41,
+     "need": 342,
+     "needH": 430,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": null,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 416,
+     "needH": 429,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "54px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "30.6px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 330,
+     "needH": 384,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 406,
+     "needH": 319,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 370,
+     "needH": 319,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 255,
+     "needH": 319,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 233,
+     "needH": 319,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 254,
+     "needH": 319,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 254,
+     "needH": 163,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 254,
+     "needH": 220,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 254,
+     "needH": 220,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 900,
+   "height": 800,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 173,
+     "need": 369,
+     "needH": 430,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 25,
+     "need": 547,
+     "needH": 430,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 6,
+     "need": 498,
+     "needH": 430,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 26,
+     "need": 344,
+     "needH": 430,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 7,
+     "need": 314,
+     "needH": 430,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 41,
+     "need": 342,
+     "needH": 430,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": null,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 416,
+     "needH": 429,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "54px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 20,
+     "need": 277,
+     "needH": 323,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 8,
+     "need": 410,
+     "needH": 323,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 373,
+     "needH": 323,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 7,
+     "need": 257,
+     "needH": 323,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 236,
+     "needH": 323,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 256,
+     "needH": 323,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 19,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 409,
+     "needH": 422,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "28px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 350,
+     "needH": 408,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 72,
+     "need": 369,
+     "needH": 290,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 61,
+     "need": 369,
+     "needH": 319,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 20,
+     "need": 311,
+     "needH": 390,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 41,
+     "need": 285,
+     "needH": 390,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 20,
+     "need": 310,
+     "needH": 390,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 199,
+     "needH": 127,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 199,
+     "needH": 172,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 199,
+     "needH": 172,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 768,
+   "height": 1024,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 20,
+     "need": 277,
+     "needH": 323,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 8,
+     "need": 410,
+     "needH": 323,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 373,
+     "needH": 323,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 7,
+     "need": 257,
+     "needH": 323,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 236,
+     "needH": 323,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 256,
+     "needH": 323,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 19,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 409,
+     "needH": 422,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 273,
+     "needH": 318,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 405,
+     "needH": 318,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 369,
+     "needH": 318,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 254,
+     "needH": 318,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 233,
+     "needH": 318,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 253,
+     "needH": 318,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 17,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 482,
+     "needH": 497,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "28px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": 16,
+     "word": "내 성향",
+     "gapChip": 13,
+     "need": 387,
+     "needH": 450,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": 25,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 596,
+     "needH": 468,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": 13,
+     "word": "플레저",
+     "gapChip": 7,
+     "need": 544,
+     "needH": 470,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 9,
+     "need": 374,
+     "needH": 469,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 8,
+     "need": 341,
+     "needH": 467,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 9,
+     "need": 372,
+     "needH": 469,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 452,
+     "needH": 289,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 452,
+     "needH": 391,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 448,
+     "needH": 387,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 273,
+     "needH": 318,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 405,
+     "needH": 318,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 369,
+     "needH": 318,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 254,
+     "needH": 318,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 233,
+     "needH": 318,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 253,
+     "needH": 318,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 17,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 482,
+     "needH": 497,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 131,
+     "needH": 152,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 194,
+     "needH": 152,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 176,
+     "needH": 152,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 122,
+     "needH": 152,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 111,
+     "needH": 152,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 121,
+     "needH": 152,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 33,
+     "word": "혜택",
+     "gapChip": 7,
+     "need": 316,
+     "needH": 326,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "28px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": 17,
+     "word": "내 성향",
+     "gapChip": 62,
+     "need": 258,
+     "needH": 300,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": 24,
+     "word": "구독",
+     "gapChip": 45,
+     "need": 323,
+     "needH": 254,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": 14,
+     "word": "플레저",
+     "gapChip": 36,
+     "need": 323,
+     "needH": 279,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 20,
+     "need": 250,
+     "needH": 313,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": 17,
+     "word": "리허설",
+     "gapChip": 38,
+     "need": 228,
+     "needH": 312,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 19,
+     "need": 248,
+     "needH": 313,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 242,
+     "needH": 155,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 242,
+     "needH": 210,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 242,
+     "needH": 209,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night",
+   "width": 320,
+   "height": 640,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 131,
+     "needH": 152,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 194,
+     "needH": 152,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 5,
+     "need": 176,
+     "needH": 152,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 122,
+     "needH": 152,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 111,
+     "needH": 152,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 121,
+     "needH": 152,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 33,
+     "word": "혜택",
+     "gapChip": 7,
+     "need": 316,
+     "needH": 326,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 101,
+     "need": 316,
+     "needH": 368,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 468,
+     "needH": 368,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": 145,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 426,
+     "needH": 368,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 8,
+     "need": 294,
+     "needH": 368,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 269,
+     "needH": 368,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 30,
+     "need": 292,
+     "needH": 368,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 59,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 521,
+     "needH": 537,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "86.4px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "내 성향",
+     "gapChip": null,
+     "need": 342,
+     "needH": 398,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": null,
+     "need": 556,
+     "needH": 437,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 506,
+     "needH": 437,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 349,
+     "needH": 437,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 319,
+     "needH": 437,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 347,
+     "needH": 437,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 90,
+     "needH": 104,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 104,
+     "needH": 82,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 104,
+     "needH": 90,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 83,
+     "needH": 104,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 76,
+     "needH": 104,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "26px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "34px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 454,
+     "needH": 291,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 361,
+     "needH": 312,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 320,
+     "needH": 276,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "day",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 101,
+     "need": 316,
+     "needH": 368,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 468,
+     "needH": 368,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": 145,
+     "word": "플레저",
+     "gapChip": 3,
+     "need": 426,
+     "needH": 368,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 8,
+     "need": 294,
+     "needH": 368,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 269,
+     "needH": 368,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 30,
+     "need": 292,
+     "needH": 368,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 68,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 547,
+     "needH": 564,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "86.4px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 273,
+     "needH": 318,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 405,
+     "needH": 318,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 369,
+     "needH": 318,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 254,
+     "needH": 318,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 233,
+     "needH": 318,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 253,
+     "needH": 318,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 17,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 482,
+     "needH": 497,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-promise h2",
+     "680",
+     "28px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/insight",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "insight",
+     "id": "",
+     "src": "benefit-insight.webp",
+     "gapWord": 16,
+     "word": "내 성향",
+     "gapChip": 13,
+     "need": 387,
+     "needH": 450,
+     "natural": 429
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/subscriptions",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-subscriptions",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": 25,
+     "word": "구독",
+     "gapChip": 12,
+     "need": 596,
+     "needH": 468,
+     "natural": 636
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/care",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": 13,
+     "word": "플레저",
+     "gapChip": 7,
+     "need": 544,
+     "needH": 470,
+     "natural": 579
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/fortune",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 9,
+     "need": 374,
+     "needH": 469,
+     "natural": 399
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/rehearsal",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 8,
+     "need": 341,
+     "needH": 467,
+     "natural": 365
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-album.webp",
+     "need": 124,
+     "needH": 156,
+     "natural": 397,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#benefits/family-album",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "detail",
+     "id": "benefit-detail-hero benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 9,
+     "need": 372,
+     "needH": 469,
+     "natural": 397
+    },
+    {
+     "kind": "related",
+     "src": "benefit-insight.webp",
+     "need": 134,
+     "needH": 156,
+     "natural": 429,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-subscriptions.webp",
+     "need": 156,
+     "needH": 123,
+     "natural": 636,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-care.webp",
+     "need": 156,
+     "needH": 135,
+     "natural": 579,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-fortune.webp",
+     "need": 125,
+     "needH": 156,
+     "natural": 399,
+     "gapWord": null,
+     "gapChip": null
+    },
+    {
+     "kind": "related",
+     "src": "benefit-rehearsal.webp",
+     "need": 114,
+     "needH": 156,
+     "natural": 365,
+     "gapWord": null,
+     "gapChip": null
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-detail-hero h1",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-how h2",
+     "680",
+     "26px"
+    ]
+   ]
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "sticker-book.webp",
+     "gapWord": null,
+     "word": "월드",
+     "gapChip": null,
+     "need": 452,
+     "needH": 289,
+     "natural": 200
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "path-vr-felt.webp",
+     "gapWord": null,
+     "word": "패스",
+     "gapChip": null,
+     "need": 452,
+     "needH": 391,
+     "natural": 800
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 448,
+     "needH": 387,
+     "natural": 579
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "day",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#discover",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-insight.webp",
+     "gapWord": null,
+     "word": "성향",
+     "gapChip": 6,
+     "need": 273,
+     "needH": 318,
+     "natural": 429
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-subscriptions.webp",
+     "gapWord": null,
+     "word": "구독",
+     "gapChip": 6,
+     "need": 405,
+     "needH": 318,
+     "natural": 636
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": 4,
+     "need": 369,
+     "needH": 318,
+     "natural": 579
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": 6,
+     "need": 254,
+     "needH": 318,
+     "natural": 399
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": 5,
+     "need": 233,
+     "needH": 318,
+     "natural": 365
+    },
+    {
+     "kind": "card",
+     "id": "benefit-art",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": 6,
+     "need": 253,
+     "needH": 318,
+     "natural": 397
+    },
+    {
+     "kind": "hero",
+     "id": "benefit-hero-art",
+     "src": "benefit-gift.webp",
+     "gapWord": 17,
+     "word": "혜택",
+     "gapChip": null,
+     "need": 482,
+     "needH": 497,
+     "natural": 582
+    }
+   ],
+   "small": [],
+   "weights": [
+    [
+     ".benefit-hero h1",
+     "680",
+     "48px"
+    ],
+    [
+     ".benefit-copy h2",
+     "650",
+     "20px"
+    ],
+    [
+     ".benefit-kicker",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-copy>p",
+     "550",
+     "13px"
+    ],
+    [
+     ".benefit-card .benefit-status",
+     "550",
+     "13px"
+    ]
+   ]
+  },
+  {
+   "theme": "night 담음",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 320,
+     "needH": 276,
+     "natural": 579
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 221,
+     "needH": 276,
+     "natural": 399
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 202,
+     "needH": 276,
+     "natural": 365
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 220,
+     "needH": 276,
+     "natural": 397
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 320,
+     "needH": 276,
+     "natural": 579
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 221,
+     "needH": 276,
+     "natural": 399
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 202,
+     "needH": 276,
+     "natural": 365
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 220,
+     "needH": 276,
+     "natural": 397
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night 담음",
+   "width": 1440,
+   "height": 900,
+   "scale": 2,
+   "view": "#library",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "app",
+     "id": "app-card benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 348,
+     "needH": 300,
+     "natural": 579
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 240,
+     "needH": 300,
+     "natural": 399
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 219,
+     "needH": 300,
+     "natural": 365
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 239,
+     "needH": 300,
+     "natural": 397
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night 담음",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#home",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 448,
+     "needH": 387,
+     "natural": 579
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 309,
+     "needH": 387,
+     "natural": 399
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 283,
+     "needH": 387,
+     "natural": 365
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 307,
+     "needH": 387,
+     "natural": 397
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-care.webp",
+     "gapWord": null,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 448,
+     "needH": 387,
+     "natural": 579
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 309,
+     "needH": 387,
+     "natural": 399
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 283,
+     "needH": 387,
+     "natural": 365
+    },
+    {
+     "kind": "quick",
+     "id": "quick-card",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 307,
+     "needH": 387,
+     "natural": 397
+    }
+   ],
+   "small": [],
+   "weights": []
+  },
+  {
+   "theme": "night 담음",
+   "width": 390,
+   "height": 844,
+   "scale": 3,
+   "view": "#library",
+   "overflow": false,
+   "posters": [
+    {
+     "kind": "app",
+     "id": "app-card benefit-care",
+     "src": "benefit-care.webp",
+     "gapWord": 23,
+     "word": "플레저",
+     "gapChip": null,
+     "need": 417,
+     "needH": 360,
+     "natural": 579
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-fortune",
+     "src": "benefit-fortune.webp",
+     "gapWord": null,
+     "word": "운세",
+     "gapChip": null,
+     "need": 288,
+     "needH": 360,
+     "natural": 399
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-rehearsal",
+     "src": "benefit-rehearsal.webp",
+     "gapWord": null,
+     "word": "리허설",
+     "gapChip": null,
+     "need": 263,
+     "needH": 360,
+     "natural": 365
+    },
+    {
+     "kind": "app",
+     "id": "app-card benefit-family-album",
+     "src": "benefit-album.webp",
+     "gapWord": null,
+     "word": "앨범",
+     "gapChip": null,
+     "need": 286,
+     "needH": 360,
+     "natural": 397
+    }
+   ],
+   "small": [],
+   "weights": []
+  }
+ ],
+ "need": {
+  "benefit-insight.webp": 388,
+  "benefit-insight.webp (높이)": 452,
+  "benefit-subscriptions.webp": 624,
+  "benefit-subscriptions.webp (높이)": 491,
+  "benefit-care.webp": 568,
+  "benefit-care.webp (높이)": 491,
+  "benefit-fortune.webp": 392,
+  "benefit-fortune.webp (높이)": 491,
+  "benefit-rehearsal.webp": 358,
+  "benefit-rehearsal.webp (높이)": 491,
+  "benefit-album.webp": 390,
+  "benefit-album.webp (높이)": 491,
+  "benefit-gift.webp": 562,
+  "benefit-gift.webp (높이)": 579,
+  "sticker-book.webp": 460,
+  "sticker-book.webp (높이)": 295,
+  "path-vr-felt.webp": 452,
+  "path-vr-felt.webp (높이)": 391
+ },
+ "problems": []
+}

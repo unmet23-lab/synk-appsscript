@@ -255,7 +255,7 @@ export function renderMemberInsight(state = {}, { native = false, poster = null 
   const report = state.status === 'ready' && state.report && typeof state.report === 'object' ? state.report : null;
   const status = report ? 'ready' : ['loading', 'signed-out', 'unconfigured', 'error'].includes(state.status) ? state.status : 'error';
   const back = native ? `<button type="button" class="mi-back" data-view="benefits">${arrow}회원 혜택 모두 보기</button>` : `<a class="mi-back" href="#benefits">${arrow}회원 혜택 모두 보기</a>`;
-  // 포스터(물건·번호 라벨·상태 스티커)는 PC 앱만 넘긴다 — 다른 혜택 소개 머리와 같은 틀. 웹 플랫폼은 그림 없이 원래 머리.
+  // 포스터(물건·번호 라벨·상태 스티커)를 넘기면 다른 혜택 소개 머리와 같은 틀 — PC 앱(launcher)과 웹 플랫폼(member-benefits.mjs) 모두 넘긴다. 없으면 그림 없는 원래 머리.
   const art = poster && typeof poster.art === 'string' ? poster.art : '';
   const top = art
     ? `<img class="mi-object" src="${escape(art)}" alt=""><div class="mi-hero-top"><span class="mi-eyebrow">${escape(text(poster.label, 'SYNK FOR YOU / ATLAS'))}</span>${poster.badge ? `<span class="mi-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi-led" aria-hidden="true"></span>${escape(poster.badge)}</span>` : ''}</div>`

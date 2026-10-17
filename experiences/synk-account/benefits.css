@@ -1,103 +1,133 @@
-/* SYNK FOR YOU (웹) — 싱ㅋ 시그널 2 (2026-10-10, 1차 2026-10-06)
-   서비스마다 사업 색 포스터 한 장: 플레저 청금석, 운세 팝, 리허설 코랄, 가족 앨범 버터.
-   펠트 물건은 제 색 그대로 세우고(누끼), 흰 바탕 사진(리허설)은 인화지처럼 붙인다. */
+/* SYNK FOR YOU (웹) — 싱ㅋ 시그널 2 · 혜택 포스터 다시 굽기(2026-10-17, PC 앱 launcher.css 「회원 혜택」 구역과 같은 규칙)
+   사업 색 면 + 그 면 색에서 구운 펠트 물건 하나(제 색, −3°, 모두 같은 바닥선에 선다) + 큰 한글.
+   물건 상자는 큰 글자 머리 위에서 끝난다. 카드 상태는 어두운 알약 + LED, 기울인 흰 스티커는 소개 머리에 하나.
+   물건은 제 사업 색 면에서만 쓴다(어두운 부분의 알파가 비어 다른 바탕에서는 비친다). 원본 docs/디자인/플랫폼_시그널/혜택물건,
+   웹용 판 docs/디자인/플랫폼_시그널/웹그림. 글자는 2판: 큰 제목 680 · 카드 제목 650 · 강조 600 · 라벨 550 · 본문 450, 한글 13px 이상. */
 
+/* 웹에는 구독 계정판 화면이 없어 사업 색만 여기서 정한다(성향은 member-insight.css). */
+.benefit-subscriptions{--face:#7DB45A;--on-face:#13240A;--glow:#7DB45A;--word:'구독';--len:2}
+
+/* 물건·번호·상태 공통 */
+img.benefit-object{position:absolute;z-index:0;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);transform-origin:50% 100%;filter:drop-shadow(0 16px 20px rgba(0,0,0,.2)) drop-shadow(0 3px 5px rgba(0,0,0,.12));transition:transform .35s var(--ease)}
+.benefit-index{position:absolute;z-index:2;left:20px;top:19px;font-family:var(--mono);font-size:.71875rem;letter-spacing:.08em;opacity:.72;white-space:nowrap}
+.benefit-status{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:.8125rem;font-weight:600;white-space:nowrap}
+.benefit-status .led{display:inline-block;flex:none;width:6px;height:6px;border-radius:50%;background:#F5C445}
+.benefit-status.is-integrated .led{background:#7DB45A}
+.benefit-art .benefit-status{position:absolute;z-index:2;right:14px;top:13px;background:rgba(8,9,12,.62);color:#FAFAF9;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-weight:550}
+
+/* 첫머리: 고른 앱 색을 따르지 않고 플랫폼 기본 청금석(물건도 청금석 바탕에서 구웠다) */
 .benefit-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:stretch;padding:4px 0 8px}
 .benefit-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;padding:20px 4px}
-.benefit-hero-copy .sb-eyebrow span{margin-left:6px;color:var(--ink-2);font-family:var(--sans);letter-spacing:0;text-transform:none;font-weight:650}
-.benefit-hero h1{margin:18px 0 22px;font-size:clamp(3.25rem,7vw,7rem);font-weight:900;letter-spacing:-.06em;line-height:.88}
+.benefit-hero-copy .sb-eyebrow{font-size:.71875rem;letter-spacing:.08em}
+.benefit-hero-copy .sb-eyebrow span{margin-left:6px;color:var(--ink-2);font-family:var(--sans);font-size:.8125rem;letter-spacing:0;text-transform:none;font-weight:550}
+.benefit-hero h1{margin:18px 0 20px;font-size:clamp(3rem,6vw,5.75rem);font-weight:680;letter-spacing:-.05em;line-height:1.02}
 .benefit-hero h1 span{color:inherit}
-.benefit-hero-copy>p:not(.sb-eyebrow):not(.benefit-disclosure){font-size:1.0625rem;color:var(--ink-2);max-width:40ch}
+.benefit-hero-copy>p:not(.sb-eyebrow):not(.benefit-disclosure){font-size:1.0625rem;font-weight:450;line-height:1.6;color:var(--ink-2);max-width:40ch}
 .benefit-hero-copy .sb-btn{margin-top:26px}
-.benefit-text-link{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-size:.9375rem;font-weight:750;text-decoration:underline;text-decoration-color:var(--ink-4);text-underline-offset:6px}
-.benefit-disclosure{margin-top:16px;font-size:.78125rem!important;color:var(--ink-3)!important}
-/* 데스크톱과 같은 한 장: 청금석 한 면 + 펠트 메모 + 큰 「마음」(앱마다 색 하나 규칙). 나머지 두 그림은 꾸밈이라 숨긴다. */
-.benefit-hero-art{position:relative;min-height:400px;border-radius:var(--r-xl);overflow:hidden;isolation:isolate;background:var(--studio),#3D6BC9;color:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
-.benefit-hero-art::before{content:"마음" / "";position:absolute;z-index:3;left:20px;bottom:12px;font-size:clamp(4.5rem,9vw,9.5rem);font-weight:900;line-height:.82;letter-spacing:-.065em}
-.benefit-hero-art::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.28;mix-blend-mode:overlay;pointer-events:none}
-.benefit-art-stage{position:absolute;inset:0;z-index:2;display:block;padding:0}
-.benefit-art-stage img{position:absolute;inset:8% 7% 30% 34%;width:auto;height:auto;max-width:60%;max-height:62%;margin:auto;object-fit:contain;filter:var(--cut-shadow);transform:rotate(-3deg)}
-.benefit-art-stage .hero-rehearsal,.benefit-art-stage .hero-family{display:none}
-.benefit-hero-caption{position:absolute;z-index:3;right:18px;bottom:16px;padding:5px 10px;border-radius:999px;background:#FAFAF9;color:#08090C;font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em;transform:rotate(-2deg);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.benefit-text-link{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-size:.9375rem;font-weight:600;text-decoration:underline;text-decoration-color:var(--ink-4);text-underline-offset:6px}
+.benefit-disclosure{margin-top:16px;font-size:.8125rem!important;font-weight:450;line-height:1.6;color:var(--ink-3)!important}
+.benefit-hero-art{--face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9;position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;min-height:380px;border-radius:var(--r-xl);background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.benefit-hero-art::before{content:"혜택" / "";position:absolute;z-index:2;left:20px;bottom:14px;font-size:min(9.5rem,30cqw);font-weight:900;line-height:.82;letter-spacing:-.065em;white-space:nowrap}
+.benefit-hero-art::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.24;mix-blend-mode:overlay;pointer-events:none}
+.benefit-hero-art img.benefit-object{top:9%;right:7%;width:52%;height:52%}
 .benefit-home-strip{position:relative;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding:16px 18px 14px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);font-size:.875rem;color:var(--ink-2);overflow:hidden}
 .benefit-home-strip::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--four)}
-.benefit-home-strip a{font-weight:750;color:var(--ink)}
-.benefit-count{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;color:var(--ink-3)}
+.benefit-home-strip a{font-weight:600;color:var(--ink)}
+.benefit-collection .sb-eyebrow,.benefit-promise .sb-eyebrow,.benefit-how .sb-eyebrow{font-size:.71875rem;letter-spacing:.08em}
+.benefit-collection .section-heading h2,.benefit-more .section-heading h2{font-weight:680;letter-spacing:-.04em}
+.benefit-more .section-heading>a{font-weight:600}
+.benefit-count{font-family:var(--mono);font-size:.71875rem;letter-spacing:.08em;color:var(--ink-3)}
 
-/* 카드 */
-.benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.benefit-grid:has(>:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
+/* 카드: 혜택이 넷 이상이면 2열 큰 포스터. 열 수는 화면 폭이 아니라 본문 폭으로 정한다 — 웹은 1100px 아래에서도 왼쪽 메뉴가 남아
+   본문이 좁아, 화면 폭 기준 2열이면 카드가 230px대로 줄어 칩이 물건을 덮었다. 카드가 340px(셋 이하일 때 300px)보다 좁아지면 한 열 줄인다. */
+.benefit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(300px,calc((100% - 32px) / 3))),1fr));gap:16px}
+.benefit-grid:has(>:nth-child(4)){grid-template-columns:repeat(auto-fill,minmax(min(100%,max(340px,calc((100% - 16px) / 2))),1fr))}
 .benefit-grid:has(>:nth-child(4)) .benefit-card .benefit-art{aspect-ratio:16/9.4}
 .benefit-card{display:flex;flex-direction:column;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
 .benefit-card:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--line-2),0 18px 40px color-mix(in srgb,var(--glow) 18%,transparent)}
+.benefit-card:hover img.benefit-object{transform:rotate(-1.5deg) translateY(-4px)}
 .benefit-card .benefit-art{display:block;aspect-ratio:4/3.4;container-type:inline-size}
-.benefit-card .benefit-art img{inset:9% 7% 36% auto;width:46%;height:auto;max-height:54%;margin:auto 0}
-.benefit-card.benefit-family-album .benefit-art img{width:38%}
-.benefit-card.benefit-rehearsal .benefit-art img{inset:18% 9% auto auto;width:36%;aspect-ratio:1;object-fit:cover;border-radius:14px;filter:none;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 18px 32px rgba(0,0,0,.28),0 3px 8px rgba(0,0,0,.16);transform:rotate(-4deg)}
-.benefit-card .benefit-art::after{content:var(--word);position:absolute;z-index:2;left:16px;bottom:12px;font-size:min(5.5rem,calc(54cqw / (var(--len) * .97)));font-weight:900;letter-spacing:calc(-.085em + var(--len,2) * .01em);line-height:.82}
-.benefit-index{position:absolute;z-index:3;left:14px;top:13px;padding:5px 9px;border-radius:999px;background:rgba(8,9,12,.16);font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em}
-.benefit-status{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:.6875rem;font-weight:800;white-space:nowrap}
-.benefit-art .benefit-status{position:absolute;z-index:3;right:14px;top:12px;transform:rotate(-2deg);box-shadow:0 6px 16px rgba(0,0,0,.2)}
-.benefit-copy{display:flex;flex-direction:column;gap:6px;flex:1;padding:18px 18px 20px}
-.benefit-kicker{font-size:.75rem!important;font-weight:650;color:var(--ink-3)!important}
-.benefit-copy h2{font-size:1.25rem;font-weight:900;letter-spacing:-.035em}
-.benefit-copy>p{font-size:.875rem;color:var(--ink-2)}
-.benefit-link{display:inline-flex;align-items:center;gap:6px;margin-top:auto;padding-top:10px;font-size:.84375rem;font-weight:750;color:var(--ink)}
+.benefit-card .benefit-art::before{opacity:.24}
+/* 상자 아래(바닥선)는 PC와 같은 69%, 위는 칩 아래(48px)에서 시작한다 */
+.benefit-card .benefit-art img.benefit-object{top:max(14%,48px);right:6%;width:48%;height:calc(69% - max(14%,48px))}
+.benefit-card .benefit-art::after{content:var(--word) / "";position:absolute;z-index:2;left:18px;bottom:12px;font-size:min(7rem,18cqw);font-weight:900;letter-spacing:calc(-.085em + var(--len,2) * .01em);line-height:.82;white-space:nowrap}
+.benefit-copy{display:flex;flex-direction:column;gap:6px;flex:1;padding:20px 22px 22px}
+/* 라벨은 카드 본문(.benefit-copy>p, 450)보다 강한 선택자로 550을 지킨다 */
+.benefit-copy>.benefit-kicker{font-size:.8125rem;font-weight:550;color:var(--ink-3)}
+.benefit-copy h2{font-size:1.25rem;font-weight:650;letter-spacing:-.03em;line-height:1.3}
+.benefit-copy>p{font-size:.875rem;font-weight:450;line-height:1.6;color:var(--ink-2)}
+.benefit-link{display:inline-flex;align-items:center;gap:6px;margin-top:auto;padding-top:12px;font-size:.8125rem;font-weight:600;color:var(--ink)}
 .benefit-link:hover{color:var(--glow)}
 .benefit-empty{padding:24px;border-radius:var(--r-lg);border:1px dashed var(--line-2);color:var(--ink-3)}
+
+/* 둘러보기·라이브러리 카드와 홈 바로가기의 혜택 물건도 같은 바닥선에 세운다 */
+.app-card[class*="benefit-"] .app-art>img{inset:auto;top:12%;right:7%;width:44%;height:50%;max-height:none;margin:0;object-position:50% 100%;transform-origin:50% 100%}
+.quick-card:is([data-shortcut=care],[data-shortcut=fortune],[data-shortcut=rehearsal],[data-shortcut=family-album]) .quick-title>img{height:46%;max-height:none;object-position:50% 100%;transform-origin:50% 100%}
 
 /* 약속 */
 .benefit-promise{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 32px;align-items:end;margin-top:52px;padding-top:32px;border-top:1px solid var(--line)}
 .benefit-promise .sb-eyebrow{grid-column:1/-1}
-.benefit-promise h2{font-size:clamp(1.75rem,3.4vw,3rem);font-weight:900;letter-spacing:-.055em;line-height:1.02}
+.benefit-promise h2{font-size:clamp(1.75rem,3.4vw,3rem);font-weight:680;letter-spacing:-.04em;line-height:1.1}
 .benefit-promise>div{display:flex;flex-direction:column;gap:10px}
-.benefit-promise p:not(.sb-eyebrow){font-size:.9375rem;color:var(--ink-2)}
+.benefit-promise p:not(.sb-eyebrow){font-size:.9375rem;font-weight:450;line-height:1.6;color:var(--ink-2)}
 
-/* 상세 */
-.benefit-detail-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;min-height:clamp(380px,46vh,480px);border-radius:var(--r-xl);background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
-.benefit-detail-hero::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.28;mix-blend-mode:overlay;pointer-events:none}
-.benefit-detail-hero>div:first-child{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:26px;max-width:min(760px,62%)}
-.benefit-detail-hero .sb-eyebrow{color:inherit;opacity:.82}
-.benefit-detail-hero h1{font-size:.9375rem;font-weight:800;letter-spacing:.01em}
-.benefit-detail-hero h2{font-size:clamp(2.25rem,4.4vw,4rem);font-weight:900;letter-spacing:-.055em;line-height:.98}
-.benefit-detail-hero p:not(.sb-eyebrow){font-size:1rem;font-weight:600;max-width:46ch;opacity:.92}
-.benefit-detail-hero .benefit-art{position:absolute;inset:0 0 0 auto;width:46%;background:transparent;overflow:visible;isolation:auto}
-.benefit-detail-hero .benefit-art::before{display:none}
-.benefit-detail-hero .benefit-art img{inset:10% 12% 14% 4%;width:auto;height:auto;max-width:84%;max-height:76%;margin:auto}
-.benefit-detail-hero.benefit-rehearsal .benefit-art img{width:min(70%,320px);aspect-ratio:1;object-fit:cover;border-radius:16px;filter:none;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 24px 44px rgba(0,0,0,.3),0 4px 10px rgba(0,0,0,.18);transform:rotate(-4deg)}
+/* 소개 머리: 성향 소개(member-insight.css .mi-hero.has-art)와 같은 틀 — 위 번호 라벨·스티커, 오른쪽 위 물건,
+   아래 큰 한글 + 오른쪽 한 줄 제목, 맨 아래 설명 선. 뒤로 가기는 성향 소개와 같은 44px 칸·회색 글자. */
+.back-link.benefit-back{min-height:44px;margin:0 0 12px;padding:0 2px;font-size:.875rem;font-weight:650}
+.benefit-detail-hero{position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:clamp(400px,46vh,470px);padding:26px 32px 24px;border-radius:var(--r-xl);background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.benefit-detail-hero::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.24;mix-blend-mode:overlay;pointer-events:none}
+.benefit-detail-hero>:not(.benefit-object){position:relative;z-index:2}
+.benefit-detail-hero img.benefit-object{top:6%;right:4%;width:min(36%,380px);height:48%}
+.benefit-detail-top{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
+.benefit-detail-top .benefit-index{position:static;opacity:.78}
+.benefit-detail-top .benefit-status{height:30px;padding:0 13px;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(0,0,0,.24)}
+.benefit-detail-title{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-top:auto}
+.benefit-detail-title::before{content:var(--word) / "";font-size:min(8.5rem,17cqw);font-weight:900;line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em);white-space:nowrap}
+.benefit-detail-hero h1{flex:0 1 360px;font-size:clamp(1.25rem,2.2vw,1.625rem);font-weight:650;letter-spacing:-.03em;line-height:1.35;text-wrap:balance}
+.benefit-detail-note{padding-top:16px;border-top:1px solid color-mix(in srgb,var(--on-face) 22%,transparent);font-size:.9375rem;font-weight:550;line-height:1.55}
 .benefit-availability{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:16px 0;padding:18px 20px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
 .benefit-availability>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;flex:1;min-width:260px}
-.benefit-availability p{font-size:.875rem;color:var(--ink-2)}
-.benefit-local-note{flex-basis:100%;font-size:.78125rem!important;color:var(--ink-3)!important}
+.benefit-availability p{font-size:.875rem;font-weight:450;line-height:1.6;color:var(--ink-2)}
+.benefit-local-note{flex-basis:100%;font-size:.8125rem!important;color:var(--ink-3)!important}
 .benefit-how{margin-top:36px}
-.benefit-how h2{margin:8px 0 14px;font-size:clamp(1.625rem,2.4vw,2.125rem);font-weight:900;letter-spacing:-.045em}
+.benefit-how h2{margin:8px 0 14px;font-size:clamp(1.625rem,2.4vw,2.125rem);font-weight:680;letter-spacing:-.04em}
 .benefit-how ol{list-style:none;padding:0;border-top:1px solid var(--line)}
 .benefit-how li{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:20px 4px;border-bottom:1px solid var(--line)}
 .benefit-step-number{font-family:var(--mono);font-size:1.75rem;line-height:1;color:color-mix(in srgb,var(--glow) 72%,var(--ink))}
-.benefit-how h3{font-size:1.125rem;font-weight:850;letter-spacing:-.025em}
-.benefit-how li p{margin-top:4px;font-size:.875rem;color:var(--ink-2)}
+.benefit-how h3{font-size:1.125rem;font-weight:650;letter-spacing:-.02em}
+.benefit-how li p{margin-top:4px;font-size:.875rem;font-weight:450;line-height:1.6;color:var(--ink-2)}
 .benefit-more{margin-top:12px}
 .benefit-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .benefit-related a{display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);transition:background .18s var(--ease)}
 .benefit-related a:hover{background:var(--surface-2)}
-.benefit-related img{width:64px;height:64px;flex:none;border-radius:14px;object-fit:contain;padding:6px;background:var(--face);filter:none}
+/* 작은 그림 칸도 그 혜택의 사업 색 면(물건을 구운 바탕)으로 */
+.benefit-related img{width:64px;height:64px;flex:none;border-radius:14px;object-fit:contain;object-position:50% 100%;padding:7px 6px 5px;background:var(--studio),var(--face);filter:none}
 .benefit-related div{display:flex;flex-direction:column;gap:2px;flex:1}
-.benefit-related span:first-child{font-family:var(--mono);font-size:.625rem;letter-spacing:.06em;color:var(--ink-3)}
-.benefit-related strong{font-size:1rem;font-weight:850}
-.benefit-related p{font-size:.8125rem;color:var(--ink-2)}
+.benefit-related span:first-child{font-size:.8125rem;font-weight:550;color:var(--ink-3)}
+.benefit-related strong{font-size:1rem;font-weight:650}
+.benefit-related p{font-size:.8125rem;font-weight:450;color:var(--ink-2)}
 .benefit-related>a>span{color:var(--ink-3)}
 
+@media (prefers-reduced-motion:reduce){.benefit-card:hover{transform:none}.benefit-card:hover img.benefit-object{transform:rotate(-3deg)}}
+
+/* 본문이 좁은 창(왼쪽 메뉴가 남는 761~1100px 등)에서는 소개 머리 물건을 위 라벨·스티커 줄 아래에서 시작한다 */
+@media (min-width:761px){@container (max-width:700px){.benefit-detail-hero img.benefit-object{top:68px;height:calc(54% - 68px)}}}
 @media (max-width:1100px){
   .benefit-hero{grid-template-columns:1fr}
-  .benefit-hero-art{min-height:320px}
-  .benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:760px){
-  .benefit-grid,.benefit-related{grid-template-columns:1fr}
+  .benefit-related{grid-template-columns:1fr}
   .benefit-promise{grid-template-columns:1fr}
-  .benefit-hero-art{min-height:260px}
-  .benefit-detail-hero{min-height:460px}
-  .benefit-detail-hero>div:first-child{max-width:100%;padding:20px}
-  .benefit-detail-hero .benefit-art{inset:0 0 auto auto;width:56%;height:46%}
+  .benefit-hero-art{min-height:300px}
+  .benefit-detail-hero{min-height:0;gap:14px;padding:20px 20px 18px}
+  .benefit-detail-hero img.benefit-object{position:relative;inset:auto;order:1;align-self:flex-end;width:auto;max-width:62%;height:150px;margin:-4px 4px 4px 0}
+  .benefit-detail-hero :is(.benefit-detail-title,.benefit-detail-note){order:2}
+  .benefit-detail-title{flex-direction:column;align-items:flex-start;gap:12px}
+  .benefit-detail-title::before{font-size:min(5.5rem,24cqw)}
+  .benefit-detail-hero h1{flex:none}
   .benefit-how li{grid-template-columns:48px 1fr}
+}
+@media (max-width:600px){
+  /* 휴대폰 카드는 PC처럼 번호 라벨을 빼고 상태 칩만 남긴다 */
+  .benefit-card .benefit-index{display:none}
 }

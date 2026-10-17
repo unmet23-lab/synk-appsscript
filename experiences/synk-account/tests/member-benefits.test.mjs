@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { localBenefitPreview, publicBenefitEntry, filterBenefits, benefitDetail } from '../src/member-benefits.mjs';
+import fs from 'node:fs';
+import { localBenefitPreview, publicBenefitEntry, filterBenefits, benefitDetail, benefitCards, benefitHero } from '../src/member-benefits.mjs';
 import { normalizeLibrary } from '../src/library.mjs';
 import { targetFor } from '../../learning-hub/server.mjs';
-import { memberBenefit } from '../../../desktop/renderer/benefits.mjs';
+import { MEMBER_BENEFITS, memberBenefit } from '../../../desktop/renderer/benefits.mjs';
 
 test('fixed benefit demos are available only in a local HTTP preview', () => {
   const previews = { care: 'http://127.0.0.1:4296/', fortune: 'http://127.0.0.1:4299/', rehearsal: 'http://127.0.0.1:4297/', 'family-album': 'http://127.0.0.1:4298/' };
@@ -22,7 +23,7 @@ test('fixed benefit demos are available only in a local HTTP preview', () => {
 test('benefits are discoverable without being treated as installed or entitled applications', () => {
   assert.deepEqual(filterBenefits('가족').map(v => v.id), ['family-album']);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), ['rehearsal']);
-  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'care', 'fortune', 'rehearsal', 'family-album']);
+  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care', 'fortune', 'rehearsal', 'family-album']);
   assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);
@@ -82,11 +83,32 @@ test('benefit detail reflects device save and favorite state without creating a 
   assert.match(html, /이 기기에 바로가기만 저장/);assert.doesNotMatch(html, /data-action="launch"/);
   assert.deepEqual(library, before);assert.deepEqual(library.recent, []);
   assert.match(benefitDetail('fortune', 'http://localhost/', { library }), /data-action="save" data-id="fortune" aria-pressed="false"/);
+  // PC 앱 안 혜택(구독 계정판)은 기기 바로가기 목록에 없어 담기·즐겨찾기 단추를 내지 않는다.
+  assert.doesNotMatch(benefitDetail('subscriptions', 'http://localhost/', { library }), /data-action="(save|favorite)"/);
 });
 
 test('preview server serves only named public benefit assets, not source modules or private files', () => {
-  for (const file of ['benefits.css', 'assets/member/care-note.webp', 'assets/member/fortune-star.avif', 'assets/member/teacher-cover.png', 'assets/member/studio-camera.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp']) {
+  for (const file of ['benefits.css', 'member-insight.css', 'assets/member/benefit-gift.webp', 'assets/member/benefit-insight.webp', 'assets/member/benefit-subscriptions.webp', 'assets/member/benefit-care.webp', 'assets/member/benefit-fortune.webp', 'assets/member/benefit-rehearsal.webp', 'assets/member/benefit-album.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp']) {
     assert.ok(targetFor('/synk-account/' + file), file);
   }
-  for (const file of ['src/member-benefits.mjs', 'assets/member/private.json', 'assets/member/unknown.png']) assert.equal(targetFor('/synk-account/' + file), null);
+  for (const file of ['src/member-benefits.mjs', 'assets/member/private.json', 'assets/member/unknown.png', 'assets/member/care-note.webp']) assert.equal(targetFor('/synk-account/' + file), null);
+});
+
+test('web benefit posters use the PC felt objects, and every object the web draws is built and served', () => {
+  const cards = benefitCards(), total = String(MEMBER_BENEFITS.length).padStart(2, '0');
+  const files = ['benefit-gift.webp', ...MEMBER_BENEFITS.map(item => item.asset)];
+  for (const item of MEMBER_BENEFITS) assert.ok(cards.includes(`<img class="benefit-object" src="./assets/member/${item.asset}"`), item.id);
+  assert.ok(benefitHero().includes('<img class="benefit-object" src="./assets/member/benefit-gift.webp" alt="">'));
+  for (const file of files) {
+    assert.ok(targetFor('/synk-account/assets/member/' + file), file);
+    assert.ok(fs.existsSync(new URL('../assets/member/' + file, import.meta.url)), file);
+  }
+  // 성향 소개도 PC 앱처럼 포스터(물건·번호 라벨·상태 스티커)를 받아 다른 소개 머리와 같은 틀로 연다.
+  const insight = benefitDetail('insight', 'https://synk.im/platform/');
+  assert.ok(insight.includes('<header class="mi-hero has-art"><img class="mi-object" src="./assets/member/benefit-insight.webp"'));
+  assert.ok(insight.includes(`SYNK FOR YOU · 01 / ${total}`));
+  const care = benefitDetail('care', 'https://synk.im/platform/');
+  assert.ok(care.includes('<header class="benefit-detail-hero benefit-care"><img class="benefit-object" src="./assets/member/benefit-care.webp"'));
+  assert.ok(care.includes(`SYNK FOR YOU · 03 / ${total}`));
+  assert.ok(care.includes('<h1><span class="sr-only">플레저. </span>'));
 });

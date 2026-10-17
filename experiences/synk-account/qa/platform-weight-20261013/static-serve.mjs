@@ -3,6 +3,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { pipeline } from 'node:stream';
 
 const [,, firstRoot, port = '4401', fallbackRoot = ''] = process.argv;
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.wasm': 'application/wasm', '.gz': 'application/gzip', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8' };
@@ -19,5 +20,6 @@ http.createServer((req, res) => {
     res.end(body); return;
   }
   res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
-  fs.createReadStream(file).pipe(res);
+  // pipe()는 브라우저가 요청을 끊어도 파일을 닫지 않아, Windows에서 빌드가 그 파일을 바꾸지 못했다(rename EPERM, 10-17).
+  pipeline(fs.createReadStream(file), res, () => {});
 }).listen(Number(port), '127.0.0.1', () => console.log('serving', firstRoot, fallbackRoot, 'on', port));
