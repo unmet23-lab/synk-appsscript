@@ -26,7 +26,7 @@ if (process.argv.includes('--remote')) {
     for(let i=1;i<rows.length;i++){const gap=(rows[i][0]-rows[i-1][0]-rows[i-1][2])*scale;maxGap=Math.max(maxGap,gap);if(Math.abs(gap)>0.01)gaps.push({index:i,before:rows[i-1].map(x=>x*scale),after:rows[i].map(x=>x*scale),gapSeconds:gap});}
     console.log(JSON.stringify({packetCount:rows.length,timebase:tb[1]+'/'+tb[2],first:rows[0].map(x=>x*scale),last:rows.at(-1).map(x=>x*scale),maxGapSeconds:maxGap,gaps,stderr:p.stderr}));
   `;
-  const p = spawnSync('ssh', ['-i', path.join(require('os').homedir(), '.ssh/synk_radio'), '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', 'synk@34.71.111.97', 'node'], { input: remote, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, windowsHide: true });
+  const p = spawnSync('ssh', ['-i', path.join(require('os').homedir(), '.ssh/synk_radio'), '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', 'synk-radio', 'node'], { input: remote, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, windowsHide: true });
   if (p.status !== 0) throw Error(p.stderr);
   const report = JSON.parse(p.stdout);
   fs.writeFileSync(path.join(folder, 'server-ffmpeg5-copy-3cycles-report.json'), JSON.stringify(report, null, 2) + '\n');

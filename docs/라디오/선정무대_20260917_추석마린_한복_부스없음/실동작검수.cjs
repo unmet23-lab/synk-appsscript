@@ -34,7 +34,7 @@ const assert=require('assert/strict');
  console.log(JSON.stringify(result));
 })().catch(e=>{console.error(e.message);process.exitCode=1;});`;
 
-const result = JSON.parse(execFileSync('ssh', ['-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 'synk@34.71.111.97', 'node'], {
+const result = JSON.parse(execFileSync('ssh', ['-i', path.join(os.homedir(), '.ssh', 'synk_radio'), '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 'synk-radio', 'node'], {
   input: code, encoding: 'utf8', timeout: 50000, maxBuffer: 2 * 1024 * 1024, windowsHide: true,
 }));
 assert.equal(result.passed, true);

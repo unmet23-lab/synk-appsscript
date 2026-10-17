@@ -3,7 +3,7 @@
 const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');
 const dir=__dirname,root=path.resolve(dir,'../../../..');
 const key=path.join(os.homedir(),'.ssh/synk_radio');
-const rpc=code=>JSON.parse(cp.execFileSync('ssh',['-i',key,'synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:55000,maxBuffer:8*1024*1024,windowsHide:true}));
+const rpc=code=>JSON.parse(cp.execFileSync('ssh',['-i',key,'synk-radio','node'],{input:code,encoding:'utf8',timeout:55000,maxBuffer:8*1024*1024,windowsHide:true}));
 const expected=JSON.parse(fs.readFileSync(path.join(dir,'manifest.json'),'utf8'));
 const serverCode=String.raw`
 const fs=require('fs'),cp=require('child_process');

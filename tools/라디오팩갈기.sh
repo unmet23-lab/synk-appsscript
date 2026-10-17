@@ -4,8 +4,8 @@
 # ■ 어디서 도나
 #   **서버에서** 돈다. 올리는 것은 tools/라디오팩올리기.sh 가 하고(스테이징 = /home/synk/팩),
 #   이 스크립트가 그것을 방송 폴더(/opt/synk-radio/팩)로 옮긴다.
-#     scp -i ~/.ssh/synk_radio tools/라디오팩갈기.sh synk@34.71.111.97:/tmp/
-#     ssh -i ~/.ssh/synk_radio synk@34.71.111.97 'bash /tmp/라디오팩갈기.sh <옛판폴더> <파일이름들…>'
+#     scp -i ~/.ssh/synk_radio tools/라디오팩갈기.sh synk-radio:/tmp/
+#     ssh -i ~/.ssh/synk_radio synk-radio 'bash /tmp/라디오팩갈기.sh <옛판폴더> <파일이름들…>'
 #
 # ■ 왜 안 끊기나
 #   스테이징과 방송 폴더가 «같은 디스크»라 mv 는 이름 바꾸기다(원자적 · 반쯤 쓰인 파일이 안 생긴다).
