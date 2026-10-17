@@ -14,6 +14,18 @@
 - 고침: 생성 전에 MCP `balance`로 잔액·plan을 보고 어느 계정인지 확인한다. 계정이 바뀌었으면 참고 그림(얼굴·마스코트·로고·기준 정지컷)을 다시 올리고 ID 장부는 계정별로 둔다. 어느 계정 ID인지는 표시가 아니라 최근 성공 기록으로 가린다. 다른 계정에서 만든 초안을 1080p로 만들려면 (a) 초안 mp4를 올려 `upscale_video` (b) 같은 지시문·시작 그림으로 다시 생성(결과가 달라짐) (c) 원래 계정으로 되돌려 마무리 가운데 유호님이 고른다. 공용 CLI 로그인(`~/.config/higgsfield`)은 건드리지 않고, `reset_balance`는 부르지 않는다.
 - 다시 확인: `balance`의 plan·잔액과, `show_generations`에 내가 만든 최근 작업이 보이는지.
 
+### CLI로 두 번째 계정에 로그인하면 브라우저에 남은 계정이 붙는다
+- 증상: 계정판 잔액 읽기용으로 founder를 따로 로그인하려는데, `higgsfield auth login`이 연 브라우저에 unmet23이 이미 로그인돼 있어 founder로 바꿀 수 없었다(10-17).
+- 원인: CLI는 로그인 폴더를 고르는 옵션이 없고 홈 폴더의 `.config/higgsfield`만 본다. 로그인 화면은 기본 브라우저(크롬의 로그인 상태)로 연다. 첫 시도에서 남은 `config.json`의 작업공간이 다른 계정 것이면 로그인 뒤에도 잔액을 못 읽는다.
+- 고침: 계정마다 `~/.ai-accounts/higgsfield-<이름>/`을 USERPROFILE·HOME으로 삼아 로그인한다(`~/.ai-accounts/higgsfield-login.ps1 -Name <이름>`). CLI가 찍는 「If browser does not open, visit: …」 주소를 `chrome --incognito`로 열어 시크릿 창에서 로그인하고, 끝나면 `workspace list --json`에서 owner 작업공간을 `workspace set`한다. 기본 로그인(77yuhbs)은 건드리지 않는다.
+- 다시 확인: 그 폴더를 홈으로 한 `higgsfield account status --json`의 메일이 그 계정이고, 기본 `account status`는 그대로 77yuhbs.
+
+### 홈을 바꿔 로그인한 계정 폴더가 지워지지 않는다
+- 증상: 회원판 AI 구독 계정판 개발 창에서 Higgsfield 새 계정 로그인이 5분 시간 초과로 끝난 뒤(승인 안 하면 CLI가 5분에 끝나 「로그인을 마치지 못했어요」), 지워져야 할 계정 폴더가 남았다. 그 폴더를 Electron의 Node `fs.rmSync`로 지우면 EPERM이었다(10-17).
+- 원인: CLI가 브라우저를 열 때 Windows가 바뀐 홈 안에 `AppData\Local\Microsoft\Windows\INetCache`(숨김·시스템, `Content.IE5` junction)·`INetCookies`를 만든다. 로그인 프로그램이 막 끝난 그 순간에는 무언가 이 캐시 폴더를 잡고 있어 한 번에 지우기가 실패했다. 같은 모양을 만들어 지우면 일반 Node·Electron Node 모두 지워져, 모양이 아니라 잠깐 잡힌 것이다.
+- 고침: `desktop/src/ai-subscriptions.cjs`의 `removeFolder`가 한 번에 지우기 → 아래부터 하나씩(링크는 따라 들어가지 않고 링크만) → 1초 간격으로 10번 더 지운다. 계정 「지우기」에서 로그인 파일·캐시 폴더까지 지워지는 시험을 붙였다.
+- 다시 확인: 개발 창에서 「새 계정 연결」 뒤 브라우저가 열리면(INetCache 생김) 「로그인 취소」 → 계정 폴더가 1초 안에 없어진다(10-17 15:29 실측 0.5초).
+
 ### 무제한이 걸린 계정인데 MCP 정지컷이 장당 2크레딧씩 나간다
 - 증상: Nano Banana Pro 무제한 기간인데 MCP로 만든 정지컷 12장이 장당 2크레딧 청구됐다. `use_unlim:true`로 값을 물으면 「Unlimited generations aren't supported for nano_banana_pro」(10-11).
 - 원인: 무제한은 힉스필드 웹 화면에서만 적용된다. MCP 기록에는 모델이 `nano_banana_2`로 찍히기도 하지만 값은 장당 2 그대로다.
