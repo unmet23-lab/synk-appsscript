@@ -35,10 +35,12 @@
 .member-subs .ms-led{width:6px;height:6px;border-radius:50%;background:#F5C445}
 .member-subs .ms-badge.is-integrated .ms-led{background:#7DB45A}
 .member-subs .ms-hero.has-art .ms-hero-title{margin:auto 0 20px}
-.member-subs .ms-hero.has-art h1{font-size:min(8.5rem,17cqw);line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em)}
+.member-subs .ms-hero.has-art h1{font-size:min(8.5rem,17cqw);line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em);white-space:nowrap;flex:none}
 .member-subs .ms-hero.has-art .ms-hero-title>p{flex:0 1 360px;font-size:clamp(1.25rem,2.2vw,1.625rem);font-weight:650;letter-spacing:-.03em}
 .member-subs .ms-hero.has-art .ms-hero-note{font-size:.9375rem;font-weight:550}
 .member-subs .ms-object{position:absolute;z-index:0;top:6%;right:4%;width:min(36%,380px);height:48%;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);transform-origin:50% 100%;filter:drop-shadow(0 16px 20px rgba(0,0,0,.2)) drop-shadow(0 3px 5px rgba(0,0,0,.12));pointer-events:none}
+/* 좁은 창: 다른 소개 머리(launcher.css)와 같은 자리 규칙 */
+@media (min-width:761px){@container (max-width:600px){.member-subs .ms-object{top:68px;height:calc(54% - 68px)}}}
 .member-subs .ms-hero-actions{display:flex;flex-wrap:wrap;gap:8px}
 .member-subs .ms-hero .ms-button{border-color:rgba(19,36,10,.3);color:var(--ms-on-face)}
 .member-subs .ms-hero .ms-button:hover:not(:disabled){background:rgba(19,36,10,.08)}
@@ -182,10 +184,10 @@
 
 @media (max-width:760px){
   .member-subs .ms-hero{padding:22px 20px 20px}
-  .member-subs .ms-hero.has-art{min-height:0;padding:20px 20px 18px}
+  .member-subs .ms-hero.has-art{min-height:0;gap:14px;padding:20px 20px 18px}
   .member-subs .ms-object{position:relative;top:auto;right:auto;order:1;align-self:flex-end;width:auto;max-width:62%;height:150px;margin:-4px 4px 4px 0}
   .member-subs .ms-hero.has-art :is(.ms-hero-title,.ms-hero-note){order:2}
-  .member-subs .ms-hero.has-art .ms-hero-title{flex-direction:column;align-items:flex-start;gap:12px;margin-top:0}
+  .member-subs .ms-hero.has-art .ms-hero-title{flex-direction:column;align-items:flex-start;gap:12px;margin:0}
   .member-subs .ms-hero.has-art h1{font-size:min(5.5rem,24cqw)}
   .member-subs .ms-hero.has-art .ms-hero-title>p{flex:none}
   .member-subs .ms-hero-title{flex-direction:column;align-items:flex-start;gap:14px}
