@@ -1,110 +1,99 @@
-<title>PULSE AI 모델 캐스팅북</title>
-<meta name="description" content="SYNK PULSE가 만든 AI 모델을 각도·표정·헤어·전신·목소리까지 보고 고르는 캐스팅북입니다.">
+<title>PULSE 모델 캐스팅북</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="SYNK PULSE의 AI 모델을 업종·분위기·키로 좁히고, 나란히 비교하고, 고른 모델·헤어·목소리를 문의 글로 복사하는 캐스팅북입니다.">
 <link rel="icon" href="@@FAVICON@@">
 <style>@@FONTS@@
-@@COMMON@@
 @@STYLE@@</style>
-<div class="sb-page">
 <a class="skip" href="#models">모델 목록으로 이동</a>
-<header class="topbar">
-  <div class="wrap">
-    <a class="brand" href="#top" aria-label="SYNK PULSE AI 모델 캐스팅북 처음으로"><img src="@@LOGO@@" alt="SYNK PULSE"><span class="divider" aria-hidden="true"></span><span>AI 모델 캐스팅북</span></a>
-    <nav class="topnav" aria-label="페이지 안 이동">
-      <a href="#models">모델</a><a href="#how">고르는 법</a><a href="#notes">사용 안내</a>
-      <button class="pick-btn" id="open-picks" type="button">내 선택 <span class="count" id="pick-count">0</span></button>
-    </nav>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#top" aria-label="PULSE 모델 캐스팅북 처음으로"><img src="@@LOGO@@" alt="SYNK PULSE"><span class="brand-sep" aria-hidden="true"></span><span class="mono">MODEL CASTING</span></a>
+    <nav class="top-nav" aria-label="페이지 안 이동"><a href="#brief">추천받기</a><a href="#models">모델</a><a href="#notes">사용 안내</a></nav>
+    <div class="top-acts">
+      <button class="pill line" id="open-compare" type="button">비교 <b class="num" id="compare-count">0</b></button>
+      <button class="pill dark" id="open-picks" type="button">내 선택 <b class="num" id="pick-count">0</b></button>
+    </div>
   </div>
-  <div class="thread" aria-hidden="true"></div>
 </header>
 
 <main id="top">
-  <div class="wrap hero">
-    <div>
-      <p class="sb-eyebrow">PULSE / AI MODEL CASTING</p>
-      <h1>광고에 쓸 얼굴을<br><span class="sb-mark">미리 보고</span> 고르세요.</h1>
-      <p class="lead">SYNK PULSE가 직접 만든 AI 모델이에요. 모델마다 앞뒤좌우 모습, 표정, 헤어, 전신, 목소리를 한 번에 볼 수 있어요. 마음에 드는 모델과 헤어·목소리 조합을 담아 보내 주세요.</p>
-      <ul class="facts" id="facts"></ul>
-      <div class="hero-cta"><a class="btn primary" href="#models">모델 보러 가기</a><a class="btn line" href="#how">고르는 법 보기</a></div>
-    </div>
-    <div class="board" id="board" aria-label="대표 모델 사진"></div>
-  </div>
-
-  <div class="thread wrap" aria-hidden="true"></div>
-
-  <section class="block" id="models" aria-labelledby="models-title">
-    <div class="wrap">
-      <div class="block-head">
-        <div><p class="sb-eyebrow">MODELS</p><h2 id="models-title">모델 목록</h2></div>
-        <p>사진을 누르면 그 모델의 모든 컷과 목소리, 신체 정보를 볼 수 있어요. 코드(M01, F01)로 말씀해 주시면 바로 찾을 수 있어요.</p>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-head">
+      <div>
+        <p class="eyebrow mono">PULSE · AI MODEL CASTING</p>
+        <h1 id="hero-title">광고에 맞는 얼굴을<br><span class="soft">나란히 놓고 고르세요.</span></h1>
       </div>
-      <div class="filters" id="filters" role="group" aria-label="모델 거르기"></div>
-      <p class="result-note" id="result-note" role="status"></p>
-      <div class="grid" id="grid"></div>
+      <div class="hero-side">
+        <p class="lead">SYNK PULSE가 만든 AI 모델이에요. 업종과 분위기로 좁히고, 두세 명을 같은 컷·같은 키 눈금에 놓고 비교한 뒤, 고른 모델과 헤어·목소리를 문의 글로 복사해 보내 주세요.</p>
+        <div class="hero-cta"><a class="btn dark" href="#brief">브리프로 추천받기<span class="arrow" aria-hidden="true"></span></a><a class="btn line" href="#models">모델 전체 보기</a></div>
+      </div>
+    </div>
+    <figure class="stage" aria-labelledby="stage-cap">
+      <div class="stage-top"><span class="mono">HEIGHT LINEUP · CM</span><span class="stage-hint">사진을 누르면 그 모델을 자세히 볼 수 있어요</span></div>
+      <div class="lineup" id="hero-lineup"></div>
+      <figcaption id="stage-cap">모든 모델을 같은 눈금에 세웠어요. 정수리부터 신발 바닥까지 잰 키예요.</figcaption>
+    </figure>
+    <dl class="facts" id="facts"></dl>
+  </section>
+
+  <section class="band" id="brief" aria-labelledby="brief-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><p class="eyebrow mono">BRIEF MATCH</p><h2 id="brief-title">광고 내용을 알려 주시면 맞는 모델을 골라 드려요</h2></div>
+        <p class="sec-note">업종·분위기와 모델의 인상·어울리는 업종·장면 사진을 맞춰 봐요. 고른 이유도 같이 보여 드려요.</p>
+      </div>
+      <div class="brief-grid">
+        <form class="brief-form" id="brief-form" autocomplete="off"></form>
+        <div class="brief-out" id="brief-out" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 
-  <section class="block" id="how" aria-labelledby="how-title" style="background:#fcfafb">
-    <div class="wrap">
-      <div class="block-head">
-        <div><p class="sb-eyebrow">HOW TO CHOOSE</p><h2 id="how-title">세 단계로 고르면 돼요</h2></div>
-      </div>
-      <ol class="steps">
-        <li><h3>얼굴과 분위기 고르기</h3><p>성별·나이·콘셉트로 거른 뒤, 대표 사진과 앞뒤좌우 모습을 보고 브랜드에 맞는 얼굴을 고르세요.</p></li>
-        <li><h3>헤어와 목소리 정하기</h3><p>모델 창에서 헤어 3가지와 목소리 3가지를 비교하고, 원하는 조합을 골라 ‘선택 목록에 담기’를 눌러 주세요.</p></li>
-        <li><h3>선택 내용 보내기</h3><p>‘내 선택’에서 내용을 복사해 크몽 메시지나 발주서의 ‘장면·모델’ 메모에 붙여 넣어 주세요. 자동으로 전송되지는 않아요.</p></li>
-      </ol>
-      <dl class="info-table" id="info-table"></dl>
+  <section class="wrap block" id="models" aria-labelledby="models-title">
+    <div class="sec-head">
+      <div><p class="eyebrow mono">MODELS</p><h2 id="models-title">모델 목록</h2></div>
+      <p class="sec-note">사진을 누르면 앞뒤좌우·표정·헤어·목소리·몸 비율까지 볼 수 있어요. 오른쪽 아래 「비교」로 두세 명을 담아 나란히 보세요.</p>
     </div>
+    <div class="filters" id="filters" role="group" aria-label="모델 거르기"></div>
+    <div class="result-bar"><p class="result-note" id="result-note" role="status"></p><button class="text-btn" type="button" id="clear-filters" hidden>조건 지우기</button></div>
+    <div class="grid" id="grid"></div>
   </section>
 
-  <section class="block" id="notes" aria-labelledby="notes-title">
-    <div class="wrap">
-      <div class="block-head">
-        <div><p class="sb-eyebrow">BEFORE YOU USE</p><h2 id="notes-title">사용 전에 알아 두세요</h2></div>
-      </div>
-      <div class="notes">
-        <article class="note key">
-          <h3>광고에는 ‘가상인물’ 표시가 필요해요</h3>
-          <p>2026년 6월 1일부터 AI로 만든 가상인물이 제품을 추천하거나 보증하는 광고에는 ‘가상인물’임을 알리는 표시를 해야 해요. 영상에서는 인물이 나오는 동안 인물 가까이에, 블로그·카페 글에서는 제목이나 첫 부분에 표시해요.</p>
-          <p>AI 기본법(2026년 1월 22일 시행)도 AI로 만든 결과물의 표시를 요구해요. 게시 전에 표시 문구와 위치를 함께 확인해 드려요.</p>
-          <p class="src">근거: 공정거래위원회 「추천·보증 등에 관한 표시·광고 심사지침」 개정(2026. 6. 1. 시행), 「인공지능 발전과 신뢰 기반 조성 등에 관한 기본법」. 최종 판단은 광고 매체와 법률 전문가에게 확인해 주세요.</p>
-        </article>
-        <article class="note">
-          <h3>한 번 고른 얼굴은 끝까지 같아요</h3>
-          <p>모든 컷은 모델의 대표 사진 한 장을 기준으로 만들어요. 새 의상, 새 장면, 다른 헤어가 필요해도 같은 얼굴로 추가 제작할 수 있어요.</p>
-        </article>
-        <article class="note">
-          <h3>가상인물과 실제 인물 모델을 구분해요</h3>
-          <p>‘실제 인물’ 표시가 없는 모델은 실제 사람의 사진이나 이름을 넣지 않고 만든 가상인물이에요. 특정 인물과 닮아 보인다고 느끼시면 알려 주세요. 사용 전에 얼굴을 조정해 드려요.</p>
-          <p>M03 유호는 SYNK 대표 본인의 얼굴과 목소리로, 본인 동의를 받아 만든 모델이에요.</p>
-        </article>
-        <article class="note">
-          <h3>사용 범위와 전속은 상담에서 정해요</h3>
-          <ul>
-            <li>사용할 매체(SNS·상세페이지·옥외 등)와 기간</li>
-            <li>같은 업종의 다른 브랜드에 이 모델을 쓰지 않는 ‘업종 전속’ 여부</li>
-            <li>납품 해상도와 사진·영상 수량</li>
-          </ul>
-        </article>
-        <article class="note">
-          <h3>목소리는 들어 보는 용도예요</h3>
-          <p>샘플 문장은 톤을 비교하려고 만든 AI 음성이에요. 실제 광고 대사로 다시 만들어 드리고, 영어 등 다른 언어도 상담 가능해요.</p>
-        </article>
-        <article class="note">
-          <h3>움직이는 영상도 만들 수 있어요</h3>
-          <p>고른 모델로 걷기·말하기 같은 짧은 움직임 시안을 먼저 만들어 확인할 수 있어요. 영상 길이와 수량은 상담에서 정해요.</p>
-        </article>
-      </div>
+  <section class="wrap block" id="notes" aria-labelledby="notes-title">
+    <div class="sec-head"><div><p class="eyebrow mono">BEFORE YOU USE</p><h2 id="notes-title">쓰기 전에 알아 두세요</h2></div></div>
+    <div class="notes">
+      <article class="note">
+        <h3>광고에는 ‘가상인물’ 표시가 필요해요</h3>
+        <p>2026년 6월 1일부터 AI로 만든 가상인물이 제품을 추천하거나 보증하는 광고에는 가상인물임을 알리는 표시를 해야 해요. 영상은 인물이 나오는 동안 인물 가까이에, 글은 제목이나 첫 부분에 표시해요. 게시 전에 표시 문구와 위치를 함께 확인해 드려요.</p>
+        <p class="small">근거: 공정거래위원회 「추천·보증 등에 관한 표시·광고 심사지침」(2026. 6. 1. 시행), 「인공지능 발전과 신뢰 기반 조성 등에 관한 기본법」(2026. 1. 22. 시행). 최종 판단은 광고 매체와 법률 전문가에게 확인해 주세요.</p>
+      </article>
+      <article class="note">
+        <h3>한 번 고른 얼굴은 끝까지 같아요</h3>
+        <p>모든 컷은 모델의 대표 사진을 기준으로 만들어요. 새 옷, 새 장면, 다른 헤어가 필요해도 같은 얼굴로 더 만들 수 있어요.</p>
+      </article>
+      <article class="note">
+        <h3>가상인물과 실제 인물을 나눠 표시해요</h3>
+        <p>‘실제 인물’ 표시가 없는 모델은 실제 사람의 사진이나 이름 없이 만든 가상인물이에요. 특정 인물과 닮아 보이면 알려 주세요. 쓰기 전에 얼굴을 조정해 드려요. M03 유호는 SYNK 대표 본인의 얼굴과 목소리로, 본인 동의를 받아 만든 모델이에요.</p>
+      </article>
+      <article class="note">
+        <h3>사용 범위와 전속은 상담에서 정해요</h3>
+        <p>쓸 매체(SNS·상세페이지·옥외 등)와 기간, 같은 업종의 다른 브랜드에 이 모델을 쓰지 않는 업종 전속 여부, 납품 해상도와 사진·영상 수량을 함께 정해요.</p>
+      </article>
+      <article class="note">
+        <h3>목소리는 톤을 들어 보는 용도예요</h3>
+        <p>샘플 문장은 톤을 비교하려고 만든 음성이에요. 실제 광고 대사로 다시 만들어 드리고, 다른 언어도 상담할 수 있어요.</p>
+      </article>
     </div>
   </section>
 </main>
-<footer><div class="wrap"><span>SYNK PULSE · AI 모델 캐스팅북 · <span id="updated"></span></span><span>이 페이지의 사진은 모두 AI로 만들었어요. ‘실제 인물’ 표시가 있는 모델만 실제 사람을 바탕으로 했어요.</span></div></footer>
+<footer class="foot"><div class="wrap foot-in"><span>SYNK PULSE · 모델 캐스팅북 · <span id="updated"></span></span><span>이 페이지의 모델 사진은 모두 AI로 만들었어요. ‘실제 인물’ 표시가 있는 모델만 실제 사람을 바탕으로 했어요.</span></div></footer>
 
-<dialog id="sheet" aria-labelledby="sheet-title"></dialog>
-<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="사진 크게 보기"></div>
-<div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" hidden aria-labelledby="drawer-title"></aside>
-<div class="toast" id="toast" role="status" hidden></div>
-</div>
+<div class="tray" id="tray" hidden></div>
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-title"></dialog>
+<dialog class="sheet compare" id="compare" aria-labelledby="compare-title"></dialog>
+<dialog class="drawer" id="drawer" aria-labelledby="drawer-title"></dialog>
+<dialog class="lightbox" id="lightbox" aria-label="사진 크게 보기"></dialog>
+<div class="toast" id="toast" role="status" popover="manual"></div>
 <script type="application/json" id="data">@@DATA@@</script>
+<script>@@LOGIC@@</script>
 <script>@@APP@@</script>

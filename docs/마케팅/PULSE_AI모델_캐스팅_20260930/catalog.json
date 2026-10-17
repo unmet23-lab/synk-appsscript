@@ -1,0 +1,121 @@
+{
+  "note": "모델 고르기 시스템(site-src·build-site.cjs)의 설정. 모델의 이름·신체·업종은 roster-v2.json, 목소리는 voices.json, 완성 명세서는 명세서/<코드>_<이름>.json이 원본이다. 여기에는 고르기에만 쓰는 것(업종·분위기 분류, 브리프 낱말, 모델별 추가 자료)을 둔다. 모델을 더할 때는 roster-v2.json에 한 줄을 더하면 카드·거르기·비교·추천에 바로 나온다. 아래 models의 칸은 있는 것만 채우면 된다. 화면에 보이는 글에는 만든 도구 이름을 쓰지 않는다.",
+  "updated": "2026-10-17",
+  "industries": [
+    { "id": "food", "label": "식음료", "hint": "음료·디저트·카페·주류", "fits": ["음료", "디저트", "카페", "주류", "위스키"], "words": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차", "디저트", "케이크", "베이커리", "빵", "아이스크림", "과자", "간식", "카페", "맥주", "소주", "와인", "위스키", "주류", "식품", "밀키트", "편의점", "배달", "레스토랑", "치킨", "버거"], "sub": { "디저트": ["아이스크림", "케이크", "베이커리", "빵", "과자", "간식", "디저트", "초콜릿", "쿠키"], "음료": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차"], "카페": ["카페", "커피", "라떼"], "주류": ["맥주", "소주", "와인", "위스키", "주류"]}},
+    { "id": "beauty", "label": "뷰티·스킨케어", "hint": "스킨케어·색조·뷰티 기기", "fits": ["스킨케어", "뷰티", "색조", "클렌징"], "words": ["화장품", "스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "클렌징", "마스크팩", "쿠션", "파운데이션", "립밤", "틴트", "립스틱", "아이섀도", "마스카라", "네일", "뷰티", "피부", "미백", "보습"], "sub": { "색조": ["쿠션", "파운데이션", "립스틱", "틴트", "립밤", "아이섀도", "마스카라", "네일"], "스킨케어": ["스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "마스크팩", "보습", "미백"], "클렌징": ["클렌징"]}},
+    { "id": "fragrance", "label": "향수·그루밍", "hint": "향수·면도·헤어 스타일링", "fits": ["향수", "그루밍"], "words": ["향수", "퍼퓸", "디퓨저", "바디미스트", "면도", "쉐이빙", "왁스", "포마드", "그루밍", "남성 화장품"], "sub": { "향수": ["향수", "퍼퓸", "디퓨저", "바디미스트"], "그루밍": ["면도", "쉐이빙", "왁스", "포마드", "그루밍", "남성 화장품"]}},
+    { "id": "fashion", "label": "패션·잡화", "hint": "의류·주얼리·안경·시계", "fits": ["패션", "주얼리", "안경", "시계", "정장"], "words": ["옷", "의류", "패션", "원피스", "니트", "코트", "재킷", "자켓", "셔츠", "바지", "청바지", "스커트", "운동화", "신발", "가방", "모자", "주얼리", "목걸이", "반지", "귀걸이", "안경", "선글라스", "시계", "정장", "수트", "룩북", "속옷", "스트리트", "티셔츠"], "sub": { "주얼리": ["주얼리", "목걸이", "반지", "귀걸이"], "안경": ["안경", "선글라스"], "시계": ["시계"], "정장": ["정장", "수트"], "스트리트": ["스트리트"], "캐주얼": ["니트", "청바지", "운동화", "티셔츠"]}},
+    { "id": "tech", "label": "테크·앱", "hint": "앱·게임·IT 서비스", "fits": ["테크", "앱", "게임", "IT", "스타트업"], "words": ["앱", "어플", "애플리케이션", "게임", "플랫폼", "소프트웨어", "SaaS", "AI", "인공지능", "스마트폰", "휴대폰", "이어폰", "노트북", "가전", "IT", "테크", "스타트업", "웹사이트"], "sub": { "앱": ["앱", "어플", "애플리케이션"], "게임": ["게임"], "IT": ["IT", "SaaS", "소프트웨어"], "스타트업": ["스타트업"]}},
+    { "id": "finance", "label": "금융·기업", "hint": "금융·보험·B2B", "fits": ["금융", "보험", "B2B"], "words": ["금융", "은행", "보험", "카드", "대출", "투자", "증권", "주식", "연금", "핀테크", "결제", "기업", "B2B", "솔루션", "컨설팅", "채용", "부동산", "가계부"], "sub": { "금융": ["금융", "은행", "카드", "대출", "투자", "증권", "주식", "연금", "핀테크", "결제", "가계부"], "보험": ["보험"], "B2B": ["B2B", "기업", "솔루션", "컨설팅"]}},
+    { "id": "edu", "label": "교육", "hint": "학원·강의·교육 앱", "fits": ["교육", "강연"], "words": ["교육", "학원", "강의", "인강", "수업", "과외", "공부", "시험", "자격증", "어학", "영어", "한국어", "코딩", "클래스", "강연", "세미나", "대학"] },
+    { "id": "travel", "label": "여행·라이프스타일", "hint": "여행·항공·생활", "fits": ["여행", "항공", "라이프스타일"], "words": ["여행", "호텔", "숙소", "항공", "리조트", "캠핑", "관광", "라이프스타일", "인테리어", "가구", "생활용품", "피트니스", "요가", "헬스", "필라테스", "반려"], "sub": { "여행": ["여행", "호텔", "숙소", "리조트", "캠핑", "관광"], "항공": ["항공"]}},
+    { "id": "auto", "label": "자동차", "hint": "자동차·모빌리티", "fits": ["자동차"], "words": ["자동차", "차량", "전기차", "SUV", "세단", "모빌리티", "렌터카", "타이어"] },
+    { "id": "ent", "label": "음악·엔터", "hint": "음악·공연·콘텐츠", "fits": ["음악", "엔터"], "words": ["음악", "음원", "앨범", "공연", "콘서트", "페스티벌", "뮤직비디오", "엔터", "아이돌", "웹툰", "영화", "드라마", "유튜브"] }
+  ],
+  "moods": [
+    {"id": "fresh", "label": "상큼·발랄", "match": ["상큼", "발랄", "싱그러"], "words": ["상큼", "발랄", "산뜻", "청량", "귀여", "밝은", "통통 튀", "생기", "딸기", "레몬", "자몽", "복숭아", "과일"]},
+    { "id": "friendly", "label": "친근·편안", "match": ["친근", "부드러운", "호감", "다정"], "words": ["친근", "편안", "따뜻", "다정", "포근", "일상", "공감"] },
+    { "id": "natural", "label": "청순·내추럴", "match": ["청순", "싱그러", "내추럴"], "words": ["청순", "내추럴", "자연스러", "맑은", "깨끗", "순한"] },
+    { "id": "smart", "label": "지적·신뢰", "match": ["지적", "단정", "차분", "신뢰"], "words": ["지적", "신뢰", "전문", "단정", "차분", "깔끔", "믿음"] },
+    { "id": "chic", "label": "세련·고급", "match": ["세련", "도회", "성숙", "배우 같은"], "words": ["세련", "고급", "럭셔리", "프리미엄", "도시", "모던", "시크", "우아"] },
+    { "id": "bold", "label": "강렬·섹시", "match": ["섹시", "강렬", "남성적"], "words": ["섹시", "강렬", "카리스마", "관능", "매혹", "남성적", "대담"] },
+    { "id": "unique", "label": "개성·힙", "match": ["힙", "개성"], "words": ["힙", "개성", "스트리트", "트렌디", "자유", "MZ", "독특"] }
+  ],
+  "genderWords": { "남": ["남성", "남자", "맨즈"], "여": ["여성", "여자", "우먼"] },
+  "compareShots": [
+    { "key": "hero", "label": "대표" },
+    { "key": "exp-smile", "label": "웃음" },
+    { "key": "angle-left", "label": "옆모습" },
+    { "key": "angle-back", "label": "뒷모습" },
+    { "key": "fullbody", "label": "전신" },
+    { "key": "look-1", "label": "룩 1" }
+  ],
+  "models": {
+    "M01": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m01-fullbody-v1.webp", "top": 106, "feet": 1440 },
+      "body": { "heads": 6.95, "shoulderFace": 2.31, "leg": 0.513, "torso": 0.28, "measured": "2026-10-17" },
+      "shotLabels": { "context": "창가 카페 · 커피잔", "hands": "향수병을 든 손" },
+      "shotTags": { "context": ["food", "travel"], "hands": ["fragrance"] }
+    },
+    "F01": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f01-fullbody-v1.webp", "top": 352, "feet": 2387 },
+      "body": { "heads": 6.82, "shoulderFace": 2.16, "leg": 0.517, "torso": 0.274, "measured": "2026-10-17" },
+      "shotLabels": { "context": "화장대 · 립스틱 바르기", "hands": "립스틱을 든 손" },
+      "shotTags": { "context": ["beauty"], "hands": ["beauty"], "look-1": ["fashion"] }
+    },
+    "F02": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f02-fullbody-v1.webp", "top": 307, "feet": 2414 },
+      "shotLabels": { "context": "카페 카운터 · 딸기 라떼", "hands": "콤팩트를 든 손" },
+      "shotTags": { "context": ["food"], "hands": ["beauty"], "look-1": ["fashion"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 쌍꺼풀과 애교살이 있어요. 웃으면 반달눈이 돼요." },
+        { "label": "얼굴선", "text": "둥글고 부드러운 얼굴선, 작은 턱, 둥근 코끝." },
+        { "label": "피부", "text": "밝은 웜톤에 볼이 은은하게 붉어요. 점·주근깨·흉터가 없어요." },
+        { "label": "메이크업", "text": "코랄 립과 윤기 있는 피부 표현이 기본이에요." }
+      ],
+      "bodyNote": "일곱 명 가운데 키가 가장 작고, 여자 모델 중 어깨가 가장 좁아요. 아담하고 친근한 체형이라 일상·생활 광고에서 가까운 사람처럼 보여요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": ["한 입 맛보고 눈 감으며 미소", "제품을 보고 눈이 커지며 감탄", "휴대폰을 보며 소리 내 웃기", "고개 갸웃하며 고민", "카메라 보며 윙크", "손 흔들며 인사"],
+        "avoid": ["섹시하거나 무게 있는 연출은 콘셉트와 맞지 않아 쓰지 않아요."]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F02_harin/v2",
+        "items": [
+          { "key": "full-left", "file": "15.jpg", "label": "전신 옆", "en": "SIDE" },
+          { "key": "full-back", "file": "16.jpg", "label": "전신 뒤", "en": "BACK" },
+          { "key": "full-45", "file": "17.jpg", "label": "전신 45도", "en": "3/4" }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F02_harin/v2",
+        "items": [
+          { "id": "b01", "file": "18.jpg", "place": "밤 네온 거리", "label": "후드티 · 뒤돌아보며 미소", "tags": ["fashion", "ent"] },
+          { "id": "b02", "file": "19.jpg", "place": "가을 공원", "label": "트렌치코트 · 걷기", "tags": ["fashion", "travel"] },
+          { "id": "b03", "file": "20.jpg", "place": "회의실", "label": "블라우스 · 설명하는 손짓", "tags": ["finance", "edu", "tech"] },
+          { "id": "b04", "file": "21.jpg", "place": "집 주방", "label": "앞치마 · 한 입 맛보는 미소", "tags": ["food"] },
+          { "id": "b05", "file": "22.jpg", "place": "노을 해변", "label": "린넨 원피스 · 맨발로 걷기", "tags": ["travel", "fashion"] },
+          { "id": "b06", "file": "23.jpg", "place": "눈 오는 거리", "label": "패딩과 목도리 · 손 녹이기", "tags": ["fashion"] },
+          { "id": "b07", "file": "24.jpg", "place": "요가 스튜디오", "label": "운동복 · 스트레칭", "tags": ["travel"] },
+          { "id": "b08", "file": "25.jpg", "place": "지하철 창가", "label": "니트와 이어폰 · 창밖 보기", "tags": ["tech"] },
+          { "id": "b09", "file": "26.jpg", "place": "아침 침실", "label": "파자마 · 기지개", "tags": ["travel"] },
+          { "id": "b10", "file": "27.jpg", "place": "편의점", "label": "데님 재킷 · 음료 고르기", "tags": ["food"] },
+          { "id": "b11", "file": "28.jpg", "place": "화장대", "label": "헤어밴드 · 스킨케어 바르기", "tags": ["beauty"] },
+          { "id": "b12", "file": "29.jpg", "place": "비 오는 저녁", "label": "레인코트와 투명 우산", "tags": ["fashion"] },
+          { "id": "b13", "file": "30.jpg", "place": "옥상", "label": "스트리트 룩 · 당당하게", "tags": ["fashion"] },
+          { "id": "b14", "file": "31.jpg", "place": "거실 소파", "label": "카디건 · 휴대폰 보며 웃음", "tags": ["tech"] },
+          { "id": "b15", "file": "32.jpg", "place": "스튜디오", "label": "검은 터틀넥 · 측광 근접", "tags": ["beauty"] },
+          { "id": "b16", "file": "33.jpg", "place": "풀밭", "label": "맨투맨 · 누워서 웃음", "tags": ["beauty", "travel"] }
+        ]
+      },
+      "motion": [
+        { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4", "label": "커피잔 동작 · 5초", "note": "손과 제품 움직임을 보는 접사예요. 얼굴과 대사 연기는 들어 있지 않아요." },
+        { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4", "label": "런웨이 · 5초", "note": "걷는 자세와 옷의 움직임을 보는 샘플이에요." }
+      ]
+    },
+    "F03": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f03-fullbody-v1.webp", "top": 230, "feet": 2411 },
+      "body": { "heads": 7.18, "shoulderFace": 2.27, "leg": 0.498, "torso": 0.289, "measured": "2026-10-17" },
+      "shotLabels": { "context": "회의실 · 발표", "hands": "스킨케어 병을 든 손" },
+      "shotTags": { "context": ["finance", "edu", "tech"], "hands": ["beauty"], "look-1": ["finance"] }
+    },
+    "M02": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m02-fullbody-v1.webp", "top": 130, "feet": 1452 },
+      "body": { "heads": 6.72, "shoulderFace": 2.29, "leg": 0.506, "torso": 0.279, "measured": "2026-10-17" },
+      "shotLabels": { "context": "바 라운지 · 위스키", "hands": "손목시계를 매만지는 손" },
+      "shotTags": { "context": ["food"], "hands": ["fashion"], "look-1": ["fashion", "auto"] }
+    },
+    "F04": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f04-fullbody-v1.webp", "top": 290, "feet": 2386 },
+      "body": { "heads": 7.12, "shoulderFace": 2.26, "leg": 0.523, "torso": 0.272, "measured": "2026-10-17" },
+      "shotLabels": { "context": "바닷가 산책로 · 탄산수", "hands": "클렌징 폼을 든 손" },
+      "shotTags": { "context": ["food", "travel"], "hands": ["beauty"] }
+    },
+    "M03": {
+      "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m03-fullbody-v1.webp", "top": 275, "feet": 2423 },
+      "body": { "heads": 7.29, "shoulderFace": 2.43, "leg": 0.495, "torso": 0.295, "measured": "2026-10-17" },
+      "shotLabels": { "context": "음악 작업실 · 믹싱 데스크", "hands": "이어폰 케이스를 든 손" },
+      "shotTags": { "context": ["ent", "tech"], "hands": ["tech"], "look-1": ["fashion"] }
+    }
+  }
+}
