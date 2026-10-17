@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "provider": "typecast",
+  "approved": true,
+  "clips": {
+    "red": {
+      "text": "빨간색",
+      "src": "red.mp3",
+      "durationSeconds": 1.104,
+      "sha256": "7c30f846c15f0bfbc779b515991d665097d6dbdf74b80bb8996ad2d0843c0a75"
+    },
+    "blue": {
+      "text": "파란색",
+      "src": "blue.mp3",
+      "durationSeconds": 0.941,
+      "sha256": "78ef880f626eddddece4fb64f2846f4affcc3a586883060163d03951b4d50e2e"
+    },
+    "up": {
+      "text": "위",
+      "src": "up.mp3",
+      "durationSeconds": 0.65,
+      "sha256": "a0e93cdf40769fcda7d1147ac6c0f096fb7222c43994fe9717a8d7251c4aedea"
+    },
+    "down": {
+      "text": "아래",
+      "src": "down.mp3",
+      "durationSeconds": 1.483,
+      "sha256": "72f21491333cfbffddda211710bc566b5c13a259bed9f0268b1509d278aab761"
+    },
+    "one": {
+      "text": "한 번",
+      "src": "one.mp3",
+      "durationSeconds": 1.179,
+      "sha256": "b3ac93d2139f8743e2f7a4e0f1a3e449c6f039b0ce3d192795a5a0a864598b8c"
+    },
+    "two": {
+      "text": "두 번",
+      "src": "two.mp3",
+      "durationSeconds": 0.863,
+      "sha256": "e727dc460968c0d6d5be3d89fb4337ade8120088abd2f50ab2288e49fc4f5239"
+    },
+    "three": {
+      "text": "세 번",
+      "src": "three.mp3",
+      "durationSeconds": 0.842,
+      "sha256": "cd5d859b72764e72e178643ac347139d6c666893a217a233782c3db933625f3e"
+    }
+  }
+}

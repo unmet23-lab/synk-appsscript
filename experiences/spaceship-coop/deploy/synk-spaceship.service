@@ -1,0 +1,18 @@
+[Unit]
+Description=SYNK temporary cooperative spaceship rooms
+After=docker.service synk-company.service
+Requires=docker.service
+Wants=synk-company.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/synk/spaceship/current/deploy
+ExecStartPre=/usr/bin/docker network inspect synk-company_edge
+ExecStart=/usr/bin/docker compose --env-file /etc/synk/spaceship.env --file /opt/synk/spaceship/current/deploy/compose.yaml up --detach --wait --wait-timeout 60 --no-build --pull never
+ExecStop=/usr/bin/docker compose --env-file /etc/synk/spaceship.env --file /opt/synk/spaceship/current/deploy/compose.yaml stop --timeout 10
+TimeoutStartSec=90
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

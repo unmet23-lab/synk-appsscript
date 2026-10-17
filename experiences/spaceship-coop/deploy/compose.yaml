@@ -1,0 +1,33 @@
+# Independent project. Do not run compose against the company service.
+# Build from the reviewed spaceship-coop directory; never mount company data.
+name: synk-spaceship
+services:
+  spaceship:
+    image: ${SYNK_SPACESHIP_IMAGE:?Set the reviewed immutable image tag}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    read_only: true
+    user: node
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      SYNK_SPACESHIP_PUBLIC: "1"
+      SYNK_SPACESHIP_MAX_ROOMS: "50"
+    expose: ["4318"]
+    networks:
+      edge:
+        ipv4_address: 172.30.77.4
+        aliases: [synk-spaceship]
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+networks:
+  edge:
+    external: true
+    name: synk-company_edge
