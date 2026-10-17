@@ -188,7 +188,8 @@ if (워크트리인가) {
       fs.readdirSync(ROOT).filter((f) => re.test(f)).forEach((f) => files.push(f));
     } else if (fs.existsSync(path.join(ROOT, t))) files.push(t);
   }
-  check('.claspignore에서 배포 대상을 찾아냈다(≥5종)', files.length >= 5);
+  // 개수로 재지 않는다 — 10-02 학원 시스템을 지운 뒤 배포 대상은 셋이다. 늘 올라가는 둘을 찾았는지만 본다.
+  check('.claspignore에서 배포 대상을 찾아냈다(Code.js·appsscript.json 포함)', files.includes('Code.js') && files.includes('appsscript.json'));
 
   for (const f of files) {
     const p = path.join(ROOT, f);

@@ -208,7 +208,7 @@ function synkbrief운영설치() {
     log.appendRow(['시각', '캠페인ID', '처리 결과', 'HTTP 상태']); log.setFrozenRows(1); log.setColumnWidths(1, 4, 190);
   }
   // 편집기에서 설치해도 getUi 오류가 나지 않도록 메뉴는 시트를 열 때 onOpen이 만든다.
-  // 기존 morningJobs를 사용하므로 별도 트리거를 중복 생성하지 않는다.
+  // 트리거는 여기서 만들지 않는다. 운영 점검 15분 트리거는 synkbrief운영알림설정이 만든다.
   console.log('synkbrief 관리표 설치 완료. 시트를 새로고침하면 운영 메뉴가 나타납니다. 발송 상태는 자동으로 바꾸지 않았습니다.');
 }
 
@@ -310,7 +310,7 @@ function synkbrief_발송로그_(p, campaign, state, code) {
 
 function synkbrief정기점검() {
   const p = PropertiesService.getScriptProperties();
-  // Meta 토큰 갱신은 Supabase Vault/cron의 책임이다. 설치 전에는 기존 일일 트리거도 조용히 멈춘다.
+  // Meta 토큰 갱신은 Supabase Vault/cron의 책임이다. 운영 알림을 켜기 전에는 불려도 아무 일도 하지 않는다.
   if (p.getProperty('SYNKBRIEF_OPS_MONITOR_ENABLED') !== '1') return { ok: true, state: 'disabled' };
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return { ok: true, state: 'busy' };

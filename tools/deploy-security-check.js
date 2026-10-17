@@ -42,10 +42,11 @@ function targetJsFiles(root = ROOT) {
 }
 
 /* 최상위 함수 단위로 자른다. Apps Script 파일은 평평해서 `function foo(` 가 항상 1열에서 시작한다.
- * 중괄호 세기보다 이쪽이 튼튼하다 — 문자열·주석·정규식 리터럴 안의 중괄호에 속지 않는다. */
+ * 중괄호 세기보다 이쪽이 튼튼하다 — 문자열·주석·정규식 리터럴 안의 중괄호에 속지 않는다.
+ * 이름은 유니코드 식별자로 본다. ASCII만 보면 한글 이름 함수(`웹응답_`)가 경계가 되지 못해 앞 함수 본문에 붙는다(10-17). */
 function topLevelFunctions(src) {
   const out = [];
-  const re = /^function\s+([A-Za-z_$][\w$]*)\s*\(/gm;
+  const re = /^function\s+([\p{ID_Start}_$][\p{ID_Continue}$]*)\s*\(/gmu;
   const hits = [];
   let m;
   while ((m = re.exec(src)) !== null) hits.push({ name: m[1], start: m.index });

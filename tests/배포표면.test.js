@@ -113,6 +113,21 @@ test('parseDeploymentLine — 임시 배포를 가려낸다', () => {
   assert.strictEqual(parseDeploymentLine('Found 3 deployments.'), null);
 });
 
+test('topLevelFunctions — 한글 이름 함수도 경계로 본다', () => {
+  const src = [
+    'function doGet(e) {',
+    '  return 웹응답_(e);',
+    '}',
+    'function 웹응답_(e) {',
+    '  sh.deleteRow(2);', // doGet 뒤의 한글 이름 함수 본문이 doGet에 붙으면 거짓 적색이 난다
+    '}',
+  ].join('\n');
+  const fns = topLevelFunctions(src);
+  assert.deepStrictEqual(fns.map((f) => f.name), ['doGet', '웹응답_']);
+  assert.ok(!fns[0].body.includes('deleteRow'), 'doGet 본문이 한글 이름 함수까지 삼켰다');
+  assert.strictEqual(fns[1].line, 4);
+});
+
 test('topLevelFunctions — 문자열·주석 안의 중괄호에 속지 않는다', () => {
   const src = [
     'function doGet(e) {',

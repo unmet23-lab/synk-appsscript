@@ -6,6 +6,10 @@
  * 지운 코드는 git 기록에 있다. 목록과 이유는 docs/_ops/옛시스템_정리목록_20261002.md에 있다.
  * 학원을 다시 열 때는 교사 앱·talk·Atlas로 새로 만든다.
  *
+ * [vNEXT] 2026-10-17 옛 학원 트리거를 받던 함수 14개(parentSweep·morningJobs 등)와 트리거정리()를 지웠다.
+ * v9.346은 남은 옛 트리거가 처음 깨어날 때 스스로 지워지게 했다. 그래도 남은 트리거가 있으면 「함수 없음」으로
+ * 실패하니 Apps Script 트리거 화면에서 지운다. 운영 점검 15분 트리거는 synkbrief운영알림설정이 만든다.
+ *
  * 댓글·DM 처리와 Meta 토큰 갱신의 운영 정본은 Supabase synkbrief-dm이다.
  *   - 운영 알림: 명시 설치 후 15분마다 Supabase 상태를 읽고 장애 변화·복구를 메일로 알린다.
  *   - 기존 웹 입구·시트 메뉴: @synkbrief 호환 코드를 유지한다(엔진_synkbrief.js).
@@ -49,43 +53,3 @@ function doGet(e) {
 function 웹응답_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
-
-// 기존 운영 점검 타이머는 보존한다. 명시 활성화·읽기 키가 갖춰졌을 때만 누락된 15분 타이머를 복구한다.
-const 남길트리거 = ['synkbrief정기점검'];
-
-function 트리거정리() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(10000)) return;
-  try {
-    let 있음 = false;
-    ScriptApp.getProjectTriggers().forEach(t => {
-      if (남길트리거.indexOf(t.getHandlerFunction()) === -1) ScriptApp.deleteTrigger(t);
-      else if (t.getEventType() === ScriptApp.EventType.CLOCK) 있음 = true;
-    });
-    const p = PropertiesService.getScriptProperties();
-    const key = p.getProperty('SYNKBRIEF_OPS_READ_KEY');
-    if (!있음 && p.getProperty('SYNKBRIEF_OPS_MONITOR_ENABLED') === '1' && key && key.length >= 32 && !/\s/.test(key)) {
-      ScriptApp.newTrigger('synkbrief정기점검').timeBased().everyMinutes(15).create();
-    }
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-/* 옛 학원 운영 트리거가 부르던 함수 이름이다. 새 코드를 올린 뒤 남은 옛 트리거가 처음 깨어나면
- * 트리거를 정리하고 끝난다. 10분 주기 트리거가 있어서 올린 뒤 10분 안에 정리된다.
- * 라이브에서 옛 트리거가 모두 사라진 것을 확인하면 이 함수들도 지운다. */
-function parentSweep() { 트리거정리(); }
-function dailyBackupJob() { 트리거정리(); }
-function morningJobs() { 트리거정리(); synkbrief정기점검(); }
-function sendMorningDigestJob() { 트리거정리(); }
-function calcAllJob() { 트리거정리(); }
-function momentSweepJob() { 트리거정리(); }
-function nightJobs() { 트리거정리(); }
-function weeklyJobs() { 트리거정리(); }
-function monthlyJobs() { 트리거정리(); }
-function monthlyReportCardsJob() { 트리거정리(); }
-function monthlyReportJob() { 트리거정리(); }
-function 교재연동Nightly() { 트리거정리(); }
-function onConsultEdit() { 트리거정리(); }
-function onHwFeedbackEdit() { 트리거정리(); }
