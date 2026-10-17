@@ -153,6 +153,8 @@ async function buildRows() {
   {
     const sample = prefix => rows.filter(r => r.번호.startsWith(prefix) && r.갈래 === '게임 문항').slice(0, 3).map(r => r.내용).join(' / ');
     for (const game of WORLD_GAMES) {
+      // 문항이 없는 항목(모든 미니게임과 상점인 learning-hub)은 게임이 아니므로 상황을 묻지 않는다.
+      if (!rows.some(r => r.번호.startsWith(`문항/${game.path}/`))) continue;
       if (!game.situations.length) { add(`게임상황/${game.path}/없음`, '게임↔상황', game.label, `${game.label}: 한 상황으로 묶지 않는다(여러 일상 주제를 고루 다룬다).`, '이 게임에 맞는 상황이 있으면 메모에 적어 주세요', '', ''); continue; }
       for (const id of game.situations) {
         const s = situation.get(id);
