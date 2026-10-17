@@ -99,7 +99,7 @@ test('a broken layer is refused', () => {
 test('a host that only shows sentences carries no form reader: the layer requires nothing but its sentences', () => {
   const shown = situationExamples(map);
   assert.deepEqual(shown.examplesFor('sit-travel-order').map(e => [e.id, e.ko, e.grammar, e.reviewed]), [
-    ['ex-travel-order-1', '따뜻한 커피 한 잔 주세요.', null, false], ['ex-travel-order-2', '설탕은 빼 주세요.', null, false], ['ex-travel-order-3', '따뜻한 커피 대신 차 한 잔 주세요.', null, false]]);
+    ['ex-travel-order-1', '따뜻한 커피 한 잔 주세요.', null, false], ['ex-travel-order-2', '설탕은 빼 주세요.', null, false], ['ex-travel-order-3', '커피 대신 따뜻한 차 한 잔 주세요.', null, false]]);
   const code = require('node:fs').readFileSync(require.resolve('../strata/topik-i-examples'), 'utf8');
   assert.deepEqual([...code.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]), ['./topik-i.situation-examples.json']);
 });
@@ -118,7 +118,7 @@ test('the account summary carries a situation\'s sentences only when the host pa
   assert.deepEqual(summary.forReasons[0].situations[1], { id: 'sit-travel-order', label: '주문', line: '주문할 때 쓰는 말이라 골랐어요.', examples: [
     { id: 'ex-travel-order-1', ko: '따뜻한 커피 한 잔 주세요.', reviewed: false },
     { id: 'ex-travel-order-2', ko: '설탕은 빼 주세요.', reviewed: false },
-    { id: 'ex-travel-order-3', ko: '따뜻한 커피 대신 차 한 잔 주세요.', reviewed: false }] });
+    { id: 'ex-travel-order-3', ko: '커피 대신 따뜻한 차 한 잔 주세요.', reviewed: false }] });
   assert.equal(summary.forReasons[1].situations[0].examples[0].ko, '오랜만이에요!');
   // Sentences are where practice happens, in words: no evidence, ability or grade comes from them.
   assert.equal(summary.basis, 'self-declared');
