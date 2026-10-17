@@ -3,6 +3,7 @@
 // - Claude: Claude Code `claude -p /usage` · `claude auth status --json`
 // - GPT: Codex app-server `account/read` · `account/rateLimits/read`
 // - Higgsfield: `higgsfield account status --json`
+// - Gemini: Antigravity CLI `agy -p /usage --output-format json`(모델 호출 없음, 토큰 0)
 // 토큰·자격 파일은 열지 않는다. 실행 대상과 인자는 고정이며, 화면에서 받은 값은 검증한 이메일과
 // 로그인 코드(표준입력)뿐이다. 기록은 이 PC의 앱 데이터 폴더에만 둔다.
 const fs=require('node:fs');
@@ -13,17 +14,21 @@ const SERVICES=Object.freeze({
   claude:Object.freeze({label:'Claude',kind:'weekly',bin:'claude',home:'CLAUDE_CONFIG_DIR',folders:true}),
   gpt:Object.freeze({label:'GPT',kind:'weekly',bin:'codex',home:'CODEX_HOME',folders:true}),
   higgsfield:Object.freeze({label:'Higgsfield',kind:'credit',bin:'higgsfield',home:null,folders:false}),
+  // agy는 계정 폴더를 바꾸는 설정이 없어 PC당 한 계정이고, 로그인은 키 입력 화면이라 검은 창에서만 한다.
+  gemini:Object.freeze({label:'Gemini',kind:'weekly',bin:'agy',home:null,folders:false,consoleLogin:true}),
 });
 const KINDS=new Set(['weekly','credit','plan']);
 const INSTALLERS=Object.freeze({
   claude:'irm https://claude.ai/install.ps1 | iex',
   gpt:'irm https://chatgpt.com/codex/install.ps1 | iex',
   higgsfield:'npm install -g @higgsfield/cli',
+  gemini:'irm https://antigravity.google/cli/install.ps1 | iex',
 });
 const MAC_INSTALLERS=Object.freeze({
   claude:'curl -fsSL https://claude.ai/install.sh | bash',
   gpt:'curl -fsSL https://chatgpt.com/codex/install.sh | sh',
   higgsfield:'curl -fsSL https://raw.githubusercontent.com/higgsfield-ai/cli/main/install.sh | sh',
+  gemini:'curl -fsSL https://antigravity.google/cli/install.sh | bash',
 });
 const HELP_LINKS=Object.freeze({
   node:'https://nodejs.org/ko/download',
@@ -32,6 +37,8 @@ const HELP_LINKS=Object.freeze({
   'claude-install':'https://code.claude.com/docs/en/setup',
   'codex-install':'https://github.com/openai/codex#installing-and-running-codex-cli',
   'higgsfield-install':'https://github.com/higgsfield-ai/cli#install',
+  'gemini-plans':'https://gemini.google/subscriptions/',
+  'antigravity-install':'https://antigravity.google/docs/cli',
 });
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
 const FOLDER=/^(claude|gpt)-[a-z0-9]{8}$/;
@@ -77,6 +84,22 @@ function codexWindows(snapshot){
   const shape=w=>w?{usedPercent:Number(w.usedPercent),resetsAt:isoOrNull(w.resetsAt),windowMins:Number(w.windowDurationMins)||null}:null;
   return {session:shape(session),weekly:shape(weekly)};
 }
+// agy /usage: 묶음(Gemini 모델, Claude·GPT 모델)마다 주간·5시간 버킷과 남은 비율을 준다.
+// Gemini 묶음을 본 한도로 쓰고, 나머지 묶음은 모델별 주간 줄로 보여 준다. 남은 비율이 없으면 모름(null)으로 둔다.
+function parseAgyUsage(text){
+  const data=parseJson(text),groups=data?.command?.data?.groups;
+  if(!data||data.status!=='SUCCESS'||!Array.isArray(groups)||!groups.length)return null;
+  const bucket=(group,window)=>{
+    const b=(Array.isArray(group?.buckets)?group.buckets:[]).find(x=>x&&x.window===window);
+    const left=b?clampNumber(b.remaining_fraction,0,1):null;
+    return left===null?null:{usedPercent:Math.round((1-left)*1000)/10,resetsAt:isoOrNull(b.reset_time)};
+  };
+  const name=group=>/claude/i.test(group?.name||'')&&/gpt/i.test(group?.name||'')?'Claude·GPT 모델':cleanText(group?.name,40)||'다른 모델';
+  const main=groups.find(g=>/gemini/i.test(g?.name||''))||groups[0];
+  const models=groups.filter(g=>g!==main).slice(0,4).map(g=>{const w=bucket(g,'weekly');return w?{name:name(g),...w}:null;}).filter(Boolean);
+  return {session:bucket(main,'5h'),weekly:bucket(main,'weekly'),models};
+}
+const agyNeedsLogin=text=>/not signed in|sign in|log ?in|unauthenticated|auth(entication)? (required|failed)/i.test(stripAnsi(text));
 function loginUrl(text){
   for(const m of stripAnsi(text).matchAll(/https:\/\/[^\s"'<>`]+/g)){
     try{const url=new URL(m[0]);if(url.protocol==='https:'&&LOGIN_DOMAINS.some(d=>url.hostname===d||url.hostname.endsWith('.'+d)))return url.toString();}catch{}
@@ -88,7 +111,9 @@ function loginUrl(text){
 function candidatePaths(bin,{platform,env,home}){
   const out=[];
   if(platform==='win32'){
-    const dirs=[path.join(home,'.local','bin'),env.APPDATA&&path.join(env.APPDATA,'npm'),path.join(home,'bin'),...String(env.PATH||env.Path||'').split(';')].filter(Boolean);
+    // agy 공식 설치 위치(%LOCALAPPDATA%\agy\bin)와 winget 링크 폴더도 본다.
+    const local=env.LOCALAPPDATA||path.join(home,'AppData','Local');
+    const dirs=[path.join(home,'.local','bin'),env.APPDATA&&path.join(env.APPDATA,'npm'),path.join(home,'bin'),...(bin==='agy'?[path.join(local,'agy','bin'),path.join(local,'Microsoft','WinGet','Links')]:[]),...String(env.PATH||env.Path||'').split(';')].filter(Boolean);
     for(const dir of dirs)for(const ext of ['.exe','.cmd'])out.push(path.join(dir,bin+ext));
   }else{
     const dirs=[path.join(home,'.local','bin'),'/opt/homebrew/bin','/usr/local/bin',path.join(home,'bin'),...String(env.PATH||'').split(':')].filter(Boolean);
@@ -163,11 +188,11 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     out.NO_COLOR='1';out.FORCE_COLOR='0';
     return {...out,...extra};
   }
-  function rawRun(command,argv,{env:runEnv,input=null,timeout=READ_TIMEOUT,verbatim=false}={}){
+  function rawRun(command,argv,{env:runEnv,input=null,timeout=READ_TIMEOUT,verbatim=false,cwd}={}){
     return new Promise(resolve=>{
       let out='',err='',done=false,child;
       const finish=code=>{if(done)return;done=true;clearTimeout(timer);resolve({code,out,err});};
-      try{child=spawn(command,argv,{env:runEnv,shell:false,windowsHide:true,windowsVerbatimArguments:verbatim});}catch(error){resolve({code:-1,out:'',err:String(error?.message||error)});return;}
+      try{child=spawn(command,argv,{env:runEnv,shell:false,windowsHide:true,windowsVerbatimArguments:verbatim,...(cwd?{cwd}:{})});}catch(error){resolve({code:-1,out:'',err:String(error?.message||error)});return;}
       const timer=setTimeout(()=>{try{child.kill();}catch{}finish(-2);},timeout);
       child.stdout?.on('data',d=>{if(out.length<OUTPUT_LIMIT)out+=d;});
       child.stderr?.on('data',d=>{if(err.length<OUTPUT_LIMIT)err+=d;});
@@ -191,10 +216,12 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     tools=next;toolsAt=now();
     return tools;
   }
-  function runTool(file,args,{extraEnv={},input=null,timeout=READ_TIMEOUT}={}){
+  function runTool(file,args,{extraEnv={},input=null,timeout=READ_TIMEOUT,cwd}={}){
     const {command,argv,verbatim}=commandFor(file,args,{platform,env});
-    return rawRun(command,argv,{env:childEnv(extraEnv),input,timeout,verbatim});
+    return rawRun(command,argv,{env:childEnv(extraEnv),input,timeout,verbatim,cwd});
   }
+  // agy는 실행 폴더를 작업 공간으로 본다. 회원 파일이 있는 곳이 아니라 이 혜택의 데이터 폴더에서 돌린다.
+  const agyCwd=()=>{try{fs.mkdirSync(root,{recursive:true});return root;}catch{return undefined;}};
   const homeEnv=(service,folder)=>folder&&SERVICES[service]?.home?{[SERVICES[service].home]:path.join(accountsDir,folder)}:{};
 
   /* 읽기 */
@@ -258,11 +285,20 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(!data||typeof data!=='object'||data.credits===undefined)return /auth|login|expired|token/i.test(r.out+r.err)?{state:'needs-login',message:'Higgsfield 로그인이 필요해요. 다시 연결해 주세요.'}:{state:'error',message:'Higgsfield 계정 상태를 읽지 못했어요.'};
     return {state:'ok',email:typeof data.email==='string'?data.email:null,plan:typeof data.subscription_plan_type==='string'?data.subscription_plan_type:null,live:{readAt:now(),credits:clampNumber(data.credits,-1e9,1e12)}};
   }
+  async function readGemini(){
+    const r=await runTool(tools.gemini.path,['-p','/usage','--output-format','json'],{timeout:45000,cwd:agyCwd()});
+    const usage=parseAgyUsage(r.out);
+    if(!usage||!usage.weekly&&!usage.session){
+      if(agyNeedsLogin(r.out+'\n'+r.err))return {state:'needs-login',message:'Gemini(Antigravity) 로그인이 필요해요. 다시 연결해 주세요.'};
+      return {state:'error',message:r.code===-2?'Antigravity CLI가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':'Antigravity CLI의 사용량을 읽지 못했어요.'};
+    }
+    return {state:'ok',live:{readAt:now(),session:usage.session,weekly:usage.weekly,models:usage.models}};
+  }
   async function readRow(row){
     const spec=SERVICES[row.service];
     if(!spec||row.source!=='auto')return null;
     if(!tools[row.service]?.path)return {state:'error',message:`${spec.label}용 공식 프로그램이 이 PC에서 보이지 않아요. 가이드의 설치 단계를 확인해 주세요.`};
-    try{return row.service==='claude'?await readClaude(row):row.service==='gpt'?await readCodex(row):await readHiggsfield(row);}
+    try{return row.service==='claude'?await readClaude(row):row.service==='gpt'?await readCodex(row):row.service==='gemini'?await readGemini(row):await readHiggsfield(row);}
     catch{return {state:'error',message:'읽는 중 문제가 생겼어요. 잠시 뒤 다시 확인해 주세요.'};}
   }
   function applyRead(row,result){
@@ -297,6 +333,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   async function verifyLogin(service,folder){
     if(service==='claude'){const a=await claudeAccount(folder);return a.loggedIn?{ok:true,email:a.email,plan:a.plan}:{ok:false};}
     if(service==='gpt'){const r=await codexSession(folder,[{method:'account/read',params:{}}]);const acc=r.results[0]?.account;return acc?{ok:true,email:acc.email||null,plan:acc.planType||null}:{ok:false};}
+    // agy는 계정 이메일을 공식 출력으로 내주지 않는다. 사용량이 읽히면 연결된 것으로 본다.
+    if(service==='gemini'){const g=await readGemini();return g.state==='ok'?{ok:true,email:null,plan:null}:{ok:false};}
     const h=await readHiggsfield();return h.state==='ok'?{ok:true,email:h.email,plan:h.plan}:{ok:false};
   }
   function addRow(service,folder,info){
@@ -318,22 +356,34 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   }
   async function startLogin(service,{email,console:useConsole=false}={}){
     const spec=SERVICES[service];if(!spec)return {ok:false,code:'UNKNOWN_SERVICE'};
+    if(spec.consoleLogin)useConsole=true;
     if(login&&!['done','error','cancelled'].includes(login.stage))return {ok:false,code:'LOGIN_BUSY'};
     await detectTools();if(!tools[service].path)return {ok:false,code:'TOOL_MISSING'};
     if(email!==undefined&&email!==null&&email!==''&&!(service==='claude'&&EMAIL.test(String(email))))return {ok:false,code:'INVALID_EMAIL'};
     const folder=spec.folders?service+'-'+randomId():null;
     if(folder)fs.mkdirSync(path.join(accountsDir,folder),{recursive:true});
-    const args=service==='claude'?['auth','login',...(email?['--email',String(email)]:[])]:service==='gpt'?['login']:['auth','login'];
+    // agy는 로그인 명령이 따로 없고, 처음 켜면 로그인 화면이 나온다.
+    const args=service==='claude'?['auth','login',...(email?['--email',String(email)]:[])]:service==='gpt'?['login']:service==='gemini'?[]:['auth','login'];
     const current={id:'l-'+randomId(),service,folder,email:email?String(email):null,stage:'starting',url:null,needsCode:false,message:'',console:useConsole,child:null,startedAt:now(),output:''};
     login=current;
-    const {command,argv,verbatim}=commandFor(tools[service].path,args,{platform,env});
+    const cwd=service==='gemini'?agyCwd():undefined;
     try{
-      current.child=spawn(command,argv,useConsole
-        ?{env:childEnv(homeEnv(service,folder)),shell:false,detached:true,stdio:'ignore',windowsHide:false,windowsVerbatimArguments:verbatim}
-        :{env:childEnv(homeEnv(service,folder)),shell:false,windowsHide:true,windowsVerbatimArguments:verbatim});
+      if(useConsole&&platform==='darwin')current.child=spawnMacTerminal(tools[service].path,args,homeEnv(service,folder),cwd);
+      else{
+        const {command,argv,verbatim}=commandFor(tools[service].path,args,{platform,env});
+        current.child=spawn(command,argv,useConsole
+          ?{env:childEnv(homeEnv(service,folder)),shell:false,detached:true,stdio:'ignore',windowsHide:false,windowsVerbatimArguments:verbatim,...(cwd?{cwd}:{})}
+          :{env:childEnv(homeEnv(service,folder)),shell:false,windowsHide:true,windowsVerbatimArguments:verbatim});
+      }
     }catch{finishLogin(current,'error','로그인 프로그램을 열지 못했어요.');return {ok:false,code:'SPAWN_FAILED'};}
     current.child.on('error',()=>finishLogin(current,'error','로그인 프로그램을 열지 못했어요.'));
-    if(useConsole){current.stage='console';current.message='검은 창이 열렸어요. 브라우저에서 승인하고, 코드가 나오면 검은 창에 붙여 넣어 주세요.';current.child.unref?.();pollLogin(current);}
+    if(useConsole){
+      current.stage='console';
+      current.message=service==='gemini'
+        ?'검은 창이 열렸어요. Enter로 「Google OAuth」를 고르고, 브라우저에서 계정을 고른 뒤 「로그인」을 눌러 주세요. 브라우저에 나온 코드를 「클립보드에 복사」해 검은 창에 붙여 넣고 Enter를 누르면 돼요(검은 창에서는 오른쪽 클릭이 붙여넣기예요).'
+        :'검은 창이 열렸어요. 브라우저에서 승인하고, 코드가 나오면 검은 창에 붙여 넣어 주세요.';
+      current.child.unref?.();pollLogin(current);
+    }
     else{
       const onData=data=>{
         current.output=(current.output+data).slice(-OUTPUT_LIMIT);
@@ -397,6 +447,14 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     try{await openExternal(login.url);return {ok:true};}catch{return {ok:false,code:'OPEN_FAILED'};}
   }
 
+  // macOS에는 따로 여는 검은 창이 없어 터미널 앱에 고정 명령을 넘긴다. 값은 셸 작은따옴표로 감싼다.
+  const shQuote=value=>"'"+String(value).replace(/'/g,"'\\''")+"'";
+  const asString=value=>'"'+String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
+  function spawnMacTerminal(file,args,extraEnv,cwd){
+    const line=[cwd?`cd ${shQuote(cwd)} &&`:'',...Object.entries(extraEnv).map(([key,value])=>`${key}=${shQuote(value)}`),shQuote(file),...args.map(shQuote)].filter(Boolean).join(' ');
+    return spawn('osascript',['-e',`tell application "Terminal" to do script ${asString(line)}`,'-e','tell application "Terminal" to activate'],{env:childEnv(),shell:false,detached:true,stdio:'ignore'});
+  }
+
   /* 설치 도움 */
   async function openInstaller(service){
     if(!SERVICES[service])return {ok:false,code:'UNKNOWN_SERVICE'};
@@ -451,4 +509,4 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   };
 }
 
-module.exports={createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,loginUrl,claudeNeedsLogin,candidatePaths,commandFor,SERVICES,INSTALLERS,HELP_LINKS};
+module.exports={createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,parseAgyUsage,loginUrl,claudeNeedsLogin,candidatePaths,commandFor,SERVICES,INSTALLERS,HELP_LINKS};

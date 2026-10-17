@@ -83,3 +83,31 @@ test('the board asks members to sign in, then guides first-time users before sho
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
   board.dispose();
 });
+
+test('the Gemini guide walks through the console sign-in and the row shows both quota groups',async()=>{
+  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
+  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+  const {createSubscriptionsBoard,attention}=await import('../renderer/subscriptions.mjs');
+  const gemini=row({service:'gemini',label:'Gemini',email:null,live:{readAt:Date.now(),weekly:{usedPercent:36,resetsAt:Date.now()+3*864e5},session:{usedPercent:10,resetsAt:Date.now()+3600e3},models:[{name:'Claude·GPT 모델',usedPercent:0,resetsAt:Date.now()+3*864e5}]}});
+  let snapshot={ok:true,tools:{claude:{installed:true},gpt:{installed:true},higgsfield:{installed:true,npm:true},gemini:{installed:true,version:'1.4.0'}},rows:[gemini],settings:{usdKrw:1400},check:{at:Date.now(),total:1,ok:1},login:null,checking:false};
+  const listeners=[],logins=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async()=>({ok:true}),useExisting:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};},save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true})}};
+  const board=createSubscriptionsBoard({bridge});
+  const el=fakeContainer();
+  board.render(el,{signedIn:true,native:true});
+  await new Promise(r=>setImmediate(r));
+  assert.match(el.innerHTML,/ms-s-gemini/);assert.match(el.innerHTML,/Antigravity CLI/);
+  const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
+  await click({subs:'toggle',id:'g-gemini'});
+  assert.match(el.innerHTML,/Claude·GPT 모델 주간 <b class="ms-num">0%<\/b>/);assert.match(el.innerHTML,/<strong>Gemini<\/strong>/);
+  await click({subs:'guide',service:'gemini'});
+  assert.match(el.innerHTML,/Gemini 연결 가이드/);assert.match(el.innerHTML,/Gemini 로그인/);assert.ok(!el.innerHTML.includes('>새 계정 연결</button>'));
+  await click({subs:'login',service:'gemini'});
+  assert.deepEqual(logins,[['gemini',{email:undefined}]]);
+  snapshot={...snapshot,login:{id:'l-1',service:'gemini',stage:'console',console:true,message:'',needsCode:false,url:null}};
+  listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/1\. Google OAuth/);assert.match(el.innerHTML,/오른쪽 클릭/);
+  // 이메일이 없는 계정은 이름을 두 번 쓰지 않는다.
+  assert.ok(attention([{...gemini,state:'needs-login'}],Date.now()).some(i=>i.text==='다시 로그인 필요 · Gemini'));
+  board.dispose();
+});

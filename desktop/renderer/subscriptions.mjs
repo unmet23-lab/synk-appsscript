@@ -6,9 +6,10 @@ const KINDS = [['weekly', '주간 한도', '주간 %와 초기화 시각'], ['cr
 const AUTO = {
   claude: { label: 'Claude', tool: 'Claude Code', plan: 'Claude Pro·Max 이상 요금제가 필요해요. 무료 요금제는 Claude Code를 쓸 수 없어요.', planLink: 'claude-plans', install: 'irm https://claude.ai/install.ps1 | iex', installLink: 'claude-install', email: true },
   gpt: { label: 'ChatGPT · Codex', tool: 'Codex', plan: 'ChatGPT 계정으로 로그인해요. 요금제마다 Codex 한도가 달라요.', planLink: 'chatgpt-plans', install: 'powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"', installLink: 'codex-install', email: false },
-  higgsfield: { label: 'Higgsfield', tool: 'Higgsfield CLI', plan: 'Higgsfield 계정의 남은 크레딧을 읽어요. 이 PC에는 계정 하나만 연결돼요.', planLink: null, install: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', email: false, node: true },
+  higgsfield: { label: 'Higgsfield', tool: 'Higgsfield CLI', plan: 'Higgsfield 계정의 남은 크레딧을 읽어요. 이 PC에는 계정 하나만 연결돼요.', planLink: null, install: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', email: false, node: true, single: true },
+  gemini: { label: 'Gemini', tool: 'Antigravity CLI', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽어요. Gemini 모델 한도와 Claude·GPT 모델 한도가 따로 보여요. 이 PC에는 Google 계정 하나만 연결돼요.', planLink: 'gemini-plans', install: 'irm https://antigravity.google/cli/install.ps1 | iex', installLink: 'antigravity-install', email: false, single: true },
 };
-const MANUAL_NAMES = ['Gemini', 'Suno', 'Typecast', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Hugging Face', 'Google AI Pro'];
+const MANUAL_NAMES = ['Suno', 'Typecast', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Hugging Face', 'Google AI Pro'];
 const MANUAL_KIND = { suno: 'credit', typecast: 'credit', elevenlabs: 'credit', kling: 'credit', higgsfield: 'credit', claude: 'weekly', gpt: 'weekly', chatgpt: 'weekly' };
 const CODE_TEXT = {
   TOOL_MISSING: '먼저 공식 프로그램을 설치해 주세요. 설치 후 「다시 확인」을 눌러요.',
@@ -66,7 +67,7 @@ export function isLow(row) {
 }
 const liveWeekly = (row, now) => { const w = row?.live?.weekly; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w.usedPercent : null; };
 const liveSession = (row, now) => { const w = row?.live?.session; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w : null; };
-const who = row => `${row.email ? row.email.split('@')[0] : row.label} ${row.label}`.trim();
+const who = row => (row.email ? `${row.email.split('@')[0]} ${row.label}` : row.label).trim();
 
 export function attention(rows, now) {
   const items = [];
@@ -128,7 +129,7 @@ export function money(amount, currency) {
 const pair = (krw, usd) => [krw ? money(krw, 'KRW') : '', usd ? money(usd, 'USD') : ''].filter(Boolean).join(' + ');
 const credits = v => (Math.abs(v) < 10 ? Number(v).toFixed(2).replace(/\.?0+$/, '') : Math.round(v).toLocaleString('ko-KR'));
 const bar = p => `<span class="ms-bar${p >= 90 ? ' hot' : ''}" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, p))}%"></span></span>`;
-const svcClass = service => (['claude', 'gpt', 'higgsfield'].includes(service) ? 'ms-s-' + service : 'ms-s-other');
+const svcClass = service => (Object.hasOwn(AUTO, service) ? 'ms-s-' + service : 'ms-s-other');
 const stateChip = row => row.source !== 'auto' ? '<span class="ms-chip ms-chip-manual">직접 넣음</span>'
   : row.state === 'ok' ? '<span class="ms-chip ms-chip-ok">연결됨</span>'
     : row.state === 'needs-login' ? '<span class="ms-chip ms-chip-alert">다시 로그인</span>'
@@ -299,7 +300,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     </div>`;
   }
   function manualForm() {
-    if (!ui.manualOpen) return '<div class="ms-manual-open"><button type="button" class="ms-button" data-subs="manual">Gemini·Suno처럼 자동으로 못 읽는 구독 직접 넣기</button></div>';
+    if (!ui.manualOpen) return '<div class="ms-manual-open"><button type="button" class="ms-button" data-subs="manual">Suno·Typecast처럼 자동으로 못 읽는 구독 직접 넣기</button></div>';
     return `<form class="ms-form ms-manual" data-subs-form="manual" data-kind="plan">
       <h3 class="ms-wide">직접 넣는 구독</h3>
       <label>서비스 이름<input id="ms-manual-label" name="label" list="ms-names" maxlength="40" placeholder="Suno" required></label>
@@ -344,7 +345,17 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
         <details class="ms-cmd"><summary>직접 붙여 넣고 싶다면</summary><code>${esc(info.install)}</code><button type="button" class="ms-link" data-subs="copy" data-service="${key}">명령 복사</button> <button type="button" class="ms-link" data-subs="help" data-link="${info.installLink}">공식 설치 안내</button></details>`);
     let loginBody;
     if (!installed) loginBody = '<p class="ms-soft">설치가 끝나면 열려요.</p>';
-    else if (login && !['done', 'error', 'cancelled'].includes(login.stage)) {
+    else if (login && !['done', 'error', 'cancelled'].includes(login.stage) && key === 'gemini') {
+      loginBody = `<p>검은 창이 열렸어요. 아래 순서대로 하면 돼요. 창이 안 보이면 아래쪽 작업 표시줄에서 찾아 주세요.</p>
+        <ol class="ms-mini-steps">
+          <li>검은 창에서 <b>Enter</b>를 눌러 「1. Google OAuth」를 골라요.</li>
+          <li>열린 브라우저에서 연결할 Google 계정을 고르고 「로그인」을 눌러요.</li>
+          <li>브라우저에 나온 코드를 「클립보드에 복사」하고, 검은 창 안에서 <b>오른쪽 클릭</b>(붙여넣기) 뒤 <b>Enter</b>를 눌러요.</li>
+          <li>폴더를 믿겠냐고 물으면 아무거나 골라도 돼요. 로그인은 이미 끝났어요.</li>
+        </ol>
+        <p class="ms-soft">연결되면 이 화면이 저절로 넘어가요. 그다음 검은 창은 닫아도 돼요.</p>
+        <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button></div>`;
+    } else if (login && !['done', 'error', 'cancelled'].includes(login.stage)) {
       loginBody = `<p>${esc(login.message || '로그인을 준비하고 있어요.')}</p>
         ${login.url ? '<p class="ms-soft">브라우저가 열리지 않았다면 아래 단추로 다시 열어 주세요. 오른쪽 위 계정이 연결할 계정과 같은지도 확인해 주세요.</p><div class="ms-inline"><button type="button" class="ms-button" data-subs="open-url">로그인 페이지 다시 열기</button></div>' : ''}
         ${login.needsCode ? `<form class="ms-code" data-subs-form="code"><label for="ms-code">브라우저에 보이는 코드</label><div class="ms-inline"><input id="ms-code" autocomplete="off" spellcheck="false" value="${esc(ui.code)}" placeholder="코드를 붙여 넣기 (Ctrl+V)"><button type="submit" class="ms-button ms-button-primary">연결</button></div></form>` : ''}
@@ -352,9 +363,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button>${key === 'claude' && !login.console ? '<button type="button" class="ms-link" data-subs="console-login">코드가 안 들어가면 · 검은 창으로 로그인하기</button>' : ''}</div>`;
     } else {
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
-      loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. 다른 계정은 「새 계정 연결」로 하나씩 더해요.</p>
+      loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
         ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>로그인 화면에 미리 채워져요. 다만 브라우저에 다른 Claude 계정이 이미 로그인돼 있으면 그 계정으로 연결되니, 먼저 브라우저(claude.ai)에서 연결할 계정으로 바꿔 두세요.</small></label>` : ''}
-        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button>${key === 'higgsfield' ? '' : `<button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>새 계정 연결</button>`}${key === 'higgsfield' ? `<button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>Higgsfield 로그인</button>` : ''}</div>
+        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : '새 계정 연결'}</button></div>
         ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
     }
     const loginState = !installed ? 'wait' : login?.stage === 'done' ? 'done' : 'now';
@@ -369,6 +380,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
       ['코드를 붙여 넣어도 넘어가지 않아요', '코드 앞뒤 공백 없이 한 번에 붙여 넣어 주세요. 계속 안 되면 「검은 창으로 로그인하기」를 눌러 검은 창에 직접 붙여 넣어 주세요(오른쪽 클릭으로 붙여넣기).'],
       ['「구독 한도가 없어요」라고 나와요', 'Claude Code는 Pro·Max 이상 요금제에서만 쓸 수 있어요. 무료 요금제 계정은 자동으로 읽을 수 없으니 「직접 넣기」로 결제일만 챙겨 주세요.'],
       ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
+      ['Gemini 검은 창에서 막혔어요', '검은 창을 한 번 눌러 고른 뒤 Enter를 눌러요. 코드는 Ctrl+V 대신 검은 창 안에서 오른쪽 클릭으로 붙여 넣어요. 브라우저에서 계정을 고를 때 연결할 Google 계정을 눌러 주세요. 이 PC에는 Gemini 계정 하나만 연결돼요.'],
       ['연결을 끊고 싶어요', '서비스 줄을 펼쳐 계정의 「지우기」를 두 번 누르면 이 앱이 만든 로그인 폴더까지 지워요. 기존 로그인을 가져온 계정은 목록에서만 빠져요.'],
     ];
     return `<details class="ms-help" ${ui.help ? 'open' : ''}><summary data-subs="help-toggle">막혔을 때</summary><dl>${items.map(([q, a]) => `<div><dt>${esc(q)}</dt><dd>${esc(a)}</dd></div>`).join('')}</dl></details>`;
@@ -385,7 +397,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     else if (!context.signedIn) body = section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">위 초록 판의 「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>');
     else if (loadError) body = section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>');
     else if (!snapshot) body = '<p class="ms-loading">계정판을 준비하고 있어요…</p>';
-    else if (!rows.length) { if (!ui.guide && !ui.guideClosed) ui.guide = 'claude'; body = connectSection() + section('02', '직접 넣는 구독', 'Gemini·Suno처럼 공식 출력이 없는 서비스는 결제일과 요금만 넣어 둘 수 있어요.', manualForm()); }
+    else if (!rows.length) { if (!ui.guide && !ui.guideClosed) ui.guide = 'claude'; body = connectSection() + section('02', '직접 넣는 구독', 'Suno·Typecast처럼 공식 출력이 없는 서비스는 결제일과 요금만 넣어 둘 수 있어요.', manualForm()); }
     else body = attentionSection(rows, now) + serviceSection(rows, now) + agendaSection(rows, now) + connectSection();
     const focused = document.activeElement?.id;
     const selection = focused && container.querySelector('#' + CSS.escape(focused)) ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;

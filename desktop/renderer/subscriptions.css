@@ -82,6 +82,7 @@
 .member-subs .ms-s-claude{--ms-svc:#F2895F}
 .member-subs .ms-s-gpt{--ms-svc:#7DB45A}
 .member-subs .ms-s-higgsfield{--ms-svc:#E05C97}
+.member-subs .ms-s-gemini{--ms-svc:#6FA8F5}
 .member-subs .ms-s-other{--ms-svc:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .ms-count{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;white-space:nowrap}
 .member-subs .ms-status{overflow:hidden;font-size:.9375rem;text-overflow:ellipsis;white-space:nowrap}
@@ -142,6 +143,8 @@
 .member-subs .ms-step h4{margin-bottom:6px;font-size:1rem;font-weight:750}
 .member-subs .ms-step p{color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
 .member-subs .ms-step p+p{margin-top:6px}
+.member-subs .ms-guide ol.ms-mini-steps{display:flex;flex-direction:column;gap:6px;margin:10px 0;padding-left:1.4em;list-style:decimal;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
+.member-subs .ms-mini-steps b{color:var(--ink,#FAFAF9);font-weight:650}
 .member-subs .ms-code{margin-top:12px}
 .member-subs .ms-code label{display:block;margin-bottom:2px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.8125rem;font-weight:650}
 .member-subs .ms-code input{flex:1 1 280px;font-family:var(--mono,monospace)}
