@@ -74,6 +74,34 @@ export function isLow(row) {
 }
 const liveWeekly = (row, now) => { const w = row?.live?.weekly; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w.usedPercent : null; };
 const liveSession = (row, now) => { const w = row?.live?.session; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w : null; };
+// 남은 %는 내림한다(99.6% 썼으면 0%). 남은 양을 부풀려 보이지 않게.
+export const leftPercent = used => Math.max(0, Math.floor(100 - Number(used) + 1e-6));
+
+// 한도 고리(10-17, Bklit 여러 겹 게이지): 안 고리 5시간 · 바깥 고리 주간. 초기화 시각이 지난 기간은 다시 가득 찬 것으로 본다.
+// 가운데 숫자와 「초기화까지」는 두 고리 중 덜 남은 쪽(지금 쓸 수 있는 만큼)을 따른다.
+export function limitGauge(row, now) {
+  if (row?.kind !== 'weekly') return null;
+  const shape = w => {
+    if (!w || !Number.isFinite(Number(w.usedPercent))) return null;
+    if (w.resetsAt && now >= w.resetsAt) return { used: 0, left: 100, resetsAt: null };
+    const used = Math.min(100, Math.max(0, Number(w.usedPercent)));
+    return { used, left: leftPercent(used), resetsAt: w.resetsAt || null };
+  };
+  const session = shape(row.live?.session);
+  let weekly = shape(row.live?.weekly);
+  if (isUsedUp(row, now)) weekly = { used: 100, left: 0, resetsAt: nextReset(row, now) };
+  else if (weekly && !weekly.resetsAt && weekly.used > 0) weekly.resetsAt = nextReset(row, now);
+  if (!session && !weekly) return null;
+  const focus = session && (!weekly || session.left < weekly.left) ? 'session' : 'weekly';
+  return { session, weekly, focus, left: (focus === 'session' ? session : weekly).left, resetsAt: (focus === 'session' ? session : weekly).resetsAt };
+}
+// 주의는 「10% 이하 남음」 하나로 숫자·색·알림 칩이 같은 기준을 쓴다.
+export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ? 'low' : 'ok');
+// 서비스마다 지금 가장 여유 있는 계정: 고리가 있고, 다시 로그인이 필요 없고, 덜 남은 쪽이 가장 많이 남은 계정.
+export function roomiest(list, now) {
+  const score = row => { const g = limitGauge(row, now); return g ? (row.source === 'auto' && row.state === 'needs-login' ? 0 : 1000) + g.left : -1; };
+  return [...list].sort((a, b) => score(b) - score(a))[0] || null;
+}
 const who = row => (row.email ? `${row.email.split('@')[0]} ${row.label}` : row.label).trim();
 // 메일이 없는 API 키 줄은 키 끝 네 글자로 구분한다.
 const accountName = row => row.email || (row.keyHint ? `${row.label} · 키 ${row.keyHint}` : row.label);
@@ -85,8 +113,10 @@ export function attention(rows, now) {
     if (row.kind === 'weekly') {
       const wp = liveWeekly(row, now), session = liveSession(row, now);
       if (isUsedUp(row, now)) { const r = nextReset(row, now); items.push({ level: 0, order: r || Infinity, id: row.id, text: `소진 · ${who(row)}${r ? ` · ${when(r)} 풀림` : ''}` }); }
-      else if (wp !== null && wp >= 90) items.push({ level: 1, order: 0, id: row.id, text: `주간 ${Math.round(wp)}% · ${who(row)}` });
-      else if (session && session.usedPercent >= 90) items.push({ level: 1, order: 0, id: row.id, text: `5시간 ${Math.round(session.usedPercent)}% · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
+      // 5시간을 다 쓴 계정은 주간이 남아 있어도 지금은 못 쓰니 주간 주의보다 먼저 올린다.
+      else if (session && session.usedPercent >= 100) items.push({ level: 0, order: session.resetsAt || Infinity, id: row.id, text: `5시간 소진 · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
+      else if (wp !== null && leftPercent(wp) <= 10) items.push({ level: 1, order: 0, id: row.id, text: `거의 소진 · 주간 ${leftPercent(wp)}% 남음 · ${who(row)}` });
+      else if (session && leftPercent(session.usedPercent) <= 10) items.push({ level: 1, order: 0, id: row.id, text: `거의 소진 · 5시간 ${leftPercent(session.usedPercent)}% 남음 · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
     }
     if (isLow(row)) items.push({ level: 1, order: 0, id: row.id, text: `크레딧 부족 · ${who(row)} · ${credits(balance(row).value)}` });
     const dd = nextBill(row.billDay, now);
@@ -137,7 +167,45 @@ export function money(amount, currency) {
 }
 const pair = (krw, usd) => [krw ? money(krw, 'KRW') : '', usd ? money(usd, 'USD') : ''].filter(Boolean).join(' + ');
 const credits = v => (Math.abs(v) < 10 ? Number(v).toFixed(2).replace(/\.?0+$/, '') : Math.round(v).toLocaleString('ko-KR'));
-const bar = p => `<span class="ms-bar${p >= 90 ? ' hot' : ''}" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, p))}%"></span></span>`;
+const WINDOW_NAME = { session: '5시간', weekly: '주간' };
+// 「· 4일 19시간 뒤」가 좁은 칸에서 「뒤」나 「·」만 홀로 남지 않게 띄어쓰기를 붙인다.
+const keep = text => text.replace(/ /g, '\u00a0');
+const leftHtml = w => (w.left <= 0 ? '<b class="ms-alert-text">소진</b>' : `<b class="ms-num${w.left <= 10 ? ' ms-warn-text' : ''}">${w.left}%</b> 남음`);
+// 고리 그림(viewBox 120): 바깥 주간 · 안 5시간. 남은 만큼 12시 방향에서 시계 방향으로 찬다. 서비스 줄의 작은 고리는 굵게.
+// 97% 넘게 남으면 둥근 끝이 맞닿아 닫혀 보여 각진 끝으로, 100%는 이음매 없는 닫힌 원으로 그린다.
+const RINGS = { full: { weekly: 54, session: 43, width: 8 }, mini: { weekly: 46, session: 46, width: 20 } };
+function ringsSvg(g, size = 'full') {
+  const spec = RINGS[size];
+  const ring = key => {
+    const w = g[key]; if (!w) return '';
+    const level = gaugeLevel(w), attrs = `cx="60" cy="60" r="${spec[key]}" stroke-width="${spec.width}"`;
+    return `<circle class="ms-track" data-level="${level}" ${attrs}/>${w.left > 0 ? `<circle class="ms-arc" data-ring="${key}" data-level="${level}" ${attrs}${w.left >= 100 ? ' data-full' : ` stroke-linecap="${w.left >= 97 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - w.left}" transform="rotate(-90 60 60)"`}/>` : ''}`;
+  };
+  return `<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">${ring('weekly')}${ring('session')}</svg>`;
+}
+const gauge = (g, key, label) => { const w = g[g.focus]; return `<span class="ms-gauge" data-level="${gaugeLevel(w)}">${ringsSvg(g)}<span class="ms-gauge-center"><b class="ms-gauge-num" data-roll="${esc(key)}">${w.left}<small>%</small></b><span>${WINDOW_NAME[g.focus]}${label ? (w.left <= 0 ? ' 소진' : ' 남음') : ''}</span></span></span>`; };
+const miniGauge = (g, key) => `<span class="ms-gauge ms-gauge-mini" data-level="${gaugeLevel(g[key])}">${ringsSvg({ [key]: g[key] }, 'mini')}</span>`;
+const untilReset = (g, now) => (g.resetsAt ? `${WINDOW_NAME[g.focus]} 초기화까지 <b>${rel(g.resetsAt - now)}</b>` : g[g.focus].used === 0 ? '아직 안 씀' : '초기화 시각 없음');
+
+// 숫자 굴림(WORLD world-motion.mjs의 roll과 같은 문법): 숫자 글자는 그대로 두고(투명), 그 위에 0~9 띠를 굴린다.
+const motionOn = () => typeof matchMedia === 'function' && document.documentElement?.dataset?.motion !== 'reduced' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+function roll(el, { delay = 0, duration = 1000 } = {}) {
+  const nodes = [], walk = n => { for (const c of [...n.childNodes]) { if (c.nodeType === 3) nodes.push(c); else if (c.nodeType === 1) walk(c); } };
+  walk(el);
+  let k = 0;
+  for (const node of nodes) {
+    if (!/\d/.test(node.textContent)) continue;
+    const frag = document.createDocumentFragment();
+    for (const ch of node.textContent) {
+      if (!/\d/.test(ch)) { frag.append(ch); continue; }
+      const d = document.createElement('span'); d.className = 'ms-roll'; d.style.setProperty('--d', ch);
+      const t = document.createElement('span'); t.className = 'ms-roll-t'; t.textContent = ch;
+      const strip = document.createElement('i'); strip.setAttribute('aria-hidden', 'true'); strip.style.setProperty('--rd', `${delay + k * 120}ms`); strip.style.setProperty('--rt', `${duration + k * 160}ms`);
+      d.append(t, strip); frag.append(d); k++;
+    }
+    node.replaceWith(frag);
+  }
+}
 const svcClass = service => (Object.hasOwn(AUTO, service) ? 'ms-s-' + service : 'ms-s-other');
 const stateChip = row => row.source !== 'auto' ? '<span class="ms-chip ms-chip-manual">직접 넣음</span>'
   : row.state === 'ok' ? '<span class="ms-chip ms-chip-ok">연결됨</span>'
@@ -150,6 +218,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
   const api = bridge?.subscriptions;
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
   const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false };
+  const rolled = new Map();
   api?.onChanged?.(value => { if (value?.ok) { snapshot = value; if (visible) paint(); } });
 
   async function load(refreshTools = false) {
@@ -224,20 +293,32 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
         <div class="ms-hero-note"><span>${esc(note)}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
+  // 서비스 하나에 고리 하나: 지금 가장 여유 있는 계정의 남은 한도. 누르면 그 계정을 펼친다.
+  function meter(list, now) {
+    const row = roomiest(list, now), g = row && limitGauge(row, now);
+    if (!g) return '';
+    const name = row.email ? row.email.split('@')[0] : '';
+    const legend = ['weekly', 'session'].filter(k => g[k]).map(k => `<span class="ms-legend-row" data-ring="${k}" data-level="${gaugeLevel(g[k])}"><i aria-hidden="true"></i>${WINDOW_NAME[k]}<span>${leftHtml(g[k])}</span></span>`).join('');
+    return `<button type="button" class="ms-meter ${svcClass(row.service)}" data-subs="jump" data-id="${esc(row.id)}">${gauge(g, 'm-' + (row.source === 'auto' ? row.service : row.label), true)}
+      <span class="ms-meter-body"><span class="ms-meter-head"><span class="ms-tag">${esc(row.label)}</span>${name ? `<strong>${esc(name)}</strong>` : ''}</span>${list.length > 1 ? `<span class="ms-meter-note">계정 ${list.length}개 중 가장 여유</span>` : ''}<span class="ms-legend">${legend}</span><span class="ms-reset">${untilReset(g, now)}</span></span><span class="ms-chev" aria-hidden="true"></span></button>`;
+  }
   function attentionSection(rows, now) {
-    const items = attention(rows, now);
-    const body = items.length ? `<div class="ms-attn">${items.map(item => `<button type="button" class="ms-attn-chip ms-l${item.level}" data-subs="jump" data-id="${esc(item.id)}"><span class="ms-dot" aria-hidden="true"></span>${esc(item.text)}</button>`).join('')}</div>`
+    const items = attention(rows, now), groups = new Map();
+    for (const row of rows) if (row.kind === 'weekly') { const key = row.source === 'auto' ? row.service : row.label; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); }
+    const meters = [...groups.values()].map(list => meter(list, now)).filter(Boolean).join('');
+    const chips = items.length ? `<div class="ms-attn">${items.map(item => `<button type="button" class="ms-attn-chip ms-l${item.level}" data-subs="jump" data-id="${esc(item.id)}"><span class="ms-dot" aria-hidden="true"></span>${esc(item.text)}</button>`).join('')}</div>`
       : '<p class="ms-clear">지금 챙길 건 없어요. 소진된 계정도, 3일 안 결제도 없어요.</p>';
-    return section('01', '지금 볼 것', '소진·한도 90% 이상·크레딧 부족·3일 안 결제만 올라와요.', body);
+    const description = meters ? '서비스마다 가장 여유 있는 계정의 남은 한도예요(안쪽 고리 5시간 · 바깥쪽 주간). 소진·10% 이하 남음·크레딧 부족·3일 안 결제는 따로 올라와요.' : '소진·10% 이하 남음·크레딧 부족·3일 안 결제만 올라와요.';
+    return section('01', '지금 볼 것', description, (meters ? `<div class="ms-meters">${meters}</div>` : '') + chips);
   }
   function rowLine(row, now) {
     const lines = [];
     if (row.kind === 'weekly') {
-      const wp = liveWeekly(row, now), s = liveSession(row, now), r = nextReset(row, now);
-      if (wp !== null) { const started = row.live.weekly.resetsAt ? row.live.weekly.resetsAt - 7 * DAY_MS : null; lines.push(`주간 ${bar(wp)}<b class="ms-num">${Math.round(wp)}%</b>${started && now - started < DAY_MS ? ` <span class="ms-soft">(${stamp(started, now)} 새 주 시작)</span>` : ''}`); }
-      if (s) lines.push(`5시간 <b class="ms-num">${Math.round(s.usedPercent)}%</b>${s.resetsAt ? ` <span class="ms-soft">· ${rel(s.resetsAt - now)} 뒤 풀림</span>` : ''}`);
-      for (const model of row.live?.models || []) if (Number.isFinite(model.usedPercent)) lines.push(`${esc(model.name)} 주간 <b class="ms-num">${Math.round(model.usedPercent)}%</b>`);
-      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">· ${rel(r - now)} 뒤</span>` : wp === 0 ? '<span class="ms-soft">아직 안 씀 · 쓰기 시작하면 주간 한도 기간이 시작돼요</span>' : '<span class="ms-soft">초기화 시각 없음</span>');
+      const wp = liveWeekly(row, now), g = limitGauge(row, now), r = nextReset(row, now);
+      if (g?.weekly) { const started = wp !== null && row.live.weekly.resetsAt ? row.live.weekly.resetsAt - 7 * DAY_MS : null; lines.push(`주간 ${leftHtml(g.weekly)}${started && now - started < DAY_MS ? ` <span class="ms-soft">(${stamp(started, now)} 새 주 시작)</span>` : ''}`); }
+      if (g?.session) lines.push(`5시간 ${leftHtml(g.session)}${g.session.resetsAt ? ` <span class="ms-soft">${keep('· ' + rel(g.session.resetsAt - now) + ' 뒤 풀림')}</span>` : ''}`);
+      for (const model of row.live?.models || []) if (Number.isFinite(model.usedPercent)) { const used = Math.min(100, Math.max(0, model.usedPercent)); lines.push(`${esc(model.name)} 주간 ${leftHtml({ used, left: leftPercent(used) })}`); }
+      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">${keep('· ' + rel(r - now) + ' 뒤')}</span>` : wp === 0 ? '<span class="ms-soft">아직 안 씀 · 쓰기 시작하면 주간 한도 기간이 시작돼요</span>' : '<span class="ms-soft">초기화 시각 없음</span>');
       if (isUsedUp(row, now)) lines.push(`<span class="ms-alert-text">${r ? full(r) + '에 풀림' : '소진 해제는 직접 눌러 주세요'}</span>`);
     }
     if (row.kind === 'credit') { const b = balance(row); lines.push(b ? `잔액 <b class="ms-num${isLow(row) ? ' ms-warn-text' : ''}">${credits(b.value)}</b> <span class="ms-soft">· ${b.source === 'live' ? '공식값' : '직접 넣음'}${b.at ? ' ' + stamp(b.at, now) : ''}</span>` : '<span class="ms-soft">잔액 미입력</span>'); }
@@ -276,7 +357,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const first = list[0], kind = first.kind;
     const usedN = list.filter(r => isUsedUp(r, now)).length, lowN = list.filter(isLow).length, alertN = list.filter(r => r.source === 'auto' && r.state !== 'ok' && r.state !== 'unknown').length;
     let status = '';
-    if (kind === 'weekly') { const best = [...list].sort((a, b) => (liveWeekly(a, now) ?? 101) - (liveWeekly(b, now) ?? 101))[0], wp = liveWeekly(best, now); status = `<b>${esc(best.email ? best.email.split('@')[0] : best.label)}</b>${wp !== null ? ` ${bar(wp)}<span class="ms-num">${Math.round(wp)}%</span>` : ''}${list.length > 1 ? ` <span class="ms-soft">가장 여유 있는 계정</span>` : ''}`; }
+    if (kind === 'weekly') { const best = roomiest(list, now) || first, g = limitGauge(best, now); const key = g && (g.weekly ? 'weekly' : 'session'); status = `<b>${esc(best.email ? best.email.split('@')[0] : best.label)}</b>${g ? ` ${miniGauge(g, key)}${WINDOW_NAME[key]} ${leftHtml(g[key])}` : ''}${list.length > 1 ? ` <span class="ms-soft">가장 여유 있는 계정</span>` : ''}`; }
     else if (kind === 'credit') { const b = balance(first); status = `<b>${esc(first.email ? first.email.split('@')[0] : first.label)}</b> · ${b ? `<span class="${isLow(first) ? 'ms-warn-text' : ''}">${credits(b.value)}</span>` : '<span class="ms-soft">잔액 미입력</span>'}${list.length > 1 ? ` <span class="ms-soft">외 ${list.length - 1}</span>` : ''}`; }
     else status = list.slice(0, 2).map(r => `<b>${esc(r.email ? r.email.split('@')[0] : r.label)}</b>`).join(', ') + (list.length > 2 ? ` <span class="ms-soft">외 ${list.length - 2}</span>` : '');
     const flags = [usedN ? `<span class="ms-alert-text">소진 ${usedN}</span>` : '', lowN ? `<span class="ms-warn-text">부족 ${lowN}</span>` : '', alertN ? `<span class="ms-warn-text">확인 필요 ${alertN}</span>` : ''].filter(Boolean).join(' · ');
@@ -298,9 +379,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     </div>`;
   }
   function accountRow(row, now) {
-    const armed = ui.removeArmed === row.id;
-    return `<div class="ms-account" data-row="${esc(row.id)}">
-      <div class="ms-account-name"><strong>${esc(accountName(row))}</strong>${stateChip(row)}${isUsedUp(row, now) ? '<span class="ms-chip ms-chip-alert">소진</span>' : ''}${isLow(row) ? '<span class="ms-chip ms-chip-warn">부족</span>' : ''}</div>
+    const armed = ui.removeArmed === row.id, g = limitGauge(row, now);
+    return `<div class="ms-account${g ? ' has-gauge' : ''}" data-row="${esc(row.id)}">${g ? gauge(g, 'a-' + row.id, false) : ''}
+      <div class="ms-account-name"><strong>${esc(accountName(row))}</strong>${stateChip(row)}${isUsedUp(row, now) ? '<span class="ms-chip ms-chip-alert">소진</span>' : g && gaugeLevel(g[g.focus]) === 'low' ? '<span class="ms-chip ms-chip-warn">거의 소진</span>' : ''}${isLow(row) ? '<span class="ms-chip ms-chip-warn">부족</span>' : ''}</div>
       <div class="ms-account-info">${rowLine(row, now)}</div>
       <div class="ms-account-actions">
         ${row.source === 'auto' && row.state === 'needs-login' ? `<button type="button" class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="${esc(row.id)}">다시 연결</button>` : ''}
@@ -413,6 +494,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     return `<section class="ms-section"><div class="ms-section-heading"><span class="ms-section-number">${number}</span><div><h2>${title}</h2><p>${description}</p></div></div>${body}</section>`;
   }
 
+  // 고리 숫자는 처음 보일 때와 값이 바뀔 때만 한 번 굴리고 고리를 그린다(1분마다 다시 그려도 가만히 있다).
+  function rollChanged() {
+    const nodes = container?.querySelectorAll?.('[data-roll]'); if (!nodes) return;
+    const motion = motionOn();
+    for (const el of nodes) {
+      const key = el.dataset.roll, value = el.textContent;
+      if (motion && rolled.get(key) !== value) { roll(el); el.closest('.ms-gauge')?.classList.add('is-drawing'); }
+      rolled.set(key, value);
+    }
+  }
   function paint() {
     if (!container || !visible) return;
     const now = Date.now(), rows = snapshot?.rows || [];
@@ -426,6 +517,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const focused = document.activeElement?.id;
     const selection = focused && container.querySelector('#' + CSS.escape(focused)) ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
     container.innerHTML = `<div class="member-subs">${hero(now)}${body}</div>`;
+    rollChanged();
     if (focused) { const el = container.querySelector('#' + CSS.escape(focused)); if (el) { el.focus({ preventScroll: true }); if (selection && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(...selection); } catch {} } }
   }
 
@@ -437,7 +529,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
       if (!timer) { timer = setInterval(() => { if (visible && !document.hidden && !(container?.contains(document.activeElement) && document.activeElement.matches('input,select,textarea'))) paint(); }, 60000); timer?.unref?.(); }
       paint();
     },
-    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; } },
+    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; rolled.clear(); } },
     dispose() { clearInterval(timer); timer = null; visible = false; },
     refresh: () => load(true),
   };
