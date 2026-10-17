@@ -94,7 +94,7 @@
 :root[data-host=world] #lobby .hero-art{background:#fff}   /* 운동화는 아래 ::before가 그린다(들썩일 때 바탕 사진이 겹쳐 보이지 않게) */
 :root[data-host=world] .lobby .hero-art::before{content:'';position:absolute;inset:0;border-radius:6px;background:#fff url(assets/world/runner.webp) center/cover no-repeat;transform-origin:40% 90%}
 :root[data-host=world][data-motion=full] .lobby .hero-art::before{animation:w-ready 3s 1.2s cubic-bezier(.2,.75,.2,1) infinite}
-@keyframes w-ready{0%,64%{transform:none}70%{transform:translateX(-5px) rotate(-3deg)}78%{transform:translateX(9px) rotate(2deg) scaleX(1.04)}86%{transform:translateX(-2px)}92%,100%{transform:none}}
+@keyframes w-ready{0%,64%{transform:none}70%{transform:translateX(-5px) skewX(4deg)}78%{transform:translateX(9px) skewX(-6deg) scaleX(1.04)}86%{transform:translateX(-2px)}92%,100%{transform:none}}
 @media(prefers-reduced-motion:reduce){:root[data-host=world] #start::before,:root[data-host=world] .lobby .hero-art::before,.w-roll>i::before{animation:none!important}.w-roll>i{display:none}.w-roll>.w-roll-t{color:inherit}}
 :root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
 /* 보조: 1px 선 알약 */

@@ -14469,8 +14469,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     justChose = false;
     if (!motionOn() || home.state?.reduced || /^life-(story|cafe)/.test(type)) return;
     const reward = getPref("celebrate");
+    const result = ["life-complete", "life-review-complete"].includes(type);
     if (!again && !answered) {
-      [...content.querySelectorAll(".life-poster-label,.life-section-label,.life-pack-label,.life-pack-count")].slice(0, 10).forEach((el, i) => typeLabel(el, { delay: 260 + i * 130 }));
+      if (!result) [...content.querySelectorAll(".life-poster-label,.life-section-label,.life-pack-label,.life-pack-count")].slice(0, 10).forEach((el, i) => typeLabel(el, { delay: 260 + i * 130 }));
       content.querySelectorAll(".life-meter>b,.life-library-note,.life-count").forEach((el) => roll(el, { delay: 700 }));
       const poster = content.querySelector(".life-poster:not(.life-complete-poster)"), print2 = poster?.querySelector(":scope>.w-print");
       if (poster) {
@@ -14512,8 +14513,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       spring(band, [{ opacity: 0, transform: "translateY(46px)" }, { opacity: 1, transform: "translateY(-6px)", offset: 0.62 }, { transform: "translateY(2px)", offset: 0.82 }, { transform: "none" }], { duration: 620, delay: 120 });
       if (lastFeedback.correct && !lastFeedback.helped && reward && band) stamp(band, { size: 92, rot: -12, top: -40, right: 4, delay: 640, shake: content });
     }
-    if (["life-complete", "life-review-complete"].includes(type)) {
+    if (result) {
       const poster = content.querySelector(".life-complete-poster");
+      typeLabel(poster?.querySelector(".life-poster-label"), { delay: 200 });
       slam(poster?.querySelector(".life-poster-word"), { delay: 260, shakeEl: reward ? poster : null });
       develop(poster?.querySelector(":scope>.w-print img"), { delay: 350 });
       [...content.querySelectorAll(".life-section-label")].forEach((el, i) => typeLabel(el, { delay: 900 + i * 220 }));
