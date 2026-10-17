@@ -5,6 +5,7 @@ import {play,haptic,verdict,getPref} from '../brand-opening/world-sound.mjs'
 import {storyPhotoFile,hasStoryPhoto,cafePhotoFile,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 import {storySigns} from '../brand-opening/story-signs.mjs';
 import {storyLineMarkup,storySteps,createStoryDetail} from './life-story.mjs';
+import {motionOn,ink,typeLabel,roll,drop,bindTilt,stitch,wash,shake,spring,stamp,confetti,slam,develop} from '../brand-opening/world-motion.mjs';
 if(!document.querySelector('[data-life-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./life-ui.css',import.meta.url).href;style.dataset.lifeStyle='true';document.head.append(style);}
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 세 친구: 카페 장면은 방 사진 속 작은 친구(home/friend-*), 이야기 무대는 정본 컷(assets/tutors).
@@ -27,6 +28,9 @@ const meter=(done,total,label=`${done} / ${total}`)=>`<span class="life-meter" a
 const expressionOf=(lesson,q)=>lesson?.expressions.find(e=>e.id===q?.expressionId)||{korean:q?.choices?.find(c=>c.id===q.answerId)?.text||'',meaning:''};
 export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null}){
  const panel=document.querySelector('#world-panel'),content=document.querySelector('#panel-content');
+ // 10-17 움직임: 고른 답의 초록이 손끝 자리에서 번지도록 마지막으로 누른 자리를 기억한다. 진행 막대는 같은 레슨에서 늘 때만 움직인다.
+ let lastPoint=null,justChose=false,barMemo={key:'',value:-1};
+ content?.addEventListener('pointerdown',event=>{lastPoint={x:event.clientX,y:event.clientY};},{passive:true});
  for(const [variable,file]of Object.entries({'--cafe-room':'home/cafe-room-v1.webp','--cafe-drinks':'home/cafe-drinks-v2.png','--cafe-ice':'home/cafe-ice.webp','--life-print-goals':'world-felt/goals.webp'}))panel.style.setProperty(variable,`url("${asset(file)}")`);
  for(const kind of ['counter','window','garden'])if(hasCafePhoto(kind))panel.style.setProperty('--cafe-'+kind,`url("${asset(cafePhotoFile(kind))}")`);
  // 흰 인화지에 붙인 펠트 사진(assets/world-felt). 한 화면에 같은 사진은 한 번만 쓴다.
@@ -104,6 +108,51 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   if(tutorSlot&&tutor?.element){const slot=content.querySelector(tutorSlot);if(slot){tutor.element.dataset.layout='scene';slot.append(tutor.element);}}
   home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();story.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
   rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);content.querySelector(focus)?.focus({preventScroll:true});updateHome();
+  decorate(type,keepScroll);
+ }
+ // 10-17 움직임(유호님 「시안에 있는 움직임 전부 앱에 넣어 줘」): 라벨 타이핑 · 포스터 잉크 · 인화지 툭 놓기/손가락 따라 기울기 · 지금 팩 바느질 · 숫자 굴림
+ // · 고른 답(맞으면 초록이 번지고 틀리면 도리도리) · 판정 띠 스프링 · 참 잘했어요 도장 · 진행 막대 · 결과(큰 글자 쾅 · 인화지 현상 · 펠트 색종이).
+ // 이야기·카페 장면은 따로 맡은 움직임이 있어 여기서 건드리지 않는다. 「보상 연출」이 꺼져 있으면 도장·색종이·흔들림은 빼고 결과만.
+ const baseOf=el=>{const t=getComputedStyle(el).transform;return t&&t!=='none'?t:'';};
+ function decorate(type,again){
+  const answered=justChose;justChose=false;
+  if(!motionOn()||home.state?.reduced||/^life-(story|cafe)/.test(type))return;
+  const reward=getPref('celebrate');
+  if(!again&&!answered){
+   [...content.querySelectorAll('.life-poster-label,.life-section-label,.life-pack-label,.life-pack-count')].slice(0,10).forEach((el,i)=>typeLabel(el,{delay:260+i*130}));
+   content.querySelectorAll('.life-meter>b,.life-library-note,.life-count').forEach(el=>roll(el,{delay:700}));
+   const poster=content.querySelector('.life-poster:not(.life-complete-poster)'),print=poster?.querySelector(':scope>.w-print');
+   if(poster){
+    ink(poster.querySelector('.life-poster-word'),{delay:480,from:250,duration:1100});
+    if(print){const base=baseOf(print);drop(print,{base,delay:520});if(getComputedStyle(print).position==='static')print.style.position='relative';if(!print.querySelector('.w-tilt-glare')){const glare=document.createElement('span');glare.className='w-tilt-glare';print.append(glare);}bindTilt(poster,print,{base});poster.style.touchAction='pan-y';}
+   }
+   content.querySelectorAll('.life-pack-word').forEach((el,i)=>ink(el,{delay:900+i*70}));
+   const cta=poster?.querySelector('.felt-button');if(cta){cta.classList.add('w-sheen');if(getComputedStyle(cta).position==='static')cta.style.position='relative';}
+   stitch(content.querySelector('.life-pack-card[data-current="true"]'),{delay:1300});
+  }
+  const meta=content.querySelector('.life-session-meta'),key=meta?.dataset.lifeLessonId||'';
+  if(meta){
+   const bar=meta.querySelector('.life-progress>i'),cells=[...meta.querySelectorAll('i.is-done')],value=bar?parseFloat(bar.style.width)||0:cells.length;
+   if(barMemo.key===key&&value>barMemo.value){
+    if(bar)spring(bar,[{width:`${barMemo.value}%`},{width:`${value}%`}],{duration:900,easing:'cubic-bezier(.3,1.25,.4,1)',fill:'none'});
+    else cells.slice(Math.max(0,barMemo.value)).forEach(cell=>spring(cell,[{transform:'scaleY(1)',filter:'brightness(1)'},{transform:'scaleY(2.4)',filter:'brightness(1.8)',offset:.4},{transform:'none',filter:'none'}],{duration:620,fill:'none'}));
+   }
+   barMemo={key,value};
+  }
+  if(type==='life-question'&&answered&&lastFeedback){
+   const chosen=content.querySelector('.life-choice.is-chosen'),band=content.querySelector('.life-feedback');
+   if(lastFeedback.correct)wash(chosen,lastPoint);else shake(chosen);
+   spring(band,[{opacity:0,transform:'translateY(46px)'},{opacity:1,transform:'translateY(-6px)',offset:.62},{transform:'translateY(2px)',offset:.82},{transform:'none'}],{duration:620,delay:120});
+   if(lastFeedback.correct&&!lastFeedback.helped&&reward&&band)stamp(band,{size:92,rot:-12,top:-40,right:4,delay:640,shake:content});
+  }
+  if(['life-complete','life-review-complete'].includes(type)){
+   const poster=content.querySelector('.life-complete-poster');
+   slam(poster?.querySelector('.life-poster-word'),{delay:260,shakeEl:reward?poster:null});
+   develop(poster?.querySelector(':scope>.w-print img'),{delay:350});
+   [...content.querySelectorAll('.life-section-label')].forEach((el,i)=>typeLabel(el,{delay:900+i*220}));
+   content.querySelectorAll('.life-result-got strong').forEach(el=>roll(el,{delay:1300}));
+   if(reward){const got=content.querySelector('.life-result-got');if(got?.querySelector('.w-led.ok'))stamp(got,{size:70,rot:-10,top:'calc(50% - 35px)',right:10,delay:1700});confetti(panel||content,{x:.5,y:.28,delay:650});}
+  }
  }
  // 판정 한 번: 소리 + 진동 + (「친구들의 반응」이 켜져 있으면) 튜터 자세 한 번.
  const judge=correct=>verdict(correct,{react:value=>companion?.react?.(value)});
@@ -276,7 +325,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  function choose(choiceId){if(lastFeedback)return;
   const p=getProgress(),l=lessonById(context.lessonId),q=l.questions[context.questionIndex];
-  const correct=choiceId===q.answerId;p.recordAnswer({lessonId:l.id,questionId:q.id,choiceId,correct,helped});lastFeedback={question:q,choiceId,correct,helped};renderQuestion();judge(correct);
+  const correct=choiceId===q.answerId;p.recordAnswer({lessonId:l.id,questionId:q.id,choiceId,correct,helped});lastFeedback={question:q,choiceId,correct,helped};justChose=true;renderQuestion();judge(correct);
  }
  // 다음 레슨으로 가는 조용한 링크(맞춤 추천이 있으면 그쪽).
  const nextLink=nextLesson=>`<button class="quiet-button" ${onNext?'data-life-next':nextLesson?`data-life-lesson="${nextLesson.id}"`:'data-life-packs'}>${onNext?'다음 연습':nextLesson?'다음 레슨':'팩 목록 보기'}</button>`;

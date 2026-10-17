@@ -6,6 +6,7 @@ import {createSupportLedger,supportLabel,supportLine} from './game-tutor-support
 import {createTutorReview} from './tutor-review.mjs';
 import {getPref} from './world-sound.mjs';
 import {tutorPhoto,preloadTutorPhotos} from './tutor-photos.mjs';
+import {motionOn,talk,squish} from './world-motion.mjs';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL(path,import.meta.url).href;
@@ -84,8 +85,14 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  const face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),label=element.querySelector('.game-tutor-label');
  const body=element.querySelector('.game-tutor-portrait');
  const setFace=emotion=>{face.src=photo(emotion);element.dataset.face=emotion;};
- // 대기 중에는 스스로 움직이지 않는다(조사 ⑤ · 유호님 멀미 기준) — 예전의 눈 깜빡임 반복은 뺐다. 이름은 부르는 곳을 위해 남긴다.
- function idle(){}
+ // 10-17 움직임(10-15 유호님이 움직임 금지를 지움): 사진은 천천히 숨 쉬고, 놀이 중이 아닐 때는 3~5초마다 눈을 감았다 뜬다(타이머 하나).
+ body.querySelectorAll('img').forEach(img=>img.classList.add('w-breathe'));
+ let blinkTimer=0;
+ function idle(){
+  clearTimeout(blinkTimer);blinkTimer=0;if(disposed||document.hidden||reduced()||!motionOn())return;
+  blinkTimer=setTimeout(()=>{blinkTimer=0;if(disposed)return;if(phase==='playing'||element.dataset.face!=='기본'){idle();return;}face.src=photo('잔잔감음');blinkTimer=setTimeout(()=>{blinkTimer=0;if(disposed)return;face.src=photo(element.dataset.face||'기본');idle();},140);},2800+Math.random()*2400);
+ }
+ body.addEventListener('pointerdown',()=>{if(disposed||reduced()||!motionOn())return;squish(body);if(phase==='playing'||!reactionsOn())return;setFace('놀람');later(()=>setFace('기본'),900);});
  function playSound(emotion){
   stopSound();if(!sound||phase==='playing'||practice||review||document.hidden||!reactionsOn())return;
   const pool=tutor.sounds[emotion]||tutor.sounds.기본;if(!pool?.length)return;
@@ -98,7 +105,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
   const pose=REACTIONS.has(next)&&reactionsOn();
   if(pose){setFace(tutorFace(tutor.id,next));if(!reduced())body.dataset.reaction=next;}
   else if(!REACTIONS.has(next))setFace(tutorFace(tutor.id,next));
-  later(()=>{line.textContent=support?supportLine(tutor.id,support):tutorLine(tutor.id,next,index);label.textContent=support?supportLabel(support,game):labels[next]||labels.ready;playSound(['success','combo','finish'].includes(next)?'기쁨':next==='retry'?'안심':'기본');},reduced()?0:delays[tutor.id]);
+  later(()=>{talk(line,support?supportLine(tutor.id,support):tutorLine(tutor.id,next,index),tutor.id);label.textContent=support?supportLabel(support,game):labels[next]||labels.ready;playSound(['success','combo','finish'].includes(next)?'기쁨':next==='retry'?'안심':'기본');},reduced()?0:delays[tutor.id]);
   if(pose)later(()=>{setFace('기본');delete body.dataset.reaction;},1800);
  }
  function react(event,detail={}){
@@ -167,12 +174,12 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  const motion=matchMedia('(prefers-reduced-motion:reduce)');
  document.addEventListener('visibilitychange',visibility);motion.addEventListener('change',visibility);
  if(frame)window.addEventListener('message',message);
- refreshSupport();setFace('기본');idle();
+ refreshSupport();setFace('기본');idle();talk(line,line.textContent,tutor.id,{delay:300});
  // Independent learners use the game's normal start button. Skipping this
  // optional companion introduction must never mark a practice as completed.
  if(!independent)queueMicrotask(()=>{if(disposed||phase!=='lobby')return;if(practiceEnabled&&!practiced)openPractice();else if(!guideSeen)openGuide();});
  return Object.freeze({element,react,setPhase,openGuide,openPractice,metrics:()=>({tutor:tutor.id,game,phase,kind,streak,misses,guideOpen,sound,practiced,presentation:{...preferences},difficulties:ledger.list(),review:review?.metrics()||null,practice:practice?.metrics()||null,reactionAudioPlaying:clip?.paused===false}),dispose(){
-  if(disposed)return;disposed=true;clear();if(help.open)help.close();
+  if(disposed)return;disposed=true;clear();clearTimeout(blinkTimer);if(help.open)help.close();
   practice?.dispose();practice=null;review?.dispose();review=null;
   if(frame)window.removeEventListener('message',message);document.removeEventListener('visibilitychange',visibility);motion.removeEventListener('change',visibility);
   help.remove();element.remove();container.classList.remove('has-game-tutor');

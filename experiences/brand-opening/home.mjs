@@ -8,6 +8,7 @@ import {createHomeMemory} from './home-memory.mjs';
 import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
 import {play,bindTaps,getPref,setPref,hapticAvailable,PREF_LABELS} from './world-sound.mjs';
+import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const asset=path=>new URL(path,import.meta.url).href;
@@ -56,11 +57,11 @@ function chooseOrientation(value){
  });
 }
 function syncScene(){
+ // 시트 전환(home.css)과 world-motion(튜터 깜빡임·숨쉬기 등)도 앱의 「움직임 줄이기」를 따른다 — 튜터·동네가 이 값을 읽으니 먼저 둔다.
+ document.documentElement.dataset.motion=reduced.matches||manualReduced?'reduced':'full';
  const active=entryPhase==='ready'&&sceneActive&&!document.hidden&&!panel.open&&inView;
  homeTutor?.setActive(active);living.setReducedMotion(reduced.matches||manualReduced);living.setActive(active&&place==='room');
  town.setActive(entryPhase==='ready'&&!panel.open&&place==='town');
- // 시트 전환(home.css)도 앱의 「움직임 줄이기」를 따른다.
- document.documentElement.dataset.motion=reduced.matches||manualReduced?'reduced':'full';
 }
 // 동네 ↔ 우리 집(3D 방). 방에 들어갈 때만 3D를 불러 그리고, 나오면 멈춘다.
 function setPlace(next,{focus=false}={}){
@@ -95,7 +96,13 @@ function setEntryState({phase='restoring',message=''}={}){
 }
 new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;syncScene();},{threshold:.05}).observe(scene);
 landscape.addEventListener('change',syncLayout);spacious.addEventListener('change',syncLayout);reduced.addEventListener('change',syncScene);document.addEventListener('visibilitychange',syncLayout);document.addEventListener('fullscreenchange',syncLayout);
-function setNav(name){$$('.world-nav button').forEach(button=>{if(button.dataset.view===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});}
+// 10-17 움직임: 아래 탭을 바꾸면 흰 알약이 옛 자리에서 미끄러지고 새 아이콘이 톡 튄다.
+function setNav(name){
+ const old=$('.world-nav button[aria-current=page]'),from=old?.dataset.view!==name?old?.getBoundingClientRect():null;
+ $$('.world-nav button').forEach(button=>{if(button.dataset.view===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+ const now=$('.world-nav button[aria-current=page]');if(!from||!now||!motionOn())return;
+ slidePill($('.world-nav'),now,from);spring(now.querySelector('svg,img'),[{transform:'none'},{transform:'translateY(-4px) scale(1.22)',offset:.4},{transform:'translateY(1px) scale(.96)',offset:.7},{transform:'none'}],{duration:520,fill:'none'});
+}
 function disposePanelContent({keepView=false}={}){
  clearTimeout(frameTimer);
  const resource=panelResource;panelResource=null;
@@ -302,6 +309,8 @@ if(initialTutor){$('.profile-portrait img').src=profilePhoto(initialTutor.id);re
 window.__synkHome=home;
 // 단추를 누를 때의 짧은 소리(효과음 스위치를 따른다). 시트 안 단추도 문서 하나로 묶인다.
 bindTaps(document);
+// 10-17 단추 젤리: 알약·선택지·아래 탭을 누르면 쏙 들어갔다가 놓으면 통 튀어나온다(튜터 고르기·동네 이름표는 각자 묶는다).
+bindPress(document,':is(.felt-button,.quiet-button,.world-nav button,.life-choice,.game-tutor-help,.life-tutor-help,.home-tutor-action,.home-tutor-choose,.home-tutor-practice,.play-list>button,.life-row,.close-button):not(#world-panel.tutor-panel *)');
 export default home;
 syncLayout();
 setEntryState({phase:'restoring'});

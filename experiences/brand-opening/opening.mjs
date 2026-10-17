@@ -1,3 +1,4 @@
+import {motionOn,spring,ink,dust,bindPress} from './world-motion.mjs';
 const SEEN='synk.brand-opening.v1.seen';
 const asset=name=>new URL(`./assets/${name}`,import.meta.url).href;
 
@@ -41,7 +42,20 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
     if(companyOnly){finish('company-end');return;}
     stage='title';dialog.dataset.stage='title';dialog.querySelector('.opening-title').hidden=false;dialog.querySelector('.opening-company').setAttribute('aria-hidden','true');enter.setAttribute('aria-label',`${product} 시작하기`);hint.hidden=false;
     hideTimer=setTimeout(()=>{if(!settled)dialog.querySelector('.opening-company').hidden=true;},470);
-    playVideo();
+    playVideo();titleMotion();
+  }
+  // 10-17 움직임(유호님 「시안에 있는 움직임 전부」): 사진은 천천히 다가가고, 로고는 꾹, WORLD는 한 자씩, 부제는 잉크처럼 차오른다. 빛 알갱이가 떠오르고 시작 알약엔 빛이 스친다.
+  function titleMotion(){
+    if(reduced||!motionOn())return;
+    const section=dialog.querySelector('.opening-title');
+    section.querySelector('.opening-title-scene')?.classList.add('w-drift');
+    spring(section.querySelector('.opening-title-logo'),[{opacity:0,transform:'scale(1.4)',filter:'blur(10px)'},{opacity:1,transform:'scale(.965)',filter:'blur(0px)',offset:.62},{transform:'scale(1.01)',offset:.82},{transform:'scale(1)'}],{duration:1000,delay:120});
+    const world=section.querySelector('.opening-world');
+    if(product==='SYNK WORLD'&&world){world.textContent='';for(const ch of 'WORLD'){const span=document.createElement('span');span.className='opening-world-letter';span.textContent=ch;world.append(span);}
+     world.querySelectorAll('span').forEach((span,i)=>spring(span,[{opacity:0,transform:'translateY(9px)',filter:'blur(4px)'},{opacity:1,transform:'none',filter:'blur(0px)'}],{duration:620,delay:620+i*95}));}
+    ink(section.querySelector('.opening-title-subtitle'),{delay:1150,from:150});
+    dust(section,{after:section.querySelector('picture')});
+    hint.classList.add('w-sheen');
   }
   function playVideo(){
     if(settled||!motionRequested||stage!=='title'||document.hidden)return;
@@ -63,6 +77,8 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   soundButton.addEventListener('click',()=>{soundOn=!soundOn;updateSound();if(soundOn)playSound();else stopAudio();if(video.paused)playVideo();});
   const enterWorld=()=>finish(stage==='company'?'skip':'start');
   enter.addEventListener('click',enterWorld);
+  // 누르는 동안 시작 알약이 쏙 들어갔다 통 튀어나온다(알약은 가운데 맞춤에 translateX를 쓴다).
+  bindPress(dialog,'.opening-enter',{target:()=>hint.hidden?null:hint,base:()=>'translateX(-50%)'});
   dialog.addEventListener('keydown',event=>{
     if(event.key==='Tab')dialog.dataset.keyboard='true';
     if(event.target===dialog&&['Enter',' '].includes(event.key)){event.preventDefault();enterWorld();}

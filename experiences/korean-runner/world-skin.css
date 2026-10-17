@@ -78,6 +78,24 @@
 :root[data-host=world] .felt-cta .disc::after{content:none}
 :root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
 :root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
+/* 10-17 WORLD 움직임: 시작 알약 위로 빛 띠가 가끔 지나간다 */
+:root[data-host=world] #start{position:relative;isolation:isolate;overflow:hidden}
+:root[data-host=world][data-motion=full] #start::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 32%,rgba(249,104,89,.24) 50%,transparent 68%);transform:translateX(-130%);animation:w-sheen 5.2s 1.6s cubic-bezier(.4,.1,.2,1) infinite}
+@keyframes w-sheen{0%{transform:translateX(-130%)}24%,100%{transform:translateX(130%)}}
+/* 입구 큰 글자 · 숫자 굴림(brand-opening/world-motion.css와 같은 값) · 운동화 들썩 */
+:root[data-host=world] .hero h1 .w-pop{display:inline-block;transform-origin:50% 100%}
+.w-roll{position:relative;display:inline-block;line-height:1.15}
+.w-roll>.w-roll-t{color:transparent}
+.w-roll>i{position:absolute;left:0;right:0;top:0;height:1.15em;overflow:hidden;font-style:normal;text-align:center;line-height:1.15}
+.w-roll>i::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';display:block;white-space:pre;animation:w-roll var(--rt,1s) cubic-bezier(.2,.8,.2,1) var(--rd,0s) both}
+@keyframes w-roll{from{transform:translateY(0)}to{transform:translateY(calc((10 + var(--d)) * -1.15em))}}
+:root[data-motion=reduced] .w-roll>i{display:none}
+:root[data-motion=reduced] .w-roll>.w-roll-t{color:inherit}
+:root[data-host=world] #lobby .hero-art{background:#fff}   /* 운동화는 아래 ::before가 그린다(들썩일 때 바탕 사진이 겹쳐 보이지 않게) */
+:root[data-host=world] .lobby .hero-art::before{content:'';position:absolute;inset:0;border-radius:6px;background:#fff url(assets/world/runner.webp) center/cover no-repeat;transform-origin:40% 90%}
+:root[data-host=world][data-motion=full] .lobby .hero-art::before{animation:w-ready 3s 1.2s cubic-bezier(.2,.75,.2,1) infinite}
+@keyframes w-ready{0%,64%{transform:none}70%{transform:translateX(-5px) rotate(-3deg)}78%{transform:translateX(9px) rotate(2deg) scaleX(1.04)}86%{transform:translateX(-2px)}92%,100%{transform:none}}
+@media(prefers-reduced-motion:reduce){:root[data-host=world] #start::before,:root[data-host=world] .lobby .hero-art::before,.w-roll>i::before{animation:none!important}.w-roll>i{display:none}.w-roll>.w-roll-t{color:inherit}}
 :root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
 /* 보조: 1px 선 알약 */
 :root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);

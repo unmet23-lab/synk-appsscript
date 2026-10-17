@@ -1,6 +1,7 @@
 import {TUTORS} from './tutor-profiles.mjs';
 import {readTutorChoice,saveTutorChoice,choiceKey,TUTOR_IDS} from './tutor-choice.mjs';
 import {tutorPhoto,profilePhoto,preloadTutorPhotos} from './tutor-photos.mjs';
+import {motionOn,spring,ink,talk,squish,slidePill,bindPress} from './world-motion.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const openings={marin:'배정 대기. …준비됐다.',kkamong:'…이 몸을 고르겠지? 당연히.',mongle:'어? 너구나! 같이 할래?'};
 const summaries={marin:'목표를 작게 나눠 차근차근 가고 싶다면 잘 맞아요.',kkamong:'티격태격하며 도전하는 게 좋다면 잘 맞아요.',mongle:'뭐든 같이 해 보고 싶다면 잘 맞아요.'};
@@ -11,7 +12,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  let storage;try{storage=localStorage;}catch{}
  let owner='guest',choice=readTutorChoice(storage),draft=null,step='choose',continuation=null,active=false;
  let committing=false,commitError='',generation=0,rendering=false;
- let timers=new Set(),audio=null,sound=false,lastSound=0,lastVoice=null,tapCount=0,lastTap=0;
+ let timers=new Set(),audio=null,sound=false,lastSound=0,lastVoice=null,tapCount=0,lastTap=0,swapFrom=null;
  try{sound=storage?.getItem('synk.world.tutor.sound')==='true';}catch{}
  const content=()=>document.querySelector('#panel-content');
  const later=(callback,ms)=>{const timer=setTimeout(()=>{timers.delete(timer);if(active&&!document.hidden)callback();},ms);timers.add(timer);return timer;};
@@ -41,15 +42,28 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
   home.attachPanelResource({dispose(){cancelMotion();active=false;if(!rendering){generation++;committing=false;commitError='';continuation=null;}}});
   active=true;
   refreshStatus();
-  if(t){preload(t);react('intro',false);startIdle();}
+  if(t){preload(t);react('intro',false);startIdle();enterMotion();}
+ }
+ // 10-17 움직임: 숨쉬기 · 친구 바뀜(알약 미끄러짐 + 사진이 아래에서 솟고 말풍선이 피어남) · 이름 잉크 · 주 알약 빛 스침.
+ function enterMotion(){
+  const root=content(),from=swapFrom;swapFrom=null;if(!root||!motionOn())return;
+  root.querySelector('.tutor-touch')?.classList.add('w-breathe');
+  root.querySelector('.tutor-primary')?.classList.add('w-sheen');
+  if(from){
+   slidePill(root.querySelector('.tutor-options'),root.querySelector('.tutor-option[aria-pressed=true]'),from);
+   spring(root.querySelector('.tutor-portrait.large'),[{opacity:0,transform:'translateY(26px) scale(.9)'},{opacity:1,transform:'translateY(-4px) scale(1.02)',offset:.6},{transform:'none'}],{duration:640});
+   spring(root.querySelector('.tutor-speech'),[{opacity:0,transform:'scale(.86)'},{opacity:1,transform:'scale(1.02)',offset:.6},{transform:'scale(1)'}],{duration:460});
+  }
+  ink(root.querySelector('.tutor-about h3, .tutor-welcome-copy strong'),{delay:from?80:600});
  }
  function preload(t){preloadTutorPhotos(t.id,'onb');}
  function setFace(emotion){const t=selected(),face=content()?.querySelector('.tutor-face');if(face&&t)face.src=picture(t,emotion);}
  function speak(text,label){
   const node=content()?.querySelector('#tutor-speech');if(!node)return;
   content().querySelector('#tutor-speech-label').textContent=label;
-  node.textContent=text;
-  const bubble=node.closest('.tutor-speech');bubble.classList.remove('speak');void bubble.offsetWidth;bubble.classList.add('speak');
+  const bubble=node.closest('.tutor-speech');
+  talk(node,text,selected()?.id);bubble.classList.toggle('w-talking',motionOn());
+  bubble.classList.remove('speak');void bubble.offsetWidth;bubble.classList.add('speak');
   // Full readable text is present from the first frame; Marine reveals it in place.
   bubble.style.setProperty('--speech-duration',`${Math.min(1.4,text.length*.025)}s`);
  }
@@ -74,7 +88,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  function touch(){
   const now=Date.now();tapCount=now-lastTap<1200?tapCount+1:1;lastTap=now;
   cancelMotion();const t=selected();if(!t)return;
-  const reaction=t.reactions[tapCount>=3?'repeat':'normal'];setFace(reaction.첫);playSound('기본');speak(openings[t.id],'인사하면');
+  const reaction=t.reactions[tapCount>=3?'repeat':'normal'];setFace(reaction.첫);playSound('기본');speak(openings[t.id],'인사하면');squish(content()?.querySelector('.tutor-portrait.large'));
   later(()=>setFace(reaction.뒤),240);
   later(()=>{setFace('기본');startIdle();},timing[t.id].hold);
  }
@@ -108,7 +122,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  function click(event){
   if(!active)return;const button=event.target.closest('[data-tutor-id],[data-tutor-reaction],[data-tutor-action]');if(!button||!content()?.contains(button))return;
   if(button.disabled||committing&&(['confirm','finish','back'].includes(button.dataset.tutorAction)||button.dataset.tutorId))return;
-  if(button.dataset.tutorId){const after=continuation;draft=button.dataset.tutorId;tapCount=0;render();continuation=after;playSound('기본');content().querySelector(`[data-tutor-id="${draft}"]`)?.focus({preventScroll:true});return;}
+  if(button.dataset.tutorId){const after=continuation;const old=content()?.querySelector('.tutor-option[aria-pressed=true]');swapFrom=old&&button.dataset.tutorId!==draft?old.getBoundingClientRect():null;draft=button.dataset.tutorId;tapCount=0;render();continuation=after;playSound('기본');content().querySelector(`[data-tutor-id="${draft}"]`)?.focus({preventScroll:true});return;}
   if(button.dataset.tutorReaction){react(button.dataset.tutorReaction);return;}
   const action=button.dataset.tutorAction;
   if(action==='sound'){sound=!sound;try{storage?.setItem('synk.world.tutor.sound',String(sound));}catch{}button.textContent=`반응 소리 ${sound?'켜짐':'꺼짐'}`;button.setAttribute('aria-pressed',String(sound));button.setAttribute('aria-label',`반응 소리 ${sound?'끄기':'켜기'}`);if(sound)playSound('기본');else stopSound();}
@@ -118,6 +132,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
   else if(action==='finish')void finish();
  }
  document.addEventListener('click',click);
+ bindPress(document,'#world-panel.tutor-panel :is(.tutor-option,.tutor-primary,.tutor-sound,.tutor-back,[data-tutor-reaction])');
  document.addEventListener('visibilitychange',()=>{if(!active)return;cancelMotion();setFace('기본');if(!document.hidden)startIdle();});
  const media=matchMedia('(prefers-reduced-motion:reduce)');media.addEventListener('change',()=>{if(active){cancelMotion();setFace('기본');if(!home.state.reduced)startIdle();}});
  return Object.freeze({open,ensure:then=>open({then}),choice:()=>TUTORS.find(t=>t.id===choice)||null,refreshStatus,

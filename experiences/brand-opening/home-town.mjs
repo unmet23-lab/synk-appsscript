@@ -37,6 +37,7 @@ export const TOWN_SCENES={
 // 기기 시계를 따라 동네가 낮·저녁·밤으로 바뀐다(같은 세트를 같은 자리에서 다시 구운 사진 세 벌). 다녀오면 바뀌어 있을 뿐, 화면에서 움직이지 않는다.
 export function townTime(date=new Date()){const m=date.getHours()*60+date.getMinutes();return m>=360&&m<1020?'day':m>=1020&&m<1170?'evening':'night';}
 const TIME_NAMES={day:'낮',evening:'저녁',night:'밤'};
+import {motionOn,popIn,glow,bindPress} from './world-motion.mjs';
 const HINT_KEY='synk.world.town.hint.v1';
 const icon=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const DOOR=icon('<path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/>');
@@ -58,15 +59,20 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
   button.innerHTML=`<span class="town-pin-dot" aria-hidden="true"></span><span class="town-pin-name"></span><span class="town-pin-count"></span>`;
   button.querySelector('.town-pin-name').textContent=place.name;
   if(place.id==='home')button.querySelector('.town-pin-dot').outerHTML=`<span class="town-pin-icon" aria-hidden="true">${DOOR}</span>`;
-  button.addEventListener('click',()=>{if(active){closeHint();onPlace(place);}});
+  button.addEventListener('click',()=>{if(active){closeHint();shine(place.id);onPlace(place);}});
   pins.append(button);buttons.set(place.id,button);
   // 건물 자체를 눌러도 같은 곳으로 간다. 화면 읽기 프로그램에는 이름표 단추 하나만 보인다.
   const zone=document.createElement('div');zone.className='town-area';zone.dataset.townArea=place.id;
-  zone.addEventListener('click',()=>{if(active){closeHint();onPlace(place);}});
+  zone.addEventListener('click',()=>{if(active){closeHint();shine(place.id);onPlace(place);}});
   // PC에서 건물 위에 올리면 그 이름표가 같이 밝아진다(정지 표시, 움직임 없음).
   zone.addEventListener('pointerenter',()=>button.classList.add('is-hover'));zone.addEventListener('pointerleave',()=>button.classList.remove('is-hover'));
   areas.append(zone);zones.set(place.id,zone);
  }
+ // 10-17 움직임: 동네에 들어오면 이름표가 하나씩 톡톡 켜지고, 사진은 18초 동안 아주 조금 다가오며, 누른 장소엔 불빛이 번진다. 「지금」 이름표의 빛 고리는 world-motion.css.
+ const pinBase=b=>`translate(${b.style.getPropertyValue('--pin-x')||'-50%'},-50%)`;
+ bindPress(pins,'.town-pin',{base:pinBase});
+ function shine(id){const zone=zones.get(id);if(!zone)return;const n=v=>parseFloat(v)||0;glow(frame,n(zone.style.left)+n(zone.style.width)/2,n(zone.style.top)+n(zone.style.height)/2);}
+ function arrive(){if(!motionOn())return;frame.classList.remove('w-drift');void frame.offsetWidth;frame.classList.add('w-drift');popIn(TOWN_PLACES.map(p=>buttons.get(p.id)),{delay:350,gap:85,base:pinBase});}
  // 처음 온 사람에게만 한 번: 장소를 누르면 배운다는 것. 닫거나 장소를 한 번 누르면 다시 나오지 않는다.
  let seen=false;try{seen=localStorage.getItem(HINT_KEY)==='1';}catch{}
  const hint=document.createElement('div');hint.className='town-hint';hint.hidden=seen;
@@ -160,11 +166,11 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
  observer?.observe(container);if(obstacle)observer?.observe(obstacle);
  window.addEventListener('resize',fit);
  document.addEventListener('visibilitychange',visible);timer=setInterval(()=>setTime(),300000);
- setTime();arrange();render();
+ setTime();arrange();render();requestAnimationFrame(arrive);
  return {
   setLayout(value){layout=value==='landscape'?'landscape':'portrait';arrange();},
   setProgress(summary){progress=summary||null;render();},
-  setActive(value){active=!!value;container.inert=!active;if(active)fit();},
+  setActive(value){const was=active;active=!!value;container.inert=!active;if(active)fit();if(active&&!was)arrive();},
   focus(){buttons.get(progress?.nextLesson?.packId?TOWN_PLACES.find(p=>p.pack===progress.nextLesson.packId)?.id:'home')?.focus({preventScroll:true});},
   dispose(){clearInterval(timer);observer?.disconnect();window.removeEventListener('resize',fit);document.removeEventListener('visibilitychange',visible);},
   metrics:()=>({layout,active,time,hint:!hint.hidden,fit:frame.dataset.fit,compact,frame:{left:Math.round(parseFloat(frame.style.left)),top:Math.round(parseFloat(frame.style.top)),width:Math.round(parseFloat(frame.style.width)),height:Math.round(parseFloat(frame.style.height))},places:TOWN_PLACES.map(p=>({id:p.id,pack:p.pack,state:buttons.get(p.id).dataset.state,count:buttons.get(p.id).querySelector('.town-pin-count').textContent}))})
