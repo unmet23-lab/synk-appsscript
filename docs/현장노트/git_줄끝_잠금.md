@@ -59,6 +59,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `git -c core.autocrlf=false archive <커밋> -- <경로들> | tar -x -C <폴더>`. 차이만 볼 때는 `diff --strip-trailing-cr`도 된다.
 - 다시 확인: 꺼낸 파일의 `tr -cd '\r' | wc -c`가 blob(`git cat-file blob <커밋>:<경로> | tr -cd '\r' | wc -c`)과 같다.
 
+### 그대로 들여온 외부 배포 파일의 해시가 커밋 뒤 달라진다
+- 증상: 10-17 메신저 통화의 npm `livekit-client` ESM을 그대로 넣고 README에 SHA-256을 적었는데, 커밋 트리만 꺼낸 시험에서 해시가 맞지 않았다(1,396,433 → 1,396,348바이트).
+- 원인: 원본 파일에 CRLF 줄 85개가 섞여 있었다. `core.autocrlf=true`라 `git add`가 CR을 지웠고, 새로 체크아웃하면 모든 줄이 CRLF가 되어 어느 쪽도 원본 바이트가 아니다.
+- 고침: 들여온 배포 폴더에 `.gitattributes`로 `<폴더>/** -text -diff`를 걸고 다시 올린다. 바이트 그대로 저장·체크아웃된다.
+- 다시 확인: `git cat-file blob <커밋>:<경로> | sha256sum`이 원본·README의 해시와 같다. 들여오기 전에 원본의 CR 개수부터 센다.
+
 ### 워크트리에서 만든 묶음의 지도 판(map_ver)이 바뀐다
 - 증상: 워크트리에서 `node tools/build-game-learning.js`를 돌리자 묶음의 `map_ver`와 Strata 원본 sha256이 바뀐다(내용은 같음). 옮겨 쓴 `atlas-learning.js`가 메인 `--check`에서 「Learning source differs」로 실패한다(10-03).
 - 원인: 워크트리 체크아웃이 `strata/*.json`을 CRLF로 꺼내 바이트 해시가 달라졌다. 옮기기 스크립트도 CRLF로 썼다. 생성기는 LF로 쓰고 바이트로 비교한다.

@@ -31,6 +31,12 @@
 !tools/company-messenger/direct-task-service.mjs
 !tools/company-messenger/web-push-service.mjs
 !tools/company-messenger/platform-navigation.mjs
+!tools/company-messenger/voice-service.mjs
+!tools/company-messenger/voice-invitations.mjs
+!tools/company-messenger/voice-encryption.mjs
+!tools/company-messenger/voice-sharing.mjs
+!tools/company-messenger/voice-livekit.mjs
+!tools/company-messenger/voice-usage.mjs
 !tools/company-messenger/public
 !tools/company-messenger/public/**
 !atlas/
