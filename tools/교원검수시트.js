@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // 교원 검수 시트 하나. 교원이 확인할 것을 원본에서 그대로 뽑아 한 표로 만든다:
-// 게임 문항과 게임 글(여덟 게임), 상황 예문(Strata 예문 층), 게임↔상황 초안, 문형→능력 초안.
+// 게임 문항과 게임 글(여덟 게임), 상황 예문(Strata 예문 층), 게임↔상황 초안, 문형→능력 초안,
+// 중급(TOPIK II) 능력과 그 선행 초안(strata/topik-ii.skills.json).
 // 표는 여기서만 만들고, 고친 것은 원본(게임 문항 파일, strata/)에 반영한다. 표를 직접 원본으로 삼지 않는다.
 //
 //   node tools/교원검수시트.js                       docs/교원검수/교원검수시트.csv 를 다시 만든다
@@ -22,7 +23,7 @@ const SHEET = 'docs/교원검수/교원검수시트.csv';
 const APPENDIX = 'docs/교원검수/오답교정_새문항_검수부록.html';
 const EXAMPLES = 'strata/topik-i.situation-examples.json';
 const COLUMNS = ['번호', '갈래', '자리', '내용', '정답·보기', '풀이', '읽힌 문형', '확인', '고친 내용', '메모', '검수자', '날짜'];
-const KINDS = ['게임 문항', '게임 글', '상황 예문', '게임↔상황', '문형→능력'];
+const KINDS = ['게임 문항', '게임 글', '상황 예문', '게임↔상황', '문형→능력', '중급 능력', '중급 선행'];
 const load = rel => import(pathToFileURL(path.join(root, rel)).href);
 const one = value => String(value ?? '').replace(/\s*\r?\n\s*/g, ' ').trim();
 
@@ -164,6 +165,17 @@ async function buildRows() {
   for (const [id, label, forms, step, pointSkills, basis] of grammar.points) {
     add(`문형능력/${id}`, '문형→능력', `${step}단계 · ${basis === undefined ? '문법 은행 순서' : '표준 교육과정 등급'}`, `${label} → ${pointSkills.map(skill => skillLabel.get(skill) || skill).join(' · ')}`,
       `형태 ${forms.join(', ')}`, '', '');
+  }
+  // 중급 능력과 선행 초안: 능력을 나눈 방식·이름·단계와 「먼저 익힐 것」을 교원이 본다(strata/topik-ii.skills.json)
+  const intermediate = require('../strata/topik-ii.skills.json');
+  const domains = { listening: '듣기', reading: '읽기', writing: '쓰기' };
+  const allLabels = new Map([...skillLabel, ...intermediate.skills.map(([id, , label]) => [id, label])]);
+  for (const [id, domain, label, stages, tasks, units] of intermediate.skills) {
+    add(`중급능력/${id}`, '중급 능력', `${domains[domain]} · 제작 단계 ${stages.join('·')}(급수 아님)`, label,
+      '', `대표 과제 ${tasks.join('·') || '없음(원고 필요)'} · 단원 ${units.join('·')}`, '');
+  }
+  for (const [from, to] of intermediate.prerequisites) {
+    add(`중급선행/${from}>${to}`, '중급 선행', '먼저 익힐 것(초안, 막지 않음)', `${allLabels.get(from)} → ${allLabels.get(to)}`, '', '', '');
   }
   const ids = new Set();
   for (const row of rows) { if (!row.내용 || ids.has(row.번호) || !KINDS.includes(row.갈래)) throw new Error(`교원 검수 시트: 잘못된 줄 ${row.번호}`); ids.add(row.번호); }

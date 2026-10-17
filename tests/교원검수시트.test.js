@@ -23,6 +23,9 @@ test('the sheet lists every kind of thing a teacher reviews, each row once under
   assert.deepEqual([...new Set(rows.map(row => row.갈래))], KINDS);
   assert.equal(count(rows, '상황 예문'), 78);
   assert.equal(count(rows, '문형→능력'), 87);
+  assert.equal(count(rows, '중급 능력'), 13);
+  assert.equal(count(rows, '중급 선행'), 25);
+  assert.equal(rows.find(row => row.번호 === '중급선행/ko.reading.attitude>ko.writing.opinion').내용, '필자의 관점·사실과 의견 구분하기 → 근거를 들어 의견 글 쓰기');
   assert.equal(count(rows, '게임↔상황'), 8, 'seven WORLD games, the runner in two situations');
   for (const game of ['blank-slice', 'entry-check', 'story-classroom', 'order-rush', 'korean-runner', 'korean-rhythm', 'korean-racing', 'talk-rally']) {
     assert.ok(rows.some(row => row.번호.startsWith(`문항/${game}/`)), game);
