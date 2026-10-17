@@ -32,6 +32,6 @@ console.log(JSON.stringify({passed:true,at:new Date().toISOString(),mainPid:main
 })().catch(e=>{console.error(e.message);process.exitCode=1;});
 `;
 const command=`node -e 'eval(Buffer.from("${Buffer.from(code).toString('base64')}","base64").toString())'`;
-const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk@34.71.111.97',command],{encoding:'utf8',timeout:45000}));
+const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk-radio',command],{encoding:'utf8',timeout:45000}));
 fs.writeFileSync(path.join(__dirname,'서버실동작검증.json'),JSON.stringify(result,null,2));
 const {samples,...summary}=result;console.log(JSON.stringify(summary,null,2));

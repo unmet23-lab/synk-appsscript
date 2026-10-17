@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
-const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97';
+const dir=__dirname,key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio';
 const phase=process.argv[2];assert.ok(['trial','final'].includes(phase));
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const initial=JSON.parse(fs.readFileSync(path.join(dir,'server-before.json'),'utf8'));

@@ -2,7 +2,7 @@
 
 > 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차)
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -83,6 +83,14 @@
 - 원인: 게이트웨이는 시작할 때 설정을 읽는다. PC가 절전 중이거나 꺼져 있으면 게이트웨이도 멈추고, 그동안 텔레그램이 약 24시간 쌓아 둔 메시지를 다음 로그인 때 한꺼번에 처리한다.
 - 고침: 설정을 바꾸면 `hermes gateway restart`를 한다. 처리 중인 일을 마친 뒤 내려간다.
 - 다시 확인: `%LOCALAPPDATA%\hermes\logs\gateway-restart.log` 끝 줄의 시각.
+
+## Codex 예약
+
+### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
+- 증상: 10-17 새 `COUNT=2` 일간 예약에 `BYHOUR=8,16`을 넣자 첫 명목 실행이 예상한 08:00 KST 대신 17:00 KST였다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`일 때 다음 명목 실행이 16:10 KST였고, 시험 삼아 `BYHOUR=7`로 바꾸자 07:10 KST가 됐다.
+- 원인: 내부 해석 차이의 원인은 미확정이다. 이 판에서 확인한 `COUNT=2` 일간 예약과 `COUNT=1`·`COUNT=3` 월간 예약의 `BYHOUR`는 UTC로, 기존 무기한 일간 예약의 `BYHOUR`는 한국 시각으로 반영됐다. RRULE 전체에 한 시간대를 가정하면 예약이 어긋난다.
+- 고침: 10-18 08:00·16:00 KST의 `COUNT=2` 일간 예약은 `BYHOUR=7,23`, 10-19 10:20·19:20·21:20 KST의 `COUNT=3` 월간 예약은 `BYHOUR=1,10,12`로 저장했다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`을 유지하고, 10-18·22 16:00 KST의 일회성 월간 예약 두 개는 `BYHOUR=7`로 고쳤다. 모두 `ACTIVE`와 의도한 다음 명목 실행 시각을 확인했으며 실제 예약 실행은 아직 미검증이다.
+- 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 UTC+09:00으로 변환해 일정별 의도한 시각과 대조한다. 실제 실행은 `last_run_at`과 `automation_runs`를 따로 본다.
 
 ## Codex 세션 기록
 

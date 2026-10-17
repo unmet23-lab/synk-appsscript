@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'docs/_ops/라디오�
 const base=JSON.parse(fs.readFileSync(path.join(out,'배포전상태.json'),'utf8')).server;
 const file=path.join(root,'docs/라디오/무대영상/'+(v4?'추석_나무고정_조명_20260909.mp4':'추석_영상생성_20260909.mp4'));
 const sha=f=>createHash('sha256').update(fs.readFileSync(f)).digest('hex');
-const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97';
+const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio';
 const mode=process.argv.slice(2).find(a=>a!=='--v4')||'--check';if(!['--upload','--check','--apply'].includes(mode))throw new Error('잘못된 실행 모드');
 const fileSha=sha(file),target='/opt/synk-radio/무대차례/'+(v4?'chuseok-tree-light-20260909-':'chuseok-generated-20260909-')+fileSha.slice(0,12)+'.mp4';
 const incoming=mode==='--upload'?target+'.upload-'+require('node:crypto').randomUUID():null;

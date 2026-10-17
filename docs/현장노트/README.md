@@ -13,7 +13,7 @@
 | 파일 | 다루는 것 |
 |---|---|
 | [윈도우 셸](윈도우_셸.md) | PowerShell 변수 뒤 한글, heredoc·백틱, 파이썬 한글 출력·cv2 경로, Git Bash 경로 변환·시각, 바탕화면·앱 AppData·%TEMP% 정리, 디스크 재기, ssh 키 권한 |
-| [git 줄끝·잠금](git_줄끝_잠금.md) | 공용 작업본에서 내 것만 커밋하는 절차, CRLF·LF, index.lock, 당기기·push, 워크트리·junction, 공간 정리 |
+| [git 줄끝·잠금](git_줄끝_잠금.md) | 공용 작업본에서 내 것만 커밋하는 절차, CRLF·LF, index.lock, 당기기·push, 워크트리·junction, 공간 정리, 큰 blob을 거른 클론의 이력 훑기 |
 | [시험·화면 확인](시험_화면확인.md) | `node --test` 요약, CI가 안 도는 시험, 실제 키, 공용 증거를 덮는 시험, 가려진 창·휴대폰 폭 |
 | [그림 굽기·오리기](그림_굽기_오리기.md) | GPT 그림 굽기 주간 한도·계정 돌려쓰기, 펠트 오리기의 흰 띠·바닥 그림자, sharp 위치 |
 | [Higgsfield](higgsfield.md) | 계정·잔액·제출 거절, 올리기, Nano Banana Pro, Seedance·Wan·Kling |
