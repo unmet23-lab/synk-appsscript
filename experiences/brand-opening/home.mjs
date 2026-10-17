@@ -8,7 +8,9 @@ import {createHomeMemory} from './home-memory.mjs';
 import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
 import {play,bindTaps,getPref,setPref,hapticAvailable,PREF_LABELS} from './world-sound.mjs';
-import {motionOn,slidePill,spring,bindPress,doors} from './world-motion.mjs';
+import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
+// 문 열림은 이름 없이 꺼내 쓴다: 공개 직후 캐시에 doors가 없는 옛 world-motion.mjs가 남아 있어도 홈은 뜨고 장소만 바로 바뀐다.
+import * as worldMotion from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const asset=path=>new URL(path,import.meta.url).href;
@@ -89,11 +91,11 @@ function go(next,{user=false,focus=false,sound='',instant=false}={}){
  if(trip){if(user||trip.to===next&&!instant)return trip.done;trip.stop.abort();trip=null;delete $('.world-shell').dataset.moving;setTitle(place);syncScene();}
  if(next===place)return Promise.resolve();
  if(sound)play(sound);
- if(instant||!motionOn()||entryPhase!=='ready'||document.hidden){setPlace(next,{focus});return Promise.resolve();}
+ if(instant||!motionOn()||!worldMotion.doors||entryPhase!=='ready'||document.hidden){setPlace(next,{focus});return Promise.resolve();}
  const room=next==='room',t={to:next,stop:new AbortController(),hold:room},shell=$('.world-shell');trip=t;shell.dataset.moving=next;syncScene();
  // 나갈 때 「동네로」는 문이 닫히는 동안 비킨다(맞물리면 어차피 사라진다). 걷을 때 되돌린다.
  const leave=room?null:$('.room-back').animate([{opacity:1},{opacity:0}],{duration:140,easing:'ease-out',fill:'forwards'});
- t.done=doors($('.town-scene'),{mode:room?'open':'close',host:$('#home-main'),reveal:room?scene:null,title:$$('.place-heading>*'),signal:t.stop.signal,
+ t.done=worldMotion.doors($('.town-scene'),{mode:room?'open':'close',host:$('#home-main'),reveal:room?scene:null,title:$$('.place-heading>*'),signal:t.stop.signal,
   ready:room?()=>{t.hold=false;syncScene();return living.prepare();}:null,
   swap:({start})=>{setPlace(next,{title:!room});if(room)start($('.room-back'),[{opacity:0,scale:'.94'},{opacity:1,scale:'1'}],{duration:360,delay:160,easing:'cubic-bezier(.25,.9,.3,1)'});},
   opened:()=>{setTitle(next);if(focus)$('.room-back')?.focus({preventScroll:true});}})
