@@ -382,7 +382,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const now = Date.now(), rows = snapshot?.rows || [];
     let body = '';
     if (!context.native) body = section('01', 'PC 앱에서 쓰는 혜택이에요', '이 혜택은 회원 PC에 설치된 공식 프로그램으로 사용량을 읽기 때문에 SYNK Platform PC 앱에서만 열려요.', '<p class="ms-soft">PC 앱을 설치하고 SYNK ID로 로그인한 뒤 회원 혜택에서 열어 주세요.</p>');
-    else if (!context.signedIn) body = section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">오른쪽 위 「SYNK ID로 로그인」을 눌러 주세요.</p>');
+    else if (!context.signedIn) body = section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">위 초록 판의 「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>');
     else if (loadError) body = section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>');
     else if (!snapshot) body = '<p class="ms-loading">계정판을 준비하고 있어요…</p>';
     else if (!rows.length) { if (!ui.guide && !ui.guideClosed) ui.guide = 'claude'; body = connectSection() + section('02', '직접 넣는 구독', 'Gemini·Suno처럼 공식 출력이 없는 서비스는 결제일과 요금만 넣어 둘 수 있어요.', manualForm()); }
