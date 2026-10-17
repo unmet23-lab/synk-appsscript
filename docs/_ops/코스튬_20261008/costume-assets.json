@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "reviewDate": "2026-10-08",
+  "character": "까몽",
+  "costumeCount": 5,
+  "includesUncostumedBaseline": true,
+  "transformation": "기존 정본 및 기존 통합 착용 AVIF를 RGBA로 읽고 768x768 Lanczos 축소 후 lossless WebP 저장. 원본 수정, 새 이미지 생성, 크롭, 얼굴 합성 없음.",
+  "reviewEvidence": [
+    "costume-candidates-contact.png",
+    "expressions-contact.png",
+    "selected-light-dark.png",
+    "asset-inventory.json",
+    "expression-check.json"
+  ],
+  "excludedCandidate": {
+    "name": "털모자",
+    "reason": "단품 시트에서 꼬리 끝이 하단 경계에 잘린 모양으로 보여 제외"
+  },
+  "expressionDecision": "기존 표정판에서 미간과 얼굴 털의 넓은 차이를 확인해 사용 대상에서 제외. 기본 원본만 채택.",
+  "backgroundDecision": "288px 밝은 크림 배경에서 기본 정면 사용을 확인. 짙은 남색 배경은 기존 누끼 가장자리에 밝은 테가 드러나므로 사진 배경으로 직접 적용하지 않음.",
+  "assets": [
+    {
+      "id": "kkamong-base",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "기본 까몽",
+      "kind": "base",
+      "itemNames": [],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\까몽_본체.png",
+      "sourceSha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        512,
+        559,
+        3763,
+        3641
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-base.webp",
+      "imageRelativePath": "assets/kkamong-base.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 240008,
+      "imageSha256": "38dfa064e70b80b8507ee78f10305221de003996932f9fbfd2fd457b1ee43720",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    },
+    {
+      "id": "kkamong-scarf",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "포근한 목도리",
+      "kind": "accessory",
+      "itemNames": [
+        "목도리"
+      ],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_누끼_틀_avif\\까몽_목도리.avif",
+      "sourceSha256": "df95525901945e3a7213dd35301a3a1dce4489504f0f83499b637f103cf58616",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        465,
+        536,
+        3696,
+        3737
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-scarf.webp",
+      "imageRelativePath": "assets/kkamong-scarf.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 286810,
+      "imageSha256": "a69df98f2fa85d32a7254d1961d465cef504bcfa68e4c0281466b6d253cd82b6",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    },
+    {
+      "id": "kkamong-apron",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "작은 앞치마",
+      "kind": "clothing",
+      "itemNames": [
+        "앞치마"
+      ],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_누끼_틀_avif\\까몽_앞치마.avif",
+      "sourceSha256": "da6e4b062b114575116bb7a39dcdf84dee5fd288e0b30ab4e083d0528dbc8212",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        480,
+        542,
+        3761,
+        3748
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-apron.webp",
+      "imageRelativePath": "assets/kkamong-apron.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 268254,
+      "imageSha256": "68d7e4a6afc09379bcd17f31db0737c2a30641da0cc247187aabca5cae89da5a",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    },
+    {
+      "id": "kkamong-summer-deel",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "하늘빛 여름 델",
+      "kind": "clothing",
+      "itemNames": [
+        "여름 델"
+      ],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_누끼_틀_avif\\까몽_여름델.avif",
+      "sourceSha256": "b7e6a25a85a4ee47ee06a5dc9ead2731e40476a2f37081f5c87c09ecf365baed",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        542,
+        624,
+        3649,
+        3586
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-summer-deel.webp",
+      "imageRelativePath": "assets/kkamong-summer-deel.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 235614,
+      "imageSha256": "f78f3707fe212c457d335af731f756177f7276092bbc5ce73445631d7096bf35",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    },
+    {
+      "id": "kkamong-winter-deel",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "따뜻한 겨울 델",
+      "kind": "clothing",
+      "itemNames": [
+        "겨울 델"
+      ],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_누끼_틀_avif\\까몽_겨울델.avif",
+      "sourceSha256": "e866722f9c20aa85d50d0e7293b4a1a3014cb5e2f7fafad832a2345a5bde7dae",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        439,
+        524,
+        3873,
+        3793
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-winter-deel.webp",
+      "imageRelativePath": "assets/kkamong-winter-deel.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 287934,
+      "imageSha256": "5d3a21fcedc7b7534323b4524c1a89a1a0a8a0c3a4412d005b3908bac42ab1cb",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    },
+    {
+      "id": "kkamong-headphones",
+      "characterId": "kkamong",
+      "characterName": "까몽",
+      "name": "펠트 헤드폰",
+      "kind": "accessory",
+      "itemNames": [
+        "펠트 헤드폰"
+      ],
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_누끼_틀_avif\\까몽_펠트헤드폰.avif",
+      "sourceSha256": "6dcd36f9cf95ebc9a1f74c4aa22995dc351a8bd601b08c5e80b8cc55d2eb6268",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "alphaBoundingBox": [
+        395,
+        512,
+        3713,
+        3713
+      ],
+      "touchesCanvasBoundary": false,
+      "imagePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\코스튬_20261008\\assets\\kkamong-headphones.webp",
+      "imageRelativePath": "assets/kkamong-headphones.webp",
+      "imageSize": [
+        768,
+        768
+      ],
+      "imageBytes": 268192,
+      "imageSha256": "f66dfd9d9413483d2b248aa8dabfd087f8719209eb7ba76cb8d2b6365039a4f2",
+      "pose": "기존 정본 정면",
+      "reviewedExpressions": [
+        "기본"
+      ],
+      "expressionVariants": [],
+      "allowedReaction": "동일 이미지 전체의 translate/rotate/scale와 글 반응",
+      "allowedBackground": "밝은 크림 계열. 짙은 배경은 밝은 누끼 테가 드러나므로 직접 배치 제외.",
+      "reviewStatus": "static-use-reviewed",
+      "reviewLimit": "수동 기본 이미지 검수. 표정 전환, 임의 조합, 염색, 공개 배포 검수는 포함하지 않음."
+    }
+  ]
+}
