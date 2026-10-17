@@ -223,9 +223,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     if (row.kind === 'weekly') {
       const wp = liveWeekly(row, now), s = liveSession(row, now), r = nextReset(row, now);
       if (wp !== null) { const started = row.live.weekly.resetsAt ? row.live.weekly.resetsAt - 7 * DAY_MS : null; lines.push(`주간 ${bar(wp)}<b class="ms-num">${Math.round(wp)}%</b>${started && now - started < DAY_MS ? ` <span class="ms-soft">(${stamp(started, now)} 새 주 시작)</span>` : ''}`); }
-      if (s) lines.push(`5시간 <b class="ms-num">${Math.round(s.usedPercent)}%</b> <span class="ms-soft">· ${rel(s.resetsAt - now)} 뒤 풀림</span>`);
+      if (s) lines.push(`5시간 <b class="ms-num">${Math.round(s.usedPercent)}%</b>${s.resetsAt ? ` <span class="ms-soft">· ${rel(s.resetsAt - now)} 뒤 풀림</span>` : ''}`);
       for (const model of row.live?.models || []) if (Number.isFinite(model.usedPercent)) lines.push(`${esc(model.name)} 주간 <b class="ms-num">${Math.round(model.usedPercent)}%</b>`);
-      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">· ${rel(r - now)} 뒤</span>` : '<span class="ms-soft">초기화 시각 없음</span>');
+      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">· ${rel(r - now)} 뒤</span>` : wp === 0 ? '<span class="ms-soft">아직 안 씀 · 쓰기 시작하면 주간 한도 기간이 시작돼요</span>' : '<span class="ms-soft">초기화 시각 없음</span>');
       if (isUsedUp(row, now)) lines.push(`<span class="ms-alert-text">${r ? full(r) + '에 풀림' : '소진 해제는 직접 눌러 주세요'}</span>`);
     }
     if (row.kind === 'credit') { const b = balance(row); lines.push(b ? `잔액 <b class="ms-num${isLow(row) ? ' ms-warn-text' : ''}">${credits(b.value)}</b> <span class="ms-soft">· ${b.source === 'live' ? '공식값' : '직접 넣음'}${b.at ? ' ' + stamp(b.at, now) : ''}</span>` : '<span class="ms-soft">잔액 미입력</span>'); }

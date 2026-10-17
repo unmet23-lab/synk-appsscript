@@ -86,13 +86,14 @@ function codexWindows(snapshot){
 }
 // agy /usage: 묶음(Gemini 모델, Claude·GPT 모델)마다 주간·5시간 버킷과 남은 비율을 준다.
 // Gemini 묶음을 본 한도로 쓰고, 나머지 묶음은 모델별 주간 줄로 보여 준다. 남은 비율이 없으면 모름(null)으로 둔다.
+// 하나도 안 쓴 버킷은 창이 아직 시작되지 않아 초기화 시각이 부를 때마다 「지금+기간」으로 밀리므로 시각을 비운다(10-17 실측).
 function parseAgyUsage(text){
   const data=parseJson(text),groups=data?.command?.data?.groups;
   if(!data||data.status!=='SUCCESS'||!Array.isArray(groups)||!groups.length)return null;
   const bucket=(group,window)=>{
     const b=(Array.isArray(group?.buckets)?group.buckets:[]).find(x=>x&&x.window===window);
     const left=b?clampNumber(b.remaining_fraction,0,1):null;
-    return left===null?null:{usedPercent:Math.round((1-left)*1000)/10,resetsAt:isoOrNull(b.reset_time)};
+    return left===null?null:{usedPercent:Math.round((1-left)*1000)/10,resetsAt:left===1?null:isoOrNull(b.reset_time)};
   };
   const name=group=>/claude/i.test(group?.name||'')&&/gpt/i.test(group?.name||'')?'Claude·GPT 모델':cleanText(group?.name,40)||'다른 모델';
   const main=groups.find(g=>/gemini/i.test(g?.name||''))||groups[0];
@@ -310,6 +311,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     row.live=result.live;
     const weekly=result.live.weekly;
     if(weekly?.resetsAt){const d=new Date(Math.round(weekly.resetsAt/60000)*60000);row.resetDay=d.getDay();row.resetHour=d.getHours();row.resetMinute=d.getMinutes();}
+    else if(weekly&&weekly.usedPercent===0){row.resetDay=null;row.resetHour=null;row.resetMinute=null;}
     if(weekly&&Number.isFinite(weekly.usedPercent))row.usedUpAt=weekly.usedPercent>=100?now():null;
     if(result.live.credits!==undefined&&result.live.credits!==null){row.credits=result.live.credits;row.creditsAt=now();}
   }

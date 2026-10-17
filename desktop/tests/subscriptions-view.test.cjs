@@ -100,6 +100,10 @@ test('the Gemini guide walks through the console sign-in and the row shows both 
   const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
   await click({subs:'toggle',id:'g-gemini'});
   assert.match(el.innerHTML,/Claude·GPT 모델 주간 <b class="ms-num">0%<\/b>/);assert.match(el.innerHTML,/<strong>Gemini<\/strong>/);
+  // 하나도 안 쓴 한도는 밀리는 초기화 시각 대신 「아직 안 씀」으로 보인다.
+  snapshot={...snapshot,rows:[{...gemini,live:{readAt:Date.now(),weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null},models:[]}}]};listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/아직 안 씀/);assert.ok(!el.innerHTML.includes('1분 안 뒤 풀림'));
+  snapshot={...snapshot,rows:[gemini]};listeners.forEach(cb=>cb(snapshot));
   await click({subs:'guide',service:'gemini'});
   assert.match(el.innerHTML,/Gemini 연결 가이드/);assert.match(el.innerHTML,/Gemini 로그인/);assert.ok(!el.innerHTML.includes('>새 계정 연결</button>'));
   await click({subs:'login',service:'gemini'});

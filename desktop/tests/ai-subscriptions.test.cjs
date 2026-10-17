@@ -44,6 +44,8 @@ test('reads the Antigravity quota groups: Gemini as the main limit, Claude·GPT 
   assert.equal(usage.weekly.usedPercent,36);assert.equal(usage.weekly.resetsAt,Date.parse('2026-10-24T02:25:55Z'));
   assert.equal(usage.session.usedPercent,90);
   assert.deepEqual(usage.models.map(m=>[m.name,m.usedPercent]),[['Claude·GPT 모델',0]]);
+  // 하나도 안 쓴 묶음은 기간이 시작되지 않아 초기화 시각을 비운다.
+  assert.equal(usage.models[0].resetsAt,null);
   // 실패 응답이나 남은 비율이 없는 버킷은 숫자를 지어내지 않는다.
   assert.equal(parseAgyUsage(JSON.stringify({status:'ERROR',command:{data:{groups:[]}}})),null);
   assert.equal(parseAgyUsage('Not signed in'),null);
