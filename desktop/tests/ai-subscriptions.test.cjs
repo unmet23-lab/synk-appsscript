@@ -72,12 +72,13 @@ test('npm shims run through cmd with fixed quoted arguments and executables run 
 });
 
 /* ---------- 가짜 공식 프로그램 ---------- */
-function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true}={}){
+function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=null}={}){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-'));
   const home=path.join(root,'home'),bin=path.join(home,'.local','bin'),npm=path.join(root,'npm'),agyBin=path.join(root,'local','agy','bin');
   fs.mkdirSync(bin,{recursive:true});fs.mkdirSync(npm,{recursive:true});fs.mkdirSync(agyBin,{recursive:true});
   for(const file of [path.join(bin,'claude.exe'),path.join(npm,'codex.cmd'),path.join(npm,'higgsfield.exe'),path.join(npm,'npm.cmd'),path.join(agyBin,'agy.exe')])fs.writeFileSync(file,'');
-  const calls=[],stdinWrites=[];let loginChild=null;const state={claudeLoggedIn,geminiLoggedIn};
+  // higgsHomes: 홈 폴더(USERPROFILE)마다 Higgsfield 로그인. 기본 홈은 77@example.com.
+  const calls=[],stdinWrites=[];let loginChild=null;const state={claudeLoggedIn,geminiLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com'};
   function spawn(command,argv,options){
     const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();
     const call={command,argv,options};calls.push(call);
@@ -98,23 +99,40 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true}={}){
         else if(m.method==='account/read')send({id:m.id,result:{account:{type:'chatgpt',email:'synk@example.com',planType:'pro'}}});
         else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null}}});}};
     }
-    else if(joined.includes('account status'))reply(JSON.stringify({credits:0.22,email:'77@example.com',subscription_plan_type:'ultra'}));
+    else if(joined.includes('auth login')&&command.endsWith('higgsfield.exe')){
+      // 실제 CLI처럼 주소를 찍고, 브라우저 승인이 끝나면 그 홈에 로그인을 두고 끝난다(작업공간은 비어 있음).
+      const homeDir=options.env.USERPROFILE;
+      setImmediate(()=>child.stdout.emit('data','Opening browser for authentication...\nIf browser does not open, visit: https://clerk.higgsfield.ai/oauth/authorize?client_id=x&state=abc\nWaiting for approval...\n'));
+      setTimeout(()=>{state.higgsHomes[homeDir]={email:state.nextHiggsEmail,workspace:null};child.emit('close',0);},10);
+    }
+    else if(joined.includes('workspace list'))reply(JSON.stringify([{id:'ws-member-0001',name:null,plan_type:'ultra',credits:1373.34,is_selected:false,user_role:'owner'}]));
+    else if(joined.includes('workspace set')){const h=state.higgsHomes[options.env.USERPROFILE];if(h)h.workspace=argv.at(-1);reply('Selected workspace: '+argv.at(-1)+'\n',h?0:1);}
+    else if(joined.includes('account status')){
+      const h=state.higgsHomes[options.env.USERPROFILE];
+      if(!h)reply(JSON.stringify({credits:0.22,email:'77@example.com',subscription_plan_type:'ultra'}));
+      else if(!h.workspace)reply('Error: No workspace selected.\nHint: Run: higgsfield workspace set <workspace_id>\n',1);
+      else reply(JSON.stringify({credits:1373.34,email:h.email,subscription_plan_type:'ultra'}));
+    }
     else reply('',1);
     return child;
   }
   const changes=[],opened=[];
-  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,now:()=>NOW,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
+  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,...(fetch?{fetch}:{}),...(secrets?{secrets}:{}),now:()=>NOW,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
   return {root,service,calls,stdinWrites,changes,opened,state,get loginChild(){return loginChild;}};
 }
 
 test('finds the official tools, reads existing logins and keeps tokens out of the snapshot',async()=>{
   const f=fakeSystem();
   const snap=await f.service.snapshot();
-  assert.deepEqual(Object.fromEntries(Object.entries(snap.tools).map(([k,v])=>[k,v.installed])),{claude:true,gpt:true,higgsfield:true,gemini:true});
+  assert.deepEqual(Object.fromEntries(Object.entries(snap.tools).map(([k,v])=>[k,v.installed])),{claude:true,gpt:true,higgsfield:true,gemini:true,typecast:true});
+  assert.equal(snap.tools.typecast.api,true);
   const claude=await f.service.useExisting('claude');assert.equal(claude.ok,true);
   const gpt=await f.service.useExisting('gpt');assert.equal(gpt.ok,true);
   const higgs=await f.service.useExisting('higgsfield');assert.equal(higgs.ok,true);
+  const firstChange=f.changes.length;
   const after=await f.service.check();
+  // 확인을 시작하는 첫 알림부터 「확인 중」이어야 화면이 잠깐 끝난 것처럼 보이지 않는다.
+  assert.equal(f.changes[firstChange].checking,true);
   const by=Object.fromEntries(after.rows.map(r=>[r.service,r]));
   assert.equal(by.claude.email,'member@example.com');assert.equal(by.claude.live.weekly.usedPercent,31);assert.equal(by.claude.resetDay,4);assert.equal(by.claude.resetHour,10);
   assert.equal(by.gpt.email,'synk@example.com');assert.equal(by.gpt.live.weekly.usedPercent,100);assert.equal(by.gpt.usedUpAt,NOW);
@@ -208,4 +226,104 @@ test('Gemini reads the Antigravity quota from the app data folder and signs in t
   assert.equal(row.live.weekly.usedPercent,36);assert.equal(row.live.session.usedPercent,90);assert.equal(row.live.models[0].name,'Claude·GPT 모델');
   const usageCall=f.calls.find(c=>c.command.endsWith('agy.exe')&&c.argv.includes('/usage'));
   assert.deepEqual(usageCall.argv,['-p','/usage','--output-format','json']);assert.equal(usageCall.options.cwd,path.join(f.root,'data'));assert.equal(usageCall.options.shell,false);
+});
+
+/* ---------- Higgsfield 여러 계정 ---------- */
+// 로그인이 끝나고, 연결 직후 저절로 도는 확인까지 끝날 때를 기다린다(진행 중인 확인은 본체에 직접 묻는다).
+const settle=async(f,stages=['done'])=>{
+  for(let i=0;i<400&&(!stages.includes(f.changes.at(-1)?.login?.stage)||f.changes.at(-1)?.checking);i++)await new Promise(r=>setTimeout(r,5));
+  for(let i=0;i<400&&(await f.service.snapshot()).checking;i++)await new Promise(r=>setTimeout(r,5));
+};
+
+test('connects several Higgsfield accounts, each in its own home folder, and picks the new workspace',async()=>{
+  const f=fakeSystem();
+  assert.equal((await f.service.useExisting('higgsfield')).ok,true);
+  f.state.nextHiggsEmail='founder@example.com';
+  const started=await f.service.startLogin('higgsfield');assert.equal(started.ok,true);
+  const loginCall=f.calls.find(c=>c.command.endsWith('higgsfield.exe')&&c.argv.join(' ')==='auth login');
+  const home=loginCall.options.env.USERPROFILE;
+  assert.match(path.basename(home),/^higgsfield-[a-z0-9]{8}$/);assert.equal(loginCall.options.env.HOME,home);assert.ok(fs.existsSync(home));
+  await new Promise(r=>setImmediate(r));
+  const browser=f.changes.map(c=>c.login).find(l=>l?.stage==='browser');
+  // 화면이 이 주소로 「주소 복사」(시크릿 창) 단추를 띄운다.
+  assert.match(browser.url,/^https:\/\/clerk\.higgsfield\.ai\//);
+  await settle(f);
+  assert.equal(f.changes.at(-1).login.stage,'done');
+  // 새 홈은 작업공간이 비어 있어 내가 주인인 작업공간을 먼저 고른다.
+  const set=f.calls.find(c=>c.argv.join(' ')==='workspace set ws-member-0001');
+  assert.ok(set);assert.equal(set.options.env.USERPROFILE,home);
+  const snap=await f.service.check();
+  const rows=snap.rows.filter(r=>r.service==='higgsfield');
+  assert.deepEqual(rows.map(r=>[r.email,r.credits,r.folder]).sort(),[['77@example.com',0.22,false],['founder@example.com',1373.34,true]]);
+  assert.equal(snap.check.total,2);assert.equal(snap.check.ok,2);
+  // 기본 로그인은 홈을 바꾸지 않고 읽는다.
+  const defaultRead=f.calls.find(c=>c.argv.join(' ')==='account status --json'&&!c.options.env.USERPROFILE);
+  assert.ok(defaultRead);
+});
+
+test('a new sign-in that lands on an already connected account is reported and leaves no extra folder',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('higgsfield');
+  f.state.nextHiggsEmail='77@example.com';
+  await f.service.startLogin('higgsfield');
+  const home=f.calls.find(c=>c.command.endsWith('higgsfield.exe')&&c.argv.join(' ')==='auth login').options.env.USERPROFILE;
+  await settle(f,['done','error']);
+  const last=f.changes.at(-1).login;
+  assert.equal(last.stage,'error');assert.match(last.message,/이미 연결된 77@example.com/);assert.match(last.message,/시크릿 창/);
+  assert.equal(fs.existsSync(home),false);
+  const snap=await f.service.snapshot();assert.equal(snap.rows.filter(r=>r.service==='higgsfield').length,1);
+});
+
+/* ---------- Typecast API 키 ---------- */
+function fakeTypecast(){
+  const good='tc-good-key-1234567890',state={valid:new Set([good]),calls:[]};
+  const fetch=async(url,options)=>{
+    state.calls.push({url,options});
+    if(url!=='https://api.typecast.ai/v1/users/me/subscription')return {ok:false,status:404};
+    if(!state.valid.has(options.headers['X-API-KEY']))return {ok:false,status:401,json:async()=>({})};
+    return {ok:true,status:200,json:async()=>({plan:'lite',credits:{plan_credits:200000,used_credits:73584}})};
+  };
+  // 가짜 암호화: 거꾸로 뒤집어 base64로 둔다(평문 키가 파일에 남지 않는지만 본다).
+  const secrets={available:()=>true,encrypt:text=>Buffer.from('enc:'+Buffer.from(text).reverse().toString('base64')),decrypt:data=>Buffer.from(String(data).slice(4),'base64').reverse().toString()};
+  return {good,state,fetch,secrets};
+}
+
+test('Typecast connects with an API key kept encrypted on this PC and reads the credits left',async()=>{
+  const tc=fakeTypecast(),f=fakeSystem({fetch:tc.fetch,secrets:tc.secrets});
+  const accounts=path.join(f.root,'data','accounts');
+  const typecastFolders=()=>fs.existsSync(accounts)?fs.readdirSync(accounts).filter(n=>n.startsWith('typecast-')):[];
+  assert.deepEqual(await f.service.connectKey('typecast','has space key 123'),{ok:false,code:'INVALID_KEY_FORMAT'});
+  assert.deepEqual(await f.service.connectKey('typecast','tc-wrong-key-000000'),{ok:false,code:'INVALID_KEY'});
+  assert.deepEqual(typecastFolders(),[]);
+  const done=await f.service.connectKey('typecast','  '+tc.good+'\n');assert.equal(done.ok,true);
+  const row=done.snapshot.rows.find(r=>r.service==='typecast');
+  assert.equal(row.credits,126416);assert.equal(row.plan,'lite');assert.equal(row.keyHint,'…7890');assert.equal(row.folder,true);assert.equal(row.state,'ok');assert.equal(row.kind,'credit');
+  assert.equal(row.keyId,undefined);assert.ok(!JSON.stringify(done.snapshot).includes(tc.good));
+  const [folder]=typecastFolders();
+  assert.ok(!fs.readFileSync(path.join(accounts,folder,'key.bin')).toString().includes(tc.good));
+  assert.ok(!fs.readFileSync(path.join(f.root,'data','board.json'),'utf8').includes(tc.good));
+  // 같은 키를 또 넣어도 한 줄이다.
+  assert.equal((await f.service.connectKey('typecast',tc.good)).snapshot.rows.filter(r=>r.service==='typecast').length,1);
+  // 「지금 확인」이 저장한 키로 다시 읽고, 키가 폐기되면 다시 연결을 알린다.
+  let snap=await f.service.check();assert.equal(snap.rows.find(r=>r.service==='typecast').state,'ok');
+  const call=tc.state.calls.at(-1);assert.equal(call.options.headers['X-API-KEY'],tc.good);assert.equal(call.options.redirect,'error');
+  tc.state.valid.clear();
+  snap=await f.service.check();
+  const revoked=snap.rows.find(r=>r.service==='typecast');assert.equal(revoked.state,'needs-login');assert.match(revoked.stateMessage,/새 키로 다시 연결/);
+  // 지우면 키 파일도 사라진다.
+  await f.service.save({remove:revoked.id});assert.equal(fs.existsSync(path.join(accounts,folder)),false);
+  // 로그인·설치 길로는 들어오지 않는다.
+  assert.deepEqual(await f.service.useExisting('typecast'),{ok:false,code:'UNKNOWN_SERVICE'});
+  assert.deepEqual(await f.service.startLogin('typecast'),{ok:false,code:'UNKNOWN_SERVICE'});
+  assert.deepEqual(await f.service.openInstaller('typecast'),{ok:false,code:'UNKNOWN_SERVICE'});
+  assert.deepEqual(await f.service.connectKey('claude',tc.good),{ok:false,code:'UNKNOWN_SERVICE'});
+});
+
+test('without secure storage the API key is refused instead of being saved in plain text',async()=>{
+  const tc=fakeTypecast();
+  const locked=fakeSystem({fetch:tc.fetch,secrets:{...tc.secrets,available:()=>false}});
+  assert.deepEqual(await locked.service.connectKey('typecast',tc.good),{ok:false,code:'SECURE_STORAGE_UNAVAILABLE'});
+  const none=fakeSystem({fetch:tc.fetch});
+  assert.deepEqual(await none.service.connectKey('typecast',tc.good),{ok:false,code:'SECURE_STORAGE_UNAVAILABLE'});
+  assert.equal(tc.state.calls.length,0);
 });

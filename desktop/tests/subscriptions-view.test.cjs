@@ -115,3 +115,48 @@ test('the Gemini guide walks through the console sign-in and the row shows both 
   assert.ok(attention([{...gemini,state:'needs-login'}],Date.now()).some(i=>i.text==='다시 로그인 필요 · Gemini'));
   board.dispose();
 });
+
+test('Typecast connects with a pasted API key and Higgsfield can add more accounts through a private window',async()=>{
+  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
+  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+  // Node에는 읽기 전용 navigator가 있어 clipboard만 가짜로 붙인다.
+  const copied=[];
+  Object.defineProperty(globalThis.navigator,'clipboard',{value:{writeText:async text=>{copied.push(text);}},configurable:true});
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const higgs=row({service:'higgsfield',label:'Higgsfield',kind:'credit',email:'77@example.com',live:{readAt:Date.now(),credits:0.22},credits:0.22,creditsAt:Date.now()});
+  const typecast=row({service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'…7890',plan:'lite',live:{readAt:Date.now(),credits:126416},credits:126416,creditsAt:Date.now()});
+  let snapshot={ok:true,tools:{claude:{installed:true},gpt:{installed:true},higgsfield:{installed:true,npm:true},gemini:{installed:true},typecast:{installed:true,api:true}},rows:[higgs],settings:{usdKrw:1400},check:{at:Date.now(),total:1,ok:1},login:null,checking:false};
+  const listeners=[],keys=[],logins=[];const toasts=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async()=>({ok:true}),useExisting:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};},save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true}),
+    connectKey:async(service,key)=>{keys.push([service,key]);if(key!=='tc-good-key-1234567890')return {ok:false,code:'INVALID_KEY'};snapshot={...snapshot,rows:[higgs,typecast]};return {ok:true,id:typecast.id,snapshot};}}};
+  const board=createSubscriptionsBoard({bridge,toast:m=>toasts.push(m)});
+  const el=fakeContainer();
+  board.render(el,{signedIn:true,native:true});
+  await new Promise(r=>setImmediate(r));
+  const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
+  const submit=async (name,dataset={})=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:name,...dataset},querySelector:()=>null})}});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));};
+  // Typecast 카드는 설치가 필요 없고, 가이드는 키 페이지 → 붙여 넣기 순서다.
+  assert.match(el.innerHTML,/ms-s-typecast/);assert.match(el.innerHTML,/설치 필요 없음/);
+  await click({subs:'guide',service:'typecast'});
+  assert.match(el.innerHTML,/Typecast 연결 가이드/);assert.match(el.innerHTML,/data-link="typecast-api"/);assert.match(el.innerHTML,/type="password"/);assert.ok(!el.innerHTML.includes('설치 창 열기'));
+  el.handlers.get('input')({target:{id:'ms-key',value:'tc-wrong-key-000000'}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(keys.at(-1),['typecast','tc-wrong-key-000000']);assert.match(toasts.at(-1),/키를 받지 않았어요/);
+  el.handlers.get('input')({target:{id:'ms-key',value:' tc-good-key-1234567890 '}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(keys.at(-1),['typecast','tc-good-key-1234567890']);assert.match(toasts.at(-1),/키를 연결했어요/);
+  assert.ok(!el.innerHTML.includes('tc-good-key'));
+  await click({subs:'toggle',id:'g-typecast'});
+  assert.match(el.innerHTML,/Typecast · 키 …7890/);assert.match(el.innerHTML,/126,416/);
+  // Higgsfield는 이제 여러 계정: 기존 로그인 쓰기와 새 계정 연결이 함께 있다.
+  await click({subs:'guide',service:'higgsfield'});
+  assert.match(el.innerHTML,/>새 계정 연결<\/button>/);assert.match(el.innerHTML,/계정 여러 개/);
+  await click({subs:'login',service:'higgsfield'});
+  assert.deepEqual(logins.at(-1),['higgsfield',{email:undefined}]);
+  snapshot={...snapshot,login:{id:'l-1',service:'higgsfield',stage:'browser',url:'https://clerk.higgsfield.ai/oauth/authorize?state=abc',needsCode:false,message:'브라우저에서 로그인을 마치면 자동으로 넘어가요.',console:false}};
+  listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/data-subs="copy-url"/);assert.match(el.innerHTML,/시크릿 창/);
+  await click({subs:'copy-url'});
+  assert.deepEqual(copied,['https://clerk.higgsfield.ai/oauth/authorize?state=abc']);assert.match(toasts.at(-1),/시크릿 창/);
+  board.dispose();
+});

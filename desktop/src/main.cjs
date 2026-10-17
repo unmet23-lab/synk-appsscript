@@ -93,7 +93,9 @@ const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.
 const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
 // AI 구독 계정판: 플랫폼 창에서 로그인한 회원만, 공식 프로그램 출력만 읽는다(ai-subscriptions.cjs).
 let aiSubscriptions=null;
-function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot)});return aiSubscriptions;}
+// Typecast처럼 API 키로 읽는 서비스의 키는 safeStorage(Windows DPAPI·macOS 키체인)로만 이 PC에 둔다.
+const subscriptionSecrets={available:()=>{try{return ['win32','darwin'].includes(process.platform)&&safeStorage.isEncryptionAvailable()&&safeStorage.getSelectedStorageBackend?.()!=='basic_text';}catch{return false;}},encrypt:value=>safeStorage.encryptString(value),decrypt:data=>safeStorage.decryptString(data)};
+function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),secrets:subscriptionSecrets,openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot)});return aiSubscriptions;}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 function pulseResourceAllowed(value){
   try{const url=new URL(value);return url.origin===PULSE_ORIGIN&&!url.username&&!url.password&&(url.pathname.startsWith('/pulse/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}catch{return false;}
@@ -300,6 +302,7 @@ function createWindow(){
     'synk:subscriptions-install':service=>subscriptionCall(s=>s.openInstaller(service)),
     'synk:subscriptions-help':key=>subscriptionCall(s=>s.openHelp(key)),
     'synk:subscriptions-save':patch=>subscriptionCall(s=>s.save(patch)),
+    'synk:subscriptions-key':(service,key)=>subscriptionCall(s=>s.connectKey(service,key)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
