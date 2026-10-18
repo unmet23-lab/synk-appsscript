@@ -85,6 +85,10 @@ test('benefit detail reflects device save and favorite state without creating a 
   assert.match(benefitDetail('fortune', 'http://localhost/', { library }), /data-action="save" data-id="fortune" aria-pressed="false"/);
   // PC 앱 안 혜택(구독 계정판)은 기기 바로가기 목록에 없어 담기·즐겨찾기 단추를 내지 않는다.
   assert.doesNotMatch(benefitDetail('subscriptions', 'http://localhost/', { library }), /data-action="(save|favorite)"/);
+  // 웹 소개는 PC 앱 받기로 잇고, 카드는 「내 기록」이 아니라 소개로 간다(내 기록은 성향만).
+  assert.ok(benefitDetail('subscriptions', 'http://localhost/').includes('<a class="benefit-link" href="#downloads">PC 앱 받기 →</a>'));
+  assert.ok(benefitCards('계정판').includes('어떤 경험인가요?'));
+  assert.ok(!benefitCards('계정판').includes('내 기록 살펴보기'));
 });
 
 test('preview server serves only named public benefit assets, not source modules or private files', () => {
