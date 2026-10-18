@@ -41,6 +41,10 @@ test('each account lands in one state and each service recommends its roomiest c
   const mixed=serviceGroups([passed,rows[2]],NOW)[0];
   assert.deepEqual([mixed.best.row.id,mixed.projected.map(a=>a.row.id),mixed.ready.map(a=>a.row.id)],['roomy',['passed'],['roomy']]);
   assert.equal(serviceGroups([passed],NOW)[0].best.row.id,'passed');
+  // 1%만 남은 확인값보다 창이 풀려 다시 찼을 계정을 먼저 추천하고, 거의 다 쓴 계정뿐이면 그 계정을 추천한다.
+  const almost=row({id:'almost',email:'almost@example.com',live:{readAt:NOW,weekly:{usedPercent:99,resetsAt:NOW+864e5}}});
+  assert.equal(serviceGroups([almost,passed],NOW)[0].best.row.id,'passed');
+  assert.equal(serviceGroups([almost,rows[0]],NOW)[0].best.row.id,'almost');
 });
 
 test('the limit follows whichever window has less left, and past windows count as full again',async()=>{
@@ -87,12 +91,12 @@ test('the glance board shows one row per service and rolls each number only when
     await tick();
     // 서비스마다 한 줄: 추천 계정 이름, 개수 글, 덜 남은 창의 고리 하나.
     assert.equal((el.innerHTML.match(/class="ms-svc /g)||[]).length,4);
-    assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name">roomy<small>Max<\/small>/);
-    assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">· 1개 다 씀<\/span>/);
+    assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name"><span>roomy<\/span><small>Max<\/small>/);
+    assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 다 씀<\/span>/);
     assert.match(el.innerHTML,/data-roll="r-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
     assert.match(el.innerHTML,/data-roll="r-gpt">51<small>%/);
     assert.match(el.innerHTML,/data-roll="c-higgsfield">1,373<\/b><span>크레딧<\/span>/);
-    assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 계정<\/span><span class="ms-pick-name">이 PC 로그인/);
+    assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 계정<\/span><span class="ms-pick-name"><span>이 PC 로그인<\/span>/);
     // 다 남은 고리(아직 안 쓴 Gemini)는 이음매 없는 닫힌 원이다(대시 없음).
     assert.match(el.innerHTML,/<circle class="ms-arc" data-level="ok" cx="30" cy="30" r="25" stroke-width="7" data-full\/>/);
     // 02는 다 쓴 계정이 풀리는 때와 풀리면 남는 주간 한도.
@@ -182,6 +186,8 @@ test('the board asks members to sign in, then starts first-time members from one
   assert.deepEqual(calls,['snapshot']);
   // 계정이 없으면 한눈에 보기는 빈 카드 하나와 계정 관리 입구만 보인다.
   assert.match(el.innerHTML,/아직 연결한 계정이 없어요/);assert.match(el.innerHTML,/연결한 계정 0개/);assert.ok(!el.innerHTML.includes('ms-foot'));assert.ok(!el.innerHTML.includes('다음에 풀려요'));
+  // 계정이 없어도 포스터의 「계정 관리」는 남고(다른 혜택 포스터와 같은 틀), 「지금 확인」은 읽을 계정이 생긴 뒤에만 보인다.
+  assert.match(el.innerHTML,/class="ms-hero-actions"><button type="button" class="ms-button" data-subs="manage">계정 관리<\/button>/);assert.ok(!el.innerHTML.includes('data-subs="check"'));
   await click({subs:'manage'});
   // 계정 관리는 첫 서비스(Claude) 가이드를 펼쳐 두고, 설치 안 된 서비스는 머리에 알린다.
   assert.match(el.innerHTML,/계정 관리<\/h1>/);assert.match(el.innerHTML,/Claude 연결 가이드/);assert.match(el.innerHTML,/설치 창 열기/);assert.match(el.innerHTML,/irm https:\/\/claude\.ai\/install\.ps1 \| iex/);
@@ -193,7 +199,7 @@ test('the board asks members to sign in, then starts first-time members from one
   snapshot={...snapshot,rows:[row({live:{readAt:Date.now(),weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
   listeners.forEach(cb=>cb(snapshot));
   await click({subs:'glance'});
-  assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">4<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">· 거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
+  assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">4<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
@@ -253,7 +259,7 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   assert.match(el.innerHTML,/Claude · GPT · Gemini · Typecast도 연결할 수 있어요/);
   // Typecast 블록은 설치가 필요 없고, 가이드는 키 페이지 → 붙여 넣기 순서다.
   await click({subs:'manage'});
-  assert.match(el.innerHTML,/ms-s-typecast/);assert.match(el.innerHTML,/Typecast API 키 · 설치 필요 없음/);
+  assert.match(el.innerHTML,/ms-s-typecast/);assert.match(el.innerHTML,/Typecast API 키<small class="ms-mtool-note"> · 설치 필요 없음<\/small>/);
   await click({subs:'guide',service:'typecast'});
   assert.match(el.innerHTML,/Typecast 연결 가이드/);assert.match(el.innerHTML,/data-link="typecast-api"/);assert.match(el.innerHTML,/type="password"/);assert.ok(!el.innerHTML.includes('설치 창 열기'));
   el.handlers.get('input')({target:{id:'ms-key',value:'tc-wrong-key-000000'}});
@@ -265,7 +271,7 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   assert.ok(!el.innerHTML.includes('tc-good-key'));
   // 한눈에 줄은 키 끝 네 글자와 100 넘는 크레딧을 소수 없이, 펼친 줄은 요금제와 함께.
   await click({subs:'glance'});
-  assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 키<\/span><span class="ms-pick-name">…7890<small>Lite<\/small>/);assert.match(el.innerHTML,/data-roll="c-typecast">126,416<\/b>/);
+  assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 키<\/span><span class="ms-pick-name"><span>…7890<\/span><small>Lite<\/small>/);assert.match(el.innerHTML,/data-roll="c-typecast">126,416<\/b>/);
   await click({subs:'toggle',id:'g-typecast'});
   assert.match(el.innerHTML,/<span class="ms-acc-name">…7890<\/span><span class="ms-acc-sub">Lite<\/span>/);
   // Higgsfield는 계정 여러 개: 기존 로그인 쓰기와 새 계정 연결이 함께 있다.
@@ -365,7 +371,7 @@ test('the fix band gives each account its own action and rereads just that accou
   // 넷이면 둘만 보이고 나머지는 계정 관리로.
   assert.equal((el.innerHTML.match(/class="ms-fix-row"/g)||[]).length,3);
   assert.match(el.innerHTML,/손볼 계정이 2개 더 있어요<\/span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기/);
-  assert.match(el.innerHTML,/5개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">· 2개 못 읽음 · 2개 다시 로그인<\/span>/);
+  assert.match(el.innerHTML,/5개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">2개 못 읽음 · 2개 다시 로그인<\/span>/);
   snapshot={...snapshot,rows:[bad[1],ok]};listeners.forEach(cb=>cb(snapshot));
   assert.match(el.innerHTML,/읽지 못함 · <b>b<\/b>\(Claude\) · [\d/: ]+ 값<\/span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="b" >다시 읽기/);
   await click({subs:'reread',id:'b'});
@@ -373,6 +379,19 @@ test('the fix band gives each account its own action and rereads just that accou
   // 펼친 줄도 같은 행동: 못 읽은 이유와 다시 읽기.
   await click({subs:'toggle',id:'g-claude'});
   assert.match(el.innerHTML,/<h3>손볼 것<\/h3>.*Claude Code가 응답하지 않았어요\./);
+  board.dispose();
+});
+
+test('when only nearly used accounts are left the pick says so',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now(),rows=[row({email:'almost@example.com',live:{readAt:now,weekly:{usedPercent:99,resetsAt:now+864e5}}}),row({email:'out@example.com',live:{readAt:now,session:{usedPercent:100,resetsAt:now+3600e3},weekly:{usedPercent:10,resetsAt:now+3*864e5}}})];
+  const snapshot={ok:true,tools:{},rows,settings:{usdKrw:1400},check:{at:now,total:2,ok:2},login:null,checking:false};
+  const board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}}),el=fakeContainer();
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  assert.match(el.innerHTML,/<span class="ms-pick-label">남은 건 이것뿐<\/span><span class="ms-pick-name"><span>almost<\/span>/);
+  assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 거의 다 씀 · 1개 다 씀<\/span>/);
   board.dispose();
 });
 
