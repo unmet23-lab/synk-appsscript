@@ -47,7 +47,7 @@ function pair(src, base) {
 }
 
 // 화면의 브리프 추천이 제품 설명 속 낱말을 찾으므로 words는 같이 보낸다(fits·match는 빌드에서 모델에 붙인다)
-const data = { updated: catalog.updated, industries: catalog.industries.map(({ id, label, hint, words, sub }) => ({ id, label, hint, words, sub })), moods: catalog.moods.map(({ id, label, words }) => ({ id, label, words })), genderWords: catalog.genderWords || {}, compareShots: catalog.compareShots, models: [] };
+const data = { updated: catalog.updated, industries: catalog.industries.map(({ id, label, hint, words, sub }) => ({ id, label, hint, words, sub })), moods: catalog.moods.map(({ id, label, words }) => ({ id, label, words })), genderWords: catalog.genderWords || {}, compareShots: catalog.compareShots, say: catalog.say || null, shareBase: catalog.artifactUrl || '', models: [] };
 
 for (const m of models) {
   const code = m.code, extra = (catalog.models || {})[code] || {}, spec = specs[code];
@@ -90,7 +90,7 @@ for (const m of models) {
     const wav = path.join(here, 'voice', `${v.name}.wav`), mp3 = `voice/${code}-${i + 1}.mp3`;
     if (fs.existsSync(wav)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-ac', '1', '-b:a', '96k', outRel(mp3)]);
     if (!fs.existsSync(outRel(mp3))) { missing.push(`${code} voice ${i + 1}`); return null; }
-    return { label: v.label, note: v.note || VOICE_NOTE[v.voice] || '', text: v.text || '', src: mp3 };
+    return { label: v.label, note: v.note || VOICE_NOTE[v.voice] || '', text: v.text || '', src: mp3, say: v.engine === 'typecast' && !!v.voiceId };
   }).filter(Boolean);
 
   const motion = [];
@@ -100,6 +100,15 @@ for (const m of models) {
     if (fs.existsSync(src) && (!fs.existsSync(outRel(rel)) || fs.statSync(outRel(rel)).size !== fs.statSync(src).size)) fs.copyFileSync(src, outRel(rel));
     if (fs.existsSync(outRel(rel))) motion.push({ src: rel, label: v.label, note: v.note || '' }); else missing.push(`${code} motion ${i + 1}`);
   });
+
+  // 보드에서 마우스를 올리면 도는 짧은 영상(loop/<코드>.mp4, 처음·끝 프레임이 대표 사진과 같다)
+  let loop = null;
+  if (extra.loop) {
+    const src = path.join(here, extra.loop.src), rel = `video/${code}-loop.mp4`;
+    fs.mkdirSync(path.join(out, 'video'), { recursive: true });
+    if (fs.existsSync(src) && (!fs.existsSync(outRel(rel)) || fs.statSync(outRel(rel)).size !== fs.statSync(src).size)) fs.copyFileSync(src, outRel(rel));
+    if (fs.existsSync(outRel(rel))) loop = { src: rel }; else missing.push(`${code} loop`);
+  }
 
   // 몸 비율: 명세서가 있으면 명세서 값, 없으면 catalog의 측정값
   const measured = spec && spec['몸'] && spec['몸']['측정_전신기준'];
@@ -120,8 +129,8 @@ for (const m of models) {
     code, name: m.name, gender: m.gender, ageBand: m.ageBand || '', age: m.age || '', concept: m.concept, impression: m.impression, fits: m.fits,
     height: m.height || null, weightKg: m.weightKg || null, build: m.build || '', sizes: m.sizes || {}, skin: m.skin || '', eyes: m.eyes || '', hairBase: m.hairBase || '',
     realPerson: !!m.realPerson, hair: m.hair.map((h) => ({ label: h.label })), looks: m.looks.map((l) => ({ label: l.label })),
-    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, motion, tagged,
-    face: extra.face || null, bodyNote: extra.bodyNote || '', direction: extra.direction || null, spec: !!spec,
+    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, motion, loop, tagged,
+    face: extra.face || null, bodyNote: extra.bodyNote || '', direction: extra.direction || null, spec: !!spec && scenes.length > 0, // 「상세 프로필」 꼬리표: 명세서에 장면 사진까지 갖춘 모델
     script: mine.every((v) => v.text) ? '' : (mine[0] || {}).script || '',
   };
   Object.assign(pub, logic.tagModel(pub, catalog));
@@ -149,13 +158,17 @@ const rep = {
   LOGO: uri(path.join(pulse, 'brand-pulse.webp'), 'image/webp'),
   FONTS: fonts,
   STYLE: fs.readFileSync(path.join(here, 'site-src/style.css'), 'utf8'),
-  DATA: JSON.stringify(data).replace(/</g, '\\u003c'),
+  DATA: '@@DATA@@',
   LOGIC: fs.readFileSync(path.join(here, 'site-src/casting-logic.js'), 'utf8'),
   APP: fs.readFileSync(path.join(here, 'site-src/app.js'), 'utf8'),
 };
 let page = fs.readFileSync(path.join(here, 'site-src/template.html'), 'utf8');
-for (const [k, v] of Object.entries(rep)) page = page.replace(`@@${k}@@`, () => v);
-if (/@@\w+@@/.test(page)) throw Error('채우지 못한 자리표시가 있다');
+for (const [k, v] of Object.entries(rep)) if (k !== 'DATA') page = page.replace(`@@${k}@@`, () => v);
+if (/@@(?!DATA@@)\w+@@/.test(page)) throw Error('채우지 못한 자리표시가 있다');
+// 「우리 광고 문장으로 듣기」 서버 주소는 홈페이지판(index.html)에만 넣는다. claude.ai 페이지는 다른 주소로 요청을 보낼 수 없다.
+const sayBase = { max: (catalog.say || {}).max || 60, daily: (catalog.say || {}).daily || 10 };
+const dataJson = (api) => JSON.stringify({ ...data, say: { ...sayBase, api } }).replace(/</g, '\\u003c');
+const withData = (html, api) => html.replace('@@DATA@@', () => dataJson(api));
 // 화면에 나가는 글에 만든 도구 이름이 섞이지 않았는지 본다(목소리 이름표는 VOICE_NOTE로 바꿔서 나간다)
 const banned = /Gemini|Nano ?Banana|Higgsfield|Soul 2|Vertex|LoRA|pls_f0|MediaPipe|Leda|Aoede|Laomedeia|SYNK-LoRA|Typecast|타입캐스트|tc_[0-9a-f]{8}/i;
 const leak = JSON.stringify(data).match(banned);
@@ -165,9 +178,11 @@ const licenses = ['SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt', 'DM_Mono/OFL.txt
 const cut = page.indexOf('</style>') + '</style>'.length;
 const head = page.slice(0, cut), body = page.slice(cut);
 const lic = `\n<!-- Embedded font licenses\n${licenses}\n-->`;
-fs.writeFileSync(path.join(out, 'artifact.html'), head + lic + body);
-fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${head}${lic}</head>\n<body>${body}</body></html>\n`);
+const homeApi = process.env.PULSE_SAY_API ?? ((catalog.say || {}).api || '');
+fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, ''));
+fs.writeFileSync(path.join(out, 'index.html'), withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${head}${lic}</head>\n<body>${body}</body></html>\n`, homeApi));
 const size = (p) => (fs.statSync(path.join(out, p)).size / 1024 / 1024).toFixed(2) + 'MB';
-console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.spec ? ' 명세서' : ''}`).join(' / '));
+console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.voices.some((v) => v.say) ? '(문장 듣기)' : ''}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '));
+if (homeApi) console.log('문장 듣기 서버', homeApi);
 if (missing.length) console.log('빠진 것', missing.join(', '));
 console.log('index.html', size('index.html'), '· artifact.html', size('artifact.html'));
