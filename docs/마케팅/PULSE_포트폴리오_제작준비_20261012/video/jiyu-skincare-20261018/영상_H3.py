@@ -31,6 +31,10 @@ SEED = int(os.environ.get("H3_SEED", "42"))
 FRAMES = 124
 W, H = 768, 1344
 GUIDE_AT = 48  # 컷 3 끝 창을 못 박는 프레임(2.0초)
+# H3_LAST=1: 끝 프레임(5.17초)에도 시작 그림을 넣어 화면 틀을 양쪽에서 묶는다. 10-19 컷 7(시드 42)이 「locked-off」 지시에도
+# 0~1.5초에 옆으로 밀려 엔드카드 자리(오른쪽 빈 벽)가 줄었다. 표정 변화는 가운데에서 일어나고 편집은 앞 3초만 쓴다.
+LAST = os.environ.get("H3_LAST") == "1"
+TAG = "_끝고정" if LAST else ""
 LOG = os.path.join(OUT, "기록.txt")
 
 # 컷: 시작 그림(키프레임_A) — 컷 3은 (시작, 끝)
@@ -166,9 +170,11 @@ def graph(cut, names):
                                                                   "sigmas": ["9", 0], "latent_image": ["6", 1]}},
         "12": {"class_type": "VAEDecode", "inputs": {"samples": ["11", 0], "vae": ["3", 0]}},
         "14": {"class_type": "CreateVideo", "inputs": {"images": ["12", 0], "fps": 24}},
-        "15": {"class_type": "SaveVideo", "inputs": {"video": ["14", 0], "filename_prefix": f"jiyu/h3_{cut}_s{SEED}",
+        "15": {"class_type": "SaveVideo", "inputs": {"video": ["14", 0], "filename_prefix": f"jiyu/h3_{cut}_s{SEED}{'_last' if LAST else ''}",
                                                      "format": "auto", "codec": "auto"}},
     }
+    if LAST:
+        g["6"]["inputs"]["last_frame"] = ["5", 0]
     if len(names) > 1:
         # 끝 창을 2.0초에 못 박는다(AddGuide는 비율을 지키며 가운데를 잘라 맞춘다)
         g["20"] = {"class_type": "LoadImage", "inputs": {"image": names[1]}}
@@ -199,7 +205,7 @@ def run(cut):
     names = prepare(cut)
     pid = post("/prompt", {"prompt": graph(cut, names), "client_id": str(uuid.uuid4())})["prompt_id"]
     t0 = time.time()
-    log(f"{NAMES[cut]} 넣음 {pid} steps={STEPS} seed={SEED}")
+    log(f"{NAMES[cut]}{TAG} 넣음 {pid} steps={STEPS} seed={SEED}")
     while True:
         time.sleep(10)
         h = get(f"/history/{pid}")
@@ -212,7 +218,7 @@ def run(cut):
         files = [f for o in h[pid].get("outputs", {}).values() for k in ("images", "videos", "gifs") for f in o.get(k, [])]
         if files:
             f = files[0]
-            dst = os.path.join(OUT, f"{NAMES[cut]}_s{SEED}.mp4")
+            dst = os.path.join(OUT, f"{NAMES[cut]}_s{SEED}{TAG}.mp4")
             shutil.copyfile(os.path.join(COMFY_DIR, "output", f.get("subfolder", ""), f["filename"]), dst)
             log(f"{NAMES[cut]} 끝 {time.time() - t0:.0f}초 → {os.path.basename(dst)}")
             return True
