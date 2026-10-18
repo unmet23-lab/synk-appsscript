@@ -144,6 +144,12 @@
 - 고침: 로컬 비교는 Space가 돌려준 캡션 전문으로 한다(`.tmp/bench-5090-local/image/zerogpu_flux_caption.py` → `captions_flux.json`). 10-18 로컬 RTX 5090 수치: FLUX 3 Klein nvfp4 + qwen3vl int8(ComfyUI API, `local_flux_comfy.py`) 1024²·16단계 한 장 6.7~7.6초, 처음 적재 18초, VRAM 최대 11.9GB. 같은 캡션이면 구도·질감이 ZeroGPU판과 거의 같다(평균 화소 차이 10~13/255, nvfp4 탓). ZeroGPU는 같은 장이 왕복 66~83초. SeedVR2-3B fp16(노드 CLI, `upscale/run_local_seedvr2.sh`): 그림 480×854 → 1072 한 장 전체 37초(파이썬 띄우기·적재 포함, 계산 약 8초, 9.4GB). 영상 4초 97프레임 → 720p 131초, → 1080p(`--vae_encode_tiled --vae_decode_tiled`) 312초, 둘 다 batch 33에 VRAM 23GB 가까이 차고 VAE 디코딩이 시간의 절반을 넘는다. Upsampler Space 그림은 로컬보다 또렷하지만 주근깨·눈매를 더 지어낸다.
 - 다시 확인: ComfyUI를 남의 8188과 겹치지 않게 `--port 8190`으로 띄워 `local_flux_comfy.py captions_flux.json <폴더>`를 돌리고, 끝나면 그 프로세스를 끄고 GPU를 쓰는 세션에 알린다.
 
+### 노트북 GPU가 다른 작업에 오래 잡혀 있으면 기다리지 말고 ZeroGPU로 돌린다
+- 증상: 10-18 MiniMax H3 로컬 6컷(2시간)과 LoRA 학습(4시간, 15GB)이 GPU를 차례로 잡는 동안, 다른 세션들은 「GPU 비었어요」 메시지만 기다렸다. 노트북이 바쁘면 ZeroGPU로 넘기는 장치는 없다.
+- 원인: GPU 하나(24GB)를 여러 세션이 나눠 쓴다. 유호님 10-18: 넘기는 도구는 만들지 않고 규칙으로 한다(「가벼운게 낫겠다」).
+- 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `q121235/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다.
+- 다시 확인: 남은 할당량을 [결제 페이지 데이터](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다)로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
+
 ### 큰 모델 내려받기가 0바이트에서 멈추거나 끊기면 조각이 지워진다
 - 증상: 10-18 다른 세션이 `hf download`·병렬 내려받기로 큰 모델을 받는 동안, 이쪽 `hf_hub_download`·`hf download`가 몇 분째 0바이트였다(xet). xet를 끄자 초당 6MB로 받았지만, 잠깐 주소를 못 찾자(`getaddrinfo failed`) 받던 5.5GB 조각이 사라졌다. 세 세션이 함께 받을 때 회선 전체가 초당 10MB 안팎이었다.
 - 원인: xet 내려받기가 같은 PC의 다른 xet·병렬 내려받기에 밀려 시작하지 못한 것으로 보인다(추정). 조각이 지워진 까닭은 모른다.
