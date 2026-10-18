@@ -16,7 +16,7 @@ const OUT = path.resolve(here, '../src/board.css');
 let css = fs.readFileSync(SRC, 'utf8').replace(/\r/g, '');
 css = css
   .split('\n')
-  .filter((ln) => !/data-theme=light|prefers-color-scheme:light|prefers-reduced-motion/.test(ln))
+  .filter((ln) => !/data-theme=light|data-theme=day|prefers-color-scheme:light|prefers-reduced-motion/.test(ln))
   .join('\n');
 
 const open = '@media (max-width:760px){';

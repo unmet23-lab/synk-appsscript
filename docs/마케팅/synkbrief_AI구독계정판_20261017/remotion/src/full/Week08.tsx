@@ -1,60 +1,49 @@
-// 08 앞으로 7일: 「앞으로 7일」 구획이 내려앉고 날짜 줄이 박마다 하나씩(위치·불투명도만). 글은 agendaSection 그대로.
+// 08 앞으로 7일(본편 v2): 「02 다음에 풀려요」(다 쓴 계정이 풀리는 가까운 셋)가 내려앉고, 박에 「앞으로 7일 일정 N개 모두 보기」가 눌려
+// 그 자리에서 펼쳐진다 — 풀리는 때와 쓸 수 있는 계정의 주간 초기화(흐린 줄)가 날짜순으로 반 박씩 하나씩(위치·불투명도만). 글은 앱 HTML 그대로.
 import React from 'react';
 import { interpolate, useCurrentFrame } from 'remotion';
-import { AGENDA } from '../data';
-import { clamp } from '../lib/anim';
+import { AppBoard, boardHtml, staggerCss, useBoardBoxes } from '../app/board';
+import { clamp, EASE_IN_OUT } from '../lib/anim';
 import { L } from '../theme';
-import { BoardZ, CaptionF, FloatCard, HeadF, Lines, MarkF, settle } from '../v5/cine';
+import { CaptionF, FloatCard, HeadF, Lines, MarkF, settle } from '../v5/cine';
 import { at, T } from './time';
 
-const BW = 440;
+const BW = 460;
 const PAD = 22;
 const Z = (L.W - L.X - L.R - 2 * PAD) / BW;
 const TOP = 640;
+const H = 600;
+// 02 구획만(포스터·01·아래 입구는 감춘다)
+const CSS = `.sc-week .ms-back,.sc-week .ms-hero,.sc-week .ms-section:first-of-type,.sc-week .ms-foot{display:none!important}
+.sc-week .ms-section{margin-top:0}`;
 
 export const Week08: React.FC = () => {
   const f = useCurrentFrame();
+  const open = at('week', 54.5);
+  const opened = f >= open;
   const drift = interpolate(f, [T, at('week', 60)], [1, 1.03], clamp);
-  const dayAt = [T, at('week', 54.5), at('week', 55)];
+  // 펼친 뒤: 앞 셋은 그대로, 넷째부터 반 박씩
+  const half = (at('week', 55) - at('week', 54)) ;
+  const ps = Array.from({ length: 16 }, (_, i) => (i < 3 ? 1 : settle(f, open + (i - 2) * half * 0.5, 16)));
+  const css = opened ? `${CSS}\n${staggerCss('.sc-week .ms-next-item', ps)}` : CSS;
+  // 펼친 목록이 판 아래로 넘치는 만큼, 줄이 나타나는 동안 천천히 올린다(끝 줄까지 보이게).
+  const [boxes, probe] = useBoardBoxes(boardHtml('glance-more'), BW, Z, 'sc-week', CSS, ['.ms-next']);
+  const list = boxes?.['.ms-next'];
+  const over = list ? Math.max(0, list.y + list.h - (H - PAD) + 18) : 0;
+  const scroll = opened ? over * interpolate(f, [open + half, at('week', 59)], [0, 1], { ...clamp, easing: EASE_IN_OUT }) : 0;
   return (
     <>
+      {probe}
       <HeadF left="synkbrief 활용" right="08" />
-      <Lines at={T} size={72} top={L.TOP - 8} lines={[<>앞으로 <MarkF key="m" p={interpolate(f, [at('week', 54.5), at('week', 54.5) + 12], [0, 1], clamp)}>7일 한눈에</MarkF></>]} />
+      <Lines at={T} size={72} top={L.TOP - 8} lines={[<>앞으로 <MarkF key="m" p={interpolate(f, [open, open + 12], [0, 1], clamp)}>7일 한눈에</MarkF></>]} />
       <div style={{ position: 'absolute', inset: 0, scale: String(drift), transformOrigin: `540px ${TOP + 280}px` }}>
-        <FloatCard style={{ left: L.X, top: TOP, width: L.W - L.X - L.R, padding: `18px ${PAD}px ${PAD}px` }}>
-          <BoardZ width={BW} scale={Z}>
-            <section className="ms-section" style={{ borderTop: 0, padding: '4px 2px 0' }}>
-              <div className="ms-section-heading" style={{ marginBottom: 16 }}>
-                <span className="ms-section-number">03</span>
-                <div>
-                  <h2>앞으로 7일</h2>
-                  <p>주간 초기화와 결제일을 날짜별로 모았어요.</p>
-                </div>
-              </div>
-              <div className="ms-agenda">
-                {AGENDA.map((d, i) => {
-                  const s = i === 0 ? 1 : settle(f, dayAt[i], 16);
-                  return (
-                    <div key={d.day} className="ms-day" style={{ opacity: interpolate(s, [0, 0.5], [0, 1], clamp), translate: `0 ${(1 - s) * 18}px` }}>
-                      <strong>{d.day}</strong>
-                      <div>
-                        {d.items.map((it) => (
-                          <div key={it.time + it.what} className={`ms-day-item ms-s-${it.svc}`}>
-                            <span className="ms-num">{it.time}</span>
-                            <span className="ms-tag">{it.tag}</span>
-                            <span>{it.what}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </BoardZ>
+        <FloatCard style={{ left: L.X, top: TOP, width: L.W - L.X - L.R, height: H, padding: `${PAD}px ${PAD}px 0` }}>
+          <div style={{ translate: `0 ${-scroll}px` }}>
+            <AppBoard html={boardHtml(opened ? 'glance-more' : 'glance')} width={BW} scale={Z} cls="sc-week" css={css} />
+          </div>
         </FloatCard>
       </div>
-      <CaptionF text="초기화와 결제일까지 날짜별로." em="결제일까지" at={T + 2} />
+      <CaptionF text="풀리는 때와 초기화를 날짜순으로." em="날짜순으로." at={T + 2} />
     </>
   );
 };
