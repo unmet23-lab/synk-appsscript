@@ -199,3 +199,95 @@ test('company navigation accepts publication messages only from its authenticate
   message({origin:'https://outside.test',source:frame,data});message({origin:location.origin,source:{},data});assert.equal(calls.length,0);message({origin:location.origin,source:frame,data});assert.equal(calls.length,1);context.state.user=null;message({origin:location.origin,source:frame,data});assert.equal(calls.length,1);
   context.state.user={id:'member',role:'member'};vm.runInContext('syncWorkspaceLocation()',context);assert.equal(location.searchParams.get('publicationFormat'),'youtube-shorts');context.state.tab='messenger';vm.runInContext('syncWorkspaceLocation()',context);assert.equal(location.searchParams.has('publicationAction'),false);assert.equal(location.searchParams.has('publicationFormat'),false);assert.equal(location.searchParams.has('packageId'),false);
 });
+test('address lookup fills the platform time, title and format and registers the format without a package',async()=>{
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;Object.assign(pf.registration,{channelId:"channel",url:"https://youtube.com/shorts/abc"})');
+  const pending=f.run('pfLookup()');const request=f.requests[0];assert.match(request.path,/^\/api\/post-performance\/lookup\?/);const query=new URL(request.path,'http://fixture.test').searchParams;assert.equal(query.get('channelId'),'channel');assert.equal(query.get('url'),'https://youtube.com/shorts/abc');assert.equal(request.body,undefined);
+  request.resolve({platform:'youtube',externalId:'abc',publishedAt:'2026-10-18T07:13:00.000Z',suggestedFormat:'youtube-shorts',title:'플랫폼 제목',ownerMatch:true,existingEntryId:null,checkpoints:{24:{dueAt:'2026-10-19T07:13:00.000Z',missed:false},72:{dueAt:'2026-10-21T07:13:00.000Z',missed:false}}});await pending;
+  assert.equal(f.run('pf.registration.publishedAt'),'2026-10-18T16:13');assert.equal(f.run('pf.registration.title'),'플랫폼 제목');assert.equal(f.run('pf.registration.publicationFormat'),'youtube-shorts');
+  assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfRegistrationFormats())')),['youtube-shorts','youtube-video']);
+  const note=f.run('pfLookupNote()');assert.match(note,/확인했어요/);assert.match(note,/YouTube Shorts/);assert.match(note,/24시간 확인/);assert.match(note,/72시간 확인/);
+  const field=f.run('pfRegistrationFormatField()');assert.match(field,/쇼츠와 일반 영상을 따로 비교/);assert.doesNotMatch(field,/묶음에 여러/);
+  const saving=f.run('pfRegisterPost()');const register=f.requests[1];assert.equal(register.path,'/api/post-performance');assert.equal(register.body.publicationFormat,'youtube-shorts');assert.equal('publicationPackageId' in register.body,false);assert.equal(register.body.publishedAt,'2026-10-18T07:13:00.000Z');register.resolve({entry,publishedAtAdjusted:true});await saving;assert.equal(f.run('pf.lookup'),null);assert.match(f.run('pf.status'),/플랫폼에 나온 시각으로 맞췄어요/);
+});
+test('a post from another account blocks registration and stale lookups never fill the form',async()=>{
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;Object.assign(pf.registration,{channelId:"channel",url:"https://youtube.com/watch?v=other",publishedAt:"2026-10-18T10:00"})');
+  const first=f.run('pfLookup()');f.requests[0].resolve({platform:'youtube',ownerMatch:false,reason:'다른 채널의 영상이에요.'});await first;
+  assert.match(f.run('pfLookupNote()'),/이 계정에서 올린 게시물이 아니에요/);
+  await f.run('pfRegisterPost()');assert.equal(f.requests.length,1);assert.match(f.run('pf.error'),/이 계정에서 올린 게시물이 아니에요/);
+  f.run('pf.registration.url="https://youtube.com/watch?v=mine"');const second=f.run('pfLookup()');f.run('pf.registration.url="https://youtube.com/watch?v=changed"');f.requests[1].resolve({platform:'youtube',ownerMatch:true,publishedAt:'2026-10-18T01:00:00.000Z',title:'옛 응답',suggestedFormat:'youtube-video'});await second;
+  assert.equal(f.run('pf.registration.title'),'');assert.equal(f.run('pf.registration.publishedAt'),'2026-10-18T10:00');assert.equal(f.run('pfLookupFor()'),null);
+  f.run('pf.registration.url="https://youtube.com/watch?v=mine"');assert.equal(f.run('pfLookupFor()'),null);assert.equal(f.run('pfLookupBlocked()'),false);assert.equal(f.run('pfLookupNote()'),'');
+});
+test('until the server announces lookup the form stays manual, never calls it and never sends a format without a package',async()=>{
+  const f=fixture();f.run('Object.assign(pf.registration,{channelId:"channel",url:"https://www.instagram.com/reel/CODE/",publishedAt:"2026-10-18T16:30",publicationFormat:"instagram-reels"})');
+  await f.run('pfLookup()');f.handlers.get('change').forEach(handler=>handler({target:{dataset:{pfRegister:'url'},value:'https://www.instagram.com/reel/OTHER/',matches:()=>false}}));assert.equal(f.requests.length,0);
+  const html=f.run('pfPerformancePanel()');assert.doesNotMatch(html,/data-pf-action="lookup"/);assert.match(html,/유튜브 스튜디오·인스타 게시 정보에 나온 시각/);assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfRegistrationFormats())')),[]);
+  const saving=f.run('pfRegisterPost()');assert.equal('publicationFormat' in f.requests[0].body,false);assert.equal(f.requests[0].body.publishedAt,'2026-10-18T07:30:00.000Z');f.requests[0].resolve({entry});await saving;
+});
+test('the register link opens the post-performance form directly',async()=>{
+  const f=fixture();assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfReadTarget("/?tab=workroom&section=tools&tool=publication&publicationAction=register"))')),{action:'register'});
+  assert.equal(f.run('pfReadTarget("/?tab=workroom&section=tools&tool=publication&publicationAction=register&entryId=x")'),null);
+  const opening=f.run('pfOpenTarget({action:"register"})');f.requests[0].resolve(f.run('structuredClone(initial)'));assert.equal(await opening,true);assert.equal(f.run('pf.view'),'performance');assert.equal(f.run('pf.target.action'),'register');assert.match(f.run('pf.status'),/게시한 계정과 주소, 게시 시각을 넣어 주세요/);
+  const g=fixture();g.context.initial.performance.lookupAvailable=true;const again=g.run('pfOpenTarget({action:"register"})');g.requests[0].resolve(g.run('structuredClone(initial)'));assert.equal(await again,true);assert.match(g.run('pf.status'),/게시 시각과 형식을 확인해 채워요/);
+});
+test('lookups and account changes update the register form in place instead of repainting the page',async()=>{
+  const f=fixture(),inputs={publishedAt:{value:'2026-10-18T10:00'},title:{value:''}},lookup={disabled:true},note={innerHTML:''},hint={textContent:''},inserted=[],submit={disabled:false,insertAdjacentHTML(position,html){inserted.push([position,html]);}},flush=()=>new Promise(resolve=>setImmediate(resolve)),change=(field,value)=>f.handlers.get('change').forEach(handler=>handler({target:{dataset:{pfRegister:field},value,matches:()=>false}}));let format=null;
+  const form={querySelector(selector){const field=/data-pf-register="(\w+)"/.exec(selector)?.[1];if(field==='publicationFormat')return format&&{closest:()=>format};if(field)return inputs[field]||null;return {'[data-pf-action="lookup"]':lookup,'.pf-lookup-note':note,'[data-pf-register-hint]':hint,'button[type="submit"]':submit}[selector]||null;}},query=f.context.document.querySelector;
+  f.context.document.querySelector=selector=>selector==='[data-pf-form="register"]'?form:query(selector);f.run('pf.data.performance.lookupAvailable=true;pf.data.performance.channels[0].platform="youtube";pf.registration.publishedAt="2026-10-18T10:00"');
+  change('channelId','channel');assert.equal(f.requests.length,0);assert.equal(lookup.disabled,true);
+  change('url','https://youtube.com/shorts/abc');assert.match(f.requests[0].path,/^\/api\/post-performance\/lookup\?/);assert.equal(lookup.disabled,false);assert.match(note.innerHTML,/확인하고 있어요/);
+  f.requests[0].resolve({platform:'youtube',ownerMatch:true,publishedAt:'2026-10-18T07:13:00.000Z',title:'플랫폼 제목',suggestedFormat:'youtube-shorts'});await flush();
+  assert.equal(lookup.disabled,false);assert.equal(inputs.publishedAt.value,'2026-10-18T16:13');assert.equal(inputs.title.value,'플랫폼 제목');assert.match(hint.textContent,/플랫폼에서 확인한/);assert.match(note.innerHTML,/확인했어요/);assert.equal(inserted.length,1);assert.equal(inserted[0][0],'beforebegin');assert.match(inserted[0][1],/data-pf-register="publicationFormat"/);assert.equal(submit.disabled,false);
+  format={outerHTML:inserted[0][1]};change('url','https://youtube.com/watch?v=other');assert.equal(format.outerHTML,'');assert.match(hint.textContent,/저장할 때 플랫폼 시각으로 맞춰요/);assert.equal(inputs.title.value,'');assert.equal(inputs.publishedAt.value,'');
+  f.requests[1].resolve({platform:'youtube',ownerMatch:false});await flush();assert.equal(submit.disabled,true);assert.match(note.innerHTML,/이 계정에서 올린 게시물이 아니에요/);
+  assert.equal(f.renders,0);assert.equal(inserted.length,1);
+});
+test('unconfirmed results and lookup errors keep manual entry open and say why',async()=>{
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;Object.assign(pf.registration,{channelId:"channel",url:"https://youtube.com/watch?v=a",title:"내가 쓴 제목"})');
+  let pending=f.run('pfLookup()');f.requests[0].resolve({platform:'threads',ownerMatch:null,publishedAt:null,reason:'스레드는 자동으로 확인할 수 없어요.'});await pending;
+  assert.match(f.run('pfLookupNote()'),/스레드는 자동으로 확인할 수 없어요\. 게시 시각을 직접 넣어 주세요/);assert.equal(f.run('pfRegisterBlocked()'),false);
+  pending=f.run('pfLookup()');f.requests[1].resolve({platform:'youtube',ownerMatch:true,publishedAt:null,title:'플랫폼 제목',suggestedFormat:'youtube-video',reason:'게시 시각을 읽지 못했어요.'});await pending;
+  const note=f.run('pfLookupNote()');assert.match(note,/확인했어요/);assert.match(note,/게시 시각을 읽지 못했어요\. 채널 연결과 게시 주소를 확인/);assert.match(note,/플랫폼의 게시 시각을 확인해야 등록할 수 있어요/);assert.doesNotMatch(note,/게시 시각을 직접 넣어 주세요|role=/);assert.equal(f.run('pf.registration.title'),'내가 쓴 제목');assert.equal(f.run('pf.registration.publicationFormat'),'youtube-video');
+  pending=f.run('pfLookup()');const denied=new Error('이 채널의 게시물을 확인할 권한이 없어요.');denied.status=403;f.requests[2].reject(denied);await pending;assert.match(f.run('pfLookupNote()'),/권한이 없어요/);assert.equal(f.run('pfRegisterBlocked()'),false);
+  pending=f.run('pfLookup()');f.requests[3].reject(new TypeError('Failed to fetch'));await pending;assert.match(f.run('pfLookupNote()'),/게시 정보를 확인하지 못했어요/);assert.doesNotMatch(f.run('pfLookupNote()'),/Failed/);
+});
+test('YouTube and Instagram unknown lookup results explain verification instead of an unusable manual fallback',async()=>{
+  for(const platform of ['youtube','instagram']){
+    const f=fixture();f.context.platform=platform;f.run('pf.data.performance.lookupAvailable=true;pf.data.performance.channels[0].platform=platform;Object.assign(pf.registration,{channelId:"channel",url:"https://example.test/post"})');
+    assert.match(f.run('pfPublishedHint()'),/저장할 때 플랫폼 시각으로 맞춰요/);assert.doesNotMatch(f.run('pfPublishedHint()'),/5분|직접 넣어/);
+    const pending=f.run('pfLookup()');f.requests[0].resolve({platform,ownerMatch:null,publishedAt:null,reason:'연결을 확인해 주세요.'});await pending;
+    assert.match(f.run('pfLookupNote()'),/채널 연결과 게시 주소를 확인한 뒤 다시 조회/);assert.match(f.run('pfLookupNote()'),/플랫폼의 게시 시각을 확인해야 등록할 수 있어요/);assert.doesNotMatch(f.run('pfLookupNote()'),/게시 시각을 직접 넣어 주세요/);assert.equal(f.run('pfRegisterBlocked()'),false);
+  }
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;pf.data.performance.channels[0].platform="threads";pf.registration.channelId="channel"');assert.match(f.run('pfPublishedHint()'),/시각을 직접 넣어 주세요/);
+});
+test('a new address clears what the last lookup filled, keeps edits, and feed posts get no reels format',async()=>{
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;Object.assign(pf.registration,{channelId:"channel",url:"https://www.instagram.com/reel/REEL/"})');
+  let pending=f.run('pfLookup()');f.requests[0].resolve({platform:'instagram',ownerMatch:true,publishedAt:'2026-10-18T07:30:00.000Z',title:'릴스',suggestedFormat:'instagram-reels'});await pending;
+  assert.equal(f.run('pf.registration.publicationFormat'),'instagram-reels');assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfRegistrationFormats())')),['instagram-reels']);assert.equal(f.run('pf.registration.publishedAt'),'2026-10-18T16:30');
+  f.run('pf.registration.title="내가 고친 제목";pf.registration.url="https://www.instagram.com/p/FEED/"');pending=f.run('pfLookup()');
+  assert.equal(f.run('pf.registration.title'),'내가 고친 제목');assert.equal(f.run('pf.registration.publishedAt'),'');assert.equal(f.run('pf.registration.publicationFormat'),'');
+  f.requests[1].resolve({platform:'instagram',ownerMatch:true,publishedAt:null,title:null,suggestedFormat:null});await pending;
+  assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfRegistrationFormats())')),[]);assert.equal(f.run('pfRegistrationFormatField()'),'');
+  f.run('pf.registration.publishedAt="2026-10-18T17:00"');const saving=f.run('pfRegisterPost()');const body=f.requests[2].body;assert.equal('publicationFormat' in body,false);assert.equal(body.title,'내가 고친 제목');assert.equal(body.url,'https://www.instagram.com/p/FEED/');f.requests[2].resolve({entry});await saving;assert.equal(f.run('pf.lookupFill'),null);
+});
+test('with a package selected the lookup leaves the package format alone',async()=>{
+  const f=fixture();f.run('pf.data.performance.lookupAvailable=true;pf.data.performance.channels[0].platform="youtube";pf.data.packages.packages=[{id:"pkg",title:"묶음",outputs:[{channel:"youtube-shorts"}]}];Object.assign(pf.registration,{channelId:"channel",url:"https://youtube.com/watch?v=x",publicationPackageId:"pkg"});pfSyncRegistrationFormat()');
+  assert.equal(f.run('pf.registration.publicationFormat'),'youtube-shorts');
+  const pending=f.run('pfLookup()');f.requests[0].resolve({platform:'youtube',ownerMatch:true,publishedAt:'2026-10-18T07:00:00.000Z',suggestedFormat:'youtube-video'});await pending;
+  assert.equal(f.run('pf.registration.publicationFormat'),'youtube-shorts');assert.deepEqual(JSON.parse(f.run('JSON.stringify(pfRegistrationFormats())')),['youtube-shorts']);assert.equal(f.run('pf.registration.publishedAt'),'2026-10-18T16:00');
+});
+test('a deep-link target keeps its focus through later full repaints until the person moves on',async()=>{
+  const f=fixture(),flush=()=>new Promise(resolve=>setImmediate(resolve)),doc=f.context.document,query=doc.querySelector,select='pfFocusTarget(\'[data-pf-register="url"]\')';let scrolled=0;
+  const make=()=>({focus(){doc.activeElement=this;},scrollIntoView(){scrolled++;},contains(node){return node===this;}}),fire=type=>f.handlers.get(type).forEach(handler=>handler({type})),repaint=async()=>{url=make();doc.activeElement=null;f.run('publicationFlowEnsure()');await flush();};
+  let url=make();doc.querySelector=selector=>selector==='[data-pf-register="url"]'?url:query(selector);
+  f.run(select);await flush();assert.equal(doc.activeElement,url);assert.equal(scrolled,1);
+  await repaint();assert.equal(doc.activeElement,url);assert.equal(scrolled,2);
+  f.run('publicationFlowEnsure()');await flush();assert.equal(scrolled,2);
+  f.context.wr.loading=true;await repaint();assert.equal(doc.activeElement,null);f.context.wr.loading=false;f.run('publicationFlowEnsure()');await flush();assert.equal(doc.activeElement,url);
+  f.context.overlay={children:{length:1}};await repaint();assert.equal(doc.activeElement,null);f.context.overlay={children:{length:0}};f.run('publicationFlowEnsure()');await flush();assert.equal(doc.activeElement,url);
+  f.context.document.getElementById=id=>id==='main'?{getBoundingClientRect:()=>({top:0,bottom:900})}:null;f.context.window.innerHeight=900;const inView=scrolled;url=Object.assign(make(),{getBoundingClientRect:()=>({top:300,bottom:340,height:40})});doc.activeElement=null;f.run('publicationFlowEnsure()');await flush();assert.equal(doc.activeElement,url);assert.equal(scrolled,inView);
+  for(const type of ['keydown','pointerdown','wheel','touchstart']){f.run(select);await flush();fire(type);assert.equal(f.run('pf.focusTarget'),null,type);}
+  const released=scrolled;await repaint();assert.equal(doc.activeElement,null);assert.equal(scrolled,released);
+  f.run(select);await flush();f.run('pf.focusTarget.until=0');await repaint();assert.equal(f.run('pf.focusTarget'),null);assert.equal(doc.activeElement,null);
+  f.run(select);f.context.makerTools.view='weekly';await flush();assert.equal(f.run('pf.focusTarget'),null);
+});

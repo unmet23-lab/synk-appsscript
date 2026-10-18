@@ -54,6 +54,16 @@ test('three prior same-account same-format observations expose descriptive media
   assert.deepEqual(comparison,{sampleCount:3,median:100,deltaPercent:100,status:'ready'});assert.equal(card.status,'ready');assert.ok(card.limits.some(text=>text.includes('통계적 유의성')));assert.ok(card.limits.some(text=>text.includes('원인을 증명하지')));assert.equal(card.experiments[0].id,'new-example');assert.match(card.experiments[0].reason,/원인은 아직 확인하지/);
 });
 
+test('external format observations join matching package samples without relaxing provenance filters',t=>{
+  const f=fixture(t),external=({format='youtube-shorts',...options}={})=>{const row=f.entry({linked:null,format:null,source:'api:youtube',...options});f.change(row,raw=>{raw.origin='external';raw.publicationFormat=format;});return row;};
+  external({hours:0,metrics:{views:50}});f.entry({hours:24,source:'api:youtube',metrics:{views:100}});external({hours:48,metrics:{views:150}});
+  external({hours:72,channelId:'youtube-other'});external({hours:72,format:'youtube-video'});external({hours:72,source:'manual'});external({hours:72,unit:'seconds'});external({hours:72,offset:21});external({hours:72,offset:361});external({hours:72,channelId:'instagram',format:'instagram-reels'});external({hours:72,format:'instagram-reels'});
+  const row=external({hours:120,metrics:{views:200}}),card=f.card(row);
+  assert.deepEqual(card.format,{id:'youtube-shorts',label:'YouTube Shorts'});assert.equal(card.source,null);assert.equal(card.status,'ready');assert.equal(card.canPlan,true);
+  assert.deepEqual(card.facts[0].comparison,{sampleCount:3,median:100,deltaPercent:100,status:'ready'});
+  assert.match(f.learning.plan(f.users.owner,row.id,{experimentId:'new-example'}).input.editorialNote,/이전 3편/);
+});
+
 test('one or two comparison posts show sample count without a misleading median or change rate',t=>{
   const f=fixture(t);f.entry({hours:0});const prior=f.entry({hours:24}),row=f.entry({metrics:{views:200}});let card=f.card(row);assert.equal(card.status,'limited');assert.deepEqual(card.facts[0].comparison,{sampleCount:2,median:null,deltaPercent:null,status:'insufficient'});
   f.change(prior,raw=>{raw.active=false;});card=f.card(row);assert.equal(card.facts[0].comparison.sampleCount,1);assert.equal(card.experiments[0].id,'observe-again');

@@ -19,6 +19,12 @@ function fixture(){
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('overview shows actual observed posts separately from Workspace publishing and preserves unknown',()=>{
+ const f=fixture();f.context.initial.observed={published7d:12,channelsObserved:3,channelsTotal:34};f.run('socialWorkspaceState.data=initial');
+ let html=f.run('snswOverview()');assert.match(html,/SNS 7일 게시/);assert.match(html,/<strong>12<\/strong>/);assert.match(html,/3\/34개 채널/);assert.match(html,/Workspace 7일 발행/);assert.match(html,/href="\/\?tab=overview&section=all"/);
+ f.run('socialWorkspaceState.data.observed.published7d=null');html=f.run('snswOverview()');assert.match(html,/<strong>—<\/strong>/);
+});
+
 test('first entry renders loading before ensure starts and settles without a refresh or duplicate request',async()=>{
   const f=fixture(),frames=[];f.run('socialWorkspaceReset()');
   f.context.render=()=>{frames.push(f.run('renderSocialWorkspace()'));f.run('socialWorkspaceEnsure()');};
@@ -718,4 +724,10 @@ test('a workspace detail refresh cannot replace a newer editor or a reopened rev
     if(scenario.deny)f.requests[1].reject(Object.assign(new Error('Old source denied'),{status:404}));else f.requests[1].resolve({post:a,jobs:[]});await loading;
     assert.equal(f.run('socialWorkspaceState.editId'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.id'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.revision'),2);assert.equal(f.run('snswRows("posts").find(p=>p.id===next).revision'),2);assert.equal(f.run('socialWorkspaceState.draft.revision'),2);assert.equal(f.run('socialWorkspaceState.detailUnavailable'),false);assert.equal(f.run('socialWorkspaceState.error'),'');assert.equal(f.run('socialWorkspaceState.loading'),false);
   }
+});
+test('results offer the post address register link only to people who can write',()=>{
+  const f=fixture(),has=()=>f.run('snswResults()').includes('publicationAction=register');
+  assert.equal(has(),true);assert.match(f.run('snswResults()'),/게시 주소로 추가/);
+  f.context.state.user.role='viewer';assert.equal(has(),false);
+  f.context.state.user.role='admin';f.run('socialWorkspaceState.data.canWrite=false');assert.equal(has(),false);
 });

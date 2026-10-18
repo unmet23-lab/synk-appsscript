@@ -12,6 +12,7 @@ const tick=()=>new Promise(setImmediate);
 
 function fixture({url='http://localhost:4191/',storage=new Map()}={}){
   const location=new URL(url),nodes=new Map(),handlers=[],windowHandlers=[],requests=[],renders=[],notifications=[],posted=[],created=[];
+  const timers=new Map();let nextTimer=1;
   const state={user:{id:'crew-a',name:'크루 가',role:'member',teamId:'team-a'},data:{channels:[],teams:[{id:'team-a',active:true}]},tab:'home',marketingView:'summary',scope:'mine',teamId:'',report:null,reportRequest:0,modalRequest:0,authMode:'login',csrf:'test-csrf',error:''};
   const lookup=id=>id==='messenger-module-slot'&&state.tab!=='messenger'?null:nodes.get(id)||null;
   const document={activeElement:null,hidden:false,addEventListener:(type,handler)=>handlers.push({type,handler}),getElementById:lookup,querySelector:selector=>selector.startsWith('#')?lookup(selector.slice(1)):null,querySelectorAll:()=>[]};
@@ -23,13 +24,13 @@ function fixture({url='http://localhost:4191/',storage=new Map()}={}){
   for(const id of ['marin-input','marin-form','marin-conversation','messenger-module-slot']){const row=element(id==='marin-input'?'textarea':'section');row.id=id;nodes.set(id,row);}
   const sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
   const context=vm.createContext({state,document,location,URL,URLSearchParams,Intl,Date,sessionStorage,localStorage:sessionStorage,cp:{view:'library'},
-    window:{addEventListener:(type,handler)=>windowHandlers.push({type,handler}),scrollTo(){},matchMedia:()=>({matches:false})},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href;}},MutationObserver:class{observe(){}},ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:callback=>callback(),clearInterval(){},clearTimeout(){},setTimeout:callback=>{callback();return 1;},crypto:{randomUUID:()=> 'test-id'},
+    window:{addEventListener:(type,handler)=>windowHandlers.push({type,handler}),scrollTo(){},matchMedia:()=>({matches:false})},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href;}},MutationObserver:class{observe(){}},ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:callback=>callback(),clearInterval(){},clearTimeout:id=>timers.delete(id),setTimeout:(callback,delay=0)=>{const id=nextTimer++;timers.set(id,{callback,delay});return id;},crypto:{randomUUID:()=> 'test-id'},
     isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',canManageTeam:()=>['admin','manager'].includes(state.user?.role),icon:()=>'',button:()=>'',dateToday:()=> '2026-09-30',shiftDate:(date,days)=>new Date(Date.parse(date)+days*86400000).toISOString().slice(0,10),
     render:()=>renders.push({tab:state.tab,userId:state.user?.id}),notify:message=>notifications.push(message),api(path,body,method){return new Promise((resolve,reject)=>requests.push({path,body,method,resolve,reject}));},
   });
   const run=source=>vm.runInContext(source,context);run(helpers+'\n'+workspaceSource+'\n'+demoSource+'\n'+homeSource);
   const dispatch=(type,target,props={})=>{const event={target,prevented:false,preventDefault(){this.prevented=true;},...props};for(const row of handlers.filter(row=>row.type===type))row.handler(event);return event;};
-  return{state,context,location,document,nodes,handlers,windowHandlers,requests,renders,notifications,posted,created,storage,run,dispatch,element,home:run('marinHome')};
+  return{state,context,location,document,nodes,handlers,windowHandlers,requests,renders,notifications,posted,created,storage,timers,run,dispatch,element,home:run('marinHome')};
 }
 
 test('default entry is the Marine home while explicit marketing, messenger and saved-plan routes retain their destinations',()=>{
@@ -56,6 +57,7 @@ test('initial bare, query and hash routes load only the selected workspace after
 test('home navigation hides the persistent messenger frame and restores the same frame and draft when returning',()=>{
   const f=fixture();f.run("selectWorkspaceView('messenger');mountWorkspaceModule()");
   const frame=f.run('workspaceModule.frame'),host=f.run('workspaceModule.host');assert.equal(frame.src,'/messenger/');
+  assert.equal(f.run('workspaceModule.loadRetries'),0,'a scheduled recovery does not run synchronously');assert.deepEqual([...f.timers.values()].map(timer=>timer.delay),[12000],'the real recovery delay remains scheduled');
   f.run("selectWorkspaceView('home');mountWorkspaceModule()");assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(host.hidden,true);assert.equal(host.inert,true);assert.equal(frame.contentWindow.draft,'unfinished messenger draft');
   f.run("selectWorkspaceView('marketing');mountWorkspaceModule();selectWorkspaceView('home');mountWorkspaceModule();selectWorkspaceView('messenger');mountWorkspaceModule()");
   assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(host.hidden,false);assert.equal(host.inert,false);assert.equal(frame.contentWindow.draft,'unfinished messenger draft');assert.equal(f.created.filter(row=>row.tagName==='IFRAME').length,1);

@@ -96,7 +96,9 @@ export function createAuthorization(platform, { clientId, redirectUri, state, ch
     params.set('scope', scopes.join(' '));
     params.set('access_type', 'offline');
     params.set('prompt', 'consent select_account');
-    params.set('include_granted_scopes', 'true');
+    // Brand-account consent rejects inherited Drive grants. The explicitly
+    // allowlisted YouTube grants above preserve this channel's capabilities.
+    params.set('include_granted_scopes', 'false');
   } else if (platform === 'instagram') {
     endpoint = 'https://www.instagram.com/oauth/authorize';
     params.set('scope', scopes.join(','));

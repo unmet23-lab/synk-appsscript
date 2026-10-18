@@ -12,6 +12,18 @@ const now='2026-10-14T00:00:00.000Z',clock=()=>now;
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status});
 const ig={id:'ig',platform:'instagram',handle:'synk',ownerIds:['admin'],active:true,connectionVersion:2};
 const input={accessToken:'synthetic-access',accountId:'100',authType:'instagram-login'};
+
+test('statistics-only manual IG connection accepts a verified empty media list without granting comments or publishing',async t=>{
+ const f=fixture(t,{'100/media':()=>json({data:[]})});
+ const r=await f.service.connect(f.admin,ig.id,{...input,purpose:'statistics',scope:'forged',expiresAt:'2099-01-01'});
+ assert.equal(r.ok,true);const c=f.store.secret('channel:'+ig.id);
+ assert.equal(c.capabilityVerification.mediaRead,true);assert.equal(c.capabilityVerification.commentsRead,false);assert.equal(c.capabilityVerification.replyPermissionInferred,false);assert.equal(c.permissionsVerifiedAt,null);assert.equal(c.scope,'');assert.equal(c.expiresAt,null);assert.equal(hasVerifiedMetaComments(ig,c),false);assert.ok(f.api.calls.every(x=>x.init.method==='GET'));assert.equal(f.api.calls.length,2);
+});
+
+test('empty media still fails manual IG comments connection and forged statistics purpose cannot grant publishing',async()=>{
+ await assert.rejects(verifyMetaConnection({channel:ig,credentials:input,...mock({'100/media':()=>json({data:[]})}),clock}),{code:'META_COMMENT_PROOF_REQUIRED'});
+ await assert.rejects(verifyMetaConnection({channel:ig,credentials:{...input,purpose:'statistics'},purpose:'publishing',...mock(),clock}),{code:'META_PUBLISH_OAUTH_REQUIRED'});
+});
 const scope=['instagram_business_basic','instagram_business_manage_comments'];
 function mock(overrides={}){const calls=[];return {calls,fetchImpl:async(raw,init)=>{const url=new URL(raw),path=url.pathname.replace(/^\/v[\d.]+\//,'');calls.push({url,init});if(overrides[path])return overrides[path](url,init);if(path==='me')return json({id:'900',user_id:'100',username:'synk'});if(path==='100/media')return json({data:[{id:'600'}]});if(path==='600')return json({id:'600',owner:{id:'900'}});if(path==='600/comments')return json({data:[]});throw Error('unexpected fake path');}};}
 function fixture(t,mockOptions={}){const dir=mkdtempSync(join(tmpdir(),'synk-meta-connection-')),store=new Store(dir);t.after(()=>{store.close();rmSync(dir,{recursive:true,force:true});});const admin={id:'admin',role:'admin',active:true},member={id:'member',role:'member',active:true};store.put('users',admin.id,admin);store.put('users',member.id,member);store.put('channels',ig.id,ig);const api=mock(mockOptions),service=createMetaConnectionService({store,clock,fetchImpl:api.fetchImpl});return {store,admin,member,api,service};}

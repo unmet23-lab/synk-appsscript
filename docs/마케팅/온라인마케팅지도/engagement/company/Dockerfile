@@ -44,6 +44,7 @@ COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public","/work
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs"]
 COPY ["tools/company-messenger/server.mjs","tools/company-messenger/drive-storage.mjs","tools/company-messenger/company-integration.mjs","tools/company-messenger/collaboration-service.mjs","tools/company-messenger/productivity-service.mjs","tools/company-messenger/direct-task-service.mjs","tools/company-messenger/web-push-service.mjs","tools/company-messenger/platform-navigation.mjs","/workspace/tools/company-messenger/"]
 COPY ["tools/company-messenger/public","/workspace/tools/company-messenger/public"]
+COPY ["tools/company-messenger/voice-service.mjs","tools/company-messenger/voice-livekit.mjs","tools/company-messenger/voice-usage.mjs","tools/company-messenger/voice-invitations.mjs","tools/company-messenger/voice-encryption.mjs","tools/company-messenger/voice-sharing.mjs","/workspace/tools/company-messenger/"]
 COPY ["atlas/engine.js","atlas/trail.js","atlas/personalization.js","atlas/domain.js","atlas/temper-outcomes.js","atlas/interpretation.js","atlas/work.js","/workspace/atlas/"]
 COPY ["atlas/ask.js","/workspace/atlas/ask.js"]
 COPY ["experiences/shift-workbench/model.mjs","experiences/shift-workbench/storage-upgrade.mjs","/workspace/experiences/shift-workbench/"]

@@ -10,10 +10,12 @@ const run=promisify(execFile);
 
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-publication-api-'));let at='2026-10-11T00:00:00.000Z',calls=0;
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,clock:()=>at,collector:async()=>{calls++;throw new Error('No external connections in publication API tests.');}}),address=await app.start(),base=`http://127.0.0.1:${address.port}`;
+  const postPerformanceFetch=async input=>{const url=new URL(input);assert.equal(url.origin,'https://www.googleapis.com');return Response.json({items:[{id:url.searchParams.get('id'),snippet:{channelId:'UCabcdefghijklmnopqrstuv',publishedAt:'2026-10-11T00:00:00.000Z',title:'합성 게시'},contentDetails:{duration:'PT30S'}}]});};
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,clock:()=>at,postPerformanceFetch,collector:async()=>{calls++;throw new Error('No external connections in publication API tests.');}}),address=await app.start(),base=`http://127.0.0.1:${address.port}`;
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(directory.includes('synk-publication-api-'));await rm(directory,{recursive:true,force:true});});
   const owner=app.store.createUser({name:'Owner',email:'owner@example.test',role:'member'}),other=app.store.createUser({name:'Other',email:'other@example.test',role:'member'}),viewer=app.store.createUser({name:'Viewer',email:'viewer@example.test',role:'viewer'}),sessions=new Map([owner,other,viewer].map(user=>[user.id,app.store.mint('session',user.id,{csrfToken:'publication-test'},10)]));
   const channel={id:'publication-channel',platform:'youtube',displayName:'Test channel',canonicalUrl:'https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv',externalId:'UCabcdefghijklmnopqrstuv',ownerIds:[owner.id],active:true};app.store.put('channels',channel.id,channel);
+  app.store.setSecret('channel:'+channel.id,{apiKey:'synthetic-lookup-key'});
   async function request(path,input,user=owner,extra={}){
     const response=await fetch(base+path,{method:input===undefined?'GET':'POST',headers:{...(user?{Cookie:'synk_company_session='+sessions.get(user.id)}:{}),...(input===undefined?{}:{'Content-Type':'application/json',Origin:app.origin,'X-CSRF-Token':'publication-test'}),...extra},...(input===undefined?{}:{body:JSON.stringify(input)})});return {status:response.status,data:await response.json(),headers:response.headers};
   }
@@ -26,17 +28,18 @@ test('publication routes preserve authentication, Origin, CSRF, role and channel
   assert.equal((await f.request('/api/publication-workspace',undefined,null)).status,401);
   assert.equal((await f.request('/api/post-performance',input,f.owner,{Origin:'https://other.invalid'})).status,403);
   assert.equal((await f.request('/api/post-performance',input,f.owner,{'X-CSRF-Token':'invalid'})).status,403);
-  assert.equal((await f.request('/api/post-performance',input,f.viewer)).status,404);
-  assert.equal((await f.request('/api/post-performance',input,f.other)).status,404);
+  assert.equal((await f.request('/api/post-performance',input,f.viewer)).status,403);
+  assert.equal((await f.request('/api/post-performance',input,f.other)).status,403);
   const saved=await f.request('/api/post-performance',input);assert.equal(saved.status,201);assert.equal(saved.data.entry.checkpoints.length,2);
   const again=await f.request('/api/post-performance',input);assert.equal(again.status,200);assert.equal(again.data.entry.id,saved.data.entry.id);
   assert.equal((await f.request('/api/post-performance',undefined,f.other)).data.entries.length,0);
   assert.equal((await f.request('/api/post-performance/'+saved.data.entry.id+'/checkpoints/24',{metrics:{views:30}},f.other)).status,404);
-  const workspace=await f.request('/api/publication-workspace');assert.equal(workspace.status,200);assert.equal(workspace.data.performance.entries.length,1);assert.ok(Array.isArray(workspace.data.catalog.channels));assert.equal(f.calls(),0);
+  const workspace=await f.request('/api/publication-workspace');assert.equal(workspace.status,200);assert.equal(workspace.data.performance.lookupAvailable,true);assert.equal(workspace.data.performance.entries.length,1);assert.ok(Array.isArray(workspace.data.catalog.channels));assert.equal(f.calls(),0);
 });
 
 test('registered publications persist missing metrics and actual observation times without enabling broad collection',async t=>{
   const f=await fixture(t),saved=await f.request('/api/post-performance',{channelId:f.channel.id,url:'https://youtu.be/abcDEF12345',publishedAt:'2026-10-11T00:00:00.000Z',title:'성과 시험'}),id=saved.data.entry.id;
+  f.app.store.setSecret('channel:'+f.channel.id,{});
   assert.equal((await f.request(`/api/post-performance/${id}/checkpoints/24`,{metrics:{views:2}})).status,400);
   f.setTime('2026-10-12T00:05:00.000Z');await f.app.collectPublicationPerformance();
   assert.equal(f.calls(),0);

@@ -133,7 +133,7 @@ test('Facebook filters recent posts without invented metrics and conservatively 
     listCalls++;
     return ok({ data: [{ id: '123_1', created_time: old, permalink_url: 'https://facebook.com/123/posts/1' }], paging: { next: 'https://graph.facebook.com/next', cursors: { after: 'next' } } });
   }));
-  assert.equal(listCalls, 1);
+  assert.equal(listCalls, 2);
   assert.equal(result.posts.length, 0);
   assert.equal(result.channel.followers, null);
   assert.equal(result.coverage.status, 'partial');
