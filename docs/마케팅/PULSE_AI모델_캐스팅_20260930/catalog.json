@@ -157,7 +157,37 @@
         { "label": "피부", "text": "밝은 웜톤에 볼이 은은하게 붉어요." },
         { "label": "메이크업", "text": "선명한 코랄 레드 립이 기본이에요." }
       ],
-      "direction": { "fit": ["바닷바람에 머리를 날리며 웃기", "세안 뒤 개운한 표정", "물 한 모금 뒤 미소", "창가에서 책 읽기", "손 흔들며 인사"], "avoid": ["섹시하거나 무게 있는 연출은 청순한 인상과 맞지 않아요."] }
+      "bodyNote": "하린과 키가 거의 같은 166cm인데, 여자 모델 가운데 다리 비율이 가장 길고 어깨선이 반듯해요. 곧고 단정한 체형이라 스킨케어·여행·교육 광고에서 깨끗한 인상을 줘요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": { "fit": ["바닷바람에 머리를 날리며 웃기", "세안 뒤 개운한 표정", "물 한 모금 뒤 미소", "창가에서 책 읽기", "손 흔들며 인사", "화장솜으로 토너 바르기", "창밖을 보며 차분한 미소"], "avoid": ["섹시하거나 무게 있는 연출은 청순한 인상과 맞지 않아요."] },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F04_jiyu/v2",
+        "items": [
+          { "key": "full-left", "file": "15.jpg", "label": "전신 옆", "en": "SIDE" },
+          { "key": "full-back", "file": "16.jpg", "label": "전신 뒤", "en": "BACK" },
+          { "key": "full-45", "file": "17.jpg", "label": "전신 45도", "en": "3/4" }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F04_jiyu/v2",
+        "items": [
+          { "id": "b01", "file": "18.jpg", "place": "바닷가 산책로", "label": "셔츠 원피스 · 바람 맞으며 웃기", "tags": ["travel", "fashion"] },
+          { "id": "b02", "file": "19.jpg", "place": "아침 욕실", "label": "헤어밴드 · 세안 뒤 수건", "tags": ["beauty"] },
+          { "id": "b03", "file": "20.jpg", "place": "공항 탑승구", "label": "트렌치코트 · 손 흔들며 인사", "tags": ["travel"] },
+          { "id": "b04", "file": "21.jpg", "place": "비행기 창가", "label": "회색 카디건 · 구름 보기", "tags": ["travel"] },
+          { "id": "b05", "file": "22.jpg", "place": "도서관 창가", "label": "블라우스와 니트 조끼 · 책 읽기", "tags": ["edu"] },
+          { "id": "b06", "file": "23.jpg", "place": "카페", "label": "민트 니트 · 레몬 물잔", "tags": ["food"] },
+          { "id": "b07", "file": "24.jpg", "place": "벚꽃길", "label": "분홍 카디건 · 꽃잎 사이 걷기", "tags": ["fashion", "travel"] },
+          { "id": "b08", "file": "25.jpg", "place": "공부방", "label": "옥스퍼드 셔츠 · 노트북과 필기", "tags": ["edu", "tech"] },
+          { "id": "b09", "file": "26.jpg", "place": "강변 공원", "label": "민트 자전거 · 티셔츠와 반바지", "tags": ["travel"] },
+          { "id": "b10", "file": "27.jpg", "place": "화장대", "label": "캐미솔 · 화장솜으로 토너", "tags": ["beauty"] },
+          { "id": "b11", "file": "28.jpg", "place": "비 오는 창가", "label": "오트밀 니트 · 따뜻한 차", "tags": ["food", "travel"] },
+          { "id": "b12", "file": "29.jpg", "place": "녹차밭", "label": "린넨 셔츠와 와이드 청바지 · 걷기", "tags": ["travel", "food"] },
+          { "id": "b13", "file": "30.jpg", "place": "밤 옥상", "label": "크림 카디건 · 따뜻한 음료", "tags": ["food"] },
+          { "id": "b14", "file": "31.jpg", "place": "집 주방", "label": "앞치마 · 과일 씻기", "tags": ["food"] },
+          { "id": "b15", "file": "32.jpg", "place": "스튜디오", "label": "흰 티 · 하늘색 배경 뷰티 컷", "tags": ["beauty"] },
+          { "id": "b16", "file": "33.jpg", "place": "아침 침대", "label": "파자마 · 위에서 본 웃음", "tags": ["travel"] }
+        ]
+      }
     },
     "M03": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m03-fullbody-v1.webp", "top": 275, "feet": 2423 },
