@@ -1,6 +1,6 @@
 # 웹 플랫폼 회원 혜택 포스터 · 2026-10-17
 
-PC 앱 회원 혜택 포스터 다시 굽기([기록](../../../../docs/디자인/플랫폼_시그널/README.md#member-benefit-objects-20261017), master `fa8b338bb`)를 웹 플랫폼(`platform.html#benefits`)에도 옮겼다. 같은 물건 일곱 개, 같은 놓는 규칙. 공개(synk-policy)는 하지 않았고 로컬 빌드·화면 확인까지다. 바꾼 점과 PC와 다르게 한 곳은 [디자인 기록 · 웹 플랫폼에 옮기기](../../../../docs/디자인/플랫폼_시그널/README.md#member-benefit-objects-web-20261017).
+PC 앱 회원 혜택 포스터 다시 굽기([기록](../../../../docs/디자인/플랫폼_시그널/README.md#member-benefit-objects-20261017), master `fa8b338bb`)를 웹 플랫폼(`platform.html#benefits`)에도 옮겼다. 같은 물건 일곱 개, 같은 놓는 규칙. 10-18 synk.im/account에 공개했다(아래 「공개」). 바꾼 점과 PC와 다르게 한 곳은 [디자인 기록 · 웹 플랫폼에 옮기기](../../../../docs/디자인/플랫폼_시그널/README.md#member-benefit-objects-web-20261017).
 
 ## 사진
 
@@ -32,3 +32,10 @@ python -X utf8 experiences/synk-account/qa/member-benefit-objects-20261017/compo
 ```
 
 정적 서버는 같은 날 끊긴 요청의 파일을 닫게 고쳤다 — 그 전 판은 점검 뒤 빌드가 그림을 못 바꿨다([현장 노트](../../../../docs/현장노트/시험_화면확인.md)).
+
+## 공개 (2026-10-18, synk-policy `6aa13b8`)
+
+공개본 `account/dist/platform.js`는 GPT 릴리스 판이라 master로 다시 묶지 않고 [`patch-live.cjs`](patch-live.cjs)로 회원 혜택 부분만 얹었다(옛 판 컴파일이 공개본과 바이트가 같은지 먼저 확인, 결과 [patch-report.json](patch-report.json)). 공개본에 있는 혜택 다섯만 그림·대체 글을 바꿨고 구독 카드는 넣지 않았다. 올린 파일: `dist/platform.js`·`benefits.css`·`member-insight.css`, `assets/member/benefit-{gift,insight,care,fortune,rehearsal,album}.webp`(추가 6 · 수정 3 · 지움 0).
+
+- 올리기 전: 실제 `https://synk.im/account/platform.html`에 후보 아홉 개를 끼워(`SYNK_CANDIDATE_DIR`) 112화면 문제 0.
+- 올린 뒤: curl 바이트 대조 9/9(HTTP 200), 공개본 112화면 문제 0, 「synk.im 배포 점검」 성공(run 39083260317). 캡처 [공개본 1440·390](../../../../docs/디자인/플랫폼_시그널/화면/웹회원혜택-공개본.jpg), 원본 41장은 공용 작업본 `.tmp/web-benefit-posters-20261017/live-after/`.
