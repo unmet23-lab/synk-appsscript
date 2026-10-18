@@ -1,7 +1,7 @@
 'use strict';
 
 // A persistent same-origin module keeps conversations and drafts alive across tabs.
-const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
+const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['social','SNS·마케팅','calendar'],['messenger','메신저','chat']];
 // One application frame for every workspace; only its contextual menu changes.
@@ -158,10 +158,15 @@ function workspaceLoadingText(){return workspaceModule.loadDelayed?'메신저 �
 function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p role="status">${workspaceLoadingText()}</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button><a class="btn small" data-messenger-standalone href="/messenger/" target="_blank" rel="noopener"${workspaceModule.loadDelayed?'':' hidden'}>메신저만 열기</a></div></section>`;}
 function stopWorkspaceModuleLoading(){clearTimeout(workspaceModule.loadTimer);workspaceModule.loadTimer=null;workspaceModule.loadGeneration++;}
 function canRecoverWorkspaceModule(frame=workspaceModule.frame){return Boolean(state.user&&frame&&workspaceModule.frame===frame&&!workspaceModule.ready&&!workspaceModule.voice?.call&&!document.hidden&&globalThis.navigator?.onLine!==false);}
+function workspaceModuleDocumentLoading(frame){
+  try{const doc=frame?.contentDocument;return Boolean(doc&&['loading','interactive'].includes(doc.readyState)&&doc.location?.origin===location.origin&&doc.location?.pathname==='/messenger/');}catch{return false;}
+}
 function startWorkspaceModuleLoading({immediate=false}={}){
   stopWorkspaceModuleLoading();workspaceModule.loadDelayed=workspaceModule.loadRetries>=2;
   const frame=workspaceModule.frame;
   if(!canRecoverWorkspaceModule(frame))return;
+  if(workspaceModule.loadStartedAt===null)workspaceModule.loadStartedAt=Date.now();
+  const graceRemaining=workspaceModuleDocumentLoading(frame)?Math.max(0,60000-(Date.now()-workspaceModule.loadStartedAt)-1000):Infinity;
   const generation=workspaceModule.loadGeneration,current=()=>generation===workspaceModule.loadGeneration&&canRecoverWorkspaceModule(frame);
   workspaceModule.loadTimer=setTimeout(()=>{
     if(generation!==workspaceModule.loadGeneration)return;
@@ -173,12 +178,15 @@ function startWorkspaceModuleLoading({immediate=false}={}){
       if(generation!==workspaceModule.loadGeneration)return;
       workspaceModule.loadTimer=null;
       if(!current())return;
-      workspaceModule.loadRetries++;frame.src='/messenger/';startWorkspaceModuleLoading();
+      // A parsed document may still be downloading its module or styles.
+      // Preserve that progress for one bounded minute instead of restarting it.
+      if(workspaceModuleDocumentLoading(frame)&&Date.now()-workspaceModule.loadStartedAt<60000){startWorkspaceModuleLoading();workspaceModule.loadDelayed=true;syncWorkspaceLoading();return;}
+      workspaceModule.loadRetries++;workspaceModule.loadStartedAt=Date.now();frame.src='/messenger/';startWorkspaceModuleLoading();
       syncWorkspaceLoading();
     },1000);
   // Two quick attempts, then one navigation per 30 seconds while visible.
   // Long outages must recover too, without reloading a ready or active frame.
-  },immediate?0:workspaceModule.loadRetries<2?12000:29000);
+  },immediate?0:Math.min(workspaceModule.loadRetries<2?12000:29000,graceRemaining));
 }
 function resumeWorkspaceModuleLoading(){if(canRecoverWorkspaceModule()){startWorkspaceModuleLoading({immediate:true});syncWorkspaceLoading();}}
 function syncWorkspaceLoading(){
@@ -198,7 +206,7 @@ function workspaceShareButton(){return !isViewer()&&workspaceViewNames[state.tab
 function resetWorkspaceModule(){
   // Removing the frame ends its document: the messenger stops capture and the SDK on pagehide.
   clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);stopWorkspaceModuleLoading();clearInterval(workspaceModule.voiceTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();document.getElementById('workspace-call')?.remove();
-  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,loadTimer:null,loadDelayed:false,loadRetries:0,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
+  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,loadTimer:null,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
 }
 function mountWorkspaceModule(){
   if(!state.user)return resetWorkspaceModule();
@@ -235,7 +243,7 @@ function syncWorkspaceModuleGeometry(){
   Object.assign(host.style,{left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${Math.max(160,rect.height)}px`});
 }
 function sendWorkspaceMessage(message){if(workspaceModule.frame?.contentWindow)workspaceModule.frame.contentWindow.postMessage(message,location.origin);}
-function retryWorkspaceModule(){if(workspaceModule.voice?.call)return;if(workspaceModule.frame){workspaceModule.ready=false;workspaceModule.loadRetries=0;startWorkspaceModuleLoading();syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
+function retryWorkspaceModule(){if(workspaceModule.voice?.call)return;if(workspaceModule.frame){workspaceModule.ready=false;workspaceModule.loadRetries=0;workspaceModule.loadStartedAt=Date.now();startWorkspaceModuleLoading();syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
 function openWorkspaceDestination(value){
   const action=typeof safeMarinAction==='function'?safeMarinAction(value):null;if(!action||action.type!=='messenger'||!state.user)return false;
   workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),...(action.channelId?{channelId:action.channelId}:{}),...(action.userId?{userId:action.userId}:{}),...(action.messageId?{messageId:action.messageId}:{}),...(action.fileId?{fileId:action.fileId}:{}),...(action.panel?{panel:action.panel}:{})};

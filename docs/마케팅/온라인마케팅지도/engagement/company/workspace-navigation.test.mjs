@@ -336,3 +336,41 @@ test('social sections use one canonical workspace entry and preserve legacy anal
   for(const view of ['overview','calendar','compose','queue','bulk','accounts','results','inbox','settings']){f.context.socialSection=view;f.run("selectWorkspaceView('social',socialSection);syncWorkspaceLocation()");assert.equal(f.state.tab,'social');assert.equal(f.location.searchParams.get('tab'),'social');assert.equal(f.location.searchParams.get('section'),view);assert.equal(f.run('workspacePrimaryView()'),'social');}
   f.run("selectWorkspaceView('analysis')");assert.equal(f.state.tab,'analysis');assert.equal(f.run('workspacePrimaryView()'),'social');
 });
+
+
+function pendingDocumentFixture(readyState='interactive',url='http://localhost:4191/messenger/'){
+  const f=initialLoadFixture();let now=1000;
+  f.context.Date={now:()=>now};f.frame.contentDocument={readyState,location:new URL(url)};
+  return Object.assign(f,{advance(ms){now+=ms;},clock(){return now;},next(){const delay=f.timers.values().next().value.ms;now+=delay;f.tick();return delay;}});
+}
+test('a slow same-origin messenger module keeps its document while ready checks continue',async()=>{
+  for(const state of ['loading','interactive']){
+    const f=pendingDocumentFixture(state);f.run('startWorkspaceModuleLoading()');
+    f.next();f.next();assert.equal(f.navigations(),0);assert.equal(f.posts.at(-1).type,'workspace:ready-check');assert.equal(f.run('workspaceModule.loadDelayed'),true);
+    assert.equal(f.run('workspaceModule.loadStartedAt'),1000);
+    await f.message({origin:f.location.origin,source:f.frame.contentWindow,data:{type:'messenger:ready'}});
+    assert.equal(f.timers.size,0);assert.equal(f.navigations(),0);
+  }
+});
+test('an unfinished messenger document cannot extend its loading grace beyond sixty seconds',()=>{
+  const f=pendingDocumentFixture();f.run('startWorkspaceModuleLoading()');
+  for(let check=0;check<4;check++){f.next();f.next();assert.equal(f.navigations(),0);}
+  assert.equal(f.clock(),53000);assert.equal(f.next(),7000);assert.equal(f.navigations(),0);assert.equal(f.next(),1000);
+  assert.equal(f.clock(),61000);assert.equal(f.navigations(),1);assert.equal(f.run('workspaceModule.loadStartedAt'),61000);
+});
+test('completed failures, about blank, foreign pages and inaccessible frames retain initial recovery',()=>{
+  for(const [state,url,throws] of [['complete','http://localhost:4191/messenger/',false],['loading','about:blank',false],['loading','https://elsewhere.example/messenger/',false],['loading','http://localhost:4191/other',false],['loading','http://localhost:4191/messenger/',true]]){
+    const f=pendingDocumentFixture(state,url);if(throws)Object.defineProperty(f.frame,'contentDocument',{get(){throw new Error('inaccessible document');}});
+    f.run('startWorkspaceModuleLoading()');f.next();f.next();assert.equal(f.navigations(),1);
+  }
+});
+test('hidden and online recovery do not restart the current document grace and stale callbacks stay cancelled',async()=>{
+  const f=pendingDocumentFixture();f.context.navigator={onLine:true};f.run('startWorkspaceModuleLoading()');f.next();f.next();
+  const stale=f.timers.values().next().value.callback;f.context.document.hidden=true;await f.documentEvent('visibilitychange');assert.equal(f.timers.size,0);
+  f.advance(50000);f.context.document.hidden=false;await f.documentEvent('visibilitychange');stale();assert.equal(f.run('workspaceModule.loadStartedAt'),1000);
+  f.next();f.next();assert.equal(f.navigations(),1);
+});
+test('logout during document grace cancels the delayed retry and clears its attempt time',async()=>{
+  const f=pendingDocumentFixture();f.run('startWorkspaceModuleLoading()');f.next();f.next();const stale=f.timers.values().next().value.callback;
+  f.state.user=null;f.run('resetWorkspaceModule()');stale();assert.equal(f.navigations(),0);assert.equal(f.timers.size,0);assert.equal(f.run('workspaceModule.loadStartedAt'),null);
+});
