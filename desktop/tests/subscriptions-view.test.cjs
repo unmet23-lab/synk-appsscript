@@ -260,3 +260,30 @@ test('a late reply from the check button does not put a finished board back to c
   assert.match(el.innerHTML,/data-subs="check" >지금 확인</);
   board.dispose();
 });
+
+test('re-connecting a Typecast row from its 「다시 연결」 button replaces that row key',async()=>{
+  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
+  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const typecast=row({service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'…7890',state:'needs-login',stateMessage:'Typecast API 키가 더 이상 맞지 않아요. 새 키로 다시 연결해 주세요.',live:{readAt:Date.now(),credits:900},credits:900,creditsAt:Date.now()});
+  const snapshot={ok:true,tools:{typecast:{installed:true,api:true}},rows:[typecast],settings:{usdKrw:1400},check:{at:Date.now(),total:1,ok:0},login:null,checking:false};
+  const calls=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},connectKey:async(service,key,options)=>{calls.push([service,key,options]);return {ok:true,id:typecast.id,snapshot};}}};
+  const board=createSubscriptionsBoard({bridge}),el=fakeContainer();
+  board.render(el,{signedIn:true,native:true});
+  await new Promise(r=>setImmediate(r));
+  const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
+  const submit=async (name,dataset={})=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:name,...dataset},querySelector:()=>null})}});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));};
+  await click({subs:'toggle',id:'g-typecast'});
+  assert.match(el.innerHTML,/data-subs="relogin" data-id="[^"]+">다시 연결</);
+  await click({subs:'relogin',id:typecast.id});
+  el.handlers.get('input')({target:{id:'ms-key',value:'tc-new-key-0987654321'}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(calls.at(-1),['typecast','tc-new-key-0987654321',{replace:typecast.id}]);
+  // 가이드에서 새로 넣는 키는 어느 줄도 바꾸지 않는다.
+  await click({subs:'guide',service:'typecast'});
+  el.handlers.get('input')({target:{id:'ms-key',value:'tc-other-key-1111111111'}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(calls.at(-1),['typecast','tc-other-key-1111111111',{}]);
+  board.dispose();
+});
