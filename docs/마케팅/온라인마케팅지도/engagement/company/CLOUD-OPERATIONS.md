@@ -1,13 +1,19 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
 <a id="next-company-release-pulse-structure-20261018"></a>
-## 다음 회사 릴리스 대기 — PULSE 고객 화면 구조 판 + M03 뮤직비디오 (2026-10-18 준비 · 운영 전)
+## 다음 회사 릴리스 필수 포함 — PULSE 고객 화면 구조 판 + M03 뮤직비디오 (2026-10-18 통합 후보 준비 · 운영 전)
 
-2026-10-18 사용자 확인(10-17 「색만 바뀌었네」 → 구조 시안 「훨씬 괜찮은것같은데」 → 10-18 실제 앱 PC·휴대폰 비교 뒤 「웅 다음 전부 자율주행으로 진행해」)으로 다음 회사 릴리스에 PULSE 고객 화면 구조 판과 10-17 M03 뮤직비디오 포트폴리오를 함께 싣는다. 후보에 `node .tmp/pulse-redesign-20261017/release/apply.cjs --root=<후보 폴더>`를 적용하고 `--check`(0 = 얹힘)로 확인한 **뒤** 최종 manifest·이미지를 만든다. 기준선은 운영 `6b6471d02385…`(10-18 15:43 KST)의 파일이고, 그 밖의 부모면 파일마다 3방향 병합하며 충돌이 하나라도 있으면 아무것도 쓰지 않는다. 바뀌는 것은 `company/public/pulse-app/` 화면 11파일·시험 2파일, 새 파일 4개(`pulse-structure.test.mjs`, `public/pulse-app/assets/casting/video/M03-mv-happy-gangster-{poster-v1.webp,excerpt-20s-v1.mp4,full-v1.mp4}`)이며 API·데이터·권한·스키마는 그대로다. mp4 두 개는 git 밖이라 꾸러미 payload와 공용 작업본 디스크에서 sha256 그대로 싣는다.
+**2026-10-18 사용자 추가 지시: 「절대로 다음 회사 릴리스에 실어줘 … 서버 두 가지도 같은 후보에 넣어줘」. 다음 회사 릴리스에는 ① PULSE 고객 화면 구조 판 ② M03 뮤직비디오 화면·원본 세 파일 ③ 뮤비 공개 파일 목록 ④ 영상·소리 Range(206·416)·스트리밍을 반드시 같은 후보·manifest·이미지에 싣는다. 어느 하나라도 빠진 후보는 이 요청의 릴리스 후보로 확정하지 않는다.**
 
-**릴리스 담당이 함께 넣을 서버 두 가지:** `server.mjs` 공개 목록에 뮤비 세 파일, `static-response.mjs` 영상·소리 Range(206·416)·스트리밍 읽기(없으면 아이폰 사파리 재생 불가, 운영 F02 영상도 같음). 문장·코드는 [꾸러미 README §서버](../../../../../.tmp/pulse-redesign-20261017/release/README.md)와 [뮤비 인계 §3](../../../../../.tmp/pulse-mv-portfolio-20261017/README.md). 서버 1을 못 넣는 릴리스라면 뮤비 화면·미디어는 미루고 구조 판만 싣는다.
+**통합 후보:** `.tmp/company-pulse-structure-release-20261018/candidate/` ([준비·이어 하기](../../../../../.tmp/company-pulse-structure-release-20261018/README.md)). 운영 완료 기록 `c516b0e11d30…`(10-18 16:49 KST)의 원문 1,030개를 바이트 대조해 만들었다. 후보 manifest는 `adb2f0f5d13b6a11a6b6f2c3ed8b15c9dd06bbbf4e2e585240c52f6879da29ec`, 원문 1,036개·이미지 목록 601개·변경/추가 21개·부모 1,015개 그대로·삭제 0이다. 메신저 조회·새로고침 캐시 등 부모 개선을 보존했다. 원래 화면 꾸러미는 [`.tmp/pulse-redesign-20261017/release/`](../../../../../.tmp/pulse-redesign-20261017/release/README.md)이며 `--check` 0을 확인했다. mp4 두 개를 포함한 뮤비 세 파일의 전체 SHA256은 원본과 같다.
 
-운영 부모 복사본(1,026파일 manifest 바이트 일치)에 얹어 `--check` 1→0·재적용 무변경, PULSE 시험 44파일 465/465를 확인했다. 회사 전체 시험 3,567개 중 실패 4개는 `marin-home-client.test.mjs`로 꾸러미 없는 부모 복사본에서도 같게 실패한다(Windows 로컬). 이미지 빌드·Linux 인수·HA 배포는 하지 않았다. 배포 뒤 꾸러미 README의 공개 SHA256(app.css `2b4b4566…`, sw.js `e5afe401…`, 뮤비 세 파일)과 1440·390 화면(현황판·05 영상 확인 승인 막대·체험·제작자·M03 발췌 재생, 아이폰 포함)을 확인한다. 공개 일치 전에는 운영 완료로 적지 않는다.
+**서버 두 가지도 구현·결합했다:** `server.mjs`에 M03 대표 이미지·발췌·본편의 정확한 공개 경로 세 개를 추가했다. `static-response.mjs`는 `static-media.mjs`로 영상·소리를 파일 핸들에서 스트리밍하며, 바이트 범위 206·범위 밖 416·HEAD·중단된 요청을 처리한다. 영상 전체를 메모리 캐시에 올리지 않는다. 기존 텍스트 압축·digest 캐시는 유지한다. API·데이터·권한·스키마·환경변수 변경은 없다.
+
+**누락 검사:** 저장소 루트에서 `node .tmp/company-pulse-structure-release-20261018/verify-candidate.cjs`가 종료 0이어야 한다. 화면 꾸러미, 서버 패치, 미디어 원본 SHA, 모든 원문과 이미지 목록·overlay를 함께 검사한다. 새 부모나 추가 변경을 합치면 이 묶음을 보존한 새 manifest·이미지 목록·시험 증거를 만들어야 하며, 기존 6b6471 화면 시험용 사본(`check/` · `parent-check/`)은 릴리스 후보로 쓰지 않는다.
+
+**확인 범위:** Windows 격리 후보의 PULSE·서버·메신저 관련 61파일 **701/701**, 실패·건너뜀 0, 시험 전후 원문 불변·외부 통신 0. 별도 서버/캐시 25/25도 통과했다. [동결 인수](../../../../../.tmp/company-pulse-structure-release-20261018/release-pin.json) · [후보 시험](../../../../../.tmp/company-pulse-structure-release-20261018/qa/result.json). 이미지 layer는 준비했으며 실제 이미지 빌드·Linux 인수·HA 배포는 아직 하지 않았다. 배포 직전 실제 부모·HA 상태를 다시 읽고 기존 HA 릴리스 절차를 따른다.
+
+**운영 완료 조건:** [공개 대조 계약](../../../../../.tmp/company-pulse-structure-release-20261018/public-verification-contract.json)의 화면·미디어 전체 SHA256과 M03/F02 Range 206을 확인하고, 1440·390 화면의 현황판·05 승인 막대/문의·체험·제작자·M03 재생/이동 및 실제 아이폰 재생을 확인한다. 새 백업·격리 복원·HA 재무장까지 인수한 뒤 운영 완료로 바꾼다.
 
 <a id="server-log-retention-20261016"></a>
 ## 공통 서버 반복 로그·보관 정책 — 2026-10-16
