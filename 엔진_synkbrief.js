@@ -308,6 +308,16 @@ function synkbrief_발송로그_(p, campaign, state, code) {
   } catch (_) { /* 기록 오류 때문에 성공한 DM을 재발송하지 않는다. */ }
 }
 
+// 운영 알림은 Script Properties의 SYNKBRIEF_OPS_EMAIL로, 비어 있으면 이 프로젝트 소유 계정(점검 트리거 소유자)으로 보낸다.
+// 개인 메일 주소는 코드에 적지 않는다. 형식이 맞지 않으면 빈 값을 돌려 보내지 않는다.
+function synkbrief_운영알림수신_(p) {
+  let to = String(p.getProperty('SYNKBRIEF_OPS_EMAIL') || '').trim();
+  if (!to) {
+    try { to = String(Session.getEffectiveUser().getEmail() || '').trim(); } catch (_) { to = ''; }
+  }
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) ? to : '';
+}
+
 function synkbrief정기점검() {
   const p = PropertiesService.getScriptProperties();
   // Meta 토큰 갱신은 Supabase Vault/cron의 책임이다. 설치 전에는 기존 일일 트리거도 조용히 멈춘다.
@@ -327,13 +337,15 @@ function synkbrief정기점검() {
       p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
       return { ok: true, state: 'baseline', healthy: true };
     }
-    // 일일 잔여 수신자 수가 없으면 상태를 소비하지 않아 다음 회차에 다시 시도한다.
+    // 일일 잔여 수신자 수나 받을 주소가 없으면 상태를 소비하지 않아 다음 회차에 다시 시도한다.
     if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', healthy: status.healthy };
+    const to = synkbrief_운영알림수신_(p);
+    if (!to) return { ok: false, state: 'recipient_missing', healthy: status.healthy };
     record.delivery = 'pending';
     p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
     try {
       MailApp.sendEmail({
-        to: 'unmet23@gmail.com',
+        to: to,
         subject: status.healthy ? '[SYNK DM] 운영 복구' : '[SYNK DM] 운영 이상',
         body: '확인 시각: ' + status.at + '\n상태: ' + (status.healthy ? '정상' : '확인 필요') + '\n\n' + status.rows.map(r => r.name + ' | ' + r.health + ' | 시각 ' + r.at + ' | HTTP ' + (r.http || '-')).join('\n'),
         name: 'SYNK'
@@ -434,6 +446,8 @@ function synkbrief운영알림설정() {
   const p = PropertiesService.getScriptProperties();
   const key = p.getProperty('SYNKBRIEF_OPS_READ_KEY');
   if (!key || key.length < 32 || /\s/.test(key)) throw new Error('SYNKBRIEF_OPS_READ_KEY를 Script Properties에 먼저 저장해 주세요.');
+  const recipient = synkbrief_운영알림수신_(p);
+  if (!recipient) throw new Error('운영 알림을 받을 메일을 찾지 못했습니다. Script Properties의 SYNKBRIEF_OPS_EMAIL을 확인해 주세요.');
   MailApp.getRemainingDailyQuota();
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) throw new Error('운영 점검이 실행 중입니다. 잠시 뒤 다시 설정해 주세요.');
@@ -443,7 +457,7 @@ function synkbrief운영알림설정() {
     ScriptApp.newTrigger('synkbrief정기점검').timeBased().everyMinutes(15).create();
     old.forEach(t => ScriptApp.deleteTrigger(t));
     p.setProperty('SYNKBRIEF_OPS_MONITOR_ENABLED', '1');
-    return { ok: true, enabled: true, intervalMinutes: 15, recipient: 'unmet23@gmail.com', emailSent: false };
+    return { ok: true, enabled: true, intervalMinutes: 15, recipient: recipient, emailSent: false };
   } finally { lock.releaseLock(); }
 }
 
@@ -461,11 +475,13 @@ function synkbrief운영알림시험() {
       return { ok: delivered, state: delivered ? 'already_sent' : 'delivery_unknown', emailSent: false };
     }
     if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', emailSent: false };
+    const to = synkbrief_운영알림수신_(p);
+    if (!to) return { ok: false, state: 'recipient_missing', emailSent: false };
     const record = { at: new Date().toISOString(), delivery: 'pending' };
     p.setProperty('SYNKBRIEF_OPS_MAIL_TEST', JSON.stringify(record));
     try {
       MailApp.sendEmail({
-        to: 'unmet23@gmail.com', subject: '[SYNK DM] 알림 연결 시험', name: 'SYNK',
+        to: to, subject: '[SYNK DM] 알림 연결 시험', name: 'SYNK',
         body: 'SYNK DM 운영 알림의 메일 연결을 확인하기 위한 시험 메일입니다.\n운영 장애가 발생했다는 알림이 아닙니다.\n확인 시각: ' + record.at
       });
       record.delivery = 'sent';

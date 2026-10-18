@@ -31,5 +31,5 @@ const visualExpressions=[...new Set(expressions.map(x=>x==='깜빡'?'눈감음':
 console.log(JSON.stringify({passed:true,at:new Date().toISOString(),expressions,visualExpressions,sampleCount:samples.length,first:samples[0],scope:'Read-only actual radio-live Chromium runtime, not public playback'}));
 })().catch(e=>{console.error(e.message);process.exitCode=1;});
 `;
-const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:45000}));
+const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk-radio','node'],{input:code,encoding:'utf8',timeout:45000}));
 fs.writeFileSync(path.join(__dirname,'라이브13/서버실동작검증.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

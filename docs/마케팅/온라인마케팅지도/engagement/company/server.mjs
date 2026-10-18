@@ -127,6 +127,8 @@ export function createCompanyApp(options={}) {
   const workroomScheduleSetting=process.env.SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED;
   if(workroomScheduleSetting!==undefined&&!['0','1'].includes(workroomScheduleSetting))throw new Error('SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED는 0 또는 1이어야 합니다.');
   const workroomScheduleEnabled=workroomScheduleSetting===undefined?backgroundJobsEnabled:workroomScheduleSetting==='1';
+  const publicationPerformanceSchedule=options.publicationPerformanceSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  if(typeof publicationPerformanceSchedule!=='boolean')throw httpError('게시 후 성과 자동 수집 설정을 확인해 주세요.');
   if(options.workNotificationsEnabled!==undefined&&typeof options.workNotificationsEnabled!=='boolean')throw new Error('workNotificationsEnabled는 boolean이어야 합니다.');
   const workNotificationsSetting=options.workNotificationsEnabled??process.env.SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED??backgroundJobsSetting;
   if(![true,false,'0','1'].includes(workNotificationsSetting))throw new Error('SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED는 0 또는 1이어야 합니다.');
@@ -359,7 +361,7 @@ export function createCompanyApp(options={}) {
   const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
-  const publicationPerformanceSchedule=backgroundJobsEnabled&&options.schedule!==false;
+  // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
   const publicationReview=createPublicationReviewService({store,studio,publicationPackages,publicationLinks,clock});
   const publicationWorkflow=automationReadScope.service(createPublicationWorkflowService({store,studio,publicationInbox,publicationPackages,publicationReview,postPerformance,publicationLinks,clock}),['workspace']);
@@ -1662,8 +1664,8 @@ export function createCompanyApp(options={}) {
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
         if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>creativeResearchSync.tick(clock())).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
-        // Registered-post observation makes external SNS requests, so automatic runs
-        // follow the background pause setting; explicit collection remains available.
+        // Registered-post observation follows the workroom opt-in while broad
+        // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
         if(publicationInboxLocal&&(options.publicationInboxSchedule??(options.schedule!==false))&&!stopRequested){publicationInboxTimer=setInterval(scanPublicationInbox,5000);publicationInboxTimer.unref();void scanPublicationInbox();}
         if(publicationLinkSchedule&&!stopRequested){publicationLinkTimer=setInterval(scanPublicationLinks,60000);publicationLinkTimer.unref();void scanPublicationLinks();}

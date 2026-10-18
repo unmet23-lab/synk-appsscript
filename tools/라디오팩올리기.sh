@@ -11,8 +11,8 @@
 set -uo pipefail
 
 KEY="$HOME/.ssh/synk_radio"
-HOST="synk@34.71.111.97"
-SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=15)
+HOST="synk-radio"
+SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15)
 REMOTE="/home/synk/팩"
 
 ok=0; ng=0; skip=0

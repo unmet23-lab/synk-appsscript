@@ -4,7 +4,7 @@ const dir=__dirname,manifest=JSON.parse(fs.readFileSync(path.join(dir,'manifest.
 if(!['--check','--apply'].includes(mode))throw Error('모드 오류');
 const html=fs.readFileSync(path.join(dir,'after-마스코트.html')),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 if(sha(html)!==manifest.htmlSha)throw Error('가운데 배치 HTML 변경');
-const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97';
+const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio';
 const rpc=(code,p)=>JSON.parse(execFileSync('ssh',['-i',key,host,'node'],{input:'const p='+JSON.stringify(p)+';\n'+code,encoding:'utf8',timeout:60000,windowsHide:true}));
 const p={mode,id:crypto.randomUUID(),target:'/opt/synk-radio/지면/bots/오버레이/마스코트.html',oldSha:manifest.sourceHtmlSha,newSha:manifest.htmlSha,html:html.toString('base64'),backup:'/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-center-20260915-'+manifest.sourceHtmlSha.slice(0,12),stage:'/opt/synk-radio/무대차례/field-radio13-20260910-986177a55b4b.mp4',audio:'/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac',protected:[
  ['/opt/synk-radio/지면/bots/오버레이/'+manifest.helperName,manifest.helperSha],

@@ -68,7 +68,7 @@ test('기존 계정 장애 중 Drive 장애 종류 변화와 부분·전체 복�
   assert.equal(f.run().state,'sent');assert.equal(f.emails.at(-1).subject,'[SYNK DM] 운영 이상');
   assert.doesNotMatch(f.emails.at(-1).body,/synkbrief-drive-library/);assert.match(f.emails.at(-1).body,/send-failed/);
   f.payload=snapshot();assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).subject,/복구/);
-  assert.equal(f.emails.length,7);assert.ok(f.emails.every(mail=>mail.to==='unmet23@gmail.com'));
+  assert.equal(f.emails.length,7);assert.ok(f.emails.every(mail=>mail.to==='owner@example.test'));
 });
 
 test('Drive 동기화 오류는 서버 전체 정상 표시에도 숨기지 않고 inactive는 disabled로 알린다',()=>{
@@ -229,7 +229,7 @@ test('신규 장애와 다른 장애 및 복구만 각각 1통, 시각과 순서
   assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,1);
   f.payload.accounts.find(a=>a.connected).health='refresh-failed';f.run();assert.equal(f.emails.length,2);
   f.payload=snapshot();f.run();f.run();assert.equal(f.emails.length,3);assert.match(f.emails[2].subject,/복구/);
-  assert.ok(f.emails.every(m=>m.to==='unmet23@gmail.com'));assert.doesNotMatch(f.values.get('SYNKBRIEF_OPS_NOTICE')+JSON.stringify(f.emails),/old-meta-token|SECRET|test-only-ops/);
+  assert.ok(f.emails.every(m=>m.to==='owner@example.test'));assert.doesNotMatch(f.values.get('SYNKBRIEF_OPS_NOTICE')+JSON.stringify(f.emails),/old-meta-token|SECRET|test-only-ops/);
 });
 test('최초부터 장애여도 알리고 HTTP 실패와 연결 예외를 같은 장애 반복 없이 알린다',()=>{
   const f=fixture();f.http=503;f.raw='SECRET token='+KEY;f.run();f.run();assert.equal(f.emails.length,1);assert.match(f.emails[0].body,/http_error.*503/);
@@ -278,7 +278,7 @@ test('설정은 로그인·키·메일 권한 확인 실패 또는 트리거 생
 test('연결 시험은 고정 메일 1통만 보내며 운영 장애라고 표시하거나 상태 해시를 바꾸지 않는다',()=>{
   const f=fixture();f.run();const before=f.values.get('SYNKBRIEF_OPS_NOTICE');
   assert.equal(f.context.synkbrief운영알림시험().state,'sent');assert.equal(f.context.synkbrief운영알림시험().state,'already_sent');
-  assert.equal(f.emails.length,1);assert.equal(f.emails[0].to,'unmet23@gmail.com');assert.equal(f.emails[0].subject,'[SYNK DM] 알림 연결 시험');assert.match(f.emails[0].body,/장애가 발생했다는 알림이 아닙니다/);
+  assert.equal(f.emails.length,1);assert.equal(f.emails[0].to,'owner@example.test');assert.equal(f.emails[0].subject,'[SYNK DM] 알림 연결 시험');assert.match(f.emails[0].body,/장애가 발생했다는 알림이 아닙니다/);
   assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_MAIL_TEST')).delivery,'sent');assert.equal(f.values.get('SYNKBRIEF_OPS_NOTICE'),before);
 });
 test('연결 시험은 관리자·잠금·quota를 확인하고 전달 미확인 시에도 다시 보내지 않는다',()=>{
@@ -386,4 +386,22 @@ test('운영 상태 조회 실패는 quota·트리거를 0으로 오인하거나
   const {value,log}=observeStatus(f);assert.equal(value.currentMailQuota,null);assert.equal(value.timers.count,null);assert.doesNotMatch(log,/PRIVATE|test-only/);
   f.context.PropertiesService.getScriptProperties=()=>{throw Error('PRIVATE '+KEY);};
   assert.throws(()=>f.context.synkbrief운영알림상태(),error=>{assert.doesNotMatch(error.message,/PRIVATE|test-only/);return /상태를 읽지 못했습니다/.test(error.message);});
+});
+test('운영 알림은 Script Properties의 받는 곳을 먼저 쓰고, 없으면 소유 계정으로 보내며 코드에 개인 메일을 두지 않는다',()=>{
+  assert.doesNotMatch(source,/@(gmail|naver|outlook|hanmail)\./);
+  const f=fixture();f.values.set('SYNKBRIEF_OPS_EMAIL',' ops@example.test ');breakAccount(f);
+  assert.equal(f.run().state,'sent');assert.equal(f.emails.at(-1).to,'ops@example.test');
+  assert.equal(f.context.synkbrief운영알림시험().state,'sent');assert.equal(f.emails.at(-1).to,'ops@example.test');
+  assert.equal(f.context.synkbrief운영알림설정().recipient,'ops@example.test');
+  const g=fixture();assert.equal(g.context.synkbrief운영알림설정().recipient,'owner@example.test');
+});
+test('받을 주소가 없거나 형식이 틀리면 보내지 않고 알림·시험 상태를 소비하지 않으며 설정은 트리거를 건드리지 않는다',()=>{
+  for(const configure of [f=>{f.values.set('SYNKBRIEF_OPS_EMAIL','not-an-address');},f=>{f.context.Session.getEffectiveUser=()=>({getEmail:()=>''});},f=>{f.context.Session.getEffectiveUser=()=>{throw Error('PRIVATE '+KEY);};}]){
+    const f=fixture();breakAccount(f);configure(f);
+    assert.equal(f.run().state,'recipient_missing');assert.equal(f.values.has('SYNKBRIEF_OPS_NOTICE'),false);assert.equal(f.emails.length,0);assert.equal(f.released,true);
+  }
+  const f=fixture();f.values.set('SYNKBRIEF_OPS_EMAIL','not-an-address');f.values.delete('SYNKBRIEF_OPS_MONITOR_ENABLED');f.triggers=[trigger('synkbrief정기점검','CLOCK')];
+  assert.equal(f.context.synkbrief운영알림시험().state,'recipient_missing');assert.equal(f.values.has('SYNKBRIEF_OPS_MAIL_TEST'),false);
+  assert.throws(()=>f.context.synkbrief운영알림설정(),/SYNKBRIEF_OPS_EMAIL/);assert.equal(f.deleted.length,0);assert.equal(f.triggers.length,1);assert.equal(f.values.has('SYNKBRIEF_OPS_MONITOR_ENABLED'),false);
+  assert.equal(f.emails.length,0);
 });

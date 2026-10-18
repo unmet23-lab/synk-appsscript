@@ -14,6 +14,6 @@ for(const pid of pids)for(const fd of fs.readdirSync('/proc/'+pid+'/fd')){try{co
 console.log(JSON.stringify({checkedAt:new Date().toISOString(),service,progress,errorCounts,activeFiles},null,2));
 `;
 const command=`node -e 'eval(Buffer.from("${Buffer.from(remote).toString('base64')}","base64").toString())'`;
-const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk@34.71.111.97',command],{encoding:'utf8',timeout:30000}));
+const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'synk-radio',command],{encoding:'utf8',timeout:30000}));
 fs.writeFileSync(path.join(__dirname,'실방송확인.json'),JSON.stringify(result,null,2));
 console.log(JSON.stringify(result,null,2));

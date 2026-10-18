@@ -17,12 +17,12 @@
 set -euo pipefail
 
 KEY="$HOME/.ssh/synk_radio"
-HOST="synk@34.71.111.97"
+HOST="synk-radio"
 SRC="bots/오버레이"
 DEST="/opt/synk-radio/지면/bots/오버레이"
 DJ_SRC="docs/Loom_자산/라디오DJ"
 DJ_DEST="/opt/synk-radio/지면/docs/Loom_자산/라디오DJ"
-SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=15)
+SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
 if [ ! -d "$SRC" ]; then
   echo "🔴 $SRC 가 없다 — 저장소 뿌리에서 돌려라"; exit 1

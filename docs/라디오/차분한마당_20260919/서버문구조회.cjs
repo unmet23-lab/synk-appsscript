@@ -9,6 +9,6 @@ const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex
 const services=cp.execFileSync('systemctl',['list-units','--type=service','--all','--no-legend','--plain'],{encoding:'utf8'}).split('\n').filter(s=>/radio/.test(s));
 const timers=cp.execFileSync('systemctl',['list-timers','--all','--no-legend','--plain'],{encoding:'utf8'}).split('\n').filter(s=>/radio/.test(s));
 console.log(JSON.stringify({at:new Date().toISOString(),texts,hashes:Object.fromEntries(files.concat(protectedPaths).map(f=>[base+f,hash(base+f)])),services,timers}));`;
-const result=JSON.parse(cp.execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'-o','BatchMode=yes','-o','ConnectTimeout=20','synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:60000,maxBuffer:4*1024*1024,windowsHide:true}));
+const result=JSON.parse(cp.execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh/synk_radio'),'-o','BatchMode=yes','-o','ConnectTimeout=20','synk-radio','node'],{input:code,encoding:'utf8',timeout:60000,maxBuffer:4*1024*1024,windowsHide:true}));
 for(const [f,s] of Object.entries(result.texts))fs.writeFileSync(path.join(__dirname,'before-'+path.posix.basename(f)),s);
 delete result.texts;fs.writeFileSync(path.join(__dirname,'서버현황.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
