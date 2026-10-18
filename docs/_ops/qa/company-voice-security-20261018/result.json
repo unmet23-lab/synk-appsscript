@@ -1,0 +1,242 @@
+{
+  "schema": "synk-company-voice-security-release/v1",
+  "status": "passed",
+  "verifiedAt": "2026-10-18T15:28:30.159Z",
+  "timezone": "Asia/Seoul",
+  "candidateManifestSha256": "6ab425e5addeda880226839083839400eea32cccdb60ca7708fa70bc77d3896f",
+  "parentManifestSha256": "3000c7cf632e9398e090db93a4343d55038fce4841693ce7d963b5f867e10d8f",
+  "imageId": "sha256:0abeca32642a5d5cc4339ebfbe3d92595d0395a80f062e5d01bd515a25c9027c",
+  "sourceFiles": 1072,
+  "imageFiles": 646,
+  "changedFiles": 42,
+  "productionDeployed": true,
+  "backupRestored": true,
+  "haArmed": true,
+  "publicVerificationPassed": true,
+  "productionVoiceEnabled": false,
+  "productionLiveKitConfigured": false,
+  "qa": {
+    "windows": {
+      "testFiles": 116,
+      "counts": {
+        "tests": 1667,
+        "pass": 1667,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "sourceUnchanged": true,
+      "evidence": {
+        "path": ".tmp/post-performance-release-v5-20261018/qa-v2/result.json",
+        "sha256": "226c05492a027b75900840960e5a353cfbee46464f0b32a3027ecb839e0ac2a9"
+      }
+    },
+    "linux": {
+      "production": {
+        "tests": 1667,
+        "pass": 1667,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "compatibility": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "evidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/deployment/rootqa/stage-execution-1792330272615.json",
+        "sha256": "985a5859d7c13f9baace9dfe44a158ab51e0b9670fd17aeb412a810659754582"
+      }
+    },
+    "realSdk": {
+      "passed": true,
+      "variant": "workspace-repaint-with-active-voice",
+      "sourceUnchanged": true,
+      "production": false,
+      "physicalDevices": false,
+      "evidence": {
+        "path": ".tmp/company-voice-20261018/security-candidate-v5-ui/candidate-ui-result.json",
+        "sha256": "fd049245e12055df187da14f32a7f3b1d7e59baab9a7f6b26284b4689ece8558"
+      }
+    },
+    "automaticRecovery": {
+      "passed": true,
+      "manualReconnectClicks": 0,
+      "transport": "HTTP loopback; not a public HTTPS or production-session test",
+      "evidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/ui-independent-baseline-1792330049713/report.json",
+        "sha256": "c1af1e590207a307c9137125f21790115a477bbe92b26e9cfc517a7b611a9a2d"
+      }
+    },
+    "public": {
+      "messengerFiles": 12,
+      "fullFiles": 221,
+      "fullReadSources": {
+        "first-full-read": 219,
+        "bounded-followup-read": 1,
+        "earlier-exact-full-body-pulse-read": 1
+      },
+      "initialFullReadFailures": 2,
+      "evidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/public-complete-proof-1792333531988.json",
+        "sha256": "e4d310ea173ed48260b4c21424fed04191bc945f1d1a57f5f2466839f68bf036"
+      }
+    },
+    "cleanupLockRegression": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/apt-lock-regression-result.json",
+      "sha256": "c7925f0f2556af106ae9d07d70d85c2b58cb13692d12d68877ecea4c79d4c89b"
+    },
+    "metadataUtf8Regression": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/metadata-utf8-result.json",
+      "sha256": "ac583bc28197569cff1db86fc861c271c6619ba95664e69c7c13274949f134ec"
+    },
+    "compactProofRegression": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/compact-proof-regression-result.json",
+      "sha256": "96f88ff42c56ac195f98d3ae060ac91dc696a8dcaeed4cf68d4c8c5f21ab107b"
+    }
+  },
+  "dataPreservation": {
+    "exactPreStartPreservationProven": true,
+    "postStartSchemasUnchanged": true,
+    "postStartSessionAndTokenTablesExact": false,
+    "limitation": "Post-start identity session hashes changed for two rows. Aggregate hashes cannot prove continuity of each old session."
+  },
+  "backup": {
+    "bytes": 519574762,
+    "sha256": "9c3e18a7ef6ef838f558353172db2b5706aabae607cd900c909c1662544f4750",
+    "generation": "1792333016959757",
+    "invocationId": "c807daf22b6c45fea000221f1413b868",
+    "evidence": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/dr/backup-status-1792333094175.json",
+      "sha256": "40962aa307552b12d0a3ac66525ef1969978ef25cd08302bbd16da1c6a1970e9"
+    }
+  },
+  "ha": {
+    "armed": true,
+    "replicaHealthy": true,
+    "currentReleaseOutageTested": false,
+    "evidence": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/arm-postcheck-final-v2.json",
+      "sha256": "a5474ed308446b42748859025473660e3b06298700234dca7e0a336ef2c7536d"
+    }
+  },
+  "cleanup": {
+    "knownStageCopiesRemoved": 4,
+    "freeBytesAfter": 8418988032,
+    "requiredRestoreFreeBytes": 8382380792,
+    "originalBackupsAndCurrentPreviousSourcesPreserved": true,
+    "allDockerImagesPreserved": true,
+    "preservedAptMetadata": {
+      "source": "/var/lib/apt/lists/_etc_apt_mirrors_debian.list_dists_bookworm_main_binary-amd64_Packages",
+      "archive": "/var/lib/synk-company-ops/apt-packages-preserved-515e692f2c41.gz",
+      "bytes": 13965727,
+      "sha256": "e525019850c58258b7002d79568265e012a3af37ad18cbf1b4dba012c2f32339",
+      "logicalSha256": "515e692f2c4121c6fcec444ef100cc18f79a991910615f3a88c8b7becfc94d2f",
+      "logicalBytes": 50060337
+    },
+    "aptMetadataRestoration": {
+      "status": "restored",
+      "originalBytesMatch": true,
+      "evidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/apt-metadata-restored-result.json",
+        "sha256": "6fae57c89fdd99ed045aeabb65072b3b7463d034ee8c9cc968819189767c9bc3"
+      }
+    },
+    "evidence": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/cleanup-known-stages-run-1792335542472.json",
+      "sha256": "e44d6dfa5aa7c754909cb2fb5d5fbd293678326bee51e6a8c4f38e6c7f9116a8"
+    }
+  },
+  "authenticatedUi": {
+    "status": "passed-with-observation-limits",
+    "evidence": {
+      "path": ".tmp/post-performance-release-v5-20261018/live-verification-final.json",
+      "sha256": "d61e5e6a23c5dac9232e5255186c51bc1eeb36aedb36072af7008607b5634173"
+    },
+    "scope": "Production performance UI and source bytes, existing-data preservation and background-render state. Not a production voice call or physical-device test."
+  },
+  "sourcePublication": {
+    "voiceBranch": "codex/voice-security-publish-20261018",
+    "publishedVoiceCommit": "90e3bdd51e4129c9d19bca7e7b0b84f89eea21c1",
+    "v5ProductCommit": "85a58f378632d5cbb9300140d6f307236a199861",
+    "v5TestCorrectionCommit": "da7ec8bc523e62c73ee3cc613c543b2059711e0b",
+    "combinedSnapshotIsSingleVoiceBranchCommit": false,
+    "masterChangedByThisTask": false,
+    "selectedMasterIntegration": {
+      "commit": "b7a5e24a5ea27de941c9bb38084472a52cb296e6",
+      "remoteRefEvidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/git-remote-source-read.json",
+        "sha256": "20f0f35ad63921bec19c6c4a2fe935d8628fb5a886c3318a665fbe8526d8e70b"
+      },
+      "securityFilesEvidence": {
+        "path": ".tmp/company-voice-security-release-v3-20261018/master-security-source-read.json",
+        "sha256": "3272ee67b79a879c45d779290ee2a6b385fd10c30800907e7dcae14ee8106ba0"
+      },
+      "securityFilesRawMatched": 7,
+      "fullProductionSnapshotByteIdentityClaimed": false
+    },
+    "finalDocumentationReceipt": ".tmp/company-voice-security-release-v3-20261018/documentation-push-v1.json"
+  },
+  "remaining": [
+    "Connect a separate production LiveKit project and enable production calling; never reuse the test key.",
+    "Physical two-device and separate-network tests, mobile background behavior and provider billing reconciliation remain unverified.",
+    "Existing initial-state event exceptions predate v5. The measured production API/cold-load duration is not established server processing time."
+  ],
+  "finalDocumentEvidence": {
+    "package": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/package-live-v1.json",
+      "sha256": "0784ea7802c6320e906db2eab63ce29d0d7c7da98919c6e8a4837b3f965fc03c"
+    },
+    "runtime": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/runtime-live-postcheck-1792332033647.json",
+      "sha256": "22a69d5d78c79e18e2684691d6d31d155cfbb2d8dd7ad83909591f99e61fdaa2"
+    },
+    "public": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/public-messenger-verification-1792332037242.json",
+      "sha256": "90cb6be34d1ba271094843b185576f19c717c72e6451acd1d0a3af1cc72d47c4"
+    },
+    "drContext": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/dr/context-final-v2.json",
+      "sha256": "109cdb80aa3747d8a0eb6a4c8150068e712a426d1de7ea2d6d8288c34835ec70"
+    },
+    "restore": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/dr/restore-v1.json",
+      "sha256": "66addc1c8b51a19b6c8f339e41ae376c310517063b24312c7e51b23ef8a65ba7"
+    },
+    "armContract": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/contract-final-v2.json",
+      "sha256": "8b747e1bd3842697ae0a2b69e9cf6b6f6be3713d15b2d5c33873ba02e211015e"
+    },
+    "armPostcheck": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/arm-postcheck-final-v2.json",
+      "sha256": "a5474ed308446b42748859025473660e3b06298700234dca7e0a336ef2c7536d"
+    },
+    "runtimeVerifier": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/verify-runtime.cjs",
+      "sha256": "d8ba5c62243aec21f90a6a0c9564aa3e35fbe13fcc56594e1431583321fb9156"
+    },
+    "publicVerifier": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/verify-public.cjs",
+      "sha256": "8cbccf193625e9aa5358abef44f6532da31759f707c40ad7befd160e9f944df5"
+    },
+    "drAdapter": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/dr/adapter.cjs",
+      "sha256": "a2c935bcd493f4784bfae5ee5627e79e7e691c34efe0c1848055bbaa7d7d48db"
+    },
+    "postcheckVerifier": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/postcheck.cjs",
+      "sha256": "9ab7f514a183a45956721c35f130390185bcedba7d93260e912722f14b655e1b"
+    },
+    "operatorPreparation": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/deployment/operator-preparation.json",
+      "sha256": "2833a43c7b88f3f4375075b17fe3883f060d70aaafe28e3c03ba23b72e93dd3f"
+    },
+    "rearmSource": {
+      "path": ".tmp/company-voice-security-release-v3-20261018/rearm/source-successor.json",
+      "sha256": "10f6d6b26f8c696f65ce0d230d4f3c91b41f2ef1fb8c9f7c9f43a5830d670491"
+    }
+  }
+}
