@@ -59,7 +59,7 @@ function crScheduleSyncStatus(){
   const userId=cr.userId,generation=cr.refreshGeneration;
   cr.syncStatusTimer=setTimeout(async()=>{cr.syncStatusTimer=null;if(generation!==cr.refreshGeneration||!crRefreshActive(userId))return;await crReadSyncStatus();crScheduleSyncStatus();},60000);
 }
-function crScheduleRefresh(){
+function crScheduleRefresh(){if(typeof state==='undefined')return;
   if(state.user)crIdentity();else if(cr.userId!==null){crReset();return;}if(!crRefreshActive()){crStopRefresh();return;}
   crScheduleSyncStatus();if(typeof EventSource!=='function'){cr.liveStatus='fallback';crScheduleFallback();return;}
   if(!cr.stream){

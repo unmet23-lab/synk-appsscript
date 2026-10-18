@@ -130,5 +130,5 @@ document.addEventListener('click',async event=>{
   const source=event.target.closest?.('[data-ah-source]');if(source){if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.button>0)return;event.preventDefault();try{await ahOpenSource(source.dataset.ahSource,source.dataset.ahView);}catch(error){notify(error.message);}return;}
   const target=event.target.closest?.('[data-ah-action]');if(target&&!target.disabled&&state.user&&target.dataset.ahAction==='refresh')await ahLoad();
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden)ahSuspend();else if(ahVisible())automationHealthEnsure();});
+document.addEventListener('visibilitychange',()=>{if(typeof state==='undefined')return;if(document.hidden)ahSuspend();else if(ahVisible())automationHealthEnsure();});
 document.addEventListener('toggle',event=>{const group=event.target?.dataset?.ahGroup;if((['issues','manual'].includes(group)||automationHealthState.data?.projectGroups?.some(item=>'project:'+item.projectId===group))&&ahVisible())automationHealthState.expanded[group]=event.target.open;},true);

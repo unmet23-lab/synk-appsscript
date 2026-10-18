@@ -234,7 +234,7 @@ function startWorkspaceModuleLoading({immediate=false}={}){
   // Long outages must recover too, without reloading a ready or active frame.
   },immediate?0:Math.min(workspaceModule.loadRetries<2?12000:29000,graceRemaining));
 }
-function resumeWorkspaceModuleLoading(){if(canRecoverWorkspaceModule()){startWorkspaceModuleLoading({immediate:true});syncWorkspaceLoading();}}
+function resumeWorkspaceModuleLoading(){if(typeof state==='undefined')return;if(canRecoverWorkspaceModule()){startWorkspaceModuleLoading({immediate:true});syncWorkspaceLoading();}}
 function syncWorkspaceLoading(){
   // The persistent frame sits above this slot; keep a stalled document from
   // covering the loading feedback and reconnect button before its ready signal.
@@ -420,7 +420,7 @@ globalThis.navigator?.serviceWorker?.addEventListener('message',event=>{
   })().catch(()=>{});
 });
 window.addEventListener('scroll',syncWorkspaceModuleGeometry,{passive:true});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWorkspaceModuleLoading();else{resumeWorkspaceModuleLoading();if(state.user)void refreshWorkspaceSummary();}});
+document.addEventListener('visibilitychange',()=>{if(typeof state==='undefined')return;if(document.hidden)stopWorkspaceModuleLoading();else{resumeWorkspaceModuleLoading();if(state.user)void refreshWorkspaceSummary();}});
 window.addEventListener('online',resumeWorkspaceModuleLoading);
 window.addEventListener('offline',stopWorkspaceModuleLoading);
 window.addEventListener('pagehide',stopWorkspaceModuleLoading);

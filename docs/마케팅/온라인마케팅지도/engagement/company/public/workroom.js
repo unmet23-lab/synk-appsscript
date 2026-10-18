@@ -121,7 +121,7 @@ function wrEnsureDaily(){
   }
   if(wr.daily?.running&&wr.dailyPollTimer===null)wrScheduleDailyPoll();
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')wrSuspendDaily();else wrEnsureDaily();});
+document.addEventListener('visibilitychange',()=>{if(typeof state==='undefined')return;if(document.visibilityState==='hidden')wrSuspendDaily();else wrEnsureDaily();});
 async function wrLoadDaily(date=wr.dailyDate,{poll=false}={}){
   const userId=state.user?.id;if(!userId)return;wrIdentity();wrCancelDailyPoll();if(!poll)wr.dailyPollUntil=0;const request=++wr.dailyRequest;
   wr.dailyDate=String(date||'');wr.dailyLoading=true;wr.dailyPollFetching=poll;wr.dailyAttempted=true;wr.dailyError='';
