@@ -35,6 +35,12 @@ fps는 다섯 판(v20·Claude·아르곤·합친 판·동네 전체 판)을 겹�
 
 비교 페이지(비공개): https://claude.ai/artifact/5okyuxXCSYcKDLzCK9xJpE (unmet25 계정, 10-18 밤 이웃집 고침과 Fable 검수 반영). 세션이 잠시 unmet27 계정으로 이어졌을 때 올린 사본 https://claude.ai/artifact/WCc8iRdqot3Wiei9mMnTor 은 검수 전 글이다 — 아티팩트는 올린 계정에서만 열린다.
 
+## 휴대폰 확인(같은 와이파이)
+
+`node experiences/synk-town/qa/blender-merged-20261018/phone-preview.mjs`가 PC 와이파이 주소(10-18 `192.168.0.14:4389`)에 QA 중계를 띄운다. 주소는 `http://<IP>:4389/day.html?play=walk`(v20), `…&district=town-merged`, `…&district=townwide-merged`. 중계는 제품 파일을 바꾸지 않고 보내는 응답만 고친다(같은 /24만 받음, `crypto.randomUUID` 대체, `day-app.mjs` 복사본에 주소 추가, CSP 넓힘). 화면 위 두 줄(`phone-hud.js`, 터치는 통과)이 fps·첫 화면 시간·구운 판 받기 시간·GPU 텍스처·JS 메모리(안드로이드 크롬만)를 보여 주고, 5초마다 `.tmp/town-merged-20261018/phone-reports.jsonl`로 보낸다. 이 PC는 `node.exe` 들어오는 연결이 공용 네트워크에서 이미 허용돼 있어 방화벽 작업은 없었다. PC에서 휴대폰 크기로 세 주소를 열어 확인하는 것은 `phone-check.cjs`.
+
+CSP: Town 서버의 CSP로는 구운 판이 뜨지 않는다(KTX2 해독기의 WebAssembly·문자열 실행, blob 주소가 막혀 v20으로 돌아감 — `csp-check.cjs`). 지금까지의 QA는 `bypassCSP`로 열어 몰랐다. 제품에 넣으려면 CSP를 넓히거나 다른 해독기 빌드가 필요하다.
+
 ## Git 밖 원본
 
 GLB·.blend·캡처는 Git에 넣지 않는다. 10-18 19:00 올리고 다시 읽어 대조했다(70개, 그중 37개는 앞 묶음과 같은 내용이라 재사용, 어긋남 0). 원본 창고 77yuhbs `SYNK_원본창고/town-합친판-20261018/<경로>`(목록·SHA-256 영수증은 `~/Documents/SYNK_원본창고/상태/town-합친판-20261018/목록.json`). 이웃집 가까이 흠을 고친 뒤의 묶음 GLB는 `town-합친판2-20261018`(10-18 22:23, 63개 중 3개 새로·60개는 같은 내용 재사용, verify 어긋남 0) — Town에 넣을 `townwide-merged` GLB는 이쪽이 정본이다.
