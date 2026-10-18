@@ -11,6 +11,8 @@
 # (centre only) deleted a whole front wall whose centre sat behind the door and a
 # gable whose centre sat behind a beam (10-18). Flip or delete only when every
 # point agrees, so a face that is open anywhere stays as it is.
+# Rays reach `reach` (0.6 m): a ray that hits nothing counts as open, so inward or
+# buried faces inside a solid deeper than that are left as they are.
 # Objects must carry world coordinates (identity transform), as Argon's do.
 import bpy, bmesh
 from mathutils import Vector

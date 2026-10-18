@@ -1,7 +1,8 @@
 # How much of each atlas did Blender's per-object bake margin overwrite?
 # Bakes the albedo of each group twice on the CPU (margin 0 and 16, 1 sample) and
 # counts covered texels (non-black at margin 0) whose colour changed with margin 16.
-#   blender -b <copy of bake.blend> -P probe_margin_overwrite.py -- <part:group,...>
+#   blender -b <copy of bake.blend> -P margin_overwrite_check.py -- <part:group,...>
+# (Works on a copy: it re-targets the bake image nodes and must not be saved over bake.blend.)
 import bpy, sys
 import numpy as np
 

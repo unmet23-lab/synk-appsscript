@@ -419,7 +419,9 @@ def unwrap(objs, res, group=None):
     if GROUP_METHOD.get(group) == 'lightmap':
         # PREF_MARGIN_DIV: 0.2 gave ~2 px gaps at 2048 in the 10-18 trial.
         bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_MARGIN_DIV=.2)
-        bpy.ops.object.mode_set(mode='OBJECT'); return
+        bpy.ops.object.mode_set(mode='OBJECT')
+        if group in GROUP_MIN_ISLAND: log('--min-island is not applied to lightmap-packed groups', group)
+        return
     bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=margin, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
@@ -500,10 +502,18 @@ def refresh_meshes(parts):
     n = 0
     for o, me in zip(objs, dst.meshes):
         if me is None: log('no built mesh for', o.name); continue
-        for i, m in enumerate(me.materials):
-            own = bpy.data.materials.get(re.sub(r'\.\d{3}$', '', m.name)) if m else None
-            if own and own is not m: me.materials[i] = own
-        old = o.data; name = old.name; o.data = me; bpy.data.meshes.remove(old); me.name = name; n += 1
+        old = o.data
+        # The baked mesh has the same slots as the built one (baking adds none), so
+        # take its materials slot by slot; the name fallback is for a changed build
+        # (the claude variant has same-named src_ materials with .001 suffixes).
+        if len(old.materials) == len(me.materials):
+            for i, m in enumerate(old.materials): me.materials[i] = m
+        else:
+            log('slot count changed, matching materials by name', o.name)
+            for i, m in enumerate(me.materials):
+                own = bpy.data.materials.get(re.sub(r'\.\d{3}$', '', m.name)) if m else None
+                if own and own is not m: me.materials[i] = own
+        name = old.name; o.data = me; bpy.data.meshes.remove(old); me.name = name; n += 1
     return n
 
 def stage_bake():
@@ -514,11 +524,20 @@ def stage_bake():
     bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'bake.blend' if resume else 'build.blend'))
     samples = int(arg('--samples', '1024')); setup_cycles(samples); sc = bpy.context.scene
     report = json.load(open(os.path.join(WORK, 'bake.json'))) if resume else {'samples': samples, 'resolution': RES, 'atlases': {}}
-    # --refresh and --clean touch only parts with no atlas baked yet: the meshes
-    # of a part carry the bake UVs of all its atlases, so a part with one atlas
-    # done keeps its meshes (clear all of its atlases to redo it).
+    # An atlas is done when its bake.json entry and its PNG are both there (the
+    # same test the loop below skips by). --refresh and --clean touch only parts
+    # with no atlas done: the meshes of a part carry the bake UVs of all its
+    # atlases, so a part with one atlas done keeps its meshes (remove the entry or
+    # the PNG of every atlas of the part to redo it).
+    def atlas_done(p, g):
+        name = f'town-{VARIANT}-{p}-{g}'
+        return resume and name in report['atlases'] and os.path.exists(os.path.join(WORK, name + '.png'))
     def unbaked(names):
-        return [p for p in names if all(f'town-{VARIANT}-{p}-{g}' not in report['atlases'] for g in groups_of(p))]
+        return [p for p in names if not any(atlas_done(p, g) for g in groups_of(p))]
+    for flag in ('--refresh', '--clean'):
+        kept = [p for p in (arg(flag) or '').split(',') if p and p not in unbaked([p])]
+        if kept: log(flag, 'skipped for parts with an atlas done', kept)
+    if arg('--refresh') and not resume: log('--refresh needs --resume 1 and a bake.blend; skipped')
     # --refresh <part,...> (with --resume): those parts' meshes come back from build.blend.
     if resume and arg('--refresh') and unbaked(arg('--refresh').split(',')):
         parts = unbaked(arg('--refresh').split(','))
@@ -547,9 +566,8 @@ def stage_bake():
         for group in groups_of(part):
             objs = [o for o in town if o['part'] == part and o['group'] == group]
             if not objs: continue
-            done = f'town-{VARIANT}-{part}-{group}'
-            if resume and done in report['atlases'] and os.path.exists(os.path.join(WORK, done + '.png')):
-                log('already baked', done); continue
+            if atlas_done(part, group):
+                log('already baked', f'town-{VARIANT}-{part}-{group}'); continue
             t0 = time.time(); res = RES; unwrap(objs, res, group)
             def poly_area(pts):
                 return abs(sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1] for i in range(len(pts)))) / 2
@@ -589,7 +607,7 @@ def stage_bake():
             name = f'town-{VARIANT}-{part}-{group}'
             out = bpy.data.images.new(name, res, res, alpha=True); out.pixels.foreach_set(enc.astype(np.float32).ravel())
             out.filepath_raw = os.path.join(WORK, name + '.png'); out.file_format = 'PNG'; out.save()
-            report['atlases'][name] = {'objects': len(objs), 'uvFill': round(uv_fill, 3), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
+            report['atlases'][name] = {'objects': len(objs), 'uvFill': round(uv_fill, 3), 'samples': GROUP_SAMPLES.get(group, samples), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
                                        'clipped_fraction': float((full * .5 > 1).mean())}
             log('baked', name, report['atlases'][name])
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(WORK, 'bake.blend'))
