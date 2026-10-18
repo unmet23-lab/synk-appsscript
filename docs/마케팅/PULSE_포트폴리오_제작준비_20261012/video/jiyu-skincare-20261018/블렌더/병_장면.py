@@ -657,12 +657,12 @@ def main():
         # 배경판 폭 0.5m: 카메라가 보는 폭(약 0.35m)에 왼쪽 커튼 창과 오른쪽 화분이 함께 들어온다
         build_room(sway=True, plate=(0.0, 0.5))
         build_leaf_shadow()
-        # 컷 6은 컷 2보다 8초 뒤: 물방울은 다 흘러내린 자리에 멈춰 있고 젖은 자국도 다 그어져 있다
+        # 컷 6은 컷 2보다 8초 뒤: 물방울은 다 흘러내린 자리에 멈춰 있고 젖은 자국은 말라 없다.
+        # (10-18 Fable 3차: 자국을 남겨 두니 11초에 병 위 가는 흰 세로선이 흠집·머리카락처럼 보였다)
         S.frame_set(48)
-        final = prog.outputs[0].default_value
         hero.animation_data_clear()
         tmat.node_tree.animation_data_clear()
-        prog.outputs[0].default_value = final
+        prog.outputs[0].default_value = 0.0
         # 살짝 내려다봐(약 6°) 세면대 윗면이 뒤로 이어지고 앞 끝 두께가 화면에 들어오지 않게(진열대처럼 보였다)
         cam = camera(100, Vector((0, -0.75, 0.155)), Vector((0, 0, 0.075)), fstop=8.0, focus=0.73)
         for f, d in ((1, 0.75), (48, 0.72)):

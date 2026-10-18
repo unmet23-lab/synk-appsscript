@@ -19,11 +19,17 @@ JOBS = [
     ("컷3_시작_v4.jpg", "컷3_시작_v4b.jpg", [], [(1290, 855, 1378, 1042), (1495, 1015, 1536, 1165)], 25),
     # 컷5_v3: Fable 재검수 「볼에 점 3개가 새로 생김(다른 컷엔 없음)」 — 볼 아래 둘·광대 위 하나. 옅은 주근깨는 둔다
     ("컷5_v3.jpg", "컷5_v3b.jpg", [(730, 1151, 6), (721, 1217, 6), (854, 962, 7)], [], 5),
+    # 컷7_v6: Fable 3차 「오른볼 옅은 점 1개」 — 미소선 옆(입꼬리 그늘은 둔다)
+    ("컷7_v6.jpg", "컷7_v6b.jpg", [(412, 790, 7)], [], 5),
 ]
 
 
 def main():
+    # 인자로 원본 이름을 주면 그것만(10-18 AhnLab Safe Transaction 랜섬웨어 탐지 오탐이 JPEG 연속 덮어쓰기를 끊었다 — 현장 노트 윈도우_셸.md)
+    only = set(sys.argv[1:])
     for src, dst, circles, rects, rad in JOBS:
+        if only and src not in only:
+            continue
         img = cv2.imdecode(np.fromfile(os.path.join(K, src), dtype=np.uint8), cv2.IMREAD_COLOR)
         mask = np.zeros(img.shape[:2], np.uint8)
         for x, y, r in circles:

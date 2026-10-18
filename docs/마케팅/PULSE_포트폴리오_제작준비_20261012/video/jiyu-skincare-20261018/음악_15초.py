@@ -41,12 +41,16 @@ def build():
     h0, h1, hL = SEG_HOOK
     rh = (h1 - h0) / hL
     h_end = h0 + HOOK_USE * rh
+    # 페이드는 늘이기(atempo) 전 원본 구간에 건다. 10-18 Fable 3차: 늘인 뒤 aL-15ms에 건 페이드는 atempo가 끝을 12ms쯤
+    # 덜 만들어 거의 먹지 않았고, 9.489·13.739초가 한 표본 만에 0.39 → 0으로 끊겨 딸깍 날 수 있었다
+    seg_a = a1 - a0
+    seg_h = HOOK_USE * rh
     parts = [
-        f"[0:a]atrim={a0:.6f}:{a1:.6f},asetpts=PTS-STARTPTS,atempo={ra:.6f},"
-        f"afade=t=in:st=0:d=0.03,afade=t=out:st={aL - 0.015:.6f}:d=0.015," + fit("pa", aL),
+        f"[0:a]atrim={a0:.6f}:{a1:.6f},asetpts=PTS-STARTPTS,"
+        f"afade=t=in:st=0:d=0.03,afade=t=out:st={seg_a - 0.02:.6f}:d=0.02,atempo={ra:.6f}," + fit("pa", aL),
         "anullsrc=r=48000:cl=stereo,atrim=0:0.5[pz]",
-        f"[0:a]atrim={h0 - PRE * rh:.6f}:{h_end - PRE * rh:.6f},asetpts=PTS-STARTPTS,atempo={rh:.6f},"
-        f"afade=t=in:st=0:d=0.003,afade=t=out:st={HOOK_USE - 0.015:.6f}:d=0.015," + fit("ph", HOOK_USE),
+        f"[0:a]atrim={h0 - PRE * rh:.6f}:{h_end - PRE * rh:.6f},asetpts=PTS-STARTPTS,"
+        f"afade=t=in:st=0:d=0.003,afade=t=out:st={seg_h - 0.02:.6f}:d=0.02,atempo={rh:.6f}," + fit("ph", HOOK_USE),
         "anullsrc=r=48000:cl=stereo,atrim=0:0.25[pz2]",
         # 10-18 Fable 재검수: 원곡 마지막 화음은 후렴보다 6dB 작아(RMS -18.8 대 -12.4) 「타격」이 아니라 「내려앉음」으로 들렸다 → 2배(+6dB)
         f"[0:a]atrim={LAST - PRE:.6f}:{LAST - PRE + TAIL:.6f},asetpts=PTS-STARTPTS,volume=2.0,"
