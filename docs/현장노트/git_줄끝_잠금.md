@@ -179,6 +179,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
+### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
+- 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.
+- 원인: 세션마다 내 커밋만 origin에 다시 쌓아 올리고(restack) 로컬 병합은 「origin has other commits」로 건너뛰어, 같은 내용이 양쪽에 다른 번호로 쌓였다.
+- 고침: `.tmp/master-align-20261018/align_merge.py`(계획만 → `--go`). `git merge-tree --write-tree`로 병합 트리를 만들고 충돌은 경로별 규칙(한쪽이 다른 쪽을 품으면 그쪽, 표·장부는 합집합, 「쓴 AI」 머리말은 잇기)으로 푼다. 바뀐 경로마다 작업본이 옛 HEAD 그대로면 새 판(작업본 줄끝 유지), 남의 미커밋 수정이면 3방향, 3방향이 부딪히면 줄 단위(한쪽만 고친 줄은 그쪽, origin에만 있는 새 묶음은 작업본에 같은 글이 없을 때만, 둘 다 다르게 쓴 줄은 작업본 판을 두고 기록) → 바이트 백업 → 병합 커밋(부모 로컬·origin) → master CAS → 그 경로만 공용 인덱스. 결과 `c3222446d`(71경로, 작업본 = 병합본 62, 3방향 9).
+- 다시 확인: `git merge-base --is-ancestor origin/master master`, 3방향 파일마다 「백업의 작업본 고유 줄이 새 작업본에 다 있는지」(머리말을 이은 줄은 글이 들어 있는지). 둘 다 다르게 쓴 줄(10-18: 트랙 「자동화 3종 후속」)은 HEAD에 origin 판이 있으니 그 줄 주인 세션이 커밋 전에 합쳐야 한다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
