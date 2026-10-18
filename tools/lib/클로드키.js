@@ -81,7 +81,8 @@ function JSON쓰기(파일, 값) {
 function 목록읽기(목록경로) {
   const 목록 = JSON읽기(목록경로, null);
   if (!목록) throw new Error(`키 목록이 없다: ${목록경로}`);
-  if (!Array.isArray(목록.키) || 목록.키.length === 0) throw new Error('키 목록의 「키」 배열이 비었다');
+  // 빈 배열은 오류가 아니라 「지금 쓸 크레딧 키 없음」이다(새 조직 키를 넣기 전) — 고르기는 null, 보내기는 키 없음으로 멈춘다.
+  if (!Array.isArray(목록.키)) throw new Error('키 목록에 「키」 배열이 없다');
   const 이름들 = new Set();
   return 목록.키.map((항목, i) => {
     if (!항목 || typeof 항목.이름 !== 'string' || !항목.이름.trim()) throw new Error(`키 ${i + 1}번에 이름이 없다`);
@@ -207,7 +208,7 @@ async function 보내기(본문, 옵션 = {}) {
     }
     return { 응답: body, 키이름: 키.이름, http: 응답.status, 건너뛴키 };
   }
-  throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${건너뛴키.map((k) => `${k.이름}:${k.이유}`).join(', ') || '모두 소진 표시 중'}. --상태로 확인`, { 건너뛴키 });
+  throw 오류('클로드키_모두소진', `쓸 수 있는 키가 없다 — ${건너뛴키.map((k) => `${k.이름}:${k.이유}`).join(', ') || (키들.length ? '모두 소진 표시 중' : '목록에 키 없음')}. --상태로 확인`, { 건너뛴키 });
 }
 
 function 상태보기(옵션 = {}) {

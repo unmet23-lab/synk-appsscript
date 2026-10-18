@@ -49,7 +49,7 @@
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
 - 증상: Max 20x 월 API 크레딧($200)이 있다고 보고 새 키(`synk-local-tools`)로 블라인드 비교·교원 검수 사전 점검을 돌렸는데, 약 $2.6을 쓴 뒤 「Your credit balance is too low」가 났다(10-17).
 - 원인: 그 키의 조직(unmet23 Console의 「양유호's Individual Org」, `anthropic-organization-id` f6ddc1be…)에는 크레딧이 없었고(Promotional credits 칸 없음), 8~9월에 산 작은 충전 잔액이 먼저 나갔다. 동시 요청 4개가 돌던 중이라 잔액을 넘겨 **미납 -$1.31**이 됐고 API가 막혔다(충전 전까지 같은 조직의 talk 운영·리허설 키도 멈춘다). 크레딧은 claude.ai 설정 → 결제의 「API 크레딧」에서 연결한 조직 하나에만 들어오고, 새 구독은 7일 뒤부터 받을 수 있다. 그날 Chrome의 claude.ai는 77yuhbs(Max 5x, 10-17 결제)였고 결제 화면에 API 크레딧 칸이 아직 없었다.
-- 고침: 큰 작업 전에 Console 결제 화면의 Promotional credits와 조직 이름을 먼저 본다. 응답 머리 `anthropic-organization-id`로 키의 조직을 확인할 수 있다(키 값은 출력하지 않는다). 크레딧이 없으면 연결한 조직에서 키를 새로 만들거나 연결 조직을 고친다(직접 못 바꾸면 고객지원).
+- 고침: 큰 작업 전에 Console 결제 화면의 Promotional credits와 조직 이름을 먼저 본다. 응답 머리 `anthropic-organization-id`로 키의 조직을 확인할 수 있다(키 값은 출력하지 않는다). 크레딧이 없으면 연결한 조직에서 키를 새로 만들거나 연결 조직을 고친다(직접 못 바꾸면 고객지원). 연결할 조직은 결제 수단·산 잔액·자동충전이 없는 새 조직이 안전하다. 공식 문서(10-18 확인)에 따르면 월 크레딧 다음에 산 잔액이 쓰인다. 그래서 잔액이 남은 조직은 크레딧이 떨어져도 「credit balance is too low」가 나지 않고, 다음 키로 넘어가지 않은 채 돈이 나간다. 자동충전도 산 잔액만 보고 기준선에서 충전하므로, 월 크레딧이 남아 있어도 충전된다.
 - 다시 확인: 키 하나로 `claude-haiku-5-5` 16토큰 요청 — 크레딧이 있으면 200, 없으면 400 「credit balance is too low」(청구 없음).
 
 ### 구독에 로그인된 PC에서 `claude -p`에 API 키를 줘도 구독으로 청구된다

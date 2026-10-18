@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -197,6 +197,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 지금 판(앞에서 쌓은 것)은 새 번호인데 다음 커밋의 부모·자기 판은 옛 번호라 그 줄이 서로 다르다. 트랙은 그 위에 다른 세션의 미푸시 문장이 줄마다 섞여 origin 판과 로컬 판의 줄이 아예 다르다.
 - 고침: 3방향 전에 부모·자기 판에도 같은 번호 바꾸기를 먼저 한다(`merge3` 첫 줄에서 두 blob에 `renum` 적용). 이미 origin에 다른 번호로 올라간 로컬 커밋 번호(10-18 `47a1d1f60`으로 올라간 바탕 커밋)도 같이 바꾼다(`--map=옛:새`). 트랙은 `--skip=docs/_ops/트랙.md`로 커밋별 이식에서 빼고, 마지막에 origin 판의 그 줄에 내 문장만 정확히 한 번 바꾸는 커밋을 얹는다(바뀐 줄 수가 맞는지 확인). 로컬 병합은 origin 판으로 덮지 않고 「로컬 트리 + 번호 문자열 바꾸기」로 만든다. 공용 `.tmp/push-mine-20261013/restack.py`에는 아직 이 셋이 없다(10-18은 세션 사본으로 했다).
 - 다시 확인: 올린 머리에서 `git grep <옛 번호>`가 0, 올린 트리를 풀어 관련 시험 통과, 로컬 병합 전후 차이가 번호 줄뿐이다(10-18: origin `b79545629..b5ffa068f`, 로컬 병합 `659ea4d03` 7파일 8줄).
+
+### 결정 표에 행을 더한 커밋을 다시 쌓으면 `restack.py`가 「끼울 자리 못 찾음」으로 멈춘다
+- 증상: 10-18 결정 표에 세 행을 더한 커밋(`add77ba8c`)을 `restack.py --commits=add77ba8c --renumber=`로 다시 쌓았는데, 결정 표만 「끼울 자리 못 찾음: '| 2026-10-17 | 확정 | [보안 · talk 운영 반영 …'」(merge-file 충돌 2)로 빠졌다. 나머지 문서 셋은 merge-file·transplant로 됐다.
+- 원인: 내 행 앞뒤의 문맥 행이 다른 세션의 로컬 전용 커밋이 넣은 행이라 origin 판에는 없다. 결정 표는 맨 위에 행이 계속 끼어서 로컬 판과 origin 판의 행 순서도 다르다.
+- 고침: 결정 표만 origin 판에 내 행을 직접 끼운다. 닻은 「내 판에서 내 행 다음에 오는 행 중 origin 판에도 있는 첫 행」이고, 내 판에서 표 맨 위 행이면 구분줄 바로 다음이다(`결정.js --추가`와 같은 자리). `.tmp/push-mine-20261013/restack_결정행.js <restack 머리> <내 커밋> --out=<결과> [--push]`가 restack 머리에 결정 표만 채워 같은 메시지·작성자로 다시 만든다. 이 도구의 결과 파일에는 `renumber.files`가 있어 `merge_local.py --res=<결과>`가 그대로 읽는다. restack.py 결과는 번호를 안 바꾸면 `renumber`가 `{}`여서 merge_local.py 9행 `res['renumber']['files']`에서 KeyError가 난다(10-18 코드로 확인).
+- 다시 확인: 도구가 경로마다 「origin → 올린 커밋」의 더한·지운 줄이 「부모 → 내 커밋」과 개수까지 같은지 보고, 저장소 검사를 돌린다. 올린 뒤에는 `git ls-remote`가 올린 커밋인지 본다. 10-18: origin `a99182659..886739c24`(13파일 +1732/−4, 원래 커밋과 같음), 로컬 병합 `b8b32d744`(트리는 로컬 그대로).
 
 ### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
 - 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.

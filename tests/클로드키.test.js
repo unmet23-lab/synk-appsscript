@@ -163,6 +163,16 @@ test('시험 중에는 경로를 다 넘기지 않으면 실제 키 폴더를 �
   assert.throws(() => 클로드.상태보기(), /실제 키 폴더 차단/);
 });
 
+test('빈 키 목록은 오류가 아니라 「키 없음」이다 — 고르기는 null, 보내기는 호출 없이 멈춘다', async () => {
+  const t = 방만들기([]);
+  try {
+    const 안됨 = async () => { throw new Error('호출되면 안 됨'); };
+    assert.deepEqual(await 클로드.키고르기({ ...t.옵션, fetch: 안됨, 지금 }), { 이름: null, 값: null, 건너뛴키: [] });
+    await assert.rejects(클로드.보내기(본문, { ...t.옵션, fetch: 안됨, 지금 }), /목록에 키 없음/);
+    assert.deepEqual(클로드.상태보기({ ...t.옵션, 지금 }), []);
+  } finally { t.지우기(); }
+});
+
 test('키 목록 오류는 호출 전에 막는다', async () => {
   const t = 방만들기([['A', 32, 'sk-ant-test-aaaa']]);
   try {
