@@ -2,7 +2,7 @@
 
 > 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · Claude Code 10-18 아르곤 실행 두 항목
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -26,11 +26,17 @@
 - 고침: 10-14에 깨진 훅 두 개(orca-status·synk-session-freshness)를 유호님 승인을 받아 뺐다. 백업은 `~/.gemini/config/hooks.json.bak-20261014`다. 훅이 다시 생기면 같은 일이 난다.
 - 다시 확인: `cat ~/.gemini/config/hooks.json` — 10-17 새 노트북은 `{}`(훅 없음)다.
 
-### 아르곤에게 블렌더 실행까지 맡기면 Claude Code가 막는다
-- 증상: Claude Code(자동 모드)에서 `agy -p … --dangerously-skip-permissions`로 아르곤이 블렌더를 직접 실행·반복하게 하려 하자 「Create Unsafe Agents」로 거절됐다(10-17 펠트 찻집 실험).
-- 원인: 다른 에이전트에게 모든 도구 권한을 자동 승인으로 넘기는 실행이라 Claude Code 안전 장치가 막는다.
-- 고침: 도구 없이 스크립트만 받는다 — `agy -p "<지시>" --model gemini-4-argon-high --disable-slash-commands --print-timeout 15m`, 답의 ```python 블록을 꺼내 위험 호출(지우기·네트워크·외부 실행)을 훑은 뒤 `blender -b --python build.py -- out.png scene.blend`로 내가 렌더한다. 고칠 점·오류는 `-c`(이어 하기)로 돌려준다. 답 하나에 3~5분, 1,300~1,700줄. 실행까지 맡기려면 유호님이 Antigravity 앱에서 직접 한다. 기록 `.tmp/argon-blender-20261017/notes.md`.
+### 아르곤에게 블렌더 실행까지 맡기면 Claude Code가 막을 때가 있다
+- 증상: Claude Code(자동 모드)에서 `agy -p … --dangerously-skip-permissions`로 아르곤이 블렌더를 직접 실행·반복하게 하려 하자 「Create Unsafe Agents」로 거절됐다(10-17 펠트 찻집 실험). 같은 날 15:56 싱크타운 찻집 구역 비교에서는 같은 플래그로 띄운 실행이 막히지 않고 1시간 20분·320단계를 혼자 돌아 GLB까지 냈다.
+- 원인: 다른 에이전트에게 모든 도구 권한을 자동 승인으로 넘기는 실행이라 Claude Code 안전 장치가 그때그때 판단한다. 통과한 실행은 유호님이 그 실험을 직접 말했고(「둘 다 실험해줘」), 요청문·규격·참고 파일만 둔 격리 폴더를 작업 폴더로 해 스크립트 파일로 띄웠다. 어느 것이 갈랐는지는 모른다.
+- 고침: 실행까지 맡길 때는 유호님 말을 받은 뒤 격리 폴더에서 띄운다 — `agy --model gemini-4-argon-high --input-format stream-json --output-format stream-json --print-timeout 0s --dangerously-skip-permissions --disable-slash-commands --log-file <폴더>/agy-cli.log`, 표준 입력에 `{"event":"user","message":{"content":"<요청문>"}}` 한 줄(기록 `experiences/synk-town/qa/blender-district-20261017/argon/run.json`). 이때 `--print`를 같이 넣으면 바로 뒤 낱말을 질문으로 먹고 종료 코드 2로 끝난다(10-17 그대로: `Error: --print took "--print-timeout" as its prompt, so the intended prompt was left as an argument and ignored.`) — 표준 입력으로 줄 때는 `--print`를 뺀다. 막히면 도구 없이 스크립트만 받는다 — `agy -p "<지시>" --model gemini-4-argon-high --disable-slash-commands --print-timeout 15m`, 답의 ```python 블록을 꺼내 위험 호출(지우기·네트워크·외부 실행)을 훑은 뒤 `blender -b --python build.py -- out.png scene.blend`로 내가 렌더한다. 고칠 점·오류는 `-c`(이어 하기)로 돌려준다. 답 하나에 3~5분, 1,300~1,700줄. 그래도 실행까지 맡겨야 하면 유호님이 Antigravity 앱에서 직접 한다. 기록 `.tmp/argon-blender-20261017/notes.md`.
 - 다시 확인: `agy models | grep argon`(10-17 low/medium/high 셋).
+
+### 아르곤 작업 보고서의 설정 주장이 실제와 다르다
+- 증상: 10-17 찻집 구역 아르곤 보고서(`report.json`)가 굽기에 「OpenImageDenoise」를 켰다고 적었지만, 받은 굽기 지도에는 노이즈 제거가 걸리지 않았다.
+- 원인: 아르곤이 켠 것은 Cycles 렌더 설정이고, 굽기는 그 설정을 쓰지 않는다([블렌더 노트](블렌더_3D.md#cycles-굽기에는-렌더-노이즈-제거가-걸리지-않는다)). 실제 노이즈 감소는 아르곤이 직접 짠 numpy 흐림과 검은 텍셀 메우기였다.
+- 고침: 아르곤 보고서는 「한 일 목록」으로만 읽고, 수치·설정은 남긴 스크립트와 결과 파일로 확인한다(삼각형 수·텍스처 수는 GLB에서 직접 센다).
+- 다시 확인: 보고서에 적힌 설정 이름을 아르곤 스크립트에서 `rg`로 찾아 어디에 쓰였는지 본다.
 
 ### 몽골어 검문이 문제없이 끝나도 종료 코드가 2다
 - 증상: 검문이 끝나고 종료 코드 2가 나온다. 「■ 종합」 줄에는 「공식 앱 뜻 검토 대기」가 적혀 있다.

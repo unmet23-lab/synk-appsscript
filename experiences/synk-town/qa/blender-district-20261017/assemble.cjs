@@ -54,7 +54,7 @@ const data = {
     { id: 'argon', label: '아르곤 블렌더 판', shots: shotsFor('argon'), how: extra.how?.argon || '' },
   ],
   metrics, fps,
-  fpsNote: `정지 시점마다 8초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 고배율은 기기 배율 2로 열어 Town이 「가볍게」 화질 규칙대로 PC 1.5배·휴대폰 1.25배로 그린 값으로, 세 판을 순서를 돌려 가며 ${Math.min(...perfs[0].summary.map(x => x.fps.length))}~${perfs[0].rounds}회전 쟀습니다. 이 노트북의 내장 GPU는 같은 판·같은 시점에서도 회전마다 크게 흔들려(발열·전력 조절로 보임) 세 판의 차이가 이 흔들림보다 작습니다. 대조로 잰 1배 화면(내장 GPU)과 고배율 외장 GPU(RTX 5090)는 ${capped.length}개 시점에서 세 판 모두 60fps 상한이라 표에서 뺐습니다. 같은 세션에서 번갈아 잰 짧은 대조(results/ab-cut.json)에서도 구운 판이 v20보다 −10~+5fps 사이로 오갔습니다. 헤드리스 Edge 값이고 실물 휴대폰 값이 아닙니다.`,
+  fpsNote: `정지 시점마다 8초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 고배율은 기기 배율 2로 열어 Town이 「가볍게」 화질 규칙대로 PC 1.5배·휴대폰 1.25배로 그린 값으로, 세 판을 순서를 돌려 가며 ${Math.min(...perfs[0].summary.map(x => x.fps.length))}~${perfs[0].rounds}회전 쟀습니다. 10-18에 다른 측정·굽기 없이 한 번에 다시 잰 값입니다(10-17에 낸 값은 제가 측정 두 개를 약 5분 겹쳐 돌려 낮게 나왔습니다 — results/perf-igpu-dpr2-overlap.json). 같은 판·같은 시점도 회전마다 크게 흔들리고, PC에서 Claude 판은 중앙값이 4fps쯤 낮지만 그 흔들림 안입니다. 대조로 잰 1배 화면(내장 GPU)과 고배율 외장 GPU(RTX 5090)는 ${capped.length}개 시점에서 세 판 모두 60fps 상한이라 표에서 뺐습니다. 같은 세션에서 번갈아 잰 짧은 대조(results/ab-cut.json)에서도 구운 판이 v20보다 −10~+5fps 사이로 오갔습니다. 헤드리스 Edge 값이고 실물 휴대폰 값이 아닙니다.`,
   unverified: extra.unverified || [],
   decide: extra.decide || '',
 };

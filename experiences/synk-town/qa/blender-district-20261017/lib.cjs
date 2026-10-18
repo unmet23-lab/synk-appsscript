@@ -27,7 +27,16 @@ const SCENE_PATCHES = [
     'cameraTarget.lerp(target, cameraBlend); camera.lookAt(cameraTarget); if (globalThis.__townCam) { const o = globalThis.__townCam; camera.position.fromArray(o.p); if (camera.fov !== o.fov) { camera.fov = o.fov; camera.updateProjectionMatrix(); } camera.lookAt(o.t[0], o.t[1], o.t[2]); }'],
 ];
 
-async function patchRoutes(page) {
+// extra: { "<file>.mjs": [[from, to], ...] } patches other Town modules the same way (capture-only).
+async function patchRoutes(page, extra = {}) {
+  for (const [file, patches] of Object.entries(extra)) await page.route('**/' + file, async route => {
+    let body = fs.readFileSync(path.join(town, file), 'utf8').replace(/\r\n/g, '\n');
+    for (const [from, to] of patches) {
+      if (!body.includes(from)) throw Error(file + ' patch anchor missing: ' + from.slice(0, 40));
+      body = body.replace(from, to);
+    }
+    await route.fulfill({ status: 200, contentType: 'text/javascript; charset=utf-8', body });
+  });
   await page.route('**/day-scene.mjs', async route => {
     let body = fs.readFileSync(path.join(town, 'day-scene.mjs'), 'utf8').replace(/\r\n/g, '\n');
     for (const [from, to] of SCENE_PATCHES) {
@@ -67,7 +76,7 @@ async function cameraMode(page, mode) {
   throw Error('camera ' + mode);
 }
 
-async function openTown(browser, base, { width, height, query = '', dpr = 1 }) {
+async function openTown(browser, base, { width, height, query = '', dpr = 1, patches = {} }) {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dpr, bypassCSP: true, ...(width < 700 ? { isMobile: true, hasTouch: true } : {}) });
   const errors = [], requests = [];
   page.on('pageerror', e => errors.push(String(e.stack || e)));
@@ -75,7 +84,7 @@ async function openTown(browser, base, { width, height, query = '', dpr = 1 }) {
   page.on('requestfinished', async request => {
     try { const r = await request.response(); const sizes = await request.sizes(); requests.push({ url: request.url().replace(base, ''), status: r?.status(), bytes: sizes.responseBodySize, type: r?.headers()['content-type'] }); } catch { }
   });
-  await patchRoutes(page);
+  await patchRoutes(page, patches);
   const started = Date.now();
   await page.goto(base + '/day.html?play=walk' + query);
   await page.waitForFunction(() => globalThis.SYNKTownDay?.metrics()?.assetsReady && SYNKTownDay.metrics().walk?.enabled, {}, { timeout: 90000 });

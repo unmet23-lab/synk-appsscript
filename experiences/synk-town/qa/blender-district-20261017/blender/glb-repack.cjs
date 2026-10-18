@@ -1,7 +1,8 @@
 // Replace the baked images inside a Blender-exported GLB with WebP encodes of
-// the original PNGs. Blender's exporter treats an RGBA image as premultiplied
-// and brightens RGB where alpha (the sun share) is low; the bake needs straight
-// RGB + independent alpha. Also marks bake_* materials OPAQUE.
+// the original PNGs. Blender's glTF WebP export does not keep RGB under
+// alpha 0, and in a bake alpha is the sun share, so alpha 0 is full shade whose
+// colour matters (bake_ground mean G there 8.0 -> 28.7; check with
+// alpha-check.cjs). sharp's `exact` keeps it. Also marks bake_* materials OPAQUE.
 //   NODE_PATH=desktop/node_modules node glb-repack.cjs <in.glb> <pngDir> <out.glb> [quality]
 const fs = require('node:fs'), path = require('node:path');
 const sharp = require('sharp');
