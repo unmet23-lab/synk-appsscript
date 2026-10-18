@@ -104,6 +104,79 @@
 - 고침: 설정을 바꾸면 `hermes gateway restart`를 한다. 처리 중인 일을 마친 뒤 내려간다.
 - 다시 확인: `%LOCALAPPDATA%\hermes\logs\gateway-restart.log` 끝 줄의 시각.
 
+### 연결됨 표시만으로 텔레그램 작업 완료를 판단하지 않는다
+- 증상: 10-18 점검에서 게이트웨이는 running·telegram connected였지만, 같은 날 이전 로그에는 Telegram API ConnectTimeout이 반복됐고 14:33 재시작 때 이전 프로세스의 비정상 종료가 기록돼 있었다. 점검 당시 PC는 AC·배터리 모두 유휴 3,600초 후 절전 설정이었다.
+- 원인: 시간초과와 비정상 종료의 직접 원인은 미확정이다. 현재 게이트웨이는 로컬 PC에서 실행되므로 절전 중에는 일을 진행할 수 없다. 시작프로그램 등록은 로그인 시 실행을 뜻하며 상시 가동 증거가 아니다.
+- 고침: 이번 점검에서는 설정·프로세스를 바꾸지 않았다. 게이트웨이 상태·실제 PID·최근 polling 복구 로그, Telegram getMe/getWebhookInfo 읽기, 장부 pending/recent 읽기를 대조했다. getUpdates를 별도로 호출해 수신 메시지를 소비하거나 시험 메시지를 보내지 않았다.
+- 다시 확인: 10-18 15:29 이후 Telegram 읽기 API HTTP 200·pending_update_count 0, 장부 조회 성공·기존 6줄·적용안 대기 0을 확인했다. 새 메시지의 접수→장부 추가→Claude 예약 완료→전달 전 과정은 이번에 시험하지 않았다. 비밀값을 제외한 근거는 `.tmp/hermes-audit-20261018/`.
+
+### Windows 시작프로그램은 게이트웨이 장애 복구가 아니다
+- 증상: 공식 Startup VBS가 등록돼 있었지만 게이트웨이의 비정상 종료 뒤 재실행을 보장하는 외부 감시가 없었다(10-18).
+- 원인: VBS의 `sh.Run(..., 0, False)`는 Python을 분리하고 종료한다. 게이트웨이 내부 loop watchdog도 종료 코드 75로 나가는 구조라 외부 재실행기가 필요하다.
+- 고침: 기존 시작프로그램을 유지하고 `SYNK_Hermes_Gateway_Recovery` Windows 작업을 추가했다. 2분마다 소유 PID·실행파일·gateway run만 확인해 없을 때 공식 `hermes gateway start`를 부른다. LLM 호출·강제 종료는 없다. AC 유휴 절전·최대절전만 0으로 바꾸고 배터리·덮개 동작은 유지했다.
+- 다시 확인: `tools/hermes-synk/runtime/recover-gateway.ps1 -ReadOnly`와 작업 스케줄러 실제 결과 0, 원래 게이트웨이 PID 유지·AC 0/DC 3600을 확인했다. 강제 장애 시험은 하지 않았다. 소스·복원은 `tools/hermes-synk/README.md`, 근거는 `.tmp/hermes-improve-20261018/runtime/`.
+
+### 다른 Python 프로세스의 terminal 시험은 실제 게이트웨이 자동 전달 증거가 아니다
+- 증상: 별도 Python helper가 공식 terminal을 호출해도 운영 게이트웨이가 그 프로세스의 메모리 queue를 자동 인수하지 않는다.
+- 원인: 완료 watcher·ProcessRegistry는 프로세스별이고 checkpoint 복원은 게이트웨이 시작 시 수행된다. `process_manage poll`은 전체 output이 아니라 짧은 output_preview만 반환하며, log/wait를 먼저 읽으면 자동 알림이 소비될 수 있다.
+- 고침: CLI 직접 실행·완료 receipt와 운영 게이트웨이의 자동 전달 시험을 구분한다. 전달 시험은 1회용 공식 gateway startup hook에서 실제 등록 명령을 호출한다. 현재 SYNK 연결은 추가 GPT 호출 없이 작업별 wait/log로 공식 마지막 응답을 읽어 공식 Telegram 전송 helper로 전달하며 `delivery.json`의 sent·message_id를 본다. 시험 hook는 끝나면 비활성화한다.
+
+### 공식 CLI 작업이 끝나도 접수 GPT 한도 때문에 결과 알림이 실패한다
+- 증상: 10-18 게이트웨이 안에서 실제 Codex·Claude 작업은 끝났지만, 기존 notify=true 완료 요약이 Hermes GPT의 `usage_limit_reached` 429에 막혀 결과 대신 재요청 안내를 보냈다. Claude도 `subtype: success`인데 `is_error: true`, `terminal_reason: api_error`, 429로 끝났다.
+- 원인: CLI 실행 계정과 결과를 다시 요약하는 Hermes 계정은 별개이며, 프로세스 종료·JSON subtype만으로 성공을 판정할 수 없다.
+- 고침: SYNK 작업의 notify를 끄고 공식 process_manage wait/log로 CLI 마지막 응답을 추출해 공식 send_message helper로 직접 보낸다. 오류·한도·미완료를 그대로 표시하고, API 수신 확인 ID와 결과를 저장한다. 전송 결과가 불명확하면 중복 전송하지 않는다. 계정·모델은 바꾸지 않는다.
+- 다시 확인: `tests/hermes-synk-plugin.test.py`의 실제 모양 429·미완료·전송 미확인 시험과 `.tmp/hermes-improve-20261018/gateway-smoke-direct.json`의 운영 게이트웨이 시험을 대조한다. 직접 명령은 접수 GPT를 호출하지 않지만 자연어·기존 팁 답장은 GPT 한도 영향을 받는다.
+
+### Hermes에서 실행한 Codex의 Windows 샌드박스 준비가 멈춘다
+- 증상: 10-18 Codex workspace-write 실행이 Windows elevated sandbox 준비에서 문서 읽기를 끝내지 못했고, CLI는 종료 코드 0으로 원문 미확인 결과를 냈다.
+- 원인: 해당 실행의 elevated 준비가 응답하지 않았다. 샌드박스 내부 원인은 미확정이다.
+- 고침: 호출별 `-c windows.sandbox=mxc`로 공식 MXC를 선택하고 workspace-write는 유지한다. 계정·모델·전체 권한 우회 옵션은 바꾸지 않는다.
+- 다시 확인: 공식 `codex sandbox --include-managed-config --permission-profile ':workspace'`로 실제 `docs/AI_운영원칙.md` 읽기가 성공했다. 텔레그램 실제 위임 결과에서도 문서 내용·미확인 문구·전송 확인을 따로 확인한다.
+- 다시 확인: `.tmp/hermes-improve-20261018/gateway-smoke-result.json`의 운영 PID·작업 ID·종료 코드·Telegram assistant 표식과 실제 전송 기록을 대조한다. 휴대폰에서 직접 입력한 새 메시지의 수신 증거와는 구분한다.
+
+### 헤르메스만 다른 GPT 계정으로 바꾸려면 독립 OAuth와 활성 자격을 함께 확인한다
+- 증상: 10-18 사용자 요청으로 헤르메스 접수 GPT를 `q121235@outlook.com` Microsoft 계정으로 바꿨다. 기존 Codex 그림 굽기에도 같은 계정 로그인이 있었지만 refresh token 사본을 함께 쓰면 회전 때문에 다른 세션이 무효가 될 수 있다.
+- 원인: Hermes는 독립 OAuth 세션과 credential pool을 쓰며, 새 계정을 priority 0에 추가만 하면 한도 때 옛 계정으로 회전할 수 있다. `auth.adopt_external_logins: true`도 다른 앱 로그인을 가져올 수 있다.
+- 고침: Hermes 내부에 원래 인증·설정을 백업하고 공식 `auth add openai-codex --browser --no-browser`로 새 로그인했다. 실제 이메일을 확인한 뒤 기존 자격을 공식 `auth remove`로 활성 pool에서 뺐고 외부 로그인 자동 가져오기를 껐다. 모델·추론 설정은 유지하고 공식 gateway restart로 반영했다.
+- 다시 확인: 활성 pool 1개·JWT 이메일 `q121235@outlook.com`·옛 singleton 없음·자동 provider fallback 없음, GPT-6.1 Sol xhigh의 `SYNK_HERMES_GPT_CONNECTED` 응답·도구 호출 0, gateway running·telegram connected를 확인했다. 비밀값 없는 근거 `.tmp/hermes-gpt-account-20261018/`. 기존 Codex·Claude 앱의 계정 전환은 하지 않았다.
+
+### Hermes 반복 조회에서 보낸 기록이 새 보고를 가린다
+- 증상: 10-18 세 흐름 연결 시험에서 발송 기록이 100개 넘으면 새 아침 보고가 큐에서 빠질 수 있었다. 자정에 받은 원격 자료를 아침 보고에 다시 쓸 수도 있었다.
+- 원인: 파일명 정렬 뒤 개수 제한을 먼저 적용했고, 원격 갱신을 날짜 변경으로만 판단했다.
+- 고침: 발송 시도 claim이 없는 초안만 생성 시각순으로 읽는다. 원격 자료는 한 시간마다, 아침 보고 직전에도 갱신한다. 발송 결과가 불명확하면 재전송하지 않는다. 잠금이 10분 넘게 남으면 정상으로 표시하지 않고 한 번 알린다.
+- 현재 정책: 10-18 추가 요청 이후 아침 요약은 껐고 판단·조치 필요 사건만 알린다. 기존 정보성 초안은 보존하면서 발송을 억제하며 원격 자료의 시간당 조회는 유지한다.
+- 다시 확인: `tests/hermes-synk-monitor.test.cjs`의 과거 발송 120건+새 보고, 동시 수집·재시작·변화 없는 날 시험과 `tests/hermes-synk-automation.test.py`의 동시 발송·불명확한 응답 시험. 공식 예약은 `--no-agent`·5분 하나이고 예약 엔진의 별도 실패 전송은 `local`로 두어 현재 수신자 허용 검사를 거친 전송만 쓴다.
+
+### 큰 공용 저장소를 통째로 복사하면 격리 작업도 무거워진다
+- 증상: 10-18 SYNK 전체 원문 후보가 약 1.29GiB여서 휴대폰 요청마다 전체 작업본을 만들 수 없었다.
+- 원인: 큰 자료가 함께 있는 공용 저장소를 일반적인 작은 코드 저장소처럼 취급했다.
+- 고침: 현재 수정본 중 요청한 파일·폴더와 필수 원문만 별도 인덱스로 확인한 뒤 공식 sparse worktree로 만든다. 격리 준비는 원본 HEAD·인덱스·설정을 바꾸지 않는다. 10-18 추가 승인 후 원본 파일 반영은 별도 3방향 병합·검증·배타 쓰기 단계가 맡는다. 원본 변경·비밀·용량 초과·대상 누락은 접수를 보류한다.
+- 다시 확인: `tests/hermes-synk-workspace.test.cjs`의 현재 dirty 원문 보존·원본 인덱스/설정 불변·동시 준비·범위/비밀/보관 한도 시험. 별도 인덱스와 기준 HEAD를 그대로 `npm run check:storage`에도 넘긴다.
+
+### Git 무시 목록에 든 요청 파일이 격리 작업본에서 빠진다
+- 증상: 실제 `docs/홈페이지_시안/시안.html`이 있어도 Git 후보 목록에서는 빠져, 대상 없이 준비 성공을 반환할 수 있었다.
+- 원인: `ls-files --others --exclude-standard`에는 ignored 파일이 나오지 않는다. 반대로 전체 ignored 목록을 재귀 검색하자 실제 큰 저장소에서 준비가 지연됐다.
+- 고침: 선택한 실제 경로만 제한적으로 열거하고 `check-ignore --stdin`으로 확인한다. 대상 소스가 무시되어 있으면 `IGNORED_SCOPE_SOURCE`로 보류한다. 기본 작업본에는 운영 원문과 도구 사용 전 필수 현장 노트도 포함한다.
+- 다시 확인: 명시 파일·디렉터리 scope와 무관한 cache/dependency 제외 시험, 실제 문제 경로의 읽기 전용 진단. 준비 실패 때는 CLI를 시작하지 않으며 새 요청으로 다시 접수해야 한다.
+
+### Hermes의 저장소 Python을 그대로 부르면 설치된 의존성을 못 찾는다
+- 증상: 공식 관리 Python으로 스크립트를 직접 부르면 `ModuleNotFoundError: dotenv`가 났다. 공식 `hermes cron run`에서는 같은 스크립트가 성공했다.
+- 원인: 이 Windows 설치는 의존성 경로를 공식 실행기가 구성한다. 저장소 Python 파일 하나만 실행하는 것은 같은 실행 환경이 아니다.
+- 고침: 운영 검증은 공식 cron의 `--no-agent` 경로로 한다. 일시중지 예약의 `cron run`은 성공 실행이 아니라 활성화 안내만 반환하므로 실제 `last_status`와 수집 `health.json`을 확인한다.
+- 다시 확인: 10-18 `synk-three-flows`의 17:00 공식 수동 실행과 17:10 첫 자동 실행 모두 `last_status=ok`, `health.json status=ok/noAgent=true`. 자동 실행이 보낸 점검 알림의 Telegram API 수신 확인과 발송 기록 재처리의 새 전송 0회를 대조했다.
+
+### 검증한 작업을 원본에 자동 반영할 때 동시 저장과 알림이 겹친다
+- 증상: 10-18 합성 저장소에서 하드링크 파일을 쓰자 범위 밖 연결 파일도 바뀌었다. 검증 뒤 같은 범위에 생긴 새 의존 파일도 기존 파일 해시만으로는 놓쳤다. 결과 처리와 5분 수집이 겹치면 같은 판단 알림을 두 경로에서 보낼 수 있었다.
+- 원인: 경로 검사 뒤 교체하는 방법은 검사와 쓰기 사이에 틈이 있고, 기존 파일 목록만 비교하면 추가된 파일이 빠진다. 알림을 보냈는지 확인하는 것만으로는 아직 보내기 전인 두 처리기의 경합을 막지 못한다.
+- 고침: 최신 원본과 3방향 병합한 후보를 다시 검사한다. Windows에서 원본·의존 파일과 부모 폴더의 핸들을 확보한 뒤 내용·범위 목록을 대조하고 같은 핸들로 쓴다. 쓰기 대상의 hardlink 수가 2 이상이면 보류한다. 사전 백업과 fsync 작업 영수증을 남기고 이미 적용한 부분은 다시 쓰지 않는다. 실패 뒤 생긴 빈폴더는 경로로 삭제하지 않는다. 새 직접 위임 작업의 판단 알림은 플러그인만 소유하며 수집기는 상세 조회만 한다.
+- 다시 확인: `tests/hermes-synk-integration.test.cjs`의 실제 Windows writer 잠금·hardlink·검증 뒤 파일 추가·재시작 영수증·원본 HEAD/인덱스 보존 시험, `tests/hermes-synk-overview.test.cjs`의 발송 전/중/불명 구간 중복 알림 0회 시험. 다중 파일의 전원 차단을 단일 원자 쓰기로 보장하지 않으며, 중간 바이트나 이후 다른 변경이 있으면 자동 덮어쓰기 없이 판단 대기로 남긴다.
+
+### Node 시험의 종료 0과 모듈 로드는 변경 동작 검증이 아니다
+- 증상: 없는 시험 경로와 정상 시험을 함께 주면 Node가 누락을 넘길 수 있고, 함수가 잘못돼도 모듈을 불러오기만 한 시험은 통과했다. 상위 Node 시험 프로세스의 `NODE_TEST_CONTEXT`를 물려주면 하위 시험 출력도 사라질 수 있었다.
+- 원인: 명령 종료와 실제 시험 수·변경 동작의 실행 여부를 같은 증거로 취급했다.
+- 고침: 검사 경로 실재·명시적 TAP 전체 통과·skip/todo 0·변경줄의 V8 함수/분기 실행을 확인한다. 하위 환경에서 계정·API 키·상위 test context를 제외한다. JSON 등 별도 검증 방법이 없는 형식은 파싱만으로 자동 반영하지 않는다. 새 계약 `changed_lines_v1` 이전의 성공 캐시는 재사용하지 않는다.
+- 다시 확인: `tests/hermes-synk-validation.test.cjs`의 실제 실패·무관한 시험·미호출 함수/분기·여러 프로세스 실행 합산·시험 중 후보 변경·재시작 캐시 시험.
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
