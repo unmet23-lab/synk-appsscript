@@ -1,5 +1,14 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="next-company-release-pulse-structure-20261018"></a>
+## 다음 회사 릴리스 대기 — PULSE 고객 화면 구조 판 + M03 뮤직비디오 (2026-10-18 준비 · 운영 전)
+
+2026-10-18 사용자 확인(10-17 「색만 바뀌었네」 → 구조 시안 「훨씬 괜찮은것같은데」 → 10-18 실제 앱 PC·휴대폰 비교 뒤 「웅 다음 전부 자율주행으로 진행해」)으로 다음 회사 릴리스에 PULSE 고객 화면 구조 판과 10-17 M03 뮤직비디오 포트폴리오를 함께 싣는다. 후보에 `node .tmp/pulse-redesign-20261017/release/apply.cjs --root=<후보 폴더>`를 적용하고 `--check`(0 = 얹힘)로 확인한 **뒤** 최종 manifest·이미지를 만든다. 기준선은 운영 `6b6471d02385…`(10-18 15:43 KST)의 파일이고, 그 밖의 부모면 파일마다 3방향 병합하며 충돌이 하나라도 있으면 아무것도 쓰지 않는다. 바뀌는 것은 `company/public/pulse-app/` 화면 11파일·시험 2파일, 새 파일 4개(`pulse-structure.test.mjs`, `public/pulse-app/assets/casting/video/M03-mv-happy-gangster-{poster-v1.webp,excerpt-20s-v1.mp4,full-v1.mp4}`)이며 API·데이터·권한·스키마는 그대로다. mp4 두 개는 git 밖이라 꾸러미 payload와 공용 작업본 디스크에서 sha256 그대로 싣는다.
+
+**릴리스 담당이 함께 넣을 서버 두 가지:** `server.mjs` 공개 목록에 뮤비 세 파일, `static-response.mjs` 영상·소리 Range(206·416)·스트리밍 읽기(없으면 아이폰 사파리 재생 불가, 운영 F02 영상도 같음). 문장·코드는 [꾸러미 README §서버](../../../../../.tmp/pulse-redesign-20261017/release/README.md)와 [뮤비 인계 §3](../../../../../.tmp/pulse-mv-portfolio-20261017/README.md). 서버 1을 못 넣는 릴리스라면 뮤비 화면·미디어는 미루고 구조 판만 싣는다.
+
+운영 부모 복사본(1,026파일 manifest 바이트 일치)에 얹어 `--check` 1→0·재적용 무변경, PULSE 시험 44파일 465/465를 확인했다. 회사 전체 시험 3,567개 중 실패 4개는 `marin-home-client.test.mjs`로 꾸러미 없는 부모 복사본에서도 같게 실패한다(Windows 로컬). 이미지 빌드·Linux 인수·HA 배포는 하지 않았다. 배포 뒤 꾸러미 README의 공개 SHA256(app.css `2b4b4566…`, sw.js `e5afe401…`, 뮤비 세 파일)과 1440·390 화면(현황판·05 영상 확인 승인 막대·체험·제작자·M03 발췌 재생, 아이폰 포함)을 확인한다. 공개 일치 전에는 운영 완료로 적지 않는다.
+
 <a id="server-log-retention-20261016"></a>
 ## 공통 서버 반복 로그·보관 정책 — 2026-10-16
 

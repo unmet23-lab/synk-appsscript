@@ -16,7 +16,7 @@
 .feedback-rounds{min-width:0;margin-top:0;padding:22px}
 .feedback-rounds>h3{font-size:var(--t-title-s);margin-bottom:4px}
 .feedback-rounds .round-target{display:flex;align-items:center;gap:8px;margin:16px 0 10px;font-weight:var(--w-label);color:var(--ink-2)}
-.feedback-rounds .round-target::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--glow);box-shadow:0 0 0 3px rgba(224,92,151,.2)}
+.feedback-rounds .round-target::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--glow);box-shadow:0 0 0 3px rgba(214,69,127,.2)}
 /* 작성칸: 시간 알약 + 「지금 장면 시간」 한 줄, 아래 글, 오른쪽 아래 추가 */
 .feedback-rounds form[data-form=round-draft]{padding:14px;border-radius:16px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
 .feedback-rounds .round-time{display:flex;align-items:flex-end;gap:8px;margin-bottom:10px}
@@ -41,7 +41,7 @@
 /* 모은 의견 보내기: 접어 두고 요약 줄로 연다 */
 .feedback-rounds .round-submit{margin-top:14px;padding:4px 16px;border-radius:16px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2)}
 .feedback-rounds .round-submit>summary{min-height:48px;font-size:15px;font-weight:var(--w-strong)}
-.feedback-rounds .round-submit>summary::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--led-check);box-shadow:0 0 0 3px rgba(245,196,69,.2)}
+.feedback-rounds .round-submit>summary::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--led-check);box-shadow:0 0 0 3px rgba(224,154,10,.2)}
 .feedback-rounds .round-submit form{padding:4px 0 16px}
 .feedback-rounds .fine-print{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 .feedback-rounds form+.section-gap{border-top:1px solid var(--line);padding-top:16px}
