@@ -1,0 +1,11 @@
+# PREPARED ONLY: aggregate limit across all research and smoke services.
+[Unit]
+Description=SYNK 77yuhbs Ultra Argon resource limits
+
+[Slice]
+CPUQuota=50%
+MemoryMax=1G
+MemorySwapMax=0
+TasksMax=160
+
+

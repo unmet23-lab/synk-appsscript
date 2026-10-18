@@ -18,5 +18,5 @@ const assert=require('assert/strict');
  assert.ok(samples.every(x=>x.ready&&x.DJ==='마린'&&x.scene==='추석보름달마당'&&x.boothHidden&&x.clothes.every(c=>c.hidden&&!c.src)),'마린/추석/의상 없음/부스 숨김 상태');assert.equal(errors.length,0,JSON.stringify(errors));
  console.log(JSON.stringify(result));
 })().catch(e=>{console.error(e.message);process.exitCode=1});`;
-const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','StrictHostKeyChecking=no','-o','ConnectTimeout=20','synk@34.71.111.97','node'],{input:code,encoding:'utf8',timeout:50000,maxBuffer:2*1024*1024,windowsHide:true}));
+const result=JSON.parse(execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','StrictHostKeyChecking=accept-new','-o','ConnectTimeout=20','synk-radio','node'],{input:code,encoding:'utf8',timeout:50000,maxBuffer:2*1024*1024,windowsHide:true}));
 if(!result.passed)throw new Error('실동작 검증 실패');fs.writeFileSync(path.join(dir,'서버실동작검증.json'),JSON.stringify(result,null,2)+'\n','utf8');console.log(JSON.stringify(result,null,2));

@@ -11,6 +11,7 @@ const Temper = require('./temper');
 const { createLearningSync, sameEvent } = require('./learning-sync');
 const { createMemorySync } = require('./memory-sync');
 const Ledger = require('./learning-ledger');
+const { createPages, THRESHOLD } = require('./learning-pages');
 const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -32,6 +33,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     || !memoryOwner.flow || ['today', 'setToday', 'presentation', 'setPresentation', 'epoch', 'memories', 'save', 'decline', 'state', 'merge', 'subscribe'].some(name => typeof memoryOwner.flow[name] !== 'function'))) throw new TypeError('Atlas: a verified personal memory owner is required');
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
+  const pages = storageScope === 'account' && storage ? createPages(storage, key, ['events', 'settled', 'dropped']) : null;
+  let paged = false;
   // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
   let flowPort = null;
   let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
@@ -63,11 +66,12 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const log = () => session.snapshot ? session.snapshot() : session.events();
   const decode = raw => {
     if (raw == null) return null;
-    const value = JSON.parse(raw);
-    if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 20000
+    const value = pages ? pages.decode(raw) : JSON.parse(raw);
+    paged = pages?.active() || false;
+    if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || storageScope !== 'account' && value.events.length > 20000
       || Object.keys(value).some(k => !['version', 'epoch', 'events', 'owner', 'ledger', 'settled', 'dropped'].includes(k))) throw new Error('Atlas: unreadable history');
     if (value.ledger != null) Ledger.validate(value.ledger);
-    for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || ids.length > 20000 || !ids.every(identifier))) throw new Error('Atlas: unreadable history');
+    for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || storageScope !== 'account' && ids.length > 20000 || !ids.every(identifier))) throw new Error('Atlas: unreadable history');
     // An account store must have been created for this account. Merely passing
     // account options over the guest device key never adopts its old events.
     if (storageScope === 'account' ? value.owner !== accountKey : value.owner != null) throw new Error('Atlas: local history belongs to a different storage scope');
@@ -80,7 +84,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     try {
       const raw = storage.getItem(key);
       if (raw === lastStoredRaw) return UNCHANGED;
-      const stored = decode(raw); lastStoredRaw = raw; return stored;
+      const stored = decode(raw); lastStoredRaw = pages?.decodedRaw() ?? raw; return stored;
     }
     catch { readable = false; complete = false; warning = '기록을 읽지 못해 기본 연습으로 진행해요.'; notify('storage-error', 'STORAGE_ERROR'); return null; }
   }
@@ -148,7 +152,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   let ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
   // Fold older, finished items once the kept log grows past the limit (see `fold`).
   function compact() {
-    if (!folding) return;
+    // A large server restore keeps its complete causal log in durable pages. In
+    // particular, later pages may contain feedback/exclusions for early parents.
+    if (!folding || paged) return;
     const events = log(), now = Date.parse(monotonicClock());
     if (events.length <= folding.max) return;
     // Nothing could fold a moment ago: try again after a minute or once more entries settle.
@@ -174,11 +180,16 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function persist(kind = 'append', { quiet = false } = {}) {
     if (!storage || !readable) { complete = false; notify('storage-error', 'STORAGE_ERROR'); return false; }
     try {
+      if (pages && log().length > THRESHOLD) paged = true;
       compact();
       const events = log();
-      if (events.length > 20000) throw Object.assign(new Error('Atlas: local history limit'), { code: 'HISTORY_CAPACITY' });
-      const raw = snapshot(events);
-      storage.setItem(key, raw); lastStoredRaw = raw; writable = true; if (!quiet) notify(kind); return true;
+      if (!pages && events.length > 20000) throw Object.assign(new Error('Atlas: local history limit'), { code: 'HISTORY_CAPACITY' });
+      let raw;
+      if (paged) raw = pages.write({ version: 1, epoch, events, owner: accountKey,
+        ...(ledger ? { ledger } : {}), ...(settled.size ? { settled: [...settled] } : {}), ...(dropped.size ? { dropped: [...dropped] } : {}) },
+      typeof lastStoredRaw === 'string' ? lastStoredRaw : null);
+      else { raw = snapshot(events); storage.setItem(key, raw); }
+      lastStoredRaw = raw; writable = true; if (!quiet) notify(kind); return true;
     } catch (error) { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; notify('storage-error', error.code === 'HISTORY_CAPACITY' ? 'HISTORY_CAPACITY' : 'STORAGE_ERROR'); return false; }
   }
   // Initialize one shared epoch before a second game/tab opens it.
@@ -294,7 +305,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         }
         // Identical durable history needs neither replay nor another disk write.
         // A previous storage failure must still retry persistence below.
-        if (combined.length === previousLength && !skipped.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0, skipped };
+        if (combined.length === previousLength && !skipped.length && writable && (paged || snapshot(combined) === lastStoredRaw)) return { added: 0, skipped };
         // Construct before replacing: wrong scope, parent links, schema or IDs
         // reject the entire incoming batch without changing the local log.
         const imported = newSession(combined); session = imported;

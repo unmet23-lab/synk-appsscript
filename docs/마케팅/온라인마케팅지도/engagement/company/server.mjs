@@ -42,7 +42,7 @@ import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliv
 import { createPulseStudioService } from './pulse-studio.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
-import { createStaticResponder } from './static-response.mjs';
+import { createStaticResponder, publicScriptAndStylePaths } from './static-response.mjs';
 import { workroomGuide,workroomSource } from './workroom-guide.mjs';
 import { companyGuide } from './company-guide.mjs';
 import { createStudioService } from './studio-service.mjs';
@@ -127,6 +127,8 @@ export function createCompanyApp(options={}) {
   const workroomScheduleSetting=process.env.SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED;
   if(workroomScheduleSetting!==undefined&&!['0','1'].includes(workroomScheduleSetting))throw new Error('SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED는 0 또는 1이어야 합니다.');
   const workroomScheduleEnabled=workroomScheduleSetting===undefined?backgroundJobsEnabled:workroomScheduleSetting==='1';
+  const publicationPerformanceSchedule=options.publicationPerformanceSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  if(typeof publicationPerformanceSchedule!=='boolean')throw httpError('게시 후 성과 자동 수집 설정을 확인해 주세요.');
   if(options.workNotificationsEnabled!==undefined&&typeof options.workNotificationsEnabled!=='boolean')throw new Error('workNotificationsEnabled는 boolean이어야 합니다.');
   const workNotificationsSetting=options.workNotificationsEnabled??process.env.SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED??backgroundJobsSetting;
   if(![true,false,'0','1'].includes(workNotificationsSetting))throw new Error('SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED는 0 또는 1이어야 합니다.');
@@ -158,7 +160,7 @@ export function createCompanyApp(options={}) {
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
-  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,voice:options.messengerVoice,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
+  messenger=createMessenger({dataDir:messengerDataDir,staticResponderFactory:createStaticResponder,driveStorage:options.messengerDriveStorage,voice:options.messengerVoice,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
@@ -359,7 +361,7 @@ export function createCompanyApp(options={}) {
   const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
-  const publicationPerformanceSchedule=backgroundJobsEnabled&&options.schedule!==false;
+  // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
   const publicationReview=createPublicationReviewService({store,studio,publicationPackages,publicationLinks,clock});
   const publicationWorkflow=automationReadScope.service(createPublicationWorkflowService({store,studio,publicationInbox,publicationPackages,publicationReview,postPerformance,publicationLinks,clock}),['workspace']);
@@ -487,9 +489,11 @@ export function createCompanyApp(options={}) {
   }
   function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   function purgeExpired(at=clock()){store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if((row.expiresAt&&Date.parse(row.expiresAt)<=Date.parse(at))||(kind==='hypeObservations'&&(!Number.isFinite(Date.parse(row.checkedAt))||Date.parse(row.checkedAt)<=Date.parse(at)-HYPE_RETENTION_MS)))store.remove(kind,row.id);const postIds=new Set(store.all('posts').map(p=>p.id));for(const row of store.all('hypeObservations'))if(!postIds.has(row.postId))store.remove('hypeObservations',row.id);});}
-  function records(channels,{readOnly=false}={}){if(!readOnly)purgeExpired();const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  // Reads enforce retention immediately; scheduledTick owns physical expiry cleanup.
+  function records(channels){const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  function selectRecords(source,channels){const ids=new Set(channels.map(c=>c.id)),posts=source.posts.filter(p=>ids.has(p.channelId)),postIds=new Set(posts.map(p=>p.id));return{version:source.version,posts,snapshots:source.snapshots.filter(s=>postIds.has(s.postId)),channelSnapshots:source.channelSnapshots.filter(s=>ids.has(s.channelId))};}
   function assistantPerformance(user,{scope,asOf}){
-    const {catalog,data}=reportSource(user,new URLSearchParams({scope}),asOf,{readOnly:true});
+    const {catalog,data}=reportSource(user,new URLSearchParams({scope}),asOf);
     const team=typeof user.teamId==='string'&&user.teamId?store.get('teams',user.teamId):null;
     return {channelCount:catalog.channels.length,teamName:team?.active?team.name:null,growth:buildGrowthSummary(data,catalog,{asOf})};
   }
@@ -521,14 +525,15 @@ export function createCompanyApp(options={}) {
         postCount:group.posts.length,newPosts:group.posts.filter(post=>post.publishedDate>=start).length,metrics};
     })};
   }
-  function reportSource(user,query,end,{readOnly=false}={}){
+  function reportSource(user,query,end,{overview=false}={}){
     const all=scopedChannels(user,query);const ownerId=['admin','manager'].includes(user.role)?query.get('ownerId'):null;
     const candidates=all.filter(c=>(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel')));
-    const events=store.all('ownershipEvents'),raw=records(candidates,{readOnly});
+    // The overview and selected report share one read and one expiry cutoff.
+    const events=store.all('ownershipEvents'),overviewData=overview?records(all):null,raw=overviewData?selectRecords(overviewData,candidates):records(candidates);
     const selected=ownerId?recordsForOwner(raw,candidates,events,ownerId,end):{records:raw,channels:candidates};
     const channels=selected.channels;
     const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl,country:''}))};
-    return {all,ownerId,events,channels,catalog,data:selected.records};
+    return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
     const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
@@ -538,14 +543,14 @@ export function createCompanyApp(options={}) {
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
     dateRange(start,end);if(end>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
-    const {all,ownerId,events,catalog,data}=reportSource(user,query,end),result=analyze(data,catalog,{start,end});
+    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end});
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
     const groups=result.groups('channel');
     const users=visibleMembers(store,user);
     const memberGroups=users.map(u=>{const mine=recordsForOwner(data,catalog.channels,events,u.id,end);const item=analyze(mine.records,{channels:mine.channels},{start,end});return {id:u.id,name:u.name,active:u.active,teamId:u.teamId,channelCount:mine.channels.length,metrics:item.metrics};});
     const overviewCatalog={channels:all.map(c=>({...c,ready:true,brand:c.displayName,publicUrl:c.canonicalUrl}))};
-    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(records(all),overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
+    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
   }
   function saveCollection(channel,result,runId,withinTransaction=false,mode='full'){
     const live=store.get('channels',channel.id);
@@ -674,6 +679,9 @@ export function createCompanyApp(options={}) {
       audit(user,'import-legacy',`${added.length} channels`);return {added:added.length,skipped};});
   }
   const respondStatic=createStaticResponder();
+  // Only assets directly named by the public workspace entry may be immutable.
+  const versionedCompanyAssets=publicScriptAndStylePaths(readFileSync(join(here,'public/index.html')),'/');
+  versionedCompanyAssets.delete('/notification-sw.js');
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
   function writeResponse(res,status,body,type='application/json; charset=utf-8'){res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
@@ -1504,7 +1512,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/team-trends'){
         const teams=store.all('teams').filter(team=>team.active===true),ids=new Set(teams.map(team=>team.id));
         const channels=store.all('channels').filter(channel=>ids.has(channel.teamId));
-        return send(res,200,buildTeamTrends({teams,channels,records:records(channels,{readOnly:true}),ownTeamId:user.teamId,query:url.searchParams,today:today()}));
+        return send(res,200,buildTeamTrends({teams,channels,records:records(channels),ownTeamId:user.teamId,query:url.searchParams,today:today()}));
       }
       if(path==='/api/studio-examples')return send(res,200,studio.examples(user));
       if(path==='/api/studio-workspace')return send(res,200,studio.workspace(user));
@@ -1578,6 +1586,7 @@ export function createCompanyApp(options={}) {
     for(const id of ['m01','f01','f02','f03','m02','f04','m03'])files['/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp']=['public/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp','image/webp'];
     files['/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4','video/mp4'];
     files['/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4','video/mp4'];
+    for(const file of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];
     files['/pulse-app/production-catalog.mjs']=['public/pulse-app/production-catalog.mjs','text/javascript; charset=utf-8'];
     files['/pulse-app/production-library/']=['public/pulse-app/production-library/index.html','text/html; charset=utf-8'];
     files['/pulse-app/production-library/index.html']=files['/pulse-app/production-library/'];
@@ -1631,7 +1640,7 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
-    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
+    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers,versioned:versionedCompanyAssets.has(path),...(path==='/'?{transformHTML:content=>respondStatic.versionHTML(content,{documentPath:'/',resolveAsset:urlPath=>versionedCompanyAssets.has(urlPath)&&files[urlPath]?join(here,files[urlPath][0]):null})}:{})});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
   }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&(/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)||e.replySafe&&['EXISTING_REPLY_REQUIRES_CONFIRMATION','REPLY_HISTORY_CHANGED'].includes(e.code))?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
@@ -1662,8 +1671,8 @@ export function createCompanyApp(options={}) {
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
         if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>creativeResearchSync.tick(clock())).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
-        // Registered-post observation makes external SNS requests, so automatic runs
-        // follow the background pause setting; explicit collection remains available.
+        // Registered-post observation follows the workroom opt-in while broad
+        // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
         if(publicationInboxLocal&&(options.publicationInboxSchedule??(options.schedule!==false))&&!stopRequested){publicationInboxTimer=setInterval(scanPublicationInbox,5000);publicationInboxTimer.unref();void scanPublicationInbox();}
         if(publicationLinkSchedule&&!stopRequested){publicationLinkTimer=setInterval(scanPublicationLinks,60000);publicationLinkTimer.unref();void scanPublicationLinks();}

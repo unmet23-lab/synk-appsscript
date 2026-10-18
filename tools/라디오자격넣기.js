@@ -25,7 +25,7 @@ const { execFileSync } = require('child_process');
 
 const talk환경 = path.join(os.homedir(), 'Documents', 'SYNK-talk', '.env');
 const 열쇠 = path.join(os.homedir(), '.ssh', 'synk_radio');
-const 서버 = 'synk@34.71.111.97';
+const 서버 = 'synk-radio';
 
 /** 봇이 읽는 칸 ← talk `.env` 의 어느 이름에서 오나. 이름이 다른 자리가 있다. */
 const 봇칸 = {
@@ -56,7 +56,7 @@ function 환경읽기(경로) {
 }
 
 function ssh(명령, 넣을것) {
-  return execFileSync('ssh', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 서버, 명령],
+  return execFileSync('ssh', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 서버, 명령],
     { input: 넣을것 || '', encoding: 'utf8' });
 }
 

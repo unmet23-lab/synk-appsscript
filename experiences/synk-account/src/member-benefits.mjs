@@ -9,7 +9,7 @@ const number = item => `${String(MEMBER_BENEFITS.indexOf(item) + 1).padStart(2, 
 const state = item => `<span class="benefit-status is-${item.status}"><span class="led" aria-hidden="true"></span>${esc(item.statusLabel)}</span>`;
 
 // The loopback-only demo is separate from membership and production launch rights.
-const LOCAL_PREVIEWS = Object.freeze({ care: 'http://127.0.0.1:4296/', fortune: 'http://127.0.0.1:4299/', rehearsal: 'http://127.0.0.1:4297/', 'family-album': 'http://127.0.0.1:4298/' });
+const LOCAL_PREVIEWS = Object.freeze({ care: 'http://127.0.0.1:4296/', fortune: 'http://127.0.0.1:4299/' });
 export function localBenefitPreview(id, base) {
   if (!Object.hasOwn(LOCAL_PREVIEWS, id) || memberBenefit(id)?.status !== 'preview') return null;
   try {
@@ -19,7 +19,7 @@ export function localBenefitPreview(id, base) {
   } catch { return null; }
 }
 
-const PUBLIC_ENTRIES = Object.freeze({ care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/', rehearsal: 'https://synk.im/rehearsal/', 'family-album': 'https://synk.im/album/' });
+const PUBLIC_ENTRIES = Object.freeze({ care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/' });
 export function publicBenefitEntry(id) {
   if (!Object.hasOwn(PUBLIC_ENTRIES, id)) return null;
   const value = memberBenefit(id)?.publicUrl;
@@ -42,7 +42,7 @@ export function benefitCards(query = '') {
 export function benefitHero({ home = false } = {}) {
   return `<section class="benefit-hero ${home ? 'benefit-home' : ''}" aria-labelledby="benefit-heading">
     <div class="benefit-hero-copy"><p class="sb-eyebrow">SYNK FOR YOU <span>회원 혜택</span></p>
-    <h1 id="benefit-heading">소중한 순간을,<br><span>더 잘.</span></h1><p>오늘의 운세로 가볍게 시작하고,<br>마음을 전하고, 말을 준비하고,<br>가족의 이야기를 간직하는 일.<br>당신의 일상 가까이에 SYNK가 함께합니다.</p>
+    <h1 id="benefit-heading">소중한 순간을,<br><span>더 잘.</span></h1><p>나의 성향과 AI 구독을 살피고,<br>오늘의 운세를 즐기고,<br>소중한 사람을 챙기는 일.<br>당신의 일상 가까이에 SYNK가 함께합니다.</p>
     ${home ? '<a class="sb-btn soft" href="#benefits">회원 혜택 만나보기 <span aria-hidden="true">→</span></a>' : '<button class="benefit-text-link" data-action="scroll-benefits">회원 혜택 살펴보기 <span aria-hidden="true">↓</span></button>'}
     <p class="benefit-disclosure">공개 서비스는 웹에서 바로 시작해요.<br>서비스별 현재 상태를 확인해 주세요.</p></div>
     <div class="benefit-hero-art" aria-hidden="true"><span class="benefit-index">MEMBER BENEFITS</span><img class="benefit-object" src="./assets/member/benefit-gift.webp" alt=""></div>
@@ -51,7 +51,7 @@ export function benefitHero({ home = false } = {}) {
 
 export function benefitsPage() {
   return benefitHero() + `<section id="benefit-collection" class="benefit-collection" aria-labelledby="benefit-collection-title"><div class="section-heading"><div><p class="sb-eyebrow">MADE FOR YOUR EVERYDAY</p><h2 id="benefit-collection-title">나를 알아가고, 일상을 더 즐겁게</h2></div><span class="benefit-count">01 — ${String(MEMBER_BENEFITS.length).padStart(2, '0')}</span></div>${benefitCards()}</section>
-  <section class="benefit-promise"><p class="sb-eyebrow">A LITTLE MORE PERSONAL</p><h2>매번 처음부터<br>설명하지 않아도 되도록.</h2><div><p>내가 고른 말과 남긴 이야기, 연습에서 어려웠던 순간이 다음 경험에 이어지도록 만들고 있어요.</p><p>서비스별로 기억할 내용을 직접 고르고, 확인하고, 고칠 수 있는 경험을 준비합니다.</p><a class="benefit-link" href="./client.html?product=platform">내 SYNK ID 관리 <span aria-hidden="true">↗</span></a></div></section>`;
+  <section class="benefit-promise"><p class="sb-eyebrow">A LITTLE MORE PERSONAL</p><h2>매번 처음부터<br>설명하지 않아도 되도록.</h2><div><p>내가 알려준 관심사와 선호, 실제 학습 기록을 바탕으로 나에게 맞는 경험을 찾아가요.</p><p>서비스별로 기억할 내용을 직접 고르고, 확인하고, 고칠 수 있는 경험을 준비합니다.</p><a class="benefit-link" href="./client.html?product=platform">내 SYNK ID 관리 <span aria-hidden="true">↗</span></a></div></section>`;
 }
 
 export function benefitDetail(id, base, { library = null, insight = { status: 'signed-out', report: null } } = {}) {

@@ -204,18 +204,6 @@
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-fortune.webp",
       "bytes": 277358,
       "sha256": "0cbc7f01325679e4103b846ba88f2f6bf55cc8954f6f3ccf708f80404e33ec22"
-    },
-    {
-      "name": "benefit-rehearsal.webp",
-      "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-rehearsal.webp",
-      "bytes": 168210,
-      "sha256": "99a4141eedcbec3ba04b129dd215391a0c3ae58579d41266ef4c1cbe17edac88"
-    },
-    {
-      "name": "benefit-album.webp",
-      "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-album.webp",
-      "bytes": 276752,
-      "sha256": "b6f9949a530a2c545c7c61cf80d7f7dd2b2b331cc8633b5fb8672b2d7fd40d08"
     }
   ]
 }

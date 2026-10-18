@@ -1,6 +1,7 @@
 {
   "note": "모델 고르기 시스템(site-src·build-site.cjs)의 설정. 모델의 이름·신체·업종은 roster-v2.json, 목소리는 voices.json, 완성 명세서는 명세서/<코드>_<이름>.json이 원본이다. 여기에는 고르기에만 쓰는 것(업종·분위기 분류, 브리프 낱말, 모델별 추가 자료)을 둔다. 모델을 더할 때는 roster-v2.json에 한 줄을 더하면 카드·거르기·비교·추천에 바로 나온다. 아래 models의 칸은 있는 것만 채우면 된다. 화면에 보이는 글에는 만든 도구 이름을 쓰지 않는다.",
-  "updated": "2026-10-17",
+  "updated": "2026-10-18",
+  "say": { "api": "", "max": 60, "daily": 10 },
   "industries": [
     { "id": "food", "label": "식음료", "hint": "음료·디저트·카페·주류", "fits": ["음료", "디저트", "카페", "주류", "위스키"], "words": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차", "디저트", "케이크", "베이커리", "빵", "아이스크림", "과자", "간식", "카페", "맥주", "소주", "와인", "위스키", "주류", "식품", "밀키트", "편의점", "배달", "레스토랑", "치킨", "버거"], "sub": { "디저트": ["아이스크림", "케이크", "베이커리", "빵", "과자", "간식", "디저트", "초콜릿", "쿠키"], "음료": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차"], "카페": ["카페", "커피", "라떼"], "주류": ["맥주", "소주", "와인", "위스키", "주류"]}},
     { "id": "beauty", "label": "뷰티·스킨케어", "hint": "스킨케어·색조·뷰티 기기", "fits": ["스킨케어", "뷰티", "색조", "클렌징"], "words": ["화장품", "스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "클렌징", "마스크팩", "쿠션", "파운데이션", "립밤", "틴트", "립스틱", "아이섀도", "마스카라", "네일", "뷰티", "피부", "미백", "보습"], "sub": { "색조": ["쿠션", "파운데이션", "립스틱", "틴트", "립밤", "아이섀도", "마스카라", "네일"], "스킨케어": ["스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "마스크팩", "보습", "미백"], "클렌징": ["클렌징"]}},
@@ -34,18 +35,36 @@
   "models": {
     "M01": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m01-fullbody-v1.webp", "top": 106, "feet": 1440 },
-      "body": { "heads": 6.95, "shoulderFace": 2.31, "leg": 0.513, "torso": 0.28, "measured": "2026-10-17" },
+      "loop": { "src": "loop/M01.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "창가 카페 · 커피잔", "hands": "향수병을 든 손" },
-      "shotTags": { "context": ["food", "travel"], "hands": ["fragrance"] }
+      "shotTags": { "context": ["food", "travel"], "hands": ["fragrance"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 속쌍꺼풀이에요. 웃으면 눈가가 접히며 눈이 가늘어져요." },
+        { "label": "얼굴선", "text": "갸름한 달걀형에 턱선이 또렷하고 콧대가 곧아요." },
+        { "label": "피부", "text": "밝은 웜톤에 옅은 수염 자국이 있어요. 대표 사진은 조명이 어두워 견본이 실제보다 조금 짙게 잡혔어요." },
+        { "label": "머리", "text": "갈색 가운데 가르마 웨이브를 볼륨 있게 세워요." }
+      ],
+      "direction": {
+        "fit": ["창가에서 커피를 마시며 미소", "향을 맡고 눈을 감는 장면", "안경을 고쳐 쓰며 책장 넘기기", "노트북 앞에서 생각에 잠기기", "걷다가 돌아보며 미소"],
+        "avoid": ["과장된 코믹 리액션은 차분한 인상과 맞지 않아 쓰지 않아요."]
+      }
     },
     "F01": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f01-fullbody-v1.webp", "top": 352, "feet": 2387 },
-      "body": { "heads": 6.82, "shoulderFace": 2.16, "leg": 0.517, "torso": 0.274, "measured": "2026-10-17" },
+      "loop": { "src": "loop/F01.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "화장대 · 립스틱 바르기", "hands": "립스틱을 든 손" },
-      "shotTags": { "context": ["beauty"], "hands": ["beauty"], "look-1": ["fashion"] }
+      "shotTags": { "context": ["beauty"], "hands": ["beauty"], "look-1": ["fashion"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 눈꼬리가 올라간 눈매예요. 윙 아이라인이 잘 어울려요." },
+        { "label": "얼굴선", "text": "작은 얼굴에 갸름한 턱선, 도톰한 입술." },
+        { "label": "피부", "text": "밝은 뉴트럴 톤에 매끈한 피부 표현." },
+        { "label": "메이크업", "text": "로즈 코랄 립과 눈매를 길게 빼는 아이라인이 기본이에요." }
+      ],
+      "direction": { "fit": ["거울 앞에서 립 바르기", "카메라를 응시하는 클로즈업", "밤거리를 걷는 뒷모습", "손목에 향수 뿌리기", "주얼리를 매만지는 손"], "avoid": ["아이 같은 귀여운 연출이나 과장된 리액션은 세련된 인상과 맞지 않아요."] }
     },
     "F02": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f02-fullbody-v1.webp", "top": 307, "feet": 2414 },
+      "loop": { "src": "loop/F02.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "카페 카운터 · 딸기 라떼", "hands": "콤팩트를 든 손" },
       "shotTags": { "context": ["food"], "hands": ["beauty"], "look-1": ["fashion"] },
       "face": [
@@ -89,33 +108,99 @@
         ]
       },
       "motion": [
-        { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4", "label": "커피잔 동작 · 5초", "note": "손과 제품 움직임을 보는 접사예요. 얼굴과 대사 연기는 들어 있지 않아요." },
-        { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4", "label": "런웨이 · 5초", "note": "걷는 자세와 옷의 움직임을 보는 샘플이에요." }
+        {
+          "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4",
+          "label": "커피잔 동작 · 5초",
+          "note": "손과 제품 움직임을 보는 접사예요. 얼굴과 대사 연기는 들어 있지 않아요."
+        },
+        {
+          "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4",
+          "label": "런웨이 · 5초",
+          "note": "걷는 자세와 옷의 움직임을 보는 샘플이에요."
+        }
       ]
     },
     "F03": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f03-fullbody-v1.webp", "top": 230, "feet": 2411 },
-      "body": { "heads": 7.18, "shoulderFace": 2.27, "leg": 0.498, "torso": 0.289, "measured": "2026-10-17" },
+      "loop": { "src": "loop/F03.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "회의실 · 발표", "hands": "스킨케어 병을 든 손" },
-      "shotTags": { "context": ["finance", "edu", "tech"], "hands": ["beauty"], "look-1": ["finance"] }
+      "shotTags": { "context": ["finance", "edu", "tech"], "hands": ["beauty"], "look-1": ["finance"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 옆으로 길게 뻗은 눈매예요. 웃으면 눈이 가늘게 접혀요." },
+        { "label": "얼굴선", "text": "광대가 살짝 높고 턱이 갸름해요. 머리를 넘겨 이마가 다 보여요." },
+        { "label": "피부", "text": "밝은 뉴트럴 톤에 윤기 있는 피부." },
+        { "label": "메이크업", "text": "누드 코랄 립에 작은 금색 링 귀걸이가 기본이에요." }
+      ],
+      "direction": { "fit": ["설명하는 손짓으로 발표하기", "화면을 보며 고개 끄덕이기", "정면을 보고 차분하게 말하기", "태블릿을 넘기며 상담하듯 미소"], "avoid": ["섹시하거나 과장된 리액션은 믿음 가는 인상과 맞지 않아요."] }
     },
     "M02": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m02-fullbody-v1.webp", "top": 130, "feet": 1452 },
-      "body": { "heads": 6.72, "shoulderFace": 2.29, "leg": 0.506, "torso": 0.279, "measured": "2026-10-17" },
+      "loop": { "src": "loop/M02.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "바 라운지 · 위스키", "hands": "손목시계를 매만지는 손" },
-      "shotTags": { "context": ["food"], "hands": ["fashion"], "look-1": ["fashion", "auto"] }
+      "shotTags": { "context": ["food"], "hands": ["fashion"], "look-1": ["fashion", "auto"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 깊고 그늘진 눈매, 짙은 일자 눈썹." },
+        { "label": "얼굴선", "text": "각진 턱과 높은 광대. 웃으면 눈가 주름이 깊게 잡혀요." },
+        { "label": "피부", "text": "중간 웜톤에 짧은 수염." },
+        { "label": "머리", "text": "흑발을 이마 쪽으로 흘러내리게 넘겨요." }
+      ],
+      "direction": { "fit": ["위스키 잔을 들고 카메라 응시", "손목시계를 매만지기", "차에서 내려 걷기", "재킷 단추를 잠그며 낮게 웃기"], "avoid": ["발랄한 연출이나 학생 역할은 성숙한 인상과 맞지 않아요."] }
     },
     "F04": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f04-fullbody-v1.webp", "top": 290, "feet": 2386 },
-      "body": { "heads": 7.12, "shoulderFace": 2.26, "leg": 0.523, "torso": 0.272, "measured": "2026-10-17" },
+      "loop": { "src": "loop/F04.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "바닷가 산책로 · 탄산수", "hands": "클렌징 폼을 든 손" },
-      "shotTags": { "context": ["food", "travel"], "hands": ["beauty"] }
+      "shotTags": { "context": ["food", "travel"], "hands": ["beauty"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색에 속쌍꺼풀과 애교살이 있어요. 웃으면 반달눈이 돼요." },
+        { "label": "얼굴선", "text": "둥글고 부드러운 얼굴에 작은 턱." },
+        { "label": "피부", "text": "밝은 웜톤에 볼이 은은하게 붉어요." },
+        { "label": "메이크업", "text": "선명한 코랄 레드 립이 기본이에요." }
+      ],
+      "bodyNote": "하린과 키가 거의 같은 166cm인데, 여자 모델 가운데 다리 비율이 가장 길고 어깨선이 반듯해요. 곧고 단정한 체형이라 스킨케어·여행·교육 광고에서 깨끗한 인상을 줘요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": { "fit": ["바닷바람에 머리를 날리며 웃기", "세안 뒤 개운한 표정", "물 한 모금 뒤 미소", "창가에서 책 읽기", "손 흔들며 인사", "화장솜으로 토너 바르기", "창밖을 보며 차분한 미소"], "avoid": ["섹시하거나 무게 있는 연출은 청순한 인상과 맞지 않아요."] },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F04_jiyu/v2",
+        "items": [
+          { "key": "full-left", "file": "15.jpg", "label": "전신 옆", "en": "SIDE" },
+          { "key": "full-back", "file": "16.jpg", "label": "전신 뒤", "en": "BACK" },
+          { "key": "full-45", "file": "17.jpg", "label": "전신 45도", "en": "3/4" }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F04_jiyu/v2",
+        "items": [
+          { "id": "b01", "file": "18.jpg", "place": "바닷가 산책로", "label": "셔츠 원피스 · 바람 맞으며 웃기", "tags": ["travel", "fashion"] },
+          { "id": "b02", "file": "19.jpg", "place": "아침 욕실", "label": "헤어밴드 · 세안 뒤 수건", "tags": ["beauty"] },
+          { "id": "b03", "file": "20.jpg", "place": "공항 탑승구", "label": "트렌치코트 · 손 흔들며 인사", "tags": ["travel"] },
+          { "id": "b04", "file": "21.jpg", "place": "비행기 창가", "label": "회색 카디건 · 구름 보기", "tags": ["travel"] },
+          { "id": "b05", "file": "22.jpg", "place": "도서관 창가", "label": "블라우스와 니트 조끼 · 책 읽기", "tags": ["edu"] },
+          { "id": "b06", "file": "23.jpg", "place": "카페", "label": "민트 니트 · 레몬 물잔", "tags": ["food"] },
+          { "id": "b07", "file": "24.jpg", "place": "벚꽃길", "label": "분홍 카디건 · 꽃잎 사이 걷기", "tags": ["fashion", "travel"] },
+          { "id": "b08", "file": "25.jpg", "place": "공부방", "label": "옥스퍼드 셔츠 · 노트북과 필기", "tags": ["edu", "tech"] },
+          { "id": "b09", "file": "26.jpg", "place": "강변 공원", "label": "민트 자전거 · 티셔츠와 반바지", "tags": ["travel"] },
+          { "id": "b10", "file": "27.jpg", "place": "화장대", "label": "캐미솔 · 화장솜으로 토너", "tags": ["beauty"] },
+          { "id": "b11", "file": "28.jpg", "place": "비 오는 창가", "label": "오트밀 니트 · 따뜻한 차", "tags": ["food", "travel"] },
+          { "id": "b12", "file": "29.jpg", "place": "녹차밭", "label": "린넨 셔츠와 와이드 청바지 · 걷기", "tags": ["travel", "food"] },
+          { "id": "b13", "file": "30.jpg", "place": "밤 옥상", "label": "크림 카디건 · 따뜻한 음료", "tags": ["food"] },
+          { "id": "b14", "file": "31.jpg", "place": "집 주방", "label": "앞치마 · 과일 씻기", "tags": ["food"] },
+          { "id": "b15", "file": "32.jpg", "place": "스튜디오", "label": "흰 티 · 하늘색 배경 뷰티 컷", "tags": ["beauty"] },
+          { "id": "b16", "file": "33.jpg", "place": "아침 침대", "label": "파자마 · 위에서 본 웃음", "tags": ["travel"] }
+        ]
+      }
     },
     "M03": {
       "stand": { "src": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m03-fullbody-v1.webp", "top": 275, "feet": 2423 },
-      "body": { "heads": 7.29, "shoulderFace": 2.43, "leg": 0.495, "torso": 0.295, "measured": "2026-10-17" },
+      "loop": { "src": "loop/M03.mp4", "made": "10-18 · 4초 720p · 시작·끝 그림 = 대표 사진 · .tmp/pulse-loops-20261018/README.md" },
       "shotLabels": { "context": "음악 작업실 · 믹싱 데스크", "hands": "이어폰 케이스를 든 손" },
-      "shotTags": { "context": ["ent", "tech"], "hands": ["tech"], "look-1": ["fashion"] }
+      "shotTags": { "context": ["ent", "tech"], "hands": ["tech"], "look-1": ["fashion"] },
+      "face": [
+        { "label": "눈", "text": "흑갈색이고 사진 기준 왼쪽 눈에만 쌍꺼풀이 있어요." },
+        { "label": "얼굴선", "text": "갸름한 얼굴에 곧은 콧대." },
+        { "label": "피부", "text": "밝은 톤." },
+        { "label": "머리", "text": "흑발 콘로우." }
+      ],
+      "direction": { "fit": ["작업실에서 헤드폰을 쓰고 리듬 타기", "강연하듯 설명하기", "카메라 보며 장난스러운 미소", "스트리트 룩으로 걷기"], "avoid": ["실제 인물이라 새 연출은 본인 확인 뒤에 정해요."] }
     }
   }
 }

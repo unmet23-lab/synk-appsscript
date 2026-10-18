@@ -101,7 +101,7 @@ const wait=async()=>{for(let i=0;i<120;i++){const s=opened();if(s.service.Active
 })().catch(e=>{console.error(e.message);process.exitCode=1});
 `;
 const key = path.join(os.homedir(), '.ssh', 'synk_radio');
-const raw = execFileSync('ssh', ['-i', key, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=20', 'synk@34.71.111.97', 'node'], {
+const raw = execFileSync('ssh', ['-i', key, '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=20', 'synk-radio', 'node'], {
   input: 'globalThis.p=' + JSON.stringify(payload) + ';\n' + code,
   encoding: 'utf8', timeout: 240000, maxBuffer: 4 * 1024 * 1024, windowsHide: true,
 });

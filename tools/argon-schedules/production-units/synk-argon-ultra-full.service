@@ -1,0 +1,52 @@
+# Direct official CLI; activation is controlled by production-ready.
+# Missing readiness marker deliberately prevents execution.
+[Unit]
+Description=SYNK full daily research - official Argon CLI
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/etc/synk-argon-77yuhbs/production-ready
+ConditionPathExists=/var/lib/synk-argon-77yuhbs/prompts/full.input.jsonl
+ConditionFileIsExecutable=/usr/bin/flock
+ConditionFileIsExecutable=/opt/synk-argon-77yuhbs/bin/agy
+ConditionFileIsExecutable=/opt/synk-google-workspace-cli/0.22.5-musl/bin/gws
+
+[Service]
+Type=oneshot
+User=synk-argon-ultra
+Group=synk-argon-ultra
+WorkingDirectory=/var/lib/synk-argon-77yuhbs/work
+Environment=HOME=/var/lib/synk-argon-77yuhbs
+Environment=TZ=Asia/Seoul
+Environment=LANG=C.UTF-8
+Environment=AGY_CLI_DISABLE_AUTO_UPDATE=true
+Environment=GOOGLE_WORKSPACE_CLI_CONFIG_DIR=/var/lib/synk-argon-77yuhbs/.config/gws-docs
+Environment=GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file
+UnsetEnvironment=AGY_ADC_AUTH GEMINI_API_KEY GOOGLE_API_KEY GOOGLE_APPLICATION_CREDENTIALS GOOGLE_GENAI_USE_VERTEXAI GOOGLE_CLOUD_PROJECT GCLOUD_PROJECT GOOGLE_CLOUD_LOCATION GOOGLE_GEMINI_BASE_URL SYNK_ALLOW_PAID_API
+UMask=0077
+StandardInput=file:/var/lib/synk-argon-77yuhbs/prompts/full.input.jsonl
+StandardOutput=append:/var/lib/synk-argon-77yuhbs/logs/full.stream.jsonl
+StandardError=append:/var/lib/synk-argon-77yuhbs/logs/full.stderr.log
+ExecStartPre=/usr/bin/python3 /opt/synk-argon-77yuhbs/run-check.py begin full
+ExecStopPost=/usr/bin/python3 /opt/synk-argon-77yuhbs/run-check.py end full
+ExecStart=/usr/bin/flock --exclusive --nonblock --conflict-exit-code 75 --close /var/lib/synk-argon-77yuhbs/run.lock /opt/synk-argon-77yuhbs/bin/agy --input-format stream-json --output-format stream-json --model gemini-4-argon-high --print-timeout 45m --disable-slash-commands
+TimeoutStartSec=50min
+TimeoutStopSec=120s
+KillMode=control-group
+Restart=no
+Slice=synk-argon-ultra.slice
+CPUQuota=50%
+MemoryMax=1G
+MemorySwapMax=0
+TasksMax=128
+Nice=10
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/synk-argon-77yuhbs
+CapabilityBoundingSet=
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+

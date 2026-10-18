@@ -54,13 +54,11 @@
   }
 }
 /* 사업 색: SNS 키트 계정 테마와 같은 값. --word는 포스터의 큰 한글(표시 전용). */
-.brand-world,.app-card.world,.detail-hero.world,.quick-card[data-shortcut=world],.benefit-rehearsal,.quick-card[data-shortcut=rehearsal],.quick-card[data-shortcut=teacher]{--face:#F96859;--on-face:#1E0E0A;--glow:#F96859;--word:'월드';--len:2}
+.brand-world,.app-card.world,.detail-hero.world,.quick-card[data-shortcut=world],.quick-card[data-shortcut=teacher]{--face:#F96859;--on-face:#1E0E0A;--glow:#F96859;--word:'월드';--len:2}
 .brand-messenger,.app-card.messenger,.detail-hero.messenger,.quick-card[data-shortcut=messenger]{--face:#17181C;--on-face:#C5D6F5;--glow:#3D6BC9;--word:'워크\A스페이스';--len:4}
 .app-card.path,.detail-hero.path,.quick-card[data-shortcut=path]{--face:#526956;--on-face:#FFFFFF;--glow:#7DB45A;--word:'패스';--len:2}
 .benefit-care,.quick-card[data-shortcut=care]{--face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9;--word:'플레저';--len:3}
-.benefit-rehearsal,.quick-card[data-shortcut=rehearsal]{--word:'리허설';--len:3}
 .quick-card[data-shortcut=teacher]{--word:'내 수업';--len:3}
-.benefit-family-album,.quick-card[data-shortcut=family-album]{--face:#F5C445;--on-face:#251A04;--glow:#F5C445;--word:'앨범';--len:2}
 .benefit-fortune,.quick-card[data-shortcut=fortune]{--face:#E05C97;--on-face:#1C0711;--glow:#E05C97;--word:'운세';--len:2}
 
 *,*::before,*::after{box-sizing:border-box}

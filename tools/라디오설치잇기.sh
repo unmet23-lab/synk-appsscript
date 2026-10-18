@@ -11,8 +11,8 @@
 set -uo pipefail
 
 KEY="$HOME/.ssh/synk_radio"
-HOST="synk@34.71.111.97"
-SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=15)
+HOST="synk-radio"
+SSHOPT=(-i "$KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15)
 LOCAL_PACKS=("$HOME/Documents/SYNK-talk/팩"/*.ts "$HOME/Documents/SYNK-talk/팩2"/*.ts)
 
 # ① 로컬 팩의 «온전한 총합»을 센다 — 이것이 도달 목표다

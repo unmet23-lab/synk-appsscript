@@ -168,7 +168,7 @@ export const Cursor: React.FC<{ path: [number, number, number][]; click?: number
 /** 계정판 틀: 실제 계정판 CSS(member-subs)를 휴대폰 폭 css로 그리고 scale배 키운다 */
 export const Board: React.FC<{ width: number; scale: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ width, scale, children, style }) => (
   <div style={{ width: width * scale, height: 'auto', ...style }}>
-    <div className="member-subs" style={{ ...(BOARD_TOKENS as React.CSSProperties), width, maxWidth: 'none', margin: 0, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+    <div className="member-subs ms-phone" style={{ ...(BOARD_TOKENS as React.CSSProperties), width, maxWidth: 'none', margin: 0, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
       {children}
     </div>
   </div>

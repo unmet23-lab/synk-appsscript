@@ -119,6 +119,66 @@ test('departed participants lose key access and a fresh key is withheld until re
   assert.equal(f.provider.issued.length, 3); // first Alice, rekeyed Alice, resumed Bob
 });
 
+test('a participant that reset its Room survives another membership change before the round is ready', async t => {
+  const f = secureFixture(t), alice = await f.connect();
+  const bob = await f.service.join(f.input('bob')), pendingKey = await f.key(alice);
+  assert.equal((await f.ack(alice, 'alice', pendingKey)).admission.token, null);
+  // The client discards its old Room as required by the E2EE contract.
+  f.provider.rooms.set(alice.admission.room, []); f.advance(8000);
+  await f.service.leave(f.owner(bob, 'bob'));
+  assert.equal(f.service.current('alice', 'alice-session').admission.state, 'active');
+  const replacement = await f.key(alice); assert.notEqual(replacement.epoch, pendingKey.epoch);
+  const ready = await f.ack(alice, 'alice', replacement); assert.ok(ready.admission.token);
+  assert.equal(f.provider.updates.filter(row => row.identity === alice.admission.id && row.permissions.paused).length, 1);
+  // A fresh credential must be fenced again on the next membership change.
+  await f.service.join(f.input('carol'));
+  assert.equal(f.provider.updates.filter(row => row.identity === alice.admission.id && row.permissions.paused).length, 2);
+});
+
+test('absent connecting and reconnecting transports are revoked without ending the admission or minting a JWT inside the revocation boundary', async t => {
+  for (const phase of ['connecting', 'reconnecting']) await t.test(phase, async t => {
+    const f = secureFixture(t), controlCalls = [];
+    if (phase === 'connecting') f.provider.autoConnect = false;
+    const alice = await f.connect();
+    if (phase === 'reconnecting') {
+      await f.service.sweep(); f.provider.rooms.set(alice.admission.room, []); f.advance(5000); await f.service.sweep();
+    }
+    const before = f.db.prepare('SELECT joined_at,lease_until FROM voice_admissions WHERE id=?').get(alice.admission.id);
+    const adapter = createLiveKitVoiceProvider({ url: 'wss://fixture.livekit.cloud', apiKey: 'APItest123', apiSecret: 'synthetic-secret-for-tests-only-123456', now: () => f.stamp,
+      fetch: async (url, options) => { const method = url.split('/').at(-1); controlCalls.push({ method, body: JSON.parse(options.body) }); return method === 'UpdateParticipant' ? Response.json({ code: 'not_found' }, { status: 404 }) : Response.json({}); },
+    });
+    f.provider.updatePermissions = (...args) => adapter.updatePermissions(...args);
+    const bob = await f.service.join(f.input('bob'));
+    const barrier = (controlCalls.find(row => row.method === 'RemoveParticipant').body.revoke_token_ts + 1) * 1000;
+    await f.ack(bob, 'bob');
+    assert.equal((await f.ack(alice)).admission.token, null);
+    assert.equal(f.service.current('alice', 'alice-session').admission.state, 'active');
+    f.advance(barrier - f.stamp - 1);
+    assert.equal((await f.service.resume(f.owner(alice))).admission.token, null);
+    f.advance(1);
+    assert.ok((await f.service.resume(f.owner(alice))).admission.token);
+    const after = f.db.prepare('SELECT joined_at,lease_until FROM voice_admissions WHERE id=?').get(alice.admission.id);
+    assert.equal(after.joined_at, before.joined_at);
+    assert.ok(after.lease_until <= before.lease_until + 5000);
+    assert.deepEqual(controlCalls.map(row => row.method), ['UpdateParticipant', 'RemoveParticipant']);
+  });
+});
+
+test('only an authenticated UpdateParticipant not_found pause uses the revocation fallback, and a failed fallback remains an error', async () => {
+  for (const [status, code, removeFails] of [[404, 'other', false], [401, 'not_found', false], [503, 'not_found', false], [404, 'not_found', true]]) {
+    const methods = [];
+    const provider = createLiveKitVoiceProvider({ url: 'wss://fixture.livekit.cloud', apiKey: 'APItest123', apiSecret: 'synthetic-secret-for-tests-only-123456', fetch: async url => {
+      const method = url.split('/').at(-1); methods.push(method);
+      return method === 'UpdateParticipant' ? Response.json({ code }, { status }) : Response.json({ code: 'unavailable' }, { status: 503 });
+    } });
+    await assert.rejects(provider.updatePermissions('room', 'identity', { paused: true }), error => error.status === 503);
+    assert.deepEqual(methods, removeFails ? ['UpdateParticipant', 'RemoveParticipant'] : ['UpdateParticipant']);
+  }
+  const methods = [], provider = createLiveKitVoiceProvider({ url: 'wss://fixture.livekit.cloud', apiKey: 'APItest123', apiSecret: 'synthetic-secret-for-tests-only-123456', fetch: async url => { methods.push(url.split('/').at(-1)); return Response.json({ code: 'not_found' }, { status: 404 }); } });
+  await assert.rejects(provider.updatePermissions('room', 'identity', { canSpeak: true }), error => error.status === 503);
+  assert.deepEqual(methods, ['UpdateParticipant']);
+});
+
 test('encryption acknowledgement timeout and a process restart never downgrade or restore old keys', async t => {
   const f = secureFixture(t), joined = await f.service.join(f.input()); await f.key(joined);
   f.advance(30001); await f.service.sweep(); assert.equal(f.provider.issued.length, 0);

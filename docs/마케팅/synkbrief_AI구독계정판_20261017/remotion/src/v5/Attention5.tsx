@@ -14,32 +14,34 @@ const BW = 380;
 const SCALE = (L.W - L.X - L.R - 52) / BW;
 
 const TOP = 640;
-// 둘째 칩(주간 99%)의 화면 위 자리 — 렌더 정지컷(10-17)에서 잰 값: 판 안 css 134에서 시작, 폭 222
-const CHIP = { x: L.X + 26 + 2 * SCALE, y: TOP + 26 + 134 * SCALE, w: 222 * SCALE, h: 44 * SCALE };
+// 둘째 칩(거의 소진 · 주간 1% 남음)의 화면 위 자리 — 10-18 고리 개편 뒤 정지컷 실측
+const CHIP = { x: 115, y: 1036, w: 627, h: 90 };
 
-export const Attention5: React.FC = () => {
+type Timing = { chips: number[]; pop: number; back: number; circle: number };
+
+export const Attention5: React.FC<{ t?: Timing; label?: string }> = ({ t = ATT, label = '05' }) => {
   const f = useCurrentFrame();
-  const out = settle(f, ATT.pop, 11);
-  const back = interpolate(f, [ATT.back, ATT.back + 10], [0, 1], { ...clamp, easing: EASE_IN_OUT });
+  const out = settle(f, t.pop, 11);
+  const back = interpolate(f, [t.back, t.back + 10], [0, 1], { ...clamp, easing: EASE_IN_OUT });
   const big = out * (1 - back);
-  const circle = evolvePath(ramp(f, ATT.circle, 14), 'M 30 60 C 30 15, 330 5, 380 50 C 420 95, 120 125, 40 95 C 10 85, 20 40, 60 30');
+  const circle = evolvePath(ramp(f, t.circle, 14), 'M 30 60 C 30 15, 330 5, 380 50 C 420 95, 120 125, 40 95 C 10 85, 20 40, 60 30');
   return (
     <>
-      <HeadF left="synkbrief 활용" right="05" />
+      <HeadF left="synkbrief 활용" right={label} />
       <Lines at={2} size={72} top={L.TOP - 8} lines={[<>급한 것만 <MarkF key="m" p={ramp(f, 8, 12)}>맨 위에</MarkF></>]} />
-      <FloatCard style={{ left: L.X, right: L.R, top: TOP, height: 440, padding: 26 }}>
+      <FloatCard style={{ left: L.X, right: L.R, top: TOP, height: 520, padding: 26 }}>
         <Board width={BW} scale={SCALE}>
           <section className="ms-section" style={{ borderTop: 0, padding: '4px 2px 0' }}>
             <div className="ms-section-heading" style={{ opacity: 1 - 0.92 * big }}>
               <span className="ms-section-number">01</span>
               <div>
                 <h2>지금 볼 것</h2>
-                <p>소진·한도 90% 이상·크레딧 부족·3일 안 결제만 올라와요.</p>
+                <p>서비스마다 가장 여유 있는 계정의 남은 한도예요(안쪽 고리 5시간 · 바깥쪽 주간). 소진·10% 이하 남음·크레딧 부족·3일 안 결제는 따로 올라와요.</p>
               </div>
             </div>
             <div className="ms-attn" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
               {ATTENTION.map((a, i) => {
-                const s = settle(f, ATT.chips[i], 16);
+                const s = settle(f, t.chips[i], 16);
                 const lifted = i === 0 ? big : 0; // 1번 칩만 흐리고, 2번 칩(주간 99%)은 큰 숫자 밑 출처로 또렷하게
                 return (
                   <button
@@ -69,7 +71,7 @@ export const Attention5: React.FC = () => {
           }}
         >
           <div style={{ font: `800 200px/0.9 ${F.ko}`, letterSpacing: '-.06em', color: C.crayon, fontVariantNumeric: 'tabular-nums' }}>
-            99%
+            1%
           </div>
         </div>
       ) : null}

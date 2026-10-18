@@ -79,7 +79,9 @@ let workdayTimer=null,workdayTimerVersion=0;
 const pendingUpdates = new Set();
 const mobileLayout=window.matchMedia('(max-width: 680px)');
 const directoryWide=window.matchMedia('(min-width: 1000px)');
-let sidebarReturnFocus=null,drawerReturnFocus=null,moduleVisible=!moduleBase||window.parent===window;
+let sidebarReturnFocus=null,drawerReturnFocus=null,moduleVisible=!moduleBase||window.parent===window,moduleReady=false;
+function announceWorkspaceReady(){moduleReady=true;parentMessage('messenger:ready');}
+const bootRecovery={generation:0,attempt:0,phase:'idle',timer:null,timeout:null,controller:null,resumeOnRestore:false};
 // Calls live in voice.js (loaded as its own module) so chat re-rendering never owns the SDK Room.
 let voice=null;
 function voiceController(){
@@ -105,6 +107,7 @@ function companySessionRecovery(){
 }
 async function api(path, options = {}){
   const recovery=companySessionRecovery();if(recovery)await recovery;
+  if(options.signal?.aborted)throw options.signal.reason||Object.assign(new Error('취소한 요청이에요.'),{name:'AbortError'});
   const identity={userId:state.user?.id,integrated:state.integrated,csrf:state.integrated?.csrfToken};
   const opts = {...options,credentials:'same-origin',headers:{...options.headers}};
   const recoveryContext=opts.recoveryContext;delete opts.recoveryContext;
@@ -113,6 +116,7 @@ async function api(path, options = {}){
   const controller=recoveryContext&&typeof AbortController==='function'?new AbortController():null;
   if(controller)opts.signal=controller.signal;const timeout=controller?setTimeout(()=>controller.abort(),30000):null;
   let response,data;try{response=await fetch(moduleUrl(path),opts);data=await response.json().catch(()=>({}));}finally{if(controller)clearTimeout(timeout);}
+  if(opts.signal?.aborted)throw opts.signal.reason||Object.assign(new Error('취소한 요청이에요.'),{name:'AbortError'});
   if(identity.userId!==state.user?.id||identity.integrated!==state.integrated||identity.csrf!==state.integrated?.csrfToken)throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
   if(recoveryContext&&!transferContextCurrent(recoveryContext))throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
   if(!response.ok){
@@ -174,11 +178,42 @@ async function refreshStorageProvider(){
 }
 function storageNote(){return `${storageSentence()} 파일은 자동으로 삭제되지 않아요. 중요한 자료는 별도로 백업해 주세요.${state.user?.role==='member'?'<br>위 수치는 내가 볼 수 있는 대화 기준이에요.':''}`;}
 
+function stopBootRecovery(phase='idle'){
+  bootRecovery.generation++;clearTimeout(bootRecovery.timer);clearTimeout(bootRecovery.timeout);bootRecovery.controller?.abort();
+  Object.assign(bootRecovery,{attempt:0,phase,timer:null,timeout:null,controller:null,resumeOnRestore:false});
+}
+function bootRecoveryVisible(){return !document.hidden&&(!moduleBase||window.parent===window||moduleVisible);}
+function scheduleBootRecovery(delay){
+  clearTimeout(bootRecovery.timer);bootRecovery.timer=null;
+  if(bootRecovery.phase!=='waiting'||!bootRecoveryVisible())return;
+  const generation=bootRecovery.generation;
+  bootRecovery.timer=setTimeout(()=>{bootRecovery.timer=null;if(generation===bootRecovery.generation&&bootRecovery.phase==='waiting'&&bootRecoveryVisible())void boot();},delay);
+}
+function resumeBootRecovery(){if(bootRecovery.phase==='waiting'&&bootRecoveryVisible())scheduleBootRecovery(0);}
 async function boot(){
-  try { const data = await api('/api/bootstrap'); state.platformUrl=data.platformUrl||null; state.needsSetup=data.needsSetup; state.workspace=data.workspace; state.storage=data.storage||{provider:'local'}; state.integrated=data.integrated||null; if(data.user) enterWorkspace(data); else renderAuth(data.needsSetup?'setup':'login'); }
-  catch(error){app.innerHTML=`<div class="boot"><div class="page-error"><h2>연결을 기다리고 있어요</h2><p class="muted">메신저 서버가 실행 중인지 확인한 후 다시 열어 주세요.</p><p class="tiny muted">${esc(error.message)}</p><button class="button primary" id="retry-boot">다시 연결</button></div></div>`;$('#retry-boot').onclick=boot;}
+  if(bootRecovery.phase==='loading'||bootRecovery.phase==='closed')return;
+  clearTimeout(bootRecovery.timer);bootRecovery.timer=null;
+  if(bootRecovery.attempt||bootRecovery.phase==='failed')app.innerHTML='<div class="boot"><span class="spinner"></span><p role="status">메신저에 다시 연결하고 있어요.</p></div>';
+  moduleReady=false;bootRecovery.phase='loading';
+  const generation=++bootRecovery.generation,controller=new AbortController();bootRecovery.controller=controller;
+  const deadline=new Promise((_,reject)=>{bootRecovery.timeout=setTimeout(()=>{const error=Object.assign(new Error('응답이 늦어 자동으로 다시 연결할게요.'),{name:'TimeoutError'});controller.abort(error);reject(error);},10000);});
+  try {
+    const data=await Promise.race([api('/api/bootstrap',{signal:controller.signal}),deadline]);
+    if(generation!==bootRecovery.generation)return;
+    stopBootRecovery();state.platformUrl=data.platformUrl||null;state.needsSetup=data.needsSetup;state.workspace=data.workspace;state.storage=data.storage||{provider:'local'};state.integrated=data.integrated||null;
+    if(data.user)enterWorkspace(data);else renderAuth(data.needsSetup?'setup':'login');
+  }catch(error){
+    if(generation!==bootRecovery.generation)return;
+    clearTimeout(bootRecovery.timeout);bootRecovery.timeout=null;bootRecovery.controller=null;
+    const transient=error.name==='TimeoutError'||(!error.status&&error.name==='TypeError')||error.status===429||error.status>=500&&error.status<=599;
+    bootRecovery.phase=transient?'waiting':'failed';if(transient)bootRecovery.attempt++;
+    const delay=Math.min(30000,2000*2**Math.min(bootRecovery.attempt-1,4));
+    app.innerHTML=`<div class="boot"><div class="page-error"><h2>${transient?'잠시 연결을 기다리고 있어요':'메신저에 연결하지 못했어요'}</h2><p class="muted" role="status">${transient?`${delay/1000}초 뒤 자동으로 다시 연결할게요.`:'로그인 상태와 접근 권한을 확인해 주세요.'}</p><p class="tiny muted">${esc(error.message)}</p><button class="button primary" id="retry-boot">지금 다시 연결</button></div></div>`;
+    $('#retry-boot').onclick=()=>void boot();announceWorkspaceReady();if(transient)scheduleBootRecovery(delay);
+  }
 }
 function renderAuth(mode='login'){
+  stopBootRecovery();
   voice?.dispose('auth');resetTransfers();
   resetWorkNotificationState();
   if(moduleBase){returnToCompanyLogin();return;}
@@ -189,8 +224,10 @@ function renderAuth(mode='login'){
   if(state.platformUrl)$('.auth-brand').insertAdjacentHTML('beforeend',platformEntry());
   $('#auth-form').onsubmit=async event=>{event.preventDefault();const submit=$('#auth-submit');const errorBox=$('#auth-error');errorBox.classList.add('hidden');submit.disabled=true;try{const data=await api(`/api/${setup?'setup':join?'join':'login'}`,{method:'POST',body:Object.fromEntries(new FormData(event.currentTarget))});enterWorkspace(data);}catch(error){errorBox.textContent=error.message;errorBox.classList.remove('hidden');submit.disabled=false;}};
   $('#switch-auth')?.addEventListener('click',()=>renderAuth(join?'login':'join'));
+  announceWorkspaceReady();
 }
 function enterWorkspace(data){
+  stopBootRecovery();
   resetTransfers();state.sendRecovery={messages:data.sendRecovery?.messages===true,uploads:data.sendRecovery?.uploads===true};
   resetWorkNotificationState();setWorkNotificationStatus(data.scheduledNotifications?.enabled);
   document.body.classList.toggle('integrated-module',Boolean(data.integrated));
@@ -200,7 +237,14 @@ function enterWorkspace(data){
   renderShell();void voiceController()?.init(data);
   let last;try{last=localStorage.getItem(`synk-messenger:last:${state.user.id}`);}catch{}
   const channel=state.channels.find(c=>c.id===last)||state.channels.find(c=>c.kind==='self')||state.channels[0];
-  Promise.resolve(channel?selectChannel(channel.id):clearChannelSelection()).then(()=>{connectEvents();parentMessage('messenger:ready');});
+  const initialMessages=channel?selectChannel(channel.id):clearChannelSelection();
+  // The shell and its message loader are usable before history/read receipts
+  // finish. Keeping the parent hidden until those requests settle looks blank.
+  announceWorkspaceReady();
+  const user=state.user;
+  // Invitations and live updates must not wait for history or read receipts.
+  connectEvents();
+  Promise.resolve(initialMessages).catch(error=>{if(state.user===user)toast(error.message,true);});
 }
 function renderShell(){
   app.innerHTML=`<div class="shell"><button class="mobile-scrim" id="mobile-scrim" aria-label="메뉴 닫기"></button><aside class="sidebar" id="sidebar"><div class="sidebar-brand"><img class="brand-logo" src="assets/synk-ko.svg" alt="싱ㅋ"><span class="brand-context">팀 메신저</span></div><div class="workspace-card"><span class="workspace-symbol">${esc(initials(state.workspace.name).slice(0,1))}</span><div class="workspace-info"><strong>${esc(state.workspace.name)}</strong><span>워크스페이스</span></div>${icon('lock')}</div><button class="sidebar-search" id="global-search">${icon('search')}<span>대화 검색</span><kbd>Ctrl K</kbd></button><nav class="sidebar-scroll" aria-label="대화 목록"><section class="nav-section"><div class="section-label">내 공간</div><div id="self-nav"></div></section><section class="nav-section"><div class="section-label">채널<button class="icon-button small" id="create-channel" aria-label="채널 만들기">${icon('plus')}</button></div><div id="channel-nav"></div></section><section class="nav-section"><div class="section-label">다이렉트 메시지<button class="icon-button small" id="new-dm" aria-label="새 다이렉트 메시지">${icon('plus')}</button></div><div id="dm-nav"></div></section></nav><div class="sidebar-bottom"><div id="connection" class="connection offline"><span class="dot"></span><span>실시간 연결 중</span></div><button class="profile-button" id="workspace-settings">${avatar(state.user)}<span><strong>${esc(state.user.name)}</strong><small>${state.user.role==='owner'?'워크스페이스 관리자':'팀 멤버'}</small></span>${icon('settings')}</button></div></aside><main class="main"><header class="main-header"><button class="icon-button mobile-menu" id="mobile-menu" aria-label="대화 목록 열기">${icon('menu')}</button><div class="header-title"><div class="header-breadcrumb"><span>${esc(state.workspace.name)}</span>${icon('chevron')}<span id="breadcrumb-type">채널</span></div><h1 id="channel-title"></h1></div><div class="header-actions"><button class="member-count" id="channel-members" aria-label="팀 멤버 보기">${icon('users')}<span id="member-number"></span></button><button class="icon-button" id="channel-search" aria-label="이 대화 검색">${icon('search')}</button></div></header><div class="channel-bar"><button class="tab-button active" id="tab-chat">${icon('chat')}대화</button><button class="tab-button" id="tab-files">${icon('folder')}공유한 파일</button><span class="channel-about" id="channel-about"></span></div><div class="content-body"><section class="chat-area" id="chat-area" aria-label="대화"><div class="message-scroll" id="message-scroll"><div id="message-list"></div></div><button class="jump-latest hidden" id="jump-latest">${icon('down')}최근 메시지</button><div class="composer-wrap"><form class="composer" id="composer-form"><div class="upload-queue hidden" id="upload-queue"></div><textarea id="composer-input" aria-label="메시지 입력" rows="2" maxlength="8000" placeholder="메시지를 남겨 보세요"></textarea><div class="composer-bottom"><button class="icon-button" type="button" id="attach-file" aria-label="파일 첨부">${icon('plus')}</button><button class="icon-button" type="button" id="composer-emoji" aria-label="이모지 넣기">${icon('smile')}</button><span class="composer-hint">Enter로 전송 · Shift + Enter로 줄바꿈</span><button class="send-button" type="submit" id="send-message" aria-label="메시지 보내기" disabled>${icon('send')}</button></div><input id="file-input" class="hidden" type="file" multiple></form><div class="composer-footnote"><span id="composer-status">파일을 이곳에 끌어다 놓아도 좋아요.</span><span id="composer-storage">${uploadDestination()} · 파일당 최대 ${bytes(state.fileBytes)}</span></div></div><div class="drop-overlay hidden" id="drop-overlay">${icon('upload')}<strong>이 대화에 파일 놓기</strong><span>한 번에 5개 · 파일당 최대 ${bytes(state.fileBytes)}</span></div></section><section class="files-view hidden" id="files-view" aria-label="공유한 파일"></section><aside class="drawer hidden" id="drawer"></aside></div></main></div>`;
@@ -371,7 +415,10 @@ async function selectChannel(channelId, {keepDrawer=false,preserveFilter=false} 
   syncComposerAccess();
   $('#channel-options')?.classList.toggle('hidden',channel.kind!=='channel'||!channel.canManage||!canWriteMessages());
   $('#message-list').classList.remove('empty');$('#message-list').innerHTML='<div class="message-loading"><span class="spinner"></span>대화를 불러오고 있어요.</div>';
-  try{const result=await api(`/api/channels/${id(channelId)}/messages`);if(seq!==state.loadSeq)return;state.messages=result.messages;state.hasMore=result.hasMore;renderMessages();scrollToBottom();await markRead(channelId);}catch(error){if(seq!==state.loadSeq)return;$('#message-list').innerHTML=`<div class="large-empty"><strong>대화를 불러오지 못했어요</strong><p>${esc(error.message)}</p><button class="button" data-action="retry">다시 불러오기</button></div>`;}
+  // An SSE refresh can finish while this first request is pending. Only replace
+  // the initial snapshot; a failed refresh still leaves it available as fallback.
+  let expectedMessages=state.messages;
+  try{const result=await api(`/api/channels/${id(channelId)}/messages`);if(seq!==state.loadSeq||state.messages!==expectedMessages)return;state.messages=expectedMessages=result.messages;state.hasMore=result.hasMore;renderMessages();scrollToBottom();void markRead(channelId);}catch(error){if(seq!==state.loadSeq||state.messages!==expectedMessages)return;$('#message-list').innerHTML=`<div class="large-empty"><strong>대화를 불러오지 못했어요</strong><p>${esc(error.message)}</p><button class="button" data-action="retry">다시 불러오기</button></div>`;}
 }
 async function markRead(channelId){
   const messageId=state.messages.at(-1)?.id;
@@ -417,7 +464,7 @@ async function refreshMessages(){
     messages=[...result.messages,...messages];
   }
   if(seq!==state.loadSeq||refresh!==state.refreshSeq)return;
-  state.messages=messages;state.hasMore=result.hasMore;renderMessages({preserve:true});await markRead(channelId);
+  state.messages=messages;state.hasMore=result.hasMore;renderMessages({preserve:true});void markRead(channelId);
 }
 async function loadEarlier(button){if(!state.messages.length)return;button.disabled=true;const seq=state.loadSeq,box=$('#message-scroll'),oldHeight=box.scrollHeight;try{const result=await api(`/api/channels/${id(state.channelId)}/messages?before=${id(state.messages[0].id)}`);if(seq!==state.loadSeq)return;state.messages=[...result.messages,...state.messages];state.hasMore=result.hasMore;renderMessages();box.scrollTop=box.scrollHeight-oldHeight;}catch(error){toast(error.message,true);button.disabled=false;}}
 function resizeComposer(){const box=$('#composer-input');if(!box)return;box.style.height='auto';box.style.height=`${Math.min(box.scrollHeight,190)}px`;}
@@ -881,7 +928,12 @@ document.addEventListener('keydown',event=>{
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
 });
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user){refreshChannels().catch(()=>{});refreshMessages().catch(()=>{});refreshVisibleWorkday().catch(()=>{});}else cancelWorkdayRefresh();});
+document.addEventListener('visibilitychange',()=>{resumeBootRecovery();if(!document.hidden&&state.user){refreshChannels().catch(()=>{});refreshMessages().catch(()=>{});refreshVisibleWorkday().catch(()=>{});}else cancelWorkdayRefresh();});
+window.addEventListener('online',resumeBootRecovery);
+window.addEventListener('pagehide',()=>{const resume=bootRecovery.phase==='loading'||bootRecovery.phase==='waiting';stopBootRecovery('closed');bootRecovery.resumeOnRestore=resume;});
+// A restored page resumes an unfinished bootstrap; any other restored screen
+// keeps working buttons (a permanent-failure screen can still retry manually).
+window.addEventListener('pageshow',event=>{if(!event.persisted||bootRecovery.phase!=='closed')return;if(bootRecovery.resumeOnRestore){stopBootRecovery('waiting');resumeBootRecovery();}else stopBootRecovery();});
 window.addEventListener('beforeunload',saveDraft);
 for(const eventType of ['dragover','drop'])window.addEventListener(eventType,event=>{if(state.user&&[...(event.dataTransfer?.types||[])].includes('Files'))event.preventDefault();});
 
@@ -1053,6 +1105,7 @@ function parentMessage(type,payload={}){
   window.parent.postMessage({type,...payload},location.origin);
 }
 function returnToCompanyLogin(){
+  stopBootRecovery();
   voice?.dispose('auth');resetTransfers();state.events?.close();state.user=null;resetWorkNotificationState();if(modal.open)modal.close();
   app.innerHTML='<div class="boot"><p>회사 계정 로그인이 필요해요.</p><a class="button primary" href="/" target="_top">워크스페이스 로그인</a></div>';
   if(window.parent!==window)parentMessage('messenger:auth-expired');
@@ -1095,7 +1148,8 @@ async function handleWorkspaceOpen(value){
 }
 window.addEventListener('message',async event=>{
   if(!moduleBase||event.origin!==location.origin||event.source!==window.parent||!event.data||typeof event.data!=='object')return;
-  if(event.data.type==='workspace:visible'){moduleVisible=Boolean(event.data.visible);if(!moduleVisible&&state.workspaceOpenPending){state.navigationSeq++;state.workspaceOpenId=null;state.workspaceOpenPending=false;}if(moduleVisible&&state.user){refreshVisibleWorkday().catch(()=>{});await refreshChannels().catch(()=>{});await refreshMessages().catch(()=>{});}else cancelWorkdayRefresh();return;}
+  if(event.data.type==='workspace:ready-check'){if(moduleReady)parentMessage('messenger:ready');return;}
+  if(event.data.type==='workspace:visible'){const wasVisible=moduleVisible;moduleVisible=Boolean(event.data.visible);if(moduleVisible&&!wasVisible)resumeBootRecovery();if(!moduleVisible&&state.workspaceOpenPending){state.navigationSeq++;state.workspaceOpenId=null;state.workspaceOpenPending=false;}if(moduleVisible&&state.user){refreshVisibleWorkday().catch(()=>{});await refreshChannels().catch(()=>{});await refreshMessages().catch(()=>{});}else cancelWorkdayRefresh();return;}
   if(event.data.type==='workspace:open'){await handleWorkspaceOpen(event.data);return;}
   if(event.data.type==='workspace:voice'){voice?.parentAction(event.data);return;}
   if(event.data.type==='workspace:share'&&state.user&&canWriteMessages()){

@@ -1,0 +1,32 @@
+[Unit]
+Description=Record and deliver one Argon scheduled task failure (%i)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+StateDirectory=synk-argon-alerts
+StateDirectoryMode=0700
+ExecStart=/usr/bin/python3 -I /opt/synk-argon-77yuhbs/alert-event.py capture %i
+TimeoutStartSec=45s
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/lib/synk-argon-77yuhbs/run-status
+ReadWritePaths=/var/lib/synk-argon-alerts
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+MemoryMax=64M
+TasksMax=16

@@ -7,7 +7,7 @@
  * 계정 목록 = docs/마케팅/sns-계정.json
  *
  * 자동: YouTube(기존 LAB YouTube 인증으로 공개 통계 조회) · Telegram 공개 채널(t.me 공개 페이지)
- * 손: 그 밖의 계정, 그리고 상담 신청의 인지채널별 수(상담시트에서 센다 · KPI 보고 한 줄은 상위 다섯뿐이다)
+ * 손: 그 밖의 계정. 과거 상담 구분은 별도로 확인된 수치가 있을 때만 수동으로 보존한다.
  * 게시·수정·메시지 발송을 하지 않는다. 자격 값은 출력하지 않는다.
  */
 const fs = require('node:fs');
@@ -18,9 +18,9 @@ const ACCOUNTS_FILE = path.join(REPO_ROOT, 'docs', '마케팅', 'sns-계정.json
 const LEDGER_FILE = path.join(REPO_ROOT, 'docs', '_ops', '채널성과.jsonl');
 const SUMMARY_FILE = path.join(REPO_ROOT, 'docs', '마케팅', '채널성과.md');
 
-// 상담 폼의 인지채널 선택지 — 엔진_폼리포트.js 의 인지채널 문항과 같은 열 칸(2026-09-18 유튜브·텔레그램 추가).
+// 2026-09-18 당시 상담 집계의 역사적 분류. 현재 Google Form에는 이 문항·연결 시트가 없다.
 const CONSULT_BUCKETS = ['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'];
-// 폼 선택지는 아니지만 KPI 집계가 따로 세는 칸 — 인지채널이 빈 상담(엔진_운영배치.js computeKpiMetrics).
+// 과거에 인지채널이 빈 상담을 표시하던 칸이다.
 const CONSULT_COLUMNS = [...CONSULT_BUCKETS, '미기입'];
 const METRICS = { 팔로워: 'followers', 게시물: 'posts', 조회: 'views' };
 const PLATFORM_LABEL = {
@@ -95,7 +95,7 @@ function handEntry(accountKey, args, { accounts, date, at = new Date() }) {
   return entry;
 }
 
-// 적지 않은 칸은 «모름»으로 남긴다. KPI 보고 한 줄은 상위 채널만 보여 주므로 0으로 확정하지 않는다.
+// 적지 않은 칸은 «모름»으로 남긴다. 현재 자동 완료 원천이 없으므로 0으로 확정하지 않는다.
 // 모든 칸을 셌을 때만 complete 로 나머지를 0으로 채운다.
 function consultEntry(period, args, { at = new Date(), complete = false } = {}) {
   if (!/^\d{4}-\d{2}-\d{2}~\d{4}-\d{2}-\d{2}$/.test(String(period))) {
@@ -236,7 +236,7 @@ function summarize({ accounts, ledger, today = localDate() }) {
     '',
     '## 상담 신청 — 어디서 알게 됐나',
     '',
-    '상담시트 인지채널별 상담 수를 옮겨 적은 값이다. 계정 숫자가 올라도 이 표가 그대로면 사람이 넘어오지 않은 것이다. 「—」는 적지 않아 모르는 칸이고, 그런 칸이 있으면 합에 「이상」이 붙는다. 앱 KPI 보고 한 줄은 상위 다섯 채널만 보여 주므로 나머지는 상담시트에서 센다. 유튜브·텔레그램 칸은 2026-09-18에 더했다. 두 칸이 폼에 반영되기 전 기간에는 두 곳에서 온 문의가 다른 칸에 섞여 있다.',
+    '이 표는 별도 근거로 확인해 수동 기록한 과거 상담 수만 보여 준다. 2026-10-02에 옛 상담시트/KPI가 폐기됐고 현재 홈페이지 Google Form에는 연결 시트·인지채널 필드·게시물 식별자가 없어 신청 완료를 자동으로 셀 수 없다. 빈 표는 유입이나 신청이 0건이라는 뜻이 아니다. 「—」는 미확인이고, 그런 칸이 있으면 합에 「이상」이 붙는다. 유튜브·텔레그램 칸은 2026-09-18에 더한 역사적 분류다.',
     '',
     ...(consultRows.length
       ? [`| 기간 | ${CONSULT_COLUMNS.join(' | ')} | 합 |`, `|---|${CONSULT_COLUMNS.map(() => '---|').join('')}---|`, ...consultRows]
@@ -246,7 +246,7 @@ function summarize({ accounts, ledger, today = localDate() }) {
     '',
     '- 자동으로 잴 수 있는 것(YouTube 셋 · Telegram 공개 채널): `node tools/채널성과.js --재기`',
     '- 그 밖의 계정: 앱이나 웹에서 숫자를 보고 `node tools/채널성과.js --적기 <키> 팔로워=N 게시물=N`',
-    '- 상담 신청: 상담시트 인지채널을 세어 `node tools/채널성과.js --상담 2026-09-01~2026-09-30 페이스북=N 인스타=N` (모든 칸을 셌으면 끝에 `--전부`를 붙여 나머지를 0으로 채운다)',
+    '- 상담 신청: 확인 가능한 원본과 기간별 분류를 별도로 확보한 경우에만 `node tools/채널성과.js --상담 2026-09-01~2026-09-30 페이스북=N 인스타=N`으로 과거 수치를 수동 기록한다. 모든 칸을 실제 확인한 경우에만 `--전부`를 붙인다.',
     '- 장부만으로 이 요약을 다시 만들기: `node tools/채널성과.js --요약`',
     '',
     '## 아직 못 재는 것',
@@ -271,7 +271,7 @@ function usage() {
   node tools/채널성과.js --적기 <계정키> 팔로워=N [게시물=N] [조회=N] [--날짜 YYYY-MM-DD]
       API가 없는 계정의 숫자를 손으로 적는다
   node tools/채널성과.js --상담 <기간> 페이스북=N 인스타=N ... [--전부]
-      상담시트 인지채널별 수를 적는다 (기간 예: 2026-09-01~2026-09-30)
+      별도 근거로 확인된 과거 인지채널별 수만 적는다 (현재 폼·완료 API는 미연결)
       적지 않은 칸은 «모름»으로 남는다. 모든 칸을 셌으면 --전부로 나머지를 0으로 채운다
   node tools/채널성과.js --요약      장부에서 요약만 다시 만든다 (네트워크 안 씀)
   node tools/채널성과.js --계정      계정 키 목록

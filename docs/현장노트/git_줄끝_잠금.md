@@ -8,6 +8,25 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ## 절차 · 공용 작업본에서 내 것만 커밋하기
 
+### `worktree --no-checkout` 뒤 희소 경로만 설정하면 인덱스가 비어 있다 (2026-10-18)
+- 증상: 새 공개 작업본에 sparse-checkout 경로를 설정했지만 `status`가 기존 파일 전체의 스테이징 삭제를 표시했다.
+- 원인: `--no-checkout`으로 만든 비어 있는 인덱스에 HEAD를 읽지 않은 상태였다. 파일을 실제로 지운 결과가 아니었다.
+- 고침: 이 작업에서 새로 만든 빈 전용 작업본임을 확인한 뒤 `git read-tree --reset -u HEAD`로 HEAD와 희소 범위를 구체화했다. 공용 작업본이나 변경이 있는 폴더에는 이 복구를 쓰지 않는다.
+- 다시 확인: 공개 전 status가 비어 있고, `b45319c`의 변경 범위와 실제 공개 응답86개가 검토한 목록과 일치했다.
+
+공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
+
+1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
+2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
+3. 별도 인덱스에 올린다.
+   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
+   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
+4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
+5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
+6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
+
+보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
+
 공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
 
 1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
@@ -76,6 +95,18 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 연결 워크트리에서 범위 없이 쓴 값은 메인과 같이 쓰는 `.git/config`에 들어간다.
 - 고침: 워크트리는 `git -c core.autocrlf=false worktree add …`로 만들고, 계속 필요한 값은 `git -C <워크트리> config --worktree <키> <값>`으로 쓴다.
 - 다시 확인: 메인에서 `git config --show-origin --get-all core.autocrlf`가 시스템 gitconfig의 `true` 하나뿐이다.
+
+### 3방향 착지 스크립트가 그림을 글자로 다루면 줄끝을 바꿔 깨뜨린다
+- 증상: 10-18 계정판 착지 미리 계산에서 새 jpg 두 장이 「줄 0→783 · CR 0→1470」으로 나왔다. 그대로 썼다면 그림 두 장이 깨졌다.
+- 원인: 경로마다 `git show`를 utf8 글자로 읽고 「새 파일은 CRLF」 규칙으로 `\n`을 `\r\n`으로 바꾸는 착지 스크립트(공용 작업본 3방향 착지)가 바이너리를 가리지 않았다.
+- 고침: 그림·글꼴·소리(`.jpg·png·webp·gif·woff2·ttf·mp3·mp4·wav`)는 `git show`의 바이트를 그대로 쓰고, 작업본에 다른 판이 있으면 충돌로 멈춘다. 쓰기 전에 합친 결과를 폴더로 꺼내 작업본과 diff해 내 줄만 더해졌는지 본다.
+- 다시 확인: 착지 뒤 `cmp <(git show master:<그림>) <그림>`이 같다(10-18 두 장 통과).
+
+### `tools/결정.js --추가`가 CRLF 결정 표에 LF 줄을 넣는다
+- 증상: 결정을 넣은 뒤 git이 「LF will be replaced by CRLF」를 경고했고, 결정 표에서 LF만인 줄이 1개였다(10-18).
+- 원인: 도구가 새 표 줄을 `\n`으로 끼운다. 작업본(`core.autocrlf true`)은 CRLF라 그 한 줄만 줄끝이 섞인다.
+- 고침: 넣은 뒤 파일 전체를 CRLF로 맞춘다(`t.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n')`를 임시 파일 → rename). 도구 자체를 고치는 건 따로 할 일이다.
+- 다시 확인: `(t.match(/(^|[^\r])\n/g)||[]).length`가 0이다.
 
 ## index.lock
 
@@ -179,6 +210,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
+### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
+- 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.
+- 원인: 세션마다 내 커밋만 origin에 다시 쌓아 올리고(restack) 로컬 병합은 「origin has other commits」로 건너뛰어, 같은 내용이 양쪽에 다른 번호로 쌓였다.
+- 고침: `.tmp/master-align-20261018/align_merge.py`(계획만 → `--go`). `git merge-tree --write-tree`로 병합 트리를 만들고 충돌은 경로별 규칙(한쪽이 다른 쪽을 품으면 그쪽, 표·장부는 합집합, 「쓴 AI」 머리말은 잇기)으로 푼다. 바뀐 경로마다 작업본이 옛 HEAD 그대로면 새 판(작업본 줄끝 유지), 남의 미커밋 수정이면 3방향, 3방향이 부딪히면 줄 단위(한쪽만 고친 줄은 그쪽, origin에만 있는 새 묶음은 작업본에 같은 글이 없을 때만, 둘 다 다르게 쓴 줄은 작업본 판을 두고 기록) → 바이트 백업 → 병합 커밋(부모 로컬·origin) → master CAS → 그 경로만 공용 인덱스. 결과 `c3222446d`(71경로, 작업본 = 병합본 62, 3방향 9).
+- 다시 확인: `git merge-base --is-ancestor origin/master master`, 3방향 파일마다 「백업의 작업본 고유 줄이 새 작업본에 다 있는지」(머리말을 이은 줄은 글이 들어 있는지). 둘 다 다르게 쓴 줄(10-18: 트랙 「자동화 3종 후속」)은 HEAD에 origin 판이 있으니 그 줄 주인 세션이 커밋 전에 합쳐야 한다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
@@ -204,3 +241,11 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 정리 목록이 `git ls-files`를 거르지 않았다. 추적 파일은 이미 `.git`에 있어 지워도 백업이 늘지 않는데, 작업본이 「삭제됨」으로 남아 누가 `git add -A`·`commit -a`를 하면 그 삭제가 저장소에 들어간다. 맨 위 `.git`만 보고 거르면 한 단계 안의 클론은 못 거른다.
 - 고침: 정리 목록에서 `git ls-files` 경로를 뺀다. 추적 파일이 정말 크면 지우지 말고 sparse-checkout으로 작업본에서만 뺀다. 폴더를 통째로 지우기 전에 그 안 어디에든 `.git`(폴더든 파일이든)이 있는지 보고, 있으면 그 아래는 빼고 따로 본다. 지워진 추적 파일은 `git status --porcelain | grep '^ D'` 목록을 `GIT_LITERAL_PATHSPECS=1 git restore --worktree --pathspec-from-file=<목록>`으로 되살린다(공용 인덱스는 그대로). 정리 기록(`removed*.jsonl`의 경로·sha256)이 있으면 바이트까지 맞춘다: 별도 인덱스(`read-tree HEAD`)의 `checkout-index`(체크아웃 판, autocrlf 적용)와 HEAD blob(LF) 가운데 기록된 해시와 같은 쪽을 쓴다(10-10 349개). 내용이 같아도 인덱스에 적힌 크기와 다르면 status가 ` M`으로 남으니, 지우기 직전 바이트 그대로 되살린다(`git ls-files --debug`의 size로 확인). 단 낡은 것을 일부러 없앤 정리라면 되살리지 않는다 — 정리 기록·커밋·진행 중인 GPT 작업으로 가리고, 헷갈리면 유호님께 여쭌다.
 - 다시 확인: 정리 뒤 `GIT_OPTIONAL_LOCKS=0 git ls-files --deleted | wc -l`이 0이다(10-17 0). 정리가 아직 돌고 있을 수 있으니 정리 기록 파일의 수정 시각이 멈췄는지도 본다.
+
+## 이력 훑기
+
+### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
+- 증상: `git clone --bare --filter=blob:limit=1m`로 받은 이력(1MB 넘는 blob 1,787개 빠짐)에서 `GIT_NO_LAZY_FETCH=1 git log --all -S<값>`과 `--find-object=<blob>`이 `fatal: could not fetch <blob> from promisor remote`로 끝났다(10-17 클라우드 비밀값 점검). 환경 변수가 없으면 빠진 큰 blob을 하나씩 받으러 간다.
+- 원인: 경로를 주지 않으면 모든 경로의 바뀐 blob을 읽는다(`-S`는 내용 비교, 이름 바뀜 탐지도 내용을 읽는다). 받지 않은 큰 blob에서 멈춘다. 둘 중 어느 쪽이 먼저 막혔는지는 가르지 않았다.
+- 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
+- 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.

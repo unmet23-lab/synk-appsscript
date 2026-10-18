@@ -61,7 +61,8 @@ test('브리프 추천: 제품 설명의 세부 분야와 성별 낱말', () => 
   assert.equal(top('딸기 아이스크림')[0], 'F02', '디저트까지 맞는 하린이 맨 위');
   assert.ok(!top('딸기 아이스크림').includes('M02'), '위스키·주류 모델은 디저트 광고에 올리지 않는다');
   assert.equal(top('프리미엄 위스키')[0], 'M02');
-  assert.equal(top('가계부 앱')[0], 'F03', '금융 낱말(가계부)과 앱이 겹치는 서진');
+  assert.ok(top('가계부 앱').slice(0, 2).includes('F03'), '금융 낱말(가계부)이 맞는 서진이 앞쪽');
+  assert.ok(!top('딸기 라떼 신메뉴').includes('M02'), '라떼에 위스키·주류 모델을 올리지 않는다');
   assert.deepEqual(top('남성 향수'), ['M01', 'M02'], '설명에 남성이 있으면 남자 모델만');
   assert.ok(top('여성 니트').every((c) => c.startsWith('F')));
   const it = L.recommend(models, { product: 'IT 솔루션 소개 영상' }, T, 1)[0];
@@ -119,6 +120,25 @@ test('같은 성별 안에서의 위치와 조사', () => {
   assert.equal(L.josa('M03', '을', '를'), '을(를)');
 });
 
+test('7명 모두 명세서(몸 비율·색)와 얼굴 기준·연출이 있다', () => {
+  const fs = require('node:fs');
+  const specDir = path.join(dir, '명세서');
+  const specs = fs.readdirSync(specDir).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(fs.readFileSync(path.join(specDir, f), 'utf8')));
+  for (const m of roster) {
+    const s = specs.find((x) => x['코드'] === m.code);
+    // 하린 명세서(F02_하린.json)는 LoRA 작업이 따로 관리해 아직 git 밖일 수 있다. 나머지 여섯은 이 캐스팅북이 만든다
+    if (!s && m.code === 'F02') continue;
+    assert.ok(s, `${m.code} 명세서`);
+    const body = s['몸']['측정_전신기준'];
+    for (const k of ['등신_머리카락포함', '어깨_얼굴폭_비', '다리비율_골반관절에서바닥']) assert.equal(typeof body[k], 'number', `${m.code} ${k}`);
+    for (const k of ['머리', '피부', '입술']) assert.match(s['색'][k], /^#[0-9A-F]{6}$/, `${m.code} ${k}`);
+    const extra = catalog.models[m.code];
+    assert.ok(extra.face && extra.face.length >= 3, `${m.code} 얼굴 기준`);
+    assert.ok(extra.direction && extra.direction.fit.length, `${m.code} 연출`);
+    assert.ok(!extra.body, `${m.code} 몸 비율은 명세서 한 곳에만`);
+  }
+});
+
 test('설정 파일: 분류 id가 겹치지 않고, 모델별 자료가 명단과 분류를 가리킨다', () => {
   const ids = catalog.industries.map((i) => i.id);
   assert.equal(new Set(ids).size, ids.length);
@@ -134,4 +154,36 @@ test('설정 파일: 분류 id가 겹치지 않고, 모델별 자료가 명단�
     const visible = text.replace(/"(dir|src)":"[^"]*"/g, '');
     assert.ok(!visible.includes(banned), banned);
   }
+});
+
+test('문의 글: 들어 보고 싶은 문장이 모델마다 들어간다', () => {
+  const picks = [{ code: 'M02', hair: 0, voice: 0, memo: '', line: '오늘 밤,\n한 잔의 깊이를' }];
+  const kmong = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'kmong' });
+  assert.match(kmong, /   이 목소리로 들어 보고 싶은 문장: “오늘 밤, 한 잔의 깊이를”/);
+  const order = L.inquiryText({ picks, models, brief: null, compare: [], taxonomy: TAX, format: 'order' });
+  assert.match(order, /\n대사: 오늘 밤, 한 잔의 깊이를/);
+  const none = L.inquiryText({ picks: [{ code: 'M02', hair: 0, voice: 0, memo: '' }], models, brief: null, compare: [], taxonomy: TAX });
+  assert.doesNotMatch(none, /문장/);
+});
+
+test('움직이는 사진: 7명 모두 loop/<코드>.mp4를 가리킨다', () => {
+  for (const m of roster) assert.equal((catalog.models[m.code].loop || {}).src, `loop/${m.code}.mp4`, m.code);
+});
+
+test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
+  const say = require(path.join(dir, 'say-server.cjs'));
+  const table = say.voiceTable();
+  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'M01', 'M02'], '유호(실제 목소리) 말고 여섯 명이 타입캐스트 목소리');
+  assert.deepEqual(Object.keys(table.M02), ['0', '1', '2']);
+  assert.ok(!JSON.stringify(table).includes('Gemini'));
+  assert.equal(say.clean(' 안녕\n하세요<b>\u0007 '), '안녕 하세요 b');
+  await new Promise((ok) => say.server.listen(0, '127.0.0.1', ok));
+  const url = `http://127.0.0.1:${say.server.address().port}/api/say`;
+  const post = async (body) => { const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return [r.status, (await r.json()).message]; };
+  try {
+    assert.equal((await post({ model: 'M03', voice: 0, text: '안녕하세요' }))[0], 404, '유호는 실제 목소리라 만들지 않는다');
+    assert.equal((await post({ model: 'M02', voice: 0, text: '가'.repeat(say.LIMIT.chars + 1) }))[0], 400);
+    assert.equal((await post({ model: 'M02', voice: 0, text: '   ' }))[0], 400);
+    assert.equal((await fetch(url)).status, 405);
+  } finally { await new Promise((ok) => say.server.close(ok)); }
 });

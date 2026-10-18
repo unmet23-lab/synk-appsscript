@@ -9,6 +9,9 @@ const ROUND_MS = 30000;
 export function createVoiceEncryption({ db, required, now, fail, provider, publish, invalidate, validate, cleanupPending, fenceShares }) {
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const rounds = new Map();
+  // A pause fences the current credential, not just one membership round. The
+  // SDK may already have discarded its Room when that round is superseded.
+  const pausedCredentials = new Map();
   const active = callId => all("SELECT * FROM voice_admissions WHERE call_id=? AND state='active' ORDER BY id", callId);
   const signature = rows => rows.map(row => row.id).join(',');
   const wipe = round => { round?.key?.fill(0); if (round) { round.key = null; round.challenges.clear(); round.acks.clear(); } };
@@ -33,6 +36,8 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
   }
   async function reconcile() {
     if (!required) return;
+    const activeIds = new Set(all("SELECT id FROM voice_admissions WHERE state='active'").map(row => row.id));
+    for (const id of pausedCredentials.keys()) if (!activeIds.has(id)) pausedCredentials.delete(id);
     const calls = all('SELECT * FROM voice_calls WHERE ended_at IS NULL');
     const liveIds = new Set(calls.map(call => call.id));
     for (const callId of rounds.keys()) if (!liveIds.has(callId)) clear(callId);
@@ -42,7 +47,7 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
       let round = rounds.get(call.id), sig = signature(rows);
       if (!round || round.signature !== sig) {
         wipe(round);
-        round = { signature: sig, status: 'pausing', epoch: randomUUID(), key: null, deadline: now() + ROUND_MS, paused: new Set(), challenges: new Map(), acks: new Set() };
+        round = { signature: sig, status: 'pausing', epoch: randomUUID(), key: null, deadline: now() + ROUND_MS, paused: new Set(rows.filter(row => pausedCredentials.has(row.id)).map(row => row.id)), challenges: new Map(), acks: new Set() };
         rounds.set(call.id, round); fenceShares(call.id);
         db.prepare("UPDATE voice_admissions SET media_state='securing',deadline_at=? WHERE call_id=? AND state='active'").run(round.deadline, call.id);
         publish('voice', call.channel_id);
@@ -55,7 +60,12 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
       // UpdateParticipant on Cloud revokes old tokens as well as changing live
       // permissions. Never distribute a new epoch while old media is flowing.
       for (const row of rows.filter(row => row.token_issued && !round.paused.has(row.id))) {
-        try { await provider.updatePermissions(call.room_name, row.id, { paused: true }); round.paused.add(row.id); }
+        try {
+          const paused = await provider.updatePermissions(call.room_name, row.id, { paused: true });
+          const notBefore = paused?.tokenNotBeforeMs ?? 0;
+          if (!Number.isSafeInteger(notBefore) || notBefore < 0) throw new Error('Invalid credential fence');
+          pausedCredentials.set(row.id, notBefore); round.paused.add(row.id);
+        }
         catch { invalidate(row, 'encryption_pause_failed'); }
         validate();
       }
@@ -74,6 +84,8 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
   }
   return {
     required, assertClient, summary, ready, fence, reconcile,
+    tokenReady(row) { return !required || now() >= (pausedCredentials.get(row.id) || 0); },
+    tokenIssued(row) { pausedCredentials.delete(row.id); },
     keyFor(row) {
       if (!required) fail('VOICE_E2EE_DISABLED', 409, '이 통화는 암호화 키를 사용하지 않습니다.');
       const round = rounds.get(row.call_id);
@@ -99,6 +111,6 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
       return summary(row.call_id, row.id);
     },
     invalidTracks(row, tracks) { return required && tracks.length > 0 && (tracks.some(track => track.encryption !== 'GCM') || !ready(row) && rounds.get(row.call_id)?.status !== 'pausing'); },
-    close() { for (const id of rounds.keys()) clear(id); },
+    close() { for (const id of rounds.keys()) clear(id); pausedCredentials.clear(); },
   };
 }

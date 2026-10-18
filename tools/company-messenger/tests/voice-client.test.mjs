@@ -265,6 +265,25 @@ async function startJoin(f) {
   await f.voice.join(CHANNEL);
 }
 
+test('a ready key round without a token waits for the revocation fence and resumes the same prepared Room', async t => {
+  let resumes = 0;
+  const ready = () => ({ ...callState({ status: 'ready' }), admission: admission(null, { status: 'ready' }) });
+  const f = await joinedController(t, {
+    'POST /api/voice/:id/encryption/ack': ready,
+    'POST /api/voice/:id/resume': () => ++resumes === 1 ? ready()
+      : { ...callState({ status: 'ready' }), admission: admission('after-revocation', { status: 'ready' }) },
+  });
+  f.setRoom(callState({ status: 'ready' }));
+  await startJoin(f);
+  await until(() => resumes === 1, 'first resume waits for the fence');
+  assert.equal(f.log.filter(row => row[0] === 'connect').length, 0);
+  await until(() => f.log.some(row => row[0] === 'connect' && row[1] === 'after-revocation'), 'automatic resume after the fence', 4000);
+  assert.equal(f.log.filter(row => row[1]?.endsWith?.('/voice/join')).length, 1);
+  assert.equal(f.log.filter(row => row[0] === 'worker').length, 1);
+  assert.equal(f.log.filter(row => row[1]?.endsWith?.('/encryption/ack')).length, 1);
+  assert.equal(resumes, 2);
+});
+
 test('a new epoch pauses local publishing, keeps signalling until the key arrives, then replaces Room, worker and tracks', async t => {
   let keyCalls = 0;
   const f = await joinedController(t, {

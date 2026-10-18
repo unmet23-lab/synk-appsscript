@@ -62,7 +62,7 @@ img.benefit-object{position:absolute;z-index:0;object-fit:contain;object-positio
 
 /* 둘러보기·라이브러리 카드와 홈 바로가기의 혜택 물건도 같은 바닥선에 세운다 */
 .app-card[class*="benefit-"] .app-art>img{inset:auto;top:12%;right:7%;width:44%;height:50%;max-height:none;margin:0;object-position:50% 100%;transform-origin:50% 100%}
-.quick-card:is([data-shortcut=care],[data-shortcut=fortune],[data-shortcut=rehearsal],[data-shortcut=family-album]) .quick-title>img{height:46%;max-height:none;object-position:50% 100%;transform-origin:50% 100%}
+.quick-card:is([data-shortcut=care],[data-shortcut=fortune]) .quick-title>img{height:46%;max-height:none;object-position:50% 100%;transform-origin:50% 100%}
 
 /* 약속 */
 .benefit-promise{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 32px;align-items:end;margin-top:52px;padding-top:32px;border-top:1px solid var(--line)}

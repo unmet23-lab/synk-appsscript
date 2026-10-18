@@ -256,10 +256,11 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
     const call = one('SELECT * FROM voice_calls WHERE id=?', row.call_id);
     const security = encryption.summary(call.id, row.id);
     const base = { ...rowState(row), room: call.room_name, identity: row.id, serverUrl: provider.serverUrl, canSpeak: Boolean(row.can_speak), encryption: security, share: sharing.current(row.id) };
-    if (!encryption.ready(row)) return { ...channelState(call.channel_id), admission: { ...base, token: null, tokenExpiresAt: null } };
+    if (!encryption.ready(row) || !encryption.tokenReady(row)) return { ...channelState(call.channel_id), admission: { ...base, token: null, tokenExpiresAt: null } };
     const credential = provider.issueToken(call.room_name, row.id, limits.maxConcurrentParticipants, sharing.permissions(row));
     assert(typeof credential.token === 'string' && credential.token.length > 0, 503, '통화 참가 정보를 만들지 못했습니다.');
     run('UPDATE voice_admissions SET token_issued=1 WHERE id=?', row.id);
+    encryption.tokenIssued(row);
     return { ...channelState(call.channel_id), admission: { ...base, token: credential.token, tokenExpiresAt: credential.expiresAt } };
   }
   function requireNoPending() { if (pending() && (one("SELECT 1 FROM voice_admissions WHERE state='revoking'") || one('SELECT 1 FROM voice_orphans'))) fail('VOICE_CLEANUP_PENDING', 503, '이전 통화 연결을 정리하고 있습니다. 잠시 후 다시 시도해 주세요.'); }

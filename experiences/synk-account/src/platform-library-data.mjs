@@ -1,8 +1,9 @@
 // Shared web/PC selections. No URLs, app permissions, or private product contents.
 export const PLATFORM_APP_IDS = Object.freeze(['world','messenger','teacher','path','pulse','partners','care','fortune','rehearsal','family-album']);
-// Keep the v1 storage contract, including historical Partners records. New UI
+// Keep the v1 storage contract, including historical app references. New UI
 // selections use the merged catalogue without rewriting an account document.
-export const ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter(id=>id!=='partners'));
+const RETIRED_PLATFORM_APP_IDS = new Set(['rehearsal','family-album']);
+export const ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter(id=>id!=='partners'&&!RETIRED_PLATFORM_APP_IDS.has(id)));
 export const platformAppId = id => id==='partners'?'pulse':id;
 export const platformDisplayAppId = (id,appIds=ACTIVE_PLATFORM_APP_IDS) => platformAppId(id)==='teacher'&&appIds.includes('teacher')&&appIds.includes('messenger')?'messenger':platformAppId(id);
 export const platformDisplayAppIds = (appIds=ACTIVE_PLATFORM_APP_IDS) => [...new Set(appIds.filter(id=>ACTIVE_PLATFORM_APP_IDS.includes(id)).map(id=>platformDisplayAppId(id,appIds)))];
@@ -27,9 +28,9 @@ export function validatePlatformLibrary(value) {
 }
 export function projectPlatformLibrary(value,{appIds=ACTIVE_PLATFORM_APP_IDS}={}) {
   const next=validatePlatformLibrary(value);
-  next.favorites=[...new Set(next.favorites.map(id=>platformDisplayAppId(id,appIds)))];
+  next.favorites=[...new Set(next.favorites.filter(id=>!RETIRED_PLATFORM_APP_IDS.has(id)).map(id=>platformDisplayAppId(id,appIds)))];
   const recent=new Map();
-  for(const row of next.recent){const id=platformDisplayAppId(row.id,appIds),previous=recent.get(id);if(!previous||row.at>previous.at)recent.set(id,{...row,id,...(row.id==='teacher'&&id!==row.id?{entryId:'teacher'}:{})});}
+  for(const row of next.recent){if(RETIRED_PLATFORM_APP_IDS.has(row.id))continue;const id=platformDisplayAppId(row.id,appIds),previous=recent.get(id);if(!previous||row.at>previous.at)recent.set(id,{...row,id,...(row.id==='teacher'&&id!==row.id?{entryId:'teacher'}:{})});}
   next.recent=[...recent.values()].sort((a,b)=>b.at-a.at);
   return next;
 }

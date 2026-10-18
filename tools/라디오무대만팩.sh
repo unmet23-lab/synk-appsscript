@@ -19,8 +19,8 @@
 #
 # ■ 쓰기
 #   1) 서버에서 소리 뽑기(가벼운 복사 · CPU 최저 우선순위):
-#        ssh synk@34.71.111.97 'mkdir -p /tmp/오디오 && for f in /opt/synk-radio/팩/*.ts; do b=$(basename "${f%.ts}"); nice -n 19 ffmpeg -y -loglevel error -i "$f" -vn -c:a copy /tmp/오디오/$b.aac; done'
-#        scp 'synk@34.71.111.97:/tmp/오디오/*.aac' <오디오폴더>/
+#        ssh synk-radio 'mkdir -p /tmp/오디오 && for f in /opt/synk-radio/팩/*.ts; do b=$(basename "${f%.ts}"); nice -n 19 ffmpeg -y -loglevel error -i "$f" -vn -c:a copy /tmp/오디오/$b.aac; done'
+#        scp 'synk-radio:/tmp/오디오/*.aac' <오디오폴더>/
 #   2) 덮개 굽기(0원): node tools/라디오배경굽기.js --장르 neon_water --무대덮개  (chuseok · dream_water · dream_field도)
 #   3) 이 스크립트:  bash tools/라디오무대만팩.sh <오디오폴더> <낼폴더>
 #   4) 낼폴더에 playlist.txt · playlist.원래.txt · 재생목록.json 을 옛 팩에서 복사해 넣고 서버 /opt/synk-radio/팩_무대만/ 로 올린 뒤

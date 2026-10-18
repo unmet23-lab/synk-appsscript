@@ -114,3 +114,34 @@ test('Harin has exactly two portrait motion samples with honest labels in editab
   }
   assert.deepEqual(selection,before);
 });
+
+test('only the founder model shows the finished music video as a poster, a click-to-play excerpt and a full-film link',async()=>{
+  const owners=CASTING_MODELS.filter(model=>model.works?.length);
+  assert.deepEqual(owners.map(model=>model.id),['M03']);
+  const [work]=owners[0].works,base='./assets/casting/video/M03-mv-happy-gangster-';
+  assert.deepEqual({kind:work.kind,title:work.title,poster:work.poster,excerpt:work.excerpt,full:work.full},{
+    kind:'music-video',title:'Happy, Happy Gangster',poster:base+'poster-v1.webp',
+    excerpt:{src:base+'excerpt-20s-v1.mp4',duration:'20초'},full:{src:base+'full-v1.mp4',duration:'3분 18초'},
+  });
+  assert.equal(owners[0].videos.every(video=>video.src===''),true,'ad and runway slots stay unproduced');
+  const poster=await readFile(new URL('./public/pulse-app/'+work.poster.slice(2),import.meta.url));
+  assert.equal(createHash('sha256').update(poster).digest('hex'),'cab9f663ca559534948325e96b80ccc41e840ae5665472e39bdbc19f6fd46e50');
+  const selection=normalizeDemoCasting({modelId:'M03',voice:'A'});
+  for(const editable of [true,false]){
+    const html=castingView(selection,{editable}),players=Array.from(html.matchAll(/<video\b[^>]*>/g),match=>match[0]);
+    assert.equal(players.length,1);
+    assert.equal(players[0],`<video controls playsinline preload="none" poster="${work.poster}" src="${work.excerpt.src}" aria-label="Happy, Happy Gangster · 20초 발췌">`);
+    assert.match(html,/<span class="eyebrow">MUSIC VIDEO<\/span><h5>Happy, Happy Gangster<\/h5>/);
+    assert.match(html,/유호의 작품과 광고·런웨이/);
+    assert.match(html,/<p class="casting-motion-note">SYNK가 직접 만든 뮤직비디오의 20초 발췌예요\. 3분 넘는 본편 내내 장면과 옷이 바뀌어도 같은 얼굴로 이어져요\.<\/p>/);
+    assert.ok(html.includes(`<a class="casting-work-full" href="${work.full.src}" target="_blank" rel="noopener noreferrer">본편 보기 · 3분 18초 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`));
+    assert.equal((html.match(/영상 준비 중/g)||[]).length,2);
+    assert.doesNotMatch(html,/autoplay|\bloop\b|preload="auto"|src=""|Kling|Wan|Seedance|Higgsfield/);
+  }
+  for(const modelId of ['M01','F01','F02','F03','M02','F04'])assert.doesNotMatch(castingView(normalizeDemoCasting({modelId})),/MUSIC VIDEO|casting-work/);
+  // The browser downloads these modules as-is, so even comments must not name the generation tools.
+  for(const file of ['casting-catalog.mjs','casting-view.mjs','casting.css']){
+    const source=await readFile(new URL('./public/pulse-app/'+file,import.meta.url),'utf8');
+    assert.doesNotMatch(source,/\b(?:Kling|Wan ?\d|Seedance|Higgsfield|Nano ?Banana|Veo)\b/i,file);
+  }
+});

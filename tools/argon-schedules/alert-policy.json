@@ -1,0 +1,36 @@
+{
+  "displayName": "SYNK Argon scheduled research failure",
+  "enabled": true,
+  "combiner": "OR",
+  "userLabels": {
+    "component": "argon-schedules",
+    "managed_by": "synk"
+  },
+  "documentation": {
+    "mimeType": "text/markdown",
+    "subject": "SYNK Argon 예약 실패 · ${log.extracted_label.role}",
+    "content": "SYNK Argon 예약의 실행 또는 문서 저장 검증이 실패했습니다.\n\n역할: ${log.extracted_label.role}\n\n오류 코드: ${log.extracted_label.error}\n\n시험 식별자: ${log.extracted_label.test_id}\n\nalert-test는 연결 확인용 합성 시험이며 운영 조사·문서는 변경하지 않습니다. 운영 오류는 서버의 해당 역할 run-status와 systemd 상태를 확인하세요. 다른 모델·유료 API로 자동 대체하지 않습니다. 이 알림에는 조사 본문·인증 정보가 포함되지 않습니다."
+  },
+  "conditions": [
+    {
+      "displayName": "Argon run or Docs verification failed",
+      "conditionMatchedLog": {
+        "filter": "resource.type=\"gce_instance\"\nresource.labels.project_id=\"synk-bake-unmet27\"\nresource.labels.instance_id=\"8318146427425792493\"\nlog_id(\"synk_argon_ops\")\nseverity>=ERROR\njsonPayload.event=\"SYNK_ARGON_RUN_FAILED\"\n(jsonPayload.role=~\"^(full|yt-tt|meta-brand|synkbrief)$\" OR (jsonPayload.role=\"alert-test\" AND jsonPayload.test=true))",
+        "labelExtractors": {
+          "role": "EXTRACT(jsonPayload.role)",
+          "error": "EXTRACT(jsonPayload.error)",
+          "test_id": "EXTRACT(jsonPayload.testId)"
+        }
+      }
+    }
+  ],
+  "notificationChannels": [
+    "projects/synk-bake-unmet27/notificationChannels/14855206170551846292"
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": {
+      "period": "300s"
+    },
+    "autoClose": "1800s"
+  }
+}

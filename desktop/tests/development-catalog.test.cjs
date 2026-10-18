@@ -48,7 +48,7 @@ test('full development discovery keeps local member records private across accou
 
 test('public apps offer a usable browser action while packaged and unsupported apps keep honest availability',async()=>{
   const {primaryAction,statusLabel}=await stateModule,{canOpenFromHome}=await homeModule;
-  const publicAppsAvailable=['care','fortune','rehearsal'];
+  const publicAppsAvailable=['care','fortune'];
   for(const id of publicAppsAvailable){
     const action=primaryAction({id},{native:true,publicAppsAvailable});
     assert.deepEqual(action,{label:'웹으로 열기',action:'public-web',disabled:false});
