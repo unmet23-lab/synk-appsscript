@@ -20,6 +20,12 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   installUpdate:()=>ipcRenderer.invoke('synk:install-update'),
   onUpdateChanged:callback=>subscribe('synk:update-changed',callback),
   getDesktopPreferences:()=>ipcRenderer.invoke('synk:desktop-preferences'),
+  careNotifications:Object.freeze({
+    status:()=>ipcRenderer.invoke('synk:care-notifications-status'),
+    configure:patch=>ipcRenderer.invoke('synk:care-notifications-configure',patch),
+    test:()=>ipcRenderer.invoke('synk:care-notifications-test'),
+    onChanged:callback=>subscribe('synk:care-notifications-changed',callback),
+  }),
   updateDesktopPreferences:patch=>ipcRenderer.invoke('synk:desktop-preferences-update',patch),
   copyPlatformDiagnostics:summary=>ipcRenderer.invoke('synk:copy-platform-diagnostics',summary),
   setTrayShortcuts:items=>ipcRenderer.invoke('synk:tray-shortcuts',items),
