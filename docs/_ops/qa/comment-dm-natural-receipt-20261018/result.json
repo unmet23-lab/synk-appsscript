@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "tested_at": "2026-10-18",
+  "timezone": "Asia/Seoul",
+  "result": "passed",
+  "scope": {
+    "campaign": "D0008",
+    "test_account": "1101yuh",
+    "post_url": "https://www.instagram.com/reel/DeoJ2fZKY9n/",
+    "new_comments": 1,
+    "new_dms": 1,
+    "new_public_replies": 1,
+    "code_reply_sent": false
+  },
+  "actual_receipt": {
+    "comment_url": "https://www.instagram.com/p/DeoJ2fZKY9n/c/18010401902992783/",
+    "public_reply_url": "https://www.instagram.com/p/DeoJ2fZKY9n/c/18010401902992783/r/17974765995147448/",
+    "first_dm_matches_approved": true,
+    "first_dm_bytes": 631,
+    "first_dm_sha256": "17e522fa533a0537e06fcc722f2647820ca0c66ee591355ac2df15eeac371f09",
+    "link_url": "https://github.com/unmet23-lab/claude-session-share",
+    "link_opened": true,
+    "public_reply_matches_approved": true
+  },
+  "synthetic_tests": {
+    "passed": 7,
+    "failed": 0,
+    "scope": "One-time trial SQL preparation and restoration; no external sends"
+  },
+  "post_trial_audit": {
+    "checked_at": "2026-10-18T10:25:46.005Z",
+    "all_checks_passed": true,
+    "checks": {
+      "original_rows_exact": true,
+      "original_global_unknown_count_exact": true,
+      "original_global_unknown_values_exact": true,
+      "original_account_suppression_count_exact": true,
+      "original_account_suppression_values_exact": true,
+      "other_source_six_exact": true,
+      "original_session_exact": true,
+      "original_two_sends_exact": true,
+      "original_two_done_queues_exact": true,
+      "campaign_all_columns_exact": true,
+      "new_trial_exact_shape": true,
+      "new_send_event_keys_match_actual_comment": true,
+      "new_queue_event_keys_match_actual_comment": true,
+      "new_send_queue_links_exact": true,
+      "new_opening_session_links_exact": true,
+      "new_send_current_approved_hash": true,
+      "new_sends_confirmed_sent_http200": true,
+      "new_queues_done_once_payload_zero": true,
+      "own_and_account_pending_zero": true,
+      "new_trial_archived_and_closed": true,
+      "actual_received_text_matches_current_render": true,
+      "global_sends_expected34_unknown2": true
+    },
+    "counts": {
+      "preserved_old_sessions": 1,
+      "preserved_old_sends": 2,
+      "preserved_old_done_queues": 2,
+      "preserved_other_source_optouts": 6,
+      "account_suppressions": 17,
+      "global_sends": {
+        "sent": 34,
+        "unknown": 2
+      },
+      "new_trial_sessions": 1,
+      "new_trial_sends": 2,
+      "new_trial_queues": 2,
+      "pending_payloads": 0
+    }
+  },
+  "server_times": {
+    "arm_intent": "2026-10-18T10:21:20.037Z",
+    "arm_deadline": "2026-10-18T10:24:20.037Z",
+    "restoration_confirmed_at": "2026-10-18T10:22:02.752Z",
+    "new_sends": [
+      {
+        "stage": "opening",
+        "state": "sent",
+        "http_status": 200,
+        "created_at": "2026-10-18T10:21:54.251747+00:00",
+        "updated_at": "2026-10-18T10:21:57.103699+00:00"
+      },
+      {
+        "stage": "public_reply",
+        "state": "sent",
+        "http_status": 200,
+        "created_at": "2026-10-18T10:21:57.163446+00:00",
+        "updated_at": "2026-10-18T10:21:58.13848+00:00"
+      }
+    ],
+    "new_queue": [
+      {
+        "stage": "opening",
+        "state": "done",
+        "attempts": 1,
+        "created_at": "2026-10-18T10:21:43.677747+00:00",
+        "updated_at": "2026-10-18T10:21:57.136391+00:00"
+      },
+      {
+        "stage": "public_reply",
+        "state": "done",
+        "attempts": 1,
+        "created_at": "2026-10-18T10:21:47.61225+00:00",
+        "updated_at": "2026-10-18T10:21:58.159529+00:00"
+      }
+    ]
+  },
+  "ui_evidence_times": {
+    "source": "ui-evidence.json; root browser verification, independently compared saved received text",
+    "comment_post_attempt_at": "2026-10-18T10:21:33.739Z",
+    "comment_visible_verified_at": "2026-10-18T10:21:50.731Z",
+    "dm_visible_verified_at": "2026-10-18T10:22:15.626Z",
+    "link_opened_at": "2026-10-18T10:24:03.237Z",
+    "public_reply_verified_at": "2026-10-18T10:24:46.069Z"
+  },
+  "timing_note": "send.created_at is reservation time; send.updated_at is persisted provider result time. UI verified times are when the browser observation was recorded, not an asserted exact delivery latency.",
+  "evidence": {
+    "local_directory": ".tmp/comment-dm-natural-receipt-20261018/",
+    "local_files": [
+      "ui-evidence.json",
+      "dm-received-text.txt",
+      "dm-received-approved.jpg",
+      "comment-and-public-reply.jpg",
+      "post-trial-audit.json",
+      "run-2026-10-18T10-20-20-198Z-8ac6333b/restored.json"
+    ],
+    "publication_scope": "Only this summary and the canonical written results are committed. Database row backups and screenshots remain local."
+  },
+  "remaining_scope": [
+    "P3 findings recorded in the handoff",
+    "Follow-up question, STOP and human-reply echo trials were not performed by this test"
+  ]
+}
