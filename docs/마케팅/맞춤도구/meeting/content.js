@@ -320,10 +320,11 @@
     id: 'brief.meeting', version: 1, checked: CHECKED,
     series: 'synkbrief 활용', title: '회의 기록 맞춤 정리',
     intro: {
-      eyebrow: 'synkbrief 활용 · 회의 정리',
-      title: '흩어진 회의 기록을<br><span class="hl">내 상황에 맞는</span> 회의록으로',
+      eyebrow: 'SYNKBRIEF · MEETING',
+      title: '흩어진 회의 기록을<br><span class="hl">내 상황에 맞는 회의록으로</span>',
       lead: '어떤 회의인지, 기록이 어떤 모양인지, 어떤 AI를 쓰는지 고르면 그대로 붙여 넣을 요청문과 한 번 저장할 규칙, 받는 사람에게 보낼 글까지 만들어 드려요. 고르는 동안 왜 그렇게 하는지도 알려 드릴게요.',
-      meta: ['약 1분', '질문 7~9개', 'ChatGPT·Claude·Gemini', '로그인 없음'],
+      // 첫 화면 계기판 칸은 좁고 「·」로 이은 말은 줄바꿈 없이 묶여 옆 칸을 덮는다 → AI 이름 셋은 소개 글에만(10-18)
+      meta: ['약 1분', '질문 7~9개', '세 AI 모두', '로그인 없음'],
       privacy: '고른 답만 이 기기에 저장돼요. 회의 내용은 이 화면에 입력하지 않아요.',
       start: '내 회의에 맞추기',
       linksLabel: '영상 속 자료 바로 받기',

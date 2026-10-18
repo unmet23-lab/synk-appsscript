@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>회의 기록 맞춤 정리 · synkbrief</title>
 <meta name="description" content="어떤 회의인지, 기록이 어떤 모양인지, 어떤 AI를 쓰는지 고르면 그대로 붙여 넣을 요청문, 프로젝트·스킬에 저장할 규칙, 보낼 문장까지 만들어 드려요. 영상 속 11쪽 PDF와 연습 자료도 여기 있어요.">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="synkbrief">
 <meta property="og:title" content="흩어진 회의 기록을 읽기 쉬운 회의록으로 · 1분 맞춤 정리">
@@ -19,12 +23,12 @@
 <link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css">
 </head>
-<body>
+<body class="t-meeting">
 <div class="tool">
   <header class="bar">
-    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈">
-      <img src="assets/brand-shift.webp" alt="synk SHIFT" width="103" height="28">
-      <span>synkbrief 활용</span>
+    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈 · synkbrief 활용">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">synkbrief <i>/</i> meeting</span>
     </a>
     <div class="bar-tools">
       <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
@@ -51,6 +55,8 @@ SynkWizard.start({
     id: 'brief.meeting',
     scope: { domain: 'SHIFT', workspace: 'synkbrief', subject: 'visitor' },
     content: SynkMeetingContent, rules: SynkMeetingRules, view: SynkMeetingView,
+    // 처음 쓰는 사람에겐 순서·가져가기·설정·확인표만. 「기본」「자세히」는 결과 안에서 고른다(컴퓨터 도구와 같은 기준, 10-18).
+    defaultLayout: 'quick',
     candidates: [
       { id: 'quick', pace: 'short', minutes: 2 },
       { id: 'guided', pace: 'standard', minutes: 4 },

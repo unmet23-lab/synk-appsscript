@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI 직원 매뉴얼 만들기 · yuhobuilds</title>
 <meta name="description" content="맡길 일과 기준을 고르면 ChatGPT·Claude·Gemini에 붙여 넣기만 하면 되는 내 AI 직원 매뉴얼을 만들어 드려요. 바로 써 보거나 한 번 넣어 두고 한 줄로 맡기세요. 질문 다섯 개, 로그인 없음.">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
 <link rel="canonical" href="https://synk.im/builds/manual/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="yuhobuilds">
@@ -19,14 +23,13 @@
 <link rel="icon" type="image/png" href="assets/favicon-32.png">
 <link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css">
-<link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="t-manual">
 <div class="tool">
   <header class="bar">
-    <a class="brand" href="https://synk.im/" aria-label="SYNK 홈">
-      <img src="assets/logo-synk.webp" alt="synk" width="58" height="28">
-      <span>yuhobuilds</span>
+    <a class="brand" href="https://synk.im/builds/" aria-label="yuhobuilds 맞춤 프로그램 모음">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">yuhobuilds <i>/</i> manual</span>
     </a>
     <div class="bar-tools">
       <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
@@ -53,6 +56,8 @@ SynkWizard.start({
     id: 'builds.manual',
     scope: { domain: 'SHIFT', workspace: 'yuhobuilds', subject: 'visitor' },
     content: SynkManualContent, rules: SynkManualRules, view: SynkManualView,
+    // 처음 쓰는 사람에겐 써 보기·한 줄 예·확인표만. 「기본」「자세히」는 결과 안에서 고른다(컴퓨터·회의 도구와 같은 기준, 10-18).
+    defaultLayout: 'quick',
     candidates: [
       { id: 'quick', pace: 'short', minutes: 2 },
       { id: 'guided', pace: 'standard', minutes: 4 },
