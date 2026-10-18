@@ -1,5 +1,5 @@
 /* SYNK FOR YOU 회원 혜택 앱 — 싱ㅋ 시그널 공통 틀 (2026-10-14)
- * 쓰는 곳: 무료 운세(daily-fortune) · 플레저(relationship-care) · 중요한 대화 리허설(conversation-rehearsal) · 가족 이야기 앨범(family-album)
+ * 쓰는 곳: 무료 운세(daily-fortune) · 플레저(relationship-care)
  * 기준: docs/디자인/플랫폼_시그널/README.md(토큰·부품·하지 않는 것), 맞춤 도구 2판(docs/마케팅/맞춤도구/core/signal.css),
  *       글자 2판(#pulse-client-room-type-20261013): 큰 제목 680 · 카드 제목 650 · 강조 600 · 라벨 550 · 본문 450(포스터 큰 한글만 900),
  *       크기 13·14·15.5·16·17·20·24 + 큰 제목 clamp, 한글 13px 이상, 영문·숫자 Inter Tight, 카드 왼쪽 색 막대 없음.
@@ -38,8 +38,6 @@
 @media (prefers-color-scheme:light){:root[data-theme=system]{--bg:#ECECEA;--panel:#FFFFFF;--surface-1:#F5F5F4;--surface-2:#EDEDEB;--surface-3:#E2E2E0;--line:rgba(8,9,12,.08);--line-2:rgba(8,9,12,.15);--ink:#08090C;--ink-2:rgba(8,9,12,.72);--ink-3:rgba(8,9,12,.56);--ink-4:rgba(8,9,12,.2);--on-ink:#FFFFFF;--glass:rgba(255,255,255,.74);--glass-strong:rgba(255,255,255,.92);--glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 12px 30px rgba(8,9,12,.12);--shadow:0 26px 64px rgba(8,9,12,.16);--butter-text:#7E5A10;--ok-text:#3F6B2E;--alert-text:#AE322A;color-scheme:light}}
 .app-fortune{--face:#E05C97;--on-face:#1C0711;--glow:#E05C97;--tint-night:#FFC2DC;--tint-day:#A52D63}
 .app-care{--face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9;--tint-night:#C5D6F5;--tint-day:#24448C}
-.app-rehearsal{--face:#F96859;--on-face:#1E0E0A;--glow:#F96859;--tint-night:#FFB4A9;--tint-day:#AE322A}
-.app-album{--face:#F5C445;--on-face:#251A04;--glow:#F5C445;--tint-night:#FFEBB0;--tint-day:#7E5A10}
 body{--tint:var(--tint-night)}
 :root[data-theme=day] body{--tint:var(--tint-day)}
 @media (prefers-color-scheme:light){:root[data-theme=system] body{--tint:var(--tint-day)}}

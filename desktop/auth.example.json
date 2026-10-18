@@ -10,8 +10,6 @@
     "teacher": { "clientId": "REPLACE_TEACHER_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43824/synk/oauth/teacher/callback" },
     "fortune": { "clientId": "REPLACE_FORTUNE_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43825/synk/oauth/fortune/callback" },
     "care": { "clientId": "REPLACE_CARE_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43826/synk/oauth/care/callback" },
-    "rehearsal": { "clientId": "REPLACE_REHEARSAL_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43827/synk/oauth/rehearsal/callback" },
-    "family-album": { "clientId": "REPLACE_FAMILY_ALBUM_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43828/synk/oauth/family-album/callback" },
     "path": { "clientId": "REPLACE_PATH_PUBLIC_CLIENT_ID", "redirectUri": "http://127.0.0.1:43829/synk/oauth/path/callback" }
   }
 }

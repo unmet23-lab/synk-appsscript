@@ -1,5 +1,15 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-benefits-retired-20261018"></a>
+## 2026-10-18 회원 혜택 정리
+
+사용자 요청으로 **가족 이야기 앨범**과 **중요한 대화 리허설**을 폐기한다. 소개만 숨기지 않고 웹·PC의 회원 혜택, 검색·실행 경로, 별도 앱과 전용 자산·계정 연결 코드를 삭제한다. 현재 혜택은 **내 성향 확인하기 · AI 구독 계정판 · 플레저 · 무료 운세**다. PATH 실사 면접실은 별도 제품으로 유지한다. 기존 계정 문서에 남은 앱 참조는 다른 메모를 읽기 위한 호환 범위만 허용하고 새 실행·즐겨찾기·메모 연결은 받지 않는다.
+
+후속 승인으로 공개 웹과 설치본까지 반영했다. 공개 `synk-policy` **b45319c**에서 두 서비스의 직접 주소·전용 자산 53개와 회원 혜택·로그인 소개·한국어/영어 FAQ를 정리하고, 다운로드와 기존 설치본 업데이트를 **0.4.24 / 20261018.1**로 함께 전환했다. 웹 AI 구독 소개 문구는 **cb7005c**에서 정리했다. 공개 응답 86개(변경 파일 SHA·삭제 404), 후속 변경 2파일·삭제 주소·업데이트 feed, 세 설치파일의 실제 공개 다운로드 SHA가 일치한다. [공개 대조](../.tmp/remove-member-benefits-release-20261018/public-verification.json) · [후속 확인](../.tmp/remove-member-benefits-release-20261018/public-follow-up-verification.json) · [릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.24).
+
+동일 소스의 Windows x64·Mac arm64/x64 설치·실행 QA가 [공통 CI 39111691408](https://github.com/unmet23-lab/synk-policy/actions/runs/39111691408)을 통과했다. 현재 PC는 검증된 설치기의 기존 엔진을 명령줄에서 실행해 설치했으며, 파일 75개·소스 150개를 대조했다. 실행 중이던 개발 창을 정상 종료하고 설치된 0.4.24로 인수해 SYNK ID 로그인·AI 구독 계정판의 보관 파일 보존, 네 혜택과 폐기 앱 실행 거절을 확인했다. [설치 대조](../.tmp/remove-member-benefits-release-20261018/installed-verification.json) · [실제 PC 인수](../.tmp/remove-member-benefits-release-20261018/native-handoff.json). 다른 PC/Mac은 공개된 업데이트 경로로 새 설치파일을 받으며, 원격 기기의 실제 설치 완료를 확인한 것은 아니다. 운영에 보관한 과거 개인 자료는 삭제하지 않았다.
+
+
 <a id="member-ai-subscriptions-20261017"></a>
 ## 2026-10-17 AI 구독 계정판 — PC 앱 회원 혜택
 

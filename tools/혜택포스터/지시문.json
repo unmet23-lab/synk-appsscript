@@ -36,20 +36,6 @@
       "BG": "#E05C97",
       "BGNAME": "pink",
       "OBJECT": "a fortune-teller's crystal ball: a perfectly round deep lapis-blue felt ball (#2E4FA8) with small butter-yellow felt stars and one small butter-yellow crescent moon felted onto its surface, resting in a chunky butter-yellow felt cup stand on a round charcoal felt base."
-    },
-    {
-      "이름": "benefit-rehearsal",
-      "쓰임": "중요한 대화 리허설(코랄, 큰 글자 「리허설」)",
-      "BG": "#F96859",
-      "BGNAME": "coral",
-      "OBJECT": "a retro stand microphone: a rounded charcoal felt microphone head (#2A2A2E) with a stitched grille pattern and a butter-yellow felt band around its middle, on a short thick charcoal felt stand with a solid round charcoal base. A small lapis-blue felt speech bubble floats just above and to the right of the microphone head."
-    },
-    {
-      "이름": "benefit-album",
-      "쓰임": "가족 이야기 앨범(버터, 큰 글자 「앨범」)",
-      "BG": "#F5C445",
-      "BGNAME": "butter yellow",
-      "OBJECT": "a thick closed photo album standing slightly turned, with a coral felt cover (#F2794E), a charcoal felt spine and charcoal felt corner protectors. One instant photo with a lapis-blue felt border peeks out of the top of the album; inside its border a tiny felt picture of a green hill under a pale blue sky."
     }
   ]
 }

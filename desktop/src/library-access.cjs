@@ -4,7 +4,7 @@
 // Input must be the authenticated synk-account GET response, never profile data
 // or renderer/local-storage answers. Company employment is NOT academy staff.
 // Retired Studio/SHIFT/Partners grants are ignored; they never grant another app.
-const APP_IDS=Object.freeze(['world','messenger','teacher','path','pulse','care','fortune','rehearsal','family-album']);
+const APP_IDS=Object.freeze(['world','messenger','teacher','path','pulse','care','fortune']);
 const identifier=value=>typeof value==='string'&&value.length>0&&value.length<=120&&value.trim()===value&&!/[\x00-\x1f\x7f]/.test(value);
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const unavailable=()=>({status:'unavailable',appIds:[]});

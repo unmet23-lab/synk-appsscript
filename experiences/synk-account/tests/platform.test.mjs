@@ -40,22 +40,22 @@ test('search, category and local collection filters combine without granting acc
 test('benefit shortcuts persist beside existing apps and can be found by category, search and favorites', () => {
  const map = new Map(), storage = { getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value) };
  let library = createLibrary(storage);
- library.dispatch({ type: 'save', id: 'world' });library.dispatch({ type: 'favorite', id: 'care' });library.dispatch({ type: 'save', id: 'family-album' });
+ library.dispatch({ type: 'save', id: 'world' });library.dispatch({ type: 'favorite', id: 'care' });library.dispatch({ type: 'save', id: 'fortune' });
  library = createLibrary(storage);
- assert.deepEqual(library.read().saved, ['world', 'care', 'family-album']);assert.deepEqual(library.read().recent, []);
- assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, category: 'life' }).map(v => v.id), ['care', 'family-album']);
- assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, query: '사진' }).map(v => v.id), ['family-album']);
+ assert.deepEqual(library.read().saved, ['world', 'care', 'fortune']);assert.deepEqual(library.read().recent, []);
+ assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, category: 'life' }).map(v => v.id), ['care', 'fortune']);
+ assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, query: '운세' }).map(v => v.id), ['fortune']);
  assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, collection: 'favorites' }).map(v => v.id), ['care']);
  assert.deepEqual(filterApplications({ library: library.read() }).map(v => v.id), ['world', 'messenger', 'path']);
  assert.equal(libraryItemRoute('care'), '#benefits/care');assert.equal(libraryItemRoute('world'), '#app/world');assert.equal(libraryItemRoute('unknown'), '#discover');
- library.dispatch({ type: 'save', id: 'care' });assert.deepEqual(library.read().favorites, []);assert.deepEqual(library.read().saved, ['world', 'family-album']);
+ library.dispatch({ type: 'save', id: 'care' });assert.deepEqual(library.read().favorites, []);assert.deepEqual(library.read().saved, ['world', 'fortune']);
 });
-test('seven explicit launch requests survive reload without becoming completed activity or account records', () => {
- const ids = ['world', 'messenger', 'path', 'care', 'fortune', 'rehearsal', 'family-album'];
+test('five explicit launch requests survive reload without becoming completed activity or account records', () => {
+ const ids = ['world', 'messenger', 'path', 'care', 'fortune'];
  let state = normalizeLibrary();ids.forEach((id, index) => { state = updateLibrary(state, { type: 'launch', id, mode: 'web' }, index + 1); });
  assert.deepEqual(state.recent.map(v => v.id), [...ids].reverse());assert.deepEqual(state.saved, []);
  state = updateLibrary(state, { type: 'launch', id: 'care', mode: 'web' }, 20);
- assert.equal(state.recent.length, 7);assert.deepEqual(state.recent[0], { id: 'care', at: 20, mode: 'web' });
+ assert.equal(state.recent.length, 5);assert.deepEqual(state.recent[0], { id: 'care', at: 20, mode: 'web' });
  assert.deepEqual(normalizeLibrary(JSON.parse(JSON.stringify(state))), state);
  state = updateLibrary(state, { type: 'remember', value: false });state = updateLibrary(state, { type: 'launch', id: 'care', mode: 'web' }, 30);
  assert.deepEqual(state.recent, []);

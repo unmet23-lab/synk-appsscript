@@ -39,7 +39,7 @@ test('unknown app IDs, arbitrary links, duplicate records and unsafe dates are r
 
 test('merged catalogue keeps historical Partners records valid and projects duplicate shortcuts without changing storage',()=>{
  const doc={...make(),favorites:['pulse','partners','world'],recent:[{id:'pulse',at:10,mode:'web'},{id:'partners',at:20,mode:'client'}],notes:[{id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:true}]},before=structuredClone(doc);
- assert.equal(PLATFORM_APP_IDS.length,10);assert.equal(ACTIVE_PLATFORM_APP_IDS.length,9);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('partners'),false);
+ assert.equal(PLATFORM_APP_IDS.length,10);assert.equal(ACTIVE_PLATFORM_APP_IDS.length,7);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('partners'),false);
  assert.deepEqual(validatePersonalState('platform-library',doc),doc);
  const visible=projectPlatformLibrary(doc);assert.deepEqual(visible.favorites,['pulse','world']);assert.deepEqual(visible.recent,[{id:'pulse',at:20,mode:'client'}]);assert.deepEqual(visible.notes,doc.notes);assert.deepEqual(doc,before);
 });
@@ -65,7 +65,7 @@ test('disabled recent capture clears history and later launches cannot restore i
 test('web and PC fixed requests target only platform-library with platform credentials',()=>{
  const doc=make();assert.equal(requestSpec('platformLoad',{},'0.4.0','platform','platform').path,'synk-personal?resource=platform-library');
  assert.equal(requestSpec('platformSave',{state:doc,expected_revision:2},'0.4.0','platform','platform').body.resource,'platform-library');
- for(const [product,key] of [['world','world'],['platform','care'],['platform','rehearsal']])assert.throws(()=>requestSpec('platformLoad',{},'0.4.0',product,key));
+ for(const [product,key] of [['world','world'],['platform','care'],['platform']])assert.throws(()=>requestSpec('platformLoad',{},'0.4.0',product,key));
  assert.throws(()=>requestSpec('platformDelete',{expected_revision:1,resource:'family-album'},'0.4.0','platform','platform'));
 });
 const identity=id=>({configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:id},sessionGeneration:1});
@@ -160,4 +160,10 @@ test('native library logout and disposal fence a pending saved-login verificatio
 });
 test('native library ordinary explicit signed-out login still invokes fresh OAuth',async()=>{
  const f=nativeRetryAccountFixture({configured:true,status:'signed-out',signedIn:false,sessionGeneration:2});await f.account.start();await f.account.signIn();assert.deepEqual(f.counts(),{loads:0,oauth:1,statusReads:2});f.account.dispose();
+});
+
+test('retired app references remain readable without becoming active shortcuts or accepting new actions',()=>{
+  const old={...emptyPlatformLibrary(),consent:true,favorites:['world','rehearsal','family-album'],recent:[{id:'family-album',at:1,mode:'web'}],notes:[{id:'old-note',appId:'family-album',title:'보관한 메모',done:false,createdAt:1}]};
+  const projected=projectPlatformLibrary(old);assert.deepEqual(projected.favorites,['world']);assert.deepEqual(projected.recent,[]);assert.equal(projected.notes[0].title,'보관한 메모');assert.deepEqual(validatePlatformLibrary(old),old);
+  for(const id of ['rehearsal','family-album'])for(const type of ['favorite','launch','note'])assert.throws(()=>updatePlatformLibrary(old,{type,id,title:'새 메모',mode:'web'},2));
 });

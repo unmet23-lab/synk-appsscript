@@ -13,7 +13,7 @@ export const CONTEXTS={
   partner:{label:'외부 창작·파트너 협업',goal:'expression',ids:['pulse']},
   team:{label:'SYNK 사내 업무',goal:'work',ids:['messenger']},
 };
-const goals={world:['study'],messenger:['work','expression'],teacher:['clarity'],path:['prepare'],pulse:['explore','expression'],care:['prepare','expression'],fortune:['explore'],rehearsal:['prepare','expression'],'family-album':['expression','explore']};
+const goals={world:['study'],messenger:['work','expression'],teacher:['clarity'],path:['prepare'],pulse:['explore','expression'],care:['prepare','expression'],fortune:['explore']};
 const goalLabels={explore:'새로운 공간 살펴보기',study:'한국어 학습 시작하기',clarity:'수업과 설명 준비하기',work:'업무에 활용하기',expression:'만들고 표현하기',prepare:'다음 단계 준비하기'};
 const defaults={textSize:'standard',explanation:'standard',motion:'full'};
 const now=()=>new Date().toISOString();

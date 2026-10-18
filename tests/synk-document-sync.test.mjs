@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createDocumentSync } from '../experiences/synk-account/src/document-sync.mjs';
 
-const PREFIX = 'synthetic-document-sync:family-album:';
+const PREFIX = 'synthetic-document-sync:path:';
 const ACCOUNT = 'synthetic-owner';
 const keyFor = account => PREFIX + encodeURIComponent(account);
 const pendingEntries = (storage, account = ACCOUNT) => [...storage.data].filter(([key, raw]) => {
@@ -31,9 +31,9 @@ function memoryStorage(initial = []) {
 function fixture({ storage = memoryStorage(), transport, remoteText = 'server', onSaved = () => {}, onRemoved = () => {}, preferRemoteOnOpen = false } = {}) {
   const statuses = [], states = [], calls = [];
   let revision = 0, remote = state(remoteText);
-  const reply = () => ({ ok: true, scope: 'synk-personal', resource: 'family-album', accountId: ACCOUNT, revision, state: remote });
+  const reply = () => ({ ok: true, scope: 'synk-personal', resource: 'path', accountId: ACCOUNT, revision, state: remote });
   const sync = createDocumentSync({
-    storage, onSaved, onRemoved, preferRemoteOnOpen, cachePrefix: PREFIX, scope: 'synk-personal', resource: 'family-album',
+    storage, onSaved, onRemoved, preferRemoteOnOpen, cachePrefix: PREFIX, scope: 'synk-personal', resource: 'path',
     operations: { load: 'personalLoad', save: 'personalSave', delete: 'personalDelete' },
     validateState, emptyState: () => state(''),
     onState: value => states.push(structuredClone(value)), onStatus: value => statuses.push(structuredClone(value)),
@@ -72,7 +72,7 @@ test('successful load/save/refresh/delete/close leaves no completed cache and on
 test('pending offline data survives close and reopens only for its account', async t => {
   const storage = memoryStorage([[keyFor('other-owner'), cache('other-owner', 'other private draft')]]);
   const offline = fixture({ storage, transport: async action => {
-    if (action === 'personalLoad') return { ok: true, scope: 'synk-personal', resource: 'family-album', accountId: ACCOUNT, revision: 0, state: state('server') };
+    if (action === 'personalLoad') return { ok: true, scope: 'synk-personal', resource: 'path', accountId: ACCOUNT, revision: 0, state: state('server') };
     throw Object.assign(new Error('Offline'), { code: 'NETWORK_FAILED' });
   } });
   t.after(() => offline.sync.close());
@@ -201,7 +201,7 @@ function sharedServer({ beforeSave = async () => {} } = {}) {
         if (body.expected_revision !== revision) return { ok: false, revision, error: { code: 'REVISION_CONFLICT' } };
         remote = action === 'personalSave' ? validateState(body.state) : null; revision++;
       }
-      return { ok: true, scope: 'synk-personal', resource: 'family-album', accountId: ACCOUNT, revision, state: remote };
+      return { ok: true, scope: 'synk-personal', resource: 'path', accountId: ACCOUNT, revision, state: remote };
     },
   };
 }

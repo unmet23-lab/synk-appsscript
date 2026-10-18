@@ -1,7 +1,7 @@
 'use strict';
 
 // Fixed public navigation carries only the verified account to match; OAuth grants access.
-const PUBLIC_APP_URLS=Object.freeze({care:'https://synk.im/care/',fortune:'https://synk.im/fortune/',rehearsal:'https://synk.im/rehearsal/','family-album':'https://synk.im/album/',path:'https://synk.im/path/interview/film/rehearsal.html'});
+const PUBLIC_APP_URLS=Object.freeze({care:'https://synk.im/care/',fortune:'https://synk.im/fortune/',path:'https://synk.im/path/interview/film/rehearsal.html'});
 function publicAppDestination(id){return typeof id==='string'&&Object.hasOwn(PUBLIC_APP_URLS,id)?PUBLIC_APP_URLS[id]:null;}
 function publicAppsAvailable({clientId,mode}){return clientId==='platform'&&mode==='development'?Object.keys(PUBLIC_APP_URLS):[];}
 function createPublicApps({clientId,mode,openExternal,accountStatus=()=>null}){
