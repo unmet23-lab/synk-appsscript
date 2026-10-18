@@ -1,0 +1,633 @@
+{
+  "schema": "synk-sns-public-post-counting-verification/v1",
+  "status": "passed-with-explicit-platform-exclusions",
+  "recordedAt": "2026-10-18T10:46:57.093Z",
+  "url": "https://workspace.synk.im/?tab=social&section=overview",
+  "release": {
+    "manifestSha256": "c5c80352e532ef23b9b35e0167b1dd19b5a1e4bd4c6753bf58c8e761ff40c41b",
+    "image": "sha256:4eace03ccdf2c21b63b89c2a2819199ffb5ab6f72ac0d49871fa07ea87c36a05",
+    "sourceFiles": 1040,
+    "imagePayloadFiles": 601,
+    "deploymentId": "40ffa4944dee3bebf0dfb3b29934a6ae",
+    "sourceCommit": "8cdb318b9b5e15e12ad37a97c2fc6de555b53386",
+    "localBranch": "codex/sns-real-post-counts-20261018"
+  },
+  "inventory": {
+    "officialAt": "2026-10-18T09:47:34.010Z",
+    "storedAt": "2026-10-18T09:48:59.721Z",
+    "registeredChannels": 34,
+    "verifiedChannels": 26,
+    "publicPosts": 59,
+    "published7d": 40,
+    "unavailableExcluded": 3,
+    "allPostIdsMatched": true,
+    "duplicatePosts": 0,
+    "missingPosts": 0,
+    "channels": [
+      {
+        "channelId": "26ee82b6-9206-4ebe-959c-d9183755a3ad",
+        "platform": "youtube",
+        "handle": "synkkorean",
+        "officialId": "UCmZplYKuNHLPng4iL2AbLLg",
+        "name": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+        "posts": 12,
+        "postIds": [
+          "-sLV-OAim3k",
+          "4PmAR9VNHS8",
+          "7CuEvVZrVYY",
+          "AjSVuiLzIVk",
+          "F4iJDO6mjaY",
+          "Stt1zyAorEs",
+          "V9ccOv2s9CU",
+          "aHASRkZDalc",
+          "fMIYxAVV6Bw",
+          "knW2_3ifY08",
+          "lnmZrBsALGg",
+          "oebEFTik10w"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "cb94bc7e-54e1-465f-8cc5-d64f41bb4c9a",
+        "platform": "instagram",
+        "handle": "synk.mn",
+        "officialId": "17841411304755030",
+        "name": "SYNK LAB",
+        "posts": 4,
+        "postIds": [
+          "17871543513641871",
+          "17881377573626643",
+          "17905018206573719",
+          "17999613777010925"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "ff61f46f-fec3-499a-955b-a773d8755e39",
+        "platform": "facebook",
+        "handle": "synkworld",
+        "officialId": "1140051542527584",
+        "name": "SYNK",
+        "posts": 13,
+        "postIds": [
+          "1140051542527584_1118453540620849",
+          "1140051542527584_122121785835343429",
+          "1140051542527584_122128096023343429",
+          "1140051542527584_122130175269343429",
+          "1140051542527584_122134074867343429",
+          "1140051542527584_122135816055343429",
+          "1140051542527584_122135975871343429",
+          "1140051542527584_122136098109343429",
+          "1140051542527584_122136692421343429",
+          "1140051542527584_1288531877687015",
+          "1140051542527584_1482183887005783",
+          "1140051542527584_2471881933305790",
+          "1140051542527584_898583633106585"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
+        "platform": "youtube",
+        "handle": "yuhobuilds",
+        "officialId": "UCxoNjKiW4pP6Hbpn2xeu_qg",
+        "name": "유호 · AI와 회사 만들기",
+        "posts": 4,
+        "postIds": [
+          "E5UKkLg5O24",
+          "Nq4ek0Cuau4",
+          "R3zPsNM6a2c",
+          "SVLlCOGRbVI"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
+        "platform": "instagram",
+        "handle": "yuhobuilds",
+        "officialId": "17841431575383549",
+        "name": "유호 · AI와 회사 만들기",
+        "posts": 4,
+        "postIds": [
+          "17885047476503509",
+          "17885763336505619",
+          "17907241008576385",
+          "18095724692124430"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "cffc89eb-dcc4-472e-9b29-7b2013d25602",
+        "platform": "youtube",
+        "handle": "synkbrief",
+        "officialId": "UCin1csie3qJ3GH1Yb6RnLrg",
+        "name": "SYNK 브리핑",
+        "posts": 0,
+        "postIds": [],
+        "matched": true
+      },
+      {
+        "channelId": "620ff779-b81c-4c04-81d4-e9e842cab6a8",
+        "platform": "instagram",
+        "handle": "synkbrief",
+        "officialId": "17841433358976667",
+        "name": "SYNK 브리핑",
+        "posts": 0,
+        "postIds": [],
+        "matched": true
+      },
+      {
+        "channelId": "09446f6f-1e07-4b17-be5e-f9d4a8792832",
+        "platform": "youtube",
+        "handle": "synklabvietnam",
+        "officialId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+        "name": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+        "posts": 1,
+        "postIds": [
+          "rBkmRlUAuk0"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "3b879812-7054-4467-ab66-0b83c3744521",
+        "platform": "youtube",
+        "handle": "synklabjapan",
+        "officialId": "UCXpX-UiwswwUqoQkRVdJyow",
+        "name": "SYNK LAB Japan | 楽しい韓国語",
+        "posts": 1,
+        "postIds": [
+          "DA0Xrvrmd8Y"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "34c5d37b-b675-4a88-9d80-334d6435c895",
+        "platform": "youtube",
+        "handle": "synklabtaiwan",
+        "officialId": "UC3BeJKEOQ-wqLf93N_vIGqg",
+        "name": "SYNK LAB Taiwan | 快樂學韓語",
+        "posts": 1,
+        "postIds": [
+          "pL3c0aenbTY"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "76cad8b1-8e4f-4a4a-955d-d986786336c8",
+        "platform": "youtube",
+        "handle": "synklabmyanmar",
+        "officialId": "UCEbtgcX5zd6jX8r1o9iIgdw",
+        "name": "SYNK LAB Myanmar | ကိုရီးယားစာ ပျော်ပျော်သင်မယ်",
+        "posts": 1,
+        "postIds": [
+          "B0BNHSCtnQw"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "56424e13-073d-4ce3-80ab-812e33d5545f",
+        "platform": "youtube",
+        "handle": "synklabthailand",
+        "officialId": "UCyGr1LIjHGp_lZTtq-48EdA",
+        "name": "SYNK LAB Thailand | เรียนเกาหลีสนุก ๆ",
+        "posts": 1,
+        "postIds": [
+          "Qcxom0h-QFM"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "497890ea-a4d9-4834-9bf2-108e35037a27",
+        "platform": "youtube",
+        "handle": "synklabindonesia",
+        "officialId": "UC2hBQHVItJj6-YC_qsP7stQ",
+        "name": "SYNK LAB Indonesia | Serunya Bahasa Korea",
+        "posts": 1,
+        "postIds": [
+          "9kWfsBLIV4A"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "55d3ff7c-4776-456f-a2fa-12dcaffec54f",
+        "platform": "youtube",
+        "handle": "synklabindia",
+        "officialId": "UCgpWbvOtTCz5TIrZ9yf-96A",
+        "name": "SYNK LAB India | मज़ेदार कोरियन",
+        "posts": 1,
+        "postIds": [
+          "NNxld3yWjXE"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "9c941e8f-550f-43c5-be11-682203d58db6",
+        "platform": "facebook",
+        "handle": "synklab.np",
+        "officialId": "1311065102093068",
+        "name": "SYNK LAB Nepal",
+        "posts": 2,
+        "postIds": [
+          "1311065102093068_122104565835478645",
+          "1311065102093068_122122866339478645"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "dd5c34c5-9d73-48c8-b220-c22b0072e088",
+        "platform": "youtube",
+        "handle": "synklabkyrgyzstan",
+        "officialId": "UC9bdSh8r5iAtQS1r8_jS2hQ",
+        "name": "SYNK LAB Kyrgyzstan | Кызыктуу корей тили",
+        "posts": 1,
+        "postIds": [
+          "fqleiSiOANg"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "885cc23b-6d3b-45a3-8cfe-854967fd1661",
+        "platform": "facebook",
+        "handle": null,
+        "officialId": "1311331138729740",
+        "name": "SYNK LAB Cambodia",
+        "posts": 2,
+        "postIds": [
+          "1311331138729740_122095105407490889",
+          "1311331138729740_122112647817490889"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "3fdb93be-0d13-4a34-95be-d18ff3c30f30",
+        "platform": "youtube",
+        "handle": "synklabusa",
+        "officialId": "UCWpKsFuvNi0LfUeYirNrRww",
+        "name": "SYNK LAB USA | Korean Made Fun",
+        "posts": 1,
+        "postIds": [
+          "l_OEhuO77B8"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "6b5e51b3-16b3-43bb-b687-63d1f98e8567",
+        "platform": "youtube",
+        "handle": "synklabphilippines",
+        "officialId": "UCojw4LpKyelcfgniVxng-Ew",
+        "name": "SYNK LAB Philippines | Korean Made Fun",
+        "posts": 1,
+        "postIds": [
+          "ms7Up63e4vQ"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "f42ba3fe-582e-45d0-956b-5ec0b81b86f2",
+        "platform": "youtube",
+        "handle": "synklabsrilanka",
+        "officialId": "UCoz4Uv4iE6Dd4cNe-C1eXng",
+        "name": "SYNK LAB Sri Lanka | සතුටින් කොරියානු ඉගෙන ගමු",
+        "posts": 1,
+        "postIds": [
+          "HDVQT7LxqEs"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "823edddf-0588-48f6-b15f-7afd21bc724a",
+        "platform": "facebook",
+        "handle": null,
+        "officialId": "1322127544319220",
+        "name": "SYNK LAB Sri Lanka",
+        "posts": 2,
+        "postIds": [
+          "1322127544319220_122108042295475802",
+          "1322127544319220_122121312339475802"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "a5891b9d-7859-4be9-9a2c-20e749dfc7ac",
+        "platform": "youtube",
+        "handle": "synklabaustralia",
+        "officialId": "UCSTmpu2wPZYimD3jkXzr3aQ",
+        "name": "SYNK LAB Australia | Korean Made Fun",
+        "posts": 1,
+        "postIds": [
+          "-dbjPFed3jk"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "e2ed2286-bce5-4cfe-adbd-b21a6abf369f",
+        "platform": "youtube",
+        "handle": "synklabparaguay",
+        "officialId": "UCyYm3TWZQWliVyHF_dc3Tbg",
+        "name": "SYNK LAB Paraguay | Coreano divertido",
+        "posts": 1,
+        "postIds": [
+          "p3swrt_WLyU"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "f249263e-eb6b-4bc3-8f29-486b24982444",
+        "platform": "youtube",
+        "handle": "synklabnewzealand",
+        "officialId": "UCN0hYfLSOCuaIc_f0QW2Iww",
+        "name": "SYNK LAB New Zealand | Korean Made Fun",
+        "posts": 1,
+        "postIds": [
+          "SjaW5Kuyd4c"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "312ac182-4e2b-4c13-998f-204d799809e9",
+        "platform": "youtube",
+        "handle": "synklabmalaysia",
+        "officialId": "UCyZ4fygi4pMnNRgUrcNqnAQ",
+        "name": "SYNK LAB Malaysia | Seronok Belajar Korea",
+        "posts": 1,
+        "postIds": [
+          "GzYiwwlRUa0"
+        ],
+        "matched": true
+      },
+      {
+        "channelId": "b67f77cc-4154-462c-881e-db1deb7e8496",
+        "platform": "youtube",
+        "handle": "synklabcanada",
+        "officialId": "UCtw3xrupij61YVBR_IgBVUQ",
+        "name": "SYNK LAB Canada | Korean Made Fun",
+        "posts": 1,
+        "postIds": [
+          "QEVhfK3Om8U"
+        ],
+        "matched": true
+      }
+    ],
+    "lastVerifiedStoredAt": "2026-10-18T10:46:59.218Z",
+    "lastVerifiedStoredPostIdsMatched": true
+  },
+  "automatic": {
+    "processStartedAt": "2026-10-18T09:44:12.821609329Z",
+    "runtimeFlags": {
+      "background": "0",
+      "workroom": "1"
+    },
+    "channels": 26,
+    "runs": 26,
+    "firstStartedAt": "2026-10-18T09:44:16.867Z",
+    "lastFinishedAt": "2026-10-18T09:44:37.616Z",
+    "beforeManualFullAt": "2026-10-18T09:48:00.758Z",
+    "recentEveryMinutes": 30,
+    "fullAtKst": "09:00",
+    "pcRequired": false,
+    "followup": {
+      "at": "2026-10-18T10:19:46.229Z",
+      "runs": 25,
+      "firstStartedAt": "2026-10-18T10:18:16.923Z",
+      "lastFinishedAt": "2026-10-18T10:19:20.731Z",
+      "additionalManualRequestsByThisTask": 0
+    }
+  },
+  "exclusions": {
+    "unavailablePrivateVideoIds": [
+      "Tn0nig6MPOQ",
+      "RDbcBaSk3CA",
+      "m-1mBAmjdeI"
+    ],
+    "unconnectedOrUnsupported": [
+      {
+        "platform": "tiktok",
+        "handle": "synk.mn",
+        "name": "LAB · 몽골 · @synk.mn",
+        "reason": "No reviewed TikTok Display API app"
+      },
+      {
+        "platform": "tiktok",
+        "handle": "yuhobuilds",
+        "name": "YUHO · 공통·미분리 · @yuhobuilds",
+        "reason": "No reviewed TikTok Display API app"
+      },
+      {
+        "platform": "threads",
+        "handle": "yuhobuilds",
+        "name": "YUHO · 공통·미분리 · @yuhobuilds",
+        "reason": "No current collector; legacy record retained"
+      },
+      {
+        "platform": "x",
+        "handle": "yuhobuilds",
+        "name": "YUHO · 공통·미분리 · @yuhobuilds",
+        "reason": "No current collector; legacy record retained"
+      },
+      {
+        "platform": "tiktok",
+        "handle": "synkbrief",
+        "name": "SHIFT · 공통·미분리 · @synkbrief",
+        "reason": "No reviewed TikTok Display API app"
+      },
+      {
+        "platform": "linkedin",
+        "handle": "synk-im",
+        "name": "SYNK · 공통·미분리 · synk-im",
+        "reason": "No current collector; legacy record retained"
+      },
+      {
+        "platform": "tiktok",
+        "handle": "synklab.vn",
+        "name": "LAB · 베트남 · @synklab.vn",
+        "reason": "No reviewed TikTok Display API app"
+      },
+      {
+        "platform": "tiktok",
+        "handle": "synklab.mm",
+        "name": "LAB · 미얀마 · @synklab.mm",
+        "reason": "No reviewed TikTok Display API app"
+      }
+    ],
+    "insights": {
+      "platform": "instagram",
+      "handle": "yuhobuilds",
+      "inventoryComplete": true,
+      "posts": 4,
+      "unavailableValuesKeptUnknown": true
+    },
+    "youtubeLive": {
+      "handle": "synkkorean",
+      "shorts": 11,
+      "live": 1,
+      "publicInventory": 12,
+      "channelVideoCount": 11
+    },
+    "manualTikTok": {
+      "includedInAutomaticTotal": false,
+      "lab": {
+        "handle": "synk.mn",
+        "posts": 3
+      },
+      "synkbrief": {
+        "handle": "synkbrief",
+        "posts": 0
+      },
+      "officialReviewGuidelines": "https://developers.tiktok.com/docs/en/app-review-guidelines"
+    }
+  },
+  "validation": {
+    "windowsProduct": {
+      "tests": 1048,
+      "pass": 1048,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "linuxProductTests": 1048,
+    "linuxCompatibilityTests": 2,
+    "externalNetworkInProductTests": false,
+    "productionBrowserLogin": "existing original user session retained",
+    "snsUi": {
+      "desktop": {
+        "width": 1440,
+        "height": 900
+      },
+      "mobile": {
+        "width": 390,
+        "height": 844
+      },
+      "published7dDisplayed": 40,
+      "collectedChannelsDisplayed": "26/34",
+      "internalPublishingJobsDisplayed": 6,
+      "physicalPhoneTested": false
+    },
+    "pulse": {
+      "requiredBundleIncluded": true,
+      "publicFileCount": 14,
+      "rangeProbes": 6,
+      "physicalIphoneTested": false
+    },
+    "operations": {
+      "backupUploaded": true,
+      "backupGeneration": "1792317831026556",
+      "backupBytes": 517648734,
+      "isolatedRestorePassed": true,
+      "originalKeyPreserved": true,
+      "armed": true,
+      "epoch": 7,
+      "replicaHealthy": true,
+      "https": {
+        "status": 200,
+        "ready": true,
+        "tlsVerified": true
+      },
+      "loopRestarts": 0,
+      "currentReleaseOutageTested": false,
+      "drWaitCompatibility": {
+        "nodeTests": 49,
+        "pythonTests": 13,
+        "offlinePrepareMaxSeconds": 1200,
+        "remoteMaxMilliseconds": 1500000,
+        "securityValidationChanges": 0,
+        "originalWorkerAndContextRetained": true
+      },
+      "haLinuxQa": {
+        "nodeTests": 173,
+        "pythonTests": 48,
+        "failed": 0,
+        "skipped": 0,
+        "protectedUnchanged": true
+      },
+      "protectedAccountTables": 9,
+      "protectedAccountRows": 28,
+      "tokens": {
+        "before": 3,
+        "after": 3,
+        "removed": 0
+      },
+      "finalPins": {
+        "approval-input-v2.json": "cf630d46cdb04cdd5653914ffa683d49d6ba84fe35e808197a63115076abd307",
+        "contract-final-v1.json": "7dde17be3f33e66ef8600cacd44f14bf3120c6abcd9b067187c053ecc2f5972f",
+        "arm-postcheck-final-v1.json": "d724b3b54c9b8ebea8e73f8c0b6ed8e2c07f632628f3e8a777d6112249c09aec"
+      }
+    },
+    "newSnsPublications": 0,
+    "newComments": 0,
+    "newSubscriptions": 0
+  },
+  "evidence": [
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/qa/result.json",
+      "sha256": "104f126895d7e17edc11e5f34d0b1b43a5abeb77b50df4627a86f54b83091da6"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/deployment/rootqa/linux-1792314164892/result.json",
+      "sha256": "e29f5770e5b46a681ded6b7c1af6affc20450266b8640ae3a9de4351868fca92"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/deployment-attempt2/runtime-live-postcheck-1792316743164.json",
+      "sha256": "0389b2303994c451992c02b98fc88a6c34c1bb0ab0a331d0a26ddb63737f96da"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/deployment-attempt2/public-messenger-verification-1792316745292.json",
+      "sha256": "9738eac258db575f1b20f668289b3f12987b2ebe61cc63a153d6e6aea75712f6"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/inventory-comparison.json",
+      "sha256": "c5ed4873dc583d89f5ad8c24cbf4624361ef394a3d6882ef39a18e978491ee7b"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/pulse-public-1792316796046.json",
+      "sha256": "6112141aa68b97e7834f648e3a84b7d241e486a7868052ad04d960fa593e7f8d"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/dr/backup-status-1792317784139.json",
+      "sha256": "f95372afe21312d5d71264b177b2790140d375c59bf3a3631c2532ce107f1816"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/dr-extended/restore-v1.json",
+      "sha256": "0e57a5a4667bb27121d68d5b54fe611f5a5845402fc84fdeef82946fcb5a19f3"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/approval-input-v2.json",
+      "sha256": "cf630d46cdb04cdd5653914ffa683d49d6ba84fe35e808197a63115076abd307"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/contract-final-v1.json",
+      "sha256": "7dde17be3f33e66ef8600cacd44f14bf3120c6abcd9b067187c053ecc2f5972f"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/arm-postcheck-final-v1.json",
+      "sha256": "d724b3b54c9b8ebea8e73f8c0b6ed8e2c07f632628f3e8a777d6112249c09aec"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/natural-final-v1.json",
+      "sha256": "9bacb68c1d674f4c2f73f9fb78de11c513eb8d0c7304d6b06e43ca0c491149d8"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/automatic-followup.json",
+      "sha256": "8ffb6770a81b0e6c34341754f0f2a3150e3ae337c1612777cd223468c0f20096"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/dr-extended/wait-narrow-qa-v1.json",
+      "sha256": "6a93c56a973f1c966d18eac8d6da1dfeb1479695cac846f4b36d87037225c6dc"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/dr-extended/context-long-v1.json",
+      "sha256": "a66efe2a08fd72366c26088ddb91155e984022b8959ad4eb5dcb988446ab3b85"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/rearm-attempt2/linux-qa-result-v2.json",
+      "sha256": "83fcf942cb4c3fd8a39d8ae7f78d5da9251a7e76e1987277840e6c86616b9bdc"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/baseline-input-compatibility.json",
+      "sha256": "5f53996af92a8f00d147d275a0ccc7c26b339bf6428a7b35b0e5c910458316d6"
+    },
+    {
+      "path": ".tmp/sns-pulse-counting-v3-20261018/collected-state-1792320419599.json",
+      "sha256": "d1a3f7cd0297a07dd05cfa92ee6d8fff2e35787653a57e6b66215252e17aaa9d"
+    }
+  ]
+}

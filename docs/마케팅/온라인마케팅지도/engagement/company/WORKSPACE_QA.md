@@ -1,5 +1,16 @@
 # 통합 검증 · 2026-09-29
 
+<a id="sns-real-post-counting-20261018"></a>
+## LAB·synkbrief 실제 게시물 집계 — 2026-10-18 운영 검증
+
+- **반영·회귀:** manifest `c5c80352e532ef23b9b35e0167b1dd19b5a1e4bd4c6753bf58c8e761ff40c41b`, 원문1,040개·이미지 목록601개. 동결 후보의 Windows/Linux 제품 회귀 각각1,048/1,048·실패/건너뜀0, Linux 추가 호환2/2. 부모 조회/캐시·메신저와 필수 PULSE 구조·M03·영상/소리 Range를 보존했다. [제품·Linux 검증](../../../../../.tmp/sns-pulse-counting-v3-20261018/deployment/rootqa/linux-1792314164892/result.json).
+- **실제 자동 실행:** 서버18:44:12 기동 뒤18:44:16~18:44:37에26채널 수집이 자동 실행됐다. 수동 전체 수집18:48:00보다 앞선 별도 읽기 증거다. 이후19:18:16~19:19:20에도 최근 수집25개가 모두 성공했다. 다른 연결1개는19:00에 갱신돼 이번30분 주기 대상에서 빠졌다. 백그라운드 일반 작업0·작업실 예약1을 유지했으며 이 작업의 전체 재대조 요청은 UI에서1회뿐이다. [첫 자동 실행](../../../../../.tmp/sns-pulse-counting-v3-20261018/collected-state-1792316715230.json) · [30분 후 자동 실행](../../../../../.tmp/sns-pulse-counting-v3-20261018/automatic-followup.json).
+- **공식 원본 대조:**18:47:34 API 읽기와18:48:59 저장 목록에서26채널의 공개59개 게시물 ID가 전부 같고 중복/누락0·최근7일40개였다. 원본 조회는 GET84회·SNS/DB 쓰기0이다. 과거 비공개 YouTube3개는 이력 보존·현재 집계 제외를 확인했다. LAB YouTube12개는 쇼츠11개+진행 중 라이브1개로 공개 화면과 대조했다. [채널별 ID 대조](../../../../../.tmp/sns-pulse-counting-v3-20261018/inventory-comparison.json).
+- **계정·지표:** LAB Instagram4개·Facebook SYNK13개, synkbrief YouTube/Instagram 각0개, 국가별LAB YouTube16계정 각1개·Facebook3페이지 각2개, yuhobuilds YouTube/Instagram 각4개다. yuhobuilds Instagram의4개 목록은 완전하지만 인사이트 권한이 없어 일부 지표는 미제공이다. 숫자0으로 채우지 않았다. 조회수/좋아요는 관측 사이에도 변하므로 동일 시점의 불변값이라고 주장하지 않는다.
+- **운영 화면:** 실제 기존 유호 로그인에서 SNS 운영 현황의40건·26/34범위·내부 발행6건 구분, 채널 연결26개와 LAB/synkbrief의 마지막 수집을 확인했다. Chrome1440/390설정에서 표시를 확인했으며 실물 휴대폰 시험은 아니다. [PC](../../../../../.tmp/sns-pulse-counting-v3-20261018/sns-overview-desktop.png) · [모바일 너비](../../../../../.tmp/sns-pulse-counting-v3-20261018/sns-overview-mobile.png).
+- **한계:** TikTok5개는 공식 앱 미연결, Threads/X/LinkedIn3개는 기존 미지원 기록이다. 웹에서 LAB TikTok3개·synkbrief0개를 직접 확인했지만 자동 합계에 섞지 않았다. 새 SNS 게시·댓글·삭제·유료 API 호출0. 새 릴리스 강제 장애 전환·실물 아이폰 미디어 재생은 미검증이며 실제 백업/복원/HA의 완료 여부는 [현재 운영 인수](CLOUD-OPERATIONS.md#sns-real-post-counting-production-20261018)를 따른다.
+- **운영 마감:** 새 백업·원래 키/계정9표·토큰3→3 격리 복원과19:46:13 HA armed=true·복제/HTTPS 정상을 확인했다. 새 복원 보조 파일을 포함한 Linux Node173/Python48·기존 배포126개 검사도 실패/건너뜀0이다. [보존한 집계·검증 요약](../../../../_ops/qa/sns-post-counting-20261018/result.json).
+
 <a id="sns-close-20261016"></a>
 ## SNS 최종 점검·종료 · 2026-10-16
 

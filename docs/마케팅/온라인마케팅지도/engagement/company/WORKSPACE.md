@@ -1294,6 +1294,17 @@ Postiz 설치와 별개로 Meta 공식 API를 이용한다. **SNS 운영 → 댓
 기존8개 서비스·24개 선정 사용자 반응 조사의 연결 끊김·누락·결과 불명확 문제를 이번 범위에 재사용했다. 10월14일 [Buffer Community 도움말](https://support.buffer.com/en-us/articles/using-community-in-buffer-jvTv4uQacA)의 미답변 우선 처리·권한 복구 흐름과 [Meta 공식 SDK의 댓글 필드](https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/adobjects/igcomment.py)를 추가 확인했다. 채택한 장점은 미답변 구분·관측 시각·재연결 안내이며, SYNK에서는 회사 권한·기존 담당 업무·발송 원장에 연결한다. 신규 사용자 효과 조사를 수행하거나 전체 시장을 전수조사한 결과는 아니다.
 
 
+<a id="sns-real-post-counting-20261018"></a>
+### 실제 SNS 게시물 자동 집계 — 2026-10-18 운영 반영
+
+운영 현황의 **SNS 7일 게시**는 등록한 활성 채널에서 공식 API로 확인한 현재 공개 게시물 중 최근 7일 게시물 수다. 내부 발행 작업 수는 **Workspace 7일 발행**으로 따로 보여 준다. 비공개·일부 공개 YouTube 영상, 수동 기록, 만료 콘텐츠와 전체 목록 대조에서 사라진 게시물은 실제 공개 게시 수에서 제외하고 원래 기록은 보존한다. 완전한 전체 조회가 끝났을 때만 누락을 반영하며 최근 조회·권한 오류·일부 응답으로 과거 게시물을 지우거나 0건으로 확정하지 않는다.
+
+기존 회사 서버가 최근 7일 게시물을 **30분마다**, 전체 목록을 **매일 09:00 KST**에 수집한다. PC나 이 화면을 열어 둘 필요가 없다. 기존 작업실 예약 스위치만 사용하며 꺼진 다른 백그라운드 작업을 일괄 활성화하지 않았다. 개요에 수집 범위와 마지막 관측을 표시하고 미연결·미지원·인사이트 미제공은 0과 구분한다. Facebook 피드와 릴스의 같은 게시물은 중복 없이 합친다.
+
+LAB Instagram `@synk.mn`과 synkbrief YouTube·Instagram의 실제 계정을 확인해 연결했고, 기존 승인된 Facebook Page 세 곳과 공개 YouTube 읽기 전용 연결을 복구했다. 공개 통계 연결은 등록한 정확한 YouTube 계정만 읽으며 게시·댓글 권한이나 자동 게시 활성화로 사용하지 않는다. 새 게시·댓글 작성은 하지 않았다. 10월18일18:48 KST 대조에서는 **26/34채널·공개59개·최근7일40개**가 공식 원본의 게시물 ID와 모두 일치했다. LAB YouTube는 쇼츠11개와 진행 중 라디오 라이브1개를 포함해12개이며 채널의 영상 표시11개와 구분한다. synkbrief 두 채널은 연결 정상·실제0개다. [검증](WORKSPACE_QA.md#sns-real-post-counting-20261018).
+
+TikTok 5계정은 개발자 앱이 없어 공식 자동 집계가 미연결이다. [공식 앱 심사 조건](https://developers.tiktok.com/docs/en/app-review-guidelines)은 개인·사내 전용 앱을 승인 대상에서 제외하므로 앱 생성만으로 해결됐다고 보지 않는다. 외부 서비스의 실제 적격성·Display API 심사와 계정 동의가 필요하며 필요한 조회 범위는 `user.info.basic`, `user.info.profile`, `user.info.stats`, `video.list`다. 현재 웹에서 확인한 LAB TikTok3개·synkbrief0개는 수동 확인 기록이며 자동 합계에 넣지 않았다. Threads·X·LinkedIn 3개 기존 기록도 현재 자동 수집 범위 밖이다.
+
 <a id="sns-direct-publishing-20261014"></a>
 ### Postiz 없이 SNS 직접 게시 — 2026-10-15 공용 3차 합본 운영 인수
 
