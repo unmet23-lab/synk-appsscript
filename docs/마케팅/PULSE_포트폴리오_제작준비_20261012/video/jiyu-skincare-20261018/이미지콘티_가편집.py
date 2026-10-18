@@ -47,11 +47,13 @@ def fit(path):
     return im.crop((0, top, W, top + H))
 
 
-def end_layer():
-    # 엔드카드 겹(투명 바탕 1080×1920): 블렌더 팩샷(그래픽 팩샷, 벽에 부드러운 그림자) + 병 아래 가운데 글자.
+def end_layer(L=None, size=(W, H), pack_path=None):
+    # 엔드카드 겹(투명 바탕, 기본 1080×1920): 블렌더 팩샷(그래픽 팩샷, 벽에 부드러운 그림자) + 병 아래 가운데 글자.
     # 10-18 Fable 검수: 병을 머리 옆에 띄우고 글자를 위쪽 벽에 둔 첫 배치는 스티커처럼 보였다 → 오른쪽 그늘 벽 가슴 높이에 병, 글자는 병 아래.
-    L = END_LAYOUT
-    pack = Image.open(PACK).convert("RGBA")
+    # 본편_편집.py는 비율 판(4:5·1:1)마다 자리(L)·크기(size)를 바꾸고 블렌더 최종 팩샷(pack_path)을 넘긴다.
+    L = L or END_LAYOUT
+    W, H = size
+    pack = Image.open(pack_path or PACK).convert("RGBA")
     pack = pack.crop(pack.getchannel("A").getbbox())
     s = L["bottle_h"] / pack.height
     pack = pack.resize((round(pack.width * s), L["bottle_h"]), Image.LANCZOS)
