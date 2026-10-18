@@ -179,6 +179,8 @@ test('the Gemini guide walks through the console sign-in and the row shows both 
   // 하나도 안 쓴 한도는 밀리는 초기화 시각 대신 「아직 안 씀」으로 보인다.
   snapshot={...snapshot,rows:[{...gemini,live:{readAt:Date.now(),weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null},models:[]}}]};listeners.forEach(cb=>cb(snapshot));
   assert.match(el.innerHTML,/아직 안 씀/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤.풀림/);
+  // 서비스 줄 요약도 같은 말로 보인다(「초기화 시각 없음」이 아님).
+  assert.doesNotMatch(el.innerHTML,/초기화 시각 없음/);
   snapshot={...snapshot,rows:[gemini]};listeners.forEach(cb=>cb(snapshot));
   await click({subs:'guide',service:'gemini'});
   assert.match(el.innerHTML,/Gemini 연결 가이드/);assert.match(el.innerHTML,/Gemini 로그인/);assert.ok(!el.innerHTML.includes('>새 계정 연결</button>'));
@@ -234,5 +236,27 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   assert.match(el.innerHTML,/data-subs="copy-url"/);assert.match(el.innerHTML,/시크릿 창/);
   await click({subs:'copy-url'});
   assert.deepEqual(copied,['https://clerk.higgsfield.ai/oauth/authorize?state=abc']);assert.match(toasts.at(-1),/시크릿 창/);
+  board.dispose();
+});
+
+test('a late reply from the check button does not put a finished board back to checking',async()=>{
+  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
+  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const base={ok:true,tools:{claude:{installed:true}},rows:[row({live:{readAt:Date.now(),weekly:{usedPercent:20,resetsAt:Date.now()+864e5}}})],settings:{usdKrw:1400},login:null};
+  const idle={...base,seq:1,check:{at:Date.now()-3600e3,total:1,ok:1},checking:false};
+  const running={...base,seq:3,check:idle.check,checking:true},stale={...running,seq:6},done={...base,seq:7,check:{at:Date.now(),total:1,ok:1},checking:false};
+  const listeners=[];
+  // 알림(3·7)이 먼저 오고, 그보다 먼저 만든 응답(6)이 늦게 도착하는 순서를 흉내 낸다.
+  const bridge={subscriptions:{snapshot:async()=>idle,check:async()=>{for(const s of [running,done])listeners.forEach(cb=>cb(s));return stale;},onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
+  const el=fakeContainer();
+  const board=createSubscriptionsBoard({bridge});
+  board.render(el,{signedIn:true,native:true});
+  await new Promise(r=>setImmediate(r));
+  assert.match(el.innerHTML,/data-subs="check" >지금 확인</);
+  el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'check'}})}});
+  for(let i=0;i<3;i++)await new Promise(r=>setImmediate(r));
+  assert.ok(!el.innerHTML.includes('확인 중…'));assert.ok(!el.innerHTML.includes('읽는 중이에요'));
+  assert.match(el.innerHTML,/data-subs="check" >지금 확인</);
   board.dispose();
 });

@@ -219,17 +219,19 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
   const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false };
   const rolled = new Map();
-  api?.onChanged?.(value => { if (value?.ok) { snapshot = value; if (visible) paint(); } });
+  // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
+  const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
+  api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint(); } });
 
   async function load(refreshTools = false) {
     if (!api) return;
-    try { const value = await api.snapshot({ refreshTools }); if (value?.ok) { snapshot = value; loadError = null; } else loadError = CODE_TEXT[value?.code] || '계정판을 불러오지 못했어요.'; }
+    try { const value = await api.snapshot({ refreshTools }); if (value?.ok) { take(value); loadError = null; } else loadError = CODE_TEXT[value?.code] || '계정판을 불러오지 못했어요.'; }
     catch { loadError = '계정판을 불러오지 못했어요. 다시 시도해 주세요.'; }
     if (visible) paint();
   }
   async function act(name, task) {
     if (busy) return; busy = name; paint();
-    try { const result = await task(); if (result && result.ok === false) toast(CODE_TEXT[result.code] || result.error?.message || '요청을 마치지 못했어요. 다시 시도해 주세요.'); else if (result?.rows) snapshot = result; return result; }
+    try { const result = await task(); if (result && result.ok === false) toast(CODE_TEXT[result.code] || result.error?.message || '요청을 마치지 못했어요. 다시 시도해 주세요.'); else if (result?.rows) take(result); return result; }
     catch { toast('요청을 마치지 못했어요. 다시 시도해 주세요.'); }
     finally { busy = ''; paint(); }
   }
@@ -363,7 +365,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const flags = [usedN ? `<span class="ms-alert-text">소진 ${usedN}</span>` : '', lowN ? `<span class="ms-warn-text">부족 ${lowN}</span>` : '', alertN ? `<span class="ms-warn-text">확인 필요 ${alertN}</span>` : ''].filter(Boolean).join(' · ');
     const resets = kind === 'weekly' ? list.map(r => nextReset(r, now)).filter(Boolean).sort((a, b) => a - b) : [];
     const bills = list.map(r => nextBill(r.billDay, now)).filter(d => d !== null).sort((a, b) => a - b);
-    const next = kind === 'weekly' ? (resets.length ? `${when(resets[0])} 초기화` : '초기화 시각 없음') : (bills.length ? `결제 ${bills[0] === 0 ? '오늘' : 'D-' + bills[0]}` : '결제일 없음');
+    const unused = r => r.live?.weekly?.usedPercent === 0 && !r.live.weekly.resetsAt;
+    const next = kind === 'weekly' ? (resets.length ? `${when(resets[0])} 초기화` : list.every(unused) ? '아직 안 씀' : '초기화 시각 없음') : (bills.length ? `결제 ${bills[0] === 0 ? '오늘' : 'D-' + bills[0]}` : '결제일 없음');
     let krw = 0, usd = 0; for (const r of list) if (num(r.price) !== null) { if (r.currency === 'USD') usd += Number(r.price); else krw += Number(r.price); }
     const id = 'g-' + (first.source === 'auto' ? first.service : first.label), open = ui.open.has(id) || list.some(r => ui.open.has(r.id));
     return `<div class="ms-block${open ? ' open' : ''} ${svcClass(first.service)}">

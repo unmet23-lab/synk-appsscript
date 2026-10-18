@@ -37,6 +37,13 @@ test('sorts Codex windows by length, not by primary or secondary order',()=>{
   assert.equal(w.weekly.usedPercent,100);assert.equal(w.session,null);assert.equal(w.weekly.resetsAt,1792742616000);
   const both=codexWindows({primary:{usedPercent:12,windowDurationMins:300,resetsAt:1},secondary:{usedPercent:40,windowDurationMins:10080,resetsAt:2}});
   assert.equal(both.session.usedPercent,12);assert.equal(both.weekly.usedPercent,40);
+  // 하나도 안 쓴 창은 초기화 시각이 「읽은 시각+기간」으로 밀려 오므로 비운다(10-18 실제 계정: 0%, 정확히 168시간 뒤).
+  const at=Date.UTC(2026,9,18,2,7,22),sec=Math.floor(at/1000);
+  const idle=codexWindows({primary:{usedPercent:0,windowDurationMins:10080,resetsAt:sec+10080*60}},at);
+  assert.equal(idle.weekly.usedPercent,0);assert.equal(idle.weekly.resetsAt,null);
+  // 0%여도 이미 시작한 창, 쓰기 시작한 창의 시각은 그대로 둔다.
+  assert.equal(codexWindows({primary:{usedPercent:0,windowDurationMins:10080,resetsAt:sec+3*86400}},at).weekly.resetsAt,(sec+3*86400)*1000);
+  assert.equal(codexWindows({primary:{usedPercent:3,windowDurationMins:10080,resetsAt:sec+10080*60}},at).weekly.resetsAt,(sec+10080*60)*1000);
 });
 
 test('reads the Antigravity quota groups: Gemini as the main limit, Claude·GPT as a model line',()=>{
@@ -133,6 +140,9 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   const after=await f.service.check();
   // 확인을 시작하는 첫 알림부터 「확인 중」이어야 화면이 잠깐 끝난 것처럼 보이지 않는다.
   assert.equal(f.changes[firstChange].checking,true);
+  // 돌려받는 결과는 확인이 끝난 상태이고 마지막 알림보다 번호가 크다. 늦게 도착해도 화면이 「확인 중」으로 돌아가지 않는다.
+  assert.equal(after.checking,false);assert.equal(f.changes.at(-1).checking,false);assert.ok(after.seq>f.changes.at(-1).seq);
+  assert.ok(f.changes.every((s,i)=>i===0||s.seq>f.changes[i-1].seq));
   const by=Object.fromEntries(after.rows.map(r=>[r.service,r]));
   assert.equal(by.claude.email,'member@example.com');assert.equal(by.claude.live.weekly.usedPercent,31);assert.equal(by.claude.resetDay,4);assert.equal(by.claude.resetHour,10);
   assert.equal(by.gpt.email,'synk@example.com');assert.equal(by.gpt.live.weekly.usedPercent,100);assert.equal(by.gpt.usedUpAt,NOW);
@@ -145,6 +155,15 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   // 저장 파일도 다시 읽힌다.
   const reread=createAiSubscriptions({root:path.join(f.root,'data'),platform:'win32',env:{},home:path.join(f.root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>NOW});
   assert.equal((await reread.save({settings:{usdKrw:1380}})).rows.length,3);
+});
+
+test('a second check while one runs shares it and also gets the finished board',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  const usage=()=>f.calls.filter(c=>c.argv.includes('/usage')).length,before=usage();
+  const [a,b]=await Promise.all([f.service.check(),f.service.check()]);
+  assert.equal(usage(),before+1);
+  assert.equal(a.checking,false);assert.equal(b.checking,false);assert.equal(b.check.total,1);
 });
 
 test('signs in a new Claude account in its own folder with the code typed into the app',async()=>{

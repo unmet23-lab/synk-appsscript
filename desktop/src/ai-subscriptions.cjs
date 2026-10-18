@@ -85,11 +85,18 @@ function parseClaudeUsage(output,now=new Date()){
 }
 function claudeNeedsLogin(text){return /not logged in|please run \/login|invalid api key|oauth token (has )?expired|authentication_error|please (log|sign) ?in/i.test(stripAnsi(text));}
 function parseJson(text){try{return JSON.parse(stripAnsi(text).trim());}catch{const m=/\{[\s\S]*\}/.exec(stripAnsi(text));if(!m)return null;try{return JSON.parse(m[0]);}catch{return null;}}}
-function codexWindows(snapshot){
+// 하나도 안 쓴 창은 아직 시작되지 않아 resetsAt이 읽을 때마다 「지금+기간」으로 밀린다. 그런 시각은 비운다(agy와 같음, 10-18 실측).
+function codexWindows(snapshot,at=Date.now()){
   const windows=[snapshot?.primary,snapshot?.secondary].filter(Boolean);
   const weekly=windows.find(w=>Number(w.windowDurationMins)>=6*1440)||null;
   const session=windows.find(w=>w!==weekly)||null;
-  const shape=w=>w?{usedPercent:Number(w.usedPercent),resetsAt:isoOrNull(w.resetsAt),windowMins:Number(w.windowDurationMins)||null}:null;
+  const shape=w=>{
+    if(!w)return null;
+    const usedPercent=Number(w.usedPercent),windowMins=Number(w.windowDurationMins)||null;
+    let resetsAt=isoOrNull(w.resetsAt);
+    if(usedPercent===0&&resetsAt!==null&&windowMins&&Math.abs(resetsAt-(at+windowMins*60000))<15*60000)resetsAt=null;
+    return {usedPercent,resetsAt,windowMins};
+  };
   return {session:shape(session),weekly:shape(weekly)};
 }
 // agy /usage: 묶음(Gemini 모델, Claude·GPT 모델)마다 주간·5시간 버킷과 남은 비율을 준다.
@@ -140,7 +147,7 @@ function commandFor(file,args,{platform,env}){
 function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{}}){
   if(!root)throw new TypeError('root is required');
   const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts');
-  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null;
+  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,seq=0;
   home=home||env.USERPROFILE||env.HOME||'';
 
   /* 저장 */
@@ -177,9 +184,10 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       state:['ok','needs-login','error','unknown'].includes(row.state)?row.state:'unknown',stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
     };
   }
+  // seq: 화면은 알림(send)과 응답(invoke)을 따로 받아 도착 순서가 바뀔 수 있다. 번호가 작은 옛 스냅숏은 버리게 한다.
   function publicSnapshot(){
     const b=load();
-    return {ok:true,platform,tools:tools?Object.fromEntries(Object.entries(tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:k==='higgsfield'?!!v.npm:undefined,api:v.api?true:undefined}])):null,
+    return {ok:true,seq:++seq,platform,tools:tools?Object.fromEntries(Object.entries(tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:k==='higgsfield'?!!v.npm:undefined,api:v.api?true:undefined}])):null,
       rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
       login:login?{id:login.id,service:login.service,stage:login.stage,url:login.url,needsCode:login.needsCode,message:login.message,console:!!login.console}:null,
       checking:!!checking};
@@ -295,7 +303,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const limits=r.results[1];
     if(!limits||limits.error)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex 사용 한도를 읽지 못했어요.'};
     const snap=limits.rateLimits||Object.values(limits.rateLimitsByLimitId||{})[0]||{};
-    const windows=codexWindows(snap);
+    const windows=codexWindows(snap,now());
     return {state:'ok',email:account.email||null,plan:snap.planType||account.planType||null,live:{readAt:now(),session:windows.session,weekly:windows.weekly,models:[],reached:snap.rateLimitReachedType||null}};
   }
   // 새 홈 폴더로 막 로그인하면 작업공간이 비어 「No workspace selected」가 난다. 내가 주인인 첫 작업공간을 고른다.
@@ -371,8 +379,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(weekly&&Number.isFinite(weekly.usedPercent))row.usedUpAt=weekly.usedPercent>=100?now():null;
     if(result.live.credits!==undefined&&result.live.credits!==null){row.credits=result.live.credits;row.creditsAt=now();}
   }
+  // 돌려주는 스냅숏은 `checking`을 비운 뒤에 만든다. 안에서 만들면 「확인 중」인 채로 마지막 알림보다 늦게 도착해 화면이 멈춘다.
   async function check({ids}={}){
-    if(checking)return checking;
+    if(checking){await checking.catch(()=>{});return publicSnapshot();}
     checking=(async()=>{
       // `checking`에 담긴 뒤에 알려야 첫 알림부터 「확인 중」이다(먼저 알리면 잠깐 확인이 끝난 것처럼 보인다).
       await null;emit();
@@ -383,9 +392,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       await Promise.all([worker(),worker()]);
       b.check={at:now(),total:targets.length,ok:results.filter(r=>r.state==='ok').length};
       persist();
-      return publicSnapshot();
     })();
-    try{return await checking;}finally{checking=null;emit();}
+    try{await checking;}finally{checking=null;emit();}
+    return publicSnapshot();
   }
 
   /* 연결 */
