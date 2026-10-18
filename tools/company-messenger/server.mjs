@@ -94,13 +94,21 @@ async function jsonBody(req) {
   }
 }
 
-export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled } = {}) {
+export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, staticResponderFactory = null } = {}) {
   assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
   assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   // This first version is deliberately local-only. Network deployment needs TLS and an explicit hosting design.
   assert(integration || ['127.0.0.1', '::1', 'localhost'].includes(host), 400, '현재 버전은 이 컴퓨터에서만 실행할 수 있습니다.');
   assert(basePath === '' || basePath === '/messenger', 400, '메신저 경로 설정을 확인해 주세요.');
   assert(Number.isInteger(port) && port >= 0 && port <= 65535, 400, '포트 번호가 올바르지 않습니다.');
+  assert(staticResponderFactory === null || typeof staticResponderFactory === 'function', 400, '정적 응답 설정을 확인해 주세요.');
+  // Hash and compress the final public bytes, including embedded CSS URLs.
+  async function readPublicAsset(file) {
+    const content = await readFile(file);
+    if (!basePath || !['.html', '.css'].includes(path.extname(file))) return content;
+    return Buffer.from(content.toString('utf8').replace(/((?:src|href)=["'])\/(?!\/)/g, `$1${basePath}/`).replace(/(url\(["']?)\/assets\//g, `$1${basePath}/assets/`));
+  }
+  const respondPublicStatic = staticResponderFactory?.({ read: readPublicAsset });
   const platformEntryUrl = resolvePlatformUrl(platformUrl, { origin: integration?.origin || `http://${host === '::1' ? '[::1]' : host}:${port}` });
   dataDir = path.resolve(dataDir);
   const uploadDir = path.join(dataDir, 'uploads');
@@ -1091,9 +1099,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       let info;
       try { info = await stat(staticPath); } catch { throw new AppError(404, '파일을 찾을 수 없습니다.'); }
       assert(info.isFile(), 404, '파일을 찾을 수 없습니다.');
+      if (respondPublicStatic && ['.js', '.css'].includes(path.extname(staticPath))) {
+        return await respondPublicStatic(req, res, { path: staticPath, type: MIME[path.extname(staticPath)] });
+      }
       if (basePath && ['.html', '.css'].includes(path.extname(staticPath))) {
-        let content = await readFile(staticPath, 'utf8');
-        content = content.replace(/((?:src|href)=["'])\/(?!\/)/g, `$1${basePath}/`).replace(/(url\(["']?)\/assets\//g, `$1${basePath}/assets/`);
+        const content = await readPublicAsset(staticPath);
         res.writeHead(200, { 'Content-Type': MIME[path.extname(staticPath)], 'Content-Length': Buffer.byteLength(content) });
         res.end(method === 'HEAD' ? undefined : content);
         return;

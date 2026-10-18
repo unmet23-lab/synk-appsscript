@@ -160,7 +160,7 @@ export function createCompanyApp(options={}) {
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
-  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
+  messenger=createMessenger({dataDir:messengerDataDir,staticResponderFactory:createStaticResponder,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
