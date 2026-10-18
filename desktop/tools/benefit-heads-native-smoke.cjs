@@ -1,11 +1,11 @@
 'use strict';
-// 회원 혜택 소개 머리 여섯(성향·구독·플레저·운세·리허설·앨범)을 숨은 Electron 창에서 여러 폭으로 열어,
+// 회원 혜택 소개 머리 넷(성향·구독·플레저·운세)을 숨은 Electron 창에서 여러 폭으로 열어,
 // 물건(실제 그림 점)이 위 번호 라벨·스티커, 큰 한글, 한 줄 제목과 겹치지 않는지 잰다. 합성 계정만 쓰고 바깥 요청은 막는다.
 // 사용: node desktop/tools/benefit-heads-native-smoke.cjs  (출력 SYNK_BENEFIT_HEADS_OUT, 기본 desktop/artifacts/benefit-heads)
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..'),out=process.env.SYNK_BENEFIT_HEADS_OUT||path.join(root,'artifacts','benefit-heads'),prefix='SYNK_BENEFIT_HEADS ';
 if(!path.isAbsolute(out))throw Error('Output path must be absolute');
-const IDS=['insight','subscriptions','care','fortune','rehearsal','family-album'];
+const IDS=['insight','subscriptions','care','fortune'];
 // [폭, 높이] — 1100~761은 본문이 좁아지는 구간, 760 아래는 물건이 흐름 안으로 들어오는 휴대폰 틀.
 const SIZES=[[1440,900],[1366,768],[1280,720],[1180,800],[1100,800],[1020,800],[960,800],[900,800],[860,800],[820,800],[780,800],[761,800],[760,800],[600,800],[390,844],[320,700]];
 const SHOT_WIDTHS=new Set([1440,1020,900,820,390]);

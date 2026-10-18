@@ -11,21 +11,19 @@ const SERVICES = freeze([
   { id: 'care', name: 'SYNK 플레저', product: 'platform', connection: 'implemented' },
   { id: 'tools', name: 'SYNK 맞춤 도구', product: 'platform', connection: 'legacy' },
   { id: 'path', name: 'SYNK PATH', product: 'platform', connection: 'implemented' },
-  { id: 'rehearsal', name: '중요한 대화 리허설', product: 'platform', connection: 'implemented' },
-  { id: 'family-album', name: '가족 이야기 앨범', product: 'platform', connection: 'implemented' },
   { id: 'dating', name: 'SYNK 소개팅', product: 'platform', connection: 'implemented' },
   { id: 'path-travel', name: 'SYNK PATH 여행', product: 'platform', connection: 'implemented' },
 ]);
-const native = ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'rehearsal', 'family-album', 'path'].map((service, index) => ({
+const native = [['platform',43821], ['world',43822], ['messenger',43823], ['teacher',43824], ['fortune',43825], ['care',43826], ['path',43829]].map(([service, port]) => ({
   id: `${service}-native`, service, product: SERVICES.find(item => item.id === service).product, runtime: 'native', connection: SERVICES.find(item => item.id === service).connection === 'pending-adapter' ? 'pending-adapter' : 'implemented', configKey: service,
-  redirectUris: [`http://127.0.0.1:${43821 + index}/synk/oauth/${service}/callback`],
+  redirectUris: [`http://127.0.0.1:${port}/synk/oauth/${service}/callback`],
 }));
 const browserRedirects = {
   platform: 'http://127.0.0.1:4280/synk-account/client.html?product=platform',
   world: 'http://127.0.0.1:4280/synk-account/client.html?product=world',
   messenger: 'http://127.0.0.1:4191/api/synk-id/callback',
   teacher: 'http://127.0.0.1:4295/', fortune: 'http://127.0.0.1:4299/', care: 'http://127.0.0.1:4296/',
-  rehearsal: 'http://127.0.0.1:4297/', 'family-album': 'http://127.0.0.1:4298/', path: 'http://127.0.0.1:4292/',
+  path: 'http://127.0.0.1:4292/',
   dating: 'http://127.0.0.1:4300/atlas-lab/dating.html',
   'path-travel': 'http://127.0.0.1:4303/',
 };

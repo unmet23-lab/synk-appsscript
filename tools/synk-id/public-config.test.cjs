@@ -14,7 +14,7 @@ const data = (plan, name) => plan.files.find(file => file.path === OUTPUTS[name]
 test('registry preserves existing legacy identities and distinguishes unimplemented services', () => {
   assert.deepEqual(LEGACY_CLIENT_IDS.production, { world: '52e3e2ac-e26f-46c4-948a-e4ef84982141', tools: '291a98a7-4fa8-44fe-b5de-8acb790bea21' });
   assert.equal(LEGACY_CLIENT_IDS.rehearsal.world, 'f1a08dbc-2677-46bf-9146-db65688bf445');
-  assert.deepEqual(SERVICES.filter(item => ['path', 'rehearsal', 'family-album'].includes(item.id)).map(item => item.connection), ['implemented', 'implemented', 'implemented']);
+  assert.deepEqual(SERVICES.filter(item => ['path'].includes(item.id)).map(item => item.connection), ['implemented']);
   assert.equal(CLIENTS.find(item => item.id === 'teacher-browser').connection, 'pending-adapter');
   assert.ok(Object.isFrozen(CLIENTS[0].redirectUris));
 });
@@ -23,7 +23,7 @@ test('travel uses a separate browser-only client and observed config without cha
   const travel = CLIENTS.filter(row => row.service === 'path-travel');
   assert.equal(travel.length, 1); assert.equal(travel[0].id, 'path-travel-browser');
   assert.deepEqual(travel[0].redirectUris, ['http://127.0.0.1:4303/']);
-  assert.equal(CLIENTS.filter(row => row.runtime === 'native').length, 9);
+  assert.equal(CLIENTS.filter(row => row.runtime === 'native').length, 7);
   const plan = buildConfigPlan(input(['path-browser', 'path-travel-browser'])), browser = data(plan, 'browser');
   assert.deepEqual(browser.clients.path, { clientId: 'synthetic-path-browser', redirectUri: 'http://127.0.0.1:4292/' });
   assert.deepEqual(browser.clients['path-travel'], { clientId: 'synthetic-path-travel-browser', redirectUri: 'http://127.0.0.1:4303/' });
@@ -48,20 +48,20 @@ test('actual registrations produce all six isolated desktop clients and canonica
   assert.equal(plan.products['synthetic-teacher-native'], 'world');
 });
 
-test('three personal apps produce distinct native and browser clients using their registered callbacks', async () => {
-  const plan = buildConfigPlan(input(['path-native', 'rehearsal-native', 'family-album-native', 'path-browser', 'rehearsal-browser', 'family-album-browser']));
+test('PATH produces distinct native and browser clients using their registered callbacks', async () => {
+  const plan = buildConfigPlan(input(['path-native','path-browser']));
   const desktop = data(plan, 'desktop');
-  for (const [id, port] of [['rehearsal', 43827], ['family-album', 43828], ['path', 43829]]) {
+  for (const [id, port] of [['path',43829]]) {
     assert.equal(configuration(desktop, id, 'development').clientKey, id);
     assert.equal(new URL(desktop.clients[id].redirectUri).port, String(port));
   }
   const browser = data(plan, 'browser'), core = await import(pathToFileURL(path.resolve(__dirname, '../../experiences/synk-account/src/core.mjs')));
   const checked = core.readConfig(browser, 'http://127.0.0.1:4280/');
-  for (const id of ['path', 'rehearsal', 'family-album']) {
+  for (const id of ['path']) {
     assert.equal(checked.clients[id].clientId, 'synthetic-' + id + '-browser');
     assert.notEqual(checked.clients[id].clientId, desktop.clients[id].clientId);
   }
-  assert.equal(plan.registered.length, 6);
+  assert.equal(plan.registered.length, 2);
 });
 
 test('dating uses a dedicated browser registration without changing any existing native callback', () => {
@@ -71,8 +71,8 @@ test('dating uses a dedicated browser registration without changing any existing
   assert.equal(dating[0].product, 'platform');
   assert.deepEqual(dating[0].redirectUris, ['http://127.0.0.1:4300/atlas-lab/dating.html']);
   const native = CLIENTS.filter(item => item.runtime === 'native');
-  assert.deepEqual(native.map(item => item.service), ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'rehearsal', 'family-album', 'path']);
-  for (const [index, item] of native.entries()) assert.deepEqual(item.redirectUris, [`http://127.0.0.1:${43821 + index}/synk/oauth/${item.service}/callback`]);
+  assert.deepEqual(native.map(item => item.service), ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'path']);
+  for (const [index, item] of native.entries()) assert.deepEqual(item.redirectUris, [`http://127.0.0.1:${item.service==='path'?43829:43821 + index}/synk/oauth/${item.service}/callback`]);
 });
 
 test('only an observed dating registration adds its isolated platform config and consent entry', async () => {

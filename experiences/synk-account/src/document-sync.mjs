@@ -50,7 +50,7 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
   function cacheRecord(key, raw) {
     let accountId=null;
     try {
-      if (new TextEncoder().encode(raw).byteLength > (resource === 'family-album' ? 32 : 4) * 1024 * 1024 + 32768) throw failure('INVALID_LOCAL_CACHE');
+      if (new TextEncoder().encode(raw).byteLength > 4 * 1024 * 1024 + 32768) throw failure('INVALID_LOCAL_CACHE');
       const cached = JSON.parse(raw);
       accountId=recordOwner(key,cached);
       const base = PREFIX + encodeURIComponent(cached?.accountId);

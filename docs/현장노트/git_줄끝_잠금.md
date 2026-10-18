@@ -8,6 +8,25 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ## 절차 · 공용 작업본에서 내 것만 커밋하기
 
+### `worktree --no-checkout` 뒤 희소 경로만 설정하면 인덱스가 비어 있다 (2026-10-18)
+- 증상: 새 공개 작업본에 sparse-checkout 경로를 설정했지만 `status`가 기존 파일 전체의 스테이징 삭제를 표시했다.
+- 원인: `--no-checkout`으로 만든 비어 있는 인덱스에 HEAD를 읽지 않은 상태였다. 파일을 실제로 지운 결과가 아니었다.
+- 고침: 이 작업에서 새로 만든 빈 전용 작업본임을 확인한 뒤 `git read-tree --reset -u HEAD`로 HEAD와 희소 범위를 구체화했다. 공용 작업본이나 변경이 있는 폴더에는 이 복구를 쓰지 않는다.
+- 다시 확인: 공개 전 status가 비어 있고, `b45319c`의 변경 범위와 실제 공개 응답86개가 검토한 목록과 일치했다.
+
+공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
+
+1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
+2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
+3. 별도 인덱스에 올린다.
+   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
+   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
+4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
+5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
+6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
+
+보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
+
 공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
 
 1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.

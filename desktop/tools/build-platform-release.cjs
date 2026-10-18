@@ -9,6 +9,15 @@ const {inventory,audit}=require('./freeze-platform-release.cjs');
 const assert=(value,message)=>{if(!value)throw Error(message);};
 const sha=file=>{const hash=crypto.createHash('sha256'),buffer=Buffer.allocUnsafe(8<<20),fd=fs.openSync(file,'r');try{let count;while((count=fs.readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,count));}finally{fs.closeSync(fd);}return hash.digest('hex');};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
+// Pinned installers can still contain OAuth registrations for retired products.
+// Keep the selected clients and their vault fingerprints; remove only the two
+// registrations retired from Platform before validating the new source contract.
+function removeRetiredAuthClients(auth){
+  if(auth==null)return auth;
+  const result=structuredClone(auth);
+  if(result.clients)for(const id of ['rehearsal','family-album'])delete result.clients[id];
+  return result;
+}
 function command(exe,args,options={}){const result=cp.spawnSync(exe,args,{encoding:'utf8',windowsHide:true,maxBuffer:16<<20,timeout:600000,...options});assert(result.status===0,'Command failed: '+exe+' '+(result.error?.message||result.stderr||result.stdout));return result.stdout;}
 function validateSnapshot(root){const spec=JSON.parse(fs.readFileSync(path.join(root,'release-input.json'))),source=path.join(root,'source');assert(spec.schemaVersion===1&&spec.product==='platform'&&spec.channel==='preview','Unsupported release');assert(spec.releaseId==='platform-preview-'+spec.version&&/^\d+\.\d+\.\d+$/.test(spec.version)&&/^\d{8}\.\d+$/.test(spec.buildId),'Invalid release identity');assert(JSON.stringify(inventory(source))===JSON.stringify(spec.sourceFiles),'Frozen source changed');audit(source,spec.sourceFiles);assert(sourceHash(source)===spec.sourceHash,'Frozen source hash changed');return spec;}
 function verifyArchive(asar,source,archive){const expected=inventory(source).filter(row=>row.path!=='synk-install.json');asar.uncache(archive);const actual=asar.listPackage(archive).map(file=>file.replaceAll('\\','/').replace(/^\//,'')).filter(file=>!asar.statFile(archive,path.normalize(file)).files).sort();assert(actual.join('\n')===expected.map(row=>row.path).sort().join('\n'),'Archive membership differs');for(const row of expected)assert(crypto.createHash('sha256').update(asar.extractFile(archive,path.normalize(row.path))).digest('hex')===row.sha256,'Archive source differs: '+row.path);return expected.length;}
@@ -61,6 +70,8 @@ async function buildTarget(options){
     if(!same)runtime.releases.push(legacy);
   }
   runtime.update={manifestUrl:spec.manifestUrl,channel:spec.channel,releaseId:spec.releaseId,buildId:spec.buildId};
+  runtime.auth=removeRetiredAuthClients(runtime.auth);
+  require(path.join(stage,'src/auth-config.cjs')).configuration(runtime.auth,runtime.clientId,runtime.mode);
   json(path.join(stage,'runtime.json'),runtime);json(path.join(stage,'package.json'),{name:'synk-platform-preview',version:spec.version,description:'SYNK Platform desktop client',author:'SYNK',main:'src/main.cjs'});
   const metadata={clientId:'platform',mode:'development',appId:'im.synk.platform.preview',version:spec.version,arch,platform,sourceHash:spec.sourceHash,releaseId:spec.releaseId,buildId:spec.buildId,channel:spec.channel};json(path.join(stage,'synk-install.json'),metadata);
   const dist=path.join(out,'dist'),config={appId:metadata.appId,productName:'SYNK Platform Preview',executableName:'SYNKPlatformPreview',electronVersion:spec.electronVersion,asar:true,npmRebuild:false,forceCodeSigning:false,directories:{app:stage,output:dist,buildResources:path.join(stage,'assets')},files:['package.json','runtime.json','src/**','renderer/**','assets/**'],extraResources:[{from:path.join(stage,'synk-install.json'),to:'synk-install.json'},...children.map(child=>({from:path.join(out,'children',child.installer.relativePath),to:'clients/'+child.installer.relativePath}))],artifactName:'SYNK-Platform-Preview-'+spec.version+'-Signal-'+(platform==='win32'?'win':'mac')+'-'+arch+'.${ext}',publish:null};
@@ -110,4 +121,4 @@ async function buildTarget(options){
   const report={ok:true,schemaVersion:1,product:'platform',channel:spec.channel,version:spec.version,releaseId:spec.releaseId,buildId:spec.buildId,builtAt:new Date().toISOString(),sourceHash:spec.sourceHash,artifact:descriptor,artifactFile:artifact,memberCount,bundled:children.map(child=>({id:child.id,version:child.version,platform:child.platform,arch:child.arch,installer:child.installer,asarSHA256:child.asarSHA256})),metadata,unsignedPreview:platform==='win32',adHocSigned:platform==='darwin',notarized:false,installedStateTouched:false,published:false};json(path.join(out,'build-report.json'),report);json(path.join(out,'artifact.json'),descriptor);fs.writeFileSync(path.join(out,'SHA256SUMS.txt'),descriptor.sha256+'  '+path.basename(artifact)+'\n');validateSnapshot(root);return report;
 }
 if(require.main===module){const options={};for(const arg of process.argv.slice(2)){const match=/^--([a-z-]+)=(.+)$/.exec(arg);assert(match,'Unsupported argument');options[match[1].replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]=match[2];}buildTarget(options).then(report=>console.log(JSON.stringify(report))).catch(error=>{console.error(error.stack);process.exitCode=1;});}
-module.exports={buildTarget,validateSnapshot,verifyArchive,verifySignalPackage,sha,command};
+module.exports={buildTarget,validateSnapshot,verifyArchive,verifySignalPackage,removeRetiredAuthClients,sha,command};
