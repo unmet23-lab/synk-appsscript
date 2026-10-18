@@ -293,7 +293,7 @@ function createWindow(){
     'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
     'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
-    'synk:subscriptions-check':()=>subscriptionCall(s=>s.check()),
+    'synk:subscriptions-check':ids=>subscriptionCall(s=>s.check(Array.isArray(ids)?{ids:ids.filter(id=>typeof id==='string')}:{})),
     'synk:subscriptions-use-existing':service=>subscriptionCall(s=>s.useExisting(service)),
     'synk:subscriptions-login':(service,options)=>subscriptionCall(s=>s.startLogin(service,{email:options?.email,console:options?.console===true})),
     'synk:subscriptions-code':(id,code)=>subscriptionCall(s=>s.submitCode(id,code)),

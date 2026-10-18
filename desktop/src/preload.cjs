@@ -52,7 +52,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
   subscriptions:Object.freeze({
     snapshot:(options={})=>ipcRenderer.invoke('synk:subscriptions-snapshot',{refreshTools:options?.refreshTools===true}),
-    check:()=>ipcRenderer.invoke('synk:subscriptions-check'),
+    check:(ids)=>ipcRenderer.invoke('synk:subscriptions-check',Array.isArray(ids)?ids.filter(id=>typeof id==='string').slice(0,200).map(id=>id.slice(0,80)):null),
     useExisting:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-use-existing',service):unknownSubscription('UNKNOWN_SERVICE'),
     login:(service,options={})=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-login',service,{email:typeof options?.email==='string'?options.email.trim().slice(0,254):undefined,console:options?.console===true}):unknownSubscription('UNKNOWN_SERVICE'),
     submitCode:(id,code)=>typeof id==='string'&&typeof code==='string'?ipcRenderer.invoke('synk:subscriptions-code',id,code.slice(0,2048)):unknownSubscription('INVALID_CODE'),
