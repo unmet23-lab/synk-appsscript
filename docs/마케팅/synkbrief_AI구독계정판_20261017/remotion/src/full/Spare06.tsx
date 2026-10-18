@@ -27,13 +27,13 @@ export const Spare06: React.FC = () => {
   return (
     <>
       <HeadF left="synkbrief 활용" right="06" />
-      <Lines at={T} size={72} top={L.TOP - 8} lines={[<>제일 <MarkF key="m" p={interpolate(f, [at('spare', 40.5), at('spare', 40.5) + 12], [0, 1], clamp)}>여유 있는 계정</MarkF></>]} />
+      <Lines at={T} size={72} top={L.TOP - 8} lines={[<>가장 <MarkF key="m" p={interpolate(f, [at('spare', 40.5), at('spare', 40.5) + 12], [0, 1], clamp)}>많이 남은 계정부터</MarkF></>]} />
       <div style={{ position: 'absolute', inset: 0, scale: String(drift), transformOrigin: `540px ${TOP + 200}px` }}>
         <FloatCard style={{ left: L.X, top: TOP, width: L.W - L.X - L.R, height: H, padding: `${PAD}px ${PAD}px 0` }}>
           <AppBoard html={html} width={BW} scale={Z} cls="sc-spare" css={CSS} />
         </FloatCard>
       </div>
-      <CaptionF text="지금 쓸 여유 있는 계정까지." em="여유 있는 계정까지." at={T + 2} />
+      <CaptionF text="남은 게 가장 많은 계정부터." em="가장 많은 계정부터." at={T + 2} />
     </>
   );
 };

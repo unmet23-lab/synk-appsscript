@@ -42,9 +42,9 @@ export const Hook01: React.FC<{ variant?: 'A' | 'B' }> = ({ variant = 'A' }) => 
                   <>
                     AI 계정 <span style={{ display: 'inline-block', scale: String(bump), transformOrigin: '50% 75%', fontVariantNumeric: 'tabular-nums' }}>{TOTAL}</span>개
                   </>,
-                  <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>남은 한도</MarkF>,
+                  <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>남은 사용량</MarkF>,
                 ]
-              : ['AI 구독 3개 넘으면,', '이번 주 얼마 남았는지', <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>아세요?</MarkF>]
+              : ['AI 구독 3개 넘으면,', '이번 주 사용량', <>얼마 남았는지 <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>아세요?</MarkF></>]
           }
         />
         <div style={{ position: 'absolute', left: L.X, top: 890, width: BW * SCALE, perspective: 1700 }}>

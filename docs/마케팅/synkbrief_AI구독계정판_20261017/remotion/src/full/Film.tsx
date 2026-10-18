@@ -72,7 +72,7 @@ const SCENES: { k: Parameters<typeof seq>[0]; el: (variant: 'A' | 'B') => React.
 const SONG_TAIL_FROM = TAIL.songFrame; // 곡 끝맺음 첫 타격(53.0초) — time.ts TAIL
 
 // 배경음 크기: 말 없는 곳 0.42(약 −20 LUFS), 말 아래 0.16(약 −29 LUFS). 녹음은 −17 LUFS 그대로(1.0).
-// 줄 사이가 0.8초(24프레임) 이하면 낮춘 채 잇는다(올렸다 내렸다 출렁이지 않게). 말머리 0.2초 전부터 내린다.
+// 줄 사이가 1초(30프레임) 이하면 낮춘 채 잇는다(올렸다 내렸다 출렁이지 않게 — v4 06→07 29프레임). 말머리 0.2초 전부터 내린다.
 const BGM_OPEN = 0.42;
 const BGM_UNDER = 0.16;
 const SFX_UNDER = 0.7;
@@ -83,7 +83,7 @@ type Clip = { id: string; at: number; speechEnd: number; end: number };
 const windows = (clips: Clip[]) =>
   clips.reduce<[number, number][]>((w, c) => {
     const last = w[w.length - 1];
-    if (last && c.at - last[1] <= 24) last[1] = c.speechEnd;
+    if (last && c.at - last[1] <= 30) last[1] = c.speechEnd;
     else w.push([c.at, c.speechEnd]);
     return w;
   }, []);

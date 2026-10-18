@@ -43,7 +43,7 @@ export const Week08: React.FC = () => {
           </div>
         </FloatCard>
       </div>
-      <CaptionF text="풀리는 때와 초기화를 날짜순으로." em="날짜순으로." at={T + 2} />
+      <CaptionF text="초기화 전에 쓰게, 날짜순으로." em="초기화 전에" at={T + 2} />
     </>
   );
 };

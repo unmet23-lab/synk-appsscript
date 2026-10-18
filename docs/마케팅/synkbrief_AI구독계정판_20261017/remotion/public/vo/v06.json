@@ -1,153 +1,153 @@
 {
  "audio_format": "wav",
- "audio_duration": 2.232,
+ "audio_duration": 2.098,
  "words": [
   {
-   "text": "지금",
-   "start": 0.013,
-   "end": 0.227
+   "text": "남은",
+   "start": 0.081,
+   "end": 0.309
   },
   {
-   "text": "쓸",
-   "start": 0.281,
-   "end": 0.414
+   "text": "게",
+   "start": 0.363,
+   "end": 0.417
   },
   {
-   "text": "여유",
-   "start": 0.508,
-   "end": 0.708
+   "text": "가장",
+   "start": 0.471,
+   "end": 0.726
   },
   {
-   "text": "있는",
-   "start": 0.789,
-   "end": 1.002
+   "text": "많은",
+   "start": 0.767,
+   "end": 0.955
   },
   {
-   "text": "계정까지",
-   "start": 1.056,
-   "end": 1.457
+   "text": "계정부터",
+   "start": 0.995,
+   "end": 1.412
   },
   {
    "text": "알려",
-   "start": 1.524,
-   "end": 1.711
+   "start": 1.453,
+   "end": 1.614
   },
   {
    "text": "주고,",
-   "start": 1.751,
-   "end": 2.232
+   "start": 1.654,
+   "end": 2.098
   }
  ],
  "characters": [
   {
-   "text": "지",
-   "start": 0.013,
-   "end": 0.12
+   "text": "남",
+   "start": 0.081,
+   "end": 0.256
   },
   {
-   "text": "금",
-   "start": 0.12,
-   "end": 0.227
-  },
-  {
-   "text": " ",
-   "start": 0.227,
-   "end": 0.281
-  },
-  {
-   "text": "쓸",
-   "start": 0.281,
-   "end": 0.414
+   "text": "은",
+   "start": 0.256,
+   "end": 0.309
   },
   {
    "text": " ",
-   "start": 0.414,
-   "end": 0.508
+   "start": 0.309,
+   "end": 0.363
   },
   {
-   "text": "여",
-   "start": 0.508,
-   "end": 0.642
-  },
-  {
-   "text": "유",
-   "start": 0.642,
-   "end": 0.708
+   "text": "게",
+   "start": 0.363,
+   "end": 0.417
   },
   {
    "text": " ",
-   "start": 0.708,
-   "end": 0.789
+   "start": 0.417,
+   "end": 0.471
   },
   {
-   "text": "있",
-   "start": 0.789,
-   "end": 0.922
+   "text": "가",
+   "start": 0.471,
+   "end": 0.592
   },
   {
-   "text": "는",
-   "start": 0.922,
-   "end": 1.002
+   "text": "장",
+   "start": 0.592,
+   "end": 0.726
   },
   {
    "text": " ",
-   "start": 1.002,
-   "end": 1.056
+   "start": 0.726,
+   "end": 0.767
+  },
+  {
+   "text": "많",
+   "start": 0.767,
+   "end": 0.901
+  },
+  {
+   "text": "은",
+   "start": 0.901,
+   "end": 0.955
+  },
+  {
+   "text": " ",
+   "start": 0.955,
+   "end": 0.995
   },
   {
    "text": "계",
-   "start": 1.056,
-   "end": 1.15
+   "start": 0.995,
+   "end": 1.089
   },
   {
    "text": "정",
-   "start": 1.15,
-   "end": 1.27
+   "start": 1.089,
+   "end": 1.237
   },
   {
-   "text": "까",
-   "start": 1.27,
-   "end": 1.403
+   "text": "부",
+   "start": 1.237,
+   "end": 1.332
   },
   {
-   "text": "지",
-   "start": 1.403,
-   "end": 1.457
+   "text": "터",
+   "start": 1.332,
+   "end": 1.412
   },
   {
    "text": " ",
-   "start": 1.457,
-   "end": 1.524
+   "start": 1.412,
+   "end": 1.453
   },
   {
    "text": "알",
-   "start": 1.524,
-   "end": 1.657
+   "start": 1.453,
+   "end": 1.547
   },
   {
    "text": "려",
-   "start": 1.657,
-   "end": 1.711
+   "start": 1.547,
+   "end": 1.614
   },
   {
    "text": " ",
-   "start": 1.711,
-   "end": 1.751
+   "start": 1.614,
+   "end": 1.654
   },
   {
    "text": "주",
-   "start": 1.751,
-   "end": 1.845
+   "start": 1.654,
+   "end": 1.749
   },
   {
    "text": "고",
-   "start": 1.845,
-   "end": 2.219
+   "start": 1.749,
+   "end": 2.085
   },
   {
    "text": ",",
-   "start": 2.219,
-   "end": 2.232
+   "start": 2.085,
+   "end": 2.098
   }
  ]
 }

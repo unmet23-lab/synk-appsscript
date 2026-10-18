@@ -32,7 +32,8 @@ export const Official09: React.FC = () => {
     <>
       <HeadF left="synkbrief 활용" right="09 · 흔한 오해" />
       <div style={{ position: 'absolute', left: L.X, right: L.R, top: L.TOP - 8, color: C.onField, font: `800 72px/1.12 ${F.ko}`, letterSpacing: '-.045em', whiteSpace: 'nowrap' }}>
-        <Mask p={settle(f, T, 16)}>토큰 복사?</Mask>{' '}
+        {/* 「토큰」은 이 영상에서 사용량 뜻으로도 쓰여(02 「남은 토큰」), 로그인용은 「인증 토큰」으로 가른다(v4) */}
+        <Mask p={settle(f, T, 16)}>인증 토큰 복사?</Mask>{' '}
         <Mask p={settle(f, at('official', 62), 16)}>
           <MarkF p={ramp(f, at('official', 62.5), 12)}>필요 없어요</MarkF>
         </Mask>

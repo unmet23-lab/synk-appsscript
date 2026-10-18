@@ -2,7 +2,7 @@
 """구운 나레이션(remotion/public/vo/*.wav)을 로컬 faster-whisper로 받아써 대본과 견준다. 비용 0원.
 
     python -I 소리/받아쓰기.py [medium|large-v3-turbo|small] [파일 접두사]   (기본 medium)
-    python -I 소리/받아쓰기.py --믹스 <영상.mp4>   렌더한 영상의 소리를 vo표 자리대로 잘라 받아쓴다(효과음·배경음에 묻히는지)
+    python -I 소리/받아쓰기.py --믹스 <영상.mp4> [모델]   렌더한 영상의 소리를 자리(place.json)대로 잘라 받아쓴다(효과음·배경음에 묻히는지, CUT=A|B)
 
 판정: 글자 오차율(CER). 읽는 법이 갈리는 말(AI·싱크·피씨·숫자)은 양쪽을 같은 글로 바꿔 견준다.
 """
@@ -17,6 +17,7 @@ SAME = [
     (r'SYNK|SYNC|Sync|sync|씽크|싱크', '싱크'),
     (r'PC|pc|피시|피씨', '피씨'),
     (r'16\s*개', '열여섯개'), (r'3\s*개', '세개'), (r'열 여섯', '열여섯'),
+    (r'토크는', '토큰은'),  # 「토큰은」의 소리[토크는]를 medium이 소리대로 적는다(v4, large는 「토큰은」)
 ]
 
 
@@ -55,7 +56,7 @@ def main():
             subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', str(max(0, c['start'] - 0.15)), '-t', str(c['end'] - c['start'] + 0.3), '-i', film,
                             '-vn', '-ac', '1', '-ar', '16000', out], check=True)
             jobs.append((c['id'], out))
-        size = 'medium'
+        size = next((a for a in argv if a in ('small', 'medium', 'large-v3-turbo')), 'medium')
     else:
         size = next((a for a in argv if a in ('small', 'medium', 'large-v3-turbo')), 'medium')
         pre = next((a for a in argv if a not in ('small', 'medium', 'large-v3-turbo')), '')
