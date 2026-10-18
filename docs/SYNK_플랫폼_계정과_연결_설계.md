@@ -1,5 +1,17 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-benefits-next-release-20261018"></a>
+## 2026-10-18 회원 혜택 다음 릴리스 입력
+
+웹과 PC의 AI 구독 소개는 `desktop/renderer/benefits.mjs` 하나를 계속 쓴다. 공개 `synk-policy cb7005c`에서 도구 이름을 뺀 소개·제공 안내 두 문장을 공통 원천에 그대로 반영했다. 별도 웹 문구 사본은 두지 않는다. 다음 공개·설치본은 아래 입력을 함께 포함한다.
+
+- **웹 플랫폼:** `9812277bd` 이후 `experiences/synk-account/src/member-benefits.mjs`를 사용한다. 카드 단추는 `item.id === 'insight'`만 「내 기록 살펴보기」, 구독 카드는 「어떤 경험인가요?」이며 미리보기 혜택의 「자세히 살펴보기」는 유지한다. PC 앱 안 혜택은 「PC 앱 받기 →」(`#downloads`)로 연결한다. `platform.css`의 `.quick-card::before`는 `content:var(--word) / ""`를 유지한다.
+- **Atlas·회원 성향:** `SYNK_MEMBER_INSIGHT_20261014` 묶음에 `4f328e127` 이후 `desktop/renderer/member-insight-view.mjs`를 넣고 `renderMemberInsight(insight, { poster })` 호출도 함께 유지한다. 새 묶음에서 성향 포스터·번호·상태가 표시되는지 확인한다.
+- **PC 설치본:** 혜택 물건 `4f328e127`, 좁은 창 소개 머리 `ae6e0b304`, Fable P3 `0075e2994`의 renderer·자산 변경을 새 동결 입력에 넣는다. 세 커밋은 origin/master에 있으나 기존 설치본에 모두 포함됐다는 뜻은 아니다. 폐기 반영 `0742f710b`(origin 재이식 `32ec228cc`)도 유지하고, 동결 manifest·실제 ASAR에서 해당 원천과 자산의 SHA를 대조한다. [공통 릴리스](../desktop/LIFECYCLE.md#platform-release-reproduction)와 `desktop/tools/benefit-heads-native-smoke.cjs`로 네 혜택의 좁은 창을 확인한다.
+- **빌드·캐시:** 공용 작업본의 10-18 16:51 `dist/platform.js`·`build-manifest.json`은 커밋 입력으로 쓰지 않는다. 다음 번들 커밋 전에 검토한 릴리스 원천을 격리 사본에서 다시 빌드하고 같은 입력의 `--check`를 통과시킨다. 일반 master 포털 빌드에는 미공개 모듈이 있으므로 그 결과로 공개본 전체를 덮지 않는다([현장 노트](현장노트/배포_공개.md)). 공개 `account/dist/platform.js`를 바꾸면 `platform.html`의 `?v=`도 새 SHA-256 앞 12자로 맞추고 실제 응답을 대조한다.
+
+이번 인수는 공통 소개 원천과 다음 릴리스 조건 정리다. 웹 재공개·새 PC 설치본 빌드·설치는 진행하지 않았다.
+
 <a id="member-benefits-retired-20261018"></a>
 ## 2026-10-18 회원 혜택 정리
 
