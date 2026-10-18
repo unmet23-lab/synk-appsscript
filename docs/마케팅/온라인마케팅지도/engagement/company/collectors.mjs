@@ -268,7 +268,9 @@ async function youtube(channel, credentials, request, recent) {
   const unavailable = ['saves', 'reach'];
   const metricPeriods = {};
   let analyticsPartial = false;
-  const analyticsAllowed=!credentials.scope||String(credentials.scope).split(/[ ,]+/).includes('https://www.googleapis.com/auth/yt-analytics.readonly');
+  // reports.query accepts these scopes; channel ownership is verified above.
+  const analyticsScopes = ['youtube', 'youtube.readonly', 'youtubepartner', 'yt-analytics-monetary.readonly', 'yt-analytics.readonly'].map(scope => `https://www.googleapis.com/auth/${scope}`);
+  const analyticsAllowed = !credentials.scope || String(credentials.scope).split(/[\s,]+/).some(scope => analyticsScopes.includes(scope));
   if (accessToken && !publicOnly && analyticsAllowed && posts.length) {
     const endDate = new Date().toISOString().slice(0, 10);
     try {
