@@ -3,6 +3,6 @@
 @media(max-width:380px){.tt-heading{flex-wrap:wrap}.tt-stats{grid-template-columns:1fr}.tt-stat>strong{font-size:31px}.tt-team-tools{flex-direction:column}.tt-team-tools label{width:100%}.tt-metrics{gap:2px}.tt-metrics button{padding-inline:9px}.tt-custom form{display:grid;grid-template-columns:1fr}.tt-custom input{width:100%}.tt-legend{gap:10px}}
 
 /* Keep the graph close to the team and metric choices. */
-.tt-heading{padding:4px 0 18px}.tt-heading h2{font-size:19px;margin:0}.tt-team-tools{margin-bottom:18px}.tt-range-tools{margin:12px 0 18px}.tt-stat{padding:20px}.tt-period{margin:20px 0 14px}
+.tt-heading{padding:4px 0 18px}.tt-heading h2{font-size:19px;margin:0}.tt-team-tools{margin-bottom:18px}.tt-range-tools{margin:12px 0 18px}.tt-stat{padding:20px}.tt-period{margin:20px 0 14px;word-break:keep-all}
 
 .tt-series-0{--tt-color:#3d6bc9}.tt-series-1{--tt-color:#9d562f}.tt-series-2{--tt-color:#557746}.tt-series-3{--tt-color:#8d4b78}.tt-series-4{--tt-color:#786823}.tt-series-5{--tt-color:#327b83}.tt-svg.is-mobile .tt-axis{font-size:15px}

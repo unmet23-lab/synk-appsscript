@@ -1,6 +1,7 @@
 // Browser check: while a collection run is going, polling must not throw the reader back to the top.
 // A: an unchanged /api/state answer repaints nothing. B: a changed answer repaints in the background and keeps
-// scroll and focus, and waits while typed-in input is unsaved or a click is held. Clicking to another section still starts at the top.
+// scroll, focus and opened sections, and waits while typed-in input is unsaved or a click is held. The team comparison chart
+// refreshes in place without a loading paint. Clicking to another section still starts at the top.
 // Starts verify-workspace-fixture.mjs in its own temporary folder (disposable data, synthetic users), drives headless Chrome, then removes that folder.
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
@@ -37,6 +38,11 @@ try{
   await quiet.close();
   const desk=await session({viewport:{width:1280,height:900}});await busy(desk,true);
   for(const [name,path] of views)await step(`changed poll keeps the place · ${name}`,async()=>{const page=await open(desk,path),start=await scrollDown(page);await page.waitForTimeout(15000);const end=await after(page);await page.close();return {ok:end.repaints>=2&&end.main===start&&start>0,detail:{start,...end}};});
+  await step('changed poll refreshes the team chart in place, keeping the opened table and the chosen date · overview team',async()=>{const page=await open(desk,'/?tab=overview&section=team');await page.click('details.tt-records > summary');
+    await page.focus('[data-team-trend-date]');await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowLeft');const date=await page.evaluate(()=>teamTrends.date);
+    let fetches=0;page.on('request',request=>{if(new URL(request.url()).pathname==='/api/team-trends')fetches++;});const start=await scrollDown(page);await page.waitForTimeout(15000);
+    const end=await page.evaluate(()=>({main:Math.round(document.querySelector('main').scrollTop),repaints:window.__repaints,open:document.querySelector('details.tt-records')?.open===true,date:teamTrends.date,focused:document.activeElement?.hasAttribute?.('data-team-trend-date')===true}));await page.close();
+    return {ok:fetches>=1&&end.repaints>=2&&end.open&&!!date&&end.date===date&&end.focused&&end.main===start&&start>0,detail:{start,fetches,chosen:date,...end}};});
   await step('a field being typed in is not swapped out while the reader types',async()=>{const page=await open(desk,'/?tab=social&section=results');await page.click('input[name="query"]');await page.keyboard.type('검증');await page.evaluate(()=>{window.__repaints=0;});await page.waitForTimeout(15000);
     const end=await page.evaluate(()=>({repaints:window.__repaints,focused:document.activeElement?.getAttribute?.('name'),value:document.activeElement?.value??null}));await page.close();return {ok:end.repaints===0&&end.focused==='query'&&end.value==='검증',detail:end};});
   await step('a focused field nobody typed in keeps focus through background repaints',async()=>{const page=await open(desk,'/?tab=social&section=results');await page.click('input[name="query"]');await page.evaluate(()=>{window.__repaints=0;});await page.waitForTimeout(15000);
@@ -58,4 +64,4 @@ try{
   }
 }
 for(const row of results)console.log(`${row.ok?'ok  ':'FAIL'} ${row.name} ${JSON.stringify(row.detail)}`);
-assert.ok(results.length===12&&results.every(row=>row.ok),'workspace repaint scenarios failed');
+assert.ok(results.length===13&&results.every(row=>row.ok),'workspace repaint scenarios failed');

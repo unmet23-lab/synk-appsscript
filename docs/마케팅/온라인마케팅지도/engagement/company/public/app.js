@@ -177,13 +177,13 @@ async function loadState() {
   const data=await api('/api/state');if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
   if(!isDemoMode()&&data.user?.id!==authStamp.userId){clearCompanySessionView();throw companyAuthChanged();}
   const signature=JSON.stringify(data);if(quiet&&signature===state.dataSignature)return null;state.dataSignature=signature;
-  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends();normalizeMarketingScope();if(quiet&&typeof renderBackground==='function')renderBackground();else render();return data;
+  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends(quiet);normalizeMarketingScope();if(quiet&&typeof renderBackground==='function')renderBackground();else render();return data;
 }
 async function loadReport() {
-  if (state.tab === 'overview' && state.scope === 'team' && state.marketingView !== 'channels' && typeof loadTeamTrends === 'function') { state.error='';state.loading=false;await loadTeamTrends();return; }
+  const quiet = arguments[0]?.quiet === true, paint = quiet && typeof renderBackground === 'function' ? renderBackground : render;
+  if (state.tab === 'overview' && state.scope === 'team' && state.marketingView !== 'channels' && typeof loadTeamTrends === 'function') { state.error='';state.loading=false;await loadTeamTrends(false,{quiet});return; }
   // The simple home always describes today. Historical periods belong to analysis.
   if (state.tab === 'overview' && state.marketingView !== 'channels') { state.end = reportToday(); state.start = shiftDate(state.end,-((new Date(state.end+'T00:00:00Z').getUTCDay()+6)%7)); state.range = 'custom'; }
-  const quiet = arguments[0]?.quiet === true, paint = quiet && typeof renderBackground === 'function' ? renderBackground : render;
   const requestId = ++state.reportRequest; state.loading = true; state.error = ''; if (!quiet) render();
   if (state.tab === 'analysis') void loadTeamOverview(false, { quiet });
   if (state.tab === 'overview' && state.homeExtrasOpen && !isDemoMode()) void loadHype();

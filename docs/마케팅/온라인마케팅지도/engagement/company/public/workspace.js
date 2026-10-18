@@ -166,17 +166,21 @@ function workspaceRepaintBlocked(root){
   const composing=workspaceRepaint.composing,active=document.activeElement;
   return !!(composing?.isConnected&&root.contains(composing))||workspaceRepaint.pressed||!!(active?.isContentEditable&&root.contains(active)&&workspaceRepaint.edited.has(active))||[...root.querySelectorAll('input,textarea,select')].some(field=>workspaceRepaint.edited.has(field)&&workspaceFieldChanged(field));
 }
+// Same-named sections match by position only while their count is unchanged; a grown or shrunk list is left as rendered.
+function workspaceDetails(root){const seen=new Map(),rows=[...root.querySelectorAll('details')].map(node=>{const name=workspaceFieldSelector(node)+'.'+node.className,index=seen.get(name)||0;seen.set(name,index+1);return [name,index,node];});return rows.map(([name,index,node])=>[`${name}#${index}/${seen.get(name)}`,node]);}
 function workspaceRepaintLater(root){workspaceRepaint.root=root;if(workspaceRepaint.retry)return;workspaceRepaint.retry=setTimeout(()=>{workspaceRepaint.retry=null;if(workspaceRepaintBlocked(workspaceRepaint.root))workspaceRepaintLater(workspaceRepaint.root);else renderBackground();},2000);}
 function workspaceRepaintCapture(root,entering){
   if(!workspaceRepaint.background||entering||workspaceViewKey()!==workspaceRepaint.key)return null;
   if(workspaceRepaintBlocked(root)){workspaceRepaintLater(root);return {deferred:true};}
   const main=document.getElementById('main'),active=document.activeElement,focused=active&&active!==main&&root.contains(active)?active:null,text=workspaceTextField(focused);
-  const saved={main:main?main.scrollTop:null,scrolls:[...root.querySelectorAll('[id]')].filter(node=>node!==main&&(node.scrollTop>0||node.scrollLeft>0)).map(node=>[node.id,node.scrollTop,node.scrollLeft])};
+  const saved={main:main?main.scrollTop:null,scrolls:[...root.querySelectorAll('[id]')].filter(node=>node!==main&&(node.scrollTop>0||node.scrollLeft>0)).map(node=>[node.id,node.scrollTop,node.scrollLeft]),details:workspaceDetails(root).map(([name,node])=>[name,node.open])};
   if(focused){const selector=workspaceFieldSelector(focused);saved.focus={selector,index:[...root.querySelectorAll(selector)].indexOf(focused),start:text?focused.selectionStart:null,end:text?focused.selectionEnd:null,direction:text?focused.selectionDirection:null};}
   return saved;
 }
 function workspaceRepaintRestore(root,saved){
   if(!saved||saved.deferred)return;
+  // Opened sections first: a collapsed table would shorten the page before the scroll position comes back.
+  const open=new Map(saved.details);for(const [name,node] of workspaceDetails(root))if(open.has(name))node.open=open.get(name);
   const main=document.getElementById('main');if(main&&saved.main!==null)main.scrollTop=saved.main;
   for(const [id,top,left] of saved.scrolls){const node=document.getElementById(id);if(node&&node!==main&&root.contains(node)){node.scrollTop=top;node.scrollLeft=left;}}
   const focus=saved.focus,active=document.activeElement;if(!focus||focus.index<0||(active&&active!==main&&root.contains(active)))return;

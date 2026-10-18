@@ -7,6 +7,7 @@ const workspaceSource=readFileSync(new URL('./public/workspace.js',import.meta.u
 const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
 const teamOverviewSource=readFileSync(new URL('./public/team-overview.js',import.meta.url),'utf8');
+const teamTrendsSource=readFileSync(new URL('./public/team-trends.js',import.meta.url),'utf8');
 const slice=(from,to)=>appSource.slice(appSource.indexOf(from),appSource.indexOf(to));
 
 function matchOne(node,part){if(part==='[id]')return 'id' in node.attrs;if(part==='[contenteditable]')return 'contenteditable' in node.attrs;const tag=/^[a-z]+/.exec(part)?.[0],pairs=[...part.matchAll(/\[([^=\]]+)="([^"]*)"\]/g)];return (!tag||node.tagName===tag.toUpperCase())&&pairs.every(([,name,value])=>node.attrs[name]===value);}
@@ -81,13 +82,14 @@ test('renderBackground marks only its own repaint, even when it throws',()=>{
 });
 
 test('collection polling repaints only when the state answer changed, and then in the background',async()=>{
-  let payload={user:{id:'u'},channels:[{id:'a',status:'running'}]},renders=0,backgrounds=0;
-  const context=vm.createContext({state:{user:{id:'u'}},companyAuthSnapshot:()=>({userId:'u'}),companyAuthCurrent:()=>true,companyAuthChanged:()=>new Error('changed'),api:async()=>structuredClone(payload),isDemoMode:()=>false,clearCompanySessionView(){},initializeDemoRange(){},resetTeamOverview(){},resetTeamTrends(){},normalizeMarketingScope(){},render:()=>renders++,renderBackground:()=>backgrounds++});
+  let payload={user:{id:'u'},channels:[{id:'a',status:'running'}]},renders=0,backgrounds=0;const trendResets=[];
+  const context=vm.createContext({state:{user:{id:'u'}},companyAuthSnapshot:()=>({userId:'u'}),companyAuthCurrent:()=>true,companyAuthChanged:()=>new Error('changed'),api:async()=>structuredClone(payload),isDemoMode:()=>false,clearCompanySessionView(){},initializeDemoRange(){},resetTeamOverview(){},resetTeamTrends:keep=>trendResets.push(keep),normalizeMarketingScope(){},render:()=>renders++,renderBackground:()=>backgrounds++});
   vm.runInContext(slice('async function loadState()','async function loadReport()'),context);const load=code=>vm.runInContext(code,context);
   assert.ok(await load('loadState()'));assert.equal(renders,1);const first=load('state.data');
   assert.equal(await load('loadState({quiet:true})'),null);assert.equal(renders,1);assert.equal(backgrounds,0);assert.equal(load('state.data'),first,'an unchanged answer leaves the screen data alone');
   payload={user:{id:'u'},channels:[{id:'a',status:'success'}]};assert.ok(await load('loadState({quiet:true})'));assert.equal(backgrounds,1);assert.equal(renders,1);
   assert.ok(await load('loadState()'));assert.equal(renders,2,'ordinary loads always repaint');
+  assert.deepEqual(trendResets,[false,true,false],'only a changed poll keeps the team chart on screen while it refreshes');
 });
 
 test('a quiet report reload skips loading paints, also for the team overview it starts',async()=>{
@@ -100,4 +102,61 @@ test('a quiet report reload skips loading paints, also for the team overview it 
   let teamRenders=0,teamBackgrounds=0;const team=vm.createContext({state:{user:{id:'u'},tab:'analysis',scope:'all',marketingView:'summary',start:'2026-10-12',end:'2026-10-18'},URLSearchParams,api:async()=>({teams:[]}),render:()=>teamRenders++,renderBackground:()=>teamBackgrounds++});
   vm.runInContext(teamOverviewSource,team);await vm.runInContext('loadTeamOverview(false,{quiet:true})',team);assert.equal(teamRenders,0);assert.equal(teamBackgrounds,1);
   await vm.runInContext('resetTeamOverview();loadTeamOverview()',team);assert.equal(teamRenders,2,'ordinary team loads keep their loading paint');
+});
+
+test('the team comparison page passes a quiet reload on to its trend chart',async()=>{
+  const calls=[];const context=vm.createContext({state:{tab:'overview',scope:'team',marketingView:'summary',reportRequest:0},loadTeamTrends:async(force,options)=>{calls.push([force,options?.quiet===true]);},render(){},renderBackground(){}});
+  vm.runInContext(slice('async function loadReport()','function startPolling()'),context);
+  await vm.runInContext('loadReport({quiet:true})',context);await vm.runInContext('loadReport()',context);
+  assert.deepEqual(calls,[[false,true],[false,false]]);
+});
+
+function trendPage(){
+  const requests=[],paints=[],slider={value:'0',defaultValue:'0',setAttribute(){}};
+  const state={user:{id:'u',role:'member',teamId:'alpha'},data:{},scope:'team',tab:'overview',marketingView:'summary'};
+  const context=vm.createContext({state,URLSearchParams,document:{addEventListener(){},querySelector:selector=>selector==='[data-team-trend-date]'?slider:null,querySelectorAll:()=>[]},reportToday:()=> '2026-10-18',shiftDate:(date,n)=>new Date(Date.parse(date)+n*86400000).toISOString().slice(0,10),isDemoMode:()=>false,isAdmin:()=>false,
+    render:()=>paints.push('render'),renderBackground:()=>paints.push('background'),api(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});requests.push({resolve,reject});return promise;}});
+  vm.runInContext(teamTrendsSource,context);
+  const answer=(...values)=>({start:'2026-10-16',end:'2026-10-18',ownTeamId:'alpha',teams:[{id:'alpha',name:'우리 팀',isOwn:true,summary:{latest:values.at(-1),count:1,eligible:1,period:{delta:0,count:1,eligible:1,complete:true}},series:values.map((latest,index)=>({date:`2026-10-1${index+6}`,latest,count:1,latestCount:1,eligible:1,complete:true,change:{delta:0,complete:true}}))}]});
+  return {state,requests,paints,slider,answer,run:code=>vm.runInContext(code,context)};
+}
+
+test('a quiet team trend refresh keeps the chart and the chosen date on screen, then repaints in the background',async()=>{
+  const {state,requests,paints,slider,answer,run}=trendPage(),warning=/이전 숫자를 보여 주고 있어요/;
+  let loading=run('loadTeamTrends()');requests[0].resolve(answer(1,2,3));await loading;assert.deepEqual(paints,['render','render']);
+  run('ttPaintDate(1)');assert.equal(slider.defaultValue,'1','the chosen date is saved state, not unsaved input');
+  paints.length=0;run('resetTeamTrends(true)');assert.match(run('teamTrendsSection()'),/tt-stats/,'the chart stays while the refresh is pending');assert.doesNotMatch(run('teamTrendsSection()'),warning,'a pending refresh is not a warning');
+  loading=run('loadTeamTrends(false,{quiet:true})');assert.deepEqual(paints,[],'no loading paint');assert.match(run('teamTrendsSection()'),/tt-stats/);
+  requests[1].resolve(answer(1,2,5));await loading;assert.deepEqual(paints,['background']);assert.equal(run('teamTrends.date'),'2026-10-17','the chosen date survives the refresh');assert.equal(run('teamTrends.result.teams[0].summary.latest'),5);
+  run('resetTeamTrends(true)');loading=run('loadTeamTrends(false,{quiet:true})');requests[2].reject(new Error('잠깐 끊김'));await loading;
+  assert.equal(run('teamTrends.error'),'','a failed quiet refresh keeps the chart instead of an error box');assert.equal(run('teamTrends.stale'),true);assert.equal(run('teamTrends.result.teams[0].summary.latest'),5);
+  assert.match(run('teamTrendsSection()'),/이전 숫자를 보여 주고 있어요[\s\S]*data-team-trend-action="retry"/,'the kept chart says it is not the newest and offers a retry');
+  paints.length=0;loading=run('loadTeamTrends()');assert.deepEqual(paints,['render'],'a stale chart still refreshes on an ordinary load, with its loading paint');assert.equal(run('teamTrends.result'),null);requests[3].resolve(answer(1));await loading;
+  assert.doesNotMatch(run('teamTrendsSection()'),warning,'a successful load clears the warning');
+  state.tab='analysis';run('resetTeamTrends(true)');assert.equal(run('teamTrends.result'),null,'off screen, a quiet reset drops the chart as before');
+});
+
+test('leaving the team page during a quiet refresh still fetches the newer numbers on return',async()=>{
+  for(const fails of [false,true]){
+    const {state,requests,answer,run}=trendPage();
+    let loading=run('loadTeamTrends()');requests[0].resolve(answer(1,2,3));await loading;
+    run('resetTeamTrends(true)');loading=run('loadTeamTrends(false,{quiet:true})');state.tab='analysis';
+    if(fails)requests[1].reject(new Error('잠깐 끊김'));else requests[1].resolve(answer(1,2,9));await loading;
+    assert.equal(run('teamTrends.result.teams[0].summary.latest'),3,'an answer that arrives off screen is not applied');assert.equal(run('teamTrends.stale'),true);
+    state.tab='overview';loading=run('loadTeamTrends()');assert.equal(requests.length,3,'coming back fetches again');requests[2].resolve(answer(1,2,9));await loading;
+    assert.equal(run('teamTrends.result.teams[0].summary.latest'),9);assert.equal(run('teamTrends.stale'),false);
+  }
+});
+
+test('background repaints reopen opened sections before the scroll comes back',()=>{
+  const p=page(),records=open=>element('details',{},{className:'tt-records',open}),custom=open=>element('details',{},{className:'tt-custom',open});
+  p.nodes=[element('main',{id:'main'},{scrollTop:900}),records(true),custom(false)];p.run('workspaceRepaintDone()');const saved=capture(p);
+  const after={main:element('main',{id:'main'}),records:records(false),custom:custom(true)};let top=0;
+  Object.defineProperty(after.main,'scrollTop',{get:()=>top,set:value=>{top=Math.min(value,after.records.open?2000:300);}});
+  p.nodes=[after.main,after.records,after.custom];p.context.workspaceRepaintRestore(p.root,saved);
+  assert.equal(after.records.open,true);assert.equal(after.custom.open,false,'a section the reader closed stays closed');assert.equal(after.main.scrollTop,900,'the table opens before the page scrolls back');
+  const variant=open=>element('details',{},{className:'sw-variant',open});
+  p.nodes=[element('main',{id:'main'}),variant(false),variant(true)];p.run('workspaceRepaintDone()');const list=capture(p);
+  const grown=[variant(false),variant(false),variant(false)];p.nodes=[element('main',{id:'main'}),...grown];p.context.workspaceRepaintRestore(p.root,list);
+  assert.deepEqual(grown.map(node=>node.open),[false,false,false],'a list that grew is left as rendered instead of opening the neighbour');
 });
