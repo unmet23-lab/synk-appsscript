@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "approved": true,
+  "clips": {
+    "grow": {
+      "text": "커져요",
+      "file": "audio/grow.mp3",
+      "durationSeconds": 0.936
+    },
+    "shrink": {
+      "text": "작아져요",
+      "file": "audio/shrink.mp3",
+      "durationSeconds": 1.093
+    },
+    "open": {
+      "text": "열어요",
+      "file": "audio/open.mp3",
+      "durationSeconds": 1.246
+    },
+    "close": {
+      "text": "닫아요",
+      "file": "audio/close.mp3",
+      "durationSeconds": 1.088
+    },
+    "up": {
+      "text": "위",
+      "file": "audio/up.mp3",
+      "durationSeconds": 0.65
+    },
+    "down": {
+      "text": "아래",
+      "file": "audio/down.mp3",
+      "durationSeconds": 1.483
+    },
+    "water": {
+      "text": "물",
+      "file": "audio/water.mp3",
+      "durationSeconds": 1.086
+    },
+    "bread": {
+      "text": "빵",
+      "file": "audio/bread.mp3",
+      "durationSeconds": 0.662
+    },
+    "apple": {
+      "text": "사과",
+      "file": "audio/apple.mp3",
+      "durationSeconds": 0.871
+    },
+    "count-1": {
+      "text": "한 개",
+      "file": "audio/count-1.mp3",
+      "durationSeconds": 1.093
+    },
+    "count-2": {
+      "text": "두 개",
+      "file": "audio/count-2.mp3",
+      "durationSeconds": 0.923
+    },
+    "count-3": {
+      "text": "세 개",
+      "file": "audio/count-3.mp3",
+      "durationSeconds": 1.372
+    },
+    "water-please": {
+      "text": "물 주세요.",
+      "file": "audio/water-please.mp3",
+      "durationSeconds": 1.347
+    },
+    "bread-please": {
+      "text": "빵 주세요.",
+      "file": "audio/bread-please.mp3",
+      "durationSeconds": 1.282
+    },
+    "apple-please": {
+      "text": "사과 주세요.",
+      "file": "audio/apple-please.mp3",
+      "durationSeconds": 1.189
+    },
+    "bread-1": {
+      "text": "빵 한 개 주세요.",
+      "file": "audio/bread-1.mp3",
+      "durationSeconds": 1.296
+    },
+    "bread-2": {
+      "text": "빵 두 개 주세요.",
+      "file": "audio/bread-2.mp3",
+      "durationSeconds": 1.442
+    },
+    "bread-3": {
+      "text": "빵 세 개 주세요.",
+      "file": "audio/bread-3.mp3",
+      "durationSeconds": 1.399
+    },
+    "apple-1": {
+      "text": "사과 한 개 주세요.",
+      "file": "audio/apple-1.mp3",
+      "durationSeconds": 1.308
+    },
+    "apple-2": {
+      "text": "사과 두 개 주세요.",
+      "file": "audio/apple-2.mp3",
+      "durationSeconds": 1.677
+    },
+    "apple-3": {
+      "text": "사과 세 개 주세요.",
+      "file": "audio/apple-3.mp3",
+      "durationSeconds": 1.619
+    },
+    "red": {
+      "text": "빨간색",
+      "file": "audio/red.mp3",
+      "durationSeconds": 1.104
+    },
+    "blue": {
+      "text": "파란색",
+      "file": "audio/blue.mp3",
+      "durationSeconds": 0.941
+    },
+    "one": {
+      "text": "한 번",
+      "file": "audio/one.mp3",
+      "durationSeconds": 1.179
+    },
+    "two": {
+      "text": "두 번",
+      "file": "audio/two.mp3",
+      "durationSeconds": 0.863
+    },
+    "three": {
+      "text": "세 번",
+      "file": "audio/three.mp3",
+      "durationSeconds": 0.842
+    }
+  }
+}

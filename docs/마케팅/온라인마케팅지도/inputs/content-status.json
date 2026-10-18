@@ -25,23 +25,28 @@
     {
       "id": "lab-23-country-translation-plan",
       "source": "current-user-direction-relayed-by-parent",
-      "decision": "한국어 기준 콘텐츠의 23개국 번역·현지화는 계획이며 번역 완료·국가별 최종 언어 확정 아님."
+      "decision": "한국어 기준 콘텐츠의 25개국(2026-10-02 브라질·멕시코 추가) 번역·현지화는 계획이며 번역 완료·국가별 최종 언어 확정 아님."
     },
     {
       "id": "l2-approval-not-established",
       "source": "current-user-direction-relayed-by-parent",
       "decision": "첫 기존 카드에 사용자 불만이 있었고 새 구성 승인은 확인되지 않음. 재검토가 필요한 상태로 표시."
+    },
+    {
+      "id": "lab-brazil-mexico-20261002",
+      "source": "user-decision-20261002",
+      "decision": "브라질·멕시코를 LAB 해외 SNS 계획에 넣는다(국가별 2플랫폼: 멕시코 YouTube·TikTok, 브라질 Instagram·YouTube). 2026-10-17 사용자 「지도에 맥시코 브라질 넣어」로 지도에 반영."
     }
   ],
   "planCounts": {
     "contentConcepts": 14,
     "facelessContentConcepts": 12,
     "faceVideoConceptsOtherSession": 2,
-    "countries": 23,
-    "plannedCountryPlatformSlots": 46,
+    "countries": 25,
+    "plannedCountryPlatformSlots": 50,
     "existingMongoliaRecordSlots": 2,
-    "newCountryCandidates": 22,
-    "newChannelSlotsPlanned": 44
+    "newCountryCandidates": 24,
+    "newChannelSlotsPlanned": 48
   },
   "planCountNote": "산술적인 계획 행·슬롯 수다. 실제 신규 생성 계정 수·운영 완료 수·성과 수치가 아님.",
   "contents": [
@@ -1074,6 +1079,76 @@
         },
         {
           "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "MX",
+      "name": "멕시코",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "TikTok"
+      ],
+      "audience": "취미로 한국어를 배우는 스페인어권 학습자 · 드라마·노래 속 한국어로 시작(TOPIK은 원하면 가는 목표)",
+      "planStatus": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "스페인어권 전체로 가는 입구 · 미성년 보호 별도 조건 없음(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
+      "demandRank": null,
+      "sourceType": "user-decision-20261002",
+      "sourcePaths": [
+        "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+        "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+      ],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "BR",
+      "name": "브라질",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "YouTube"
+      ],
+      "audience": "취미로 한국어를 배우는 포르투갈어권 학습자 · 드라마·노래 속 한국어로 시작(TOPIK은 원하면 가는 목표)",
+      "planStatus": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "SNS는 지금 운영 가능 · 앱 출시는 미성년 보호법(ECA Digital)에 맞는 보호자 기능 묶음 이후(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
+      "demandRank": null,
+      "sourceType": "user-decision-20261002",
+      "sourcePaths": [
+        "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+        "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+      ],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
           "status": "planned-not-created-or-verified",
           "accountId": null,
           "handle": null,

@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "provider": "typecast",
+  "approved": true,
+  "clips": {
+    "grow": {
+      "text": "커져요",
+      "file": "grow.mp3",
+      "durationSeconds": 0.936,
+      "sha256": "92fdcd3236376bc9ca8ed63095beadce0e6e4aac2a43a719428b09d3c049f391"
+    },
+    "shrink": {
+      "text": "작아져요",
+      "file": "shrink.mp3",
+      "durationSeconds": 1.093,
+      "sha256": "8b6e13f62abe34b1139aead3ffb5fc553112499cf772cf1e0c76c4bbfeb1e572"
+    },
+    "open": {
+      "text": "열어요",
+      "file": "open.mp3",
+      "durationSeconds": 1.246,
+      "sha256": "8ae2ba80ef76527efcdc56dc79273a9a1cc68156a39a997fa6ed3c9f4bed98be"
+    },
+    "close": {
+      "text": "닫아요",
+      "file": "close.mp3",
+      "durationSeconds": 1.088,
+      "sha256": "08de1e4cf263bca4b2f7d1ad57763f97ae20670f99a6f3f90b3bf404d08d2c17"
+    },
+    "up": {
+      "text": "위",
+      "file": "up.mp3",
+      "durationSeconds": 0.65,
+      "sha256": "a0e93cdf40769fcda7d1147ac6c0f096fb7222c43994fe9717a8d7251c4aedea"
+    },
+    "down": {
+      "text": "아래",
+      "file": "down.mp3",
+      "durationSeconds": 1.483,
+      "sha256": "72f21491333cfbffddda211710bc566b5c13a259bed9f0268b1509d278aab761"
+    }
+  }
+}

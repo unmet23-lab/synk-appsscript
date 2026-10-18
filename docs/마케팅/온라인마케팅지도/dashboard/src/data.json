@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-09-27T06:19:28.345Z",
+  "generatedAt": "2026-10-17T10:21:09.625Z",
   "status": "reviewed-local-records",
   "buildStatus": "updating",
   "filters": [
@@ -88,9 +88,9 @@
           "legalEntity": "브랜드",
           "brand": "LAB",
           "ownedCount": 5,
-          "securedExpansionCount": 24,
+          "securedExpansionCount": 26,
           "sharedCount": 1,
-          "plannedSlots": 46
+          "plannedSlots": 50
         },
         {
           "id": "SHIFT",
@@ -160,12 +160,13 @@
           "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
-          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [
           {
@@ -174,7 +175,7 @@
           },
           {
             "label": "확장 확보",
-            "definition": "몽골 외 LAB 44자리 중 계정 레지스트리에 실재 확인된 24곳. 게시·성과 수가 아니다."
+            "definition": "몽골 외 LAB 48자리 중 계정 레지스트리에 실재 확인된 26곳. 게시·성과 수가 아니다."
           },
           {
             "label": "공유 연결",
@@ -188,11 +189,11 @@
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅_정본.md / docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+            "detail": "docs/마케팅_정본.md / docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -215,23 +216,23 @@
         {
           "id": "lab-secured",
           "label": "LAB 확장 확보",
-          "value": 24,
+          "value": 26,
           "unit": "곳",
-          "note": "YouTube 16 + 기타 SNS 8 · 게시 수 아님"
+          "note": "YouTube 18 + 기타 SNS 8 · 게시 수 아님"
         },
         {
           "id": "lab-pending",
           "label": "LAB 확장 미확인",
-          "value": 20,
+          "value": 22,
           "unit": "곳",
           "note": "개설 또는 브랜드 채널 확인 필요"
         },
         {
           "id": "lab-world",
           "label": "LAB 대상 국가",
-          "value": 23,
+          "value": 25,
           "unit": "개국",
-          "note": "전체 관리 계획 49자리 · 몽골 기존 5 포함"
+          "note": "전체 관리 계획 53자리 · 몽골 기존 5 포함"
         }
       ],
       "source": {
@@ -244,17 +245,18 @@
           "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
-          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [
           {
             "label": "LAB 전체 계획",
-            "definition": "23개국 우선 46자리 + 몽골 추가 3자리 = 49자리. 그중 기존 몽골 5자리, 확장 확보 24자리, 확장 미확인 20자리."
+            "definition": "25개국 우선 50자리 + 몽골 추가 3자리 = 53자리. 그중 기존 몽골 5자리, 확장 확보 26자리, 확장 미확인 22자리."
           }
         ],
         "caveats": [
@@ -264,11 +266,11 @@
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -717,21 +719,60 @@
           "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
+        },
+        {
+          "id": "country-MX",
+          "code": "MX",
+          "country": "멕시코",
+          "brand": "LAB",
+          "platformsLabel": "YouTube · TikTok",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
+          "scriptStatus": "한국어 원본 검토",
+          "translationStatus": "최종 번역 미확인",
+          "localReviewStatus": "현지 검수 미확인",
+          "contentStatus": "한국어 원본 확정 후 현지화",
+          "publishStatus": "새 콘텐츠 게시 미확인",
+          "appStatus": "출시 계획 · 공개 출시 미확인",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
+          "condition": "스페인어권 전체로 가는 입구 · 미성년 보호 별도 조건 없음(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
+          "sourceLabel": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가 · 수요 순위 아님"
+        },
+        {
+          "id": "country-BR",
+          "code": "BR",
+          "country": "브라질",
+          "brand": "LAB",
+          "platformsLabel": "Instagram · YouTube",
+          "existingCount": 1,
+          "existingLabel": "확장 확보 1/2",
+          "setupStatus": "확장 확보 1/2",
+          "scriptStatus": "한국어 원본 검토",
+          "translationStatus": "최종 번역 미확인",
+          "localReviewStatus": "현지 검수 미확인",
+          "contentStatus": "한국어 원본 확정 후 현지화",
+          "publishStatus": "새 콘텐츠 게시 미확인",
+          "appStatus": "출시 계획 · 공개 출시 미확인",
+          "nextAction": "확보한 프로필과 미확인 계정의 상태를 각각 확인한 뒤 번역·현지 검수와 게시를 준비한다.",
+          "condition": "SNS는 지금 운영 가능 · 앱 출시는 미성년 보호법(ECA Digital)에 맞는 보호자 기능 묶음 이후(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
+          "sourceLabel": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가 · 수요 순위 아님"
         }
       ],
       "source": {
-        "label": "LAB 23개국별 확보 상태와 제작 계획",
+        "label": "LAB 25개국별 확보 상태와 제작 계획",
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/content-status.json",
           "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
-          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -741,11 +782,11 @@
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+            "detail": "docs/마케팅/온라인마케팅지도/inputs/content-status.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -3175,10 +3216,144 @@
           "verificationScope": "개설 미확인",
           "observedGate": "blocked-shared-instagram-signup-gate",
           "youtubeProfileVerified": false
+        },
+        {
+          "id": "lab-mx-youtube",
+          "brand": "LAB",
+          "sourceBrand": "LAB",
+          "country": "멕시코",
+          "countryCode": "MX",
+          "platform": "YouTube",
+          "handle": "@synklabmexico",
+          "publicUrl": "https://www.youtube.com/channel/UCgVd9xnRPn28UaaRFxR0ARQ",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "채널 생성 확인 · 프로필 미게시",
+          "profileStatus": "프로필 게시·공개 미확인",
+          "coverStatus": "커버 미확인",
+          "avatarStatus": "historical-upload-current-state-unverified",
+          "profileStatusCode": "created-current-studio-preparation-unverified-browser-blocked-2026-10-02",
+          "priority": "우선 플랫폼",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "channelRole": "현지 한국어 학습 콘텐츠",
+          "nextAction": "YouTube Studio에서 프로필 게시 후 공개 화면 확인",
+          "lastEvidenceAt": "2026-09-20T07:55:00+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json",
+          "sourcePaths": [
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+          ],
+          "verificationScope": "생성 기록 · 공개 프로필 미확인",
+          "observedGate": null,
+          "youtubeProfileVerified": false
+        },
+        {
+          "id": "lab-mx-tiktok",
+          "brand": "LAB",
+          "sourceBrand": "LAB",
+          "country": "멕시코",
+          "countryCode": "MX",
+          "platform": "TikTok",
+          "handle": null,
+          "publicUrl": null,
+          "loginAlias": null,
+          "accountStatus": "planned",
+          "channelScope": "확장 미확인",
+          "setupStatus": "앱 보안 확인 필요 · 생성 안 됨",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "app-security-handoff-required-not-created",
+          "priority": "우선 플랫폼",
+          "publishStatus": "계정 미확인",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "channelRole": "현지 한국어 학습 콘텐츠",
+          "nextAction": "휴대폰 앱에서 보안 확인 후 개설",
+          "lastEvidenceAt": null,
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json",
+          "sourcePaths": [
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "app-security-handoff-required-not-created",
+          "youtubeProfileVerified": false
+        },
+        {
+          "id": "lab-br-instagram",
+          "brand": "LAB",
+          "sourceBrand": "LAB",
+          "country": "브라질",
+          "countryCode": "BR",
+          "platform": "Instagram",
+          "handle": null,
+          "publicUrl": null,
+          "loginAlias": null,
+          "accountStatus": "planned",
+          "channelScope": "확장 미확인",
+          "setupStatus": "계정 센터 가입 시도 · 생성 안 됨",
+          "profileStatus": "계정 미확인",
+          "coverStatus": "계정 미확인",
+          "avatarStatus": null,
+          "profileStatusCode": "account-center-signup-attempt-login-ui-remained-not-created",
+          "priority": "우선 플랫폼",
+          "publishStatus": "계정 미확인",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "channelRole": "현지 한국어 학습 콘텐츠",
+          "nextAction": "공식 가입 경로로 다시 시도",
+          "lastEvidenceAt": null,
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json",
+          "sourcePaths": [
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+          ],
+          "verificationScope": "개설 미확인",
+          "observedGate": "account-center-signup-attempt-login-ui-remained-not-created",
+          "youtubeProfileVerified": false
+        },
+        {
+          "id": "lab-br-youtube",
+          "brand": "LAB",
+          "sourceBrand": "LAB",
+          "country": "브라질",
+          "countryCode": "BR",
+          "platform": "YouTube",
+          "handle": "@synklabbrasil",
+          "publicUrl": "https://www.youtube.com/channel/UCe5MsB-r8rbtoabKluoJcig",
+          "loginAlias": "unmet23",
+          "accountStatus": "confirmed-expansion",
+          "channelScope": "확장 확보",
+          "setupStatus": "계정·프로필 확인",
+          "profileStatus": "소개·사진 공개 확인",
+          "coverStatus": "커버 공개 확인",
+          "avatarStatus": "published-approved-mongle-avatar-publicly-verified",
+          "profileStatusCode": "complete-all-profile-fields-publicly-verified-2026-10-02",
+          "priority": "우선 플랫폼",
+          "publishStatus": "새 학습 콘텐츠 게시 미확인",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "channelRole": "현지 한국어 학습 콘텐츠",
+          "nextAction": "원어민 감수와 학습 영상 준비; 게시 시 재확인",
+          "lastEvidenceAt": "2026-10-02T20:52:47.000+09:00",
+          "sourceLabel": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json\ndocs/마케팅/sns-계정.json\ndocs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json",
+          "sourcePaths": [
+            "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
+          ],
+          "verificationScope": "공개 프로필 확인 기록",
+          "observedGate": null,
+          "youtubeProfileVerified": true
         }
       ],
       "source": {
-        "label": "기존 26개 등록 항목과 LAB 44개 확장 자리",
+        "label": "기존 26개 등록 항목과 LAB 48개 확장 자리",
         "files": [
           "docs/마케팅/sns-계정.json",
           "docs/마케팅/SNS_계정_전체목록_20260919.md",
@@ -3187,12 +3362,13 @@
           "docs/마케팅/온라인마케팅지도/account-setup-proposal.json",
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
-          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+          "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -3202,11 +3378,11 @@
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json"
+            "detail": "docs/마케팅/sns-계정.json / docs/마케팅/SNS_계정_전체목록_20260919.md / docs/마케팅/프로필최신화_20260919/반영_v6.json / docs/마케팅/프로필최신화_20260919/실행상태.json / docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -3710,10 +3886,10 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -3727,7 +3903,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -3778,7 +3954,7 @@
           "label": "unmet23",
           "existence": "기록 및 사용자 확인",
           "loginType": "Google 계정 구분명",
-          "currentUse": "유호 TikTok·LAB 신규 YouTube 14곳·rednote 로그인 기록",
+          "currentUse": "유호 TikTok·LAB 신규 YouTube 16곳·rednote 로그인 기록",
           "proposedRole": "기존 연결 유지",
           "assignment": "기존 연결 기록 · 신규 역할 미적용",
           "security": "미확인",
@@ -3815,10 +3991,10 @@
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -3832,7 +4008,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -3864,9 +4040,9 @@
         {
           "id": "task-global",
           "brand": "LAB",
-          "country": "몽골 외 22개국",
-          "title": "확장 20곳 개설·생성 확인",
-          "state": "24곳 확보 · 20곳 미확인",
+          "country": "몽골 외 24개국",
+          "title": "확장 22곳 개설·생성 확인",
+          "state": "26곳 확보 · 22곳 미확인",
           "nextAction": "Instagram 오류·TikTok 로그인·중국 인증·VK 브랜드 채널을 계정별로 확인"
         },
         {
@@ -3880,7 +4056,7 @@
         {
           "id": "task-localize",
           "brand": "LAB",
-          "country": "23개국",
+          "country": "25개국",
           "title": "번역·현지 검수·플랫폼별 제작",
           "state": "원본 확정 후",
           "nextAction": "국가와 언어를 동일시하지 않고 현지화 언어부터 확정"
@@ -3920,7 +4096,7 @@
         {
           "id": "task-app",
           "brand": "LAB",
-          "country": "23개국",
+          "country": "25개국",
           "title": "학습 앱 국가별 출시",
           "state": "계획 · 출시 미확인",
           "nextAction": "SNS 운영과 별도로 스토어·언어·접속·정책 조건 확인"
@@ -3933,13 +4109,14 @@
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json",
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
+          "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json",
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -3949,11 +4126,11 @@
         "evidenceFlow": [
           {
             "title": "입력 자료",
-            "detail": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md / docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
+            "detail": "docs/마케팅/온라인마케팅지도/account-setup-proposal.json / docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json / docs/마케팅/온라인마케팅지도/intl-youtube/publication.json / docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json / docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json / docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md / docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -4126,10 +4303,10 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-09-27T06:19:28.345Z",
+        "executedAt": "2026-10-17T10:21:09.625Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
-          "2026-09-19~23 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
+          "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
         ],
         "metricDefinitions": [],
         "caveats": [
@@ -4143,7 +4320,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 26행과 확장 44자리를 ID로 대조하고 확인된 24곳만 확보로 표시. 23개국 계획은 LAB에만 연결."
+            "detail": "기존 26행과 확장 48자리를 ID로 대조하고 확인된 26곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },

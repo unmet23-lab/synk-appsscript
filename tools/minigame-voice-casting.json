@@ -671,6 +671,14 @@
           "name": "하나"
         }
       }
+    },
+    "beginner-games": {
+      "narrator": {
+        "voice": {
+          "id": "tc_61659cc118732016a95fe7c6",
+          "name": "하나"
+        }
+      }
     }
   },
   "lines": {

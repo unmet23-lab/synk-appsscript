@@ -1,0 +1,10 @@
+# Insert this handle inside the existing workspace.synk.im site block,
+# before the existing company reverse_proxy. Preserve every other directive.
+@spaceship path /api/spaceship /api/spaceship/*
+handle @spaceship {
+    reverse_proxy synk-spaceship:4318 {
+        header_up X-Forwarded-For {remote_host}
+        header_up -Cookie
+        flush_interval -1
+    }
+}

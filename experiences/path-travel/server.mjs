@@ -16,6 +16,7 @@ const HEADERS = {
   'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
+const REENTRY_HTML = '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>여행 계획 열기</title><main><h1>여행 계획 열기</h1><p>이 PC의 여행 화면으로 이동하려면 아래 링크를 눌러 주세요.</p><a href="/">여행 계획 열기</a></main></html>';
 
 export function createServer({ port = 4303, accountConfigPath = new URL('./config.json', import.meta.url), accountConfig } = {}) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new TypeError('Invalid port');
@@ -33,7 +34,15 @@ export function createServer({ port = 4303, accountConfigPath = new URL('./confi
     let pathname, url;
     try { url = new URL(req.url, origin); pathname = decodeURIComponent(url.pathname); }
     catch { return send(400, { error: '올바르지 않은 주소예요.' }); }
-    if (req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site' && !shared.allowsOAuthReturn(req, url, 'path-travel')) return send(403, { error: '이 앱에서 직접 열어 주세요.' });
+    if (req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site' && !shared.allowsOAuthReturn(req, url, 'path-travel')) {
+      // Extension-opened tabs can arrive cross-site. Keep them denied and let
+      // the user explicitly enter the fixed local page from this same origin.
+      if (req.method === 'GET' && req.headers.origin === undefined && req.headers['sec-fetch-mode'] === 'navigate'
+        && req.headers['sec-fetch-dest'] === 'document' && ['/', '/index.html', '/planner.html'].includes(pathname) && !url.search && !url.hash) {
+        return send(403, REENTRY_HTML, 'text/html; charset=utf-8');
+      }
+      return send(403, { error: '이 앱에서 직접 열어 주세요.' });
+    }
     if (pathname === '/api/health') return send(200, { ok: true, product: 'path-travel', mode: 'local-real-planner-v4', city: 'seoul', cloudAI: false, booking: false, accountSync: shared.configured('path-travel') });
     const common = await shared.read(pathname === '/config.json' ? '/api/account-config' : pathname);
     if (common) return send(200, common.body, common.type);

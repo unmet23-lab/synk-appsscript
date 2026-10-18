@@ -24,6 +24,10 @@ test('benefits are discoverable without being treated as installed or entitled a
   assert.deepEqual(filterBenefits('가족').map(v => v.id), []);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), []);
   assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care', 'fortune']);
+  // The PC-only AI subscription board is discoverable on the web but has no web or local entry.
+  assert.equal(localBenefitPreview('subscriptions', 'http://localhost/'), null);
+  assert.equal(publicBenefitEntry('subscriptions'), null);
+  assert.match(benefitCards(), /benefit-subscriptions[\s\S]*?class="benefit-link"[^>]*>어떤 경험인가요\?/);
   assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);

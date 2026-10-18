@@ -22,14 +22,15 @@ test('대외 FAQ가 지금 비전 정본과 같다', () => {
   assert.deepEqual(syncVisionSources({ check: true }).changed, []);
 });
 
-test('10-02 개인화 엔진 기업 비전과 09-18 사업 역할을 파생 소개에 전달한다', () => {
+test('10-02 개인화 엔진 기업 비전과 10-06 SHIFT 사업 범위를 파생 소개에 전달한다', () => {
   const visions = loadVisions();
   assert.equal(visions.synk.headline, '누구에게나 확실히 도움이 되는 개인화 엔진을 만듭니다.');
   assert.equal(visions.synk.subtext, 'SYNK는 개인화 엔진 아틀라스를 만드는 기업입니다. 20대부터 60대까지 남녀노소 누구든 게임을 하거나 배우고 공부할 때, 컨설팅을 받을 때 그 사람의 목표와 상황에 맞는 도움을 받게 합니다. 한국어 교육, 기업의 AI 활용, 콘텐츠, 유학·취업 준비는 이 엔진이 쓰이는 분야입니다.');
   assert.equal(visions.lab.headline, '한국어를 배우고, 한국에서의 공부와 생활을 준비하는 교육을 만듭니다.');
   assert.equal(visions.lab.subtext, '');
-  assert.equal(visions.shift.headline, '기업과 기관이 AI를 자기 일에 활용하고, 가진 가치를 고객에게 전달하도록 돕습니다.');
-  assert.match(visions.shift.subtext, /실제 업무에 맞춘 AI 교육과 컨설팅, 기업 브랜딩/);
+  // 10-06 SHIFT 사업·BM 범위 결정의 문장(유호님 10-17 새 문장 확정). 파생 소개에는 서브텍스트 첫 문단만 간다.
+  assert.equal(visions.shift.headline, '기업이 AI와 개인화 기술을 자기 업무와 고객 서비스에 활용하도록 돕습니다.');
+  assert.equal(visions.shift.subtext, '기업의 특정 업무에 개인화 서비스를 도입하고 운영하는 사업을 준비합니다. 코칭·훈련과 구매·사용 지원에서 적용할 업무를 정하고, 고객사의 자료와 기존 시스템을 연결합니다.');
   assert.equal(visions.pulse.headline, '음악과 영상, 캐릭터의 이야기로 다시 찾고 싶은 작품을 만듭니다.');
   assert.equal(visions.pulse.subtext, '');
   const block = withVisionBlock('# LAB\n\n기존 본문', 'lab');
@@ -43,7 +44,10 @@ test('선택적 부연은 전면 문장이나 SYNK·SHIFT 부연 누락을 숨�
   const visions = loadVisions();
   assert.deepEqual(loadVisions(source.replace(/\n/g, '\r\n')), visions);
   assert.throws(() => loadVisions(source.replace(visions.synk.subtext, '')), /필요한 서브텍스트/);
-  assert.throws(() => loadVisions(source.replace(visions.shift.subtext, '')), /필요한 서브텍스트/);
+  // SHIFT 서브텍스트는 두 문단이다. 첫 문단만 지우면 둘째 문단이 서브텍스트로 올라오므로 구간 전체를 지운다.
+  const shiftSubtext = /(## SYNK SHIFT\n[\s\S]*?### 서브텍스트\n)[\s\S]*?(?=\n## )/;
+  assert.match(source, shiftSubtext);
+  assert.throws(() => loadVisions(source.replace(shiftSubtext, '$1')), /필요한 서브텍스트/);
   assert.throws(() => loadVisions(source.replace('### 전면 비전\n\n' + visions.lab.headline, '')), /전면 문장/);
 });
 

@@ -33,7 +33,7 @@ async function fixture(t){
   }
   async function input(format='pdf',user='owner'){const prepared=await api({user});assert.equal(prepared.status,200,prepared.text);return {format,fingerprint:prepared.data.fingerprint};}
   async function raw({method='GET',body='',extra={},onArrived,url=path}={}){
-    const arrived=deferred();if(onArrived)app.server.once('request',()=>queueMicrotask(arrived.resolve));
+    const arrived=deferred();if(onArrived)app.server.once('request',()=>setImmediate(arrived.resolve));
     let req;
     const result=new Promise((resolve,reject)=>{req=request(base+url,{method,headers:headers('owner',method,{'Content-Length':Buffer.byteLength(body),...extra})},res=>{const chunks=[];res.on('data',chunk=>chunks.push(chunk));res.on('end',()=>{const bytes=Buffer.concat(chunks);resolve({status:res.statusCode,text:bytes.toString('utf8'),headers:res.headers});});});req.on('error',reject);});
     if(onArrived){req.write(body.slice(0,10));await arrived.promise;onArrived();req.end(body.slice(10));}else req.end(body);

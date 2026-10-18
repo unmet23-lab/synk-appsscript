@@ -79,9 +79,11 @@ test('caller cannot mutate the stored proof, and the hook is removed after adapt
 
 test('a missing or broken adapter source leaves the host modules loadable with the paid feature unavailable', async t => {
   const company = 'docs/마케팅/온라인마케팅지도/engagement/company/', service = company + 'computer-interpretation-service.mjs', store = company + 'store.mjs';
+  // store.mjs imports request-security.mjs (since f12bef709); the host must load with its real imports.
+  const requestSecurity = company + 'request-security.mjs';
   for (const [breakage, reason] of [['missing', 'ERR_MODULE_NOT_FOUND'], ['syntax', 'ADAPTER_LOAD_FAILED']]) {
     const f = await fixture(t);
-    for (const path of [service, store]) await fs.copyFile(join(root, path), join(f.directory, path));
+    for (const path of [service, store, requestSecurity]) await fs.copyFile(join(root, path), join(f.directory, path));
     if (breakage === 'missing') await fs.rm(join(f.directory, 'experiences/atlas-lab/model-extraction.mjs'));
     else await fs.writeFile(join(f.directory, 'atlas/domain.js'), 'this is not JavaScript (');
     // The company server imports exactly this service module at startup.

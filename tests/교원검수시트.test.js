@@ -23,7 +23,8 @@ test('the sheet lists every kind of thing a teacher reviews, each row once under
   assert.deepEqual([...new Set(rows.map(row => row.갈래))], KINDS);
   assert.equal(count(rows, '상황 예문'), 78);
   assert.equal(count(rows, '문형→능력'), 87);
-  assert.equal(count(rows, '게임↔상황'), 8, 'seven WORLD games, the runner in two situations');
+  assert.equal(count(rows, '게임↔상황'), 9, 'eight WORLD games, the runner in two situations');
+  assert.ok(!rows.some(row => row.번호.startsWith('게임상황/learning-hub/')), 'the hub is not a game');
   for (const game of ['blank-slice', 'entry-check', 'story-classroom', 'order-rush', 'korean-runner', 'korean-rhythm', 'korean-racing', 'talk-rally']) {
     assert.ok(rows.some(row => row.번호.startsWith(`문항/${game}/`)), game);
   }

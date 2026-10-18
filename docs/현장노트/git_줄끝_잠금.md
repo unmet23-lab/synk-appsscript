@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -237,3 +237,21 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 경로를 주지 않으면 모든 경로의 바뀐 blob을 읽는다(`-S`는 내용 비교, 이름 바뀜 탐지도 내용을 읽는다). 받지 않은 큰 blob에서 멈춘다. 둘 중 어느 쪽이 먼저 막혔는지는 가르지 않았다.
 - 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
 - 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.
+
+### 생성 지도의 원천 해시가 CRLF 작업본과 리눅스에서 다르다
+- 증상: SNS 지도 시험(`verify-map`·`engagement/server`)이 리눅스 클론에서 원천 5개가 「바뀜」이라고 했다. 실제로 내용이 바뀐 것은 3개였다(10-17 클라우드).
+- 원인: 지도 생성기가 Windows CRLF 작업본의 바이트로 해시를 쟀다. 같은 내용이 리눅스 체크아웃에서는 LF라 해시가 다르다.
+- 고침: 원천 해시는 CRLF를 LF로 맞춘 바이트로 잰다(`build-map.mjs`의 `sourceHash`). 다른 생성 스냅샷도 같은 방식으로 잰다.
+- 다시 확인: 리눅스 클론에서 `node --test docs/마케팅/온라인마케팅지도/verify-map.test.mjs`가 해시 시험을 통과한다.
+
+### 다른 가지에서 들여온 생성 사본이 사본 대조 시험에서 어긋난다
+- 증상: 병합 안 된 codex 가지의 `experiences/word-magic/kit/` 사본을 그대로 가져오자 `play-common/kit` 시험이 「사본이 원본과 같다」에서 실패했다(10-17).
+- 원인: 그 가지의 사본은 CRLF로 커밋돼 있어 생성기 출력(LF)과 바이트가 달랐다. 사본은 생성기 결과라 가지마다 낡을 수도 있다.
+- 고침: 생성 사본(`collection.js`·`kit/` 등)은 가져오지 말고 정본 생성기(`node experiences/play-common/build-kit.mjs`, `build-collection.mjs`)로 다시 만든다.
+- 다시 확인: `git ls-files --eol experiences/word-magic/kit | grep -c 'i/crlf'`가 0이다.
+
+### PC에만 있는 파일을 읽는 시험이 클라우드 클론에서 실패한다
+- 증상: 클라우드 클론에서 `미니게임_목소리`(voice-request.json), `learning-hub/server`(입문 게임 파일), `path-travel-server`(계획 화면 파일)가 404·ENOENT로 실패했다(10-17).
+- 원인: 10-14 「pending changes」 일괄 커밋들이 바뀐 파일이 import하는 새 파일만 넣어, 시험이 부르는 파일 일부가 PC 작업본에만 남았다.
+- 고침: `git log --all --oneline -- <경로>`로 origin의 다른 가지에 있는지 먼저 찾는다(입문 게임 277개는 `origin/codex/beginner-games-finish-20261010`에 있었다). 어디에도 없으면 PC에서 커밋한다(path-travel 계획 화면 8개·장소 사진 13장).
+- 다시 확인: PC 작업본에서 `git status --short experiences/path-travel`이 비어 있다.

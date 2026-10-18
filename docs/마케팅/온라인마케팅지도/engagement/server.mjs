@@ -80,7 +80,8 @@ async function catalog() {
   const stale = [];
   for (const source of verification.files) {
     try {
-      const actual = createHash('sha256').update(await readFile(resolve(mapRoot, source.file))).digest('hex');
+      // 지도 생성기와 같이 줄끝을 LF로 맞춘 바이트로 잰다(CRLF 작업본에서도 같은 값).
+      const actual = createHash('sha256').update((await readFile(resolve(mapRoot, source.file))).toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
       if (actual !== source.sha256) stale.push(source.file);
     } catch { stale.push(source.file); }
   }

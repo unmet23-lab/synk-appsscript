@@ -29,7 +29,7 @@
     "sit-travel-order": [
       ["ex-travel-order-1", "따뜻한 커피 한 잔 주세요.", "order-rush/o01"],
       ["ex-travel-order-2", "설탕은 빼 주세요.", "order-rush/o03"],
-      ["ex-travel-order-3", "따뜻한 커피 대신 차 한 잔 주세요.", "order-rush/o09"]
+      ["ex-travel-order-3", "커피 대신 따뜻한 차 한 잔 주세요.", "order-rush/o09"]
     ],
     "sit-travel-transport": [
       ["ex-travel-transport-1", "이 버스는 명동에 가요?"],
