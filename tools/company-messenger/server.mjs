@@ -102,6 +102,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   assert(basePath === '' || basePath === '/messenger', 400, '메신저 경로 설정을 확인해 주세요.');
   assert(Number.isInteger(port) && port >= 0 && port <= 65535, 400, '포트 번호가 올바르지 않습니다.');
   assert(staticResponderFactory === null || typeof staticResponderFactory === 'function', 400, '정적 응답 설정을 확인해 주세요.');
+  const versionedMessengerAssets=new Set(['/app.js','/styles.css','/messenger-design.css','/signal.css']);
   // Hash and compress the final public bytes, including embedded CSS URLs.
   async function readPublicAsset(file) {
     const content = await readFile(file);
@@ -1100,10 +1101,20 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       try { info = await stat(staticPath); } catch { throw new AppError(404, '파일을 찾을 수 없습니다.'); }
       assert(info.isFile(), 404, '파일을 찾을 수 없습니다.');
       if (respondPublicStatic && ['.js', '.css'].includes(path.extname(staticPath))) {
-        return await respondPublicStatic(req, res, { path: staticPath, type: MIME[path.extname(staticPath)] });
+        return await respondPublicStatic(req, res, { path: staticPath, type: MIME[path.extname(staticPath)], versioned: versionedMessengerAssets.has(relative) });
       }
       if (basePath && ['.html', '.css'].includes(path.extname(staticPath))) {
-        const content = await readPublicAsset(staticPath);
+        let content = await readPublicAsset(staticPath);
+      if (relative === '/' || relative === '/index.html') {
+        if (respondPublicStatic?.versionHTML) content = await respondPublicStatic.versionHTML(content, {
+          documentPath: basePath + '/',
+          resolveAsset: urlPath => {
+            if (!urlPath.startsWith(basePath + '/')) return null;
+            const asset = urlPath.slice(basePath.length);
+            return versionedMessengerAssets.has(asset) ? path.join(publicDir, asset.slice(1)) : null;
+          },
+        });
+      }
         res.writeHead(200, { 'Content-Type': MIME[path.extname(staticPath)], 'Content-Length': Buffer.byteLength(content) });
         res.end(method === 'HEAD' ? undefined : content);
         return;

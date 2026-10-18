@@ -42,7 +42,7 @@ import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliv
 import { createPulseStudioService } from './pulse-studio.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
-import { createStaticResponder } from './static-response.mjs';
+import { createStaticResponder, publicScriptAndStylePaths } from './static-response.mjs';
 import { workroomGuide,workroomSource } from './workroom-guide.mjs';
 import { companyGuide } from './company-guide.mjs';
 import { createStudioService } from './studio-service.mjs';
@@ -679,6 +679,9 @@ export function createCompanyApp(options={}) {
       audit(user,'import-legacy',`${added.length} channels`);return {added:added.length,skipped};});
   }
   const respondStatic=createStaticResponder();
+  // Only assets directly named by the public workspace entry may be immutable.
+  const versionedCompanyAssets=publicScriptAndStylePaths(readFileSync(join(here,'public/index.html')),'/');
+  versionedCompanyAssets.delete('/notification-sw.js');
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
   function writeResponse(res,status,body,type='application/json; charset=utf-8'){res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
@@ -1636,7 +1639,7 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
-    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
+    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers,versioned:versionedCompanyAssets.has(path),...(path==='/'?{transformHTML:content=>respondStatic.versionHTML(content,{documentPath:'/',resolveAsset:urlPath=>versionedCompanyAssets.has(urlPath)&&files[urlPath]?join(here,files[urlPath][0]):null})}:{})});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
   }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&(/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)||e.replySafe&&['EXISTING_REPLY_REQUIRES_CONFIRMATION','REPLY_HISTORY_CHANGED'].includes(e.code))?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
