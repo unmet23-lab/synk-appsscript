@@ -61,7 +61,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     install:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-install',service):unknownSubscription('UNKNOWN_SERVICE'),
     help:key=>SUBSCRIPTION_HELP.includes(key)?ipcRenderer.invoke('synk:subscriptions-help',key):unknownSubscription('UNKNOWN_LINK'),
     save:patch=>patch&&typeof patch==='object'?ipcRenderer.invoke('synk:subscriptions-save',JSON.parse(JSON.stringify(patch))):unknownSubscription('INVALID_REQUEST'),
-    connectKey:(service,key)=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512)):unknownSubscription('INVALID_KEY_FORMAT'),
+    connectKey:(service,key,options={})=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512),{replace:typeof options?.replace==='string'?options.replace.slice(0,40):null}):unknownSubscription('INVALID_KEY_FORMAT'),
     onChanged:callback=>subscribe('synk:subscriptions-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},

@@ -30,6 +30,8 @@ const CODE_TEXT = {
   KEY_CHECK_FAILED: 'Typecast 크레딧을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',
   NETWORK: 'Typecast에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.',
   SECURE_STORAGE_UNAVAILABLE: '이 PC에서는 키를 안전하게 저장할 수 없어 연결하지 않았어요.',
+  BOARD_BUSY: '다른 프로그램이 계정판 파일을 잠깐 쓰고 있어요. 잠시 뒤 다시 시도해 주세요.',
+  NO_WORKSPACE: 'Higgsfield에서 쓸 작업공간이 골라져 있지 않아요. 터미널에서 「higgsfield workspace set」으로 고른 뒤 다시 시도해 주세요.',
 };
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -217,7 +219,8 @@ const arrowBack = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = null } = {}) {
   const api = bridge?.subscriptions;
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
-  const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false };
+  // relogin: 「다시 연결」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
+  const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false, relogin: null };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
@@ -249,8 +252,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'recheck-tools') return void act('tools', async () => { await load(true); toast('설치 상태를 다시 확인했어요.'); });
     if (name === 'toggle') { ui.open.has(id) ? ui.open.delete(id) : ui.open.add(id); return paint(); }
     if (name === 'jump') { ui.open.add(id); paint(); container?.querySelector(`[data-row="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-    if (name === 'guide') { ui.guide = service || 'claude'; ui.email = ''; ui.code = ''; paint(); container?.querySelector('#ms-guide')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-    if (name === 'close-guide') { ui.guide = null; ui.guideClosed = true; return paint(); }
+    if (name === 'guide') { ui.guide = service || 'claude'; ui.email = ''; ui.code = ''; ui.relogin = null; paint(); container?.querySelector('#ms-guide')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+    if (name === 'close-guide') { ui.guide = null; ui.guideClosed = true; ui.relogin = null; return paint(); }
     if (name === 'install') return void act('install', async () => { const r = await api.install(service); if (r?.ok) toast(`${AUTO[service].tool} 설치 창을 열었어요. 끝나면 「다시 확인」을 눌러 주세요.`); return r; });
     if (name === 'copy') { const text = AUTO[service]?.install; if (text) navigator.clipboard?.writeText(text).then(() => toast('설치 명령을 복사했어요. PowerShell에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 명령을 직접 선택해 복사해 주세요.')); return; }
     if (name === 'help') return void api.help(data.link);
@@ -261,7 +264,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 브라우저에 남은 다른 계정으로 승인되지 않게, 로그인 주소를 시크릿 창에 붙여 넣을 수 있게 한다.
     if (name === 'copy-url') { const url = snapshot?.login?.url; if (url) navigator.clipboard?.writeText(url).then(() => toast('로그인 주소를 복사했어요. 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 「로그인 페이지 다시 열기」를 써 주세요.')); return; }
     if (name === 'cancel-login') return void act('cancel', () => api.cancel(snapshot?.login?.id));
-    if (name === 'relogin') { const row = rowById(id); if (row) { ui.guide = row.service; ui.email = row.email || ''; paint(); container?.querySelector('#ms-guide')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); } return; }
+    if (name === 'relogin') { const row = rowById(id); if (row) { ui.guide = row.service; ui.email = row.email || ''; ui.relogin = row.id; paint(); container?.querySelector('#ms-guide')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); } return; }
     if (name === 'edit') { ui.editing = ui.editing === id ? null : id; return paint(); }
     if (name === 'remove') { if (ui.removeArmed !== id) { ui.removeArmed = id; return paint(); } ui.removeArmed = null; return void act('remove', () => api.save({ remove: id })); }
     if (name === 'used') { const row = rowById(id); if (row) return void act('used', () => api.save({ row: { id, usedUpAt: isUsedUp(row, Date.now()) ? null : Date.now() } })); }
@@ -275,7 +278,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function onForm(name, form) {
     if (name === 'code') { const code = ui.code.trim(); if (!code) return toast('브라우저에 보이는 코드를 붙여 넣어 주세요.'); return void act('code', async () => { const r = await api.submitCode(snapshot?.login?.id, code); if (r?.ok) ui.code = ''; return r; }); }
-    if (name === 'key') { const key = ui.key.trim(), service = form.dataset.service; if (!key) return toast('복사한 API 키를 붙여 넣어 주세요.'); return void act('key', async () => { const r = await api.connectKey(service, key); if (!r?.ok) return r; ui.key = ''; ui.guide = null; toast(`${AUTO[service]?.label || ''} 키를 연결했어요. 남은 크레딧을 읽었어요.`); return r.snapshot || r; }); }
+    if (name === 'key') { const key = ui.key.trim(), service = form.dataset.service; if (!key) return toast('복사한 API 키를 붙여 넣어 주세요.'); return void act('key', async () => { const replace = ui.relogin && rowById(ui.relogin)?.service === service ? ui.relogin : null; const r = await api.connectKey(service, key, replace ? { replace } : {}); if (!r?.ok) return r; ui.key = ''; ui.guide = null; ui.relogin = null; toast(`${AUTO[service]?.label || ''} 키를 연결했어요. 남은 크레딧을 읽었어요.`); return r.snapshot || r; }); }
     if (name === 'manual') { const v = formValues(form); if (!v.label) return toast(CODE_TEXT.LABEL_REQUIRED); return void act('manual', async () => { const r = await api.save({ add: v }); if (r?.rows) { ui.manualOpen = false; toast(`${v.label}를 넣었어요.`); } return r; }); }
     if (name === 'edit') { const id = form.dataset.id, row = rowById(id); if (!row) return; const v = formValues(form); const patch = { id, price: v.price, currency: v.currency, billDay: v.billDay, note: v.note }; if (row.source === 'manual') Object.assign(patch, { label: v.label || row.label, kind: v.kind, resetDay: v.resetDay, resetHour: v.resetHour, resetMinute: v.resetMinute }); if ((row.kind === 'credit' || v.kind === 'credit') && row.source === 'manual') Object.assign(patch, { credits: v.credits, lowAt: v.lowAt }); else if (row.kind === 'credit') patch.lowAt = v.lowAt; return void act('edit', async () => { const r = await api.save({ row: patch }); if (r?.rows) { ui.editing = null; toast('저장했어요.'); } return r; }); }
   }

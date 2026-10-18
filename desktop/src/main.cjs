@@ -302,7 +302,7 @@ function createWindow(){
     'synk:subscriptions-install':service=>subscriptionCall(s=>s.openInstaller(service)),
     'synk:subscriptions-help':key=>subscriptionCall(s=>s.openHelp(key)),
     'synk:subscriptions-save':patch=>subscriptionCall(s=>s.save(patch)),
-    'synk:subscriptions-key':(service,key)=>subscriptionCall(s=>s.connectKey(service,key)),
+    'synk:subscriptions-key':(service,key,options)=>subscriptionCall(s=>s.connectKey(service,key,{replace:typeof options?.replace==='string'?options.replace:null})),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

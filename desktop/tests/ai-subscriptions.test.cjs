@@ -79,32 +79,43 @@ test('npm shims run through cmd with fixed quoted arguments and executables run 
 });
 
 /* ---------- 가짜 공식 프로그램 ---------- */
-function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=null}={}){
+function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=null,withNpm=true}={}){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-'));
   const home=path.join(root,'home'),bin=path.join(home,'.local','bin'),npm=path.join(root,'npm'),agyBin=path.join(root,'local','agy','bin');
   fs.mkdirSync(bin,{recursive:true});fs.mkdirSync(npm,{recursive:true});fs.mkdirSync(agyBin,{recursive:true});
-  for(const file of [path.join(bin,'claude.exe'),path.join(npm,'codex.cmd'),path.join(npm,'higgsfield.exe'),path.join(npm,'npm.cmd'),path.join(agyBin,'agy.exe')])fs.writeFileSync(file,'');
+  for(const file of [path.join(bin,'claude.exe'),path.join(npm,'codex.cmd'),path.join(npm,'higgsfield.exe'),...(withNpm?[path.join(npm,'npm.cmd')]:[]),path.join(agyBin,'agy.exe')])fs.writeFileSync(file,'');
   // higgsHomes: 홈 폴더(USERPROFILE)마다 Higgsfield 로그인. 기본 홈은 77@example.com.
-  const calls=[],stdinWrites=[];let loginChild=null;const state={claudeLoggedIn,geminiLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com'};
+  // consoles: 숨긴 PowerShell 런처가 Start-Process로 띄운 검은 창(스크립트·환경). freshPath: 다시 읽는 사용자·시스템 PATH.
+  const calls=[],stdinWrites=[];let loginChild=null,pidSeq=4000;
+  const state={claudeLoggedIn,geminiLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com',claudeEmail:'member@example.com',freshPath:'',codexEmptyLimits:false,defaultHiggsNoWorkspace:false,consoles:[],killed:[]};
   function spawn(command,argv,options){
     const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();
+    // 실제 ChildProcess처럼 끝나기 전에는 exitCode가 null이다(본체는 살아 있는 프로세스만 PID로 끈다).
+    child.exitCode=null;child.signalCode=null;child.on('close',code=>{child.exitCode=code??1;});
     const call={command,argv,options};calls.push(call);
     const joined=[command,...argv].join(' ');
-    const reply=(out,code=0)=>setImmediate(()=>{if(out)child.stdout.emit('data',out);child.emit('close',code);});
+    const reply=(out,code=0,delay=0)=>(delay?fn=>setTimeout(fn,delay):setImmediate)(()=>{if(out)child.stdout.emit('data',out);child.emit('close',code);});
     child.kill=()=>setImmediate(()=>child.emit('close',null));child.unref=()=>{};
     child.stdin={write(text){stdinWrites.push(text);if(child.onInput)child.onInput(text);return true;},end(){}};
-    if(command==='powershell.exe')reply('');
+    if(command==='powershell.exe'&&argv.includes('-EncodedCommand')){
+      // 런처: 창의 PID를 한 줄 찍고, WaitForExit면 창이 닫힐 때까지(시험이 닫을 때까지) 살아 있다.
+      const script=Buffer.from(argv[argv.indexOf('-EncodedCommand')+1],'base64').toString('utf16le');
+      const windowPid=++pidSeq;child.pid=++pidSeq;state.consoles.push({script,env:options.env,windowPid,launcher:child,close:()=>child.emit('close',0)});
+      setImmediate(()=>{child.stdout.emit('data',windowPid+'\r\n');if(!/WaitForExit/.test(script))child.emit('close',0);});
+    }
+    else if(command==='powershell.exe')reply(argv.some(a=>/GetEnvironmentVariable/.test(a))?state.freshPath:'');
+    else if(command==='taskkill'){state.killed.push(argv.join(' '));reply('');}
     else if(joined.includes('--version'))reply(command.endsWith('claude.exe')?'2.1.301 (Claude Code)\n':'1.0.0\n');
     else if(command.endsWith('agy.exe')){if(argv.includes('/usage'))reply(state.geminiLoggedIn?AGY_USAGE:'Error: not signed in. Run agy to sign in.\n',state.geminiLoggedIn?0:1);}
-    else if(joined.includes('/usage'))reply(state.claudeLoggedIn?USAGE:'Not logged in · Please run /login\n',state.claudeLoggedIn?0:1);
-    else if(joined.includes('auth status'))reply(JSON.stringify({loggedIn:state.claudeLoggedIn,email:'member@example.com',subscriptionType:'max'}));
-    else if(joined.includes('auth login')&&command.endsWith('claude.exe')){loginChild=child;setImmediate(()=>child.stdout.emit('data','Opening browser to sign in…\nIf the browser didn\'t open, visit: https://claude.com/cai/oauth/authorize?code=true&state=abc\nPaste code here if prompted > '));child.onInput=()=>{state.claudeLoggedIn=true;setImmediate(()=>child.emit('close',0));};}
+    else if(joined.includes('/usage'))reply(state.claudeLoggedIn?USAGE:'Not logged in · Please run /login\n',state.claudeLoggedIn?0:1,state.usageDelay||0);
+    else if(joined.includes('auth status'))reply(JSON.stringify({loggedIn:state.claudeLoggedIn,email:state.claudeEmail,subscriptionType:'max'}));
+    else if(joined.includes('auth login')&&command.endsWith('claude.exe')){loginChild=child;child.pid=++pidSeq;setImmediate(()=>child.stdout.emit('data','Opening browser to sign in…\nIf the browser didn\'t open, visit: https://claude.com/cai/oauth/authorize?code=true&state=abc\nPaste code here if prompted > '));child.onInput=()=>{state.claudeLoggedIn=true;setImmediate(()=>child.emit('close',0));};}
     else if(joined.includes('app-server')){
       child.onInput=text=>{for(const line of text.split('\n').filter(Boolean)){const m=JSON.parse(line);
         const send=v=>setImmediate(()=>child.stdout.emit('data',JSON.stringify(v)+'\n'));
         if(m.method==='initialize')send({id:m.id,result:{}});
         else if(m.method==='account/read')send({id:m.id,result:{account:{type:'chatgpt',email:'synk@example.com',planType:'pro'}}});
-        else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null}}});}};
+        else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:state.codexEmptyLimits?{planType:'pro',primary:null,secondary:null}:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null}}});}};
     }
     else if(joined.includes('auth login')&&command.endsWith('higgsfield.exe')){
       // 실제 CLI처럼 주소를 찍고, 브라우저 승인이 끝나면 그 홈에 로그인을 두고 끝난다(작업공간은 비어 있음).
@@ -116,7 +127,7 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
     else if(joined.includes('workspace set')){const h=state.higgsHomes[options.env.USERPROFILE];if(h)h.workspace=argv.at(-1);reply('Selected workspace: '+argv.at(-1)+'\n',h?0:1);}
     else if(joined.includes('account status')){
       const h=state.higgsHomes[options.env.USERPROFILE];
-      if(!h)reply(JSON.stringify({credits:0.22,email:'77@example.com',subscription_plan_type:'ultra'}));
+      if(!h)reply(...(state.defaultHiggsNoWorkspace?['Error: No workspace selected.\nHint: Run: higgsfield workspace set <workspace_id>\n',1]:[JSON.stringify({credits:0.22,email:'77@example.com',subscription_plan_type:'ultra'})]));
       else if(!h.workspace)reply('Error: No workspace selected.\nHint: Run: higgsfield workspace set <workspace_id>\n',1);
       else reply(JSON.stringify({credits:1373.34,email:h.email,subscription_plan_type:'ultra'}));
     }
@@ -191,6 +202,24 @@ test('cancelled logins leave no empty account folder behind',async()=>{
   assert.deepEqual(f.service.cancelLogin(started.id),{ok:true});
   assert.equal(fs.existsSync(folder),false);
   assert.equal(f.changes.at(-1).login.stage,'cancelled');
+  // npm 설치본(cmd → node)이어도 실제 CLI가 남지 않게 프로세스 묶음째 끈다.
+  for(let i=0;i<20&&!f.state.killed.length;i++)await new Promise(r=>setImmediate(r));
+  assert.deepEqual(f.state.killed,[`/PID ${f.loginChild.pid} /T /F`]);
+});
+
+test('cancelling while the sign-in is being verified adds no row',async()=>{
+  const f=fakeSystem({claudeLoggedIn:false});
+  const started=await f.service.startLogin('claude');
+  const folder=f.calls.find(c=>c.argv.includes('login')).options.env.CLAUDE_CONFIG_DIR;
+  await new Promise(r=>setImmediate(r));
+  f.service.submitCode(started.id,'abcDEF123456#state');
+  await new Promise(r=>setImmediate(r));
+  // 로그인 프로그램은 끝났고, 본체가 계정을 확인하는 중이다.
+  assert.equal(f.changes.at(-1).login.message,'연결을 확인하고 있어요.');
+  assert.deepEqual(f.service.cancelLogin(started.id),{ok:true});
+  for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));
+  const snap=await f.service.snapshot();
+  assert.equal(snap.login.stage,'cancelled');assert.equal(snap.rows.length,0);assert.equal(fs.existsSync(folder),false);
 });
 
 test('manual subscriptions keep only validated fields',async()=>{
@@ -209,9 +238,24 @@ test('help links and installers are fixed lists',async()=>{
   assert.deepEqual(await f.service.openHelp('https://evil.example'),{ok:false,code:'UNKNOWN_LINK'});
   assert.deepEqual(await f.service.openHelp('node'),{ok:true});assert.equal(f.opened.at(-1),'https://nodejs.org/ko/download');
   assert.deepEqual(await f.service.openInstaller('calc'),{ok:false,code:'UNKNOWN_SERVICE'});
+  assert.deepEqual(await f.service.openInstaller('constructor'),{ok:false,code:'UNKNOWN_SERVICE'});
   assert.deepEqual(await f.service.openInstaller('claude'),{ok:true});
-  const install=f.calls.find(c=>c.command==='powershell.exe'&&c.argv.includes('-NoExit'));
-  assert.match(install.argv.at(-1),/^irm https:\/\/claude\.ai\/install\.ps1 \| iex;/);assert.equal(install.options.shell,false);
+  // 설치 창은 숨긴 런처가 Start-Process로 새로 띄운다. detached로 띄우면 콘솔이 없어 설치 스크립트가 한 줄도 돌지 않는다.
+  const launcher=f.state.consoles.at(-1);
+  assert.match(launcher.script,/^\$p=Start-Process -FilePath 'powershell\.exe' -ArgumentList '-NoExit','-NoProfile','-ExecutionPolicy','Bypass','-EncodedCommand','[A-Za-z0-9+/=]+' -PassThru;/);
+  const inner=Buffer.from(/'-EncodedCommand','([A-Za-z0-9+/=]+)'/.exec(launcher.script)[1],'base64').toString('utf16le');
+  assert.match(inner,/^irm https:\/\/claude\.ai\/install\.ps1 \| iex;/);assert.match(inner,/「다시 확인」/);
+  assert.ok(!f.calls.some(c=>c.options?.detached));assert.ok(f.calls.every(c=>c.options?.shell!==true));
+});
+
+test('tools installed while the app stays open are found on the next re-check',async()=>{
+  const f=fakeSystem({withNpm:false});
+  assert.deepEqual(await f.service.openInstaller('higgsfield'),{ok:false,code:'NODE_REQUIRED'});
+  // 앱을 켠 채 Node.js를 설치해 시스템 PATH에 새 폴더가 생겼다.
+  const nodeDir=path.join(f.root,'nodejs');fs.mkdirSync(nodeDir);fs.writeFileSync(path.join(nodeDir,'npm.cmd'),'');
+  f.state.freshPath=nodeDir;
+  assert.deepEqual(await f.service.openInstaller('higgsfield'),{ok:true});
+  assert.equal(f.state.consoles.at(-1).env.PATH.split(';')[0],nodeDir);
 });
 
 test('a sign-in approved in the browser with a different account is reported, not hidden',async()=>{
@@ -231,9 +275,11 @@ test('Gemini reads the Antigravity quota from the app data folder and signs in t
   assert.deepEqual(await f.service.useExisting('gemini'),{ok:false,code:'NOT_LOGGED_IN'});
   assert.deepEqual(await f.service.startLogin('gemini',{email:'member@example.com'}),{ok:false,code:'INVALID_EMAIL'});
   const started=await f.service.startLogin('gemini');assert.equal(started.ok,true);
-  // agy는 로그인 명령이 없어 인자 없이 검은 창으로 켜고, 실행 폴더는 이 혜택의 데이터 폴더다.
-  const call=f.calls.find(c=>c.command.endsWith('agy.exe')&&!c.argv.length);
-  assert.equal(call.options.detached,true);assert.equal(call.options.windowsHide,false);assert.equal(call.options.cwd,path.join(f.root,'data'));
+  // agy는 로그인 명령이 없어 인자 없이 검은 창으로 켠다. 창은 숨긴 런처가 Start-Process로 띄우고(창이 닫힐 때까지 기다림),
+  // 실행 폴더는 이 혜택의 데이터 폴더다.
+  const win=f.state.consoles.at(-1),re=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  assert.match(win.script,new RegExp(`^\\$p=Start-Process -FilePath '${re(path.join(f.root,'local','agy','bin','agy.exe'))}' -WorkingDirectory '${re(path.join(f.root,'data'))}' -PassThru;`));
+  assert.match(win.script,/\$p\.WaitForExit\(\)$/);assert.ok(!f.calls.some(c=>c.options?.detached));
   assert.equal(f.changes.at(-1).login.stage,'console');assert.equal(f.changes.at(-1).login.console,true);
   f.state.geminiLoggedIn=true;
   t.mock.timers.tick(6000);
@@ -365,4 +411,129 @@ test('removing a connected Higgsfield account deletes its home folder, sign-in a
   const row=(await f.service.snapshot()).rows.find(r=>r.email==='founder@example.com');
   await f.service.save({remove:row.id});
   assert.equal(fs.existsSync(home),false);
+});
+
+/* ---------- 10-18 본체 검토에서 찾은 것 ---------- */
+const writeBoard=(f,rows)=>{fs.mkdirSync(path.join(f.root,'data'),{recursive:true});fs.writeFileSync(path.join(f.root,'data','board.json'),JSON.stringify({version:1,rows,settings:{usdKrw:1400},check:null}));};
+
+test('removing an account never follows a link out of its folder',async t=>{
+  const f=fakeSystem();
+  const accounts=path.join(f.root,'data','accounts'),outside=path.join(f.root,'outside');
+  fs.mkdirSync(path.join(outside,'sub'),{recursive:true});fs.writeFileSync(path.join(outside,'keep.txt'),'k');fs.writeFileSync(path.join(outside,'sub','keep2.txt'),'k');
+  // 계정 폴더 안의 링크가 바깥을 가리키는 경우와, 계정 폴더 자체가 링크인 경우.
+  const inner=path.join(accounts,'claude-aaaaaaaa'),linked=path.join(accounts,'claude-bbbbbbbb');
+  fs.mkdirSync(path.join(inner,'deep'),{recursive:true});fs.writeFileSync(path.join(inner,'deep','token.json'),'x');
+  fs.symlinkSync(outside,path.join(inner,'deep','link-out'),'junction');fs.symlinkSync(outside,linked,'junction');
+  writeBoard(f,[{id:'r-aaaaaaaa',service:'claude',source:'auto',folder:'claude-aaaaaaaa',email:'a@example.com'},{id:'r-bbbbbbbb',service:'claude',source:'auto',folder:'claude-bbbbbbbb',email:'b@example.com'}]);
+  // 앱이 쓰는 Electron 44.5(Node 24.21)의 fs.rmSync는 junction을 따라가 바깥을 지운다(10-18 실측). 계정 폴더 지우기에 쓰지 않는지 본다.
+  t.mock.method(fs,'rmSync',()=>{throw new Error('fs.rmSync must not delete account folders');});
+  await f.service.save({remove:'r-aaaaaaaa'});await f.service.save({remove:'r-bbbbbbbb'});
+  assert.equal(fs.existsSync(inner),false);assert.equal(fs.existsSync(linked),false);
+  assert.equal(fs.readFileSync(path.join(outside,'keep.txt'),'utf8'),'k');assert.equal(fs.readFileSync(path.join(outside,'sub','keep2.txt'),'utf8'),'k');
+});
+
+test('a Claude row follows the account its login now belongs to and never doubles another row',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  // 회원이 터미널에서 /login으로 기본 로그인을 다른 계정으로 바꿨다.
+  f.state.claudeEmail='b@example.com';
+  let rows=(await f.service.check()).rows.filter(r=>r.service==='claude');
+  assert.deepEqual(rows.map(r=>[r.email,r.state]),[['b@example.com','ok']]);
+  // 바뀐 계정이 이미 다른 줄에 있으면 같은 숫자를 두 줄에 세지 않고 알린다.
+  const g=fakeSystem();
+  writeBoard(g,[{id:'r-default1',service:'claude',source:'auto',folder:null,email:'a@example.com',plan:'max'},{id:'r-folder01',service:'claude',source:'auto',folder:'claude-cccccccc',email:'c@example.com',plan:'max'}]);
+  g.state.claudeEmail='c@example.com';
+  const by=Object.fromEntries((await g.service.check()).rows.map(r=>[r.id,r]));
+  assert.equal(by['r-default1'].state,'error');assert.match(by['r-default1'].stateMessage,/c@example\.com 계정으로 바뀌었는데/);assert.equal(by['r-default1'].email,'a@example.com');
+  assert.equal(by['r-folder01'].state,'ok');
+});
+
+test('an account connected while a full check runs is read right after it',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  // Claude 읽기를 늦추고 그 읽기가 시작된 뒤에 GPT를 연결해, 연결이 반드시 전체 확인 도중(대상이 정해진 뒤)에 끝나게 한다.
+  f.state.usageDelay=80;
+  const usage=()=>f.calls.filter(c=>c.argv.includes('/usage')).length,before=usage();
+  const running=f.service.check();
+  for(let i=0;i<400&&usage()===before;i++)await new Promise(r=>setImmediate(r));
+  assert.equal((await f.service.useExisting('gpt')).ok,true);
+  await running;
+  assert.ok(f.calls.filter(c=>c.argv.join(' ').includes('app-server')).length>=2);
+  const snap=await f.service.snapshot(),row=snap.rows.find(r=>r.service==='gpt');
+  assert.equal(row.state,'ok');assert.equal(row.live.weekly.usedPercent,100);
+  // 요약은 판 전체로 센다(한 줄만 다시 읽어도 「1/1」로 줄지 않는다).
+  assert.deepEqual([snap.check.total,snap.check.ok],[2,2]);
+});
+
+test('Codex without any limit window is a read failure, not a silent ok',async()=>{
+  const f=fakeSystem();f.state.codexEmptyLimits=true;
+  assert.equal((await f.service.useExisting('gpt')).ok,true);
+  const snap=await f.service.snapshot(),row=snap.rows.find(r=>r.service==='gpt');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용 한도를 알려 주지 않았어요/);
+  assert.deepEqual([snap.check.total,snap.check.ok],[1,0]);
+});
+
+test('the default Higgsfield login is read as is and its selected workspace is never changed',async()=>{
+  const f=fakeSystem();f.state.defaultHiggsNoWorkspace=true;
+  assert.deepEqual(await f.service.useExisting('higgsfield'),{ok:false,code:'NO_WORKSPACE'});
+  assert.ok(!f.calls.some(c=>c.argv[0]==='workspace'));
+});
+
+test('importing the default login of an account already connected in its own folder keeps that folder',async()=>{
+  const f=fakeSystem({claudeLoggedIn:false});
+  const started=await f.service.startLogin('claude',{email:'member@example.com'});
+  const folder=f.calls.find(c=>c.argv.includes('login')).options.env.CLAUDE_CONFIG_DIR;
+  await new Promise(r=>setImmediate(r));
+  f.service.submitCode(started.id,'abcDEF123456#state');
+  await settle(f);
+  assert.equal((await f.service.useExisting('claude')).ok,true);
+  const rows=(await f.service.snapshot()).rows.filter(r=>r.service==='claude');
+  assert.deepEqual(rows.map(r=>[r.email,r.folder]),[['member@example.com',true]]);assert.ok(fs.existsSync(folder));
+});
+
+test('a new Typecast key entered from the row it replaces updates that row instead of adding one',async()=>{
+  const tc=fakeTypecast(),f=fakeSystem({fetch:tc.fetch,secrets:tc.secrets});
+  const first=await f.service.connectKey('typecast',tc.good);const id=first.id;
+  tc.state.valid.clear();
+  assert.equal((await f.service.check()).rows.find(r=>r.id===id).state,'needs-login');
+  const fresh='tc-new-key-0987654321';tc.state.valid.add(fresh);
+  const replaced=await f.service.connectKey('typecast',fresh,{replace:id});
+  assert.deepEqual(replaced.snapshot.rows.filter(r=>r.service==='typecast').map(r=>[r.id,r.keyHint,r.state]),[[id,'…4321','ok']]);
+  const accounts=path.join(f.root,'data','accounts');
+  assert.equal(fs.readdirSync(accounts).filter(n=>n.startsWith('typecast-')).length,1);
+  assert.equal((await f.service.check()).rows.find(r=>r.id===id).state,'ok');
+  assert.equal(tc.state.calls.at(-1).options.headers['X-API-KEY'],fresh);
+});
+
+test('a board file that cannot be read is never replaced by an empty board',async()=>{
+  const f=fakeSystem();
+  const boardFile=path.join(f.root,'data','board.json');
+  // 다른 프로그램이 잡고 있는 것처럼 ENOENT가 아닌 오류로 읽기가 실패한다.
+  fs.mkdirSync(boardFile,{recursive:true});
+  assert.deepEqual(await f.service.snapshot(),{ok:false,code:'BOARD_BUSY'});
+  assert.deepEqual(await f.service.save({settings:{usdKrw:1380}}),{ok:false,code:'BOARD_BUSY'});
+  assert.ok(fs.statSync(boardFile).isDirectory());
+  fs.rmdirSync(boardFile);
+  writeBoard(f,[{id:'m-suno0001',service:'suno',source:'manual',label:'Suno',kind:'credit'}]);
+  assert.equal((await f.service.snapshot()).rows.length,1);
+  // 깨진 파일은 옆에 남긴 뒤에만 새로 시작한다.
+  const g=fakeSystem(),dir=path.join(g.root,'data');
+  fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'board.json'),'{"rows":[{"id":"m-');
+  assert.equal((await g.service.snapshot()).rows.length,0);
+  const kept=fs.readdirSync(dir).filter(n=>n.startsWith('board.json.broken-'));
+  assert.equal(kept.length,1);assert.equal(fs.readFileSync(path.join(dir,kept[0]),'utf8'),'{"rows":[{"id":"m-');
+});
+
+test('closing the console window without signing in ends the login, and cancel closes a live window',async()=>{
+  const f=fakeSystem({geminiLoggedIn:false});
+  assert.equal((await f.service.startLogin('gemini')).ok,true);
+  f.state.consoles.at(-1).close();
+  for(let i=0;i<60&&f.changes.at(-1)?.login?.stage==='console';i++)await new Promise(r=>setImmediate(r));
+  const last=f.changes.at(-1).login;assert.equal(last.stage,'error');assert.match(last.message,/검은 창이 닫혔/);
+  // 취소는 런처가 살아 있을 때(창 프로세스를 쥐고 있어 PID가 재사용되지 않을 때)만 창 PID를 묶음째 끈다.
+  const again=await f.service.startLogin('gemini'),win=f.state.consoles.at(-1);
+  assert.deepEqual(f.service.cancelLogin(again.id),{ok:true});
+  for(let i=0;i<20&&!f.state.killed.length;i++)await new Promise(r=>setImmediate(r));
+  assert.deepEqual(f.state.killed,[`/PID ${win.windowPid} /T /F`]);
+  f.service.dispose();
 });
