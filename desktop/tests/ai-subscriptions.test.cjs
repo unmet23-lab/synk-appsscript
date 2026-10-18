@@ -152,6 +152,8 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   const claude=await f.service.useExisting('claude');assert.equal(claude.ok,true);
   const gpt=await f.service.useExisting('gpt');assert.equal(gpt.ok,true);
   const higgs=await f.service.useExisting('higgsfield');assert.equal(higgs.ok,true);
+  // Max 등급은 공식 출력에 없어 Claude Code 설정 파일(.claude.json, 토큰 없음)의 등급 칸에서 읽는다.
+  fs.writeFileSync(path.join(f.root,'home','.claude.json'),JSON.stringify({oauthAccount:{emailAddress:'member@example.com',organizationRateLimitTier:'default_claude_max_20x',userRateLimitTier:null}}));
   const firstChange=f.changes.length;
   const after=await f.service.check();
   // 확인을 시작하는 첫 알림부터 「확인 중」이어야 화면이 잠깐 끝난 것처럼 보이지 않는다.
@@ -163,6 +165,7 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   const during=f.changes.slice(firstChange).filter(s=>s.checking).map(s=>`${s.progress?.done}/${s.progress?.total}`);
   assert.deepEqual([during[0],during.at(-1)],['0/3','3/3']);assert.equal(after.progress,null);
   const by=Object.fromEntries(after.rows.map(r=>[r.service,r]));
+  assert.equal(by.claude.plan,'max_20x');
   assert.equal(by.claude.email,'member@example.com');assert.equal(by.claude.live.weekly.usedPercent,31);assert.equal(by.claude.resetDay,4);assert.equal(by.claude.resetHour,10);
   assert.equal(by.gpt.email,'synk@example.com');assert.equal(by.gpt.live.weekly.usedPercent,100);assert.equal(by.gpt.usedUpAt,NOW);
   assert.equal(by.higgsfield.credits,0.22);assert.equal(by.higgsfield.plan,'ultra');
@@ -174,6 +177,15 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   // 저장 파일도 다시 읽힌다.
   const reread=createAiSubscriptions({root:path.join(f.root,'data'),platform:'win32',env:{},home:path.join(f.root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>NOW});
   assert.equal((await reread.save({settings:{usdKrw:1380}})).rows.length,3);
+});
+
+test('a missing or odd Claude config keeps the Max plan without a tier',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  const plan=async()=>(await f.service.check()).rows.find(r=>r.service==='claude').plan;
+  assert.equal(await plan(),'max');
+  fs.writeFileSync(path.join(f.root,'home','.claude.json'),'{not json');assert.equal(await plan(),'max');
+  fs.writeFileSync(path.join(f.root,'home','.claude.json'),JSON.stringify({oauthAccount:{organizationRateLimitTier:'default_claude_max_5x'}}));assert.equal(await plan(),'max_5x');
 });
 
 test('a second check while one runs shares it and also gets the finished board',async()=>{
