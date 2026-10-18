@@ -325,3 +325,9 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 10-14 「pending changes」 일괄 커밋들이 바뀐 파일이 import하는 새 파일만 넣어, 시험이 부르는 파일 일부가 PC 작업본에만 남았다.
 - 고침: `git log --all --oneline -- <경로>`로 origin의 다른 가지에 있는지 먼저 찾는다(입문 게임 277개는 `origin/codex/beginner-games-finish-20261010`에 있었다). 어디에도 없으면 PC에서 커밋한다(path-travel 계획 화면 8개·장소 사진 13장).
 - 다시 확인: PC 작업본에서 `git status --short experiences/path-travel`이 비어 있다.
+
+### 전체 미추적 파일 상태가 Node 기본 출력 버퍼를 넘는다
+- 증상: 10-18 QA 마무리 스크립트의 `execFileSync('git', ['status', '--short', '--untracked-files=all'])`가 `ENOBUFS`로 중단됐다.
+- 원인: 공용 작업본의 전체 파일 목록이 Node 기본 maxBuffer를 넘었다. Git 변경이나 저장용량 부족을 뜻하지 않는다.
+- 고침: stdout을 증거 파일 descriptor로 직접 연결하고 종료 코드를 확인했다. 읽기 점검에는 `--no-optional-locks`를 붙였으며 reset·clean·stash는 쓰지 않았다.
+- 다시 확인: `.tmp/path-travel-account-public-20261018/finish.cjs` 재실행이 0으로 끝나고 `workspace-status-after.txt`와 성공 `result.json`을 남겼다.
