@@ -1,0 +1,245 @@
+{
+  "manifest": {
+    "name": "town-merged",
+    "builtAt": "2026-10-18T06:32:04.078Z",
+    "textures": {
+      "mode": "etc1s",
+      "pc": 2048,
+      "phone": 1024
+    },
+    "geometry": "meshopt-high",
+    "parts": [
+      {
+        "id": "ground",
+        "url": "town-merged-ground.glb",
+        "phone": "town-merged-ground-phone.glb"
+      },
+      {
+        "id": "home",
+        "placeId": "home",
+        "url": "town-merged-home.glb",
+        "phone": "town-merged-home-phone.glb"
+      },
+      {
+        "id": "cafe",
+        "placeId": "cafe",
+        "url": "town-merged-cafe.glb",
+        "phone": "town-merged-cafe-phone.glb"
+      },
+      {
+        "id": "workshop",
+        "placeId": "workshop",
+        "url": "town-merged-workshop.glb",
+        "phone": "town-merged-workshop-phone.glb"
+      },
+      {
+        "id": "greenhouse",
+        "placeId": "greenhouse",
+        "url": "town-merged-greenhouse.glb",
+        "phone": "town-merged-greenhouse-phone.glb"
+      }
+    ]
+  },
+  "log": [
+    {
+      "part": "ground",
+      "tier": "pc",
+      "file": "town-merged-ground.glb",
+      "glbBytes": 1715088,
+      "textures": [
+        {
+          "name": "town-merged-ground-hard",
+          "from": "png",
+          "bytes": 783783
+        },
+        {
+          "name": "town-merged-ground-soft",
+          "from": "png",
+          "bytes": 572862
+        }
+      ]
+    },
+    {
+      "part": "ground",
+      "tier": "phone",
+      "file": "town-merged-ground-phone.glb",
+      "glbBytes": 767304,
+      "textures": [
+        {
+          "name": "town-merged-ground-hard",
+          "from": "png",
+          "bytes": 245861
+        },
+        {
+          "name": "town-merged-ground-soft",
+          "from": "png",
+          "bytes": 163006
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "pc",
+      "file": "town-merged-home.glb",
+      "glbBytes": 2713124,
+      "textures": [
+        {
+          "name": "town-merged-home-base",
+          "from": "png",
+          "bytes": 465694
+        },
+        {
+          "name": "town-merged-home-roof",
+          "from": "png",
+          "bytes": 1035059
+        },
+        {
+          "name": "town-merged-home-timber",
+          "from": "png",
+          "bytes": 781196
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "phone",
+      "file": "town-merged-home-phone.glb",
+      "glbBytes": 1146736,
+      "textures": [
+        {
+          "name": "town-merged-home-base",
+          "from": "png",
+          "bytes": 156015
+        },
+        {
+          "name": "town-merged-home-roof",
+          "from": "png",
+          "bytes": 312959
+        },
+        {
+          "name": "town-merged-home-timber",
+          "from": "png",
+          "bytes": 246608
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "pc",
+      "file": "town-merged-cafe.glb",
+      "glbBytes": 1856428,
+      "textures": [
+        {
+          "name": "town-merged-cafe-pavilion",
+          "from": "png",
+          "bytes": 585572
+        },
+        {
+          "name": "town-merged-cafe-upper",
+          "from": "png",
+          "bytes": 912046
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "phone",
+      "file": "town-merged-cafe-phone.glb",
+      "glbBytes": 821836,
+      "textures": [
+        {
+          "name": "town-merged-cafe-pavilion",
+          "from": "png",
+          "bytes": 183187
+        },
+        {
+          "name": "town-merged-cafe-upper",
+          "from": "png",
+          "bytes": 279846
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "pc",
+      "file": "town-merged-workshop.glb",
+      "glbBytes": 2774468,
+      "textures": [
+        {
+          "name": "town-merged-workshop-base",
+          "from": "png",
+          "bytes": 677485
+        },
+        {
+          "name": "town-merged-workshop-facade",
+          "from": "png",
+          "bytes": 699067
+        },
+        {
+          "name": "town-merged-workshop-roof",
+          "from": "png",
+          "bytes": 974165
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "phone",
+      "file": "town-merged-workshop-phone.glb",
+      "glbBytes": 1134900,
+      "textures": [
+        {
+          "name": "town-merged-workshop-base",
+          "from": "png",
+          "bytes": 211176
+        },
+        {
+          "name": "town-merged-workshop-facade",
+          "from": "png",
+          "bytes": 212454
+        },
+        {
+          "name": "town-merged-workshop-roof",
+          "from": "png",
+          "bytes": 287533
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "pc",
+      "file": "town-merged-greenhouse.glb",
+      "glbBytes": 1828064,
+      "textures": [
+        {
+          "name": "town-merged-greenhouse-house",
+          "from": "png",
+          "bytes": 778216
+        },
+        {
+          "name": "town-merged-greenhouse-props",
+          "from": "png",
+          "bytes": 760670
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "phone",
+      "file": "town-merged-greenhouse-phone.glb",
+      "glbBytes": 780804,
+      "textures": [
+        {
+          "name": "town-merged-greenhouse-house",
+          "from": "png",
+          "bytes": 250102
+        },
+        {
+          "name": "town-merged-greenhouse-props",
+          "from": "png",
+          "bytes": 241533
+        }
+      ]
+    }
+  ]
+}

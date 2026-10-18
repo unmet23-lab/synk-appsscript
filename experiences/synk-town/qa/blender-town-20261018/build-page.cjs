@@ -63,8 +63,8 @@ section { display: grid; gap: 14px; min-width: 0; }
 .chip { font: inherit; font-size: 14px; font-weight: 550; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
-.trio.phone { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); max-width: 820px; }
+.trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.trio.phone { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); max-width: 860px; }
 figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
 figure img { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--stage); }
 figcaption { font-size: 13px; font-weight: 550; color: var(--muted); }

@@ -89,6 +89,8 @@ async function openTown(browser, base, { width, height, query = '', dpr = 1, pat
   await page.goto(base + '/day.html?play=walk' + query);
   await page.waitForFunction(() => globalThis.SYNKTownDay?.metrics()?.assetsReady && SYNKTownDay.metrics().walk?.enabled, {}, { timeout: 90000 });
   const readyMs = Date.now() - started;
+  // Deferred district parts (the 10-18 outer ring) arrive after the core: wait for them too.
+  await page.waitForFunction(() => { const d = SYNKTownDay.metrics().bakedDistrict; return !d?.deferred || d.deferred.loaded || d.deferred.failed; }, {}, { timeout: 90000 });
   await focus(page); await quiet(page); await delay(700);
   return { page, errors, requests, readyMs };
 }

@@ -6,6 +6,8 @@
 const fs = require('node:fs'), path = require('node:path');
 const L = require('../blender-district-20261017/lib.cjs');
 const CORE = { minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 };
+// --outer: also split off the neighbours and the ground ring out to the flat town bounds (town-layout.mjs ground.flatBounds).
+const OUTER = { minX: -22.6, maxX: 22.6, minZ: -25.4, maxZ: 9.6 };
 const KEYED = ['stem', 'foliage', 'flowers', 'bark', 'stone', 'paving', 'mortar', 'gravel', 'gardenSoil', 'homePlaster', 'cafePlaster', 'workshopPlaster',
   'shutters', 'metal', 'glassBacking', 'interiorPlaster', 'farFoliage', 'cloth', 'guideCloth', 'coral', 'butter', 'terrainMaterial', 'cliffMaterial', 'greenhouseGlass'];
 const PATCHES = { 'day-environment.mjs': [
@@ -14,17 +16,18 @@ const PATCHES = { 'day-environment.mjs': [
   ["const grass = material({ color: '#ffffff', roughness: .93, side: THREE.DoubleSide });",
     "const grass = material({ color: '#ffffff', roughness: .93, side: THREE.DoubleSide }); grass.userData.synkKey = 'grass';"],
 ] };
-module.exports = { CORE, PATCHES };
+module.exports = { CORE, OUTER, PATCHES };
 if (require.main === module) (async () => {
   const outDir = path.resolve(process.argv[2] || path.join(__dirname, 'reference'));
+  const withOuter = process.argv.includes('--outer');
   let browser;
   try {
     fs.mkdirSync(outDir, { recursive: true });
     const { base } = await L.fixture(); browser = await L.launch();
     const { page, errors } = await L.openTown(browser, base, { width: 1280, height: 900, patches: PATCHES });
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'export-town-browser.js'), 'utf8') });
-    const result = await page.evaluate(core => globalThis.__exportCoreTown(core), CORE);
-    const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live', faded: 'v20_faded' };
+    const result = await page.evaluate(core => globalThis.__exportCoreTown(core), withOuter ? { ...CORE, outer: OUTER } : CORE);
+    const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live', faded: 'v20_faded', ...(withOuter ? { neighbours: 'v20_neighbours', ring: 'v20_ring_ground' } : {}) };
     for (const [part, file] of Object.entries(names)) fs.writeFileSync(path.join(outDir, file + '.glb'), Buffer.from(result.files[part], 'base64'));
     for (const [file, data] of Object.entries(result.mapFiles)) fs.writeFileSync(path.join(outDir, file), Buffer.from(data, 'base64'));
     const summary = Object.fromEntries(Object.entries(result.report).map(([k, r]) => [k, { meshes: r.meshes, triangles: r.triangles }]));

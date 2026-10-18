@@ -12,6 +12,11 @@
 //            stay on the ground while v20 hides the object (10-18).
 //   live   — everything else Town builds: grass, flowers, shrubs, the outer ring,
 //            the far underlay (bake occluders only)
+// With core.outer (the flat town bounds, 10-18 outer ring) two more parts:
+//   neighbours — the eight town-neighbour-* houses
+//   ring       — walkable ground inside core.outer but outside the core (the
+//                neighbours' foundations and yard paths are ground batches too);
+//                live then keeps only what lies outside core.outer
 // Material keys come from Town's shared `m` or from the capture-time
 // userData.synkKey patch in export-town.cjs.
 globalThis.__exportCoreTown = async function exportCoreTown(core) {
@@ -23,7 +28,9 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
   // another key in town-landscape stays live (grass, foliage, flowers, bark...).
   const GROUND_KEYS = new Set(['terrainMaterial', 'paving', 'stone', 'mortar', 'gravel', 'gardenSoil', 'cliffMaterial']);
   const inCore = (x, z) => x >= core.minX && x <= core.maxX && z >= core.minZ && z <= core.maxZ;
-  const PARTS_OUT = [...PLACES, 'ground', 'live', 'faded'];
+  const outer = core.outer || null;
+  const PARTS_OUT = [...PLACES, 'ground', 'live', 'faded', ...(outer ? ['neighbours', 'ring'] : [])];
+  const inOuter = (x, z) => !outer || (x >= outer.minX && x <= outer.maxX && z >= outer.minZ && z <= outer.maxZ);
   const out = Object.fromEntries(PARTS_OUT.map(k => [k, new Map()]));
   const report = Object.fromEntries(PARTS_OUT.map(k => [k, { meshes: 0, triangles: 0, sources: {} }]));
   const groundInstances = [];
@@ -93,6 +100,7 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
     const place = PLACES.find(p => root.name === 'town-' + p);
     const landscape = root.name === 'town-landscape';
     const faded = /^town-(street-bench|street-planter|tree)-/.test(root.name);
+    const neighbour = outer && /^town-neighbour-/.test(root.name);
     root.traverse(object => {
       if (!object.isMesh || object.isSprite || !object.geometry?.attributes?.position) return;
       if (object.material?.isSpriteMaterial || object.material?.isShaderMaterial) return;
@@ -102,6 +110,7 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
       const add = (matrix, tint, centre, instanceIndex) => {
         if (place) return push(place, object.geometry, matrix, tint, null, mat);
         if (faded) return push('faded', object.geometry, matrix, tint, null, mat);
+        if (neighbour) return push('neighbours', object.geometry, matrix, tint, null, mat);
         if (!groundKey) return push('live', object.geometry, matrix, tint, null, mat);
         object.geometry.computeBoundingSphere();
         const radius = object.geometry.boundingSphere.radius * matrix.getMaxScaleOnAxis();
@@ -113,11 +122,17 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
           // edge were lost and Town showed holes along the border (10-18).
           const touches = pts => !(Math.max(...pts.map(p => p.x)) <= core.minX || Math.min(...pts.map(p => p.x)) >= core.maxX || Math.max(...pts.map(p => p.z)) <= core.minZ || Math.min(...pts.map(p => p.z)) >= core.maxZ);
           push('ground', object.geometry, matrix, tint, (x, y, z, pts) => touches(pts) && above(y), mat);
-          push('live', object.geometry, matrix, tint, (x, y, z) => !inCore(x, z) || !above(y), mat);
+          if (outer) {
+            const touchesOuter = pts => !(Math.max(...pts.map(p => p.x)) <= outer.minX || Math.min(...pts.map(p => p.x)) >= outer.maxX || Math.max(...pts.map(p => p.z)) <= outer.minZ || Math.min(...pts.map(p => p.z)) >= outer.maxZ);
+            const allInCore = pts => pts.every(p => inCore(p.x, p.z));
+            push('ring', object.geometry, matrix, tint, (x, y, z, pts) => touchesOuter(pts) && !allInCore(pts) && above(y), mat);
+            push('live', object.geometry, matrix, tint, (x, y, z) => !inOuter(x, z) || !above(y), mat);
+          } else push('live', object.geometry, matrix, tint, (x, y, z) => !inCore(x, z) || !above(y), mat);
         } else if (inCore(centre.x, centre.z) && above(centre.y)) {
           push('ground', object.geometry, matrix, tint, null, mat);
           if (instanceIndex != null) groundInstances.push({ mesh: object.name || object.uuid, key, index: instanceIndex });
-        } else push('live', object.geometry, matrix, tint, null, mat);
+        } else if (outer && inOuter(centre.x, centre.z) && above(centre.y)) push('ring', object.geometry, matrix, tint, null, mat);
+        else push('live', object.geometry, matrix, tint, null, mat);
       };
       if (object.isInstancedMesh) {
         const centre = new THREE.Vector3();

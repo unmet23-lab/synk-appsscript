@@ -3,6 +3,11 @@
 //   cafe-<variant>  one district: assets/district/<name>.glb (10-17)
 //   town-<variant>  the core town: assets/district/<name>.json lists one GLB per
 //                   part (shared ground + buildings), phone-sized files below 600 px
+//   townwide-<variant>  the core town plus the outer ring out to the flat town
+//                   bounds: the ground ring and the eight neighbour houses too
+//                   (10-18 merged version); each neighbour mesh names its house
+//                   (…_neighbour-N) and goes under that house's root, so Town's
+//                   per-house occlusion fading keeps working
 // Walking bounds, solids, floor heights, the open fronts, click targets, support
 // surfaces and the name labels all stay the approved v20 ones: the v20 meshes
 // are hidden, not removed. Textures may be WebP or KTX2 (KHR_texture_basisu).
@@ -12,6 +17,8 @@ export const BAKED_DISTRICTS = Object.freeze({
 });
 export const BAKED_SETS = Object.freeze({
   town: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']) }),
+  // town-layout.mjs ground.flatBounds
+  townwide: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), outerBounds: Object.freeze({ minX: -22.6, maxX: 22.6, minZ: -25.4, maxZ: 9.6 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']), neighbours: true }),
 });
 
 export function districtRequest(search) {
@@ -143,7 +150,7 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
       if (/roof/.test(object.name)) object.material.userData.townSurface = 'roof';
       // Ground does not need to cast; structure keeps shading characters and
       // the v20 lawn just outside the district.
-      object.castShadow = !/ground/.test(object.name); object.receiveShadow = true;
+      object.castShadow = !/ground|ring/.test(object.name); object.receiveShadow = true;
       source.dispose();
     }
     state.meshes++; state.triangles += (object.geometry.index ? object.geometry.index.count : object.geometry.attributes.position.count) / 3;
@@ -167,11 +174,23 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
   const landscape = world.children.find(child => child.name === 'town-landscape');
   const noGround = { restore() {}, cutMeshes: 0, droppedPieces: 0, parkedInstances: 0 };
   const state = { name: request.name, url: request.set ? request.manifest : request.url, tier: phone ? 'phone' : 'pc', loaded: false, failed: null, parts: [], meshes: 0, triangles: 0, textures: [], textureBytes: 0,
-    downloadBytes: 0, loadMs: null, hiddenV20Meshes: 0, cutGroundMeshes: 0, droppedGroundPieces: 0, parkedGroundInstances: 0, prepareMs: null };
-  let ground = noGround, attached = [];
+    downloadBytes: 0, loadMs: null, hiddenV20Meshes: 0, cutGroundMeshes: 0, droppedGroundPieces: 0, parkedGroundInstances: 0, prepareMs: null, deferred: null };
+  let ground = noGround, outer = null, attached = [];
+  const layered = [];
+  // The outer ring (townwide sets) replaces v20 only once its parts arrive: the
+  // ground ring is cut out then, and the v20 neighbour houses leave the render
+  // layer instead of turning invisible, so Town's occlusion fading (which
+  // restores `visible`) can never bring them back.
+  const houses = request.neighbours ? world.children.filter(child => child.userData.neighbourhoodHouse) : [];
+  const takeOuter = () => {
+    if (outer || !request.outerBounds) return;
+    outer = landscape ? hideDistrictGround(THREE, landscape, request.outerBounds, request.groundTop, true) : noGround;
+    for (const house of houses) house.traverse(object => { if (object.isMesh && !object.isSprite) { layered.push([object, object.layers.mask]); object.layers.set(31); } });
+  };
+  const giveOuterBack = () => { outer?.restore(); outer = null; for (const [object, mask] of layered.splice(0)) object.layers.mask = mask; };
   const fail = error => {
     // A missing or broken file restores the approved v20 town untouched.
-    state.failed = String(error?.message || error); ground.restore();
+    state.failed = String(error?.message || error); giveOuterBack(); ground.restore();   // outer first: it cut what the core cut left
     for (const root of attached) root.parent?.remove(root);
     for (const object of hidden) object.visible = true; state.loaded = false; return state;
   };
@@ -180,9 +199,40 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
   if (targets.some(b => !b)) return null;
   targets.forEach(hideBuilding);
   ground = landscape ? hideDistrictGround(THREE, landscape, request.bounds, request.groundTop, request.set) : noGround;
-  const record = () => Object.assign(state, { hiddenV20Meshes: hidden.length, cutGroundMeshes: ground.cutMeshes, droppedGroundPieces: ground.droppedPieces, parkedGroundInstances: ground.parkedInstances });
+  const record = () => Object.assign(state, { hiddenV20Meshes: hidden.length + layered.length, cutGroundMeshes: ground.cutMeshes + (outer?.cutMeshes || 0),
+    droppedGroundPieces: ground.droppedPieces + (outer?.droppedPieces || 0), parkedGroundInstances: ground.parkedInstances + (outer?.parkedInstances || 0) });
   record(); state.prepareMs = Math.round(performance.now() - started);
-  const sized = async url => { const response = await fetch(url); if (!response.ok) throw new Error(`${url} responded with ${response.status}`); const buffer = await response.arrayBuffer(); state.downloadBytes += buffer.byteLength; return buffer; };
+  const sized = async (url, tally) => { const response = await fetch(url); if (!response.ok) throw new Error(`${url} responded with ${response.status}`); const buffer = await response.arrayBuffer(); tally.bytes += buffer.byteLength; return buffer; };
+  const firstTally = { get bytes() { return state.downloadBytes; }, set bytes(v) { state.downloadBytes = v; } };
+  function attach(part, gltf) {
+    const root = gltf.scene; root.name = `town-${part.id}-baked`;
+    const before = { meshes: state.meshes, triangles: state.triangles, textureBytes: state.textureBytes };
+    if (part.id === 'ring' || part.id === 'neighbours') takeOuter();
+    adoptBaked(THREE, root, liveGlass, state, part.drop || []);
+    // GLB vertices are in Town world space; parents carry their own transform.
+    const building = part.placeId && buildings.find(b => b.userData.placeId === part.placeId);
+    const parent = building || world;
+    parent.updateMatrixWorld(true); root.applyMatrix4(parent.matrixWorld.clone().invert());
+    parent.add(root); root.updateMatrixWorld(true); attached.push(root);
+    if (building) replaceVolume?.(building);
+    if (part.id === 'neighbours') {
+      // Each mesh names its house (…_neighbour-N): hang it under that house's root
+      // so the per-house occlusion volume fades the baked house like v20's.
+      const meshes = []; root.traverse(object => { if (object.isMesh) meshes.push(object); });
+      const touched = new Set();
+      for (const mesh of meshes) {
+        const house = houses.find(h => h.name === 'town-' + mesh.name.match(/neighbour-\d+/)?.[0]);
+        if (!house) continue;
+        house.updateMatrixWorld(true); mesh.updateMatrixWorld(true);
+        const worldMatrix = mesh.matrixWorld.clone(); mesh.removeFromParent(); house.add(mesh);
+        mesh.matrix.copy(house.matrixWorld.clone().invert().multiply(worldMatrix)); mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+        attached.push(mesh); touched.add(house);
+      }
+      for (const house of touched) replaceVolume?.(house);
+    }
+    state.parts.push({ id: part.id, meshes: state.meshes - before.meshes, triangles: state.triangles - before.triangles, textureBytes: state.textureBytes - before.textureBytes, ...(part.defer ? { deferred: true } : {}) });
+    record();
+  }
   // The loaders are fetched only when a baked district is requested; v20 never downloads them.
   const ready = Promise.all([import('./rendering/GLTFLoader.js'), import('./rendering/KTX2Loader.js'), import('./rendering/meshopt_decoder.module.js'), request.set ? fetch(request.manifest).then(r => { if (!r.ok) throw new Error(`${request.manifest} responded with ${r.status}`); return r.json(); }) : null])
     .then(async ([{ GLTFLoader }, { KTX2Loader }, { MeshoptDecoder }, manifest]) => {
@@ -192,23 +242,21 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
       const parts = request.set ? manifest.parts.map(part => ({ ...part, url: new URL((phone && part.phone) || part.url, base).href }))
         : [{ id: request.placeId, placeId: request.placeId, url: new URL(request.url, location.href).href }];
       // A set must bring every part it hid: the shared ground and each building.
-      if (request.set) for (const id of ['ground', ...request.places]) if (!parts.some(part => part.id === id)) throw new Error('manifest lacks ' + id);
-      const loaded = await Promise.all(parts.map(async part => ({ part, gltf: await loader.parseAsync(await sized(part.url), part.url.replace(/[^/]*$/, '')) })));
-      ktx2.dispose();
-      for (const { part, gltf } of loaded) {
-        const root = gltf.scene; root.name = `town-${part.id}-baked`;
-        const before = { meshes: state.meshes, triangles: state.triangles, textureBytes: state.textureBytes };
-        adoptBaked(THREE, root, liveGlass, state, part.drop || []);
-        // GLB vertices are in Town world space; parents carry their own transform.
-        const building = part.placeId && buildings.find(b => b.userData.placeId === part.placeId);
-        const parent = building || world;
-        parent.updateMatrixWorld(true); root.applyMatrix4(parent.matrixWorld.clone().invert());
-        parent.add(root); root.updateMatrixWorld(true); attached.push(root);
-        if (building) replaceVolume?.(building);
-        state.parts.push({ id: part.id, meshes: state.meshes - before.meshes, triangles: state.triangles - before.triangles, textureBytes: state.textureBytes - before.textureBytes });
-      }
+      if (request.set) for (const id of ['ground', ...request.places, ...(request.neighbours ? ['ring', 'neighbours'] : [])]) if (!parts.some(part => part.id === id)) throw new Error('manifest lacks ' + id);
+      const load = (part, tally) => sized(part.url, tally).then(buffer => loader.parseAsync(buffer, part.url.replace(/[^/]*$/, ''))).then(gltf => ({ part, gltf }));
+      // Deferred parts (the outer ring) download after the core is in place, so
+      // they do not count against the first entry; v20 stays there meanwhile.
+      const now = parts.filter(part => !part.defer), later = parts.filter(part => part.defer);
+      for (const { part, gltf } of await Promise.all(now.map(part => load(part, firstTally)))) attach(part, gltf);
       state.loaded = true; state.loadMs = Math.round(performance.now() - started);
+      if (!later.length) { ktx2.dispose(); return state; }
+      const deferred = state.deferred = { parts: later.map(part => part.id), loaded: false, failed: null, bytes: 0, loadMs: null };
+      const t0 = performance.now(), mark = attached.length;
+      Promise.all(later.map(part => load(part, deferred)))
+        .then(list => { for (const { part, gltf } of list) attach(part, gltf); deferred.loaded = true; deferred.loadMs = Math.round(performance.now() - t0); })
+        .catch(error => { deferred.failed = String(error?.message || error); for (const root of attached.splice(mark)) root.parent?.remove(root); giveOuterBack(); record(); })
+        .finally(() => ktx2.dispose());
       return state;
     }).catch(fail);
-  return { ready, stats: () => ({ ...state, parts: state.parts.map(p => ({ ...p })), textures: state.textures.map(t => ({ ...t })) }) };
+  return { ready, stats: () => ({ ...state, parts: state.parts.map(p => ({ ...p })), textures: state.textures.map(t => ({ ...t })), deferred: state.deferred && { ...state.deferred } }) };
 }

@@ -1,0 +1,329 @@
+{
+  "manifest": {
+    "name": "townwide-merged",
+    "builtAt": "2026-10-18T08:52:59.173Z",
+    "textures": {
+      "mode": "etc1s",
+      "pc": 2048,
+      "phone": 1024
+    },
+    "geometry": "meshopt-high",
+    "parts": [
+      {
+        "id": "ground",
+        "url": "townwide-merged-ground.glb",
+        "phone": "townwide-merged-ground-phone.glb"
+      },
+      {
+        "id": "home",
+        "placeId": "home",
+        "url": "townwide-merged-home.glb",
+        "phone": "townwide-merged-home-phone.glb"
+      },
+      {
+        "id": "cafe",
+        "placeId": "cafe",
+        "url": "townwide-merged-cafe.glb",
+        "phone": "townwide-merged-cafe-phone.glb"
+      },
+      {
+        "id": "workshop",
+        "placeId": "workshop",
+        "url": "townwide-merged-workshop.glb",
+        "phone": "townwide-merged-workshop-phone.glb"
+      },
+      {
+        "id": "greenhouse",
+        "placeId": "greenhouse",
+        "url": "townwide-merged-greenhouse.glb",
+        "phone": "townwide-merged-greenhouse-phone.glb"
+      },
+      {
+        "id": "ring",
+        "defer": true,
+        "url": "townwide-merged-ring.glb",
+        "phone": "townwide-merged-ring-phone.glb"
+      },
+      {
+        "id": "neighbours",
+        "defer": true,
+        "url": "townwide-merged-neighbours.glb",
+        "phone": "townwide-merged-neighbours-phone.glb"
+      }
+    ]
+  },
+  "log": [
+    {
+      "part": "ground",
+      "tier": "pc",
+      "file": "townwide-merged-ground.glb",
+      "glbBytes": 1662964,
+      "textures": [
+        {
+          "name": "town-wide-ground-hard",
+          "from": "png",
+          "bytes": 808930
+        },
+        {
+          "name": "town-wide-ground-soft",
+          "from": "png",
+          "bytes": 492258
+        }
+      ]
+    },
+    {
+      "part": "ground",
+      "tier": "phone",
+      "file": "townwide-merged-ground-phone.glb",
+      "glbBytes": 757156,
+      "textures": [
+        {
+          "name": "town-wide-ground-hard",
+          "from": "png",
+          "bytes": 252345
+        },
+        {
+          "name": "town-wide-ground-soft",
+          "from": "png",
+          "bytes": 143045
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "pc",
+      "file": "townwide-merged-home.glb",
+      "glbBytes": 2717040,
+      "textures": [
+        {
+          "name": "town-wide-home-base",
+          "from": "png",
+          "bytes": 470318
+        },
+        {
+          "name": "town-wide-home-roof",
+          "from": "png",
+          "bytes": 1034098
+        },
+        {
+          "name": "town-wide-home-timber",
+          "from": "png",
+          "bytes": 781454
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "phone",
+      "file": "townwide-merged-home-phone.glb",
+      "glbBytes": 1147932,
+      "textures": [
+        {
+          "name": "town-wide-home-base",
+          "from": "png",
+          "bytes": 157627
+        },
+        {
+          "name": "town-wide-home-roof",
+          "from": "png",
+          "bytes": 312695
+        },
+        {
+          "name": "town-wide-home-timber",
+          "from": "png",
+          "bytes": 246452
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "pc",
+      "file": "townwide-merged-cafe.glb",
+      "glbBytes": 1858120,
+      "textures": [
+        {
+          "name": "town-wide-cafe-pavilion",
+          "from": "png",
+          "bytes": 586749
+        },
+        {
+          "name": "town-wide-cafe-upper",
+          "from": "png",
+          "bytes": 912562
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "phone",
+      "file": "townwide-merged-cafe-phone.glb",
+      "glbBytes": 822024,
+      "textures": [
+        {
+          "name": "town-wide-cafe-pavilion",
+          "from": "png",
+          "bytes": 183536
+        },
+        {
+          "name": "town-wide-cafe-upper",
+          "from": "png",
+          "bytes": 279692
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "pc",
+      "file": "townwide-merged-workshop.glb",
+      "glbBytes": 2770336,
+      "textures": [
+        {
+          "name": "town-wide-workshop-base",
+          "from": "png",
+          "bytes": 675004
+        },
+        {
+          "name": "town-wide-workshop-facade",
+          "from": "png",
+          "bytes": 698732
+        },
+        {
+          "name": "town-wide-workshop-roof",
+          "from": "png",
+          "bytes": 972850
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "phone",
+      "file": "townwide-merged-workshop-phone.glb",
+      "glbBytes": 1134948,
+      "textures": [
+        {
+          "name": "town-wide-workshop-base",
+          "from": "png",
+          "bytes": 211305
+        },
+        {
+          "name": "town-wide-workshop-facade",
+          "from": "png",
+          "bytes": 212281
+        },
+        {
+          "name": "town-wide-workshop-roof",
+          "from": "png",
+          "bytes": 287620
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "pc",
+      "file": "townwide-merged-greenhouse.glb",
+      "glbBytes": 1827372,
+      "textures": [
+        {
+          "name": "town-wide-greenhouse-house",
+          "from": "png",
+          "bytes": 778520
+        },
+        {
+          "name": "town-wide-greenhouse-props",
+          "from": "png",
+          "bytes": 759680
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "phone",
+      "file": "townwide-merged-greenhouse-phone.glb",
+      "glbBytes": 779656,
+      "textures": [
+        {
+          "name": "town-wide-greenhouse-house",
+          "from": "png",
+          "bytes": 248981
+        },
+        {
+          "name": "town-wide-greenhouse-props",
+          "from": "png",
+          "bytes": 241505
+        }
+      ]
+    },
+    {
+      "part": "ring",
+      "tier": "pc",
+      "file": "townwide-merged-ring.glb",
+      "glbBytes": 729536,
+      "textures": [
+        {
+          "name": "town-wide-ring-ring_lawn",
+          "from": "png",
+          "bytes": 106419
+        },
+        {
+          "name": "town-wide-ring-ring_paths",
+          "from": "png",
+          "bytes": 261229
+        }
+      ]
+    },
+    {
+      "part": "ring",
+      "tier": "phone",
+      "file": "townwide-merged-ring-phone.glb",
+      "glbBytes": 489196,
+      "textures": [
+        {
+          "name": "town-wide-ring-ring_lawn",
+          "from": "png",
+          "bytes": 41378
+        },
+        {
+          "name": "town-wide-ring-ring_paths",
+          "from": "png",
+          "bytes": 85930
+        }
+      ]
+    },
+    {
+      "part": "neighbours",
+      "tier": "pc",
+      "file": "townwide-merged-neighbours.glb",
+      "glbBytes": 2868360,
+      "textures": [
+        {
+          "name": "town-wide-neighbours-neighbours_roof",
+          "from": "png",
+          "bytes": 1026089
+        },
+        {
+          "name": "town-wide-neighbours-neighbours_wall",
+          "from": "png",
+          "bytes": 935176
+        }
+      ]
+    },
+    {
+      "part": "neighbours",
+      "tier": "phone",
+      "file": "townwide-merged-neighbours-phone.glb",
+      "glbBytes": 1518412,
+      "textures": [
+        {
+          "name": "town-wide-neighbours-neighbours_roof",
+          "from": "png",
+          "bytes": 312808
+        },
+        {
+          "name": "town-wide-neighbours-neighbours_wall",
+          "from": "png",
+          "bytes": 298567
+        }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,10 @@ WORK = os.path.abspath(arg('--work', '.'))
 os.makedirs(WORK, exist_ok=True)
 PARTS = (arg('--parts') or 'home,workshop,greenhouse,ground').split(',')
 CORE = dict(minX=-13.6, maxX=13.6, minZ=-12.2, maxZ=8.7)
+# The flat town bounds (town-layout.mjs ground.flatBounds): the merged version's
+# ground ring part reaches out to them (10-18 outer ring).
+OUTER = dict(minX=-22.6, maxX=22.6, minZ=-25.4, maxZ=9.6)
+GROUND_PARTS = ('ground', 'ring')
 RES = int(arg('--res', '2048'))
 # Output names town-<variant>-<part>-<group>. 'merged' (10-18): Argon's modelling
 # scripts build the geometry (../../blender-merged-20261018/blender/merged_build.py),
@@ -34,6 +38,12 @@ ANGLE_LIMIT = float(arg('--angle', '66'))
 # and EXTEND, a dark stone island packed next to a path painted its margin over
 # the path's edge texels (dark notches along the path, 10-18).
 MARGIN_PX = float(arg('--margin', '6'))
+# Per-group unwrap overrides, "group=value,group=value" (10-18 outer ring): the
+# neighbour houses are thousands of small pieces and 6 px around each left 8% of
+# the atlas covered (2 px: 28%); the ring's long path ribbons pack best with
+# lightmap pack (25% against 11%). uv_fill_try.py in ../../blender-merged-20261018 measures them.
+GROUP_MARGIN = {k: float(v) for k, v in (p.split('=') for p in (arg('--group-margin') or '').split(',') if p)}
+GROUP_METHOD = dict(p.split('=') for p in (arg('--group-method') or '').split(',') if p)
 # Town camera poses (position, target, vertical fov) from ../poses (PC 1280x900).
 PREVIEW_CAMERAS = {'core': ((0, 8.2, 12.4), (0, .2, -2.6), 42), 'home-close': ((-5.706, 2.11, 5.549), (-5.986, .69, 1.699), 42),
                    'greenhouse-close': ((2.6, 2.35, -2.75), (-.15, .95, -6.1), 42)}
@@ -390,7 +400,8 @@ def box_blur(a, r):
 def to_srgb(lin):
     return np.where(lin <= .0031308, lin * 12.92, 1.055 * np.power(np.clip(lin, 0, None), 1 / 2.4) - .055)
 
-def unwrap(objs, res):
+def unwrap(objs, res, group=None):
+    margin = GROUP_MARGIN.get(group, MARGIN_PX) / res
     bpy.ops.object.select_all(action='DESELECT')
     for o in objs:
         o.select_set(True)
@@ -398,10 +409,14 @@ def unwrap(objs, res):
         o.data.uv_layers.active = o.data.uv_layers['bake']
     bpy.context.view_layer.objects.active = objs[0]
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=MARGIN_PX / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    if GROUP_METHOD.get(group) == 'lightmap':
+        # PREF_MARGIN_DIV: 0.2 gave ~2 px gaps at 2048 in the 10-18 trial.
+        bpy.ops.uv.lightmap_pack(PREF_CONTEXT='ALL_FACES', PREF_PACK_IN_ONE=True, PREF_NEW_UVLAYER=False, PREF_MARGIN_DIV=.2)
+        bpy.ops.object.mode_set(mode='OBJECT'); return
+    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=margin, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
-    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=MARGIN_PX / res)
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=margin)
     bpy.ops.object.mode_set(mode='OBJECT')
 
 def groups_of(part):
@@ -416,6 +431,7 @@ def drop_live_ground_in_core():
     the west lawn as light/dark wedges (10-18). Drop those faces for the bake
     (flat ones only: stone walls outside the core still cast their shadows)."""
     n = 0
+    rect = OUTER if any(o.get('part') == 'ring' for o in bpy.data.collections['town'].objects) else CORE
     for o in bpy.data.collections['occluders'].objects:
         if o.type != 'MESH' or o.get('source') != 'v20_live.glb' or not o.material_slots or not o.material_slots[0].material: continue
         if KIND.get(parse(o.material_slots[0].material.name)['key']) not in ('lawn', 'soil', 'stone', 'paving', 'mortar', 'gravel'): continue
@@ -423,8 +439,8 @@ def drop_live_ground_in_core():
         for f in bm.faces:
             pts = [mw @ v.co for v in f.verts]
             if max(p.z for p in pts) > .35: continue
-            if max(p.x for p in pts) <= CORE['minX'] or min(p.x for p in pts) >= CORE['maxX']: continue
-            if max(p.y for p in pts) <= -CORE['maxZ'] or min(p.y for p in pts) >= -CORE['minZ']: continue
+            if max(p.x for p in pts) <= rect['minX'] or min(p.x for p in pts) >= rect['maxX']: continue
+            if max(p.y for p in pts) <= -rect['maxZ'] or min(p.y for p in pts) >= -rect['minZ']: continue
             drop.append(f)
         if drop:
             bmesh.ops.delete(bm, geom=drop, context='FACES'); bm.to_mesh(o.data); o.data.update(); n += len(drop)
@@ -432,24 +448,33 @@ def drop_live_ground_in_core():
     return n
 
 def stage_bake():
-    bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'build.blend'))
+    # --resume 1 continues a bake that stopped (10-18: the app quit with 15 of 16
+    # atlases done): reopen bake.blend, which keeps the finished atlases' UVs, and
+    # skip every atlas whose PNG and bake.json entry are already there.
+    resume = arg('--resume') == '1' and os.path.exists(os.path.join(WORK, 'bake.blend')) and os.path.exists(os.path.join(WORK, 'bake.json'))
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'bake.blend' if resume else 'build.blend'))
     samples = int(arg('--samples', '1024')); setup_cycles(samples); sc = bpy.context.scene
     town = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and not o['glass']]
     log('dropped live ground faces in the core', drop_live_ground_in_core())
-    report = {'samples': samples, 'resolution': RES, 'atlases': {}}
+    report = json.load(open(os.path.join(WORK, 'bake.json'))) if resume else {'samples': samples, 'resolution': RES, 'atlases': {}}
     for part in PARTS:
         # Ground layers lie 1-6 mm over each other (paths over gravel, beds over
         # lawn). Baked with each other as occluders, the lower layer went black
         # and showed through in Town as notches and wedges (10-18). v20's ground
         # pieces cast no shadows either (batch(..., cast=false)), so while the
         # ground bakes, ground objects are invisible to shadow and bounce rays.
+        # The ground ring of the merged town is the same kind of layer (10-18).
         for o in town:
-            if o['part'] == 'ground':
-                o.visible_shadow = part != 'ground'; o.visible_diffuse = part != 'ground'; o.visible_glossy = part != 'ground'
+            if o['part'] in GROUND_PARTS:
+                flat = part in GROUND_PARTS
+                o.visible_shadow = not flat; o.visible_diffuse = not flat; o.visible_glossy = not flat
         for group in groups_of(part):
             objs = [o for o in town if o['part'] == part and o['group'] == group]
             if not objs: continue
-            t0 = time.time(); res = RES; unwrap(objs, res)
+            done = f'town-{VARIANT}-{part}-{group}'
+            if resume and done in report['atlases'] and os.path.exists(os.path.join(WORK, done + '.png')):
+                log('already baked', done); continue
+            t0 = time.time(); res = RES; unwrap(objs, res, group)
             def poly_area(pts):
                 return abs(sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1] for i in range(len(pts)))) / 2
             uv_fill = sum(poly_area([tuple(o.data.uv_layers['bake'].data[i].uv) for i in p.loop_indices]) for o in objs for p in o.data.polygons)
@@ -505,15 +530,23 @@ def stage_export():
             bsdf = nt.nodes['Principled BSDF']; tex = nt.nodes.new('ShaderNodeTexImage'); tex.image = img
             nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color']); nt.links.new(tex.outputs['Alpha'], bsdf.inputs['Alpha'])
             bsdf.inputs['Roughness'].default_value = 1; m['synk_bake_scale'] = 2.0; m['synk_sun_alpha'] = 1
-            bpy.ops.object.select_all(action='DESELECT')
-            for o in g:
-                o.select_set(True); o.data.materials.clear(); o.data.materials.append(m)
-                for n in [l.name for l in o.data.uv_layers if l.name != 'bake']: o.data.uv_layers.remove(o.data.uv_layers[n])
-                for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
-            bpy.context.view_layer.objects.active = g[0]; bpy.ops.object.join()
-            j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_{group}'; keep.append(j)
-        glass = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and o.get('glass') and o not in keep]
-        if glass:
+            # Objects tagged with a house (the neighbours) join per house, so Town can
+            # hang each house's meshes under its own root and fade houses one by one.
+            # Partition first: joining removes the joined objects from the file.
+            by_house = {}
+            for o in g: by_house.setdefault(o.get('house', ''), []).append(o)
+            for house, hg in sorted(by_house.items()):
+                bpy.ops.object.select_all(action='DESELECT')
+                for o in hg:
+                    o.select_set(True); o.data.materials.clear(); o.data.materials.append(m)
+                    for n in [l.name for l in o.data.uv_layers if l.name != 'bake']: o.data.uv_layers.remove(o.data.uv_layers[n])
+                    for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
+                bpy.context.view_layer.objects.active = hg[0]; bpy.ops.object.join()
+                j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_{group}' + (f'_{house}' if house else ''); keep.append(j)
+        all_glass = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and o.get('glass') and o not in keep]
+        glass_by_house = {}
+        for o in all_glass: glass_by_house.setdefault(o.get('house', ''), []).append(o)
+        for house, glass in sorted(glass_by_house.items()):
             # One glass material per name: a second new('live_glass') becomes live_glass.001,
             # which Town would not recognise. The greenhouse panes are v20's thinner glass.
             glass_name = 'live_glass_thin' if part == 'greenhouse' else 'live_glass'
@@ -526,7 +559,7 @@ def stage_export():
                 for n in [l.name for l in o.data.uv_layers]: o.data.uv_layers.remove(o.data.uv_layers[n])
                 for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
             bpy.context.view_layer.objects.active = glass[0]; bpy.ops.object.join()
-            j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_glass'; keep.append(j)
+            j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_glass' + (f'_{house}' if house else ''); keep.append(j)
         bpy.ops.object.select_all(action='DESELECT')
         for k in keep: k.select_set(True)
         path = os.path.join(out_dir, f'town-{VARIANT}-{part}-raw.glb')

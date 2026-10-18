@@ -12,6 +12,11 @@ const [variant, rawDir, pngDir, cafeGlb, cafePng] = process.argv.slice(2);
 const args = Object.fromEntries(process.argv.slice(7).map(a => a.replace(/^--/, '').split('=')));
 const mode = args.mode || 'etc1s', pc = Number(args.pc || 2048), phone = Number(args.phone || 1024);
 const out = path.resolve(here, '../../assets/district');
+// --name: the set name Town asks for (default town-<variant>); townwide-<v> also brings the outer ring.
+const setName = args.name || `town-${variant}`;
+const resultsFile = path.join(here, 'results', `build-set-${args.name || variant}.json`);
+// The outer ring is seen from afar: --outer-pc / --outer-phone size its maps apart from the core's.
+const outerSize = { pc: Number(args['outer-pc'] || pc), phone: Number(args['outer-phone'] || phone) };
 const parts = [
   { id: 'ground', src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-ground${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir },
   { id: 'home', placeId: 'home', src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-home${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir },
@@ -22,14 +27,27 @@ const parts = [
     : { id: 'cafe', placeId: 'cafe', src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-cafe${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir },
   { id: 'workshop', placeId: 'workshop', src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-workshop${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir },
   { id: 'greenhouse', placeId: 'greenhouse', src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-greenhouse${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir, glass: 'thin' },
+  // Outer ring parts (merged version, 10-18 step ③), packed only when baked.
+  ...['ring', 'neighbours'].map(id => ({ id, outer: true, src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-${id}${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir }))
+    .filter(part => part.src.some(f => fs.existsSync(f))),
 ];
-const manifest = { name: `town-${variant}`, builtAt: new Date().toISOString(), textures: { mode, pc, phone }, geometry: 'meshopt' + (args.level ? '-' + args.level : ''), parts: [] }, log = [];
+const manifest = { name: setName, builtAt: new Date().toISOString(), textures: { mode, pc, phone }, geometry: 'meshopt' + (args.level ? '-' + args.level : ''), parts: [] }, log = [];
+// --only=<id,...> repacks those parts and keeps the others from the last run (results/build-set-<variant>.json).
+const only = args.only ? args.only.split(',') : null;
+const previous = only ? JSON.parse(fs.readFileSync(resultsFile, 'utf8')) : null;
 for (const part of parts) {
+  if (only && !only.includes(part.id)) {
+    manifest.parts.push(previous.manifest.parts.find(p => p.id === part.id)); log.push(...previous.log.filter(l => l.part === part.id)); continue;
+  }
   const src = part.src.find(f => fs.existsSync(f));
   if (!src) throw new Error(`no GLB for ${part.id}: ${part.src.join(' | ')}`);
-  const entry = { id: part.id, ...(part.placeId ? { placeId: part.placeId } : {}) };
-  for (const [tier, size] of [['pc', pc], ['phone', phone]]) {
-    const file = `town-${variant}-${part.id}${tier === 'phone' ? '-phone' : ''}.glb`;
+  // Outer-ring parts load after the core is in place (day-district.mjs 'defer').
+  const entry = { id: part.id, ...(part.placeId ? { placeId: part.placeId } : {}), ...(part.outer ? { defer: true } : {}) };
+  for (const [tier, coreSize] of [['pc', pc], ['phone', phone]]) {
+    // --size-<part>=<pc>,<phone> sets one part's maps (10-18: neighbours 2048/1024, ring 1024/512).
+    const custom = args['size-' + part.id]?.split(',').map(Number);
+    const size = custom ? custom[tier === 'pc' ? 0 : 1] : part.outer ? outerSize[tier] : coreSize;
+    const file = `${setName}-${part.id}${tier === 'phone' ? '-phone' : ''}.glb`;
     const res = execFileSync(process.execPath, [path.join(here, 'compress-glb.mjs'), src, part.png || '-', path.join(out, file), `--mode=${mode}`, `--size=${size}`, '--geo=meshopt', ...(args.level ? [`--level=${args.level}`] : []), ...(args.gain ? [`--gain=${args.gain}`] : []), ...(part.drop ? [`--drop=${part.drop}`] : []), ...(part.glass ? [`--glass=${part.glass}`] : [])],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], env: process.env });
     const line = res.split('\n').find(l => l.startsWith('{')); const r = JSON.parse(line);
@@ -39,7 +57,7 @@ for (const part of parts) {
   }
   manifest.parts.push(entry);
 }
-fs.writeFileSync(path.join(out, `town-${variant}.json`), JSON.stringify(manifest, null, 2) + '\n');
+fs.writeFileSync(path.join(out, `${setName}.json`), JSON.stringify(manifest, null, 2) + '\n');
 fs.mkdirSync(path.join(here, 'results'), { recursive: true });
-fs.writeFileSync(path.join(here, 'results', `build-set-${variant}.json`), JSON.stringify({ manifest, log }, null, 2) + '\n');
-console.log(JSON.stringify({ manifest: `town-${variant}.json`, pcBytes: log.filter(l => l.tier === 'pc').reduce((n, l) => n + l.glbBytes, 0), phoneBytes: log.filter(l => l.tier === 'phone').reduce((n, l) => n + l.glbBytes, 0) }));
+fs.writeFileSync(resultsFile, JSON.stringify({ manifest, log }, null, 2) + '\n');
+console.log(JSON.stringify({ manifest: `${setName}.json`, pcBytes: log.filter(l => l.tier === 'pc').reduce((n, l) => n + l.glbBytes, 0), phoneBytes: log.filter(l => l.tier === 'phone').reduce((n, l) => n + l.glbBytes, 0) }));

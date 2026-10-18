@@ -1,0 +1,29 @@
+{
+  "asset": "neighbours",
+  "objects": {
+    "neighbours_wall": 13308,
+    "neighbours_timber": 22216,
+    "neighbours_yard": 2380,
+    "neighbours_roof": 19032,
+    "neighbours_glass": 420
+  },
+  "total_triangles": 57356,
+  "triangle_budget": 64000,
+  "within_budget": true,
+  "atlas_groups": {
+    "neighbours_wall": "neighbours_wall",
+    "neighbours_timber": "neighbours_wall",
+    "neighbours_yard": "neighbours_wall",
+    "neighbours_roof": "neighbours_roof"
+  },
+  "build_seconds": 0.42,
+  "changes_vs_v20": [
+    "Included all 8 neighbour houses and their yard elements (stone foundations, front paving pads, style-0 porch steps & plank decks, yard gravel paths, and front/side garden fences) directly in neighbours_* world-space meshes while keeping exact town-layout.mjs positions, dimensions, yaw rotations, and collision footprints.",
+    "Upgraded roofs across all 3 styles (symmetric gable style 0, mono-pitch shed style 1, curved bell-gable style 2, plus style 0 porch roof and style 2 rotated pantry roof) with smooth high-resolution curved slabs, 11 curved purlin tile courses following roof Z-curvature, 9 standing-seam slope ribs, sculpted ridge caps, and darkWood gable bargeboard trims.",
+    "Replaced flat single-box doors and shutters with recessed darkWood shadow backings, individual beveled vertical tongue-and-groove planks (5 planks per door, 3 planks per shutter) with alternating wood-grain tints, horizontal battens, and door latches.",
+    "Replaced solid block window frames with 4-piece mortised picture-frame joinery (front windows, side windows, and style-1 clerestory windows) plus inner wood sashes, beveled mullions/transoms, and 3-block dressed limestone sills.",
+    "Refined stone foundations, fence coping caps, front paving pads, and porch steps into individual beveled ashlar/flagstone courses with mortar bases and subtle stone-to-stone color variation.",
+    "Added procedural 'neighbours_*' Cycles materials (Metallic = 0) with multi-scale lime plaster trowel & sand grain, slate tile striations, oak/walnut wood grain, limestone bump, and river gravel Voronoi texture."
+  ],
+  "unmet_requirements": []
+}

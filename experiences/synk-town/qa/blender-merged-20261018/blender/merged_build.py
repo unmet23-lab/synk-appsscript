@@ -6,6 +6,11 @@
 # KTX2/meshopt afterwards).
 #
 #   blender -b -P merged_build.py -- --work <dir> --ref <dir holding reference/> --sky <jpg> [--preview 1]
+#           [--ring <Argon outer-ring folder> --live <v20_live.glb of export-town.cjs --outer>]
+#   --ring adds the outer ring (10-18 step ③): Argon's neighbours_geo.py / ring_geo.py
+#   from that folder build the eight neighbour houses and the ground ring; their
+#   ATLAS_GROUPS give the atlas groups. Neighbour objects are split per house so
+#   the export joins one mesh per house (Town fades houses one by one).
 #   blender -b -P ../../blender-town-20261018/blender/town_bake.py -- --stage bake   --work <dir> --variant merged --parts ground,home,cafe,workshop,greenhouse
 #   blender -b -P ../../blender-town-20261018/blender/town_bake.py -- --stage export --work <dir> --variant merged --parts ground,home,cafe,workshop,greenhouse --out <dir>/out
 #
@@ -27,6 +32,33 @@ import town_bake as tb   # helpers only; its stage runs when it is the main scri
 # Atlas groups. Argon baked three 2048 maps per part (14 in all) and its phone
 # set went over the 6 MB budget; here the ground and the greenhouse share two
 # maps each (12 in all), like the Claude version's ground (hard / soft).
+# Town (x, z) of the neighbour houses (town-layout.mjs houses).
+HOUSES = [('neighbour-0', -16.6, -16.3), ('neighbour-1', -10, -16), ('neighbour-2', -4.7, -16.7), ('neighbour-3', 5.4, -16.6),
+          ('neighbour-4', 12.2, -16.4), ('neighbour-5', 17.4, -17.6), ('neighbour-6', -12.9, -21.1), ('neighbour-7', 8.9, -21.1)]
+
+
+def split_by_house(o):
+    """Give every face to the nearest neighbour house (Town x, z = Blender x, -y)."""
+    import bmesh
+    mw = o.matrix_world; owner = {}
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    for face in bm.faces:
+        c = mw @ face.calc_center_median()
+        owner.setdefault(min(HOUSES, key=lambda h: (h[1] - c.x) ** 2 + (h[2] + c.y) ** 2)[0], set()).add(face.index)
+    bm.free()
+    if len(owner) == 1:
+        o['house'] = next(iter(owner)); return [o]
+    out = []
+    for house, faces in sorted(owner.items()):
+        c = o.copy(); c.data = o.data.copy()
+        for col in o.users_collection: col.objects.link(c)
+        bm = bmesh.new(); bm.from_mesh(c.data); bm.faces.ensure_lookup_table()
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.index not in faces], context='FACES'); bm.to_mesh(c.data); bm.free()
+        c['house'] = house; c.name = f'{o.name}__{house}'; out.append(c)
+    bpy.data.objects.remove(o, do_unlink=True)
+    return out
+
+
 GROUPS = {
     'home': {'home_maru': 'base', 'home_wall': 'base', 'home_timber': 'timber', 'home_props': 'timber',
              'home_roof': 'roof', 'home_cloth': 'roof', 'home_foliage': 'roof'},
@@ -77,6 +109,20 @@ def main():
     # Argon's own set and here). Lift it 4 mm so it reads as v20's continuous rim.
     from mathutils import Matrix
     built['ground_curb'].data.transform(Matrix.Translation((0, 0, .004))); built['ground_curb'].data.update()
+    ring_dir = tb.arg('--ring')
+    if ring_dir:
+        ring_dir = os.path.abspath(ring_dir); sys.path.insert(0, os.path.join(ring_dir, 'scripts'))
+        import neighbours_geo, ring_geo
+        for mod in (neighbours_geo, ring_geo):
+            if hasattr(mod, 'ROOT'): mod.ROOT = ring_dir
+        take('neighbours', neighbours_geo.build_all_neighbours_meshes(mat_builder.build_procedural_materials()))
+        take('ring', ring_geo.build_all_ring_meshes(mat_builder.build_procedural_materials()))
+        GROUPS['neighbours'] = dict(neighbours_geo.ATLAS_GROUPS); GROUPS['ring'] = dict(ring_geo.ATLAS_GROUPS)
+        # Argon's core ground runs past the core rectangle (lawn to x ±14.53, z −14.5;
+        # soil and gravel by up to 0.55 m) and the ring now covers that band too:
+        # cut the flat layers at the rectangle so the two never lie on each other.
+        # Stepping stones keep their whole shape (they stand above the lawn).
+        for key in ('ground_lawn', 'ground_soil', 'ground_gravel'): tb.clip_to_core(built[key])
     tb.log('built by Argon scripts', len(built), 'objects in', round(time.time() - t0, 1), 's')
 
     for name in ('town', 'occluders'): bpy.context.scene.collection.children.link(bpy.data.collections.new(name))
@@ -91,6 +137,7 @@ def main():
         o['part'], o['group'], o['key'], o['glass'] = part, group, key, glass
         o.name = f'{part}__{group}__{key}'
         k = f'{part}/{group}'; tris[k] = tris.get(k, 0) + sum(len(p.vertices) - 2 for p in o.data.polygons)
+    for o in [o for o in town.objects if o.get('part') == 'neighbours']: split_by_house(o)
     # Helpers the scripts left behind (imported references, temporary curves) do not belong in the bake.
     stray = [o for o in bpy.data.objects if o.name not in town.objects]
     tb.log('removed stray objects', [o.name for o in stray][:20], len(stray))
@@ -98,7 +145,8 @@ def main():
 
     # Occluders: v20_live only (grass, flowers, shrubs, the outer ring). Faded
     # roots (v20_faded.glb) are left out on purpose; see the header.
-    for o in tb.import_glb(os.path.join(ref, 'reference', 'v20_live.glb'), occ):
+    live = os.path.abspath(tb.arg('--live')) if tb.arg('--live') else os.path.join(ref, 'reference', 'v20_live.glb')
+    for o in tb.import_glb(live, occ):
         o['occluder'] = True; o['source'] = 'v20_live.glb'
         for slot in o.material_slots:
             mt = slot.material
