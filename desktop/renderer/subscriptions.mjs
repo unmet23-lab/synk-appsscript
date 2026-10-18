@@ -164,8 +164,9 @@ export function serviceGroups(rows, now, checkAt = null) {
     const out = by(['out']).sort((a, b) => (a.unblock ?? Infinity) - (b.unblock ?? Infinity));
     // 크레딧은 부족한 계정을 「넉넉」에서 뺀다. 주간 한도는 10% 이하도 지금 쓸 수 있다.
     const ready = g.kind === 'credit' ? usable.filter(a => a.state === 'ok') : usable;
-    // 추천은 확인한 값에서 먼저 고르고, 없을 때만 풀렸을 계정에서 고른다.
-    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), ready, best: usable[0] || projected[0] || by(['manual'])[0] || null };
+    // 추천은 넉넉한 확인값 → 풀렸을 계정 → 거의 다 쓴 확인값 순(1% 남은 계정보다 다시 찼을 계정이 낫다).
+    const plenty = usable.filter(a => a.state === 'ok');
+    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), ready, best: plenty[0] || projected[0] || usable[0] || by(['manual'])[0] || null };
   });
   const order = g => (g.service ? ORDER.indexOf(g.service) : ORDER.length);
   return groups.sort((a, b) => order(a) - order(b) || a.label.localeCompare(b.label, 'ko'));
@@ -372,8 +373,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const ago = fresh === 'aging' ? `(${rel(now - check.at)} 전)` : '';
       note = `<span class="ms-note-long">지금 바로 쓸 수 있는 계정 <b class="ms-num">${ready}</b>개 · 전체 ${total}개 · 마지막 확인 ${stamp(check.at, now)}${ago}${missed}</span><span class="ms-note-short">바로 쓸 계정 <b class="ms-num">${ready}</b>개 · 전체 ${total}개 · ${stamp(check.at, now)} 확인${missed}</span>`;
     }
-    const actions = context.native && context.signedIn && snapshot && rows.length
-      ? `<button type="button" class="ms-button ms-button-primary" data-subs="check" ${busy || snapshot.checking || !auto ? 'disabled' : ''}>${snapshot.checking || busy === 'check' ? '확인 중…' : '지금 확인'}</button><button type="button" class="ms-button" data-subs="manage">계정 관리</button>`
+    // 「계정 관리」는 늘(다른 혜택 포스터와 같은 틀), 「지금 확인」은 읽을 계정이 생긴 뒤에.
+    const actions = context.native && context.signedIn && snapshot
+      ? `${rows.length ? `<button type="button" class="ms-button ms-button-primary" data-subs="check" ${busy || snapshot.checking || !auto ? 'disabled' : ''}>${snapshot.checking || busy === 'check' ? '확인 중…' : '지금 확인'}</button>` : ''}<button type="button" class="ms-button" data-subs="manage">계정 관리</button>`
       : context.native && !context.signedIn ? '<button type="button" class="ms-button ms-button-primary" data-insight-action="account">SYNK ID로 로그인</button>' : '';
     return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
       <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
@@ -401,10 +403,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (n === 1) {
       const a = g.accounts[0], unit = g.service === 'typecast' ? '키' : g.service ? '계정' : '구독';
       const word = a.projected ? '풀렸을 거예요' : { low: credit ? '부족' : '거의 다 씀', out: '다 씀', error: '못 읽음', login: '다시 로그인', unknown: waiting }[a.state];
-      return `${unit} 1개${word ? ` <span class="ms-soft">· ${word}</span>` : ''}`;
+      return `${unit} 1개${word ? ` <span class="ms-soft">${word}</span>` : ''}`;
     }
     const tail = [credit ? (low ? `${low}개 부족` : '') : (low ? `${low}개 거의 다 씀` : ''), g.projected.length ? `${g.projected.length}개 풀렸을 거예요` : '', g.out.length ? `${g.out.length}개 다 씀` : '', g.error.length ? `${g.error.length}개 못 읽음` : '', g.login.length ? `${g.login.length}개 다시 로그인` : '', g.pending.length ? `${g.pending.length}개 ${waiting}` : ''].filter(Boolean).join(' · ');
-    return `${n}개 중 <em>${g.ready.length}개</em> ${credit ? '넉넉' : '바로 써요'}${tail ? ` <span class="ms-soft">· ${tail}</span>` : ''}`;
+    return `${n}개 중 <em>${g.ready.length}개</em> ${credit ? '넉넉' : '바로 써요'}${tail ? ` <span class="ms-soft">${tail}</span>` : ''}`;
   }
   function valueHtml(g, now, stale) {
     const best = g.best, read = stale && best?.row?.live?.readAt ? ` · ${stamp(best.row.live.readAt, now)}` : '', guess = best?.projected ? ' · 예상' : '';
@@ -422,12 +424,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const id = 'g-' + g.key, open = ui.open.has(id), n = g.accounts.length;
     const order = [...g.usable, ...g.projected, ...g.manual, ...g.out, ...g.error, ...g.login, ...g.pending];
     const dots = order.map(a => `<i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}"></i>`).join('');
-    const pick = n > 1 ? '추천' : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
+    // 여러 계정인데 추천이 거의 다 쓴 계정뿐이면 라벨로도 말한다.
+    const pick = n > 1 ? (g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
     const plan = g.best && g.service ? planName(g.best.row.plan) : '';
     return `<div class="ms-svc${open ? ' open' : ''} ${svcClass(g.service)}">
       <button type="button" class="ms-svc-row" data-subs="toggle" data-id="${esc(id)}" aria-expanded="${open}">
         <span class="ms-pool"><span class="ms-pool-top"><span class="ms-tag">${esc(g.label)}</span><span class="ms-count">${countText(g)}</span></span><span class="ms-dots" aria-hidden="true">${dots}</span></span>
-        <span class="ms-pick"><span class="ms-pick-label">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `${esc(g.best.name)}${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span></span>
+        <span class="ms-pick"><span class="ms-pick-label">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span></span>
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
@@ -451,7 +454,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요</span>${bar(a)}${value(a)}`)).join('');
     const manual = g.manual.map(a => line(a, `<span class="ms-acc-when">${credit ? '잔액을 넣지 않았어요' : '직접 넣은 주간 구독이에요 · 다 쓰면 「다 씀 표시」를 눌러요'}</span>`, credit ? '' : usedButton(a.row, now))).join('');
     const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · 풀리면 주간 ${a.g.weekly.left}%` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
-    const error = g.error.map(a => line(a, `<span class="ms-acc-when">${esc(a.row.stateMessage || '읽지 못했어요.')}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
+    // 긴 이유는 두 줄까지만 보이고(전문은 title과 계정 관리 ⋯), 마지막으로 읽은 값의 시각을 붙인다.
+    const reason = a => `${a.row.stateMessage || '읽지 못했어요.'}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}`;
+    const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
     const login = g.login.map(a => line(a, '<span class="ms-acc-when">다시 로그인이 필요해요</span>', `<button type="button" class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="${esc(a.row.id)}">${reloginLabel(a.row)}</button>`)).join('');
     const pending = g.pending.map(a => line(a, `<span class="ms-acc-when">${snapshot?.checking ? '읽는 중이에요' : '아직 읽지 않았어요 · 「지금 확인」을 누르면 읽어요'}</span>`)).join('');
     const part = (title, body) => (body ? `<div class="ms-acc-group"><h3>${title}</h3>${body}</div>` : '');
@@ -481,7 +486,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const all = upcoming(rows, now, checkAt), unblocks = all.filter(i => i.type === 'unblock');
     if (!unblocks.length) return '';
     const list = ui.more ? all : unblocks.slice(0, 3);
-    const more = all.length > Math.min(3, unblocks.length) ? `<button type="button" class="ms-more" data-subs="more" aria-expanded="${ui.more}">${ui.more ? '접기' : `이번 주 일정 ${all.length}개 모두 보기`}</button>` : '';
+    const more = all.length > Math.min(3, unblocks.length) ? `<button type="button" class="ms-more" data-subs="more" aria-expanded="${ui.more}">${ui.more ? '접기' : `앞으로 7일 일정 ${all.length}개 모두 보기`}</button>` : '';
     return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제를 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
   }
   function footer(now, rows) {
@@ -529,7 +534,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const tools = snapshot?.tools || {};
     return ORDER.map(key => {
       const info = AUTO[key], tool = tools[key], list = rows.filter(r => r.source === 'auto' && r.service === key), open = ui.guide === key;
-      const toolText = info.key ? `${esc(info.tool)} · 설치 필요 없음` : `${esc(info.tool)}${tool?.version ? ` · <span class="ms-num">${esc(shortVersion(tool.version))}</span>` : ''}`;
+      const toolText = info.key ? `${esc(info.tool)}<small class="ms-mtool-note"> · 설치 필요 없음</small>` :`${esc(info.tool)}${tool?.version ? ` · <span class="ms-num">${esc(shortVersion(tool.version))}</span>` : ''}`;
       const chip = !info.key && tool && !tool.installed ? '<span class="ms-chip ms-chip-warn">설치 안 됨</span>' : '';
       const label = !list.length ? '연결 시작' : info.key ? '키 더 넣기' : info.single ? '계정 바꾸기' : '계정 더 연결';
       return `<div class="ms-mblock ${svcClass(key)}"><div class="ms-mhead"><span class="ms-tag">${esc(info.short)}</span><span class="ms-mtool">${toolText}</span>${chip}<button type="button" class="ms-button ms-button-small${open ? ' is-on' : ''}" data-subs="${open ? 'close-guide' : 'guide'}" data-service="${key}" aria-expanded="${open}">${open ? '가이드 닫기' : label}</button></div>${list.map(r => manageRow(r, now)).join('') || `<p class="ms-mempty">아직 연결한 ${info.key ? '키가' : '계정이'} 없어요.</p>`}${open ? guide(key) : ''}</div>`;
