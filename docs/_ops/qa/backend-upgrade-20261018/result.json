@@ -494,8 +494,8 @@
       "defaultBranch": "master"
     },
     "ciSkipAudit": {
-      "status": "eight-covered-two-await-private-repository-read-access",
-      "releaseValidation": "github-linux-and-windows-passed",
+      "status": "all-ten-covered-in-github-ci",
+      "releaseValidation": "github-linux-and-windows-passed-with-private-source",
       "originalRun": 39125006065,
       "cases": [
         {
@@ -530,8 +530,8 @@
           "id": "strata-canonical-rebuild",
           "count": 1,
           "original": "live canonical sources reproduce the saved map byte for byte, without changing sources",
-          "resolution": "Local upstream source check passed; optional read-only Talk checkout prepared; no new credential or access granted.",
-          "status": "github-access-pending"
+          "resolution": "Read-only private Talk checkout reproduced the saved map in GitHub CI; missing configured inputs fail.",
+          "status": "github-linux-verified"
         },
         {
           "id": "review-declared-count",
@@ -558,8 +558,8 @@
           "id": "talk-contract-equality",
           "count": 1,
           "original": "계약 파일이 형제(SYNK-talk)와 같은 바이트다",
-          "resolution": "Local committed Talk contracts match; optional read-only checkout prepared; configured-but-missing inputs fail instead of skipping.",
-          "status": "github-access-pending"
+          "resolution": "Read-only private Talk checkout matched the canonical contract files in GitHub CI; missing configured inputs fail.",
+          "status": "github-linux-verified"
         },
         {
           "id": "current-card-layout",
@@ -579,6 +579,59 @@
         "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8"
       },
       "githubEvidence": {
+        "verifiedRun": 39128398307,
+        "verifiedCommit": "9b69d610d1b5b55e666ca7762a2e35587b4c2fc9",
+        "linux": {
+          "tests": 1773,
+          "pass": 1769,
+          "fail": 0,
+          "skipped": 4
+        },
+        "windows": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0,
+          "skipped": 0
+        },
+        "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8",
+        "crossRepositoryCasesExecuted": 2,
+        "crossRepositoryCasesSkipped": 0,
+        "talkCheckout": "success",
+        "logSha256": "d1e0067ce8749f343066aaf9fe67e0723a2dcc7f8a88e1d43afa92c520796adf"
+      },
+      "linuxSkipAccounting": {
+        "windowsCoveredInSeparateJob": 4,
+        "privateUpstreamNotConnected": 0
+      },
+      "access": {
+        "upstream": "unmet23-lab/SYNK-talk",
+        "recipient": "unmet23-lab/synk-appsscript",
+        "authentication": "single-repository SSH deploy key",
+        "requiredPermission": "Repository Git contents: read",
+        "readOnly": true,
+        "deployKeyId": 166841461,
+        "title": "synk-appsscript CI read-only 2026-10-18",
+        "secretName": "SYNK_TALK_READ_SSH_KEY",
+        "activationVariable": "SYNK_TALK_CI=on",
+        "requestedFiles": [
+          "package.json",
+          "contents/토픽퀴즈문항.js",
+          "lib/태그기술표.js",
+          "계약/"
+        ],
+        "configuredMissingInputsFailClosed": true,
+        "userApproved": true,
+        "dedicatedCredentialCreated": true,
+        "personalCredentialsCopied": false,
+        "permissionsChanged": true,
+        "expiresAt": null,
+        "localPlaintextRemoved": true,
+        "createdAt": "2026-10-18T12:40:37Z",
+        "secretUpdatedAt": "2026-10-18T12:40:38Z"
+      },
+      "productionDeploymentPerformed": false,
+      "paidAIInvoked": false,
+      "previousGitHubEvidence": {
         "verifiedRun": 39127210030,
         "verifiedCommit": "f342bb756da82082fce3c88ecda3f0bc748f8911",
         "linuxTests": 1773,
@@ -596,28 +649,35 @@
         "windowsSkipped": 0,
         "tempLegacyAndNativePathsDiffer": true
       },
-      "linuxSkipAccounting": {
-        "windowsCoveredInSeparateJob": 4,
-        "privateUpstreamNotConnected": 2
+      "defaultBranchVerification": {
+        "runId": 39128398307,
+        "commit": "9b69d610d1b5b55e666ca7762a2e35587b4c2fc9",
+        "branch": "master",
+        "status": "success",
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39128398307",
+        "linux": {
+          "tests": 1773,
+          "pass": 1769,
+          "fail": 0,
+          "skipped": 4
+        },
+        "windows": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0,
+          "skipped": 0
+        },
+        "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8"
       },
-      "access": {
-        "upstream": "unmet23-lab/SYNK-talk",
-        "recipient": "GitHub Actions in unmet23-lab/synk-appsscript",
-        "requiredPermission": "Contents: read; Metadata: read",
-        "requestedFiles": [
-          "package.json",
-          "contents/토픽퀴즈문항.js",
-          "lib/태그기술표.js",
-          "계약/"
-        ],
-        "secretName": "SYNK_TALK_READ_TOKEN",
-        "activationVariable": "SYNK_TALK_CI=on",
-        "configuredMissingInputsFailClosed": true,
-        "credentialsCreatedOrCopied": false,
-        "permissionsChanged": false
-      },
-      "productionDeploymentPerformed": false,
-      "paidAIInvoked": false
+      "privateSourceLocalVerification": {
+        "isolatedTests": 13,
+        "isolatedPass": 13,
+        "sharedTests": 13,
+        "sharedPass": 13,
+        "fail": 0,
+        "skipped": 0,
+        "requiredSource": true
+      }
     }
   }
 }
