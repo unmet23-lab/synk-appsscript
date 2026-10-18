@@ -182,6 +182,7 @@
 - 원인: 노드 requirements가 그 판들을 요구한다. 노드가 이모지를 찍는다.
 - 고침: 모자란 패키지만 `pip install --no-deps --target C:/SYNK-LoRA/tools/seedvr2-extra <패키지==판…>`으로 따로 깔고, `PYTHONPATH`로 그 폴더를 붙여 `PYTHONIOENCODING=utf-8 venv/Scripts/python.exe -X utf8 custom_nodes/ComfyUI-SeedVR2_VideoUpscaler/inference_cli.py`로 돌린다. ComfyUI 서버를 다시 켤 필요가 없다. 가중치는 `ComfyUI/models/SEEDVR2/`(numz/SeedVR2_comfyUI의 fp16·fp8).
 - 다시 확인: `--help`가 뜨는지, 뜰 때 「SageAttention ❌ | Flash Attention ❌」 줄(윈도우는 sdpa로 돈다)을 본다.
+- 10-19 지유 광고: 출력 폴더가 한글 경로(`synk-vendor/…/영상_H3/업/`)면 기록에는 저장했다고 나오는데 PNG가 0장이었다(노드가 `cv2.imwrite`로 쓰고 실패 값을 보지 않는다. [윈도우_셸](윈도우_셸.md)의 cv2 한글 경로와 같은 원인). 입력도 영문 이름으로 복사해 `C:\SYNK-LoRA\work\jiyu_up`에서 돌리고 결과를 옮긴다(광고 폴더 `영상_다듬기.py`). 그렇게 돌린 6구간은 48·72장이 모두 나왔다(구간당 4.6~6.9분). VRAM을 23GB 가까이 써 LoRA 학습과 같이 못 도니, 학습 사이 틈에 끼운다(`C:\SYNK-LoRA\validation\_v2공통\학습_사슬.py`).
 
 ### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
 - 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
