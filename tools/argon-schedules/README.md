@@ -2,9 +2,13 @@
 
 2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 [트랙](../../docs/_ops/트랙.md)의 해당 예약 항목과 아래 실행 상태에서 확인한다.
 
+## 계정 기준
+
+2026-10-18 사용자 확정: 예약을 포함한 모든 아르곤 실행은 `77yuhbs@gmail.com` Ultra, 업무 문서 저장은 `unmet23@gmail.com`으로 통일한다. 상위 기준은 [AI 운영 원칙](../../docs/AI_운영원칙.md#역할)이다. PC의 웹·앱·CLI에서도 아르곤 작업을 시작할 때 실제 실행 계정을 확인한다. unmet23의 Argon 권한 해결·실행 계정 이전은 현재 후속 작업에서 종료했다.
+
 ## 실행 구조
 
-- Linux systemd가 **공식 Antigravity CLI `agy`를 직접 실행**한다. 고정 모델은 `gemini-4-argon-high`, 실행 구독은 승인된 Ultra 계정이다. 다른 모델이나 유료 API로 자동 대체하지 않는다.
+- Linux systemd가 **공식 Antigravity CLI `agy`를 직접 실행**한다. 고정 모델은 `gemini-4-argon-high`, 실행 구독은 `77yuhbs@gmail.com`의 Ultra 계정이다. 다른 모델이나 유료 API로 자동 대체하지 않는다.
 - `docs-io.py`는 Google Workspace CLI(`gws`)를 통한 지정 Google Docs의 읽기·백업·revision 충돌 방지·쓰기·본문 재읽기만 처리한다. `snapshot`은 본문을 비공개 작업 파일로 저장하고 짧은 메타데이터를 반환한다. 설치한 `gws` 0.22.5는 자체 버전 출력에 Google의 공식 지원 제품이 아니라고 명시한다. 공식 Antigravity CLI `agy`의 지원 상태와 혼동하지 않는다.
 - `run-check.py`는 시작 시 Docs 기준 해시를 보존하고, 종료 시 실제 모델·대화 ID·도구 거절 여부·완료 표식·Docs 재읽기 해시를 대조한다. 두 Python 파일은 LLM을 실행하지 않는다.
 - 종료 영수증은 `run-status/history/ROLE-INVOCATION_ID.json`에도 0600으로 보관한다. 다음 회차가 최신 상태를 바꿔도 실행 시각·실제 모델·문서 해시를 확인할 수 있고, 영수증에는 보고서 본문과 revision을 넣지 않는다.
