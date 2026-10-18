@@ -173,7 +173,7 @@ test('움직이는 사진: 7명 모두 loop/<코드>.mp4를 가리킨다', () =>
 test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
   const say = require(path.join(dir, 'say-server.cjs'));
   const table = say.voiceTable();
-  assert.deepEqual(Object.keys(table), ['M02'], '지금은 태준만 타입캐스트 목소리');
+  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'M01', 'M02'], '유호(실제 목소리) 말고 여섯 명이 타입캐스트 목소리');
   assert.deepEqual(Object.keys(table.M02), ['0', '1', '2']);
   assert.ok(!JSON.stringify(table).includes('Gemini'));
   assert.equal(say.clean(' 안녕\n하세요<b>\u0007 '), '안녕 하세요 b');
@@ -181,7 +181,7 @@ test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문
   const url = `http://127.0.0.1:${say.server.address().port}/api/say`;
   const post = async (body) => { const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return [r.status, (await r.json()).message]; };
   try {
-    assert.equal((await post({ model: 'F02', voice: 0, text: '안녕하세요' }))[0], 404);
+    assert.equal((await post({ model: 'M03', voice: 0, text: '안녕하세요' }))[0], 404, '유호는 실제 목소리라 만들지 않는다');
     assert.equal((await post({ model: 'M02', voice: 0, text: '가'.repeat(say.LIMIT.chars + 1) }))[0], 400);
     assert.equal((await post({ model: 'M02', voice: 0, text: '   ' }))[0], 400);
     assert.equal((await fetch(url)).status, 405);
