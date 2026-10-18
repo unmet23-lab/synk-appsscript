@@ -39,7 +39,7 @@ const clientCardIds=['delivery','closeout','kickoff','changes','requests','sched
 
 // Links are constructed from source identifiers. Never echo an arbitrary URL,
 // filesystem path, provider error, customer note, or credentials to this view.
-function item(value){return {id:clean(value.id,400),automationId:value.automationId,kind:clean(value.kind,80),status:value.status,statusLabel:value.statusLabel||labels[value.status]||'확인 필요',title:clean(value.title)||'작업 기록',text:clean(value.text,800),href:value.href,occurredAt:iso(value.occurredAt),dueAt:iso(value.dueAt),...(['customer','staff'].includes(value.waitingFor)?{waitingFor:value.waitingFor}:{})};}
+function item(value){return {id:clean(value.id,400),automationId:value.automationId,kind:clean(value.kind,80),status:value.status,statusLabel:value.statusLabel||labels[value.status]||'확인 필요',title:clean(value.title)||'작업 기록',text:clean(value.text,800),href:value.href,occurredAt:iso(value.occurredAt),dueAt:iso(value.dueAt),...(value.code==='post-performance-collector-stale'?{code:value.code,since:iso(value.since),affectedEntries:[...new Set(value.affectedEntries.map(id=>clean(id,200)).filter(Boolean))]}:{}),...(['customer','staff'].includes(value.waitingFor)?{waitingFor:value.waitingFor}:{})};}
 
 // Reuse the workflow ordering without copying customer messages or staff notes
 // into the health report. The source link opens those in their existing view.
@@ -88,13 +88,22 @@ export function createAutomationHealthService({store,studio,publicationPackages,
       const ownedPaused=performance.entries.filter(row=>{const channel=store.get('channels',row.channelId);return row.active===false&&row.hidden!==true&&channel?.active!==false&&channel?.hidden!==true&&channel?.ownerIds?.includes(user.id)&&row.canEdit===true;});
       const entryIds=new Set(entries.map(row=>row.id));
       byId.performance.counts.targets=entries.length;byId.performance.counts.paused=ownedPaused.length+entries.filter(row=>store.get('channels',row.channelId)?.collectionDisabled===true).length;
-      const observations=[],future=[];
+      const observations=[],future=[],staleEntries=new Set(),staleDueAt=[];
+      const performanceSuccess=instant(rt.performance?.lastSuccessAt);
       for(const entry of entries){
         const channel=channels.get(entry.channelId),rawChannel=store.get('channels',entry.channelId),creator=store.get('users',entry.createdBy),platform=PLATFORM_CAPABILITIES.find(row=>row.id===entry.platform);
         for(const checkpoint of entry.checkpoints||[]){
           if(![24,72].includes(checkpoint.hours))continue;
           const due=instant(checkpoint.dueAt),closes=instant(checkpoint.closesAt),href=publicationWorkflowHref('performance',{entryId:entry.id,checkpointHours:checkpoint.hours}),id=entry.id+':'+checkpoint.hours,title=entry.title||entry.channelName;
           const data={title,href,dueAt:checkpoint.dueAt,occurredAt:checkpoint.attemptedAt||checkpoint.recordedAt};
+          // A recent attempt is not proof that the collector completed after this
+          // observation became due. Only include currently accessible automatic work.
+          if(due!==null&&due<now&&closes!==null&&closes>=due&&rt.performance?.enabled===true&&rawChannel?.collectionDisabled!==true&&['api-key','oauth'].includes(platform?.mode)&&channel?.connected===true&&creator?.active&&canWriteChannel(creator,rawChannel)&&canWriteChannel(user,rawChannel)){
+            observed('performance',['collector-stale'],'current');
+            if(['pending','retry','collecting','missed'].includes(checkpoint.status)&&(performanceSuccess===null||performanceSuccess<due||performanceSuccess>now)){
+              staleEntries.add(entry.id);staleDueAt.push(checkpoint.dueAt);
+            }
+          }
           if(rt.performance?.enabled!==false&&rawChannel?.collectionDisabled!==true)observed('performance',['window','connection','collection','late'],id);
           if(checkpoint.status==='recorded'&&Object.values(checkpoint.metrics||{}).some(value=>typeof value==='number'&&Number.isFinite(value)&&value>=0)){observations.push(checkpoint.recordedAt);continue;}
           if(due===null||closes===null){mark(['performance']);continue;}
@@ -115,6 +124,7 @@ export function createAutomationHealthService({store,studio,publicationPackages,
           else byId.performance.status=rt.performance?.running?'running':'scheduled';
         }
       }
+      if(staleEntries.size){const since=earliest(staleDueAt);problem('performance','collector-stale','current',{code:'post-performance-collector-stale',since,affectedEntries:[...staleEntries],status:'delayed',title:'게시 성과 자동 수집 확인 지연',text:`게시물 ${staleEntries.size}편의 관측 시각 뒤에 수집기가 정상 점검을 마친 기록이 없어요. 서버의 자동 수집 상태를 확인해 주세요.`,href:byId.performance.href,dueAt:since,occurredAt:since});}
       byId.performance.lastResultAt=latest(observations);byId.performance.nextDueAt=earliest(future);
       if(entries.length&&entries.every(row=>store.get('channels',row.channelId)?.collectionDisabled===true))byId.performance.status='paused';
       let inbox=read(['inbox'],()=>publicationInbox.state(user),{available:false,active:false,entries:[]});

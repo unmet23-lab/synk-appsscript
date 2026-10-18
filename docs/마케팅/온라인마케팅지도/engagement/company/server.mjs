@@ -283,7 +283,7 @@ export function createCompanyApp(options={}) {
     publicationInboxTick=Promise.resolve().then(()=>publicationInbox.scan()).then(result=>{finishRuntime(inboxRuntime,true);return result;},()=>{finishRuntime(inboxRuntime,false);});
     return publicationInboxTick;
   }
-  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:collectionCredentialsFor,isConnected:hasConnection}),['list','observations']);
+  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:collectionCredentialsFor,isConnected:hasConnection,fetchImpl:options.postPerformanceFetch}),['list','observations']);
   socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
   const authorizeSocialPublish=input=>{socialProvider.assertUnique?.(input.channel);return socialPublishing.assertExecution({...input,continuation:input.continuation===true||input.phase==='media-fetch'});};
   const socialPublishMedia=createSocialPublishMedia({store,clock,origin,resolveMedia:socialMarketing.resolveMedia,authorizePublish:authorizeSocialPublish,...options.socialPublishMediaOptions});
@@ -1138,15 +1138,22 @@ export function createCompanyApp(options={}) {
       }
       if(path==='/api/post-performance'){
         if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 등록해 주세요.');
+        const originalHash=auth.hash,authorize=()=>{
+          const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+          return latest.user;
+        };
+        const channel=store.get('channels',input.channelId);
+        if(!channel||channel.active===false||!canWriteChannel(authorize(),channel))throw httpError('이 채널에 게시 성과를 등록할 권한이 없어요.',403);
         if(input.publicationPackageId){
-          const pack=publicationPackages.get(user,input.publicationPackageId).package,channel=channelFor(user,input.channelId,'write');
+          const pack=publicationPackages.get(user,input.publicationPackageId).package;
           const formats=(pack.channels||[]).filter(format=>format.startsWith(channel.platform==='youtube'?'youtube-':channel.platform==='instagram'?'instagram-':'unsupported-'));
           if(!formats.length)throw httpError('선택한 게시 묶음에는 이 계정의 플랫폼용 영상이 없습니다.');
           if(input.publicationFormat&&!formats.includes(input.publicationFormat))throw httpError('게시 묶음과 계정에 맞는 영상 형식을 선택해 주세요.');
           if(!input.publicationFormat&&formats.length>1)throw httpError('같은 플랫폼의 영상 형식이 여러 개입니다. 실제 게시한 영상 형식을 선택해 주세요.');
           input.publicationFormat=input.publicationFormat||formats[0];
-        }else if(input.publicationFormat)throw httpError('영상 형식을 연결할 게시 묶음을 먼저 선택해 주세요.');
-        const result=postPerformance.register(user,input);audit(user,'post-performance-registered',result.entry.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.existing?200:201,result);
+        }
+        const authorizeRegistration=()=>{const actor=authorize();if(input.publicationPackageId){const pack=publicationPackages.get(actor,input.publicationPackageId).package;if(!(pack.channels||[]).includes(input.publicationFormat))throw httpError('게시 묶음의 영상 형식이 바뀌었어요. 다시 선택해 주세요.',409);}return actor;};
+        const result=await postPerformance.registerVerified(user,input,{authorize:authorizeRegistration,signal:publicationAbort.signal});authorize();audit(user,'post-performance-registered',result.entry.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.existing?200:201,result);
       }
       const publicationCheckpoint=path.match(/^\/api\/post-performance\/([^/]+)\/checkpoints\/(24|72)$/);
       if(publicationCheckpoint){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 기록해 주세요.');return send(res,200,postPerformance.manualCheckpoint(user,publicationCheckpoint[1],Number(publicationCheckpoint[2]),input));}
@@ -1483,6 +1490,12 @@ export function createCompanyApp(options={}) {
       if(publicationInboxDraft){
         if(demoRequest||!publicationInboxLocal)throw httpError('완성본 자동 가져오기는 로컬 작업실에서 사용할 수 있습니다.',403);
         return send(res,200,publicationInbox.readDraft(user,publicationInboxDraft[1]));
+      }
+      if(path==='/api/post-performance/lookup'){
+        if(demoRequest)throw httpError('게시 주소 확인은 실제 작업실에서 이용해 주세요.');
+        if([...url.searchParams.keys()].some(key=>!['channelId','url'].includes(key))||['channelId','url'].some(key=>url.searchParams.getAll(key).length!==1))throw httpError('확인할 계정과 게시 주소를 하나씩 선택해 주세요.');
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+        const result=await postPerformance.lookup(user,{channelId:url.searchParams.get('channelId'),url:url.searchParams.get('url')},{authorize,signal:publicationAbort.signal});authorize();return send(res,200,result);
       }
       if(path==='/api/post-performance'){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 확인해 주세요.');return send(res,200,postPerformance.list(user));}
       if(path==='/api/publication-packages'){if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationPackages.list(user));}

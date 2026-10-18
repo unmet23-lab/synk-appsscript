@@ -12,7 +12,8 @@ const failed={status:'error',reason:'http-404',detail:'합성 응답: HTTP 404 �
 const reachable={status:'reachable',reason:'http-response',detail:'합성 응답: HTTP 200. 실제 자료 열람은 별도 확인합니다.',httpStatus:200};
 async function fixture(t,{schedule=false}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-publication-links-http-'));let app,base,at=Date.parse(NOW),calls=0,probe=async()=>failed;
-  async function start(){app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,backgroundJobsEnabled:false,publicationLinkSchedule:schedule,clock:()=>new Date(at).toISOString(),publicationLinkProbe:async(...args)=>{calls++;return probe(...args);}});const address=await app.start();base=`http://127.0.0.1:${address.port}`;}
+  const postPerformanceFetch=async input=>{const url=new URL(input);assert.equal(url.origin,'https://www.googleapis.com');return Response.json({items:[{id:url.searchParams.get('id'),snippet:{channelId:'UCabcdefghijklmnopqrstuv',publishedAt:NOW,title:'합성 게시'},contentDetails:{duration:'PT30S'}}]});};
+  async function start(){app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,backgroundJobsEnabled:false,publicationLinkSchedule:schedule,clock:()=>new Date(at).toISOString(),postPerformanceFetch,publicationLinkProbe:async(...args)=>{calls++;return probe(...args);}});const address=await app.start();base=`http://127.0.0.1:${address.port}`;}
   await start();await app.waitForIdle();
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(directory.includes('synk-publication-links-http-'));await rm(directory,{recursive:true,force:true});});
   const users=Object.fromEntries(['owner','other','viewer'].map(name=>[name,app.store.createUser({name,email:name+'@example.test',role:name==='viewer'?'viewer':'member',teamId:name==='other'?'b':'a'})]));
@@ -26,7 +27,8 @@ async function fixture(t,{schedule=false}={}){
   const media={id:randomUUID(),productionId:production.id,diskName:randomUUID()+'.mp4',mimeType:'video/mp4',fileName:'video.mp4',byteSize:128,createdAt:NOW,createdById:users.owner.id};
   const version=studio.addMedia(users.owner,production.id,media,'합성 영상').production.versions.at(-1);
   function pack(extra={}){const row={id:randomUUID(),productionId:production.id,versionId:version.id,createdById:users.owner.id,createdAt:new Date(at).toISOString(),title:'합성 링크 확인',body:'합성 원고',channels:['youtube-shorts'],source:{...media,sha256:'0'.repeat(64)},outputs:[],checks:[{label:'자료 링크',status:'pass',detail:'주소 형식'}],state:'prepared',published:false,link:'https://example.test/material',...extra};app.store.put('studioPublicationPackages',row.id,row);return row;}
-  const initial=pack();app.store.put('channels','youtube',{id:'youtube',platform:'youtube',displayName:'합성 채널',ownerIds:[users.owner.id],teamId:'a',active:true});
+  const initial=pack();app.store.put('channels','youtube',{id:'youtube',platform:'youtube',externalId:'UCabcdefghijklmnopqrstuv',displayName:'합성 채널',ownerIds:[users.owner.id],teamId:'a',active:true});
+  app.store.setSecret('channel:youtube',{apiKey:'synthetic-lookup-key'});
   return {users,sessions,request,pack,initial,production,version,get app(){return app;},calls:()=>calls,setProbe(value){probe=value;},advance(ms){at+=ms;},async restart(){await app.stop();await start();await app.waitForIdle();}};
 }
 const linkPath=(id,kind='package')=>'/api/publication-links/'+kind+'/'+id;

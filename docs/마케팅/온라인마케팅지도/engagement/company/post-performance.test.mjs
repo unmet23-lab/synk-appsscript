@@ -124,20 +124,31 @@ test('unconnected channels explicitly require manual input and do not fetch', as
   assert.equal(f.service.list(f.owner).entries[0].checkpoints[0].status, 'manual-required');
 });
 
-test('automatic retries are bounded and do not expose provider error text', async t => {
+test('automatic retries continue at bounded intervals through the observation window without exposing provider errors', async t => {
   const f = fixture(t, { collector: async () => { throw Object.assign(new Error('Bearer secret-value access_token=secret'), { code: 'RATE_LIMITED', retryable: true }); } });
   f.register(); f.now(24); assert.equal((await f.service.collectDue()).retried, 1);
   f.now(24.01); await f.service.collectDue(); assert.equal(f.calls(), 1);
   f.now(24.1); await f.service.collectDue(); f.now(24.5); await f.service.collectDue(); f.now(25); await f.service.collectDue();
-  assert.equal(f.calls(), 3); const checkpoint = f.service.list(f.owner).entries[0].checkpoints[0];
-  assert.equal(checkpoint.status, 'manual-required'); assert.equal(checkpoint.attempts, 3); assert.equal(checkpoint.lastErrorCode, 'RATE_LIMITED');
+  assert.equal(f.calls(), 4); const checkpoint = f.service.list(f.owner).entries[0].checkpoints[0];
+  assert.equal(checkpoint.status, 'retry'); assert.equal(checkpoint.attempts, 4); assert.equal(checkpoint.lastErrorCode, 'RATE_LIMITED');
+  assert.equal(checkpoint.nextAttemptAt,atHours(25.5));
   assert.doesNotMatch(JSON.stringify(checkpoint), /secret-value|access_token/);
+  f.now(29.9);await f.service.collectDue();assert.equal(f.service.list(f.owner).entries[0].checkpoints[0].nextAttemptAt,atHours(30));
+  f.now(30);await f.service.collectDue();const count=f.calls();await f.service.collectDue();assert.equal(f.calls(),count);
+  f.now(30.01);await f.service.collectDue();assert.equal(f.calls(),count);assert.equal(f.service.list(f.owner).entries[0].checkpoints[0].status,'missed');
 });
 
 test('missing exact post and mismatched publication time never borrow another post metrics', async t => {
   const f = fixture(t, { collector: async () => ({ posts: [{ url: `https://www.youtube.com/watch?v=zzzzzzzzzzz`, publishedAt: BASE, metrics: { views: 500 } }, { url: URL, publishedAt: atHours(-1), metrics: { views: 99 } }] }) });
   f.register(); f.now(24); await f.service.collectDue();
   const checkpoint = f.service.list(f.owner).entries[0].checkpoints[0]; assert.equal(checkpoint.metrics.views, null); assert.equal(checkpoint.lastErrorCode, 'PUBLISHED_AT_MISMATCH');
+});
+
+test('a transient outage lasting beyond three attempts can still record inside the six-hour window', async t => {
+  let attempt=0;
+  const f=fixture(t,{collector:async()=>{if(++attempt<=3)throw Object.assign(Error('temporary'),{code:'NETWORK_ERROR',retryable:true});return {posts:[{url:URL,publishedAt:BASE,metrics:{views:7}}]};}});
+  f.register();for(const time of [24,24.1,24.5,25]){f.now(time);await f.service.collectDue();}
+  const checkpoint=f.service.list(f.owner).entries[0].checkpoints[0];assert.equal(f.calls(),4);assert.equal(checkpoint.status,'recorded');assert.equal(checkpoint.attempts,4);assert.equal(checkpoint.metrics.views,7);assert.equal(checkpoint.observedAt,atHours(25));
 });
 
 test('shared persistent lease batches a channel and prevents two service instances from fetching together', async t => {
