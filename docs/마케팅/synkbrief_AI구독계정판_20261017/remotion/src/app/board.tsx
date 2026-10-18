@@ -12,16 +12,19 @@ const ART = staticFile('app/benefit-subscriptions.webp');
 /** 앱 HTML 한 판. 휴대폰 폭 배치(ms-phone: 앱 @media max-width:760px의 포스터 규칙)를 붙인다. */
 export const boardHtml = (key: BoardKey): string => (boards as Record<string, string>)[key].replace('__ART__', ART).replace('<div class="member-subs', '<div class="member-subs ms-phone');
 
-/** 고리 그리기: 앱 고리(ms-arc)의 남은 만큼을 p(0~1)만큼만 그린다. ps가 배열이면 i번째 고리에 ps[i]. 0이면 고리 바닥만. */
+/** 고리 그리기: 앱 고리(ms-arc, 10-18 밤부터 쓴 만큼 찬다)를 p(0~1)만큼만 그린다. ps가 배열이면 i번째 고리에 ps[i]. 0이면 고리 바닥만.
+ * 번호는 고리(svg.ms-ring)마다 매긴다 — 0%라 호가 없는 고리도 번호 하나를 써서 다음 줄 고리가 앞당겨지지 않는다(v5 Fable). */
 export function drawArcs(html: string, ps: number | number[]): string {
   let i = 0;
-  return html.replace(/<circle class="ms-arc"([^>]*)\/>/g, (m, attrs: string) => {
+  return html.replace(/<svg class="ms-ring"[\s\S]*?<\/svg>/g, (ring) => {
     const p = Array.isArray(ps) ? (ps[i] ?? 1) : ps;
     i += 1;
-    if (p >= 1) return m;
-    if (p <= 0.001) return '';
-    if (attrs.includes('data-full')) return `<circle class="ms-arc"${attrs} style="opacity:${p.toFixed(3)}"/>`;
-    return m.replace(/stroke-dashoffset="([\d.]+)"/, (_, off: string) => `stroke-dashoffset="${(100 - (100 - Number(off)) * p).toFixed(2)}"`);
+    return ring.replace(/<circle class="ms-arc"([^>]*)\/>/g, (m, attrs: string) => {
+      if (p >= 1) return m;
+      if (p <= 0.001) return '';
+      if (attrs.includes('data-full')) return `<circle class="ms-arc"${attrs} style="opacity:${p.toFixed(3)}"/>`;
+      return m.replace(/stroke-dashoffset="([\d.]+)"/, (_, off: string) => `stroke-dashoffset="${(100 - (100 - Number(off)) * p).toFixed(2)}"`);
+    });
   });
 }
 

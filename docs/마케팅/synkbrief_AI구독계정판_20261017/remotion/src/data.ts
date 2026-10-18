@@ -69,4 +69,4 @@ export const GEMINI_GUIDE = {
 };
 
 // 혜택 포스터(benefits.mjs subscriptions + launcher.mjs benefitPoster)
-export const POSTER = { label: 'SYNK FOR YOU · 02 / 06', badge: 'PC 앱 · 회원 무료', word: '구독', lines: ['흩어진 AI 구독,', '이번 주 얼마 남았는지 한 번에.'] };
+export const POSTER = { label: 'SYNK FOR YOU · 02 / 06', badge: 'PC 앱 · 회원 무료', word: '구독', lines: ['흩어진 AI 구독,', '이번 주 얼마나 썼는지 한 번에.'] };

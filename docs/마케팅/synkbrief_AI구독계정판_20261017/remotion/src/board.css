@@ -139,7 +139,7 @@
 .member-subs .ms-ring{flex:none;width:52px;height:52px;overflow:visible}
 .member-subs .ms-track{fill:none;stroke:var(--line-2,rgba(255,255,255,.14))}
 .member-subs .ms-track[data-level=out]{stroke:color-mix(in srgb,var(--ms-alert) 42%,transparent)}
-.member-subs .ms-arc{fill:none;stroke:var(--ms-face)}
+.member-subs .ms-arc{fill:none;stroke:var(--ms-ok)}
 .member-subs .ms-arc[data-level=low]{stroke:var(--ms-warn)}
 .member-subs .ms-big{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:96px}
 .member-subs .ms-big-num{font-family:'Inter Tight',var(--sans,SUIT,sans-serif);font-size:2rem;font-weight:680;line-height:1.15;letter-spacing:-.04em;font-feature-settings:'tnum';white-space:nowrap}
@@ -149,9 +149,7 @@
 .member-subs .ms-gauge[data-level=low] .ms-big-num{color:var(--ms-warn)}
 .member-subs .ms-value.is-guess :is(.ms-arc,.ms-big-num){opacity:.7}
 .member-subs .ms-gauge.is-drawing .ms-arc{animation:ms-arc .9s cubic-bezier(.2,.8,.2,1) both}
-.member-subs .ms-gauge.is-drawing .ms-arc[data-full]{animation-name:ms-fade}
 @keyframes ms-arc{from{stroke-dashoffset:100}}
-@keyframes ms-fade{from{opacity:0}}
 /* 숫자 굴림: WORLD world-motion.css의 .w-roll과 같은 띠·곡선·간격 */
 .member-subs .ms-roll{position:relative;display:inline-block;line-height:1.15}
 .member-subs .ms-roll>.ms-roll-t{color:transparent}
@@ -165,7 +163,7 @@
 .member-subs .ms-detail{padding:4px 22px 18px 24px;border-top:1px solid var(--line,rgba(255,255,255,.075));background:color-mix(in srgb,var(--bg,#060709) 30%,transparent)}
 .member-subs .ms-acc-group+.ms-acc-group{margin-top:8px}
 .member-subs .ms-acc-group h3{margin:14px 0 6px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:600}
-.member-subs .ms-acc{display:grid;grid-template-columns:12px minmax(110px,.6fr) minmax(0,1.7fr) 120px 84px;align-items:center;gap:14px;min-height:46px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
+.member-subs .ms-acc{display:grid;grid-template-columns:12px minmax(110px,.6fr) minmax(0,1.7fr) 120px 112px;align-items:center;gap:14px;min-height:46px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
 .member-subs .ms-acc-group h3+.ms-acc{border-top:0}
 .member-subs .ms-acc-name{overflow:hidden;font-size:.9375rem;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .member-subs .ms-acc-name small{margin-left:7px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
