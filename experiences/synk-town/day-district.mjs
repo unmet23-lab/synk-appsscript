@@ -111,7 +111,10 @@ function hideDistrictGround(THREE, landscape, b, groundTop, onlyGround = false) 
     if (object.isInstancedMesh) {
       const parked = [];
       for (let i = 0; i < object.count; i++) {
-        object.getMatrixAt(i, m); p.setFromMatrixPosition(m).applyMatrix4(object.matrixWorld);
+        object.getMatrixAt(i, m);
+        // Already parked by an earlier cut (the townwide outer ring cuts after the core): skip, or it is counted twice.
+        if (m.elements[0] === 0 && m.elements[5] === 0 && m.elements[10] === 0) continue;
+        p.setFromMatrixPosition(m).applyMatrix4(object.matrixWorld);
         if (inside(p)) { parked.push([i, m.clone()]); object.setMatrixAt(i, zero); }
       }
       if (parked.length) {
@@ -252,9 +255,21 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
       if (!later.length) { ktx2.dispose(); return state; }
       const deferred = state.deferred = { parts: later.map(part => part.id), loaded: false, failed: null, bytes: 0, loadMs: null };
       const t0 = performance.now(), mark = attached.length;
+      const before = { parts: state.parts.length, meshes: state.meshes, triangles: state.triangles, textures: state.textures.length, textureBytes: state.textureBytes };
       Promise.all(later.map(part => load(part, deferred)))
         .then(list => { for (const { part, gltf } of list) attach(part, gltf); deferred.loaded = true; deferred.loadMs = Math.round(performance.now() - t0); })
-        .catch(error => { deferred.failed = String(error?.message || error); for (const root of attached.splice(mark)) root.parent?.remove(root); giveOuterBack(); record(); })
+        .catch(error => {
+          // Undo whatever the outer ring attached: meshes (and their GPU data), counts, v20's ground and houses.
+          deferred.failed = String(error?.message || error);
+          for (const root of attached.splice(mark)) {
+            root.parent?.remove(root);
+            // Only the baked Lambert materials are ours; glass meshes share v20's live glass.
+            root.traverse(object => { if (!object.isMesh) return; object.geometry.dispose(); [object.material].flat().filter(m => m.isMeshLambertMaterial).forEach(m => { m.emissiveMap?.dispose(); m.dispose(); }); });
+          }
+          state.parts.length = before.parts; state.textures.length = before.textures;
+          Object.assign(state, { meshes: before.meshes, triangles: before.triangles, textureBytes: before.textureBytes });
+          giveOuterBack(); for (const house of houses) replaceVolume?.(house); record();
+        })
         .finally(() => ktx2.dispose());
       return state;
     }).catch(fail);

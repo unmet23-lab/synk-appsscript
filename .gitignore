@@ -203,6 +203,8 @@ docs/_ops/마스코트_Drive이관_20260910/transfer/
 *.zip
 *.tar.gz
 *.glb
+# Baked Town district set lists: they point at GLBs kept in the originals warehouse (10-18).
+experiences/synk-town/assets/district/*.json
 /tmp/
 # 검토·실험 중간판: 납품본은 각 폴더 바깥의 정본 자리에 둔다.
 **/_검토/
