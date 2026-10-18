@@ -13,6 +13,8 @@
 
 매 작업마다 두 모델의 비교·승인을 거치지 않는다. 이전의 고정 검수 모델·최대 추론 명령·라이브 직전 별도 검수 절차를 필수 관문으로 적용하지 않는다. 현재 요청에서 구체적으로 지정한 담당·모델·검토 범위가 우선한다.
 
+2026-10-18 예약 예외: 기존 조사 4종(전체·YouTube/TikTok·Meta/브랜드·synkbrief)은 사용자 요청으로 별도 서버의 77yuhbs Ultra에서 공식 Antigravity CLI `gemini-4-argon-high`로 집행한다. Docs 저장은 unmet23 연결을 유지하고 PC 로그인은 바꾸지 않는다. unmet23의 CLI Argon 권한과 실제 실행이 검증되기 전에는 자동으로 옮기지 않는다. 예약·복원 원문은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md), 현재 결과는 [트랙](_ops/트랙.md)에 둔다.
+
 <a id="benchmark-workflow"></a>
 
 ## 모든 작업의 출발점 · 사용자 평가에 근거한 벤치마킹

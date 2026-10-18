@@ -2,7 +2,7 @@
 
 > 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -16,9 +16,9 @@
 
 ### agy가 어느 계정으로 도는지 설정 파일 표시가 틀린다
 - 증상: `~/.gemini/google_accounts.json`에 적힌 계정과 agy가 실제로 쓰는 계정이 다르다(10-17).
-- 원인: agy 로그인은 Windows 자격 증명(키링)에 있고, 이 파일은 옛 기록이다. 키링에 있으니 `USERPROFILE`을 바꿔도 같은 로그인을 쓴다.
-- 고침: 실제 계정은 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 확인한다. `--구독` 통로도 그 계정의 몫을 쓴다. agy에서는 gemini-4-argon-low/medium/high도 고를 수 있다.
-- 다시 확인: `grep "authenticated successfully as" ~/.gemini/antigravity-cli/cli.log | tail -1`(10-17 한 줄 있음).
+- 원인: agy 로그인은 Windows 자격 증명(키링)에 있고, 이 파일은 별도 Gemini CLI의 기록이다. 키링에 있으니 `USERPROFILE`을 바꿔도 같은 로그인을 쓴다. 10-17 확인한 [공식 설치 문서](https://antigravity.google/docs/install/)도 한 로컬 제품에서 로그인하면 로컬 환경의 다른 제품과 자격이 공유된다고 명시한다.
+- 고침: 실제 계정은 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 확인한다. `--구독` 통로도 그 계정의 몫을 쓴다. 로컬 프로필 파일이나 홈 경로만 바꾸면 계정이 격리된다고 가정하지 않는다. agy에서는 gemini-4-argon-low/medium/high도 고를 수 있지만, 모델 선택이 계정 격리를 뜻하지 않는다.
+- 다시 확인: 최신 인증 로그와 공식 설치 문서를 함께 확인한다. 10-17 `agy --help`·설치된 공식 문서에서는 계정별 프로필·인증 격리 옵션을 찾지 못했다. 기존 로그인 계정은 바꾸지 않았다.
 
 ### agy가 `string_value contains invalid UTF-8`로 죽는다
 - 증상: agy가 `proto: … string_value contains invalid UTF-8`를 내고 끝난다(10-14).
@@ -111,6 +111,54 @@
 - 원인: 기록 JSON의 일부 줄은 한글을 `\uXXXX` 꼴로 남긴다.
 - 고침: 파일 이름의 ASCII 부분으로 다시 찾거나, 한글을 `\u` 꼴로 바꿔서도 찾고, 찾은 줄은 내용으로 확인한다.
 - 다시 확인: `grep -o '\\u[a-dA-D][0-9a-fA-F]\{3\}' <최신 rollout> | wc -l`(10-17 최신 기록에서 263곳).
+
+### 구형 Gemini CLI의 Google 로그인 통로가 지원 종료로 막힌다
+- 증상: 10-17 Gemini CLI 0.64.0에서 기존 개인 Google OAuth로 Argon을 명시한 최소 요청 1회가 인증 단계의 `IneligibleTierError`·`UNSUPPORTED_CLIENT`로 끝났다. 모델 `init`·`result`는 없었고 실제 모델 호출은 0회였다.
+- 원인: 서버가 Gemini Code Assist 개인용에서 이 클라이언트를 더는 지원하지 않으며 Antigravity 제품군으로 이전하라고 응답했다. 이 오류는 요청한 Argon 모델의 지원 여부를 확인한 결과가 아니다.
+- 고침: 막다른 길 — 재시도·모델 대체·유료 API 전환 없이 중단했다. 기존 OAuth 파일이 있다는 것만으로 구형 CLI를 예약 실행 대안으로 쓰지 않는다.
+- 다시 확인: 공식 클라이언트 지원·인증 방식을 먼저 확인한다. 이번 검증은 API 키·Vertex 환경값을 제외한 자식 프로세스에서 `GOOGLE_GENAI_USE_GCA=true`·`billing.overageStrategy=never`로 진행했고, 인증 실패 뒤 실행을 반복하지 않았다.
+
+### Linux 서버에 키링 데몬이 없어도 공식 CLI의 파일 저장 경로가 있다
+- 증상: 10-18 별도 계정 실행 환경을 준비한 Linux 서버에 D-Bus 실행기는 있지만 GNOME Keyring·Secret Service 데몬은 없었다. 이를 인증 불가로 판단하면 불필요한 데몬 설치가 선행된다.
+- 원인: 설치 문서는 기본 키링을 설명하지만 공식 CLI 변경 기록의 1.1.3은 D-Bus 세션이 없는 headless Linux에서 키링을 건너뛰며, 1.1.26은 그때 파일 저장을 사용한다고 명시한다. Windows의 같은 OS 사용자에서 HOME만 바꾸는 방법과는 다르다.
+- 고침: 공식 Linux CLI 1.4.0을 별도 OS 사용자·0700 HOME에 설치하고 설정을 0600으로 보존했다. `useG1Credits=false`와 전역 `use_ai_credits` 상속 없음·API `modelProvider` 없음도 확인했다. 공식 OAuth를 완료한 Ultra 별도 사용자에서 새 비대화형 systemd 프로세스의 인증 복원과 Argon 실행까지 확인했다. PC 자격을 복사하거나 바꾸지 않았다.
+- 다시 확인: 토큰 값을 출력하지 않고 인증 로그와 실제 timer의 init·result·stderr를 대조한다. 10-18 11:00:28~11:00:41 KST 표식 시험은 `gemini-4-argon-high`·`SUCCESS`·표식 일치·stderr 빈 값이었다(`.tmp/argon-isolated-20261017/ultra-clock-result-20261018.json`). 운영 조사·Docs 저장·전달은 별도 검증 대상이다. SSH 인증 대기는 60초 뒤 종료될 수 있으므로 만료된 OAuth URL 대신 새 URL을 받는다.
+
+### Pro 구독 표시만으로 CLI에서 Argon을 쓸 수 있다고 판단한다
+- 증상: 10-18 별도 Pro 계정의 공식 CLI 1.4.0에서 `gemini-4-argon-high`가 `invalid model selection`으로 거절됐다. 실제 사용 가능 목록에 Argon이 없었고 모델 호출은 0회였다. 같은 날 Ultra 별도 계정의 목록에는 Argon low·medium·high가 있었다.
+- 원인: 웹 구독 표시와 CLI가 해당 계정에 제공하는 실제 모델 목록을 같은 것으로 가정했다. 이번 관찰만으로 모든 Pro 계정의 지원 여부나 차이의 원인을 일반화할 수는 없다.
+- 고침: 실행할 계정으로 `agy models`를 먼저 확인하고 목록의 정확한 slug를 지정한다. 공식 changelog 1.1.2는 print 모드에서 없는 모델을 명시하면 기본 모델로 대체하지 않고 실패하도록 바뀌었다고 설명한다. 다른 모델이나 유료 API로 자동 전환하지 않는다.
+- 다시 확인: 동일 사용자 환경의 `agy models` 결과와 실제 timer 출력의 `init.model`을 대조한다. 10-18 Ultra 표식 timer는 `gemini-4-argon-high`로 성공했으며, Pro 계정의 실패를 모델 호출 성공으로 기록하지 않았다.
+
+### systemd stdin은 공식 user event 한 줄로 넘긴다
+- 증상: 10-18 공식 CLI를 직접 호출하는 예약은 stdin 파일로 지시를 넘기므로 일반 JSON·채팅 API 형식과 CLI 입력 형식을 구분해야 했다.
+- 원인: 공식 `--input-format stream-json`은 한 줄당 `{"event":"user","message":{"content":"지시문"}}`인 NDJSON을 받으며 `--output-format stream-json`과 함께 쓴다. bare `-p`는 오류이고, 값을 붙인 prompt 플래그는 stdin을 건너뛸 수 있다(공식 changelog 1.1.15·1.1.18·1.1.1).
+- 고침: JSON 문자열 안의 줄바꿈은 직렬화로 escape하고 파일은 JSON 1행 + LF 1개로 쓴다. 입력 파일 방식에 `-p`를 붙이지 않는다.
+- 다시 확인: 10-18 표식 timer와 도구 점검이 이 user event 형식으로 실행됐다. 출력의 `event=init`·`event=result`와 실제 응답을 확인한다. JSON 파일이 존재한다는 것만으로 지시 실행 성공을 판단하지 않는다.
+
+### headless 도구 거절도 종료 코드0과 SUCCESS로 끝날 수 있다
+- 증상: 10-18 첫 도구 점검은 권한 거절이 있었지만 종료 코드0·`result.status=SUCCESS`였고 `denied_actions`에 거절이 남았다. 이 첫 결과 파일은 후속 점검으로 덮였으므로 당시 도구 출력에서 확인한 과거 관찰이다.
+- 원인: 공식 changelog 1.1.20은 print 모드의 개별 도구 오류·거절을 실행 전체의 치명 오류와 구분한다고 설명한다. 기본 request-review에서 headless는 새 확인을 받을 수 없다.
+- 고침: 설치된 공식 CLI의 거절 안내대로 `~/.gemini/antigravity-cli/settings.json`의 **`permissions.allow`**에 검증한 읽기 명령 두 개만 정확히 허용했다. 광범위 자동 승인·skip-permissions는 쓰지 않았다. 공식 builtin automation 문법은 `command(<명령 prefix>)`, `write_file(<절대 경로>)`, `read_url(<도메인>)`이며, 명령 prefix는 뒤 인자까지 허용 범위가 넓어질 수 있으므로 실제 옵션·대상까지 좁힌다. 예전 changelog의 단수 `permission.allow` 문구나 URL 도구명 자체를 설정 키로 복사하지 않는다.
+- 다시 확인: 10-18 둘째 점검은 실제 UTC 시각·gws 버전·공식 설치 문서 본문을 읽고 Argon init·SUCCESS·denied_actions 없음·stderr 빈 값을 확인했다(`.tmp/argon-isolated-20261017/ultra-tool-probe-20261018.json`). 이때 전체 URL 형태의 read_url 규칙도 있었지만 그 규칙의 필요성과 정확한 매칭 범위를 분리 시험하지 않았으므로 일반 규칙으로 확정하지 않는다. 종료 코드·status·denied_actions·stderr·실제 도구 출력을 함께 본다.
+
+### 조사 예약의 도메인을 몇 개만 허용하면 공식 연결 문서에서 멈춘다
+- 증상: 10-18 실제 synkbrief 조사에서 검색의 Google grounding redirect, 다음 시험에서는 Google AI 개발 문서를 읽다가 headless `read_url` 거절로 응답 없이 끝났다.
+- 원인: 출발점 도메인 목록은 새 공식 발표·검색 리디렉션·연결 도움말의 모든 호스트를 포함하지 않는다. 도메인을 한 개씩 더하는 방식은 다음 회차의 새 출처에서 같은 실패가 생길 수 있다.
+- 고침: [공식 권한 문서](https://antigravity.google/docs/permissions?tab=cli)에서 `read_url(domain)`은 하위 도메인을 포함하고 `read_url(*)`는 모든 도메인의 **읽기**임을 확인했다. 승인된 공개 조사 범위에 읽기 규칙을 적용하고, 브라우저 조작 `execute_url`·명령 전체 허용은 추가하지 않았다. 명령·문서 쓰기는 지정 경로로 유지하며 인증 폴더·토큰·설정에 대한 에이전트의 `read_file`은 거절했다.
+- 다시 확인: 실제 실행의 `denied_actions`와 Docs 저장·재읽기를 함께 본다. 권한 설정 자체는 조사 성공의 증거가 아니다. 규칙 근거와 변경 기록은 `.tmp/argon-isolated-20261017/research-permissions-20261018.json`이다.
+
+### systemd append 로그가 root 소유라 실행 후 검사기가 읽지 못한다
+- 증상: 10-18 `StandardOutput=append:`로 처음 생긴 로그가 root 소유0600이라 별도 실행 사용자로 도는 `ExecStopPost`에서 Permission denied가 났다.
+- 원인: systemd가 출력 파일을 먼저 열었고 서비스의 User만으로 파일 소유자까지 바뀌지는 않았다. 실행 종료0만 보면 이 후처리 실패를 놓친다.
+- 고침: 설치 시 로그8개를 미리 만들고 실제 실행 사용자 소유0600으로 맞췄다. 실행·후처리 중에는 logrotate를 미뤄 같은 파일의 byte offset을 유지한다. Docs 읽기100초와 서비스 후처리30초의 불일치도120초로 맞췄다.
+- 다시 확인: 모델·거절·완료 표식·Docs SHA를 검사하는 후처리 시험10개가 통과했다. NO_CHANGE는 실행 전후 SHA가 같아야 하고 완료 표식은 첫 줄을 정확히 대조한다. 실제 서비스의 Result·run-status와 함께 확인한다(`.tmp/argon-isolated-20261017/run-check-test.py`, `delivery-hardening-20261018.json`).
+
+### Docs 저장은 됐는데 긴 명령 출력이 잘려 완료 확인을 못 한다
+- 증상: 10-18 Argon이 실제 조사 본문을 Docs에 저장·재읽기까지 끝냈지만, 보조도구가 본문 전체를 JSON 응답에 넣어 CLI 출력이 잘렸다. 모델이 저장 여부를 확인하려고 구현 파일을 읽다가 권한 거절로 끝났다.
+- 원인: 독자용 본문과 기계 확인값을 같은 명령 출력으로 보냈다. 프로세스 종료0·SUCCESS만으로 저장 전달까지 완료로 처리할 수 없다.
+- 고침: `snapshot ROLE`은 전체 본문을 전용 work 파일에 원자 저장하고 짧은 메타데이터·본문 경로만 반환한다. 모델은 그 파일을 범위 읽기한다. `write` 응답에서는 본문을 빼고 상태·revision·SHA·백업 경로만 반환한다. 내부 검사기의 `read` 계약은 유지했다.
+- 다시 확인: 보조도구 시험17개가 통과했다. 큰 Unicode 본문·출력1KiB 미만·충돌·실패 시 이전 파일 보존을 확인하고, 실제 공식 CLI의 `denied_actions` 없음과 완료 표식·Docs 재읽기 SHA를 함께 대조한다. 운영 소스는 `tools/argon-schedules/`에 보존한다.
 
 ## Claude Code·공식 CLI 읽기(계정판)
 
