@@ -24,13 +24,14 @@ function validFaq(config){
 }
 function normalizeDm(raw){
  if(raw===undefined||raw===null)return null;
- if(!exact(raw,['campaign_id','account_id','title','keyword','message','duration_mode','ends_at','resource','public_reply_text','conversation_config'])
+ if(!exact(raw,['campaign_id','account_id','title','keyword','message','duration_mode','ends_at','resource','public_reply_text','conversation_config','opening_mode'])
   ||typeof raw.account_id!=='string'||!/^\d{5,30}$/.test(raw.account_id)||!text(raw.title,120)||/[\r\n]/.test(raw.title)||!text(raw.message,800)
   ||typeof raw.keyword!=='string'||!/^[a-z0-9가-힣_-]{1,30}$/i.test(raw.keyword)||!['fixed','evergreen'].includes(raw.duration_mode)
   ||(raw.duration_mode==='evergreen'?raw.ends_at!==null:typeof raw.ends_at!=='string'||!Number.isFinite(Date.parse(raw.ends_at)))
   ||(raw.campaign_id!==undefined&&(typeof raw.campaign_id!=='string'||!/^[a-z0-9_-]{1,64}$/.test(raw.campaign_id))))throw Error('DM 자료 설정이 올바르지 않습니다.');
  if(raw.duration_mode==='fixed'&&(new Date(raw.ends_at).toISOString()!==raw.ends_at||Date.parse(raw.ends_at)<=Date.now()||Date.parse(raw.ends_at)>Date.now()+30*86400000))
   throw Error('DM 종료일은 지금부터 30일 이내의 UTC 시각이어야 합니다.');
+ if(raw.opening_mode!==undefined&&!['text','resource'].includes(raw.opening_mode))throw Error('DM 첫 메시지 방식이 올바르지 않습니다.');
  const r=raw.resource;
  if(!exact(r,['kind','url','file_id','sha256','folder_id','library_root'])||!id(r.folder_id)||!id(r.library_root)||r.folder_id===r.library_root)
   throw Error('DM 자료 폴더가 올바르지 않습니다.');
