@@ -1,0 +1,17 @@
+Use your image generation tool to create ONE image (do not write code, do not edit files). After it is generated, reply with only the saved image path.
+
+Image: a single product-photo board, landscape 3:2, pure white seamless background, soft even studio light, gentle contact shadow under each object. Eight separate needle-felted wool objects arranged in a neat 4 columns x 2 rows grid, each object centered in its own cell with generous empty white space around it, objects never touching or overlapping each other or the cell borders. Same handmade needle-felt material as the reference photos: dense fuzzy wool fibers, visible fiber texture, small cream running-stitch details, rounded soft edges, premium and clean. Palette: coral red, warm butter yellow, cream, charcoal, soft teal, muted plum. Do NOT use blue as a main object color (the objects will sit on a deep blue poster later). Absolutely no letters, no numbers, no words, no logos, no brand marks anywhere.
+
+Row 1, left to right:
+1. A small felt desk calendar (spiral top), its page shows a plain grid of empty squares; two of the squares are circled with thick coral red yarn. No numbers on it.
+2. Two objects together as one small group: a faceted teal felt gemstone and, beside it, a small cream felt box shaped like a rounded speech bubble.
+3. A charcoal felt key with a round bow, a small blank butter-yellow tag hanging from it on a short cream thread.
+4. Three tiny felt buildings standing side by side as one group: a little house with a coral roof, a taller office tower in charcoal with cream windows, and a small school building with a little bell tower in butter yellow.
+
+Row 2, left to right:
+5. An open cream felt box with the lid tilted back; peeking out of it: a small coral document folder, a charcoal electric plug with its cord, and a short chain of two linked butter-yellow rings.
+6. A faceted teal felt gemstone with three small felt items around it: a short charcoal film strip piece, a coral music note, and a small magnifying glass with a butter rim.
+7. A small charcoal felt clipboard holding a cream note card with a big coral checkmark stitched on it.
+8. The same cream speech-bubble shaped felt box as in item 2, now closed and locked with a small coral felt padlock with a charcoal shackle.
+
+Photorealistic photograph of real felt objects, sharp focus, high detail, no text.
