@@ -1,0 +1,82 @@
+{
+  "server": {
+    "checkedAt": "2026-10-18T06:02:54.484858+00:00",
+    "server": "synk-company-2",
+    "roles": {
+      "full": {
+        "userMatch": true,
+        "homeMatch": true,
+        "modelMatch": true,
+        "docsConfigMatch": true,
+        "timer": {
+          "NextElapseUSecRealtime": "Sun 2026-10-18 20:00:00 UTC",
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        },
+        "inputSha256": "cecbaf81bdbce305347924507c9c5d8b355fa29e9942663d6e877e2fdb951c85",
+        "inputMatchesSource": true
+      },
+      "yt-tt": {
+        "userMatch": true,
+        "homeMatch": true,
+        "modelMatch": true,
+        "docsConfigMatch": true,
+        "timer": {
+          "NextElapseUSecRealtime": "Sun 2026-10-18 11:00:00 UTC",
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        },
+        "inputSha256": "b10d3e5c3592364693bb4fead1428dc387b24fc55a9f26f21ee58699aa81c138",
+        "inputMatchesSource": true
+      },
+      "meta-brand": {
+        "userMatch": true,
+        "homeMatch": true,
+        "modelMatch": true,
+        "docsConfigMatch": true,
+        "timer": {
+          "NextElapseUSecRealtime": "Sun 2026-10-18 08:00:00 UTC",
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        },
+        "inputSha256": "b0af85b2b59063a82a4230eba5e8cd92ad08d2fd73d1db4bb33b4e932633b643",
+        "inputMatchesSource": true
+      },
+      "synkbrief": {
+        "userMatch": true,
+        "homeMatch": true,
+        "modelMatch": true,
+        "docsConfigMatch": true,
+        "timer": {
+          "NextElapseUSecRealtime": "Mon 2026-10-19 00:00:00 UTC",
+          "ActiveState": "active",
+          "UnitFileState": "enabled"
+        },
+        "inputSha256": "cb9b3c6141898917dbede50157e1a7b7310ad105a22e6c1143aae5225b9e0c89",
+        "inputMatchesSource": true
+      }
+    },
+    "actions": {
+      "modelCalls": 0,
+      "docsWrites": 0,
+      "serverConfigChanges": 0
+    },
+    "argonAccountMatch": true,
+    "argonAccount": "77yuhbs@gmail.com",
+    "docsMapping": {
+      "full": "10LfWPhwWO1Lzk8V_HddA0a5vVNJ0NVQXZgNyUplcwvk",
+      "yt-tt": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+      "meta-brand": "1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ",
+      "synkbrief": "16boBqiExm-qjCof8SQsEEpF2-5ckmK27Bc2kxKiFYwM"
+    },
+    "docsAuthStatusExit": 0,
+    "docsAccountMatch": true,
+    "docsAccount": "unmet23@gmail.com",
+    "docsMappingMatchesSource": true
+  },
+  "pc": {
+    "modelsExit": 0,
+    "argonHighAvailable": true,
+    "latestAuthenticatedAccountMatches": true
+  }
+}

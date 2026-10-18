@@ -1,6 +1,6 @@
 # SYNK AI 운영 원칙
 
-> 2026-10-10 사용자 확정, 역할 표는 2026-10-17 사용자 확정으로 바꿨다. 현재 요청이 작업 범위를 정한다. AI의 역할과 작업 방식은 이 문서에서만 관리한다.
+> 2026-10-10 사용자 확정, 역할 표는 2026-10-17 사용자 확정, 아르곤 실행·문서 저장 계정은 2026-10-18 사용자 확정으로 바꿨다. 현재 요청이 작업 범위를 정한다. AI의 역할과 작업 방식은 이 문서에서만 관리한다.
 
 ## 역할
 
@@ -8,12 +8,12 @@
 |---|---|
 | 백엔드·이미지 생성·헤르메스 에이전트 연결 | GPT가 맡는다. |
 | 그 밖의 거의 모든 작업(기획·프론트엔드·앱·엔진·콘텐츠 제작과 마감) | Claude가 처음부터 마감까지 진행한다. |
-| 딥리서치·구글 드라이브 | Google AI Pro 계정(unmet23@gmail.com)으로만 쓴다. 딥리서치는 아르곤(Gemini 4 Argon)으로 한다. |
+| 딥리서치 | Google AI Ultra 계정(77yuhbs@gmail.com)의 아르곤(Gemini 4 Argon)으로 한다. 업무 문서 저장은 unmet23@gmail.com을 사용한다. |
 | 블렌더 작업·LoRA 학습용 사람 사진 | Google AI Ultra 계정(77yuhbs@gmail.com)의 아르곤으로 블렌더 작업을 하고, LoRA 학습용 사람 사진도 이 계정에서 만든다. |
 
 매 작업마다 두 모델의 비교·승인을 거치지 않는다. 이전의 고정 검수 모델·최대 추론 명령·라이브 직전 별도 검수 절차를 필수 관문으로 적용하지 않는다. 현재 요청에서 구체적으로 지정한 담당·모델·검토 범위가 우선한다.
 
-2026-10-18 예약 예외: 기존 조사 4종(전체·YouTube/TikTok·Meta/브랜드·synkbrief)은 사용자 요청으로 별도 서버의 77yuhbs Ultra에서 공식 Antigravity CLI `gemini-4-argon-high`로 집행한다. Docs 저장은 unmet23 연결을 유지하고 PC 로그인은 바꾸지 않는다. unmet23의 CLI Argon 권한과 실제 실행이 검증되기 전에는 자동으로 옮기지 않는다. 예약·복원 원문은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md), 현재 결과는 [트랙](_ops/트랙.md)에 둔다.
+2026-10-18 계정 통일: 아르곤을 사용하는 모든 작업(딥리서치·예약 조사·블렌더 등)은 웹·앱·공식 CLI 모두 Google AI Ultra 계정 `77yuhbs@gmail.com`으로 실행한다. 작업을 시작할 때 해당 서비스의 실제 인증 계정을 확인한다. 업무 Google Docs/Sheets와 조사 결과 문서는 `unmet23@gmail.com`의 기존 연결·문서 ID·공유 범위를 유지한다. Chrome의 기본 계정과 Docs 계정을 일괄 전환하지 않고 아르곤 작업 세션에서 77yuhbs를 선택한다. 한도·인증·모델 접근 실패 시 unmet23이나 다른 모델·추가 결제·유료 API로 자동 대체하지 않는다. 기존 조사 4종(전체·YouTube/TikTok·Meta/브랜드·synkbrief)은 별도 서버의 공식 Antigravity CLI `gemini-4-argon-high`와 기존 예약 시각을 유지한다. 예약·복원 원문은 [Argon 예약 운영 소스](../tools/argon-schedules/README.md), 현재 결과는 [트랙](_ops/트랙.md)에 둔다.
 
 <a id="benchmark-workflow"></a>
 
