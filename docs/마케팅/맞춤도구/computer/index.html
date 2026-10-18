@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI 컴퓨터 맞춤 추천 · synkbrief</title>
 <meta name="description" content="AI 공부, 영상 편집, 내 컴퓨터에 AI 설치까지. 데스크톱일지 노트북일지, 램·그래픽은 몇 GB가 가성비인지 1분 만에 계산하고, 왜 그런지도 쉽게 알려 드려요. 로그인 없이 이 기기 안에서 계산해요.">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="synkbrief">
 <meta property="og:title" content="AI 하려고 컴퓨터 사기 전에 · 1분 맞춤 추천">
@@ -19,12 +23,12 @@
 <link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css">
 </head>
-<body>
+<body class="t-computer">
 <div class="tool">
   <header class="bar">
-    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈">
-      <img src="assets/brand-shift.webp" alt="synk SHIFT" width="103" height="28">
-      <span>synkbrief 기초</span>
+    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈 · synkbrief 기초">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">synkbrief <i>/</i> computer</span>
     </a>
     <div class="bar-tools">
       <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
@@ -51,6 +55,8 @@ SynkWizard.start({
     id: 'brief.computer',
     scope: { domain: 'SHIFT', workspace: 'synkbrief', subject: 'visitor' },
     content: SynkComputerContent, rules: SynkComputerRules, view: SynkComputerView,
+    // 처음 쓰는 사람에겐 결론·사양·가져가기·매장 확인표만(휴대폰 기본 보기가 10화면이 넘었다, 10-18 Fable). 「기본」「자세히」는 결과 안에서 고른다.
+    defaultLayout: 'quick',
     candidates: [
       { id: 'quick', pace: 'short', minutes: 2 },
       { id: 'guided', pace: 'standard', minutes: 4 },

@@ -333,9 +333,9 @@
     id: 'brief.computer', version: 2, checked: CHECKED,
     series: 'synkbrief 기초', title: 'AI 컴퓨터 맞춤 추천',
     intro: {
-      eyebrow: 'synkbrief 기초 · 맞춤 추천',
-      title: 'AI 하려고 컴퓨터 사기 전에,<br>내게 맞는 <span class="hl">사양부터</span> 알아봐요',
-      lead: '몇 가지만 고르면 데스크톱인지 노트북인지, 램·저장공간·그래픽은 얼마나 필요한지 가성비 기준으로 계산해 드려요. 고르는 동안 ‘왜 그런지’와 ‘왜 비싼지’도 알려 드릴게요.',
+      eyebrow: 'SYNKBRIEF · COMPUTER',
+      title: 'AI 하려고 컴퓨터 사기 전에,<br><span class="hl">내게 맞는 사양부터 알아봐요</span>',
+      lead: '몇 가지만 고르면 데스크톱일지 노트북일지, 램·그래픽은 몇 GB가 가성비인지 계산해 드려요. 왜 그런지도 같이 알려 드려요.',
       meta: ['약 1분', '고른 만큼 질문 6~11개', '가성비 기준', '로그인 없음'],
       privacy: '고른 내용은 이 기기에만 저장돼요. AI를 부르지 않고 이 화면 안에서 계산해요.',
       start: '시작하기',

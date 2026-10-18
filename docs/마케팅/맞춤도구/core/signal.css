@@ -397,6 +397,91 @@ details[open]>summary::before{transform:rotate(45deg)}
 /* 화면 바뀜: 누른 뒤의 짧은 나타남 하나만(스스로 움직이는 효과 없음) */
 .fade-in{animation:sgFade .22s var(--ease) both}
 @keyframes sgFade{from{opacity:0}to{opacity:1}}
+/* AI 컴퓨터 맞춤 추천 부품(10-18 스크랩북에서 옮김): 램 「책상」·용량 칩·판정 칩·돈 쓰는 순서·4K 비교·모델 막대.
+ * 책상 블록 색은 펠트 대신 판 위의 색면 — base 회색·lapis 사업 색·meadow 초록·butter 버터·pop 자두·coral 코랄. */
+.vis-cap{margin:8px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}
+.desk-aside{margin-top:14px}
+.desk-card{position:relative;padding:20px 20px 18px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
+.desk-card h3{margin:0 0 2px;font-size:15.5px;font-weight:600;color:var(--ink-2)}
+.desk-card .big{margin:4px 0 2px;font-size:24px;font-weight:650;line-height:1.25;letter-spacing:-.02em}
+.desk-card .big small{font-size:15.5px;font-weight:550;letter-spacing:0;white-space:nowrap;color:var(--ink-3)}
+.formbox .plan>b{display:block;margin:0 0 4px;font-weight:600}
+.desk-card .cap{margin:12px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}
+.desk-card.has-art{padding-top:22px}
+.desk-card.has-art .big{max-width:calc(100% - 132px)}
+.desk-art{position:absolute;top:-26px;right:12px;width:124px;margin:0;pointer-events:none}
+.desk-art img{width:100%;height:auto;transform:rotate(-3deg);filter:var(--cut-shadow)}
+.desk{position:relative;margin:14px 0 0}
+.desk .surface{position:relative;height:72px;border-radius:14px;background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--line-2);overflow:hidden}
+.desk .blocks{position:absolute;inset:8px;display:flex;gap:3px}
+.blk{position:relative;min-width:6px;border-radius:9px;display:flex;align-items:flex-end;padding:0 8px 6px;overflow:hidden;transition:flex-basis .35s var(--ease)}
+.blk span{font-size:13px;font-weight:600;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk.base{background:rgba(255,255,255,.2);color:var(--ink)}
+.blk.lapis{background:var(--face);color:var(--on-face)}
+.blk.meadow{background:#7DB45A;color:#0F1E08}
+.blk.butter{background:#F5C445;color:#251A04}
+.blk.pop{background:#C9A3E8;color:#1F1030}
+.blk.coral{background:#F96859;color:#1E0E0A}
+.blk.teal{background:#4FB8A8;color:#04201C}
+:root[data-theme=day] .blk.base{background:rgba(8,9,12,.14)}
+@media (prefers-color-scheme:light){:root[data-theme=system] .blk.base{background:rgba(8,9,12,.14)}}
+.drawer{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:14px;font-weight:600;line-height:1.5;color:#FFB4A9}
+.drawer i{flex:none;width:18px;height:18px;border-radius:5px;background:repeating-linear-gradient(135deg,rgba(249,104,89,.75) 0 5px,rgba(249,104,89,.3) 5px 10px)}
+.drawer.fit{color:var(--butter-text)}
+.drawer.ok{color:var(--ok-text)}
+:root[data-theme=day] .drawer.over{color:#AE322A}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--ink-3)}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i.blk{display:inline-block;flex:none;width:12px;height:12px;min-width:0;padding:0;border-radius:4px}
+.tiers{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.tiers .chip{min-height:44px;padding:6px 14px;font-size:15px}
+.tier-note{margin:12px 0 0;font-size:15.5px;line-height:1.62;color:var(--ink-2)}
+.tier-note b{font-weight:600;color:var(--ink)}
+.verdict{display:inline-flex;align-items:center;gap:9px;margin:2px 0 14px;padding:7px 15px 7px 13px;border-radius:999px;background:var(--surface-3);font-size:15.5px;font-weight:600;line-height:1.3}
+.verdict::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--led-info);box-shadow:0 0 0 3px rgba(61,107,201,.25)}
+.verdict.enough::before{background:var(--led-ok);box-shadow:0 0 0 3px rgba(125,180,90,.25)}
+.verdict.tight::before{background:var(--led-check);box-shadow:0 0 0 3px rgba(245,196,69,.25)}
+.verdict.short::before{background:var(--led-alert);box-shadow:0 0 0 3px rgba(249,104,89,.25)}
+.verdict.unknown::before{background:var(--ink-3);box-shadow:none}
+h3.mini{margin:20px 0 8px;font-size:17px;font-weight:600}
+.why.can li b{display:inline-flex;justify-content:center;width:22px;margin-right:4px;font-weight:650}
+.why.can li b.ok{color:var(--ok-text)}
+.why.can li b.maybe{color:var(--butter-text)}
+.why.can li b.no{color:var(--ink-3)}
+ol.money{margin:0;padding:0;list-style:none;counter-reset:m;display:grid;gap:10px}
+ol.money li{counter-increment:m;position:relative;padding-left:42px;font-size:15.5px;line-height:1.62}
+ol.money li::before{content:counter(m,decimal-leading-zero);position:absolute;left:0;top:2px;font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+/* PC 결과 글줄은 한글 70자 안팎에서 끊고(1,080px 한 줄이 100자 넘었다), NPU 카드는 혼자 남지 않게 한 줄을 다 쓴다 */
+.r-computer .why li,.r-computer .tipbody p,.r-computer ol.money li,.r-computer .sub{max-width:72ch}
+@media(min-width:881px){.r-computer .specs .spec.npu-card{grid-column:1/-1}}
+.bars{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.bars li{display:grid;grid-template-columns:44px minmax(0,1fr) 58px;gap:10px;align-items:center;font-size:13px;color:var(--ink-2)}
+.bars .rail{height:12px;border-radius:6px;background:var(--surface-3);overflow:hidden}
+.bars .rail i{display:block;height:100%;border-radius:6px;background:var(--face)}
+.bars em{font-style:normal;font-weight:600;text-align:right;color:var(--ink)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end}
+.cmp figure{margin:0}
+.cmp .box{border-radius:6px;background:var(--face)}
+.cmp .grid4{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.cmp .grid4 i{display:block;aspect-ratio:16/9;border-radius:4px;background:var(--face)}
+.cmp figcaption{margin-top:6px;font-size:13px;text-align:center;color:var(--ink-3)}
+.pool.mem .p b.kr{font-family:inherit;font-weight:600;letter-spacing:0}
+.pool.mem .row{display:flex;gap:6px;margin-top:10px}
+.pool.mem .row span{flex:1;padding:8px 10px;border-radius:10px;background:var(--face);color:var(--on-face);font-size:13px;font-weight:600;line-height:1.4}
+.pool.mem .row span.alt{background:var(--surface-2);color:var(--ink)}
+@media(max-width:560px){
+  .blk span{display:none}
+  /* 휴대폰 첫 화면 안에 「시작하기」(설명보다 먼저), 질문 띠는 낮게, 띠의 「QUESTION 01 / 06」과 겹치는 「1 / 6」은 숨김 — 이 도구만(body.t-computer) */
+  .t-computer .intro .lead{order:1}.t-computer .intro .meta{order:2}.t-computer .intro .privacy,.t-computer .intro .account-note{order:3}
+  .t-computer .intro .start{margin-top:4px}
+  .t-computer .intro .poster.tall{min-height:296px}
+  .t-computer .step-poster{min-height:124px}
+  .t-computer .stage .progress span{display:none}
+  .desk-art{top:-18px;width:96px}
+  .desk-card.has-art .big{max-width:calc(100% - 100px)}
+  .bars li{grid-template-columns:38px minmax(0,1fr) 52px}
+}
+@media print{.desk-art{display:none}.desk-card.has-art .big{max-width:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 /* SYNK 계정에서 고른 설정(core/account.js) */
 .synk-text-large .tool{zoom:1.12}
@@ -470,7 +555,6 @@ details[open]>summary::before{transform:rotate(45deg)}
   .layout{border-radius:22px;padding:10px 10px 10px 16px}
   .tipbody{padding:0 16px 14px 34px}
   .nav .btn.primary{flex:1}
-  .picked{scroll-margin-bottom:96px}
   /* 질문 화면의 「이전·다음」은 화면 아래에 붙는다(고른 뒤 「다음」이 화면 밖이었다, 10-17) */
   .main>.nav{position:sticky;bottom:10px;z-index:6;margin:24px -8px 0;padding:8px;border-top:0;border-radius:999px;background:color-mix(in srgb,var(--panel) 95%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 0 0 1px var(--line),0 14px 30px rgba(0,0,0,.35)}
   .copybox textarea{max-height:360px;overflow:auto}
