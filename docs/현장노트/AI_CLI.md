@@ -1,8 +1,8 @@
 # 현장 노트 · AI CLI·구독 통로
 
-> 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
-> 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인
+> 판: Antigravity CLI `agy` 1.4.2(Windows winget, 10-18 코드 검수 비교에서 확인)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
+> 마지막 확인: 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -11,112 +11,34 @@
 ### 몽골어 검문이 Gemini 무료 API의 429로 막힌다
 - 증상: 10-14 LAB TOPIK 몽골어판 검문이 무료 API 몫(gemini-3.8-flash 하루 20회)에 두 번 막혔다. 몫은 09:00 KST에 풀렸지만 풀리자마자 다른 쪽에서 다 썼다.
 - 원인: 무료 몫이 하루 20회뿐이라 다른 쪽이 먼저 쓰면 바로 바닥난다. 누가 썼는지는 확인하지 못했다.
-- 고침: `node tools/몽골어대조.js --파일 <파일> --구독`을 쓴다. Google AI 구독(agy, `tools/lib/제미나이구독호출.js`)으로 같은 모델을 부르고, API 키나 결제는 쓰지 않는다. 유료(`--돈 --유료-api`)는 어림값을 알리고 승인을 받은 뒤에만 쓴다.
-- 다시 확인: `rg -n "'--구독'" tools/몽골어대조.js`(10-17 74행).
+- 고침: 10-17부터는 저절로 넘어간다. 무료 문이 429(몫 상한)를 내면 `tools/lib/제미나이호출.js`의 구독대체가 같은 모델·사고 수준으로 Google AI 구독(agy, `tools/lib/제미나이구독호출.js`, 지금 Ultra 계정)을 한 번 부른다. 하루 몫이면 재시도 없이 바로, 분당 몫이면 5·15초 재시도 뒤 넘긴다. 장부 `문`은 `글→구독`, 화면은 「무료 몫 상한 → 구독 문으로 넘김」. 처음부터 구독으로 가려면 `--구독`, 넘기지 않으려면 `--대체없음`. 대량 도구(검수표검문·몽골어출구 `--태우기`·검문커버리지)는 기본이 `--대체없음`이고 `--구독대체`를 줘야 넘긴다. CI·끄기 변수 `SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK=1`·유료 「돈」 문에서는 넘기지 않는다. 유료(`--돈 --유료-api`)는 어림값을 알리고 승인을 받은 뒤에만 쓴다.
+- 다시 확인: `node --test tests/제미나이구독대체.test.js`(10-17 6/6). 실제 넘김은 429를 흉내 낸 호출로 확인했다(10-17 agy 77yuhbs · gemini-3.8-flash-high · 40초).
 
-### agy가 어느 계정으로 도는지 설정 파일 표시가 틀린다
-- 증상: `~/.gemini/google_accounts.json`에 적힌 계정과 agy가 실제로 쓰는 계정이 다르다(10-17).
-- 원인: agy 로그인은 Windows 자격 증명(키링)에 있고, 이 파일은 별도 Gemini CLI의 기록이다. 키링에 있으니 `USERPROFILE`을 바꿔도 같은 로그인을 쓴다. 10-17 확인한 [공식 설치 문서](https://antigravity.google/docs/install/)도 한 로컬 제품에서 로그인하면 로컬 환경의 다른 제품과 자격이 공유된다고 명시한다.
-- 고침: 실제 계정은 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 확인한다. `--구독` 통로도 그 계정의 몫을 쓴다. 로컬 프로필 파일이나 홈 경로만 바꾸면 계정이 격리된다고 가정하지 않는다. agy에서는 gemini-4-argon-low/medium/high도 고를 수 있지만, 모델 선택이 계정 격리를 뜻하지 않는다.
-- 다시 확인: 최신 인증 로그와 공식 설치 문서를 함께 확인한다. 10-17 `agy --help`·설치된 공식 문서에서는 계정별 프로필·인증 격리 옵션을 찾지 못했다. 기존 로그인 계정은 바꾸지 않았다.
-
-### agy가 `string_value contains invalid UTF-8`로 죽는다
-- 증상: agy가 `proto: … string_value contains invalid UTF-8`를 내고 끝난다(10-14).
-- 원인: 전역 훅(`~/.gemini/config/hooks.json`) 하나가 CP949로 된 오류문을 냈다. 구조화 답(`--json-schema`)은 `finish` 도구를 거치므로 반드시 훅을 지난다.
-- 고침: 10-14에 깨진 훅 두 개(orca-status·synk-session-freshness)를 유호님 승인을 받아 뺐다. 백업은 `~/.gemini/config/hooks.json.bak-20261014`다. 훅이 다시 생기면 같은 일이 난다.
-- 다시 확인: `cat ~/.gemini/config/hooks.json` — 10-17 새 노트북은 `{}`(훅 없음)다.
-
-### 아르곤에게 블렌더 실행까지 맡기면 Claude Code가 막는다
-- 증상: Claude Code(자동 모드)에서 `agy -p … --dangerously-skip-permissions`로 아르곤이 블렌더를 직접 실행·반복하게 하려 하자 「Create Unsafe Agents」로 거절됐다(10-17 펠트 찻집 실험).
-- 원인: 다른 에이전트에게 모든 도구 권한을 자동 승인으로 넘기는 실행이라 Claude Code 안전 장치가 막는다.
-- 고침: 도구 없이 스크립트만 받는다 — `agy -p "<지시>" --model gemini-4-argon-high --disable-slash-commands --print-timeout 15m`, 답의 ```python 블록을 꺼내 위험 호출(지우기·네트워크·외부 실행)을 훑은 뒤 `blender -b --python build.py -- out.png scene.blend`로 내가 렌더한다. 고칠 점·오류는 `-c`(이어 하기)로 돌려준다. 답 하나에 3~5분, 1,300~1,700줄. 실행까지 맡기려면 유호님이 Antigravity 앱에서 직접 한다. 기록 `.tmp/argon-blender-20261017/notes.md`.
-- 다시 확인: `agy models | grep argon`(10-17 low/medium/high 셋).
-
-### 몽골어 검문이 문제없이 끝나도 종료 코드가 2다
-- 증상: 검문이 끝나고 종료 코드 2가 나온다. 「■ 종합」 줄에는 「공식 앱 뜻 검토 대기」가 적혀 있다.
-- 원인: `tools/몽골어대조.js`는 기계 검문 통과면 0, 실패면 1, 나머지는 모두 2로 끝난다. 뜻 대조가 돌지 않았으면 「뜻 검토 대기」로 남아 2가 된다.
-- 고침: 판정은 「■ 종합」 사유 줄로 한다. 뜻은 원문과 역번역 한국어를 줄마다 직접 견준다. 맞춤법 층은 해시태그 붙여쓰기(`#солонгосхэл`)와 한국 이름(`Минсү`)을 늘 의심으로 낸다. 이런 것은 오타가 아니라고 보고하고, 게시 여부는 유호님께 묻는다.
-- 다시 확인: `rg -n "exitCode = " tools/몽골어대조.js`(10-17 497행 `실패 ? 1 : (통과 ? 0 : 2)`).
-
-## Hermes(텔레그램 팁 봇)
-
-봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
-
-### GPT 대화 창이 64K로 묶여 2분마다 압축한다
-- 증상: GPT(openai-codex)가 판정하는 동안 대화 압축이 2분마다 돌았고, 한 번에 1.5분이 걸렸다. agent.log에는 `Compressor window clamped to Ollama num_ctx: 500000 -> 65536`이 찍혀 있었다(10-16·10-17).
-- 원인: `config.yaml` model 묶음의 `ollama_num_ctx: 65536`이 로컬 Ollama 모델이 아닌 모델에도 그대로 걸린다. `hermes-agent/agent/agent_init.py`는 이 값이 있으면 서버가 로컬인지 보지 않고 num_ctx로 쓰고, 압축기 창을 그 값으로 줄인다(`_clamp_compressor_to_ollama_num_ctx`). 값이 없으면 로컬 서버일 때만 Ollama에 물어 정한다.
-- 고침: 10-17 11:31에 그 줄만 뺐고, 게이트웨이도 그 직후 다시 떴다. 로컬 qwen3.8-64k는 Modelfile의 num_ctx 65536과 `model.context_length: 65536` 상한 때문에 그대로 64K다.
-- 다시 확인: `hermes chat -q "Reply with the single word OK." --oneshot --provider openai-codex -m gpt-6.1-sol --reasoning low --max-turns 1`을 한 번 돌리고, agent.log에서 그 실행의 `OpenAI client created (agent_init…)` 뒤에 `clamped to Ollama` 줄이 없는지 본다(10-17 16:26 없음, 입력 1.6만 토큰 한 번). 설정을 바꿨으면 게이트웨이 시작 시각(`%LOCALAPPDATA%\hermes\gateway-starts.log` 마지막 줄, 유닉스 초)이 config.yaml 수정 시각보다 뒤인지도 본다.
-
-### Hermes 터미널에서 `/c/...` 경로를 넘긴 명령이 실패한다
-- 증상: `git -C /c/Users/...`나 `node /tmp/a.js`가 「cannot change to」·「not found」로 실패한다. `cd /c/...`는 된다.
-- 원인: Hermes의 `terminal` 도구는 Windows에서 Git Bash(MSYS)로 돌지만 경로 변환을 꺼 둔다. 그래서 네이티브 프로그램(git·rg·node·python)에는 MSYS 경로가 바뀌지 않고 그대로 넘어간다. PowerShell 명령도 쓸 수 없다.
-- 고침: 네이티브 프로그램에는 `C:/Users/...`처럼 슬래시로 쓴 Windows 경로를 넘긴다. 네이티브 프로그램이 읽을 임시 파일은 `/tmp`가 아니라 `$LOCALAPPDATA/Temp`에 둔다.
-- 다시 확인: `rg -n "path conversion is disabled" "$LOCALAPPDATA/hermes/hermes-agent/agent/prompt_builder.py"`(10-17 v0.22.2 926행).
-
-### Hermes 파이썬에서 yaml을 못 읽는다
-- 증상: Hermes에 딸린 파이썬으로 config.yaml을 검사하면 `ModuleNotFoundError: No module named 'yaml'`이 난다.
-- 원인: `%LOCALAPPDATA%\hermes\tools\python-3.14.7…`는 Hermes가 쓰는 최소 파이썬이라 yaml이 들어 있지 않다.
-- 고침: config 검사는 Node로 `hermes-agent/node_modules/yaml`을 불러서 한다.
-- 다시 확인: `"$LOCALAPPDATA/hermes/tools/python-3.14.7+20260901-win32-x64/python.exe" -I -c "import yaml"`(10-17 여전히 실패, node yaml 2.9.1은 있음).
-
-### Hermes의 GPT 계정은 `~/.codex`와 따로 있다
-- 증상: GPT 앱의 로그인(`~/.codex`)을 바꿔도 Hermes가 쓰는 GPT 계정은 바뀌지 않는다. `hermes auth list/status`는 메일을 보여 주지 않는다(10-17).
-- 원인: Hermes는 자기 `%LOCALAPPDATA%\hermes\auth.json`에 있는 openai-codex 자격(device_code)을 쓴다. 이 자격이 GPT 앱·굽기와 같은 계정이면 주간 한도도 같이 쓴다.
-- 고침: 어느 계정인지는 토큰에서 email 칸만 풀어 확인하고, 토큰 값은 어디에도 남기지 않는다. Hermes에는 자격을 여러 개 넣고 순서(`auth add`·`priority`)대로 돌려 쓰는 기능이 있다.
-- 다시 확인: `hermes auth status`로 자격 개수를 본다.
-
-### GPT가 받기 스킬을 스스로 고친다
-- 증상: 10-17 06:12에 GPT가 `skill_manage`로 자기 스킬(SKILL.md)을 고쳤다.
-- 원인: Hermes는 에이전트에게 스킬을 고치는 도구를 준다. 스킬 폴더 안에 둔 옛 판 사본도 스킬로 읽힐 수 있다.
-- 고침: 옛 판 사본은 스킬 폴더 밖(`%LOCALAPPDATA%\hermes\backups\`)에 둔다. 스킬을 고친 뒤에는 GPT가 다시 덮어썼는지 SKILL.md의 수정 시각과 내용을 본다.
-- 다시 확인: `ls "$LOCALAPPDATA/hermes/backups"`(10-17 `synk-tip-판정판-20261017` 있음).
-
-### `web_extract`가 Codex 연결에서 돌지 않는다
-- 증상: GPT(openai-codex)로 도는 Hermes에서 `web_extract` 도구가 되지 않았다(10-16).
-- 원인: 모른다.
-- 고침: 막다른 길: 다른 연결로는 시험하지 않았다. 지금 받기 스킬은 `scripts/ig_fetch.py`로 게시물을 받는다.
-- 다시 확인: 스킬 폴더 `scripts/`에 `ig_fetch.py`가 있는지 본다(10-17 있음).
-
-### 설정을 바꿔도 게이트웨이에 바로 반영되지 않는다
-- 증상: config.yaml을 고쳐도 다음 공유가 옛 설정으로 처리된다.
-- 원인: 게이트웨이는 시작할 때 설정을 읽는다. PC가 절전 중이거나 꺼져 있으면 게이트웨이도 멈추고, 그동안 텔레그램이 약 24시간 쌓아 둔 메시지를 다음 로그인 때 한꺼번에 처리한다.
-- 고침: 설정을 바꾸면 `hermes gateway restart`를 한다. 처리 중인 일을 마친 뒤 내려간다.
-- 다시 확인: `%LOCALAPPDATA%\hermes\logs\gateway-restart.log` 끝 줄의 시각.
-
-## Codex 예약
-
-### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
-- 증상: 10-17 새 `COUNT=2` 일간 예약에 `BYHOUR=8,16`을 넣자 첫 명목 실행이 예상한 08:00 KST 대신 17:00 KST였다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`일 때 다음 명목 실행이 16:10 KST였고, 시험 삼아 `BYHOUR=7`로 바꾸자 07:10 KST가 됐다.
-- 원인: 내부 해석 차이의 원인은 미확정이다. 이 판에서 확인한 `COUNT=2` 일간 예약과 `COUNT=1`·`COUNT=3` 월간 예약의 `BYHOUR`는 UTC로, 기존 무기한 일간 예약의 `BYHOUR`는 한국 시각으로 반영됐다. RRULE 전체에 한 시간대를 가정하면 예약이 어긋난다.
-- 고침: 10-18 08:00·16:00 KST의 `COUNT=2` 일간 예약은 `BYHOUR=7,23`, 10-19 10:20·19:20·21:20 KST의 `COUNT=3` 월간 예약은 `BYHOUR=1,10,12`로 저장했다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`을 유지하고, 10-18·22 16:00 KST의 일회성 월간 예약 두 개는 `BYHOUR=7`로 고쳤다. 모두 `ACTIVE`와 의도한 다음 명목 실행 시각을 확인했으며 실제 예약 실행은 아직 미검증이다.
-- 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 UTC+09:00으로 변환해 일정별 의도한 시각과 대조한다. 실제 실행은 `last_run_at`과 `automation_runs`를 따로 본다.
-
-## Codex 세션 기록
-
-### GPT가 끝났는지를 기록 파일의 수정 시각으로 보면 틀린다
-- 증상: 10-03 GPT 작업을 기다리던 감시가 「30분 조용함」으로 끝났다. 그런데 GPT는 그 뒤에도 기록을 쓰고 있었고, 2초 뒤에는 파일을 고쳤다.
-- 원인: Windows는 열린 핸들로 파일 끝에 덧붙이는 동안 LastWriteTime을 늦게 갱신한다. 그래서 rollout 파일의 수정 시각은 세션이 열려 있는 동안 처음 만든 시각 근처에 멈춰 있다.
-- 고침: 기록 파일은 크기 변화와 끝 줄의 `"timestamp"`(UTC)로 본다. 감시 스크립트는 「작업 파일 수정 시각」과 「그 파일을 언급한 기록 줄의 timestamp」 중 늦은 쪽을 기준으로 조용한 시간을 잰다. 처음에는 파일 끝 8MB만 읽고, 그 뒤로는 늘어난 부분만 읽는다. 목표 모드(`<objective>`)가 끝났는지는 부모 rollout의 `update_goal({status:"complete"})` 호출과 마지막 assistant 메시지로 확인한다. 하위 에이전트는 `send_message`의 target `/root`로 부모에게 보고한다. 작업 파일(게임 소스 등)의 수정 시각은 그대로 믿어도 된다.
-- 다시 확인: 열려 있는 최신 rollout의 수정 시각과 끝 줄 timestamp를 견준다. 10-17 15:50에는 수정 시각이 14:51인데 끝 줄은 06:50Z(15:50 KST), 크기는 9.4MB였다.
-
-### 작성자를 찾을 때 보관된 GPT 세션을 빠뜨린다
-- 증상: 10-08 파일 작성자를 `~/.codex/sessions/2026/10/*`에서만 찾다가 못 찾았다. 그 스레드는 하루 만에 `~/.codex/archived_sessions/`로 옮겨져 있었다(10-04~08 보관 세션 165개).
-- 원인: 보관된 세션은 날짜 폴더에서 빠져 `archived_sessions/`로 옮겨진다.
-- 고침: `sessions/<연>/<월>/<일>/`와 `archived_sessions/`를 함께 찾는다. 하위 에이전트 세션은 `session_meta.payload.source.subagent.thread_spawn.parent_thread_id`로 부모 스레드에 묶는다. 10-08에 쓴 스레드 묶기 스크립트(`.tmp/atlas-preserve-20261008/codex_attrib2.js` 등)는 새 노트북에 없다.
-- 다시 확인: `ls ~/.codex/archived_sessions | wc -l`(10-17 새 노트북 19개).
-
-### 기록에서 한글 경로를 찾으면 놓친다
-- 증상: apply_patch 기록에서 경로로 찾으면 한글 경로 파일이 나오지 않는다(10-08).
-- 원인: 기록 JSON의 일부 줄은 한글을 `\uXXXX` 꼴로 남긴다.
-- 고침: 파일 이름의 ASCII 부분으로 다시 찾거나, 한글을 `\u` 꼴로 바꿔서도 찾고, 찾은 줄은 내용으로 확인한다.
-- 다시 확인: `grep -o '\\u[a-dA-D][0-9a-fA-F]\{3\}' <최신 rollout> | wc -l`(10-17 최신 기록에서 263곳).
+### 새 노트북에 Gemini 무료 키 파일이 없다
+- 증상: `node evals/돌리기.js --자체점검`의 문 프로브가 「키없음 — 글 API 키 파일이 없다: C:/Users/q1212/SYNK_보안/제미나이_무료.txt」로 멈춘다(10-17).
+- 원인: 노트북을 옮길 때 `SYNK_보안`에 무료 키 파일이 따라오지 않았다(10-17에는 타입캐스트·클로드 키만 있었다).
+- 고침: 옛 노트북 백업이나 AI Studio에서 무료 키를 다시 받아 그 경로에 둔다. 그 전까지 몽골어 검문은 `--구독`으로 돌린다(키가 없으면 무료 문을 부르기 전에 멈추므로 자동 넘김도 일어나지 않는다).
+- 다시 확인: `ls ~/SYNK_보안/` 에 `제미나이_무료.txt`.
 
 ### 구형 Gemini CLI의 Google 로그인 통로가 지원 종료로 막힌다
 - 증상: 10-17 Gemini CLI 0.64.0에서 기존 개인 Google OAuth로 Argon을 명시한 최소 요청 1회가 인증 단계의 `IneligibleTierError`·`UNSUPPORTED_CLIENT`로 끝났다. 모델 `init`·`result`는 없었고 실제 모델 호출은 0회였다.
 - 원인: 서버가 Gemini Code Assist 개인용에서 이 클라이언트를 더는 지원하지 않으며 Antigravity 제품군으로 이전하라고 응답했다. 이 오류는 요청한 Argon 모델의 지원 여부를 확인한 결과가 아니다.
 - 고침: 막다른 길 — 재시도·모델 대체·유료 API 전환 없이 중단했다. 기존 OAuth 파일이 있다는 것만으로 구형 CLI를 예약 실행 대안으로 쓰지 않는다.
 - 다시 확인: 공식 클라이언트 지원·인증 방식을 먼저 확인한다. 이번 검증은 API 키·Vertex 환경값을 제외한 자식 프로세스에서 `GOOGLE_GENAI_USE_GCA=true`·`billing.overageStrategy=never`로 진행했고, 인증 실패 뒤 실행을 반복하지 않았다.
+
+## Claude API
+
+### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
+- 증상: Max 20x 월 API 크레딧($200)이 있다고 보고 새 키(`synk-local-tools`)로 블라인드 비교·교원 검수 사전 점검을 돌렸는데, 약 $2.6을 쓴 뒤 「Your credit balance is too low」가 났다(10-17).
+- 원인: 그 키의 조직(unmet23 Console의 「양유호's Individual Org」, `anthropic-organization-id` f6ddc1be…)에는 크레딧이 없었고(Promotional credits 칸 없음), 8~9월에 산 작은 충전 잔액이 먼저 나갔다. 동시 요청 4개가 돌던 중이라 잔액을 넘겨 **미납 -$1.31**이 됐고 API가 막혔다(충전 전까지 같은 조직의 talk 운영·리허설 키도 멈춘다). 크레딧은 claude.ai 설정 → 결제의 「API 크레딧」에서 연결한 조직 하나에만 들어오고, 새 구독은 7일 뒤부터 받을 수 있다. 그날 Chrome의 claude.ai는 77yuhbs(Max 5x, 10-17 결제)였고 결제 화면에 API 크레딧 칸이 아직 없었다.
+- 고침: 큰 작업 전에 Console 결제 화면의 Promotional credits와 조직 이름을 먼저 본다. 응답 머리 `anthropic-organization-id`로 키의 조직을 확인할 수 있다(키 값은 출력하지 않는다). 크레딧이 없으면 연결한 조직에서 키를 새로 만들거나 연결 조직을 고친다(직접 못 바꾸면 고객지원).
+- 다시 확인: 키 하나로 `claude-haiku-5-5` 16토큰 요청 — 크레딧이 있으면 200, 없으면 400 「credit balance is too low」(청구 없음).
+
+### agy가 어느 계정으로 도는지 설정 파일 표시가 틀린다
+- 증상: `~/.gemini/google_accounts.json`에 적힌 계정과 agy가 실제로 쓰는 계정이 다르다(10-17).
+- 원인: agy 로그인은 Windows 자격 증명(키링)에 있고, 이 파일은 별도 Gemini CLI의 기록이다. 키링에 있으니 `USERPROFILE`을 바꿔도 같은 로그인을 쓴다. 10-17 확인한 [공식 설치 문서](https://antigravity.google/docs/install/)도 한 로컬 제품에서 로그인하면 로컬 환경의 다른 제품과 자격이 공유된다고 명시한다.
+- 고침: 실제 계정은 `~/.gemini/antigravity-cli/cli.log`의 `authenticated successfully as` 줄로 확인한다. `--구독` 통로도 그 계정의 몫을 쓴다. 로컬 프로필 파일이나 홈 경로만 바꾸면 계정이 격리된다고 가정하지 않는다. agy에서는 gemini-4-argon-low/medium/high도 고를 수 있지만, 모델 선택이 계정 격리를 뜻하지 않는다.
+- 다시 확인: 최신 인증 로그와 공식 설치 문서를 함께 확인한다. 10-17 `agy --help`·설치된 공식 문서에서는 계정별 프로필·인증 격리 옵션을 찾지 못했다. 기존 로그인 계정은 바꾸지 않았다.
 
 ### Linux 서버에 키링 데몬이 없어도 공식 CLI의 파일 저장 경로가 있다
 - 증상: 10-18 별도 계정 실행 환경을 준비한 Linux 서버에 D-Bus 실행기는 있지만 GNOME Keyring·Secret Service 데몬은 없었다. 이를 인증 불가로 판단하면 불필요한 데몬 설치가 선행된다.
@@ -160,6 +82,171 @@
 - 고침: `snapshot ROLE`은 전체 본문을 전용 work 파일에 원자 저장하고 짧은 메타데이터·본문 경로만 반환한다. 모델은 그 파일을 범위 읽기한다. `write` 응답에서는 본문을 빼고 상태·revision·SHA·백업 경로만 반환한다. 내부 검사기의 `read` 계약은 유지했다.
 - 다시 확인: 보조도구 시험17개가 통과했다. 큰 Unicode 본문·출력1KiB 미만·충돌·실패 시 이전 파일 보존을 확인하고, 실제 공식 CLI의 `denied_actions` 없음과 완료 표식·Docs 재읽기 SHA를 함께 대조한다. 운영 소스는 `tools/argon-schedules/`에 보존한다.
 
+### agy가 `string_value contains invalid UTF-8`로 죽는다
+- 증상: agy가 `proto: … string_value contains invalid UTF-8`를 내고 끝난다(10-14).
+- 원인: 전역 훅(`~/.gemini/config/hooks.json`) 하나가 CP949로 된 오류문을 냈다. 구조화 답(`--json-schema`)은 `finish` 도구를 거치므로 반드시 훅을 지난다.
+- 고침: 10-14에 깨진 훅 두 개(orca-status·synk-session-freshness)를 유호님 승인을 받아 뺐다. 백업은 `~/.gemini/config/hooks.json.bak-20261014`다. 훅이 다시 생기면 같은 일이 난다.
+- 다시 확인: `cat ~/.gemini/config/hooks.json` — 10-17 새 노트북은 `{}`(훅 없음)다.
+
+### 아르곤에게 블렌더 실행까지 맡기면 Claude Code가 막는다
+- 증상: Claude Code(자동 모드)에서 `agy -p … --dangerously-skip-permissions`로 아르곤이 블렌더를 직접 실행·반복하게 하려 하자 「Create Unsafe Agents」로 거절됐다(10-17 펠트 찻집 실험).
+- 원인: 다른 에이전트에게 모든 도구 권한을 자동 승인으로 넘기는 실행이라 Claude Code 안전 장치가 막는다.
+- 고침: 도구 없이 스크립트만 받는다 — `agy -p "<지시>" --model gemini-4-argon-high --disable-slash-commands --print-timeout 15m`, 답의 ```python 블록을 꺼내 위험 호출(지우기·네트워크·외부 실행)을 훑은 뒤 `blender -b --python build.py -- out.png scene.blend`로 내가 렌더한다. 고칠 점·오류는 `-c`(이어 하기)로 돌려준다. 답 하나에 3~5분, 1,300~1,700줄. 실행까지 맡기려면 유호님이 Antigravity 앱에서 직접 한다. 기록 `.tmp/argon-blender-20261017/notes.md`.
+- 다시 확인: `agy models | grep argon`(10-17 low/medium/high 셋).
+
+### 몽골어 검문이 문제없이 끝나도 종료 코드가 2다
+- 증상: 검문이 끝나고 종료 코드 2가 나온다. 「■ 종합」 줄에는 「공식 앱 뜻 검토 대기」가 적혀 있다.
+- 원인: `tools/몽골어대조.js`는 기계 검문 통과면 0, 실패면 1, 나머지는 모두 2로 끝난다. 뜻 대조가 돌지 않았으면 「뜻 검토 대기」로 남아 2가 된다.
+- 고침: 판정은 「■ 종합」 사유 줄로 한다. 뜻은 원문과 역번역 한국어를 줄마다 직접 견준다. 맞춤법 층은 해시태그 붙여쓰기(`#солонгосхэл`)와 한국 이름(`Минсү`)을 늘 의심으로 낸다. 이런 것은 오타가 아니라고 보고하고, 게시 여부는 유호님께 묻는다.
+- 다시 확인: `rg -n "exitCode = " tools/몽골어대조.js`(10-17 497행 `실패 ? 1 : (통과 ? 0 : 2)`).
+
+## Hermes(텔레그램 팁 봇)
+
+봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
+
+### 연결됨 표시만으로 텔레그램 작업 완료를 판단하지 않는다
+- 증상: 10-18 점검에서 게이트웨이는 running·telegram connected였지만, 같은 날 이전 로그에는 Telegram API ConnectTimeout이 반복됐고 14:33 재시작 때 이전 프로세스의 비정상 종료가 기록돼 있었다. 점검 당시 PC는 AC·배터리 모두 유휴 3,600초 후 절전 설정이었다.
+- 원인: 시간초과와 비정상 종료의 직접 원인은 미확정이다. 현재 게이트웨이는 로컬 PC에서 실행되므로 절전 중에는 일을 진행할 수 없다. 시작프로그램 등록은 로그인 시 실행을 뜻하며 상시 가동 증거가 아니다.
+- 고침: 이번 점검에서는 설정·프로세스를 바꾸지 않았다. 게이트웨이 상태·실제 PID·최근 polling 복구 로그, Telegram getMe/getWebhookInfo 읽기, 장부 pending/recent 읽기를 대조했다. getUpdates를 별도로 호출해 수신 메시지를 소비하거나 시험 메시지를 보내지 않았다.
+- 다시 확인: 10-18 15:29 이후 Telegram 읽기 API HTTP 200·pending_update_count 0, 장부 조회 성공·기존 6줄·적용안 대기 0을 확인했다. 새 메시지의 접수→장부 추가→Claude 예약 완료→전달 전 과정은 이번에 시험하지 않았다. 비밀값을 제외한 근거는 `.tmp/hermes-audit-20261018/`.
+
+### Windows 시작프로그램은 게이트웨이 장애 복구가 아니다
+- 증상: 공식 Startup VBS가 등록돼 있었지만 게이트웨이의 비정상 종료 뒤 재실행을 보장하는 외부 감시가 없었다(10-18).
+- 원인: VBS의 `sh.Run(..., 0, False)`는 Python을 분리하고 종료한다. 게이트웨이 내부 loop watchdog도 종료 코드 75로 나가는 구조라 외부 재실행기가 필요하다.
+- 고침: 기존 시작프로그램을 유지하고 `SYNK_Hermes_Gateway_Recovery` Windows 작업을 추가했다. 2분마다 소유 PID·실행파일·gateway run만 확인해 없을 때 공식 `hermes gateway start`를 부른다. LLM 호출·강제 종료는 없다. AC 유휴 절전·최대절전만 0으로 바꾸고 배터리·덮개 동작은 유지했다.
+- 다시 확인: `tools/hermes-synk/runtime/recover-gateway.ps1 -ReadOnly`와 작업 스케줄러 실제 결과 0, 원래 게이트웨이 PID 유지·AC 0/DC 3600을 확인했다. 강제 장애 시험은 하지 않았다. 소스·복원은 `tools/hermes-synk/README.md`, 근거는 `.tmp/hermes-improve-20261018/runtime/`.
+
+### 다른 Python 프로세스의 terminal 시험은 실제 게이트웨이 자동 전달 증거가 아니다
+- 증상: 별도 Python helper가 공식 terminal을 호출해도 운영 게이트웨이가 그 프로세스의 메모리 queue를 자동 인수하지 않는다.
+- 원인: 완료 watcher·ProcessRegistry는 프로세스별이고 checkpoint 복원은 게이트웨이 시작 시 수행된다. `process_manage poll`은 전체 output이 아니라 짧은 output_preview만 반환하며, log/wait를 먼저 읽으면 자동 알림이 소비될 수 있다.
+- 고침: CLI 직접 실행·완료 receipt와 운영 게이트웨이의 자동 전달 시험을 구분한다. 전달 시험은 1회용 공식 gateway startup hook에서 실제 등록 명령을 호출한다. 현재 SYNK 연결은 추가 GPT 호출 없이 작업별 wait/log로 공식 마지막 응답을 읽어 공식 Telegram 전송 helper로 전달하며 `delivery.json`의 sent·message_id를 본다. 시험 hook는 끝나면 비활성화한다.
+
+### 공식 CLI 작업이 끝나도 접수 GPT 한도 때문에 결과 알림이 실패한다
+- 증상: 10-18 게이트웨이 안에서 실제 Codex·Claude 작업은 끝났지만, 기존 notify=true 완료 요약이 Hermes GPT의 `usage_limit_reached` 429에 막혀 결과 대신 재요청 안내를 보냈다. Claude도 `subtype: success`인데 `is_error: true`, `terminal_reason: api_error`, 429로 끝났다.
+- 원인: CLI 실행 계정과 결과를 다시 요약하는 Hermes 계정은 별개이며, 프로세스 종료·JSON subtype만으로 성공을 판정할 수 없다.
+- 고침: SYNK 작업의 notify를 끄고 공식 process_manage wait/log로 CLI 마지막 응답을 추출해 공식 send_message helper로 직접 보낸다. 오류·한도·미완료를 그대로 표시하고, API 수신 확인 ID와 결과를 저장한다. 전송 결과가 불명확하면 중복 전송하지 않는다. 계정·모델은 바꾸지 않는다.
+- 다시 확인: `tests/hermes-synk-plugin.test.py`의 실제 모양 429·미완료·전송 미확인 시험과 `.tmp/hermes-improve-20261018/gateway-smoke-direct.json`의 운영 게이트웨이 시험을 대조한다. 직접 명령은 접수 GPT를 호출하지 않지만 자연어·기존 팁 답장은 GPT 한도 영향을 받는다.
+
+### Hermes에서 실행한 Codex의 Windows 샌드박스 준비가 멈춘다
+- 증상: 10-18 Codex workspace-write 실행이 Windows elevated sandbox 준비에서 문서 읽기를 끝내지 못했고, CLI는 종료 코드 0으로 원문 미확인 결과를 냈다.
+- 원인: 해당 실행의 elevated 준비가 응답하지 않았다. 샌드박스 내부 원인은 미확정이다.
+- 고침: 호출별 `-c windows.sandbox=mxc`로 공식 MXC를 선택하고 workspace-write는 유지한다. 계정·모델·전체 권한 우회 옵션은 바꾸지 않는다.
+- 다시 확인: 공식 `codex sandbox --include-managed-config --permission-profile ':workspace'`로 실제 `docs/AI_운영원칙.md` 읽기가 성공했다. 텔레그램 실제 위임 결과에서도 문서 내용·미확인 문구·전송 확인을 따로 확인한다.
+- 다시 확인: `.tmp/hermes-improve-20261018/gateway-smoke-result.json`의 운영 PID·작업 ID·종료 코드·Telegram assistant 표식과 실제 전송 기록을 대조한다. 휴대폰에서 직접 입력한 새 메시지의 수신 증거와는 구분한다.
+
+### GPT 대화 창이 64K로 묶여 2분마다 압축한다
+- 증상: GPT(openai-codex)가 판정하는 동안 대화 압축이 2분마다 돌았고, 한 번에 1.5분이 걸렸다. agent.log에는 `Compressor window clamped to Ollama num_ctx: 500000 -> 65536`이 찍혀 있었다(10-16·10-17).
+- 원인: `config.yaml` model 묶음의 `ollama_num_ctx: 65536`이 로컬 Ollama 모델이 아닌 모델에도 그대로 걸린다. `hermes-agent/agent/agent_init.py`는 이 값이 있으면 서버가 로컬인지 보지 않고 num_ctx로 쓰고, 압축기 창을 그 값으로 줄인다(`_clamp_compressor_to_ollama_num_ctx`). 값이 없으면 로컬 서버일 때만 Ollama에 물어 정한다.
+- 고침: 10-17 11:31에 그 줄만 뺐고, 게이트웨이도 그 직후 다시 떴다. 로컬 qwen3.8-64k는 Modelfile의 num_ctx 65536과 `model.context_length: 65536` 상한 때문에 그대로 64K다.
+- 다시 확인: `hermes chat -q "Reply with the single word OK." --oneshot --provider openai-codex -m gpt-6.1-sol --reasoning low --max-turns 1`을 한 번 돌리고, agent.log에서 그 실행의 `OpenAI client created (agent_init…)` 뒤에 `clamped to Ollama` 줄이 없는지 본다(10-17 16:26 없음, 입력 1.6만 토큰 한 번). 설정을 바꿨으면 게이트웨이 시작 시각(`%LOCALAPPDATA%\hermes\gateway-starts.log` 마지막 줄, 유닉스 초)이 config.yaml 수정 시각보다 뒤인지도 본다.
+
+### Hermes 터미널에서 `/c/...` 경로를 넘긴 명령이 실패한다
+- 증상: `git -C /c/Users/...`나 `node /tmp/a.js`가 「cannot change to」·「not found」로 실패한다. `cd /c/...`는 된다.
+- 원인: Hermes의 `terminal` 도구는 Windows에서 Git Bash(MSYS)로 돌지만 경로 변환을 꺼 둔다. 그래서 네이티브 프로그램(git·rg·node·python)에는 MSYS 경로가 바뀌지 않고 그대로 넘어간다. PowerShell 명령도 쓸 수 없다.
+- 고침: 네이티브 프로그램에는 `C:/Users/...`처럼 슬래시로 쓴 Windows 경로를 넘긴다. 네이티브 프로그램이 읽을 임시 파일은 `/tmp`가 아니라 `$LOCALAPPDATA/Temp`에 둔다.
+- 다시 확인: `rg -n "path conversion is disabled" "$LOCALAPPDATA/hermes/hermes-agent/agent/prompt_builder.py"`(10-17 v0.22.2 926행).
+
+### Hermes 파이썬에서 yaml을 못 읽는다
+- 증상: Hermes에 딸린 파이썬으로 config.yaml을 검사하면 `ModuleNotFoundError: No module named 'yaml'`이 난다.
+- 원인: `%LOCALAPPDATA%\hermes\tools\python-3.14.7…`는 Hermes가 쓰는 최소 파이썬이라 yaml이 들어 있지 않다.
+- 고침: config 검사는 Node로 `hermes-agent/node_modules/yaml`을 불러서 한다.
+- 다시 확인: `"$LOCALAPPDATA/hermes/tools/python-3.14.7+20260901-win32-x64/python.exe" -I -c "import yaml"`(10-17 여전히 실패, node yaml 2.9.1은 있음).
+
+### Hermes의 GPT 계정은 `~/.codex`와 따로 있다
+- 증상: GPT 앱의 로그인(`~/.codex`)을 바꿔도 Hermes가 쓰는 GPT 계정은 바뀌지 않는다. `hermes auth list/status`는 메일을 보여 주지 않는다(10-17).
+- 원인: Hermes는 자기 `%LOCALAPPDATA%\hermes\auth.json`에 있는 openai-codex 자격(device_code)을 쓴다. 이 자격이 GPT 앱·굽기와 같은 계정이면 주간 한도도 같이 쓴다.
+- 고침: 어느 계정인지는 토큰에서 email 칸만 풀어 확인하고, 토큰 값은 어디에도 남기지 않는다. Hermes에는 자격을 여러 개 넣고 순서(`auth add`·`priority`)대로 돌려 쓰는 기능이 있다.
+- 다시 확인: `hermes auth status`로 자격 개수를 본다.
+
+### 헤르메스만 다른 GPT 계정으로 바꾸려면 독립 OAuth와 활성 자격을 함께 확인한다
+- 증상: 10-18 사용자 요청으로 헤르메스 접수 GPT를 `q121235@outlook.com` Microsoft 계정으로 바꿨다. 기존 Codex 그림 굽기에도 같은 계정 로그인이 있었지만 refresh token 사본을 함께 쓰면 회전 때문에 다른 세션이 무효가 될 수 있다.
+- 원인: Hermes는 독립 OAuth 세션과 credential pool을 쓰며, 새 계정을 priority 0에 추가만 하면 한도 때 옛 계정으로 회전할 수 있다. `auth.adopt_external_logins: true`도 다른 앱 로그인을 가져올 수 있다.
+- 고침: Hermes 내부에 원래 인증·설정을 백업하고 공식 `auth add openai-codex --browser --no-browser`로 새 로그인했다. 실제 이메일을 확인한 뒤 기존 자격을 공식 `auth remove`로 활성 pool에서 뺐고 외부 로그인 자동 가져오기를 껐다. 모델·추론 설정은 유지하고 공식 gateway restart로 반영했다.
+- 다시 확인: 활성 pool 1개·JWT 이메일 `q121235@outlook.com`·옛 singleton 없음·자동 provider fallback 없음, GPT-6.1 Sol xhigh의 `SYNK_HERMES_GPT_CONNECTED` 응답·도구 호출 0, gateway running·telegram connected를 확인했다. 비밀값 없는 근거 `.tmp/hermes-gpt-account-20261018/`. 기존 Codex·Claude 앱의 계정 전환은 하지 않았다.
+
+### GPT가 받기 스킬을 스스로 고친다
+- 증상: 10-17 06:12에 GPT가 `skill_manage`로 자기 스킬(SKILL.md)을 고쳤다.
+- 원인: Hermes는 에이전트에게 스킬을 고치는 도구를 준다. 스킬 폴더 안에 둔 옛 판 사본도 스킬로 읽힐 수 있다.
+- 고침: 옛 판 사본은 스킬 폴더 밖(`%LOCALAPPDATA%\hermes\backups\`)에 둔다. 스킬을 고친 뒤에는 GPT가 다시 덮어썼는지 SKILL.md의 수정 시각과 내용을 본다.
+- 다시 확인: `ls "$LOCALAPPDATA/hermes/backups"`(10-17 `synk-tip-판정판-20261017` 있음).
+
+### `web_extract`가 Codex 연결에서 돌지 않는다
+- 증상: GPT(openai-codex)로 도는 Hermes에서 `web_extract` 도구가 되지 않았다(10-16).
+- 원인: 모른다.
+- 고침: 막다른 길: 다른 연결로는 시험하지 않았다. 지금 받기 스킬은 `scripts/ig_fetch.py`로 게시물을 받는다.
+- 다시 확인: 스킬 폴더 `scripts/`에 `ig_fetch.py`가 있는지 본다(10-17 있음).
+
+### 설정을 바꿔도 게이트웨이에 바로 반영되지 않는다
+- 증상: config.yaml을 고쳐도 다음 공유가 옛 설정으로 처리된다.
+- 원인: 게이트웨이는 시작할 때 설정을 읽는다. PC가 절전 중이거나 꺼져 있으면 게이트웨이도 멈추고, 그동안 텔레그램이 약 24시간 쌓아 둔 메시지를 다음 로그인 때 한꺼번에 처리한다.
+- 고침: 설정을 바꾸면 `hermes gateway restart`를 한다. 처리 중인 일을 마친 뒤 내려간다.
+- 다시 확인: `%LOCALAPPDATA%\hermes\logs\gateway-restart.log` 끝 줄의 시각.
+
+## Codex 예약
+
+### Hermes 반복 조회에서 보낸 기록이 새 보고를 가린다
+- 증상: 10-18 세 흐름 연결 시험에서 발송 기록이 100개 넘으면 새 아침 보고가 큐에서 빠질 수 있었다. 자정에 받은 원격 자료를 아침 보고에 다시 쓸 수도 있었다.
+- 원인: 파일명 정렬 뒤 개수 제한을 먼저 적용했고, 원격 갱신을 날짜 변경으로만 판단했다.
+- 고침: 발송 시도 claim이 없는 초안만 생성 시각순으로 읽는다. 원격 자료는 한 시간마다, 아침 보고 직전에도 갱신한다. 발송 결과가 불명확하면 재전송하지 않는다. 잠금이 10분 넘게 남으면 정상으로 표시하지 않고 한 번 알린다.
+- 현재 정책: 10-18 추가 요청 이후 아침 요약은 껐고 판단·조치 필요 사건만 알린다. 기존 정보성 초안은 보존하면서 발송을 억제하며 원격 자료의 시간당 조회는 유지한다.
+- 다시 확인: `tests/hermes-synk-monitor.test.cjs`의 과거 발송 120건+새 보고, 동시 수집·재시작·변화 없는 날 시험과 `tests/hermes-synk-automation.test.py`의 동시 발송·불명확한 응답 시험. 공식 예약은 `--no-agent`·5분 하나이고 예약 엔진의 별도 실패 전송은 `local`로 두어 현재 수신자 허용 검사를 거친 전송만 쓴다.
+
+### 큰 공용 저장소를 통째로 복사하면 격리 작업도 무거워진다
+- 증상: 10-18 SYNK 전체 원문 후보가 약 1.29GiB여서 휴대폰 요청마다 전체 작업본을 만들 수 없었다.
+- 원인: 큰 자료가 함께 있는 공용 저장소를 일반적인 작은 코드 저장소처럼 취급했다.
+- 고침: 현재 수정본 중 요청한 파일·폴더와 필수 원문만 별도 인덱스로 확인한 뒤 공식 sparse worktree로 만든다. 격리 준비는 원본 HEAD·인덱스·설정을 바꾸지 않는다. 10-18 추가 승인 후 원본 파일 반영은 별도 3방향 병합·검증·배타 쓰기 단계가 맡는다. 원본 변경·비밀·용량 초과·대상 누락은 접수를 보류한다.
+- 다시 확인: `tests/hermes-synk-workspace.test.cjs`의 현재 dirty 원문 보존·원본 인덱스/설정 불변·동시 준비·범위/비밀/보관 한도 시험. 별도 인덱스와 기준 HEAD를 그대로 `npm run check:storage`에도 넘긴다.
+
+### Git 무시 목록에 든 요청 파일이 격리 작업본에서 빠진다
+- 증상: 실제 `docs/홈페이지_시안/시안.html`이 있어도 Git 후보 목록에서는 빠져, 대상 없이 준비 성공을 반환할 수 있었다.
+- 원인: `ls-files --others --exclude-standard`에는 ignored 파일이 나오지 않는다. 반대로 전체 ignored 목록을 재귀 검색하자 실제 큰 저장소에서 준비가 지연됐다.
+- 고침: 선택한 실제 경로만 제한적으로 열거하고 `check-ignore --stdin`으로 확인한다. 대상 소스가 무시되어 있으면 `IGNORED_SCOPE_SOURCE`로 보류한다. 기본 작업본에는 운영 원문과 도구 사용 전 필수 현장 노트도 포함한다.
+- 다시 확인: 명시 파일·디렉터리 scope와 무관한 cache/dependency 제외 시험, 실제 문제 경로의 읽기 전용 진단. 준비 실패 때는 CLI를 시작하지 않으며 새 요청으로 다시 접수해야 한다.
+
+### Hermes의 저장소 Python을 그대로 부르면 설치된 의존성을 못 찾는다
+- 증상: 공식 관리 Python으로 스크립트를 직접 부르면 `ModuleNotFoundError: dotenv`가 났다. 공식 `hermes cron run`에서는 같은 스크립트가 성공했다.
+- 원인: 이 Windows 설치는 의존성 경로를 공식 실행기가 구성한다. 저장소 Python 파일 하나만 실행하는 것은 같은 실행 환경이 아니다.
+- 고침: 운영 검증은 공식 cron의 `--no-agent` 경로로 한다. 일시중지 예약의 `cron run`은 성공 실행이 아니라 활성화 안내만 반환하므로 실제 `last_status`와 수집 `health.json`을 확인한다.
+- 다시 확인: 10-18 `synk-three-flows`의 17:00 공식 수동 실행과 17:10 첫 자동 실행 모두 `last_status=ok`, `health.json status=ok/noAgent=true`. 자동 실행이 보낸 점검 알림의 Telegram API 수신 확인과 발송 기록 재처리의 새 전송 0회를 대조했다.
+
+### 검증한 작업을 원본에 자동 반영할 때 동시 저장과 알림이 겹친다
+- 증상: 10-18 합성 저장소에서 하드링크 파일을 쓰자 범위 밖 연결 파일도 바뀌었다. 검증 뒤 같은 범위에 생긴 새 의존 파일도 기존 파일 해시만으로는 놓쳤다. 결과 처리와 5분 수집이 겹치면 같은 판단 알림을 두 경로에서 보낼 수 있었다.
+- 원인: 경로 검사 뒤 교체하는 방법은 검사와 쓰기 사이에 틈이 있고, 기존 파일 목록만 비교하면 추가된 파일이 빠진다. 알림을 보냈는지 확인하는 것만으로는 아직 보내기 전인 두 처리기의 경합을 막지 못한다.
+- 고침: 최신 원본과 3방향 병합한 후보를 다시 검사한다. Windows에서 원본·의존 파일과 부모 폴더의 핸들을 확보한 뒤 내용·범위 목록을 대조하고 같은 핸들로 쓴다. 쓰기 대상의 hardlink 수가 2 이상이면 보류한다. 사전 백업과 fsync 작업 영수증을 남기고 이미 적용한 부분은 다시 쓰지 않는다. 실패 뒤 생긴 빈폴더는 경로로 삭제하지 않는다. 새 직접 위임 작업의 판단 알림은 플러그인만 소유하며 수집기는 상세 조회만 한다.
+- 다시 확인: `tests/hermes-synk-integration.test.cjs`의 실제 Windows writer 잠금·hardlink·검증 뒤 파일 추가·재시작 영수증·원본 HEAD/인덱스 보존 시험, `tests/hermes-synk-overview.test.cjs`의 발송 전/중/불명 구간 중복 알림 0회 시험. 다중 파일의 전원 차단을 단일 원자 쓰기로 보장하지 않으며, 중간 바이트나 이후 다른 변경이 있으면 자동 덮어쓰기 없이 판단 대기로 남긴다.
+
+### Node 시험의 종료 0과 모듈 로드는 변경 동작 검증이 아니다
+- 증상: 없는 시험 경로와 정상 시험을 함께 주면 Node가 누락을 넘길 수 있고, 함수가 잘못돼도 모듈을 불러오기만 한 시험은 통과했다. 상위 Node 시험 프로세스의 `NODE_TEST_CONTEXT`를 물려주면 하위 시험 출력도 사라질 수 있었다.
+- 원인: 명령 종료와 실제 시험 수·변경 동작의 실행 여부를 같은 증거로 취급했다.
+- 고침: 검사 경로 실재·명시적 TAP 전체 통과·skip/todo 0·변경줄의 V8 함수/분기 실행을 확인한다. 하위 환경에서 계정·API 키·상위 test context를 제외한다. JSON 등 별도 검증 방법이 없는 형식은 파싱만으로 자동 반영하지 않는다. 새 계약 `changed_lines_v1` 이전의 성공 캐시는 재사용하지 않는다.
+- 다시 확인: `tests/hermes-synk-validation.test.cjs`의 실제 실패·무관한 시험·미호출 함수/분기·여러 프로세스 실행 합산·시험 중 후보 변경·재시작 캐시 시험.
+
+### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
+- 증상: 10-17 새 `COUNT=2` 일간 예약에 `BYHOUR=8,16`을 넣자 첫 명목 실행이 예상한 08:00 KST 대신 17:00 KST였다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`일 때 다음 명목 실행이 16:10 KST였고, 시험 삼아 `BYHOUR=7`로 바꾸자 07:10 KST가 됐다.
+- 원인: 내부 해석 차이의 원인은 미확정이다. 이 판에서 확인한 `COUNT=2` 일간 예약과 `COUNT=1`·`COUNT=3` 월간 예약의 `BYHOUR`는 UTC로, 기존 무기한 일간 예약의 `BYHOUR`는 한국 시각으로 반영됐다. RRULE 전체에 한 시간대를 가정하면 예약이 어긋난다.
+- 고침: 10-18 08:00·16:00 KST의 `COUNT=2` 일간 예약은 `BYHOUR=7,23`, 10-19 10:20·19:20·21:20 KST의 `COUNT=3` 월간 예약은 `BYHOUR=1,10,12`로 저장했다. 기존 무기한 일간 `synk-sns`는 `BYHOUR=16`을 유지하고, 10-18·22 16:00 KST의 일회성 월간 예약 두 개는 `BYHOUR=7`로 고쳤다. 모두 `ACTIVE`와 의도한 다음 명목 실행 시각을 확인했으며 실제 예약 실행은 아직 미검증이다.
+- 다시 확인: `~/.codex/sqlite/codex-dev.db`를 SQLite `mode=ro`로 열어 `automations.next_run_nominal_at`(Unix 밀리초)을 UTC+09:00으로 변환해 일정별 의도한 시각과 대조한다. 실제 실행은 `last_run_at`과 `automation_runs`를 따로 본다.
+
+## Codex 세션 기록
+
+### GPT가 끝났는지를 기록 파일의 수정 시각으로 보면 틀린다
+- 증상: 10-03 GPT 작업을 기다리던 감시가 「30분 조용함」으로 끝났다. 그런데 GPT는 그 뒤에도 기록을 쓰고 있었고, 2초 뒤에는 파일을 고쳤다.
+- 원인: Windows는 열린 핸들로 파일 끝에 덧붙이는 동안 LastWriteTime을 늦게 갱신한다. 그래서 rollout 파일의 수정 시각은 세션이 열려 있는 동안 처음 만든 시각 근처에 멈춰 있다.
+- 고침: 기록 파일은 크기 변화와 끝 줄의 `"timestamp"`(UTC)로 본다. 감시 스크립트는 「작업 파일 수정 시각」과 「그 파일을 언급한 기록 줄의 timestamp」 중 늦은 쪽을 기준으로 조용한 시간을 잰다. 처음에는 파일 끝 8MB만 읽고, 그 뒤로는 늘어난 부분만 읽는다. 목표 모드(`<objective>`)가 끝났는지는 부모 rollout의 `update_goal({status:"complete"})` 호출과 마지막 assistant 메시지로 확인한다. 하위 에이전트는 `send_message`의 target `/root`로 부모에게 보고한다. 작업 파일(게임 소스 등)의 수정 시각은 그대로 믿어도 된다.
+- 다시 확인: 열려 있는 최신 rollout의 수정 시각과 끝 줄 timestamp를 견준다. 10-17 15:50에는 수정 시각이 14:51인데 끝 줄은 06:50Z(15:50 KST), 크기는 9.4MB였다.
+
+### 작성자를 찾을 때 보관된 GPT 세션을 빠뜨린다
+- 증상: 10-08 파일 작성자를 `~/.codex/sessions/2026/10/*`에서만 찾다가 못 찾았다. 그 스레드는 하루 만에 `~/.codex/archived_sessions/`로 옮겨져 있었다(10-04~08 보관 세션 165개).
+- 원인: 보관된 세션은 날짜 폴더에서 빠져 `archived_sessions/`로 옮겨진다.
+- 고침: `sessions/<연>/<월>/<일>/`와 `archived_sessions/`를 함께 찾는다. 하위 에이전트 세션은 `session_meta.payload.source.subagent.thread_spawn.parent_thread_id`로 부모 스레드에 묶는다. 10-08에 쓴 스레드 묶기 스크립트(`.tmp/atlas-preserve-20261008/codex_attrib2.js` 등)는 새 노트북에 없다.
+- 다시 확인: `ls ~/.codex/archived_sessions | wc -l`(10-17 새 노트북 19개).
+
+### 기록에서 한글 경로를 찾으면 놓친다
+- 증상: apply_patch 기록에서 경로로 찾으면 한글 경로 파일이 나오지 않는다(10-08).
+- 원인: 기록 JSON의 일부 줄은 한글을 `\uXXXX` 꼴로 남긴다.
+- 고침: 파일 이름의 ASCII 부분으로 다시 찾거나, 한글을 `\u` 꼴로 바꿔서도 찾고, 찾은 줄은 내용으로 확인한다.
+- 다시 확인: `grep -o '\\u[a-dA-D][0-9a-fA-F]\{3\}' <최신 rollout> | wc -l`(10-17 최신 기록에서 263곳).
+
 ## Claude Code·공식 CLI 읽기(계정판)
 
 ### 파이프로 부른 `claude -p`가 표준입력을 3초 기다리고, 로그인이 없어도 「Not logged in」을 내지 않는다
@@ -173,3 +260,27 @@
 - 원인: 망 요청(토큰 갱신 등)이 실패하는 동안 Codex app-server `account/read`가 계정 없이 답한 것으로 보인다. 내부 동작은 확인하지 못했다.
 - 고침: 「로그인 필요」로 읽혀도 바로 믿지 않는다. 그 서비스의 고정 주소에 HEAD로(로그인 정보 없이) 인터넷이 닿는지 보고, 안 닿으면 연결 문제로 둔다. 닿으면 3초 뒤 한 번 더 읽어 같을 때만 「다시 로그인」으로 둔다(`desktop/src/ai-subscriptions.cjs`의 `readConfirmed`). Typecast는 서버가 401·403으로 분명히 답할 때만이라 바로 알린다.
 - 다시 확인: 계정판 시험 「a sign-in that only looks lost for a moment …」. 실제 Claude Code로 로그인 없는 폴더를 읽으면, 인터넷이 닿을 때는 6.5초 뒤 「다시 로그인」이고 확인 주소를 막으면 1.8초 뒤 「인터넷에 연결되지 않아」다.
+
+### 몽골어 검문을 아르곤으로 돌리면 문법 층은 더 잡고 역번역은 고쳐 읽는다
+- 증상: 10-18 관용구 퀴즈 #2 몽골어판으로 `GEMINI_MODEL=gemini-4-argon node tools/몽골어대조.js --파일 … --구독`과 기본(gemini-3.8-flash high)을 견줬다. 일부러 문제 셋(맞춤법 Хөхрөтлөө · 뜻이 틀린 зар · 탯줄 뜻인 хүй унах 예문)을 넣은 초안에서 문법 층은 flash 1개, 아르곤 3개를 잡았다(아르곤은 зар의 격 빠짐까지 짚음). 첫 편 승인본은 둘 다 「정상」(헛경보 없음). 최종본은 flash가 일부러 틀리게 보여 주는 오답 딱지(хүй унах?)를 「어색」으로, 아르곤은 「정상」으로 봤다. 대신 역번역에서 flash는 хүй를 「탯줄」로 직역해 어색함이 드러났고, 아르곤은 의도를 짐작해 「배꼽」으로 옮겨 그 문제를 가렸다. 시간은 flash 39~72초, 아르곤 92~106초.
+- 원인: 강한 모델이 역번역에서 깨진 문장의 의도를 추론해 「고쳐 읽는」 현상(도구 머리말의 08-05 실측과 같은 뿌리). 문법 채점은 원문 없이 보는 층이라 강한 모델의 어휘·격 지식이 그대로 이득이 된다.
+- 고침: 구독 통로 경로표에 `gemini-4-argon`(low·medium·high)을 더했다(`tools/lib/제미나이구독호출.js`, Ultra 계정 agy에서만 됨). 10-18 유호님 「그게 낫겠다」로 `tools/몽골어대조.js`가 `--구독`일 때 **문법 채점은 gemini-4-argon high, 직역 역번역은 flash high**로 나눠 부른다(화면 첫 줄 `모델: … (문법 채점은 gemini-4-argon …)`, 장부에 `문법모델`). `GEMINI_GRAMMAR_MODEL`로 채점 모델을 바꾸고, `GEMINI_MODEL`만 주면 두 층 모두 그 모델(비교용). 무료 API 문은 그대로 한 모델. 같은 날 이 조합으로 몽골어 「배꼽」 낱말을 견줬더니 flash 직역이 хүй를 「탯줄」, хүйс를 「배꼽」으로 옮겨 хүйс를 골랐다.
+- 다시 확인: 비교 원자료 `.tmp/argon-mn-compare-20261018/`(A 초안·B 첫 편·C 최종, run.sh). 같은 파일을 두 모델로 돌려 문법 층 지적 수와 역번역의 직역 정도를 견준다.
+
+### 큰 검수 자료를 한 번에 넘기면 아르곤이 뒷부분을 못 읽고 0건으로 끝날 수 있다
+- 증상: 10-18 공식 CLI 1.4.2에 실제 코드 묶음 745,066바이트를 stdin user event 하나로 전달했다. 응답은 SUCCESS였지만 coverage에 `<truncated 553485 bytes>`와 B·C 사례 미열람을 명시했다. 이 0건은 검수 통과가 아니다.
+- 원인: 큰 단일 입력의 전달·문맥 구성 중 잘림이 발생했다. 어느 내부 단계의 한도인지는 확정하지 않았으며 모델의 100만 토큰 창과 같은 한도로 보지 않는다.
+- 고침: 16,000바이트씩 47개 파일로 나누자 전부 읽었지만, 다음 문맥 압축에서 `Compaction failed`가 반복돼 그 실행도 제외했다. 최종 비교는 세 커밋을 네 기능 묶음으로 나눠 변경 전·후 코드와 필요한 보조 자료를 각각 69~168KB의 같은 stdin 입력으로 두 모델에 준다. 마지막 표식을 실제로 확인한 실행만 채점한다.
+- 다시 확인: `.tmp/review-compare-20261018/v3/manifest.json`·`run-audit.json`에서 두 모델의 입력 SHA·종료 표식·도구 사용 없음·완료 상태를 확인한다. `v2/`에는 47개 읽기 뒤의 압축 실패를 보존하며, 미열람·중단과 검수 결과 0건을 구분한다.
+
+### Windows의 하위 Codex 읽기 전용 실행이 파일 읽기도 정책으로 거절한다
+- 증상: 10-18 `codex exec --sandbox read-only`의 읽기 전용 `type`·`Get-Content`가 모두 `blocked by policy`였고 자료를 읽지 못했다. 최종 findings는 비었지만 coverage는 검수 미실시라고 밝혔다.
+- 원인: 해당 하위 CLI 실행의 셸 정책이 명령 실행을 거절했다. 샌드박스나 권한을 완화하지 않았으며 정책 내부의 정확한 이유는 미확정이다.
+- 고침: 권한을 바꾸지 않고 파일 접근이 필요 없는 stdin 전달을 쓴다. 최종 비교의 두 모델 모두 같은 네 묶음을 이 방식으로 받고, 접근 실패·큰 입력 잘림·압축 실패 실행은 점수에서 제외한다.
+- 다시 확인: 같은 비교의 `v2/runs/gpt/final.txt`·stderr와 `v3/run-audit.json`을 대조한다. 자료를 못 읽은 실행을 버그 0건으로 채점하지 않는다.
+
+### 제미나이 검문이 싱할라어 ZWJ를 「빠졌다」고 잘못 짚는다
+- 증상: 10-18 `tools/현지어대조.js`로 싱할라어를 두 번 돌렸는데 두 번 다 아르곤이 「ජයග්‍රහණය의 ZWJ가 빠져 결합이 깨졌다」며 「어색」을 냈다.
+- 원인: 원문에는 U+200D가 들어 있다(locales.ts·검문 파일 모두 `… dca 200d dbb …`). 모델이 받은 글에서 ZWJ를 못 보는 쪽이다.
+- 고침: ZWJ·ZWNJ 지적은 코드 포인트로 먼저 확인하고, 들어 있으면 그 지적만 오판으로 적고 넘어간다. 다른 지적은 그대로 고친다.
+- 다시 확인: `node -e`로 해당 낱말의 코드 포인트를 찍어 200d가 있는지 본다.

@@ -1,7 +1,7 @@
 # 현장 노트 · 영상·소리(ffmpeg·자막·HyperFrames·TTS)
 
 > 판: ffmpeg 9.0(gyan.dev full) · HyperFrames 0.8.x(10-13 코드 읽음) · GSAP · faster-whisper(small·medium·large-v3-turbo, 이 PC CPU) · Vertex Gemini TTS · Typecast API
-> 마지막 확인: 2026-10-17(대부분 10-02~10-13 실측)
+> 마지막 확인: 2026-10-18(대부분 10-02~10-13 실측, Remotion 판 전환·경로 줄바꿈 10-18)
 > 쓴 AI: Claude Code(Claude Opus 5.5) — Claude 메모에서 옮김
 
 영상 만드는 방법(장면을 한 번에 뽑기, 편집에서 덜어 내기, 톤)은 [만족 사례 장부](../마케팅/제작양식/만족사례_장부.md)가 정본이다. 편집 이음새는 S18, 모션그래픽은 S16·S17을 본다. 여기는 ffmpeg·렌더·목소리 도구가 오류 없이 틀린 결과를 낸 함정이다. 틀은 [README](README.md)를 따른다.
@@ -32,6 +32,12 @@
 - 고침: 1패스로 input_i를 잰 뒤 `volume=<-14 - input_i>dB,alimiter=limit=0.84:attack=1:release=60:level=false`(필요하면 limit 0.75)로 올린다. 음악이 깔린 믹스는 loudnorm 선형이 잘 된다. amix는 가장 긴 입력에서 끝나니 영상 길이만큼 `anullsrc`를 한 줄 더 섞어 길이를 채운다.
 - 다시 확인: 최종 파일을 `ebur128=peak=true`로 다시 재서 −14.5±0.3 LUFS · 최대 −1.2 dBFS 안인지 본다.
 
+### 색 맞춤 LUT를 건 얼굴 컷만 피부가 수채화처럼 뭉개진다
+- 증상: 한강 v33 「…아니요」 얼굴 컷의 볼·이마가 평평한 색 덩어리로 끊겨 「수채화처럼 변했다」(10-18 유호님). 같은 계열 LUT를 건 PATH 상담사 컷도 약하게 얼룩.
+- 원인: `[새판]도구/색_맞추기_LUT.py --밝기분포 1`로 만든 LUT는 밝기 분위수까지 맞춰 곡선이 울퉁불퉁하다. 이걸 480p 8비트 압축 영상에 키우기 전에 걸면 피부 단계가 계단처럼 늘어난다. 16비트로 걸어도 표 자체의 울퉁불퉁함은 남는다. 생성 클립 탓이 아니다(원본 프레임은 멀쩡).
+- 고침: 평균·폭만 맞춘 LUT를 쓰거나, 꼭 그 색 방향이 필요하면 표를 다듬는다(`[새판]도구/LUT_부드럽게.py`, 33격자 시그마 1.5). 어느 쪽이든 1080으로 키운 뒤 `format=gbrp16le,lut3d=…:interp=tetrahedral,format=yuv420p`로 건다(한강 조립 옵션 `lut_hq`).
+- 다시 확인: 같은 프레임을 원본 · LUT 판으로 얼굴 부분만 크게 잘라 나란히 본다. 전체 화면 썸네일에선 안 보인다.
+
 ## 렌더(HyperFrames·GSAP)
 
 아래 HyperFrames 항목은 기존 영상 수정·재현의 기술 참고다. 새 영상의 도구는 [제작 도구 선택](../마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다.
@@ -41,6 +47,12 @@
 - 원인: GSAP `tl.fromTo(el, {opacity:1, …}, {…}, 30.9)`의 from은 immediateRender라 타임라인을 만드는 순간 적용된다. from이 opacity 0인 등장 효과는 문제없다.
 - 고침: 보이는 값에서 시작하는 효과(리플·번쩍임)는 `tl.set(el, {opacity:1, scale:0.6}, t); tl.to(el, {opacity:0, scale:3, …}, t)`로 쓴다. 같은 요소에 CSS `transform`과 GSAP 변형을 같이 쓰면 hyperframes check가 `gsap_css_transform_conflict`로 막으니, 처음 상태는 CSS 대신 `tl.set(…, 0)`으로 준다.
 - 다시 확인: 효과 시각 전의 snapshot 프레임에 그 요소가 안 보인다.
+
+### Windows에서 `render --variables '{"hook":"C"}'`를 node로 부르면 렌더가 실패한다
+- 증상: `spawnSync('npx', [..., '--variables', JSON.stringify(vars)], { shell: true })`로 부른 C안 렌더가 바로 실패했다(10-17 yuhobuilds 노트북 이사 편, 0.8.167). 같은 렌더를 변수 없이 부르면 된다.
+- 원인: Windows에서 npx(.cmd)를 쓰려고 `shell: true`를 주면 인자가 이스케이프 없이 이어 붙어 JSON 따옴표가 빠진다(node DEP0190 경고가 같이 뜬다).
+- 고침: 변수를 파일로 써서 `--variables-file <json> --strict-variables`로 넘긴다. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/렌더.cjs`.
+- 다시 확인: `--strict-variables`를 준 렌더가 끝나고, 그 판의 0초 프레임에 변수 분기(훅 C 제목)가 보인다.
 
 ### snapshot·check·미리보기에서는 멀쩡한데 렌더에서만 그림이 404다
 - 증상: 실땀 그림이 렌더에서만 빠진다(`[FileServer] 404`, 10-13 SNS 키트).
@@ -72,6 +84,18 @@
 - 고침: 값 칸은 보통 글줄(`white-space:nowrap`)로 두고, 작은 고리는 앱 CSS의 `vertical-align`으로 맞춘다.
 - 다시 확인: 정지컷에서 「62% 남음」 사이가 띄어져 있는지 본다.
 
+### 밝은 판이 어두운 창으로 바뀌는 몇 프레임에 회색 판이 비친다
+- 증상: 10-18 세션 공유 편 Remotion 본편에서 종이 판 → 어두운 로그 창 전환 3~6프레임과 폴더 카드가 사라지는 프레임에 회색 판·회색 카드가 찍혔다(Fable 검수 「반투명 회색 유령 카드」). 30프레임 간격 시트에서는 안 보이고 2~3프레임 간격 띠에서만 보였다.
+- 원인: 밝은 판을 opacity로 내리면 검정 무대가 비쳐 회색이 된다. 어두운 창을 clip으로 덮으면서 밝은 판도 같이 흐리면(`paper = 1 − dark`), 아직 안 덮인 부분이 회색이다. 밝은 판과 어두운 판을 서로 반대로 페이드해도 같다.
+- 고침: 밝은 판은 다 덮일 때까지 1로 두고 덮인 뒤에 내린다(`paper = dark < 1 ? 1 : 0`). 사라질 카드는 흐리지 말고 다른 판 밑으로 모으거나 위·아래에서 덮는다. 같은 색 판에서 판으로 넘길 때(확대한 칸 → 사이드바)는 새 판 종이를 처음부터 1로 두고 내용만 바꾼다. 보기 `docs/마케팅/yuhobuilds_세션공유_20261017/remotion/src/full/kit.tsx`의 `Shell`.
+- 다시 확인: 전환 구간을 `ffmpeg -i out/x.mp4 -vf "select='between(n\,A\,B)*not(mod(n-A\,3))',scale=270:-1,tile=10x1" -frames:v 1 strip.png`로 뽑아 회색 판이 없는지 본다.
+
+### 경로에 ZWSP만 넣으면 하이픈에서도 줄이 바뀐다
+- 증상: 10-18 로그 줄의 긴 경로를 `\` 뒤 ZWSP(U+200B)로 끊으려 했는데 「…\claude-」 / 「code-sessions\…」처럼 하이픈에서 끊겼다. 강조 낱말 「(symlink/file plant)」도 두 줄로 갈려 밑줄이 둘로 보였다.
+- 원인: Chrome은 하이픈 뒤도 기본 줄바꿈 자리로 본다. ZWSP는 자리를 더할 뿐 다른 자리를 막지 않는다.
+- 고침: 경로를 `\`로 나눠 빈칸 없는 마디마다 `white-space:nowrap` span으로 감싸고 마디 사이에만 ZWSP를 둔다. 강조 낱말 span도 nowrap. 창이 화면 오른쪽 밖으로 이어지는 배치라면 글 상자 폭은 화면(1080) 안까지만 준다. 보기 같은 폴더 `ActOne.tsx`의 `atSep`.
+- 다시 확인: `npx remotion still src/index.ts full-a x.png --frame=640`에서 줄이 `\` 자리에서만 바뀌고 강조 밑줄이 한 줄이다.
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다
@@ -79,6 +103,18 @@
 - 원인: 지시와 대본이 한 덩어리라 모델이 경계를 못 가른다.
 - 고침: `### DIRECTOR'S NOTES (never read these notes aloud)` / `### TRANSCRIPT` 머리글로 가르고, 메모에는 대본 글을 넣지 않는다(18개 모두 정상). 숫자는 읽는 법이 갈리니(65살·3년·1층) 읽을 글을 따로 적는다. 10-04 Vertex에서 되는 모델: `gemini-3.8-flash-tts`(wav), `gemini-3.1-flash-tts-preview`, `gemini-2.5-pro-tts`, `gemini-2.5-flash-tts`(`gemini-3.8-pro-tts`는 없다).
 - 다시 확인: 구운 뒤 받아쓰기로 확인한다(아래 받아쓰기 항목, 스크립트 보기 `experiences/entry-check/art-source/voice_check.py` — 로컬 faster-whisper, 0원). 길이가 글자 수에 비해 길면(초당 2.2자 미만) 지시문을 읽은 것이다.
+
+### 목소리 후보를 같은 대본으로 읽히면 몇 목소리는 수십 초를 지어내거나 한 문장을 두 번 읽는다
+- 증상: 10-17 45초 대본(머리글로 메모·대본을 가른 판)을 `gemini-3.8-flash-tts`로 9개 읽혔더니 Charon·Fenrir·Sadaltager·Zubenelgenubi가 107~126초로 나왔다. 둘째 문장 자리에 대본에 없는 이야기를 50초 넘게 지어냈다. 그 문장을 「파일 96만 개.」 → 「파일만 96만 개였어요.」로 다듬은 판은 다섯 목소리 중 넷이 그 문장을 두 번 읽었다.
+- 원인: 모르겠다. 명사로 끝나는 짧은 문장과 숫자가 이어지는 자리에서만 일어났다(같은 메모로 Achird·Puck은 대본대로 읽었다).
+- 고침: 길이부터 거른다(대본 음절 ÷ 6.5보다 1.3배 넘게 길면 버림). 남은 것만 받아쓰기로 재고 일치 0.95 아래는 버린다. 문장을 고치면 지어내기가 다른 모양(반복)으로 옮겨 갈 수 있으니, 잘 읽은 판이 있으면 대본을 그 판에 맞춰 되돌린다. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/README.md` 「목소리」.
+- 다시 확인: `한번에_맞추기.py` 줄의 「말」 길이와 「일치」 값.
+
+### 받아쓰기 정렬이 숫자가 많은 문장 경계를 0.3~0.7초 잘못 잡는다
+- 증상: 10-17 범수 테이크(대사 14줄을 쉼 0.35~0.5초로 이은 판)를 `한번에_맞추기.py`(faster-whisper small)로 정렬했더니 p1→p2·f1→f2·f2→k1 경계가 앞 대사 끝 = 다음 대사 시작으로 붙었다. silencedetect로 본 실제 무음(예: 28.73~29.31초)과 0.3~0.7초 어긋나, 장면 전환·자막이 말을 앞질렀다.
+- 원인: 「5기가」「2만 7천 개」「암호화」처럼 받아쓰기가 숫자·다른 글자로 적는 곳에서 글자 맞추기(difflib)가 빈 구간을 앞뒤로 메우며 경계를 끌어당긴다.
+- 고침: Typecast는 `/v1/text-to-speech/with-timestamps` 응답에 낱말·글자 시각(`words`·`characters`)을 준다. 대사마다 구워 이었다면 이은 자리(앞 무음 + 대사 길이 + 쉼)를 계산하고, 낱말 시각을 대사 파일의 첫 소리(−40 dBFS)에 맞춰 옮긴다 → 경계가 실제 무음과 0.01~0.02초 안. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/음성/범수_시각.py`. Typecast 낱말 수는 띄어쓰기 낱말 수와 같다(「5기가가」가 낱말 하나).
+- 다시 확인: 만든 take.json의 대사 시작·끝을 `silencedetect=noise=-40dB:d=0.2` 무음 자리와 나란히 본다.
 
 ### 대사를 줄마다 따로 구워 이으면 뚝뚝 끊긴다
 - 증상: 한 줄씩 만들어 쉼을 넣어 이은 45초 나레이션을 유호님이 「흐름이 뚝뚝 끊기는 느낌」이라고 했다(10-04).
@@ -91,20 +127,16 @@
 - 원인: 기호를 글자 그대로 읽고, 낱말 하나짜리는 문맥이 없다. 잔량은 늦게 반영된다(실제는 1글자 1크레딧, 23,409자 → 23,409).
 - 고침: 걸린 줄만 소리로 읽을 글을 따로 준다(화면 글자는 그대로). 낱말 끝에 마침표를 붙여 다시 구우면 흐린 낱말 19개 중 13개가 또렷해졌다. 굽기 비용은 글자 수로 미리 셈해 알린다. 도구는 `tools/미니게임_목소리.cjs`(키는 유호님이 이 PC에서 넣는다 — 키를 채팅으로 받지 않는다). 실제 길이는 어림보다 길다(「Nope!」 0.8초, 「Say it!」 1.0초) — 굽고 나서 길이를 재 배치·`atempo`(1.3배까지)로 맞춘다.
 - 다시 확인: 받아쓰기로 걸린 줄을 다시 본다. 비용은 Typecast 잔량을 한참 뒤에 다시 읽는다.
+- 10-17 더한 경우(관용구 퀴즈 #2, 하나 happy 1.3): 「Laughs hard!」가 받아쓰기 small·medium 모두 「Really? Hard!」·「Whoey! Hard!」로 나왔고 1.86초로 늘어졌다 → 「Laughing so hard!」로 바꾸자 바로 맞았다. 짧은 영어 두 낱말에 감정 세기를 크게 주면 앞 낱말이 뭉개질 수 있다. 또 Typecast 줄 파일 끝에는 0.2~0.5초 숨·여운이 남아(−50dB 무음 걷기로 안 걷힘) 다음 줄과 겹치니, 받아쓰기로 잰 마지막 낱말 끝 + 0.12초에서 자르고 0.06초 페이드한다(같은 폴더 `나레이션.cjs`의 `cut`). 「Nope!」「Three!」 같은 한 낱말은 받아쓰기 시각이 짧게 나와 자르지 않는다.
+- 10-18 더한 경우(같은 영상 100 BPM 판): 빨리 돌릴 때(1.1~1.25배) 맞던 줄이 원래 빠르기(1.0~1.05배)로 되돌리자 믹스에서 「Heavy mouth?」→「Happy Mouth」, 「Believes anything!」→「Please anything」으로 들렸다(깨끗한 원본은 맞음). 줄 머리 첫 자음이 약해서다. 앞에 짧은 말을 붙여 「A heavy mouth?」·「They believe anything!」로 다시 굽자 믹스에서도 맞았다(화면 글은 그대로).
 - 10-17 더한 경우(synkbrief 「GPTs·젬」, 범수 1.12배): 짧은 외래어가 문장 머리에서 빨리 지나가면 묻힌다. 「그럼 젬은요?」는 받아쓰기(faster-whisper medium)에 「그럼 쟤는요?」, 「젬은 네.」는 「재문 내」로 나왔다. 앞에 맥락 낱말을 붙이고(「그럼, 제미나이 젬은요?」) 쉼표로 숨을 주면(「젬은, 네.」) 「재미나이잼은요」·「GEM은」으로 또렷해졌다. 「GPTs」는 「지피티즈」가 「GPTG」로 뭉개져 「지피티에스」로 읽혔다(받아쓰기 「GPTS」).
-
-### 새 노트북에는 Typecast 키 파일이 없다
-- 증상: 10-17 `docs/마케팅/synkbrief_GPTs젬_스킬전환_20261017/소리/나레이션.mjs`가 `~/SYNK_보안/타입캐스트.txt`를 못 찾았다(같은 경로를 `tools/미니게임_목소리.cjs`·`tools/한글단계_목소리.cjs`도 쓴다).
-- 원인: 노트북 옮기기(10-17)에서 `SYNK_보안` 폴더가 넘어오지 않았다.
-- 고침: 막다른 길 — 키는 비밀값이라 AI가 옛 노트북에서 찾아 옮기지 않는다. 유호님이 `C:/Users/q1212/SYNK_보안/타입캐스트.txt`에 넣으면 된다(옛 노트북은 10-31까지). 10-17 15:51에 키 파일이 들어와 지금은 된다(같은 날 16시 yuhobuilds 세션 공유 편 범수 굽기 성공). 10-17에는 PowerShell로 폴더와 빈 파일을 만들고(`New-Item`은 파일이 없을 때만) `Start-Process notepad.exe <파일>`로 메모장을 띄워 드렸더니, 유호님이 붙여 넣고 저장해서 바로 풀렸다(키 값은 읽지 않는다).
-- 다시 확인: PowerShell `Test-Path "$env:USERPROFILE\SYNK_보안\타입캐스트.txt"`, 그다음 `--시험`처럼 짧은 굽기가 지나가는지 본다.
-- 10-17 더한 것: LAB 관용구 퀴즈 `나레이션.cjs`의 원본 캐시(`Documents/synk-vendor/lab-topik-narration/raw/`)도 새 PC에 없어서, 첫 편에서 산 「Three!」「Nope!」 같은 줄도 다시 샀다(관용구 퀴즈 #2 v4 두 판 277자). 캐시 폴더는 굽기 때 새로 생긴다.
 
 ### 효과음·킥이 말머리에 겹치면 첫 자음이 묻힌다
 - 증상: 받아쓰기에서 「발이」가 「다리·파리」로 들렸다. 효과음 없는 같은 말은 정확했다(10-13, 장부 S17).
 - 원인: 효과음·음악 구간 첫 킥·베이스가 첫 자음을 가린다. BGM −12dB로는 부족했다.
 - 고침: 말하는 동안 효과음을 낮추고, 관용구 제목처럼 중요한 줄은 0.3초 전부터 BGM을 −24dB로 내린다.
 - 다시 확인: 최종 믹스에서 줄마다 잘라 받아쓴다.
+- 10-17 다시(관용구 퀴즈 #2 v4, Claude): 영어 줄을 효과음과 같은 박에 놓자 깨끗한 원본은 맞는데 믹스에서만 「Heavy mouth?」→「Happy Mouse!」, 「Thin ears?」→「Then ears?」, 「Believes anything!」→「I don't believe anything!」로 들렸다. 효과음을 30%로 줄이는 것으로는 모자랐다. 나레이션판에서는 줄머리와 같은 박의 효과음(그림 「뽀잉」, 정답 뒤 반짝·몽글)을 아예 빼고, 오답·정답 줄의 BGM을 −8dB → 약 −16dB로 내리고, 정답 줄을 「딩」 뒤 0.2초로 늦추자 「Heavy mouth?」는 바로 들렸다. 남은 「Sold!→soul」 같은 한 낱말은 받아쓰기 쪽 한계로 보고 귀로 판단한다. 코드 `docs/마케팅/LAB_관용구퀴즈2_20261017/remotion/src/kids/KidsFilm.tsx`(voSkip·depth).
 
 ### 받아쓰기 small 판정이 자르는 자리마다 흔들린다
 - 증상: 같은 믹스에서 faster-whisper small이 5번 중 2~3번만 맞다고 한다. 낱말 하나짜리는 받아쓰기 자체가 자주 틀린다(「코→cool」, 「너머/넘어」).
@@ -123,6 +155,31 @@
 - 원인: carve의 전체 크기 맞춤 단계(fromCarve `gain`)가 일부러 천천히 돌아온다.
 - 고침: carve의 목소리 대역 칸(말을 따라 바로 돌아옴)은 두고 크기 맞춤 단계만 빼고, 말할 때만 −8dB · 말끝 0.15초 뒤부터 0.45초에 걸쳐 원래대로 · 1초보다 짧은 틈은 낮춘 채 두는 duck 단계를 직접 쓴다. 대사는 `data-start = 첫 말소리 시각 − 파일 앞 무음`으로 놓는다(carve는 `data-media-start`를 무시한다). 앞뒤 파일이 겹치면 트랙을 번갈아 둔다(같은 트랙에서 겹치면 `duplicate_audio_track` 경고). `@hyperframes/core`는 저장소에 깔지 않고 임시 폴더에 깔아 `--core`로 준다. 한 번에 하는 보기 스크립트는 `docs/마케팅/LAB_한글날_내이름한글로_20261002/음성/넣기.cjs`.
 - 다시 확인: 말 사이 구간의 크기를 목소리 없는 판과 구간별로 견준다(+0.5dB 안).
+
+### 새 노트북에는 Typecast 키 파일이 없다
+- 증상: 10-17 `docs/마케팅/synkbrief_GPTs젬_스킬전환_20261017/소리/나레이션.mjs`가 `~/SYNK_보안/타입캐스트.txt`를 못 찾았다(같은 경로를 `tools/미니게임_목소리.cjs`·`tools/한글단계_목소리.cjs`도 쓴다).
+- 원인: 노트북 옮기기(10-17)에서 `SYNK_보안` 폴더가 넘어오지 않았다.
+- 고침: 막다른 길 — 키는 비밀값이라 AI가 옛 노트북에서 찾아 옮기지 않는다. 유호님이 `C:/Users/q1212/SYNK_보안/타입캐스트.txt`에 넣으면 된다(옛 노트북은 10-31까지). 10-17 15:51에 키 파일이 들어와 지금은 된다(같은 날 16시 yuhobuilds 세션 공유 편 범수 굽기 성공). 10-17에는 PowerShell로 폴더와 빈 파일을 만들고(`New-Item`은 파일이 없을 때만) `Start-Process notepad.exe <파일>`로 메모장을 띄워 드렸더니, 유호님이 붙여 넣고 저장해서 바로 풀렸다(키 값은 읽지 않는다).
+- 다시 확인: PowerShell `Test-Path "$env:USERPROFILE\SYNK_보안\타입캐스트.txt"`, 그다음 `--시험`처럼 짧은 굽기가 지나가는지 본다.
+- 10-17 더한 것: LAB 관용구 퀴즈 `나레이션.cjs`의 원본 캐시(`Documents/synk-vendor/lab-topik-narration/raw/`)도 새 PC에 없어서, 첫 편에서 산 「Three!」「Nope!」 같은 줄도 다시 샀다(관용구 퀴즈 #2 v4 두 판 277자). 캐시 폴더는 굽기 때 새로 생긴다.
+
+### 새 Remotion 프로젝트는 S16 설정을 가져와 세우고, 시안 렌더 음량은 따로 올린다
+- 증상: 10-17 S16(4.0.535)의 package.json·package-lock.json·remotion.config.ts·tsconfig.json·`src/lib/fonts.ts`·`anim.tsx`와 `public/fonts/`를 복사해 `npm ci --prefer-offline`으로 세웠더니 `npm warn install-scripts esbuild@0.28.1 (postinstall)`이 떴다. 나레이션 없이 BGM 0.32 + 띄엄띄엄 효과음으로 렌더한 시안은 −26.2 LUFS였다.
+- 원인: 새 npm이 설치 스크립트를 기본으로 막는다(esbuild 바이너리는 선택 의존으로 이미 들어와 렌더는 됐다). 음량은 말이 없으니 낮게 나온 것.
+- 고침: 경고는 두고 `npx remotion still`·`render`로 확인했다. 시안 음량은 `ffmpeg -c:v copy -af "volume=10dB,alimiter=limit=0.84:level=false"` 뒤 ebur128로 −16.4 LUFS·봉우리 −1.5 dBFS를 확인했다(loudnorm은 띄엄띄엄 소리에서 모자란다 — 위 항목). 본편은 나레이션 기준으로 섞는다.
+- 다시 확인: `npx tsc --noEmit -p .`와 `npx remotion still src/index.ts <id> out/x.png --frame=10`이 오류 없이 끝나는지.
+
+### Remotion 박자표 같은 모듈 상수는 컴포지션 props로 못 바꾼다
+- 증상: 10-18 관용구 퀴즈 #2를 100 BPM으로 늦추려는데 박 길이 `B`·`T`·`TOTAL`이 `timeline.ts`의 모듈 상수라 컴포지션마다 다른 값을 줄 수 없었다(같은 번들에 120 BPM 판도 있음).
+- 원인: 모듈 상수는 번들 때 한 번 정해진다. defaultProps는 컴포넌트 안에서만 읽힌다.
+- 고침: `REMOTION_` 접두 환경 변수는 번들 안 `process.env`로 들어간다 — `export const B = process.env.REMOTION_TEMPO === '100' ? 18 : 15`, 렌더는 `REMOTION_TEMPO=100 npx remotion render …`. `Root.tsx`가 템포에 맞는 컴포지션만 등록하게 해 다른 템포 판을 잘못 뽑지 않게 했다. 숫자로 박은 프레임(15·30·96 등)은 박 단위로 바꿔 둔다. 음악 재배치본은 rubberband(`tempo=0.8333:pitchq=quality:transients=crisp:detector=percussive`)로 늘리면 박 자리가 그대로 1.2배가 된다.
+- 다시 확인: `REMOTION_TEMPO=100 npx remotion compositions src/index.ts`가 36.00초를, 변수 없이 30.00초를 보인다.
+
+### Remotion 나레이션 믹스는 봉우리가 0dBFS를 넘는다
+- 증상: 10-17 −15.9 LUFS 나레이션 + BGM 0.5(말할 때 −9dB) + 키트 효과음 30개를 Remotion으로 렌더했더니 −13.0 LUFS · 봉우리 +0.1 dBFS였다.
+- 원인: Remotion은 트랙을 그대로 더하고 리미터가 없다. 효과음이 말과 겹치는 순간 넘친다.
+- 고침: 렌더 뒤 영상은 복사하고 소리만 `-af "volume=-1.5dB,alimiter=limit=0.84:attack=3:release=60:level=false"`로 다시 인코딩했다 → −14.5 LUFS · −1.4 dBFS. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/remotion/렌더.mjs`.
+- 다시 확인: 최종 파일의 `ebur128=peak=true`가 −14.5±0.5 LUFS · −1 dBFS 아래.
 
 ## 렌더 장비
 
@@ -185,3 +242,15 @@
 - 원인: 크롬 로그인 `huggingface.co/settings/billing` 화면은 분 단위(0/40분)지만, 페이지 `data-props` 안 `"zeroGpu":{"current":<남은 초>,"base":2400,"resetsAt":…}`는 초 단위다. 차감은 예약 시간이 아니라 실제 GPU 초 × 크기 배수(xlarge 2배)다: 10-17 조건 7.5초 → 14.8초, 생성 109초 → 218.1초. 다 쓰면 선불 잔액에서 자동으로 빠진다(10분 $1). `resetsAt`은 첫 사용 24시간 뒤.
 - 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
 - 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
+
+### 사전검사 뒤 대본만 고치면 옛 대조 결과로 전달될 수 있다
+- 증상: 10-17 영상·자막은 그대로 두고 검사에 사용한 대본·받아쓰기를 고치거나 지워도 `완성본등록.mjs --inspection`이 통과했다. 대본만 제공해 대조 상대가 없어도 별도 안내가 없었다.
+- 원인: 전달 때 영상·자막 SHA256만 확인했고, 대본 대조는 상대 입력이 없으면 건너뛰었다.
+- 고침: 검사에 사용한 대본·받아쓰기의 원래 경로·존재·SHA256도 전달과 재사용 때 확인한다. 대조 상대 누락은 검토 안내, 제공된 빈 원문은 차단으로 남긴다. 영상만 기술 검사하는 사용은 유지한다.
+- 다시 확인: `node --test tests/영상사전검사.test.mjs tools/완성본등록.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.test.mjs` 34/34 통과. 수정·삭제된 원문 전달 차단, 원문 복원 후 같은 전달 재사용, CLI 경고 0·차단 2·실행 실패 1 확인. 실제 운영 인박스·게시에는 적용 실행하지 않았다.
+
+### Remotion Node API(bundle·renderStill)는 REMOTION_ 환경 변수를 넘기지 않는다
+- 증상: 10-18 관용구 퀴즈 #2 나라별판에서 `@remotion/bundler`·`@remotion/renderer`로 번들을 한 번 만들어 정지컷을 찍자 `Could not find composition kids-quiz-v5b-th`가 났다. 목록에는 120 BPM 판만 있었다.
+- 원인: CLI는 `REMOTION_`으로 시작하는 환경 변수를 번들 안 `process.env`로 넘겨 주지만 Node API는 넘기지 않는다. `REMOTION_TEMPO=100`이 비어 Root가 100 BPM 판을 등록하지 않았다. 스크립트에서 `process.env`에 넣어도 같다.
+- 고침: `selectComposition`·`renderStill`·`renderMedia`에 `envVariables: { REMOTION_TEMPO: '100' }`를 직접 준다(`remotion/현지어_정지컷.mjs`·`현지어_렌더.mjs`). 한글 경로는 `fileURLToPath(import.meta.url)`로 바꿔야 `%EB…`로 남지 않는다.
+- 다시 확인: 같은 스크립트로 26개 채널 정지컷·영상이 모두 나왔고, 뉴질랜드판은 게시된 영어판과 끝 계정만 달랐다.
