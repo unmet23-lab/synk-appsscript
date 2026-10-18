@@ -417,9 +417,10 @@ const Tool: React.FC<P> = ({ s }) => {
   const t1 = wf(s, 'v09', 1); // 날짜와
   const t2 = wf(s, 'v09', 3); // 일은
   const phone = settle(f, s.land, 12);
-  const screen = f < t1 + 3 ? { src: 'tool_1_where.jpg', y: 420 } : f < t2 + 3 ? { src: 'tool_2_who.jpg', y: 420 } : { src: 'tool_6_result.jpg', y: 0 };
-  const tap1: [number, number] = [PH.left + 360 * PK, PH.top + (1386 - 420) * PK];
-  const tap2: [number, number] = [PH.left + 360 * PK, PH.top + (964 - 420) * PK];
+  // 캡처는 게시일에 공개된 도구에서 다시 찍는다(D-숫자가 그날 값). 10-18 판: 375×812 배율 2, 고른 칸 가운데 y는 「둘 다」 1422 · 「내가 만들었어요」 965
+  const screen = f < t1 + 3 ? { src: 'tool_1_where_1018.jpg', y: 420 } : f < t2 + 3 ? { src: 'tool_2_who_1018.jpg', y: 420 } : { src: 'tool_6_result_1018.jpg', y: 0 };
+  const tap1: [number, number] = [PH.left + 360 * PK, PH.top + (1422 - 420) * PK];
+  const tap2: [number, number] = [PH.left + 360 * PK, PH.top + (965 - 420) * PK];
   return (
     <>
       <HeadF right="내 결과" />
