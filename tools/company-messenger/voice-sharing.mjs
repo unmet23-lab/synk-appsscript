@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 const iso = value => value == null ? null : new Date(value).toISOString();
-export function createVoiceSharing({ db, now, fail, provider, validateRequestId, permissionFor, encryptionReady, invalidate, publish, meter }) {
+export function createVoiceSharing({ db, now, fail, provider, validateRequestId, permissionFor, encryptionReady, fenceCredential, invalidate, publish, meter }) {
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
@@ -44,9 +44,11 @@ export function createVoiceSharing({ db, now, fail, provider, validateRequestId,
       if (latest?.state !== 'stopping') continue;
       const call = callFor(admission);
       try {
-        await provider.updatePermissions(call.room_name, admission.id, permissions(admission));
-        // The old broader JWT is revoked by Cloud UpdateParticipant. Still wait
-        // for current media disappearance before releasing the single slot.
+        const revoked = await provider.updatePermissions(call.room_name, admission.id, { ...permissions(admission), revokeTokens: true });
+        fenceCredential(admission, revoked);
+        // Explicit revocation also removes this transport. Preserve the audio
+        // admission, but withhold its replacement JWT until the cutoff passes.
+        // Still confirm media disappearance before releasing the single slot.
         const remote = await provider.listParticipants(call.room_name);
         permissionFor(admission);
         const participant = remote.find(member => member.identity === admission.id && member.state !== 'DISCONNECTED');

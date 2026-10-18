@@ -335,9 +335,13 @@ export function createVoice(deps) {
     } catch (error) { if (alive(s) && [401, 403].includes(error.status)) endSession(s, error.status === 401 ? 'auth' : 'permission_revoked'); }
   }
   async function flowError(s, error) {
-    if ([404, 410].includes(error.status) || error.code === 'VOICE_ENDED') { await confirmEnded(s); return; }
-    if (error.status === 401) { endSession(s, 'auth'); return; }
-    if (error.status === 403) { await confirmEnded(s, 'permission_revoked'); return; }
+    // A Cloud JWT can be revoked between resume and Room.connect. Its HTTP
+    // status says nothing about the company login; recheck current/resume.
+    if (!error.voiceConnect) {
+      if ([404, 410].includes(error.status) || error.code === 'VOICE_ENDED') { await confirmEnded(s); return; }
+      if (error.status === 401) { endSession(s, 'auth'); return; }
+      if (error.status === 403) { await confirmEnded(s, 'permission_revoked'); return; }
+    }
     if (error.voiceFatal) { await leave({ silent: true }); toast(error.message, true); return; }
     // Transient network/provider failures recover through current/resume with
     // backoff; the server's connect/reconnect grace decides when the call ends.

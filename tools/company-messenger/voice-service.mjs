@@ -84,7 +84,7 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
   const invitations = createVoiceInvitations({ db, now, fail, validateRequestId, available: activeFeature, publish, visible: invitationVisible });
   let encryption;
   const cleanupPending = () => Boolean(one("SELECT 1 FROM voice_admissions WHERE state='revoking'") || one('SELECT 1 FROM voice_orphans'));
-  const sharing = createVoiceSharing({ db, now, fail, provider, validateRequestId, publish, invalidate, permissionFor: sharingPermission, encryptionReady: row => !e2eeRequired || encryption?.ready(row), meter: () => atomic(() => usageMeter.meterAll()) });
+  const sharing = createVoiceSharing({ db, now, fail, provider, validateRequestId, publish, invalidate, permissionFor: sharingPermission, encryptionReady: row => !e2eeRequired || encryption?.ready(row), fenceCredential: (row, result) => encryption.fenceCredential(row, result), meter: () => atomic(() => usageMeter.meterAll()) });
   encryption = createVoiceEncryption({ db, required: e2eeRequired, now, fail, provider, publish, invalidate, validate: () => validateActive(false), cleanupPending, fenceShares: sharing.fence });
   function available() { if (closed) fail('VOICE_STOPPING', 503, '통화 서버가 종료 중입니다. 다시 연결해 주세요.'); }
   function activeFeature() { available(); if (!enabled) fail('VOICE_DISABLED', 503, '통화 기능이 아직 연결되지 않았습니다.'); }

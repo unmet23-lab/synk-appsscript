@@ -90,10 +90,12 @@ export function createLiveKitVoiceProvider({ url, apiKey, apiSecret, fetch: fetc
     },
     async updatePermissions(room, identity, permissions) {
       const grants = mediaGrants(permissions);
-      const result = await control('UpdateParticipant', { room, identity, permission: { can_subscribe: grants.canSubscribe, can_publish: grants.canPublish, can_publish_data: false, can_publish_sources: grants.sources, can_update_metadata: false } }, { roomAdmin: true, room }, false, permissions.paused === true);
-      if (result === PARTICIPANT_ABSENT) {
-        // A missing transport may still hold a usable JWT. Revoke it explicitly
-        // and keep replacement JWTs past the whole-second revocation boundary.
+      const revokeTokens = permissions.paused === true || permissions.revokeTokens === true;
+      await control('UpdateParticipant', { room, identity, permission: { can_subscribe: grants.canSubscribe, can_publish: grants.canPublish, can_publish_data: false, can_publish_sources: grants.sources, can_update_metadata: false } }, { roomAdmin: true, room }, false, revokeTokens);
+      if (revokeTokens) {
+        // Cloud's default permission-change revocation has a clock buffer that
+        // can admit recent original/refreshed JWTs. Remove even a connected
+        // transport with an explicit cutoff, then fence replacement JWTs past it.
         const cutoff = Math.floor(now() / 1000) + 1;
         await control('RemoveParticipant', { room, identity, revoke_token_ts: cutoff }, { roomAdmin: true, room });
         return { tokenNotBeforeMs: (cutoff + 1) * 1000 };
