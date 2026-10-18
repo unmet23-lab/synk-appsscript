@@ -41,6 +41,12 @@
 - 고침: 1패스로 input_i를 잰 뒤 `volume=<-14 - input_i>dB,alimiter=limit=0.84:attack=1:release=60:level=false`(필요하면 limit 0.75)로 올린다. 음악이 깔린 믹스는 loudnorm 선형이 잘 된다. amix는 가장 긴 입력에서 끝나니 영상 길이만큼 `anullsrc`를 한 줄 더 섞어 길이를 채운다.
 - 다시 확인: 최종 파일을 `ebur128=peak=true`로 다시 재서 −14.5±0.3 LUFS · 최대 −1.2 dBFS 안인지 본다.
 
+### 끝없는 `apad`를 섞은 인코딩이 출력 2MB쯤 쓰고 CPU만 쓰며 멈춘다
+- 증상: 10-18 지유 이미지 콘티 가편집(`이미지콘티_가편집.py`, PNG 360장 + 내레이션 3개·음악을 `amix=…:duration=longest,apad,atrim=0:15` · `-t 15`로 인코딩)에서 ffmpeg가 3초 만에 mp4를 2~2.6MB 쓴 뒤 10분 넘게 파일이 자라지 않고 CPU 시간만 쌓였다. 오류도 끝도 없고, 남은 파일은 moov가 없어 열리지 않는다. 30분 전 같은 스크립트는 1분 반에 끝났고, 같은 명령을 셸에서 바로 돌리면 2~3초에 끝나 「표준 입력 탓」으로 잘못 짚었다(`-nostdin`·`stdin=DEVNULL`을 넣어도 또 멈췄다).
+- 원인: `apad`가 길이 없이 무음을 끝없이 만든다. 파이썬에서 `capture_output=True`로 같은 명령을 돌리면 60초 시간 초과(2.6MB), 출력을 물려주면 2초 — 때에 따라 멈추는 ffmpeg 9 스레드 일정과의 경쟁으로 보인다.
+- 고침: 무음 채우기는 늘 길이를 못 박는다: `apad=whole_dur=15,atrim=0:15`. 바꾼 뒤 `capture_output` 모드로 세 번 모두 2.2~2.6초에 끝났다. 멈췄으면 그 ffmpeg만 끄고(부모 파이썬은 따라 끝난다) 남은 임시 PNG로 다시 돌린다.
+- 다시 확인: 출력 파일 크기가 몇 초마다 자라는지 본다. `ffprobe`가 「moov atom not found」면 덜 쓴 파일이다.
+
 ## 렌더(HyperFrames·GSAP)
 
 아래 HyperFrames 항목은 기존 영상 수정·재현의 기술 참고다. 새 영상의 도구는 [제작 도구 선택](../마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다.
