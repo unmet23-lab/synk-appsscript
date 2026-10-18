@@ -170,7 +170,7 @@ function fakeSdk(log, control) {
       options.encryption.worker.postMessage({ kind: 'init' });
     }
     async setE2EEEnabled(enabled) { log.push(['e2ee', enabled]); }
-    async connect(url, token) { log.push(['connect', token]); if (control.failConnect) { this.emit('disconnected', 0); throw Object.assign(new Error('could not establish signal connection'), { name: 'ConnectionError' }); } this.state = 'connected'; }
+    async connect(url, token) { log.push(['connect', token]); if (control.failConnect || control.connectError) { this.emit('disconnected', 0); throw control.connectError || Object.assign(new Error('could not establish signal connection'), { name: 'ConnectionError' }); } this.state = 'connected'; }
     async disconnect() { log.push(['disconnect']); this.state = 'disconnected'; }
     async startAudio() {}
     async switchActiveDevice() {}
@@ -404,6 +404,33 @@ test('a failing media connection retries through current/resume with backoff, ne
 });
 
 // ── review regressions (Fable 10-17) ──────────────────────────
+test('a revoked Cloud JWT retries the same admission, but an actual company API 401 still ends access', async t => {
+  for (const companySessionValid of [true, false]) await t.test(companySessionValid ? 'company session stays valid' : 'company session expired', async t => {
+    let resumes = 0;
+    const f = await joinedController(t, {
+      'POST /api/voice/:id/resume': () => {
+        resumes++;
+        if (resumes > 1 && !companySessionValid) return Object.assign(new Error('company login expired'), { status: 401 });
+        return { ...callState({ status: 'ready' }), admission: admission('replacement-' + resumes, { status: 'ready' }) };
+      },
+    });
+    f.control.connectError = Object.assign(new Error('invalid token: revoked'), { name: 'ConnectionError', status: 401 });
+    await startJoin(f); f.setRoom(callState({ status: 'ready' })); f.voice.handleUpdate({ type: 'voice', channelId: CHANNEL });
+    await until(() => f.log.some(row => row[0] === 'connect'), 'first Cloud connect');
+    f.control.connectError = null;
+    if (companySessionValid) {
+      await until(() => f.log.some(row => row[0] === 'publish'), 'automatic recovery with replacement JWT', 5000);
+      assert.ok(f.log.some(row => row[0] === 'connect' && row[1] === 'replacement-2'));
+      assert.equal(f.log.filter(row => row[0] === 'worker').length, 1);
+    } else {
+      await until(() => f.log.some(row => row[0] === 'terminate'), 'company auth failure stops worker', 5000);
+      assert.equal(f.log.filter(row => row[0] === 'publish').length, 0);
+    }
+    assert.equal(resumes, 2);
+    assert.equal(f.log.filter(row => row[1]?.endsWith?.('/voice/join')).length, 1);
+  });
+});
+
 async function connectedController(t, extra = {}) {
   const f = await joinedController(t, extra);
   await startJoin(f);

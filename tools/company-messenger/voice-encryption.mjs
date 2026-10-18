@@ -9,8 +9,8 @@ const ROUND_MS = 30000;
 export function createVoiceEncryption({ db, required, now, fail, provider, publish, invalidate, validate, cleanupPending, fenceShares }) {
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const rounds = new Map();
-  // A pause fences the current credential, not just one membership round. The
-  // SDK may already have discarded its Room when that round is superseded.
+  // A pause or share downgrade fences the current credential, not just one
+  // membership round. Keep it until a replacement JWT is actually issued.
   const pausedCredentials = new Map();
   const active = callId => all("SELECT * FROM voice_admissions WHERE call_id=? AND state='active' ORDER BY id", callId);
   const signature = rows => rows.map(row => row.id).join(',');
@@ -34,10 +34,15 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
     if (!required) return;
     if (!input || Object.keys(input).sort().join(',') !== 'protocol,supported' || input.protocol !== E2EE_PROTOCOL || input.supported !== true) fail('VOICE_E2EE_REQUIRED', 426, '암호화 통화를 지원하는 최신 화면에서 다시 참가해 주세요.');
   }
+  function fenceCredential(row, result) {
+    const notBefore = result?.tokenNotBeforeMs ?? 0;
+    if (!Number.isSafeInteger(notBefore) || notBefore < 0) throw new Error('Invalid credential fence');
+    pausedCredentials.set(row.id, Math.max(pausedCredentials.get(row.id) || 0, notBefore));
+  }
   async function reconcile() {
-    if (!required) return;
     const activeIds = new Set(all("SELECT id FROM voice_admissions WHERE state='active'").map(row => row.id));
     for (const id of pausedCredentials.keys()) if (!activeIds.has(id)) pausedCredentials.delete(id);
+    if (!required) return;
     const calls = all('SELECT * FROM voice_calls WHERE ended_at IS NULL');
     const liveIds = new Set(calls.map(call => call.id));
     for (const callId of rounds.keys()) if (!liveIds.has(callId)) clear(callId);
@@ -57,14 +62,13 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
         clear(call.id); continue;
       }
       if (round.status !== 'pausing') continue;
-      // UpdateParticipant on Cloud revokes old tokens as well as changing live
-      // permissions. Never distribute a new epoch while old media is flowing.
+      // The provider explicitly removes/revokes paused credentials; Cloud's
+      // default permission-update cutoff alone allows recent cached JWTs.
+      // Never distribute a new epoch while old media is flowing.
       for (const row of rows.filter(row => row.token_issued && !round.paused.has(row.id))) {
         try {
           const paused = await provider.updatePermissions(call.room_name, row.id, { paused: true });
-          const notBefore = paused?.tokenNotBeforeMs ?? 0;
-          if (!Number.isSafeInteger(notBefore) || notBefore < 0) throw new Error('Invalid credential fence');
-          pausedCredentials.set(row.id, notBefore); round.paused.add(row.id);
+          fenceCredential(row, paused); round.paused.add(row.id);
         }
         catch { invalidate(row, 'encryption_pause_failed'); }
         validate();
@@ -83,8 +87,8 @@ export function createVoiceEncryption({ db, required, now, fail, provider, publi
     }
   }
   return {
-    required, assertClient, summary, ready, fence, reconcile,
-    tokenReady(row) { return !required || now() >= (pausedCredentials.get(row.id) || 0); },
+    required, assertClient, summary, ready, fence, reconcile, fenceCredential,
+    tokenReady(row) { return now() >= (pausedCredentials.get(row.id) || 0); },
     tokenIssued(row) { pausedCredentials.delete(row.id); },
     keyFor(row) {
       if (!required) fail('VOICE_E2EE_DISABLED', 409, '이 통화는 암호화 키를 사용하지 않습니다.');
