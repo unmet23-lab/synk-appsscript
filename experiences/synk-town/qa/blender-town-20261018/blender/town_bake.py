@@ -1,0 +1,408 @@
+# SYNK Town core neighbourhood, Blender build + bake + export (Claude, 2026-10-18).
+#
+#   blender -b -P town_bake.py -- --stage build  --work <dir> --ref <reference dir> --sky <jpg> [--parts home,workshop,greenhouse,ground]
+#   blender -b -P town_bake.py -- --stage bake   --work <dir> [--samples 1024] [--parts ...]
+#   blender -b -P town_bake.py -- --stage export --work <dir> --out <dir> [--parts ...]
+#
+# The Claude route for the town keeps v20's own geometry: the per-part
+# reference GLBs from ../export-town.cjs are imported in place, given procedural
+# surface detail by their v20 material key, unwrapped and baked in one scene
+# (all four buildings, the core ground and the live vegetation as occluders).
+# The cafe building itself comes from the 10-17 cafe-claude.glb and is not
+# rebuilt here. Spec: ../자산규격.md. Blender (x, y, z) = Town (x, -z, y).
+import bpy, bmesh, math, json, sys, os, time, re
+import numpy as np
+from mathutils import Vector, Matrix
+
+ARGV = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+def arg(name, default=None):
+    return ARGV[ARGV.index(name) + 1] if name in ARGV else default
+STAGE = arg('--stage', 'build')
+WORK = os.path.abspath(arg('--work', '.'))
+os.makedirs(WORK, exist_ok=True)
+PARTS = (arg('--parts') or 'home,workshop,greenhouse,ground').split(',')
+CORE = dict(minX=-13.6, maxX=13.6, minZ=-12.2, maxZ=8.7)
+RES = int(arg('--res', '2048'))
+# Atlases per part (spec: at most three of 2048² per part).
+GROUPS = {'ground': ['hard', 'soft'], 'home': ['house', 'roof', 'props'], 'workshop': ['house', 'roof', 'props'], 'greenhouse': ['house', 'props']}
+ANGLE_LIMIT = float(arg('--angle', '66'))
+
+def log(*a):
+    print('[town]', *a, flush=True)
+
+def srgb_hex(h):
+    h = h.lstrip('#'); c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    return [x / 12.92 if x <= .04045 else ((x + .055) / 1.055) ** 2.4 for x in c]
+
+# ---------------------------------------------------------------- source materials
+NAME = re.compile(r'^(?P<key>.+?)_(?P<hex>[0-9a-f]{6})_r(?P<r>\d+)_m(?P<m>\d+)(?:_t(?P<t>\d+))?(?:\.\d+)?$')
+KIND = {
+    'wood': 'wood', 'darkWood': 'wood', 'shutters': 'wood', 'districtWood': 'wood', 'bark': 'wood',
+    'plaster': 'plaster', 'plasterWarm': 'plaster', 'homePlaster': 'plaster', 'cafePlaster': 'plaster', 'workshopPlaster': 'plaster', 'interiorPlaster': 'plaster', 'farWall': 'plaster',
+    'roofSlate': 'roof', 'roofTerra': 'roof', 'roofSage': 'roof', 'districtRoof': 'roof',
+    'stone': 'stone', 'cliffMaterial': 'stone', 'paving': 'paving', 'mortar': 'mortar', 'gravel': 'gravel',
+    'gardenSoil': 'soil', 'soil': 'soil', 'terrainMaterial': 'lawn', 'cotton': 'cotton', 'cloth': 'cotton', 'butter': 'butter',
+}
+GLASS = {'glass', 'greenhouseGlass', 'districtGlass'}
+ROUGH = {'ceramic': .23, 'metal': .4, 'brass': .33, 'frame': .48, 'tea': .22, 'water': .21}
+
+def parse(name):
+    mm = NAME.match(name)
+    if not mm: return {'key': name, 'hex': 'ffffff', 'rough': .9, 'metal': 0, 'opacity': None}
+    return {'key': mm['key'], 'hex': mm['hex'], 'rough': int(mm['r']) / 100, 'metal': int(mm['m']) / 100, 'opacity': int(mm['t']) / 100 if mm['t'] else None}
+
+def group_of(part, key):
+    if part == 'ground':
+        return 'soft' if KIND.get(key) in ('lawn', 'soil') else 'hard'
+    kind = KIND.get(key)
+    if kind == 'roof': return 'roof' if 'roof' in GROUPS[part] else 'house'
+    if kind in ('plaster', 'wood', 'stone', 'mortar', 'paving'): return 'house'
+    return 'props'
+
+def node(nt, kind, loc=(0, 0), **props):
+    n = nt.nodes.new(kind); n.location = loc
+    for k, v in props.items(): setattr(n, k, v)
+    return n
+
+def make_material(name, kind, color, rough, color_layer):
+    """Principled diffuse look of one v20 material with procedural surface detail.
+    Base colour = v20 hex x vertex colour (instance tints / terrain field)."""
+    mat = bpy.data.materials.new(name); mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
+    out = node(nt, 'ShaderNodeOutputMaterial', (900, 0))
+    bsdf = node(nt, 'ShaderNodeBsdfPrincipled', (600, 0)); bsdf.inputs['Roughness'].default_value = rough
+    nt.links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+    base = node(nt, 'ShaderNodeRGB', (-600, 120)); base.outputs[0].default_value = (*color, 1)
+    col = base.outputs[0]
+    if color_layer:
+        tint = node(nt, 'ShaderNodeVertexColor', (-600, 300)); tint.layer_name = color_layer
+        mix = node(nt, 'ShaderNodeMix', (-300, 200)); mix.data_type = 'RGBA'; mix.blend_type = 'MULTIPLY'; mix.inputs['Factor'].default_value = 1
+        nt.links.new(col, mix.inputs[6]); nt.links.new(tint.outputs['Color'], mix.inputs[7]); col = mix.outputs[2]
+    pos = node(nt, 'ShaderNodeTexCoord', (-1200, 0)).outputs['Object']
+    def multiply(c, grey_socket, x=0):
+        g = node(nt, 'ShaderNodeCombineXYZ', (x - 150, -100))
+        for k in 'XYZ': nt.links.new(grey_socket, g.inputs[k])
+        m2 = node(nt, 'ShaderNodeMix', (x, 100)); m2.data_type = 'RGBA'; m2.blend_type = 'MULTIPLY'; m2.inputs['Factor'].default_value = 1
+        nt.links.new(c, m2.inputs[6]); nt.links.new(g.outputs[0], m2.inputs[7]); return m2.outputs[2]
+    def remap(sock, lo, hi, a=.3, b=.7, x=-550, y=0):
+        r = node(nt, 'ShaderNodeMapRange', (x, y)); r.inputs['From Min'].default_value = a; r.inputs['From Max'].default_value = b
+        r.inputs['To Min'].default_value = lo; r.inputs['To Max'].default_value = hi; nt.links.new(sock, r.inputs['Value']); return r.outputs['Result']
+    bump_h, strength = None, 0
+    if kind == 'wood':
+        # Grain along the boards (most v20 boards run along Town x); rings across.
+        mp = node(nt, 'ShaderNodeMapping', (-1000, 0)); mp.inputs['Scale'].default_value = (.35, 6, 6); nt.links.new(pos, mp.inputs['Vector'])
+        wave = node(nt, 'ShaderNodeTexWave', (-800, 0)); wave.inputs['Scale'].default_value = 1.6; wave.inputs['Distortion'].default_value = 7
+        wave.inputs['Detail'].default_value = 3; nt.links.new(mp.outputs['Vector'], wave.inputs['Vector'])
+        col = multiply(col, remap(wave.outputs['Fac'], .9, 1.05, 0, 1)); bump_h, strength = wave.outputs['Fac'], .05
+    elif kind in ('plaster', 'stone', 'gravel', 'roof', 'lawn', 'mortar', 'soil', 'cotton', 'paving'):
+        noise = node(nt, 'ShaderNodeTexNoise', (-800, 0)); noise.inputs['Detail'].default_value = 8
+        noise.inputs['Scale'].default_value = {'plaster': 38, 'stone': 22, 'paving': 9, 'cotton': 140, 'gravel': 90, 'roof': 30, 'lawn': 60, 'mortar': 40, 'soil': 55}[kind]
+        nt.links.new(pos, noise.inputs['Vector'])
+        broad = node(nt, 'ShaderNodeTexNoise', (-800, -260)); broad.inputs['Scale'].default_value = 1.2; nt.links.new(pos, broad.inputs['Vector'])
+        amp = {'plaster': .035, 'stone': .07, 'paving': .05, 'cotton': .03, 'gravel': .12, 'roof': .06, 'lawn': .16, 'mortar': .06, 'soil': .14}[kind]
+        mm = node(nt, 'ShaderNodeMath', (-300, -100)); mm.operation = 'MULTIPLY'
+        nt.links.new(remap(noise.outputs['Fac'], 1 - amp, 1 + amp * .4), mm.inputs[0])
+        nt.links.new(remap(broad.outputs['Fac'], 1 - amp * .5, 1 + amp * .2, .35, .65, y=-260), mm.inputs[1])
+        grey = mm.outputs[0]
+        if kind == 'lawn':
+            mp = node(nt, 'ShaderNodeMapping', (-1000, -520)); mp.inputs['Scale'].default_value = (1, 6, 1); nt.links.new(pos, mp.inputs['Vector'])
+            streak = node(nt, 'ShaderNodeTexNoise', (-800, -520)); streak.inputs['Scale'].default_value = 260; nt.links.new(mp.outputs['Vector'], streak.inputs['Vector'])
+            m3 = node(nt, 'ShaderNodeMath', (-300, -300)); m3.operation = 'MULTIPLY'
+            nt.links.new(grey, m3.inputs[0]); nt.links.new(remap(streak.outputs['Fac'], .86, 1.10, .35, .65, y=-520), m3.inputs[1]); grey = m3.outputs[0]
+        if kind == 'paving':
+            # Flagstone courses: irregular cells with soft mortar joints (the
+            # 10-17 Argon court read best; same idea, Claude's own nodes).
+            mp = node(nt, 'ShaderNodeMapping', (-1000, -780)); mp.inputs['Scale'].default_value = (1.45, 1.9, 1); nt.links.new(pos, mp.inputs['Vector'])
+            vor = node(nt, 'ShaderNodeTexVoronoi', (-800, -780)); vor.feature = 'DISTANCE_TO_EDGE'; vor.inputs['Scale'].default_value = 1.6
+            vor.inputs['Randomness'].default_value = .85; nt.links.new(mp.outputs['Vector'], vor.inputs['Vector'])
+            joint = remap(vor.outputs['Distance'], .78, 1, .0, .035, y=-780)
+            m4 = node(nt, 'ShaderNodeMath', (-300, -560)); m4.operation = 'MULTIPLY'
+            nt.links.new(grey, m4.inputs[0]); nt.links.new(joint, m4.inputs[1]); grey = m4.outputs[0]
+            cell = node(nt, 'ShaderNodeTexVoronoi', (-800, -1040)); cell.feature = 'F1'; cell.inputs['Scale'].default_value = 1.6
+            cell.inputs['Randomness'].default_value = .85; nt.links.new(mp.outputs['Vector'], cell.inputs['Vector'])
+            m5 = node(nt, 'ShaderNodeMath', (-300, -820)); m5.operation = 'MULTIPLY'
+            nt.links.new(grey, m5.inputs[0]); nt.links.new(remap(cell.outputs['Color'], .955, 1.03, 0, 1, y=-1040), m5.inputs[1]); grey = m5.outputs[0]
+            bump_h = vor.outputs['Distance']; strength = .25
+        col = multiply(col, grey)
+        if bump_h is None:
+            bump_h = noise.outputs['Fac']; strength = {'plaster': .08, 'stone': .18, 'cotton': .12, 'gravel': .35, 'roof': .10, 'lawn': .25, 'mortar': .1, 'soil': .3}[kind]
+    if kind == 'butter':
+        bsdf.inputs['Emission Color'].default_value = (*color, 1); bsdf.inputs['Emission Strength'].default_value = .35
+    nt.links.new(col, bsdf.inputs['Base Color'])
+    if bump_h is not None:
+        bump = node(nt, 'ShaderNodeBump', (300, -300)); bump.inputs['Strength'].default_value = strength; bump.inputs['Distance'].default_value = .02
+        nt.links.new(bump_h, bump.inputs['Height']); nt.links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    return mat
+
+def make_glass(name, color, opacity):
+    mat = bpy.data.materials.new(name); mat.use_nodes = True
+    b = mat.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value = (*color, 1)
+    b.inputs['Roughness'].default_value = .075; b.inputs['Alpha'].default_value = opacity
+    try: mat.surface_render_method = 'BLENDED'
+    except Exception: pass
+    return mat
+
+# ---------------------------------------------------------------- import
+def import_glb(path, collection):
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=path)
+    objs = [o for o in bpy.data.objects if o not in before and o.type == 'MESH']
+    for o in objs:
+        for c in list(o.users_collection): c.objects.unlink(o)
+        collection.objects.link(o)
+    for o in [o for o in bpy.data.objects if o not in before and o.type != 'MESH']: bpy.data.objects.remove(o)
+    return objs
+
+def clip_to_core(o):
+    """Cut ground meshes exactly at the core rectangle (Town x, z -> Blender x, -y)."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    for co, no in (((CORE['minX'], 0, 0), (-1, 0, 0)), ((CORE['maxX'], 0, 0), (1, 0, 0)),
+                   ((0, -CORE['maxZ'], 0), (0, -1, 0)), ((0, -CORE['minZ'], 0), (0, 1, 0))):
+        geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
+        bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no, clear_outer=True)
+    bm.to_mesh(o.data); bm.free(); o.data.update()
+
+def remove_hidden_faces(objs, blockers):
+    """Bake texels only for faces somebody can see: drop undersides resting on
+    the ground or a deck, faces pressed against another surface (short ray
+    along the normal), and ground layers covered by a higher layer (short ray
+    straight up: lawn under the court and paths, ground under the decks)."""
+    from mathutils.bvhtree import BVHTree
+    dg = bpy.context.evaluated_depsgraph_get()
+    trees = [(o, BVHTree.FromObject(o, dg)) for o in objs + blockers]
+    removed = {}
+    up = Vector((0, 0, 1))
+    for o in objs:
+        bm = bmesh.new(); bm.from_mesh(o.data); bm.faces.ensure_lookup_table(); kill = []
+        ground = o['part'] == 'ground'
+        for f in bm.faces:
+            c = f.calc_center_median(); n = f.normal
+            if n.z < -.5 and c.z < .135: kill.append(f); continue
+            if ground and n.z > .5:
+                if any(t.ray_cast(c + up * 2e-4, up, .09)[0] is not None for other, t in trees if other is not o): kill.append(f); continue
+                continue
+            origin = c + n * 1e-4
+            if any(t.ray_cast(origin, n, .004)[0] is not None for other, t in trees): kill.append(f)
+        removed[o.name] = len(kill)
+        bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(o.data); bm.free(); o.data.update()
+    return removed
+
+def prepare(objs, part):
+    """One material per imported object (the reference has one per v20 material)."""
+    out = []
+    for o in objs:
+        src = o.material_slots[0].material.name if o.material_slots and o.material_slots[0].material else o.name
+        info = parse(src); key = info['key']
+        layer = o.data.color_attributes[0].name if len(o.data.color_attributes) else None
+        color = srgb_hex(info['hex'])
+        if key in GLASS or (info['opacity'] is not None and info['opacity'] < .6):
+            o.data.materials.clear(); o.data.materials.append(make_glass(f'live_glass_{info["hex"]}', color, info['opacity'] or .29))
+            o['part'], o['group'], o['key'], o['glass'] = part, 'glass', key, True
+        else:
+            kind = KIND.get(key, 'plain')
+            o.data.materials.clear(); o.data.materials.append(make_material(f'src_{part}_{key}_{info["hex"]}', kind, color, ROUGH.get(key, info['rough'] if kind == 'plain' else {'wood': .8}.get(kind, .9)), layer))
+            o['part'], o['group'], o['key'], o['glass'] = part, group_of(part, key), key, False
+        o.name = f'{part}__{o["group"]}__{key}'
+        out.append(o)
+    return out
+
+# ---------------------------------------------------------------- world (v20 lights, see spec 5)
+def setup_world(sky_path):
+    sc = bpy.context.scene
+    world = bpy.data.worlds.new('town-sky'); sc.world = world; world.use_nodes = True
+    nt = world.node_tree; nt.nodes.clear()
+    out = node(nt, 'ShaderNodeOutputWorld', (900, 0)); add = node(nt, 'ShaderNodeAddShader', (650, 0))
+    coord = node(nt, 'ShaderNodeTexCoord', (-900, 0))
+    mapping = node(nt, 'ShaderNodeMapping', (-700, 200)); mapping.inputs['Rotation'].default_value = (0, 0, math.pi + .65)
+    nt.links.new(coord.outputs['Generated'], mapping.inputs['Vector'])
+    env = node(nt, 'ShaderNodeTexEnvironment', (-450, 200)); env.image = bpy.data.images.load(sky_path)
+    nt.links.new(mapping.outputs['Vector'], env.inputs['Vector'])
+    bg1 = node(nt, 'ShaderNodeBackground', (300, 200)); bg1.inputs['Strength'].default_value = .45
+    nt.links.new(env.outputs['Color'], bg1.inputs['Color'])
+    sep = node(nt, 'ShaderNodeSeparateXYZ', (-450, -200)); nt.links.new(coord.outputs['Generated'], sep.inputs[0])
+    step = node(nt, 'ShaderNodeMath', (-250, -200)); step.operation = 'GREATER_THAN'; step.inputs[1].default_value = 0
+    nt.links.new(sep.outputs['Z'], step.inputs[0])
+    mix = node(nt, 'ShaderNodeMix', (0, -200)); mix.data_type = 'RGBA'; k = .58 / math.pi
+    mix.inputs[6].default_value = (*[x * k for x in srgb_hex('#71815e')], 1); mix.inputs[7].default_value = (*[x * k for x in srgb_hex('#d8eaff')], 1)
+    nt.links.new(step.outputs[0], mix.inputs['Factor'])
+    bg2 = node(nt, 'ShaderNodeBackground', (300, -200)); bg2.inputs['Strength'].default_value = 1
+    nt.links.new(mix.outputs[2], bg2.inputs['Color'])
+    nt.links.new(bg1.outputs[0], add.inputs[0]); nt.links.new(bg2.outputs[0], add.inputs[1]); nt.links.new(add.outputs[0], out.inputs['Surface'])
+    def sun(name, color, strength, toward, angle):
+        ld = bpy.data.lights.new(name, 'SUN'); ld.energy = strength; ld.color = color; ld.angle = math.radians(angle)
+        ob = bpy.data.objects.new(name, ld); sc.collection.objects.link(ob)
+        ob.rotation_euler = Vector(toward).normalized().to_track_quat('Z', 'Y').to_euler()
+    sun('sun', srgb_hex('#fff3de'), 3.15, (-9, -7, 11), 1.5)
+    sun('fill', srgb_hex('#cddfff'), .18, (8, 10, 4), 4)
+
+def setup_cycles(samples):
+    sc = bpy.context.scene; sc.render.engine = 'CYCLES'
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    for kind in ('OPTIX', 'CUDA'):
+        try:
+            prefs.compute_device_type = kind; prefs.get_devices()
+            gpus = [d for d in prefs.devices if d.type == kind]
+            if gpus:
+                for d in prefs.devices: d.use = d.type == kind
+                sc.cycles.device = 'GPU'; log('device', kind, [d.name for d in gpus]); break
+        except Exception as e: log('device fail', kind, e)
+    sc.cycles.samples = samples; sc.cycles.use_denoising = False
+    sc.cycles.max_bounces = 6; sc.cycles.diffuse_bounces = 4; sc.cycles.glossy_bounces = 1; sc.cycles.transparent_max_bounces = 4
+    sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
+
+# ---------------------------------------------------------------- build
+def stage_build():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    for name in ('town', 'occluders'): bpy.context.scene.collection.children.link(bpy.data.collections.new(name))
+    ref = os.path.abspath(arg('--ref')); town, occ = bpy.data.collections['town'], bpy.data.collections['occluders']
+    t0 = time.time()
+    # Occluders: live vegetation and the outer ring, the cafe (rebaked by the
+    # 10-17 cafe-claude.glb, here only for shadows), and parts not rebuilt now.
+    occluder_files = ['v20_live.glb', 'v20_cafe.glb'] + [f'v20_{p}.glb' for p in ('home', 'workshop', 'greenhouse') if p not in PARTS]
+    if 'ground' not in PARTS: occluder_files.append('v20_town_ground.glb')
+    for f in occluder_files:
+        for o in import_glb(os.path.join(ref, f), occ): o['occluder'] = True; o['source'] = f
+    objs = []
+    for part in PARTS:
+        imported = import_glb(os.path.join(ref, 'v20_town_ground.glb' if part == 'ground' else f'v20_{part}.glb'), town)
+        objs += prepare(imported, part)
+    for o in objs:
+        if o['part'] == 'ground': clip_to_core(o)
+    bake_objs = [o for o in objs if not o['glass']]
+    # Live grass and trees never hide a ground face (grass grows on the baked lawn).
+    removed = remove_hidden_faces(bake_objs, [o for o in occ.objects if o.type == 'MESH' and o.get('source') != 'v20_live.glb'])
+    log('removed hidden faces', sum(removed.values()))
+    setup_world(os.path.abspath(arg('--sky'))); setup_cycles(64)
+    tris = {}
+    for o in objs:
+        k = f'{o["part"]}/{o["group"]}'; tris[k] = tris.get(k, 0) + sum(len(p.vertices) - 2 for p in o.data.polygons)
+    log('built', len(objs), 'objects in', round(time.time() - t0, 1), 's', tris)
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(WORK, 'build.blend'))
+    json.dump({'parts': PARTS, 'triangles': tris, 'removedHiddenFaces': removed, 'seconds': round(time.time() - t0, 1)}, open(os.path.join(WORK, 'build.json'), 'w'), indent=2)
+
+# ---------------------------------------------------------------- bake (same passes as the cafe, 10-17)
+def fill_dead_texels(rgb, passes=8):
+    lum = rgb.mean(axis=2); valid = lum > 1e-4; out = rgb.copy()
+    for _ in range(passes):
+        acc = np.zeros_like(out); cnt = np.zeros(lum.shape, np.float32)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            v = np.roll(valid, (dy, dx), (0, 1)); c = np.roll(out, (dy, dx), (0, 1))
+            acc += c * v[..., None]; cnt += v
+        grow = (~valid) & (cnt > 0)
+        out[grow] = acc[grow] / cnt[grow][:, None]; valid = valid | grow
+    return out
+
+def box_blur(a, r):
+    k = 2 * r + 1; p = np.pad(a, r, mode='edge'); c = p.cumsum(0).cumsum(1); c = np.pad(c, ((1, 0), (1, 0)))
+    return (c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]) / (k * k)
+
+def to_srgb(lin):
+    return np.where(lin <= .0031308, lin * 12.92, 1.055 * np.power(np.clip(lin, 0, None), 1 / 2.4) - .055)
+
+def unwrap(objs, res):
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in objs:
+        o.select_set(True)
+        if 'bake' not in o.data.uv_layers: o.data.uv_layers.new(name='bake')
+        o.data.uv_layers.active = o.data.uv_layers['bake']
+    bpy.context.view_layer.objects.active = objs[0]
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=4 / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=4 / res)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+def stage_bake():
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'build.blend'))
+    samples = int(arg('--samples', '1024')); setup_cycles(samples); sc = bpy.context.scene
+    town = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and not o['glass']]
+    report = {'samples': samples, 'resolution': RES, 'atlases': {}}
+    for part in PARTS:
+        for group in GROUPS[part]:
+            objs = [o for o in town if o['part'] == part and o['group'] == group]
+            if not objs: continue
+            t0 = time.time(); res = RES; unwrap(objs, res)
+            images = {p: bpy.data.images.new(f'{part}_{group}_{p}', res, res, alpha=False, float_buffer=True) for p in ('full', 'sun')}
+            def target(img):
+                for o in objs:
+                    for mt in o.data.materials:
+                        nt = mt.node_tree; n = nt.nodes.get('bake_target') or nt.nodes.new('ShaderNodeTexImage')
+                        n.name = 'bake_target'; n.image = img; n.location = (900, -400); nt.nodes.active = n
+            bpy.ops.object.select_all(action='DESELECT')
+            for o in objs: o.select_set(True)
+            bpy.context.view_layer.objects.active = objs[0]
+            target(images['full'])
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'INDIRECT', 'DIFFUSE', 'GLOSSY', 'EMIT'}, margin=12, margin_type='EXTEND', use_clear=True, target='IMAGE_TEXTURES')
+            strengths = [(n, n.inputs['Strength'].default_value) for n in sc.world.node_tree.nodes if n.type == 'BACKGROUND']
+            for n, _ in strengths: n.inputs['Strength'].default_value = 0
+            fill = bpy.data.objects['fill']; fill.hide_render = True; sc.cycles.samples = max(128, samples // 2)
+            target(images['sun'])
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'DIFFUSE'}, margin=12, margin_type='EXTEND', use_clear=True, target='IMAGE_TEXTURES')
+            for n, s in strengths: n.inputs['Strength'].default_value = s
+            fill.hide_render = False; sc.cycles.samples = samples
+            def read(img):
+                a = np.empty(res * res * 4, dtype=np.float32); img.pixels.foreach_get(a); return a.reshape(res, res, 4)[..., :3]
+            full, sun = fill_dead_texels(read(images['full'])), read(images['sun'])
+            lum_full, lum_sun = full.mean(axis=2), sun.mean(axis=2)
+            share = np.clip(lum_sun / np.maximum(lum_full, 1e-4), 0, 1); share[lum_full < .03] = 0; share = box_blur(share, 2)
+            enc = np.concatenate([np.clip(to_srgb(full * .5), 0, 1), share[..., None]], axis=2)
+            name = f'town-claude-{part}-{group}'
+            out = bpy.data.images.new(name, res, res, alpha=True); out.pixels.foreach_set(enc.astype(np.float32).ravel())
+            out.filepath_raw = os.path.join(WORK, name + '.png'); out.file_format = 'PNG'; out.save()
+            report['atlases'][name] = {'objects': len(objs), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
+                                       'clipped_fraction': float((full * .5 > 1).mean())}
+            log('baked', name, report['atlases'][name])
+            bpy.ops.wm.save_as_mainfile(filepath=os.path.join(WORK, 'bake.blend'))
+            json.dump(report, open(os.path.join(WORK, 'bake.json'), 'w'), indent=2)
+
+# ---------------------------------------------------------------- export (one GLB per part)
+def stage_export():
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'bake.blend'))
+    out_dir = os.path.abspath(arg('--out')); os.makedirs(out_dir, exist_ok=True)
+    report = {}
+    for part in PARTS:
+        objs = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o['part'] == part]
+        keep = []
+        for group in GROUPS[part]:
+            g = [o for o in objs if o['group'] == group]
+            if not g: continue
+            name = f'town-claude-{part}-{group}'
+            img = bpy.data.images.load(os.path.join(WORK, name + '.png'), check_existing=False); img.alpha_mode = 'CHANNEL_PACKED'
+            m = bpy.data.materials.new(f'bake_{part}_{group}'); m.use_nodes = True; nt = m.node_tree
+            bsdf = nt.nodes['Principled BSDF']; tex = nt.nodes.new('ShaderNodeTexImage'); tex.image = img
+            nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color']); nt.links.new(tex.outputs['Alpha'], bsdf.inputs['Alpha'])
+            bsdf.inputs['Roughness'].default_value = 1; m['synk_bake_scale'] = 2.0; m['synk_sun_alpha'] = 1
+            bpy.ops.object.select_all(action='DESELECT')
+            for o in g:
+                o.select_set(True); o.data.materials.clear(); o.data.materials.append(m)
+                for n in [l.name for l in o.data.uv_layers if l.name != 'bake']: o.data.uv_layers.remove(o.data.uv_layers[n])
+                for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
+            bpy.context.view_layer.objects.active = g[0]; bpy.ops.object.join()
+            j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_{group}'; keep.append(j)
+        glass = [o for o in objs if o['glass']]
+        if glass:
+            gm = bpy.data.materials.new('live_glass'); gm.use_nodes = True
+            b = gm.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value = (*srgb_hex('#d6e7eb'), 1)
+            b.inputs['Roughness'].default_value = .075; b.inputs['Alpha'].default_value = .29
+            bpy.ops.object.select_all(action='DESELECT')
+            for o in glass:
+                o.select_set(True); o.data.materials.clear(); o.data.materials.append(gm)
+                for n in [l.name for l in o.data.uv_layers]: o.data.uv_layers.remove(o.data.uv_layers[n])
+                for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
+            bpy.context.view_layer.objects.active = glass[0]; bpy.ops.object.join()
+            j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_glass'; keep.append(j)
+        bpy.ops.object.select_all(action='DESELECT')
+        for k in keep: k.select_set(True)
+        path = os.path.join(out_dir, f'town-claude-{part}-raw.glb')
+        kwargs = dict(filepath=path, export_format='GLB', use_selection=True, export_yup=True, export_apply=True, export_extras=True,
+                      export_texcoords=True, export_normals=True, export_materials='EXPORT', export_cameras=False, export_lights=False,
+                      export_animations=False, export_image_format='WEBP', export_image_quality=90)
+        props = set(bpy.ops.export_scene.gltf.get_rna_type().properties.keys())
+        for k in [k for k in kwargs if k not in props]: kwargs.pop(k)
+        bpy.ops.export_scene.gltf(**kwargs)
+        report[part] = {'glb': path, 'bytes': os.path.getsize(path), 'meshes': len(keep),
+                        'triangles': {k.name: sum(len(p.vertices) - 2 for p in k.data.polygons) for k in keep}}
+        log('exported', part, report[part]['bytes'], 'bytes', sum(report[part]['triangles'].values()), 'tris')
+    json.dump(report, open(os.path.join(WORK, 'export.json'), 'w'), indent=2)
+
+{'build': stage_build, 'bake': stage_bake, 'export': stage_export}[STAGE]()
