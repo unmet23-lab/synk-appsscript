@@ -1,5 +1,18 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="backend-read-production-20261018"></a>
+## 백엔드 조회·정적 자산 캐시 개선 — 2026-10-18 운영 인수
+
+**2026-10-18 17:27:23 KST 최종 인수 완료.** 부모 `6b6471d02385c32e20dda7bda578b4082fa427f17a04d94150740e6b79331e47` 위 후보 `c516b0e11d30001ccb02325c021ba8e782c86b1a4509f1877a83a95d08bc9e53`, 이미지 `sha256:06bde74cfa17f52533155a4643d9db4ec24d32a99805e2f89e0de78033e7929a`, 배포 `01e714956bb97015c40b0b467298966a`, 소스 커밋 `705ef25907aa44bc9a531489a8034b2e87c36119`를 정확 영수증으로 대조했다. 원천 1,030개·이미지 원천 594개이며 부모 1,022개 바이트를 보존했다. unread 집계와 analytics GET의 반복 읽기·쓰기 부작용을 줄이고, 공개 JS/CSS의 내용 해시 URL 캐시를 반영했다.
+
+제품 시험은 Windows 225/225와 실제 Linux 이미지 225+compat 2건이다. 공개 8개 중 HTML 2응답만 107개 연결 자산의 digest로 독립 재계산했으며 정확 바이트·no-store·nosniff를 확인했다. 나머지 공개 6개는 원문과 같다. 재무장 QA는 원천 closure379개, Node120/Python35/과거배포126개이며 제품 시험과 합산하지 않는다.
+
+교체 뒤 새 백업으로 격리 앱을 기동해 원래 키와 활성 세션/토큰 보존, 외부 네트워크 0·공개 포트 0·시험 컨테이너 제거를 검증했다. 최종 HA는 `armed=true`·A owner epoch7이며 request `888683b7-14c9-4069-9505-925d74d09aa1`다. 현재 판의 새 강제 장애 전환 시험은 하지 않았다(`currentReleaseOutageTested=false`, `noNativeRearmClaim=true`).
+
+사용자가 운영 새로고침이 훨씬 빨라졌다고 체감 개선을 확인했으며, 초 단위 소요 시간은 계측하지 않았다. 합성 조건의 캐시 측정값을 운영 속도로 보고하지 않는다. 소스 저장소 자동시험 39107411565는 `completed/skipped`이며 통과 증거가 아니다. 실물 두 번째 기기 검증은 미완료다. 기존 교실·개인자료·학습·공개 클라이언트 검증과 제한사항은 [전체 결과](../../../../_ops/qa/backend-upgrade-20261018/result.json)에 보존했다.
+
+[Linux 후보](../../../../../.tmp/company-backend-read-release-v4-20261018/deployment/reviewed-candidate-receipt.json) · [배포 package](../../../../../.tmp/company-backend-read-release-v4-20261018/deployment/package-live-v1.json) · [운영 보존](../../../../../.tmp/company-backend-read-release-v4-20261018/deployment/runtime-live-postcheck-1792309772321.json) · [공개 대조](../../../../../.tmp/company-backend-read-release-v4-20261018/deployment/public-messenger-verification-1792309773760.json) · [격리 복원](../../../../../.tmp/company-backend-read-release-v4-20261018/rearm/dr/restore-v1.json) · [재무장 계약](../../../../../.tmp/company-backend-read-release-v4-20261018/rearm/contract-final-v1.json) · [최종 HA](../../../../../.tmp/company-backend-read-release-v4-20261018/rearm/arm-postcheck-final-v1.json)
+
 <a id="server-log-retention-20261016"></a>
 ## 공통 서버 반복 로그·보관 정책 — 2026-10-16
 
