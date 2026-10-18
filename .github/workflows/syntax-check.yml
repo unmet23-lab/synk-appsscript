@@ -32,7 +32,8 @@ jobs:
         with:
           repository: unmet23-lab/SYNK-talk
           ref: master
-          token: ${{ secrets.SYNK_TALK_READ_TOKEN }}
+          ssh-key: ${{ secrets.SYNK_TALK_READ_SSH_KEY }}
+          ssh-strict: true
           persist-credentials: false
           path: SYNK-talk
           sparse-checkout-cone-mode: false
