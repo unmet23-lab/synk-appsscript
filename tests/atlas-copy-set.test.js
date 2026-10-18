@@ -101,3 +101,33 @@ test('the full check refuses a missing Talk server generator before changing any
   for (const check of [true, false]) assert.throws(() => runAll({ ...options, check }), /Missing Talk server generator/);
   assert.equal(fs.readFileSync(existing, 'utf8'), '// keep');
 });
+
+test('one sync refreshes the profile core before rebuilding the life consumer', t => {
+  const { root, write } = fixture(t);
+  const core = 'experiences/synk-world-app/world-learning-profile-core.mjs';
+  const life = 'experiences/brand-opening/content/life-standalone.mjs';
+  const builder = (source, target) => "const fs=require('node:fs'),path=require('node:path');const root=path.resolve(__dirname,'..');\n"
+    + `const source=path.join(root,${JSON.stringify(source)}),target=path.join(root,${JSON.stringify(target)}),bytes=fs.readFileSync(source);\n`
+    + "if(process.argv.includes('--check')){if(!fs.existsSync(target)||!fs.readFileSync(target).equals(bytes))throw Error('stale derived consumer');}\n"
+    + "else{fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,bytes);}\n";
+  write('tools/build-game-learning.js', '// no unrelated fixture consumers\n');
+  write('tools/build-hangul-stage.js', '// no unrelated fixture consumers\n');
+  write('tools/build-world-account.mjs', '// no unrelated fixture consumers\n');
+  // The fixture builders use CommonJS, while the real registry invokes .mjs names.
+  // createRequire keeps their filesystem behavior identical under those names.
+  const moduleBuilder = (source, target) => "import {createRequire} from 'node:module';import {fileURLToPath} from 'node:url';"
+    + "const require=createRequire(import.meta.url),__dirname=fileURLToPath(new URL('.',import.meta.url));\n" + builder(source, target);
+  write('tools/build-world-learning-profile.mjs', moduleBuilder('atlas/engine.js', core));
+  write('tools/build-world-life.mjs', moduleBuilder(core, life));
+  write(core, '// previous profile core\n');
+  write(life, '// previous profile core\n');
+  const options = { root, local: true };
+  const first = runAll({ ...options, check: false });
+  assert.equal(first.ok, true, JSON.stringify(first.problems));
+  write('atlas/engine.js', '// refreshed canonical engine\n');
+  const synced = runAll({ ...options, check: false });
+  assert.equal(synced.ok, true, JSON.stringify(synced.problems));
+  const checked = runAll({ ...options, check: true });
+  assert.equal(checked.ok, true, JSON.stringify(checked.problems));
+  assert.equal(fs.readFileSync(path.join(root, life), 'utf8'), '// refreshed canonical engine\n');
+});

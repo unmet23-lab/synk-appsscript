@@ -4,14 +4,18 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: syntax-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   check:
-    if: ${{ github.event.repository.private == false || vars.SYNK_SELFHOSTED == 'on' }}
-    runs-on: ${{ github.event.repository.private == false && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
+    # Private hosted CI is opt-in, after verifying the account's spending stop.
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' || vars.SYNK_SELFHOSTED == 'on' }}
+    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
@@ -57,14 +61,15 @@ jobs:
         run: |
           set -o pipefail
           rc=0
-          node --test tests/*.test.js 2>&1 | tee /tmp/synk-test.txt || rc=$?
+          test_log="$RUNNER_TEMP/synk-test.txt"
+          node --test --test-reporter=tap tests/*.test.js 2>&1 | tee "$test_log" || rc=$?
           if [ "$rc" -eq 0 ]; then
             exit 0
           fi
           echo "::group::🔴 깨진 검사만 다시 — 분모와 함께 읽는다(F207)"
-          grep -E "^# (tests|pass|fail|skipped|todo) " /tmp/synk-test.txt || true
+          grep -E "^# (tests|pass|fail|skipped|todo) " "$test_log" || true
           echo "--- not ok ---"
-          grep -E "^not ok " /tmp/synk-test.txt \
+          grep -E "^not ok " "$test_log" \
             || echo "(not ok 0건 — 실패가 TAP 밖에서 났다: 스폰 실패·구문 오류 쪽을 본다)"
           echo "::endgroup::"
           exit "$rc"

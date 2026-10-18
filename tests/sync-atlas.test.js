@@ -115,7 +115,7 @@ test('the server bundle is rebuilt by Talk\'s own generator in the same run and 
   fs.unlinkSync(path.join(website, 'package.json'));
   // A stand-in for Talk's tools/synk-server-build.js with the same build()/write() shape.
   write('tools/synk-server-build.js', "const fs=require('node:fs'),path=require('node:path');const root=path.resolve(__dirname,'..');\n"
-    + "function build(){return '// bundle\\n'+fs.readFileSync(path.join(root,'lib/atlas/trail.js'),'utf8').length+':'+fs.readFileSync(path.join(root,'lib/atlas/engine.js'),'utf8').length;}\n"
+    + "function build(){return '// bundle\\nmodule.exports = '+JSON.stringify(fs.readFileSync(path.join(root,'lib/atlas/trail.js'),'utf8').length+':'+fs.readFileSync(path.join(root,'lib/atlas/engine.js'),'utf8').length)+';\\n';}\n"
     + "function write(){const f=path.join(root,'supabase/functions/_shared/synk-atlas.js');fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,build());}\nmodule.exports={build,write};\n");
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);

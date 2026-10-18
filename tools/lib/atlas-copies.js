@@ -13,9 +13,10 @@ const WEBSITE_GAMES = Object.freeze({ racing: 'korean-racing', runner: 'korean-r
 // The builders resolve esbuild from experiences/synk-account first and fall back to the repo root's, so a
 // clean CI checkout (npm ci at the root) checks them like the learning bundles.
 const WORLD_BUNDLES = Object.freeze([
+  // Life imports this generated profile core, so refresh its producer first.
+  { label: 'WORLD learning profile core', build: 'tools/build-world-learning-profile.mjs', output: 'experiences/synk-world-app/world-learning-profile-core.mjs' },
   { label: 'WORLD life bundle', build: 'tools/build-world-life.mjs', output: 'experiences/brand-opening/content/life-standalone.mjs' },
   { label: 'WORLD account bundle', build: 'tools/build-world-account.mjs', output: 'experiences/synk-world-app/world-account.bundle.mjs' },
-  { label: 'WORLD learning profile core', build: 'tools/build-world-learning-profile.mjs', output: 'experiences/synk-world-app/world-learning-profile-core.mjs' },
 ]);
 // Product modules whose canonical source lives in the product, not in atlas/. They keep an Atlas-style
 // global for stored records, so the marker scan would otherwise report them as copies.
