@@ -2,6 +2,7 @@
 // Authenticated hosts provide the account-isolated stores and transport. This
 // module never discovers identities, adopts guest history, or uploads snapshots.
 const SYNC_KEY = 'synk.atlas.learning-sync.v1';
+const { createPages, THRESHOLD } = require('./learning-pages');
 const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const clone = value => JSON.parse(JSON.stringify(value));
 const canonical = value => JSON.stringify(value, function (_key, entry) {
@@ -28,6 +29,8 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length
     || backoffMs.some(ms => !Number.isFinite(ms) || ms < 0)) throw new TypeError('Atlas sync: invalid retry bounds');
   const key = `${SYNC_KEY}.${accountKey}`;
+  const pages = createPages(storage, key, ['acknowledged', 'pending', 'missing']);
+  let lastStoredRaw = null;
   // Outbox v2 keeps ids only: the account log holds every queued entry (v1 kept a second copy).
   // `missing` names acknowledged entries the log has lost; they are fetched from the server again.
   let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
@@ -42,21 +45,36 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     for (const controller of controllers) controller.abort();
     phase = 'blocked'; code = errorCode(error); message = error?.message || code; port.markComplete(false); publish();
   };
+  const readState = raw => {
+    const stored = pages.decode(raw), v1 = stored?.version === 1;
+    if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0
+      || typeof stored.complete !== 'boolean' || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id)
+      || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? e => id(e?.id) : id)
+      || !(stored.missing === undefined || Array.isArray(stored.missing) && stored.missing.every(id))
+      || !(stored.recoveryCursor === undefined || Number.isSafeInteger(stored.recoveryCursor) && stored.recoveryCursor >= 0 && stored.recoveryCursor <= stored.cursor)) throw failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement');
+    if (stored.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: a new consent revision requires a fresh account store');
+    return { ...stored, version: 2, pending: v1 ? stored.pending.map(e => e.id) : stored.pending, missing: stored.missing || [] };
+  };
   const save = () => {
-    try { storage.setItem(key, JSON.stringify(state)); }
+    try {
+      const current = storage.getItem(key);
+      if (current !== lastStoredRaw) {
+        if (current == null) throw failure('STORAGE_ERROR', 'Atlas sync: outbox was removed by another context');
+        const latest = readState(current), acknowledged = new Set([...latest.acknowledged, ...state.acknowledged]);
+        state = { ...state, cursor: Math.max(latest.cursor, state.cursor), complete: latest.cursor > state.cursor ? latest.complete : state.complete,
+          acknowledged: [...acknowledged], pending: [...new Set([...latest.pending, ...state.pending])].filter(eventId => !acknowledged.has(eventId)),
+          missing: [...new Set([...latest.missing, ...state.missing])], recoveryCursor: Math.min(latest.recoveryCursor || 0, state.recoveryCursor || 0) };
+        lastStoredRaw = pages.decodedRaw();
+      }
+      if (pages.active() || state.acknowledged.length + state.pending.length + state.missing.length > THRESHOLD) lastStoredRaw = pages.write(state, lastStoredRaw);
+      else { lastStoredRaw = JSON.stringify(state); storage.setItem(key, lastStoredRaw); }
+    }
     catch { throw failure('STORAGE_ERROR', 'Atlas sync: the durable outbox could not be saved'); }
   };
   try {
     const raw = storage.getItem(key);
     if (raw != null) {
-      const stored = JSON.parse(raw), v1 = stored?.version === 1;
-      if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0
-        || typeof stored.complete !== 'boolean' || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id)
-        || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? e => id(e?.id) : id)
-        || !(stored.missing === undefined || Array.isArray(stored.missing) && stored.missing.every(id))
-        || stored.pending.length + stored.acknowledged.length + (stored.missing?.length || 0) > 40000) throw failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement');
-      if (stored.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: a new consent revision requires a fresh account store');
-      state = { ...stored, version: 2, pending: v1 ? stored.pending.map(e => e.id) : stored.pending, missing: stored.missing || [] };
+      state = readState(raw); lastStoredRaw = pages.decodedRaw();
     }
     port.markComplete(whole());
   } catch (error) { block(error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement')); }
@@ -71,7 +89,10 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     // Any other acknowledged entry the log no longer has was lost here (an older history
     // written over a newer one): fetch it from the server again.
     const lost = state.acknowledged.filter(eventId => !localIds.has(eventId) && !folded.has(eventId));
-    if (lost.length) { state.missing = [...new Set([...state.missing, ...lost])]; port.markComplete(false); }
+    if (lost.length) {
+      if (lost.some(eventId => !state.missing.includes(eventId))) state.recoveryCursor = 0;
+      state.missing = [...new Set([...state.missing, ...lost])]; port.markComplete(false);
+    }
     state.acknowledged = state.acknowledged.filter(eventId => localIds.has(eventId));
     state.missing = state.missing.filter(eventId => !localIds.has(eventId));
     const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
@@ -131,17 +152,19 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       const skipped = new Set(result?.skipped || []), remote = new Set(state.acknowledged);
       for (const event of response.events) if (!skipped.has(event.id)) remote.add(event.id);
       state.acknowledged = [...remote]; state.pending = state.pending.filter(eventId => !remote.has(eventId)); state.cursor = response.cursor;
-      if (!response.hasMore) state.complete = true;
+      state.complete = !response.hasMore;
       save(); port.markComplete(whole()); publish();
       // Everything the server held when this pull began has come back by now, so the log may
       // fold those entries (game-learning.js `fold.remote`); an older adapter has no settle().
-      if (!response.hasMore) { if (typeof port.settle === 'function') port.settle(state.acknowledged); return; }
+      if (!response.hasMore) { if (typeof port.settle === 'function') port.settle(state.acknowledged); return true; }
     }
-    throw failure('INVALID_RESPONSE', 'Atlas sync: page limit exceeded');
+    // A work budget is not a protocol error. Keep the committed cursor and resume
+    // another bounded turn; never declare completion or upload before the pull ends.
+    return false;
   };
   // Lost entries come back from the server: read it from the start, take only those ids.
   const recover = async token => {
-    let after = 0;
+    let after = state.recoveryCursor || 0;
     for (let page = 0; page < maxPages && state.missing.length; page++) {
       const response = await request('get', { after, revision }, token);
       if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after
@@ -157,10 +180,13 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         state.missing = state.missing.filter(eventId => !back.has(eventId));
       }
       after = response.cursor;
+      state.recoveryCursor = Math.min(after, state.cursor);
       // The whole server log has been read: what is still missing is not there (stop asking).
       if (!response.hasMore || after >= state.cursor) { state.missing = []; }
+      if (!state.missing.length) state.recoveryCursor = 0;
       save(); port.markComplete(whole()); publish();
     }
+    return !state.missing.length;
   };
   const flushQueue = async token => {
     let emptyAcks = 0;
@@ -187,11 +213,12 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     if (stopped || phase === 'blocked') return Promise.resolve(status());
     if (running) { if (!pullOnly) flushRequested = true; return running; }
     flushRequested = !pullOnly;
-    const token = generation;phase = 'syncing';code = null;message = null;publish();
+    const token = generation;let continuation = false;phase = 'syncing';code = null;message = null;publish();
     running = (async () => {
       try {
-        await pullPages(token);
-        if (active(token) && state.missing.length) await recover(token);
+        const pulled = await pullPages(token);
+        if (active(token) && !pulled) { continuation = true; return status(); }
+        if (active(token) && state.missing.length && !await recover(token)) { continuation = true; return status(); }
         if (active(token) && flushRequested) await flushQueue(token);
         if (active(token)) { phase = 'synced';code = null;message = null;publish(); }
       } catch (error) {
@@ -199,7 +226,13 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
           if (FATAL.has(errorCode(error))) block(error);
           else { phase = 'offline';code = errorCode(error);message = error?.message || code;publish(); }
         }
-      } finally { running = null; }
+      } finally {
+        running = null;
+        if (continuation && active(token) && auto && started && !timer) {
+          const pullOnly = !flushRequested;
+          timer = setTimeout(() => { timer = null; void run(pullOnly); }, 0);
+        }
+      }
       return status();
     })();
     return running;
