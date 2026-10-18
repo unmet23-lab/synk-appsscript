@@ -1,0 +1,265 @@
+{
+  "manifest": {
+    "name": "town-argon",
+    "builtAt": "2026-10-18T04:19:44.558Z",
+    "textures": {
+      "mode": "etc1s",
+      "pc": 2048,
+      "phone": 1024
+    },
+    "geometry": "meshopt",
+    "parts": [
+      {
+        "id": "ground",
+        "url": "town-argon-ground.glb",
+        "phone": "town-argon-ground-phone.glb"
+      },
+      {
+        "id": "home",
+        "placeId": "home",
+        "url": "town-argon-home.glb",
+        "phone": "town-argon-home-phone.glb"
+      },
+      {
+        "id": "cafe",
+        "placeId": "cafe",
+        "url": "town-argon-cafe.glb",
+        "phone": "town-argon-cafe-phone.glb"
+      },
+      {
+        "id": "workshop",
+        "placeId": "workshop",
+        "url": "town-argon-workshop.glb",
+        "phone": "town-argon-workshop-phone.glb"
+      },
+      {
+        "id": "greenhouse",
+        "placeId": "greenhouse",
+        "url": "town-argon-greenhouse.glb",
+        "phone": "town-argon-greenhouse-phone.glb"
+      }
+    ]
+  },
+  "log": [
+    {
+      "part": "ground",
+      "tier": "pc",
+      "file": "town-argon-ground.glb",
+      "glbBytes": 2108604,
+      "textures": [
+        {
+          "name": "town-argon-ground-court",
+          "from": "png",
+          "bytes": 484220
+        },
+        {
+          "name": "town-argon-ground-path",
+          "from": "png",
+          "bytes": 422292
+        },
+        {
+          "name": "town-argon-ground-lawn",
+          "from": "png",
+          "bytes": 728155
+        }
+      ]
+    },
+    {
+      "part": "ground",
+      "tier": "phone",
+      "file": "town-argon-ground-phone.glb",
+      "glbBytes": 1018872,
+      "textures": [
+        {
+          "name": "town-argon-ground-court",
+          "from": "png",
+          "bytes": 185898
+        },
+        {
+          "name": "town-argon-ground-path",
+          "from": "png",
+          "bytes": 146088
+        },
+        {
+          "name": "town-argon-ground-lawn",
+          "from": "png",
+          "bytes": 212977
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "pc",
+      "file": "town-argon-home.glb",
+      "glbBytes": 2398824,
+      "textures": [
+        {
+          "name": "town-argon-home-roof",
+          "from": "png",
+          "bytes": 779935
+        },
+        {
+          "name": "town-argon-home-base",
+          "from": "png",
+          "bytes": 426343
+        },
+        {
+          "name": "town-argon-home-timber",
+          "from": "png",
+          "bytes": 606938
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "phone",
+      "file": "town-argon-home-phone.glb",
+      "glbBytes": 1215252,
+      "textures": [
+        {
+          "name": "town-argon-home-roof",
+          "from": "png",
+          "bytes": 258593
+        },
+        {
+          "name": "town-argon-home-base",
+          "from": "png",
+          "bytes": 152271
+        },
+        {
+          "name": "town-argon-home-timber",
+          "from": "png",
+          "bytes": 218793
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "pc",
+      "file": "town-argon-cafe.glb",
+      "glbBytes": 1962540,
+      "textures": [
+        {
+          "name": "tex_bake_upper",
+          "from": "embedded",
+          "bytes": 829107
+        },
+        {
+          "name": "tex_bake_pavilion",
+          "from": "embedded",
+          "bytes": 634653
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "phone",
+      "file": "town-argon-cafe-phone.glb",
+      "glbBytes": 989720,
+      "textures": [
+        {
+          "name": "tex_bake_upper",
+          "from": "embedded",
+          "bytes": 275569
+        },
+        {
+          "name": "tex_bake_pavilion",
+          "from": "embedded",
+          "bytes": 215396
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "pc",
+      "file": "town-argon-workshop.glb",
+      "glbBytes": 2464672,
+      "textures": [
+        {
+          "name": "town-argon-workshop-roof",
+          "from": "png",
+          "bytes": 809469
+        },
+        {
+          "name": "town-argon-workshop-base",
+          "from": "png",
+          "bytes": 535719
+        },
+        {
+          "name": "town-argon-workshop-facade",
+          "from": "png",
+          "bytes": 544802
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "phone",
+      "file": "town-argon-workshop-phone.glb",
+      "glbBytes": 1211824,
+      "textures": [
+        {
+          "name": "town-argon-workshop-roof",
+          "from": "png",
+          "bytes": 253509
+        },
+        {
+          "name": "town-argon-workshop-base",
+          "from": "png",
+          "bytes": 188977
+        },
+        {
+          "name": "town-argon-workshop-facade",
+          "from": "png",
+          "bytes": 194671
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "pc",
+      "file": "town-argon-greenhouse.glb",
+      "glbBytes": 2284404,
+      "textures": [
+        {
+          "name": "town-argon-greenhouse-planter",
+          "from": "png",
+          "bytes": 673225
+        },
+        {
+          "name": "town-argon-greenhouse-maru",
+          "from": "png",
+          "bytes": 457291
+        },
+        {
+          "name": "town-argon-greenhouse-frame",
+          "from": "png",
+          "bytes": 740337
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "phone",
+      "file": "town-argon-greenhouse-phone.glb",
+      "glbBytes": 1042836,
+      "textures": [
+        {
+          "name": "town-argon-greenhouse-planter",
+          "from": "png",
+          "bytes": 234398
+        },
+        {
+          "name": "town-argon-greenhouse-maru",
+          "from": "png",
+          "bytes": 154359
+        },
+        {
+          "name": "town-argon-greenhouse-frame",
+          "from": "png",
+          "bytes": 240564
+        }
+      ]
+    }
+  ]
+}

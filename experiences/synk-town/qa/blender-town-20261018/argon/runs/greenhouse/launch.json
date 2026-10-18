@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-18T03:17:44.582Z",
+  "part": "greenhouse",
+  "bin": "C:/Users/q1212/AppData/Local/Microsoft/WinGet/Links/agy.exe",
+  "args": [
+    "--model",
+    "gemini-4-argon-high",
+    "--input-format",
+    "stream-json",
+    "--output-format",
+    "stream-json",
+    "--print-timeout",
+    "0s",
+    "--dangerously-skip-permissions",
+    "--disable-slash-commands",
+    "--log-file",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.claude\\worktrees\\goofy-yonath-85aa95\\.tmp\\town-blender-20261018\\argon\\runs\\greenhouse\\agy-cli.log"
+  ],
+  "cwd": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.claude\\worktrees\\goofy-yonath-85aa95\\.tmp\\town-blender-20261018\\argon"
+}

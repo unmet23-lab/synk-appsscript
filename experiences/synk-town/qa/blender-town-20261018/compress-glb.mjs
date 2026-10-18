@@ -18,6 +18,43 @@ const sharp = require('sharp');
 const [input, pngDir, output] = process.argv.slice(2);
 const args = Object.fromEntries(process.argv.slice(5).map(a => a.replace(/^--/, '').split('=')));
 const mode = args.mode || 'etc1s', size = Number(args.size || 2048);
+// Push-pull hole fill on RGBA8 in place: holes are texels with RGB and alpha all
+// 0. Pull: masked 2x2 averages up to 1x1. Push: each hole takes its parent's
+// value from the next coarser level, so a hole gets the mean of its nearest
+// island texels at the scale where they first appear.
+function pushPullFill(data, w, h) {
+  const levels = [];
+  let cw = w, ch = h, col = new Float32Array(w * h * 4), wt = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const hole = !data[i * 4] && !data[i * 4 + 1] && !data[i * 4 + 2] && !data[i * 4 + 3];
+    if (!hole) { wt[i] = 1; for (let k = 0; k < 4; k++) col[i * 4 + k] = data[i * 4 + k]; }
+  }
+  levels.push({ w: cw, h: ch, col, wt });
+  while (cw > 1 || ch > 1) {
+    const nw = Math.max(1, cw >> 1), nh = Math.max(1, ch >> 1), ncol = new Float32Array(nw * nh * 4), nwt = new Float32Array(nw * nh);
+    for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+      let s = 0; const acc = [0, 0, 0, 0];
+      for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
+        const sx = Math.min(cw - 1, x * 2 + dx), sy = Math.min(ch - 1, y * 2 + dy), j = sy * cw + sx;
+        if (wt[j] > 0) { s += wt[j]; for (let k = 0; k < 4; k++) acc[k] += col[j * 4 + k] * wt[j]; }
+      }
+      const o = y * nw + x;
+      if (s > 0) { nwt[o] = Math.min(1, s); for (let k = 0; k < 4; k++) ncol[o * 4 + k] = acc[k] / s; }
+    }
+    cw = nw; ch = nh; col = ncol; wt = nwt; levels.push({ w: cw, h: ch, col, wt });
+  }
+  for (let l = levels.length - 2; l >= 0; l--) {
+    const f = levels[l], c = levels[l + 1];
+    for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) {
+      const i = y * f.w + x; if (f.wt[i] > 0) continue;
+      const p = Math.min(c.h - 1, y >> 1) * c.w + Math.min(c.w - 1, x >> 1);
+      for (let k = 0; k < 4; k++) f.col[i * 4 + k] = c.col[p * 4 + k]; f.wt[i] = 1e-6;
+    }
+  }
+  const top = levels[0];
+  for (let i = 0; i < w * h; i++) if (!data[i * 4] && !data[i * 4 + 1] && !data[i * 4 + 2] && !data[i * 4 + 3])
+    for (let k = 0; k < 4; k++) data[i * 4 + k] = Math.round(top.col[i * 4 + k]);
+}
 const imageDecoder = async buffer => { const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true }); return { data: new Uint8Array(data), width: info.width, height: info.height }; };
 const { MeshoptEncoder, MeshoptDecoder } = await import('file:///' + path.join(tools, 'meshoptimizer/index.module.js').replace(/\\/g, '/'));
 await MeshoptEncoder.ready; await MeshoptDecoder.ready;
@@ -48,10 +85,19 @@ for (const texture of mode === 'keep' ? [] : doc.getRoot().listTextures()) {
   // alpha when it resizes RGBA, and alpha here is the sun share, so full shade
   // (alpha 0) lost its colour (10-18: 36–53% of the cafe's pixels moved at
   // 1024). removeAlpha() does not help: sharp resizes before it drops alpha.
-  let resized;
-  if (meta.width === size) resized = await sharp(source).ensureAlpha().png().toBuffer();
-  else {
+  // Empty atlas space (RGB 0 and alpha 0) is filled push-pull from the islands
+  // around it: small mip levels, used at grazing angles, otherwise averaged the
+  // black background into the island edges (10-18: dark notches along the paths,
+  // light/dark wedges on lawn slivers packed at the atlas border).
+  const filled = await (async () => {
     const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    pushPullFill(data, info.width, info.height);
+    return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  })();
+  let resized;
+  if (meta.width === size) resized = filled;
+  else {
+    const { data, info } = await sharp(filled).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     const px = info.width * info.height, rgb = Buffer.alloc(px * 3), alpha = Buffer.alloc(px);
     for (let i = 0; i < px; i++) { rgb[i * 3] = data[i * 4]; rgb[i * 3 + 1] = data[i * 4 + 1]; rgb[i * 3 + 2] = data[i * 4 + 2]; alpha[i] = data[i * 4 + 3]; }
     const shrink = (buf, channels) => sharp(buf, { raw: { width: info.width, height: info.height, channels } }).resize(size, size, { kernel: 'lanczos3', fit: 'fill' }).raw().toBuffer();

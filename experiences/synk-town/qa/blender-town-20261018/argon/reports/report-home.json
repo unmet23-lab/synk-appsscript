@@ -1,0 +1,247 @@
+{
+  "part": "home",
+  "asset": "out/town-argon-home.glb",
+  "blender_version": "5.2.2 LTS",
+  "gpu_backend": "OPTIX",
+  "totals": {
+    "triangles": 44096,
+    "triangle_budget": 60000,
+    "meshes": 8,
+    "mesh_budget": 24,
+    "materials": 8,
+    "textures": 3,
+    "texture_budget": "3 x 2048x2048",
+    "glb_size_bytes": 3159544,
+    "glb_size_mb": 3.013
+  },
+  "baking": {
+    "diffuse_passes": [
+      "DIRECT",
+      "INDIRECT",
+      "COLOR"
+    ],
+    "samples_total_diffuse": 512,
+    "samples_direct_sun_alpha": 64,
+    "sun_alpha_min_clamp": "2/255",
+    "uv_island_margin_px": 8.6,
+    "bake_margin_dilation_px": 10,
+    "atlas_bake_times_sec": {
+      "base": 31.87,
+      "timber": 35.75,
+      "roof": 27.3
+    },
+    "total_bake_and_export_sec": 105.35
+  },
+  "meshes": [
+    {
+      "name": "home_cloth",
+      "vertices": 1696,
+      "triangles": 1652,
+      "materials": [
+        "bake_cloth"
+      ]
+    },
+    {
+      "name": "home_foliage",
+      "vertices": 10125,
+      "triangles": 9600,
+      "materials": [
+        "bake_foliage"
+      ]
+    },
+    {
+      "name": "home_glass",
+      "vertices": 69,
+      "triangles": 68,
+      "materials": [
+        "live_glass"
+      ]
+    },
+    {
+      "name": "home_maru",
+      "vertices": 2350,
+      "triangles": 2096,
+      "materials": [
+        "bake_maru"
+      ]
+    },
+    {
+      "name": "home_props",
+      "vertices": 2675,
+      "triangles": 2840,
+      "materials": [
+        "bake_props"
+      ]
+    },
+    {
+      "name": "home_roof",
+      "vertices": 8464,
+      "triangles": 11016,
+      "materials": [
+        "bake_roof"
+      ]
+    },
+    {
+      "name": "home_timber",
+      "vertices": 13897,
+      "triangles": 14728,
+      "materials": [
+        "bake_timber"
+      ]
+    },
+    {
+      "name": "home_wall",
+      "vertices": 2055,
+      "triangles": 2096,
+      "materials": [
+        "bake_wall"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "bake_cloth",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-roof",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_foliage",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-roof",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_maru",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-base",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_props",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-timber",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_roof",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-roof",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_timber",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-timber",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_wall",
+      "type": "baked_diffuse",
+      "texture": "town-argon-home-base",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "live_glass",
+      "type": "realtime_glass",
+      "baseColor": "#bedbd5",
+      "roughness": 0.1,
+      "opacity": 0.29
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "town-argon-home-roof",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 864942,
+      "webp_sizeKB": 844.7,
+      "source_png": "out/town-argon-home-roof.png",
+      "source_png_sizeKB": 3806.9
+    },
+    {
+      "index": 1,
+      "name": "town-argon-home-base",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 282936,
+      "webp_sizeKB": 276.3,
+      "source_png": "out/town-argon-home-base.png",
+      "source_png_sizeKB": 1927.7
+    },
+    {
+      "index": 2,
+      "name": "town-argon-home-timber",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 415748,
+      "webp_sizeKB": 406.0,
+      "source_png": "out/town-argon-home-timber.png",
+      "source_png_sizeKB": 3034.8
+    }
+  ],
+  "spec_compliance": {
+    "world_origin_identity_transforms": true,
+    "y_up_gltf_export": true,
+    "maru_top_y_0p1295": true,
+    "rear_wall_w3p85_d0p25_h2p2": true,
+    "pier_bases_pm1p8_m1p65_0p28x0p9": true,
+    "home_door_x_m1p03_w0p73": true,
+    "roof_eave_above_2p1m": true,
+    "synk_bake_scale_2p0": true,
+    "synk_sun_alpha_1": true,
+    "live_glass_material": true,
+    "no_lights_cameras_animations": true,
+    "unmet_requirements": []
+  },
+  "previews": {
+    "home-close": "out/preview-home-home-close.png",
+    "close_alias": "out/preview-home-close.png",
+    "core": "out/preview-home-core.png"
+  }
+}

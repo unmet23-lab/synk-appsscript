@@ -1,0 +1,11 @@
+{
+  "startedAt": "2026-10-18T03:17:44.554Z",
+  "pid": 26696,
+  "buildings": [
+    "home",
+    "workshop",
+    "greenhouse"
+  ],
+  "ground": true,
+  "limitMin": 90
+}

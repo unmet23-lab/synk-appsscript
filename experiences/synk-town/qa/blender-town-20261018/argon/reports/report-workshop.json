@@ -1,0 +1,251 @@
+{
+  "asset": "out/town-argon-workshop.glb",
+  "part": "workshop",
+  "place_center_town": [
+    6.0,
+    0.0
+  ],
+  "blender_version": "5.2.2 LTS",
+  "gpu_backend": "OPTIX",
+  "totals": {
+    "triangles": 45750,
+    "triangle_budget": 60000,
+    "meshes": 8,
+    "mesh_budget": 24,
+    "materials": 8,
+    "textures": 3,
+    "texture_budget": "3 x 2048x2048",
+    "glb_size_bytes": 3386776,
+    "glb_size_mb": 3.23
+  },
+  "baking": {
+    "diffuse_passes": [
+      "DIRECT",
+      "INDIRECT",
+      "COLOR"
+    ],
+    "samples_total_diffuse": 512,
+    "samples_direct_sun_alpha": 64,
+    "post_filter": "10-pass contact-shadow dilation + 2-pass island-masked bilateral filter",
+    "uv_island_margin_px": 8.6,
+    "bake_margin_dilation_px": 10,
+    "atlas_bake_times_sec": {
+      "base": 32.34,
+      "facade": 31.18,
+      "roof": 27.99
+    },
+    "total_bake_and_export_sec": 107.56
+  },
+  "meshes": [
+    {
+      "name": "workshop_foliage",
+      "vertices": 7199,
+      "triangles": 6480,
+      "materials": [
+        "bake_foliage"
+      ]
+    },
+    {
+      "name": "workshop_glass",
+      "vertices": 66,
+      "triangles": 64,
+      "materials": [
+        "live_glass"
+      ]
+    },
+    {
+      "name": "workshop_maru",
+      "vertices": 5047,
+      "triangles": 5138,
+      "materials": [
+        "bake_maru"
+      ]
+    },
+    {
+      "name": "workshop_metal",
+      "vertices": 2526,
+      "triangles": 2964,
+      "materials": [
+        "bake_metal"
+      ]
+    },
+    {
+      "name": "workshop_roof",
+      "vertices": 7866,
+      "triangles": 10212,
+      "materials": [
+        "bake_roof"
+      ]
+    },
+    {
+      "name": "workshop_timber",
+      "vertices": 12136,
+      "triangles": 14232,
+      "materials": [
+        "bake_timber"
+      ]
+    },
+    {
+      "name": "workshop_wall",
+      "vertices": 2568,
+      "triangles": 3256,
+      "materials": [
+        "bake_wall"
+      ]
+    },
+    {
+      "name": "workshop_workbench",
+      "vertices": 3038,
+      "triangles": 3404,
+      "materials": [
+        "bake_workbench"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "bake_foliage",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-roof",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_maru",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-base",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_metal",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-base",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_roof",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-roof",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_timber",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-facade",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_wall",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-facade",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_workbench",
+      "type": "baked_diffuse",
+      "texture": "town-argon-workshop-base",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "live_glass",
+      "type": "realtime_glass",
+      "baseColor": "#bedbd5",
+      "roughness": 0.1,
+      "opacity": 0.29
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "town-argon-workshop-roof",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webpByteLength": 1014030,
+      "webpSizeKB": 990.3,
+      "sourcePng": "out/town-argon-workshop-roof.png",
+      "sourcePngBytes": 4226980
+    },
+    {
+      "index": 1,
+      "name": "town-argon-workshop-base",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webpByteLength": 471056,
+      "webpSizeKB": 460.0,
+      "sourcePng": "out/town-argon-workshop-base.png",
+      "sourcePngBytes": 2736673
+    },
+    {
+      "index": 2,
+      "name": "town-argon-workshop-facade",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webpByteLength": 324096,
+      "webpSizeKB": 316.5,
+      "sourcePng": "out/town-argon-workshop-facade.png",
+      "sourcePngBytes": 3015581
+    }
+  ],
+  "spec_compliance": {
+    "world_origin_identity_transforms": true,
+    "y_up_gltf_export": true,
+    "maru_top_y_0p1295": true,
+    "rear_wall_w3p85_d0p25_h2p2": true,
+    "front_pier_bases_pm1p8_m1p65_0p28x0p9": true,
+    "sliding_door_x_m1p18_w0p64": true,
+    "roof_eave_above_2p1m": true,
+    "synk_bake_scale_2p0": true,
+    "synk_sun_alpha_1": true,
+    "live_glass_material": true,
+    "no_lights_cameras_animations": true,
+    "unmet_requirements": []
+  },
+  "previews": {
+    "workshop-close": "out/preview-workshop-workshop-close.png",
+    "close": "out/preview-workshop-close.png",
+    "core": "out/preview-workshop-core.png"
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "part": "ground",
+  "asset": "out/town-argon-ground.glb",
+  "blender_version": "5.2.2 LTS",
+  "gpu_backend": "OPTIX",
+  "totals": {
+    "triangles": 57915,
+    "triangle_budget": 80000,
+    "meshes": 9,
+    "mesh_budget": 24,
+    "materials": 9,
+    "textures": 3,
+    "texture_budget": "3 x 2048x2048",
+    "glb_size_bytes": 4658852,
+    "glb_size_mb": 4.443
+  },
+  "baking": {
+    "diffuse_passes": [
+      "DIRECT",
+      "INDIRECT",
+      "COLOR"
+    ],
+    "samples_total_diffuse": 512,
+    "samples_direct_sun_alpha": 64,
+    "sun_alpha_min_clamp": "2/255",
+    "uv_island_margin_px": 8.6,
+    "bake_times_sec": {
+      "court": 27.22,
+      "path": 27.44,
+      "lawn": 31.94
+    },
+    "total_pipeline_sec": 99.47
+  },
+  "meshes": [
+    {
+      "name": "ground_court",
+      "vertices": 4419,
+      "triangles": 6448,
+      "materials": [
+        "bake_court"
+      ]
+    },
+    {
+      "name": "ground_curb",
+      "vertices": 840,
+      "triangles": 1230,
+      "materials": [
+        "bake_curb"
+      ]
+    },
+    {
+      "name": "ground_gravel",
+      "vertices": 1856,
+      "triangles": 3062,
+      "materials": [
+        "bake_gravel"
+      ]
+    },
+    {
+      "name": "ground_lawn",
+      "vertices": 5835,
+      "triangles": 10963,
+      "materials": [
+        "bake_lawn"
+      ]
+    },
+    {
+      "name": "ground_mortar",
+      "vertices": 4435,
+      "triangles": 5066,
+      "materials": [
+        "bake_mortar"
+      ]
+    },
+    {
+      "name": "ground_path",
+      "vertices": 1127,
+      "triangles": 1920,
+      "materials": [
+        "bake_path"
+      ]
+    },
+    {
+      "name": "ground_soil",
+      "vertices": 2463,
+      "triangles": 4362,
+      "materials": [
+        "bake_soil"
+      ]
+    },
+    {
+      "name": "ground_stepping",
+      "vertices": 360,
+      "triangles": 480,
+      "materials": [
+        "bake_stepping"
+      ]
+    },
+    {
+      "name": "ground_stones",
+      "vertices": 18869,
+      "triangles": 24384,
+      "materials": [
+        "bake_stones"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "bake_court",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-court",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_curb",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-court",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_gravel",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-path",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_lawn",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-lawn",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_mortar",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-court",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_path",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-path",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_soil",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-lawn",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_stepping",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-path",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_stones",
+      "type": "baked_diffuse",
+      "texture": "town-argon-ground-path",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "town-argon-ground-court",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 580814,
+      "webp_sizeKB": 567.2,
+      "source_png": "out/town-argon-ground-court.png",
+      "source_png_sizeKB": 2042.0
+    },
+    {
+      "index": 1,
+      "name": "town-argon-ground-path",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 718978,
+      "webp_sizeKB": 702.1,
+      "source_png": "out/town-argon-ground-path.png",
+      "source_png_sizeKB": 2515.3
+    },
+    {
+      "index": 2,
+      "name": "town-argon-ground-lawn",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 1714438,
+      "webp_sizeKB": 1674.3,
+      "source_png": "out/town-argon-ground-lawn.png",
+      "source_png_sizeKB": 5070.3
+    }
+  ],
+  "previews": [
+    "out/preview-ground-core.png",
+    "out/preview-ground-follow.png"
+  ],
+  "unmet_requirements": []
+}

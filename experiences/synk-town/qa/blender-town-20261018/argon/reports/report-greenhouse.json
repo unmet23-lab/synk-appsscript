@@ -1,0 +1,290 @@
+{
+  "part": "town-greenhouse",
+  "asset": "out/town-argon-greenhouse.glb",
+  "original_pngs": [
+    "out/town-argon-greenhouse-maru.png",
+    "out/town-argon-greenhouse-frame.png",
+    "out/town-argon-greenhouse-planter.png"
+  ],
+  "blender_version": "5.2.2 LTS",
+  "gpu_backend": "OPTIX",
+  "totals": {
+    "triangles": 30160,
+    "triangle_budget": 60000,
+    "meshes": 10,
+    "mesh_budget": 24,
+    "materials": 10,
+    "textures": 3,
+    "texture_budget": "3 x 2048x2048",
+    "glb_size_bytes": 2879860,
+    "glb_size_mb": 2.746
+  },
+  "baking": {
+    "diffuse_passes": [
+      "DIRECT",
+      "INDIRECT",
+      "COLOR"
+    ],
+    "samples_total_diffuse": 512,
+    "samples_direct_sun_alpha": 64,
+    "post_filter": "10-pass occlusion footprint dilation + 2-pass island-masked bilateral filter",
+    "uv_island_margin_px": 8.6,
+    "bake_margin_dilation_px": 10,
+    "atlas_bake_times_sec": {
+      "maru": 35.74,
+      "frame": 16.67,
+      "planter": 20.73
+    },
+    "total_bake_and_export_sec": 82.61
+  },
+  "meshes": [
+    {
+      "name": "greenhouse_crops",
+      "vertices": 7199,
+      "triangles": 7296,
+      "materials": [
+        "bake_crops"
+      ]
+    },
+    {
+      "name": "greenhouse_curb",
+      "vertices": 912,
+      "triangles": 1016,
+      "materials": [
+        "bake_curb"
+      ]
+    },
+    {
+      "name": "greenhouse_frame",
+      "vertices": 6946,
+      "triangles": 7140,
+      "materials": [
+        "bake_frame"
+      ]
+    },
+    {
+      "name": "greenhouse_glass",
+      "vertices": 128,
+      "triangles": 192,
+      "materials": [
+        "live_glass"
+      ]
+    },
+    {
+      "name": "greenhouse_labels",
+      "vertices": 576,
+      "triangles": 648,
+      "materials": [
+        "bake_labels"
+      ]
+    },
+    {
+      "name": "greenhouse_maru",
+      "vertices": 4464,
+      "triangles": 5012,
+      "materials": [
+        "bake_maru"
+      ]
+    },
+    {
+      "name": "greenhouse_metal",
+      "vertices": 1265,
+      "triangles": 1264,
+      "materials": [
+        "bake_metal"
+      ]
+    },
+    {
+      "name": "greenhouse_planter",
+      "vertices": 4544,
+      "triangles": 5036,
+      "materials": [
+        "bake_planter"
+      ]
+    },
+    {
+      "name": "greenhouse_sill",
+      "vertices": 856,
+      "triangles": 900,
+      "materials": [
+        "bake_sill"
+      ]
+    },
+    {
+      "name": "greenhouse_soil",
+      "vertices": 982,
+      "triangles": 1656,
+      "materials": [
+        "bake_soil"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "bake_crops",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-planter",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_curb",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-maru",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_frame",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-frame",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_labels",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-planter",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_maru",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-maru",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_metal",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-frame",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_planter",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-planter",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_sill",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-frame",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_soil",
+      "type": "baked_diffuse",
+      "texture": "town-argon-greenhouse-planter",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "live_glass",
+      "type": "realtime_glass",
+      "baseColor": "#bedbd5",
+      "roughness": 0.1,
+      "opacity": 0.29
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "town-argon-greenhouse-planter",
+      "png_file": "out/town-argon-greenhouse-planter.png",
+      "png_size_kb": 3254.6,
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 594528,
+      "webp_sizeKB": 580.6
+    },
+    {
+      "index": 1,
+      "name": "town-argon-greenhouse-maru",
+      "png_file": "out/town-argon-greenhouse-maru.png",
+      "png_size_kb": 2467.2,
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 409672,
+      "webp_sizeKB": 400.1
+    },
+    {
+      "index": 2,
+      "name": "town-argon-greenhouse-frame",
+      "png_file": "out/town-argon-greenhouse-frame.png",
+      "png_size_kb": 3537.7,
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "webp_byteLength": 792260,
+      "webp_sizeKB": 773.7
+    }
+  ],
+  "spec_compliance": {
+    "world_origin_identity_transforms": true,
+    "y_up_gltf_export": true,
+    "maru_top_y_0p1295": true,
+    "maru_bounds_x_minus2p275_to_2p275_z_minus8p871_to_minus4p773": true,
+    "three_walls_glass_and_frame_open_front": true,
+    "planting_beds_at_x_minus1p25_1p15_z_minus6p67_0p88x1p85": true,
+    "eave_clearance_above_2p1m": true,
+    "synk_bake_scale_2p0": true,
+    "synk_sun_alpha_1_min_2_255": true,
+    "live_glass_material": true,
+    "no_lights_cameras_animations": true,
+    "unmet_requirements": []
+  },
+  "previews": {
+    "greenhouse-close": "out/preview-greenhouse-greenhouse-close.png",
+    "close": "out/preview-greenhouse-close.png",
+    "core": "out/preview-greenhouse-core.png"
+  }
+}

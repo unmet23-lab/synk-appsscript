@@ -26,6 +26,10 @@ RES = int(arg('--res', '2048'))
 # Atlases per part (spec: at most three of 2048² per part).
 GROUPS = {'ground': ['hard', 'soft'], 'home': ['house', 'roof', 'props'], 'workshop': ['house', 'roof', 'props'], 'greenhouse': ['house', 'props']}
 ANGLE_LIMIT = float(arg('--angle', '66'))
+# 6 px between islands and margins filled from the 3D-adjacent faces: with 3 px
+# and EXTEND, a dark stone island packed next to a path painted its margin over
+# the path's edge texels (dark notches along the path, 10-18).
+MARGIN_PX = float(arg('--margin', '6'))
 # Town camera poses (position, target, vertical fov) from ../poses (PC 1280x900).
 PREVIEW_CAMERAS = {'core': ((0, 8.2, 12.4), (0, .2, -2.6), 42), 'home-close': ((-5.706, 2.11, 5.549), (-5.986, .69, 1.699), 42),
                    'greenhouse-close': ((2.6, 2.35, -2.75), (-.15, .95, -6.1), 42)}
@@ -184,12 +188,10 @@ def subdivide_long_edges(o, limit=.45, passes=6):
         if not long: break
         bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=True)
     bmesh.ops.triangulate(bm, faces=bm.faces[:])
-    # Imported glTF split normals do not survive the split (black wedges in
-    # the first preview): the ground is flat, so shade it from face normals.
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
-    for f in bm.faces:
-        if f.normal.z < 0: f.normal_flip()
-        f.smooth = False
+    # Flat shading from the faces' own winding. (An earlier "flip every face
+    # pointing down" rule also flipped the lower facets of the stepping stones,
+    # which then baked black; the black wedges it was meant for were holes.)
+    for f in bm.faces: f.smooth = False
     bm.to_mesh(o.data); bm.free()
     try:
         with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]): bpy.ops.mesh.customdata_custom_splitnormals_clear()
@@ -392,18 +394,49 @@ def unwrap(objs, res):
         o.data.uv_layers.active = o.data.uv_layers['bake']
     bpy.context.view_layer.objects.active = objs[0]
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=3 / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=MARGIN_PX / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
-    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=3 / res)
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=MARGIN_PX / res)
     bpy.ops.object.mode_set(mode='OBJECT')
+
+def drop_live_ground_in_core():
+    """The live reference keeps every v20 ground triangle whose centre lies
+    outside the core, so triangles straddling the border reach into it, flat
+    and coplanar with the clipped baked ground. As occluders they baked into
+    the west lawn as light/dark wedges (10-18). Drop those faces for the bake
+    (flat ones only: stone walls outside the core still cast their shadows)."""
+    n = 0
+    for o in bpy.data.collections['occluders'].objects:
+        if o.type != 'MESH' or o.get('source') != 'v20_live.glb' or not o.material_slots or not o.material_slots[0].material: continue
+        if KIND.get(parse(o.material_slots[0].material.name)['key']) not in ('lawn', 'soil', 'stone', 'paving', 'mortar', 'gravel'): continue
+        bm = bmesh.new(); bm.from_mesh(o.data); mw = o.matrix_world; drop = []
+        for f in bm.faces:
+            pts = [mw @ v.co for v in f.verts]
+            if max(p.z for p in pts) > .35: continue
+            if max(p.x for p in pts) <= CORE['minX'] or min(p.x for p in pts) >= CORE['maxX']: continue
+            if max(p.y for p in pts) <= -CORE['maxZ'] or min(p.y for p in pts) >= -CORE['minZ']: continue
+            drop.append(f)
+        if drop:
+            bmesh.ops.delete(bm, geom=drop, context='FACES'); bm.to_mesh(o.data); o.data.update(); n += len(drop)
+        bm.free()
+    return n
 
 def stage_bake():
     bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'build.blend'))
     samples = int(arg('--samples', '1024')); setup_cycles(samples); sc = bpy.context.scene
     town = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and not o['glass']]
+    log('dropped live ground faces in the core', drop_live_ground_in_core())
     report = {'samples': samples, 'resolution': RES, 'atlases': {}}
     for part in PARTS:
+        # Ground layers lie 1-6 mm over each other (paths over gravel, beds over
+        # lawn). Baked with each other as occluders, the lower layer went black
+        # and showed through in Town as notches and wedges (10-18). v20's ground
+        # pieces cast no shadows either (batch(..., cast=false)), so while the
+        # ground bakes, ground objects are invisible to shadow and bounce rays.
+        for o in town:
+            if o['part'] == 'ground':
+                o.visible_shadow = part != 'ground'; o.visible_diffuse = part != 'ground'; o.visible_glossy = part != 'ground'
         for group in GROUPS[part]:
             objs = [o for o in town if o['part'] == part and o['group'] == group]
             if not objs: continue
@@ -422,12 +455,12 @@ def stage_bake():
             for o in objs: o.select_set(True)
             bpy.context.view_layer.objects.active = objs[0]
             target(images['full'])
-            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'INDIRECT', 'DIFFUSE', 'GLOSSY', 'EMIT'}, margin=12, margin_type='EXTEND', use_clear=True, target='IMAGE_TEXTURES')
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'INDIRECT', 'DIFFUSE', 'GLOSSY', 'EMIT'}, margin=16, margin_type='ADJACENT_FACES', use_clear=True, target='IMAGE_TEXTURES')
             strengths = [(n, n.inputs['Strength'].default_value) for n in sc.world.node_tree.nodes if n.type == 'BACKGROUND']
             for n, _ in strengths: n.inputs['Strength'].default_value = 0
             fill = bpy.data.objects['fill']; fill.hide_render = True; sc.cycles.samples = max(128, samples // 2)
             target(images['sun'])
-            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'DIFFUSE'}, margin=12, margin_type='EXTEND', use_clear=True, target='IMAGE_TEXTURES')
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'DIFFUSE'}, margin=16, margin_type='ADJACENT_FACES', use_clear=True, target='IMAGE_TEXTURES')
             for n, s in strengths: n.inputs['Strength'].default_value = s
             fill.hide_render = False; sc.cycles.samples = samples
             def read(img):

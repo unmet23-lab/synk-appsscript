@@ -73,7 +73,10 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
         if (e) { const tu = e[0] * u + e[3] * w + e[6], tw = e[1] * u + e[4] * w + e[7]; u = tu; w = tw; }
         b.uvs.push(u, map && !map.flipY ? w : 1 - w); b.hasUv = true;
       } else b.uvs.push(0, 0);
-      color.setRGB(1, 1, 1); if (col) color.fromBufferAttribute(col, id); if (tint) color.multiply(tint); b.colors.push(color.r, color.g, color.b);
+      // Geometry colours count only when the material draws them (planted beds
+      // carry a soil→lawn colour attribute that v20's material ignores; baked,
+      // it showed as a yellow wedge band, 10-18). Instance tints always count.
+      color.setRGB(1, 1, 1); if (col && mat.vertexColors) color.fromBufferAttribute(col, id); if (tint) color.multiply(tint); b.colors.push(color.r, color.g, color.b);
     }
     report[part].triangles += triangles.length;
     const source = materialName(mat); report[part].sources[source] = (report[part].sources[source] || 0) + triangles.length;

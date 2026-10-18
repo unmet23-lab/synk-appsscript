@@ -1,0 +1,5994 @@
+{
+  "started": "2026-10-18T04:41:53.949Z",
+  "finished": "2026-10-18T05:12:42.647Z",
+  "gpu": "default",
+  "dpr": 2,
+  "rounds": 7,
+  "seconds": 8,
+  "views": [
+    "core",
+    "follow",
+    "cafe-close",
+    "home-close"
+  ],
+  "summary": [
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "fps": [
+        41.38,
+        34.49,
+        41.05,
+        45.11,
+        36.52,
+        36.76,
+        37.44
+      ],
+      "drawCalls": 1304,
+      "triangles": 1790576,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 37.44
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        30.73,
+        35.62,
+        39.11,
+        44.77,
+        35.61,
+        38.93,
+        30.1
+      ],
+      "drawCalls": 1340,
+      "triangles": 1871888,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 35.62
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "fps": [
+        24.59,
+        39.51,
+        42.27,
+        48.37,
+        38.8,
+        39.53,
+        39.96
+      ],
+      "drawCalls": 1083,
+      "triangles": 1631110,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.53
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "fps": [
+        31.32,
+        40.38,
+        45.44,
+        45.92,
+        35.43,
+        38.45,
+        41.6
+      ],
+      "drawCalls": 743,
+      "triangles": 1300018,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 40.38
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "fps": [
+        59.98,
+        59.99,
+        59.97,
+        59.97,
+        56.61,
+        57.23,
+        59.35
+      ],
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.97
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.98,
+        59.98,
+        60.07,
+        59.97,
+        59.34,
+        60.08,
+        59.98
+      ],
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.98
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "fps": [
+        59.97,
+        59.97,
+        60,
+        60.08,
+        59.96,
+        59.97,
+        60.08
+      ],
+      "drawCalls": 678,
+      "triangles": 935638,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.97
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "fps": [
+        59.96,
+        60,
+        59.99,
+        59.97,
+        59.99,
+        59.33,
+        60
+      ],
+      "drawCalls": 533,
+      "triangles": 836356,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.99
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "fps": [
+        26.39,
+        34.98,
+        41.56,
+        40.72,
+        40.76,
+        36.62,
+        39.54
+      ],
+      "drawCalls": 897,
+      "triangles": 1833484,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.54
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        37.17,
+        35.64,
+        42.77,
+        42.46,
+        41.67,
+        30.85,
+        39.14
+      ],
+      "drawCalls": 933,
+      "triangles": 1914796,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.14
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "fps": [
+        38.64,
+        37.4,
+        41.33,
+        42.65,
+        39.97,
+        36.15,
+        41.22
+      ],
+      "drawCalls": 740,
+      "triangles": 1703268,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.97
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "fps": [
+        42.26,
+        38.46,
+        46.26,
+        45.8,
+        42.21,
+        35.17,
+        42.37
+      ],
+      "drawCalls": 456,
+      "triangles": 1373040,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 42.26
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "fps": [
+        59.97,
+        59.98,
+        59.99,
+        60.1,
+        59.98,
+        59.98,
+        59.99
+      ],
+      "drawCalls": 515,
+      "triangles": 1086802,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.98
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.97,
+        59.99,
+        59.99,
+        59.97,
+        60.08,
+        59.97,
+        59.99
+      ],
+      "drawCalls": 513,
+      "triangles": 1085938,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.99
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "fps": [
+        59.97,
+        60.08,
+        60.08,
+        59.87,
+        59.99,
+        59.61,
+        59.97
+      ],
+      "drawCalls": 483,
+      "triangles": 969057,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.97
+    },
+    {
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "fps": [
+        60.08,
+        60.09,
+        60.11,
+        59.99,
+        59.99,
+        59.23,
+        60.08
+      ],
+      "drawCalls": 346,
+      "triangles": 860733,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 60.08
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "fps": [
+        37.39,
+        31.34,
+        39.25,
+        37.62,
+        38.54,
+        35.73,
+        29.92
+      ],
+      "drawCalls": 979,
+      "triangles": 2018459,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 37.39
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        37.18,
+        31.74,
+        39.75,
+        42.55,
+        40.07,
+        41.06,
+        29.94
+      ],
+      "drawCalls": 1015,
+      "triangles": 2099771,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.75
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "fps": [
+        38.94,
+        33.65,
+        39.68,
+        43.05,
+        40.79,
+        41.17,
+        29.84
+      ],
+      "drawCalls": 818,
+      "triangles": 1868771,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 39.68
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "fps": [
+        43.08,
+        34.04,
+        44.06,
+        45.11,
+        42.11,
+        42.05,
+        32.06
+      ],
+      "drawCalls": 522,
+      "triangles": 1515459,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 42.11
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "fps": [
+        59.98,
+        59.36,
+        59.97,
+        59.98,
+        59.72,
+        59.99,
+        60.07
+      ],
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.98
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.98,
+        59.98,
+        59.98,
+        59.98,
+        56.84,
+        59.97,
+        59.99
+      ],
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.98
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "fps": [
+        59.86,
+        59.98,
+        59.99,
+        59.98,
+        54.59,
+        59.99,
+        57.98
+      ],
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 59.98
+    },
+    {
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "fps": [
+        59.99,
+        59.98,
+        60.08,
+        60.08,
+        59.74,
+        60.09,
+        60
+      ],
+      "drawCalls": 384,
+      "triangles": 954186,
+      "adapter": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "fpsMedian": 60
+    }
+  ],
+  "rows": [
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 12169,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 332,
+      "fps": 41.38,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 8.7,
+        "p95": 12
+      },
+      "drawCalls": 1304,
+      "triangles": 1790576,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 12169,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 247,
+      "fps": 30.73,
+      "intervalMs": {
+        "p50": 33.3,
+        "p95": 45.9
+      },
+      "cpuRenderMs": {
+        "p50": 8.3,
+        "p95": 14.5
+      },
+      "drawCalls": 1340,
+      "triangles": 1871888,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 12169,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 197,
+      "fps": 24.59,
+      "intervalMs": {
+        "p50": 37.6,
+        "p95": 54.2
+      },
+      "cpuRenderMs": {
+        "p50": 7.5,
+        "p95": 11.6
+      },
+      "drawCalls": 1083,
+      "triangles": 1631110,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 12169,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 251,
+      "fps": 31.32,
+      "intervalMs": {
+        "p50": 25.1,
+        "p95": 54.1
+      },
+      "cpuRenderMs": {
+        "p50": 5.9,
+        "p95": 8.4
+      },
+      "drawCalls": 743,
+      "triangles": 1300018,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2101,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 5.1,
+        "p95": 6.5
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2101,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 5.2,
+        "p95": 6.2
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2101,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4.6,
+        "p95": 5.5
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2101,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.96,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.4,
+        "p95": 4.3
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2610,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.03,
+      "frames": 212,
+      "fps": 26.39,
+      "intervalMs": {
+        "p50": 33.5,
+        "p95": 58.2
+      },
+      "cpuRenderMs": {
+        "p50": 6.4,
+        "p95": 8.7
+      },
+      "drawCalls": 897,
+      "triangles": 1833484,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2610,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 298,
+      "fps": 37.17,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 37.6
+      },
+      "cpuRenderMs": {
+        "p50": 6.4,
+        "p95": 8.5
+      },
+      "drawCalls": 933,
+      "triangles": 1914796,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2610,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 310,
+      "fps": 38.64,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 4.6,
+        "p95": 6.5
+      },
+      "drawCalls": 740,
+      "triangles": 1703268,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2610,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 339,
+      "fps": 42.26,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 3.9,
+        "p95": 5.2
+      },
+      "drawCalls": 456,
+      "triangles": 1373040,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1989,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.4,
+        "p95": 4.4
+      },
+      "drawCalls": 515,
+      "triangles": 1086802,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1989,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4.6
+      },
+      "drawCalls": 513,
+      "triangles": 1085938,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1989,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.1,
+        "p95": 3.7
+      },
+      "drawCalls": 483,
+      "triangles": 969057,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1989,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 3
+      },
+      "drawCalls": 346,
+      "triangles": 860733,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2611,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 300,
+      "fps": 37.39,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 6.3,
+        "p95": 9.5
+      },
+      "drawCalls": 979,
+      "triangles": 2018459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2611,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 298,
+      "fps": 37.18,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 6.4,
+        "p95": 8.4
+      },
+      "drawCalls": 1015,
+      "triangles": 2099771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2611,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 312,
+      "fps": 38.94,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 5.9,
+        "p95": 7.7
+      },
+      "drawCalls": 818,
+      "triangles": 1868771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2611,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 345,
+      "fps": 43.08,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 25.3
+      },
+      "cpuRenderMs": {
+        "p50": 4.4,
+        "p95": 5.8
+      },
+      "drawCalls": 522,
+      "triangles": 1515459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1998,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.6,
+        "p95": 4.5
+      },
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1998,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.8,
+        "p95": 3.8
+      },
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1998,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 479,
+      "fps": 59.86,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4
+      },
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 0,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1998,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.9,
+        "p95": 2.4
+      },
+      "drawCalls": 384,
+      "triangles": 954186,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2515,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.03,
+      "frames": 281,
+      "fps": 34.98,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 4.6,
+        "p95": 5.6
+      },
+      "drawCalls": 898,
+      "triangles": 1833544,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2515,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 286,
+      "fps": 35.64,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 5.4
+      },
+      "drawCalls": 934,
+      "triangles": 1914856,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2515,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 300,
+      "fps": 37.4,
+      "intervalMs": {
+        "p50": 25.1,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.1,
+        "p95": 5
+      },
+      "drawCalls": 741,
+      "triangles": 1703328,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2515,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.03,
+      "frames": 309,
+      "fps": 38.46,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4.5
+      },
+      "drawCalls": 457,
+      "triangles": 1373100,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2008,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 3.9
+      },
+      "drawCalls": 515,
+      "triangles": 1086802,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2008,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 3.4
+      },
+      "drawCalls": 513,
+      "triangles": 1085938,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2008,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.7
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 3.5
+      },
+      "drawCalls": 483,
+      "triangles": 969057,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2008,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.09,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.7,
+        "p95": 1.9
+      },
+      "drawCalls": 346,
+      "triangles": 860733,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2524,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 251,
+      "fps": 31.34,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 37.6
+      },
+      "cpuRenderMs": {
+        "p50": 5,
+        "p95": 6.3
+      },
+      "drawCalls": 978,
+      "triangles": 2018321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2524,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.03,
+      "frames": 255,
+      "fps": 31.74,
+      "intervalMs": {
+        "p50": 33.2,
+        "p95": 33.5
+      },
+      "cpuRenderMs": {
+        "p50": 6.4,
+        "p95": 9.2
+      },
+      "drawCalls": 1014,
+      "triangles": 2099633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2524,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 270,
+      "fps": 33.65,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 6,
+        "p95": 8.6
+      },
+      "drawCalls": 817,
+      "triangles": 1868633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2524,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 273,
+      "fps": 34.04,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 4.2,
+        "p95": 6.5
+      },
+      "drawCalls": 521,
+      "triangles": 1515321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2358,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 475,
+      "fps": 59.36,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 17.2
+      },
+      "cpuRenderMs": {
+        "p50": 2.9,
+        "p95": 4.1
+      },
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2358,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 4.2
+      },
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2358,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.8,
+        "p95": 3.7
+      },
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2358,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.9,
+        "p95": 3.1
+      },
+      "drawCalls": 384,
+      "triangles": 954186,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2321,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.03,
+      "frames": 277,
+      "fps": 34.49,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 7.4,
+        "p95": 9.7
+      },
+      "drawCalls": 1303,
+      "triangles": 1790438,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2321,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.03,
+      "frames": 286,
+      "fps": 35.62,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 8.2,
+        "p95": 10.5
+      },
+      "drawCalls": 1339,
+      "triangles": 1871750,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2321,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 317,
+      "fps": 39.51,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 6.9,
+        "p95": 10.6
+      },
+      "drawCalls": 1082,
+      "triangles": 1630972,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2321,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 324,
+      "fps": 40.38,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 5.1,
+        "p95": 7.4
+      },
+      "drawCalls": 742,
+      "triangles": 1299880,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1709,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.9,
+        "p95": 3.3
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1709,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4.3,
+        "p95": 7.4
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1709,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4,
+        "p95": 5.2
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 1,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1709,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 60,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.7
+      },
+      "cpuRenderMs": {
+        "p50": 2.3,
+        "p95": 3.3
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2323,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 315,
+      "fps": 39.25,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.3,
+        "p95": 7.2
+      },
+      "drawCalls": 979,
+      "triangles": 2018459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2323,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.03,
+      "frames": 319,
+      "fps": 39.75,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 5.2,
+        "p95": 6.8
+      },
+      "drawCalls": 1015,
+      "triangles": 2099771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2323,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 318,
+      "fps": 39.68,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.3,
+        "p95": 6.8
+      },
+      "drawCalls": 818,
+      "triangles": 1868771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2323,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 353,
+      "fps": 44.06,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4.2
+      },
+      "drawCalls": 522,
+      "triangles": 1515459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1922,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.4,
+        "p95": 4.4
+      },
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1922,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.5,
+        "p95": 5.8
+      },
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1922,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4.1
+      },
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1922,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 2.9
+      },
+      "drawCalls": 384,
+      "triangles": 954186,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2276,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 330,
+      "fps": 41.05,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 8.5,
+        "p95": 10.7
+      },
+      "drawCalls": 1303,
+      "triangles": 1790438,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2276,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 313,
+      "fps": 39.11,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.2
+      },
+      "cpuRenderMs": {
+        "p50": 7.9,
+        "p95": 11
+      },
+      "drawCalls": 1339,
+      "triangles": 1871750,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2276,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 339,
+      "fps": 42.27,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 5.8,
+        "p95": 7.4
+      },
+      "drawCalls": 1082,
+      "triangles": 1630972,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2276,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 364,
+      "fps": 45.44,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.4,
+        "p95": 6.4
+      },
+      "drawCalls": 742,
+      "triangles": 1299880,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.1,
+        "p95": 4.5
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.07,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3,
+        "p95": 3.3
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 60,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.6,
+        "p95": 3
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4.4
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2555,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 333,
+      "fps": 41.56,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.1,
+        "p95": 5.1
+      },
+      "drawCalls": 898,
+      "triangles": 1833544,
+      "geometries": 318,
+      "textures": 65,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2555,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 343,
+      "fps": 42.77,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.1,
+        "p95": 5.2
+      },
+      "drawCalls": 934,
+      "triangles": 1914856,
+      "geometries": 318,
+      "textures": 65,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2555,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 331,
+      "fps": 41.33,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 3.6,
+        "p95": 4.9
+      },
+      "drawCalls": 741,
+      "triangles": 1703328,
+      "geometries": 318,
+      "textures": 65,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2555,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 371,
+      "fps": 46.26,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25
+      },
+      "cpuRenderMs": {
+        "p50": 3,
+        "p95": 3.9
+      },
+      "drawCalls": 457,
+      "triangles": 1373100,
+      "geometries": 318,
+      "textures": 65,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 2.7
+      },
+      "drawCalls": 515,
+      "triangles": 1086802,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.3,
+        "p95": 2.8
+      },
+      "drawCalls": 513,
+      "triangles": 1085938,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.7
+      },
+      "cpuRenderMs": {
+        "p50": 2.1,
+        "p95": 2.3
+      },
+      "drawCalls": 483,
+      "triangles": 969057,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 2,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 481,
+      "fps": 60.11,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.7
+      },
+      "cpuRenderMs": {
+        "p50": 1.7,
+        "p95": 2
+      },
+      "drawCalls": 346,
+      "triangles": 860733,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2039,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 361,
+      "fps": 45.11,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 6.3,
+        "p95": 8.2
+      },
+      "drawCalls": 1303,
+      "triangles": 1790438,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2039,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 359,
+      "fps": 44.77,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 5.9,
+        "p95": 7.1
+      },
+      "drawCalls": 1339,
+      "triangles": 1871750,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2039,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 388,
+      "fps": 48.37,
+      "intervalMs": {
+        "p50": 20.8,
+        "p95": 21
+      },
+      "cpuRenderMs": {
+        "p50": 5.6,
+        "p95": 6.7
+      },
+      "drawCalls": 1082,
+      "triangles": 1630972,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2039,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 369,
+      "fps": 45.92,
+      "intervalMs": {
+        "p50": 20.8,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.8,
+        "p95": 7.1
+      },
+      "drawCalls": 742,
+      "triangles": 1299880,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1873,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4.4
+      },
+      "drawCalls": 755,
+      "triangles": 1041486,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1873,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4
+      },
+      "drawCalls": 747,
+      "triangles": 1034590,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1873,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.8,
+        "p95": 3.4
+      },
+      "drawCalls": 677,
+      "triangles": 935500,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1873,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.1,
+        "p95": 2.5
+      },
+      "drawCalls": 532,
+      "triangles": 836218,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2244,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 326,
+      "fps": 40.72,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.3,
+        "p95": 7
+      },
+      "drawCalls": 897,
+      "triangles": 1833406,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2244,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 340,
+      "fps": 42.46,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.2,
+        "p95": 5
+      },
+      "drawCalls": 933,
+      "triangles": 1914718,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2244,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 342,
+      "fps": 42.65,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4,
+        "p95": 5.1
+      },
+      "drawCalls": 740,
+      "triangles": 1703190,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2244,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 367,
+      "fps": 45.8,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 3.1,
+        "p95": 4.5
+      },
+      "drawCalls": 456,
+      "triangles": 1372962,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1846,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 481,
+      "fps": 60.1,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.3,
+        "p95": 2.8
+      },
+      "drawCalls": 516,
+      "triangles": 1086940,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1846,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 3.4
+      },
+      "drawCalls": 514,
+      "triangles": 1086076,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1846,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 479,
+      "fps": 59.87,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.1,
+        "p95": 3.2
+      },
+      "drawCalls": 484,
+      "triangles": 969195,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1846,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 2.8
+      },
+      "drawCalls": 347,
+      "triangles": 860871,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2449,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.03,
+      "frames": 302,
+      "fps": 37.62,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 6.1,
+        "p95": 9.7
+      },
+      "drawCalls": 978,
+      "triangles": 2018321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2449,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 341,
+      "fps": 42.55,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 5.9
+      },
+      "drawCalls": 1014,
+      "triangles": 2099633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2449,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 345,
+      "fps": 43.05,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 3.9,
+        "p95": 4.7
+      },
+      "drawCalls": 817,
+      "triangles": 1868633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2449,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 362,
+      "fps": 45.11,
+      "intervalMs": {
+        "p50": 20.9,
+        "p95": 25
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4.1
+      },
+      "drawCalls": 521,
+      "triangles": 1515321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1806,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 3.7
+      },
+      "drawCalls": 567,
+      "triangles": 1199996,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1806,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.1,
+        "p95": 4
+      },
+      "drawCalls": 564,
+      "triangles": 1189532,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1806,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 2.9
+      },
+      "drawCalls": 529,
+      "triangles": 1084063,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 3,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1806,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.7,
+        "p95": 2.4
+      },
+      "drawCalls": 383,
+      "triangles": 954048,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2333,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 327,
+      "fps": 40.76,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.8,
+        "p95": 6.3
+      },
+      "drawCalls": 897,
+      "triangles": 1833406,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2333,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 334,
+      "fps": 41.67,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.8,
+        "p95": 6
+      },
+      "drawCalls": 933,
+      "triangles": 1914718,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2333,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 320,
+      "fps": 39.97,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 37.4
+      },
+      "cpuRenderMs": {
+        "p50": 4.2,
+        "p95": 5.3
+      },
+      "drawCalls": 740,
+      "triangles": 1703190,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2333,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 338,
+      "fps": 42.21,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 3.9,
+        "p95": 6.8
+      },
+      "drawCalls": 456,
+      "triangles": 1372962,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2324,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 3.3
+      },
+      "drawCalls": 516,
+      "triangles": 1086940,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2324,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.7,
+        "p95": 3.8
+      },
+      "drawCalls": 514,
+      "triangles": 1086076,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2324,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 3.2
+      },
+      "drawCalls": 484,
+      "triangles": 969195,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2324,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.8,
+        "p95": 2.7
+      },
+      "drawCalls": 347,
+      "triangles": 860871,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2537,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 309,
+      "fps": 38.54,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 6.1,
+        "p95": 8
+      },
+      "drawCalls": 979,
+      "triangles": 2018459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2537,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 321,
+      "fps": 40.07,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 6,
+        "p95": 7.6
+      },
+      "drawCalls": 1015,
+      "triangles": 2099771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2537,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 327,
+      "fps": 40.79,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.1
+      },
+      "cpuRenderMs": {
+        "p50": 5.5,
+        "p95": 9.3
+      },
+      "drawCalls": 818,
+      "triangles": 1868771,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2537,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.03,
+      "frames": 338,
+      "fps": 42.11,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.3,
+        "p95": 6.1
+      },
+      "drawCalls": 522,
+      "triangles": 1515459,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2094,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 478,
+      "fps": 59.72,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.8,
+        "p95": 3.7
+      },
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2094,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 455,
+      "fps": 56.84,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 21
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 5
+      },
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2094,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 437,
+      "fps": 54.59,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 25
+      },
+      "cpuRenderMs": {
+        "p50": 3.1,
+        "p95": 4.3
+      },
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2094,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 478,
+      "fps": 59.74,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.9,
+        "p95": 3.6
+      },
+      "drawCalls": 384,
+      "triangles": 954186,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 3112,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.05,
+      "frames": 294,
+      "fps": 36.52,
+      "intervalMs": {
+        "p50": 25.1,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 11,
+        "p95": 20.7
+      },
+      "drawCalls": 1303,
+      "triangles": 1790438,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 3112,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.03,
+      "frames": 286,
+      "fps": 35.61,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 12.2,
+        "p95": 24.2
+      },
+      "drawCalls": 1339,
+      "triangles": 1871750,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 3112,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 312,
+      "fps": 38.8,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 10.4,
+        "p95": 20
+      },
+      "drawCalls": 1082,
+      "triangles": 1630972,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 3112,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 284,
+      "fps": 35.43,
+      "intervalMs": {
+        "p50": 25.1,
+        "p95": 41.6
+      },
+      "cpuRenderMs": {
+        "p50": 8.6,
+        "p95": 16.3
+      },
+      "drawCalls": 742,
+      "triangles": 1299880,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2409,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 453,
+      "fps": 56.61,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 25
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 6.5
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2409,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 475,
+      "fps": 59.34,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 5
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2409,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.96,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4.2,
+        "p95": 5.2
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 4,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2409,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.4,
+        "p95": 4.1
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2676,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8,
+      "frames": 286,
+      "fps": 35.73,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 7,
+        "p95": 8.5
+      },
+      "drawCalls": 978,
+      "triangles": 2018321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2676,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.04,
+      "frames": 330,
+      "fps": 41.06,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.2
+      },
+      "cpuRenderMs": {
+        "p50": 6.5,
+        "p95": 7.9
+      },
+      "drawCalls": 1014,
+      "triangles": 2099633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2676,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 330,
+      "fps": 41.17,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 28.7
+      },
+      "cpuRenderMs": {
+        "p50": 5.8,
+        "p95": 7.2
+      },
+      "drawCalls": 817,
+      "triangles": 1868633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2676,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 337,
+      "fps": 42.05,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.6,
+        "p95": 5.7
+      },
+      "drawCalls": 521,
+      "triangles": 1515321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2069,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.6,
+        "p95": 4.4
+      },
+      "drawCalls": 568,
+      "triangles": 1200134,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2069,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.4,
+        "p95": 2.8
+      },
+      "drawCalls": 565,
+      "triangles": 1189670,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2069,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.3,
+        "p95": 3.4
+      },
+      "drawCalls": 530,
+      "triangles": 1084201,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2069,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 481,
+      "fps": 60.09,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.7,
+        "p95": 3.6
+      },
+      "drawCalls": 384,
+      "triangles": 954186,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2518,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 295,
+      "fps": 36.76,
+      "intervalMs": {
+        "p50": 29,
+        "p95": 29.3
+      },
+      "cpuRenderMs": {
+        "p50": 9.5,
+        "p95": 10.9
+      },
+      "drawCalls": 1304,
+      "triangles": 1790576,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2518,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 312,
+      "fps": 38.93,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 8.8,
+        "p95": 11.7
+      },
+      "drawCalls": 1340,
+      "triangles": 1871888,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2518,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.02,
+      "frames": 317,
+      "fps": 39.53,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 7.6,
+        "p95": 10.3
+      },
+      "drawCalls": 1083,
+      "triangles": 1631110,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2518,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 309,
+      "fps": 38.45,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 5.6,
+        "p95": 11.1
+      },
+      "drawCalls": 743,
+      "triangles": 1300018,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 458,
+      "fps": 57.23,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 20.9
+      },
+      "cpuRenderMs": {
+        "p50": 5.1,
+        "p95": 6.8
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4.9,
+        "p95": 6.9
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 6.4
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2605,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 475,
+      "fps": 59.33,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.9
+      },
+      "cpuRenderMs": {
+        "p50": 3.6,
+        "p95": 5
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.03,
+      "frames": 294,
+      "fps": 36.62,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 5.2,
+        "p95": 9.6
+      },
+      "drawCalls": 897,
+      "triangles": 1833406,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 247,
+      "fps": 30.85,
+      "intervalMs": {
+        "p50": 33.3,
+        "p95": 45.8
+      },
+      "cpuRenderMs": {
+        "p50": 5.9,
+        "p95": 10.6
+      },
+      "drawCalls": 933,
+      "triangles": 1914718,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 290,
+      "fps": 36.15,
+      "intervalMs": {
+        "p50": 29,
+        "p95": 33.4
+      },
+      "cpuRenderMs": {
+        "p50": 7.3,
+        "p95": 11.7
+      },
+      "drawCalls": 740,
+      "triangles": 1703190,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2881,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 282,
+      "fps": 35.17,
+      "intervalMs": {
+        "p50": 29.1,
+        "p95": 37.5
+      },
+      "cpuRenderMs": {
+        "p50": 6.7,
+        "p95": 10
+      },
+      "drawCalls": 456,
+      "triangles": 1372962,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2530,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4.6
+      },
+      "drawCalls": 516,
+      "triangles": 1086940,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2530,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.2,
+        "p95": 4.5
+      },
+      "drawCalls": 514,
+      "triangles": 1086076,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2530,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 477,
+      "fps": 59.61,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.5,
+        "p95": 4
+      },
+      "drawCalls": 484,
+      "triangles": 969195,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 5,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2530,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 474,
+      "fps": 59.23,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 1.9,
+        "p95": 2.9
+      },
+      "drawCalls": 347,
+      "triangles": 860871,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 3093,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 301,
+      "fps": 37.44,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 33.3
+      },
+      "cpuRenderMs": {
+        "p50": 10.7,
+        "p95": 21.5
+      },
+      "drawCalls": 1303,
+      "triangles": 1790516,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 3093,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.04,
+      "frames": 242,
+      "fps": 30.1,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 50
+      },
+      "cpuRenderMs": {
+        "p50": 12,
+        "p95": 23.9
+      },
+      "drawCalls": 1339,
+      "triangles": 1871828,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 3093,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.03,
+      "frames": 321,
+      "fps": 39.96,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 37.5
+      },
+      "cpuRenderMs": {
+        "p50": 9.2,
+        "p95": 19.5
+      },
+      "drawCalls": 1082,
+      "triangles": 1631050,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 3093,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.03,
+      "frames": 334,
+      "fps": 41.6,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 7.2,
+        "p95": 14.4
+      },
+      "drawCalls": 742,
+      "triangles": 1299958,
+      "geometries": 286,
+      "textures": 53,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 2204,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 475,
+      "fps": 59.35,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 5,
+        "p95": 8.8
+      },
+      "drawCalls": 756,
+      "triangles": 1041624,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 2204,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.4,
+        "p95": 5.4
+      },
+      "drawCalls": 748,
+      "triangles": 1034728,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 2204,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 4.8
+      },
+      "drawCalls": 678,
+      "triangles": 935638,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 2204,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 0,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 60,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 3.3,
+        "p95": 5
+      },
+      "drawCalls": 533,
+      "triangles": 836356,
+      "geometries": 282,
+      "textures": 46,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2781,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 317,
+      "fps": 39.54,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 6.5
+      },
+      "drawCalls": 897,
+      "triangles": 1833406,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2781,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.02,
+      "frames": 314,
+      "fps": 39.14,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 29.2
+      },
+      "cpuRenderMs": {
+        "p50": 4.7,
+        "p95": 6.1
+      },
+      "drawCalls": 933,
+      "triangles": 1914718,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2781,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.01,
+      "frames": 330,
+      "fps": 41.22,
+      "intervalMs": {
+        "p50": 25,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 4.2,
+        "p95": 5
+      },
+      "drawCalls": 740,
+      "triangles": 1703190,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2781,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 72701616,
+      "seconds": 8.03,
+      "frames": 340,
+      "fps": 42.37,
+      "intervalMs": {
+        "p50": 24.9,
+        "p95": 25.1
+      },
+      "cpuRenderMs": {
+        "p50": 3.9,
+        "p95": 5.2
+      },
+      "drawCalls": 456,
+      "triangles": 1372962,
+      "geometries": 318,
+      "textures": 66,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1980,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.3,
+        "p95": 2.6
+      },
+      "drawCalls": 515,
+      "triangles": 1086802,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1980,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 2.6
+      },
+      "drawCalls": 513,
+      "triangles": 1085938,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1980,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.97,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.2,
+        "p95": 2.5
+      },
+      "drawCalls": 483,
+      "triangles": 969057,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-claude",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1980,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 18175664,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.08,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2,
+        "p95": 3.1
+      },
+      "drawCalls": 346,
+      "triangles": 860733,
+      "geometries": 314,
+      "textures": 59,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "core",
+      "readyMs": 2757,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 240,
+      "fps": 29.92,
+      "intervalMs": {
+        "p50": 33.3,
+        "p95": 41.9
+      },
+      "cpuRenderMs": {
+        "p50": 4.9,
+        "p95": 9.1
+      },
+      "drawCalls": 978,
+      "triangles": 2018321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "readyMs": 2757,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 240,
+      "fps": 29.94,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 45.9
+      },
+      "cpuRenderMs": {
+        "p50": 5.2,
+        "p95": 9.2
+      },
+      "drawCalls": 1014,
+      "triangles": 2099633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "cafe-close",
+      "readyMs": 2757,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.01,
+      "frames": 239,
+      "fps": 29.84,
+      "intervalMs": {
+        "p50": 33.3,
+        "p95": 41.7
+      },
+      "cpuRenderMs": {
+        "p50": 4.9,
+        "p95": 8.6
+      },
+      "drawCalls": 817,
+      "triangles": 1868633,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "1280x900",
+      "view": "home-close",
+      "readyMs": 2757,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 78294048,
+      "seconds": 8.02,
+      "frames": 257,
+      "fps": 32.06,
+      "intervalMs": {
+        "p50": 29.2,
+        "p95": 41.7
+      },
+      "cpuRenderMs": {
+        "p50": 3.8,
+        "p95": 6.5
+      },
+      "drawCalls": 521,
+      "triangles": 1515321,
+      "geometries": 345,
+      "textures": 67,
+      "dpr": 1.5,
+      "drawingBuffer": {
+        "width": 1920,
+        "height": 1350
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "core",
+      "readyMs": 1992,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8.01,
+      "frames": 481,
+      "fps": 60.07,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.7,
+        "p95": 3.5
+      },
+      "drawCalls": 567,
+      "triangles": 1199996,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "readyMs": 1992,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 59.99,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.7,
+        "p95": 3.6
+      },
+      "drawCalls": 564,
+      "triangles": 1189532,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "cafe-close",
+      "readyMs": 1992,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 464,
+      "fps": 57.98,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 20.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.7,
+        "p95": 3.9
+      },
+      "drawCalls": 529,
+      "triangles": 1084063,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    },
+    {
+      "round": 6,
+      "variant": "town-argon",
+      "viewport": "390x844",
+      "view": "home-close",
+      "readyMs": 1992,
+      "adapter": {
+        "vendor": "Google Inc. (Intel)",
+        "renderer": "ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "textureBytes": 19573792,
+      "seconds": 8,
+      "frames": 480,
+      "fps": 60,
+      "intervalMs": {
+        "p50": 16.7,
+        "p95": 16.8
+      },
+      "cpuRenderMs": {
+        "p50": 2.1,
+        "p95": 2.7
+      },
+      "drawCalls": 383,
+      "triangles": 954048,
+      "geometries": 341,
+      "textures": 60,
+      "dpr": 1.25,
+      "drawingBuffer": {
+        "width": 487,
+        "height": 1055
+      },
+      "errors": 0
+    }
+  ]
+}

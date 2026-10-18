@@ -150,7 +150,9 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
   });
   for (const object of removed) { object.parent.remove(object); object.geometry.dispose(); [object.material].flat().forEach(m => { m.map?.dispose(); m.dispose(); }); }
   for (const texture of textures) {
-    texture.anisotropy = 8;
+    // Atlases never tile: clamping keeps islands at the atlas border from
+    // sampling the opposite edge (glTF's default sampler repeats).
+    texture.anisotropy = 8; texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
     const bytes = textureBytes(texture);
     state.textures.push({ width: texture.image?.width, height: texture.image?.height, compressed: !!texture.isCompressedTexture, format: texture.format, bytes });
     state.textureBytes += bytes;
