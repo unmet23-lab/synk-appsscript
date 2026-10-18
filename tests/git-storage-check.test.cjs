@@ -83,6 +83,53 @@ test('finds a large blob added and removed in intermediate commits', async t => 
   assert.equal(result.violations.find(row => row.code === 'blob-bytes').path, 'one-time.bin');
 });
 
+test('divergent range excludes a blob already reachable from the base', async t => {
+  const f = fixture(t, { maxBlobBytes: 64, maxTotalBytes: 10000 });
+  const common = f.git(['rev-parse', 'HEAD']);
+  const original = Buffer.alloc(128, 3);
+  f.write('assets/original.bin', original);
+  f.write('base-only.txt', 'base only\n');
+  f.git(['add', '--', 'assets/original.bin', 'base-only.txt']);
+  f.git(['commit', '-q', '-m', 'base already contains original']);
+  const base = f.git(['rev-parse', 'HEAD']);
+  const knownBlob = f.git(['rev-parse', 'HEAD:assets/original.bin']);
+  f.git(['checkout', '-q', '-b', 'independent-history', common]);
+  f.write('assets/original.bin', original);
+  const added = 'new source\n';
+  f.write('head-only.txt', added);
+  f.git(['add', '--', 'assets/original.bin', 'head-only.txt']);
+  f.git(['commit', '-q', '-m', 'independent original and new source']);
+  // A range walk can list this object even though it is reachable from base.
+  assert.ok(f.git(['rev-list', '--objects', '--no-object-names', base + '..HEAD']).split('\n').includes(knownBlob));
+  const result = await f.check({ base, head: 'HEAD' });
+  assert.equal(result.ok, true);
+  assert.equal(result.newBlobs, 1);
+  assert.equal(result.countedBytes, Buffer.byteLength(added));
+});
+
+test('divergent range still checks new deleted blobs and aliases of existing bytes', async t => {
+  const f = fixture(t, { maxBlobBytes: 64, maxTotalBytes: 10000 });
+  const common = f.git(['rev-parse', 'HEAD']);
+  f.write('assets/original.png', 'existing image');
+  f.git(['add', '--', 'assets/original.png']);
+  f.git(['commit', '-q', '-m', 'base image']);
+  const base = f.git(['rev-parse', 'HEAD']);
+  f.git(['checkout', '-q', '-b', 'independent-history', common]);
+  f.write('assets/original.png', 'existing image');
+  f.write('qa/copied.png', 'existing image');
+  f.write('temporary.bin', Buffer.alloc(65, 8));
+  f.git(['add', '--', 'assets/original.png', 'qa/copied.png', 'temporary.bin']);
+  f.git(['commit', '-q', '-m', 'new oversized object and existing image alias']);
+  f.git(['rm', '-q', '--', 'temporary.bin']);
+  f.git(['commit', '-q', '-m', 'delete temporary object']);
+  const result = await f.check({ base, head: 'HEAD' });
+  assert.equal(result.ok, false);
+  assert.equal(result.newBlobs, 1);
+  assert.equal(result.countedBytes, 65);
+  assert.ok(result.violations.some(row => row.code === 'blob-bytes' && row.path === 'temporary.bin'));
+  assert.ok(result.violations.some(row => row.code === 'qa-image' && row.path === 'qa/copied.png'));
+});
+
 test('blocks forced-added QA captures and excluded binary outputs irrespective of size', async t => {
   const f = fixture(t, {}, { '.gitignore': '**/qa/*.png\n*.zip\n' });
   f.write('experiences/new/qa/한글 캡처.png', 'tiny capture');
