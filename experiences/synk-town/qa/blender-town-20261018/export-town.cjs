@@ -26,6 +26,7 @@ if (require.main === module) (async () => {
     const result = await page.evaluate(core => globalThis.__exportCoreTown(core), CORE);
     const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live' };
     for (const [part, file] of Object.entries(names)) fs.writeFileSync(path.join(outDir, file + '.glb'), Buffer.from(result.files[part], 'base64'));
+    for (const [file, data] of Object.entries(result.mapFiles)) fs.writeFileSync(path.join(outDir, file), Buffer.from(data, 'base64'));
     const summary = Object.fromEntries(Object.entries(result.report).map(([k, r]) => [k, { meshes: r.meshes, triangles: r.triangles }]));
     fs.writeFileSync(path.join(outDir, 'export-report.json'), JSON.stringify({ exportedAt: new Date().toISOString(), core: CORE, adapter: await L.adapter(page), summary, groundInstances: result.groundInstances, report: result.report, errors }, null, 2) + '\n');
     console.log(JSON.stringify({ summary, groundInstances: result.groundInstances, errors: errors.filter(e => !/404/.test(e)).length }));

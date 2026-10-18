@@ -26,6 +26,9 @@ RES = int(arg('--res', '2048'))
 # Atlases per part (spec: at most three of 2048² per part).
 GROUPS = {'ground': ['hard', 'soft'], 'home': ['house', 'roof', 'props'], 'workshop': ['house', 'roof', 'props'], 'greenhouse': ['house', 'props']}
 ANGLE_LIMIT = float(arg('--angle', '66'))
+# Town camera poses (position, target, vertical fov) from ../poses (PC 1280x900).
+PREVIEW_CAMERAS = {'core': ((0, 8.2, 12.4), (0, .2, -2.6), 42), 'home-close': ((-5.706, 2.11, 5.549), (-5.986, .69, 1.699), 42),
+                   'greenhouse-close': ((2.6, 2.35, -2.75), (-.15, .95, -6.1), 42)}
 
 def log(*a):
     print('[town]', *a, flush=True)
@@ -35,7 +38,7 @@ def srgb_hex(h):
     return [x / 12.92 if x <= .04045 else ((x + .055) / 1.055) ** 2.4 for x in c]
 
 # ---------------------------------------------------------------- source materials
-NAME = re.compile(r'^(?P<key>.+?)_(?P<hex>[0-9a-f]{6})_r(?P<r>\d+)_m(?P<m>\d+)(?:_t(?P<t>\d+))?(?:\.\d+)?$')
+NAME = re.compile(r'^(?P<key>.+?)_(?P<hex>[0-9a-f]{6})_r(?P<r>\d+)_m(?P<m>\d+)(?:_t(?P<t>\d+))?(?:_x(?P<x>\d+))?(?:\.\d+)?$')
 KIND = {
     'wood': 'wood', 'darkWood': 'wood', 'shutters': 'wood', 'districtWood': 'wood', 'bark': 'wood',
     'plaster': 'plaster', 'plasterWarm': 'plaster', 'homePlaster': 'plaster', 'cafePlaster': 'plaster', 'workshopPlaster': 'plaster', 'interiorPlaster': 'plaster', 'farWall': 'plaster',
@@ -48,8 +51,9 @@ ROUGH = {'ceramic': .23, 'metal': .4, 'brass': .33, 'frame': .48, 'tea': .22, 'w
 
 def parse(name):
     mm = NAME.match(name)
-    if not mm: return {'key': name, 'hex': 'ffffff', 'rough': .9, 'metal': 0, 'opacity': None}
-    return {'key': mm['key'], 'hex': mm['hex'], 'rough': int(mm['r']) / 100, 'metal': int(mm['m']) / 100, 'opacity': int(mm['t']) / 100 if mm['t'] else None}
+    if not mm: return {'key': name, 'hex': 'ffffff', 'rough': .9, 'metal': 0, 'opacity': None, 'map': None}
+    return {'key': mm['key'], 'hex': mm['hex'], 'rough': int(mm['r']) / 100, 'metal': int(mm['m']) / 100, 'opacity': int(mm['t']) / 100 if mm['t'] else None,
+            'map': int(mm['x']) if mm['x'] else None}
 
 def group_of(part, key):
     if part == 'ground':
@@ -64,9 +68,11 @@ def node(nt, kind, loc=(0, 0), **props):
     for k, v in props.items(): setattr(n, k, v)
     return n
 
-def make_material(name, kind, color, rough, color_layer):
-    """Principled diffuse look of one v20 material with procedural surface detail.
-    Base colour = v20 hex x vertex colour (instance tints / terrain field)."""
+def make_material(name, kind, color, rough, color_layer, map_path=None, uv_layer=None, flag=False):
+    """Principled diffuse look of one v20 material: v20 hex x vertex colour
+    (instance tints / terrain field) x the v20 colour map on v20 UVs (exported
+    by ../export-town.cjs), plus light procedural detail and bump. `flag` adds
+    flagstone joints (the shared court only)."""
     mat = bpy.data.materials.new(name); mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial', (900, 0))
     bsdf = node(nt, 'ShaderNodeBsdfPrincipled', (600, 0)); bsdf.inputs['Roughness'].default_value = rough
@@ -77,6 +83,13 @@ def make_material(name, kind, color, rough, color_layer):
         tint = node(nt, 'ShaderNodeVertexColor', (-600, 300)); tint.layer_name = color_layer
         mix = node(nt, 'ShaderNodeMix', (-300, 200)); mix.data_type = 'RGBA'; mix.blend_type = 'MULTIPLY'; mix.inputs['Factor'].default_value = 1
         nt.links.new(col, mix.inputs[6]); nt.links.new(tint.outputs['Color'], mix.inputs[7]); col = mix.outputs[2]
+    if map_path:
+        uv = node(nt, 'ShaderNodeUVMap', (-900, 500)); uv.uv_map = uv_layer or ''
+        img = node(nt, 'ShaderNodeTexImage', (-600, 500)); img.image = bpy.data.images.load(map_path, check_existing=True); img.interpolation = 'Cubic'
+        nt.links.new(uv.outputs['UV'], img.inputs['Vector'])
+        mx = node(nt, 'ShaderNodeMix', (-300, 400)); mx.data_type = 'RGBA'; mx.blend_type = 'MULTIPLY'; mx.inputs['Factor'].default_value = 1
+        nt.links.new(col, mx.inputs[6]); nt.links.new(img.outputs['Color'], mx.inputs[7]); col = mx.outputs[2]
+    soft = .4 if map_path else 1   # the v20 map already carries the surface colour detail
     pos = node(nt, 'ShaderNodeTexCoord', (-1200, 0)).outputs['Object']
     def multiply(c, grey_socket, x=0):
         g = node(nt, 'ShaderNodeCombineXYZ', (x - 150, -100))
@@ -92,13 +105,14 @@ def make_material(name, kind, color, rough, color_layer):
         mp = node(nt, 'ShaderNodeMapping', (-1000, 0)); mp.inputs['Scale'].default_value = (.35, 6, 6); nt.links.new(pos, mp.inputs['Vector'])
         wave = node(nt, 'ShaderNodeTexWave', (-800, 0)); wave.inputs['Scale'].default_value = 1.6; wave.inputs['Distortion'].default_value = 7
         wave.inputs['Detail'].default_value = 3; nt.links.new(mp.outputs['Vector'], wave.inputs['Vector'])
-        col = multiply(col, remap(wave.outputs['Fac'], .9, 1.05, 0, 1)); bump_h, strength = wave.outputs['Fac'], .05
+        if not map_path: col = multiply(col, remap(wave.outputs['Fac'], .9, 1.05, 0, 1))
+        bump_h, strength = wave.outputs['Fac'], .05
     elif kind in ('plaster', 'stone', 'gravel', 'roof', 'lawn', 'mortar', 'soil', 'cotton', 'paving'):
         noise = node(nt, 'ShaderNodeTexNoise', (-800, 0)); noise.inputs['Detail'].default_value = 8
         noise.inputs['Scale'].default_value = {'plaster': 38, 'stone': 22, 'paving': 9, 'cotton': 140, 'gravel': 90, 'roof': 30, 'lawn': 60, 'mortar': 40, 'soil': 55}[kind]
         nt.links.new(pos, noise.inputs['Vector'])
         broad = node(nt, 'ShaderNodeTexNoise', (-800, -260)); broad.inputs['Scale'].default_value = 1.2; nt.links.new(pos, broad.inputs['Vector'])
-        amp = {'plaster': .035, 'stone': .07, 'paving': .05, 'cotton': .03, 'gravel': .12, 'roof': .06, 'lawn': .16, 'mortar': .06, 'soil': .14}[kind]
+        amp = {'plaster': .035, 'stone': .07, 'paving': .05, 'cotton': .03, 'gravel': .12, 'roof': .06, 'lawn': .16, 'mortar': .06, 'soil': .14}[kind] * soft
         mm = node(nt, 'ShaderNodeMath', (-300, -100)); mm.operation = 'MULTIPLY'
         nt.links.new(remap(noise.outputs['Fac'], 1 - amp, 1 + amp * .4), mm.inputs[0])
         nt.links.new(remap(broad.outputs['Fac'], 1 - amp * .5, 1 + amp * .2, .35, .65, y=-260), mm.inputs[1])
@@ -108,7 +122,7 @@ def make_material(name, kind, color, rough, color_layer):
             streak = node(nt, 'ShaderNodeTexNoise', (-800, -520)); streak.inputs['Scale'].default_value = 260; nt.links.new(mp.outputs['Vector'], streak.inputs['Vector'])
             m3 = node(nt, 'ShaderNodeMath', (-300, -300)); m3.operation = 'MULTIPLY'
             nt.links.new(grey, m3.inputs[0]); nt.links.new(remap(streak.outputs['Fac'], .86, 1.10, .35, .65, y=-520), m3.inputs[1]); grey = m3.outputs[0]
-        if kind == 'paving':
+        if kind == 'paving' and flag:
             # Flagstone courses: irregular cells with soft mortar joints (the
             # 10-17 Argon court read best; same idea, Claude's own nodes).
             mp = node(nt, 'ShaderNodeMapping', (-1000, -780)); mp.inputs['Scale'].default_value = (1.45, 1.9, 1); nt.links.new(pos, mp.inputs['Vector'])
@@ -124,7 +138,7 @@ def make_material(name, kind, color, rough, color_layer):
             bump_h = vor.outputs['Distance']; strength = .25
         col = multiply(col, grey)
         if bump_h is None:
-            bump_h = noise.outputs['Fac']; strength = {'plaster': .08, 'stone': .18, 'cotton': .12, 'gravel': .35, 'roof': .10, 'lawn': .25, 'mortar': .1, 'soil': .3}[kind]
+            bump_h = noise.outputs['Fac']; strength = {'plaster': .08, 'stone': .18, 'paving': .06, 'cotton': .12, 'gravel': .35, 'roof': .10, 'lawn': .25, 'mortar': .1, 'soil': .3}[kind]
     if kind == 'butter':
         bsdf.inputs['Emission Color'].default_value = (*color, 1); bsdf.inputs['Emission Strength'].default_value = .35
     nt.links.new(col, bsdf.inputs['Base Color'])
@@ -161,6 +175,27 @@ def clip_to_core(o):
         bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no, clear_outer=True)
     bm.to_mesh(o.data); bm.free(); o.data.update()
 
+def subdivide_long_edges(o, limit=.45, passes=6):
+    """v20 lawn triangles are about 1.5 m: split them so the covered-face test
+    below drops only the part that is really under the court or a deck."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    for _ in range(passes):
+        long = [e for e in bm.edges if e.calc_length() > limit]
+        if not long: break
+        bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=True)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    # Imported glTF split normals do not survive the split (black wedges in
+    # the first preview): the ground is flat, so shade it from face normals.
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    for f in bm.faces:
+        if f.normal.z < 0: f.normal_flip()
+        f.smooth = False
+    bm.to_mesh(o.data); bm.free()
+    try:
+        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]): bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    except Exception as e: log('custom normals clear failed', o.name, e)
+    o.data.update()
+
 def remove_hidden_faces(objs, blockers):
     """Bake texels only for faces somebody can see: drop undersides resting on
     the ground or a deck, faces pressed against another surface (short ray
@@ -171,6 +206,18 @@ def remove_hidden_faces(objs, blockers):
     trees = [(o, BVHTree.FromObject(o, dg)) for o in objs + blockers]
     removed = {}
     up = Vector((0, 0, 1))
+    # Ground faces may be hidden only by broad continuous covers: building decks
+    # (any non-ground part) and the court (paving). Narrow beds, joint lines and
+    # stepping stones never hide a lawn face — with them as covers, sparse probes
+    # landing on different strips removed lawn faces with gaps between the strips
+    # (10-18: see-through holes down to the underlay along the west beds).
+    broad = [(o, t) for o, t in trees if o.get('part') != 'ground' or o.get('key') == 'paving']
+    def covered(f, direction, dist, skip=None, among=trees):
+        # Every probe must hit: centre, the three corners pulled 10% inward and
+        # the three edge midpoints. A face only partly under a deck edge stays.
+        c = f.calc_center_median(); vs = [v.co for v in f.verts]
+        probes = [c] + [v + (c - v) * .1 for v in vs] + [(vs[i] + vs[(i + 1) % len(vs)]) / 2 + (c - (vs[i] + vs[(i + 1) % len(vs)]) / 2) * .1 for i in range(len(vs))]
+        return all(any(t.ray_cast(p + direction * 2e-4, direction, dist)[0] is not None for other, t in among if other is not skip) for p in probes)
     for o in objs:
         bm = bmesh.new(); bm.from_mesh(o.data); bm.faces.ensure_lookup_table(); kill = []
         ground = o['part'] == 'ground'
@@ -178,15 +225,14 @@ def remove_hidden_faces(objs, blockers):
             c = f.calc_center_median(); n = f.normal
             if n.z < -.5 and c.z < .135: kill.append(f); continue
             if ground and n.z > .5:
-                if any(t.ray_cast(c + up * 2e-4, up, .09)[0] is not None for other, t in trees if other is not o): kill.append(f); continue
+                if covered(f, up, .09, skip=o, among=broad): kill.append(f)
                 continue
-            origin = c + n * 1e-4
-            if any(t.ray_cast(origin, n, .004)[0] is not None for other, t in trees): kill.append(f)
+            if covered(f, n.copy(), .004): kill.append(f)
         removed[o.name] = len(kill)
         bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(o.data); bm.free(); o.data.update()
     return removed
 
-def prepare(objs, part):
+def prepare(objs, part, ref):
     """One material per imported object (the reference has one per v20 material)."""
     out = []
     for o in objs:
@@ -199,11 +245,31 @@ def prepare(objs, part):
             o['part'], o['group'], o['key'], o['glass'] = part, 'glass', key, True
         else:
             kind = KIND.get(key, 'plain')
-            o.data.materials.clear(); o.data.materials.append(make_material(f'src_{part}_{key}_{info["hex"]}', kind, color, ROUGH.get(key, info['rough'] if kind == 'plain' else {'wood': .8}.get(kind, .9)), layer))
+            map_path = os.path.join(ref, f'map_{info["map"]}.png') if info['map'] is not None else None
+            uv_layer = o.data.uv_layers[0].name if len(o.data.uv_layers) else None
+            o.data.materials.clear(); o.data.materials.append(make_material(f'src_{part}_{key}_{info["hex"]}', kind, color, ROUGH.get(key, info['rough'] if kind == 'plain' else {'wood': .8}.get(kind, .9)), layer,
+                map_path if map_path and os.path.exists(map_path) else None, uv_layer, flag=part == 'ground' and key == 'paving'))
             o['part'], o['group'], o['key'], o['glass'] = part, group_of(part, key), key, False
         o.name = f'{part}__{o["group"]}__{key}'
+        if not o['glass']: weld(o)
         out.append(o)
     return out
+
+def weld(o):
+    """The reference GLBs are unindexed (every triangle its own vertices), so
+    each triangle became its own UV island and the margins ate the atlas (2–9%
+    fill on 10-18). Welding joins coplanar neighbours into islands (45–56%);
+    shading then comes from smooth-by-angle like the 10-17 cafe build."""
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+    bm.to_mesh(o.data); bm.free()
+    try:
+        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]): bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    except Exception as e: log('custom normals clear failed', o.name, e)
+    for p in o.data.polygons: p.use_smooth = True
+    try: o.data.set_sharp_from_angle(angle=math.radians(38))
+    except Exception: pass
+    o.data.update()
 
 # ---------------------------------------------------------------- world (v20 lights, see spec 5)
 def setup_world(sky_path):
@@ -260,13 +326,24 @@ def stage_build():
     occluder_files = ['v20_live.glb', 'v20_cafe.glb'] + [f'v20_{p}.glb' for p in ('home', 'workshop', 'greenhouse') if p not in PARTS]
     if 'ground' not in PARTS: occluder_files.append('v20_town_ground.glb')
     for f in occluder_files:
-        for o in import_glb(os.path.join(ref, f), occ): o['occluder'] = True; o['source'] = f
+        for o in import_glb(os.path.join(ref, f), occ):
+            o['occluder'] = True; o['source'] = f
+            # Street furniture near the export camera came out faded (v20
+            # occlusion fading, opacity .14): occluders cast full shadows.
+            for slot in o.material_slots:
+                mt = slot.material
+                if mt and parse(mt.name)['key'] not in GLASS and mt.use_nodes and 'Principled BSDF' in mt.node_tree.nodes:
+                    alpha = mt.node_tree.nodes['Principled BSDF'].inputs['Alpha']
+                    for link in list(alpha.links): mt.node_tree.links.remove(link)
+                    alpha.default_value = 1
+                    try: mt.surface_render_method = 'DITHERED'
+                    except Exception: pass
     objs = []
     for part in PARTS:
         imported = import_glb(os.path.join(ref, 'v20_town_ground.glb' if part == 'ground' else f'v20_{part}.glb'), town)
-        objs += prepare(imported, part)
+        objs += prepare(imported, part, ref)
     for o in objs:
-        if o['part'] == 'ground': clip_to_core(o)
+        if o['part'] == 'ground': clip_to_core(o); subdivide_long_edges(o)
     bake_objs = [o for o in objs if not o['glass']]
     # Live grass and trees never hide a ground face (grass grows on the baked lawn).
     removed = remove_hidden_faces(bake_objs, [o for o in occ.objects if o.type == 'MESH' and o.get('source') != 'v20_live.glb'])
@@ -277,6 +354,15 @@ def stage_build():
         k = f'{o["part"]}/{o["group"]}'; tris[k] = tris.get(k, 0) + sum(len(p.vertices) - 2 for p in o.data.polygons)
     log('built', len(objs), 'objects in', round(time.time() - t0, 1), 's', tris)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(WORK, 'build.blend'))
+    if arg('--preview', '1') == '1':
+        # Quick material check before a long bake (Town camera poses, 32 samples).
+        sc = bpy.context.scene; sc.render.resolution_x, sc.render.resolution_y = 960, 675; sc.cycles.samples = 32
+        for name, (p, t, fov) in PREVIEW_CAMERAS.items():
+            cam = bpy.data.cameras.new(name); cam.sensor_fit = 'VERTICAL'; cam.angle_y = math.radians(fov)
+            ob = bpy.data.objects.new('cam_' + name, cam); sc.collection.objects.link(ob)
+            pb, tb = Vector((p[0], -p[2], p[1])), Vector((t[0], -t[2], t[1]))
+            ob.location = pb; ob.rotation_euler = (tb - pb).to_track_quat('-Z', 'Y').to_euler()
+            sc.camera = ob; sc.render.filepath = os.path.join(WORK, f'build-{name}.png'); bpy.ops.render.render(write_still=True)
     json.dump({'parts': PARTS, 'triangles': tris, 'removedHiddenFaces': removed, 'seconds': round(time.time() - t0, 1)}, open(os.path.join(WORK, 'build.json'), 'w'), indent=2)
 
 # ---------------------------------------------------------------- bake (same passes as the cafe, 10-17)
@@ -306,10 +392,10 @@ def unwrap(objs, res):
         o.data.uv_layers.active = o.data.uv_layers['bake']
     bpy.context.view_layer.objects.active = objs[0]
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=4 / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.uv.smart_project(angle_limit=math.radians(ANGLE_LIMIT), island_margin=3 / res, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
-    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=4 / res)
+    bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=3 / res)
     bpy.ops.object.mode_set(mode='OBJECT')
 
 def stage_bake():
@@ -322,6 +408,10 @@ def stage_bake():
             objs = [o for o in town if o['part'] == part and o['group'] == group]
             if not objs: continue
             t0 = time.time(); res = RES; unwrap(objs, res)
+            def poly_area(pts):
+                return abs(sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1] for i in range(len(pts)))) / 2
+            uv_fill = sum(poly_area([tuple(o.data.uv_layers['bake'].data[i].uv) for i in p.loop_indices]) for o in objs for p in o.data.polygons)
+            log('uv fill', part, group, round(uv_fill, 3))
             images = {p: bpy.data.images.new(f'{part}_{group}_{p}', res, res, alpha=False, float_buffer=True) for p in ('full', 'sun')}
             def target(img):
                 for o in objs:
@@ -349,7 +439,7 @@ def stage_bake():
             name = f'town-claude-{part}-{group}'
             out = bpy.data.images.new(name, res, res, alpha=True); out.pixels.foreach_set(enc.astype(np.float32).ravel())
             out.filepath_raw = os.path.join(WORK, name + '.png'); out.file_format = 'PNG'; out.save()
-            report['atlases'][name] = {'objects': len(objs), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
+            report['atlases'][name] = {'objects': len(objs), 'uvFill': round(uv_fill, 3), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
                                        'clipped_fraction': float((full * .5 > 1).mean())}
             log('baked', name, report['atlases'][name])
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(WORK, 'bake.blend'))
@@ -364,7 +454,8 @@ def stage_export():
         objs = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o['part'] == part]
         keep = []
         for group in GROUPS[part]:
-            g = [o for o in objs if o['group'] == group]
+            # Joining removes objects: look them up again for every group (10-17 cafe lesson).
+            g = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and o.get('group') == group and o not in keep]
             if not g: continue
             name = f'town-claude-{part}-{group}'
             img = bpy.data.images.load(os.path.join(WORK, name + '.png'), check_existing=False); img.alpha_mode = 'CHANNEL_PACKED'
@@ -379,9 +470,12 @@ def stage_export():
                 for n in [a.name for a in o.data.color_attributes]: o.data.color_attributes.remove(o.data.color_attributes[n])
             bpy.context.view_layer.objects.active = g[0]; bpy.ops.object.join()
             j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_{group}'; keep.append(j)
-        glass = [o for o in objs if o['glass']]
+        glass = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and o.get('glass') and o not in keep]
         if glass:
-            gm = bpy.data.materials.new('live_glass'); gm.use_nodes = True
+            # One glass material per name: a second new('live_glass') becomes live_glass.001,
+            # which Town would not recognise. The greenhouse panes are v20's thinner glass.
+            glass_name = 'live_glass_thin' if part == 'greenhouse' else 'live_glass'
+            gm = bpy.data.materials.get(glass_name) or bpy.data.materials.new(glass_name); gm.use_nodes = True
             b = gm.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value = (*srgb_hex('#d6e7eb'), 1)
             b.inputs['Roughness'].default_value = .075; b.inputs['Alpha'].default_value = .29
             bpy.ops.object.select_all(action='DESELECT')

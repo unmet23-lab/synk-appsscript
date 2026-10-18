@@ -53,6 +53,8 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   const terrainMaterial = material({ color: '#ffffff', vertexColors: true, roughness: 1, bumpMap: m.soil?.bumpMap, bumpScale: .026 });
   const cliffMaterial = material({ color: '#83917e', roughness: .94, bumpMap: m.stone?.bumpMap, bumpScale: .035 });
   const greenhouseGlass = m.glass.clone(); greenhouseGlass.opacity = .16; greenhouseGlass.depthWrite = false; ownedMaterials.add(greenhouseGlass);
+  // Walkable flat surfaces: a baked core-town set (?district=town-…) replaces these only.
+  for (const surface of [stone, paving, mortar, gravel, gardenSoil, terrainMaterial, cliffMaterial]) surface.userData.townGround = true;
   const ground = root('town-landscape', [0, .20, 0]);
 
   // Surface-scale colour is separate from the large terrain colour field.

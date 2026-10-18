@@ -1,18 +1,26 @@
-// Baked district swap for side-by-side comparison (2026-10-17 Blender test).
-// ?district=<name> replaces only what is drawn for one district with
-// assets/district/<name>.glb. Walking bounds, solids, floor heights, the open
-// tea-room front, click targets, support surfaces and the name label all stay
-// the approved v20 ones: the v20 meshes are hidden, not removed.
+// Baked district swap for side-by-side comparison (2026-10-17/18 Blender tests).
+// ?district=<name> replaces only what is drawn with baked GLBs:
+//   cafe-<variant>  one district: assets/district/<name>.glb (10-17)
+//   town-<variant>  the core town: assets/district/<name>.json lists one GLB per
+//                   part (shared ground + buildings), phone-sized files below 600 px
+// Walking bounds, solids, floor heights, the open fronts, click targets, support
+// surfaces and the name labels all stay the approved v20 ones: the v20 meshes
+// are hidden, not removed. Textures may be WebP or KTX2 (KHR_texture_basisu).
 
 export const BAKED_DISTRICTS = Object.freeze({
   cafe: Object.freeze({ placeId: 'cafe', bounds: Object.freeze({ minX: -3.0, maxX: 3.0, minZ: -3.4, maxZ: 5.35 }), groundTop: .25 }),
+});
+export const BAKED_SETS = Object.freeze({
+  town: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']) }),
 });
 
 export function districtRequest(search) {
   const name = new URLSearchParams(search).get('district');
   if (!name || !/^[a-z0-9-]{1,40}$/.test(name)) return null;
-  const district = BAKED_DISTRICTS[name.split('-')[0]];
-  return district ? { name, ...district, url: `./assets/district/${name}.glb` } : null;
+  const kind = name.split('-')[0];
+  if (BAKED_SETS[kind]) return { name, set: true, ...BAKED_SETS[kind], manifest: `./assets/district/${name}.json` };
+  const district = BAKED_DISTRICTS[kind];
+  return district ? { name, set: false, ...district, url: `./assets/district/${name}.glb` } : null;
 }
 
 // Lambert with a black diffuse colour draws nothing from real-time light; the
@@ -34,10 +42,18 @@ function bakedMaterial(THREE, source) {
   return material;
 }
 
+// GPU bytes of one texture as uploaded: compressed levels as transcoded, or
+// RGBA8 with a full mip chain for decoded images.
+function textureBytes(texture) {
+  if (texture.isCompressedTexture) return (texture.mipmaps || []).reduce((n, level) => n + (level.data?.byteLength || 0), 0);
+  const w = texture.image?.width || 0, h = texture.image?.height || 0;
+  return Math.round(w * h * 4 * 4 / 3);
+}
+
 // The v20 ground is cut along the district rectangle once, on the CPU, and
-// small ground instances (grass, flowers, pebbles) inside it are parked.
-// The v20 shaders stay untouched: a per-fragment discard in the ground
-// shaders cost about 3.5 fps at 1.5x on an integrated GPU (no early depth test).
+// small ground instances inside it are parked. The v20 shaders stay untouched:
+// a per-fragment discard in the ground shaders cost about 3.5 fps at 1.5x on an
+// integrated GPU (no early depth test).
 function cutOutRect(THREE, geometry, matrixWorld, b) {
   const g = geometry.index ? geometry.toNonIndexed() : geometry;
   const names = Object.keys(g.attributes), sizes = names.map(n => g.attributes[n].itemSize), position = g.attributes.position;
@@ -74,15 +90,17 @@ function cutOutRect(THREE, geometry, matrixWorld, b) {
   return { geometry: cut, dropped };
 }
 
-function hideDistrictGround(THREE, landscape, b, groundTop) {
+// onlyGround: the core-town set replaces walkable flat surfaces only (materials
+// day-environment tags userData.townGround); grass, flowers, shrubs, the pond
+// and the far underlay stay live. The 10-17 cafe district parks every instance.
+function hideDistrictGround(THREE, landscape, b, groundTop, onlyGround = false) {
   const restore = [], m = new THREE.Matrix4(), p = new THREE.Vector3(), zero = new THREE.Matrix4().makeScale(0, 0, 0);
-  // Instances (grass, flowers, pebbles) are parked by footprint at any height,
-  // matching the reference export; meshes are cut only at ground level.
   const inside = point => point.x > b.minX && point.x < b.maxX && point.z > b.minZ && point.z < b.maxZ;
+  const isGround = object => !onlyGround || [object.material].flat().some(material => material?.userData?.townGround);
   let cutMeshes = 0, droppedPieces = 0, parkedInstances = 0;
   landscape.updateMatrixWorld(true);
   landscape.traverse(object => {
-    if (!object.isMesh) return;
+    if (!object.isMesh || !isGround(object)) return;
     if (object.isInstancedMesh) {
       const parked = [];
       for (let i = 0; i < object.count; i++) {
@@ -98,6 +116,7 @@ function hideDistrictGround(THREE, landscape, b, groundTop) {
     object.geometry.computeBoundingBox();
     const box = object.geometry.boundingBox.clone().applyMatrix4(object.matrixWorld);
     if (box.max.x <= b.minX || box.min.x >= b.maxX || box.max.z <= b.minZ || box.min.z >= b.maxZ || box.min.y >= groundTop) return;
+    if (onlyGround && box.max.y < -.5) return; // the far underlay a metre under the meadow
     const original = object.geometry, { geometry, dropped } = cutOutRect(THREE, original, object.matrixWorld, b);
     if (!dropped) { geometry.dispose(); return; }
     object.geometry = geometry; cutMeshes++; droppedPieces += dropped;
@@ -106,43 +125,88 @@ function hideDistrictGround(THREE, landscape, b, groundTop) {
   return { restore: () => restore.forEach(fn => fn()), cutMeshes, droppedPieces, parkedInstances };
 }
 
-export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume }) {
-  const request = districtRequest(location.search), building = request && buildings.find(b => b.userData.placeId === request.placeId);
-  if (!request || !building) return null;
-  const started = performance.now(), hidden = [];
-  // Hide before the first frame so occlusion fading remembers hidden meshes.
-  building.traverse(object => { if (object.isMesh && !object.isSprite) { object.visible = false; hidden.push(object); } });
-  const landscape = world.children.find(child => child.name === 'town-landscape');
-  const ground = landscape ? hideDistrictGround(THREE, landscape, request.bounds, request.groundTop) : { restore() {}, cutMeshes: 0, droppedPieces: 0, parkedInstances: 0 };
-  const state = { name: request.name, url: request.url, loaded: false, failed: null, meshes: 0, triangles: 0, textures: [], loadMs: null, hiddenV20Meshes: hidden.length,
-    cutGroundMeshes: ground.cutMeshes, droppedGroundPieces: ground.droppedPieces, parkedGroundInstances: ground.parkedInstances, prepareMs: Math.round(performance.now() - started) };
-  // The loader is fetched only when a baked district is requested; v20 never downloads it.
-  const ready = import('./rendering/GLTFLoader.js').then(({ GLTFLoader }) => new GLTFLoader().loadAsync(request.url)).then(gltf => {
-    const root = gltf.scene; root.name = 'town-' + request.placeId + '-baked';
-    const textures = new Set();
-    root.traverse(object => {
-      if (!object.isMesh) return;
-      const source = object.material;
-      if (source.name === 'live_glass') { object.material = liveGlass; object.castShadow = false; object.receiveShadow = false; source.dispose(); }
-      else {
-        object.material = bakedMaterial(THREE, source); if (source.map) textures.add(source.map);
-        if (/roof/.test(object.name)) object.material.userData.townSurface = 'roof';
-        // Ground does not need to cast; structure keeps shading characters and
-        // the v20 lawn just outside the district.
-        object.castShadow = !/ground/.test(object.name); object.receiveShadow = true;
-        source.dispose();
-      }
-      state.meshes++; state.triangles += (object.geometry.index ? object.geometry.index.count : object.geometry.attributes.position.count) / 3;
-    });
-    for (const texture of textures) { texture.anisotropy = 8; state.textures.push({ width: texture.image?.width, height: texture.image?.height }); }
-    building.add(root); root.updateMatrixWorld(true);
-    replaceVolume?.(building);
-    state.loaded = true; state.loadMs = Math.round(performance.now() - started);
-    return state;
-  }).catch(error => {
-    // A missing or broken file restores the approved v20 district untouched.
-    state.failed = String(error?.message || error); ground.restore();
-    for (const object of hidden) object.visible = true; return state;
+// Converts one loaded GLB scene in place and records its cost.
+function adoptBaked(THREE, root, liveGlass, state, drop = []) {
+  const textures = new Set(), removed = [];
+  // The greenhouse's panes are thinner than window glass in v20 (opacity .16,
+  // no depth write); GLBs mark them live_glass_thin.
+  let thinGlass = null;
+  const glassFor = name => name !== 'live_glass_thin' ? liveGlass
+    : thinGlass ||= Object.assign(liveGlass.clone(), { opacity: .16, depthWrite: false });
+  root.traverse(object => {
+    if (!object.isMesh) return;
+    if (drop.some(prefix => object.name.startsWith(prefix))) { removed.push(object); return; }
+    const source = object.material;
+    if (/^live_glass/.test(source.name)) { object.material = glassFor(source.name); object.castShadow = false; object.receiveShadow = false; source.dispose(); }
+    else {
+      object.material = bakedMaterial(THREE, source); if (source.map) textures.add(source.map);
+      if (/roof/.test(object.name)) object.material.userData.townSurface = 'roof';
+      // Ground does not need to cast; structure keeps shading characters and
+      // the v20 lawn just outside the district.
+      object.castShadow = !/ground/.test(object.name); object.receiveShadow = true;
+      source.dispose();
+    }
+    state.meshes++; state.triangles += (object.geometry.index ? object.geometry.index.count : object.geometry.attributes.position.count) / 3;
   });
-  return { ready, stats: () => ({ ...state }) };
+  for (const object of removed) { object.parent.remove(object); object.geometry.dispose(); [object.material].flat().forEach(m => { m.map?.dispose(); m.dispose(); }); }
+  for (const texture of textures) {
+    texture.anisotropy = 8;
+    const bytes = textureBytes(texture);
+    state.textures.push({ width: texture.image?.width, height: texture.image?.height, compressed: !!texture.isCompressedTexture, format: texture.format, bytes });
+    state.textureBytes += bytes;
+  }
+}
+
+export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume, renderer, phone = false }) {
+  const request = districtRequest(location.search);
+  if (!request) return null;
+  const started = performance.now(), hidden = [];
+  const hideBuilding = building => building.traverse(object => { if (object.isMesh && !object.isSprite) { object.visible = false; hidden.push(object); } });
+  const landscape = world.children.find(child => child.name === 'town-landscape');
+  const noGround = { restore() {}, cutMeshes: 0, droppedPieces: 0, parkedInstances: 0 };
+  const state = { name: request.name, url: request.set ? request.manifest : request.url, tier: phone ? 'phone' : 'pc', loaded: false, failed: null, parts: [], meshes: 0, triangles: 0, textures: [], textureBytes: 0,
+    downloadBytes: 0, loadMs: null, hiddenV20Meshes: 0, cutGroundMeshes: 0, droppedGroundPieces: 0, parkedGroundInstances: 0, prepareMs: null };
+  let ground = noGround, attached = [];
+  const fail = error => {
+    // A missing or broken file restores the approved v20 town untouched.
+    state.failed = String(error?.message || error); ground.restore();
+    for (const root of attached) root.parent?.remove(root);
+    for (const object of hidden) object.visible = true; state.loaded = false; return state;
+  };
+  // Hide before the first frame so occlusion fading remembers hidden meshes.
+  const places = request.set ? request.places : [request.placeId], targets = places.map(id => buildings.find(b => b.userData.placeId === id));
+  if (targets.some(b => !b)) return null;
+  targets.forEach(hideBuilding);
+  ground = landscape ? hideDistrictGround(THREE, landscape, request.bounds, request.groundTop, request.set) : noGround;
+  const record = () => Object.assign(state, { hiddenV20Meshes: hidden.length, cutGroundMeshes: ground.cutMeshes, droppedGroundPieces: ground.droppedPieces, parkedGroundInstances: ground.parkedInstances });
+  record(); state.prepareMs = Math.round(performance.now() - started);
+  const sized = async url => { const response = await fetch(url); if (!response.ok) throw new Error(`${url} responded with ${response.status}`); const buffer = await response.arrayBuffer(); state.downloadBytes += buffer.byteLength; return buffer; };
+  // The loaders are fetched only when a baked district is requested; v20 never downloads them.
+  const ready = Promise.all([import('./rendering/GLTFLoader.js'), import('./rendering/KTX2Loader.js'), import('./rendering/meshopt_decoder.module.js'), request.set ? fetch(request.manifest).then(r => { if (!r.ok) throw new Error(`${request.manifest} responded with ${r.status}`); return r.json(); }) : null])
+    .then(async ([{ GLTFLoader }, { KTX2Loader }, { MeshoptDecoder }, manifest]) => {
+      const ktx2 = new KTX2Loader().setTranscoderPath('./rendering/basis/'); if (renderer) ktx2.detectSupport(renderer);
+      const loader = new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
+      const base = new URL('./assets/district/', location.href);
+      const parts = request.set ? manifest.parts.map(part => ({ ...part, url: new URL((phone && part.phone) || part.url, base).href }))
+        : [{ id: request.placeId, placeId: request.placeId, url: new URL(request.url, location.href).href }];
+      // A set must bring every part it hid: the shared ground and each building.
+      if (request.set) for (const id of ['ground', ...request.places]) if (!parts.some(part => part.id === id)) throw new Error('manifest lacks ' + id);
+      const loaded = await Promise.all(parts.map(async part => ({ part, gltf: await loader.parseAsync(await sized(part.url), part.url.replace(/[^/]*$/, '')) })));
+      ktx2.dispose();
+      for (const { part, gltf } of loaded) {
+        const root = gltf.scene; root.name = `town-${part.id}-baked`;
+        const before = { meshes: state.meshes, triangles: state.triangles, textureBytes: state.textureBytes };
+        adoptBaked(THREE, root, liveGlass, state, part.drop || []);
+        // GLB vertices are in Town world space; parents carry their own transform.
+        const building = part.placeId && buildings.find(b => b.userData.placeId === part.placeId);
+        const parent = building || world;
+        parent.updateMatrixWorld(true); root.applyMatrix4(parent.matrixWorld.clone().invert());
+        parent.add(root); root.updateMatrixWorld(true); attached.push(root);
+        if (building) replaceVolume?.(building);
+        state.parts.push({ id: part.id, meshes: state.meshes - before.meshes, triangles: state.triangles - before.triangles, textureBytes: state.textureBytes - before.textureBytes });
+      }
+      state.loaded = true; state.loadMs = Math.round(performance.now() - started);
+      return state;
+    }).catch(fail);
+  return { ready, stats: () => ({ ...state, parts: state.parts.map(p => ({ ...p })), textures: state.textures.map(t => ({ ...t })) }) };
 }

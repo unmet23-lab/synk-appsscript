@@ -1,0 +1,255 @@
+{
+  "manifest": {
+    "name": "town-claude",
+    "builtAt": "2026-10-18T03:25:01.584Z",
+    "textures": {
+      "mode": "etc1s",
+      "pc": 2048,
+      "phone": 1024
+    },
+    "geometry": "meshopt",
+    "parts": [
+      {
+        "id": "ground",
+        "url": "town-claude-ground.glb",
+        "phone": "town-claude-ground-phone.glb"
+      },
+      {
+        "id": "home",
+        "placeId": "home",
+        "url": "town-claude-home.glb",
+        "phone": "town-claude-home-phone.glb"
+      },
+      {
+        "id": "cafe",
+        "placeId": "cafe",
+        "url": "town-claude-cafe.glb",
+        "phone": "town-claude-cafe-phone.glb"
+      },
+      {
+        "id": "workshop",
+        "placeId": "workshop",
+        "url": "town-claude-workshop.glb",
+        "phone": "town-claude-workshop-phone.glb"
+      },
+      {
+        "id": "greenhouse",
+        "placeId": "greenhouse",
+        "url": "town-claude-greenhouse.glb",
+        "phone": "town-claude-greenhouse-phone.glb"
+      }
+    ]
+  },
+  "log": [
+    {
+      "part": "ground",
+      "tier": "pc",
+      "file": "town-claude-ground.glb",
+      "glbBytes": 1479368,
+      "textures": [
+        {
+          "name": "town-claude-ground-hard",
+          "from": "png",
+          "bytes": 681525
+        },
+        {
+          "name": "town-claude-ground-soft",
+          "from": "png",
+          "bytes": 480645
+        }
+      ]
+    },
+    {
+      "part": "ground",
+      "tier": "phone",
+      "file": "town-claude-ground-phone.glb",
+      "glbBytes": 680728,
+      "textures": [
+        {
+          "name": "town-claude-ground-hard",
+          "from": "png",
+          "bytes": 217257
+        },
+        {
+          "name": "town-claude-ground-soft",
+          "from": "png",
+          "bytes": 146277
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "pc",
+      "file": "town-claude-home.glb",
+      "glbBytes": 2478128,
+      "textures": [
+        {
+          "name": "town-claude-home-house",
+          "from": "png",
+          "bytes": 707351
+        },
+        {
+          "name": "town-claude-home-props",
+          "from": "png",
+          "bytes": 686848
+        },
+        {
+          "name": "town-claude-home-roof",
+          "from": "png",
+          "bytes": 596451
+        }
+      ]
+    },
+    {
+      "part": "home",
+      "tier": "phone",
+      "file": "town-claude-home-phone.glb",
+      "glbBytes": 1109112,
+      "textures": [
+        {
+          "name": "town-claude-home-house",
+          "from": "png",
+          "bytes": 227340
+        },
+        {
+          "name": "town-claude-home-props",
+          "from": "png",
+          "bytes": 210860
+        },
+        {
+          "name": "town-claude-home-roof",
+          "from": "png",
+          "bytes": 183437
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "pc",
+      "file": "town-claude-cafe.glb",
+      "glbBytes": 2355816,
+      "textures": [
+        {
+          "name": "bake_house",
+          "from": "png",
+          "bytes": 687123
+        },
+        {
+          "name": "bake_props",
+          "from": "png",
+          "bytes": 650878
+        },
+        {
+          "name": "bake_roof",
+          "from": "png",
+          "bytes": 585548
+        }
+      ]
+    },
+    {
+      "part": "cafe",
+      "tier": "phone",
+      "file": "town-claude-cafe-phone.glb",
+      "glbBytes": 1003168,
+      "textures": [
+        {
+          "name": "bake_house",
+          "from": "png",
+          "bytes": 217846
+        },
+        {
+          "name": "bake_props",
+          "from": "png",
+          "bytes": 180547
+        },
+        {
+          "name": "bake_roof",
+          "from": "png",
+          "bytes": 172525
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "pc",
+      "file": "town-claude-workshop.glb",
+      "glbBytes": 2281912,
+      "textures": [
+        {
+          "name": "town-claude-workshop-house",
+          "from": "png",
+          "bytes": 667484
+        },
+        {
+          "name": "town-claude-workshop-props",
+          "from": "png",
+          "bytes": 576757
+        },
+        {
+          "name": "town-claude-workshop-roof",
+          "from": "png",
+          "bytes": 579515
+        }
+      ]
+    },
+    {
+      "part": "workshop",
+      "tier": "phone",
+      "file": "town-claude-workshop-phone.glb",
+      "glbBytes": 1010864,
+      "textures": [
+        {
+          "name": "town-claude-workshop-house",
+          "from": "png",
+          "bytes": 210437
+        },
+        {
+          "name": "town-claude-workshop-props",
+          "from": "png",
+          "bytes": 171601
+        },
+        {
+          "name": "town-claude-workshop-roof",
+          "from": "png",
+          "bytes": 170682
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "pc",
+      "file": "town-claude-greenhouse.glb",
+      "glbBytes": 1503416,
+      "textures": [
+        {
+          "name": "town-claude-greenhouse-house",
+          "from": "png",
+          "bytes": 645543
+        },
+        {
+          "name": "town-claude-greenhouse-props",
+          "from": "png",
+          "bytes": 720435
+        }
+      ]
+    },
+    {
+      "part": "greenhouse",
+      "tier": "phone",
+      "file": "town-claude-greenhouse-phone.glb",
+      "glbBytes": 561496,
+      "textures": [
+        {
+          "name": "town-claude-greenhouse-house",
+          "from": "png",
+          "bytes": 207589
+        },
+        {
+          "name": "town-claude-greenhouse-props",
+          "from": "png",
+          "bytes": 216473
+        }
+      ]
+    }
+  ]
+}

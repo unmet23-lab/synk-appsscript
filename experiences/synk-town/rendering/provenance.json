@@ -5,7 +5,8 @@
     "Local imports rebased to same r180 renderer",
     "SSAO disposal releases shader and noise texture",
     "Sprites, lines and transparent overlays excluded from AO normals",
-    "GLTFLoader and BufferGeometryUtils (r180) added for the 2026-10-17 baked district comparison; imports rebased to /scene-assets/three.module.js"
+    "GLTFLoader and BufferGeometryUtils (r180) added for the 2026-10-17 baked district comparison; imports rebased to /scene-assets/three.module.js",
+    "KTX2Loader (+WorkerPool, ktx-parse, zstddec, ColorSpaces, basis/ transcoder) and meshopt_decoder (r180, npm three@0.180.0) added 2026-10-18 for the baked core-town comparison (KTX2 ETC1S textures, meshopt geometry); imports rebased to /scene-assets/three.module.js and same-folder modules"
   ],
   "files": [
     {
@@ -72,6 +73,46 @@
       "file": "BufferGeometryUtils.js",
       "source": "experiences/path-vr/vendor/BufferGeometryUtils.js",
       "sourceSha256": "b9b5642508aeb68530e89d6359868607d4c64f7df265dd5d670f5cf5762b688d"
+    },
+    {
+      "file": "KTX2Loader.js",
+      "source": "npm three@0.180.0 examples/jsm/loaders/KTX2Loader.js",
+      "sourceSha256": "c43052b95310199d50935bdc41fcd0fc347f25eac3b4f0245e6e4de1ef6e1d93"
+    },
+    {
+      "file": "WorkerPool.js",
+      "source": "npm three@0.180.0 examples/jsm/utils/WorkerPool.js",
+      "sourceSha256": "5ac7095fd566bc9ae48376055fd66edf27cb9ebbf9e1269dc206bfd4933ae9eb"
+    },
+    {
+      "file": "ktx-parse.module.js",
+      "source": "npm three@0.180.0 examples/jsm/libs/ktx-parse.module.js",
+      "sourceSha256": "f40c491f6c44dde511268121f778a0050e73b1a15fd844c1ae2c78c73213eafc"
+    },
+    {
+      "file": "zstddec.module.js",
+      "source": "npm three@0.180.0 examples/jsm/libs/zstddec.module.js",
+      "sourceSha256": "5cbf818e842628a4464e748594a6deae18ceddda3c2f541e7b3a0ff5fc7611e2"
+    },
+    {
+      "file": "ColorSpaces.js",
+      "source": "npm three@0.180.0 examples/jsm/math/ColorSpaces.js",
+      "sourceSha256": "cc35c01c793cd17ccded7bc8142abffd3ce0d60dd6de8d5d216983bd05aee262"
+    },
+    {
+      "file": "basis/basis_transcoder.js",
+      "source": "npm three@0.180.0 examples/jsm/libs/basis/basis_transcoder.js",
+      "sourceSha256": "8478b5b6d6b74e7d3082b89f6417321d8d1dc0307f2b30d4484bb11b441696a1"
+    },
+    {
+      "file": "basis/basis_transcoder.wasm",
+      "source": "npm three@0.180.0 examples/jsm/libs/basis/basis_transcoder.wasm",
+      "sourceSha256": "6cf17dc889352c42e9acf8897107978d127005fe3386c36a0e3845e27967630a"
+    },
+    {
+      "file": "meshopt_decoder.module.js",
+      "source": "npm three@0.180.0 examples/jsm/libs/meshopt_decoder.module.js",
+      "sourceSha256": "784315b6959c85459eab77f51776158cc381d7e7d77b919ff7c4935f088a7c5c"
     }
   ]
 }

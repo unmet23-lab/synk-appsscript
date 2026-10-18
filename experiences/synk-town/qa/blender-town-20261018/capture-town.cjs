@@ -50,7 +50,8 @@ async function walkTo(page, place) {
       for (const view of ['follow', 'wide']) { if (record) poses[key + '-' + view] = oldPoses[key + '-' + view]; await shoot(view); }
       if (record) poses[key + '-cafe-close'] = oldPoses[key + '-close'];
       await shoot('cafe-close');
-      for (const place of ['home', 'workshop', 'greenhouse']) {
+      // --cafe-only=1: the compression test changes the cafe alone; skip the walk to the other places.
+      for (const place of args['cafe-only'] === '1' ? [] : ['home', 'workshop', 'greenhouse']) {
         const view = place + '-close';
         await walkTo(page, place);
         if (record) {

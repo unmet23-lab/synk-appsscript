@@ -226,7 +226,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   // The module is fetched only then; the approved v20 path loads nothing extra.
   let bakedDistrict = null;
   const bakedDistrictReady = /[?&]district=/.test(location.search) ? import('./day-district.mjs').then(({ swapDistrict }) => {
-    bakedDistrict = swapDistrict({ THREE, world, buildings, liveGlass: m.glass, replaceVolume: root => {
+    bakedDistrict = swapDistrict({ THREE, world, buildings, liveGlass: m.glass, renderer, phone: canvas.clientWidth < 600, replaceVolume: root => {
       const index = occlusionVolumes.findIndex(volume => volume.root === root); if (index >= 0) occlusionVolumes[index] = townOcclusionVolume(root, true);
     } });
     return bakedDistrict?.ready;

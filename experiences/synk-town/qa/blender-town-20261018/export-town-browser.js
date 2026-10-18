@@ -23,9 +23,29 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
   const report = Object.fromEntries([...PLACES, 'ground', 'live'].map(k => [k, { meshes: 0, triangles: 0, sources: {} }]));
   const groundInstances = [];
   const v = new THREE.Vector3(), n = new THREE.Vector3(), normalMatrix = new THREE.Matrix3(), instance = new THREE.Matrix4(), full = new THREE.Matrix4(), color = new THREE.Color();
+  // v20 colour maps (wood grain, plaster, stone, terrain fibres) go out as PNG
+  // files map_<n>.png; the material name ends in _x<n> and the exported UVs
+  // already include the map's offset/repeat/rotation, flipped to glTF's top-left.
+  const maps = new Map(), mapFiles = {};
+  function mapIndex(mat) {
+    const tex = mat.map;
+    if (!tex || !tex.image) return null;
+    if (!maps.has(tex.uuid)) {
+      const img = tex.image, w = img.width || img.videoWidth, h = img.height || img.videoHeight;
+      if (!w || !h) return null;
+      const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (img.data) { const data = new ImageData(new Uint8ClampedArray(img.data.buffer, img.data.byteOffset, w * h * 4), w, h); ctx.putImageData(data, 0, 0); }
+      else ctx.drawImage(img, 0, 0, w, h);
+      const index = maps.size; tex.updateMatrix();
+      maps.set(tex.uuid, { index, matrix: tex.matrix.elements.slice(), flipY: tex.flipY !== false });
+      mapFiles[`map_${index}.png`] = canvas.toDataURL('image/png').split(',')[1];
+    }
+    return maps.get(tex.uuid);
+  }
   function materialName(mat) {
-    const hex = mat.color ? mat.color.getHexString() : 'ffffff';
-    return `${keyOf(mat)}_${hex}_r${Math.round((mat.roughness ?? 1) * 100)}_m${Math.round((mat.metalness ?? 0) * 100)}${mat.transparent ? '_t' + Math.round(mat.opacity * 100) : ''}`;
+    const hex = mat.color ? mat.color.getHexString() : 'ffffff', map = mapIndex(mat);
+    return `${keyOf(mat)}_${hex}_r${Math.round((mat.roughness ?? 1) * 100)}_m${Math.round((mat.metalness ?? 0) * 100)}${mat.transparent ? '_t' + Math.round(mat.opacity * 100) : ''}${map ? '_x' + map.index : ''}`;
   }
   function bucket(target, mat) {
     const name = materialName(mat);
@@ -40,15 +60,19 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
       const ids = [0, 1, 2].map(k => idx ? idx.getX(i + k) : i + k);
       const pts = ids.map(id => v.fromBufferAttribute(pos, id).applyMatrix4(matrix).clone());
       const cx = (pts[0].x + pts[1].x + pts[2].x) / 3, cy = (pts[0].y + pts[1].y + pts[2].y) / 3, cz = (pts[0].z + pts[1].z + pts[2].z) / 3;
-      if (filter && !filter(cx, cy, cz)) continue;
+      if (filter && !filter(cx, cy, cz, pts)) continue;
       triangles.push([ids, pts]);
     }
     if (!triangles.length) return 0;
-    const b = bucket(target, mat);
+    const b = bucket(target, mat), map = mapIndex(mat), e = map?.matrix;
     for (const [ids, pts] of triangles) for (let k = 0; k < 3; k++) {
       const id = ids[k], p = pts[k]; b.positions.push(p.x, p.y, p.z);
       if (nor) { n.fromBufferAttribute(nor, id).applyMatrix3(normalMatrix).normalize(); b.normals.push(n.x, n.y, n.z); } else b.normals.push(0, 1, 0);
-      if (uv) { b.uvs.push(uv.getX(id), 1 - uv.getY(id)); b.hasUv = true; } else b.uvs.push(0, 0);
+      if (uv) {
+        let u = uv.getX(id), w = uv.getY(id);
+        if (e) { const tu = e[0] * u + e[3] * w + e[6], tw = e[1] * u + e[4] * w + e[7]; u = tu; w = tw; }
+        b.uvs.push(u, map && !map.flipY ? w : 1 - w); b.hasUv = true;
+      } else b.uvs.push(0, 0);
       color.setRGB(1, 1, 1); if (col) color.fromBufferAttribute(col, id); if (tint) color.multiply(tint); b.colors.push(color.r, color.g, color.b);
     }
     report[part].triangles += triangles.length;
@@ -74,7 +98,11 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
         // The far underlay sits a metre under the meadow (y ≈ −1): never baked.
         const above = y => y > -.5;
         if (radius > 1.2) {
-          push('ground', object.geometry, matrix, tint, (x, y, z) => inCore(x, z) && above(y), mat);
+          // Every triangle that touches the core goes to the ground (Blender cuts
+          // it at the rectangle); by centroid alone, big lawn triangles across the
+          // edge were lost and Town showed holes along the border (10-18).
+          const touches = pts => !(Math.max(...pts.map(p => p.x)) <= core.minX || Math.min(...pts.map(p => p.x)) >= core.maxX || Math.max(...pts.map(p => p.z)) <= core.minZ || Math.min(...pts.map(p => p.z)) >= core.maxZ);
+          push('ground', object.geometry, matrix, tint, (x, y, z, pts) => touches(pts) && above(y), mat);
           push('live', object.geometry, matrix, tint, (x, y, z) => !inCore(x, z) || !above(y), mat);
         } else if (inCore(centre.x, centre.z) && above(centre.y)) {
           push('ground', object.geometry, matrix, tint, null, mat);
@@ -118,5 +146,5 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
   }
   const files = {};
   for (const part of Object.keys(out)) { const r = glb(out[part]); files[part] = r.base64; report[part].meshes = r.meshes; }
-  return { files, report, groundInstances: groundInstances.length };
+  return { files, mapFiles, report, groundInstances: groundInstances.length };
 };

@@ -95,8 +95,9 @@ copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
 for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
-// assets/district holds the local baked-district comparison GLBs (?district=), never published.
-copyTree(path.join(town,'rendering'),'town/rendering');copyTree(path.join(town,'assets'),'town/assets',(_source,relative)=>!relative.startsWith('town/assets/district/'));
+// assets/district holds the local baked-district comparison GLBs (?district=), never published;
+// rendering/basis is the Basis transcoder only those GLBs' KTX2 textures need.
+copyTree(path.join(town,'rendering'),'town/rendering',(_source,relative)=>!relative.startsWith('town/rendering/basis/'));copyTree(path.join(town,'assets'),'town/assets',(_source,relative)=>!relative.startsWith('town/assets/district/'));
 const daySource=path.join(town,'day.html'),dayBytes=fs.readFileSync(daySource);sourceHashes.set(daySource,sha(dayBytes));
 write('town/day.html',Buffer.from(rewrite(dayBytes.toString('utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_TOWN__=${JSON.stringify({mode:'account',rehearsal:false,accountScoped:true,basePath:config.basePath})};</script>`).replace('<a href="./preview.html">이전 찻집 생활 시제품 열기</a>',''))),daySource);
 for(const name of ['three.module.js','three.core.js','THREE-LICENSE.txt'])copyFile(path.join(home,'scene-assets',name),'town/day-assets/'+name);
