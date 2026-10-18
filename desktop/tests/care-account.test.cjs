@@ -65,7 +65,7 @@ test('Care native save carries both capabilities and preserves an explicit disab
   assert.equal(optional.body.checkinPreferenceVersion,1);assert.equal(Object.hasOwn(optional.body,'messageLibraryVersion'),false);
   for(const value of [0,2,-1,1.5,'1',null,undefined,true,NaN])assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:value},'1.0','platform','care'),{code:'INVALID_REQUEST'});
   for(const operation of ['careLoad','careDelete'])assert.throws(()=>requestSpec(operation,{...(operation==='careDelete'?{expected_revision:3}:{}),checkinPreferenceVersion:1},'1.0','platform','care'),{code:'INVALID_REQUEST'});
-  for(const client of [undefined,'platform','path','rehearsal','family-album'])assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','platform',client),{code:'INVALID_REQUEST'});
+  for(const client of [undefined,'platform','path'])assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','platform',client),{code:'INVALID_REQUEST'});
   assert.throws(()=>requestSpec('careSave',{expected_revision:3,state,checkinPreferenceVersion:1},'1.0','world','care'),{code:'INVALID_REQUEST'});
   assert.equal(Object.hasOwn(requestSpec('careSave',{expected_revision:3,state},'1.0','platform').body,'checkinPreferenceVersion'),false);
 });

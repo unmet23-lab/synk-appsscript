@@ -314,11 +314,13 @@ async function 태우기(인자) {
     const x = 목록[i];
     if (i > 0 && 사이ms) await 잠깐(사이ms);
     let r;
+    // 대량 실행은 무료 몫이 차도 구독으로 넘기지 않는다(10-17 · 구독 몫 보호) — 넘기려면 --구독대체.
+    const 넘김플래그 = 인자.includes('--구독대체') ? [] : ['--대체없음'];
     if (x.겹 === 5) {
       fs.writeFileSync(임시, `${x.한국어}\n---\n${x.몽골어}\n`, 'utf8');
-      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--파일', 임시], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--파일', 임시, ...넘김플래그], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
     } else {
-      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--원문없음', x.몽골어], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--원문없음', x.몽골어, ...넘김플래그], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
     }
     const 글 = `${r.stdout || ''}${r.stderr || ''}`;
     const 판 = 한판읽기(글, r.status);

@@ -6,8 +6,6 @@ const PRODUCT_PREVIEWS=Object.freeze({
   path:Object.freeze({id:'path',name:'SYNK PATH',appId:'im.synk.path.preview',sessionScope:'im.synk.path.preview',entry:'http://127.0.0.1:4292/'}),
   care:Object.freeze({id:'care',name:'SYNK 플레저',appId:'im.synk.care.preview',sessionScope:'im.synk.care.preview',entry:'http://127.0.0.1:4296/'}),
   fortune:Object.freeze({id:'fortune',name:'SYNK 무료 운세',appId:'im.synk.fortune.preview',sessionScope:'im.synk.fortune.preview',entry:'http://127.0.0.1:4299/'}),
-  rehearsal:Object.freeze({id:'rehearsal',name:'SYNK 중요한 대화 리허설',appId:'im.synk.rehearsal.preview',sessionScope:'im.synk.rehearsal.preview',entry:'http://127.0.0.1:4297/'}),
-  'family-album':Object.freeze({id:'family-album',name:'SYNK 가족 이야기 앨범',appId:'im.synk.family-album.preview',sessionScope:'im.synk.family-album.preview',entry:'http://127.0.0.1:4298/'}),
 });
 function product(id){return typeof id==='string'&&Object.hasOwn(PRODUCT_PREVIEWS,id)?PRODUCT_PREVIEWS[id]:null;}
 function productPreviewAvailable({packaged,mode,clientId}){return packaged===false&&mode==='development'&&clientId==='platform';}
@@ -65,10 +63,8 @@ function productDownload({id,url,mime,filename,size,sourceUrl}={}){
   const formats={
     care:{'synk-care.ics':{mime:'text/calendar',extension:'ics',filterName:'일정 파일',maxBytes:1024*1024},'synk-care.json':{mime:'application/json',extension:'json',filterName:'플레저 기록',maxBytes:4*1024*1024},'synk-care-memory.png':{mime:'image/png',extension:'png',filterName:'플레저 기억 카드',maxBytes:20*1024*1024}},
     fortune:{'synk-fortune.json':{mime:'application/json',extension:'json',filterName:'운세 보관함',maxBytes:128*1024}},
-    'family-album':{'synk-family-album.json':{mime:'application/json',extension:'json',filterName:'가족 이야기 앨범',maxBytes:32*1024*1024},'synk-family-album.zip':{mime:'application/zip',extension:'zip',filterName:'가족 앨범 소장용 묶음',maxBytes:64*1024*1024}},
-    rehearsal:{'synk-rehearsal.json':{mime:'application/json',extension:'json',filterName:'대화 리허설 기록',maxBytes:500000},'synk-rehearsal-book.html':{mime:'text/html',extension:'html',filterName:'내 성장 작품집',maxBytes:2*1024*1024}},
   };
-  if(['care','family-album','rehearsal','path'].includes(id)) {
+  if(['care','path'].includes(id)) {
     formats[id]||={};
     formats[id][`synk-${id}-local-recovery.json`]={mime:'application/json',extension:'json',filterName:'내 계정의 기기 임시기록 복구 파일',maxBytes:64*1024*1024};
   }

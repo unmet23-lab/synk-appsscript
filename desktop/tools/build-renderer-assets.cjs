@@ -23,6 +23,8 @@ const sources={
   'wide-cream.webp':'docs/디자인/펠트부품/assets/배경/wide-cream.webp',
   'wide-black.webp':'docs/디자인/펠트부품/assets/배경/wide-black.webp',
   'wide-butter.webp':'docs/디자인/펠트부품/assets/배경/wide-butter.webp',
+  // 회원 혜택 포스터 물건(2026-10-17): 사업 색 바탕에서 GPT 이미지 2.5로 굽고 tools/펠트_바탕색오리기.py로 오렸다.
+  ...Object.fromEntries(['gift','insight','subscriptions','care','fortune','rehearsal','album'].map(id=>['benefit-'+id+'.webp','docs/디자인/플랫폼_시그널/혜택물건/benefit-'+id+'.webp'])),
   'engine.js':'atlas/engine.js','personalization.js':'atlas/personalization.js',
   'racing.jpg':'experiences/korean-racing/qa/ui-refinement-playing-20261002.jpg',
   'runner.jpg':'experiences/korean-runner/qa/v6-run-blossom-mobile.jpg',

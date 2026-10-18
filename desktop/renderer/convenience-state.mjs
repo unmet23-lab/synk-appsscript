@@ -1,7 +1,7 @@
 export const VIEWS=['home','library','benefits','downloads','settings'];
 export function normalizeRoute(value={},appIds=[]){
   const view=VIEWS.includes(value?.view)?value.view:'home';
-  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','subscriptions','care','fortune','rehearsal','family-album'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
+  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','subscriptions','care','fortune'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
 }
 const routeIdentity=route=>JSON.stringify([route.view,route.appId,route.detail,route.benefitId]);
 export function createNavigation({storage,getAppIds=()=>[],read,apply,onChange=()=>{}}){
@@ -39,5 +39,5 @@ export function installationEvents(previous,next,allowed){
 }
 export function safeDiagnostics({environment={},auth={},clients=[],view='home',online=true}={}){
   const label=(value,allowed,fallback='unknown')=>allowed.includes(value)?value:fallback;
-  return {format:'SYNK platform diagnostics v1',platform:label(environment?.platform,['win32','darwin','linux'],'browser'),arch:label(environment?.arch,['x64','arm64','ia32']),version:/^\d+\.\d+\.\d+(?:[-.][a-zA-Z0-9.-]+)?$/.test(environment?.version)?environment.version:'unknown',mode:label(environment?.mode,['development','release']),signedIn:auth?.signedIn===true,accountConfigured:auth?.configured===true,online:online===true,view:label(view,VIEWS,'home'),clients:clients.map(row=>({id:label(row.id,['world','messenger','teacher','path','pulse','care','fortune','rehearsal','family-album']),status:label(row.status,['installed','not-installed','preview','planned','unavailable']),canLaunch:row.canLaunch===true,preparation:label(row.installer?.status,['idle','preparing','ready','error','installer-opened'])})).filter(row=>row.id!=='unknown')};
+  return {format:'SYNK platform diagnostics v1',platform:label(environment?.platform,['win32','darwin','linux'],'browser'),arch:label(environment?.arch,['x64','arm64','ia32']),version:/^\d+\.\d+\.\d+(?:[-.][a-zA-Z0-9.-]+)?$/.test(environment?.version)?environment.version:'unknown',mode:label(environment?.mode,['development','release']),signedIn:auth?.signedIn===true,accountConfigured:auth?.configured===true,online:online===true,view:label(view,VIEWS,'home'),clients:clients.map(row=>({id:label(row.id,['world','messenger','teacher','path','pulse','care','fortune']),status:label(row.status,['installed','not-installed','preview','planned','unavailable']),canLaunch:row.canLaunch===true,preparation:label(row.installer?.status,['idle','preparing','ready','error','installer-opened'])})).filter(row=>row.id!=='unknown')};
 }

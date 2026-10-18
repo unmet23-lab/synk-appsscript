@@ -49,10 +49,10 @@
 - 다시 확인: 짧은 png-sequence 렌더의 404 기록이 0줄이다.
 
 ### 멈춘 렌더 스크립트의 자식 프로세스가 살아남아 새 렌더와 겹친다
-- 증상: 백그라운드 `bash render_v1.sh`를 멈추고 새로 돌렸더니 렌더가 두 벌 겹쳤다. 로그에 같은 판이 두 번 찍히고 출력 폴더에 `.<이름>.hf-transaction-*`가 남아, 어느 원고로 구운 mp4인지 알 수 없었다(10-11).
-- 원인: Windows Git Bash에서 백그라운드 작업을 멈추면 맨 위 셸만 끝나고 스크립트가 띄운 npx·node 자식은 남는다.
-- 고침: 멈춘 뒤 `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`에서 CommandLine에 `hyperframes`·`render`가 든 것을 찾아 `taskkill /PID <npx pid> /T /F`로 끝낸다(Git Bash에서는 `//PID … //T //F`). 내가 띄운 것만 시작 시각으로 가린다. 출력 폴더의 `.hf-transaction-*`와 그때 나온 mp4는 지우고 다시 굽는다. 6분 넘는 렌더는 check → snapshot 프레임 확인을 마친 뒤 시작한다.
-- 다시 확인: 다시 굽기 전에 렌더 node 프로세스가 0개다.
+- 증상: 백그라운드 `bash render_v1.sh`를 멈추고 새로 돌렸더니 렌더가 두 벌 겹쳤다. 로그에 같은 판이 두 번 찍히고 출력 폴더에 `.<이름>.hf-transaction-*`가 남아, 어느 원고로 구운 mp4인지 알 수 없었다(10-11). 10-17 WORLD 측정에서는 멈춘 셸 돌림(`./final.sh`의 `for`)이 그대로 돌아 새로 띄운 돌림과 측정이 겹치고 같은 결과 파일을 서로 비웠다.
+- 원인: Windows Git Bash에서 백그라운드 작업을 멈추면 맨 위 셸만 끝나고 그 아래 스크립트 셸(`sh.exe ./final.sh`)과 스크립트가 띄운 npx·node 자식은 남는다.
+- 고침: 멈춘 뒤 `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`에서 CommandLine에 `hyperframes`·`render`가 든 것을 찾아 `taskkill /PID <npx pid> /T /F`로 끝낸다(Git Bash에서는 `//PID … //T //F`). 내가 띄운 것만 시작 시각으로 가린다. 출력 폴더의 `.hf-transaction-*`와 그때 나온 mp4는 지우고 다시 굽는다. 6분 넘는 렌더는 check → snapshot 프레임 확인을 마친 뒤 시작한다. 셸 돌림은 `Get-CimInstance Win32_Process | ? CommandLine -match '<스크립트 이름>'`으로 sh.exe·bash.exe까지 찾아 끝낸다.
+- 다시 확인: 다시 굽기 전에 렌더 node 프로세스가 0개다. 셸 돌림이면 그 스크립트 이름이 든 프로세스도 0개다.
 
 ## 목소리·받아쓰기
 
@@ -98,6 +98,12 @@
 - 고침: carve의 목소리 대역 칸(말을 따라 바로 돌아옴)은 두고 크기 맞춤 단계만 빼고, 말할 때만 −8dB · 말끝 0.15초 뒤부터 0.45초에 걸쳐 원래대로 · 1초보다 짧은 틈은 낮춘 채 두는 duck 단계를 직접 쓴다. 대사는 `data-start = 첫 말소리 시각 − 파일 앞 무음`으로 놓는다(carve는 `data-media-start`를 무시한다). 앞뒤 파일이 겹치면 트랙을 번갈아 둔다(같은 트랙에서 겹치면 `duplicate_audio_track` 경고). `@hyperframes/core`는 저장소에 깔지 않고 임시 폴더에 깔아 `--core`로 준다. 한 번에 하는 보기 스크립트는 `docs/마케팅/LAB_한글날_내이름한글로_20261002/음성/넣기.cjs`.
 - 다시 확인: 말 사이 구간의 크기를 목소리 없는 판과 구간별로 견준다(+0.5dB 안).
 
+### Remotion 박자표 같은 모듈 상수는 컴포지션 props로 못 바꾼다
+- 증상: 10-18 관용구 퀴즈 #2를 100 BPM으로 늦추려는데 박 길이 `B`·`T`·`TOTAL`이 `timeline.ts`의 모듈 상수라 컴포지션마다 다른 값을 줄 수 없었다(같은 번들에 120 BPM 판도 있음).
+- 원인: 모듈 상수는 번들 때 한 번 정해진다. defaultProps는 컴포넌트 안에서만 읽힌다.
+- 고침: `REMOTION_` 접두 환경 변수는 번들 안 `process.env`로 들어간다 — `export const B = process.env.REMOTION_TEMPO === '100' ? 18 : 15`, 렌더는 `REMOTION_TEMPO=100 npx remotion render …`. `Root.tsx`가 템포에 맞는 컴포지션만 등록하게 해 다른 템포 판을 잘못 뽑지 않게 했다. 숫자로 박은 프레임(15·30·96 등)은 박 단위로 바꿔 둔다. 음악 재배치본은 rubberband(`tempo=0.8333:pitchq=quality:transients=crisp:detector=percussive`)로 늘리면 박 자리가 그대로 1.2배가 된다.
+- 다시 확인: `REMOTION_TEMPO=100 npx remotion compositions src/index.ts`가 36.00초를, 변수 없이 30.00초를 보인다.
+
 ## 렌더 장비
 
 ### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
@@ -105,3 +111,9 @@
 - 원인: Jobs는 선불 잔액에서 분 단위로 빠진다(10-11 공식 요금표: CPU Upgrade $0.03/h, T4 $0.40, L4 $0.80, RTX PRO 6000 $2.75, 시작·받기 4~6분도 값에 든다). 잔액 충전은 결제라 유호님 몫이다. 거절돼도 `-v` 폴더는 먼저 버킷에 올라간다.
 - 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기는 [아래 항목](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
 - 다시 확인: Jobs는 L4 10장 시험으로 장당 시간을 먼저 잰다(장당 GPU 시간은 아직 어림값이다).
+
+### Remotion Node API(bundle·renderStill)는 REMOTION_ 환경 변수를 넘기지 않는다
+- 증상: 10-18 관용구 퀴즈 #2 나라별판에서 `@remotion/bundler`·`@remotion/renderer`로 번들을 한 번 만들어 정지컷을 찍자 `Could not find composition kids-quiz-v5b-th`가 났다. 목록에는 120 BPM 판만 있었다.
+- 원인: CLI는 `REMOTION_`으로 시작하는 환경 변수를 번들 안 `process.env`로 넘겨 주지만 Node API는 넘기지 않는다. `REMOTION_TEMPO=100`이 비어 Root가 100 BPM 판을 등록하지 않았다. 스크립트에서 `process.env`에 넣어도 같다.
+- 고침: `selectComposition`·`renderStill`·`renderMedia`에 `envVariables: { REMOTION_TEMPO: '100' }`를 직접 준다(`remotion/현지어_정지컷.mjs`·`현지어_렌더.mjs`). 한글 경로는 `fileURLToPath(import.meta.url)`로 바꿔야 `%EB…`로 남지 않는다.
+- 다시 확인: 같은 스크립트로 26개 채널 정지컷·영상이 모두 나왔고, 뉴질랜드판은 게시된 영어판과 끝 계정만 달랐다.

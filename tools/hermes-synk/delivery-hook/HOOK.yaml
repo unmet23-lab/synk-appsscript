@@ -1,0 +1,4 @@
+name: synk-result-recovery
+description: Resume only existing pending SYNK result delivery after gateway startup.
+events:
+  - gateway:startup

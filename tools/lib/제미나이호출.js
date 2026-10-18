@@ -42,6 +42,56 @@ function 재시도가능(status) {
 
 const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* 🔄 무료 몫 → 구독 대체(2026-10-17 · 유호 「무료 다 쓰면 울트라로 넘어가게 세팅해도 좋을것같아」).
+ * 무료 「글」 문이 몫 상한(429·RESOURCE_EXHAUSTED)에 막히면, 정책 `구독대체`와 부른 쪽 `opts.구독대체`가
+ * 둘 다 켜진 경우에만 같은 모델·같은 사고 수준으로 Google AI 구독 통로(agy · 지금 Ultra 계정)를 한 번 부른다.
+ * 대체하지 않는 것: 유료 「돈」(Vertex) · CI · 끄기 변수 SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK=1 ·
+ *   429가 아닌 실패(400/401/403/5xx·잘린 답·서빙 모델 불일치는 몫 문제가 아니다).
+ * 구독 통로가 그 모델을 모르면 멈춘다 — 모델을 바꾸지 않는다. 구독도 실패하면 Vertex로 가지 않고 끝낸다.
+ * 하루 몫(PerDay · 다시 시도까지 60초 이상)이면 5·15초 재시도를 건너뛰고 바로 넘기고, 분당 몫이면 재시도 뒤 넘긴다. */
+function 시간초(글) {
+  const m = /^\s*((?:\d+(?:\.\d+)?\s*[hms]\s*)+)$/i.exec(String(글 || ''));
+  if (!m) return null;
+  let 초 = 0;
+  for (const [, n, u] of m[1].matchAll(/(\d+(?:\.\d+)?)\s*([hms])/gi)) 초 += Number(n) * ({ h: 3600, m: 60, s: 1 }[u.toLowerCase()]);
+  return 초;
+}
+
+function 몫읽기(status, 본문) {
+  const e = (본문 && 본문.error) || {};
+  const 말 = String(e.message || '');
+  if (status !== 429 && e.status !== 'RESOURCE_EXHAUSTED') return { 몫: false };
+  let 다시초 = null, 하루 = false;
+  for (const d of Array.isArray(e.details) ? e.details : []) {
+    if (d && typeof d.retryDelay === 'string') 다시초 = 시간초(d.retryDelay) ?? 다시초;
+    for (const v of (d && Array.isArray(d.violations) ? d.violations : [])) {
+      if (/PerDay|per_day/i.test(`${(v && v.quotaId) || ''} ${(v && v.quotaMetric) || ''}`)) 하루 = true;
+    }
+  }
+  if (다시초 == null) { const m = /retry in ((?:\d+(?:\.\d+)?\s*[hms]\s*)+)/i.exec(말); if (m) 다시초 = 시간초(m[1]); }
+  return { 몫: true, 하루: 하루 || (다시초 != null && 다시초 >= 60), 다시초, 사유: 말.slice(0, 200) };
+}
+
+function 구독대체허용(opts = {}, 용도, env = opts.환경 || process.env) {
+  return !!opts.구독대체 && 정책.제미나이 && 정책.제미나이.구독대체 === true && 용도 === '글'
+    && !env.CI && !env.GITHUB_ACTIONS && env.SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK !== '1';
+}
+
+async function 구독으로대체(model, prompt, opts, 몫) {
+  const 부르기 = typeof opts.구독호출 === 'function' ? opts.구독호출 : require('./제미나이구독호출.js').부르기;
+  let 기록;
+  try {
+    기록 = await 부르기({ model, prompt, schema: opts.schema || null, thinking: opts.thinking || 'high', timeoutMs: opts.구독타임아웃 });
+  } catch (e) {
+    throw new Error(`429 무료 몫 상한 — 구독 통로로 넘겼지만 실패했다(Vertex로는 가지 않는다): ${e.message}`);
+  }
+  const text = String((기록 && 기록.text) || '');
+  if (!text) throw new Error('429 무료 몫 상한 — 구독 통로가 빈 답을 냈다');
+  const 대체 = { from: 'google-ai-studio-free-api', 사유: 몫.하루 ? '하루 몫 상한' : '분당 몫 상한', 다시초: 몫.다시초 ?? null };
+  if (opts.상세) return { ...기록, text, route: (기록 && 기록.route) || 'google-ai-subscription', requestedModel: model, 대체 };
+  return text;
+}
+
 /* Gemini 의 responseSchema 는 JSON Schema 의 «부분집합»이다 — `additionalProperties`·`$schema`·
  * `description` 은 받되 `additionalProperties:false` 는 400 을 낸다. 우리 스키마(codex-review.schema.json)
  * 를 그대로 주려고 그 키만 걷는다. 걷은 뒤에도 필수 키·enum·타입은 그대로라 판정력은 같다. */
@@ -87,15 +137,18 @@ function 응답읽기(본문, model) {
 }
 
 /** 답 텍스트(기본) 또는 `opts.상세` 면 { text, modelVersion, finishReason, usage }.
- *  @param opts.용도 '글'(기본 · AI Studio 무료 문) | '돈'(명시 승인 전용 · Vertex) */
+ *  @param opts.용도 '글'(기본 · AI Studio 무료 문) | '돈'(명시 승인 전용 · Vertex)
+ *  @param opts.구독대체 true면 무료 몫 429에서 같은 모델로 구독 통로를 부른다(위 설명). 상세에는 `대체`가 붙는다. */
 async function 제미나이(key, model, prompt, opts = {}) {
   const 타임아웃 = Number(opts.timeoutMs) || 호출타임아웃;
+  const 용도 = opts.용도 || 정책.기본용도();
+  const 지연 = Array.isArray(opts.재시도지연) ? opts.재시도지연 : 재시도지연;
   // 비용 차단·자격 실패는 재시도로 풀리지 않는다. 전송 루프 밖에서 한 번 확인한다.
-  const headers = await 정책.제미나이헤더(opts.용도 || 정책.기본용도());
+  const headers = await 정책.제미나이헤더(용도);
   for (let 회 = 0; ; 회++) {
     let res, 본문;
     try {
-      res = await fetch(정책.제미나이URL(opts.용도 || 정책.기본용도(), model), {
+      res = await fetch(정책.제미나이URL(용도, model), {
         method: 'POST',
         // 🔑 인증 머리는 정책이 낸다 — 글=API 키 · 돈=OAuth 토큰(Vertex 는 키를 못 받는다 · 09-04).
         headers,
@@ -116,19 +169,22 @@ async function 제미나이(key, model, prompt, opts = {}) {
         signal: AbortSignal.timeout(타임아웃),
       });
     } catch (e) {
-      if (회 < 재시도지연.length) { await 잠깐(재시도지연[회]); continue; }
+      if (회 < 지연.length) { await 잠깐(지연[회]); continue; }
       throw new Error(`네트워크/타임아웃: ${e.message}`);
     }
     // 성공 HTTP 뒤의 깨진 JSON은 같은 생성 요청을 다시 보내지 않는다.
     try { 본문 = await res.json(); }
     catch {
-      if (!res.ok && 재시도가능(res.status) && 회 < 재시도지연.length) {
-        await 잠깐(재시도지연[회]); continue;
-      }
-      throw new Error(`HTTP ${res.status}: 응답 JSON을 읽을 수 없다`);
+      if (res.ok) throw new Error(`HTTP ${res.status}: 응답 JSON을 읽을 수 없다`);
+      본문 = null;
     }
     if (!res.ok) {
-      if (재시도가능(res.status) && 회 < 재시도지연.length) { await 잠깐(재시도지연[회]); continue; }
+      const 몫 = 몫읽기(res.status, 본문);
+      const 넘김 = 몫.몫 && 구독대체허용(opts, 용도);
+      if (넘김 && 몫.하루) return 구독으로대체(model, prompt, opts, 몫);
+      if (재시도가능(res.status) && 회 < 지연.length) { await 잠깐(지연[회]); continue; }
+      if (넘김) return 구독으로대체(model, prompt, opts, 몫);
+      if (!본문) throw new Error(`HTTP ${res.status}: 응답 JSON을 읽을 수 없다`);
       throw new Error(`${res.status} ${(본문.error && 본문.error.message) || ''}`.trim());
     }
     const 답 = 응답읽기(본문, model);
@@ -136,7 +192,7 @@ async function 제미나이(key, model, prompt, opts = {}) {
       return {
         ...답,
         usage: 본문.usageMetadata || null,
-        route: (opts.용도 || 정책.기본용도()) === '돈' ? 'vertex-paid-api' : 'google-ai-studio-free-api',
+        route: 용도 === '돈' ? 'vertex-paid-api' : 'google-ai-studio-free-api',
         requestedModel: model,
       };
     }
@@ -186,7 +242,7 @@ async function main() {
   }
 }
 
-module.exports = { 제미나이, 제미나이스키마, 서빙모델일치, 응답읽기, 재시도가능, BASE, 호출타임아웃, 재시도지연 };
+module.exports = { 제미나이, 제미나이스키마, 서빙모델일치, 응답읽기, 재시도가능, 몫읽기, 구독대체허용, 시간초, BASE, 호출타임아웃, 재시도지연 };
 
 if (require.main === module) {
   main().catch((e) => { console.error('실행 오류:', e.message); process.exit(1); });

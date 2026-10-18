@@ -9,7 +9,7 @@ async function probeNativeUI(contents,artifacts){
     const environment=await window.synkDesktop.getEnvironment(),development=environment.mode==='development'&&environment.clientId==='platform'&&environment.nativeShell===true;
     // Source development exposes the catalogue for review. Teacher shares the
     // Workspace card; this does not grant product data or an account session.
-    const expectedApps=development?['world','messenger','path','pulse','care','fortune','rehearsal','family-album']:['world'];
+    const expectedApps=development?['world','messenger','path','pulse','care','fortune']:['world'];
     q('[data-filter="all"]').click();q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));
     const displayed=[...document.querySelectorAll('#app-list [data-app]')].map(row=>row.dataset.app);
     check('catalogue-matches-current-runtime',displayed.length===expectedApps.length&&expectedApps.every(id=>displayed.includes(id)));

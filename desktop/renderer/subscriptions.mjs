@@ -214,7 +214,7 @@ const stateChip = row => row.source !== 'auto' ? '<span class="ms-chip ms-chip-m
 const arrowBack = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>';
 
 /* ---------- 화면 ---------- */
-export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
+export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = null } = {}) {
   const api = bridge?.subscriptions;
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
   const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false };
@@ -287,8 +287,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
       ? `<button type="button" class="ms-button ms-button-primary" data-subs="check" ${busy || snapshot.checking || !auto ? 'disabled' : ''}>${snapshot.checking || busy === 'check' ? '확인 중…' : '지금 확인'}</button><button type="button" class="ms-button" data-subs="guide" data-service="claude">계정 연결</button>`
       : context.native && !context.signedIn ? '<button type="button" class="ms-button ms-button-primary" data-insight-action="account">SYNK ID로 로그인</button>' : '';
     return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
-      <header class="ms-hero">
-        <span class="ms-eyebrow">SYNK FOR YOU / AI 구독 계정판</span>
+      <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
+        <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || 'SYNK FOR YOU / AI SUBSCRIPTIONS')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
         <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>흩어진 AI 구독,<br>이번 주 얼마 남았는지 한 번에.</p></div>
         <div class="ms-hero-note"><span>${esc(note)}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;

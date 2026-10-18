@@ -1,5 +1,29 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-benefits-next-release-20261018"></a>
+## 2026-10-18 회원 혜택 릴리스 원천과 0.4.25 공개
+
+웹과 PC의 AI 구독 소개는 `desktop/renderer/benefits.mjs` 하나를 계속 쓴다. 공개 `synk-policy cb7005c`에서 도구 이름을 뺀 소개·제공 안내 두 문장을 공통 원천에 그대로 반영했다. 별도 웹 문구 사본은 두지 않는다. 다음 공개·설치본은 아래 입력을 함께 포함한다.
+
+- **웹 플랫폼:** `9812277bd` 이후 `experiences/synk-account/src/member-benefits.mjs`를 사용한다. 카드 단추는 `item.id === 'insight'`만 「내 기록 살펴보기」, 구독 카드는 「어떤 경험인가요?」이며 미리보기 혜택의 「자세히 살펴보기」는 유지한다. PC 앱 안 혜택은 「PC 앱 받기 →」(`#downloads`)로 연결한다. `platform.css`의 `.quick-card::before`는 `content:var(--word) / ""`를 유지한다.
+- **Atlas·회원 성향:** `SYNK_MEMBER_INSIGHT_20261014` 묶음에 `4f328e127` 이후 `desktop/renderer/member-insight-view.mjs`를 넣고 `renderMemberInsight(insight, { poster })` 호출도 함께 유지한다. 새 묶음에서 성향 포스터·번호·상태가 표시되는지 확인한다.
+- **PC 설치본:** 혜택 물건 `4f328e127`, 좁은 창 소개 머리 `ae6e0b304`, Fable P3 `0075e2994`의 renderer·자산 변경을 새 동결 입력에 넣는다. 후속 대조에서 세 변경이 이미 공개 0.4.24 동결 원천에 들어 있음을 확인했고 0.4.25에도 보존했다. 폐기 반영 `0742f710b`(origin 재이식 `32ec228cc`)도 유지하고, 동결 manifest·실제 ASAR에서 해당 원천과 자산의 SHA를 대조한다. [공통 릴리스](../desktop/LIFECYCLE.md#platform-release-reproduction)와 `desktop/tools/benefit-heads-native-smoke.cjs`로 네 혜택의 좁은 창을 확인한다.
+- **빌드·캐시:** 공용 작업본의 10-18 16:51 `dist/platform.js`·`build-manifest.json`은 커밋 입력으로 쓰지 않는다. 다음 번들 커밋 전에 검토한 릴리스 원천을 격리 사본에서 다시 빌드하고 같은 입력의 `--check`를 통과시킨다. 일반 master 포털 빌드에는 미공개 모듈이 있으므로 그 결과로 공개본 전체를 덮지 않는다([현장 노트](현장노트/배포_공개.md)). 공개 `account/dist/platform.js`를 바꾸면 `platform.html`의 `?v=`도 새 SHA-256 앞 12자로 맞추고 실제 응답을 대조한다.
+
+후속 요청으로 **Platform Preview 0.4.25 / 20261018.2**를 만들고 공개 다운로드·업데이트 feed·현재 PC까지 반영했다. 공개 `synk-policy 496457d`는 세 설치파일과 홈페이지 안내를 함께 전환한다. 기존 0.4.24의 동결 소스 150개 중 148개를 바이트 그대로 보존하고, `renderer/benefits.mjs`의 소개 두 문장과 `assets/launcher/sources.json`의 기존 혜택 그림 출처만 동기화했다. 원천 SHA-256은 `f591f43b120201a4150ae6729ed8b0112aef3fb2038d606a15f054cc1fe0e254`다. 웹 계정 번들·CSS·캐시 번호는 `e9cf357`을 유지한다.
+
+릴리스 검사 95개와 네 혜택 화면 검사 101개, Windows x64·Mac arm64/x64의 [공통 CI](https://github.com/unmet23-lab/synk-policy/actions/runs/39118168661)가 통과했다. 세 설치파일을 실제 공개 주소에서 내려받아 크기·SHA를 대조했고, 변경·보존 공개 파일과 폐기 주소 23/23개가 맞았다. 현재 PC의 설치 75파일·동결 소스 150개·ASAR를 확인하고 정상 종료·설치·재실행 뒤 SYNK ID 로그인, AI 구독 계정판, 원래 종료 설정과 새 업데이트 판을 확인했다. 실제 회원 혜택 카드의 새 구독 소개 문장도 확인했다. 앱은 실행해 두었다. 다른 기기의 실제 업데이트 완료를 뜻하지 않는다. [공개 대조](../.tmp/member-benefits-pc-release-20261018/public-verification.json) · [실제 PC 인수](../.tmp/member-benefits-pc-release-20261018/native-update/native-handoff.json) · [릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.25).
+
+<a id="member-benefits-retired-20261018"></a>
+## 2026-10-18 회원 혜택 정리
+
+사용자 요청으로 **가족 이야기 앨범**과 **중요한 대화 리허설**을 폐기한다. 소개만 숨기지 않고 웹·PC의 회원 혜택, 검색·실행 경로, 별도 앱과 전용 자산·계정 연결 코드를 삭제한다. 현재 혜택은 **내 성향 확인하기 · AI 구독 계정판 · 플레저 · 무료 운세**다. PATH 실사 면접실은 별도 제품으로 유지한다. 기존 계정 문서에 남은 앱 참조는 다른 메모를 읽기 위한 호환 범위만 허용하고 새 실행·즐겨찾기·메모 연결은 받지 않는다.
+
+후속 승인으로 공개 웹과 설치본까지 반영했다. 공개 `synk-policy` **b45319c**에서 두 서비스의 직접 주소·전용 자산 53개와 회원 혜택·로그인 소개·한국어/영어 FAQ를 정리하고, 다운로드와 기존 설치본 업데이트를 **0.4.24 / 20261018.1**로 함께 전환했다. 웹 AI 구독 소개 문구는 **cb7005c**에서 정리했다. 공개 응답 86개(변경 파일 SHA·삭제 404), 후속 변경 2파일·삭제 주소·업데이트 feed, 세 설치파일의 실제 공개 다운로드 SHA가 일치한다. [공개 대조](../.tmp/remove-member-benefits-release-20261018/public-verification.json) · [후속 확인](../.tmp/remove-member-benefits-release-20261018/public-follow-up-verification.json) · [릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.24).
+
+동일 소스의 Windows x64·Mac arm64/x64 설치·실행 QA가 [공통 CI 39111691408](https://github.com/unmet23-lab/synk-policy/actions/runs/39111691408)을 통과했다. 현재 PC는 검증된 설치기의 기존 엔진을 명령줄에서 실행해 설치했으며, 파일 75개·소스 150개를 대조했다. 실행 중이던 개발 창을 정상 종료하고 설치된 0.4.24로 인수해 SYNK ID 로그인·AI 구독 계정판의 보관 파일 보존, 네 혜택과 폐기 앱 실행 거절을 확인했다. [설치 대조](../.tmp/remove-member-benefits-release-20261018/installed-verification.json) · [실제 PC 인수](../.tmp/remove-member-benefits-release-20261018/native-handoff.json). 다른 PC/Mac은 공개된 업데이트 경로로 새 설치파일을 받으며, 원격 기기의 실제 설치 완료를 확인한 것은 아니다. 운영에 보관한 과거 개인 자료는 삭제하지 않았다.
+
+
 <a id="member-ai-subscriptions-20261017"></a>
 ## 2026-10-17 AI 구독 계정판 — PC 앱 회원 혜택
 

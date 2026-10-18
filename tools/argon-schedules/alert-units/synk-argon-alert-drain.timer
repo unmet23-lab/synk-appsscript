@@ -1,0 +1,12 @@
+[Unit]
+Description=Retry queued Argon failure notifications every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=10s
+Persistent=false
+Unit=synk-argon-alert-drain.service
+
+[Install]
+WantedBy=timers.target

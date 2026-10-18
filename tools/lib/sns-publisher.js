@@ -138,7 +138,9 @@ function credentialTarget(accountKey) {
 function credentialCommand(mode, accountKey, input) {
   if (process.platform !== 'win32') throw new Error('SNS 자격 보관소는 현재 Windows에서만 연결됩니다.');
   const result = spawnSync('powershell.exe', [
-    '-NoProfile', '-File', CREDENTIAL_SCRIPT, mode, credentialTarget(accountKey),
+    // 새 PC(10-17)는 PowerShell 실행 정책이 기본값이라 -File로 부른 sns-자격.ps1이 「스크립트를 실행할 수 없으므로」로 막혔다.
+    // 시스템 설정은 그대로 두고 이 호출 한 번에만 Bypass를 준다(우리 저장소 안의 스크립트).
+    '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', CREDENTIAL_SCRIPT, mode, credentialTarget(accountKey),
   ], {
     input,
     encoding: 'utf8',
