@@ -23,6 +23,10 @@ os.makedirs(WORK, exist_ok=True)
 PARTS = (arg('--parts') or 'home,workshop,greenhouse,ground').split(',')
 CORE = dict(minX=-13.6, maxX=13.6, minZ=-12.2, maxZ=8.7)
 RES = int(arg('--res', '2048'))
+# Output names town-<variant>-<part>-<group>. 'merged' (10-18): Argon's modelling
+# scripts build the geometry (../../blender-merged-20261018/blender/merged_build.py),
+# this script bakes and exports it; its atlas groups come from the objects.
+VARIANT = arg('--variant', 'claude')
 # Atlases per part (spec: at most three of 2048² per part).
 GROUPS = {'ground': ['hard', 'soft'], 'home': ['house', 'roof', 'props'], 'workshop': ['house', 'roof', 'props'], 'greenhouse': ['house', 'props']}
 ANGLE_LIMIT = float(arg('--angle', '66'))
@@ -400,6 +404,11 @@ def unwrap(objs, res):
     bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=MARGIN_PX / res)
     bpy.ops.object.mode_set(mode='OBJECT')
 
+def groups_of(part):
+    """Atlas groups of a part: the fixed Claude order, then any group the build stage set on the objects."""
+    found = {o['group'] for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and not o.get('glass')}
+    return [g for g in GROUPS.get(part, []) if g in found] + sorted(found - set(GROUPS.get(part, [])))
+
 def drop_live_ground_in_core():
     """The live reference keeps every v20 ground triangle whose centre lies
     outside the core, so triangles straddling the border reach into it, flat
@@ -437,7 +446,7 @@ def stage_bake():
         for o in town:
             if o['part'] == 'ground':
                 o.visible_shadow = part != 'ground'; o.visible_diffuse = part != 'ground'; o.visible_glossy = part != 'ground'
-        for group in GROUPS[part]:
+        for group in groups_of(part):
             objs = [o for o in town if o['part'] == part and o['group'] == group]
             if not objs: continue
             t0 = time.time(); res = RES; unwrap(objs, res)
@@ -469,7 +478,7 @@ def stage_bake():
             lum_full, lum_sun = full.mean(axis=2), sun.mean(axis=2)
             share = np.clip(lum_sun / np.maximum(lum_full, 1e-4), 0, 1); share[lum_full < .03] = 0; share = box_blur(share, 2)
             enc = np.concatenate([np.clip(to_srgb(full * .5), 0, 1), share[..., None]], axis=2)
-            name = f'town-claude-{part}-{group}'
+            name = f'town-{VARIANT}-{part}-{group}'
             out = bpy.data.images.new(name, res, res, alpha=True); out.pixels.foreach_set(enc.astype(np.float32).ravel())
             out.filepath_raw = os.path.join(WORK, name + '.png'); out.file_format = 'PNG'; out.save()
             report['atlases'][name] = {'objects': len(objs), 'uvFill': round(uv_fill, 3), 'seconds': round(time.time() - t0, 1), 'radiance_p50': float(np.median(full)),
@@ -486,11 +495,11 @@ def stage_export():
     for part in PARTS:
         objs = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o['part'] == part]
         keep = []
-        for group in GROUPS[part]:
+        for group in groups_of(part):
             # Joining removes objects: look them up again for every group (10-17 cafe lesson).
             g = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') == part and o.get('group') == group and o not in keep]
             if not g: continue
-            name = f'town-claude-{part}-{group}'
+            name = f'town-{VARIANT}-{part}-{group}'
             img = bpy.data.images.load(os.path.join(WORK, name + '.png'), check_existing=False); img.alpha_mode = 'CHANNEL_PACKED'
             m = bpy.data.materials.new(f'bake_{part}_{group}'); m.use_nodes = True; nt = m.node_tree
             bsdf = nt.nodes['Principled BSDF']; tex = nt.nodes.new('ShaderNodeTexImage'); tex.image = img
@@ -520,7 +529,7 @@ def stage_export():
             j = bpy.context.view_layer.objects.active; j.name = j.data.name = f'{part}_glass'; keep.append(j)
         bpy.ops.object.select_all(action='DESELECT')
         for k in keep: k.select_set(True)
-        path = os.path.join(out_dir, f'town-claude-{part}-raw.glb')
+        path = os.path.join(out_dir, f'town-{VARIANT}-{part}-raw.glb')
         kwargs = dict(filepath=path, export_format='GLB', use_selection=True, export_yup=True, export_apply=True, export_extras=True,
                       export_texcoords=True, export_normals=True, export_materials='EXPORT', export_cameras=False, export_lights=False,
                       export_animations=False, export_image_format='WEBP', export_image_quality=90)
@@ -532,4 +541,5 @@ def stage_export():
         log('exported', part, report[part]['bytes'], 'bytes', sum(report[part]['triangles'].values()), 'tris')
     json.dump(report, open(os.path.join(WORK, 'export.json'), 'w'), indent=2)
 
-{'build': stage_build, 'bake': stage_bake, 'export': stage_export}[STAGE]()
+if __name__ == '__main__':   # merged_build.py imports the helpers above
+    {'build': stage_build, 'bake': stage_bake, 'export': stage_export}[STAGE]()

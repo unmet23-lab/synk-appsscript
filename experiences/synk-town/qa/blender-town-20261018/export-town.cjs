@@ -1,6 +1,6 @@
 // Exports the approved v20 core town as per-part reference GLBs for Blender.
 //   node experiences/synk-town/qa/blender-town-20261018/export-town.cjs <outDir>
-// Writes v20_<part>.glb for home, cafe, workshop, greenhouse, town_ground, live
+// Writes v20_<part>.glb for home, cafe, workshop, greenhouse, town_ground, live, faded
 // and export-report.json. Product files are not modified: material keys are
 // attached only in the served copy of day-environment.mjs (capture-time patch).
 const fs = require('node:fs'), path = require('node:path');
@@ -24,7 +24,7 @@ if (require.main === module) (async () => {
     const { page, errors } = await L.openTown(browser, base, { width: 1280, height: 900, patches: PATCHES });
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'export-town-browser.js'), 'utf8') });
     const result = await page.evaluate(core => globalThis.__exportCoreTown(core), CORE);
-    const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live' };
+    const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live', faded: 'v20_faded' };
     for (const [part, file] of Object.entries(names)) fs.writeFileSync(path.join(outDir, file + '.glb'), Buffer.from(result.files[part], 'base64'));
     for (const [file, data] of Object.entries(result.mapFiles)) fs.writeFileSync(path.join(outDir, file), Buffer.from(data, 'base64'));
     const summary = Object.fromEntries(Object.entries(result.report).map(([k, r]) => [k, { meshes: r.meshes, triangles: r.triangles }]));

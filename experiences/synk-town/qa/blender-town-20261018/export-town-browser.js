@@ -6,8 +6,12 @@
 //   home / cafe / workshop / greenhouse — every mesh of town-<place>
 //   ground — the walkable flat surfaces of town-landscape inside CORE (large
 //            meshes split by triangle centroid, instanced stones by position)
-//   live   — everything else Town builds: grass, flowers, shrubs, trees, street
-//            furniture, the outer ring, the far underlay (bake occluders only)
+//   faded  — roots Town fades out with their shadows when they come between the
+//            camera and the player (street benches, planters, trees: occlusionRoots
+//            in day-environment.mjs). Never bake occluders: a baked shadow would
+//            stay on the ground while v20 hides the object (10-18).
+//   live   — everything else Town builds: grass, flowers, shrubs, the outer ring,
+//            the far underlay (bake occluders only)
 // Material keys come from Town's shared `m` or from the capture-time
 // userData.synkKey patch in export-town.cjs.
 globalThis.__exportCoreTown = async function exportCoreTown(core) {
@@ -19,8 +23,9 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
   // another key in town-landscape stays live (grass, foliage, flowers, bark...).
   const GROUND_KEYS = new Set(['terrainMaterial', 'paving', 'stone', 'mortar', 'gravel', 'gardenSoil', 'cliffMaterial']);
   const inCore = (x, z) => x >= core.minX && x <= core.maxX && z >= core.minZ && z <= core.maxZ;
-  const out = Object.fromEntries([...PLACES, 'ground', 'live'].map(k => [k, new Map()]));
-  const report = Object.fromEntries([...PLACES, 'ground', 'live'].map(k => [k, { meshes: 0, triangles: 0, sources: {} }]));
+  const PARTS_OUT = [...PLACES, 'ground', 'live', 'faded'];
+  const out = Object.fromEntries(PARTS_OUT.map(k => [k, new Map()]));
+  const report = Object.fromEntries(PARTS_OUT.map(k => [k, { meshes: 0, triangles: 0, sources: {} }]));
   const groundInstances = [];
   const v = new THREE.Vector3(), n = new THREE.Vector3(), normalMatrix = new THREE.Matrix3(), instance = new THREE.Matrix4(), full = new THREE.Matrix4(), color = new THREE.Color();
   // v20 colour maps (wood grain, plaster, stone, terrain fibres) go out as PNG
@@ -87,6 +92,7 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
     if (!root.name.startsWith('town-')) continue;
     const place = PLACES.find(p => root.name === 'town-' + p);
     const landscape = root.name === 'town-landscape';
+    const faded = /^town-(street-bench|street-planter|tree)-/.test(root.name);
     root.traverse(object => {
       if (!object.isMesh || object.isSprite || !object.geometry?.attributes?.position) return;
       if (object.material?.isSpriteMaterial || object.material?.isShaderMaterial) return;
@@ -95,6 +101,7 @@ globalThis.__exportCoreTown = async function exportCoreTown(core) {
       const mat = mats[0], key = keyOf(mat), groundKey = landscape && GROUND_KEYS.has(key);
       const add = (matrix, tint, centre, instanceIndex) => {
         if (place) return push(place, object.geometry, matrix, tint, null, mat);
+        if (faded) return push('faded', object.geometry, matrix, tint, null, mat);
         if (!groundKey) return push('live', object.geometry, matrix, tint, null, mat);
         object.geometry.computeBoundingSphere();
         const radius = object.geometry.boundingSphere.radius * matrix.getMaxScaleOnAxis();

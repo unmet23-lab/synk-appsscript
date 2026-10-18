@@ -89,8 +89,19 @@ for (const texture of mode === 'keep' ? [] : doc.getRoot().listTextures()) {
   // around it: small mip levels, used at grazing angles, otherwise averaged the
   // black background into the island edges (10-18: dark notches along the paths,
   // light/dark wedges on lawn slivers packed at the atlas border).
+  // --gain=<name part>:r,g,b multiplies the baked radiance (linear) of matching
+  // maps: the lawn atlas is tone-matched to v20's live lawn at the slab border,
+  // measured in Town at the same pose (10-18, ../blender-merged-20261018/진행.md).
+  const gains = (args.gain || '').split(';').filter(Boolean).map(g => { const [k, v] = g.split(':'); return { k, v: v.split(',').map(Number) }; });
+  const gain = gains.find(g => name.includes(g.k))?.v;
   const filled = await (async () => {
     const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    if (gain) {
+      const lin = c => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+      const enc = l => { l = Math.min(1, Math.max(0, l)); return Math.round(255 * (l <= .0031308 ? l * 12.92 : 1.055 * l ** (1 / 2.4) - .055)); };
+      for (let i = 0; i < data.length; i += 4) for (let c = 0; c < 3; c++) data[i + c] = enc(lin(data[i + c]) * gain[c]);
+      report.gain = { [name]: gain };
+    }
     pushPullFill(data, info.width, info.height);
     return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
   })();
@@ -131,10 +142,13 @@ for (const texture of mode === 'keep' ? [] : doc.getRoot().listTextures()) {
 }
 // --geo=meshopt: quantize + EXT_meshopt_compression (Town loads MeshoptDecoder).
 // Bake UVs keep 14 bits (a 2048 atlas needs better than half-texel placement).
+// --level=high adds meshopt's filters (octahedral normals, quaternion/exponential
+// encodings), --nbits / --uvbits lower the normal / UV quantization (the merged
+// version uses them to fit the budget, 10-18).
 if (args.geo === 'meshopt') {
   const { meshopt } = require(path.join(tools, '@gltf-transform/functions'));
-  await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'medium', quantizeTexcoord: 14, quantizeNormal: 10 }));
-  report.geometry = 'meshopt';
+  await doc.transform(meshopt({ encoder: MeshoptEncoder, level: args.level || 'medium', quantizeTexcoord: Number(args.uvbits || 14), quantizeNormal: Number(args.nbits || 10) }));
+  report.geometry = 'meshopt' + (args.level ? '-' + args.level : '');
 }
 const ktx = doc.getRoot().listTextures().some(t => t.getMimeType() === 'image/ktx2'), webp = doc.getRoot().listTextures().some(t => t.getMimeType() === 'image/webp');
 if (ktx) doc.createExtension(KHRTextureBasisu).setRequired(true);
