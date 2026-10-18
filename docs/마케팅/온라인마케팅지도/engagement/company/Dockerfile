@@ -112,6 +112,13 @@ COPY ["docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf","/workspace/docs/브랜�
 COPY ["docs/디자인/펠트부품/assets/ui/slab-coral-long.webp","/workspace/docs/디자인/펠트부품/assets/ui/slab-coral-long.webp"]
 COPY ["docs/디자인/펠트부품/assets/ui/badge-check.webp","/workspace/docs/디자인/펠트부품/assets/ui/badge-check.webp"]
 COPY ["docs/디자인/SNS키트/assets/felt-laptop.webp","/workspace/docs/디자인/SNS키트/assets/felt-laptop.webp"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-archive.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-archive.mjs"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/client-material-usage.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/client-material-usage.mjs"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/client-rights-reminders.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/client-rights-reminders.mjs"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.js","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.js"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.css","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.css"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.js","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.js"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.css","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.css"]
 RUN mkdir /data && chown node:node /data
 USER node
 EXPOSE 4191

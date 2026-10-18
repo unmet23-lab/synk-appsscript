@@ -508,11 +508,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   function guardRequest(req) {
     if (integration) {
       if (req.headers.origin) assert(req.headers.origin === integration.origin, 403, '회사 프로그램 화면에서 요청해 주세요.');
-      // An outside link may open the public HTML shell in the top-level tab.
-      // Keep private API requests and cross-site frames behind the same guard.
-      const publicNavigation = req.method === 'GET' && req.url?.split('?')[0] === `${basePath}/` &&
-        !req.headers.origin && req.headers['sec-fetch-mode'] === 'navigate' && req.headers['sec-fetch-dest'] === 'document';
-      assert(req.headers['sec-fetch-site'] !== 'cross-site' || publicNavigation, 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
+      assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
       return;
     }
     const allowedHosts = new Set([`127.0.0.1:${listeningPort}`, `localhost:${listeningPort}`, `[::1]:${listeningPort}`]);
