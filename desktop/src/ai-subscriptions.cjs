@@ -51,6 +51,8 @@ const HELP_LINKS=Object.freeze({
   'typecast-api':'https://studio.typecast.ai/developers/api',
 });
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
+// 「로그인 필요」로 읽혔을 때 인터넷이 그 서비스까지 닿는지만 보는 고정 주소(로그인 정보는 보내지 않는다).
+const REACHABLE=Object.freeze({claude:'https://api.anthropic.com/',gpt:'https://auth.openai.com/',higgsfield:'https://higgsfield.ai/',gemini:'https://oauth2.googleapis.com/'});
 const FOLDER=/^(claude|gpt|higgsfield|typecast)-[a-z0-9]{8}$/;
 const EMAIL=/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,24}$/;
 const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
@@ -146,7 +148,8 @@ function commandFor(file,args,{platform,env}){
 }
 
 // secrets: {available(),encrypt(text)->Buffer,decrypt(Buffer)->text} — 데스크톱 본체가 safeStorage로 넘긴다. 없으면 키를 받지 않는다.
-function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{}}){
+// retryDelay: 「로그인 필요」로 읽힌 줄을 다시 읽기 전에 기다리는 시간(ms).
+function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
   if(!root)throw new TypeError('root is required');
   const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts');
   let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,seq=0;
@@ -230,7 +233,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       child.stderr?.on('data',d=>{if(err.length<OUTPUT_LIMIT)err+=d;});
       child.on('error',error=>{err+=String(error?.message||error);finish(-1);});
       child.on('close',code=>finish(code));
-      if(input!==null)child.stdin?.end(input);
+      // 넣을 것이 없어도 표준입력은 바로 닫는다. 열어 두면 Claude Code(-p)가 입력을 3초 기다린 뒤에야 답한다(10-18 실측).
+      if(input!==null)child.stdin?.end(input);else child.stdin?.end();
     });
   }
   // Windows에서 npm 설치본(.cmd)은 cmd.exe가 실제 CLI(node)를 띄운다. cmd만 끄면 CLI가 남아 로그인 대기 포트를 잡고 있으므로
@@ -297,7 +301,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   async function claudeAccount(folder){
     const r=await runTool(tools.claude.path,['auth','status','--json'],{extraEnv:homeEnv('claude',folder),timeout:30000});
     const data=parseJson(r.out);
-    return data&&typeof data==='object'?{loggedIn:data.loggedIn===true,email:typeof data.email==='string'?data.email:null,plan:typeof data.subscriptionType==='string'?data.subscriptionType:null}:{loggedIn:false};
+    // known: 공식 출력이 로그인 여부를 분명히 알려 줬는지. 못 읽었을 때를 「로그인 풀림」으로 착각하지 않게 나눈다.
+    return data&&typeof data==='object'&&typeof data.loggedIn==='boolean'?{known:true,loggedIn:data.loggedIn,email:typeof data.email==='string'?data.email:null,plan:typeof data.subscriptionType==='string'?data.subscriptionType:null}:{known:false,loggedIn:false};
   }
   // 계정은 읽을 때마다 다시 본다. 기본 로그인(~/.claude)은 회원이 터미널에서 /login으로 다른 계정으로 바꿀 수 있고,
   // 요금제도 바뀐다. 한 번 채운 이메일을 믿으면 B 계정의 사용량이 A의 이름으로 「정상」 저장된다.
@@ -308,8 +313,12 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(claudeNeedsLogin(text))return {state:'needs-login',message:'Claude 로그인이 풀렸어요. 다시 연결해 주세요.'};
     const usage=parseClaudeUsage(r.out,new Date(now()));
     if(!usage.session&&!usage.weekly){
+      // 파이프로 부르면 로그인이 없어도 「Not logged in」 대신 비용 요약(Total cost …)이 나온다(10-18 실측, Claude Code 2.1.302).
+      // 그래서 로그인 여부는 auth status로 본다. 로그인돼 있는데 숫자가 없으면 구독 한도가 없는 로그인(API 키 등)이다.
+      const account=r.code===-2?{known:false}:await claudeAccount(row.folder);
+      if(account.known&&!account.loggedIn)return {state:'needs-login',message:'Claude 로그인이 풀렸어요. 다시 연결해 주세요.'};
       const first=stripAnsi(text).split(/\r?\n/).map(l=>l.trim()).find(Boolean)||'';
-      return {state:'error',message:r.code===-2?'Claude Code가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':/subscription|plan/i.test(first)?'이 계정은 Claude Pro·Max 구독 한도가 없어요.':'Claude Code의 사용량 화면을 읽지 못했어요.',detail:cleanText(first,160)};
+      return {state:'error',message:r.code===-2?'Claude Code가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':account.known&&!account.plan||/subscription|plan/i.test(first)?'이 계정은 Claude Pro·Max 구독 한도가 없어요.':'Claude Code의 사용량 화면을 읽지 못했어요.',detail:cleanText(first,160)};
     }
     const account=await claudeAccount(row.folder);
     const email=account.loggedIn?account.email:null,lower=email?email.toLowerCase():null;
@@ -420,6 +429,24 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     try{return row.service==='claude'?await readClaude(row):row.service==='gpt'?await readCodex(row):row.service==='gemini'?await readGemini(row):await readHiggsfield(row.folder);}
     catch{return {state:'error',message:'읽는 중 문제가 생겼어요. 잠시 뒤 다시 확인해 주세요.'};}
   }
+  // 「다시 로그인」은 확인한 뒤에만 띄운다. 잠깐 연결이 끊기면 공식 프로그램도 로그인이 풀린 것처럼 답한다
+  // (10-18 실측: 1분 사이 GPT 줄이 「다시 로그인」이었는데 2분 뒤 같은 로그인이 그대로 읽혔다).
+  // 그 서비스까지 인터넷이 안 닿으면 연결 문제로 두고, 닿으면 잠시 뒤 한 번 더 읽어 그래도 같을 때만 「다시 로그인」으로 둔다.
+  // Typecast는 서버가 401·403으로 분명히 답할 때만 「다시 연결」이라 다시 묻지 않는다.
+  async function reachable(service){
+    const url=REACHABLE[service];if(!url||typeof fetchImpl!=='function')return true;
+    try{await fetchImpl(url,{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(5000)});return true;}catch{return false;}
+  }
+  const offline=()=>({state:'error',message:'인터넷에 연결되지 않아 확인하지 못했어요. 로그인이 풀린 것은 아닐 수 있어요. 연결을 확인하고 다시 확인해 주세요.'});
+  async function readConfirmed(row){
+    const first=await readRow(row);
+    if(first?.state!=='needs-login'||SERVICES[row.service]?.apiKey)return first;
+    if(!await reachable(row.service))return offline();
+    if(retryDelay>0)await new Promise(resolve=>setTimeout(resolve,retryDelay));
+    const second=await readRow(row);
+    if(second?.state==='needs-login'&&!await reachable(row.service))return offline();
+    return second;
+  }
   function applyRead(row,result){
     if(!result)return;
     row.state=result.state;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
@@ -449,7 +476,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       await null;emit();
       await detectTools(true);
       const queue=[...targets];
-      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(!b.rows.includes(row))continue;applyRead(row,await readRow(row));emit();}};
+      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(!b.rows.includes(row))continue;applyRead(row,await readConfirmed(row));emit();}};
       await Promise.all([worker(),worker()]);
       // 요약은 지금 판 전체로 센다. 한 줄만 다시 읽었을 때는 「마지막 확인」 시각을 전체 확인 때 것으로 둔다.
       const autos=b.rows.filter(row=>row.source==='auto');

@@ -87,16 +87,16 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
   // higgsHomes: 홈 폴더(USERPROFILE)마다 Higgsfield 로그인. 기본 홈은 77@example.com.
   // consoles: 숨긴 PowerShell 런처가 Start-Process로 띄운 검은 창(스크립트·환경). freshPath: 다시 읽는 사용자·시스템 PATH.
   const calls=[],stdinWrites=[];let loginChild=null,pidSeq=4000;
-  const state={claudeLoggedIn,geminiLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com',claudeEmail:'member@example.com',freshPath:'',codexEmptyLimits:false,defaultHiggsNoWorkspace:false,consoles:[],killed:[]};
+  const state={claudeLoggedIn,geminiLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com',claudeEmail:'member@example.com',freshPath:'',codexEmptyLimits:false,defaultHiggsNoWorkspace:false,consoles:[],killed:[],online:true,reachCalls:[],codexNoAccountTimes:0,claudeExpiredTimes:0,claudeUsageOverride:null,claudeAuthOverride:null};
   function spawn(command,argv,options){
     const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();
     // 실제 ChildProcess처럼 끝나기 전에는 exitCode가 null이다(본체는 살아 있는 프로세스만 PID로 끈다).
     child.exitCode=null;child.signalCode=null;child.on('close',code=>{child.exitCode=code??1;});
-    const call={command,argv,options};calls.push(call);
+    const call={command,argv,options,child};calls.push(call);
     const joined=[command,...argv].join(' ');
     const reply=(out,code=0,delay=0)=>(delay?fn=>setTimeout(fn,delay):setImmediate)(()=>{if(out)child.stdout.emit('data',out);child.emit('close',code);});
     child.kill=()=>setImmediate(()=>child.emit('close',null));child.unref=()=>{};
-    child.stdin={write(text){stdinWrites.push(text);if(child.onInput)child.onInput(text);return true;},end(){}};
+    child.stdin={write(text){stdinWrites.push(text);if(child.onInput)child.onInput(text);return true;},end(text){if(text!=null)stdinWrites.push(text);child.stdinEnded=true;}};
     if(command==='powershell.exe'&&argv.includes('-EncodedCommand')){
       // 런처: 창의 PID를 한 줄 찍고, WaitForExit면 창이 닫힐 때까지(시험이 닫을 때까지) 살아 있다.
       const script=Buffer.from(argv[argv.indexOf('-EncodedCommand')+1],'base64').toString('utf16le');
@@ -107,14 +107,16 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
     else if(command==='taskkill'){state.killed.push(argv.join(' '));reply('');}
     else if(joined.includes('--version'))reply(command.endsWith('claude.exe')?'2.1.301 (Claude Code)\n':'1.0.0\n');
     else if(command.endsWith('agy.exe')){if(argv.includes('/usage'))reply(state.geminiLoggedIn?AGY_USAGE:'Error: not signed in. Run agy to sign in.\n',state.geminiLoggedIn?0:1);}
+    else if(joined.includes('/usage')&&state.claudeExpiredTimes>0){state.claudeExpiredTimes--;reply('OAuth token has expired. Please obtain a new token or refresh your existing token.\n',1);}
+    else if(joined.includes('/usage')&&state.claudeUsageOverride!=null)reply(state.claudeUsageOverride);
     else if(joined.includes('/usage'))reply(state.claudeLoggedIn?USAGE:'Not logged in · Please run /login\n',state.claudeLoggedIn?0:1,state.usageDelay||0);
-    else if(joined.includes('auth status'))reply(JSON.stringify({loggedIn:state.claudeLoggedIn,email:state.claudeEmail,subscriptionType:'max'}));
+    else if(joined.includes('auth status'))reply(state.claudeAuthOverride!=null?state.claudeAuthOverride:JSON.stringify({loggedIn:state.claudeLoggedIn,email:state.claudeEmail,subscriptionType:'max'}));
     else if(joined.includes('auth login')&&command.endsWith('claude.exe')){loginChild=child;child.pid=++pidSeq;setImmediate(()=>child.stdout.emit('data','Opening browser to sign in…\nIf the browser didn\'t open, visit: https://claude.com/cai/oauth/authorize?code=true&state=abc\nPaste code here if prompted > '));child.onInput=()=>{state.claudeLoggedIn=true;setImmediate(()=>child.emit('close',0));};}
     else if(joined.includes('app-server')){
       child.onInput=text=>{for(const line of text.split('\n').filter(Boolean)){const m=JSON.parse(line);
         const send=v=>setImmediate(()=>child.stdout.emit('data',JSON.stringify(v)+'\n'));
         if(m.method==='initialize')send({id:m.id,result:{}});
-        else if(m.method==='account/read')send({id:m.id,result:{account:{type:'chatgpt',email:'synk@example.com',planType:'pro'}}});
+        else if(m.method==='account/read')send({id:m.id,result:state.codexNoAccountTimes>0?(state.codexNoAccountTimes--,{account:null,requiresOpenaiAuth:true}):{account:{type:'chatgpt',email:'synk@example.com',planType:'pro'}}});
         else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:state.codexEmptyLimits?{planType:'pro',primary:null,secondary:null}:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null}}});}};
     }
     else if(joined.includes('auth login')&&command.endsWith('higgsfield.exe')){
@@ -135,7 +137,10 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
     return child;
   }
   const changes=[],opened=[];
-  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,...(fetch?{fetch}:{}),...(secrets?{secrets}:{}),now:()=>NOW,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
+  // 「로그인 필요」 뒤 인터넷이 닿는지 보는 고정 주소는 여기서 답한다(시험은 실제 망에 나가지 않는다). 나머지는 넘겨받은 가짜로.
+  const reach=new Set(['https://api.anthropic.com/','https://auth.openai.com/','https://higgsfield.ai/','https://oauth2.googleapis.com/']);
+  const fakeFetch=async(url,options)=>{if(reach.has(url)){state.reachCalls.push(url);if(!state.online)throw new TypeError('fetch failed');return {ok:true,status:200};}return fetch?fetch(url,options):{ok:false,status:404,json:async()=>({})};};
+  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,fetch:fakeFetch,retryDelay:0,...(secrets?{secrets}:{}),now:()=>NOW,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
   return {root,service,calls,stdinWrites,changes,opened,state,get loginChild(){return loginChild;}};
 }
 
@@ -536,4 +541,64 @@ test('closing the console window without signing in ends the login, and cancel c
   for(let i=0;i<20&&!f.state.killed.length;i++)await new Promise(r=>setImmediate(r));
   assert.deepEqual(f.state.killed,[`/PID ${win.windowPid} /T /F`]);
   f.service.dispose();
+});
+
+/* ---------- 잠깐 연결이 끊겼을 때 「다시 로그인」을 잘못 띄우지 않기(10-18) ---------- */
+test('a sign-in that only looks lost for a moment is read again instead of asking to log in',async()=>{
+  const f=fakeSystem();
+  assert.equal((await f.service.useExisting('gpt')).ok,true);
+  // 연결이 잠깐 흔들려 Codex가 계정을 한 번 못 줬다: 인터넷이 닿는지 보고, 한 번 더 읽어 그대로 읽힌다.
+  f.state.codexNoAccountTimes=1;
+  let row=(await f.service.check()).rows.find(r=>r.service==='gpt');
+  assert.equal(row.state,'ok');assert.deepEqual(f.state.reachCalls,['https://auth.openai.com/']);
+  // 인터넷이 안 닿으면 「다시 로그인」 대신 연결 문제로 알리고, 마지막으로 읽은 숫자는 그대로 둔다.
+  f.state.codexNoAccountTimes=2;f.state.online=false;
+  row=(await f.service.check()).rows.find(r=>r.service==='gpt');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/인터넷에 연결되지 않아/);assert.equal(row.live.weekly.usedPercent,100);
+  // 인터넷이 닿는데 다시 읽어도 계정이 없을 때만 「다시 로그인」이다.
+  f.state.codexNoAccountTimes=2;f.state.online=true;
+  row=(await f.service.check()).rows.find(r=>r.service==='gpt');
+  assert.equal(row.state,'needs-login');
+});
+
+test('Claude saying its token expired while the internet is down is a connection problem, not a lost login',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  f.state.claudeExpiredTimes=1;f.state.online=false;
+  let row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/로그인이 풀린 것은 아닐 수 있어요/);
+  assert.deepEqual(f.state.reachCalls,['https://api.anthropic.com/']);
+  f.state.online=true;
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'ok');
+});
+
+test('a Typecast key the server rejects asks to reconnect right away without probing',async()=>{
+  const tc=fakeTypecast(),f=fakeSystem({fetch:tc.fetch,secrets:tc.secrets});
+  const {id}=await f.service.connectKey('typecast',tc.good);
+  tc.state.valid.clear();
+  assert.equal((await f.service.check()).rows.find(r=>r.id===id).state,'needs-login');
+  assert.deepEqual(f.state.reachCalls,[]);
+});
+
+test('a Claude login that is really gone is told apart from a usage screen that only failed to read',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');
+  const usageCalls=()=>f.calls.filter(c=>c.argv.includes('/usage'));
+  // 파이프로 부르면 로그인이 없어도 비용 요약만 나온다(실제 Claude Code 2.1.302). auth status가 로그인 없음이라고 하면
+  // 인터넷이 닿는지 보고 한 번 더 읽은 뒤 「다시 로그인」이다.
+  f.state.claudeUsageOverride='Total cost:            $0.0000\nTotal duration (API):  0s\n';
+  f.state.claudeAuthOverride=JSON.stringify({loggedIn:false,authMethod:'none'});
+  let row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'needs-login');assert.equal(usageCalls().length,3);
+  // auth status를 못 읽었으면 로그인이 풀렸다고 단정하지 않는다.
+  f.state.claudeAuthOverride='garbled';
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  // 로그인돼 있는데 구독이 없으면(API 키 로그인) 그렇게 알린다.
+  f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,authMethod:'apiKey',subscriptionType:null});
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/구독 한도가 없어요/);
+  // 공식 프로그램의 표준입력은 바로 닫는다(열어 두면 Claude Code가 입력을 3초 기다린다).
+  assert.ok(usageCalls().every(c=>c.child.stdinEnded));
 });
