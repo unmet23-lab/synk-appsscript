@@ -1,0 +1,88 @@
+{
+ "voice": {
+  "name": "범수",
+  "id": "tc_5c3c52cb5827e00008dd7f3b"
+ },
+ "settings": {
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018
+ },
+ "made": "2026-10-18T07:54:59.329Z",
+ "lines": [
+  {
+   "id": "a01",
+   "text": "클릭 한 번에 AI 계정 열여섯 개, 남은 한도가 다 보여요.",
+   "dur": 3.366,
+   "syllablesPerSec": 5.94
+  },
+  {
+   "id": "b01",
+   "text": "AI 구독 세 개 넘게 쓰면, 이번 주 얼마 남았는지 바로 아세요?",
+   "dur": 3.342,
+   "syllablesPerSec": 6.58
+  },
+  {
+   "id": "v02",
+   "text": "보통은 계정마다 로그아웃, 로그인, 사용량 확인이죠.",
+   "dur": 3.075,
+   "syllablesPerSec": 6.83
+  },
+  {
+   "id": "v03",
+   "text": "싱크 회원 혜택, AI 구독 계정판이에요.",
+   "dur": 2.639,
+   "syllablesPerSec": 5.3
+  },
+  {
+   "id": "v04",
+   "text": "지금 확인 한 번이면 계정 열여섯 개를 다 읽어요.",
+   "dur": 2.582,
+   "syllablesPerSec": 7.36
+  },
+  {
+   "id": "v05",
+   "text": "다 쓴 계정, 모자란 크레딧까지 줄마다 보여요.",
+   "dur": 2.777,
+   "syllablesPerSec": 6.48
+  },
+  {
+   "id": "v06",
+   "text": "지금 쓸 여유 있는 계정까지 알려 주고,",
+   "dur": 2.232,
+   "syllablesPerSec": 6.72
+  },
+  {
+   "id": "v07",
+   "text": "다 쓴 계정도 언제 풀리는지 바로 보여요.",
+   "dur": 2.054,
+   "syllablesPerSec": 7.79
+  },
+  {
+   "id": "v08",
+   "text": "풀리는 때와 주간 초기화를 날짜순으로 모아요.",
+   "dur": 3.214,
+   "syllablesPerSec": 5.91
+  },
+  {
+   "id": "v09",
+   "text": "토큰을 복사할 필요 없이, 각 서비스 공식 프로그램이 알려 준 숫자만 모아요.",
+   "dur": 4.018,
+   "syllablesPerSec": 7.47
+  },
+  {
+   "id": "v10",
+   "text": "같은 앱이어도 내 피씨에선 내 계정 숫자가 나와요.",
+   "dur": 3.088,
+   "syllablesPerSec": 6.48
+  },
+  {
+   "id": "v11",
+   "text": "싱크 회원이면 무료. AI 구독, 몇 개 쓰세요?",
+   "dur": 2.721,
+   "syllablesPerSec": 5.51
+  }
+ ]
+}

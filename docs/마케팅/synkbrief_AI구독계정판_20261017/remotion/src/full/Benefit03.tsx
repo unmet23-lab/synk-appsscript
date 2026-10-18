@@ -58,7 +58,7 @@ export const Benefit03: React.FC = () => {
                       지금 확인
                     </button>
                     <button type="button" className="ms-button">
-                      계정 연결
+                      계정 관리
                     </button>
                   </div>
                 </div>
