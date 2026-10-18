@@ -6,11 +6,12 @@ import { clamp, ramp } from '../lib/anim';
 import { L } from '../theme';
 import { HOOK } from '../timeline';
 import { BoardZ, FloatCard, HeadF, Lines, MarkF, settle } from './cine';
+import { leftPercent, LeftText, MiniGauge } from './gauge';
 
 const BW = 500;
 const SCALE = (L.W - L.X - L.R) / BW;
 
-export const Hook5: React.FC = () => {
+export const Hook5: React.FC<{ variant?: 'A' | 'B' }> = ({ variant = 'A' }) => {
   const f = useCurrentFrame();
   const flat = settle(f, 2, 9);
   const push = settle(f, HOOK.click, 6);
@@ -22,15 +23,19 @@ export const Hook5: React.FC = () => {
       <Lines
         visibleAtZero
         at={0}
-        size={100}
+        size={variant === 'A' ? 100 : 84}
         top={L.TOP}
-        lines={[
-          '클릭 한 번,',
-          <>
-            AI 계정 <span style={{ display: 'inline-block', scale: String(bump), transformOrigin: '50% 75%', fontVariantNumeric: 'tabular-nums' }}>6</span>개
-          </>,
-          <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>남은 한도</MarkF>,
-        ]}
+        lines={
+          variant === 'A'
+            ? [
+                '클릭 한 번,',
+                <>
+                  AI 계정 <span style={{ display: 'inline-block', scale: String(bump), transformOrigin: '50% 75%', fontVariantNumeric: 'tabular-nums' }}>6</span>개
+                </>,
+                <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>남은 한도</MarkF>,
+              ]
+            : ['AI 구독 3개 넘으면,', '이번 주 얼마 남았는지', <MarkF key="m" p={ramp(f, HOOK.mark, 12)}>아세요?</MarkF>]
+        }
       />
       <div style={{ position: 'absolute', left: L.X, top: 890, width: BW * SCALE, perspective: 1700 }}>
         <FloatCard
@@ -43,31 +48,30 @@ export const Hook5: React.FC = () => {
         >
           <BoardZ width={BW} scale={SCALE}>
             <div style={{ padding: '12px 14px 6px' }}>
-              <div className="ms-hero" style={{ padding: '11px 16px', borderRadius: 16 }}>
-                <div className="ms-hero-note" style={{ borderTop: 0, paddingTop: 0 }}>
-                  <span>마지막 확인 11:45 · 6/6개 읽음</span>
+              <div className="ms-hero has-art" style={{ padding: '10px 16px 12px', borderRadius: 16 }}>
+                <div className="ms-hero-note" style={{ borderTop: 0, paddingTop: 0, rowGap: 10 }}>
+                  <span style={{ flex: '1 0 100%' }}>마지막 확인 11:45 · 6/6개 읽음</span>
                   <div className="ms-hero-actions">
                     <button className="ms-button ms-button-primary">지금 확인</button>
+                    <button className="ms-button">계정 연결</button>
                   </div>
                 </div>
               </div>
               <div className="mt-list" style={{ marginTop: 6 }}>
                 {ACCOUNTS.map((a, i) => {
-                  const at = HOOK.rows[i];
-                  const fill = ramp(f, at, 12);
                   return (
-                    <div key={i} className={`mt-row ms-s-${a.svc}`} style={{ minHeight: 38 }}>
+                    <div key={i} className={`mt-row ms-s-${a.svc}`} style={{ minHeight: 34 }}>
                       <span className="ms-tag">{a.label}</span>
                       <b>{a.name}</b>
                       {a.weekly !== undefined ? (
-                        <>
-                          <span className={`ms-bar${a.weekly >= 90 ? ' hot' : ''}`}>
-                            <span style={{ width: `${a.weekly * fill}%` }} />
-                          </span>
-                          <span className="ms-num">주간 {a.weekly}%</span>
-                        </>
+                        <span className="mt-left">
+                          <MiniGauge left={leftPercent(a.weekly)} drawAt={HOOK.rows[i]} />
+                          주간&nbsp;<LeftText left={leftPercent(a.weekly)} />
+                        </span>
                       ) : (
-                        <span className="ms-num ms-warn-text">크레딧 {a.credits!.toFixed(2)}</span>
+                        <span className="mt-left ms-warn-text">
+                          크레딧&nbsp;<b className="ms-num">{a.credits!.toFixed(2)}</b>
+                        </span>
                       )}
                     </div>
                   );
