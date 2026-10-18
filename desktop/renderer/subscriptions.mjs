@@ -118,8 +118,9 @@ export function limitGauge(row, now) {
 export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ? 'low' : 'ok');
 
 // 공식 출력의 요금제 이름(prolite 등)을 사람이 읽는 이름으로. 남은 %가 같을 때는 큰 요금제를 먼저 추천한다.
-const PLAN = { max: 'Max', ultra: 'Ultra', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
-const TIER = { max: 6, ultra: 5, pro: 4, plus: 3, prolite: 2, lite: 1 };
+// Claude Max는 본체가 등급을 붙여 max_5x·max_20x로 준다(등급을 못 읽으면 max).
+const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra: 'Ultra', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
+const TIER = { max20x: 8, max5x: 7, max: 6, ultra: 5, pro: 4, plus: 3, prolite: 2, lite: 1 };
 const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/g, '');
 export const planName = plan => (plan ? PLAN[planKey(plan)] || String(plan) : '');
 // 계정 이름: 메일 앞부분 → API 키 끝 네 글자(서비스가 이미 Typecast라 「키」는 붙이지 않는다) → 메일을 못 읽는 Gemini는 이 PC 로그인 → 직접 넣은 구독 이름.
@@ -445,15 +446,17 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function detailHtml(g, now) {
     const credit = g.kind === 'credit';
-    const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
+    // 계정 이름 옆에 요금제(Max 5x·Max 20x·Pro Lite 등)를 작게 붙여 계정마다 등급이 보이게 한다.
+    const tierOf = a => (a.row.source === 'auto' ? planName(a.row.plan) : '');
+    const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}${tierOf(a) ? `<small>${esc(tierOf(a))}</small>` : ''}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
     const value = a => `<span class="ms-acc-val"><b class="ms-num">${a.left}%</b><small>${WINDOW_NAME[a.focus]}</small></span>`;
     const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${a.left}%"></i></span>`;
     const usable = g.usable.map(a => credit
-      ? line(a, `<span class="ms-acc-sub">${esc([planName(a.row.plan), a.state === 'low' ? '크레딧 부족' : ''].filter(Boolean).join(' · '))}</span><span class="ms-acc-val"><b class="ms-num">${credits(a.credits)}</b></span>`)
+      ? line(a, `<span class="ms-acc-sub">${a.state === 'low' ? '크레딧 부족' : ''}</span><span class="ms-acc-val"><b class="ms-num">${credits(a.credits)}</b></span>`)
       : line(a, `<span class="ms-acc-sub">${esc(windowsText(a, now))}</span>${bar(a)}${value(a)}`)).join('');
-    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요</span>${bar(a)}${value(a)}`)).join('');
+    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요${a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>${bar(a)}${value(a)}`)).join('');
     const manual = g.manual.map(a => line(a, `<span class="ms-acc-when">${credit ? '잔액을 넣지 않았어요' : '직접 넣은 주간 구독이에요 · 다 쓰면 「다 씀 표시」를 눌러요'}</span>`, credit ? '' : usedButton(a.row, now))).join('');
-    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · 풀리면 주간 ${a.g.weekly.left}%` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
+    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · 풀리면 주간 ${a.g.weekly.left}%` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
     // 긴 이유는 두 줄까지만 보이고(전문은 title과 계정 관리 ⋯), 마지막으로 읽은 값의 시각을 붙인다.
     const reason = a => `${a.row.stateMessage || '읽지 못했어요.'}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}`;
     const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');

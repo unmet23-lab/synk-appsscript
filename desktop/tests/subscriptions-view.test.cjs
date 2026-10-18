@@ -7,7 +7,11 @@ const row=(extra)=>({id:'r-'+Math.random().toString(36).slice(2,8),service:'clau
 const tick=()=>new Promise(r=>setImmediate(r));
 
 test('each account lands in one state and each service recommends its roomiest confirmed account',async()=>{
-  const {accountState,serviceGroups}=await import('../renderer/subscriptions.mjs');
+  const {accountState,serviceGroups,planName}=await import('../renderer/subscriptions.mjs');
+  // Claude Max는 등급까지(본체가 max_5x·max_20x로 준다), 같은 %면 20x를 먼저 추천한다.
+  assert.deepEqual([planName('max_20x'),planName('max_5x'),planName('max'),planName('prolite')],['Max 20x','Max 5x','Max','Pro Lite']);
+  const five=row({id:'five',email:'five@example.com',plan:'max_5x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}}),twenty=row({id:'twenty',email:'twenty@example.com',plan:'max_20x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}});
+  assert.equal(serviceGroups([five,twenty],NOW)[0].best.row.id,'twenty');
   const rows=[
     row({id:'out',email:'out@example.com',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+36*60e3},weekly:{usedPercent:51,resetsAt:NOW+115*3600e3}}}),
     row({id:'low',email:'low@example.com',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:99,resetsAt:NOW+51*3600e3}}}),
@@ -107,9 +111,9 @@ test('the glance board shows one row per service and rolls each number only when
     // 펼친 줄은 계정 전체: 오른쪽 값에 창 이름, 보조 글은 나머지 창과 주간 초기화 때. 숫자는 굴리지 않는다.
     await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
     assert.deepEqual(drawn,[]);
-    assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<\/span><span class="ms-acc-sub">[^<]*주간 초기화<\/span>/);
+    assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<small>Max<\/small><\/span><span class="ms-acc-sub">[^<]*주간 초기화<\/span>/);
     assert.match(el.innerHTML,/<span class="ms-acc-val"><b class="ms-num">22%<\/b><small>주간<\/small><\/span>/);
-    assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 풀리면 주간 49%/);
+    assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 풀리면 주간 49% · [^<]+ 주간 초기화<\/span>/);
     // 새로 읽은 값이 바뀌면 그 숫자만 다시 굴린다.
     drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},gemini,credit]};listeners.forEach(cb=>cb(snapshot));
     assert.deepEqual(drawn,['r-gpt:is-drawing']);
@@ -273,7 +277,7 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   await click({subs:'glance'});
   assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 키<\/span><span class="ms-pick-name"><span>…7890<\/span><small>Lite<\/small>/);assert.match(el.innerHTML,/data-roll="c-typecast">126,416<\/b>/);
   await click({subs:'toggle',id:'g-typecast'});
-  assert.match(el.innerHTML,/<span class="ms-acc-name">…7890<\/span><span class="ms-acc-sub">Lite<\/span>/);
+  assert.match(el.innerHTML,/<span class="ms-acc-name">…7890<small>Lite<\/small><\/span><span class="ms-acc-sub"><\/span>/);
   // Higgsfield는 계정 여러 개: 기존 로그인 쓰기와 새 계정 연결이 함께 있다.
   await click({subs:'guide',service:'higgsfield'});
   assert.match(el.innerHTML,/>새 계정 연결<\/button>/);assert.match(el.innerHTML,/계정 여러 개/);
@@ -385,13 +389,17 @@ test('the fix band gives each account its own action and rereads just that accou
 test('when only nearly used accounts are left the pick says so',async()=>{
   prepare();
   const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
-  const now=Date.now(),rows=[row({email:'almost@example.com',live:{readAt:now,weekly:{usedPercent:99,resetsAt:now+864e5}}}),row({email:'out@example.com',live:{readAt:now,session:{usedPercent:100,resetsAt:now+3600e3},weekly:{usedPercent:10,resetsAt:now+3*864e5}}})];
-  const snapshot={ok:true,tools:{},rows,settings:{usdKrw:1400},check:{at:now,total:2,ok:2},login:null,checking:false};
-  const board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}}),el=fakeContainer();
+  const now=Date.now(),rows=[row({email:'almost@example.com',live:{readAt:now,weekly:{usedPercent:99,resetsAt:now+864e5}}}),row({email:'out@example.com',live:{readAt:now,session:{usedPercent:100,resetsAt:now+3600e3+30e3},weekly:{usedPercent:10,resetsAt:now+3*864e5}}}),row({email:'weekly@example.com',live:{readAt:now,weekly:{usedPercent:100,resetsAt:now+20*3600e3+30e3}}})];
+  const snapshot={ok:true,tools:{},rows,settings:{usdKrw:1400},check:{at:now,total:3,ok:3},login:null,checking:false};
+  const board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}}),el=fakeContainer(),{click}=driver(el);
   board.render(el,{signedIn:true,native:true});
   await tick();
   assert.match(el.innerHTML,/<span class="ms-pick-label">남은 건 이것뿐<\/span><span class="ms-pick-name"><span>almost<\/span>/);
-  assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 거의 다 씀 · 1개 다 씀<\/span>/);
+  assert.match(el.innerHTML,/3개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 거의 다 씀 · 2개 다 씀<\/span>/);
+  // 막힌 계정은 모두 주간 초기화 때를 보인다: 5시간이 막혔으면 따로, 주간이 막혔으면 풀리는 때가 곧 주간 초기화다.
+  await click({subs:'toggle',id:'g-claude'});
+  assert.match(el.innerHTML,/5시간 한도 · <b>[^<]+<\/b>에 풀려요\(1시간 뒤\) · 풀리면 주간 90% · [^<]+ 주간 초기화<\/span>/);
+  assert.match(el.innerHTML,/주간 한도 · <b>[^<]+<\/b> 주간 초기화에 풀려요\(20시간 뒤\)/);
   board.dispose();
 });
 

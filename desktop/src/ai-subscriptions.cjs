@@ -298,11 +298,22 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   };
 
   /* 읽기 */
+  // Max 요금제의 등급(5x·20x)은 공식 출력(auth status·/usage)에 없다(10-18, 2.1.302). Claude Code가 쓰는 설정 파일 .claude.json
+  // (CLAUDE_CONFIG_DIR 안, 기본 로그인은 홈 폴더. 로그인 토큰은 없다)의 oauthAccount 등급 칸 하나만 읽는다.
+  // 토큰이 든 .credentials.json은 열지 않는다. 못 읽거나 모양이 바뀌면 등급 없이 「max」로 둔다.
+  function claudeTier(folder){
+    try{
+      const account=JSON.parse(fs.readFileSync(folder?path.join(accountsDir,folder,'.claude.json'):path.join(home,'.claude.json'),'utf8'))?.oauthAccount||{};
+      const match=/max_(\d{1,2})x\b/i.exec(String(account.userRateLimitTier||account.organizationRateLimitTier||''));
+      return match?`${match[1]}x`:null;
+    }catch{return null;}
+  }
   async function claudeAccount(folder){
     const r=await runTool(tools.claude.path,['auth','status','--json'],{extraEnv:homeEnv('claude',folder),timeout:30000});
     const data=parseJson(r.out);
+    const plan=typeof data?.subscriptionType==='string'?data.subscriptionType:null,tier=plan&&/^max$/i.test(plan)?claudeTier(folder):null;
     // known: 공식 출력이 로그인 여부를 분명히 알려 줬는지. 못 읽었을 때를 「로그인 풀림」으로 착각하지 않게 나눈다.
-    return data&&typeof data==='object'&&typeof data.loggedIn==='boolean'?{known:true,loggedIn:data.loggedIn,email:typeof data.email==='string'?data.email:null,plan:typeof data.subscriptionType==='string'?data.subscriptionType:null}:{known:false,loggedIn:false};
+    return data&&typeof data==='object'&&typeof data.loggedIn==='boolean'?{known:true,loggedIn:data.loggedIn,email:typeof data.email==='string'?data.email:null,plan:tier?`${plan}_${tier}`:plan}:{known:false,loggedIn:false};
   }
   // 계정은 읽을 때마다 다시 본다. 기본 로그인(~/.claude)은 회원이 터미널에서 /login으로 다른 계정으로 바꿀 수 있고,
   // 요금제도 바뀐다. 한 번 채운 이메일을 믿으면 B 계정의 사용량이 A의 이름으로 「정상」 저장된다.

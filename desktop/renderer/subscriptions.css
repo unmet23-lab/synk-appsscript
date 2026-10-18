@@ -167,6 +167,7 @@
 .member-subs .ms-acc{display:grid;grid-template-columns:12px minmax(110px,.6fr) minmax(0,1.7fr) 120px 84px;align-items:center;gap:14px;min-height:46px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
 .member-subs .ms-acc-group h3+.ms-acc{border-top:0}
 .member-subs .ms-acc-name{overflow:hidden;font-size:.9375rem;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.member-subs .ms-acc-name small{margin-left:7px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
 .member-subs .ms-acc-sub{grid-column:3;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
 .member-subs .ms-bar{grid-column:4;height:6px;overflow:hidden;border-radius:999px;background:var(--line-2,rgba(255,255,255,.14))}
 .member-subs .ms-bar>i{display:block;height:100%;border-radius:inherit;background:var(--ms-ok)}
