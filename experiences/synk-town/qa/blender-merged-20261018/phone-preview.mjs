@@ -46,7 +46,8 @@ const PATCHES = {
 // functions from strings, in a blob worker) and GLTFLoader's blob image URLs are
 // blocked and the baked set fails back to v20. The QA harness never saw it: it
 // opens pages with Playwright's bypassCSP. The relay widens only those sources.
-const widenCsp = csp => csp
+// (10-18 night: server.mjs now sends them itself; the relay leaves such a policy alone.)
+const widenCsp = csp => csp.includes("'wasm-unsafe-eval'") ? csp : csp
   .replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob:")
   .replace("connect-src 'self'", "connect-src 'self' blob: data:")
   .replace("img-src 'self'", "img-src 'self' blob: data:") + "; worker-src 'self' blob:";

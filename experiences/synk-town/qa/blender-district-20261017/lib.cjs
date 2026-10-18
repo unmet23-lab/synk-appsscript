@@ -76,8 +76,11 @@ async function cameraMode(page, mode) {
   throw Error('camera ' + mode);
 }
 
-async function openTown(browser, base, { width, height, query = '', dpr = 1, patches = {} }) {
-  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dpr, bypassCSP: true, ...(width < 700 ? { isMobile: true, hasTouch: true } : {}) });
+// The page's CSP stays on (10-18 night): with bypassCSP the QA never saw that the
+// server's old policy blocked every baked district. Pass bypassCSP: true only to
+// compare against it.
+async function openTown(browser, base, { width, height, query = '', dpr = 1, patches = {}, bypassCSP = false }) {
+  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: dpr, bypassCSP, ...(width < 700 ? { isMobile: true, hasTouch: true } : {}) });
   const errors = [], requests = [];
   page.on('pageerror', e => errors.push(String(e.stack || e)));
   page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });

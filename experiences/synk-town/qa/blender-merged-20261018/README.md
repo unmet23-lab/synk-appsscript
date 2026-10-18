@@ -39,7 +39,7 @@ fps는 다섯 판(v20·Claude·아르곤·합친 판·동네 전체 판)을 겹�
 
 `node experiences/synk-town/qa/blender-merged-20261018/phone-preview.mjs`가 PC 와이파이 주소(10-18 `192.168.0.14:4389`)에 QA 중계를 띄운다. 주소는 `http://<IP>:4389/day.html?play=walk`(v20), `…&district=town-merged`, `…&district=townwide-merged`. 중계는 제품 파일을 바꾸지 않고 보내는 응답만 고친다(같은 /24만 받음, `crypto.randomUUID` 대체, `day-app.mjs` 복사본에 주소 추가, CSP 넓힘). 화면 위 두 줄(`phone-hud.js`, 터치는 통과)이 fps·첫 화면 시간·구운 판 받기 시간·GPU 텍스처·JS 메모리(안드로이드 크롬만)를 보여 주고, 5초마다 `.tmp/town-merged-20261018/phone-reports.jsonl`로 보낸다. 이 PC는 `node.exe` 들어오는 연결이 공용 네트워크에서 이미 허용돼 있어 방화벽 작업은 없었다. PC에서 휴대폰 크기로 세 주소를 열어 확인하는 것은 `phone-check.cjs`.
 
-CSP: Town 서버의 CSP로는 구운 판이 뜨지 않는다(KTX2 해독기의 WebAssembly·문자열 실행, blob 주소가 막혀 v20으로 돌아감 — `csp-check.cjs`). 지금까지의 QA는 `bypassCSP`로 열어 몰랐다. 제품에 넣으려면 CSP를 넓히거나 다른 해독기 빌드가 필요하다.
+CSP: Town 서버의 옛 CSP로는 구운 판이 뜨지 않았다(KTX2 해독기의 WebAssembly·문자열 실행, blob 주소가 막혀 v20으로 돌아감). 그때까지의 QA는 `bypassCSP`로 열어 몰랐다. 10-18 밤 유호님 결정으로 `server.mjs` CSP에 그 출처들을 허용했고(결정 표), QA 하네스도 CSP를 켠 채로 연다. `csp-check.cjs`로 CSP를 켠 채 불러오기 성공을 확인했다. 공개 WORLD 빌드에는 구운 판·해독기가 아직 빠져 있다.
 
 ## Git 밖 원본
 
