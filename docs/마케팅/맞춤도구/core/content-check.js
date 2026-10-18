@@ -17,9 +17,9 @@ function checkContent(content) {
   need(/^\d{4}-\d{2}-\d{2}$/.test(content.checked || ''), '확인 날짜(checked)가 YYYY-MM-DD가 아니에요.');
   need(src.synk, 'SOURCES에 SYNK 판단(synk) 설명이 없어요.');
   for (const [id, s] of Object.entries(src)) {
-    need(['official', 'community', 'synk'].includes(s.kind), `출처 ${id}의 종류가 official·community·synk가 아니에요.`);
+    need(['official', 'community', 'synk', 'seen'].includes(s.kind), `출처 ${id}의 종류가 official·community·synk·seen이 아니에요.`);
     need(s.label && s.label.length > 8, `출처 ${id}의 설명이 비어 있어요.`);
-    if (s.kind !== 'synk') need(/^https:\/\//.test(s.url || ''), `출처 ${id}에 https 주소가 없어요.`);
+    if (s.kind !== 'synk' && s.kind !== 'seen') need(/^https:\/\//.test(s.url || ''), `출처 ${id}에 https 주소가 없어요.`);
   }
 
   // 질문마다 '왜 묻는지' 팁, 선택지마다 고른 뒤 한 줄

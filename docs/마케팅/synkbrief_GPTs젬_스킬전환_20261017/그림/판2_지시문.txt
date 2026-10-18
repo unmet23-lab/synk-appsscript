@@ -1,0 +1,13 @@
+Use your image generation tool to create ONE image (do not write code, do not edit files). After it is generated, reply with only the saved image path.
+
+Image: a single product-photo board, landscape 3:2, pure white seamless background, soft even studio light, gentle contact shadow under each object. Four separate needle-felted wool objects arranged in a neat 2 columns x 2 rows grid, each object centered in its own cell with generous empty white space around it, objects never touching each other or the cell borders. Same handmade needle-felt material, colors and fiber texture as the reference photos: dense fuzzy wool fibers, small cream running-stitch details, rounded soft edges, premium and clean. Absolutely no letters, no numbers, no words, no logos anywhere.
+
+Row 1, left to right:
+1. A single faceted teal felt gemstone, exactly like the teal gemstone in the reference photo, alone.
+2. A rounded rectangular cream felt card, like a thick index card standing slightly tilted, with one bold forward-slash mark "/" stitched in deep lapis-blue yarn across its center (just the slash shape, nothing else on it).
+
+Row 2, left to right:
+3. Two closed cream felt boxes shaped like rounded speech bubbles (same shape as the box in the reference photo), standing side by side as one group; each has a small blank felt tag hanging from a short cream thread: the left tag coral red, the right tag butter yellow.
+4. A small coral red felt rubber stamp with a round charcoal wooden-look handle on top, standing upright.
+
+Photorealistic photograph of real felt objects, sharp focus, high detail, no text.
