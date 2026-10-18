@@ -1,6 +1,7 @@
 // v5 연출 부품(10-17 「트렌디한 걸 크롤링해서 … 신뢰감 위주로, 보게 하는 힘」).
 // 근거: Linear·Anthropic 런치 영상 문법(카메라가 실제 화면 속을 지나감, 마스크로 올라오는 글자, 튕김 없는 감쇠,
 // 처리 중엔 빠르고 결과에선 멈춤, 위로 휙 넘기는 전환 + 모션 블러, 과정을 보여 주는 신뢰 구조).
+import { evolvePath } from '@remotion/paths';
 import React from 'react';
 import { AbsoluteFill, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { clamp, EASE_OUT } from '../lib/anim';
@@ -167,9 +168,10 @@ export const CursorArc: React.FC<{ from: [number, number]; to: [number, number];
   );
 };
 
-/** 계정판 틀(zoom): transform과 달리 키운 만큼 자리도 커져 떠 있는 판이 내용을 자르지 않는다. */
-export const BoardZ: React.FC<{ width: number; scale: number; children: React.ReactNode }> = ({ width, scale, children }) => (
-  <div className="member-subs" style={{ ...(BOARD_TOKENS as React.CSSProperties), width, maxWidth: 'none', margin: 0, zoom: scale }}>
+/** 계정판 틀(zoom): transform과 달리 키운 만큼 자리도 커져 떠 있는 판이 내용을 자르지 않는다.
+ * 기본은 휴대폰 폭 배치(ms-phone, 앱의 @media max-width:760px 규칙). desktop이면 PC 창 배치. */
+export const BoardZ: React.FC<{ width: number; scale: number; children: React.ReactNode; desktop?: boolean }> = ({ width, scale, children, desktop }) => (
+  <div className={desktop ? 'member-subs' : 'member-subs ms-phone'} style={{ ...(BOARD_TOKENS as React.CSSProperties), width, maxWidth: 'none', margin: 0, zoom: scale }}>
     {children}
   </div>
 );
@@ -195,4 +197,24 @@ export const Whip: React.FC<{ children: React.ReactNode; len: number; noIn?: boo
   const blur = (1 - pin) * 24 + pout * 24;
   const hidden = (!noIn && f < 5) || (!noOut && f >= len - 7);
   return <AbsoluteFill style={{ translate: `0 ${y}px`, filter: blur > 0.3 ? `blur(${blur}px)` : undefined, opacity: hidden ? 0 : 1 }}>{children}</AbsoluteFill>;
+};
+
+const RING = 'M 30 60 C 30 15, 330 5, 380 50 C 420 95, 120 125, 40 95 C 10 85, 20 40, 60 30';
+/** 크레용 동그라미(급한 것 장면과 같은 붓): 화면 좌표 상자(x,y,w,h)를 at부터 len프레임 동안 한 붓에 두른다. */
+export const CrayonRing: React.FC<{ x: number; y: number; w: number; h: number; at: number; len?: number; id: string; padX?: number; padY?: number }> = ({ x, y, w, h, at, len = 14, id, padX = 40, padY = 35 }) => {
+  const f = useCurrentFrame();
+  const p = interpolate(f, [at, at + len], [0, 1], { ...clamp, easing: EASE_OUT });
+  if (p <= 0) return null;
+  const ev = evolvePath(p, RING);
+  return (
+    <svg width={w + 2 * padX} height={h + 2 * padY} viewBox="0 0 420 130" preserveAspectRatio="none" style={{ position: 'absolute', left: x - padX, top: y - padY, overflow: 'visible' }}>
+      <defs>
+        <filter id={`rough-${id}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={3} />
+          <feDisplacementMap in="SourceGraphic" scale={4} />
+        </filter>
+      </defs>
+      <path d={RING} fill="none" stroke={C.crayon} strokeWidth={7} strokeLinecap="round" strokeDasharray={ev.strokeDasharray} strokeDashoffset={ev.strokeDashoffset} style={{ filter: `url(#rough-${id})` }} />
+    </svg>
+  );
 };

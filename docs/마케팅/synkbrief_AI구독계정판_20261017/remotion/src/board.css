@@ -1,5 +1,7 @@
-/* desktop/renderer/subscriptions.css 사본(2026-10-17). 밝은 테마 줄은 빼고 휴대폰 폭 규칙을 기본으로 둔다. */
-/* AI 구독 계정판: 초록 포스터 하나, 번호 붙은 열린 구획, 밤/낮 공통 토큰. 스스로 움직이는 효과는 두지 않는다. */
+/* 자동 생성: scripts/board-css.mjs가 desktop/renderer/subscriptions.css에서 만든다. 손으로 고치지 않는다. */
+.member-subs{--ms-vw:12.8px;--ms-vh:8.6px}
+.member-subs.ms-phone{--ms-vw:5.4px;--ms-vh:9.6px}
+/* AI 구독 계정판: 초록 포스터 하나, 번호 붙은 열린 구획, 밤/낮 공통 토큰. 늘 도는 효과는 두지 않고, 한도 고리만 처음 보일 때와 값이 바뀔 때 한 번 그린다. */
 .benefit-subscriptions,.brand-subscriptions{--face:#7DB45A;--on-face:#13240A;--glow:#7DB45A}
 .member-subs{--ms-face:#7DB45A;--ms-on-face:#13240A;--ms-alert:#F96859;--ms-warn:#F5C445;--ms-ok:#7DB45A;display:flex;flex-direction:column;width:100%;max-width:1160px;margin:0 auto;color:var(--ink,#FAFAF9);font-family:var(--sans,SUIT,system-ui,sans-serif)}
 .member-subs *{box-sizing:border-box;min-width:0}
@@ -22,9 +24,24 @@
 .member-subs .ms-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--grain,none);opacity:.2;mix-blend-mode:overlay;pointer-events:none}
 .member-subs .ms-eyebrow{font-family:var(--mono,monospace);font-size:.6875rem;font-weight:500;letter-spacing:.12em}
 .member-subs .ms-hero-title{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin:22px 0 20px}
-.member-subs .ms-hero h1{font-size:3.5rem;font-weight:900;line-height:.92;letter-spacing:-.065em;outline:none}
-.member-subs .ms-hero-title>p{flex:0 1 330px;font-size:1.125rem;font-weight:700;letter-spacing:-.035em;line-height:1.35}
+.member-subs .ms-hero h1{font-size:clamp(3.5rem,calc(8 * var(--ms-vw)),6.5rem);font-weight:900;line-height:.92;letter-spacing:-.065em;outline:none}
+.member-subs .ms-hero-title>p{flex:0 1 330px;font-size:clamp(1.125rem,calc(2.2 * var(--ms-vw)),1.625rem);font-weight:700;letter-spacing:-.035em;line-height:1.35}
 .member-subs .ms-hero-note{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;padding-top:16px;border-top:1px solid rgba(19,36,10,.22);font-size:.875rem;font-weight:650}
+/* 혜택 포스터 물건(10-17): 다른 혜택 소개 머리와 같은 자리·크기·바닥선 */
+.member-subs .ms-hero.has-art{display:flex;flex-direction:column;container-type:inline-size;min-height:clamp(400px,calc(46 * var(--ms-vh)),470px);padding:26px 32px 24px}
+.member-subs .ms-hero.has-art>:not(.ms-object){position:relative;z-index:1}
+.member-subs .ms-hero-top{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
+.member-subs .ms-hero.has-art .ms-eyebrow{font-size:.71875rem;letter-spacing:.08em;opacity:.78;white-space:nowrap}
+.member-subs .ms-badge{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:.8125rem;font-weight:600;white-space:nowrap;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(0,0,0,.24)}
+.member-subs .ms-led{width:6px;height:6px;border-radius:50%;background:#F5C445}
+.member-subs .ms-badge.is-integrated .ms-led{background:#7DB45A}
+.member-subs .ms-hero.has-art .ms-hero-title{margin:auto 0 20px}
+.member-subs .ms-hero.has-art h1{font-size:min(8.5rem,17cqw);line-height:.82;letter-spacing:calc(-.085em + var(--len,2) * .01em);white-space:nowrap;flex:none}
+.member-subs .ms-hero.has-art .ms-hero-title>p{flex:0 1 360px;font-size:clamp(1.25rem,calc(2.2 * var(--ms-vw)),1.625rem);font-weight:650;letter-spacing:-.03em}
+.member-subs .ms-hero.has-art .ms-hero-note{font-size:.9375rem;font-weight:550}
+.member-subs .ms-object{position:absolute;z-index:0;top:6%;right:4%;width:min(36%,380px);height:48%;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);transform-origin:50% 100%;filter:drop-shadow(0 16px 20px rgba(0,0,0,.2)) drop-shadow(0 3px 5px rgba(0,0,0,.12));pointer-events:none}
+/* 좁은 창: 다른 소개 머리(launcher.css)와 같은 자리 규칙 */
+@media (min-width:761px){@container (max-width:600px){.member-subs .ms-object{top:68px;height:calc(54% - 68px)}}}
 .member-subs .ms-hero-actions{display:flex;flex-wrap:wrap;gap:8px}
 .member-subs .ms-hero .ms-button{border-color:rgba(19,36,10,.3);color:var(--ms-on-face)}
 .member-subs .ms-hero .ms-button:hover:not(:disabled){background:rgba(19,36,10,.08)}
@@ -48,7 +65,7 @@
 .member-subs .ms-hero+.ms-section{margin-top:28px}
 .member-subs .ms-section-heading{display:flex;align-items:baseline;gap:15px;margin-bottom:22px}
 .member-subs .ms-section-number{flex:none;color:var(--ink-3,rgba(250,250,249,.52));font-family:var(--mono,monospace);font-size:.75rem;font-weight:500}
-.member-subs .ms-section-heading h2{font-size:1.375rem;font-weight:800;line-height:1.25;letter-spacing:-.04em}
+.member-subs .ms-section-heading h2{font-size:clamp(1.375rem,calc(2.8 * var(--ms-vw)),1.875rem);font-weight:800;line-height:1.25;letter-spacing:-.04em}
 .member-subs .ms-section-heading p{margin-top:6px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
 .member-subs .ms-loading{padding:40px 2px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.9375rem}
 
@@ -70,6 +87,55 @@
 .member-subs .ms-l2 .ms-dot{background:var(--ms-face)}
 .member-subs .ms-clear{padding:16px 18px;border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);font-size:.9375rem;font-weight:600}
 
+/* 한도 고리(10-17, Bklit 여러 겹 게이지에서 원리만): 안 5시간 · 밖 주간, 남은 만큼 찬다. 가운데는 덜 남은 쪽의 %.
+   색은 계정판 면 색(메도우) · 90% 이상 쓰면 버터 · 소진이면 고리 바닥이 코랄. */
+.member-subs .ms-meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-bottom:14px}
+.member-subs .ms-meter{position:relative;display:grid;grid-template-columns:136px minmax(0,1fr);align-items:center;gap:20px;width:100%;padding:18px 22px 18px 18px;border:0;border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);color:inherit;text-align:left}
+.member-subs .ms-meter:hover{background:var(--surface-2,#191A1F)}
+.member-subs .ms-meter>.ms-chev{position:absolute;top:50%;right:20px;margin-top:-4px}
+.member-subs .ms-meter-body{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.member-subs .ms-meter-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px}
+.member-subs .ms-meter-head strong{font-size:.9375rem;font-weight:600}
+.member-subs .ms-meter-note{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450}
+.member-subs .ms-legend{display:flex;flex-direction:column;gap:3px;margin-top:4px;font-size:.875rem;font-weight:450}
+.member-subs .ms-legend-row{display:flex;align-items:center;gap:7px;color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-legend-row>span{color:var(--ink,#FAFAF9)}
+.member-subs .ms-legend-row b{font-weight:600}
+.member-subs .ms-legend-row i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--ms-face)}
+.member-subs .ms-legend-row[data-ring=session] i{background:var(--ms-ring-in)}
+.member-subs .ms-legend-row[data-level=low] i{background:var(--ms-warn)}
+.member-subs .ms-legend-row[data-level=out] i{background:var(--ms-alert)}
+.member-subs .ms-reset{margin-top:2px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
+.member-subs .ms-reset b{color:var(--ink,#FAFAF9);font-weight:600}
+.member-subs{--ms-ring-in:color-mix(in srgb,var(--ms-face) 52%,var(--ink,#FAFAF9))}
+.member-subs .ms-gauge{position:relative;display:grid;place-items:center;width:136px;aspect-ratio:1}
+.member-subs .ms-gauge svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.member-subs .ms-track{fill:none;stroke:var(--line-2,rgba(255,255,255,.14))}
+.member-subs .ms-track[data-level=out]{stroke:color-mix(in srgb,var(--ms-alert) 42%,transparent)}
+.member-subs .ms-arc{fill:none;stroke:var(--ms-face)}
+.member-subs .ms-arc[data-ring=session]{stroke:var(--ms-ring-in)}
+.member-subs .ms-arc[data-level=low]{stroke:var(--ms-warn)}
+.member-subs .ms-gauge-center{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
+.member-subs .ms-gauge-num{font-family:'Inter Tight',var(--sans,SUIT,sans-serif);font-size:1.875rem;font-weight:700;font-feature-settings:'tnum';letter-spacing:-.04em;line-height:1.15;white-space:nowrap}
+.member-subs .ms-gauge-num small{margin-left:1px;font-size:.5em;letter-spacing:0}
+.member-subs .ms-gauge-center>span{margin-top:1px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;white-space:nowrap}
+.member-subs .ms-gauge[data-level=low] .ms-gauge-num{color:var(--ms-warn)}
+.member-subs .ms-gauge[data-level=out] .ms-gauge-num{color:var(--ms-alert)}
+.member-subs .ms-gauge-mini{display:inline-grid;width:20px;margin:0 6px 0 2px;vertical-align:-4px}
+.member-subs .ms-gauge.is-drawing .ms-arc{animation:ms-arc .9s cubic-bezier(.2,.8,.2,1) both}
+.member-subs .ms-gauge.is-drawing .ms-arc[data-ring=session]{animation-delay:.12s}
+.member-subs .ms-gauge.is-drawing .ms-arc[data-full]{animation-name:ms-fade}
+@keyframes ms-arc{from{stroke-dashoffset:100}}
+@keyframes ms-fade{from{opacity:0}}
+/* 숫자 굴림: WORLD world-motion.css의 .w-roll과 같은 띠·곡선·간격 */
+.member-subs .ms-roll{position:relative;display:inline-block;line-height:1.15}
+.member-subs .ms-roll>.ms-roll-t{color:transparent}
+.member-subs .ms-roll>i{position:absolute;left:0;right:0;top:0;height:1.15em;overflow:hidden;font-style:normal;text-align:center;line-height:1.15}
+.member-subs .ms-roll>i::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';display:block;white-space:pre;animation:ms-roll var(--rt,1s) cubic-bezier(.2,.8,.2,1) var(--rd,0s) both}
+@keyframes ms-roll{from{transform:translateY(0)}to{transform:translateY(calc((10 + var(--d)) * -1.15em))}}
+:root[data-motion=reduced] .member-subs .ms-roll>i{display:none}
+:root[data-motion=reduced] .member-subs .ms-roll>.ms-roll-t{color:inherit}
+
 /* 2층 서비스 표 */
 .member-subs .ms-group+.ms-group{margin-top:20px}
 .member-subs .ms-group h3{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;font-size:.875rem;font-weight:750}
@@ -77,11 +143,12 @@
 .member-subs .ms-table{border-radius:var(--r-lg,20px);background:var(--surface-1,#121317);padding:0 18px}
 .member-subs .ms-block+.ms-block{border-top:1px solid var(--line,rgba(255,255,255,.075))}
 .member-subs .ms-row{display:grid;grid-template-columns:120px 58px minmax(0,1fr) 150px 120px 14px;align-items:center;gap:14px;width:100%;min-height:58px;padding:12px 0;border:0;background:none;color:inherit;text-align:left}
-.member-subs .ms-tag{display:inline-block;justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:2px 9px;border-radius:7px;background:color-mix(in srgb,var(--ms-svc) 18%,transparent);color:var(--ms-svc);font-size:.8125rem;font-weight:750;white-space:nowrap}
+.member-subs .ms-tag{display:inline-block;justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:2px 9px;border-radius:7px;background:color-mix(in srgb,var(--ms-svc) 18%,transparent);color:var(--ms-svc);font-size:.8125rem;font-weight:600;white-space:nowrap}
 .member-subs .ms-s-claude{--ms-svc:#F2895F}
 .member-subs .ms-s-gpt{--ms-svc:#7DB45A}
 .member-subs .ms-s-higgsfield{--ms-svc:#E05C97}
 .member-subs .ms-s-gemini{--ms-svc:#6FA8F5}
+.member-subs .ms-s-typecast{--ms-svc:#A98BF5}
 .member-subs .ms-s-other{--ms-svc:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .ms-count{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;white-space:nowrap}
 .member-subs .ms-status{overflow:hidden;font-size:.9375rem;text-overflow:ellipsis;white-space:nowrap}
@@ -90,11 +157,14 @@
 .member-subs .ms-price{font-size:.875rem;text-align:right;white-space:nowrap}
 .member-subs .ms-chev{justify-self:center;width:8px;height:8px;border-right:1.5px solid var(--ink-3,rgba(250,250,249,.52));border-bottom:1.5px solid var(--ink-3,rgba(250,250,249,.52));transform:rotate(-45deg)}
 .member-subs .ms-block.open .ms-chev{transform:rotate(45deg)}
-.member-subs .ms-bar{display:inline-block;width:64px;height:6px;margin:0 6px 0 4px;border-radius:3px;background:var(--line-2,rgba(255,255,255,.14));vertical-align:middle;overflow:hidden}
-.member-subs .ms-bar>span{display:block;height:100%;border-radius:3px;background:var(--ms-svc,var(--ms-face))}
-.member-subs .ms-bar.hot>span{background:var(--ms-alert)}
 .member-subs .ms-detail{margin:0 0 12px;padding:4px 0 4px 14px;border-left:2px solid var(--line-2,rgba(255,255,255,.14));border-radius:0}
 .member-subs .ms-account{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:start;padding:12px 0}
+.member-subs .ms-account>.ms-form{grid-column:1/-1}
+.member-subs .ms-account.has-gauge{grid-template-columns:104px minmax(0,1fr) auto;column-gap:20px}
+.member-subs .ms-account.has-gauge>.ms-gauge{grid-column:1;grid-row:1/span 2;width:104px}
+.member-subs .ms-account.has-gauge>:is(.ms-account-name,.ms-account-info){grid-column:2}
+.member-subs .ms-account.has-gauge>.ms-account-actions{grid-column:3}
+.member-subs .ms-account .ms-gauge-num{font-size:1.5rem}
 .member-subs .ms-account+.ms-account{border-top:1px dashed var(--line-2,rgba(255,255,255,.14))}
 .member-subs .ms-account-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9375rem}
 .member-subs .ms-account-info{grid-column:1;display:flex;flex-direction:column;gap:3px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem}
@@ -164,24 +234,36 @@
 .member-subs .ms-day>div{display:flex;flex-direction:column;gap:5px}
 .member-subs .ms-day-item{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.875rem}
 .member-subs .ms-day-item .ms-num{min-width:44px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem}
-
-/* 아래는 원래 @media (max-width:760px) — 영상은 휴대폰 폭(540) 배치를 늘 쓴다 */
-.member-subs .ms-hero{padding:22px 20px 20px}
-.member-subs .ms-hero-title{flex-direction:column;align-items:flex-start;gap:14px}
-.member-subs .ms-row{grid-template-columns:minmax(0,1fr) auto 14px;grid-template-areas:"tag price chev" "status status status" "next next next";row-gap:4px}
-.member-subs .ms-row .ms-tag{grid-area:tag}.member-subs .ms-row .ms-count{display:none}.member-subs .ms-row .ms-status{grid-area:status;white-space:normal}.member-subs .ms-row .ms-next{grid-area:next}.member-subs .ms-row .ms-price{grid-area:price}.member-subs .ms-row .ms-chev{grid-area:chev}
-.member-subs .ms-account{grid-template-columns:minmax(0,1fr)}
-.member-subs .ms-account-actions{grid-column:1;grid-row:auto;justify-content:flex-start}
-.member-subs .ms-form{grid-template-columns:minmax(0,1fr)}
-.member-subs .ms-day{grid-template-columns:minmax(0,1fr)}
-
-/* 영상용 더함: 한 줄 계정 목록(훅) */
+/* 원래 @media (max-width:760px) — 휴대폰 폭 판(.ms-phone)에만 */
+.member-subs.ms-phone .ms-hero{padding:22px 20px 20px}
+.member-subs.ms-phone .ms-hero.has-art{min-height:0;gap:14px;padding:20px 20px 18px}
+.member-subs.ms-phone .ms-object{position:relative;top:auto;right:auto;order:1;align-self:flex-end;width:auto;max-width:62%;height:150px;margin:-4px 4px 4px 0}
+.member-subs.ms-phone .ms-hero.has-art :is(.ms-hero-title,.ms-hero-note){order:2}
+.member-subs.ms-phone .ms-hero.has-art .ms-hero-title{flex-direction:column;align-items:flex-start;gap:12px;margin:0}
+.member-subs.ms-phone .ms-hero.has-art h1{font-size:min(5.5rem,24cqw)}
+.member-subs.ms-phone .ms-hero.has-art .ms-hero-title>p{flex:none}
+.member-subs.ms-phone .ms-hero-title{flex-direction:column;align-items:flex-start;gap:14px}
+.member-subs.ms-phone .ms-row{grid-template-columns:minmax(0,1fr) auto 14px;grid-template-areas:"tag price chev" "status status status" "next next next";row-gap:4px}
+.member-subs.ms-phone .ms-row .ms-tag{grid-area:tag}.member-subs.ms-phone .ms-row .ms-count{display:none}.member-subs.ms-phone .ms-row .ms-status{grid-area:status;white-space:normal}.member-subs.ms-phone .ms-row .ms-next{grid-area:next}.member-subs.ms-phone .ms-row .ms-price{grid-area:price}.member-subs.ms-phone .ms-row .ms-chev{grid-area:chev}
+.member-subs.ms-phone .ms-account{grid-template-columns:minmax(0,1fr)}
+.member-subs.ms-phone .ms-section:has(>.ms-meters){display:flex;flex-direction:column}
+.member-subs.ms-phone .ms-section>.ms-meters{order:1;margin:14px 0 0}
+.member-subs.ms-phone .ms-meter{grid-template-columns:120px minmax(0,1fr);gap:16px;padding:14px 36px 14px 14px}
+.member-subs.ms-phone .ms-meter>.ms-gauge{width:120px}
+.member-subs.ms-phone .ms-meter .ms-gauge-num{font-size:1.625rem}
+.member-subs.ms-phone .ms-account.has-gauge{grid-template-columns:88px minmax(0,1fr);column-gap:16px}
+.member-subs.ms-phone .ms-account.has-gauge>.ms-gauge{width:88px}
+.member-subs.ms-phone .ms-account.has-gauge>.ms-account-actions{grid-column:1/-1;grid-row:auto}
+.member-subs.ms-phone .ms-account .ms-gauge-num{font-size:1.25rem}
+.member-subs.ms-phone .ms-account-actions{grid-column:1;grid-row:auto;justify-content:flex-start}
+.member-subs.ms-phone .ms-form{grid-template-columns:minmax(0,1fr)}
+.member-subs.ms-phone .ms-day{grid-template-columns:minmax(0,1fr)}
+/* 영상에만 쓰는 한 줄 계정 목록(훅·지금 확인). 앱 서비스 줄과 같은 태그·작은 고리·「N% 남음」 부품만 쓴다. */
 .member-subs .mt-list{display:flex;flex-direction:column}
 .member-subs .mt-row{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 0;border-top:1px solid var(--line,rgba(255,255,255,.075));font-size:.9375rem}
 .member-subs .mt-row:first-child{border-top:0}
-.member-subs .mt-row b{font-weight:700;min-width:84px}
+.member-subs .mt-row>b{font-weight:700;min-width:84px}
 .member-subs .mt-row .ms-tag{min-width:92px;text-align:center}
-.member-subs .mt-row .ms-bar{width:96px}
-.member-subs .mt-row .ms-num{margin-left:auto}
+.member-subs .mt-row .mt-left{margin-left:auto;white-space:nowrap}
 .member-subs .mt-chip{display:flex;align-items:center;gap:8px;min-height:40px;padding:6px 12px;border-radius:12px;background:var(--surface-1,#121317);border:1px solid var(--line-2,rgba(255,255,255,.14));font-size:.875rem;font-weight:650}
 .member-subs .mt-chip .st{margin-left:auto;font-family:var(--mono,monospace);font-size:.8125rem}
