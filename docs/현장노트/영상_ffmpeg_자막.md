@@ -60,6 +60,12 @@
 - 고침: `docs/마케팅/synkbrief_AI구독계정판_20261017/remotion/scripts/board-css.mjs`가 앱 CSS에서 영상용 CSS를 만든다. 휴대폰 규칙은 `.member-subs.ms-phone` 아래로 옮기고, vw·vh는 앱 창 크기 변수(휴대폰 `--ms-vw:5.4px`, PC `12.8px`)로 바꾼다. 앱 CSS가 바뀌면 다시 돌린다. 앱이 CSS 애니메이션으로 하는 움직임(고리 그리기·숫자 굴림)은 같은 곡선·길이를 `useCurrentFrame()`으로 옮겨 쓴다(`src/v5/gauge.tsx`).
 - 다시 확인: `node scripts/board-css.mjs` 뒤 `grep -c "ms-phone" src/board.css`가 0보다 크고 `grep -nE "[0-9]v[wh]" src/board.css`가 빈다.
 
+### Remotion은 소리를 16비트로 더해 0 dBFS 넘는 표본을 그 자리에서 자른다
+- 증상: 10-18 synkbrief 「AI 구독 계정판」에 나레이션(Typecast −17 LUFS, 1.0)을 얹고 배경음 0.16·효과음과 렌더했더니 잘린 표본이 47개(2.2·17.1·28.4초, 말 봉우리) 나왔다. 나레이션 없는 판은 0개였다. 렌더 뒤 리미터로 봉우리를 누르는 마감만으로는 이미 잘린 소리가 돌아오지 않는다.
+- 원인: Remotion은 트랙을 `amix=…:dropout_transition=0:normalize=0`으로 더해 `pcm_s16le`로 쓴다(`node_modules/@remotion/renderer/dist/create-ffmpeg-merge-filter.js`·`merge-audio-track.js`). 합이 1.0을 넘는 표본은 16비트로 바뀌며 잘린다.
+- 고침: 영상 안 모든 `volume`(배경음·나레이션·효과음)에 같은 MASTER 0.8(−1.9dB)을 곱했다 → 잘린 표본 0 · −16.9 LUFS · −1.5 dBFS. 크기는 마감에서 되올린다(+2.4dB, 리미터 0.89 → −14.6 LUFS · −1.0 dBFS). 휴대폰판(96k)은 마감본을 다시 누르면 봉우리가 −0.4까지 솟아 렌더 원본에서 리미터 0.84로 따로 뽑는다. 보기 `docs/마케팅/synkbrief_AI구독계정판_20261017/remotion/src/full/Film.tsx`(MASTER)·`scripts/finish.mjs`.
+- 다시 확인: 마감 전 렌더 소리를 16비트로 풀어(`ffmpeg -i x.mp4 -vn -f s16le -`) 절댓값 32700 넘는 표본을 numpy로 센다. 0이어야 한다.
+
 ### inline-flex로 묶은 글줄은 낱말 사이 빈칸이 사라진다
 - 증상: 10-18 영상용 한 줄 목록의 값 칸(`display:inline-flex` 안에 `주간 <b>62%</b> 남음`)이 「주간 62%남음」으로 찍혔다.
 - 원인: flex 상자 안에서는 글 조각과 요소가 각각 flex 항목이 되고, 항목 끝의 빈칸은 접힌다.
