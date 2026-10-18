@@ -8,13 +8,15 @@ function resetTeamOverview() {
   teamOverview.request++;
   Object.assign(teamOverview,{key:'',result:null,loading:false,error:''});
 }
-async function loadTeamOverview(force = false) {
+async function loadTeamOverview(force = false, { quiet = false } = {}) {
+  // Collection polling reloads quietly: no loading paint, and the finished paint keeps the reader's place.
+  const paint = quiet && typeof renderBackground === 'function' ? renderBackground : render;
   if (!state.user || !['team','all'].includes(state.scope) || !['overview','analysis'].includes(state.tab) || state.marketingView === 'channels') return;
   const key = teamOverviewKey();
   if (!force && teamOverview.key === key && (teamOverview.result || teamOverview.loading)) return;
   const request = ++teamOverview.request;
   Object.assign(teamOverview,{key,result:null,loading:true,error:''});
-  render();
+  if (!quiet) render();
   try {
     const result = await api('/api/team-overview?' + new URLSearchParams({start:state.start,end:state.end}));
     if (request !== teamOverview.request || key !== teamOverviewKey()) return;
@@ -25,7 +27,7 @@ async function loadTeamOverview(force = false) {
   } finally {
     if (request === teamOverview.request && key === teamOverviewKey()) {
       teamOverview.loading = false;
-      if (['overview','analysis'].includes(state.tab) && ['team','all'].includes(state.scope)) render();
+      if (['overview','analysis'].includes(state.tab) && ['team','all'].includes(state.scope)) paint();
     }
   }
 }

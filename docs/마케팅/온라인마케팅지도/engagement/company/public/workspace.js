@@ -149,6 +149,48 @@ function syncWorkspaceLocation(){
   if(hash.has('view'))url.hash='';
   if(url.href!==location.href)history.replaceState(null,'',url.pathname+url.search+url.hash);
 }
+// Background repaints (collection polling, late data) keep the reader's place; clicks and navigation still start at the top.
+// They wait while the reader is mid-action — composing Korean text, holding a pointer down, or with typed-in input the screen has not
+// taken back yet — because swapping the DOM then drops the text, commits it with a change event or swallows the click.
+const workspaceRepaint={background:false,key:'',composing:null,pressed:false,retry:null,root:null,edited:new WeakSet()};
+function workspaceViewKey(){const section=workspaceSection(),tools=state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined';return JSON.stringify([state.tab,section,tools?makerTools.view:'',['overview','analysis','history'].includes(state.tab)&&section==='team'?state.teamId||'':'',state.tab==='content'&&section==='plan'&&typeof cp!=='undefined'?cp.draftId||'':'',tools&&makerTools.view==='publication'&&typeof pf!=='undefined'?pf.view:'',state.tab==='workroom'&&section==='clients'&&typeof clientDesk!=='undefined'?clientDesk.id||'':'',state.tab==='social'&&typeof socialWorkspaceState!=='undefined'?socialWorkspaceState.editId||'':'']);}
+function renderBackground(){workspaceRepaint.background=true;try{render();}finally{workspaceRepaint.background=false;}}
+function workspaceTextField(element){return element?.tagName==='TEXTAREA'||element?.tagName==='INPUT'&&['text','search','url','tel','password'].includes(element.type);}
+function workspaceFieldSelector(element){return element.tagName.toLowerCase()+[...element.attributes].filter(({name})=>name==='id'||name==='name'||name.startsWith('data-')).map(({name,value})=>`[${name}="${CSS.escape(value)}"]`).join('');}
+function workspaceFieldChanged(field){
+  if(field.tagName==='SELECT'){const options=[...field.options];if(field.multiple)return options.some(option=>option.selected!==option.defaultSelected);const chosen=options.findIndex(option=>option.defaultSelected);return field.selectedIndex!==(chosen<0?(field.size>1?-1:0):chosen);}
+  if(['checkbox','radio'].includes(field.type))return field.checked!==field.defaultChecked;
+  return !['hidden','button','submit','reset','image'].includes(field.type)&&field.value!==field.defaultValue;
+}
+function workspaceRepaintBlocked(root){
+  const composing=workspaceRepaint.composing,active=document.activeElement;
+  return !!(composing?.isConnected&&root.contains(composing))||workspaceRepaint.pressed||!!(active?.isContentEditable&&root.contains(active)&&workspaceRepaint.edited.has(active))||[...root.querySelectorAll('input,textarea,select')].some(field=>workspaceRepaint.edited.has(field)&&workspaceFieldChanged(field));
+}
+function workspaceRepaintLater(root){workspaceRepaint.root=root;if(workspaceRepaint.retry)return;workspaceRepaint.retry=setTimeout(()=>{workspaceRepaint.retry=null;if(workspaceRepaintBlocked(workspaceRepaint.root))workspaceRepaintLater(workspaceRepaint.root);else renderBackground();},2000);}
+function workspaceRepaintCapture(root,entering){
+  if(!workspaceRepaint.background||entering||workspaceViewKey()!==workspaceRepaint.key)return null;
+  if(workspaceRepaintBlocked(root)){workspaceRepaintLater(root);return {deferred:true};}
+  const main=document.getElementById('main'),active=document.activeElement,focused=active&&active!==main&&root.contains(active)?active:null,text=workspaceTextField(focused);
+  const saved={main:main?main.scrollTop:null,scrolls:[...root.querySelectorAll('[id]')].filter(node=>node!==main&&(node.scrollTop>0||node.scrollLeft>0)).map(node=>[node.id,node.scrollTop,node.scrollLeft])};
+  if(focused){const selector=workspaceFieldSelector(focused);saved.focus={selector,index:[...root.querySelectorAll(selector)].indexOf(focused),start:text?focused.selectionStart:null,end:text?focused.selectionEnd:null,direction:text?focused.selectionDirection:null};}
+  return saved;
+}
+function workspaceRepaintRestore(root,saved){
+  if(!saved||saved.deferred)return;
+  const main=document.getElementById('main');if(main&&saved.main!==null)main.scrollTop=saved.main;
+  for(const [id,top,left] of saved.scrolls){const node=document.getElementById(id);if(node&&node!==main&&root.contains(node)){node.scrollTop=top;node.scrollLeft=left;}}
+  const focus=saved.focus,active=document.activeElement;if(!focus||focus.index<0||(active&&active!==main&&root.contains(active)))return;
+  const target=[...root.querySelectorAll(focus.selector)][focus.index];if(!target||target.closest('[inert],[hidden]'))return;
+  target.focus({preventScroll:true});
+  if(Number.isInteger(focus.start)&&workspaceTextField(target))try{target.setSelectionRange(focus.start,focus.end,focus.direction||'none');}catch{}
+}
+function workspaceRepaintDone(){workspaceRepaint.key=workspaceViewKey();if(workspaceRepaint.retry){clearTimeout(workspaceRepaint.retry);workspaceRepaint.retry=null;}}
+document.addEventListener('compositionstart',event=>{workspaceRepaint.composing=event.target;},true);
+document.addEventListener('compositionend',()=>{workspaceRepaint.composing=null;},true);
+for(const type of ['input','change'])document.addEventListener(type,event=>{if(event.target?.matches?.('input,textarea,select,[contenteditable]'))workspaceRepaint.edited.add(event.target);},true);
+document.addEventListener('pointerdown',()=>{workspaceRepaint.pressed=true;},true);
+for(const type of ['pointerup','pointercancel','dragend'])document.addEventListener(type,()=>{workspaceRepaint.pressed=false;},true);
+window.addEventListener('blur',()=>{workspaceRepaint.pressed=false;});
 function marketingNavigation(){
   const active=state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab;
   return `<nav class="workspace-sections" aria-label="마케팅 메뉴">${workspaceMarketingTabs.map(([id,label])=>`<button type="button" data-action="marketing-section" data-tab="${id}" ${typeof isDemoMode==='function'&&isDemoMode()&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요" ':''}class="${active===id?'active':''}" aria-current="${active===id?'page':'false'}">${label}</button>`).join('')}</nav>`;

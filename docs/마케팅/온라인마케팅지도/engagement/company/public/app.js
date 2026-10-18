@@ -171,21 +171,25 @@ async function initialize() {
   } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>성장 현황에 연결하지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 연결', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
 }
 async function loadState() {
+  // Polling passes {quiet:true}: an unchanged answer keeps the screen as it is, a changed one repaints in the background.
+  const quiet=arguments[0]?.quiet===true;
   const authStamp=companyAuthSnapshot();if(!authStamp.userId)throw companyAuthChanged();
   const data=await api('/api/state');if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
   if(!isDemoMode()&&data.user?.id!==authStamp.userId){clearCompanySessionView();throw companyAuthChanged();}
-  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends();normalizeMarketingScope();render();return data;
+  const signature=JSON.stringify(data);if(quiet&&signature===state.dataSignature)return null;state.dataSignature=signature;
+  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends();normalizeMarketingScope();if(quiet&&typeof renderBackground==='function')renderBackground();else render();return data;
 }
 async function loadReport() {
   if (state.tab === 'overview' && state.scope === 'team' && state.marketingView !== 'channels' && typeof loadTeamTrends === 'function') { state.error='';state.loading=false;await loadTeamTrends();return; }
   // The simple home always describes today. Historical periods belong to analysis.
   if (state.tab === 'overview' && state.marketingView !== 'channels') { state.end = reportToday(); state.start = shiftDate(state.end,-((new Date(state.end+'T00:00:00Z').getUTCDay()+6)%7)); state.range = 'custom'; }
-  const requestId = ++state.reportRequest; state.loading = true; state.error = ''; render();
-  if (state.tab === 'analysis') void loadTeamOverview();
+  const quiet = arguments[0]?.quiet === true, paint = quiet && typeof renderBackground === 'function' ? renderBackground : render;
+  const requestId = ++state.reportRequest; state.loading = true; state.error = ''; if (!quiet) render();
+  if (state.tab === 'analysis') void loadTeamOverview(false, { quiet });
   if (state.tab === 'overview' && state.homeExtrasOpen && !isDemoMode()) void loadHype();
   try { const report = await api(`/api/analytics?${query({growth:state.tab==='overview'?'1':null,history:state.tab==='history'?'1':null,...(state.tab==='history'?{start:reportToday(),end:reportToday(),...(typeof historyRequestDates==='function'?historyRequestDates(reportToday()):{historyStart:state.historyStart||null,historyEnd:state.historyEnd||null})}:{})})}`); if (requestId !== state.reportRequest) return; state.report = report; }
   catch (err) { if (requestId !== state.reportRequest) return; state.error = err.message; }
-  finally { if (requestId === state.reportRequest) { state.loading = false; render(); } }
+  finally { if (requestId === state.reportRequest) { state.loading = false; paint(); } }
 }
 function startPolling() {
   if(!isDemoMode())startWorkspaceSummary();
@@ -197,7 +201,7 @@ function startPolling() {
 async function pollCollectionState(){
   if(collectionPollPending||!state.user||document.hidden||overlay.children.length||!busyRuns())return;
   collectionPollPending=true;
-  try{await loadState();if(reportTabs())await loadReport();}
+  try{const changed=await loadState({quiet:true});if(changed&&reportTabs())await loadReport({quiet:true});}
   catch{ /* A visible manual refresh remains available. */ }
   finally{collectionPollPending=false;}
 }
@@ -255,13 +259,17 @@ function shell(content) {
   const tabs=workspacePrimaryTabs,utilityTabs=workspaceUtilityTabs();
   const primaryView=workspacePrimaryView(),active=[...tabs,...utilityTabs].find(row=>row[0]===primaryView),data=state.data||{},attention=(data.collection?.needsConnection||0)+(data.collection?.needsReconnect||0)+(data.collection?.failed||0);
   const entering=renderedTab!==state.tab;renderedTab=state.tab;
+  const kept=typeof workspaceRepaintCapture==='function'?workspaceRepaintCapture(app,entering):null;
+  if(kept?.deferred){syncWorkspaceLocation();return;}
   if(state.workspaceSidebarView&&state.workspaceSidebarView!==primaryView&&['marketing','messenger'].includes(primaryView))state.workspaceSidebarOpen=false;state.workspaceSidebarView=primaryView;
   app.innerHTML=workspaceAppShell(content,{entering,title:active?.[1]});
   syncWorkspaceSidebar();
   if(typeof wpRestoreEdit==='function')wpRestoreEdit(practiceEdit);
-  if(focusSelector){const target=app.querySelector(focusSelector);if(target&&!target.closest('[inert],[hidden]'))target.focus({preventScroll:true});else if(target)document.getElementById('workspace-sidebar-toggle')?.focus({preventScroll:true});}
+  if(focusSelector&&!kept?.focus){const target=app.querySelector(focusSelector);if(target&&!target.closest('[inert],[hidden]'))target.focus({preventScroll:true});else if(target)document.getElementById('workspace-sidebar-toggle')?.focus({preventScroll:true});}
   for(const id of openDetails){const element=document.getElementById(id);if(element?.tagName==='DETAILS')element.open=true;}
+  if(typeof workspaceRepaintRestore==='function')workspaceRepaintRestore(app,kept);
   syncWorkspaceLocation();
+  if(typeof workspaceRepaintDone==='function')workspaceRepaintDone();
   mountWorkspaceModule();
   if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
   if(state.tab==='workroom'&&typeof ensureWorkroom==='function')ensureWorkroom();
@@ -608,7 +616,7 @@ document.addEventListener('click', async event => {
     if (action === 'provider') { if (isAdmin()) providerModal(target.dataset.platform); return; }
     if (action === 'owners') { ownersModal(id); return; }
     if (action === 'invite') { inviteModal(); return; }
-    if (action === 'collect' || action === 'collect-all') { target.disabled = true; const collection = await api(action === 'collect' ? `/api/channels/${encodeURIComponent(id)}/collect` : '/api/collect', action === 'collect-all' ? {scope:state.scope,teamId:state.teamId} : {}); await loadState(); if (action === 'collect-all' && !(collection.runs || []).length) { notify('수집할 수 있는 연결된 채널이 없어요. 먼저 계정 연결을 확인해 주세요.'); return; } notify('수집을 시작했어요. 완료되면 기록에 반영됩니다.'); setTimeout(async () => { try { await loadState(); if (reportTabs()) await loadReport(); } catch {} }, 1800); startPolling(); return; }
+    if (action === 'collect' || action === 'collect-all') { target.disabled = true; const collection = await api(action === 'collect' ? `/api/channels/${encodeURIComponent(id)}/collect` : '/api/collect', action === 'collect-all' ? {scope:state.scope,teamId:state.teamId} : {}); await loadState(); if (action === 'collect-all' && !(collection.runs || []).length) { notify('수집할 수 있는 연결된 채널이 없어요. 먼저 계정 연결을 확인해 주세요.'); return; } notify('수집을 시작했어요. 완료되면 기록에 반영됩니다.'); setTimeout(async () => { try { const changed = await loadState({ quiet: true }); if (changed && reportTabs()) await loadReport({ quiet: true }); } catch {} }, 1800); startPolling(); return; }
     if (action === 'copy') { try { await navigator.clipboard.writeText(target.dataset.value); notify('복사했어요.'); } catch { const field = target.closest('.link-row')?.querySelector('input'); field?.select(); notify('주소를 선택했어요. 복사해서 전달해 주세요.'); } return; }
     if (action === 'archive') { const row = state.data.channels.find(row => row.id === id); confirmModal(row.active === false ? '채널 관리를 다시 시작할까요?' : '이 채널의 관리를 중지할까요?', '기존에 수집한 콘텐츠와 성장 기록은 보존됩니다. 관리 중지 중에는 자동 수집하지 않아요.', 'archive-confirm', id); return; }
     if (action === 'archive-confirm') { target.disabled = true; const row = state.data.channels.find(row => row.id === id); await api(`/api/channels/${encodeURIComponent(id)}/archive`, { active: row.active === false }); closeModal(); await loadState(); notify('채널 관리 상태를 변경했어요.'); return; }

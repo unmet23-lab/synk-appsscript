@@ -18,10 +18,11 @@ test('reused formatters retain Korean number output and Seoul calendar boundarie
 });
 test('slow collection polling cannot issue overlapping state or analytics requests and retries after errors',async()=>{
   const pollingCode=source.slice(source.indexOf('async function pollCollectionState()'),source.indexOf('const hypeScopeKey ='));
-  let loads=0,reports=0,release,pending=new Promise(resolve=>{release=resolve;});
-  const context=vm.createContext({state:{user:{id:'one'}},document:{hidden:false},overlay:{children:[]},busyRuns:()=>true,reportTabs:()=>true,loadState:async()=>{loads++;await pending;},loadReport:async()=>{reports++;}});vm.runInContext('let collectionPollPending=false;\n'+pollingCode,context);
+  let loads=0,reports=0,release,pending=new Promise(resolve=>{release=resolve;});const options=[];
+  const context=vm.createContext({state:{user:{id:'one'}},document:{hidden:false},overlay:{children:[]},busyRuns:()=>true,reportTabs:()=>true,loadState:async option=>{loads++;options.push(['state',option?.quiet]);await pending;return {};},loadReport:async option=>{reports++;options.push(['report',option?.quiet]);}});vm.runInContext('let collectionPollPending=false;\n'+pollingCode,context);
   const first=vm.runInContext('pollCollectionState()',context);await vm.runInContext('pollCollectionState()',context);assert.equal(loads,1);assert.equal(reports,0);
-  release();await first;assert.equal(reports,1);await vm.runInContext('pollCollectionState()',context);assert.equal(loads,2);assert.equal(reports,2);
-  context.loadState=async()=>{loads++;throw new Error('temporary');};await vm.runInContext('pollCollectionState()',context);await vm.runInContext('pollCollectionState()',context);assert.equal(loads,4);
-  context.state.user=null;await vm.runInContext('pollCollectionState()',context);assert.equal(loads,4);context.state.user={id:'one'};context.document.hidden=true;await vm.runInContext('pollCollectionState()',context);assert.equal(loads,4);
+  release();await first;assert.equal(reports,1);await vm.runInContext('pollCollectionState()',context);assert.equal(loads,2);assert.equal(reports,2);assert.ok(options.every(([,quiet])=>quiet===true));
+  context.loadState=async()=>{loads++;return null;};await vm.runInContext('pollCollectionState()',context);assert.equal(loads,3);assert.equal(reports,2);
+  context.loadState=async()=>{loads++;throw new Error('temporary');};await vm.runInContext('pollCollectionState()',context);await vm.runInContext('pollCollectionState()',context);assert.equal(loads,5);
+  context.state.user=null;await vm.runInContext('pollCollectionState()',context);assert.equal(loads,5);context.state.user={id:'one'};context.document.hidden=true;await vm.runInContext('pollCollectionState()',context);assert.equal(loads,5);
 });

@@ -30,7 +30,7 @@ async function loadWorkroom(){
   if(results[0].status==='fulfilled')wr.guide=results[0].value;
   if(results[1].status==='fulfilled')wr.content=results[1].value;
   wr.error=results.filter(result=>result.status==='rejected').map(result=>result.reason?.message||'자료를 불러오지 못했어요.').join(' ');wr.loading=false;
-  if(state.tab==='workroom')render();
+  if(state.tab==='workroom')(typeof renderBackground==='function'?renderBackground:render)();
 }
 const wrButton=(label,action,attrs='',classes='')=>button(label,'workroom-'+action,'',classes,attrs);
 const wrExternal=(label,url)=>`<a class="btn small quiet" href="${escape(safeUrl(url))}" target="_blank" rel="noopener noreferrer">${escape(label)}${icon('external')}</a>`;
@@ -131,7 +131,7 @@ async function wrLoadDaily(date=wr.dailyDate,{poll=false}={}){
     if(request!==wr.dailyRequest||state.user?.id!==userId||(poll&&!wrDailyActive()))return;
     wr.daily=result;wr.dailyDate=result.date||wr.dailyDate||result.today||'';wr.dailyFetchedAt=Date.now();wr.dailyLoadedDay=wrDailyToday();
   }catch(error){if(request===wr.dailyRequest&&state.user?.id===userId)wr.dailyError=error.message||'수집 자료를 불러오지 못했어요.';}
-  finally{if(request===wr.dailyRequest&&state.user?.id===userId){wr.dailyLoading=false;wr.dailyPollFetching=false;wrScheduleDailyPoll();if(state.tab==='workroom'&&(!poll||wrDailyActive()))render();}}
+  finally{if(request===wr.dailyRequest&&state.user?.id===userId){wr.dailyLoading=false;wr.dailyPollFetching=false;wrScheduleDailyPoll();if(state.tab==='workroom'&&(!poll||wrDailyActive()))(poll&&typeof renderBackground==='function'?renderBackground:render)();}}
 }
 function wrDailyItem(item){
   const rank=Number(item.rank),metric=item.metric,ranked=item.rank!==null&&item.rank!==undefined&&Number.isFinite(rank)&&rank>0;
