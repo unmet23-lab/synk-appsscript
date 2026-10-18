@@ -1,0 +1,608 @@
+{
+ "rows": [
+  {
+   "id": "r-dedj84ra",
+   "service": "higgsfield",
+   "source": "auto",
+   "label": "Higgsfield",
+   "kind": "credit",
+   "state": "ok",
+   "plan": "ultra",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307894909,
+    "credits": 0.22
+   },
+   "credits": 0.22,
+   "creditsAt": 1792307894909,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": null,
+   "resetHour": null,
+   "resetMinute": null,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "77yuhbs@···"
+  },
+  {
+   "id": "r-p3yvmslq",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_5x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307898346,
+    "session": {
+     "usedPercent": 100,
+     "resetsAt": 1792313940000
+    },
+    "weekly": {
+     "usedPercent": 65,
+     "resetsAt": 1792634340000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 45,
+      "resetsAt": 1792634340000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 4,
+   "resetHour": 10,
+   "resetMinute": 59,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet23@···"
+  },
+  {
+   "id": "r-zdwftepr",
+   "service": "gpt",
+   "source": "auto",
+   "label": "GPT",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "pro",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307896704,
+    "session": null,
+    "weekly": {
+     "usedPercent": 100,
+     "resetsAt": 1792900194000,
+     "windowMins": 10080
+    },
+    "models": [],
+    "reached": "rate_limit_reached"
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 0,
+   "resetHour": 12,
+   "resetMinute": 50,
+   "usedUpAt": 1792307896705,
+   "note": "",
+   "stateMessage": "",
+   "email": "synk.yuh@···"
+  },
+  {
+   "id": "r-z9x9frqf",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_20x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307899793,
+    "session": {
+     "usedPercent": 0,
+     "resetsAt": null
+    },
+    "weekly": {
+     "usedPercent": 100,
+     "resetsAt": 1792378800000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 93,
+      "resetsAt": 1792378800000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 1,
+   "resetHour": 12,
+   "resetMinute": 0,
+   "usedUpAt": 1792307899793,
+   "note": "",
+   "stateMessage": "",
+   "email": "synk.yuh@···"
+  },
+  {
+   "id": "r-8scjoz57",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_20x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307902581,
+    "session": {
+     "usedPercent": 0,
+     "resetsAt": null
+    },
+    "weekly": {
+     "usedPercent": 100,
+     "resetsAt": 1792403940000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 78,
+      "resetsAt": 1792403940000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 1,
+   "resetHour": 18,
+   "resetMinute": 59,
+   "usedUpAt": 1792307902581,
+   "note": "",
+   "stateMessage": "",
+   "email": "founder@···"
+  },
+  {
+   "id": "r-dn0gef4w",
+   "service": "gemini",
+   "source": "auto",
+   "label": "Gemini",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": null,
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307905690,
+    "session": {
+     "usedPercent": 6,
+     "resetsAt": 1792324485000
+    },
+    "weekly": {
+     "usedPercent": 18.1,
+     "resetsAt": 1792811160000
+    },
+    "models": [
+     {
+      "name": "Claude·GPT 모델",
+      "usedPercent": 0,
+      "resetsAt": null
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 6,
+   "resetHour": 12,
+   "resetMinute": 6,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": null
+  },
+  {
+   "id": "r-4zjkm64d",
+   "service": "higgsfield",
+   "source": "auto",
+   "label": "Higgsfield",
+   "kind": "credit",
+   "state": "ok",
+   "plan": "plus",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307903052,
+    "credits": 0.5
+   },
+   "credits": 0.5,
+   "creditsAt": 1792307903052,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": null,
+   "resetHour": null,
+   "resetMinute": null,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet23@···"
+  },
+  {
+   "id": "r-nzbbonx4",
+   "service": "higgsfield",
+   "source": "auto",
+   "label": "Higgsfield",
+   "kind": "credit",
+   "state": "ok",
+   "plan": "ultra",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307903594,
+    "credits": 1026.84
+   },
+   "credits": 1026.84,
+   "creditsAt": 1792307903594,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": null,
+   "resetHour": null,
+   "resetMinute": null,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "founder@···"
+  },
+  {
+   "id": "r-zp03unwn",
+   "service": "typecast",
+   "source": "auto",
+   "label": "Typecast",
+   "kind": "credit",
+   "state": "ok",
+   "plan": "lite",
+   "keyHint": "…FjrE",
+   "live": {
+    "readAt": 1792307903697,
+    "credits": 114647
+   },
+   "credits": 114647,
+   "creditsAt": 1792307903697,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": null,
+   "resetHour": null,
+   "resetMinute": null,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": null
+  },
+  {
+   "id": "r-4q86myju",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_5x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307907070,
+    "session": {
+     "usedPercent": 100,
+     "resetsAt": 1792319340000
+    },
+    "weekly": {
+     "usedPercent": 55,
+     "resetsAt": 1792670340000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 46,
+      "resetsAt": 1792670340000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 4,
+   "resetHour": 20,
+   "resetMinute": 59,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet25@···"
+  },
+  {
+   "id": "r-m4cpctg6",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_5x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307908817,
+    "session": {
+     "usedPercent": 17,
+     "resetsAt": 1792325400000
+    },
+    "weekly": {
+     "usedPercent": 43,
+     "resetsAt": 1792573200000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 28,
+      "resetsAt": 1792573200000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 3,
+   "resetHour": 18,
+   "resetMinute": 0,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet27@···"
+  },
+  {
+   "id": "r-g94qz5rc",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_5x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307910134,
+    "session": {
+     "usedPercent": 100,
+     "resetsAt": 1792322940000
+    },
+    "weekly": {
+     "usedPercent": 54,
+     "resetsAt": 1792709940000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 43,
+      "resetsAt": 1792709940000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 5,
+   "resetHour": 7,
+   "resetMinute": 59,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "77yuhbs@···"
+  },
+  {
+   "id": "r-rrg4tw30",
+   "service": "claude",
+   "source": "auto",
+   "label": "Claude",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "max_5x",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307912256,
+    "session": {
+     "usedPercent": 100,
+     "resetsAt": 1792310400000
+    },
+    "weekly": {
+     "usedPercent": 14,
+     "resetsAt": 1792447200000
+    },
+    "models": [
+     {
+      "name": "Fable",
+      "usedPercent": 10,
+      "resetsAt": 1792447200000
+     }
+    ]
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 2,
+   "resetHour": 7,
+   "resetMinute": 0,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet29@···"
+  },
+  {
+   "id": "r-7odvghq2",
+   "service": "gpt",
+   "source": "auto",
+   "label": "GPT",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "pro",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307911974,
+    "session": null,
+    "weekly": {
+     "usedPercent": 31,
+     "resetsAt": 1792907251000,
+     "windowMins": 10080
+    },
+    "models": [],
+    "reached": null
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 0,
+   "resetHour": 14,
+   "resetMinute": 48,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "unmet23@···"
+  },
+  {
+   "id": "r-gwyisez4",
+   "service": "gpt",
+   "source": "auto",
+   "label": "GPT",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "prolite",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307913863,
+    "session": null,
+    "weekly": {
+     "usedPercent": 0,
+     "resetsAt": null,
+     "windowMins": 10080
+    },
+    "models": [],
+    "reached": null
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": null,
+   "resetHour": null,
+   "resetMinute": null,
+   "usedUpAt": null,
+   "note": "",
+   "stateMessage": "",
+   "email": "q121235@···"
+  },
+  {
+   "id": "r-lwafo5l2",
+   "service": "gpt",
+   "source": "auto",
+   "label": "GPT",
+   "kind": "weekly",
+   "state": "ok",
+   "plan": "prolite",
+   "keyHint": null,
+   "live": {
+    "readAt": 1792307914103,
+    "session": null,
+    "weekly": {
+     "usedPercent": 100,
+     "resetsAt": 1792892545000,
+     "windowMins": 10080
+    },
+    "models": [],
+    "reached": "rate_limit_reached"
+   },
+   "credits": null,
+   "creditsAt": null,
+   "lowAt": null,
+   "price": null,
+   "currency": "KRW",
+   "billDay": null,
+   "resetDay": 0,
+   "resetHour": 10,
+   "resetMinute": 42,
+   "usedUpAt": 1792307914103,
+   "note": "",
+   "stateMessage": "",
+   "email": "lalamerrose@···"
+  }
+ ],
+ "tools": {
+  "claude": {
+   "installed": true,
+   "version": "2.1.302 (Claude Code)"
+  },
+  "gpt": {
+   "installed": true,
+   "version": "codex-cli 0.163.0"
+  },
+  "higgsfield": {
+   "installed": true,
+   "version": "higgsfield 1.1.24 (74e091aaff646537b8f77d42e695ecccafbaa761)",
+   "npm": true
+  },
+  "gemini": {
+   "installed": true,
+   "version": "1.4.2"
+  },
+  "typecast": {
+   "installed": true,
+   "version": null,
+   "api": true
+  }
+ },
+ "settings": {
+  "usdKrw": 1400
+ },
+ "check": {
+  "at": 1792307914103,
+  "total": 16,
+  "ok": 16
+ }
+}
