@@ -17,11 +17,30 @@ jobs:
     if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' || vars.SYNK_SELFHOSTED == 'on' }}
     runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: SYNK-appsscript
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           filter: blob:none
+          path: SYNK-appsscript
+      - name: checkout authorized Talk source inputs
+        if: ${{ vars.SYNK_TALK_CI == 'on' }}
+        uses: actions/checkout@v5
+        with:
+          repository: unmet23-lab/SYNK-talk
+          ref: master
+          token: ${{ secrets.SYNK_TALK_READ_TOKEN }}
+          persist-credentials: false
+          path: SYNK-talk
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /contents/토픽퀴즈문항.js
+            /lib/태그기술표.js
+            /계약/
       - uses: actions/setup-node@v5
         with:
           node-version: 24
@@ -58,6 +77,8 @@ jobs:
       - name: validate appsscript.json
         run: node -e "JSON.parse(require('fs').readFileSync('appsscript.json','utf8')); console.log('appsscript.json OK')"
       - name: run SYNK safety tests
+        env:
+          SYNK_REQUIRE_TALK_SOURCE: ${{ vars.SYNK_TALK_CI == 'on' && '1' || '0' }}
         run: |
           set -o pipefail
           rc=0
@@ -75,3 +96,36 @@ jobs:
           exit "$rc"
       - name: prism 접점 래칫 (학생·학부모 참조 0)
         run: node tools/prism래칫.js
+
+  windows-specific:
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' }}
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tests/prism래칫회귀.test.js
+            /tests/sns-발행.test.js
+            /tests/_git밖.js
+            /tools/prism래칫.js
+            /tools/lib/sns-publisher.js
+            /tools/lib/sns-dm.js
+            /tools/sns-자격.ps1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: run Windows filesystem and mocked credential regressions
+        shell: pwsh
+        run: |
+          $testLog = Join-Path $env:RUNNER_TEMP 'synk-windows.tap'
+          node --test --test-reporter=tap --test-reporter-destination=$testLog --test-name-pattern='^Windows' tests/prism래칫회귀.test.js tests/sns-발행.test.js
+          $testExit = $LASTEXITCODE
+          Get-Content -LiteralPath $testLog
+          if ($testExit -ne 0) { exit $testExit }
+          $summary = Get-Content -LiteralPath $testLog -Raw
+          if (-not ($summary -match '(?m)^# pass (?<passed>\d+)\r?$') -or [int]$Matches['passed'] -lt 4) { throw 'Expected all four Windows regressions to execute' }
+          if ($summary -notmatch '(?m)^# skipped 0\r?$') { throw 'Windows-specific regressions must not be skipped here' }

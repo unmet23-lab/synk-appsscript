@@ -31,6 +31,7 @@ test('계약 파일이 형제(SYNK-talk)와 같은 바이트다 — 갈라지면
   const 형제계약 = path.join(형제, '계약');
   t.diagnostic(`정본=${ROOT} → 대상=${형제} (${대상.명시 ? '명시' : '기본'})`);
   if (!fs.existsSync(path.join(형제, '.git'))) {
+    assert.notEqual(process.env.SYNK_REQUIRE_TALK_SOURCE, '1', 'Talk source is required by CI but its checkout is missing');
     t.skip(`형제 저장소가 이 기계에 없다(${형제}) — CI 자리. 교차 대조는 이 기계의 커밋·배포 게이트가 진다`);
     return;
   }

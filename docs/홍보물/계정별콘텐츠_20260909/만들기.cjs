@@ -7,6 +7,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const {pathToFileURL} = require('node:url');
 const ROOT = path.resolve(__dirname, '../../..');
+const {inspectCardLayouts}=require(path.join(ROOT,'tools/lib/계정지면검사.cjs'));
 const loom = require(path.join(ROOT, 'tools/lib/loom.js'));
 const fonts = require(path.join(ROOT, 'tools/lib/브랜드폰트.js'));
 const C = loom.정본().색;
@@ -134,15 +135,7 @@ async function render() {
     const folder=path.join(__dirname,p.id);
     await page.goto(pathToFileURL(path.join(folder,'cards.html')).href+'?export',{waitUntil:'load'});
     await page.evaluate(async()=>{await Promise.all([document.fonts.load('800 48px "SUIT Variable"','한국어'),document.fonts.load('600 48px "Inter Tight"','Өөрийн үг')]);await document.fonts.ready;await Promise.all(Array.from(document.images).map(x=>x.decode()));});
-    const checks=await page.evaluate(()=>Array.from(document.querySelectorAll('.artboard')).map(b=>{
-      const br=b.getBoundingClientRect(),copy=b.querySelector('.copy'),cr=copy.getBoundingClientRect(),f=b.querySelector('.folio').getBoundingClientRect();
-      const text=Array.from(copy.querySelectorAll('h1,p,li')).map(e=>{const r=e.getBoundingClientRect();return {text:e.textContent,top:r.top-br.top,bottom:r.bottom-br.top,left:r.left-br.left,right:r.right-br.left,overflow:e.scrollWidth>e.clientWidth+1};});
-      const assets=Array.from(b.querySelectorAll('.hero-asset,.diptych')).map(e=>{const r=e.getBoundingClientRect();return{top:r.top-br.top,bottom:r.bottom-br.top,left:r.left-br.left,right:r.right-br.left};});
-      const brandBox=b.querySelector('.brand-lock').getBoundingClientRect();
-      const brandImages=Array.from(b.querySelectorAll('.brand-lock img')).map(e=>{const r=e.getBoundingClientRect();return{source:e.getAttribute('src'),width:r.width,height:r.height,loaded:e.complete&&e.naturalWidth>0,top:r.top-br.top,bottom:r.bottom-br.top};});
-      const brand={images:brandImages,flatSvg:b.querySelectorAll('.brand-lock svg').length,flatDivision:b.querySelectorAll('.division-label').length,overlapCopy:brandBox.bottom>cr.top-24,outside:brandBox.left<br.left||brandBox.right>br.right};
-      return{card:b.dataset.card,brand,fonts:{suit:document.fonts.check('800 48px "SUIT Variable"','한국어'),inter:document.fonts.check('600 48px "Inter Tight"','Өөрийн үг')},copyBottom:cr.bottom-br.top,footerTop:f.top-br.top,text,assets,textOverflow:text.some(x=>x.overflow||x.right>992||x.bottom>f.top-br.top-16),collision:assets.some(a=>a.top<cr.bottom-br.top+24&&a.right>cr.left-br.left)};
-    }));
+    const checks=await page.evaluate(inspectCardLayouts);
     for(let i=0;i<p.cards.length;i++){
       const n=String(i+1).padStart(2,'0');const master=path.join(folder,`master-${n}.png`);
       approvedLogos.replaceFile(master,await page.locator('.artboard').nth(i).screenshot({animations:'disabled'}));

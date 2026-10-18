@@ -7,8 +7,10 @@ const base=path.join(root,'docs/홍보물/계정별콘텐츠_20260909');
 const loom=require('../tools/lib/loom.js');
 const {assetNeedsRefresh,ASSET_TRANSFORM}=require('../docs/홍보물/계정별콘텐츠_20260909/만들기.cjs');
 const {CI에없는로컬자료}=require('./_git밖.js');
-// _검토/ 기록은 09-17 포괄 규칙으로 git 밖이다 — CI 체크아웃에서는 그 기록을 재는 부분만 건너뛴다(10-03, tests/_git밖.js).
-const 경계검사='docs/홍보물/계정별콘텐츠_20260909/_검토/정적_경계검사.json',로고갱신='docs/홍보물/계정별콘텐츠_20260909/_검토/로고갱신_20260910.json',검토밖='검토 기록은 09-17 포괄 규칙으로 git 밖';
+// Historical logo provenance is optional; current card layout is measured afresh.
+const 로고갱신='docs/홍보물/계정별콘텐츠_20260909/_검토/로고갱신_20260910.json',검토밖='검토 기록은 09-17 포괄 규칙으로 git 밖';
+let liveLayout;
+const inspectCurrentLayout=()=>liveLayout||=(require('./lib/계정컬렉션브라우저.cjs').inspectCollection(base));
 test('계정 컬렉션은 Loom의 명시 호출에만 실리고 기본 스킨을 바꾸지 않는다',()=>{
   const skin=loom.계정컬렉션();
   assert.match(skin,/\.account-collection/);
@@ -34,15 +36,14 @@ test('13개 기록 + 3개 준비, 7개 영상, 원작/파생과 계정 형식이
 test('완성 지면과 문안이 원고 전량에 대응한다',()=>{
   const {items}=JSON.parse(fs.readFileSync(path.join(base,'콘텐츠원고.json'),'utf8'));
   for(const p of items){
-    assert.equal(fs.readFileSync(path.join(base,p.id,'게시문안.txt'),'utf8').trim(),p.caption.trim());
+    assert.equal(fs.readFileSync(path.join(base,p.id,'게시문안.txt'),'utf8').replace(/\r\n/g,'\n').trim(),p.caption.trim());
     const html=fs.readFileSync(path.join(base,p.id,'cards.html'),'utf8');
     assert.equal((html.match(/class="artboard"/g)||[]).length,p.cards.length);
     for(let i=1;i<=p.cards.length;i++)assert.ok(fs.statSync(path.join(base,p.id,`upload-${String(i).padStart(2,'0')}.jpg`)).size>10000);
   }
 });
-test('26개 실물의 경계와 서체 검사를 통과한다',(t)=>{
-  const 없음=CI에없는로컬자료(경계검사,검토밖);if(없음)return t.skip(없음);
-  const report=JSON.parse(fs.readFileSync(path.join(base,'_검토/정적_경계검사.json'),'utf8'));
+test('26개 현재 HTML의 경계와 서체를 실제 브라우저에서 다시 검사한다',async()=>{
+  const report=await inspectCurrentLayout();
   assert.equal(report.cards,26);
   assert.deepEqual(report.errors,[]);
   for(const r of report.results){assert.equal(r.textOverflow,false,r.id);assert.equal(r.collision,false,r.id);assert.ok(r.fonts.suit&&r.fonts.inter,r.id);}
@@ -56,7 +57,7 @@ test('원천·출력·변환 규칙이 달라지면 기존 자산을 다시 만�
   assert.equal(assetNeedsRefresh({...previous,transform:'old'},'source-a','output-a'),true);
   assert.equal(assetNeedsRefresh(undefined,'source-a','output-a'),true);
 });
-test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명을 함께 표시한다',(t)=>{
+test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명을 함께 표시한다',async()=>{
   const {items}=JSON.parse(fs.readFileSync(path.join(base,'콘텐츠원고.json'),'utf8'));
   for(const p of items){
     const html=fs.readFileSync(path.join(base,p.id,'cards.html'),'utf8');
@@ -66,8 +67,7 @@ test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명�
     assert.doesNotMatch(html,/class="brand-synk"|division-stitch-logo|division-label|<svg|assets\/stitch\.webp/,p.id);
   }
   assert.match(fs.readFileSync(path.join(base,'index.html'),'utf8'),/<header class="collection-intro"><div class="brand-lock"[^>]*data-approved-logo="SYNK"[^>]*><img src="assets\/brand-full-synk-ink.webp"/);
-  const 없음=CI에없는로컬자료(경계검사,검토밖);if(없음){t.diagnostic(없음);return;}
-  const report=JSON.parse(fs.readFileSync(path.join(base,'_검토/정적_경계검사.json'),'utf8'));
+  const report=await inspectCurrentLayout();
   for(const r of report.results){
     assert.equal(r.brand.images.length,1,r.id);
     assert.equal(r.brand.flatSvg,0,r.id);assert.equal(r.brand.flatDivision,0,r.id);

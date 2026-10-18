@@ -20,6 +20,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
 
 const REPO = path.join(__dirname, '..');
 const 꾸러미 = require(path.join(REPO, 'tools', '검수꾸러미.js'));
@@ -51,12 +53,34 @@ test('자리표시자 — 중괄호만 잡고 중복은 접는다', () => {
 
 /* ── ③ 실저장소 — 낸 조각 수가 정본 선언과 같은가 ──────────────────── */
 
-/* 10-03: 등록된 묶음이 없다 — 원천 검수표 셋(M·L·O)이 09-18 문서 정리(`11157567c`)에서 지워져 등록부를 비웠다
-   (`tools/검수꾸러미.js` 묶음 등록부 머리말). 빈 등록부를 초록으로 세지 않도록, 묶음이 다시 설 때까지 아래 셋은 «건너뜀»으로 보인다. */
-const 실저장소 = 꾸러미.묶음들.length ? {} : { skip: '등록된 검수 묶음이 없다 — 09-18 정리로 원천 검수표가 모두 지워졌다' };
+// Retired review sheets are not restored. Exercise the real Markdown reader with
+// an owned fixture when no active bundle is registered; never pass an empty loop.
+function 검수대상(t) {
+  if (꾸러미.묶음들.length) return 꾸러미.묶음들;
+  const parent = fs.realpathSync(os.tmpdir());
+  const directory = fs.mkdtempSync(path.join(parent, 'synk-review-bundle-'));
+  t.after(() => {
+    assert.strictEqual(path.dirname(fs.realpathSync(directory)), parent);
+    assert.ok(path.basename(directory).startsWith('synk-review-bundle-'));
+    fs.rmSync(directory, { recursive: true });
+  });
+  const file = path.join(directory, 'review.md');
+  fs.writeFileSync(file, [
+    '# 합성 검수표', '## 1. 인사',
+    '| 번호 | 한국어 | AI 초안 | 확정 ← 검수자 |', '|---|---|---|---|',
+    '| 1 | **안녕하세요** | Сайн байна уу | |',
+    '| 2 | `{이름}` 학생 `{N}`회 | {이름} сурагч {N} удаа | |',
+    '| 3 |  |  |  |',
+    '## 2. 표현', '| 번호 | 한국어 | AI 초안 | 확정 ← 검수자 |', '|---|---|---|---|',
+    '| 4 | `A\\|B` 문장 | — | |',
+    '## 3. 근거 자료', '| 번호 | 한국어 | 초안 | 참고 |', '|---|---|---|---|',
+    '| 5 | 이 근거 행은 검수 대상이 아니다 | — | — |', '',
+  ].join('\n'));
+  return [{ 코드: 'fixture', 파일: path.relative(REPO, file), 선언: 3 }];
+}
 
-test('실저장소 — 묶음마다 낸 조각 수 = 선언값 (갈라지면 조용히 샌다)', 실저장소, () => {
-  for (const 묶음 of 꾸러미.묶음들) {
+test('검수표 파싱 — 묶음마다 낸 조각 수 = 선언값; 빈 행과 근거 표를 제외한다', (t) => {
+  for (const 묶음 of 검수대상(t)) {
     const { 조각, 경고 } = 꾸러미.조각들(묶음);
     assert.deepStrictEqual(경고, [], `${묶음.코드}: 못 담은 행이 있다 — ${경고.join(' / ')}`);
     assert.strictEqual(조각.length, 묶음.선언,
@@ -65,21 +89,26 @@ test('실저장소 — 묶음마다 낸 조각 수 = 선언값 (갈라지면 조
   }
 });
 
-test('실저장소 — 조각의 한국어 원문이 비어 있지 않다(빈 행을 조각으로 세지 않는다)', 실저장소, () => {
-  for (const 묶음 of 꾸러미.묶음들) {
+test('검수표 파싱 — 조각의 한국어 원문과 자리표시자를 보존한다', (t) => {
+  for (const 묶음 of 검수대상(t)) {
     const { 조각 } = 꾸러미.조각들(묶음);
     assert.ok(조각.length > 0, `${묶음.코드}: 조각 0 — 표식 축이 죽었는지 본다`);
     for (const c of 조각) assert.ok(c.한국어.trim().length > 0, `${묶음.코드}: 빈 원문이 조각으로 들어갔다`);
+    if (묶음.코드 === 'fixture') {
+      assert.deepStrictEqual(조각.map(c => c.한국어), ['안녕하세요', '{이름} 학생 {N}회', 'A|B 문장']);
+      assert.strictEqual(조각[1].그대로, '{이름} {N}');
+    }
   }
 });
 
-test('실저장소 — 섹션 열은 «언어 중립 코드»다(검수자가 못 읽는 한국어가 매 행에 실리면 안 된다)', 실저장소, () => {
-  for (const 묶음 of 꾸러미.묶음들) {
+test('검수표 파싱 — 섹션 열은 언어 중립 코드로 낸다', (t) => {
+  for (const 묶음 of 검수대상(t)) {
     const { 조각 } = 꾸러미.조각들(묶음);
     for (const c of 조각) {
       assert.ok(!/[가-힣]/.test(c.섹션),
         `${묶음.코드}: 섹션 「${c.섹션}」 에 한글이 있다 — 설계 벽 ①(읽을 수 없다)이 산출물에 남는다`);
     }
+    if (묶음.코드 === 'fixture') assert.deepStrictEqual(조각.map(c => c.섹션), ['§1', '§1', '§2']);
   }
 });
 

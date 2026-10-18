@@ -11,8 +11,10 @@ const childProcess = require('node:child_process');
 const vault = new Map();
 mock.method(childProcess, 'spawnSync', (command, args, options) => {
   assert.equal(command, 'powershell.exe');
-  assert.equal(path.basename(args[2]), 'sns-자격.ps1');
-  const [mode, key] = args.slice(3);
+  const fileIndex = args.indexOf('-File');
+  assert.ok(fileIndex >= 0);
+  assert.equal(path.basename(args[fileIndex + 1]), 'sns-자격.ps1');
+  const [mode, key] = args.slice(fileIndex + 2);
   assert.match(key, /^SYNK\/SNS\/test-/);
   if (mode === 'set') { vault.set(key, options.input); return { status: 0, stdout: 'ok' }; }
   if (mode === 'delete') { vault.delete(key); return { status: 0, stdout: 'ok' }; }
