@@ -96,18 +96,20 @@ export function createStore({ file, save, now = () => Date.now(), lifeEnabled = 
 }
 const MIME = { '.html': 'text/html; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png',
-  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf' };
+  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.glb': 'model/gltf-binary' };
 function fileFor(route, previewEnabled) {
   if (route === '/' || route === '/index.html') return path.join(root, 'index.html');
   if (route === '/style.css') return path.join(root, 'style.css');
   if (previewEnabled && route === '/assets/felt-coral.webp') return path.join(repo, 'experiences/synk-world-home/assets/felt-coral.webp');
   if (/^\/assets\/(?:[a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_-]+\.(webp|png|jpg|svg|woff2|ttf)$/.test(route)) return path.join(root, route.slice(1));
   if (!previewEnabled) return null;
-  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/walk.mjs', '/walk-controls.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
-  if (/^\/rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise)\.js$/.test(route)) return path.join(root, route.slice(1));
+  // Baked district comparison only (?district=); v20 never requests these.
+  if (/^\/assets\/district\/[a-z0-9-]+\.glb$/.test(route)) return path.join(root, route.slice(1));
+  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/walk.mjs', '/walk-controls.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
+  if (/^\/rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|BufferGeometryUtils)\.js$/.test(route)) return path.join(root, route.slice(1));
   if (route === '/avatar-v3.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-v3.mjs');
   if (route === '/avatar-textiles.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-textiles.mjs');
-  if (['/avatar-wardrobe.mjs', '/wardrobe-catalog.mjs'].includes(route)) return path.join(repo, 'experiences/synk-world-home', path.basename(route));
+  if (['/avatar-wardrobe.mjs', '/wardrobe-catalog.mjs', '/wardrobe-garments-v8.mjs'].includes(route)) return path.join(repo, 'experiences/synk-world-home', path.basename(route));
   if (['/scene-assets/three.module.js', '/scene-assets/three.core.js'].includes(route)) return path.join(repo, 'experiences/synk-world-home/scene-assets', path.basename(route));
   if (['/day-assets/three.module.js', '/day-assets/three.core.js', '/day-assets/THREE-LICENSE.txt'].includes(route))
     return path.join(repo, 'experiences/synk-world-home/scene-assets', path.basename(route));

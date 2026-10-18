@@ -1,0 +1,335 @@
+{
+  "source": [
+    "perf-dgpu-dpr2.log"
+  ],
+  "gpu": "high",
+  "dpr": 2,
+  "rounds": 1,
+  "failed": [],
+  "summary": [
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        5
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 5
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        4.4
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 4.4
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.7
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.7
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.1
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.1
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.5
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.5
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        60.09
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.5
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 60.09,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.5
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        4.6
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 4.6
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.9
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.9
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.4
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.4
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.8
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.8
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.1
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.1
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.1
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.1
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        4.3
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 4.3
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        60.09
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.6
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 60.09,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.6
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.2
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.2
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.87
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.8
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.87,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.8
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.3
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.3
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.3
+      ],
+      "adapter": "NVIDIA GeForce RTX 5090 Laptop",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.3
+    }
+  ]
+}

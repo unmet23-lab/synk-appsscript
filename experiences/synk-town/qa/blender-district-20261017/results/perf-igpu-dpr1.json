@@ -1,0 +1,335 @@
+{
+  "source": [
+    "perf-igpu-dpr1.log"
+  ],
+  "gpu": "default",
+  "dpr": 1,
+  "rounds": 1,
+  "failed": [],
+  "summary": [
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        44.79
+      ],
+      "intervalP50": [
+        20.8
+      ],
+      "cpuP50": [
+        6.5
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 44.79,
+      "intervalP50Median": 20.8,
+      "cpuP50Median": 6.5
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        49.55
+      ],
+      "intervalP50": [
+        20.8
+      ],
+      "cpuP50": [
+        5.6
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 49.55,
+      "intervalP50Median": 20.8,
+      "cpuP50Median": 5.6
+    },
+    {
+      "variant": "v20",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        4.2
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 4.2
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        60.08
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.4
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 60.08,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.4
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.7
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.7
+    },
+    {
+      "variant": "v20",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        4.3
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 4.3
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        46.3
+      ],
+      "intervalP50": [
+        20.9
+      ],
+      "cpuP50": [
+        5.1
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 46.3,
+      "intervalP50Median": 20.9,
+      "cpuP50Median": 5.1
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        46.66
+      ],
+      "intervalP50": [
+        20.8
+      ],
+      "cpuP50": [
+        4.4
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 46.66,
+      "intervalP50Median": 20.8,
+      "cpuP50Median": 4.4
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        59.75
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.7
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.75,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.7
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.1
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.1
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.4
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.4
+    },
+    {
+      "variant": "cafe-claude",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        59.98
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.5
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.98,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.5
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "follow",
+      "fps": [
+        41.45
+      ],
+      "intervalP50": [
+        24.9
+      ],
+      "cpuP50": [
+        5.3
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 41.45,
+      "intervalP50Median": 24.9,
+      "cpuP50Median": 5.3
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "close",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.7
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.7
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "1280x900",
+      "view": "wide",
+      "fps": [
+        60.08
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3.3
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 60.08,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3.3
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "follow",
+      "fps": [
+        59.99
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2.6
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.99,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2.6
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "close",
+      "fps": [
+        59.97
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        2
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 59.97,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 2
+    },
+    {
+      "variant": "cafe-argon",
+      "viewport": "390x844",
+      "view": "wide",
+      "fps": [
+        60.08
+      ],
+      "intervalP50": [
+        16.7
+      ],
+      "cpuP50": [
+        3
+      ],
+      "adapter": "Intel(R) Graphics (내장, 0x7D67)",
+      "fpsMedian": 60.08,
+      "intervalP50Median": 16.7,
+      "cpuP50Median": 3
+    }
+  ]
+}

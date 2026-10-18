@@ -93,9 +93,10 @@ copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollme
 // 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
 copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
-const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
+const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
 for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
-copyTree(path.join(town,'rendering'),'town/rendering');copyTree(path.join(town,'assets'),'town/assets');
+// assets/district holds the local baked-district comparison GLBs (?district=), never published.
+copyTree(path.join(town,'rendering'),'town/rendering');copyTree(path.join(town,'assets'),'town/assets',(_source,relative)=>!relative.startsWith('town/assets/district/'));
 const daySource=path.join(town,'day.html'),dayBytes=fs.readFileSync(daySource);sourceHashes.set(daySource,sha(dayBytes));
 write('town/day.html',Buffer.from(rewrite(dayBytes.toString('utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_TOWN__=${JSON.stringify({mode:'account',rehearsal:false,accountScoped:true,basePath:config.basePath})};</script>`).replace('<a href="./preview.html">이전 찻집 생활 시제품 열기</a>',''))),daySource);
 for(const name of ['three.module.js','three.core.js','THREE-LICENSE.txt'])copyFile(path.join(home,'scene-assets',name),'town/day-assets/'+name);

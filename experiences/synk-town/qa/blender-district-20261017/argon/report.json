@@ -1,0 +1,280 @@
+{
+  "asset": "out/cafe-argon.glb",
+  "blender_version": "5.2.2 LTS",
+  "gpu_device": "NVIDIA GeForce RTX 5090 Laptop GPU",
+  "gpu_backend": "OPTIX",
+  "totals": {
+    "triangles": 50496,
+    "triangle_budget": 60000,
+    "meshes": 10,
+    "mesh_budget": 24,
+    "materials": 10,
+    "textures": 3,
+    "texture_budget": "3 x 2048x2048 WebP",
+    "glb_size_bytes": 3303732,
+    "glb_size_mb": 3.151,
+    "glb_budget_mb": 6.0
+  },
+  "baking": {
+    "diffuse_passes": [
+      "DIRECT",
+      "INDIRECT",
+      "COLOR"
+    ],
+    "samples_total_diffuse": 512,
+    "samples_direct_sun_alpha": 64,
+    "denoiser": "OpenImageDenoise (ACCURATE)",
+    "uv_island_margin_px": 10.2,
+    "bake_margin_dilation_px": 12,
+    "atlas_bake_times_sec": {
+      "ground": 38.49,
+      "pavilion": 54.33,
+      "upper": 30.46
+    },
+    "total_bake_and_export_sec": 134.79
+  },
+  "meshes": [
+    {
+      "name": "cafe_awning",
+      "vertices": 5296,
+      "triangles": 7148,
+      "materials": [
+        "bake_awning"
+      ]
+    },
+    {
+      "name": "cafe_ceramic",
+      "vertices": 2942,
+      "triangles": 3376,
+      "materials": [
+        "bake_ceramic"
+      ]
+    },
+    {
+      "name": "cafe_foliage",
+      "vertices": 2860,
+      "triangles": 2968,
+      "materials": [
+        "bake_foliage"
+      ]
+    },
+    {
+      "name": "cafe_glass",
+      "vertices": 37,
+      "triangles": 36,
+      "materials": [
+        "live_glass"
+      ]
+    },
+    {
+      "name": "cafe_ground",
+      "vertices": 5356,
+      "triangles": 7952,
+      "materials": [
+        "bake_ground"
+      ]
+    },
+    {
+      "name": "cafe_maru",
+      "vertices": 3318,
+      "triangles": 3716,
+      "materials": [
+        "bake_maru"
+      ]
+    },
+    {
+      "name": "cafe_metal_lantern",
+      "vertices": 1830,
+      "triangles": 2160,
+      "materials": [
+        "bake_metal"
+      ]
+    },
+    {
+      "name": "cafe_roof",
+      "vertices": 7866,
+      "triangles": 10212,
+      "materials": [
+        "bake_roof"
+      ]
+    },
+    {
+      "name": "cafe_timber",
+      "vertices": 10222,
+      "triangles": 11804,
+      "materials": [
+        "bake_timber"
+      ]
+    },
+    {
+      "name": "cafe_wall",
+      "vertices": 997,
+      "triangles": 1124,
+      "materials": [
+        "bake_wall"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "bake_awning",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_upper",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_ceramic",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_pavilion",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_foliage",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_upper",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_ground",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_ground",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_maru",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_pavilion",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_metal",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_pavilion",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_roof",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_upper",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_timber",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_upper",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "bake_wall",
+      "type": "baked_diffuse",
+      "texture": "tex_bake_pavilion",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "synk_bake_scale": 2.0,
+      "synk_sun_alpha": 1
+    },
+    {
+      "name": "live_glass",
+      "type": "realtime_glass",
+      "baseColor": "#bedbd5",
+      "roughness": 0.1,
+      "opacity": 0.29
+    }
+  ],
+  "textures": [
+    {
+      "index": 0,
+      "name": "tex_bake_upper",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "byteLength": 689110,
+      "sizeKB": 673.0
+    },
+    {
+      "index": 1,
+      "name": "tex_bake_pavilion",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "byteLength": 529410,
+      "sizeKB": 517.0
+    },
+    {
+      "index": 2,
+      "name": "tex_bake_ground",
+      "mimeType": "image/webp",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "byteLength": 467910,
+      "sizeKB": 456.9
+    }
+  ],
+  "spec_compliance": {
+    "world_origin_identity_transforms": true,
+    "y_up_gltf_export": true,
+    "ground_bounds_x_minus3_to_3_z_minus3p4_to_5p35": true,
+    "maru_top_y_0p1295": true,
+    "court_top_y_0p103": true,
+    "tea_table_top_y_0p726": true,
+    "roof_eave_above_2p1m": true,
+    "open_front_between_piers": true,
+    "synk_bake_scale_2p0": true,
+    "synk_sun_alpha_1": true,
+    "live_glass_material": true,
+    "no_lights_cameras_animations": true,
+    "unmet_requirements": []
+  },
+  "previews": {
+    "follow": "out/preview-follow.png",
+    "close": "out/preview-close.png"
+  }
+}

@@ -1,0 +1,160 @@
+[
+ {
+  "r": 0,
+  "name": "v20",
+  "wide": 44.81,
+  "follow": 43.58,
+  "district": null
+ },
+ {
+  "r": 0,
+  "name": "claude",
+  "wide": 48.96,
+  "follow": 47.77,
+  "district": {
+   "name": "cafe-claude",
+   "url": "./assets/district/cafe-claude.glb",
+   "loaded": true,
+   "failed": null,
+   "meshes": 5,
+   "triangles": 43095,
+   "textures": [
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    }
+   ],
+   "loadMs": 2247,
+   "hiddenV20Meshes": 49,
+   "cutGroundMeshes": 10,
+   "droppedGroundPieces": 425,
+   "parkedGroundInstances": 22,
+   "prepareMs": 16
+  }
+ },
+ {
+  "r": 0,
+  "name": "argon",
+  "wide": 49.82,
+  "follow": 48.19,
+  "district": {
+   "name": "cafe-argon",
+   "url": "./assets/district/cafe-argon.glb",
+   "loaded": true,
+   "failed": null,
+   "meshes": 10,
+   "triangles": 50496,
+   "textures": [
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    }
+   ],
+   "loadMs": 1850,
+   "hiddenV20Meshes": 49,
+   "cutGroundMeshes": 10,
+   "droppedGroundPieces": 425,
+   "parkedGroundInstances": 22,
+   "prepareMs": 16
+  }
+ },
+ {
+  "r": 1,
+  "name": "v20",
+  "wide": 47.13,
+  "follow": 48.8,
+  "district": null
+ },
+ {
+  "r": 1,
+  "name": "claude",
+  "wide": 45.29,
+  "follow": 43.68,
+  "district": {
+   "name": "cafe-claude",
+   "url": "./assets/district/cafe-claude.glb",
+   "loaded": true,
+   "failed": null,
+   "meshes": 5,
+   "triangles": 43095,
+   "textures": [
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    }
+   ],
+   "loadMs": 1850,
+   "hiddenV20Meshes": 49,
+   "cutGroundMeshes": 10,
+   "droppedGroundPieces": 425,
+   "parkedGroundInstances": 22,
+   "prepareMs": 16
+  }
+ },
+ {
+  "r": 1,
+  "name": "argon",
+  "wide": 38.12,
+  "follow": 38.4,
+  "district": {
+   "name": "cafe-argon",
+   "url": "./assets/district/cafe-argon.glb",
+   "loaded": true,
+   "failed": null,
+   "meshes": 10,
+   "triangles": 50496,
+   "textures": [
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    },
+    {
+     "width": 2048,
+     "height": 2048
+    }
+   ],
+   "loadMs": 1913,
+   "hiddenV20Meshes": 49,
+   "cutGroundMeshes": 10,
+   "droppedGroundPieces": 425,
+   "parkedGroundInstances": 22,
+   "prepareMs": 17
+  }
+ }
+]

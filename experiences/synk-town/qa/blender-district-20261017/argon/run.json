@@ -1,0 +1,27 @@
+{
+  "model": "gemini-4-argon-high",
+  "account": "Google AI Ultra (agy keyring login)",
+  "startedAt": "2026-10-17T06:56:19.682Z",
+  "finishedAt": "2026-10-17T08:16:34.697Z",
+  "exitCode": 0,
+  "steps": 320,
+  "tokens": {
+    "in": 834507,
+    "out": 256856,
+    "think": 123165,
+    "cache": 18931778
+  },
+  "flags": [
+    "--model",
+    "gemini-4-argon-high",
+    "--input-format",
+    "stream-json",
+    "--output-format",
+    "stream-json",
+    "--print-timeout",
+    "0s",
+    "--dangerously-skip-permissions",
+    "--disable-slash-commands",
+    "--log-file"
+  ]
+}

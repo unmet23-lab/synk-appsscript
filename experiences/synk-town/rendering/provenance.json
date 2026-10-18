@@ -4,7 +4,8 @@
   "changes": [
     "Local imports rebased to same r180 renderer",
     "SSAO disposal releases shader and noise texture",
-    "Sprites, lines and transparent overlays excluded from AO normals"
+    "Sprites, lines and transparent overlays excluded from AO normals",
+    "GLTFLoader and BufferGeometryUtils (r180) added for the 2026-10-17 baked district comparison; imports rebased to /scene-assets/three.module.js"
   ],
   "files": [
     {
@@ -61,6 +62,16 @@
       "file": "SimplexNoise.js",
       "source": "experiences/20260909/pulse/scene-assets/ssao/SimplexNoise.js",
       "sourceSha256": "dd1f3c42c1bc9fa1b76c1c0796d352521accf0a3a95cc7d0caf479abc5a444a2"
+    },
+    {
+      "file": "GLTFLoader.js",
+      "source": "experiences/path-vr/vendor/GLTFLoader.js",
+      "sourceSha256": "64a257402916c30cbd3a214d710f3717509354cab39501729c25d2d7dce9e739"
+    },
+    {
+      "file": "BufferGeometryUtils.js",
+      "source": "experiences/path-vr/vendor/BufferGeometryUtils.js",
+      "sourceSha256": "b9b5642508aeb68530e89d6359868607d4c64f7df265dd5d670f5cf5762b688d"
     }
   ]
 }
