@@ -1,0 +1,107 @@
+{
+  "url": "http://127.0.0.1:4391/builds/move/",
+  "recordedAt": "2026-10-17T07:24:44.366Z",
+  "viewport": "390x844@3",
+  "shots": [
+    {
+      "id": "01_start",
+      "note": "첫 화면",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/01_start.webp",
+      "path": "/builds/move/",
+      "heading": "새 컴퓨터로 이사,내 PC에 맞는 목록으로",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "02_q1",
+      "note": "질문 1 · 어떻게 옮기나요(고르기 전)",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/02_q1.webp",
+      "path": "/builds/move/",
+      "heading": "어떻게 옮기나요?",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "02_q1_picked",
+      "note": "질문 1 · 클라우드를 고른 뒤",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/02_q1_picked.webp",
+      "path": "/builds/move/",
+      "heading": "어떻게 옮기나요?",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "03_q2",
+      "note": "질문 2 · 이 컴퓨터로 하는 일(AI 앱 + 코딩 도구)",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/03_q2.webp",
+      "path": "/builds/move/",
+      "heading": "이 컴퓨터로 무슨 일을 하나요?",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "04_q3",
+      "note": "질문 3 · 옛 컴퓨터(2주쯤 보관)",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/04_q3.webp",
+      "path": "/builds/move/",
+      "heading": "옛 컴퓨터는 어떻게 하나요?",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "05_result_ga_top",
+      "note": "가 · 클라우드 · AI 앱+코딩 도구 · 2주 보관 · 결과 머리",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/05_result_ga_top.webp",
+      "path": "/builds/move/",
+      "heading": "클라우드로 가볍게,키와 안 올린 코드부터",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "05_result_ga_must",
+      "note": "가 · ① 절대 두고 가면 안 되는 것",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/05_result_ga_must.webp",
+      "path": "/builds/move/",
+      "heading": "클라우드로 가볍게,키와 안 올린 코드부터",
+      "scrollY": 2551,
+      "overflowX": 0
+    },
+    {
+      "id": "06_result_na_top",
+      "note": "나 · 외장 SSD · 영상·디자인+사진·영상 파일 많음 · 바로 판매 · 결과 머리",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/06_result_na_top.webp",
+      "path": "/builds/move/",
+      "heading": "외장 SSD로 한 번에,프로젝트와 원본부터",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "06_result_na_must",
+      "note": "나 · ① 절대 두고 가면 안 되는 것",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/06_result_na_must.webp",
+      "path": "/builds/move/",
+      "heading": "외장 SSD로 한 번에,프로젝트와 원본부터",
+      "scrollY": 2563,
+      "overflowX": 0
+    },
+    {
+      "id": "07_result_da_top",
+      "note": "다 · 아직 모름 · 문서·웹 위주 · 계속 씀 · 결과 머리",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/07_result_da_top.webp",
+      "path": "/builds/move/",
+      "heading": "방법을 고르기 전에,인증서와 받아 둔 서류부터",
+      "scrollY": 0,
+      "overflowX": 0
+    },
+    {
+      "id": "07_result_da_must",
+      "note": "다 · ① 절대 두고 가면 안 되는 것",
+      "file": "yuhobuilds_노트북이사_20261017/assets/media/tool/07_result_da_must.webp",
+      "path": "/builds/move/",
+      "heading": "방법을 고르기 전에,인증서와 받아 둔 서류부터",
+      "scrollY": 2602,
+      "overflowX": 0
+    }
+  ],
+  "errors": []
+}

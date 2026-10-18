@@ -1,0 +1,9 @@
+Photorealistic vertical photo, 2:3 portrait, shot on a phone camera at a home desk late at night. Natural, unstaged, slightly imperfect — it should look like a real snapshot someone took mid-task, not an advertisement or a render.
+
+Scene: two open laptops side by side on a plain light-wood desk, both facing the camera, seen from a slightly high front angle.
+- Left: the OLD laptop — a thin, light silver-grey ultrabook, about 14 inches, a little worn (faint scuffs on the palm rest). Its screen shows a simple dark window with one long horizontal progress bar about two thirds full and a few blurred, unreadable lines of small text. Nothing legible.
+- Right: the NEW laptop — noticeably bigger and thicker, a 16-inch matte black gaming laptop with a subtle cool-white keyboard backlight and an angular hinge. Its screen shows a matching dark window with a progress bar that is filling up. Nothing legible.
+- Between and around them, ordinary clutter that tells the story: two chargers with tangled cables, a ceramic mug of coffee, a phone face down, a small paper sticky note with an unreadable scribble. A desk lamp off to the side gives warm light; the laptop screens add a cool glow on the desk.
+- Keep the top quarter of the frame calm and darker (wall in shadow) so a title can sit there.
+
+Strict rules: no brand logos or brand names anywhere, no readable text or numbers on any screen, note or object, no people or hands, no watermark. Realistic proportions and lighting, gentle phone-camera noise, true-to-life colours (not oversaturated, not teal-and-orange).

@@ -1,0 +1,11 @@
+{
+  "name": "yuhobuilds-laptop-move-20261017",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.167 preview",
+    "check": "npx --yes hyperframes@0.8.167 check",
+    "render": "npx --yes hyperframes@0.8.167 render",
+    "publish": "npx --yes hyperframes@0.8.167 publish"
+  }
+}

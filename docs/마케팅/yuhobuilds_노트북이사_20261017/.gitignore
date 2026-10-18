@@ -1,0 +1,8 @@
+# 다시 만들 수 있는 것·크기가 큰 것은 저장소 밖에 둔다(README 참고)
+snapshots/
+검수/
+renders/
+out/_시트.png
+assets/synk-kit/*
+!assets/synk-kit/motion.js
+assets/media/tool/*.png

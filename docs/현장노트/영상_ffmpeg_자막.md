@@ -63,6 +63,12 @@
 - 고침: 보이는 값에서 시작하는 효과(리플·번쩍임)는 `tl.set(el, {opacity:1, scale:0.6}, t); tl.to(el, {opacity:0, scale:3, …}, t)`로 쓴다. 같은 요소에 CSS `transform`과 GSAP 변형을 같이 쓰면 hyperframes check가 `gsap_css_transform_conflict`로 막으니, 처음 상태는 CSS 대신 `tl.set(…, 0)`으로 준다.
 - 다시 확인: 효과 시각 전의 snapshot 프레임에 그 요소가 안 보인다.
 
+### Windows에서 `render --variables '{"hook":"C"}'`를 node로 부르면 렌더가 실패한다
+- 증상: `spawnSync('npx', [..., '--variables', JSON.stringify(vars)], { shell: true })`로 부른 C안 렌더가 바로 실패했다(10-17 yuhobuilds 노트북 이사 편, 0.8.167). 같은 렌더를 변수 없이 부르면 된다.
+- 원인: Windows에서 npx(.cmd)를 쓰려고 `shell: true`를 주면 인자가 이스케이프 없이 이어 붙어 JSON 따옴표가 빠진다(node DEP0190 경고가 같이 뜬다).
+- 고침: 변수를 파일로 써서 `--variables-file <json> --strict-variables`로 넘긴다. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/렌더.cjs`.
+- 다시 확인: `--strict-variables`를 준 렌더가 끝나고, 그 판의 0초 프레임에 변수 분기(훅 C 제목)가 보인다.
+
 ### snapshot·check·미리보기에서는 멀쩡한데 렌더에서만 그림이 404다
 - 증상: 실땀 그림이 렌더에서만 빠진다(`[FileServer] 404`, 10-13 SNS 키트).
 - 원인: snapshot·check·Studio 미리보기는 `bundleToSingleHtml`을 거쳐 링크 CSS를 `<style>`로 넣고 url()을 프로젝트 뿌리 기준으로 고친 뒤 그림을 data URL로 박는다(요청이 `GET /` 하나뿐). 렌더(compileForRender)는 로컬 CSS를 링크로 두어, 인라인 스타일 속 `var()`의 상대 url()을 Chrome이 문서 기준으로 풀다 404가 난다. Studio는 `/api/projects/<id>/preview/` 아래에서 열어 `/assets/…` 같은 루트 절대 경로가 어긋날 수 있다(코드만 읽음).
@@ -107,6 +113,18 @@
 - 고침: `### DIRECTOR'S NOTES (never read these notes aloud)` / `### TRANSCRIPT` 머리글로 가르고, 메모에는 대본 글을 넣지 않는다(18개 모두 정상). 숫자는 읽는 법이 갈리니(65살·3년·1층) 읽을 글을 따로 적는다. 10-04 Vertex에서 되는 모델: `gemini-3.8-flash-tts`(wav), `gemini-3.1-flash-tts-preview`, `gemini-2.5-pro-tts`, `gemini-2.5-flash-tts`(`gemini-3.8-pro-tts`는 없다).
 - 다시 확인: 구운 뒤 받아쓰기로 확인한다(아래 받아쓰기 항목, 스크립트 보기 `experiences/entry-check/art-source/voice_check.py` — 로컬 faster-whisper, 0원). 길이가 글자 수에 비해 길면(초당 2.2자 미만) 지시문을 읽은 것이다.
 
+### 목소리 후보를 같은 대본으로 읽히면 몇 목소리는 수십 초를 지어내거나 한 문장을 두 번 읽는다
+- 증상: 10-17 45초 대본(머리글로 메모·대본을 가른 판)을 `gemini-3.8-flash-tts`로 9개 읽혔더니 Charon·Fenrir·Sadaltager·Zubenelgenubi가 107~126초로 나왔다. 둘째 문장 자리에 대본에 없는 이야기를 50초 넘게 지어냈다. 그 문장을 「파일 96만 개.」 → 「파일만 96만 개였어요.」로 다듬은 판은 다섯 목소리 중 넷이 그 문장을 두 번 읽었다.
+- 원인: 모르겠다. 명사로 끝나는 짧은 문장과 숫자가 이어지는 자리에서만 일어났다(같은 메모로 Achird·Puck은 대본대로 읽었다).
+- 고침: 길이부터 거른다(대본 음절 ÷ 6.5보다 1.3배 넘게 길면 버림). 남은 것만 받아쓰기로 재고 일치 0.95 아래는 버린다. 문장을 고치면 지어내기가 다른 모양(반복)으로 옮겨 갈 수 있으니, 잘 읽은 판이 있으면 대본을 그 판에 맞춰 되돌린다. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/README.md` 「목소리」.
+- 다시 확인: `한번에_맞추기.py` 줄의 「말」 길이와 「일치」 값.
+
+### 받아쓰기 정렬이 숫자가 많은 문장 경계를 0.3~0.7초 잘못 잡는다
+- 증상: 10-17 범수 테이크(대사 14줄을 쉼 0.35~0.5초로 이은 판)를 `한번에_맞추기.py`(faster-whisper small)로 정렬했더니 p1→p2·f1→f2·f2→k1 경계가 앞 대사 끝 = 다음 대사 시작으로 붙었다. silencedetect로 본 실제 무음(예: 28.73~29.31초)과 0.3~0.7초 어긋나, 장면 전환·자막이 말을 앞질렀다.
+- 원인: 「5기가」「2만 7천 개」「암호화」처럼 받아쓰기가 숫자·다른 글자로 적는 곳에서 글자 맞추기(difflib)가 빈 구간을 앞뒤로 메우며 경계를 끌어당긴다.
+- 고침: Typecast는 `/v1/text-to-speech/with-timestamps` 응답에 낱말·글자 시각(`words`·`characters`)을 준다. 대사마다 구워 이었다면 이은 자리(앞 무음 + 대사 길이 + 쉼)를 계산하고, 낱말 시각을 대사 파일의 첫 소리(−40 dBFS)에 맞춰 옮긴다 → 경계가 실제 무음과 0.01~0.02초 안. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/음성/범수_시각.py`. Typecast 낱말 수는 띄어쓰기 낱말 수와 같다(「5기가가」가 낱말 하나).
+- 다시 확인: 만든 take.json의 대사 시작·끝을 `silencedetect=noise=-40dB:d=0.2` 무음 자리와 나란히 본다.
+
 ### 대사를 줄마다 따로 구워 이으면 뚝뚝 끊긴다
 - 증상: 한 줄씩 만들어 쉼을 넣어 이은 45초 나레이션을 유호님이 「흐름이 뚝뚝 끊기는 느낌」이라고 했다(10-04).
 - 원인: 줄마다 억양이 새로 시작하고 「~했고,」 뒤에도 쉼이 들어간다.
@@ -150,6 +168,12 @@
 - 원인: carve의 전체 크기 맞춤 단계(fromCarve `gain`)가 일부러 천천히 돌아온다.
 - 고침: carve의 목소리 대역 칸(말을 따라 바로 돌아옴)은 두고 크기 맞춤 단계만 빼고, 말할 때만 −8dB · 말끝 0.15초 뒤부터 0.45초에 걸쳐 원래대로 · 1초보다 짧은 틈은 낮춘 채 두는 duck 단계를 직접 쓴다. 대사는 `data-start = 첫 말소리 시각 − 파일 앞 무음`으로 놓는다(carve는 `data-media-start`를 무시한다). 앞뒤 파일이 겹치면 트랙을 번갈아 둔다(같은 트랙에서 겹치면 `duplicate_audio_track` 경고). `@hyperframes/core`는 저장소에 깔지 않고 임시 폴더에 깔아 `--core`로 준다. 한 번에 하는 보기 스크립트는 `docs/마케팅/LAB_한글날_내이름한글로_20261002/음성/넣기.cjs`.
 - 다시 확인: 말 사이 구간의 크기를 목소리 없는 판과 구간별로 견준다(+0.5dB 안).
+
+### Remotion 나레이션 믹스는 봉우리가 0dBFS를 넘는다
+- 증상: 10-17 −15.9 LUFS 나레이션 + BGM 0.5(말할 때 −9dB) + 키트 효과음 30개를 Remotion으로 렌더했더니 −13.0 LUFS · 봉우리 +0.1 dBFS였다.
+- 원인: Remotion은 트랙을 그대로 더하고 리미터가 없다. 효과음이 말과 겹치는 순간 넘친다.
+- 고침: 렌더 뒤 영상은 복사하고 소리만 `-af "volume=-1.5dB,alimiter=limit=0.84:attack=3:release=60:level=false"`로 다시 인코딩했다 → −14.5 LUFS · −1.4 dBFS. 보기 `docs/마케팅/yuhobuilds_노트북이사_20261017/remotion/렌더.mjs`.
+- 다시 확인: 최종 파일의 `ebur128=peak=true`가 −14.5±0.5 LUFS · −1 dBFS 아래.
 
 ### Remotion 박자표 같은 모듈 상수는 컴포지션 props로 못 바꾼다
 - 증상: 10-18 관용구 퀴즈 #2를 100 BPM으로 늦추려는데 박 길이 `B`·`T`·`TOTAL`이 `timeline.ts`의 모듈 상수라 컴포지션마다 다른 값을 줄 수 없었다(같은 번들에 120 BPM 판도 있음).
