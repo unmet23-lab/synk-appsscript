@@ -2,8 +2,7 @@
  * 원본: SYNK-appsscript/docs/마케팅/맞춤도구/computer/view.js
  * rules.compute()가 낸 값을 그린다. 여기서 사양을 새로 계산하지 않는다.
  * 결과 순서(추천기준 §11): 형태와 핵심 사양 → 왜 이 형태인가 → 사양 카드(가성비/여유) → 돈 쓰는 순서 → 나에게 필요한 팁 → 나머지.
- * 10-18 유호님 「ai 맞춤 컴퓨터 저거 프론트가 엉망인데 업그레이드 제대로 한 버전으로」 → 옛 펠트 스크랩북(유리 카드·스티커)을 걷고
- *   카타나·skills와 같은 시그널 틀로 옮겼다. 포스터마다 그 화면을 설명하는 펠트 물건(GPT 이미지 2.5, 판·지시문은 .tmp/computer-signal-20261018/).
+ * 10-18 옛 펠트 스크랩북(유리 카드·스티커)을 걷고 카타나·skills와 같은 시그널 틀로 옮겼다. 포스터마다 그 화면을 설명하는 펠트 물건.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(root);

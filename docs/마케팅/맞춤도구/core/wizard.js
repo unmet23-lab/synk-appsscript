@@ -254,7 +254,7 @@
       const focusKey = s.type === 'group' ? `[data-field="${btn.closest('[data-field]').dataset.field}"] [data-opt="${id}"]` : `[data-opt="${id}"]`;
       render(false);
       const again = el.querySelector(focusKey); if (again) again.focus({ preventScroll: true });
-      // 고른 직후 이유 글이 휴대폰 아래 붙은 「이전·다음」에 걸쳐 가리면 보이는 데까지만 살짝 올린다(10-18 Fable).
+      // 고른 직후 이유 글이 휴대폰 아래 붙은 「이전·다음」에 걸쳐 가리면 보이는 데까지만 살짝 올린다(10-18 검수).
       // 이유 글이 화면 밖 멀리 있으면(선택지가 긴 여러 개 고르기) 움직이지 않는다 — 고를 때마다 화면이 뛰면 고르던 자리를 잃는다.
       const pk = tip && el.querySelector('.picked'), nav = el.querySelector('.main>.nav');
       if (pk && nav) { const r = pk.getBoundingClientRect(), top = nav.getBoundingClientRect().top; if (r.top < innerHeight && r.bottom > top) window.scrollBy({ top: r.bottom - top + 12, behavior: reduced() ? 'auto' : 'smooth' }); }
