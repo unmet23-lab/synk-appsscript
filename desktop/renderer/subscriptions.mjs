@@ -6,10 +6,12 @@ const KINDS = [['weekly', '주간 한도', '주간 %와 초기화 시각'], ['cr
 const AUTO = {
   claude: { label: 'Claude', tool: 'Claude Code', plan: 'Claude Pro·Max 이상 요금제가 필요해요. 무료 요금제는 Claude Code를 쓸 수 없어요.', planLink: 'claude-plans', install: 'irm https://claude.ai/install.ps1 | iex', installLink: 'claude-install', email: true },
   gpt: { label: 'ChatGPT · Codex', tool: 'Codex', plan: 'ChatGPT 계정으로 로그인해요. 요금제마다 Codex 한도가 달라요.', planLink: 'chatgpt-plans', install: 'powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"', installLink: 'codex-install', email: false },
-  higgsfield: { label: 'Higgsfield', tool: 'Higgsfield CLI', plan: 'Higgsfield 계정의 남은 크레딧을 읽어요. 이 PC에는 계정 하나만 연결돼요.', planLink: null, install: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', email: false, node: true, single: true },
+  higgsfield: { label: 'Higgsfield', tool: 'Higgsfield CLI', plan: 'Higgsfield 계정의 남은 크레딧을 읽어요. 계정 여러 개를 하나씩 연결할 수 있어요.', planLink: null, install: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', email: false, node: true },
   gemini: { label: 'Gemini', tool: 'Antigravity CLI', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽어요. Gemini 모델 한도와 Claude·GPT 모델 한도가 따로 보여요. 이 PC에는 Google 계정 하나만 연결돼요.', planLink: 'gemini-plans', install: 'irm https://antigravity.google/cli/install.ps1 | iex', installLink: 'antigravity-install', email: false, single: true },
+  // 설치할 프로그램 없이 회원이 붙여 넣은 API 키로 읽는다(키는 본체가 이 PC에 암호화해 둔다).
+  typecast: { label: 'Typecast', tool: 'Typecast API 키', plan: 'Typecast API 요금제(API Lite 등)의 이번 달 남은 크레딧을 읽어요. 설치할 프로그램은 없고, 키는 이 PC에만 암호화해 보관해요.', planLink: 'typecast-api', key: true },
 };
-const MANUAL_NAMES = ['Suno', 'Typecast', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Hugging Face', 'Google AI Pro'];
+const MANUAL_NAMES = ['Suno', 'Hugging Face', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Google AI Pro', 'Typecast'];
 const MANUAL_KIND = { suno: 'credit', typecast: 'credit', elevenlabs: 'credit', kling: 'credit', higgsfield: 'credit', claude: 'weekly', gpt: 'weekly', chatgpt: 'weekly' };
 const CODE_TEXT = {
   TOOL_MISSING: '먼저 공식 프로그램을 설치해 주세요. 설치 후 「다시 확인」을 눌러요.',
@@ -23,6 +25,11 @@ const CODE_TEXT = {
   LABEL_REQUIRED: '서비스 이름을 넣어 주세요.',
   TOO_MANY_ROWS: '구독은 200개까지 넣을 수 있어요.',
   INSTALLER_FAILED: '설치 창을 열지 못했어요. 명령을 복사해 PowerShell에 붙여 넣어 주세요.',
+  INVALID_KEY_FORMAT: 'API 키를 띄어쓰기 없이 그대로 붙여 넣어 주세요.',
+  INVALID_KEY: 'Typecast가 이 키를 받지 않았어요. 키 페이지에서 다시 복사해 붙여 넣어 주세요.',
+  KEY_CHECK_FAILED: 'Typecast 크레딧을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+  NETWORK: 'Typecast에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.',
+  SECURE_STORAGE_UNAVAILABLE: '이 PC에서는 키를 안전하게 저장할 수 없어 연결하지 않았어요.',
 };
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -67,7 +74,37 @@ export function isLow(row) {
 }
 const liveWeekly = (row, now) => { const w = row?.live?.weekly; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w.usedPercent : null; };
 const liveSession = (row, now) => { const w = row?.live?.session; return w && Number.isFinite(w.usedPercent) && !(w.resetsAt && now >= w.resetsAt) ? w : null; };
+// 남은 %는 내림한다(99.6% 썼으면 0%). 남은 양을 부풀려 보이지 않게.
+export const leftPercent = used => Math.max(0, Math.floor(100 - Number(used) + 1e-6));
+
+// 한도 고리(10-17, Bklit 여러 겹 게이지): 안 고리 5시간 · 바깥 고리 주간. 초기화 시각이 지난 기간은 다시 가득 찬 것으로 본다.
+// 가운데 숫자와 「초기화까지」는 두 고리 중 덜 남은 쪽(지금 쓸 수 있는 만큼)을 따른다.
+export function limitGauge(row, now) {
+  if (row?.kind !== 'weekly') return null;
+  const shape = w => {
+    if (!w || !Number.isFinite(Number(w.usedPercent))) return null;
+    if (w.resetsAt && now >= w.resetsAt) return { used: 0, left: 100, resetsAt: null };
+    const used = Math.min(100, Math.max(0, Number(w.usedPercent)));
+    return { used, left: leftPercent(used), resetsAt: w.resetsAt || null };
+  };
+  const session = shape(row.live?.session);
+  let weekly = shape(row.live?.weekly);
+  if (isUsedUp(row, now)) weekly = { used: 100, left: 0, resetsAt: nextReset(row, now) };
+  else if (weekly && !weekly.resetsAt && weekly.used > 0) weekly.resetsAt = nextReset(row, now);
+  if (!session && !weekly) return null;
+  const focus = session && (!weekly || session.left < weekly.left) ? 'session' : 'weekly';
+  return { session, weekly, focus, left: (focus === 'session' ? session : weekly).left, resetsAt: (focus === 'session' ? session : weekly).resetsAt };
+}
+// 주의는 「10% 이하 남음」 하나로 숫자·색·알림 칩이 같은 기준을 쓴다.
+export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ? 'low' : 'ok');
+// 서비스마다 지금 가장 여유 있는 계정: 고리가 있고, 다시 로그인이 필요 없고, 덜 남은 쪽이 가장 많이 남은 계정.
+export function roomiest(list, now) {
+  const score = row => { const g = limitGauge(row, now); return g ? (row.source === 'auto' && row.state === 'needs-login' ? 0 : 1000) + g.left : -1; };
+  return [...list].sort((a, b) => score(b) - score(a))[0] || null;
+}
 const who = row => (row.email ? `${row.email.split('@')[0]} ${row.label}` : row.label).trim();
+// 메일이 없는 API 키 줄은 키 끝 네 글자로 구분한다.
+const accountName = row => row.email || (row.keyHint ? `${row.label} · 키 ${row.keyHint}` : row.label);
 
 export function attention(rows, now) {
   const items = [];
@@ -76,8 +113,10 @@ export function attention(rows, now) {
     if (row.kind === 'weekly') {
       const wp = liveWeekly(row, now), session = liveSession(row, now);
       if (isUsedUp(row, now)) { const r = nextReset(row, now); items.push({ level: 0, order: r || Infinity, id: row.id, text: `소진 · ${who(row)}${r ? ` · ${when(r)} 풀림` : ''}` }); }
-      else if (wp !== null && wp >= 90) items.push({ level: 1, order: 0, id: row.id, text: `주간 ${Math.round(wp)}% · ${who(row)}` });
-      else if (session && session.usedPercent >= 90) items.push({ level: 1, order: 0, id: row.id, text: `5시간 ${Math.round(session.usedPercent)}% · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
+      // 5시간을 다 쓴 계정은 주간이 남아 있어도 지금은 못 쓰니 주간 주의보다 먼저 올린다.
+      else if (session && session.usedPercent >= 100) items.push({ level: 0, order: session.resetsAt || Infinity, id: row.id, text: `5시간 소진 · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
+      else if (wp !== null && leftPercent(wp) <= 10) items.push({ level: 1, order: 0, id: row.id, text: `거의 소진 · 주간 ${leftPercent(wp)}% 남음 · ${who(row)}` });
+      else if (session && leftPercent(session.usedPercent) <= 10) items.push({ level: 1, order: 0, id: row.id, text: `거의 소진 · 5시간 ${leftPercent(session.usedPercent)}% 남음 · ${who(row)} · ${rel(session.resetsAt - now)} 뒤 풀림` });
     }
     if (isLow(row)) items.push({ level: 1, order: 0, id: row.id, text: `크레딧 부족 · ${who(row)} · ${credits(balance(row).value)}` });
     const dd = nextBill(row.billDay, now);
@@ -128,7 +167,45 @@ export function money(amount, currency) {
 }
 const pair = (krw, usd) => [krw ? money(krw, 'KRW') : '', usd ? money(usd, 'USD') : ''].filter(Boolean).join(' + ');
 const credits = v => (Math.abs(v) < 10 ? Number(v).toFixed(2).replace(/\.?0+$/, '') : Math.round(v).toLocaleString('ko-KR'));
-const bar = p => `<span class="ms-bar${p >= 90 ? ' hot' : ''}" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, p))}%"></span></span>`;
+const WINDOW_NAME = { session: '5시간', weekly: '주간' };
+// 「· 4일 19시간 뒤」가 좁은 칸에서 「뒤」나 「·」만 홀로 남지 않게 띄어쓰기를 붙인다.
+const keep = text => text.replace(/ /g, '\u00a0');
+const leftHtml = w => (w.left <= 0 ? '<b class="ms-alert-text">소진</b>' : `<b class="ms-num${w.left <= 10 ? ' ms-warn-text' : ''}">${w.left}%</b> 남음`);
+// 고리 그림(viewBox 120): 바깥 주간 · 안 5시간. 남은 만큼 12시 방향에서 시계 방향으로 찬다. 서비스 줄의 작은 고리는 굵게.
+// 97% 넘게 남으면 둥근 끝이 맞닿아 닫혀 보여 각진 끝으로, 100%는 이음매 없는 닫힌 원으로 그린다.
+const RINGS = { full: { weekly: 54, session: 43, width: 8 }, mini: { weekly: 46, session: 46, width: 20 } };
+function ringsSvg(g, size = 'full') {
+  const spec = RINGS[size];
+  const ring = key => {
+    const w = g[key]; if (!w) return '';
+    const level = gaugeLevel(w), attrs = `cx="60" cy="60" r="${spec[key]}" stroke-width="${spec.width}"`;
+    return `<circle class="ms-track" data-level="${level}" ${attrs}/>${w.left > 0 ? `<circle class="ms-arc" data-ring="${key}" data-level="${level}" ${attrs}${w.left >= 100 ? ' data-full' : ` stroke-linecap="${w.left >= 97 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - w.left}" transform="rotate(-90 60 60)"`}/>` : ''}`;
+  };
+  return `<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">${ring('weekly')}${ring('session')}</svg>`;
+}
+const gauge = (g, key, label) => { const w = g[g.focus]; return `<span class="ms-gauge" data-level="${gaugeLevel(w)}">${ringsSvg(g)}<span class="ms-gauge-center"><b class="ms-gauge-num" data-roll="${esc(key)}">${w.left}<small>%</small></b><span>${WINDOW_NAME[g.focus]}${label ? (w.left <= 0 ? ' 소진' : ' 남음') : ''}</span></span></span>`; };
+const miniGauge = (g, key) => `<span class="ms-gauge ms-gauge-mini" data-level="${gaugeLevel(g[key])}">${ringsSvg({ [key]: g[key] }, 'mini')}</span>`;
+const untilReset = (g, now) => (g.resetsAt ? `${WINDOW_NAME[g.focus]} 초기화까지 <b>${rel(g.resetsAt - now)}</b>` : g[g.focus].used === 0 ? '아직 안 씀' : '초기화 시각 없음');
+
+// 숫자 굴림(WORLD world-motion.mjs의 roll과 같은 문법): 숫자 글자는 그대로 두고(투명), 그 위에 0~9 띠를 굴린다.
+const motionOn = () => typeof matchMedia === 'function' && document.documentElement?.dataset?.motion !== 'reduced' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+function roll(el, { delay = 0, duration = 1000 } = {}) {
+  const nodes = [], walk = n => { for (const c of [...n.childNodes]) { if (c.nodeType === 3) nodes.push(c); else if (c.nodeType === 1) walk(c); } };
+  walk(el);
+  let k = 0;
+  for (const node of nodes) {
+    if (!/\d/.test(node.textContent)) continue;
+    const frag = document.createDocumentFragment();
+    for (const ch of node.textContent) {
+      if (!/\d/.test(ch)) { frag.append(ch); continue; }
+      const d = document.createElement('span'); d.className = 'ms-roll'; d.style.setProperty('--d', ch);
+      const t = document.createElement('span'); t.className = 'ms-roll-t'; t.textContent = ch;
+      const strip = document.createElement('i'); strip.setAttribute('aria-hidden', 'true'); strip.style.setProperty('--rd', `${delay + k * 120}ms`); strip.style.setProperty('--rt', `${duration + k * 160}ms`);
+      d.append(t, strip); frag.append(d); k++;
+    }
+    node.replaceWith(frag);
+  }
+}
 const svcClass = service => (Object.hasOwn(AUTO, service) ? 'ms-s-' + service : 'ms-s-other');
 const stateChip = row => row.source !== 'auto' ? '<span class="ms-chip ms-chip-manual">직접 넣음</span>'
   : row.state === 'ok' ? '<span class="ms-chip ms-chip-ok">연결됨</span>'
@@ -140,7 +217,8 @@ const arrowBack = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
   const api = bridge?.subscriptions;
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
-  const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', help: false };
+  const ui = { open: new Set(), guide: null, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: false };
+  const rolled = new Map();
   api?.onChanged?.(value => { if (value?.ok) { snapshot = value; if (visible) paint(); } });
 
   async function load(refreshTools = false) {
@@ -160,7 +238,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     if (el.dataset.subsBound === 'true') return; el.dataset.subsBound = 'true';
     el.addEventListener('click', event => { if (!visible) return; const b = event.target.closest('[data-subs]'); if (b && !b.disabled) onAction(b.dataset.subs, b.dataset); });
     el.addEventListener('submit', event => { if (!visible) return; const form = event.target.closest('form[data-subs-form]'); if (!form) return; event.preventDefault(); onForm(form.dataset.subsForm, form); });
-    el.addEventListener('input', event => { if (!visible) return; if (event.target.id === 'ms-email') ui.email = event.target.value; if (event.target.id === 'ms-code') ui.code = event.target.value; if (event.target.id === 'ms-manual-label') { const k = MANUAL_KIND[event.target.value.trim().toLowerCase().replace(/\s+/g, '')]; const kind = el.querySelector('#ms-manual-kind'); if (k && kind) { kind.value = k; el.querySelector('.ms-manual')?.setAttribute('data-kind', k); } } });
+    el.addEventListener('input', event => { if (!visible) return; if (event.target.id === 'ms-email') ui.email = event.target.value; if (event.target.id === 'ms-code') ui.code = event.target.value; if (event.target.id === 'ms-key') ui.key = event.target.value; if (event.target.id === 'ms-manual-label') { const k = MANUAL_KIND[event.target.value.trim().toLowerCase().replace(/\s+/g, '')]; const kind = el.querySelector('#ms-manual-kind'); if (k && kind) { kind.value = k; el.querySelector('.ms-manual')?.setAttribute('data-kind', k); } } });
     el.addEventListener('change', event => { if (!visible) return; if (event.target.matches('[data-kind-select]')) event.target.closest('form')?.setAttribute('data-kind', event.target.value); if (event.target.id === 'ms-rate') void act('rate', () => api.save({ settings: { usdKrw: Number(event.target.value) } })); });
   }
   function onAction(name, data) {
@@ -178,6 +256,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     if (name === 'login') return void act('login', () => api.login(service, { email: service === 'claude' ? ui.email.trim() || undefined : undefined }));
     if (name === 'console-login') return void act('login', () => api.login(service, { email: service === 'claude' ? ui.email.trim() || undefined : undefined, console: true }));
     if (name === 'open-url') return void api.openLoginUrl(snapshot?.login?.id);
+    // 브라우저에 남은 다른 계정으로 승인되지 않게, 로그인 주소를 시크릿 창에 붙여 넣을 수 있게 한다.
+    if (name === 'copy-url') { const url = snapshot?.login?.url; if (url) navigator.clipboard?.writeText(url).then(() => toast('로그인 주소를 복사했어요. 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 「로그인 페이지 다시 열기」를 써 주세요.')); return; }
     if (name === 'cancel-login') return void act('cancel', () => api.cancel(snapshot?.login?.id));
     if (name === 'relogin') { const row = rowById(id); if (row) { ui.guide = row.service; ui.email = row.email || ''; paint(); container?.querySelector('#ms-guide')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); } return; }
     if (name === 'edit') { ui.editing = ui.editing === id ? null : id; return paint(); }
@@ -193,6 +273,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
   }
   function onForm(name, form) {
     if (name === 'code') { const code = ui.code.trim(); if (!code) return toast('브라우저에 보이는 코드를 붙여 넣어 주세요.'); return void act('code', async () => { const r = await api.submitCode(snapshot?.login?.id, code); if (r?.ok) ui.code = ''; return r; }); }
+    if (name === 'key') { const key = ui.key.trim(), service = form.dataset.service; if (!key) return toast('복사한 API 키를 붙여 넣어 주세요.'); return void act('key', async () => { const r = await api.connectKey(service, key); if (!r?.ok) return r; ui.key = ''; ui.guide = null; toast(`${AUTO[service]?.label || ''} 키를 연결했어요. 남은 크레딧을 읽었어요.`); return r.snapshot || r; }); }
     if (name === 'manual') { const v = formValues(form); if (!v.label) return toast(CODE_TEXT.LABEL_REQUIRED); return void act('manual', async () => { const r = await api.save({ add: v }); if (r?.rows) { ui.manualOpen = false; toast(`${v.label}를 넣었어요.`); } return r; }); }
     if (name === 'edit') { const id = form.dataset.id, row = rowById(id); if (!row) return; const v = formValues(form); const patch = { id, price: v.price, currency: v.currency, billDay: v.billDay, note: v.note }; if (row.source === 'manual') Object.assign(patch, { label: v.label || row.label, kind: v.kind, resetDay: v.resetDay, resetHour: v.resetHour, resetMinute: v.resetMinute }); if ((row.kind === 'credit' || v.kind === 'credit') && row.source === 'manual') Object.assign(patch, { credits: v.credits, lowAt: v.lowAt }); else if (row.kind === 'credit') patch.lowAt = v.lowAt; return void act('edit', async () => { const r = await api.save({ row: patch }); if (r?.rows) { ui.editing = null; toast('저장했어요.'); } return r; }); }
   }
@@ -212,20 +293,32 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
         <div class="ms-hero-note"><span>${esc(note)}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
+  // 서비스 하나에 고리 하나: 지금 가장 여유 있는 계정의 남은 한도. 누르면 그 계정을 펼친다.
+  function meter(list, now) {
+    const row = roomiest(list, now), g = row && limitGauge(row, now);
+    if (!g) return '';
+    const name = row.email ? row.email.split('@')[0] : '';
+    const legend = ['weekly', 'session'].filter(k => g[k]).map(k => `<span class="ms-legend-row" data-ring="${k}" data-level="${gaugeLevel(g[k])}"><i aria-hidden="true"></i>${WINDOW_NAME[k]}<span>${leftHtml(g[k])}</span></span>`).join('');
+    return `<button type="button" class="ms-meter ${svcClass(row.service)}" data-subs="jump" data-id="${esc(row.id)}">${gauge(g, 'm-' + (row.source === 'auto' ? row.service : row.label), true)}
+      <span class="ms-meter-body"><span class="ms-meter-head"><span class="ms-tag">${esc(row.label)}</span>${name ? `<strong>${esc(name)}</strong>` : ''}</span>${list.length > 1 ? `<span class="ms-meter-note">계정 ${list.length}개 중 가장 여유</span>` : ''}<span class="ms-legend">${legend}</span><span class="ms-reset">${untilReset(g, now)}</span></span><span class="ms-chev" aria-hidden="true"></span></button>`;
+  }
   function attentionSection(rows, now) {
-    const items = attention(rows, now);
-    const body = items.length ? `<div class="ms-attn">${items.map(item => `<button type="button" class="ms-attn-chip ms-l${item.level}" data-subs="jump" data-id="${esc(item.id)}"><span class="ms-dot" aria-hidden="true"></span>${esc(item.text)}</button>`).join('')}</div>`
+    const items = attention(rows, now), groups = new Map();
+    for (const row of rows) if (row.kind === 'weekly') { const key = row.source === 'auto' ? row.service : row.label; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); }
+    const meters = [...groups.values()].map(list => meter(list, now)).filter(Boolean).join('');
+    const chips = items.length ? `<div class="ms-attn">${items.map(item => `<button type="button" class="ms-attn-chip ms-l${item.level}" data-subs="jump" data-id="${esc(item.id)}"><span class="ms-dot" aria-hidden="true"></span>${esc(item.text)}</button>`).join('')}</div>`
       : '<p class="ms-clear">지금 챙길 건 없어요. 소진된 계정도, 3일 안 결제도 없어요.</p>';
-    return section('01', '지금 볼 것', '소진·한도 90% 이상·크레딧 부족·3일 안 결제만 올라와요.', body);
+    const description = meters ? '서비스마다 가장 여유 있는 계정의 남은 한도예요(안쪽 고리 5시간 · 바깥쪽 주간). 소진·10% 이하 남음·크레딧 부족·3일 안 결제는 따로 올라와요.' : '소진·10% 이하 남음·크레딧 부족·3일 안 결제만 올라와요.';
+    return section('01', '지금 볼 것', description, (meters ? `<div class="ms-meters">${meters}</div>` : '') + chips);
   }
   function rowLine(row, now) {
     const lines = [];
     if (row.kind === 'weekly') {
-      const wp = liveWeekly(row, now), s = liveSession(row, now), r = nextReset(row, now);
-      if (wp !== null) { const started = row.live.weekly.resetsAt ? row.live.weekly.resetsAt - 7 * DAY_MS : null; lines.push(`주간 ${bar(wp)}<b class="ms-num">${Math.round(wp)}%</b>${started && now - started < DAY_MS ? ` <span class="ms-soft">(${stamp(started, now)} 새 주 시작)</span>` : ''}`); }
-      if (s) lines.push(`5시간 <b class="ms-num">${Math.round(s.usedPercent)}%</b>${s.resetsAt ? ` <span class="ms-soft">· ${rel(s.resetsAt - now)} 뒤 풀림</span>` : ''}`);
-      for (const model of row.live?.models || []) if (Number.isFinite(model.usedPercent)) lines.push(`${esc(model.name)} 주간 <b class="ms-num">${Math.round(model.usedPercent)}%</b>`);
-      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">· ${rel(r - now)} 뒤</span>` : wp === 0 ? '<span class="ms-soft">아직 안 씀 · 쓰기 시작하면 주간 한도 기간이 시작돼요</span>' : '<span class="ms-soft">초기화 시각 없음</span>');
+      const wp = liveWeekly(row, now), g = limitGauge(row, now), r = nextReset(row, now);
+      if (g?.weekly) { const started = wp !== null && row.live.weekly.resetsAt ? row.live.weekly.resetsAt - 7 * DAY_MS : null; lines.push(`주간 ${leftHtml(g.weekly)}${started && now - started < DAY_MS ? ` <span class="ms-soft">(${stamp(started, now)} 새 주 시작)</span>` : ''}`); }
+      if (g?.session) lines.push(`5시간 ${leftHtml(g.session)}${g.session.resetsAt ? ` <span class="ms-soft">${keep('· ' + rel(g.session.resetsAt - now) + ' 뒤 풀림')}</span>` : ''}`);
+      for (const model of row.live?.models || []) if (Number.isFinite(model.usedPercent)) { const used = Math.min(100, Math.max(0, model.usedPercent)); lines.push(`${esc(model.name)} 주간 ${leftHtml({ used, left: leftPercent(used) })}`); }
+      lines.push(r ? `매주 ${when(r)} 초기화 <span class="ms-soft">${keep('· ' + rel(r - now) + ' 뒤')}</span>` : wp === 0 ? '<span class="ms-soft">아직 안 씀 · 쓰기 시작하면 주간 한도 기간이 시작돼요</span>' : '<span class="ms-soft">초기화 시각 없음</span>');
       if (isUsedUp(row, now)) lines.push(`<span class="ms-alert-text">${r ? full(r) + '에 풀림' : '소진 해제는 직접 눌러 주세요'}</span>`);
     }
     if (row.kind === 'credit') { const b = balance(row); lines.push(b ? `잔액 <b class="ms-num${isLow(row) ? ' ms-warn-text' : ''}">${credits(b.value)}</b> <span class="ms-soft">· ${b.source === 'live' ? '공식값' : '직접 넣음'}${b.at ? ' ' + stamp(b.at, now) : ''}</span>` : '<span class="ms-soft">잔액 미입력</span>'); }
@@ -264,7 +357,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const first = list[0], kind = first.kind;
     const usedN = list.filter(r => isUsedUp(r, now)).length, lowN = list.filter(isLow).length, alertN = list.filter(r => r.source === 'auto' && r.state !== 'ok' && r.state !== 'unknown').length;
     let status = '';
-    if (kind === 'weekly') { const best = [...list].sort((a, b) => (liveWeekly(a, now) ?? 101) - (liveWeekly(b, now) ?? 101))[0], wp = liveWeekly(best, now); status = `<b>${esc(best.email ? best.email.split('@')[0] : best.label)}</b>${wp !== null ? ` ${bar(wp)}<span class="ms-num">${Math.round(wp)}%</span>` : ''}${list.length > 1 ? ` <span class="ms-soft">가장 여유 있는 계정</span>` : ''}`; }
+    if (kind === 'weekly') { const best = roomiest(list, now) || first, g = limitGauge(best, now); const key = g && (g.weekly ? 'weekly' : 'session'); status = `<b>${esc(best.email ? best.email.split('@')[0] : best.label)}</b>${g ? ` ${miniGauge(g, key)}${WINDOW_NAME[key]} ${leftHtml(g[key])}` : ''}${list.length > 1 ? ` <span class="ms-soft">가장 여유 있는 계정</span>` : ''}`; }
     else if (kind === 'credit') { const b = balance(first); status = `<b>${esc(first.email ? first.email.split('@')[0] : first.label)}</b> · ${b ? `<span class="${isLow(first) ? 'ms-warn-text' : ''}">${credits(b.value)}</span>` : '<span class="ms-soft">잔액 미입력</span>'}${list.length > 1 ? ` <span class="ms-soft">외 ${list.length - 1}</span>` : ''}`; }
     else status = list.slice(0, 2).map(r => `<b>${esc(r.email ? r.email.split('@')[0] : r.label)}</b>`).join(', ') + (list.length > 2 ? ` <span class="ms-soft">외 ${list.length - 2}</span>` : '');
     const flags = [usedN ? `<span class="ms-alert-text">소진 ${usedN}</span>` : '', lowN ? `<span class="ms-warn-text">부족 ${lowN}</span>` : '', alertN ? `<span class="ms-warn-text">확인 필요 ${alertN}</span>` : ''].filter(Boolean).join(' · ');
@@ -286,9 +379,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     </div>`;
   }
   function accountRow(row, now) {
-    const armed = ui.removeArmed === row.id;
-    return `<div class="ms-account" data-row="${esc(row.id)}">
-      <div class="ms-account-name"><strong>${esc(row.email || row.label)}</strong>${stateChip(row)}${isUsedUp(row, now) ? '<span class="ms-chip ms-chip-alert">소진</span>' : ''}${isLow(row) ? '<span class="ms-chip ms-chip-warn">부족</span>' : ''}</div>
+    const armed = ui.removeArmed === row.id, g = limitGauge(row, now);
+    return `<div class="ms-account${g ? ' has-gauge' : ''}" data-row="${esc(row.id)}">${g ? gauge(g, 'a-' + row.id, false) : ''}
+      <div class="ms-account-name"><strong>${esc(accountName(row))}</strong>${stateChip(row)}${isUsedUp(row, now) ? '<span class="ms-chip ms-chip-alert">소진</span>' : g && gaugeLevel(g[g.focus]) === 'low' ? '<span class="ms-chip ms-chip-warn">거의 소진</span>' : ''}${isLow(row) ? '<span class="ms-chip ms-chip-warn">부족</span>' : ''}</div>
       <div class="ms-account-info">${rowLine(row, now)}</div>
       <div class="ms-account-actions">
         ${row.source === 'auto' && row.state === 'needs-login' ? `<button type="button" class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="${esc(row.id)}">다시 연결</button>` : ''}
@@ -300,7 +393,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     </div>`;
   }
   function manualForm() {
-    if (!ui.manualOpen) return '<div class="ms-manual-open"><button type="button" class="ms-button" data-subs="manual">Suno·Typecast처럼 자동으로 못 읽는 구독 직접 넣기</button></div>';
+    if (!ui.manualOpen) return '<div class="ms-manual-open"><button type="button" class="ms-button" data-subs="manual">Suno·Hugging Face처럼 자동으로 못 읽는 구독 직접 넣기</button></div>';
     return `<form class="ms-form ms-manual" data-subs-form="manual" data-kind="plan">
       <h3 class="ms-wide">직접 넣는 구독</h3>
       <label>서비스 이름<input id="ms-manual-label" name="label" list="ms-names" maxlength="40" placeholder="Suno" required></label>
@@ -327,15 +420,26 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     const tools = snapshot?.tools || {}, rows = snapshot?.rows || [];
     const cards = Object.entries(AUTO).map(([key, info]) => {
       const tool = tools[key], count = rows.filter(r => r.source === 'auto' && r.service === key).length;
-      const chip = !tool ? '<span class="ms-chip">확인 중</span>' : tool.installed ? `<span class="ms-chip ms-chip-ok">설치됨</span>` : '<span class="ms-chip ms-chip-warn">설치 필요</span>';
-      return `<div class="ms-connect ${svcClass(key)}"><div><span class="ms-tag">${esc(info.label)}</span>${chip}</div><p>${esc(info.tool)} · 연결한 계정 ${count}개${tool?.version ? `<br><span class="ms-soft ms-num">${esc(tool.version)}</span>` : ''}</p><button type="button" class="ms-button${ui.guide === key ? ' ms-button-primary' : ''}" data-subs="guide" data-service="${key}">${count ? '계정 더 연결' : '연결 시작'}</button></div>`;
+      const chip = info.key ? '<span class="ms-chip ms-chip-ok">설치 필요 없음</span>' : !tool ? '<span class="ms-chip">확인 중</span>' : tool.installed ? `<span class="ms-chip ms-chip-ok">설치됨</span>` : '<span class="ms-chip ms-chip-warn">설치 필요</span>';
+      return `<div class="ms-connect ${svcClass(key)}"><div><span class="ms-tag">${esc(info.label)}</span>${chip}</div><p>${esc(info.tool)} · 연결한 ${info.key ? '키' : '계정'} ${count}개${tool?.version ? `<br><span class="ms-soft ms-num">${esc(tool.version)}</span>` : ''}</p><button type="button" class="ms-button${ui.guide === key ? ' ms-button-primary' : ''}" data-subs="guide" data-service="${key}">${count ? (info.key ? '키 더 넣기' : '계정 더 연결') : '연결 시작'}</button></div>`;
     }).join('');
     return section('04', '연결과 가이드', '공식 프로그램이 이 PC에서 사용량을 읽어요. 로그인 정보는 이 PC 밖으로 나가지 않아요.', `<div class="ms-connects">${cards}</div>${ui.guide ? guide(ui.guide) : ''}${troubleshooting()}`);
   }
+  const step = (n, title, state, body) => `<li class="ms-step ms-step-${state}"><span class="ms-step-mark ms-num" aria-hidden="true">${state === 'done' ? '✓' : n}</span><div><h4>${title}</h4>${body}</div></li>`;
+  const guideFrame = (info, steps) => `<div class="ms-guide" id="ms-guide"><div class="ms-guide-head"><h3>${esc(info.label)} 연결 가이드</h3><button type="button" class="ms-link" data-subs="close-guide">닫기</button></div><ol>${steps}</ol></div>`;
+  // API 키로 읽는 서비스: 설치·로그인 대신 키 페이지 열기 → 붙여 넣기.
+  function keyGuide(key) {
+    const info = AUTO[key];
+    return guideFrame(info, step(1, '요금제 확인', 'done', `<p>${esc(info.plan)}</p>`)
+      + step(2, 'API 키 복사', 'now', `<p>아래 단추로 Typecast API 키 페이지를 열고 로그인해요. 이미 있는 키를 복사해 와도 돼요. 키를 새로 만들면 예전 키는 더 이상 쓸 수 없어요.</p><div class="ms-inline"><button type="button" class="ms-button" data-subs="help" data-link="${esc(info.planLink)}">API 키 페이지 열기</button></div>`)
+      + step(3, '키 붙여 넣기', 'now', `<form class="ms-code" data-subs-form="key" data-service="${esc(key)}"><label for="ms-key">${esc(info.label)} API 키</label><div class="ms-inline"><input id="ms-key" type="password" autocomplete="off" spellcheck="false" value="${esc(ui.key)}" placeholder="복사한 키를 붙여 넣기 (Ctrl+V)"><button type="submit" class="ms-button ms-button-primary" ${busy ? 'disabled' : ''}>연결</button></div><p class="ms-soft">키는 ${esc(info.label)}에 남은 크레딧을 물을 때만 쓰고 이 PC에 암호화해 둬요. 화면에는 끝 네 글자만 보여요.</p></form>`)
+      + step(4, '첫 확인', 'wait', '<p>연결하면 바로 남은 크레딧을 읽어요. 다음부터는 맨 위 「지금 확인」 한 번이면 같이 다시 읽어요.</p>'));
+  }
   function guide(key) {
-    const info = AUTO[key], tool = snapshot?.tools?.[key], login = snapshot?.login && snapshot.login.service === key ? snapshot.login : null, otherLogin = snapshot?.login && snapshot.login.service !== key && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
+    const info = AUTO[key];
+    if (info.key) return keyGuide(key);
+    const tool = snapshot?.tools?.[key], login = snapshot?.login && snapshot.login.service === key ? snapshot.login : null, otherLogin = snapshot?.login && snapshot.login.service !== key && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
     const installed = !!tool?.installed;
-    const step = (n, title, state, body) => `<li class="ms-step ms-step-${state}"><span class="ms-step-mark ms-num" aria-hidden="true">${state === 'done' ? '✓' : n}</span><div><h4>${title}</h4>${body}</div></li>`;
     const check = step(1, '요금제 확인', 'done', `<p>${esc(info.plan)}</p>${info.planLink ? `<button type="button" class="ms-link" data-subs="help" data-link="${info.planLink}">요금제 보기</button>` : ''}`);
     const install = step(2, `${info.tool} 설치`, installed ? 'done' : 'now', installed
       ? `<p>이 PC에 설치돼 있어요${tool.version ? ` (${esc(tool.version)})` : ''}.</p>`
@@ -357,7 +461,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button></div>`;
     } else if (login && !['done', 'error', 'cancelled'].includes(login.stage)) {
       loginBody = `<p>${esc(login.message || '로그인을 준비하고 있어요.')}</p>
-        ${login.url ? '<p class="ms-soft">브라우저가 열리지 않았다면 아래 단추로 다시 열어 주세요. 오른쪽 위 계정이 연결할 계정과 같은지도 확인해 주세요.</p><div class="ms-inline"><button type="button" class="ms-button" data-subs="open-url">로그인 페이지 다시 열기</button></div>' : ''}
+        ${login.url ? '<p class="ms-soft">브라우저가 열리지 않았다면 아래 단추로 다시 열어 주세요. 브라우저에 다른 계정이 이미 로그인돼 있으면 「주소 복사」를 눌러 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣고, 연결할 계정으로 로그인해 주세요.</p><div class="ms-inline"><button type="button" class="ms-button" data-subs="open-url">로그인 페이지 다시 열기</button><button type="button" class="ms-button" data-subs="copy-url">주소 복사</button></div>' : ''}
         ${login.needsCode ? `<form class="ms-code" data-subs-form="code"><label for="ms-code">브라우저에 보이는 코드</label><div class="ms-inline"><input id="ms-code" autocomplete="off" spellcheck="false" value="${esc(ui.code)}" placeholder="코드를 붙여 넣기 (Ctrl+V)"><button type="submit" class="ms-button ms-button-primary">연결</button></div></form>` : ''}
         ${key === 'gpt' && login.url ? '<p class="ms-soft">ChatGPT가 휴대폰 인증을 요구하면 안내대로 마쳐 주세요. 끝나면 이 화면이 저절로 넘어가요.</p>' : ''}
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button>${key === 'claude' && !login.console ? '<button type="button" class="ms-link" data-subs="console-login">코드가 안 들어가면 · 검은 창으로 로그인하기</button>' : ''}</div>`;
@@ -370,13 +474,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     }
     const loginState = !installed ? 'wait' : login?.stage === 'done' ? 'done' : 'now';
     const first = step(4, '첫 확인', login?.stage === 'done' ? 'done' : 'wait', '<p>연결하면 바로 사용량을 한 번 읽어요. 다음부터는 맨 위 「지금 확인」 한 번이면 모든 계정을 다시 읽어요.</p>');
-    return `<div class="ms-guide" id="ms-guide"><div class="ms-guide-head"><h3>${esc(info.label)} 연결 가이드</h3><button type="button" class="ms-link" data-subs="close-guide">닫기</button></div><ol>${check}${install}${step(3, '로그인', loginState, loginBody)}${first}</ol></div>`;
+    return guideFrame(info, `${check}${install}${step(3, '로그인', loginState, loginBody)}${first}`);
   }
   function troubleshooting() {
     const items = [
       ['설치했는데 「설치 필요」로 나와요', '「설치 끝났어요 · 다시 확인」을 눌러 주세요. 그래도 같으면 SYNK 앱을 완전히 껐다 켜거나 PC를 다시 시작해 주세요. Windows가 새 프로그램 위치를 아직 모를 때 생겨요.'],
       ['로그인 페이지가 열리지 않아요', '가이드의 「로그인 페이지 다시 열기」를 눌러 주세요. 회사·학교 네트워크, VPN, 백신의 웹 보호가 막을 수 있으니 잠시 끄거나 휴대폰 핫스팟으로 다시 해 보세요.'],
-      ['다른 계정으로 로그인돼요', '브라우저 오른쪽 위에서 계정을 바꾸거나 로그아웃한 뒤 다시 시도해 주세요. 로그인은 브라우저에 지금 로그인된 계정으로 승인돼요. 계정을 여러 개 연결할 때는 하나 연결할 때마다 브라우저(claude.ai·chatgpt.com)에서 다음 계정으로 바꾼 뒤 「새 계정 연결」을 눌러 주세요.'],
+      ['다른 계정으로 로그인돼요', '로그인은 브라우저에 지금 로그인된 계정으로 승인돼요. 가장 쉬운 방법은 로그인 단계의 「주소 복사」를 눌러 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣고, 연결할 계정으로 로그인하는 거예요. 계정을 여러 개 연결할 때는 하나씩 「새 계정 연결」을 누르고, 시크릿 창은 계정마다 새로 열어 주세요.'],
+      ['Typecast 키가 맞지 않대요', 'Typecast API 키 페이지에서 키를 다시 복사해 붙여 넣어 주세요. 키를 새로 만들면 예전 키는 더 이상 안 돼요. 그럴 땐 계정판의 Typecast 줄에서 「다시 연결」을 눌러 새 키를 넣어 주세요.'],
       ['코드를 붙여 넣어도 넘어가지 않아요', '코드 앞뒤 공백 없이 한 번에 붙여 넣어 주세요. 계속 안 되면 「검은 창으로 로그인하기」를 눌러 검은 창에 직접 붙여 넣어 주세요(오른쪽 클릭으로 붙여넣기).'],
       ['「구독 한도가 없어요」라고 나와요', 'Claude Code는 Pro·Max 이상 요금제에서만 쓸 수 있어요. 무료 요금제 계정은 자동으로 읽을 수 없으니 「직접 넣기」로 결제일만 챙겨 주세요.'],
       ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
@@ -389,6 +494,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     return `<section class="ms-section"><div class="ms-section-heading"><span class="ms-section-number">${number}</span><div><h2>${title}</h2><p>${description}</p></div></div>${body}</section>`;
   }
 
+  // 고리 숫자는 처음 보일 때와 값이 바뀔 때만 한 번 굴리고 고리를 그린다(1분마다 다시 그려도 가만히 있다).
+  function rollChanged() {
+    const nodes = container?.querySelectorAll?.('[data-roll]'); if (!nodes) return;
+    const motion = motionOn();
+    for (const el of nodes) {
+      const key = el.dataset.roll, value = el.textContent;
+      if (motion && rolled.get(key) !== value) { roll(el); el.closest('.ms-gauge')?.classList.add('is-drawing'); }
+      rolled.set(key, value);
+    }
+  }
   function paint() {
     if (!container || !visible) return;
     const now = Date.now(), rows = snapshot?.rows || [];
@@ -397,11 +512,12 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
     else if (!context.signedIn) body = section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">위 초록 판의 「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>');
     else if (loadError) body = section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>');
     else if (!snapshot) body = '<p class="ms-loading">계정판을 준비하고 있어요…</p>';
-    else if (!rows.length) { if (!ui.guide && !ui.guideClosed) ui.guide = 'claude'; body = connectSection() + section('02', '직접 넣는 구독', 'Suno·Typecast처럼 공식 출력이 없는 서비스는 결제일과 요금만 넣어 둘 수 있어요.', manualForm()); }
+    else if (!rows.length) { if (!ui.guide && !ui.guideClosed) ui.guide = 'claude'; body = connectSection() + section('02', '직접 넣는 구독', 'Suno·Hugging Face처럼 공식 출력이 없는 서비스는 결제일과 요금만 넣어 둘 수 있어요.', manualForm()); }
     else body = attentionSection(rows, now) + serviceSection(rows, now) + agendaSection(rows, now) + connectSection();
     const focused = document.activeElement?.id;
     const selection = focused && container.querySelector('#' + CSS.escape(focused)) ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
     container.innerHTML = `<div class="member-subs">${hero(now)}${body}</div>`;
+    rollChanged();
     if (focused) { const el = container.querySelector('#' + CSS.escape(focused)); if (el) { el.focus({ preventScroll: true }); if (selection && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(...selection); } catch {} } }
   }
 
@@ -413,7 +529,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {} } = {}) {
       if (!timer) { timer = setInterval(() => { if (visible && !document.hidden && !(container?.contains(document.activeElement) && document.activeElement.matches('input,select,textarea'))) paint(); }, 60000); timer?.unref?.(); }
       paint();
     },
-    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; } },
+    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; rolled.clear(); } },
     dispose() { clearInterval(timer); timer = null; visible = false; },
     refresh: () => load(true),
   };

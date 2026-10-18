@@ -6,7 +6,7 @@ const out=path.join(__dirname,'라이브13'),m=JSON.parse(fs.readFileSync(path.j
 const mode=process.argv[2]||'--check';
 if(!['--upload','--check','--apply'].includes(mode))throw Error('모드 오류');
 const sha=b=>createHash('sha256').update(b).digest('hex'),hash=f=>sha(fs.readFileSync(f));
-const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97',base='/opt/synk-radio/';
+const key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio',base='/opt/synk-radio/';
 function rpc(code,p){return JSON.parse(execFileSync('ssh',['-i',key,host,'node'],{input:'const p='+JSON.stringify(p)+';\n'+code,encoding:'utf8',timeout:60000}));}
 const definitions=[
  ['지면/bots/오버레이/마스코트.html',m.sourceHtmlSha],

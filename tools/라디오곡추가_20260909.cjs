@@ -90,7 +90,7 @@ function deploy() {
   const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
   if (hash(result) !== report.output.sha256) throw new Error('Output changed after verification');
   const ssh = ['-i', path.join(os.homedir(), '.ssh/synk_radio'), '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15'];
-  const remoteHost = 'synk@34.71.111.97';
+  const remoteHost = 'synk-radio';
   const remoteFile = `/opt/synk-radio/소리/${path.basename(result)}`;
   run('scp', [...ssh, result, `${remoteHost}:${remoteFile}.pending`]);
   const payload = { remoteFile, sha256: report.output.sha256, oldAudioHash, oldPlaylistHash };

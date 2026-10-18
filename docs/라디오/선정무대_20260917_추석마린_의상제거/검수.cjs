@@ -19,7 +19,7 @@ const localMirror={
 for(const [rp,lp] of Object.entries(localMirror)) assert.equal(exactRemote[rp],sha(fs.readFileSync(path.join(root,lp))),'로컬 실행 원본이 원격 기준과 다르다: '+lp);
 const remoteImagePaths=Object.keys(exactRemote).filter(p=>p.includes('/opt/synk-radio/지면/docs/'));
 const remoteCode=`const fs=require('fs'),crypto=require('crypto');const paths=${JSON.stringify(remoteImagePaths)};const out={};for(const p of paths){const b=fs.readFileSync(p);out[p]={sha256:crypto.createHash('sha256').update(b).digest('hex'),base64:b.toString('base64')}}process.stdout.write(JSON.stringify(out));`;
-const remoteJson=execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','StrictHostKeyChecking=no','-o','ConnectTimeout=20','synk@34.71.111.97','node'],{input:remoteCode,encoding:'utf8',timeout:90000,maxBuffer:8*1024*1024,windowsHide:true});
+const remoteJson=execFileSync('ssh',['-i',path.join(os.homedir(),'.ssh','synk_radio'),'-o','StrictHostKeyChecking=accept-new','-o','ConnectTimeout=20','synk-radio','node'],{input:remoteCode,encoding:'utf8',timeout:90000,maxBuffer:8*1024*1024,windowsHide:true});
 const remote=JSON.parse(remoteJson),remoteAssets=new Map();
 for(const rp of remoteImagePaths){assert.equal(remote[rp]?.sha256,exactRemote[rp],'서버 그림이 검수 기준과 다르다: '+path.basename(rp));remoteAssets.set(rp.replace('/opt/synk-radio/지면',''),Buffer.from(remote[rp].base64,'base64'));}
 for(const [rp,lp] of Object.entries(localMirror)) remoteAssets.set(rp.replace('/opt/synk-radio/지면',''),fs.readFileSync(path.join(root,lp)));

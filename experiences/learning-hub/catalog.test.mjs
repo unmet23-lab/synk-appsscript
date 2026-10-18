@@ -11,8 +11,8 @@ const block = source.match(/const catalog = (\[[\s\S]*?\n\]);/);
 const catalog = vm.runInNewContext(block[1]);
 
 async function cells() {
-  const found = { racing: new Set(), rhythm: new Set(), order: new Set(), entry: new Set(), story: new Set(), slice: new Set() };
-  const metas = { racing: [], rhythm: [], order: [], entry: [], story: [], slice: [] };
+  const found = { racing: new Set(), rhythm: new Set(), order: new Set(), entry: new Set(), story: new Set(), slice: new Set(), rally: new Set() };
+  const metas = { racing: [], rhythm: [], order: [], entry: [], story: [], slice: [], rally: [] };
   Object.defineProperty(found, 'metas', { value: metas });
   const add = (game, m) => { found[game].add(`${m.skillId}|${m.difficulty}|${m.responseFormat}`); metas[game].push(m); };
   const racing = await import(new URL('korean-racing/personalization.js', games));
@@ -39,9 +39,11 @@ async function cells() {
   for (const m of [...E.acts.flatMap(a => a.missions), ...E.review]) add('story', { responseFormat: 'action', ...story.missionMetadata(m) });
   const slice = await import(new URL('blank-slice/learning.mjs', games)), sentences = await import(new URL('blank-slice/content.mjs', games));
   for (const item of sentences.ITEMS) add('slice', slice.itemMetadata(item));
+  const rally = await import(new URL('talk-rally/learning.mjs', games)), lines = await import(new URL('talk-rally/content.mjs', games));
+  for (const item of lines.ITEMS) add('rally', rally.itemMetadata(item));
   return found;
 }
-const GAME = { 'racing-reading': 'racing', 'racing-listening': 'racing', order: 'order', rhythm: 'rhythm', 'reading-entry-check': 'entry', 'reading-story-classroom': 'story', 'reading-blank-slice': 'slice' };
+const GAME = { 'racing-reading': 'racing', 'racing-listening': 'racing', order: 'order', rhythm: 'rhythm', 'reading-entry-check': 'entry', 'reading-story-classroom': 'story', 'reading-blank-slice': 'slice', 'talk-rally': 'rally' };
 
 test('every ability the hub names exists in its game at that difficulty and response format', async () => {
   const found = await cells();

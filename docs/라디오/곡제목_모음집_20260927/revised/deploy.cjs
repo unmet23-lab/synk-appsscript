@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto'),cp=require('child_process'),assert=require('assert/strict');
-const dir=__dirname,root=path.resolve(dir,'../../../..'),key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk@34.71.111.97';
+const dir=__dirname,root=path.resolve(dir,'../../../..'),key=path.join(os.homedir(),'.ssh/synk_radio'),host='synk-radio';
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const before=fs.readFileSync(path.join(dir,'server-board-before.html'),'utf8'),local=fs.readFileSync(path.join(root,'bots/오버레이/전광판.html'),'utf8');
 const css=/  #구석\.현재곡 \{[\s\S]*?  #구석\.현재곡\.밝음 \{ opacity: 1; \}/;

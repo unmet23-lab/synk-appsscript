@@ -40,10 +40,10 @@ const expected=p.mode==='--start'?'afterSha256':'beforeSha256';for(const c of p.
  }
  console.log(JSON.stringify({at:new Date().toISOString(),mode:p.mode,before,after,media,remoteAsset:p.remoteAsset,assetSha256:p.mode==='--check'?null:hash(p.remoteAsset),changes:p.changes.map(c=>({target:c.target,sha256:hash(c.target),backup:c.backup})),protectedUnchanged:Object.keys(p.protected)},null,2));
 })().catch(e=>{console.error(e.message);process.exitCode=1});`;
-function run(data){return JSON.parse(cp.execFileSync('ssh',['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20','synk@34.71.111.97','node'],{input:'globalThis.p='+JSON.stringify(data)+';\n'+remote,encoding:'utf8',timeout:100000,maxBuffer:2*1024*1024,windowsHide:true}));}
+function run(data){return JSON.parse(cp.execFileSync('ssh',['-i',key,'-o','BatchMode=yes','-o','ConnectTimeout=20','synk-radio','node'],{input:'globalThis.p='+JSON.stringify(data)+';\n'+remote,encoding:'utf8',timeout:100000,maxBuffer:2*1024*1024,windowsHide:true}));}
 if(mode==='--stage'){
  run({...p,mode:'--check'});p.uploadPath=p.remoteAsset+'.upload-'+p.id;
- cp.execFileSync('scp',['-i',key,'-o','BatchMode=yes',asset,'synk@34.71.111.97:'+p.uploadPath],{stdio:'pipe',timeout:180000,windowsHide:true});
+ cp.execFileSync('scp',['-i',key,'-o','BatchMode=yes',asset,'synk-radio:'+p.uploadPath],{stdio:'pipe',timeout:180000,windowsHide:true});
 }
 if(mode==='--start'){
  const review=JSON.parse(fs.readFileSync(path.join(dir,'마감검수.json')));assert.equal(review.assetSha256,p.assetSha256);assert.equal(review.pass,true);

@@ -67,6 +67,13 @@ async function 부르기(tok, 방법, url, 몸) {
   const 방화벽 = await 부르기(tok, 'GET', `https://compute.googleapis.com/compute/v1/projects/${프로젝트}/global/firewalls`);
   const ssh문 = (방화벽.j.items || []).filter((f) => (f.allowed || []).some((a) => (a.ports || []).includes('22')));
   console.log(`  SSH 문(22번) = ${ssh문.length ? ssh문.map((f) => f.name).join(', ') : '❌ 안 열려 있다'}`);
+  for (const f of ssh문) {
+    const 출발지 = f.sourceRanges || [];
+    console.log(`    ${f.name} 출발지 = ${출발지.join(', ') || '(없음)'}${출발지.includes('0.0.0.0/0') ? ' ⚠ 인터넷 전체에 열려 있다' : ''}`);
+  }
+
+  // 저장소의 라디오 스크립트는 주소·계정 대신 SSH 별칭 synk-radio만 쓴다(10-17). 주소는 이 PC의 ~/.ssh/config 한 곳에 둔다.
+  console.log(`\n~/.ssh/config 의 별칭(주소가 바뀌면 여기만 고친다):\n  Host synk-radio\n    HostName ${주소}\n    User ${사용자}\n    IdentityFile ~/.ssh/synk_radio\n    StrictHostKeyChecking accept-new`);
 
   if (!붙이기) { console.log('\n붙이려면: node tools/라디오서버열쇠.js --붙이기\n'); return; }
 
@@ -99,5 +106,5 @@ async function 부르기(tok, 방법, url, 몸) {
   } else console.log('② SSH 문은 이미 열려 있다');
 
   console.log(`\n📏 들어가 보는 법(열쇠가 퍼지는 데 십수 초 걸린다):`);
-  console.log(`   ssh -i ~/.ssh/synk_radio -o StrictHostKeyChecking=no ${사용자}@${주소} "uptime"\n`);
+  console.log(`   ssh synk-radio "uptime"   (별칭은 위 ~/.ssh/config 블록)\n`);
 })().catch((e) => { console.error(`\n🔴 ${e.message}\n`); process.exit(1); });

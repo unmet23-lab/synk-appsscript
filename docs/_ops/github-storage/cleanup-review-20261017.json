@@ -1,0 +1,1074 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-17T05:43:06.433Z",
+  "status": "blocked-before-process-start",
+  "deletedFiles": 0,
+  "reclaimedBytes": 0,
+  "verification": {
+    "checkedAt": "2026-10-17T05:35:15.535064+00:00",
+    "completedAt": "2026-10-17T05:35:24.887468+00:00",
+    "manifest": "archive-20261017.json",
+    "manifestSha256": "98df11c2150269613c1f9f1c5d91d970c4a872cab9e769fb82a1b6ee6b867ec7",
+    "candidateDeletionFiles": 678,
+    "candidateDeletionBytes": 1156681695,
+    "retainedDownloadBytes": 577016464,
+    "readyForAuthorizedTemporaryCopyDeletion": true,
+    "localVerificationPassed": true,
+    "groups": {
+      "packages": {
+        "root": ".tmp/github-storage-20261017/packages",
+        "withinWorkspace": true,
+        "files": 3,
+        "directories": 0,
+        "missingFiles": [],
+        "extraFiles": [],
+        "extraDirectories": [],
+        "rejectedPaths": [],
+        "noReparsePoints": true,
+        "bytes": 577016464,
+        "verified": true
+      },
+      "remote-download": {
+        "root": ".tmp/github-storage-20261017/remote-download",
+        "withinWorkspace": true,
+        "files": 3,
+        "directories": 3,
+        "missingFiles": [],
+        "extraFiles": [],
+        "extraDirectories": [],
+        "rejectedPaths": [],
+        "noReparsePoints": true,
+        "bytes": 577016464,
+        "verified": true
+      },
+      "restore-check": {
+        "root": ".tmp/github-storage-20261017/restore-check",
+        "withinWorkspace": true,
+        "files": 675,
+        "directories": 100,
+        "missingFiles": [],
+        "extraFiles": [],
+        "extraDirectories": [],
+        "rejectedPaths": [],
+        "noReparsePoints": true,
+        "bytes": 579665231,
+        "verified": true
+      }
+    },
+    "originals": {
+      "files": 675,
+      "bytes": 579665231,
+      "matchedFiles": 675,
+      "verified": true,
+      "scope": "Only the 675 manifest originals; unrelated repository files are not deletion candidates."
+    },
+    "remote": {
+      "checkedAt": "2026-10-17T05:35:23.932970+00:00",
+      "available": true,
+      "metadataVerified": true,
+      "downloadedThisRun": false,
+      "private": true,
+      "releaseId": 415592655,
+      "tag": "storage-artifacts-20261017",
+      "draft": false,
+      "releaseMatches": true,
+      "totalAssets": 4,
+      "assets": [
+        {
+          "id": 649592485,
+          "name": "character-correction-output-20261017-5d6977297b03.zip",
+          "size": 313251328,
+          "digest": "sha256:5d6977297b03bb5c1ec77697b4ef06f7078c684519011044ceb3ed952b6f118c",
+          "state": "uploaded",
+          "updated_at": "2026-10-17T05:01:41Z",
+          "expectedBytes": 313251328,
+          "expectedSha256": "5d6977297b03bb5c1ec77697b4ef06f7078c684519011044ceb3ed952b6f118c",
+          "digestAvailable": true,
+          "verified": true
+        },
+        {
+          "id": 649592487,
+          "name": "world-app-qa-20261017-f63bc14afcce.zip",
+          "size": 157776864,
+          "digest": "sha256:f63bc14afccec8ca6d35e4781a4c91233eca6d35c1fc292cd28397fb36763b3b",
+          "state": "uploaded",
+          "updated_at": "2026-10-17T05:01:24Z",
+          "expectedBytes": 157776864,
+          "expectedSha256": "f63bc14afccec8ca6d35e4781a4c91233eca6d35c1fc292cd28397fb36763b3b",
+          "digestAvailable": true,
+          "verified": true
+        },
+        {
+          "id": 649592484,
+          "name": "world-home-qa-20261017-365f6dfff2a2.zip",
+          "size": 105988272,
+          "digest": "sha256:365f6dfff2a226ce8ba6b97b64f4a51c352fe4a7dbc94682f8c603a3c4de81c8",
+          "state": "uploaded",
+          "updated_at": "2026-10-17T05:01:13Z",
+          "expectedBytes": 105988272,
+          "expectedSha256": "365f6dfff2a226ce8ba6b97b64f4a51c352fe4a7dbc94682f8c603a3c4de81c8",
+          "digestAvailable": true,
+          "verified": true
+        }
+      ]
+    },
+    "errors": []
+  },
+  "execution": {
+    "recordedAt": "2026-10-17T05:39:19.675Z",
+    "status": "blocked-before-process-start",
+    "userExplicitlyAuthorizedThisTurn": true,
+    "tool": "exec_command",
+    "error": "CreateProcess Rejected: blocked by policy",
+    "detailedReasonProvided": false,
+    "deletedFiles": 0,
+    "reclaimedBytes": 0,
+    "temporaryCopyFiles": 678,
+    "temporaryCopyBytes": 1156681695,
+    "additionalCandidateFiles": 9,
+    "additionalCandidateBytes": 97889040,
+    "pathsStillPresent": [
+      {
+        "path": ".tmp/github-storage-20261017/packages",
+        "exists": true
+      },
+      {
+        "path": ".tmp/github-storage-20261017/restore-check",
+        "exists": true
+      },
+      {
+        "path": ".tmp/github-storage-20261017/remote-download",
+        "exists": true
+      }
+    ],
+    "handoff": "docs/_ops/github-storage/임시사본정리_Claude인계_20261017.txt",
+    "noAlternativeDeletionAttempted": true
+  },
+  "additionalTemporaryFiles": {
+    "generatedAt": "2026-10-17T05:34:43.603Z",
+    "scope": "Metadata-only; never followed symlinks/junctions; repository trees and today/current-task folders excluded.",
+    "topLevelDirectories": 571,
+    "filesScanned": 141248,
+    "bytesScanned": 4877475345,
+    "canonicalDependency": {
+      "path": "desktop/node_modules/electron/dist/icudtl.dat",
+      "bytes": 10876560,
+      "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+      "links": 1,
+      "inode": "1125899907764117",
+      "device": "1110905381"
+    },
+    "decision": {
+      "auditOnly": true,
+      "deletionAttempted": false,
+      "filesWritten": [
+        ".tmp/github-storage-20261017/additional-temp-audit.json"
+      ],
+      "candidateCount": 9,
+      "candidateBytes": 97889040,
+      "currentDependencyVersion": "44.5.1",
+      "otherOldBuilds": "657 byte-identical tracked-source output copies (7,469,782B) are documented separately but are not recommended for this cleanup; benefit is small and partial payload removal obscures historical build shape.",
+      "excludedRecent": [
+        ".tmp/member-language8-20261016",
+        ".tmp/member-language9-20261016",
+        ".tmp/member-complex-language-20261016",
+        "all 20261017/current cleanup folders"
+      ],
+      "protectedLinks": [
+        {
+          "path": ".tmp/platform-unified-login-20261009",
+          "links": [
+            "platform-unified-login-20261009/public-v8-rehearsal-slim/input/experiences/synk-account/node_modules",
+            "platform-unified-login-20261009/public-v8/input/experiences/synk-account/node_modules",
+            "platform-unified-login-20261009/public-v7-attempt2/input/experiences/synk-account/node_modules",
+            "platform-unified-login-20261009/public-v7/input/experiences/synk-account/node_modules",
+            "platform-unified-login-20261009/public-v6/input/experiences/synk-account/node_modules",
+            "platform-unified-login-20261009/artifact-audit-v5-exact/input/experiences/synk-account/node_modules"
+          ]
+        },
+        {
+          "path": ".tmp/academy-budget-20261001",
+          "links": [
+            "academy-budget-20261001/node_modules"
+          ]
+        },
+        {
+          "path": ".tmp/company-costs-20261001",
+          "links": [
+            "company-costs-20261001/node_modules"
+          ]
+        }
+      ],
+      "limitations": [
+        "Folder modification times were altered by laptop migration; file mtimes and source provenance used instead.",
+        "Metadata totals do not measure allocated disk size and are not a deletion plan.",
+        "Before any authorized deletion root must recheck source and candidate hashes and active process references; no deletion occurs in this audit.",
+        "Execution policy blocked root cleanup; no alternative tool or agent deletion is authorized by this audit."
+      ]
+    },
+    "candidates": [
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v4/world-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v4/platform-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v4/messenger-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v5/world-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v5/platform-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v5/messenger-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v3/platform-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-workspace-connect-final-smoke-20261010-v3/messenger-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "LICENSE.electron.txt",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      },
+      {
+        "path": ".tmp/desktop-native-world-entry-smoke-20261010-02/world-native/icudtl.dat",
+        "bytes": 10876560,
+        "sha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "source": "desktop/node_modules/electron/dist/icudtl.dat",
+        "sourceSha256": "9f48c7f9c7c94d516a14870707e910ab94d75ae640ff6842c4af53276cd26ebe",
+        "matches": true,
+        "links": 1,
+        "standaloneCopy": true,
+        "insideWorkspace": true,
+        "tracked": false,
+        "parentEntries": [
+          "icudtl.dat",
+          "locales",
+          "resources",
+          "vk_swiftshader_icd.json"
+        ],
+        "noExecutableInParent": true,
+        "kind": "leftover-electron-runtime-copy",
+        "ownerEvidence": "Dated desktop native smoke test output (2026-10-09/10), current canonical dependency is desktop/node_modules/electron/dist/icudtl.dat. Parent contains no executable after an earlier cleanup.",
+        "restoration": "Copy the same-hash canonical dependency back to this exact path if the historical smoke folder is needed; do not delete canonical dependency or other evidence/profile files."
+      }
+    ],
+    "oldWorldCopiesSummary": {
+      "groups": 17,
+      "files": 657,
+      "bytes": 7469782,
+      "head": "ab56f1212f5eeee38e041885e75c5019481a7e1f",
+      "selection": "Only existing old output files byte-identical to a tracked current source whose raw Git blob equals HEAD. Keep manifests and all nonmatching output/source files."
+    }
+  },
+  "additionalDocuments": {
+    "date": "2026-10-17",
+    "mode": "read-only additional document audit",
+    "scope": {
+      "canonicalFull": [
+        "docs/AI_운영원칙.md",
+        "docs/비전_정본.md",
+        "docs/제품방향.md"
+      ],
+      "canonicalSection": "docs/사업발전_정본.md section 0; current identity, shared capabilities, business expansion and preservation boundaries",
+      "priorResults": [
+        "inventory-after.json",
+        "semantic-business-pass4.json",
+        "semantic-content-pass4.json",
+        "semantic-operations-pass4.json",
+        "semantic-product-pass4.json",
+        "content-exact-duplicates-pass2.json"
+      ],
+      "priorDuplicateGroups": 148,
+      "currentFilteredGroups": 20,
+      "currentFilteredPaths": 81,
+      "method": "Reused the existing duplicate inventory; excluded temporary/output/QA/vendor/archive paths; freshly hashed surviving members; read selected representative texts and actual build/protocol references. This was not another full-repository semantic audit.",
+      "notReviewed": "All other documents, external law/pricing/service state, binary document contents, and ongoing uncommitted content beyond the selected path status."
+    },
+    "findings": {
+      "additionalSafeDeletionCandidates": 0,
+      "conclusion": "No additional document deletion is justified by the examined evidence. Most remaining duplicate paths are frozen experiments, generated build copies, local media catalogs or already shortened maintenance pointers. Identical-content paths do not imply duplicate Git blob storage.",
+      "hyperframes": "Retained only as the inspected existing-video maintenance entry. Presence of the name is not a reason for deletion.",
+      "preservation": "No source, original asset, index, commit, setting or ongoing work modified."
+    },
+    "groups": [
+      {
+        "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+        "bytesEach": 11,
+        "paths": [
+          "CLAUDE.md",
+          "docs/디자인/SNS키트/모션견본/CLAUDE.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/CLAUDE.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/CLAUDE.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/CLAUDE.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/CLAUDE.md",
+          "docs/마케팅/synkbrief-ai-angles-20260927/CLAUDE.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/CLAUDE.md",
+          "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/CLAUDE.md",
+          "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/CLAUDE.md",
+          "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/CLAUDE.md",
+          "docs/마케팅/온라인마케팅지도/dashboard/CLAUDE.md",
+          "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/CLAUDE.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/CLAUDE.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/CLAUDE.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/CLAUDE.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/CLAUDE.md",
+          "videos/synk-brand-opening/CLAUDE.md"
+        ],
+        "decision": "retain-entry",
+        "reason": "11-byte @AGENTS.md delegation for the local folder; it does not duplicate the full policy."
+      },
+      {
+        "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c",
+        "bytesEach": 41550,
+        "paths": [
+          "docs/SHIFT/내부시범_20261007/input/canonical.md",
+          "docs/마케팅/SHIFT.md"
+        ],
+        "decision": "retain-frozen-input",
+        "reason": "SHIFT protocol.json:35, report.json:10,171 and prepare.mjs:57,62 use the frozen input and hash evidence."
+      },
+      {
+        "sha256": "c64fa9aaac644797b0dd4214c37aee3737e75b5d1b29202322f9edfba6e911f1",
+        "bytesEach": 2468,
+        "paths": [
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/.media/index.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/.media/index.md"
+        ],
+        "decision": "retain-local-catalog",
+        "reason": "Identical tables resolve asset paths relative to separate video projects."
+      },
+      {
+        "sha256": "c6ef6da18fadc697e1d116ba6d9a56f8dfd55b57cd72eb13202b37b7e5801643",
+        "bytesEach": 565,
+        "paths": [
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md",
+          "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md",
+          "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md",
+          "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md"
+        ],
+        "decision": "retain-maintenance-entry",
+        "reason": "Already shortened to canonical tool selection and existing-video maintenance; HyperFrames is not a new-video default."
+      },
+      {
+        "sha256": "25b1f0bd366f234749c16f06fae2aa68bfc6aac1a13603760e620c5ef87be654",
+        "bytesEach": 501,
+        "paths": [
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/frame.md",
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/frame.md"
+        ],
+        "decision": "retain-project-history",
+        "reason": "Existing version-specific product/design/narration source; no current business-policy conflict or proven safe deletion found in this narrowed audit."
+      },
+      {
+        "sha256": "e5f0b13287df356ca9a8429bb542fac3e904ff8bf1aa3ddd90c40bcc5534cad9",
+        "bytesEach": 574,
+        "paths": [
+          "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md",
+          "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md"
+        ],
+        "decision": "retain-maintenance-entry",
+        "reason": "Already shortened to canonical tool selection and existing-video maintenance; HyperFrames is not a new-video default."
+      },
+      {
+        "sha256": "dc4198e4e3b7ae551548b2d8e6011e0073e2a3bdbdac83d10f90683eb567d344",
+        "bytesEach": 469,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/follow-along-v11/읽어주세요.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/follow-along-v9/읽어주세요.md"
+        ],
+        "decision": "retain-delivery-instructions",
+        "reason": "Each existing delivery version includes its page-specific instructions and text-file usage."
+      },
+      {
+        "sha256": "dcd81122da26d4ff3e8a0d80ce80f05935012f2fd1ad4d087bd6d4423dca9d5b",
+        "bytesEach": 449,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/follow-along-v14/읽어주세요.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/follow-along-v15/읽어주세요.md"
+        ],
+        "decision": "retain-delivery-instructions",
+        "reason": "Each existing delivery version includes its page-specific instructions and text-file usage."
+      },
+      {
+        "sha256": "fd0912983ffe4ef55401ec8e3c43d8b564bacc3b5ce28ec44e00d66dd8233b61",
+        "bytesEach": 668,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v10/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v11/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v12/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v13/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v14/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v15/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v16/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v17/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v18/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v7/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v8/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v9/.media/index.md"
+        ],
+        "decision": "retain-local-catalog",
+        "reason": "Identical tables resolve asset paths relative to separate video projects."
+      },
+      {
+        "sha256": "e3b235697a8ac209c06e65d46cd8c33c08128d6564380828f53aa7224abcf24b",
+        "bytesEach": 2810,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v12/낭독대본.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v13/낭독대본.md"
+        ],
+        "decision": "retain-project-history",
+        "reason": "Existing version-specific product/design/narration source; no current business-policy conflict or proven safe deletion found in this narrowed audit."
+      },
+      {
+        "sha256": "f714702e4f6847d3e5610c82d9c681d5f08c592f3a6e58e293c91cefd1dbf54c",
+        "bytesEach": 245,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md"
+        ],
+        "decision": "retain-consolidated-pointer",
+        "reason": "The full duplicated historical prose has already been replaced by a short link to the representative source."
+      },
+      {
+        "sha256": "409e4129952b1d3ebcf28557073381dced66342f1cb92d9af827897fcf10fed9",
+        "bytesEach": 270,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md"
+        ],
+        "decision": "retain-consolidated-pointer",
+        "reason": "The full duplicated historical prose has already been replaced by a short link to the representative source."
+      },
+      {
+        "sha256": "c7c47e612ba90fcff9f6cd6197a734e7112d65c5cbee2798b79c155e056d6fa1",
+        "bytesEach": 860,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v4/PRODUCT.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v5/PRODUCT.md"
+        ],
+        "decision": "retain-project-history",
+        "reason": "Existing version-specific product/design/narration source; no current business-policy conflict or proven safe deletion found in this narrowed audit."
+      },
+      {
+        "sha256": "d140d3d47ac5bdfee155ca78071f8b95efa005f990680db1f372204c40954d60",
+        "bytesEach": 802,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v4/frame.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v5/frame.md"
+        ],
+        "decision": "retain-project-history",
+        "reason": "Existing version-specific product/design/narration source; no current business-policy conflict or proven safe deletion found in this narrowed audit."
+      },
+      {
+        "sha256": "fca9cfd6eeef900b092d8cb4a0f4db65f99114d873c96aad8fc1d6e7a2878a0e",
+        "bytesEach": 587,
+        "paths": [
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v5/.media/index.md",
+          "docs/마케팅/synkbrief_회의메모_20260921/video-v6/.media/index.md"
+        ],
+        "decision": "retain-local-catalog",
+        "reason": "Identical tables resolve asset paths relative to separate video projects."
+      },
+      {
+        "sha256": "3806da48acc3ef4439aa48b8f40bfeef8b7ffd4e24d8699e60314d684cc39d78",
+        "bytesEach": 3289,
+        "paths": [
+          "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/이전버전/75초_모션자막마감전/원고.md",
+          "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/이전버전/76초_괴상한앱대사전/원고.md"
+        ],
+        "decision": "retain-revision-source",
+        "reason": "The dated personal-story screenplay distinguishes user recollection, dramatization and unverified outcomes."
+      },
+      {
+        "sha256": "672db66c39ef80680a75b60fdd49b2f2837df8bc606898b854aa0406bd647597",
+        "bytesEach": 72,
+        "paths": [
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_2_첫답.md",
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/결과/R_J4_3_첫답.md"
+        ],
+        "decision": "retain-experiment-proof",
+        "reason": "README defines distinct experiment versions/repetitions; prior pass4 hash matches retain original inputs and repeated outputs."
+      },
+      {
+        "sha256": "b59ad280f9d40964068965a4453b789e8ca8637f2374a3ea2c03cda8153376b5",
+        "bytesEach": 3144,
+        "paths": [
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F4_v4_답장.md",
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F_v3_답장.md"
+        ],
+        "decision": "retain-experiment-proof",
+        "reason": "README defines distinct experiment versions/repetitions; prior pass4 hash matches retain original inputs and repeated outputs."
+      },
+      {
+        "sha256": "4d89b550311cc038f5cfd4fd7dd181af2f95b7528fc8321ec519f8fd5f25528c",
+        "bytesEach": 3208,
+        "paths": [
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F4_v4_인스타.md",
+          "docs/마케팅/맞춤도구/manual/효과시험_20261006/지침/F_v3_인스타.md"
+        ],
+        "decision": "retain-experiment-proof",
+        "reason": "README defines distinct experiment versions/repetitions; prior pass4 hash matches retain original inputs and repeated outputs."
+      },
+      {
+        "sha256": "abd8c657eae5548d90d231c9755a624be4681893229da01f1f89984ea274f67a",
+        "bytesEach": 3719,
+        "paths": [
+          "experiences/blank-slice/kit/README.md",
+          "experiences/entry-check/kit/README.md",
+          "experiences/korean-racing/kit/README.md",
+          "experiences/korean-rhythm/kit/README.md",
+          "experiences/korean-runner/kit/README.md",
+          "experiences/order-rush/kit/README.md",
+          "experiences/play-common/kit/README.md",
+          "experiences/story-classroom/kit/README.md",
+          "experiences/talk-rally/kit/README.md",
+          "experiences/word-magic/kit/README.md"
+        ],
+        "decision": "retain-build-contract",
+        "reason": "play-common/build-kit.mjs copies every kit file; kit.test.mjs:17-21 asserts file list and byte identity."
+      }
+    ],
+    "currentStatus": [
+      {
+        "code": " M",
+        "path": "docs/디자인/SNS키트/모션견본/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/mongle-video/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v3/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/rebuild-v4/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/LAB_카페_다시말해주세요_20260926/revision-v2/mongle-video/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief-ai-angles-20260927/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v15/낭독대본.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v16/낭독대본.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v18/design.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v19/design.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/synkbrief_회의메모_20260921/video-v3/bootstrap/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/kit-v1/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds-ep01-rebuild-20260927/revision-v2/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/yuhobuilds_2편_첫도구선택_20260924/video/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/크몽_등록준비_20260929/ads_intro_video/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/full-film-v2/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/pilot-cut/CLAUDE.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/AGENTS.md"
+      },
+      {
+        "code": " M",
+        "path": "docs/마케팅/한강2126_포트폴리오_20260930/film-edit/real-actor-proof/CLAUDE.md"
+      },
+      {
+        "code": "??",
+        "path": "experiences/word-magic/kit/README.md"
+      },
+      {
+        "code": "??",
+        "path": "videos/synk-brand-opening/CLAUDE.md"
+      }
+    ],
+    "actualChanges": [
+      ".tmp/github-storage-20261017/additional-doc-audit.json"
+    ]
+  },
+  "otherDuplicatesNotApprovedForDeletion": [
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/docs/교원검수/학생시험_20261007/진행·관찰표.html",
+      "bytes": 841485,
+      "canonical": "docs/교원검수/학생시험_20261007/진행·관찰표.html",
+      "sha256": "d61052e6bdd2d737915c2a5dedcd5612056e2c6fa9c6e0e528b894fec482dbde",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "canonical": "desktop/assets/launcher/SUIT.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/20260909/pulse/vendor/loom.css",
+      "bytes": 625658,
+      "canonical": "experiences/20260909/pulse/vendor/loom.css",
+      "sha256": "8f5c04c870342a416cc4d38603a8cdd1ef45a459df0025a8c7beb1da988c7fb8",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/20260909/pulse/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/20260909/pulse/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/20260909/shared/loom.css",
+      "bytes": 644958,
+      "canonical": "experiences/20260909/shared/loom.css",
+      "sha256": "5ae0e8498a15982e10802c182675b278497ace4135894922987e08fb37b8e4cf",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/blank-slice/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/blank-slice/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/daily-fortune/vendor/lunar-javascript-1.7.7/lunar.mjs",
+      "bytes": 436186,
+      "canonical": "experiences/daily-fortune/vendor/lunar-javascript-1.7.7/lunar.mjs",
+      "sha256": "b20ed30863c914ca9cbb041c5570110b13867c3f73c7fc054121f5934dac2ed4",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/korean-racing/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/korean-racing/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/korean-runner/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/korean-runner/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/member-book-assets.mjs",
+      "bytes": 866980,
+      "canonical": "experiences/member-book-assets.mjs",
+      "sha256": "b1ea4058b87407ad4bdbf84609f359c0de2fee8bf51bebc08c64f409b2770fac",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/order-rush/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/order-rush/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/path-vr/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/path-vr/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/talk-rally/vendor/three.core.js",
+      "bytes": 1403455,
+      "canonical": "experiences/20260909/pulse/vendor/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "tracked": false
+    },
+    {
+      "path": "output/learning-feedback-commit-20261007/snapshot/experiences/talk-rally/vendor/three.module.js",
+      "bytes": 603113,
+      "canonical": "experiences/20260909/pulse/vendor/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "tracked": false
+    },
+    {
+      "path": "tmp/pdfs/brochure-atlas8-20260921/build/03_상담브로셔_A4_12쪽.pdf",
+      "bytes": 1481068,
+      "canonical": "docs/발표물/03_상담브로셔_A4_12쪽.pdf",
+      "sha256": "4868ca437a612c5f3ba6c892d1fe08fa884c04436fa0adc40eebe2813026be7e",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/InterTight-Bold.ttf",
+      "bytes": 310440,
+      "canonical": "desktop/installer/fonts/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/InterTight-Medium.ttf",
+      "bytes": 309140,
+      "canonical": "desktop/installer/fonts/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/InterTight-Regular.ttf",
+      "bytes": 305928,
+      "canonical": "docs/브랜드_폰트/InterTight/InterTight-Regular.ttf",
+      "sha256": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/InterTight-SemiBold.ttf",
+      "bytes": 309864,
+      "canonical": "docs/마케팅/LAB_TOPIK관용구_20261013/remotion/public/fonts/InterTight-SemiBold.ttf",
+      "sha256": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/SUIT-ExtraBold.otf",
+      "bytes": 352572,
+      "canonical": "desktop/installer/fonts/SUIT-ExtraBold.otf",
+      "sha256": "67e6733beb6192138e4651f4436f0e2be2fe6a519861dd23cb86cf136bac0232",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/SUIT-Heavy.otf",
+      "bytes": 349916,
+      "canonical": "desktop/installer/fonts/SUIT-Heavy.otf",
+      "sha256": "8873533c970d6f1525a38e0dbd80e772377e85c8e8c9a89a26903f5da4d40611",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/SUIT-Medium.otf",
+      "bytes": 352024,
+      "canonical": "desktop/installer/fonts/SUIT-Medium.otf",
+      "sha256": "204c9e9caad3a1f7cfe45bbec9e71cd679f6f009edfaa9fae85363722f5b333e",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/SUIT-Regular.otf",
+      "bytes": 351524,
+      "canonical": "docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/SUIT-Regular.otf",
+      "sha256": "75559147fba6cf373d3a9b5e4a2ea3ba2f8dfb22e5debaabb90277365b8831ad",
+      "tracked": false
+    },
+    {
+      "path": "영상/out/릴10편_사용자산/폰트/SUIT-SemiBold.otf",
+      "bytes": 351552,
+      "canonical": "docs/브랜드_폰트/SUIT/SUIT-SemiBold.otf",
+      "sha256": "faeab67df52b4400aec8893507b5b1502057b53f1224bfe6c89cdba2bece0ca1",
+      "tracked": false
+    }
+  ],
+  "sourceEvidence": [
+    {
+      "path": ".tmp/github-storage-20261017/temporary-copy-predelete-verification.json",
+      "sha256": "91f035b2e4c3b2a82c26298c8c9638f259a4d7d71be460a022b092a20c448ed1",
+      "bytes": 708060
+    },
+    {
+      "path": ".tmp/github-storage-20261017/temporary-copy-cleanup-attempt.json",
+      "sha256": "b1b73e2cb205220dd800ef18d73d692279989ba3e8b2a4a752283560c525eec6",
+      "bytes": 870
+    },
+    {
+      "path": ".tmp/github-storage-20261017/additional-temp-audit.json",
+      "sha256": "2d57431aa67bb2445ed0677e544d2ab7c80e1ad503b069f3f6bee08c45b2fa88",
+      "bytes": 1282115
+    },
+    {
+      "path": ".tmp/github-storage-20261017/additional-doc-audit.json",
+      "sha256": "1c6a43ac384b7890a86aa3689f8f51518029cb2f83fff1e038db4f0c10484ed8",
+      "bytes": 18670
+    },
+    {
+      "path": ".tmp/github-storage-20261017/additional-exact-duplicates.json",
+      "sha256": "6276d9d2ead60c7bd3b962db020ef4f8662ebe8da086d5a5fc78700e0c5f7d64",
+      "bytes": 9105
+    }
+  ],
+  "limitations": [
+    "This file preserves the decision and matching-hash summary; full local per-file audit detail stays in the listed .tmp files.",
+    "Verification is dated evidence, not authorization to bypass execution policy or delete changed/current files.",
+    "Original image paths and expected hashes are preserved in archive-20261017.json. No temporary copy was deleted."
+  ]
+}

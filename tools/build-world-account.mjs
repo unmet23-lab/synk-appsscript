@@ -4,7 +4,8 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const require=createRequire(import.meta.url);
-const esbuild=require(path.join(root,'experiences/synk-account/node_modules/esbuild'));
+// synk-account의 esbuild(WORLD 앱의 도구 묶음)를 먼저, 없는 깨끗한 체크아웃(CI)에서는 저장소 루트의 esbuild로. 두 판의 결과는 같다(10-17 확인).
+const esbuild=require(require.resolve('esbuild',{paths:[path.join(root,'experiences/synk-account'),root]}));
 const target=path.join(root,'experiences/synk-world-app/world-account.bundle.mjs');
 const result=await esbuild.build({entryPoints:[path.join(root,'experiences/synk-world-app/world-account.mjs')],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',legalComments:'none'});
 const bytes=result.outputFiles[0].contents;

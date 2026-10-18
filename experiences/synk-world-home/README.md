@@ -1,5 +1,7 @@
 # SYNK WORLD 메인 화면
 
+> **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-home/qa/<필요한 파일>"`로 해당 원본을 복원한다.
+
 **코스튬 스튜디오 후속(2026-10-09):** [8개 의상·소품과 피팅룸/룩북/촬영실](../synk-world-app/qa/costume-studio-20261009/README.md)을 공통 몽글 factory에 연결했다. 4295는 브라우저 미리보기, 4296은 합성 계정 서버 저장을 쓴다. 기존 몽글의 몸·눈·펠트 섬유는 보존하며 정적 네이티브 GLB는 새 의상으로 교체하지 않았다.
 
 2026-10-09 사용자가 승인한 [공통 3D 그래픽 방향](../../docs/디자인/게임_풍경과_재질.md#world-graphics-20261009)을 적용한 로컬 프런트 시제품이다. 휴대폰과 PC를 각각 설계하고, 실제 3D 장면과 기존 콘텐츠를 연결했다.

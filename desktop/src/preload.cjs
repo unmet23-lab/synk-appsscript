@@ -1,7 +1,7 @@
 'use strict';
 const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
-const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install'];
+const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install','typecast-api'];
 const unknownSubscription=code=>Promise.resolve({ok:false,code});
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   teacher:Object.freeze({
@@ -61,6 +61,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     install:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-install',service):unknownSubscription('UNKNOWN_SERVICE'),
     help:key=>SUBSCRIPTION_HELP.includes(key)?ipcRenderer.invoke('synk:subscriptions-help',key):unknownSubscription('UNKNOWN_LINK'),
     save:patch=>patch&&typeof patch==='object'?ipcRenderer.invoke('synk:subscriptions-save',JSON.parse(JSON.stringify(patch))):unknownSubscription('INVALID_REQUEST'),
+    connectKey:(service,key)=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512)):unknownSubscription('INVALID_KEY_FORMAT'),
     onChanged:callback=>subscribe('synk:subscriptions-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},

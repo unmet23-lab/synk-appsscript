@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "verifiedAt": "2026-10-17T05:10:52.808Z",
+  "repository": "unmet23-lab/synk-appsscript",
+  "release": {
+    "tag": "storage-artifacts-20261017",
+    "id": 415592655,
+    "url": "https://github.com/unmet23-lab/synk-appsscript/releases/tag/storage-artifacts-20261017"
+  },
+  "archiveSourceBase": "b32ca0542bca08f6ffcb51802fbf26142413abd1",
+  "publicationBase": "2d33bb60f21cb5cf52b7a6f707678fa7246de430",
+  "archivedFiles": 675,
+  "archivedBytes": 579665231,
+  "compressedBytes": 577016464,
+  "remoteRoundtrip": {
+    "downloadedArchives": 3,
+    "zipSha256Matched": 3,
+    "allZipEntryHashesMatched": 675,
+    "restoredIntoSeparateDirectory": 675,
+    "restoredFileSha256Matched": 675
+  },
+  "preserved": {
+    "localFiles": 675,
+    "localFilesDeleted": 0,
+    "correctionInputFiles": 40,
+    "runtimeInputExceptions": 4,
+    "approvedCanonicalCopiesMatched": 18,
+    "historyRewritten": false,
+    "existingBranchesAndTagsDeleted": 0
+  },
+  "checks": {
+    "ignoredOutputs": 675,
+    "protectedInputsNotIgnored": 62,
+    "hypotheticalOriginalNamesNotIgnored": 8,
+    "missingArchivedImageGivesRestoreCommand": true,
+    "storageCheckerTests": {
+      "passed": 18,
+      "failed": 0
+    },
+    "restoreTests": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Real Windows symlink creation requires an unavailable privilege; reparse-point rejection is also tested with mocked flags."
+    }
+  },
+  "limitations": [
+    "Historical Git objects are retained. Current tracked payload reduction is not a claim of remote historical storage reclaimed.",
+    "Existing private CI self-hosted opt-in is unchanged; local verification is the completed evidence."
+  ],
+  "archives": [
+    {
+      "name": "character-correction-output-20261017-5d6977297b03.zip",
+      "assetId": 649592485,
+      "bytes": 313251328,
+      "sha256": "5d6977297b03bb5c1ec77697b4ef06f7078c684519011044ceb3ed952b6f118c",
+      "files": 36
+    },
+    {
+      "name": "world-app-qa-20261017-f63bc14afcce.zip",
+      "assetId": 649592487,
+      "bytes": 157776864,
+      "sha256": "f63bc14afccec8ca6d35e4781a4c91233eca6d35c1fc292cd28397fb36763b3b",
+      "files": 495
+    },
+    {
+      "name": "world-home-qa-20261017-365f6dfff2a2.zip",
+      "assetId": 649592484,
+      "bytes": 105988272,
+      "sha256": "365f6dfff2a226ce8ba6b97b64f4a51c352fe4a7dbc94682f8c603a3c4de81c8",
+      "files": 144
+    }
+  ]
+}
