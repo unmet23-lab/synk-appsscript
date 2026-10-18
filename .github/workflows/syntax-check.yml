@@ -121,6 +121,7 @@ jobs:
       - name: run Windows filesystem and mocked credential regressions
         shell: pwsh
         run: |
+          node -e "const fs=require('node:fs'),os=require('node:os');console.log(JSON.stringify({temp:os.tmpdir(),real:fs.realpathSync(os.tmpdir()),native:fs.realpathSync.native(os.tmpdir())}))"
           $testLog = Join-Path $env:RUNNER_TEMP 'synk-windows.tap'
           node --test --test-reporter=tap --test-reporter-destination=$testLog --test-name-pattern='^Windows' tests/prism래칫회귀.test.js tests/sns-발행.test.js
           $testExit = $LASTEXITCODE

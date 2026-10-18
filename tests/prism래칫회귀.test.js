@@ -104,6 +104,21 @@ test('범위 밖 디렉터리는 탐색하지 않고, 빈 대안은 다른 매�
   assert.equal(범위밖호출수, 0);
 });
 
+test('루트와 명부는 같은 실제 경로 표기를 쓰며 짧은 별칭 차이로 거절하지 않는다', (t) => {
+  const f = 픽스처(t);
+  f.쓰기('tools/probe.js', 'prism_probe();');
+  f.명부([소비자('tools/probe.js', '학생')]);
+  const original = fs.realpathSync;
+  const legacy = t.mock.method(fs, 'realpathSync', value => value === f.루트
+    ? path.join(path.dirname(f.루트), 'legacy-short-alias') : original(value));
+  legacy.native = original.native;
+  try {
+    const result = 검사({ 루트: f.루트, 범위: ['tools/probe.js'] });
+    assert.equal(result.종료코드, 1, result.출력.join('\n'));
+    assert.equal(result.출력.at(-1), '범위 파일 1 · 참조 1 · 등록 소비자 1 · 학생·학부모 참조 1');
+  } finally { legacy.mock.restore(); }
+});
+
 test('Windows의 같은 파일을 대소문자만 바꿔 중복 등록하면 거절한다', { skip: process.platform !== 'win32' }, (t) => {
   const f = 픽스처(t);
   f.쓰기('tools/probe.js', 'prism_a(); prism_b(); prism_c();');
