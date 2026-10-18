@@ -39,3 +39,11 @@ python -X utf8 experiences/synk-account/qa/member-benefit-objects-20261017/compo
 
 - 올리기 전: 실제 `https://synk.im/account/platform.html`에 후보 아홉 개를 끼워(`SYNK_CANDIDATE_DIR`) 112화면 문제 0.
 - 올린 뒤: curl 바이트 대조 9/9(HTTP 200), 공개본 112화면 문제 0, 「synk.im 배포 점검」 성공(run 39083260317). 캡처 [공개본 1440·390](../../../../docs/디자인/플랫폼_시그널/화면/웹회원혜택-공개본.jpg), 원본 41장은 공용 작업본 `.tmp/web-benefit-posters-20261017/live-after/`.
+
+## 구독 카드 (2026-10-18, synk-policy `e9cf357`)
+
+GPT 0.4.24(`b45319c`·`cb7005c`)가 리허설·앨범을 빼고 AI 구독 계정판 카드·소개를 공개본에 넣은 뒤, 그 위에 `9812277bd`의 웹 쪽 손질만 얹었다 — 구독 카드 단추 「내 기록 살펴보기」 → 「어떤 경험인가요?」(내 기록은 성향만), PC 앱 안 혜택 소개의 링크 「SYNK ID 알아보기」 → 「PC 앱 받기 →」(`#downloads`), 홈 바로가기 큰 글자를 화면 읽기에서 뺌(`platform.css` 한 줄). 번들은 [`patch-live-subscriptions.cjs`](patch-live-subscriptions.cjs)가 공개본에 정확히 한 번 있는 두 식만 바꿨고, `platform.html`의 `?v=`를 새 번들 sha256 앞 12자로 바꿨다.
+
+- 올리기 전: 실제 주소에 후보 셋을 끼워 112화면 문제 0(이때 route가 HTML을 `text/html`로 돌려주게 `check.mjs`를 고쳤다).
+- 올린 뒤: curl 바이트 대조 3/3(HTTP 200), 공개본 112화면 문제 0, 「synk.im 배포 점검」 성공(run 39115079171). 캡처 [공개본 구독 카드·소개](../../../../docs/디자인/플랫폼_시그널/화면/웹구독카드-공개본.jpg).
+- 공개 소개 글은 GPT `cb7005c`에서 도구 이름을 뺀 판이고, master `desktop/renderer/benefits.mjs`에는 아직 옛 글이 있다 — 다음에 이 스크립트로 얹을 때 글을 되돌리지 않도록 공개본 위에서만 바꾼다.
