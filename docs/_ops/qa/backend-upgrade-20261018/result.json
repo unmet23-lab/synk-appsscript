@@ -495,7 +495,7 @@
     },
     "ciSkipAudit": {
       "status": "eight-covered-two-await-private-repository-read-access",
-      "releaseValidation": "pending-current-candidate-run",
+      "releaseValidation": "github-linux-and-windows-passed",
       "originalRun": 39125006065,
       "cases": [
         {
@@ -579,6 +579,15 @@
         "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8"
       },
       "githubEvidence": {
+        "verifiedRun": 39127210030,
+        "verifiedCommit": "f342bb756da82082fce3c88ecda3f0bc748f8911",
+        "linuxTests": 1773,
+        "linuxPass": 1767,
+        "linuxFail": 0,
+        "linuxSkipped": 6,
+        "verifiedWindowsPass": 4,
+        "verifiedWindowsFail": 0,
+        "verifiedWindowsSkipped": 0,
         "linuxCaseCoverageRun": 39126443458,
         "windowsCaseCoverageRun": 39126720015,
         "windowsJob": 117673287745,
