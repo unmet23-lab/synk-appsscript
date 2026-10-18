@@ -156,6 +156,9 @@ function marketingNavigation(){
 function workspaceHomeActions(){return '';}
 function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p>팀의 대화를 열고 있어요.</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button></div></section>`;}
 function syncWorkspaceLoading(){
+  // The persistent frame sits above this slot; keep a stalled document from
+  // covering the loading feedback and reconnect button before its ready signal.
+  if(workspaceModule.host)workspaceModule.host.style.visibility=workspaceModule.ready?'':'hidden';
   const slot=document.getElementById('messenger-module-slot');if(!slot)return;
   slot.setAttribute('aria-busy',String(!workspaceModule.ready));
   const loading=slot.querySelector('.messenger-module-loading');

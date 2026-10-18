@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
+import { createHash, createHmac } from 'node:crypto';
 import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
@@ -108,6 +109,29 @@ test('failed tunnel startup closes its fixture and retains an honest lifecycle r
   }), { code: 'NGROK_HTTPS_START_TIMEOUT' });
   await assert.rejects(access(fixtureDirectory), { code: 'ENOENT' });
   assert.equal(JSON.parse(await readFile(join(output, 'run.json'), 'utf8')).running, false);
+});
+
+test('real HTTP webhook receipts preserve acceptance and rejection without recording credentials or event contents', async t => {
+  const parent = await directory(t), output = join(parent, 'webhook-evidence'), settings = env();
+  const live = await startVoiceLive({ env: settings, port: 0, out: output,
+    livekitFetch: async () => Response.json({ code: 'not_found' }, { status: 404 }),
+    tunnelStarter: async () => ({ pid: 991122, exit: new Promise(() => {}), stop: async () => {} }),
+  });
+  t.after(() => live.stop());
+  const raw = JSON.stringify({ id: 'EV_SyntheticQa123', createdAt: String(Math.floor(Date.now() / 1000)), event: 'room_started', room: { name: 'private-webhook-test-room' } });
+  const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const head = encode({ alg: 'HS256' }), claims = encode({ iss: settings.SYNK_VOICE_TEST_LIVEKIT_API_KEY, exp: Math.floor(Date.now() / 1000) + 120, sha256: createHash('sha256').update(raw).digest('base64') });
+  const unsigned = head + '.' + claims, token = unsigned + '.' + createHmac('sha256', settings.SYNK_VOICE_TEST_LIVEKIT_API_SECRET).update(unsigned).digest('base64url');
+  for (const [authorization, expected] of [[token, 200], [null, 401]]) {
+    const response = await fetch(live.fixture.manifest.localBind + '/messenger/api/voice/webhook', { method: 'POST', headers: { 'Content-Type': 'application/webhook+json', ...(authorization ? { Authorization: authorization } : {}) }, body: raw });
+    assert.equal(response.status, expected); await response.json();
+  }
+  await live.flushWebhookReceipts();
+  const text = await readFile(live.summary.webhookReceiptsFile, 'utf8'), report = JSON.parse(text);
+  assert.deepEqual(report.receipts.map(row => [row.status, row.authorizationPresent]), [[200, true], [401, false]]);
+  assert.deepEqual(report.verifiedFormats, [{ idFormat: 'livekit-prefixed', timestampFormat: 'numeric-string', eventNamePresent: true }]);
+  for (const privateValue of [token, raw, 'EV_SyntheticQa123', 'private-webhook-test-room', settings.SYNK_VOICE_TEST_LIVEKIT_API_KEY, settings.SYNK_VOICE_TEST_LIVEKIT_API_SECRET, settings.SYNK_VOICE_TEST_NGROK_AUTHTOKEN]) assert.equal(text.includes(privateValue), false);
+  await live.stop(); await access(live.summary.webhookReceiptsFile);
 });
 
 test('an existing evidence folder cannot be overwritten even by startup error cleanup', async t => {

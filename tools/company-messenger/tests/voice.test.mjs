@@ -978,6 +978,25 @@ test('reservation and signal connection never masquerade as active media; missin
   assert.equal(JSON.stringify(state).includes('PA_media'), false); assert.equal(JSON.stringify(state).includes('session'), false);
 });
 
+test('LiveKit prefixed event IDs and protobuf numeric timestamps are accepted without normalizing provider IDs', async t => {
+  const f = serviceFixture(t), result = await f.service.join(f.admission());
+  const event = { ...mediaEvent(result, f.stamp), id: 'EV_AbCdEf123456', createdAt: String(Math.floor(f.stamp / 1000)) };
+  const signed = signEvent(event, f.stamp);
+  assert.deepEqual(await f.service.webhook(signed.raw, signed.authorization), { accepted: true });
+  assert.equal(f.db.prepare('SELECT id FROM voice_webhook_events').get().id, event.id);
+  const lists = f.provider.lists.length;
+  await f.service.webhook(signed.raw, signed.authorization);
+  assert.equal(f.provider.lists.length, lists);
+  const changed = signEvent({ ...event, event: 'participant_left' }, f.stamp);
+  await assert.rejects(f.service.webhook(changed.raw, changed.authorization), error => error.code === 'VOICE_WEBHOOK_CONFLICT');
+  for (const id of ['', 'EV_bad/id', 'x'.repeat(129), null, {}]) {
+    const invalid = signEvent({ ...event, id }, f.stamp);
+    await assert.rejects(f.service.webhook(invalid.raw, invalid.authorization), error => error.status === 400 && error.code === 'VOICE_WEBHOOK_EVENT_INVALID');
+  }
+  await assert.rejects(f.service.webhook(signed.raw, 'forged'), error => error.status === 401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM voice_webhook_events').get().n, 1);
+});
+
 test('delayed join/leave webhooks are idempotent hints and cannot resurrect or disconnect current media', async t => {
   const f = serviceFixture(t), result = await f.service.join(f.admission());
   const oldLeave = signEvent(mediaEvent(result, f.stamp, 'participant_left'), f.stamp);

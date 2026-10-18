@@ -34,14 +34,32 @@
 
 키는 SYNK 서버가 관리하고 `mediaVerified:false`를 유지한다. 복호화된 소리·화면과 GCM 판정은 정당한 참가자 사이의 SDK 암호화가 동작했다는 근거이지, SYNK 서버·운영자로부터의 보호나 이전 키 차단을 입증하지 않는다. 화면에도 '암호화(서버 관리 키)'까지만 표시한다.
 
+#### 추가 실기 확인 · 10-18
+
+같은 시험 프로젝트에 실행기 livekit 모드로 붙고, 헤드리스 Chrome(가짜 마이크·가짜 화면)으로 확인했다.
+
+- **HTTPS에서 워크스페이스 안 메신저:** 실행기를 `https://voice-qa.localhost:8453` 출처로 띄우고 자체 인증서 TLS 프록시를 앞에 뒀다(회사 세션 쿠키 `Secure` 확인). 로그인 직후 홈 화면에서 iframe이 `/messenger/`를 불러 준비 신호까지 받았다. 이어서 메신저 탭·통화 참가·양방향 소리, 다른 메뉴 세 곳(내 작업실·내 수업·SNS)을 옮기는 동안 소리 유지, 미니 조작 음소거(상대 진폭 0, 서버 `muted:true`), 메신저로 돌아온 뒤 새 join 0회, 나가기 정리를 확인했다([기록](../../.tmp/company-voice-20261018/https-local-repro/)). 그래서 ngrok 실행에서 본 `about:blank`는 앱의 HTTPS 처리 문제가 아니라, 아래 GPT 기록대로 자동화 도구가 문서 응답을 멈춘 탓으로 본다. ngrok을 거친 실제 기기 표시는 두 기기 시험에서 확인한다.
+- **브라우저의 '공유 중지':** 공유 중인 화면 영상 트랙을 브라우저가 끝낼 때와 같은 `ended` 이벤트로 끝냈다. `share/stop` 200, 상대 화면 사라짐, 공유 단추 복귀, 음성 유지. Chrome 공유 막대의 단추를 직접 누른 것은 아니다.
+- **E2EE worker 실패:** worker 파일을 막거나(로드 실패) 초기화 응답을 주지 않게 하면(8초 시간 초과) 두 경우 모두 LiveKit 소켓을 열지 않고 나가기를 보낸 뒤 '평문으로 연결하지 않아요' 안내를 띄웠다.
+- **연달아 참가:** 두 명이 통화 중일 때 두 명이 2.5초 간격으로 들어와도 네 명 모두 연결됐다.
+
+#### 발견한 백엔드 문제 · GPT 인계(P1)
+
+키 교체가 끝나기 전에 참가자 구성이 다시 바뀌면, 이미 새 키를 받은 기존 참가자의 통화가 `encryption_pause_failed`로 끝난다.
+
+- 재현(두 사람): A 혼자 통화 중 → B 참가 → B의 E2EE 준비가 8초 늦다가 실패해 나감 → A도 종료. 세 사람(A·B 연결 중, C가 참가 직후 worker 실패로 나감)에서는 두 번 실행 모두 A·B가 끝났다. 반대로 A가 새 키를 받기 전에 B가 나가면 A는 유지됐다. 타이밍에 달린 경쟁 상태다.
+- 원인: 계약([API의 E2EE 필수 참가와 키 교체](API.md#e2ee-필수-참가와-키-교체) '클라이언트 연결 순서' 2~3단계)대로 화면은 새 키를 받으면 이전 Room을 버리고, 모두 ACK할 때까지 공급자 방에 없다. 그 사이 참가 집합이 바뀌면 [voice-encryption.mjs](voice-encryption.mjs)의 새 라운드가 `token_issued` 참가자 모두에게 `UpdateParticipant`(일시 정지)를 다시 보낸다. 방에 없는 참가자에게 Cloud는 404 `not_found`를 준다(시험 프로젝트에서 직접 확인했고, 같은 경우 `RemoveParticipant`+`revoke_token_ts`는 200). 서버는 이 실패를 받은 참가자를 `invalidate(row,'encryption_pause_failed')`로 끝낸다.
+- 고칠 방향(백엔드 판단): 일시 정지가 `not_found`면 공급자에 흐르는 미디어가 없으니 참가를 끝내지 말고, 남은 토큰은 다른 방식으로 막는다. 예를 들어 일시 정지에 성공한 참가자는 새 토큰을 받기 전까지 다시 멈출 대상에서 빼거나, `revoke_token_ts`로 철회한다(같은 identity로 곧 새 토큰을 발급하므로 시각 경계를 확인해야 한다). 연결 중·재연결 중이라 잠시 방에 없는 참가자도 같은 경로를 탄다.
+- 근거: [실기 기록](../../.tmp/company-voice-20261018/edge-cloud/)의 `rotation-s1-silent`(두 사람)·`diag-shots`(세 사람)에 참가 상태·감사 기록을 3초 간격으로 남겼다. 실행 스크립트와 Cloud 응답 확인 스크립트는 같은 폴더의 `scripts/`에 있다.
+
 #### 아직 확인하지 않은 범위
 
 - 서로 다른 두 실제 기기·다른 망(휴대폰 포함), Wi-Fi·모바일망 전환. 브라우저 오프라인 흉내 6초는 이미 맺어진 연결을 끊지 못해 망 복구를 검증하지 못했다.
-- 브라우저 기본 '공유 중지' 단추(헤드리스에서 누를 수 없음), Safari·Firefox, 모바일 백그라운드.
-- 이전 키로 새 미디어가 복호화되지 않는지(E2EE-02), worker 초기화 실패의 실기 동작.
-- 웹훅 배달(로컬 실행이라 외부 주소 없음), Cloud의 옛 JWT 철회 시각, 공급자 사용량·청구 대조.
+- Chrome 공유 막대의 단추 자체(같은 이벤트로는 확인), Safari·Firefox, 모바일 백그라운드.
+- 이전 키로 새 미디어가 복호화되지 않는지(E2EE-02).
+- Cloud의 옛 JWT 철회 시각, 공급자 사용량·청구 대조. 웹훅 배달은 아래 HTTPS 실행 기록(10-18 GPT)을 따른다.
 
-실제 두 기기 시험은 [HTTPS 실행기](#voice-live-https-setup)의 공개 주소가 준비되면 같은 화면으로 진행한다. 실행 스크립트는 `.tmp/company-voice-20261017/frontend-sdk/scripts/`에 있다.
+실제 두 기기 시험은 [HTTPS 실행기](#voice-live-https-setup)의 공개 주소가 준비되면 같은 화면으로 진행한다. 위 백엔드 문제를 고친 뒤에 하는 것이 좋다. 그 전에는 한쪽이 '암호화 준비 중'에 나가면 다른 쪽도 끊길 수 있다. 실행 스크립트는 `.tmp/company-voice-20261017/frontend-sdk/scripts/`와 `.tmp/company-voice-20261018/*/scripts/`에 있다.
 
 ### 실제 통화·화면 공유 검증 환경 준비
 
@@ -94,23 +112,25 @@ node tools/company-messenger/qa/voice-fixture.mjs --mode=livekit --port=4299 --o
 
 <a id="voice-live-https-setup"></a>
 
-#### LiveKit·HTTPS 통합 실행 준비 · 2026-10-17
+#### LiveKit·HTTPS 통합 실행 준비 · 2026-10-17~18
 
 [qa/voice-live.mjs](qa/voice-live.mjs)는 위 격리 실행기를 재사용한다. 별도 테스트 LiveKit 프로젝트와 ngrok 계정/도구를 준비한 뒤, 읽기 전용 Cloud 접속 점검→임시 워크스페이스→HTTPS 터널을 시작한다. 운영 프로젝트의 키·DB는 자동으로 읽지 않는다. 신규 결제·자동충전·유료 전환은 이 실행기가 처리하지 않는다.
 
-**현재 상태(10-17 실제 Chrome 확인):** 앱 재시작 뒤 Chrome 연결이 복구됐다. `synk-voice-test`(`p_61k3v9d3yc0`)의 Build 요금제·다음 청구 예상 $0.00·당시 사용량0을 확인하고, 사용자 승인으로 `synk-voice-test-local-qa-20261017` 키를 발급해 저장소 밖 전용 env에 저장했다. `--check-cloud`는 실제 Cloud의 임의 미존재 방 조회에 성공했다(방 생성0·참가0·미디어 미검증). 같은 키로 서명하는 테스트 웹훅도 `https://trading-fernlike-scuff.ngrok-free.dev/messenger/api/voice/webhook`에 저장했다. 아직 웹훅 배달을 검증하지 않았다.
+**현재 상태(10-18 후속):** 실제 Cloud의 시험 웹훅이 HTTPS 서버에서400으로 거절됨을 재현했다. 인증 후 형식 분류에서 `EV_…` 이벤트ID·숫자 문자열 시각을 확인했고, 클라이언트용 UUID 검사를 공급자 이벤트ID에 적용하던 오류를 고쳤다. 수정 뒤 **Cloud→ngrok→서버200**을01:20:55 KST에 확인했다. 같은 공개 주소에서 서명 없음·위조 서명은각401이다. 중복/충돌·잘못된ID·서명 검사 회귀도 통과했다. [수정 전400](../../.tmp/company-voice-20261018/https-webhook-format/webhook-receipts.json) · [수정 후200/401](../../.tmp/company-voice-20261018/https-ready/webhook-receipts.json) · [공개 음성 이벤트 거절 검사](../../.tmp/company-voice-20261018/https-ready/webhook-negative-probes.json). Cloud의 시험 이벤트는 실제 참가자 미디어나 옛JWT 철회를 입증하지 않는다.
+
+**10-17 설정 기록:** 앱 재시작 뒤 Chrome 연결이 복구됐다. `synk-voice-test`(`p_61k3v9d3yc0`)의 Build 요금제·다음 청구 예상 $0.00·당시 사용량0을 확인하고, 사용자 승인으로 `synk-voice-test-local-qa-20261017` 키를 발급해 저장소 밖 전용 env에 저장했다. `--check-cloud`는 실제 Cloud의 임의 미존재 방 조회에 성공했다(방 생성0·참가0·미디어 미검증). 같은 키로 서명하는 테스트 웹훅도 `https://trading-fernlike-scuff.ngrok-free.dev/messenger/api/voice/webhook`에 저장했다.
 
 ngrok 무료 계정·개발 도메인 `trading-fernlike-scuff.ngrok-free.dev`와 공식 Windows 에이전트3.39.11을 준비했다(Authenticode Valid·발행자 ngrok, Inc.). 최초 토큰의 도구 출력 노출 뒤 사용자가 직접 교체를 완료했다. 새 값이 이전 값과 다른 것을 확인해 출력 없이 전용 env에 저장했고, 설정 검사6항목과 Cloud 읽기 인증을 확인한 뒤 **HTTPS 서버를 실행했다.** 신규 결제·유료 전환은 하지 않았다. [준비 상태](../../.tmp/company-voice-20261017/cloud-https-setup/setup-progress.json) · [요금제 화면](../../.tmp/company-voice-20261017/cloud-https-setup/livekit-build-plan.png) · [개발 도메인](../../.tmp/company-voice-20261017/cloud-https-setup/ngrok-dev-domain.png) · [웹훅 저장](../../.tmp/company-voice-20261017/cloud-https-setup/livekit-test-webhook.png).
 
-**실제 공개 접속 확인:** Chrome에서 HTTPS 로그인·메신저 직접 주소·기본 시험 방의 통화 참가 단추·실시간 연결 표시를 확인했다. 별도 로컬 HTTP 클라이언트가 정상 로그인한 가상 동료로 보낸 메시지가 공개 HTTPS 브라우저에 새로고침 없이 나타났다([화면](../../.tmp/company-voice-20261017/cloud-https-setup/https-messenger-sse.png), [관측](../../.tmp/company-voice-20261017/https-live-20261017-ready/sse-smoke.json)). LiveKit의 `Send a test event`도 실행해 콘솔의 `Test webhook event sent`를 확인했으나 **수신 서버 HTTP 상태는 확보하지 못했으므로 배달/수락 검증 완료로 기록하지 않았다**([콘솔 기록](../../.tmp/company-voice-20261017/cloud-https-setup/cloud-webhook-test-ui.txt)).
+**실제 공개 접속 확인:** 10-17 Chrome에서 HTTPS 로그인·메신저 직접 주소·기본 시험 방의 통화 참가 단추·실시간 연결 표시를 확인했다. 별도 로컬 HTTP 클라이언트가 정상 로그인한 가상 동료로 보낸 메시지가 공개 HTTPS 브라우저에 새로고침 없이 나타났다([화면](../../.tmp/company-voice-20261017/cloud-https-setup/https-messenger-sse.png), [관측](../../.tmp/company-voice-20261017/https-live-20261017-ready/sse-smoke.json)). 당시 콘솔의 `Test webhook event sent`만 확인하고 수신 상태를 미확인으로 남겼으며,10-18 위 수신 기록으로 보완했다.
 
-**현재 실행:** PID47256·이 실행의 ngrok PID46384, 표준 프로필(동시4명·최대600초). [run.json](../../.tmp/company-voice-20261017/https-live-20261017-ready/run.json)의 `credentialsFile`에 가상 계정 비밀번호가 있고 [environment.json](../../.tmp/company-voice-20261017/https-live-20261017-ready/environment.json)에 실제 관측 범위를 남겼다. PC는 `host`, 휴대폰은 `peer` 계정을 사용한다. 비밀번호는 이 임시 파일에서만 확인한다.
+**현재 실행:** PID2044·이 실행의 ngrok PID30528, 표준 프로필(동시4명·최대600초). 이전 실행은 각각 `cleanupPending:false`로 종료했다. [run.json](../../.tmp/company-voice-20261018/https-ready/run.json)의 `credentialsFile`에 새 가상 계정 비밀번호가 있고 [environment.json](../../.tmp/company-voice-20261018/https-ready/environment.json)에 실제 관측 범위를 남겼다. PC는 `host`, 휴대폰은 `peer` 계정을 사용한다. 비밀번호는 이 임시 파일에서만 확인한다. 재시작 뒤 PC Chrome의 진행자 로그인도 다시 연결했다.
 
 1. PC/휴대폰에서 [테스트 워크스페이스](https://trading-fernlike-scuff.ngrok-free.dev/)를 열고 ngrok의 `Visit Site` 안내를 통과한 뒤 해당 가상 계정으로 로그인한다.
 2. 로그인 뒤 [메신저 직접 주소](https://trading-fernlike-scuff.ngrok-free.dev/messenger/)를 연다. `전체채팅` → `통화 검증 · 기본`에서 시작한다.
-3. **워크스페이스 안 iframe은 현재 Chrome/HTTPS에서 빈 화면(`about:blank`)이 남는다.** 서버의 같은 출처 iframe 요청은200이고 공개 응답의 SAMEORIGIN/`frame-ancestors 'self'`는 확인했지만 원인을 확정하지 못했다. 기본 `다시 연결`도 해결하지 못했다([화면](../../.tmp/company-voice-20261017/cloud-https-setup/https-workspace-iframe-blank.png), [AX](../../.tmp/company-voice-20261017/cloud-https-setup/https-workspace-iframe-ax.txt)). 직접 주소에서의 통화 시험 준비와 부모 메뉴 이동 중 통화 유지 검증을 구분한다. Claude의 앞선 로컬/한 PC Cloud 검증은 위 별도 절의 기록을 보존한다.
+3. **워크스페이스 빈 화면 보완:** 준비 신호 전의 고정 iframe이 아래 로딩 안내·재연결 버튼을 덮던 문제를 고쳤다. 실제 Chrome에서 안내와 버튼 표시를 확인했다([화면](../../.tmp/company-voice-20261018/iframe-webhook/messenger-loading-restored.png)). 다만 자동화가 제어하는 탭에서는 Browser Use가 `/messenger/`200 문서 응답을 `Fetch.requestPaused`로 정지한 채 자식 문서가 `about:blank`에 머문다. 도구 연결 재설정과 생성 순서 실험으로 해결되지 않았고, 무효한 생성 순서 변경은 되돌렸다([진단](../../.tmp/company-voice-20261018/iframe-webhook/iframe-diagnostic.json)). 일반 Chrome 새 탭에서의 표시 여부는 사용자 관측을 기다리며, 내장 메신저 표시·부모 메뉴 이동 중 통화 유지 완료로 보고하지 않는다. Claude의 앞선 로컬/한 PC Cloud 검증은 위 별도 절의 기록을 보존한다.
 
-이 HTTPS 실행에서는 휴대폰 접속·마이크·실제 통화/화면 공유/E2EE를 실행하지 않았고23개 시나리오는 아직 `not_run`이다. 실제 두 기기의 통과 기록으로 해석하지 않는다.
+이 HTTPS 실행에서는 휴대폰 접속·마이크·실제 통화/화면 공유/E2EE를 실행하지 않았고23개 시나리오는 아직 `not_run`이다. CLOUD-01 중 웹훅 배달 부분만 위에서 확인했으며, 실제 두 기기의 통과 기록으로 해석하지 않는다.
 
 재현하거나 다른 PC에 준비할 때는 Chrome의 별도 테스트 프로젝트에서 요금제·한도를 확인하고, ngrok의 무료 도메인·토큰·공식 에이전트를 준비한다. 기존 승인 범위를 벗어난 가입·약관·접근 권한 확대는 동작 직전에 확인하며 신규 결제는 진행하지 않는다. 앱/실시간 이벤트 통과 여부는 실제 공개 주소에서 확인한다.
 
@@ -147,6 +167,8 @@ node --env-file="$env:USERPROFILE/SYNK_보안/voice-live-test.env" tools/company
 출력의 `url`을 PC Chrome과 휴대폰에서 각각 열고 서로 다른 가상 계정으로 로그인한다. **에이전트의 연결 확인만으로 공개 HTTPS·쿠키·SSE·iframe·마이크·WSS·E2EE가 검증된 것은 아니다.** ngrok의 방문자 확인 화면이 나오면 각 기기에서 직접 통과한 뒤 로그인하고, 메시지 실시간 수신도 확인한다. LiveKit 테스트 프로젝트의 웹훅 주소를 출력된 `webhookUrl`(`/messenger/api/voice/webhook`)로 설정하고 서명에 쓰는 키가 테스트 서버 설정과 일치하는지 CLOUD-01에서 확인한다.
 
 증거 폴더의 `environment.json`은 생성 시 Cloud 읽기 접속과 터널 설정 확인만 기록하며 `browserHttpsVerified`·`cloudWebhookConfigured`·`mediaVerified`를 `false`로 시작한다. 현재 실행에는 위 실제 브라우저/콘솔 근거를 덧붙였다. 이후 시나리오의 일부 사전 관측과 전체 통과를 구분하고, 실제 기기·웹훅·미디어 결과는 근거와 함께 `results.json`에 기록한다.
+
+`webhook-receipts.json`은 시험 서버가 받은 정확한 웹훅 경로의POST에 대해 수신/응답 시각·상태 코드·Authorization 존재 여부를 최대64건 보존한다. `verifiedFormats`도 인증에 성공한 뒤 ID/시각의 형식 분류·이벤트 이름 존재 여부만 최대64건 남긴다. 인증값·요청 본문·이벤트 값·IP는 남기지 않는다.10-18 관련 통화/HTTPS109/109·워크스페이스 메뉴22/22시험을 통과했다([범위](../../.tmp/company-voice-20261018/iframe-webhook/verification.json)).
 
 정상 종료는 **Ctrl+C**다. 미디어 철회를 시도한 뒤 이 실행기가 만든 터널 프로세스만 종료하고 결과를 보존한다. `cleanupPending:true`이면 원래 fixture DB를 보존하므로 위의 `--cleanup`을 같은 `--env-file`과 함께 사용한다. `httpsCleanupPending:true`가 나오면 출력된 `tunnelPid`의 명령줄을 확인해 이 실행의 ngrok인지 대조하고 해당 프로세스만 정리한다.
 

@@ -75,6 +75,41 @@ async function unusedPort() {
   const port = probe.address().port; await new Promise(done => probe.close(done)); return port;
 }
 
+async function observeWebhookReceipts({ app: { server }, provider }, directory) {
+  const path = join(directory, 'webhook-receipts.json'), receipts = [], verifiedFormats = [];
+  let pending = Promise.resolve(), failed = false;
+  const snapshot = () => JSON.stringify({ receipts, verifiedFormats }, null, 2);
+  const persist = () => { const text = snapshot(); pending = pending.then(() => writeFile(path, text)).catch(() => { failed = true; }); };
+  await writeFile(path, snapshot(), { flag: 'wx' });
+  const verify = provider.verifyWebhook;
+  provider.verifyWebhook = function (...args) {
+    const event = verify.apply(this, args);
+    // Record format categories only, after authentication; never event values.
+    const id = event?.id, created = event?.createdAt ?? event?.created_at;
+    verifiedFormats.push({
+      idFormat: typeof id !== 'string' ? 'missing' : /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ? 'uuid' : /^EV_[A-Za-z0-9]+$/.test(id) ? 'livekit-prefixed' : 'other',
+      timestampFormat: typeof created === 'number' ? 'number' : typeof created === 'string' && /^\d+$/.test(created) ? 'numeric-string' : 'other',
+      eventNamePresent: typeof event?.event === 'string' && Boolean(event.event),
+    });
+    if (verifiedFormats.length > 64) verifiedFormats.shift();
+    persist();
+    return event;
+  };
+  const observe = (req, res) => {
+    if (req.method !== 'POST' || req.url?.split('?')[0] !== '/messenger/api/voice/webhook') return;
+    const receivedAt = new Date().toISOString(), authorizationPresent = Boolean(req.headers.authorization);
+    // Never retain headers, request bodies, event payloads, JWTs or IP addresses.
+    res.once('finish', () => {
+      receipts.push({ receivedAt, respondedAt: new Date().toISOString(), status: res.statusCode, authorizationPresent });
+      if (receipts.length > 64) receipts.shift();
+      persist();
+    });
+  };
+  server.prependListener('request', observe);
+  const flush = async () => { await pending; if (failed) throw fail('VOICE_WEBHOOK_RECEIPTS_WRITE_FAILED'); };
+  return { path, flush, async stop() { server.off('request', observe); provider.verifyWebhook = verify; await flush(); } };
+}
+
 export function voiceTunnelEnvironment(env) {
   const childEnv = {};
   for (const name of ['PATH', 'Path', 'PATHEXT', 'SystemRoot', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA']) {
@@ -142,7 +177,7 @@ export async function startVoiceLive({ env = process.env, port = 4299, profile =
   const config = await inspectVoiceLiveConfig(env);
   if (!config.configured) throw fail('VOICE_TEST_CONFIG_INCOMPLETE');
   const cloud = await checkVoiceLiveCloud(env, { fetch: livekitFetch }); signal?.throwIfAborted();
-  let fixture, tunnel, exported, stopping;
+  let fixture, tunnel, webhooks, exported, stopping;
   async function stop() {
     return stopping ||= (async () => {
       let cleanup, httpsCleanupPending = false;
@@ -150,6 +185,7 @@ export async function startVoiceLive({ env = process.env, port = 4299, profile =
       try { cleanup = fixture ? await fixture.stop() : { cleanupPending: false, retainedDirectory: null }; }
       catch { cleanup = { cleanupPending: true, retainedDirectory: fixture?.directory || null }; }
       finally { if (tunnel) try { await tunnel.stop(); } catch { httpsCleanupPending = true; } }
+      if (webhooks) try { await webhooks.stop(); } catch { cleanup = { ...cleanup, webhookEvidencePending: true }; }
       if (httpsCleanupPending) cleanup = { ...cleanup, httpsCleanupPending: true, tunnelPid: tunnel.pid };
       if (exported) await writeFile(join(exported, 'run.json'), JSON.stringify({ ...fixture.manifest, running: false, ...cleanup }, null, 2));
       return cleanup;
@@ -160,11 +196,12 @@ export async function startVoiceLive({ env = process.env, port = 4299, profile =
     const parent = resolve(here, '../../../.tmp'); await mkdir(parent, { recursive: true });
     const requestedOutput = resolve(out || join(parent, 'voice-live-' + randomUUID()));
     await fixture.exportReports(requestedOutput); exported = requestedOutput;
+    webhooks = await observeWebhookReceipts(fixture, exported);
     tunnel = await tunnelStarter({ env, origin: config.origin, localUrl: fixture.manifest.localBind, directory: fixture.directory, signal });
     signal?.throwIfAborted();
     const readiness = { ...cloud, httpsAgentReady: true, browserHttpsVerified: false, cloudWebhookConfigured: false, mediaVerified: false };
     await writeFile(join(exported, 'environment.json'), JSON.stringify(readiness, null, 2), { flag: 'wx' });
-    return { fixture, tunnel, stop, summary: { ...readiness, url: config.origin, webhookUrl: config.origin + '/messenger/api/voice/webhook',
+    return { fixture, tunnel, stop, flushWebhookReceipts: webhooks.flush, summary: { ...readiness, url: config.origin, webhookUrl: config.origin + '/messenger/api/voice/webhook', webhookReceiptsFile: webhooks.path,
       pid: process.pid, tunnelPid: tunnel.pid, credentialsFile: fixture.manifest.credentialsFile, fixtureDirectory: fixture.directory, evidenceDirectory: exported } };
   } catch (error) {
     const cleanup = await stop();
@@ -201,7 +238,7 @@ async function main() {
     await Promise.race([live.tunnel.exit, new Promise(done => { if (abort.signal.aborted) done(); else abort.signal.addEventListener('abort', done, { once: true }); })]);
     if (!abort.signal.aborted) throw fail('NGROK_AGENT_EXITED');
   } finally {
-    if (live) { const cleanup = await live.stop(); console.log(JSON.stringify(cleanup)); process.exitCode = cleanup.cleanupPending || cleanup.httpsCleanupPending ? 2 : 0; }
+    if (live) { const cleanup = await live.stop(); console.log(JSON.stringify(cleanup)); process.exitCode = cleanup.cleanupPending || cleanup.httpsCleanupPending || cleanup.webhookEvidencePending ? 2 : 0; }
     process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
   }
 }

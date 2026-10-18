@@ -450,7 +450,10 @@ export function createVoiceService({ db, assert, validateRequestId, publish, ena
       activeFeature(); const event = provider.verifyWebhook(raw, authorization);
       return serialized(async () => {
         activeFeature();
-        const id = validateRequestId(event?.id, '통화 이벤트'), created = Number(event.createdAt ?? event.created_at);
+        // Provider event IDs are opaque and case-sensitive. LiveKit Cloud also
+        // sends EV_ IDs, so the UUID contract for client requests does not apply.
+        const id = event?.id, created = Number(event?.createdAt ?? event?.created_at);
+        if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) fail('VOICE_WEBHOOK_EVENT_INVALID', 400, '통화 이벤트 식별자를 확인해 주세요.');
         if (!Number.isSafeInteger(created) || created > now() / 1000 + 30 || typeof event.event !== 'string' || event.event.length > 80) fail('VOICE_WEBHOOK_EVENT_INVALID', 400, '통화 이벤트 형식을 확인해 주세요.');
         const call = typeof event.room?.name === 'string' && one('SELECT * FROM voice_calls WHERE room_name=? AND ended_at IS NULL', event.room.name);
         if (!call || created * 1000 < now() - 7 * 86400000 || (call.provider_room_sid && event.room.sid !== call.provider_room_sid)) return { accepted: true };
