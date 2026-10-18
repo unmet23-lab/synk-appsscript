@@ -91,7 +91,7 @@
 
   const briefIsEmpty = (b) => !b || (!b.industry && !(b.moods || []).length && !String(b.product || '').trim());
 
-  // 추천: 업종 3점(설명에서 찾은 업종 2점) · 설명에 세부 분야가 있으면 맞는 모델 +1, 안 맞는 모델 -1
+  // 추천: 업종 3점(설명에서 찾은 업종 2점) · 설명에 세부 분야가 있으면 맞는 모델 +1, 안 맞는 모델은 그 업종으로 고르지 않음
   // · 분위기 2점(설명에서 찾은 분위기 1점) · 그 업종 사진이 있으면 0.5점. 같은 점수는 명단 순서.
   // 성별·나이대를 고르면 그 안에서만 찾고, 성별을 안 골랐어도 설명에 「여성 니트」처럼 성별이 있으면 그 성별 안에서 찾는다.
   function recommend(models, brief, taxonomy, n = 3) {
@@ -107,11 +107,11 @@
       const matchedInds = [];
       for (const [id, v] of inds) {
         if (!(m.industries || []).includes(id)) continue;
-        score += v.weight; matchedInds.push(id);
         const fits = (m.fitsBy || {})[id] || [];
         const subFit = fits.find((f) => (subs.get(id) || []).some((k) => f.includes(k)));
-        if (subFit) score += 1;
-        else if (subs.has(id)) score -= 1;
+        // 설명에 세부 분야(라떼 → 음료·카페)가 있는데 이 모델의 업종 문구가 그 분야가 아니면(위스키·주류) 이 업종으로는 고르지 않는다
+        if (subs.has(id) && !subFit) continue;
+        score += v.weight + (subFit ? 1 : 0); matchedInds.push(id);
         const fit = subFit || fits[0] || label(taxonomy.industries, id);
         if (!reasons.some((r) => r.text === `${fit} 광고에 어울려요`)) reasons.push({ kind: 'industry', id, text: `${fit} 광고에 어울려요`, words: v.words });
       }
@@ -174,6 +174,7 @@
         lines.push(`[모델 ${i + 1}] ${modelLine(x.m)}`);
         if (hairOf(x)) lines.push(`헤어: ${hairOf(x)}`);
         if (voiceOf(x)) lines.push(`목소리: ${voiceOf(x)}`);
+        if (x.p.line) lines.push(`대사: ${x.p.line.replace(/\s+/g, ' ').trim()}`);
         if (x.p.memo) lines.push(`메모: ${x.p.memo.replace(/\s+/g, ' ').trim()}`);
       });
       if (others.length) lines.push(`[함께 비교한 모델] ${others.map((m) => `${m.code} ${m.name}`).join(', ')}`);
@@ -187,6 +188,7 @@
         b.push(`${i + 1}. ${modelLine(x.m)}`);
         const hv = [hairOf(x) && `헤어 ${hairOf(x)}`, voiceOf(x) && `목소리 ${voiceOf(x)}`].filter(Boolean).join(' / ');
         if (hv) b.push(`   ${hv}`);
+        if (x.p.line) b.push(`   이 목소리로 들어 보고 싶은 문장: “${x.p.line.replace(/\s+/g, ' ').trim()}”`);
         if (x.p.memo) b.push(`   메모: ${x.p.memo.replace(/\s+/g, ' ').trim()}`);
       });
       blocks.push(b);
