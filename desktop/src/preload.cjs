@@ -52,7 +52,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
   subscriptions:Object.freeze({
     snapshot:(options={})=>ipcRenderer.invoke('synk:subscriptions-snapshot',{refreshTools:options?.refreshTools===true}),
-    check:()=>ipcRenderer.invoke('synk:subscriptions-check'),
+    check:(ids)=>ipcRenderer.invoke('synk:subscriptions-check',Array.isArray(ids)?ids.filter(id=>typeof id==='string').slice(0,200).map(id=>id.slice(0,80)):null),
     useExisting:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-use-existing',service):unknownSubscription('UNKNOWN_SERVICE'),
     login:(service,options={})=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-login',service,{email:typeof options?.email==='string'?options.email.trim().slice(0,254):undefined,console:options?.console===true}):unknownSubscription('UNKNOWN_SERVICE'),
     submitCode:(id,code)=>typeof id==='string'&&typeof code==='string'?ipcRenderer.invoke('synk:subscriptions-code',id,code.slice(0,2048)):unknownSubscription('INVALID_CODE'),
@@ -61,7 +61,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     install:service=>SUBSCRIPTION_SERVICES.includes(service)?ipcRenderer.invoke('synk:subscriptions-install',service):unknownSubscription('UNKNOWN_SERVICE'),
     help:key=>SUBSCRIPTION_HELP.includes(key)?ipcRenderer.invoke('synk:subscriptions-help',key):unknownSubscription('UNKNOWN_LINK'),
     save:patch=>patch&&typeof patch==='object'?ipcRenderer.invoke('synk:subscriptions-save',JSON.parse(JSON.stringify(patch))):unknownSubscription('INVALID_REQUEST'),
-    connectKey:(service,key)=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512)):unknownSubscription('INVALID_KEY_FORMAT'),
+    connectKey:(service,key,options={})=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512),{replace:typeof options?.replace==='string'?options.replace.slice(0,40):null}):unknownSubscription('INVALID_KEY_FORMAT'),
     onChanged:callback=>subscribe('synk:subscriptions-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},

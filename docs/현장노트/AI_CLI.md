@@ -271,3 +271,17 @@
 - 원인: 독자용 본문과 기계 확인값을 같은 명령 출력으로 보냈다. 프로세스 종료0·SUCCESS만으로 저장 전달까지 완료로 처리할 수 없다.
 - 고침: `snapshot ROLE`은 전체 본문을 전용 work 파일에 원자 저장하고 짧은 메타데이터·본문 경로만 반환한다. 모델은 그 파일을 범위 읽기한다. `write` 응답에서는 본문을 빼고 상태·revision·SHA·백업 경로만 반환한다. 내부 검사기의 `read` 계약은 유지했다.
 - 다시 확인: 보조도구 시험17개가 통과했다. 큰 Unicode 본문·출력1KiB 미만·충돌·실패 시 이전 파일 보존을 확인하고, 실제 공식 CLI의 `denied_actions` 없음과 완료 표식·Docs 재읽기 SHA를 함께 대조한다. 운영 소스는 `tools/argon-schedules/`에 보존한다.
+
+## Claude Code·공식 CLI 읽기(계정판)
+
+### 파이프로 부른 `claude -p`가 표준입력을 3초 기다리고, 로그인이 없어도 「Not logged in」을 내지 않는다
+- 증상: 10-18 계정판이 `claude -p /usage`를 파이프로(표준입력을 열어 둔 채) 부르자 Claude 줄마다 3초씩 늦고 stderr에 `Warning: no stdin data received in 3s, proceeding without it`이 찍혔다. 로그인 없는 `CLAUDE_CONFIG_DIR`에서는 「Not logged in · Please run /login」 대신 `Total cost: $0.0000 …` 비용 요약이 나와, 로그아웃이 「읽기 실패」로 보였다. 터미널에서 직접 돌리면 「Not logged in」이 나와 차이를 놓치기 쉽다.
+- 원인: Claude Code 2.1.302는 표준입력이 열린 파이프면 입력을 3초 기다린다. 출력이 파이프일 때는 로그인이 없어도 `/usage`가 비용 요약을 낸다.
+- 고침: 넣을 것이 없으면 표준입력을 바로 닫는다(`child.stdin.end()`, 계정판 `rawRun`). 로그인 여부는 `/usage` 글이 아니라 `claude auth status --json`의 `loggedIn`(불리언)으로 본다. 그 값을 못 읽었으면 로그아웃으로 단정하지 않는다.
+- 다시 확인: 빈 임시 폴더를 `CLAUDE_CONFIG_DIR`로 주고 Node `spawn`으로 `-p /usage`를 부른다. 표준입력을 열어 두면 3.9초, 닫으면 0.4초이고 둘 다 `Total cost`가 나온다. 같은 폴더의 `auth status --json`은 `"loggedIn": false`다. 로그인된 폴더는 7.4초→4.4초, 출력은 같다.
+
+### 연결이 잠깐 끊기면 공식 CLI가 로그인이 풀린 것처럼 답한다
+- 증상: 10-18 13:05 계정판 「지금 확인」에서 1분 사이 GPT(Codex) 줄이 「로그인이 필요해요」, Higgsfield 기본 로그인이 「읽지 못했어요」였다. 2분 뒤 같은 명령을 직접 돌리자 둘 다 그대로 읽혔다(Codex 2.7초). 계정판에서 그 Codex 읽기는 평소의 10배인 31초가 걸렸다.
+- 원인: 망 요청(토큰 갱신 등)이 실패하는 동안 Codex app-server `account/read`가 계정 없이 답한 것으로 보인다. 내부 동작은 확인하지 못했다.
+- 고침: 「로그인 필요」로 읽혀도 바로 믿지 않는다. 그 서비스의 고정 주소에 HEAD로(로그인 정보 없이) 인터넷이 닿는지 보고, 안 닿으면 연결 문제로 둔다. 닿으면 3초 뒤 한 번 더 읽어 같을 때만 「다시 로그인」으로 둔다(`desktop/src/ai-subscriptions.cjs`의 `readConfirmed`). Typecast는 서버가 401·403으로 분명히 답할 때만이라 바로 알린다.
+- 다시 확인: 계정판 시험 「a sign-in that only looks lost for a moment …」. 실제 Claude Code로 로그인 없는 폴더를 읽으면, 인터넷이 닿을 때는 6.5초 뒤 「다시 로그인」이고 확인 주소를 막으면 1.8초 뒤 「인터넷에 연결되지 않아」다.

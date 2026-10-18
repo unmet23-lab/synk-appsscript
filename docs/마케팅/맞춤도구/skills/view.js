@@ -3,7 +3,7 @@
  * rules.compute()가 낸 값을 그린다. 여기서 추천을 새로 계산하지 않는다(D-몇 표시만 rules.days를 부른다).
  * 결과 순서(추천기준 §6): 머리 → 낱말 풀이 → 내 날짜 → 이 순서대로(단계마다 실제 앱 화면) → 「여기까지 하면 돼요」·더 보기
  *   → (기본·자세히) 안 따라오는 것·괜찮은 것 → 비교 메모 → 팁 → 옮긴 뒤 확인 → 나머지. 처음 값은 간단히(index.html defaultLayout).
- *   10-17 검수(검수_fable_20261017.md): 처음 쓰는 사람에겐 15화면이 너무 길었고, ChatGPT 안에서 할 일을 그림 없이 글로만 줬다.
+ *   10-17 검수: 처음 쓰는 사람에겐 15화면이 너무 길었고, ChatGPT 안에서 할 일을 그림 없이 글로만 줬다.
  * 틀은 카타나 도구(katana/view.js)와 같다 — 싱ㅋ 시그널(core/signal.css)의 같은 부품을 쓴다.
  */
 (function (root, factory) {
@@ -27,8 +27,7 @@
   const softBadge = src => { const s = sources()[src]; return s && s.kind !== 'official' ? badge(src) : ''; };
   const ARROW = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>';
 
-  // 화면마다 내용을 설명하는 펠트 그림(10-17 GPT 이미지 2.5로 한 판에 구워 오림 — 판·지시문은
-  // docs/마케팅/synkbrief_GPTs젬_스킬전환_20261017/그림/). 같은 그림을 되풀이하지 않는다.
+  // 화면마다 내용을 설명하는 펠트 그림(10-17 한 판에 구워 오림). 같은 그림을 되풀이하지 않는다.
   const ART = {
     intro: ['skills-art-intro.webp', 348, 366],     // 두 날짜에 동그라미 친 탁상 달력: 언제까지
     where: ['skills-art-where.webp', 417, 250],     // 보석(젬)과 말풍선 상자(GPT): 어디에

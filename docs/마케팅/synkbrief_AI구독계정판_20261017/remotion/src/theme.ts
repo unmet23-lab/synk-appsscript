@@ -34,6 +34,11 @@ export const BOARD_TOKENS: Record<string, string> = {
   '--on-ink': '#08090C',
   '--surface-1': '#121317',
   '--surface-2': '#191A1F',
+  '--surface-3': '#222329',
+  '--panel': '#0C0D10',
+  '--r-md': '14px',
+  // 색 면 결(launcher.css --grain 그대로)
+  '--grain': `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
   '--r-xl': '22px',
   '--r-lg': '18px',
   '--studio': 'radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1))',

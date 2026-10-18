@@ -436,7 +436,7 @@
     "releaseBranch": "codex/backend-upgrade-release-20261018",
     "note": "The release branch is the committed deployment source; main Talk includes other pre-existing uncommitted work and was not staged wholesale.",
     "ciRepair": {
-      "status": "candidate-prepared-pending-second-github-run",
+      "status": "github-hosted-ci-verified",
       "recoveredFrom": "010c7f86b4621c7be439a5c495234b68bc7de11d",
       "branch": "codex/backend-ci-resume-20261018",
       "hostedVariable": "SYNK_HOSTED_CI=on",
@@ -470,7 +470,28 @@
         "failure": "desktop/tools/package.cjs eagerly required electron-builder during receipt validation. Dependency now loads only in actual build main."
       },
       "scope": "Existing syntax-check workflow: root tests/*.test.js, Git storage Node/Python guards, Atlas generated copies, syntax, JSON and prism. Not all repository test suites.",
-      "productionDeploymentPerformed": false
+      "productionDeploymentPerformed": false,
+      "verificationRun": {
+        "id": 39124678017,
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39124678017",
+        "head": "8b429a0482eef0d1781568ec9b318b805f7d3925",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T11:50:33Z",
+        "tests": 1772,
+        "pass": 1762,
+        "fail": 0,
+        "skipped": 10,
+        "storageNodeTests": 18,
+        "storagePythonTests": 20
+      },
+      "skipReasons": [
+        "Windows-only path and credential-adapter cases",
+        "live map check requires local canonical sources",
+        "retired verification registries absent",
+        "sibling repository absent",
+        "untracked historical design verification receipt absent"
+      ],
+      "defaultBranch": "master"
     }
   }
 }
