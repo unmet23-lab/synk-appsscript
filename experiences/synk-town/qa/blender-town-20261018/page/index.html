@@ -75,14 +75,14 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
   <div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">Claude 판</th><th scope="col">아르곤 판</th></tr></thead><tbody><tr><th scope="row">표면 결·입체감</th><td class="">v20 형상 그대로에 빛·그늘·불규칙 판석 줄눈·회벽 결을 더했다. 차이가 작고 차분하다</td><td class="best">세 채를 새로 모델링하고 네모 판석·테두리 돌·짙은 기와 골을 넣어 「다시 만든」 느낌이 더 크다</td></tr>
 <tr><th scope="row">v20과 이어짐</th><td class="best">형상이 v20과 같다. 바닥 판 바깥 테두리 안쪽 잔디가 초록 약 4.5% 어둡다(G 155.8 대 163.2)</td><td class="">같은 테두리에서 비슷하게 어둡고 파랑이 더 빠져 누렇다(B 111.5 대 120.1). 돌마당 무늬가 v20과 다르다</td></tr>
 <tr><th scope="row">눈에 띈 흠</th><td class="">공방 가까이에서 의자 다리 그림자 가장자리에 검은 톱니</td><td class="">돌마당 아래 가장자리를 따라 흰 점선</td></tr>
-<tr><th scope="row">첫 진입 추가 내려받기 PC · 휴대폰</th><td class="best">+10.55 MB · +4.97 MB</td><td class="">+11.55 MB · +6.04 MB (휴대폰 한도 6 MB를 조금 넘음)</td></tr>
-<tr><th scope="row">늘어난 GPU 텍스처 PC · 휴대폰</th><td class="best">69.3 MB · 17.3 MB (지도 13장)</td><td class="">74.7 MB · 18.7 MB (지도 14장)</td></tr>
+<tr><th scope="row">첫 진입 추가 내려받기 PC · 휴대폰</th><td class="best">+11.06 MB · +5.22 MB</td><td class="">+12.11 MB · +6.34 MB (한도 12 · 6 MB를 둘 다 조금 넘음)</td></tr>
+<tr><th scope="row">늘어난 GPU 텍스처 PC · 휴대폰</th><td class="best">72.7 MB · 18.2 MB (지도 13장)</td><td class="">78.3 MB · 19.6 MB (지도 14장)</td></tr>
 <tr><th scope="row">그리기 호출 · 삼각형 (PC 따라가기, v20 1,340 · 187만)</th><td class="best">933 · 191만</td><td class="">1,014 · 210만</td></tr>
 <tr><th scope="row">정지 fps (PC 따라가기 중앙값, v20 35.6)</th><td class="">39.1 (31–43)</td><td class="">39.8 (30–43)</td></tr>
 <tr><th scope="row">한 번 돌리는 시간</th><td class="best">짓기 7초 · 굽기 6.7분 · 내보내기 12초 + 묶기 약 10분</td><td class="">부품 24~34분(세 채 동시) → 벽시계 61분 + 묶기 약 6분</td></tr>
 <tr><th scope="row">처음 만드는 데 든 품</th><td class="">스크립트를 쓰고 Town에서 보며 9가지를 고쳤다(11:20~13:45, 전체 다시 굽기 3번)</td><td class="best">요청문만 쓰고 실행을 지켜봤다. 첫 시도는 56분 만에 멈춰 부품별로 다시 돌렸다</td></tr>
 <tr><th scope="row">고치기 쉬움</th><td class="best">스크립트 한 벌을 고쳐 그 부품만 다시 굽는다(바닥 1분 미만 + 묶기). 같은 입력이면 같은 결과</td><td class="">고칠 때마다 부품을 새 대화로 다시 맡겨 24~34분, 결과가 매번 달라질 수 있다. 아르곤이 남긴 스크립트를 직접 고쳐 돌릴 수는 있다</td></tr></tbody></table></div>
-  <p class="small">초록 칸이 그 줄에서 나은 쪽입니다. 성능(fps)은 두 판과 v20 모두 회전 사이 흔들림 안이라 가르지 않았습니다. 화면 결은 취향이 갈리는 부분이라 같은 시점 화면으로 직접 보시는 것이 가장 정확합니다.</p>
+  <p class="small">초록 칸이 그 줄에서 나은 쪽입니다. MB는 10⁶ 바이트(규격과 같은 단위)입니다. 성능(fps)은 두 판과 v20 모두 회전 사이 흔들림 안이라 가르지 않았습니다. 화면 결은 취향이 갈리는 부분이라 같은 시점 화면으로 직접 보시는 것이 가장 정확합니다.</p>
 </section>
 
 <section aria-labelledby="shots-h">
@@ -105,11 +105,11 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 
 <section aria-labelledby="num-h">
   <h2 id="num-h">수치</h2>
-  <div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">v20 (지금 공개판)</th><th scope="col">Claude 블렌더 판</th><th scope="col">아르곤 블렌더 판</th></tr></thead><tbody><tr><th scope="row">첫 진입 내려받기 · PC<span class="note">문서와 모든 파일 합계(캐시 없음). 구운 판은 묶음 GLB·KTX2/meshopt 디코더 포함</span></th><td class="best">4.62 MB</td><td class="">15.17 MB</td><td class="">16.17 MB</td></tr>
-<tr><th scope="row">첫 진입 내려받기 · 390폭<span class="note">휴대폰 폭은 1024 지도 묶음을 받는다</span></th><td class="best">4.35 MB</td><td class="">9.32 MB</td><td class="">10.39 MB</td></tr>
-<tr><th scope="row">구운 묶음 · PC / 휴대폰<span class="note">GLB 5개(바닥·집·찻집·공방·온실) 합계</span></th><td class="">없음 (코드로 생성)</td><td class="">9.71 MB / 4.16 MB</td><td class="">10.70 MB / 5.22 MB</td></tr>
-<tr><th scope="row">늘어난 GPU 텍스처 · PC<span class="note">구운 지도(밉맵 포함, 이 PC에서 BC7로 풀린 크기). v20 자체 텍스처는 세 판 모두 그대로</span></th><td class="best">0</td><td class="">69.33 MB</td><td class="">74.67 MB</td></tr>
-<tr><th scope="row">늘어난 GPU 텍스처 · 390폭<span class="note">규격 상한 PC 96 MB · 휴대폰 32 MB</span></th><td class="best">0</td><td class="">17.33 MB</td><td class="">18.67 MB</td></tr>
+  <div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">v20 (지금 공개판)</th><th scope="col">Claude 블렌더 판</th><th scope="col">아르곤 블렌더 판</th></tr></thead><tbody><tr><th scope="row">첫 진입 내려받기 · PC<span class="note">문서와 모든 파일 합계(캐시 없음). 구운 판은 묶음 GLB·KTX2/meshopt 디코더 포함</span></th><td class="best">4.84 MB</td><td class="">15.91 MB</td><td class="">16.95 MB</td></tr>
+<tr><th scope="row">첫 진입 내려받기 · 390폭<span class="note">휴대폰 폭은 1024 지도 묶음을 받는다</span></th><td class="best">4.56 MB</td><td class="">9.78 MB</td><td class="">10.89 MB</td></tr>
+<tr><th scope="row">구운 묶음 · PC / 휴대폰<span class="note">GLB 5개(바닥·집·찻집·공방·온실) 합계</span></th><td class="">없음 (코드로 생성)</td><td class="">10.18 MB / 4.36 MB</td><td class="">11.22 MB / 5.48 MB</td></tr>
+<tr><th scope="row">늘어난 GPU 텍스처 · PC<span class="note">구운 지도(밉맵 포함, 이 PC에서 BC7로 풀린 크기). v20 자체 텍스처는 세 판 모두 그대로</span></th><td class="best">0</td><td class="">72.70 MB</td><td class="">78.29 MB</td></tr>
+<tr><th scope="row">늘어난 GPU 텍스처 · 390폭<span class="note">규격 상한 PC 96 MB · 휴대폰 32 MB</span></th><td class="best">0</td><td class="">18.18 MB</td><td class="">19.57 MB</td></tr>
 <tr><th scope="row">구운 묶음 삼각형 · 메시<span class="note">바꿔 끼운 다섯 부품</span></th><td class="">—</td><td class="">158,926 · 17</td><td class="">220,465 · 44</td></tr>
 <tr><th scope="row">그리기 호출 · 삼각형 — PC 가운데 위<span class="note">화면 전체, 그림자·AO 패스 포함(renderer.info)</span></th><td class="">1,304 · 1,790,576</td><td class="">897 · 1,833,406</td><td class="">978 · 2,018,321</td></tr>
 <tr><th scope="row">그리기 호출 · 삼각형 — 390폭 가운데 위</th><td class="">756 · 1,041,624</td><td class="">516 · 1,086,940</td><td class="">568 · 1,200,134</td></tr>
@@ -119,7 +119,7 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 <tr><th scope="row">그리기 호출 · 삼각형 — 390폭 찻집 가까이</th><td class="">678 · 935,638</td><td class="">484 · 969,195</td><td class="">530 · 1,084,201</td></tr>
 <tr><th scope="row">그리기 호출 · 삼각형 — PC 집 가까이</th><td class="">826 · 1,382,722</td><td class="">539 · 1,455,708</td><td class="">604 · 1,598,067</td></tr>
 <tr><th scope="row">그리기 호출 · 삼각형 — 390폭 집 가까이</th><td class="">576 · 879,548</td><td class="">389 · 903,967</td><td class="">426 · 997,282</td></tr>
-<tr><th scope="row">첫 화면까지 · PC<span class="note">주소를 연 뒤 걷기가 켜질 때까지(한 번 잰 값)</span></th><td class="">11.4초</td><td class="">13.3초</td><td class="">11.1초</td></tr></tbody></table></div>
+<tr><th scope="row">첫 화면까지 · PC<span class="note">주소를 연 뒤 걷기가 켜질 때까지. 한 번 잰 값. v20은 11:14, 두 판은 13:37~13:40에 찍어 PC 부하가 달랐다</span></th><td class="">11.4초</td><td class="">13.3초</td><td class="">11.1초</td></tr></tbody></table></div>
   <div class="table-wrap"><table><thead><tr><th scope="col">정지 시점 fps (중앙값)</th><th scope="col">v20 (지금 공개판)</th><th scope="col">Claude 블렌더 판</th><th scope="col">아르곤 블렌더 판</th></tr></thead><tbody><tr><th scope="row">PC · 가운데 위</th><td>37.4 (34–45)</td><td>39.5 (26–42)</td><td>37.4 (30–39)</td></tr>
 <tr><th scope="row">PC · 따라가기</th><td>35.6 (30–45)</td><td>39.1 (31–43)</td><td>39.8 (30–43)</td></tr>
 <tr><th scope="row">PC · 찻집 가까이</th><td>39.5 (25–48)</td><td>40.0 (36–43)</td><td>39.7 (30–43)</td></tr>
@@ -128,7 +128,7 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 <tr><th scope="row">390폭 · 따라가기</th><td>60.0 (59–60)</td><td>60.0 (60–60)</td><td>60.0 (57–60)</td></tr>
 <tr><th scope="row">390폭 · 찻집 가까이</th><td>60.0 (60–60)</td><td>60.0 (60–60)</td><td>60.0 (55–60)</td></tr>
 <tr><th scope="row">390폭 · 집 가까이</th><td>60.0 (59–60)</td><td>60.1 (59–60)</td><td>60.0 (60–60)</td></tr></tbody></table></div>
-  <p class="small">정지 시점마다 8초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 기기 배율 2로 열고(Town 「가볍게」 규칙대로 PC 1.5배·휴대폰 1.25배로 그림) 세 판을 순서를 돌려 가며 7~7회전 쟀습니다. 측정은 이것 하나만 돌렸고, 블렌더·agy·다른 측정이 돌지 않을 때 쟀습니다. 헤드리스 Edge(ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)) 값이고 실물 휴대폰 값이 아닙니다. 측정 중 다른 세션의 내려받기·백업 업로드가 돌아 PC 전체 CPU가 1분 평균 11~99%(대개 15~45%)로 출렁였습니다. 세 판을 회전마다 순서를 돌려 쟀으므로 그 영향은 세 판에 고르게 나뉩니다. 390폭은 세 판 모두 60fps 상한이었습니다.</p>
+  <p class="small">정지 시점마다 8초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 기기 배율 2로 열고(Town 「가볍게」 규칙대로 PC 1.5배·휴대폰 1.25배로 그림) 세 판을 순서를 돌려 가며 7회전 쟀습니다. 헤드리스 Edge(ANGLE (Intel, Intel(R) Graphics (0x00007D67) Direct3D11 vs_5_0 ps_5_0, D3D11)) 값이고 실물 휴대폰 값이 아닙니다. 측정은 이것 하나만 돌렸고, 블렌더·agy·캡처·다른 측정과 겹치지 않았습니다(13:41~14:12). 측정 직전 다른 세션의 내려받기·백업 프로세스가 떠 있었고 PC 전체 CPU가 1분 평균 11~99%(대개 15~45%)로 출렁였지만, fps 저점과 CPU 고점은 잘 맞지 않았습니다. 세 판을 회전마다 순서를 돌려 쟀습니다. 390폭은 세 판 모두 60fps 상한이었습니다.</p>
 </section>
 
 <section aria-labelledby="comp-h">
@@ -136,7 +136,7 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
   <p>동네 전체 지도 13~14장을 WebP 그대로 올리면 GPU에서 장당 22.4 MB(2048², 밉맵 포함)로 풀려 휴대폰이 버티기 어렵습니다. 찻집 구역(Claude 판)으로 형식·해상도를 바꿔 가며 같은 시점 화면을 WebP 2048과 비교했고, 그 결과로 PC는 KTX2 ETC1S 2048, 휴대폰은 KTX2 ETC1S 1024로 정해 자산규격 7절에 넣었습니다.</p>
   <div class="table-wrap"><table><thead><tr><th scope="col">판</th><th scope="col">찻집 GLB</th><th scope="col">GPU · 지도 한 장</th><th scope="col">화면 차이 · PC 따라가기</th><th scope="col">PC 찻집 가까이</th><th scope="col">390폭 찻집 가까이</th></tr></thead><tbody><tr><th scope="row">WebP 2048<span class="note">10-17 기준</span></th><td class="">3.03 MB</td><td class="">22.4 MB</td><td class="">기준</td><td class="">기준</td><td class="">기준</td></tr>
 <tr><th scope="row">KTX2 ETC1S 2048<span class="note">PC로 정함</span></th><td class="">3.75 MB (meshopt 2.75 MB)</td><td class="">5.59 MB</td><td class="">2.7 · 1.9%</td><td class="">3.3 · 4.8%</td><td class="">5.6 · 11%</td></tr>
-<tr><th scope="row">KTX2 UASTC 2048<span class="note">파일 3배, 차이도 더 큼 — 뺌</span></th><td class="">10.64 MB</td><td class="">5.59 MB</td><td class="">2.9 · 4.0%</td><td class="">5.6 · 10%</td><td class="">8.2 · 18%</td></tr>
+<tr><th scope="row">KTX2 UASTC 2048<span class="note">GLB가 ETC1S 2048의 2.8배, 차이도 더 큼 — 뺌</span></th><td class="">10.64 MB</td><td class="">5.59 MB</td><td class="">2.9 · 4.0%</td><td class="">5.6 · 10%</td><td class="">8.2 · 18%</td></tr>
 <tr><th scope="row">KTX2 ETC1S 1536<span class="note">보류(GPU 2.25배)</span></th><td class="">2.82 MB</td><td class="">3.15 MB</td><td class="">3.3 · 3.3%</td><td class="">5.5 · 10%</td><td class="">4.5 · 8.0%</td></tr>
 <tr><th scope="row">KTX2 ETC1S 1024<span class="note">휴대폰으로 정함, 알파는 최솟값으로 줄임</span></th><td class="">2.14 MB</td><td class="">1.40 MB</td><td class="">3.1 · 3.0%</td><td class="">4.8 · 9.1%</td><td class="">7.8 · 18%</td></tr></tbody></table></div>
   <div class="crops"><figure><img src="shots/crop-0.webp" alt="WebP 2048 (기준)" loading="lazy"><figcaption>WebP 2048 (기준)</figcaption></figure><figure><img src="shots/crop-1.webp" alt="KTX2 ETC1S 2048 (PC)" loading="lazy"><figcaption>KTX2 ETC1S 2048 (PC)</figcaption></figure><figure><img src="shots/crop-2.webp" alt="KTX2 ETC1S 1024 (휴대폰 지도)" loading="lazy"><figcaption>KTX2 ETC1S 1024 (휴대폰 지도)</figcaption></figure></div>
@@ -155,7 +155,7 @@ ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 
 <div class="decide" role="note">
   <p class="lbl"><span class="dot" aria-hidden="true"></span>정하실 것</p>
-  <p>이어 간다면 어느 판으로 갈지 정해 주세요. 제 추천은 Claude 스크립트 판입니다 — 더 작고(내려받기 −1 MB, 그리기 호출 −81) 한 번 돌리기가 빠르며, 고친 결과가 그대로 다시 나옵니다. 아르곤 판의 네모 판석·짙은 기와처럼 더 또렷한 결이 좋으시면 그 표현만 Claude 스크립트로 옮길 수 있습니다. 다음 단계는 의자 그림자·테두리 잔디 색 두 가지를 고친 뒤 바깥 고리까지 넓힐지입니다. master 합치기와 공개는 그 뒤에 정하시면 됩니다.</p>
+  <p>이어 간다면 어느 판으로 갈지 정해 주세요. 제 추천은 Claude 스크립트 판입니다 — 더 작고(내려받기 PC −1.05 MB·휴대폰 −1.12 MB, 그리기 호출 −81) 한 번 돌리기가 빠르며, 고친 결과가 그대로 다시 나옵니다. 아르곤 판의 네모 판석·짙은 기와처럼 더 또렷한 결이 좋으시면 그 표현만 Claude 스크립트로 옮길 수 있습니다. 다음 단계는 의자 그림자·테두리 잔디 색 두 가지를 고친 뒤 바깥 고리까지 넓힐지입니다. master 합치기와 공개는 그 뒤에 정하시면 됩니다.</p>
 </div>
 </div>
 <script>

@@ -10,7 +10,8 @@ const caps = Object.fromEntries(IDS.map(([id, dir]) => [id, read(path.join(args.
 const sets = Object.fromEntries(IDS.slice(1).map(([id]) => [id, read(path.join(__dirname, 'results', `build-set-${id}.json`))]));
 const perf = args.perf ? read(args.perf) : null, extra = read(args.extra);
 const n = x => Number(x).toLocaleString('ko-KR');
-const mb = b => (b / 1048576).toFixed(2) + ' MB';
+// MB = 10^6 bytes, the unit the spec (자산규격.md 7절) sets its budgets in.
+const mb = b => (b / 1e6).toFixed(2) + ' MB';
 const VPS = [['1280x900', 'PC'], ['390x844', '390폭']];
 const VIEWS = [['core', '가운데 위'], ['follow', '따라가기'], ['wide', '동네 전체'], ['cafe-close', '찻집 가까이'], ['home-close', '집 가까이'], ['workshop-close', '공방 가까이'], ['greenhouse-close', '온실 가까이']];
 const views = VPS.flatMap(([vp, vl]) => VIEWS.map(([v, l]) => ({ key: `${vp}-${v}`, label: `${vl} · ${l}` })));
@@ -28,8 +29,7 @@ const metrics = [
   ...['core', 'follow', 'cafe-close', 'home-close'].flatMap(view => VPS.map(([key, vl]) => ({
     label: `그리기 호출 · 삼각형 — ${vl} ${VIEWS.find(v => v[0] === view)[1]}`, note: view === 'core' && key === '1280x900' ? '화면 전체, 그림자·AO 패스 포함(renderer.info)' : '',
     ...per(c => `${n(vp(c, key).views[view].drawCalls)} · ${n(vp(c, key).views[view].triangles)}`) }))),
-  { label: '첫 화면까지 · PC', note: '주소를 연 뒤 걷기가 켜질 때까지(한 번 잰 값)', ...per(c => (vp(c, '1280x900').readyMs / 1000).toFixed(1) + '초') },
-  ...(extra.metrics || []),
+  { label: '첫 화면까지 · PC', note: '주소를 연 뒤 걷기가 켜질 때까지. ' + (extra.metrics?.[0]?.note || '한 번 잰 값'), ...per(c => (vp(c, '1280x900').readyMs / 1000).toFixed(1) + '초') },
 ];
 const fps = [];
 if (perf) for (const [key, vl] of VPS) for (const [view, label] of VIEWS) {
@@ -51,7 +51,7 @@ const data = {
     { id: 'argon', label: '아르곤 블렌더 판', shots: shotsFor('argon', 'town-argon'), how: extra.how.argon },
   ],
   metrics, fps,
-  fpsNote: perf ? `정지 시점마다 ${perf.seconds}초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 기기 배율 ${perf.dpr}로 열고(Town 「가볍게」 규칙대로 PC 1.5배·휴대폰 1.25배로 그림) 세 판을 순서를 돌려 가며 ${rounds}~${perf.rounds}회전 쟀습니다. 측정은 이것 하나만 돌렸고, 블렌더·agy·다른 측정이 돌지 않을 때 쟀습니다. 헤드리스 Edge(${adapter}) 값이고 실물 휴대폰 값이 아닙니다.${extra.fpsNote ? ' ' + extra.fpsNote : ''}` : '',
+  fpsNote: perf ? `정지 시점마다 ${perf.seconds}초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 기기 배율 ${perf.dpr}로 열고(Town 「가볍게」 규칙대로 PC 1.5배·휴대폰 1.25배로 그림) 세 판을 순서를 돌려 가며 ${rounds === perf.rounds ? perf.rounds : rounds + '~' + perf.rounds}회전 쟀습니다. 헤드리스 Edge(${adapter}) 값이고 실물 휴대폰 값이 아닙니다.${extra.fpsNote ? ' ' + extra.fpsNote : ''}` : '',
   compression: extra.compression, compare: extra.compare,
   unverified: extra.unverified, decide: extra.decide,
 };
