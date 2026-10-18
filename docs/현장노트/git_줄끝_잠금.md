@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · GPT(Codex) 10-17 공유 문서 숫자 치환 함정 추가
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -27,20 +27,13 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
 
-공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
-
-1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
-2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
-3. 별도 인덱스에 올린다.
-   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
-   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
-4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
-5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
-6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
-
-보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
-
 ## 줄끝(CRLF·LF)
+
+### 문단을 파일 끝에 붙일 때 빈 줄 두 개가 커밋 검사를 막는다
+- 증상: 10-18 결과 기록용 별도 인덱스의 `git diff --cached --check`가 두 문서에서 `new blank line at EOF`로 중단됐다. 커밋과 push는 아직 실행되지 않았다.
+- 원인: 문단 사이에 쓰는 `\n\n`을 파일 끝에도 그대로 붙였다. 검사 래퍼가 stdout을 오류에 포함하지 않아 처음에는 `GIT_FAILED`만 보였다.
+- 고침: 문단 사이의 빈 줄은 유지하고 EOF에서는 마지막 줄바꿈 하나만 남겼다. 실패한 별도 인덱스를 보존한 뒤 새 인덱스로 다시 만들었다. 검사를 끄거나 공용 인덱스를 수정하지 않았다.
+- 다시 확인: `.tmp/backend-upgrade-release-20261018/commit-results-v4.cjs`의 소유 문단 보존 시험 51건과 실제 diff·저장소 용량 검사를 통과했고, 결과 커밋 `4816c777`을 별도 브랜치에 push했다.
 
 ### 공용 문서 하나가 줄끝만 바뀌어 통째로 diff가 된다
 - 증상: `git diff HEAD`가 트랙 87줄 전부 바뀐 것으로 나온다(내용은 몇 줄만 바뀜). 파이썬으로 고친 LF 파일(`KidsQuestion.tsx` 226줄)이 통째로 CRLF가 된다.
@@ -210,12 +203,6 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
-### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
-- 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.
-- 원인: 세션마다 내 커밋만 origin에 다시 쌓아 올리고(restack) 로컬 병합은 「origin has other commits」로 건너뛰어, 같은 내용이 양쪽에 다른 번호로 쌓였다.
-- 고침: `.tmp/master-align-20261018/align_merge.py`(계획만 → `--go`). `git merge-tree --write-tree`로 병합 트리를 만들고 충돌은 경로별 규칙(한쪽이 다른 쪽을 품으면 그쪽, 표·장부는 합집합, 「쓴 AI」 머리말은 잇기)으로 푼다. 바뀐 경로마다 작업본이 옛 HEAD 그대로면 새 판(작업본 줄끝 유지), 남의 미커밋 수정이면 3방향, 3방향이 부딪히면 줄 단위(한쪽만 고친 줄은 그쪽, origin에만 있는 새 묶음은 작업본에 같은 글이 없을 때만, 둘 다 다르게 쓴 줄은 작업본 판을 두고 기록) → 바이트 백업 → 병합 커밋(부모 로컬·origin) → master CAS → 그 경로만 공용 인덱스. 결과 `c3222446d`(71경로, 작업본 = 병합본 62, 3방향 9).
-- 다시 확인: `git merge-base --is-ancestor origin/master master`, 3방향 파일마다 「백업의 작업본 고유 줄이 새 작업본에 다 있는지」(머리말을 이은 줄은 글이 들어 있는지). 둘 다 다르게 쓴 줄(10-18: 트랙 「자동화 3종 후속」)은 HEAD에 origin 판이 있으니 그 줄 주인 세션이 커밋 전에 합쳐야 한다.
-
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
@@ -242,6 +229,45 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 정리 목록에서 `git ls-files` 경로를 뺀다. 추적 파일이 정말 크면 지우지 말고 sparse-checkout으로 작업본에서만 뺀다. 폴더를 통째로 지우기 전에 그 안 어디에든 `.git`(폴더든 파일이든)이 있는지 보고, 있으면 그 아래는 빼고 따로 본다. 지워진 추적 파일은 `git status --porcelain | grep '^ D'` 목록을 `GIT_LITERAL_PATHSPECS=1 git restore --worktree --pathspec-from-file=<목록>`으로 되살린다(공용 인덱스는 그대로). 정리 기록(`removed*.jsonl`의 경로·sha256)이 있으면 바이트까지 맞춘다: 별도 인덱스(`read-tree HEAD`)의 `checkout-index`(체크아웃 판, autocrlf 적용)와 HEAD blob(LF) 가운데 기록된 해시와 같은 쪽을 쓴다(10-10 349개). 내용이 같아도 인덱스에 적힌 크기와 다르면 status가 ` M`으로 남으니, 지우기 직전 바이트 그대로 되살린다(`git ls-files --debug`의 size로 확인). 단 낡은 것을 일부러 없앤 정리라면 되살리지 않는다 — 정리 기록·커밋·진행 중인 GPT 작업으로 가리고, 헷갈리면 유호님께 여쭌다.
 - 다시 확인: 정리 뒤 `GIT_OPTIONAL_LOCKS=0 git ls-files --deleted | wc -l`이 0이다(10-17 0). 정리가 아직 돌고 있을 수 있으니 정리 기록 파일의 수정 시각이 멈췄는지도 본다.
 
+## 공용 작업본 master를 origin/master에 맞추기
+
+공용 작업본의 로컬 master가 origin/master보다 뒤처졌는데(다른 세션이 PR로 합침) 작업본에 남의 미커밋 수정과 미추적 단일 사본이 있을 때. 2026-10-17 SYNK-talk에서 `b190998`→`47dd88d`(242경로)·`47dd88d`→`cef5526`(31경로) 두 번 했다. 보고·도구·근거: `C:/Users/q1212/AppData/Roaming/Claude/side-session-notes/local_206a2f66-91f6-450a-a2d6-30903482cbf1/talk-master-align-result-20261017.md`와 그 옆 `talk-master-align-evidence/`.
+
+- 하지 않는다: 제자리 `reset`·`checkout`·`stash`(미커밋 수정·미추적이 지워짐) · `git merge origin/master`(병합 커밋이 생겨 master ≠ origin) · 별도 워크트리에서 master 체크아웃(이미 체크아웃돼 있음) · ref만 옮기기(작업본이 수십 커밋 되돌린 것처럼 보임).
+- 한다: ① `git fetch` 뒤 `git merge-base --is-ancestor master origin/master`로 빨리감기 가능인지 본다. ② origin이 고친 경로가 작업본 수정·미추적과 하나도 겹치지 않으면 `git merge --ff-only origin/master`로 끝. ③ 겹치면 `align.cjs`(사본 `C:/Users/q1212/AppData/Roaming/Claude/side-session-notes/local_206a2f66-91f6-450a-a2d6-30903482cbf1/talk-master-align-evidence/round2-cef5526/align.cjs`, 환경변수 `OLD`·`NEW`·`TALK`·`SNAPSHOT_BRANCH`·`BACKUP_DIR`·`DOCS_BRANCH=''`·`TAKE_NEW_PATHS`·`KEEP_PATHS`·`RESOLVE_DIR`): `plan <out.json>`(읽기 전용)으로 경로별 행동표 — NEW 쓰기(작업본이 OLD 그대로/없음/OLD의 옛 판) · 그대로(이미 NEW와 같음) · 3방향(기준 OLD → 안 되면 작업본과 가장 가까운 이력 판) · `.jsonl` 장부는 줄 합집합을 「때」 순서에 · NEW가 더한 경로의 다른 미추적 파일은 바이트 그대로 · NEW가 지운 수정 파일은 미추적으로 · 충돌은 경로별로 NEW/유지/손 병합 — 를 만들어 유호님 승인을 받고, `apply <approved.json>`(계획 재계산·승인판 대조 → 스냅샷 가지 + 바이트 백업 → 파일 쓰기 → `git update-ref refs/heads/master NEW OLD`(CAS) → `git reset -q`). ④ `verify-2.cjs`로 적용 전 상태 경로 전부 sha256 대조(잃은 파일 0).
+- origin/master에 합친 세션이 할 일: 합친 직후 공용 작업본 master를 위 ②·③으로 바로 맞춘다. 미루면 다음 세션이 같은 조사를 다시 한다(10-17에 두 번).
+
+### 가까운 이력 판 찾기가 스냅샷 가지에 가로채인다
+- 증상: 작업본이 NEW 조상 커밋(`da431d3`)의 판과 똑같은 파일(`tests/synk-personal-media.test.js`)이 「어느 기준으로도 충돌」로 나온다.
+- 원인: 같은 블롭을 가진 커밋이 여럿일 때 `git log --all` 첫 커밋(1차 스냅샷 가지, NEW 조상 아님)만 남겨, 그 가지와 NEW의 merge-base에는 그 파일이 없었다.
+- 고침: 블롭별로 커밋을 모아 NEW 조상이 있으면 그것을 기준 커밋으로 쓴다(align.cjs 2차 판).
+- 다시 확인: 같은 파일이 「기준 조상 da431d3, 결과=NEW」로 나오고 옮긴 뒤 `git status`에 안 보인다.
+
+### 작업본이 OLD의 옛 판이면 3방향이 충돌한다
+- 증상: 미커밋 「수정」으로 보이는 파일(`tools/synk-personal-build.js`)이 어느 기준으로도 충돌.
+- 원인: 작업본이 OLD보다 오래된 판(작업본→OLD numstat에 지운 줄 0)이라 「수정」이 아니라 「되돌림」이다.
+- 고침: 작업본→OLD에 지운 줄이 없으면 작업본 고유 내용이 없으니 NEW 판을 쓴다(align.cjs 0-b 규칙).
+- 다시 확인: 옮긴 뒤 그 파일이 `git status`에 안 보인다.
+
+### 공용 문서에 덧붙인 줄이 다른 세션의 통째 다시 쓰기로 사라진다
+- 증상: 트랙 §1 항목 끝에 덧붙인 두 문장이 3시간 뒤 없다(파일은 CRLF 193줄 → LF 201줄로 바뀜).
+- 원인: 다른 세션이 자기 판(옛 HEAD 기준)으로 파일을 통째로 썼다.
+- 고침: 쓰기 직전 판을 바이트 그대로 읽어 그 줄 끝에만 끼우고(임시 파일 → 교체), 세션을 끝낼 때 `grep`으로 있는지 다시 본다.
+- 다시 확인: `grep -c '10-17 C안' docs/_ops/트랙.md`가 0이 아니다.
+
+### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
+- 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.
+- 원인: 세션마다 내 커밋만 origin에 다시 쌓아 올리고(restack) 로컬 병합은 「origin has other commits」로 건너뛰어, 같은 내용이 양쪽에 다른 번호로 쌓였다.
+- 고침: `.tmp/master-align-20261018/align_merge.py`(계획만 → `--go`). `git merge-tree --write-tree`로 병합 트리를 만들고 충돌은 경로별 규칙(한쪽이 다른 쪽을 품으면 그쪽, 표·장부는 합집합, 「쓴 AI」 머리말은 잇기)으로 푼다. 바뀐 경로마다 작업본이 옛 HEAD 그대로면 새 판(작업본 줄끝 유지), 남의 미커밋 수정이면 3방향, 3방향이 부딪히면 줄 단위(한쪽만 고친 줄은 그쪽, origin에만 있는 새 묶음은 작업본에 같은 글이 없을 때만, 둘 다 다르게 쓴 줄은 작업본 판을 두고 기록) → 바이트 백업 → 병합 커밋(부모 로컬·origin) → master CAS → 그 경로만 공용 인덱스. 결과 `c3222446d`(71경로, 작업본 = 병합본 62, 3방향 9).
+- 다시 확인: `git merge-base --is-ancestor origin/master master`, 3방향 파일마다 「백업의 작업본 고유 줄이 새 작업본에 다 있는지」(머리말을 이은 줄은 글이 들어 있는지). 둘 다 다르게 쓴 줄(10-18: 트랙 「자동화 3종 후속」)은 HEAD에 origin 판이 있으니 그 줄 주인 세션이 커밋 전에 합쳐야 한다.
+- 함정(10-18 17:2x 두 번째 맞추기): `align_merge.py`의 충돌 규칙은 첫 병합의 충돌 6개에 맞춘 것이라, 다음 병합에 그대로 돌리면 트랙에서 다른 세션의 줄 2개(PULSE 뮤직비디오 포트폴리오·고객 화면 리디자인)를 지우는 계획이 나왔다. 계획 결과는 늘 `git diff <로컬 HEAD> <계획 트리>`로 보고 지워지는 줄이 없는지 확인한다. origin에만 있는 커밋이 내가 다시 쌓아 올린 커밋뿐이면, 그 변경이 로컬에 이미 다 들어 있는지(경로마다 blob 같음, 다른 파일은 「origin이 더한 줄이 로컬에 있고 뺀 줄이 없음」) 확인한 뒤 병합 트리 = 로컬 HEAD 트리로 `commit-tree -p HEAD -p origin/master` → `update-ref` CAS만 하면 된다(작업본·인덱스 안 건드림). 결과 `744ef19f7`.
+
+### 공용 문서의 시험 숫자를 전체 치환하면 다른 작업 기록도 바뀐다
+- 증상: 통화 시험189→190 갱신에 문서 전체 replaceAll을 써서, 다른 PULSE의 Linux189/189와 장애189.973초 기록까지 바뀌었다. 마감 대조에서 발견했다.
+- 원인: 같은 숫자가 다른 항목의 시험·시간·해시에도 있다. 문서 전체 숫자 치환은 해당 작업 항목의 갱신이 아니다.
+- 고침: HEAD와 공용 인덱스의 해당 문맥을 대조해 다른 기록 세 곳을 원래 값으로 되돌렸다. 이후 항목 제목/문맥으로 범위를 고정하고 그 범위의 정확한 문자열만 바꾼다.
+- 다시 확인: 트랙의 다른 PULSE Linux189/189와 결정의 장애189.973초는 보존되고, 통화 항목/QA만190/190인지 함께 확인한다.
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
@@ -249,3 +275,15 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 경로를 주지 않으면 모든 경로의 바뀐 blob을 읽는다(`-S`는 내용 비교, 이름 바뀜 탐지도 내용을 읽는다). 받지 않은 큰 blob에서 멈춘다. 둘 중 어느 쪽이 먼저 막혔는지는 가르지 않았다.
 - 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
 - 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.
+
+### OneDrive의 텍스트 필터를 Git 이력 백업에 그대로 쓰면 정상 소스가 빠진다
+- 증상: 10-18 첫 Git 자동보존 진단에서 플랫폼 정본 그림·앱 음성·WASM과 HTML `autocomplete` 문자열·로컬 시험용 토큰까지 차단돼 현재 master를 보존하지 못했다.
+- 원인: OneDrive는 문서·소스만, Git은 승인 앱 자산까지 포함하는 서로 다른 범위인데 텍스트 전용 필터를 그대로 적용했다. 자격 이름의 단순 정규식도 실제 비밀과 시험 문자열을 구분하지 못했다.
+- 고침: `tools/GitHub백업.cjs`는 커밋된 Git 정책의 용량·QA 산출물 검사를 재사용하고, 실제 원격에 없는 객체만 검사한다. 비밀 서명은 계속 막고 검토한 더미값은 정확한 경로·값 SHA로 한정한다. Git 기본 가지 대신 `refs/synk-backup/<SHA>`를 새로 만들고 원격 SHA를 재조회하며 원래 작업본·공용 인덱스를 건드리지 않는다.
+- 다시 확인: `node --test tests/GitHub백업.test.cjs`의 원격 ref·인덱스 보존·중간 삭제 미디어·비밀·public 읽기 전용·PID 잠금 시험과 `.tmp/backup-four-20261018/github/`의 실제 원격 대조를 본다. 사용자 정의 참조는 일반 clone에 자동으로 들어오지 않으므로 [Git 보관 안내](../_ops/github-storage/README.md)의 fetch 복원 절차를 따른다.
+
+### 정책상 올릴 수 없는 Git 이력은 암호화 bundle로 보존한다
+- 증상: 과거 로컬 가지·stash 6개에 QA 출력과 큰 묶음이 남아 현재 소스는 보존됐어도 이력 전체는 자동백업에서 보류됐다.
+- 원인: Git 저장 정책을 통과시키려고 파일을 빼거나 과거 커밋을 고치면 원래 이력의 복원이 달라진다.
+- 고침: `git bundle create --version=2 - --stdin`의 표준출력을 기존 공개키 암호화 스트림으로 연결한다. 원래 이름 있는 ref와 SHA, Git PACK 체크섬, 원문·암호문 해시를 기록하고 필요한 원격 선행 커밋은 immutable ref로 고정한다. 암호문과 manifest는 Drive 20TB `Git-보관` 그룹에 보존한다. 두 파일의 실제 원격 검증 전에 성공으로 표시하지 않는다.
+- 다시 확인: `tests/Git보관묶음.test.cjs`에서 임시 키로 왕복 복원·정확한 커밋/파일·손상된 PACK 거절·원격 영수증의 계정/시각/파일 해시 불일치 거절을 검사했다. 실제 자료는 평문 파일 없이 생성했고, 복호화는 사용자가 기존 암호를 입력하는 복원 시에만 수행한다.
