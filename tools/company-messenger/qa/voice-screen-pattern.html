@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>SYNK 통화 검증용 화면</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:32px;font:18px/1.6 system-ui,sans-serif;background:#f4f7fb;color:#16243a}
+  main{max-width:1050px;margin:auto}h1{font-size:32px;margin:0 0 12px}section{border:2px solid #294571;padding:24px;margin:20px 0;background:white;border-radius:12px}
+  #clock{font:700 clamp(24px,6vw,56px)/1.4 monospace;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.bars{display:grid;grid-template-columns:repeat(4,1fr);height:90px}.bars i:nth-child(1){background:#00c8df}.bars i:nth-child(2){background:#ef4783}.bars i:nth-child(3){background:#ffcf45}.bars i:nth-child(4){background:#283d79}
+  button{font:inherit;padding:12px 20px;margin:6px;border:2px solid #294571;border-radius:8px;background:#e5edff;color:#16243a;cursor:pointer}button:focus-visible{outline:4px solid #ef4783}#sound{min-height:30px}small{font-size:12px}.sample{overflow-wrap:anywhere}
+</style>
+<main>
+  <h1>SYNK 통화 검증용 화면</h1>
+  <p>개인 자료 대신 이 화면을 공유하세요. 원본과 수신 화면의 시계·색·글자를 함께 확인합니다.</p>
+  <section aria-label="변화하는 원본"><div id="clock" role="timer"></div><div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div><p id="change">색 전환 확인</p><button id="flip">표시 색 바꾸기</button></section>
+  <section><h2>글자 확인</h2><p class="sample" style="font-size:24px">24px · 함께 작업하며 통화합니다. ABC 0123456789</p><p class="sample" style="font-size:16px">16px · 창과 탭을 바꿔도 현재 공유 대상을 확인하세요.</p><small>12px · 원본부터 읽히는지 확인하고 수신 화면과 비교하세요.</small></section>
+  <section><h2>화면 소리 시험</h2><p>버튼을 누르면 작은 시험음이10초 동안 납니다. 마이크 청취 확인과 탭 소리 확인을 구분하세요.</p><button id="start">10초 시험음</button><button id="stop">즉시 중지</button><p id="sound" role="status">소리 꺼짐</p></section>
+  <p>원본 탭 자체의 갱신이 늦는 경우와 통화 전송 지연을 구분하세요. 이 페이지는 네트워크 요청·녹음·통화 연결을 하지 않습니다.</p>
+</main>
+<script>
+  const clock=document.getElementById('clock');setInterval(()=>clock.textContent=new Date().toISOString(),250);clock.textContent=new Date().toISOString();
+  let switched=false;document.getElementById('flip').onclick=()=>{switched=!switched;document.getElementById('change').textContent=switched?'분홍 표시 · 변경됨':'파랑 표시 · 변경됨';document.getElementById('change').style.color=switched?'#ad2056':'#204ea0';};
+  let context,timer;const sound=document.getElementById('sound');
+  async function stop(){clearTimeout(timer);const old=context;context=null;if(old)await old.close();sound.textContent='소리 꺼짐';}
+  document.getElementById('stop').onclick=()=>void stop();
+  document.getElementById('start').onclick=async()=>{await stop();try{context=new AudioContext();await context.resume();const oscillator=context.createOscillator(),gain=context.createGain();oscillator.frequency.value=660;gain.gain.value=.035;oscillator.connect(gain).connect(context.destination);oscillator.start();sound.textContent='시험음 재생 중 · 10초 후 자동 중지';timer=setTimeout(()=>void stop(),10000);}catch{await stop();sound.textContent='소리를 시작하지 못했습니다. 브라우저 지원/출력 장치를 확인하세요.';}};
+  window.addEventListener('pagehide',()=>void stop());
+</script>
+</html>

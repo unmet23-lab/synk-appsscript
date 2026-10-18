@@ -12,6 +12,8 @@ import { createCompanyIdentityBridge } from './company-integration.mjs';
 import { createCollaborationService } from './collaboration-service.mjs';
 import { createDirectTaskService } from './direct-task-service.mjs';
 import { resolvePlatformUrl } from './platform-navigation.mjs';
+import { voiceOptionsFromEnv } from './voice-livekit.mjs';
+import { createVoiceService } from './voice-service.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const scrypt = promisify(scryptCallback);
@@ -94,7 +96,16 @@ async function jsonBody(req) {
   }
 }
 
-export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled } = {}) {
+async function voiceWebhookBody(req) {
+  assert((req.headers['content-type'] || '').split(';')[0].trim().toLowerCase() === 'application/webhook+json', 415, '통화 이벤트 형식을 확인해 주세요.');
+  if (Number(req.headers['content-length']) > 65536) { req.resume(); throw new AppError(413, '요청이 너무 큽니다.'); }
+  const parts = []; let size = 0;
+  for await (const chunk of req) { size += chunk.length; if (size <= 65536) parts.push(chunk); }
+  assert(size <= 65536, 413, '요청이 너무 큽니다.');
+  return Buffer.concat(parts);
+}
+
+export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, voice = voiceOptionsFromEnv() } = {}) {
   assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
   assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   // This first version is deliberately local-only. Network deployment needs TLS and an explicit hosting design.
@@ -184,6 +195,61 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   const directTasks = createDirectTaskService({ db, assert, textField, validateRequestId: requestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape,
     onPublishError: error => console.error('[messenger] Committed task update publication:', String(error?.code || error?.name || 'Error').replace(/[^A-Za-z0-9_]/g, '').slice(0, 80)),
   });
+  const voiceService = createVoiceService({ ...voice, db, assert, validateRequestId: requestId, publish, invitationVisible: voiceInvitationVisible });
+  collaboration.setPersonalNotifications({ list: voiceService.invitationNotifications, read: voiceService.readInvitationNotification });
+
+  function voiceInvitationVisible(userId, channelId) {
+    syncDirectory();
+    if (!members().some(row => row.id === userId)) return false;
+    try { requireChannel(userId, channelId); return true; } catch { return false; }
+  }
+  function voiceRecipientCheck(channelId, userId) {
+    const original = requireChannel(userId, channelId), lifecycle = original.lifecycle_version, departure = departureVersion(channelId, userId), access = bridge?.accessKey(userId);
+    return () => {
+      assert(voiceInvitationVisible(userId, channelId), 404, '초대할 동료를 찾을 수 없습니다.');
+      const channel = requireChannel(userId, channelId);
+      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, userId) === departure && bridge?.accessKey(userId) === access, 409, '대화방 참여 상태가 변경되었습니다.');
+      const user = one('SELECT * FROM users WHERE id=?', userId);
+      const companyUser = integration?.listUsers().find(row => row.id === bridge.companyUserId(userId) && row.active !== false);
+      const identity = companyUser ? { role: companyUser.role, canWrite: companyUser.canWrite ?? companyUser.role !== 'viewer', canManage: companyUser.role === 'admin' } : null;
+      const permission = voicePermissions({ user, identity }, channel);
+      if (collaboration.notificationMode(userId, channelId) === 'mute') return { ...permission, canJoin: false };
+      return permission;
+    };
+  }
+
+  function voicePermissions(auth, channel) {
+    const policy = voiceService.policyFor(channel.id), supported = channel.kind !== 'self' && !channel.system_key;
+    const writer = (!auth.identity || auth.identity.canWrite === true) && canPostInChannel(channel, auth.user.id);
+    const canModerate = Boolean(supported && writer && (canManageChannel(channel, auth.user.id) || (channel.scope === 'team' && auth.identity?.canManage === true && ['admin', 'manager'].includes(auth.identity.role))));
+    const canRemain = Boolean(voiceService.capabilities().enabled && supported && policy.enabled && (writer || (auth.identity?.role === 'viewer' && policy.viewerCanJoin)));
+    const canShare = Boolean(canRemain && writer && policy.screenShareEnabled && (policy.memberCanShare || canModerate));
+    return { canRemain, canJoin: canRemain && !policy.locked, canSpeak: canRemain && writer && (policy.memberCanSpeak || canModerate), canShare, canShareAudio: canShare && policy.screenAudioAllowed, canModerate };
+  }
+  function publicVoicePermissions(auth, channel) {
+    const { canRemain, ...permissions } = voicePermissions(auth, channel); return permissions;
+  }
+  function voiceState(auth, channelId) {
+    const channel = requireChannel(auth.user.id, channelId);
+    return { ...voiceService.channelState(channelId), permissions: publicVoicePermissions(auth, channel) };
+  }
+  function voicePermissionCheck(req, auth, channelId) {
+    const original = requireChannel(auth.user.id, channelId);
+    assert(original.kind !== 'self' && !original.system_key, 400, '개인 대화나 팀·프로젝트 대화방에서 통화를 시작해 주세요.');
+    const lifecycle = original.lifecycle_version, departure = departureVersion(channelId, auth.user.id);
+    const access = bridge?.accessKey(auth.user.id), role = auth.identity?.role;
+    // Keep only the cookie needed to re-check the original session, never a
+    // request body, response, or a persisted credential.
+    const probe = { headers: { cookie: req.headers.cookie } };
+    return () => {
+      const latest = session(probe);
+      assert(latest && latest.token === auth.token && latest.user.id === auth.user.id, 401, '회사 계정으로 다시 로그인해 주세요.');
+      assert(latest.identity?.role === role && bridge?.accessKey(auth.user.id) === access, 403, '통화 권한이나 소속 팀이 변경되었습니다.');
+      const channel = requireChannel(latest.user.id, channelId);
+      assert(channel.lifecycle_version === lifecycle && departureVersion(channelId, latest.user.id) === departure, 409, '대화방 참여 상태가 변경되었습니다. 다시 참가해 주세요.');
+      return voicePermissions(latest, channel);
+    };
+  }
 
   function resolveWorkspaceLink({ userId, channelId, workspaceLink, recipientIds, purpose = 'share' }) {
     if (integration?.resolveWorkspaceLink) {
@@ -327,7 +393,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     syncDirectory();
     const basic = { needsSetup: !hasSetup(), workspace: { name: workspaceName() }, storage: { provider: active ? 'google-drive' : 'local' }, platformUrl: platformEntryUrl, sendRecovery: { messages: true, uploads: true } };
     if (!user) return basic;
-    return { ...basic, user: publicUser(user), channels: channelsFor(user.id), members: members(), teams: bridge?.teamsFor(user.id) || [], notificationUnread: collaboration.unreadCount(user.id), scheduledNotifications: { enabled: workNotificationsEnabled }, limits: { fileBytes: FILE_LIMIT }, ...(identity ? { integrated: { csrfToken: identity.csrfToken, companyUserId: identity.companyUserId, role: identity.role, canWrite: identity.canWrite, canManage: identity.canManage, parentOrigin: identity.parentOrigin } } : {}) };
+    return { ...basic, user: publicUser(user), channels: channelsFor(user.id), members: members(), teams: bridge?.teamsFor(user.id) || [], notificationUnread: collaboration.unreadCount(user.id), scheduledNotifications: { enabled: workNotificationsEnabled }, voice: voiceService.capabilities(), limits: { fileBytes: FILE_LIMIT }, ...(identity ? { integrated: { csrfToken: identity.csrfToken, companyUserId: identity.companyUserId, role: identity.role, canWrite: identity.canWrite, canManage: identity.canManage, parentOrigin: identity.parentOrigin } } : {}) };
   }
   function createChannel(name, description, kind, userIds, pairKey = null, category = 'generic', creatorId = null, teamId = null, scope = 'public') {
     const id = randomUUID();
@@ -382,6 +448,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function publish(type, channelId, onlyUserId) {
     syncDirectory();
+    if (type === 'channel' || type === 'member') void voiceService.sweep().catch(() => {});
     if (channelId && type !== 'channel' && one('SELECT deleted_at FROM channels WHERE id=?', channelId)?.deleted_at) return;
     const data = `event: update\ndata: ${JSON.stringify({ type, ...(channelId ? { channelId } : {}) })}\n\n`;
     for (const client of subscribers) {
@@ -408,7 +475,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     }
     return Boolean(one('SELECT 1 FROM sessions WHERE token=? AND expires_at>?', client.token, now()));
   }
-  function disconnectRevoked() { syncDirectory(); for (const client of subscribers) if (!validSubscriber(client, false)) { client.res.end(); subscribers.delete(client); } }
+  function disconnectRevoked() { syncDirectory(); void voiceService.sweep().catch(() => {}); for (const client of subscribers) if (!validSubscriber(client, false)) { client.res.end(); subscribers.delete(client); } }
   async function removeDiskFile(diskName) {
     // Disk names are generated internally, never supplied by a client.
     try { await unlink(path.join(uploadDir, diskName)); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -417,8 +484,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', integration ? 'SAMEORIGIN' : 'DENY');
     res.setHeader('Referrer-Policy', 'same-origin');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors ${integration ? "'self'" : "'none'"}; form-action 'self'`);
+    // Calls need the microphone, screen capture and LiveKit Cloud signalling only
+    // while the feature is on. Camera stays blocked; the E2EE worker is same-origin.
+    const calls = voiceService.capabilities().enabled;
+    res.setHeader('Permissions-Policy', calls ? 'camera=(), microphone=(self), display-capture=(self), geolocation=()' : 'camera=(), microphone=(), display-capture=(), geolocation=()');
+    res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'${calls ? ' wss://*.livekit.cloud https://*.livekit.cloud' : ''}; worker-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors ${integration ? "'self'" : "'none'"}; form-action 'self'`);
     res.setHeader('Cache-Control', 'no-store');
   }
   function json(res, status, value) {
@@ -429,7 +499,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   function guardRequest(req) {
     if (integration) {
       if (req.headers.origin) assert(req.headers.origin === integration.origin, 403, '회사 프로그램 화면에서 요청해 주세요.');
-      assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
+      // An outside link may open the public HTML shell in the top-level tab.
+      // Keep private API requests and cross-site frames behind the same guard.
+      const publicNavigation = req.method === 'GET' && req.url?.split('?')[0] === `${basePath}/` &&
+        !req.headers.origin && req.headers['sec-fetch-mode'] === 'navigate' && req.headers['sec-fetch-dest'] === 'document';
+      assert(req.headers['sec-fetch-site'] !== 'cross-site' || publicNavigation, 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
       return;
     }
     const allowedHosts = new Set([`127.0.0.1:${listeningPort}`, `localhost:${listeningPort}`, `[::1]:${listeningPort}`]);
@@ -577,6 +651,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       const p = url.pathname; const method = req.method;
       if (method === 'GET' && p === '/api/health') return json(res, 200, { ok: true, service: 'synk-company-messenger', version: 1 });
+      // Only this exact provider callback bypasses cookie/CSRF authentication.
+      // The service verifies the signed JWT and the original body hash.
+      if (method === 'POST' && p === '/api/voice/webhook') {
+        const raw = await voiceWebhookBody(req);
+        return json(res, 200, await voiceService.webhook(raw, req.headers.authorization));
+      }
       let auth = session(req);
       let user = auth?.user;
       const originalToken = auth?.token;
@@ -584,7 +664,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const originalAccess = user && bridge?.accessKey(user.id);
       const mutation = !['GET', 'HEAD'].includes(method);
       const readMarker = method === 'POST' && /^\/api\/channels\/[^/]+\/read$/.test(p);
-      const personalMutation = collaboration.personalMutation(p, method);
+      const personalMutation = collaboration.personalMutation(p, method) || (method === 'PATCH' && p === '/api/voice/preferences') || (method === 'POST' && (/^\/api\/voice\/invitations\/[0-9a-f-]+\/(accept|reject|cancel)$/.test(p) || /^\/api\/voice\/[0-9a-f-]+\/(heartbeat|leave|resume|usage|encryption\/(?:key|ack)|share\/(?:start|stop))$/.test(p) || /^\/api\/channels\/[^/]+\/voice\/join$/.test(p)));
       const revalidate = () => {
         if (!integration) return;
         const latest = session(req);
@@ -651,6 +731,94 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       if (p.startsWith('/api/')) {
         assert(user, 401, '로그인이 필요합니다.');
+        if (method === 'GET' && p === '/api/voice') return respond(200, voiceService.capabilities());
+        if (method === 'GET' && p === '/api/voice/current') {
+          await voiceService.sweep(); revalidate(); const result = voiceService.current(user.id, auth.token);
+          if (result.admission) { try { requireChannel(user.id, result.admission.channelId); } catch { return respond(200, { admission: null }); } }
+          return respond(200, result);
+        }
+        if (method === 'GET' && p === '/api/voice/usage') {
+          assert(auth.identity ? auth.identity.role === 'admin' && auth.identity.canManage && auth.identity.canWrite : user.role === 'owner', 403, '관리자만 전체 통화 사용량을 확인할 수 있습니다.');
+          return respond(200, await voiceService.usage());
+        }
+        if (p === '/api/voice/preferences' && ['GET', 'PATCH'].includes(method)) {
+          const preferences = method === 'PATCH' ? voiceService.updatePreferences(user.id, await readBody()) : voiceService.preferences(user.id);
+          return respond(200, { preferences });
+        }
+        if (p === '/api/voice/invitations' && method === 'GET') return respond(200, { items: voiceService.invitations(user.id) });
+        const voiceInvitation = /^\/api\/voice\/invitations\/([^/]+)(?:\/(accept|reject|cancel))?$/.exec(p);
+        if (voiceInvitation && method === 'GET' && !voiceInvitation[2]) return respond(200, { invitation: voiceService.invitation(requestId(voiceInvitation[1], '통화 초대'), user.id) });
+        if (voiceInvitation && method === 'POST' && voiceInvitation[2]) {
+          const body = await readBody(), id = requestId(voiceInvitation[1], '통화 초대');
+          if (voiceInvitation[2] === 'accept') {
+            assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 수락 요청을 확인해 주세요.');
+            const invitation = voiceService.invitation(id, user.id), check = voicePermissionCheck(req, auth, invitation.channelId);
+            const result = await voiceService.acceptInvitation({ id, userId: user.id, token: auth.token, requestId: body.requestId, client: body.client, check });
+            revalidate(); check(); return respond(200, { ...result, permissions: publicVoicePermissions(auth, requireChannel(user.id, invitation.channelId)) });
+          }
+          assert(Object.keys(body).length === 0, 400, '통화 초대 응답을 확인해 주세요.');
+          return respond(200, voiceService.respondInvitation({ id, userId: user.id, action: voiceInvitation[2] }));
+        }
+        const voiceChannel = /^\/api\/channels\/([^/]+)\/voice(?:\/(join|policy|audit|invitations))?$/.exec(p);
+        if (voiceChannel && method === 'GET' && !voiceChannel[2]) {
+          requireChannel(user.id, voiceChannel[1]);
+          await voiceService.sweep(); revalidate(); requireChannel(user.id, voiceChannel[1]);
+          return respond(200, voiceState(auth, voiceChannel[1]));
+        }
+        if (voiceChannel?.[2] === 'join' && method === 'POST') {
+          const body = await readBody();
+          assert(Object.keys(body).every(key => ['requestId', 'client'].includes(key)) && Object.hasOwn(body, 'requestId'), 400, '통화 참가 요청을 확인해 주세요.');
+          const check = voicePermissionCheck(req, auth, voiceChannel[1]);
+          rateLimit(req, `voice:${user.id}`);
+          const result = await voiceService.join({ channelId: voiceChannel[1], userId: user.id, token: auth.token, requestId: body.requestId, client: body.client, check });
+          revalidate(); check();
+          return respond(200, { ...result, permissions: publicVoicePermissions(auth, requireChannel(user.id, voiceChannel[1])) });
+        }
+        if (voiceChannel?.[2] === 'invitations' && method === 'POST') {
+          const body = await readBody(), channelId = voiceChannel[1];
+          assert(Object.keys(body).length === 2 && Object.hasOwn(body, 'requestId') && Object.hasOwn(body, 'recipientId'), 400, '초대할 동료와 요청 식별자를 확인해 주세요.');
+          const recipientId = requestId(body.recipientId, '초대할 동료'), check = voicePermissionCheck(req, auth, channelId);
+          assert(voiceInvitationVisible(recipientId, channelId), 404, '이 대화방에서 초대할 동료를 찾을 수 없습니다.');
+          const result = await voiceService.invite({ channelId, userId: user.id, recipientId, token: auth.token, requestId: body.requestId, check, recipientCheck: voiceRecipientCheck(channelId, recipientId) });
+          return respond(result.created ? 201 : 200, result);
+        }
+        if (voiceChannel?.[2] === 'policy' && method === 'PATCH') {
+          const body = await readBody(), channelId = voiceChannel[1];
+          const check = () => { revalidate(); return publicVoicePermissions(auth, requireChannel(user.id, channelId)); };
+          await voiceService.updatePolicy({ channelId, actorId: user.id, input: body, check });
+          revalidate(); return respond(200, voiceState(auth, channelId));
+        }
+        if (voiceChannel?.[2] === 'audit' && method === 'GET') {
+          assert(publicVoicePermissions(auth, requireChannel(user.id, voiceChannel[1])).canModerate, 403, '이 대화방의 통화 관리 기록을 확인할 권한이 없습니다.');
+          return respond(200, { items: voiceService.audit(voiceChannel[1]) });
+        }
+        const voiceMedia = /^\/api\/voice\/([^/]+)\/(encryption\/(key|ack)|share\/(start|stop))$/.exec(p);
+        if (voiceMedia && method === 'POST') {
+          if (voiceMedia[2].startsWith('encryption/') && integration) {
+            const keyOrigin = new URL(integration.origin);
+            assert(keyOrigin.protocol === 'https:' || keyOrigin.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(keyOrigin.hostname), 403, '암호화 키는 HTTPS 워크스페이스에서만 받을 수 있습니다.');
+          }
+          const body = await readBody(), id = requestId(voiceMedia[1], '통화 참가'), input = { id, userId: user.id, token: auth.token };
+          if (voiceMedia[2] === 'encryption/key') {
+            assert(Object.keys(body).length === 0, 400, '암호화 키 요청을 확인해 주세요.');
+            return respond(200, await voiceService.encryptionKey(input));
+          }
+          if (voiceMedia[2] === 'encryption/ack') return respond(200, await voiceService.acknowledgeEncryption({ ...input, input: body }));
+          if (voiceMedia[2] === 'share/start') return respond(200, await voiceService.startShare({ ...input, input: body }));
+          assert(Object.keys(body).length === 0, 400, '화면 공유 종료 요청을 확인해 주세요.');
+          return respond(200, await voiceService.stopShare(input));
+        }
+        const voiceAdmission = /^\/api\/voice\/([^/]+)\/(heartbeat|leave|resume|usage)$/.exec(p);
+        if (voiceAdmission && method === 'POST') {
+          assert(voiceService.capabilities().enabled, 503, '통화 기능이 아직 연결되지 않았습니다.');
+          const body = await readBody();
+          const id = requestId(voiceAdmission[1], '통화 참가');
+          if (voiceAdmission[2] === 'usage') return respond(200, await voiceService.reportUsage({ id, userId: user.id, token: auth.token, input: body }));
+          assert(Object.keys(body).length === 0, 400, '통화 연결 요청을 확인해 주세요.');
+          const result = await voiceService[voiceAdmission[2]]({ id, userId: user.id, token: auth.token });
+          if (voiceAdmission[2] === 'resume') { revalidate(); result.permissions = publicVoicePermissions(auth, requireChannel(user.id, result.call.channelId)); }
+          return respond(200, result);
+        }
         if (method === 'GET' && p === '/api/tasks/create-options') return respond(200, directTasks.options(user.id));
         if (method === 'POST' && p === '/api/tasks') {
           const body = await readBody(), result = directTasks.create(user.id, body);
@@ -660,6 +828,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         revalidate();
         if (method === 'POST' && p === '/api/logout') {
           run('DELETE FROM sessions WHERE token=?', auth.token);
+          await voiceService.sweep();
           res.setHeader('Set-Cookie', 'synk_messenger_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0');
           for (const client of subscribers) if (client.token === auth.token) { client.res.end(); subscribers.delete(client); }
           return respond(200, { ok: true });
@@ -1105,7 +1274,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       if (res.headersSent) { if (!res.writableEnded) res.end(); return; }
       if (!(error instanceof AppError) && !error.publicMessage) console.error('[messenger] Request failed:', error.code || error.name);
       const status = Number.isInteger(error.status) && error.status >= 400 && error.status <= 599 ? error.status : 500;
-      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' || /^(MESSAGE_|UPLOAD_)/.test(error.code || '') ? { code: error.code } : {}), ...(error.recoveryStatus ? { status: error.recoveryStatus, retryable: error.retryable } : {}) });
+      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' || /^(MESSAGE_|UPLOAD_|VOICE_)/.test(error.code || '') ? { code: error.code } : {}), ...(error.recoveryStatus ? { status: error.recoveryStatus, retryable: error.retryable } : {}) });
     }
   };
   const server = http.createServer(handler);
@@ -1245,6 +1414,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       closed = true;
       clearInterval(deletionTimer);
       clearInterval(reminderTimer);
+      await voiceService.close();
       for (const client of subscribers) client.res.end();
       subscribers.clear();
       if (server.listening) await new Promise((resolve, reject) => { server.close(error => error ? reject(error) : resolve()); server.closeIdleConnections(); });

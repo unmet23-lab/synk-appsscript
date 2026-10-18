@@ -3,7 +3,8 @@ import path from 'node:path';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url)),require=createRequire(import.meta.url);
-const esbuild=require(path.join(root,'experiences/synk-account/node_modules/esbuild'));
+// synk-account의 esbuild(WORLD 앱의 도구 묶음)를 먼저, 없는 깨끗한 체크아웃(CI)에서는 저장소 루트의 esbuild로. 두 판의 결과는 같다(10-17 확인).
+const esbuild=require(require.resolve('esbuild',{paths:[path.join(root,'experiences/synk-account'),root]}));
 const target=path.join(root,'experiences/brand-opening/content/life-standalone.mjs');
 const cssSource=path.join(root,'experiences/synk-world-app/life-ui.css'),cssTarget=path.join(root,'experiences/brand-opening/content/life-ui.css');
 // 홈이 직접 부르는 소리·움직임 모듈은 묶지 않고 옆 파일(content/의 한 칸 위)을 같이 쓴다 — 두 벌이면 AudioContext·첫 누름 리스너·설정 알림이 따로 생긴다.

@@ -327,3 +327,23 @@ test('without secure storage the API key is refused instead of being saved in pl
   assert.deepEqual(await none.service.connectKey('typecast',tc.good),{ok:false,code:'SECURE_STORAGE_UNAVAILABLE'});
   assert.equal(tc.state.calls.length,0);
 });
+
+test('removing a connected Higgsfield account deletes its home folder, sign-in and Windows cache junction included',async()=>{
+  const f=fakeSystem();
+  f.state.nextHiggsEmail='founder@example.com';
+  await f.service.startLogin('higgsfield');
+  const home=f.calls.find(c=>c.command.endsWith('higgsfield.exe')&&c.argv.join(' ')==='auth login').options.env.USERPROFILE;
+  await settle(f);
+  // 실제 CLI가 남기는 로그인 파일과, 브라우저를 열 때 Windows가 만드는 캐시 폴더(숨김·시스템, Content.IE5 junction)
+  fs.mkdirSync(path.join(home,'.config','higgsfield'),{recursive:true});
+  fs.writeFileSync(path.join(home,'.config','higgsfield','credentials.json'),'{"access_token":"x"}');
+  const cache=path.join(home,'AppData','Local','Microsoft','Windows','INetCache');
+  fs.mkdirSync(path.join(cache,'IE'),{recursive:true});
+  if(process.platform==='win32'){
+    fs.symlinkSync(path.join(cache,'IE'),path.join(cache,'Content.IE5'),'junction');
+    require('node:child_process').execFileSync('attrib',['+s','+h',path.join(cache,'IE')],{windowsHide:true});
+  }
+  const row=(await f.service.snapshot()).rows.find(r=>r.email==='founder@example.com');
+  await f.service.save({remove:row.id});
+  assert.equal(fs.existsSync(home),false);
+});

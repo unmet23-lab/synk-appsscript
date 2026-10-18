@@ -14,7 +14,7 @@ export const CHK = {
   len: ATT_START + T - CHECK_START,
 };
 export const ATT = {
-  chips: [beat(18.5) - ATT_START, beat(19) - ATT_START],
+  chips: [10, 20],
   pop: beat(20) - ATT_START,
   back: beat(22.5) - ATT_START,
   circle: beat(23) - ATT_START,

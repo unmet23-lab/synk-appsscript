@@ -2,6 +2,7 @@ import * as THREE from './scene-assets/three.module.js';
 import {createMongleAvatar} from './avatar-v3.mjs';
 import {slotsForOutfit} from './wardrobe-catalog.mjs';
 import {createHomeCompanions} from './home-companion-avatars.mjs';
+import {waitForShaderPrograms} from './shader-preparation.mjs';
 
 const IDS=['mongle','kkamong','marin'];
 // Room-scale silhouettes: Kkamong's wide, furry body needs less height than Marin.
@@ -28,11 +29,12 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
   const scene=new THREE.Scene();scene.background=new THREE.Color('#17120f');
   const camera=new THREE.PerspectiveCamera(36,1,.1,40),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const motionQuery=matchMedia('(prefers-reduced-motion:reduce)');
-  let disposed=false,lost=false,active=true,inView=true,reduced=Boolean(reducedMotion),level=qualityId(quality),selected=tutorId(selectedTutor),frame=0,frames=0,lastDraw=0,clock=0,renderMs=0,photoGeneration=0;
-  let width=1,height=1,mongle=null,companions=null,environment=null,resizeObserver=null,intersection=null,api=null,lifecycle=null;
+  let disposed=false,lost=false,active=true,inView=true,warming=true,reduced=Boolean(reducedMotion),level=qualityId(quality),selected=tutorId(selectedTutor),frame=0,frames=0,lastDraw=0,clock=0,renderMs=0,photoGeneration=0;
+  let width=1,height=1,mongle=null,companions=null,environment=null,resizeObserver=null,intersection=null,api=null,lifecycle=null,shadowLoans=[];
   const extraTextures=new Set(),extraMaterials=new Set(),wrappers=new Map(),anchors=new Map(),interactables=[],greetings=new Map();
   const currentSlots=()=>mongle?.metrics().equipment||slotsForOutfit(slots);
-  const stopped=()=>disposed||lost||!active||!inView||document.hidden;
+  // warming: 셰이더를 미리 엮는 동안은 그리지 않는다(그리면 엮일 때까지 화면 일과 GPU가 함께 멈춘다).
+  const stopped=()=>disposed||lost||warming||!active||!inView||document.hidden;
   const still=()=>reduced||motionQuery.matches;
   const stop=()=>{cancelAnimationFrame(frame);frame=0;lastDraw=0;};
   const material=(color,props={})=>{const m=new THREE.MeshStandardMaterial({color,roughness:.9,...props});extraMaterials.add(m);return m;};
@@ -57,7 +59,15 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
   function motionChange(){resetMotion();stop();schedule();}
   signal?.addEventListener('abort',abort,{once:true});canvas.addEventListener('webglcontextlost',contextLost);
   renderer.debug.onShaderError=()=>fail(new Error('LIVING_HOME_SHADER_ERROR'));
+  // ── 창밖 한강 그림(4차 10-17) ── 방을 짓기 전에 받기 시작해 첫 그림 전에 풀어 둔다. 3차까지는 방을 다 지은 뒤에야 받아서 방이 보인 뒤 몇 초 창이 검었다.
+  // 그림 한 장(텍스처 하나)을 세로·가로 창이 함께 쓴다. 못 받으면 창은 지금처럼 어두운 채로 둔다.
+  const viewTexture=new THREE.Texture(),viewImage=new Image();viewTexture.colorSpace=THREE.SRGBColorSpace;viewTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());extraTextures.add(viewTexture);
+  viewImage.crossOrigin='anonymous';viewImage.src=new URL('./scene-assets/window-hangang-20261014.webp',import.meta.url).href;
+  const viewReady=viewImage.decode().catch(()=>{}).then(()=>{if(disposed||!viewImage.naturalWidth)return;viewTexture.image=viewImage;viewTexture.needsUpdate=true;schedule();});
   try{
+    // 그림 요청은 지금 일이 끝나야 나간다 — 한 번 쉬어 요청부터 보내고 친구 조립(화면 일 1초 남짓)을 시작한다.
+    await new Promise(resolve=>setTimeout(resolve));
+    if(disposed||signal?.aborted)throw new DOMException('Home closed','AbortError');
     companions=createHomeCompanions({low:level==='low',grounded:true,onInvalidate:()=>lifecycle?.schedule()});
     mongle=await createMongleAvatar({mobile:matchMedia('(max-width:799px)').matches,anisotropy:Math.min(4,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:level!=='low'});
     if(disposed||signal?.aborted){mongle.dispose();throw new DOMException('Home closed','AbortError');}
@@ -84,10 +94,8 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     const floor=new THREE.Group();scene.add(floor);for(let i=0;i<40;i++)box(floor,[20,.09,.39],oak,[0,-.055,-3.05+i*.40]); // full-screen home: planks run under the glass dock to the camera
     box(scene,[20,.16,.18],oak,[0,.08,-2.73]); // PC 가로 틀은 방을 오른쪽으로 밀어 왼쪽 열까지 벽·바닥이 이어져야 한다(2차 3판)
     // ── 창밖 한강(2차 10-14) ── 뒷벽에 큰 창을 내고 승인 타이틀 장면(한강·남산·노을)을 창밖에 둔다. 카메라가 고정이라 시차 없이 창문 사진처럼 보인다.
-    // 세로·가로 화면은 창 비율이 달라 두 벌을 만들고 arrange()에서 하나만 보인다. 그림 한 장(텍스처 하나)을 두 창이 함께 쓰고,
+    // 세로·가로 화면은 창 비율이 달라 두 벌을 만들고 arrange()에서 하나만 보인다. 그림 한 장(viewTexture, 맨 위에서 미리 받음)을 두 창이 함께 쓰고,
     // 어느 부분을 쓸지는 창 판의 UV로 정한다(3차: 텍스처 복제본은 그림이 늦게 오면 첫 진입에서 업로드를 놓쳐 창이 까맣게 남았다).
-    const viewTexture=new THREE.TextureLoader().load(new URL('./scene-assets/window-hangang-20261014.webp',import.meta.url).href,()=>schedule());
-    viewTexture.colorSpace=THREE.SRGBColorSpace;viewTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());extraTextures.add(viewTexture);
     function wallWithWindow(W,H,cy){
       const shape=new THREE.Shape();shape.moveTo(-10,0);shape.lineTo(10,0);shape.lineTo(10,4.6);shape.lineTo(-10,4.6);shape.closePath();
       const hole=new THREE.Path(),x=-W/2,y=cy-H/2;hole.moveTo(x,y);hole.lineTo(x+W,y);hole.lineTo(x+W,y+H);hole.lineTo(x,y+H);hole.closePath();shape.holes.push(hole);
@@ -201,6 +209,28 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
      const style=getComputedStyle(container),lift=Number.parseFloat(style.getPropertyValue('--scene-lift'))||0,shift=Number.parseFloat(style.getPropertyValue('--scene-shift'))||0;if(lift||shift)camera.setViewOffset(width,height,-Math.round(width*shift),Math.round(height*lift),width,height);else camera.clearViewOffset();
      camera.updateProjectionMatrix();arrange();schedule();}
     function setQuality(value){level=qualityId(value);renderer.shadowMap.enabled=level!=='low';const shadowSize=level==='high'?1024:512;if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);key.shadow.map?.dispose();key.shadow.map=null;key.shadow.needsUpdate=true;}companions.setQuality(level);resize();return level;}
+    // 셰이더 미리 엮기(4차 10-17): 셰이더 캐시가 없는 첫 방문은 첫 render()가 셰이더를 하나씩 엮으며 기다려 화면 일과 GPU를 2초 남짓 붙잡았다(문 열림도 멈춤).
+    // compile()로 한꺼번에 걸면 나란히 엮여 0.2~0.3초에 끝난다(헤드리스 크롬 d3d11 측정). 다 됐는지는 KHR_parallel_shader_compile로 막지 않고 물어본다
+    // (shader-preparation.mjs — 만들어진 셰이더 전부를 묻고 닫힘·컨텍스트 손실을 따른다. compileAsync는 재질마다 마지막 판 하나만 묻는다).
+    // 확장이 없거나 시간이 넘으면 엮기만 한꺼번에 걸어 둔 채 그린다.
+    // 그림자 깊이 셰이더(그림자를 켜는 PC 화질)도 같이 건다: 그림자 판(r180 WebGLShadowMap getDepthMaterial)이 물체마다 고르는 깊이 재질과 같은 설정을
+    // 그림자 판처럼 그림 목표가 있는 상태(톤 매핑 없음·선형 색)에서 그 물체로 엮는다. 물체의 재질·자식은 바로 되돌리고, 빌린 깊이 재질은 첫 그림 뒤에 버린다.
+    function compileShadowShaders(){
+      if(!renderer.shadowMap.enabled)return [];
+      const flip={[THREE.FrontSide]:THREE.BackSide,[THREE.BackSide]:THREE.FrontSide,[THREE.DoubleSide]:THREE.DoubleSide},made=new Map(),casters=[];
+      const depthFor=m=>{const side=m.shadowSide!==null?m.shadowSide:flip[m.side],key=[side,m.map?.channel,m.alphaMap?.channel,m.alphaTest>0].join();
+        if(!made.has(key))made.set(key,new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,side,map:m.map??null,alphaMap:m.alphaMap??null,alphaTest:m.alphaTest??0}));return made.get(key);};
+      scene.traverse(o=>{if(o.castShadow&&(o.isMesh||o.isLine||o.isPoints)&&o.material)casters.push([o,o.material,o.children]);});
+      const holder=new THREE.Group(),target=new THREE.WebGLRenderTarget(1,1);holder.children=casters.map(([o])=>o); // 부모는 그대로, 훑기만
+      try{for(const [o,m] of casters){o.material=Array.isArray(m)?m.map(depthFor):depthFor(m);o.children=[];}renderer.setRenderTarget(target);renderer.compile(holder,camera,scene);}
+      finally{for(const [o,m,children] of casters){o.material=m;o.children=children;}renderer.setRenderTarget(null);target.dispose();}
+      return [...made.values()];
+    }
+    // 장면 전체 compile을 그림자보다 뒤에 둔다 — 첫 그림의 그림자 판은 마지막으로 엮을 때 모은 빛 상태를 쓰는데, 그림자 쪽은 물체의 자식을 잠깐 비운다.
+    async function warmShaders(){
+      shadowLoans=compileShadowShaders();renderer.compile(scene,camera);
+      try{await waitForShaderPrograms(renderer,{signal,timeoutMs:6000});}catch(error){if(error?.name==='AbortError')throw error;}
+    }
     function greet(id=selected){id=tutorId(id);if(disposed)return;greetings.set(id,clock);schedule();}
     function pointerUp(event){if(stopped()||event.button!==0)return;const rect=canvas.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(interactables,true)[0];if(!hit)return;let target=hit.object;while(target&&!target.userData.homeTarget)target=target.parent;const id=target?.userData.homeTarget;if(id){if(id.startsWith('tutor:'))greet(id.split(':')[1]);onInteract(id);}}
     function getAnchors(){scene.updateMatrixWorld(true);return [...anchors].map(([id,object])=>{const point=object.getWorldPosition(new THREE.Vector3()).project(camera);return {id,x:(point.x+1)/2,y:(1-point.y)/2,visible:point.z>-1&&point.z<1&&Math.abs(point.x)<=1&&Math.abs(point.y)<=1};});}
@@ -211,7 +241,11 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     api={canvas,setTutor(id){selected=tutorId(id);arrange();greet(selected);schedule();return selected;},setEquipment(nextSlots={},nextDyes={}){if(disposed)return;mongle.setEquipment(slotsForOutfit(nextSlots));mongle.setDyes(nextDyes);schedule();},setMemory,setActive(value){active=Boolean(value);if(!active)stop();else schedule();},setReducedMotion(value){reduced=Boolean(value);resetMotion();stop();schedule();},setQuality,greet,capture,getAnchors,metrics,dispose};
     canvas.addEventListener('pointerup',handlePointerUp);document.addEventListener('visibilitychange',visibility);motionQuery.addEventListener('change',motionChange);
     resizeObserver=new ResizeObserver(resize);resizeObserver.observe(container);intersection=new IntersectionObserver(entries=>{inView=entries.at(-1)?.isIntersecting!==false;if(!inView)stop();else schedule();},{rootMargin:'0px'});intersection.observe(container);
-    drawMemory();setQuality(level);render();if(lost)throw new Error('LIVING_HOME_UNAVAILABLE');onReady(api);return api;
+    // 첫 그림은 셰이더가 다 엮인 뒤에 그린다. 창 그림이 아직 오는 중이면 조금만(0.25초) 더 기다리고, 그래도 없으면 먼저 그린 뒤 오는 대로 다시 그린다.
+    // 기다리는 사이 화면 밖 판정(inView)이 와도 첫 그림은 예전처럼 그려 둔다(prepare가 숨은 방을 미리 그리는 길).
+    drawMemory();setQuality(level);await Promise.all([warmShaders(),Promise.race([viewReady,new Promise(resolve=>setTimeout(resolve,250))])]);
+    if(disposed||signal?.aborted)throw new DOMException('Home closed','AbortError');
+    warming=false;render(true);shadowLoans.forEach(m=>m.dispose());schedule();if(lost)throw new Error('LIVING_HOME_UNAVAILABLE');onReady(api);return api;
   }catch(error){dispose();if(error?.name!=='AbortError')onError(error);throw error;}
 
   // Hoisted wrappers let visibility/abort clean up safely during async loading.

@@ -119,18 +119,21 @@ export function createCollaborationService({ db, assert, textField, now, transac
     externalNotifications = adapter;
   }
   setExternalNotifications(externalNotifications);
+  let personalNotifications = null;
+  function setPersonalNotifications(adapter) { personalNotifications = adapter; }
   function visibleNotifications(userId) {
     const messages = all('SELECT n.*,m.channel_id FROM notifications n JOIN messages m ON m.id=n.message_id WHERE n.user_id=?', userId).filter(row => accessible(userId, row.channel_id)).map(row => ({ id: row.id, kind: row.kind, message: messageShape(requireMessage(String(row.message_id), userId), userId), createdAt: row.created_at, readAt: row.read_at, _source: 'message' }));
     const due = productivity.dueNotifications(userId).map(row => ({ ...row, _source: 'due' }));
     const external = (externalNotifications?.list(userId) || []).map(row => ({ ...row, _source: 'external' }));
-    return [...messages, ...due, ...external].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+    const personal = (personalNotifications?.list(userId) || []).map(row => ({ ...row, _source: 'personal' }));
+    return [...messages, ...due, ...external, ...personal].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
   }
   function unreadCount(userId) { return visibleNotifications(userId).filter(row => !row.readAt).length; }
   function notificationsForPush(userId) {
     if (!activeUser(userId)) return [];
     return visibleNotifications(userId).filter(row => {
       const channelId = row.message?.channelId;
-      return !channelId || mode(userId, channelId) !== 'mute' && !one('SELECT deleted_at FROM channels WHERE id=?', channelId)?.deleted_at;
+      return row.pushEligible !== false && (!channelId || mode(userId, channelId) !== 'mute' && !one('SELECT deleted_at FROM channels WHERE id=?', channelId)?.deleted_at);
     }).map(({ _source, ...row }) => row);
   }
   function deliverReminders() {
@@ -179,6 +182,8 @@ export function createCollaborationService({ db, assert, textField, now, transac
         if (row._source === 'message') run('UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?', now(), row.id, user.id);
         else if (row._source === 'due') productivity.readDueNotification(user.id, row.id);
       } });
+      // Personal source authorization can synchronize the company roster too.
+      for (const row of selected) if (row._source === 'personal') personalNotifications.read(user.id, row.id);
       // Customer notifications live in the company database. Never put those
       // writes inside the messenger SQLite transaction.
       if (p === '/api/notifications/read-all') externalNotifications?.readAll(user.id);
@@ -255,5 +260,5 @@ export function createCollaborationService({ db, assert, textField, now, transac
     }
     return false;
   }
-  return { prepareMessage, applyMessage, notifyMessage, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle, productivity, setExternalNotifications, notificationsForPush, notifyExternal: userId => publish('notification', null, userId) };
+  return { prepareMessage, applyMessage, notifyMessage, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle, productivity, setExternalNotifications, setPersonalNotifications, notificationsForPush, notifyExternal: userId => publish('notification', null, userId) };
 }

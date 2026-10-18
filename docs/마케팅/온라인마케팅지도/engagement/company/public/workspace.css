@@ -768,3 +768,33 @@ button,a,input,select,textarea,summary:focus-visible{outline-offset:2px}:focus-v
 @media(max-width:360px){.workspace-global-search>span{display:none}.workspace-global-search{flex:1;justify-content:center;min-width:44px}.workspace-wordmark{width:35px}.workspace-platform-entry{padding:10px}.synk-workspace .page-body{padding:20px 16px}.synk-workspace .marin-home{padding:16px}.synk-workspace .marin-welcome>.marin-mascot{width:44px;height:66px}.synk-workspace .marin-welcome h1{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.synk-workspace .btn.primary:active,#overlay .btn.primary:active,.auth-form-card .auth-submit:active{transform:none}}
 
+
+/* 직원 통화 미니 조작(2026-10-17): 메신저 밖 메뉴에서도 통화를 찾고 끝낼 수 있다. 통화 자체는 메신저 iframe에 남는다. */
+:root body .workspace-call{position:fixed;right:20px;bottom:20px;z-index:60;display:grid;gap:8px;width:min(400px,calc(100vw - 40px));font-family:var(--sg-sans,inherit)}
+:root body .workspace-call[hidden]{display:none}
+:root body :is(.workspace-call-pill,.workspace-call-ring){display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border-radius:20px;background:var(--sg-ink,#08090C);color:#fff;box-shadow:0 20px 50px rgba(8,9,12,.4)}
+:root body .workspace-call-chip{display:inline-flex;align-items:center;gap:6px;flex:none;height:26px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px;font-weight:650;white-space:nowrap}
+:root body .workspace-call-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+:root body .workspace-call-pill[data-tone="live"] .workspace-call-chip{background:rgba(46,158,102,.22);color:#8FE0B4}
+:root body .workspace-call-pill[data-tone="warn"] .workspace-call-chip{background:rgba(245,196,69,.2);color:#F5D27A}
+:root body .workspace-call-pill[data-tone="pending"] .workspace-call-chip{background:rgba(61,107,201,.28);color:#B9CDF4}
+:root body .workspace-call-text{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}
+:root body .workspace-call-text strong{overflow:hidden;font-size:14px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+:root body .workspace-call-text>span{overflow:hidden;color:rgba(255,255,255,.72);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+:root body .workspace-call-text time{font-family:var(--sg-mono,ui-monospace,monospace);font-size:12.5px}
+:root body .workspace-call-actions{display:flex;flex:none;gap:6px}
+:root body .workspace-call-icon{display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:transparent;color:#fff;cursor:pointer}
+:root body .workspace-call-icon svg{width:18px;height:18px}
+:root body .workspace-call-icon:hover{background:rgba(255,255,255,.1)}
+:root body .workspace-call-icon.muted{border-color:rgba(249,104,89,.5);background:rgba(249,104,89,.18);color:#FFB3AA}
+:root body .workspace-call-icon.active{border-color:rgba(61,107,201,.6);background:rgba(61,107,201,.3)}
+:root body .workspace-call-icon.danger{border-color:#B4382B;background:#B4382B}
+:root body .workspace-call-ring-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--sg-green,#2E9E66);animation:workspace-call-ring 1.2s ease-in-out infinite}
+:root body .workspace-call-ring-icon svg{width:19px;height:19px}
+:root body .workspace-call-button{min-height:38px;padding:0 14px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:transparent;color:#fff;font-size:13.5px;font-weight:650;cursor:pointer}
+:root body .workspace-call-button.primary{border-color:var(--sg-green,#2E9E66);background:var(--sg-green,#2E9E66)}
+:root body .workspace-call-button:disabled{opacity:.5;cursor:not-allowed}
+:root body .workspace-call :is(button):focus-visible{outline:2px solid #B9CDF4;outline-offset:2px}
+@keyframes workspace-call-ring{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@media(max-width:700px){:root body .workspace-call{right:12px;left:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto}:root body .workspace-call-ring{flex-wrap:wrap}:root body .workspace-call-ring .workspace-call-actions{width:100%;justify-content:flex-end}}
+@media(prefers-reduced-motion:reduce){:root body .workspace-call-ring-icon{animation:none}}

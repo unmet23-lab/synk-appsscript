@@ -19,6 +19,35 @@ const localDrive = {
   trash: async () => assert.fail('Tests must not access real Drive'),
 };
 
+test('external messenger document navigation loads only the public shell while cross-site APIs and frames stay blocked', async t => {
+  const fx = await fixture(t), visitor = await fx.client(null);
+  const navigation = { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' };
+  // fetch sets Sec-Fetch-Mode: cors itself. Preserve the browser navigation
+  // metadata with an actual HTTP request instead.
+  const navigate = (path, headers) => new Promise((resolve, reject) => {
+    const outgoing = request(new URL(path, fx.base), { headers }, incoming => {
+      const chunks = [];
+      incoming.on('data', chunk => chunks.push(chunk));
+      incoming.on('end', () => resolve({ status: incoming.statusCode, headers: incoming.headers, text: Buffer.concat(chunks).toString('utf8') }));
+      incoming.on('error', reject);
+    });
+    outgoing.on('error', reject); outgoing.end();
+  });
+  const page = await navigate('/messenger/', navigation);
+  assert.equal(page.status, 200);
+  assert.match(page.headers['content-type'], /text\/html/);
+  assert.match(page.text, /id="app"/);
+  assert.equal((await navigate('/messenger/api/bootstrap', navigation)).status, 403);
+  for (const headers of [
+    { ...navigation, 'sec-fetch-dest': 'iframe' },
+    { ...navigation, 'sec-fetch-mode': 'cors' },
+    { ...navigation, Origin: 'https://unrelated.example.test' },
+  ]) assert.equal((await navigate('/messenger/', headers)).status, 403);
+  const employee = await fx.client();
+  await employee.denied('/messenger/api/bootstrap', { headers: navigation }, 403);
+  await employee.denied('/messenger/api/channels', { method: 'POST', body: { name: 'cross-site' }, headers: { ...navigation, Origin: fx.app.origin } }, 403);
+});
+
 test('platform preview navigation shares the configured entry without authorizing company or messenger access', async t => {
   const fx = await fixture(t);
   const visitor = await fx.client(null);

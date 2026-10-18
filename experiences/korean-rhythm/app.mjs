@@ -781,7 +781,8 @@ if (QA) {
   };
 }
 
-if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
+// 도우미 연결은 WORLD 틀 안에서만 부른다 — 계정 페이지의 일반 틀(/try/)에는 그 파일이 없다(10-17).
+if(WORLD&&globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
  gameTutor=connectGameTutor('rhythm',{onHelp:()=>pause(),onPracticeComplete:()=>{if(state.screen==='game'&&state.round)void resume();else void start();},onResumeAfterHelp:()=>{if(state.screen==='game'&&state.round)void resume();}});
  tutorEvent(state.screen==='game'?(state.paused?'paused':'playing'):state.screen==='results'?'finish':'lobby');
 }).catch(()=>{});

@@ -49,3 +49,6 @@ experiences/synk-account/src/member-statement*.cjs text eol=lf
 # 플랫폼 연속성 번들은 생성기가 LF로 쓰고 --check와 네이티브 검사 도구가 바이트를 그대로 대조하므로 줄끝을 고정한다.
 desktop/renderer/platform-continuity.mjs text eol=lf
 desktop/renderer/platform-continuity.css text eol=lf
+
+# 메신저 통화의 벤더 SDK는 npm 원본 바이트·기록한 해시와 같아야 한다(원본에 CRLF 줄이 섞여 있다). 줄끝 변환을 하지 않는다.
+tools/company-messenger/public/vendor/** -text -diff

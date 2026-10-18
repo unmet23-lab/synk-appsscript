@@ -54,6 +54,24 @@ test('VAPID uses a valid ES256 P1363 signature, correct audience and a bounded e
   assert.throws(() => createVapidAuthorization({ endpoint: endpoint(1), ...keys, privateKey: other.getPrivateKey().toString('base64url'), subject: 'mailto:workspace@example.test', now: at }), status(503));
 });
 
+test('short-lived call sources bound queue/provider TTL and cancellation during dispatch fails authorization', async t => {
+  const f = await fixture(t, { send: async request => {
+    assert.ok(request.ttl <= 45);
+    f.sources.set('u1', []); // Cancelled after discovery, before the HTTP send.
+    assert.equal(await request.authorize(), false);
+    return { statusCode: 0 };
+  } });
+  await f.register(); f.advance(1);
+  const expiresAt = new Date(Date.parse(f.time) + 45000).toISOString();
+  f.add('voice:fixture', 'u1', { kind: 'voice_invitation', expiresAt });
+  await f.service.tick(); assert.equal(f.sent.length, 1);
+  assert.equal(f.db.prepare('SELECT expires_at FROM web_push_queue WHERE notification_id=?').get('voice:fixture').expires_at, expiresAt);
+  await f.service.tick();
+  assert.equal(f.db.prepare('SELECT state FROM web_push_queue WHERE notification_id=?').get('voice:fixture').state, 'skipped');
+  f.add('voice:expired', 'u1', { kind: 'voice_invitation', expiresAt }); f.advance(45001); await f.service.tick();
+  assert.equal(f.sent.length, 1);
+});
+
 test('generated VAPID private scalars retain their required 32-byte width when leading zeros are omitted by crypto', t => {
   t.mock.method(ECDH.prototype, 'generateKeys', function() { this.setPrivateKey(Buffer.from([1])); return this.getPublicKey(); });
   const keys = generateVapidKeys();

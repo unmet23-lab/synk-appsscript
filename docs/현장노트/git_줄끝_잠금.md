@@ -59,6 +59,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `git -c core.autocrlf=false archive <커밋> -- <경로들> | tar -x -C <폴더>`. 차이만 볼 때는 `diff --strip-trailing-cr`도 된다.
 - 다시 확인: 꺼낸 파일의 `tr -cd '\r' | wc -c`가 blob(`git cat-file blob <커밋>:<경로> | tr -cd '\r' | wc -c`)과 같다.
 
+### 그대로 들여온 외부 배포 파일의 해시가 커밋 뒤 달라진다
+- 증상: 10-17 메신저 통화의 npm `livekit-client` ESM을 그대로 넣고 README에 SHA-256을 적었는데, 커밋 트리만 꺼낸 시험에서 해시가 맞지 않았다(1,396,433 → 1,396,348바이트).
+- 원인: 원본 파일에 CRLF 줄 85개가 섞여 있었다. `core.autocrlf=true`라 `git add`가 CR을 지웠고, 새로 체크아웃하면 모든 줄이 CRLF가 되어 어느 쪽도 원본 바이트가 아니다.
+- 고침: 들여온 배포 폴더에 `.gitattributes`로 `<폴더>/** -text -diff`를 걸고 다시 올린다. 바이트 그대로 저장·체크아웃된다.
+- 다시 확인: `git cat-file blob <커밋>:<경로> | sha256sum`이 원본·README의 해시와 같다. 들여오기 전에 원본의 CR 개수부터 센다.
+
 ### 워크트리에서 만든 묶음의 지도 판(map_ver)이 바뀐다
 - 증상: 워크트리에서 `node tools/build-game-learning.js`를 돌리자 묶음의 `map_ver`와 Strata 원본 sha256이 바뀐다(내용은 같음). 옮겨 쓴 `atlas-learning.js`가 메인 `--check`에서 「Learning source differs」로 실패한다(10-03).
 - 원인: 워크트리 체크아웃이 `strata/*.json`을 CRLF로 꺼내 바이트 해시가 달라졌다. 옮기기 스크립트도 CRLF로 썼다. 생성기는 LF로 쓰고 바이트로 비교한다.
@@ -155,11 +161,23 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: push 전에 `git log origin/master..<내 커밋>`을 본다. 남의 것이 섞였으면 origin/master 위에 내 커밋의 바뀐 파일만 다시 쌓아 `git push origin <커밋>:refs/heads/master`로 올리고, 로컬 master는 그대로 둔다. 도구는 `.tmp/push-mine-20261013/`(README: `restack.py --commits=…` 미리 보기 → `--push` → `compare.py` → `merge_local.py --go`). 「푸시해」는 내 커밋만이고, 남의 커밋까지 올리는 것은 유호님이 그렇게 말할 때만이다.
 - 다시 확인: `git ls-remote origin master`가 올린 커밋이고, 원래 커밋과 올린 커밋의 바뀐 줄이 같다.
 
+### 남의 미푸시 커밋이 같은 줄을 고쳤으면 `restack.py`가 그 파일에서 멈춘다
+- 증상: 트랙 한 줄의 내 문장만 바꾼 커밋을 다시 쌓는데 `restack.py`가 `docs/_ops/트랙.md`에서 「병합 FAIL」로 멈췄다. 아무것도 올라가지 않았다(10-17).
+- 원인: 다른 세션의 로컬 전용 커밋이 같은 줄의 다른 구절을 지워서, 내 커밋의 부모 판과 origin 판이 그 줄에서 다르다. 줄 단위 3방향으로는 두 수정을 가를 수 없다.
+- 고침: 그 파일만 origin 판 blob에 내 문장 교체를 적용한다. 옛 문장이 origin 판에 꼭 한 번 있고 바뀐 줄이 하나일 때만 쓴다. 다른 경로는 origin 판이 내 부모 판과 같을 때만 내 판을 넣고, 다르면 멈춘다. 로컬 병합의 트리는 로컬 그대로 둔다(로컬이 남의 수정과 내 문장을 다 품는다).
+- 다시 확인: 올린 커밋의 바뀐 파일이 로컬 커밋과 같고 트랙은 한 줄이며, 로컬 병합 전후 `git diff --stat`이 비어 있다.
+
 ### 「트리는 로컬 그대로」 병합이 origin에만 있는 남의 커밋을 떨어뜨린다
 - 증상: GPT가 origin에만 올린 커밋(1,568개 경로)이 로컬 master에서 빠졌다. 그대로 push했으면 origin에서도 지워질 판이었다(10-08).
 - 원인: push 뒤 로컬 병합을 「트리는 로컬 판」으로 만들면서 origin 쪽 커밋을 조상으로만 품었다. `merge_local.py --renumber`도 번호 바꾼 파일을 origin 판으로 통째 덮어 로컬에만 있는 남의 줄을 지웠다(10-14).
 - 고침: 병합 전에 `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 본다. 번호만 바꿀 때는 「로컬 판 + 번호 문자열 바꾸기」로 blob을 만든다. 로컬과 origin이 크게 갈라졌을 때 합친 기록과 도구는 `.tmp/origin-merge-20261009/scripts/`(`apply3.cjs`: 병합 트리 → 공용 작업본 3방향 → master CAS → 그 경로만 인덱스)·`.tmp/origin-sync-20261010/README.md`. 작업 중 origin이 계속 움직이면 머리가 바뀔 때마다 처음부터 다시 계산하고, origin에 올리는 세션에 잠깐 멈춰 달라고 한다.
 - 다시 확인: 병합 커밋과 origin/master의 `git diff --stat`이 로컬에만 있는 커밋들의 변경뿐이다.
+
+### push 직후 `merge_local.py`가 「origin has other commits」로 멈춘다
+- 증상: 내 커밋을 `restack.py --push`로 올린 직후 `merge_local.py`가 `AssertionError: ('origin has other commits', 4)`로 멈췄다(10-17). 그사이 다른 세션이 origin에 세 커밋을 올렸다.
+- 원인: 이 도구는 로컬 master에 없는 origin 커밋이 방금 내가 올린 것뿐일 때만 「트리는 로컬 그대로」로 합친다. 남의 push가 섞인 채 트리를 로컬로 두면, 로컬에 아직 없는 남의 줄이 병합에서 빠진다(10-17에는 결정 표·트랙의 줄이 그랬다).
+- 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
+- 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
 ## 워크트리·연결 폴더·공간 정리
 

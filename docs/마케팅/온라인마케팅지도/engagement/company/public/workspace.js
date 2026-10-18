@@ -1,7 +1,7 @@
 'use strict';
 
 // A persistent same-origin module keeps conversations and drafts alive across tabs.
-const workspaceModule={userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null};
+const workspaceModule={userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['social','SNS·마케팅','calendar'],['messenger','메신저','chat']];
 // One application frame for every workspace; only its contextual menu changes.
@@ -156,6 +156,9 @@ function marketingNavigation(){
 function workspaceHomeActions(){return '';}
 function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p>팀의 대화를 열고 있어요.</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button></div></section>`;}
 function syncWorkspaceLoading(){
+  // The persistent frame sits above this slot; keep a stalled document from
+  // covering the loading feedback and reconnect button before its ready signal.
+  if(workspaceModule.host)workspaceModule.host.style.visibility=workspaceModule.ready?'':'hidden';
   const slot=document.getElementById('messenger-module-slot');if(!slot)return;
   slot.setAttribute('aria-busy',String(!workspaceModule.ready));
   const loading=slot.querySelector('.messenger-module-loading');
@@ -163,8 +166,9 @@ function syncWorkspaceLoading(){
 }
 function workspaceShareButton(){return !isViewer()&&workspaceViewNames[state.tab]?'<button type="button" class="btn small workspace-share" data-action="share-workspace" aria-label="현재 화면을 대화 초안으로 공유">'+icon('chat')+'<span>대화로 공유</span></button>':'';}
 function resetWorkspaceModule(){
-  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();
-  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null});
+  // Removing the frame ends its document: the messenger stops capture and the SDK on pagehide.
+  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);clearInterval(workspaceModule.voiceTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();document.getElementById('workspace-call')?.remove();
+  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
 }
 function mountWorkspaceModule(){
   if(!state.user)return resetWorkspaceModule();
@@ -181,16 +185,17 @@ function mountWorkspaceModule(){
       if(workspaceModule.ready)sendWorkspaceMessage(workspaceModule.open);
     }
   }
-  if(shown&&!workspaceModule.host){
+  // With calls enabled the frame is loaded in the background so invitations ring and a call survives every menu.
+  if((shown||workspaceModule.preload)&&!workspaceModule.host){
     const host=document.createElement('section');host.id='workspace-messenger';host.className='workspace-messenger';host.setAttribute('aria-label','팀 메신저');
-    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
+    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.allow='microphone; display-capture; autoplay; fullscreen';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
     host.append(frame);document.body.append(host);workspaceModule.host=host;workspaceModule.frame=frame;
     frame.addEventListener('load',()=>{syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});});
   }
   workspaceModule.slot=document.getElementById('messenger-module-slot');workspaceModule.observer?.disconnect();
   if(workspaceModule.slot){workspaceModule.observer=new ResizeObserver(syncWorkspaceModuleGeometry);workspaceModule.observer.observe(workspaceModule.slot);}
   if(workspaceModule.host){workspaceModule.host.hidden=!shown;workspaceModule.host.inert=!shown||workspaceSidebarBlocksContent()||Boolean(document.getElementById('overlay')?.children.length);workspaceModule.host.setAttribute('aria-hidden',String(!shown));sendWorkspaceMessage({type:'workspace:visible',visible:shown&&!workspaceSidebarBlocksContent()});}
-  syncWorkspaceLoading();syncWorkspaceModuleGeometry();renderWorkspaceUnread();requestAnimationFrame(syncWorkspaceModuleGeometry);
+  syncWorkspaceLoading();syncWorkspaceModuleGeometry();renderWorkspaceUnread();renderWorkspaceCall();requestAnimationFrame(syncWorkspaceModuleGeometry);
 }
 function syncWorkspaceModuleGeometry(){
   const {host,slot}=workspaceModule;if(!host||!slot||state.tab!=='messenger')return;
@@ -214,8 +219,44 @@ function renderWorkspaceUnread(){
   document.querySelectorAll('.messenger-unread').forEach(badge=>{badge.hidden=!value;badge.textContent=value>99?'99+':String(value);badge.setAttribute('aria-label',`안 읽은 메시지 ${value}개`);});
 }
 function startWorkspaceSummary(){
-  clearInterval(workspaceModule.timer);void refreshWorkspaceSummary();
+  clearInterval(workspaceModule.timer);void refreshWorkspaceSummary();void probeWorkspaceVoice();
   workspaceModule.timer=setInterval(()=>{if(state.user&&!document.hidden)void refreshWorkspaceSummary();},20000);
+}
+// Calls are off by default. Only a workspace with calls enabled preloads the messenger frame.
+async function probeWorkspaceVoice(){
+  const userId=state.user?.id,probe=++workspaceModule.voiceProbe;if(!userId||workspaceModule.preload)return;
+  try{
+    const response=await fetch('/messenger/api/voice',{credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)return;
+    const capabilities=await response.json();if(probe!==workspaceModule.voiceProbe||state.user?.id!==userId||capabilities?.enabled!==true)return;
+    workspaceModule.preload=true;mountWorkspaceModule();
+  }catch{/* The messenger tab still opens the frame on demand. */}
+}
+const workspaceCallGlyphs={mic:'<path d="M9 6a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3"/>',micOff:'<path d="M15 10V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.6 2.5M5 11a7 7 0 0 0 11.4 5.4M12 18v3M3 3l18 18"/>',leave:'<path d="M4.5 13.5c4.6-4.4 10.4-4.4 15 0l-2.1 2.4-3-1.3v-2.2a10 10 0 0 0-4.8 0v2.2l-3 1.3z"/>',open:'<path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',screen:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9.5 7.5l5 5M14.5 7.5l-5 5"/>',phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'};
+function workspaceCallGlyph(name){return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${workspaceCallGlyphs[name]}</svg>`;}
+function workspaceCallClock(ms){const total=Math.max(0,Math.floor(ms/1000)),h=Math.floor(total/3600),m=Math.floor(total%3600/60),sec=total%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`;}
+// Mini controls outside the messenger: the call itself stays in the persistent frame.
+function renderWorkspaceCall(){
+  const voice=workspaceModule.voice,call=voice?.call&&!voice.call.ended?voice.call:null,incoming=voice?.incoming&&Date.parse(voice.incoming.expiresAt)>Date.now()?voice.incoming:null;
+  const show=Boolean(state.user&&workspaceModule.host&&state.tab!=='messenger'&&(call||incoming));
+  let dock=document.getElementById('workspace-call');
+  if(!show){if(dock)dock.hidden=true;clearInterval(workspaceModule.voiceTimer);workspaceModule.voiceTimer=null;return;}
+  if(!dock){dock=document.createElement('section');dock.id='workspace-call';dock.className='workspace-call';dock.setAttribute('aria-label','통화 미니 조작');document.body.append(dock);dock.addEventListener('click',workspaceCallAction);}
+  const tone=!call?'':call.phase==='connected'?'live':['reconnecting','pausing','recoverable'].includes(call.phase)?'warn':'pending';
+  const left=incoming?Math.max(0,Math.ceil((Date.parse(incoming.expiresAt)-Date.now())/1000)):0;
+  const ring=incoming?`<div class="workspace-call-ring" role="alertdialog" aria-label="통화 초대"><span class="workspace-call-ring-icon">${workspaceCallGlyph('phone')}</span><div class="workspace-call-text"><strong>${escape(incoming.fromName)}님이 통화에 불렀어요</strong><span>${escape(incoming.channelName)} · <span data-workspace-call-left>${left}</span>초 남음</span></div><div class="workspace-call-actions"><button type="button" class="workspace-call-button" data-workspace-call="reject" data-invitation="${escape(incoming.id)}">거절</button><button type="button" class="workspace-call-button primary" data-workspace-call="accept" data-invitation="${escape(incoming.id)}" ${incoming.busy?'disabled title="지금 통화에서 먼저 나와 주세요"':''}>수락</button></div></div>`:'';
+  const pill=call?`<div class="workspace-call-pill" data-tone="${tone}"><span class="workspace-call-chip">${escape(call.phase==='connected'?'통화 중':call.label||'통화')}</span><div class="workspace-call-text"><strong>${escape(call.channelName||'대화방')}</strong><span>${call.startedAt?`<time data-workspace-call-clock>${workspaceCallClock(Date.now()-call.startedAt)}</time> · `:''}${call.remoteSharing?`${escape(call.remoteSharing)}님 화면 공유 중`:call.audioBlocked?'소리가 막혀 있어요':`${Number(call.people)||1}명`}</span></div><div class="workspace-call-actions">${call.phase==='recoverable'?'':call.canSpeak?`<button type="button" class="workspace-call-icon${call.muted?' muted':''}" data-workspace-call="mute" aria-pressed="${call.muted}" aria-label="${call.muted?'마이크 켜기':'마이크 끄기'}" title="${call.muted?'마이크 켜기':'마이크 끄기'}">${workspaceCallGlyph(call.muted?'micOff':'mic')}</button>`:''}${call.sharing?`<button type="button" class="workspace-call-icon active" data-workspace-call="stop-share" aria-label="화면 공유 중지" title="화면 공유 중지">${workspaceCallGlyph('screen')}</button>`:''}<button type="button" class="workspace-call-icon" data-workspace-call="open" aria-label="통화 화면 열기" title="통화 화면 열기">${workspaceCallGlyph('open')}</button><button type="button" class="workspace-call-icon danger" data-workspace-call="leave" aria-label="통화에서 나가기" title="나가기">${workspaceCallGlyph('leave')}</button></div></div>`:'';
+  const html=ring+pill;
+  if(dock.dataset.html!==html.replace(/<span data-workspace-call-left>\d+<\/span>|<time data-workspace-call-clock>[^<]*<\/time>/g,'')){const focused=dock.contains(document.activeElement)?document.activeElement.dataset.workspaceCall:null;dock.innerHTML=html;dock.dataset.html=html.replace(/<span data-workspace-call-left>\d+<\/span>|<time data-workspace-call-clock>[^<]*<\/time>/g,'');if(focused)dock.querySelector(`[data-workspace-call="${focused}"]`)?.focus({preventScroll:true});}
+  else{const counter=dock.querySelector('[data-workspace-call-left]');if(counter)counter.textContent=String(left);const time=dock.querySelector('[data-workspace-call-clock]');if(time&&call?.startedAt)time.textContent=workspaceCallClock(Date.now()-call.startedAt);}
+  dock.hidden=false;
+  if(!workspaceModule.voiceTimer)workspaceModule.voiceTimer=setInterval(renderWorkspaceCall,1000);
+}
+function workspaceCallAction(event){
+  const button=event.target.closest('[data-workspace-call]');if(!button||!state.user)return;
+  const action=button.dataset.workspaceCall,invitationId=button.dataset.invitation;
+  if(['open','accept'].includes(action)){selectWorkspaceView('messenger');state.error='';render();}
+  if(action==='accept'||action==='reject')button.disabled=true;
+  sendWorkspaceMessage({type:'workspace:voice',action,...(invitationId?{invitationId}:{})});
 }
 function workspaceLinkDestination(value){
   if(typeof value!=='string'||value.length>1800)return null;
@@ -271,6 +312,7 @@ window.addEventListener('message',event=>{
     return;
   }
   if(type==='messenger:navigate'){void navigateWorkspaceLink(event.data.url).catch(error=>notify(error.message));return;}
+  if(type==='messenger:voice'){workspaceModule.voice=event.data.voice&&typeof event.data.voice==='object'?event.data.voice:null;renderWorkspaceCall();return;}
   if(type==='messenger:ready'){workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
   if(type==='messenger:open-received'){if(event.data.requestId===workspaceModule.open?.requestId)workspaceModule.open=null;return;}
   if(type==='messenger:share-received'){if(event.data.requestId===workspaceModule.share?.requestId)workspaceModule.share=null;return;}
