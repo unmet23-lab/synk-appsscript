@@ -1,0 +1,86 @@
+{
+  "checkedAt": "2026-10-18T11:29:01.148Z",
+  "scope": "PULSE confirmed five bugs",
+  "remoteBase": "e15bbe7c38b7309cbaeefa06c56c8080384b4045",
+  "fixes": [
+    "받은 패키지 재공유 시 모델·헤어·목소리 유지",
+    "빈 패키지 문의 글의 이전 공유 조합 제거",
+    "스와이프 중복 결정과 화면 이동 뒤 타이머 취소",
+    "같은 문의 주소의 상단 버튼 재클릭 이동",
+    "잘못된 URL의 400 응답과 서버 생존"
+  ],
+  "cleanCheckoutTests": {
+    "command": "node --test --test-reporter=tap tests/pulse-캐스팅고르기.test.js tests/pulse-casting-browser.test.cjs tests/pulse-say-server.test.cjs",
+    "tests": 23,
+    "pass": 23,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "builtPagesPreviouslyVerified": [
+    {
+      "name": "built-index.html",
+      "ok": true,
+      "summary": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "built-artifact.html",
+      "ok": true,
+      "summary": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "media": {
+    "checkedFiles": 351,
+    "additionalFilesVersusEarlierLocalState": 38,
+    "liveInventoryVerified": false
+  },
+  "comparison": {
+    "gptConfirmed": 4,
+    "argonConfirmed": 4,
+    "overlap": 3,
+    "sampleCommits": 3,
+    "conclusion": "작은 표본의 재현 비교이며 모델 전체 우열이나 전체 발견율을 뜻하지 않는다."
+  },
+  "publication": {
+    "status": "deferred-by-user",
+    "remoteWrite": false,
+    "verifiedLive": false,
+    "originalUrl": "https://claude.ai/artifact/Pxqu9GpgbnVKMEdh8n1Go8",
+    "latestReferenceUrl": "https://claude.ai/artifact/4SisfvgiVZiEPtdwkAhSQC",
+    "next": [
+      "로그인 가능할 때 기존 링크와 소유 계정을 확인",
+      "원격 파일 목록과 최신 미디어 manifest를 대조해 추가 파일 업로드",
+      "같은 링크의 HTML 갱신 뒤 공유·문의·스와이프 검증",
+      "문장 듣기 서버의 공개 위치 결정 후 별도 배포"
+    ]
+  },
+  "localEvidence": {
+    "verification": ".tmp/qa-runs/pulse-five-bugfix-20261018T110203711Z-67740-xhgdKc/result.json",
+    "publication": ".tmp/qa-runs/pulse-casting-publication-20261018T110438970Z-58776-3Cs7gr/result.json",
+    "cleanTests": ".tmp/pulse-bugfix-20261018/commit-puHAdZ/clean-source-tests.log"
+  },
+  "sourceSha256Lf": {
+    "docs/마케팅/PULSE_AI모델_캐스팅_20260930/site-src/app.js": "203254ee0441a79f5450f1caa39f306749d9f2588d3034caaeee4cce3b0d19ac",
+    "docs/마케팅/PULSE_AI모델_캐스팅_20260930/site-src/template.html": "7667182b25e7afb5e3eeed84d3c3485c6b7c7182c3532abb880b3c80a5996f76",
+    "docs/마케팅/PULSE_AI모델_캐스팅_20260930/say-server.cjs": "982fec8324c0d675bab029b08e2bd416465894be58a36a1ba08b3cf46b9ac6d4",
+    "tests/pulse-casting-browser.test.cjs": "b8adae4d174ae3d400ec61bb1068f06fbe8fab882e996d14782952c2839dcfb4",
+    "tests/pulse-say-server.test.cjs": "15dc502fcb73de792fc4bfd4ab2c68a98e9a8b4f2ebe0e0ac774be45ae6a8d38",
+    "tests/lib/pulse-qa-evidence.cjs": "1d8752b19e371d57b76235a362a3cb8f2d1347f9b646ead89008310e436eacea"
+  },
+  "git": {
+    "branch": "codex/pulse-casting-fixes-20261018",
+    "scope": "이번 수정만 별도 브랜치로 전달; 공용 master와 기존 공개 링크는 유지"
+  }
+}

@@ -88,9 +88,10 @@ async function say(req, res, ip) {
 }
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg' };
-function file(req, res) {
+function file(req, res, pathname) {
   const site = path.join(here, 'site');
-  let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let p;
+  try { p = decodeURIComponent(pathname); } catch { return send(res, 400, { message: '잘못된 요청 주소예요.' }); }
   if (p === '/') p = '/index.html';
   const f = path.normalize(path.join(site, p));
   if (!f.startsWith(site + path.sep) || !fs.existsSync(f) || !fs.statSync(f).isFile() || f.includes('artifact-accounts')) { res.writeHead(404); res.end(); return; }
@@ -101,7 +102,8 @@ function file(req, res) {
 const server = http.createServer((req, res) => {
   const origin = req.headers.origin;
   if (origin && ORIGINS.includes(origin)) res.setHeader('access-control-allow-origin', origin), res.setHeader('vary', 'origin');
-  const url = new URL(req.url, 'http://x');
+  let url;
+  try { url = new URL(req.url, 'http://x'); } catch { return send(res, 400, { message: '잘못된 요청 주소예요.' }); }
   if (url.pathname === '/api/say') {
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'access-control-allow-methods': 'POST', 'access-control-allow-headers': 'content-type', 'access-control-max-age': '600' }); res.end(); return; }
     if (req.method !== 'POST') return send(res, 405, { message: 'POST만 받아요.' });
@@ -109,7 +111,7 @@ const server = http.createServer((req, res) => {
     say(req, res, ip).catch((e) => { console.error(e); if (!res.headersSent) send(res, 500, { message: '목소리를 만들지 못했어요.' }); });
     return;
   }
-  if (req.method === 'GET') return file(req, res);
+  if (req.method === 'GET') return file(req, res, url.pathname);
   send(res, 405, { message: '지원하지 않는 요청이에요.' });
 });
 if (require.main === module) {

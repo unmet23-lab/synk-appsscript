@@ -523,6 +523,7 @@
   function renderPkg(anchor = '', shared = null) {
     const items = shared || myItems();
     const n = items.length;
+    view.dataset.shared = shared ? shareCode(shared) : '';
     if (!n) {
       view.innerHTML = `<section class="pk-head pad"><div><h1>패키지<sup class="num">0</sup></h1><p>마음에 드는 모델을 담으면 여기에서 한 장짜리 컴프 카드로 정리하고, 나란히 비교하고, 문의 글로 보낼 수 있어요.</p></div></section>
         <section class="empty pad"><h2>아직 담은 모델이 없어요</h2><p>보드에서 사진 위 「+ 패키지」를 누르거나, 한 명씩 넘기며 오른쪽으로 밀어 담아 보세요.</p><div class="pk-acts"><a class="btn ink" href="#swipe">넘기며 고르기</a><a class="btn line" href="#board">모델 보드</a></div></section>
@@ -547,7 +548,6 @@
       ${inqHTML(items)}`;
     watchLineups(view);
     wireInq(items);
-    view.dataset.shared = shared ? shareCode(shared) : '';
     if (anchor === 'inq') requestAnimationFrame(() => $('#inq')?.scrollIntoView({ block: 'start' }));
   }
   function inqHTML(items) {
@@ -684,9 +684,11 @@
   }
 
   /* ── 넘기며 고르기 ────────────────────────────────────── */
-  let deck = [], deckAt = 0, deckPhoto = 0, deckTaken = [], deckKey = '';
+  let deck = [], deckAt = 0, deckPhoto = 0, deckTaken = [], deckKey = '', deckTimer = null;
   const deckSig = () => JSON.stringify([state.ask.trim(), filters]);
+  function cancelDeckAnimation() { clearTimeout(deckTimer); deckTimer = null; }
   function startDeck() {
+    cancelDeckAnimation();
     deckKey = deckSig();
     const { order, recs } = ranked();
     deck = order.map((m) => ({ m, r: recs.find((x) => x.model.code === m.code) || null }));
@@ -725,23 +727,25 @@
     wireDrag($('#dcard'));
   }
   function deckDecide(yes) {
+    if (deckTimer !== null) return;
     const card = $('#dcard'), cur = deck[deckAt]; if (!cur) return;
     if (yes && !inPkg(cur.m.code)) { state.pkg.push(cur.m.code); save(); syncPkg(); }
     if (yes && !deckTaken.includes(cur.m.code)) deckTaken.push(cur.m.code);
-    const fly = () => { deckAt++; deckPhoto = 0; drawDeck(); };
+    // 결정은 한 번만 즉시 반영하고, 다음 카드 그림만 애니메이션 뒤에 바꾼다.
+    deckAt++; deckPhoto = 0;
     if (card && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       card.style.transition = 'transform .28s ease-in, opacity .28s';
       card.style.transform = `translateX(${yes ? 130 : -130}%) rotate(${yes ? 14 : -14}deg)`; card.style.opacity = '0';
-      setTimeout(fly, 240);
-    } else fly();
+      deckTimer = setTimeout(() => { deckTimer = null; drawDeck(); }, 240);
+    } else drawDeck();
   }
   function wireDrag(card) {
     if (!card) return;
     let x0 = 0, y0 = 0, dx = 0, drag = false, id = null, moved = false;
     const yes = $('#st-yes'), no = $('#st-no');
-    card.addEventListener('pointerdown', (e) => { drag = true; moved = false; id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; card.style.transition = 'none'; });
+    card.addEventListener('pointerdown', (e) => { if (deckTimer !== null) return; drag = true; moved = false; id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; card.style.transition = 'none'; });
     card.addEventListener('pointermove', (e) => {
-      if (!drag || e.pointerId !== id) return;
+      if (deckTimer !== null || !drag || e.pointerId !== id) return;
       dx = e.clientX - x0; const dy = e.clientY - y0;
       if (!moved && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) { moved = true; try { card.setPointerCapture(id); } catch { /* 무시 */ } }
       if (!moved) return;
@@ -749,6 +753,7 @@
       yes.style.opacity = Math.max(0, Math.min(1, dx / 90)); no.style.opacity = Math.max(0, Math.min(1, -dx / 90));
     });
     const end = (e) => {
+      if (deckTimer !== null) { drag = false; return; }
       if (!drag || (e && e.pointerId !== id)) return; drag = false;
       if (moved && Math.abs(dx) > Math.min(120, card.clientWidth * 0.28)) { deckDecide(dx > 0); return; }
       card.style.transition = ''; card.style.transform = ''; yes.style.opacity = 0; no.style.opacity = 0;
@@ -762,6 +767,7 @@
   const jump = (y) => { try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); } catch { window.scrollTo(0, y); } };
   const go = (h) => { if (location.hash !== h) location.hash = h; else render(); };
   function render() {
+    cancelDeckAnimation();
     const h = decodeURIComponent(location.hash || '');
     const prev = route;
     if (prev === 'board' || prev === 'lineup') boardY = window.scrollY;
@@ -811,8 +817,8 @@
       case 'cmp-shot': cmpShot = v; { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); $('#pk-body').innerHTML = compareHTML(items); watchLineups($('#pk-body')); } break;
       case 'pkg-rm': state.pkg = state.pkg.filter((x) => x !== code); save(); syncPkg(); renderPkg(); break;
       case 'take-share': { const items = readShare(view.dataset.shared); for (const x of items) { if (!inPkg(x.code)) state.pkg.push(x.code); setSel(x.code, { hair: x.hair, voice: x.voice }); } save(); toast(`${items.length}명을 내 패키지에 담았어요`); go('#pkg'); break; }
-      case 'share-link': copy(`${shareBase}#p-${shareCode(myItems())}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break;
-      case 'to-inq': e.preventDefault(); $('#inq')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); break;
+      case 'share-link': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); copy(`${shareBase}#p-${shareCode(items)}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break; }
+      case 'to-inq': { e.preventDefault(); const inq = $('#inq'); if (inq) inq.scrollIntoView({ block: 'start', behavior: 'smooth' }); else go('#pkg-inq'); break; }
       case 'format': state.format = v; save(); for (const b of $$('[data-act="format"]')) b.setAttribute('aria-pressed', b === t); wireInq(view.dataset.shared ? readShare(view.dataset.shared) : myItems()); break;
       case 'copy-inq': copy($('#inq-text').value, '글을 복사했어요. 붙여 넣기만 하면 돼요.'); break;
       case 'save-card': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); const x = items.find((y) => y.code === code); const m = byCode(code); exportCanvas(() => drawCard(x), `PULSE_${m.code}_${m.name}_컴프카드`); break; }
