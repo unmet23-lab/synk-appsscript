@@ -19,6 +19,12 @@ function fixture(){
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('overview shows actual observed posts separately from Workspace publishing and preserves unknown',()=>{
+ const f=fixture();f.context.initial.observed={published7d:12,channelsObserved:3,channelsTotal:34};f.run('socialWorkspaceState.data=initial');
+ let html=f.run('snswOverview()');assert.match(html,/SNS 7일 게시/);assert.match(html,/<strong>12<\/strong>/);assert.match(html,/3\/34개 채널/);assert.match(html,/Workspace 7일 발행/);assert.match(html,/href="\/\?tab=overview&section=all"/);
+ f.run('socialWorkspaceState.data.observed.published7d=null');html=f.run('snswOverview()');assert.match(html,/<strong>—<\/strong>/);
+});
+
 test('first entry renders loading before ensure starts and settles without a refresh or duplicate request',async()=>{
   const f=fixture(),frames=[];f.run('socialWorkspaceReset()');
   f.context.render=()=>{frames.push(f.run('renderSocialWorkspace()'));f.run('socialWorkspaceEnsure()');};

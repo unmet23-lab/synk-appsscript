@@ -106,6 +106,19 @@ test('read-only OAuth scopes and provider parameter families stay separate', () 
   assert.equal(instagram.searchParams.get('enable_fb_login'), '0');
 });
 
+test('YouTube consent excludes inherited Drive grants while retaining explicit verified YouTube capabilities',()=>{
+  for(const options of [{},{publishing:true},{existingGrantedScopes:['https://www.googleapis.com/auth/youtube.upload','https://www.googleapis.com/auth/drive.file']}]){
+    const url=new URL(createAuthorization('youtube',{...flow,...options})),scope=url.searchParams.get('scope').split(' ');
+    assert.equal(url.searchParams.get('include_granted_scopes'),'false');
+    assert.ok(scope.every(value=>value.startsWith('https://www.googleapis.com/auth/youtube.')||value==='https://www.googleapis.com/auth/yt-analytics.readonly'));
+    assert.equal(scope.includes('https://www.googleapis.com/auth/drive.file'),false);
+    assert.ok(scope.includes('https://www.googleapis.com/auth/youtube.readonly'));
+    if(options.publishing||options.existingGrantedScopes)assert.ok(scope.includes('https://www.googleapis.com/auth/youtube.upload'));
+    assert.equal(url.searchParams.get('state'),flow.state);
+    assert.equal(url.searchParams.get('redirect_uri'),flow.redirectUri);
+  }
+});
+
 test('callback URLs reject remote HTTP, credentials, fragments and malformed URLs', () => {
   for (const redirectUri of ['not a URL', 'http://sns.example.test/callback', 'https://user:password@sns.example.test/callback', 'https://sns.example.test/callback#fragment', 'javascript:alert(1)']) {
     assert.throws(() => createAuthorization('youtube', { ...flow, redirectUri }), OAuthError);

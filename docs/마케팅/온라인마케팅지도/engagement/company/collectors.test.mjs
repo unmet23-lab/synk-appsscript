@@ -270,10 +270,11 @@ test('Facebook user login selects owned page across pages and keeps page tokens 
     const url = new URL(raw); tokens.push(options.headers.Authorization);
     if (url.pathname.endsWith('/me/accounts')) return ok(url.searchParams.has('after') ? { data: [{ id: '123', username: 'SYNK', link: 'https://facebook.com/profile.php?id=123', access_token: 'FIXTURE_PAGE_TOKEN' }] } : { data: [{ id: '456', username: 'else', access_token: 'OTHER_PAGE_TOKEN' }], paging: { next: 'https://graph.facebook.com/ignored', cursors: { after: 'next' } } });
     if (url.pathname.endsWith('/me')) return ok({ id: '123', username: 'synk', name: 'SYNK', followers_count: 20, fan_count: 12, link: 'https://facebook.com/profile.php?id=123' });
+    if(url.pathname.endsWith('/videos'))return ok({data:[]});
     assert.ok(url.searchParams.get('fields').includes('reactions.type(LIKE)'));
     return ok({ data: [{ id: '123_999', message: 'First', created_time: '2026-09-20T00:00:00Z', reactions: { summary: { total_count: 0 } }, comments: { summary: { total_count: 2 } }, shares: { count: 0 } }] });
   } });
-  assert.deepEqual(tokens, ['Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN']);
+  assert.deepEqual(tokens, ['Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN','Bearer FIXTURE_PAGE_TOKEN']);
   assert.deepEqual(result.posts[0].metrics, { views: null, likes: 0, comments: 2, shares: 0, saves: null, reach: null });
   assert.equal(result.channel.followers, 20);
   assert.ok(!JSON.stringify(result).includes('TOKEN'));

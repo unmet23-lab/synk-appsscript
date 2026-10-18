@@ -121,7 +121,10 @@ function oldPage(entries, dateOf, recent) {
     return date !== null && Date.parse(date) < recent.sinceMs;
   });
 }
-function optionalFailure(error, recent) {
+function optionalFailure(error, recent, independentPermission=false) {
+  // A denied optional Insights/Analytics edge does not revoke a successful
+  // identity + media/statistics read. Rate limits still pause all polling.
+  if(independentPermission&&error.code==='AUTH_REQUIRED')return;
   if (recent && ['RATE_LIMITED', 'AUTH_REQUIRED', 'TIMEOUT', 'NETWORK_ERROR'].includes(error.code)) {
     recent.collectionError = { code: error.code, status: error.status ?? null, retryable: error.retryable === true };
   }
@@ -189,6 +192,7 @@ function endpoint(origin, path, params = {}) {
 function result(channel, posts, { warnings = [], partial = false, hasMore = false, unavailable = [], source, pages = 0, omitted = 0, ownerAuthorized = false, metricPeriods = {} } = {}) {
   return { channel, posts, warnings: [...new Set(warnings)], coverage: {
     status: partial || hasMore || omitted ? 'partial' : 'complete', postsFetched: posts.length, hasMore, pagesFetched: pages,
+    inventoryComplete: !hasMore&&!omitted,
     omittedPosts: omitted, limitations: [...new Set(warnings)], unavailableMetrics: unavailable,
     source, ownerAuthorized, period: 'lifetime', metricPeriods, observedAt: new Date().toISOString(),
   } };
@@ -197,6 +201,7 @@ function capWarning(cap) { return `1회 수집 한도(콘텐츠 ${cap.maxPosts.t
 
 async function youtube(channel, credentials, request, recent) {
   const accessToken = typeof credentials.accessToken === 'string' ? credentials.accessToken.trim() : '';
+  const publicOnly=credentials.publicOnly===true;
   const apiKey = accessToken ? undefined : required(credentials, 'apiKey', 'YouTube 계정을 연결하거나 관리자에게 YouTube Data API 키 연결을 요청해 주세요.');
   const cap = recent || limits(credentials);
   const api = (path, params) => request(endpoint('https://www.googleapis.com', `/youtube/v3/${path}`, { ...params, key: apiKey }), accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : {});
@@ -204,7 +209,7 @@ async function youtube(channel, credentials, request, recent) {
   const item = response.items?.[0];
   if (!item?.id) throw new CollectorError('CHANNEL_NOT_FOUND', 'YouTube에서 해당 채널을 찾을 수 없습니다.');
   if (channel.externalId && item.id !== channel.externalId) throw mismatch();
-  if (accessToken) {
+  if (accessToken&&!publicOnly) {
     const mine = await api('channels', { part: 'id', mine: true, maxResults: 50 });
     if (!mine.items?.some(owned => owned.id === item.id) || (credentials.accountId && credentials.accountId !== item.id)) throw mismatch();
   }
@@ -244,12 +249,14 @@ async function youtube(channel, credentials, request, recent) {
   const allIds = [...ids];
   for (let offset = 0; offset < allIds.length; offset += 50) {
     const batch = allIds.slice(offset, offset + 50);
-    const videos = await api('videos', { part: 'snippet,statistics', id: batch.join(','), maxResults: 50 });
+    const videos = await api('videos', { part: 'snippet,statistics,status', id: batch.join(','), maxResults: 50 });
     if (!Array.isArray(videos.items)) throw new CollectorError('INVALID_RESPONSE', 'YouTube 콘텐츠 수치를 확인할 수 없습니다.');
     const returned = new Set();
     for (const video of videos.items) {
       if (!batch.includes(video.id) || returned.has(video.id)) continue;
       returned.add(video.id);
+      if(publicOnly&&video.status?.privacyStatus!=='public')continue;
+      if(video.status?.privacyStatus&&video.status.privacyStatus!=='public')continue;
       if (video.snippet?.channelId && video.snippet.channelId !== item.id) { omitted++; continue; }
       if (!recentDate(video.snippet?.publishedAt, recent)) continue;
       posts.push({ externalId: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, title: text(video.snippet?.title), publishedAt: isoDate(video.snippet?.publishedAt), thumbnailUrl: safeUrl(video.snippet?.thumbnails?.medium?.url || video.snippet?.thumbnails?.default?.url), metrics: metrics({ views: video.statistics?.viewCount, likes: video.statistics?.likeCount, comments: video.statistics?.commentCount }) });
@@ -261,7 +268,8 @@ async function youtube(channel, credentials, request, recent) {
   const unavailable = ['saves', 'reach'];
   const metricPeriods = {};
   let analyticsPartial = false;
-  if (accessToken && posts.length) {
+  const analyticsAllowed=!credentials.scope||String(credentials.scope).split(/[ ,]+/).includes('https://www.googleapis.com/auth/yt-analytics.readonly');
+  if (accessToken && !publicOnly && analyticsAllowed && posts.length) {
     const endDate = new Date().toISOString().slice(0, 10);
     try {
       for (let offset = 0; offset < posts.length; offset += 200) {
@@ -280,16 +288,16 @@ async function youtube(channel, credentials, request, recent) {
       warnings.push('공유 수치는 YouTube Analytics가 제공하는 2005년 이후 누적값이며 최신 며칠이 늦게 반영될 수 있습니다. 보고서에 없는 콘텐츠는 미제공으로 표시합니다.');
     } catch (error) {
       if (error.code === 'CANCELLED') throw error;
-      optionalFailure(error, recent);
+      optionalFailure(error, recent, true);
       analyticsPartial = true;
       warnings.push('YouTube Analytics 공유 수치 일부 또는 전부를 받지 못했습니다. Analytics 사용 설정과 소유자 조회 권한을 확인해 주세요.');
     }
     if (!posts.some(post => post.metrics.shares !== null)) unavailable.push('shares');
   } else {
     unavailable.push('shares');
-    if (!accessToken) warnings.push('API 키 연결에서는 공유 수치를 제공하지 않습니다. 채널 소유자의 Google 계정 연결이 필요합니다.');
+    if (!accessToken||publicOnly||!analyticsAllowed) warnings.push('공개 통계 연결에서는 공유 수치를 제공하지 않습니다. 채널 소유자의 Analytics 조회 권한이 필요합니다.');
   }
-  return result({ externalId: item.id, displayName: text(item.snippet?.title) || channel.handle || item.id, followers: item.statistics?.hiddenSubscriberCount ? null : number(item.statistics?.subscriberCount), views: number(item.statistics?.viewCount), metrics: { posts: number(item.statistics?.videoCount) } }, posts, { warnings, hasMore, omitted, pages, partial: analyticsPartial, ownerAuthorized: Boolean(accessToken), metricPeriods, source: 'youtube-data-api-v3', unavailable });
+  return result({ externalId: item.id, displayName: text(item.snippet?.title) || channel.handle || item.id, followers: item.statistics?.hiddenSubscriberCount ? null : number(item.statistics?.subscriberCount), views: number(item.statistics?.viewCount), metrics: { posts: number(item.statistics?.videoCount) } }, posts, { warnings, hasMore, omitted, pages, partial: analyticsPartial, ownerAuthorized: Boolean(accessToken)&&!publicOnly, metricPeriods, source: 'youtube-data-api-v3', unavailable });
 }
 
 async function tiktok(channel, credentials, request, recent) {
@@ -394,7 +402,8 @@ async function instagram(channel, credentials, request, recent) {
   const list = await graphList(`${resolvedId}/media`, { fields: 'id,caption,media_type,media_product_type,permalink,timestamp,thumbnail_url,like_count,comments_count' }, api, cap, recent, media => media.timestamp);
   const warnings = [...list.warnings, 'Instagram 인사이트는 프로페셔널 계정 전환 시점·콘텐츠 종류·플랫폼 보존 기간에 따라 일부 수치가 제공되지 않을 수 있습니다.', '콘텐츠별 도달은 중복 사용자를 포함하므로 전체 채널의 고유 도달 수로 합산할 수 없습니다.'];
   let missingInsights = 0;
-  let haltInsights = false;
+  const insightsAllowed=!credentials.permissionsVerifiedAt||String(credentials.scope||'').split(/[ ,]+/).includes(direct?'instagram_business_manage_insights':'instagram_manage_insights');
+  let haltInsights = !insightsAllowed;
   const posts = [];
   const metricNames = ['views', 'reach', 'shares', 'saved'];
   for (const media of list.entries) {
@@ -407,7 +416,7 @@ async function instagram(channel, credentials, request, recent) {
         for (const name of metricNames) values[name] = insightValue(combined, name);
       } catch (error) {
         if (error.code === 'CANCELLED') throw error;
-        optionalFailure(error, recent);
+        optionalFailure(error, recent, true);
         if (!recent && error.code === 'API_ERROR' && error.status === 400) {
           // Different media types support different metrics; probe independently only
           // for the explicit unsupported-query response, never for token/rate errors.
@@ -455,10 +464,28 @@ async function facebook(channel, credentials, request, recent) {
   page = await api('me', { fields: 'id,name,username,link,fan_count,followers_count' });
   if (!page?.id || !facebookMatches(channel, page) || (credentials.accountId && credentials.accountId !== String(page.id))) throw mismatch();
   const pageId = graphId(String(page.id));
-  const list = await graphList(`${pageId}/posts`, { fields: 'id,message,created_time,permalink_url,shares,reactions.type(LIKE).limit(0).summary(true),comments.limit(0).summary(true)' }, api, cap, recent, post => post.created_time);
+  const list = await graphList(`${pageId}/posts`, { fields: 'id,message,created_time,permalink_url,attachments{target},shares,reactions.type(LIKE).limit(0).summary(true),comments.limit(0).summary(true)' }, api, cap, recent, post => post.created_time);
   const posts = list.entries.map(post => ({ externalId: String(post.id), url: safeUrl(post.permalink_url), title: text(post.message), publishedAt: isoDate(post.created_time), thumbnailUrl: null, metrics: metrics({ likes: post.reactions?.summary?.total_count, comments: post.comments?.summary?.total_count, shares: post.shares?.count }) }));
-  const warnings = [...list.warnings, '이 Facebook 연결은 게시물 조회수·저장·도달을 제공하지 않습니다.', '좋아요는 전체 반응 수가 아닌 LIKE 반응만 집계합니다. 공유 수가 응답에 없으면 0으로 추정하지 않습니다.', '페이지 게시물 목록에 제공되는 콘텐츠만 수집합니다. 개인 프로필·스토리·별도 목록의 릴스는 포함되지 않을 수 있습니다.'];
-  return result({ externalId: pageId, displayName: text(page.name) || channel.handle || pageId, followers: number(page.followers_count), views: null, metrics: { likes: number(page.fan_count) } }, posts, { warnings, hasMore: list.hasMore, pages: list.pages, ownerAuthorized: true, source: 'facebook-pages-api', unavailable: ['views', 'saves', 'reach', 'channel.views'] });
+  const warnings = [...list.warnings, 'Facebook 영상의 views와 게시물의 LIKE 반응을 원 API 값으로 기록합니다. 일반 게시물 조회수·저장·도달과 응답에 없는 공유 수는 미확인입니다.'];
+  let videosPartial=false,hasMore=list.hasMore,pages=list.pages;
+  const videoId=url=>{try{const u=new URL(url,'https://www.facebook.com');return u.searchParams.get('v')||u.pathname.match(/\/(?:reel|videos)\/(\d+)/)?.[1]||null;}catch{return null;}};
+  const known=new Map();list.entries.forEach((p,i)=>{known.set(String(p.id),posts[i]);for(const attachment of p.attachments?.data||[])if(attachment.target?.id)known.set(String(attachment.target.id),posts[i]);const id=videoId(p.permalink_url);if(id)known.set(id,posts[i]);});
+  if(posts.length<cap.maxPosts&&pages<cap.maxPages){
+    try{
+      const videos=await graphList(`${pageId}/videos`,{fields:'id,title,description,created_time,permalink_url,views,likes.limit(0).summary(true),comments.limit(0).summary(true)'},api,{...cap,maxPosts:cap.maxPosts-posts.length,maxPages:cap.maxPages-pages},recent,v=>v.created_time);
+      hasMore=hasMore||videos.hasMore;pages+=videos.pages;warnings.push(...videos.warnings);
+      for(const video of videos.entries){
+        const id=String(video.id),existing=known.get(id);
+        if(existing){existing.metrics.views=number(video.views);continue;}
+        const url=typeof video.permalink_url==='string'?safeUrl(new URL(video.permalink_url,'https://www.facebook.com').href):null;
+        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:isoDate(video.created_time),thumbnailUrl:null,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
+        known.set(id,posts.at(-1));
+      }
+    }catch(error){if(error.code==='CANCELLED')throw error;optionalFailure(error,recent,true);videosPartial=true;warnings.push('Facebook 영상·릴스 목록을 확인하지 못해 전체 게시물 수와 영상 조회수는 일부 수집입니다.');}
+  }else{hasMore=true;warnings.push(capWarning(cap));}
+  const collected=result({ externalId: pageId, displayName: text(page.name) || channel.handle || pageId, followers: number(page.followers_count), views: null, metrics: { likes: number(page.fan_count) } }, posts, { warnings, partial:videosPartial,hasMore, pages, ownerAuthorized: true, source: 'facebook-pages-api', unavailable: ['saves', 'reach', 'channel.views',...(posts.some(p=>p.metrics.views!==null)?[]:['views'])] });
+  if(videosPartial)collected.coverage.inventoryComplete=false;
+  return collected;
 }
 
 /**
