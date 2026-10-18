@@ -1,6 +1,5 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
-const {build,Platform,Arch}=require('electron-builder');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY,identity}=require('../src/catalog.cjs');
 const {safeEntry,inside}=require('../src/security.cjs');
 const {configuration}=require('../src/auth-config.cjs');
@@ -97,6 +96,7 @@ async function main(args=process.argv.slice(2)) {
   if(options.platform==='darwin'&&process.platform!=='darwin'&&options.dir!=='true')throw Error('Create Mac DMG/ZIP installers on macOS; this host can only prepare an unsigned .app directory.');
   const ids=options.client?[options.client]:['world','messenger','platform'];
   const electronVersion=require('../package.json').devDependencies.electron;
+  const {build,Platform,Arch}=require('electron-builder');
   for(const id of ids){const config=prepare(id,options);const target=options.platform==='win32'?Platform.WINDOWS:Platform.MAC;
     const artifacts=await build({targets:target.createTarget(options.dir==='true'?'dir':null,options.arch==='arm64'?Arch.arm64:Arch.x64),config:{...config,electronVersion},publish:'never'});
     process.stdout.write(JSON.stringify({client:id,mode:options.mode,platform:options.platform,arch:options.arch,artifacts})+'\n');
