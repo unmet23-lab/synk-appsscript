@@ -30,9 +30,10 @@ before(async()=>{
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
 // 기록: 셰이더가 다 됐는지 묻기(ready/busy)와 그 뒤의 그리기(draw)·새 셰이더 만들기(new)를 차례로, 창 그림이 GPU로 올라간 횟수를 센다.
 function probe(){
- const P=window.__probe={log:[],uploads:0,onPoll:null},C=WebGL2RenderingContext.prototype,COMPLETION_STATUS_KHR=0x91B1;
- const ask=C.getProgramParameter;C.getProgramParameter=function(program,name){const value=ask.call(this,program,name);if(name===COMPLETION_STATUS_KHR){P.log.push(value?'ready':'busy');P.onPoll?.();}return value;};
- const create=C.createProgram;C.createProgram=function(){if(P.log.length)P.log.push('new');return create.call(this);};
+ const P=window.__probe={log:[],uploads:0,onPoll:null},C=WebGL2RenderingContext.prototype,COMPLETION_STATUS_KHR=0x91B1,ids=new WeakMap();let made=0;
+ // 묻기 기록에는 셰이더 번호를 붙인다(ready:3·busy:3) — 바쁘다던 셰이더가 다 됐다고 답한 뒤에 그렸는지 본다.
+ const ask=C.getProgramParameter;C.getProgramParameter=function(program,name){const value=ask.call(this,program,name);if(name===COMPLETION_STATUS_KHR){P.log.push(`${value?'ready':'busy'}:${ids.get(program)??'?'}`);P.onPoll?.();}return value;};
+ const create=C.createProgram;C.createProgram=function(){const program=create.call(this);ids.set(program,++made);if(P.log.length)P.log.push('new');return program;};
  for(const name of ['drawElements','drawArrays','drawElementsInstanced','drawArraysInstanced']){const draw=C[name];C[name]=function(...args){if(P.log.length&&P.log.at(-1)!=='draw')P.log.push('draw');return draw.apply(this,args);};}
  for(const name of ['texImage2D','texSubImage2D']){const upload=C[name];C[name]=function(...args){if(args.some(a=>a instanceof HTMLImageElement&&/window-hangang/.test(a.src)))P.uploads++;return upload.apply(this,args);};}
 }
@@ -58,11 +59,14 @@ test('창밖 한강 그림은 첫 그림에 함께 올라가고, 셰이더가 �
  assert.equal(result.frames,1,'mount resolves after exactly one frame');
  assert.ok(result.uploads>=1,'the window image is uploaded with the first frame, not after it');
  if(!parallel){t.diagnostic('KHR_parallel_shader_compile 없음: 미리 엮기 확인은 건너뜀');return;}
- const log=result.log.split(' ');
- assert.ok(log.includes('ready')&&log.includes('draw'),`shaders were polled before the first frame (${result.log.slice(0,200)})`);
- assert.ok(log.lastIndexOf('busy')<log.indexOf('draw'),`nothing is drawn while a shader is still compiling (${result.log.slice(0,200)})`);
+ const log=result.log.split(' '),draw=log.indexOf('draw'),before=log.slice(0,draw);
+ assert.ok(log.some(x=>x.startsWith('ready:'))&&draw>=0,`shaders were polled before the first frame (${result.log.slice(0,200)})`);
+ assert.ok(!log.slice(draw).some(x=>x.startsWith('busy:')),`nothing is drawn while a shader is still compiling (${result.log.slice(0,200)})`);
+ // 6초 한도로 그냥 그린 것이 아니다 — 바쁘다고 답한 셰이더마다 그 뒤에 다 됐다고 답했다.
+ const busy=[...new Set(before.filter(x=>x.startsWith('busy:')).map(x=>x.slice(5)))];
+ assert.deepEqual(busy.filter(id=>before.lastIndexOf(`ready:${id}`)<before.lastIndexOf(`busy:${id}`)),[],'every shader that was still compiling reported ready before the first frame');
  // 처음 물어본 뒤로는 새 셰이더가 없어야 한다(그림자 판은 본 그리기보다 먼저 셰이더를 만드니 draw 기준으로 세지 않는다).
- const asked=log.findIndex(x=>x==='ready'||x==='busy');
+ const asked=log.findIndex(x=>/^(ready|busy):/.test(x));
  assert.equal(log.slice(asked).filter(x=>x==='new').length,0,`the first frame (shadow pass included) finds every shader already compiled (${log.slice(asked,asked+40).join(' ')})`);
 });
 
