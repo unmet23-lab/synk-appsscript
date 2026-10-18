@@ -106,6 +106,12 @@ for (const [theme, seeded] of [['night', false], ['day', false], ['night', true]
   if ((theme === 'day' || seeded) && ![1440, 390].includes(width)) continue;
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, locale: 'ko-KR', colorScheme: theme === 'day' ? 'light' : 'dark', isMobile: width < 600, hasTouch: width < 600, serviceWorkers: 'block' });
   await context.addInitScript(([value, library]) => { try { localStorage.setItem('synk.platform.theme', value); if (library) localStorage.setItem('synk.platform.device-library.v1', JSON.stringify(library)); } catch {} }, [theme, seeded ? LIBRARY : null]);
+  // SYNK_CANDIDATE_DIR: 공개 전 후보. 실제 https://synk.im/ 주소를 열되, 그 폴더에 같은 경로의 파일이 있으면 그 바이트를 돌려준다(현장 노트 배포·공개).
+  if (process.env.SYNK_CANDIDATE_DIR) await context.route('https://synk.im/**', async route => {
+    const rel = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\/+/, ''), file = path.join(process.env.SYNK_CANDIDATE_DIR, rel);
+    if (rel && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({ body: fs.readFileSync(file), contentType: ({ '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webp': 'image/webp' })[path.extname(file)] || 'application/octet-stream' });
+    return route.continue();
+  });
   const page = await context.newPage(), problems = [];
   page.on('response', r => { if (r.status() >= 400 && !/config\.json$|desktop\/releases\/preview\.json$/.test(r.url())) problems.push(`${r.status()} ${r.url().split('/synk-account/')[1] || r.url()}`); });
   page.on('pageerror', e => problems.push('pageerror ' + e.message));
