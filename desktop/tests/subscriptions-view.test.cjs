@@ -52,7 +52,7 @@ test('each account lands in one state and each service recommends its roomiest c
 });
 
 test('the limit follows whichever window has less left, and past windows count as full again',async()=>{
-  const {limitGauge,gaugeLevel,leftPercent}=await import('../renderer/subscriptions.mjs');
+  const {limitGauge,gaugeLevel,leftPercent,usedShown}=await import('../renderer/subscriptions.mjs');
   // 실제 계정판 세 상태(10-17): 5시간 소진 · 주간 99% · 여유.
   const out=row({id:'out',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+36*60e3},weekly:{usedPercent:51,resetsAt:NOW+115*3600e3}}});
   const low=row({id:'low',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:99,resetsAt:NOW+51*3600e3}}});
@@ -69,6 +69,8 @@ test('the limit follows whichever window has less left, and past windows count a
   const manual=row({source:'manual',email:null,resetDay:5,resetHour:17,resetMinute:0,usedUpAt:NOW-3600e3});
   assert.deepEqual([limitGauge(manual,NOW).left,limitGauge({...manual,usedUpAt:null},NOW)],[0,null]);
   assert.deepEqual([leftPercent(99.6),leftPercent(0.5),leftPercent(48.7)],[0,99,51]);
+  // 화면의 쓴 %는 남은 %와 늘 합이 100이다(꽉 차면 다 씀과 같은 기준).
+  assert.deepEqual([usedShown(99.6),usedShown(0.5),usedShown(48.7),usedShown(0)],[100,1,49,0]);
 });
 
 test('the glance board shows one row per service and rolls each number only when it first shows or new values arrive',async()=>{
@@ -97,14 +99,16 @@ test('the glance board shows one row per service and rolls each number only when
     assert.equal((el.innerHTML.match(/class="ms-svc /g)||[]).length,4);
     assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name"><span>roomy<\/span><small>Max<\/small>/);
     assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 다 씀<\/span>/);
-    assert.match(el.innerHTML,/data-roll="r-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
-    assert.match(el.innerHTML,/data-roll="r-gpt">51<small>%/);
+    // 숫자·고리는 쓴 만큼(다른 AI처럼 꽉 차면 그 창은 다 씀).
+    assert.match(el.innerHTML,/data-roll="r-claude">78<small>%<\/small><\/b><span>주간 사용<\/span>/);
+    assert.match(el.innerHTML,/data-roll="r-gpt">49<small>%/);
     assert.match(el.innerHTML,/data-roll="c-higgsfield">1,373<\/b><span>크레딧<\/span>/);
     assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 계정<\/span><span class="ms-pick-name"><span>이 PC 로그인<\/span>/);
-    // 다 남은 고리(아직 안 쓴 Gemini)는 이음매 없는 닫힌 원이다(대시 없음).
-    assert.match(el.innerHTML,/<circle class="ms-arc" data-level="ok" cx="30" cy="30" r="25" stroke-width="7" data-full\/>/);
-    // 02는 다 쓴 계정이 풀리는 때와 풀리면 남는 주간 한도.
-    assert.match(el.innerHTML,/<span class="ms-next-rel">36분 뒤<\/span><span class="ms-next-who"><b>out<\/b> Claude · 5시간 한도 · 풀리면 주간 49%/);
+    // 78% 쓴 고리는 12시에서 78%까지 차고, 아직 안 쓴 Gemini는 채운 호가 없는 빈 원이다.
+    assert.match(el.innerHTML,/<circle class="ms-arc" data-level="ok" cx="30" cy="30" r="25" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="22" transform="rotate\(-90 30 30\)"\/>/);
+    assert.match(el.innerHTML,/<circle class="ms-track" data-level="ok" cx="30" cy="30" r="25" stroke-width="7"\/><\/svg><span class="ms-big"><b class="ms-big-num" data-roll="r-gemini">0<small>%/);
+    // 02는 다 쓴 계정이 풀리는 때와 그 계정의 주간 사용량.
+    assert.match(el.innerHTML,/<span class="ms-next-rel">36분 뒤<\/span><span class="ms-next-who"><b>out<\/b> Claude · 5시간 한도 · 주간\s51%\s사용/);
     assert.deepEqual(drawn.sort(),['c-higgsfield:is-drawing','r-claude:is-drawing','r-gemini:is-drawing','r-gpt:is-drawing']);
     // 새 스냅숏이 와도 값이 같으면 가만히 있다.
     drawn.length=0;listeners.forEach(cb=>cb(snapshot));assert.deepEqual(drawn,[]);
@@ -112,14 +116,15 @@ test('the glance board shows one row per service and rolls each number only when
     await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
     assert.deepEqual(drawn,[]);
     assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<small>Max<\/small><\/span><span class="ms-acc-sub">[^<]*주간 초기화<\/span>/);
-    assert.match(el.innerHTML,/<span class="ms-acc-val"><b class="ms-num">22%<\/b><small>주간<\/small><\/span>/);
-    assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 풀리면 주간 49% · [^<]+ 주간 초기화<\/span>/);
+    assert.match(el.innerHTML,/<span class="ms-bar" data-state="ok" aria-hidden="true"><i style="width:78%"><\/i><\/span><span class="ms-acc-val"><b class="ms-num">78%<\/b><small>주간 사용<\/small><\/span>/);
+    // 「주간 51% 사용」 한 덩이는 줄바꿈 없는 빈칸으로 붙어 좁은 창에서도 갈라지지 않는다.
+    assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 주간\u00a051%\u00a0사용 · [^<]+ 주간 초기화<\/span>/);
     // 새로 읽은 값이 바뀌면 그 숫자만 다시 굴린다.
     drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},gemini,credit]};listeners.forEach(cb=>cb(snapshot));
     assert.deepEqual(drawn,['r-gpt:is-drawing']);
     // 1분마다 다시 그릴 때는 값이 바뀌어 있어도 굴리지 않는다(저절로 움직이는 효과 없음).
     drawn.length=0;snapshot.rows[2]={...snapshot.rows[2],live:{...gpt.live,weekly:{usedPercent:70,resetsAt:fresh+145*3600e3}}};everyMinute();
-    assert.match(el.innerHTML,/data-roll="r-gpt">30<small>%/);assert.deepEqual(drawn,[]);
+    assert.match(el.innerHTML,/data-roll="r-gpt">70<small>%/);assert.deepEqual(drawn,[]);
     // 움직임 줄이기(기기·SYNK 설정)에서는 숫자도 고리도 그대로 보인다.
     board.setVisible(false);reduced=true;drawn.length=0;board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
     reduced=false;document.documentElement.dataset.motion='reduced';board.setVisible(false);board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
@@ -199,11 +204,11 @@ test('the board asks members to sign in, then starts first-time members from one
   assert.match(el.innerHTML,/<span class="ms-mtool">Codex · <span class="ms-num">0\.163\.0<\/span><\/span>/);
   await click({subs:'install',service:'claude'});
   assert.ok(calls.includes('install:claude'));assert.match(toasts.at(-1),/설치 창을 열었어요/);
-  // 계정이 생긴 뒤 한눈에 보기로 돌아가면 남은 한도가 보인다.
+  // 계정이 생긴 뒤 한눈에 보기로 돌아가면 쓴 한도가 보인다.
   snapshot={...snapshot,rows:[row({live:{readAt:Date.now(),weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
   listeners.forEach(cb=>cb(snapshot));
   await click({subs:'glance'});
-  assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">4<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
+  assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">96<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
@@ -222,13 +227,13 @@ test('the Gemini row shows both quota groups and its guide walks through the con
   board.render(el,{signedIn:true,native:true});
   await tick();
   assert.match(el.innerHTML,/ms-s-gemini/);assert.match(el.innerHTML,/<span class="ms-tag">Gemini<\/span>/);
-  assert.match(el.innerHTML,/data-roll="r-gemini">64<small>%<\/small><\/b><span>주간 남음/);
+  assert.match(el.innerHTML,/data-roll="r-gemini">36<small>%<\/small><\/b><span>주간 사용/);
   await click({subs:'toggle',id:'g-gemini'});
   // 모델 이름이 이미 「모델」로 끝나면 두 번 붙이지 않는다.
-  assert.match(el.innerHTML,/Claude·GPT 모델 100% · 5시간 90% · [^<]*주간 초기화/);
-  // 하나도 안 쓴 한도는 100%로 보이고, 밀리는 초기화 시각을 만들지 않는다.
+  assert.match(el.innerHTML,/Claude·GPT 모델\s0%\s사용 · 5시간\s10%\s사용 · [^<]*주간 초기화/);
+  // 하나도 안 쓴 한도는 0%로 보이고, 밀리는 초기화 시각을 만들지 않는다.
   snapshot={...snapshot,rows:[{...gemini,live:{readAt:Date.now(),weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null},models:[]}}]};listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/data-roll="r-gemini">100<small>%/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤/);assert.doesNotMatch(el.innerHTML,/초기화 시각 없음/);
+  assert.match(el.innerHTML,/data-roll="r-gemini">0<small>%/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤/);assert.doesNotMatch(el.innerHTML,/초기화 시각 없음/);
   snapshot={...snapshot,rows:[gemini]};listeners.forEach(cb=>cb(snapshot));
   // 계정 하나만 되는 Gemini는 머리 단추가 경고처럼 읽히지 않게 「계정 바꾸기」다.
   await click({subs:'manage'});
@@ -350,7 +355,7 @@ test('old values say when they were read and step back in tone, and a running ch
   assert.match(el.innerHTML,/에 읽은 값이에요\(3시간 1분 전\) · 지금과 다를 수 있어요/);
   assert.match(el.innerHTML,/class="member-subs is-stale"/);
   assert.match(el.innerHTML,/class="ms-stale-note">.*에 읽은 값 · <button type="button" class="ms-link" data-subs="check" >지금 확인/);
-  assert.match(el.innerHTML,/<span>주간 남음 · [\d/: ]+<\/span>/);
+  assert.match(el.innerHTML,/<span>주간 사용 · [\d/: ]+<\/span>/);
   // 20분~1시간은 몇 분 전인지만 붙이고 톤은 그대로, 못 읽은 계정이 있으면 그 수만 붙인다.
   const aging=Date.now()-40*60e3;
   snapshot={...snapshot,seq:2,rows:[{...claude,live:{...claude.live,readAt:aging}}],check:{at:aging,total:2,ok:1}};listeners.forEach(cb=>cb(snapshot));
@@ -396,9 +401,21 @@ test('when only nearly used accounts are left the pick says so',async()=>{
   await tick();
   assert.match(el.innerHTML,/<span class="ms-pick-label">남은 건 이것뿐<\/span><span class="ms-pick-name"><span>almost<\/span>/);
   assert.match(el.innerHTML,/3개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 거의 다 씀 · 2개 다 씀<\/span>/);
+  // 99% 쓴 고리는 거의 꽉 찬 노란 고리다(각진 끝이라 틈이 남는다).
+  assert.match(el.innerHTML,/data-roll="r-claude">99<small>%<\/small><\/b><span>주간 사용<\/span>/);
+  assert.match(el.innerHTML,/<circle class="ms-arc" data-level="low" cx="30" cy="30" r="25" stroke-width="7" stroke-linecap="butt" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="1" transform="rotate\(-90 30 30\)"\/>/);
+  // 둥근 끝이 틈을 메워 닫혀 보이는 94%부터 각진 끝이다(93%는 둥근 끝).
+  for (const [used,cap] of [[93,'round'],[94,'butt']]) {
+    const one={ok:true,tools:{},rows:[row({email:'edge@example.com',live:{readAt:now,weekly:{usedPercent:used,resetsAt:now+864e5}}})],settings:{usdKrw:1400},check:{at:now,total:1,ok:1},login:null,checking:false};
+    const b=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>one,onChanged:()=>()=>{}}}}),e=fakeContainer();
+    b.render(e,{signedIn:true,native:true});
+    await tick();
+    assert.match(e.innerHTML,new RegExp(`stroke-linecap="${cap}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100-used}"`));
+    b.dispose();
+  }
   // 막힌 계정은 모두 주간 초기화 때를 보인다: 5시간이 막혔으면 따로, 주간이 막혔으면 풀리는 때가 곧 주간 초기화다.
   await click({subs:'toggle',id:'g-claude'});
-  assert.match(el.innerHTML,/5시간 한도 · <b>[^<]+<\/b>에 풀려요\(1시간 뒤\) · 풀리면 주간 90% · [^<]+ 주간 초기화<\/span>/);
+  assert.match(el.innerHTML,/5시간 한도 · <b>[^<]+<\/b>에 풀려요\(1시간 뒤\) · 주간\s10%\s사용 · [^<]+ 주간 초기화<\/span>/);
   assert.match(el.innerHTML,/주간 한도 · <b>[^<]+<\/b> 주간 초기화에 풀려요\(20시간 뒤\)/);
   board.dispose();
 });

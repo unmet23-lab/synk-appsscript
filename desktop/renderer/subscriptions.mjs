@@ -95,6 +95,8 @@ export function isLow(row) {
 }
 // 남은 %는 내림한다(99.6% 썼으면 0%). 남은 양을 부풀려 보이지 않게.
 export const leftPercent = used => Math.max(0, Math.floor(100 - Number(used) + 1e-6));
+// 화면의 %는 쓴 양이다(10-18 유호님: 다른 AI처럼 꽉 차면 더 못 쓰는 쪽으로). 남은 %와 늘 합이 100이라 올림이 된다(99.6% 썼으면 100%).
+export const usedShown = used => 100 - leftPercent(used);
 
 // 한도 창 두 개(5시간 · 주간). 초기화 시각이 지난 창은 다시 가득 찬 것으로 본다.
 // 「지금 쓸 수 있는 만큼」은 두 창 중 덜 남은 쪽(focus)을 따른다.
@@ -114,7 +116,7 @@ export function limitGauge(row, now) {
   const focus = session && (!weekly || session.left < weekly.left) ? 'session' : 'weekly';
   return { session, weekly, focus, left: (focus === 'session' ? session : weekly).left, resetsAt: (focus === 'session' ? session : weekly).resetsAt };
 }
-// 주의는 「10% 이하 남음」 하나로 숫자·색·점이 같은 기준을 쓴다.
+// 주의는 「10% 이하 남음」(화면에는 90% 이상 씀) 하나로 숫자·색·점이 같은 기준을 쓴다.
 export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ? 'low' : 'ok');
 
 // 공식 출력의 요금제 이름(prolite 등)을 사람이 읽는 이름으로. 남은 %가 같을 때는 큰 요금제를 먼저 추천한다.
@@ -227,6 +229,8 @@ const pair = (krw, usd) => [krw ? money(krw, 'KRW') : '', usd ? money(usd, 'USD'
 // 크레딧: 펼친 줄·관리 화면은 소수 둘째 자리까지, 한눈에 줄은 100 이상이면 소수 없이.
 const credits = (v, round = false) => Number(v).toLocaleString('ko-KR', { maximumFractionDigits: round && Math.abs(v) >= 100 ? 0 : 2 });
 const WINDOW_NAME = { session: '5시간', weekly: '주간' };
+// 「주간 14% 사용」 한 덩이는 좁은 창에서도 갈라지지 않게 붙인다(줄은 덩이 사이 「 · 」에서만 바뀐다).
+const useText = (name, n) => `${name}\u00a0${n}%\u00a0사용`;
 const billWord = d => (d === 0 ? '오늘' : `D-${d}`);
 const modelName = name => (/모델$/.test(name) ? name : `${name} 모델`);
 const shortVersion = v => (v ? String(v).replace(/\s*\(.*\)\s*$/, '').replace(/^(codex-cli|higgsfield)\s+/i, '') : '');
@@ -236,11 +240,12 @@ const arrowBack = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const chevron = '<svg class="ms-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6"/></svg>';
 const moreIcon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>';
 
-// 서비스 줄의 고리(10-17 Bklit 게이지에서 원리만, 10-18 한 겹으로): 추천 계정의 덜 남은 쪽만, 남은 만큼 12시에서 시계 방향으로 찬다.
-// 97% 넘게 남으면 둥근 끝이 맞닿아 닫혀 보여 각진 끝으로, 100%는 이음매 없는 닫힌 원으로 그린다.
+// 서비스 줄의 고리(10-17 Bklit 게이지에서 원리만, 10-18 한 겹으로): 추천 계정의 덜 남은 쪽만, 쓴 만큼 12시에서 시계 방향으로 찬다
+// (10-18 밤 남은 만큼에서 뒤집음 — 꽉 차면 그 창은 다 쓴 것). 고리는 추천 계정(넉넉·거의 다 씀·풀렸을 것)만 그려 다 쓴 원은 오지 않는다.
+// 둥근 끝(반지름 3.5)이 틈 4.5% 안쪽을 메워 닫혀 보이므로 94% 이상 쓰면 각진 끝으로 그린다.
 function ring(w) {
-  const level = gaugeLevel(w), attrs = 'cx="30" cy="30" r="25" stroke-width="7"';
-  const arc = w.left > 0 ? `<circle class="ms-arc" data-level="${level}" ${attrs}${w.left >= 100 ? ' data-full' : ` stroke-linecap="${w.left >= 97 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - w.left}" transform="rotate(-90 30 30)"`}/>` : '';
+  const level = gaugeLevel(w), use = 100 - w.left, attrs = 'cx="30" cy="30" r="25" stroke-width="7"';
+  const arc = use > 0 ? `<circle class="ms-arc" data-level="${level}" ${attrs} stroke-linecap="${use >= 94 ? 'butt' : 'round'}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100 - use}" transform="rotate(-90 30 30)"/>` : '';
   return `<svg class="ms-ring" viewBox="0 0 60 60" aria-hidden="true" focusable="false"><circle class="ms-track" data-level="${level}" ${attrs}/>${arc}</svg>`;
 }
 // 숫자 굴림(WORLD world-motion.mjs의 roll과 같은 문법): 숫자 글자는 그대로 두고(투명), 그 위에 0~9 띠를 굴린다.
@@ -381,7 +386,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
       <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
         <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || 'SYNK FOR YOU / AI SUBSCRIPTIONS')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
-        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>흩어진 AI 구독,<br>이번 주 얼마 남았는지 한 번에.</p></div>
+        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>흩어진 AI 구독,<br>이번 주 얼마나 썼는지 한 번에.</p></div>
         <div class="ms-hero-note"><span class="ms-note">${note}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
@@ -412,7 +417,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   function valueHtml(g, now, stale) {
     const best = g.best, read = stale && best?.row?.live?.readAt ? ` · ${stamp(best.row.live.readAt, now)}` : '', guess = best?.projected ? ' · 예상' : '';
     if (best && g.kind === 'credit' && best.credits !== undefined) return `<span class="ms-gauge ms-value" data-level="${best.state}"><span class="ms-big"><b class="ms-big-num" data-roll="c-${esc(g.key)}">${credits(best.credits, true)}</b><span>크레딧${read}</span></span></span>`;
-    if (best?.g) { const w = best.g[best.focus]; return `<span class="ms-gauge ms-value${best.projected ? ' is-guess' : ''}" data-level="${gaugeLevel(w)}">${ring(w)}<span class="ms-big"><b class="ms-big-num" data-roll="r-${esc(g.key)}">${w.left}<small>%</small></b><span>${WINDOW_NAME[best.focus]} 남음${guess}${read}</span></span></span>`; }
+    if (best?.g) { const w = best.g[best.focus]; return `<span class="ms-gauge ms-value${best.projected ? ' is-guess' : ''}" data-level="${gaugeLevel(w)}">${ring(w)}<span class="ms-big"><b class="ms-big-num" data-roll="r-${esc(g.key)}">${100 - w.left}<small>%</small></b><span>${WINDOW_NAME[best.focus]} 사용${guess}${read}</span></span></span>`; }
     const wait = (big, small) => `<span class="ms-value"><span class="ms-big is-wait"><b>${big}</b><span>${small}</span></span></span>`;
     if (best) return wait('직접 넣음', g.kind === 'credit' ? '잔액을 안 넣었어요' : '한도 숫자 없음');
     const first = g.out[0];
@@ -435,12 +440,12 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
-  // 펼친 줄의 보조 글: 오른쪽 값(덜 남은 창)은 빼고 나머지 창 — 주간, 모델별 주간(Fable 등), 5시간 순 — 과 주간 초기화 때.
+  // 펼친 줄의 보조 글: 오른쪽 값(덜 남은 창)은 빼고 나머지 창 — 주간, 모델별 주간(Fable 등), 5시간 순 — 의 쓴 %와 주간 초기화 때.
   function windowsText(a, now) {
     const { g } = a, parts = [];
-    if (g.weekly && a.focus !== 'weekly') parts.push(`주간 ${g.weekly.left}%`);
-    for (const m of a.row.live?.models || []) if (Number.isFinite(Number(m.usedPercent))) parts.push(`${modelName(m.name)} ${leftPercent(Math.min(100, Math.max(0, Number(m.usedPercent))))}%`);
-    if (g.session && a.focus !== 'session') parts.push(`5시간 ${g.session.left}%`);
+    if (g.weekly && a.focus !== 'weekly') parts.push(useText('주간', 100 - g.weekly.left));
+    for (const m of a.row.live?.models || []) if (Number.isFinite(Number(m.usedPercent))) parts.push(useText(modelName(m.name), usedShown(Math.min(100, Math.max(0, Number(m.usedPercent))))));
+    if (g.session && a.focus !== 'session') parts.push(useText('5시간', 100 - g.session.left));
     if (g.weekly?.resetsAt) parts.push(`${soon(g.weekly.resetsAt, now)} 주간 초기화`);
     return parts.join(' · ');
   }
@@ -449,14 +454,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 계정 이름 옆에 요금제(Max 5x·Max 20x·Pro Lite 등)를 작게 붙여 계정마다 등급이 보이게 한다.
     const tierOf = a => (a.row.source === 'auto' ? planName(a.row.plan) : '');
     const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}${tierOf(a) ? `<small>${esc(tierOf(a))}</small>` : ''}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
-    const value = a => `<span class="ms-acc-val"><b class="ms-num">${a.left}%</b><small>${WINDOW_NAME[a.focus]}</small></span>`;
-    const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${a.left}%"></i></span>`;
+    // 막대·값은 쓴 만큼 찬다(꽉 차면 그 창은 다 씀).
+    const value = a => `<span class="ms-acc-val"><b class="ms-num">${100 - a.left}%</b><small>${WINDOW_NAME[a.focus]} 사용</small></span>`;
+    const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${100 - a.left}%"></i></span>`;
     const usable = g.usable.map(a => credit
       ? line(a, `<span class="ms-acc-sub">${a.state === 'low' ? '크레딧 부족' : ''}</span><span class="ms-acc-val"><b class="ms-num">${credits(a.credits)}</b></span>`)
       : line(a, `<span class="ms-acc-sub">${esc(windowsText(a, now))}</span>${bar(a)}${value(a)}`)).join('');
     const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요${a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>${bar(a)}${value(a)}`)).join('');
     const manual = g.manual.map(a => line(a, `<span class="ms-acc-when">${credit ? '잔액을 넣지 않았어요' : '직접 넣은 주간 구독이에요 · 다 쓰면 「다 씀 표시」를 눌러요'}</span>`, credit ? '' : usedButton(a.row, now))).join('');
-    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · 풀리면 주간 ${a.g.weekly.left}%` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
+    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · ${useText('주간', 100 - a.g.weekly.left)}` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
     // 긴 이유는 두 줄까지만 보이고(전문은 title과 계정 관리 ⋯), 마지막으로 읽은 값의 시각을 붙인다.
     const reason = a => `${a.row.stateMessage || '읽지 못했어요.'}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}`;
     const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
@@ -479,7 +485,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function nextLine(item, now) {
     const label = labelOf(item.row), name = nameOf(item.row);
-    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · 풀리면 주간 ${item.after}%` : ''}`
+    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${useText('주간', 100 - item.after)}` : ''}`
       : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}`;
     const time = item.type === 'bill' ? (item.days === 0 ? '오늘' : item.days === 1 ? '내일' : (d => `${d.getMonth() + 1}/${d.getDate()}`)(new Date(item.t))) : soon(item.t, now);
     const relText = item.type === 'bill' ? billWord(item.days) : after(item.t - now);
