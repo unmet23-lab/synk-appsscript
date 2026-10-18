@@ -1,7 +1,7 @@
 'use strict';
 
 // A persistent same-origin module keeps conversations and drafts alive across tabs.
-const workspaceModule={userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
+const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['social','SNS·마케팅','calendar'],['messenger','메신저','chat']];
 // One application frame for every workspace; only its contextual menu changes.
@@ -154,7 +154,33 @@ function marketingNavigation(){
   return `<nav class="workspace-sections" aria-label="마케팅 메뉴">${workspaceMarketingTabs.map(([id,label])=>`<button type="button" data-action="marketing-section" data-tab="${id}" ${typeof isDemoMode==='function'&&isDemoMode()&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요" ':''}class="${active===id?'active':''}" aria-current="${active===id?'page':'false'}">${label}</button>`).join('')}</nav>`;
 }
 function workspaceHomeActions(){return '';}
-function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p>팀의 대화를 열고 있어요.</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button></div></section>`;}
+function workspaceLoadingText(){return workspaceModule.loadDelayed?'메신저 연결이 늦어지고 있어요.':workspaceModule.loadRetries?'메신저 연결을 다시 시도하고 있어요.':'팀의 대화를 열고 있어요.';}
+function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p role="status">${workspaceLoadingText()}</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button><a class="btn small" data-messenger-standalone href="/messenger/" target="_blank" rel="noopener"${workspaceModule.loadDelayed?'':' hidden'}>메신저만 열기</a></div></section>`;}
+function stopWorkspaceModuleLoading(){clearTimeout(workspaceModule.loadTimer);workspaceModule.loadTimer=null;workspaceModule.loadGeneration++;}
+function canRecoverWorkspaceModule(frame=workspaceModule.frame){return Boolean(state.user&&frame&&workspaceModule.frame===frame&&!workspaceModule.ready&&!workspaceModule.voice?.call&&!document.hidden&&globalThis.navigator?.onLine!==false);}
+function startWorkspaceModuleLoading({immediate=false}={}){
+  stopWorkspaceModuleLoading();workspaceModule.loadDelayed=workspaceModule.loadRetries>=2;
+  const frame=workspaceModule.frame;
+  if(!canRecoverWorkspaceModule(frame))return;
+  const generation=workspaceModule.loadGeneration,current=()=>generation===workspaceModule.loadGeneration&&canRecoverWorkspaceModule(frame);
+  workspaceModule.loadTimer=setTimeout(()=>{
+    if(generation!==workspaceModule.loadGeneration)return;
+    workspaceModule.loadTimer=null;
+    if(!current())return;
+    // Recover a lost one-shot ready message before navigating an initial frame.
+    sendWorkspaceMessage({type:'workspace:ready-check'});
+    workspaceModule.loadTimer=setTimeout(()=>{
+      if(generation!==workspaceModule.loadGeneration)return;
+      workspaceModule.loadTimer=null;
+      if(!current())return;
+      workspaceModule.loadRetries++;frame.src='/messenger/';startWorkspaceModuleLoading();
+      syncWorkspaceLoading();
+    },1000);
+  // Two quick attempts, then one navigation per 30 seconds while visible.
+  // Long outages must recover too, without reloading a ready or active frame.
+  },immediate?0:workspaceModule.loadRetries<2?12000:29000);
+}
+function resumeWorkspaceModuleLoading(){if(canRecoverWorkspaceModule()){startWorkspaceModuleLoading({immediate:true});syncWorkspaceLoading();}}
 function syncWorkspaceLoading(){
   // The persistent frame sits above this slot; keep a stalled document from
   // covering the loading feedback and reconnect button before its ready signal.
@@ -162,13 +188,17 @@ function syncWorkspaceLoading(){
   const slot=document.getElementById('messenger-module-slot');if(!slot)return;
   slot.setAttribute('aria-busy',String(!workspaceModule.ready));
   const loading=slot.querySelector('.messenger-module-loading');
-  if(loading){loading.hidden=workspaceModule.ready;loading.setAttribute('aria-hidden',String(workspaceModule.ready));loading.inert=workspaceModule.ready;}
+  if(loading){
+    loading.hidden=workspaceModule.ready;loading.setAttribute('aria-hidden',String(workspaceModule.ready));loading.inert=workspaceModule.ready;
+    const status=loading.querySelector('[role="status"]');if(status)status.textContent=workspaceLoadingText();
+    const standalone=loading.querySelector('[data-messenger-standalone]');if(standalone)standalone.hidden=!workspaceModule.loadDelayed;
+  }
 }
 function workspaceShareButton(){return !isViewer()&&workspaceViewNames[state.tab]?'<button type="button" class="btn small workspace-share" data-action="share-workspace" aria-label="현재 화면을 대화 초안으로 공유">'+icon('chat')+'<span>대화로 공유</span></button>':'';}
 function resetWorkspaceModule(){
   // Removing the frame ends its document: the messenger stops capture and the SDK on pagehide.
-  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);clearInterval(workspaceModule.voiceTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();document.getElementById('workspace-call')?.remove();
-  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
+  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);stopWorkspaceModuleLoading();clearInterval(workspaceModule.voiceTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();document.getElementById('workspace-call')?.remove();
+  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,loadTimer:null,loadDelayed:false,loadRetries:0,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
 }
 function mountWorkspaceModule(){
   if(!state.user)return resetWorkspaceModule();
@@ -190,7 +220,8 @@ function mountWorkspaceModule(){
     const host=document.createElement('section');host.id='workspace-messenger';host.className='workspace-messenger';host.setAttribute('aria-label','팀 메신저');
     const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.allow='microphone; display-capture; autoplay; fullscreen';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
     host.append(frame);document.body.append(host);workspaceModule.host=host;workspaceModule.frame=frame;
-    frame.addEventListener('load',()=>{syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});});
+    startWorkspaceModuleLoading();
+    frame.addEventListener('load',()=>{if(workspaceModule.frame!==frame)return;syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:ready-check'});sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});});
   }
   workspaceModule.slot=document.getElementById('messenger-module-slot');workspaceModule.observer?.disconnect();
   if(workspaceModule.slot){workspaceModule.observer=new ResizeObserver(syncWorkspaceModuleGeometry);workspaceModule.observer.observe(workspaceModule.slot);}
@@ -204,7 +235,7 @@ function syncWorkspaceModuleGeometry(){
   Object.assign(host.style,{left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${Math.max(160,rect.height)}px`});
 }
 function sendWorkspaceMessage(message){if(workspaceModule.frame?.contentWindow)workspaceModule.frame.contentWindow.postMessage(message,location.origin);}
-function retryWorkspaceModule(){if(workspaceModule.frame){workspaceModule.ready=false;syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
+function retryWorkspaceModule(){if(workspaceModule.voice?.call)return;if(workspaceModule.frame){workspaceModule.ready=false;workspaceModule.loadRetries=0;startWorkspaceModuleLoading();syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
 function openWorkspaceDestination(value){
   const action=typeof safeMarinAction==='function'?safeMarinAction(value):null;if(!action||action.type!=='messenger'||!state.user)return false;
   workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),...(action.channelId?{channelId:action.channelId}:{}),...(action.userId?{userId:action.userId}:{}),...(action.messageId?{messageId:action.messageId}:{}),...(action.fileId?{fileId:action.fileId}:{}),...(action.panel?{panel:action.panel}:{})};
@@ -312,8 +343,8 @@ window.addEventListener('message',event=>{
     return;
   }
   if(type==='messenger:navigate'){void navigateWorkspaceLink(event.data.url).catch(error=>notify(error.message));return;}
-  if(type==='messenger:voice'){workspaceModule.voice=event.data.voice&&typeof event.data.voice==='object'?event.data.voice:null;renderWorkspaceCall();return;}
-  if(type==='messenger:ready'){workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
+  if(type==='messenger:voice'){const hadCall=Boolean(workspaceModule.voice?.call);workspaceModule.voice=event.data.voice&&typeof event.data.voice==='object'?event.data.voice:null;if(workspaceModule.voice?.call)stopWorkspaceModuleLoading();else if(hadCall)resumeWorkspaceModuleLoading();renderWorkspaceCall();return;}
+  if(type==='messenger:ready'){stopWorkspaceModuleLoading();workspaceModule.loadDelayed=false;workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
   if(type==='messenger:open-received'){if(event.data.requestId===workspaceModule.open?.requestId)workspaceModule.open=null;return;}
   if(type==='messenger:share-received'){if(event.data.requestId===workspaceModule.share?.requestId)workspaceModule.share=null;return;}
   if(type==='messenger:unread'){clearTimeout(workspaceModule.unreadTimer);workspaceModule.unreadTimer=setTimeout(()=>void refreshWorkspaceSummary(),400);return;}
@@ -335,7 +366,11 @@ globalThis.navigator?.serviceWorker?.addEventListener('message',event=>{
   })().catch(()=>{});
 });
 window.addEventListener('scroll',syncWorkspaceModuleGeometry,{passive:true});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user)void refreshWorkspaceSummary();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWorkspaceModuleLoading();else{resumeWorkspaceModuleLoading();if(state.user)void refreshWorkspaceSummary();}});
+window.addEventListener('online',resumeWorkspaceModuleLoading);
+window.addEventListener('offline',stopWorkspaceModuleLoading);
+window.addEventListener('pagehide',stopWorkspaceModuleLoading);
+window.addEventListener('pageshow',event=>{if(event.persisted)resumeWorkspaceModuleLoading();});
 
 const workspaceOverlayObserver=new MutationObserver(()=>{if(workspaceModule.host)workspaceModule.host.inert=state.tab!=='messenger'||workspaceSidebarBlocksContent()||Boolean(document.getElementById('overlay')?.children.length);});
 if(document.getElementById('overlay'))workspaceOverlayObserver.observe(document.getElementById('overlay'),{childList:true});

@@ -314,7 +314,7 @@ All six features use the existing SQLite DB with guarded schema additions. Notif
 1. 브라우저의 보안 컨텍스트·인코딩 변환/E2EE worker 지원을 확인하고 사용자의 참가/수락 동작으로 위 `client` 계약을 보낸다. 지원하지 않으면 통화를 멈추고 안내한다.
 2. `token:null`이면 본인 key API를 호출한다. `pausing` 중에는 로컬 발행을 중단하되 기존 신호 연결은 유지하고, 키 API가 준비될 때까지 현재 상태를 다시 확인한다. 기존 미디어가 남아 있으면 서버는 새 키를 주지 않는다.
 3. 현재 키를 받으면 기존 SDK Room·로컬 트랙·E2EE worker·이전 키 참조를 폐기하고 새 `ExternalE2EEKeyProvider`, E2EE worker와 SDK Room을 만든다. 최신 공식 가이드의 `RoomOptions.encryption`에 keyProvider/worker를 넣고 `await keyProvider.setKey(key)`, `await room.setE2EEEnabled(true)`를 마친 뒤 ACK한다. 평문 SDK Room·이전 worker·이전 키로 자동 폴백하지 않는다.
-4. ACK 응답이 아직 `token:null`이면 다른 참가자의 준비를 기다린다. `type:'voice'` SSE와 상태를 확인하고, 모두 준비되면 같은 참가의 `resume`으로 토큰을 받아 새 SDK Room에 연결한다. 마지막 ACK는 바로 토큰을 받을 수 있다. 기존25초 heartbeat·나가기·최대 수명/방 권한 계약은 계속 적용한다.
+4. ACK 응답이 아직 `token:null`이면 다른 참가자의 준비 또는 이전 토큰 철회 시각 경계를 기다린다. `type:'voice'` SSE와 상태를 확인하고, 모두 준비되면 같은 참가의 `resume`으로 토큰을 받아 새 SDK Room에 연결한다. `encryption.ready:true`여도 철회 시각 경계 전에는 `token:null`일 수 있으므로 잠시 뒤 같은 참가를 resume한다. 마지막 ACK도 이 경계를 지킨다. 기존25초 heartbeat·나가기·최대 수명/방 권한 계약은 계속 적용한다.
 5. 참가자 추가/퇴장/권한 회수로 epoch가 달라지면 같은 절차를 다시 한다. 교체를 위해 통화가 잠시 중단될 수 있고 진행 중인 화면 공유는 종료된다. 화면 재캡처는 사용자 동작으로 다시 시작한다. 같은 로그인에서의 SDK 재접속 자체는 참가자를 추가하거나 epoch를 바꾸지 않는다.
 
 공개 통화 상태/본인 `current`·`admission`의 `encryption`은 `{required,protocol,mode:'application-managed-shared-key',applicationServerTrusted:true,status:'pausing'|'awaiting_acks'|'ready',epoch,keyIndex:0,ready,pendingParticipants,mediaVerified:false,metadataEncrypted:false,sdkRoomResetRequired:true}`다. 키·challenge·proof는 이 상태와 bootstrap·SSE·알림·DB·로그·LiveKit 토큰/메타데이터에 넣지 않는다.

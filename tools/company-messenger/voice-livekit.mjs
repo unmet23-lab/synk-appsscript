@@ -1,6 +1,8 @@
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 import { voiceLimits } from './voice-usage.mjs';
 
+const PARTICIPANT_ABSENT = Symbol('livekit-participant-absent');
+
 function unavailable() {
   return Object.assign(new Error('통화 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.'), { status: 503, code: 'VOICE_PROVIDER_UNAVAILABLE', publicMessage: '통화 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
 }
@@ -58,19 +60,20 @@ export function createLiveKitVoiceProvider({ url, apiKey, apiSecret, fetch: fetc
     const input = `${header}.${body}`;
     return `${input}.${createHmac('sha256', apiSecret).update(input).digest('base64url')}`;
   }
-  async function control(method, body, video, read = false) {
+  async function control(method, body, video, read = false, allowAbsentParticipant = false) {
     try {
       const response = await fetcher(`${controlOrigin}/twirp/livekit.RoomService/${method}`, {
         method: 'POST', redirect: 'error', signal: AbortSignal.timeout(4000),
         headers: { Authorization: `Bearer ${jwt({ video })}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!read) { await response.body?.cancel(); if (!response.ok) throw unavailable(); return; }
+      if (!read && !(allowAbsentParticipant && response.status === 404)) { await response.body?.cancel(); if (!response.ok) throw unavailable(); return; }
       const chunks = []; let bytes = 0;
       for await (const chunk of response.body || []) {
         bytes += chunk.length; if (bytes > 262144) throw unavailable(); chunks.push(chunk);
       }
       const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      if (allowAbsentParticipant && method === 'UpdateParticipant' && response.status === 404 && data.code === 'not_found') return PARTICIPANT_ABSENT;
       if (method === 'ListParticipants' && response.status === 404 && data.code === 'not_found') return { participants: [] };
       if (!response.ok || !data || typeof data !== 'object' || Array.isArray(data)) throw unavailable();
       return data;
@@ -87,7 +90,14 @@ export function createLiveKitVoiceProvider({ url, apiKey, apiSecret, fetch: fetc
     },
     async updatePermissions(room, identity, permissions) {
       const grants = mediaGrants(permissions);
-      await control('UpdateParticipant', { room, identity, permission: { can_subscribe: grants.canSubscribe, can_publish: grants.canPublish, can_publish_data: false, can_publish_sources: grants.sources, can_update_metadata: false } }, { roomAdmin: true, room });
+      const result = await control('UpdateParticipant', { room, identity, permission: { can_subscribe: grants.canSubscribe, can_publish: grants.canPublish, can_publish_data: false, can_publish_sources: grants.sources, can_update_metadata: false } }, { roomAdmin: true, room }, false, permissions.paused === true);
+      if (result === PARTICIPANT_ABSENT) {
+        // A missing transport may still hold a usable JWT. Revoke it explicitly
+        // and keep replacement JWTs past the whole-second revocation boundary.
+        const cutoff = Math.floor(now() / 1000) + 1;
+        await control('RemoveParticipant', { room, identity, revoke_token_ts: cutoff }, { roomAdmin: true, room });
+        return { tokenNotBeforeMs: (cutoff + 1) * 1000 };
+      }
     },
     verifyWebhook(raw, authorization) { return verifyLiveKitWebhook(raw, authorization, { apiKey, apiSecret, now }); },
     async listParticipants(room) {

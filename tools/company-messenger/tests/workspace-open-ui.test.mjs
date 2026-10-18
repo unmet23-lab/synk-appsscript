@@ -33,3 +33,22 @@ test('personal shortcuts open assigned tasks and saved messages even after using
  await f.message({requestId:'tasks',panel:'tasks'});assert.equal(f.state.taskScope,'mine');assert.equal(f.state.taskFilter,'all');
  await f.message({requestId:'saved',panel:'saved'});assert.equal(f.state.savedView,'saved');assert.deepEqual(f.calls.filter(row=>row[0]==='panel').map(row=>Array.from(row)),[['panel','workday'],['panel','saved']]);
 });
+
+test('the embedded shell and realtime connection start before an initial history request settles',async()=>{
+ const f=fixture();let finish;f.context.historyRequest=new Promise(resolve=>{finish=resolve;});
+ f.context.document.body={classList:{toggle(){}}};
+ f.run("resetTransfers=()=>{};resetWorkNotificationState=()=>{};setWorkNotificationStatus=()=>{};renderShell=()=>calls.push(['shell']);voiceController=()=>null;selectChannel=()=>historyRequest;connectEvents=()=>calls.push(['events']);enterWorkspace({user:{id:'u1'},channels:[{id:'c1'}],members:[]})");
+ assert.ok(f.calls.some(row=>row[0]==='shell'));assert.ok(f.calls.some(row=>row[0]==='parent'&&row[1]==='messenger:ready'));
+ assert.equal(f.calls.filter(row=>row[0]==='events').length,1);
+ finish();await new Promise(resolve=>setImmediate(resolve));assert.equal(f.calls.filter(row=>row[0]==='events').length,1);
+});
+
+test('only the authenticated parent can repeat a ready handshake after the UI has been rendered',async()=>{
+ const f=fixture(),data={type:'workspace:ready-check'};
+ await f.listeners.message({origin:'http://localhost',source:f.parent,data});assert.equal(f.calls.length,0);
+ f.run('moduleReady=true');
+ await f.listeners.message({origin:'http://outside',source:f.parent,data});
+ await f.listeners.message({origin:'http://localhost',source:{},data});assert.equal(f.calls.length,0);
+ await f.listeners.message({origin:'http://localhost',source:f.parent,data});
+ assert.deepEqual(f.calls.map(row=>Array.from(row)),[['parent','messenger:ready',undefined]]);
+});

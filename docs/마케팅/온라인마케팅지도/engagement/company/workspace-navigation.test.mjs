@@ -8,15 +8,92 @@ const teamOverviewSource=readFileSync(new URL('./public/team-overview.js',import
 const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8');
 function fixture(role='admin'){
-  const resizeHandlers=[],state={user:{id:'tester',role},tab:'overview',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0},cp={view:'library'},location=new URL('http://localhost:4191/');
+  const resizeHandlers=[],messageHandlers=[],windowHandlers=new Map(),documentHandlers=new Map(),state={user:{id:'tester',role},tab:'overview',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0},cp={view:'library'},location=new URL('http://localhost:4191/');
   const context=vm.createContext({state,cp,location,URL,URLSearchParams,
     canManageTeam:()=>['admin','manager'].includes(state.user?.role),isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',
-    window:{addEventListener(type,handler){if(type==='resize')resizeHandlers.push(handler);},scrollTo(){}},document:{addEventListener(){},getElementById(){return null;}},
+    window:{addEventListener(type,handler){if(type==='resize')resizeHandlers.push(handler);if(type==='message')messageHandlers.push(handler);windowHandlers.set(type,[...(windowHandlers.get(type)||[]),handler]);},scrollTo(){}},document:{hidden:false,addEventListener(type,handler){documentHandlers.set(type,[...(documentHandlers.get(type)||[]),handler]);},getElementById(){return null;}},
     MutationObserver:class{observe(){}},history:{replaceState(_a,_b,value){location.href=new URL(value,location).href;}},
     crypto:{randomUUID:()=> 'test-share'},render(){},icon:()=>'',
   });
-  vm.runInContext(source+'\n'+demoSource,context);return{state,cp,location,context,run:s=>vm.runInContext(s,context),resize(){for(const handler of resizeHandlers)handler();}};
+  vm.runInContext(source+'\n'+demoSource,context);return{state,cp,location,context,run:s=>vm.runInContext(s,context),resize(){for(const handler of resizeHandlers)handler();},message:event=>Promise.all(messageHandlers.map(handler=>handler(event))),windowEvent:(type,event={})=>Promise.all((windowHandlers.get(type)||[]).map(handler=>handler(event))),documentEvent:(type,event={})=>Promise.all((documentHandlers.get(type)||[]).map(handler=>handler(event)))};
 }
+
+test('an initial stalled messenger keeps recovering after the first two attempts and clears recovery after ready/logout',async()=>{
+  const f=fixture(),timers=new Map(),status={textContent:''},standalone={hidden:true},host={style:{},remove(){this.removed=true;}},posts=[],frame={contentWindow:{postMessage:message=>posts.push(message)}};let sequence=0,navigations=0;
+  Object.defineProperty(frame,'src',{get:()=>'/messenger/',set:value=>{assert.equal(value,'/messenger/');navigations++;}});
+  const loading={hidden:false,setAttribute(){},querySelector:selector=>selector==='[role="status"]'?status:standalone},slot={setAttribute(){},querySelector:()=>loading};
+  const delays=[];
+  Object.assign(f.context,{setTimeout(callback,ms){assert.ok([12000,29000,1000].includes(ms));delays.push(ms);timers.set(++sequence,callback);return sequence;},clearTimeout:id=>timers.delete(id),clearInterval(){},host,frame});
+  const tick=()=>{const next=timers.keys().next().value,callback=timers.get(next);timers.delete(next);callback();};
+  f.context.document.getElementById=id=>id==='messenger-module-slot'?slot:null;
+  f.run('workspaceModule.host=host;workspaceModule.frame=frame;startWorkspaceModuleLoading();syncWorkspaceLoading()');
+  assert.equal(standalone.hidden,true);assert.equal(host.style.visibility,'hidden');
+  tick();assert.equal(posts.at(-1).type,'workspace:ready-check');assert.equal(navigations,0);
+  tick();assert.equal(navigations,1);assert.match(status.textContent,/다시 시도/);assert.equal(standalone.hidden,true);
+  tick();tick();assert.equal(navigations,2);
+  tick();tick();assert.equal(navigations,3);assert.equal(timers.size,1);assert.equal(standalone.hidden,false);assert.match(status.textContent,/늦어지고/);
+  for(let attempt=0;attempt<4;attempt++){tick();tick();}
+  assert.equal(navigations,7);assert.equal(timers.size,1);assert.deepEqual(delays.slice(0,4),[12000,1000,12000,1000]);assert.ok(delays.slice(4).every(delay=>delay===29000||delay===1000));
+  await f.message({origin:f.location.origin,source:frame.contentWindow,data:{type:'messenger:ready'}});
+  assert.equal(host.style.visibility,'');assert.equal(loading.hidden,true);assert.equal(standalone.hidden,true);assert.equal(f.run('workspaceModule.frame'),frame);
+  f.run('retryWorkspaceModule()');assert.equal(frame.src,'/messenger/');assert.equal(loading.hidden,false);assert.equal(standalone.hidden,true);
+  await f.message({origin:f.location.origin,source:frame.contentWindow,data:{type:'messenger:ready'}});assert.equal(timers.has(sequence),false);
+  f.run('retryWorkspaceModule()');
+  const stale=timers.get(sequence);f.run('resetWorkspaceModule()');assert.equal(host.removed,true);assert.equal(timers.has(sequence),false);
+  stale();assert.equal(f.run('workspaceModule.loadDelayed'),false);
+});
+
+test('a repeated ready handshake and an active call both prevent initial recovery from navigating the frame',async()=>{
+  for(const activeCall of [false,true]){
+    const f=fixture(),timers=new Map(),frame={contentWindow:{postMessage(){}}};let sequence=0;
+    Object.assign(f.context,{setTimeout:callback=>{timers.set(++sequence,callback);return sequence;},clearTimeout:id=>timers.delete(id),clearInterval(){},frame});
+    const tick=()=>{const id=timers.keys().next().value,callback=timers.get(id);timers.delete(id);callback();};
+    f.run('workspaceModule.frame=frame;startWorkspaceModuleLoading()');tick();
+    if(activeCall){f.run("workspaceModule.voice={call:{phase:'connected'}}");tick();}
+    else{await f.message({origin:f.location.origin,source:frame.contentWindow,data:{type:'messenger:ready'}});assert.equal(timers.size,0);}
+    assert.equal(frame.src,undefined);assert.equal(f.run('workspaceModule.loadRetries'),0);
+  }
+});
+
+function initialLoadFixture(){
+  const f=fixture(),timers=new Map(),posts=[],frame={contentWindow:{postMessage:message=>posts.push(message)}};let sequence=0,navigations=0;
+  Object.defineProperty(frame,'src',{get:()=>'/messenger/',set:value=>{assert.equal(value,'/messenger/');navigations++;}});
+  Object.assign(f.context,{setTimeout(callback,ms){timers.set(++sequence,{callback,ms});return sequence;},clearTimeout:id=>timers.delete(id),clearInterval(){},frame});
+  f.run('workspaceModule.frame=frame;refreshWorkspaceSummary=async()=>{};renderWorkspaceCall=()=>{}');
+  return Object.assign(f,{timers,posts,frame,navigations:()=>navigations,tick(){assert.equal(timers.size,1,'one recovery timer must remain');const id=timers.keys().next().value,item=timers.get(id);timers.delete(id);item.callback();return item.ms;}});
+}
+
+test('hidden and offline documents pause initial recovery and resume with a ready handshake without a button',async()=>{
+  const f=initialLoadFixture();f.context.navigator={onLine:true};f.context.document.hidden=true;
+  f.run('startWorkspaceModuleLoading()');assert.equal(f.timers.size,0);assert.equal(f.navigations(),0);
+  f.context.document.hidden=false;await f.documentEvent('visibilitychange');assert.equal(f.tick(),0);assert.equal(f.posts.at(-1).type,'workspace:ready-check');
+  const stale=f.timers.values().next().value.callback;
+  f.context.document.hidden=true;await f.documentEvent('visibilitychange');assert.equal(f.timers.size,0);stale();assert.equal(f.navigations(),0);
+  f.context.navigator.onLine=false;f.context.document.hidden=false;await f.documentEvent('visibilitychange');assert.equal(f.timers.size,0);
+  f.context.navigator.onLine=true;await f.windowEvent('online');const resumedTimer=f.run('workspaceModule.loadTimer');stale();assert.equal(f.run('workspaceModule.loadTimer'),resumedTimer);assert.equal(f.navigations(),0);assert.equal(f.tick(),0);assert.equal(f.tick(),1000);assert.equal(f.navigations(),1);
+  f.context.navigator.onLine=false;await f.windowEvent('offline');assert.equal(f.timers.size,0);
+  f.context.navigator.onLine=true;await f.windowEvent('online');assert.equal(f.tick(),0);
+  await f.message({origin:f.location.origin,source:f.frame.contentWindow,data:{type:'messenger:ready'}});assert.equal(f.timers.size,0);
+  await f.windowEvent('online');await f.documentEvent('visibilitychange');assert.equal(f.timers.size,0);assert.equal(f.navigations(),1);
+});
+
+test('active calls and logout cancel initial recovery even when a timeout callback was already queued',async()=>{
+  const f=initialLoadFixture();f.run('startWorkspaceModuleLoading()');f.tick();const stale=f.timers.values().next().value.callback;
+  await f.message({origin:f.location.origin,source:f.frame.contentWindow,data:{type:'messenger:voice',voice:{call:{phase:'connected'}}}});
+  assert.equal(f.timers.size,0);stale();assert.equal(f.navigations(),0);
+  await f.windowEvent('online');await f.documentEvent('visibilitychange');assert.equal(f.timers.size,0);
+  await f.message({origin:f.location.origin,source:f.frame.contentWindow,data:{type:'messenger:voice',voice:null}});
+  assert.equal(f.tick(),0);assert.equal(f.tick(),1000);assert.equal(f.navigations(),1);
+  const loggedOut=f.timers.values().next().value.callback;f.state.user=null;f.run('resetWorkspaceModule()');assert.equal(f.timers.size,0);
+  loggedOut();await f.windowEvent('online');await f.documentEvent('visibilitychange');assert.equal(f.navigations(),1);assert.equal(f.timers.size,0);
+});
+
+test('page lifecycle clears recovery work and resumes only an unfinished initial document',async()=>{
+  const f=initialLoadFixture();f.run('startWorkspaceModuleLoading()');await f.windowEvent('pagehide');assert.equal(f.timers.size,0);
+  await f.windowEvent('pageshow',{persisted:true});assert.equal(f.tick(),0);assert.equal(f.tick(),1000);assert.equal(f.navigations(),1);
+  await f.message({origin:f.location.origin,source:f.frame.contentWindow,data:{type:'messenger:ready'}});
+  await f.windowEvent('pagehide');await f.windowEvent('pageshow',{persisted:true});assert.equal(f.timers.size,0);assert.equal(f.navigations(),1);
+});
 
 function withWorkroom(f){
   const storage=new Map();
