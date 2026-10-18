@@ -177,6 +177,13 @@
 - 고침: 검사 경로 실재·명시적 TAP 전체 통과·skip/todo 0·변경줄의 V8 함수/분기 실행을 확인한다. 하위 환경에서 계정·API 키·상위 test context를 제외한다. JSON 등 별도 검증 방법이 없는 형식은 파싱만으로 자동 반영하지 않는다. 새 계약 `changed_lines_v1` 이전의 성공 캐시는 재사용하지 않는다.
 - 다시 확인: `tests/hermes-synk-validation.test.cjs`의 실제 실패·무관한 시험·미호출 함수/분기·여러 프로세스 실행 합산·시험 중 후보 변경·재시작 캐시 시험.
 
+### Claude 결과의 `subtype: success`만으로 성공을 판정하면 안 된다
+
+- 증상: 10-18 19:40 Hermes의 실제 Claude 시험 `synk-b4cde9c4b442`에서 JSON은 `type: result`, `subtype: success`지만 `is_error: true`와 주간 한도 문구를 반환했고 프로세스는 코드 1로 종료됐다.
+- 원인: 결과 이벤트의 subtype과 실제 오류·사용량 한도 판정이 별개다. 설정 `opus / xhigh`는 유지됐어도 `modelUsage`가 비어 있으면 실제 모델 호출을 증명하지 못한다.
+- 고침: 기존 결과 parser의 종료 코드·`is_error`·한도 문구 판정을 그대로 사용해 `NATIVE_QUOTA_LIMITED`로 보류했다. 계정·모델·API 경로를 바꾸거나 실패 영수증을 성공으로 고치지 않는다. 초기화 문구 `resets 12pm (Asia/Seoul)`에 없는 날짜는 추측하지 않는다.
+- 다시 확인: `.tmp/hermes-claude-20261018/`와 해당 작업의 `native.stdout.jsonl`·`finalization.json`·`delivery.json`. 19:41:27 Telegram API 수신은 휴대폰 열람 증거가 아니며 실제 완주는 한도 해제 뒤 새 요청으로 확인한다.
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
