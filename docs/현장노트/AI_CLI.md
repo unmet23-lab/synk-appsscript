@@ -2,7 +2,7 @@
 
 > 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
 > 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302)
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -11,8 +11,14 @@
 ### 몽골어 검문이 Gemini 무료 API의 429로 막힌다
 - 증상: 10-14 LAB TOPIK 몽골어판 검문이 무료 API 몫(gemini-3.8-flash 하루 20회)에 두 번 막혔다. 몫은 09:00 KST에 풀렸지만 풀리자마자 다른 쪽에서 다 썼다.
 - 원인: 무료 몫이 하루 20회뿐이라 다른 쪽이 먼저 쓰면 바로 바닥난다. 누가 썼는지는 확인하지 못했다.
-- 고침: `node tools/몽골어대조.js --파일 <파일> --구독`을 쓴다. Google AI 구독(agy, `tools/lib/제미나이구독호출.js`)으로 같은 모델을 부르고, API 키나 결제는 쓰지 않는다. 유료(`--돈 --유료-api`)는 어림값을 알리고 승인을 받은 뒤에만 쓴다.
-- 다시 확인: `rg -n "'--구독'" tools/몽골어대조.js`(10-17 74행).
+- 고침: 10-17부터는 저절로 넘어간다. 무료 문이 429(몫 상한)를 내면 `tools/lib/제미나이호출.js`의 구독대체가 같은 모델·사고 수준으로 Google AI 구독(agy, `tools/lib/제미나이구독호출.js`, 지금 Ultra 계정)을 한 번 부른다. 하루 몫이면 재시도 없이 바로, 분당 몫이면 5·15초 재시도 뒤 넘긴다. 장부 `문`은 `글→구독`, 화면은 「무료 몫 상한 → 구독 문으로 넘김」. 처음부터 구독으로 가려면 `--구독`, 넘기지 않으려면 `--대체없음`. 대량 도구(검수표검문·몽골어출구 `--태우기`·검문커버리지)는 기본이 `--대체없음`이고 `--구독대체`를 줘야 넘긴다. CI·끄기 변수 `SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK=1`·유료 「돈」 문에서는 넘기지 않는다. 유료(`--돈 --유료-api`)는 어림값을 알리고 승인을 받은 뒤에만 쓴다.
+- 다시 확인: `node --test tests/제미나이구독대체.test.js`(10-17 6/6). 실제 넘김은 429를 흉내 낸 호출로 확인했다(10-17 agy 77yuhbs · gemini-3.8-flash-high · 40초).
+
+### 새 노트북에 Gemini 무료 키 파일이 없다
+- 증상: `node evals/돌리기.js --자체점검`의 문 프로브가 「키없음 — 글 API 키 파일이 없다: C:/Users/q1212/SYNK_보안/제미나이_무료.txt」로 멈춘다(10-17).
+- 원인: 노트북을 옮길 때 `SYNK_보안`에 무료 키 파일이 따라오지 않았다(10-17에는 타입캐스트·클로드 키만 있었다).
+- 고침: 옛 노트북 백업이나 AI Studio에서 무료 키를 다시 받아 그 경로에 둔다. 그 전까지 몽골어 검문은 `--구독`으로 돌린다(키가 없으면 무료 문을 부르기 전에 멈추므로 자동 넘김도 일어나지 않는다).
+- 다시 확인: `ls ~/SYNK_보안/` 에 `제미나이_무료.txt`.
 
 ### agy가 어느 계정으로 도는지 설정 파일 표시가 틀린다
 - 증상: `~/.gemini/google_accounts.json`에 적힌 계정과 agy가 실제로 쓰는 계정이 다르다(10-17).
@@ -37,6 +43,20 @@
 - 원인: `tools/몽골어대조.js`는 기계 검문 통과면 0, 실패면 1, 나머지는 모두 2로 끝난다. 뜻 대조가 돌지 않았으면 「뜻 검토 대기」로 남아 2가 된다.
 - 고침: 판정은 「■ 종합」 사유 줄로 한다. 뜻은 원문과 역번역 한국어를 줄마다 직접 견준다. 맞춤법 층은 해시태그 붙여쓰기(`#солонгосхэл`)와 한국 이름(`Минсү`)을 늘 의심으로 낸다. 이런 것은 오타가 아니라고 보고하고, 게시 여부는 유호님께 묻는다.
 - 다시 확인: `rg -n "exitCode = " tools/몽골어대조.js`(10-17 497행 `실패 ? 1 : (통과 ? 0 : 2)`).
+
+## Claude API
+
+### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
+- 증상: Max 20x 월 API 크레딧($200)이 있다고 보고 새 키(`synk-local-tools`)로 블라인드 비교·교원 검수 사전 점검을 돌렸는데, 약 $2.6을 쓴 뒤 「Your credit balance is too low」가 났다(10-17).
+- 원인: 그 키의 조직(unmet23 Console의 「양유호's Individual Org」, `anthropic-organization-id` f6ddc1be…)에는 크레딧이 없었고(Promotional credits 칸 없음), 8~9월에 산 작은 충전 잔액이 먼저 나갔다. 동시 요청 4개가 돌던 중이라 잔액을 넘겨 **미납 -$1.31**이 됐고 API가 막혔다(충전 전까지 같은 조직의 talk 운영·리허설 키도 멈춘다). 크레딧은 claude.ai 설정 → 결제의 「API 크레딧」에서 연결한 조직 하나에만 들어오고, 새 구독은 7일 뒤부터 받을 수 있다. 그날 Chrome의 claude.ai는 77yuhbs(Max 5x, 10-17 결제)였고 결제 화면에 API 크레딧 칸이 아직 없었다.
+- 고침: 큰 작업 전에 Console 결제 화면의 Promotional credits와 조직 이름을 먼저 본다. 응답 머리 `anthropic-organization-id`로 키의 조직을 확인할 수 있다(키 값은 출력하지 않는다). 크레딧이 없으면 연결한 조직에서 키를 새로 만들거나 연결 조직을 고친다(직접 못 바꾸면 고객지원).
+- 다시 확인: 키 하나로 `claude-haiku-5-5` 16토큰 요청 — 크레딧이 있으면 200, 없으면 400 「credit balance is too low」(청구 없음).
+
+### 구독에 로그인된 PC에서 `claude -p`에 API 키를 줘도 구독으로 청구된다
+- 증상: 10-18 예약 작업을 크레딧으로 옮기려고 `ANTHROPIC_API_KEY`(또는 `apiKeyHelper`)를 주고 `claude -p`를 돌렸는데 구독 주간 한도 문구(「weekly limit」)가 나왔다. 키가 아니라 구독 로그인으로 돈 것이다. `--bare`를 붙이면 키로만 인증되지만, 도구가 Bash·Edit·PowerShell·Read 넷으로 줄고 `--tools default`로도 늘지 않는다(Claude Code 2.1.302).
+- 원인: 구독 로그인이 든 설정 폴더(`~/.claude`)에서는 CLI가 로그인을 키보다 먼저 쓴다. `--bare`는 설정·로그인을 아예 읽지 않는 최소 모드라 도구도 최소다.
+- 고침: 크레딧으로 돌 때는 구독 로그인이 없는 전용 설정 폴더를 `CLAUDE_CONFIG_DIR`로 주고 키를 함께 넣는다. `tools/크레딧실행.js`가 이렇게 띄운다. 폴더는 `%LOCALAPPDATA%\synk-claude-credit`이고, 유호님 설정에서는 `autoMode`·`permissions`만 옮긴다. 도구는 그대로고 인증은 키뿐이다. 그 폴더에서는 훅·플러그인·자동 메모를 읽지 않고, 세션 기록도 그 폴더에 쌓인다.
+- 다시 확인: `--output-format stream-json --verbose` 시작 줄의 `apiKeySource`가 `ANTHROPIC_API_KEY`인지 본다. 실행기는 다른 값이면 경고를 남긴다. 일부러 틀린 키로 돌리면 「Invalid API key」로 바로 끝나서 청구 없이 확인된다(10-18: permissionMode auto · 도구 30개 · 비용 0). 크레딧이 없는 조직의 키면 「Credit balance is too low」가 나온다.
 
 ## Hermes(텔레그램 팁 봇)
 
