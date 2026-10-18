@@ -113,6 +113,18 @@
       "새컷": "10-18 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장(생성 21번)"
     },
     "학습설정": "C:/SYNK-LoRA/validation/F04_jiyu/job_config_v2.json",
-    "학습": "아직(10-18 16:50 GPU를 다른 세션이 사용 중이라 대기)"
+    "학습": "2026-10-18 17:59~23:03, 33장, 3,300스텝(22시대 30분은 노트북이 배터리로 돌아 GPU 60W 제한, 스텝당 약 27초)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f04",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f04_jiyu_v2/f04_jiyu_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f04_jiyu_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f04, a young Korean woman, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-18, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 지유로 보인다. 약한 칸: V02 노을 역광(눈이 크게 떠지고 입술이 누드 핑크), V05 아래에서 한낮·V07 파란 해 질 녘(조금 성숙)",
+      "검증표": "C:/SYNK-LoRA/validation/F04_jiyu/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F04_jiyu/verify_v2_jobs.json",
+      "주의": "역광·형광등·무표정 컷에서 눈이 기준의 속쌍꺼풀보다 크게 떠진다. 노을·한낮 햇빛은 약하게 나오니 지시문에서 빛을 세게 쓰고, 역광 컷에는 coral red lips를 따로 적는다"
+    }
   }
 }

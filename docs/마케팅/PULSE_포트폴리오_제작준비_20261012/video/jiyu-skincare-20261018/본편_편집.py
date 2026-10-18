@@ -6,7 +6,7 @@
 #   사람·솜 컷: 영상_H3/업/<컷>/*.png(영상_다듬기.py, 1080×1920) → 영상_H3/구간/<컷>.mp4(756×1344을 키움) → 키프레임 정지 그림
 #   병 컷: 블렌더/최종/<컷>_*.png → 블렌더/중간/<컷>_*.png
 # 엔드카드: 블렌더 팩샷 + 글자(14.0초 타격, 가편집과 같은 겹). 훅 B·C는 첫 2초에 얹는 글자를 넣는다(브리프 3절 훅 표).
-# 소리: 음악(음악_15초.py) + 내레이션 세 줄 + 효과음(효과음/목록.json이 있으면). 끝에 -14 LUFS로 맞추고 봉우리를 누른다.
+# 소리: 음악(음악_15초.py) + 내레이션 세 줄 + 효과음(효과음_목록.json). 끝에 -14 LUFS로 맞추고 봉우리를 누른다.
 # 색 맞춤·입자는 후반 한 번(브리프 1절 질감): 아주 옅은 시간 입자만 넣는다.
 import glob
 import json
@@ -31,7 +31,7 @@ BLF = os.path.join(V, "블렌더", "최종")
 BLM = os.path.join(V, "블렌더", "중간")
 OUT = os.path.join(V, "편집")
 MUSIC = os.path.join(V, "음악", "지유_음악_15초_A1.wav")
-SFX = os.path.join(V, "효과음", "목록.json")
+SFX = os.path.join(HERE, "효과음_목록.json")  # 배치표는 저장소, 소리 파일은 synk-vendor/…/효과음/
 W, H, FPS = 1080, 1920, 24
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", ".."))
 SUIT_M = os.path.join(ROOT, "docs", "브랜드_폰트", "SUIT", "SUIT-Medium.otf")
@@ -69,10 +69,11 @@ END_LAYOUTS = {
 
 
 def numbered(folder, prefix=""):
-    def key(f):
-        m = re.findall(r"(\d+)\.png$", f)
-        return int(m[0]) if m else 0
-    return sorted(glob.glob(os.path.join(folder, f"{prefix}*.png")), key=key)
+    """<prefix><숫자>.png만 번호 순으로(블렌더 제품 교체판 「컷2_soom_0001.png」 같은 이름은 뺀다)."""
+    pat = re.compile(re.escape(prefix) + r"(\d+)\.png$")
+    files = [(int(m.group(1)), f) for f in glob.glob(os.path.join(folder, "*.png"))
+             if (m := pat.fullmatch(os.path.basename(f)))]
+    return [f for _, f in sorted(files)]
 
 
 def fit(im):
@@ -100,7 +101,8 @@ def read_video(path, n):
 def source(kind, name, n):
     """길이 n의 1080×1920 프레임을 차례로 낸다. 모자라면 마지막 프레임을 늘인다."""
     if kind == "사람":
-        up = numbered(os.path.join(H3, "업", name))
+        # SeedVR2 CLI는 <출력>/<입력 이름>/<입력 이름>_000000.png로 쓴다(영상_다듬기.py의 입력 이름 = 컷 이름)
+        up = numbered(os.path.join(H3, "업", name, name), f"{name}_")
         clip = os.path.join(H3, "구간", f"{name}.mp4")
         if up:
             gen, what = (fit(Image.open(f).convert("RGB")) for f in up[:n]), f"업스케일 {len(up)}장"
