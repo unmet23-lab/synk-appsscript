@@ -102,7 +102,7 @@
   function headline(f, cards) {
     const gemC = cards.find(c => c.k.startsWith('제미나이')), gptC = cards.find(c => c.k === 'ChatGPT GPTs');
     const gptPast = gptC && gptC.past;
-    // 강조(mark)는 제목 끝 절에 둔다 — 문장 가운데 노란 칠은 깨진 것처럼 보였다(10-17 Fable).
+    // 강조(mark)는 제목 끝 절에 둔다 — 문장 가운데 노란 칠은 깨진 것처럼 보였다(10-17 검수).
     let title, mark;
     if (f.gptMine && f.gemMine) { title = '젬은 기다리고, GPTs는 직접 옮겨요'; mark = '직접 옮겨요'; }
     else if (f.gptMine) { title = gptPast ? 'GPTs 종료일이 지났어요' : 'GPTs는 12월 11일 전에 직접 옮겨요'; mark = gptPast ? '지났어요' : '직접 옮겨요'; }
