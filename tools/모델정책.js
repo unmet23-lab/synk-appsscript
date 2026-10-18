@@ -4,7 +4,10 @@
  * 제품용 Gemini/Vertex 연결 설정. 번역·전사·음성·영상 도구가 공유한다.
  * GPT/Claude의 모델 선택·작업 배치·검수는 각 공식 앱/CLI와 AI 운영 원칙이 맡는다.
  * 기본은 기존 무료 API 경로이며, 유료 API는 명시 허용과 별도 OAuth 자격이 필요하다.
- * 계정·모델을 자동 대체하지 않는다. 직접 실행할 때는 --제미나이확인에서만 API를 호출한다.
+ * 모델을 자동 대체하지 않는다. 직접 실행할 때는 --제미나이확인에서만 API를 호출한다.
+ * 예외 하나(2026-10-17 사용자 결정): 무료 「글」 문이 몫 상한(429)에 막히면, 부른 쪽이 허용한 경우에만
+ * 같은 모델로 Google AI 구독 통로(agy · 지금 Ultra 계정)를 부른다(`구독대체`, `lib/제미나이호출.js`).
+ * 유료 Vertex로는 넘어가지 않고, CI와 끄기 변수(SYNK_GEMINI_NO_SUBSCRIPTION_FALLBACK=1)에서는 대체하지 않는다.
  */
 const fs = require('fs');
 
@@ -26,7 +29,8 @@ const 제미나이 = {
   최상: { model: 'gemini-3.1-pro-preview', thinking_level: 'high', 무료등급: false },
   무료최상: { model: 'gemini-3.8-flash', thinking_level: 'high', 무료등급: true },
   기본: '무료최상',
-  폴백허용: false,
+  폴백허용: false, // 모델 내리기(Pro→flash) 금지. 아래 구독대체는 같은 모델로 «문»만 바꾼다.
+  구독대체: true, // 무료 몫 429 → 같은 모델로 Google AI 구독 통로(10-17). 부른 쪽 opts.구독대체도 있어야 탄다.
 };
 
 // 키 파일과 URL은 이곳에서 관리하며, 출력에 키 값을 포함하지 않는다.
@@ -308,7 +312,7 @@ if (require.main === module) {
     try {
       if (!argv.length || (argv.length === 1 && argv[0] === '--help')) {
         console.log('제품 API 설정: 기본 글(AI Studio), 명시 유료 돈(Vertex OAuth).');
-        console.log(JSON.stringify({ 기본용도: 기본용도(), 모델: 제미나이설정(), 자동대체: false }, null, 2));
+        console.log(JSON.stringify({ 기본용도: 기본용도(), 모델: 제미나이설정(), 자동대체: false, 구독대체: 제미나이.구독대체 }, null, 2));
         console.log('실제 API 확인: node tools/모델정책.js --제미나이확인 [글|돈] [--유료-api]');
         return;
       }

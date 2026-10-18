@@ -1,0 +1,64 @@
+{
+ "liveBytes": 2035895,
+ "steps": [
+  {
+   "step": "member-benefits old compile equals live",
+   "same": true,
+   "at": 55957,
+   "length": 6940,
+   "newOwnNamesCollide": [
+    "state"
+   ]
+  },
+  {
+   "step": "member-benefits replaced",
+   "oldLength": 6940,
+   "newLength": 7310
+  },
+  {
+   "step": "benefit data asset/alt",
+   "changed": [
+    {
+     "id": "insight",
+     "from": "world-book.avif",
+     "to": "benefit-insight.webp"
+    },
+    {
+     "id": "subscriptions",
+     "skipped": "not in live"
+    },
+    {
+     "id": "care",
+     "from": "care-note.webp",
+     "to": "benefit-care.webp"
+    },
+    {
+     "id": "fortune",
+     "from": "fortune-star.avif",
+     "to": "benefit-fortune.webp"
+    },
+    {
+     "id": "rehearsal",
+     "from": "teacher-cover.png",
+     "to": "benefit-rehearsal.webp"
+    },
+    {
+     "id": "family-album",
+     "from": "studio-camera.webp",
+     "to": "benefit-album.webp"
+    }
+   ]
+  },
+  {
+   "step": "member-insight-view old compile equals live",
+   "same": true,
+   "at": 699070,
+   "length": 31726
+  },
+  {
+   "step": "member-insight-view replaced",
+   "oldLength": 31726,
+   "newLength": 32184
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Synthetic failure to verify the approved Argon notification route
+OnFailure=synk-argon-alert@%n.service
+
+[Service]
+Type=oneshot
+DynamicUser=true
+User=synk-argon-alert-test
+ExecStart=/usr/bin/false
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+CapabilityBoundingSet=

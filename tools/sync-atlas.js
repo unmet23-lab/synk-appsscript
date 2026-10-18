@@ -13,7 +13,9 @@
  * default. --consumer website is only for an older checkout that still owns sync-letter-copy.mjs;
  * that checkout's generator recomputes its letter page's cache keys (`?v=`) after a copy changes.
  * --check changes nothing and lists every difference at once (exit 1 when there is any).
- * --all includes 10 learning bundles, PATH/launcher/tools, Talk and current website staging.
+ * --all includes 10 learning bundles, the 3 WORLD bundles, PATH/launcher/tools, Talk and current
+ * website staging. Product modules that only look like copies
+ * (PRODUCT_OWNED in lib/atlas-copies.js) are listed there, never deleted or overwritten.
  * --all --local checks/builds only this repository (CI); omitted siblings are explicit.
  * Usage: node tools/sync-atlas.js [--check] [--consumer talk|website]
  *        node tools/sync-atlas.js --all [--check] [--local] */
@@ -154,13 +156,29 @@ for (const t of targets) {
     delete require.cache[require.resolve(generator)];
     const server = require(generator);
     const outputs = Array.isArray(server.OUTPUTS) ? server.OUTPUTS : [{ file: 'supabase/functions/_shared/synk-atlas.js', build: server.build }];
+    // A bundle that generates but cannot load (a module the generator's list does not inline, 10-17) must
+    // fail here, not when the server starts. Load it in a child so this process stays unaffected.
+    const loads = bundle => {
+      const result = spawnSync(process.execPath, ['-e', 'require(process.argv[1])', bundle], { cwd: t.repo, encoding: 'utf8' });
+      if (result.status === 0) return null;
+      // The message line ("Error: …"), not the code frame Node prints above it.
+      return (result.stderr || result.stdout).split('\n').map(line => line.trim()).find(line => /^[A-Za-z]*Error\b/.test(line)) || `exit ${result.status}`;
+    };
     if (check) {
       const sources = files.every(name => fs.existsSync(path.join(base, name)) && normalized(fs.readFileSync(path.join(base, name))) === normalized(fs.readFileSync(canonical(name))));
       for (const output of outputs) {
         const bundle = path.join(t.repo, output.file);
         if (sources && (!fs.existsSync(bundle) || normalized(fs.readFileSync(bundle)) !== normalized(output.build()))) problems.push(`${path.basename(t.repo)}/${output.file}: not rebuilt from the copy`);
+        else if (fs.existsSync(bundle)) { const failure = loads(bundle); if (failure) problems.push(`${path.basename(t.repo)}/${output.file}: does not load (${failure})`); }
       }
-    } else { server.write(); for (const output of outputs) console.log(`rebuilt ${path.basename(t.repo)}/${output.file}`); }
+    } else {
+      server.write();
+      for (const output of outputs) {
+        const failure = loads(path.join(t.repo, output.file));
+        if (failure) problems.push(`${path.basename(t.repo)}/${output.file}: rebuilt but does not load (${failure}); fix the generator's module list before deploying`);
+        else console.log(`rebuilt ${path.basename(t.repo)}/${output.file}`);
+      }
+    }
   }
   if (!check && before !== after) {
     console.log(`engine ${before || '(none)'} -> ${after} in ${label}`);

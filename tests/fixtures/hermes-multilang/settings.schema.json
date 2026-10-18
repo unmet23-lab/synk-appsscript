@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "properties": {"completed": {"type": "integer", "minimum": 0, "maximum": 2}},
+  "required": ["completed"],
+  "additionalProperties": false
+}

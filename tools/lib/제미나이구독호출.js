@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * Google AI Pro 구독으로 Gemini를 부르는 로컬 검수 통로.
+ * Google AI 구독(agy에 로그인한 개인 Google 계정)으로 Gemini를 부르는 로컬 통로.
+ * 2026-10-17 기준 agy 로그인은 Google AI Ultra 계정(77yuhbs)이다. 계정 확인은
+ * `~/.gemini/antigravity-cli/cli.log`의 「authenticated successfully as」 줄로 한다(토큰은 보지 않는다).
  *
  * API 키·Vertex·Google Cloud 결제는 쓰지 않는다. `agy`의 저장된 개인 Google 로그인만 쓰고,
  * 빈 임시 폴더 + sandbox에서 한 번 호출한다. 지원하지 않는 모델은 다른 모델로 내리지 않고 멈춘다.
+ * 무료 API 몫이 찼을 때 `제미나이호출.js`가 같은 모델로 이 통로를 부른다(10-17 사용자 결정).
  *
  * 사용:
  *   node tools/lib/제미나이구독호출.js --model <정책 모델> [--thinking high]
  *     [--schema <json>] -o <출력> [--timeout <ms>]   (프롬프트 = stdin)
+ *   const { 부르기 } = require('./제미나이구독호출.js');  → await 부르기({ model, prompt, schema, thinking })
  */
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const 경로표 = Object.freeze({
   'gemini-3.1-pro-preview': Object.freeze({
@@ -25,6 +29,13 @@ const 경로표 = Object.freeze({
     low: 'gemini-3.8-flash-low',
     medium: 'gemini-3.8-flash-medium',
     high: 'gemini-3.8-flash-high',
+  }),
+  /* 10-18 유호님 「아르곤 붙여서 비교해봐줘」 — 몽골어 검문을 flash와 나란히 돌려 보려고 더했다(Ultra 계정 agy 목록에 있음,
+   * Pro 계정은 invalid model selection — 현장 노트 AI_CLI). 기본 픽은 그대로 모델정책(flash high)이다. */
+  'gemini-4-argon': Object.freeze({
+    low: 'gemini-4-argon-low',
+    medium: 'gemini-4-argon-medium',
+    high: 'gemini-4-argon-high',
   }),
 });
 
@@ -41,7 +52,7 @@ function 구독모델(model, thinking = 'high') {
   if (!고른것) {
     const 가능한것 = Object.entries(경로표)
       .flatMap(([m, levels]) => Object.keys(levels).map((level) => `${m}/${level}`)).join(' · ');
-    throw new Error(`Google AI Pro 구독 통로가 지원하지 않는 픽 ${model}/${thinking || 'high'} — 가능: ${가능한것}. 다른 모델로 자동 대체하지 않는다.`);
+    throw new Error(`Google AI 구독 통로가 지원하지 않는 픽 ${model}/${thinking || 'high'} — 가능: ${가능한것}. 다른 모델로 자동 대체하지 않는다.`);
   }
   return 고른것;
 }
@@ -176,7 +187,7 @@ function main(argv = process.argv.slice(2)) {
       modelVersion: selectedModel,
       finishReason: result.status,
       usage: result.usage || null,
-      route: 'google-ai-pro-subscription',
+      route: 'google-ai-subscription',
       requestedModel: model,
       requestedThinking: thinking,
       selectedModel,
@@ -190,7 +201,43 @@ function main(argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { 경로표, 구독모델, 결과읽기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, main };
+/* 비동기 호출 — 이 파일을 **자식 프로세스로** 띄운다. agy를 동기로 기다리는 main을 그대로 쓰면서도
+ * 부르는 쪽(몽골어 검문의 맞춤법 요청 등)이 그동안 멈추지 않게 한다. 돌려주는 값은 main의 기록 모양이다.
+ * (10-17 몽골어대조.js의 「구독으로부르기」를 여기로 옮겼다 — 손잡이 --구독과 무료 몫 대체가 한 구현을 쓴다.) */
+function 부르기({ model, prompt, schema = null, thinking = 'high', timeoutMs } = {}) {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-mn-sub-'));
+  const 출력 = path.join(방, 'answer.json');
+  const args = [__filename, '--model', model, '--thinking', thinking || 'high', '-o', 출력];
+  if (timeoutMs) args.push('--timeout', String(timeoutMs));
+  if (schema) {
+    const 스키마 = path.join(방, 'schema.json');
+    fs.writeFileSync(스키마, JSON.stringify(schema), 'utf8');
+    args.push('--schema', 스키마);
+  }
+  return new Promise((resolve, reject) => {
+    const p = spawn(process.execPath, args, { windowsHide: true, stdio: ['pipe', 'ignore', 'pipe'] });
+    let 진단 = '';
+    p.stderr.setEncoding('utf8');
+    p.stderr.on('data', (d) => { 진단 += d; });
+    p.on('error', reject);
+    p.on('close', (code) => {
+      try {
+        if (code !== 0) {
+          const 끝 = 진단.trim().split(/\r?\n/).filter(Boolean).slice(-2).join(' / ');
+          return reject(new Error(`구독 통로 실패(종료 ${code}) — ${끝 || '진단 없음'}`));
+        }
+        resolve(JSON.parse(fs.readFileSync(출력, 'utf8')));
+      } catch (e) {
+        reject(e);
+      } finally {
+        fs.rmSync(방, { recursive: true, force: true });
+      }
+    });
+    p.stdin.end(String(prompt ?? ''), 'utf8');
+  });
+}
+
+module.exports = { 경로표, 구독모델, 결과읽기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, 부르기, main };
 
 if (require.main === module) {
   try { main(); }

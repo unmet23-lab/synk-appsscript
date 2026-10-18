@@ -15,8 +15,6 @@
     "dev:path": "electron src/product-main.cjs --synk-product-preview=path",
     "dev:care": "electron src/product-main.cjs --synk-product-preview=care",
     "dev:fortune": "electron src/product-main.cjs --synk-product-preview=fortune",
-    "dev:rehearsal": "electron src/product-main.cjs --synk-product-preview=rehearsal",
-    "dev:family-album": "electron src/product-main.cjs --synk-product-preview=family-album",
     "package:preview:win": "node tools/package.cjs --mode=development --platform=win32 --arch=x64",
     "package:preview:mac": "node tools/package.cjs --mode=development --platform=darwin --arch=arm64"
   },

@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on screens, bags, boxes or tags.
+
+Top row = the funny WRONG literal readings:
+1. "HEAVY MOUTH" — a big pair of felt lips (rosy pink wool, slightly glossy-looking lower lip) straining to hold a heavy black felt dumbbell by biting its bar; the lips sag down under the weight; one light-blue felt sweat drop beside them.
+2. "PAPER-THIN EARS" — a pair of skin-tone (peach) felt ears that are flat and thin as sheets of paper, bending and fluttering sideways like tissue in a breeze, slightly see-through at the edges; three short curved cream felt wind strands beside them.
+3. "BELLY BUTTON POPS OUT" — a round peach felt tummy (just a rounded dome shape, no face, no limbs) whose belly button has popped out on a little coiled felt spring, like a jack-in-the-box; two small white felt puff clouds next to the spring.
+
+Bottom row = the TRUE meanings:
+4. KEEPS SECRETS — a pair of rosy pink felt lips closed with a small mustard-yellow felt zipper across them, next to a small lavender felt treasure box with a tiny yellow felt padlock.
+5. BELIEVES WHATEVER THEY HEAR — a small felt tablet screen (dark navy frame) showing a bright coral felt sneaker with a yellow felt starburst behind it (no text), and next to it a tall wobbly pile of four felt shopping bags in mint, coral, butter yellow and lilac with felt handles (bags are plain, no prints).
+6. LAUGHING REALLY HARD — a round butter-yellow felt smiley face ball tipped over on its side, eyes squeezed shut as arcs, huge open laughing mouth, light-blue felt tears flying from both eyes; three small coral felt bounce marks (short curved strokes) under it.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

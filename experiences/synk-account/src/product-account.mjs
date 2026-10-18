@@ -20,8 +20,8 @@ export function createProductAccount({
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
 } = {}) {
-  if (!['care', 'path', 'path-travel', 'rehearsal', 'family-album'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('제품 계정 계약을 확인해 주세요.');
-  const LIMIT = (resource === 'family-album' ? 32 : 4) * 1024 * 1024 + 32768;
+  if (!['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('제품 계정 계약을 확인해 주세요.');
+  const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations));
   const bridgeRequest = bridge?.accountRequest || bridge?.request;
@@ -123,30 +123,6 @@ export function createProductAccount({
       data = result.data;
     }
     guard(expected); return validateResponse(data, ownerId);
-  }
-  async function mediaRequest(operation, values, expected, ownerId) {
-    if (resource !== 'family-album' || endpoint !== 'synk-personal') throw fault('INVALID_REQUEST', '이 제품에는 원본 파일을 보관할 수 없어요.');
-    const media = await import('./personal-media.mjs'); guard(expected);
-    if (native) {
-      media.validateMediaRequest(operation, values);
-      const result = await bridgeRequest.call(bridge, operation, values); guard(expected);
-      return media.validateMediaResponse(result, { operation, values, ownerId });
-    }
-    const api = async body => {
-      guard(expected);
-      let token = session.access_token;
-      if (session.expires_at <= now() + 30000) token = await refresh(expected);
-      guard(expected);
-      const url = `${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/synk-personal`;
-      let result = await send(url, token, { ...body, resource }); guard(expected);
-      if (result.response.status === 401 && session?.refresh_token) {
-        token = session.access_token !== token ? session.access_token : await refresh(expected); guard(expected);
-        result = await send(url, token, { ...body, resource }); guard(expected);
-      }
-      if (!result.response.ok) throw fault(result.data?.error?.code || 'MEDIA_TRANSFER_FAILED', '원본 파일을 계정에 보관하지 못했어요.', { status: result.response.status, ...missingAsset(result.data?.error) });
-      return result.data;
-    };
-    return media.requestPersonalMedia({ operation, values, ownerId, api, fetcher, guard: () => guard(expected), cryptoAPI: cryptoAPI || globalThis.crypto, controllers, origin: config.supabaseUrl });
   }
   async function nativeStatus(source) {
     if (disposed) return status();
@@ -328,7 +304,7 @@ export function createProductAccount({
   async function request(operation, values = {}) {
     if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 계정 자료를 확인해 주세요.');
     const expected = epoch, ownerId = snapshot.accountId;
-    try { return await (operation.startsWith('asset') ? mediaRequest(operation, values, expected, ownerId) : dispatch(operation, values, expected, ownerId)); }
+    try { return await dispatch(operation, values, expected, ownerId); }
     catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
   // A fixed Care-only capability. The browser never receives credentials or chooses an API URL.

@@ -5,7 +5,7 @@ const {PLATFORM_ENTRY,DEV_URLS}=require('../src/catalog.cjs');
 const {externalDestination,allowedNavigation}=require('../src/security.cjs');
 
 test('only the development Platform capability exposes the four fixed public destinations',async()=>{
-  assert.deepEqual(publicAppsAvailable({clientId:'platform',mode:'development'}),['care','fortune','rehearsal','family-album','path']);
+  assert.deepEqual(publicAppsAvailable({clientId:'platform',mode:'development'}),['care','fortune','path']);
   for(const values of [{clientId:'platform',mode:'release'},{clientId:'world',mode:'development'},{clientId:'messenger',mode:'development'},{clientId:'platform',mode:'Development'},{}]){
     let calls=0;const service=createPublicApps({...values,openExternal:()=>{calls++;}});
     assert.deepEqual(service.available(),[]);assert.equal((await service.open('care')).code,'PUBLIC_APP_UNAVAILABLE');assert.equal(calls,0);
@@ -15,7 +15,7 @@ test('only the development Platform capability exposes the four fixed public des
 
 test('public opening takes only a known ID and returns success after the browser promise resolves',async()=>{
   let complete;const calls=[],service=createPublicApps({clientId:'platform',mode:'development',openExternal:url=>{calls.push(url);return new Promise(resolve=>{complete=resolve;});}});
-  const available=service.available();available.push('world');assert.deepEqual(service.available(),['care','fortune','rehearsal','family-album','path']);
+  const available=service.available();available.push('world');assert.deepEqual(service.available(),['care','fortune','path']);
   let settled=false;const first=service.open('fortune');first.then(()=>{settled=true;});assert.equal(service.open('fortune'),first);
   await Promise.resolve();assert.deepEqual(calls,['https://synk.im/fortune/']);assert.equal(settled,false);complete();
   assert.deepEqual(await first,{ok:true,id:'fortune',externalBrowser:true});
@@ -59,10 +59,10 @@ test('existing public benefit links allow exact routes only and never share the 
 test('preload forwards exactly the fixed public IDs and refuses URL or prototype input before IPC',async()=>{
   const calls=[];let bridge;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
-  for(const id of ['care','fortune','rehearsal','path'])assert.equal((await bridge.openPublicApp(id)).ok,true);
-  assert.deepEqual(calls,[['synk:open-public-app','care'],['synk:open-public-app','fortune'],['synk:open-public-app','rehearsal'],['synk:open-public-app','path']]);
+  for(const id of ['care','fortune','path'])assert.equal((await bridge.openPublicApp(id)).ok,true);
+  assert.deepEqual(calls,[['synk:open-public-app','care'],['synk:open-public-app','fortune'],['synk:open-public-app','path']]);
   for(const id of ['__proto__','constructor','https://synk.im/care/','world','care?x=1',{},null])assert.equal((await bridge.openPublicApp(id)).code,'UNKNOWN_PUBLIC_APP');
-  assert.equal(calls.length,4);
+  assert.equal(calls.length,3);
 });
 
 async function mainFixture({clientId='platform',mode='development',authState={signedIn:false,status:'signed-out'},externalFailure=false}={}){
@@ -110,10 +110,10 @@ test('signup IPC refuses connected and changing sessions, sibling clients and un
 
 test('packaged development Platform wires the real public capability without account or company requests',async()=>{
   const f=await mainFixture(),environment=await f.handlers.get('synk:environment')(f.event);
-  assert.deepEqual(environment.publicAppsAvailable,['care','fortune','rehearsal','family-album','path']);
+  assert.deepEqual(environment.publicAppsAvailable,['care','fortune','path']);
   for(const [id,url]of Object.entries(PUBLIC_APP_URLS)){assert.equal((await f.handlers.get('synk:open-public-app')(f.event,id)).ok,true);assert.equal(f.calls.at(-1),url);}
   assert.equal(f.accountCalls,0);
-  assert.equal((await f.handlers.get('synk:open-public-app')(f.event,'__proto__')).code,'UNKNOWN_PUBLIC_APP');assert.equal(f.calls.length,5);
+  assert.equal((await f.handlers.get('synk:open-public-app')(f.event,'__proto__')).code,'UNKNOWN_PUBLIC_APP');assert.equal(f.calls.length,3);
 });
 
 test('main rejects release, other client, foreign window, subframe and foreign-document public IPC',async()=>{

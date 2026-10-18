@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { rawCopies, unknownCopies, syncRaw, runAll, GAMES } = require('../tools/lib/atlas-copies');
+const { rawCopies, ownedFiles, unknownCopies, syncRaw, runAll, GAMES, TOOL_OUTPUTS, WORLD_BUNDLES, PRODUCT_OWNED } = require('../tools/lib/atlas-copies');
+const repo = path.resolve(__dirname, '..');
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-atlas-copies-'));
   t.after(() => { assert.equal(path.dirname(root), path.resolve(os.tmpdir())); assert.ok(path.basename(root).startsWith('synk-atlas-copies-')); fs.rmSync(root, { recursive: true }); });
@@ -56,6 +57,34 @@ test('a new unregistered consumer is detected while historical QA and dependenci
   write('experiences/new-product/node_modules/engine.js', marker);
   assert.deepEqual(unknownCopies(root, new Set([known])), ['experiences/new-product/atlas-learning.js', 'experiences/new-product/vendor/ask.js', 'experiences/new-product/vendor/flow.js']);
   assert.equal(GAMES.length, 10);
+  // Registered bundles and product-owned modules carry the same markers but are classified, not unknown.
+  write('experiences/synk-world-app/world-account.bundle.mjs', 'else root.SynkAtlas = factory(() => root.SynkTrail);');
+  write('experiences/relationship-care/care-followup.js', 'else root.SynkTrailFollowup = factory();');
+  write('experiences/relationship-care/care-later.js', 'else root.SynkTrailLater = factory();');
+  const unknown = unknownCopies(root, ownedFiles(root, rawCopies(root)));
+  assert.deepEqual(unknown, ['experiences/new-product/atlas-learning.js', 'experiences/new-product/vendor/ask.js', 'experiences/new-product/vendor/flow.js', 'experiences/relationship-care/care-later.js']);
+});
+test('the registry names every current consumer: marketing tool outputs, travel staging, WORLD bundles, product-owned modules', t => {
+  const { root, write } = fixture(t);
+  assert.deepEqual(Object.keys(TOOL_OUTPUTS), ['computer', 'meeting', 'katana', 'skills', 'move', 'manual']);
+  write('website/dist/try/travel/index.html', '<!doctype html>');
+  const travel = rawCopies(root, path.join(root, 'website')).filter(row => row.label.startsWith('website/dist/try/travel/atlas/')).map(row => path.basename(row.destination));
+  assert.deepEqual(travel.sort(), ['ask.js', 'domain.js', 'engine.js', 'interpretation.js', 'personalization.js', 'temper-outcomes.js', 'trail-life.js', 'travel.js']);
+  for (const name of ['trail-life', 'temper-outcomes']) assert.ok(fs.existsSync(path.join(repo, `atlas/${name}.js`)), `canonical atlas/${name}.js exists`);
+  // The WORLD builders and their outputs are real files here; each builder verifies its output with --check.
+  assert.equal(WORLD_BUNDLES.length, 3);
+  for (const bundle of WORLD_BUNDLES) {
+    assert.ok(fs.existsSync(path.join(repo, bundle.build)), bundle.build);
+    assert.ok(fs.existsSync(path.join(repo, bundle.output)), bundle.output);
+    assert.match(fs.readFileSync(path.join(repo, bundle.build), 'utf8'), /--check/);
+  }
+  // A product-owned module is the canonical source itself, never a generated copy.
+  assert.deepEqual(PRODUCT_OWNED, ['experiences/relationship-care/care-followup.js']);
+  for (const file of PRODUCT_OWNED) {
+    const source = fs.readFileSync(path.join(repo, file), 'utf8');
+    assert.doesNotMatch(source, /Canonical source: SYNK-appsscript\/atlas|Generated from atlas\//);
+    assert.equal(fs.existsSync(path.join(repo, 'atlas', path.basename(file))), false, 'no atlas/ twin for a product-owned module');
+  }
 });
 test('missing canonical files cannot cause a partial raw-copy write', t => {
   const { root, write } = fixture(t), existing = write('experiences/path-vr/vendor/engine.js', '// keep');
