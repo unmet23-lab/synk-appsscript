@@ -159,6 +159,9 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   // 돌려받는 결과는 확인이 끝난 상태이고 마지막 알림보다 번호가 크다. 늦게 도착해도 화면이 「확인 중」으로 돌아가지 않는다.
   assert.equal(after.checking,false);assert.equal(f.changes.at(-1).checking,false);assert.ok(after.seq>f.changes.at(-1).seq);
   assert.ok(f.changes.every((s,i)=>i===0||s.seq>f.changes[i-1].seq));
+  // 확인 중 알림은 읽은 줄 수를 함께 보낸다(화면의 「읽는 중이에요… 2/3」). 끝나면 비운다.
+  const during=f.changes.slice(firstChange).filter(s=>s.checking).map(s=>`${s.progress?.done}/${s.progress?.total}`);
+  assert.deepEqual([during[0],during.at(-1)],['0/3','3/3']);assert.equal(after.progress,null);
   const by=Object.fromEntries(after.rows.map(r=>[r.service,r]));
   assert.equal(by.claude.email,'member@example.com');assert.equal(by.claude.live.weekly.usedPercent,31);assert.equal(by.claude.resetDay,4);assert.equal(by.claude.resetHour,10);
   assert.equal(by.gpt.email,'synk@example.com');assert.equal(by.gpt.live.weekly.usedPercent,100);assert.equal(by.gpt.usedUpAt,NOW);

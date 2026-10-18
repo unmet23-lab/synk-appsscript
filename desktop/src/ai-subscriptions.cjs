@@ -152,7 +152,7 @@ function commandFor(file,args,{platform,env}){
 function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
   if(!root)throw new TypeError('root is required');
   const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts');
-  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,seq=0;
+  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,checkProgress=null,seq=0;
   home=home||env.USERPROFILE||env.HOME||'';
 
   /* 저장 */
@@ -201,7 +201,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     return {ok:true,seq:++seq,platform,tools:tools?Object.fromEntries(Object.entries(tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:k==='higgsfield'?!!v.npm:undefined,api:v.api?true:undefined}])):null,
       rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
       login:login?{id:login.id,service:login.service,stage:login.stage,url:login.url,needsCode:login.needsCode,message:login.message,console:!!login.console}:null,
-      checking:!!checking};
+      checking:!!checking,progress:checking&&checkProgress?{...checkProgress}:null};
   }
   const emit=()=>{try{onChange(publicSnapshot());}catch{}};
 
@@ -470,20 +470,20 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       return missing.length?check({ids:missing}):publicSnapshot();
     }
     const full=!Array.isArray(ids),b=load(),targets=b.rows.filter(row=>row.source==='auto'&&(full||ids.includes(row.id)));
-    checkingIds=new Set(targets.map(row=>row.id));
+    checkingIds=new Set(targets.map(row=>row.id));checkProgress={done:0,total:targets.length};
     checking=(async()=>{
       // `checking`에 담긴 뒤에 알려야 첫 알림부터 「확인 중」이다(먼저 알리면 잠깐 확인이 끝난 것처럼 보인다).
       await null;emit();
       await detectTools(true);
       const queue=[...targets];
-      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(!b.rows.includes(row))continue;applyRead(row,await readConfirmed(row));emit();}};
+      const worker=async()=>{for(let row=queue.shift();row;row=queue.shift()){if(!b.rows.includes(row))continue;applyRead(row,await readConfirmed(row));checkProgress.done++;emit();}};
       await Promise.all([worker(),worker()]);
       // 요약은 지금 판 전체로 센다. 한 줄만 다시 읽었을 때는 「마지막 확인」 시각을 전체 확인 때 것으로 둔다.
       const autos=b.rows.filter(row=>row.source==='auto');
       b.check={at:full||!b.check?.at?now():b.check.at,total:autos.length,ok:autos.filter(row=>row.state==='ok').length};
       persist();
     })();
-    try{await checking;}finally{checking=null;checkingIds=null;emit();}
+    try{await checking;}finally{checking=null;checkingIds=null;checkProgress=null;emit();}
     return publicSnapshot();
   }
 
