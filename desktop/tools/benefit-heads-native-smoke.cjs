@@ -35,7 +35,8 @@ function measure(){
     const gaps=tops.map(b=>below(pts,b)).filter(v=>v!==null),hb=head.getBoundingClientRect();
     return {kind,headWidth:Math.round(hb.width),headHeight:Math.round(hb.height),top:gaps.length?Math.min(...gaps):null,word:word?above(pts,glyph(word)):null,title:title?above(pts,rect(title)):null,clash:(()=>{if(!word||!title)return null;const w=glyph(word),t=rect(title),dx=Math.max(t.l-w.r,w.l-t.r),dy=Math.max(t.t-w.b,w.t-t.b);return Math.round(Math.max(dx,dy));})(),wrapped:word?word.getBoundingClientRect().height>parseFloat(getComputedStyle(word).lineHeight)*1.5:false,
       object:(()=>{const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return [Math.round(Math.min(...xs)-hb.left),Math.round(Math.min(...ys)-hb.top),Math.round(Math.max(...xs)-hb.left),Math.round(Math.max(...ys)-hb.top)];})(),
-      overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth)};
+      wordOut:(()=>{if(!word)return null;const w=glyph(word),cs=getComputedStyle(head);return Math.round(w.r-(hb.right-parseFloat(cs.paddingRight)));})(),
+      overflow:(()=>{const m=document.getElementById('main');return Math.max(0,document.documentElement.scrollWidth-innerWidth,m?m.scrollWidth-m.clientWidth:0);})()};
   }
   return {error:'no detail head'};
 }
@@ -71,13 +72,13 @@ if(!process.versions.electron){
       for(let attempt=0;attempt<150;attempt++){const state=await run("document.documentElement.dataset.ready");if(state==='true')break;if(state==='error'||attempt===149)throw Error('Renderer not ready');await new Promise(resolve=>setTimeout(resolve,30));}
       for(const theme of ['night','day'])for(const [width,height] of SIZES){
         if(theme==='day'&&!SHOT_WIDTHS.has(width))continue;
-        window.setContentSize(width,height);await run("document.documentElement.dataset.theme='"+theme+"'");
+        window.setContentSize(width,height);await run("document.documentElement.dataset.theme='"+theme+"';document.documentElement.dataset.motion='reduced'");
         for(const id of IDS){
           await run("document.querySelector('.nav-links [data-view=benefits]').click()");await settle();
           await run("document.querySelector('[data-benefit=\""+id+"\"]').click();document.getElementById('main')?.scrollTo(0,0);scrollTo(0,0)");await settle();
           const row={theme,width,height,id,...await run('('+measure.toString()+')()')};rows.push(row);
           // 물건과 위 줄은 2px, 큰 한글·한 줄 제목과는 8px 넘게 떨어져야 하고(가로로 겹치는 점만 잰다), 큰 한글은 한 줄이고 한 줄 제목에 닿지 않아야 한다(휴대폰 틀은 위아래로 7~9px).
-          if(row.error||row.overflow||row.wrapped||(row.clash!==null&&row.clash<4)||(row.top!==null&&row.top<2)||(row.word!==null&&row.word<8)||(row.title!==null&&row.title<8))failed.push(row);
+          if(row.error||row.overflow||row.wrapped||(row.wordOut!==null&&row.wordOut>0)||(row.clash!==null&&row.clash<4)||(row.top!==null&&row.top<2)||(row.word!==null&&row.word<8)||(row.title!==null&&row.title<8))failed.push(row);
           // 숨은 창은 첫 capturePage가 앞 프레임을 돌려줄 수 있어 한 번 버리고 다시 찍는다(benefits-native-smoke와 같은 방식).
           if(SHOT_WIDTHS.has(width)){await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await new Promise(resolve=>setTimeout(resolve,130));fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,theme+'-'+width+'-'+id+'.png'),(await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true})).toPNG());}
         }
