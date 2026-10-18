@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-18",
+  "what": "Albedo (DIFFUSE COLOR, 1 sample, CPU) of each atlas group baked at 1024 with bake margin 0 and 16 (ADJACENT_FACES); overwritten = texels covered at margin 0 whose colour changed by more than 0.05 at margin 16. The real bakes were 2048 with 16 px, so these shares overstate them.",
+  "blend": "work-wide/bake.blend at 20:08 (neighbours already cleaned once)",
+  "script": "blender/margin_overwrite_check.py",
+  "groups": [
+    {
+      "part": "home",
+      "group": "roof",
+      "objects": 3,
+      "covered": 416782,
+      "overwritten": 5076,
+      "share": 0.0122
+    },
+    {
+      "part": "home",
+      "group": "base",
+      "objects": 2,
+      "covered": 763564,
+      "overwritten": 6553,
+      "share": 0.0086
+    },
+    {
+      "part": "home",
+      "group": "timber",
+      "objects": 2,
+      "covered": 302905,
+      "overwritten": 2653,
+      "share": 0.0088
+    },
+    {
+      "part": "cafe",
+      "group": "pavilion",
+      "objects": 4,
+      "covered": 710500,
+      "overwritten": 25164,
+      "share": 0.0354
+    },
+    {
+      "part": "cafe",
+      "group": "upper",
+      "objects": 4,
+      "covered": 293625,
+      "overwritten": 15656,
+      "share": 0.0533
+    },
+    {
+      "part": "workshop",
+      "group": "roof",
+      "objects": 2,
+      "covered": 484456,
+      "overwritten": 5899,
+      "share": 0.0122
+    },
+    {
+      "part": "workshop",
+      "group": "base",
+      "objects": 3,
+      "covered": 569666,
+      "overwritten": 20318,
+      "share": 0.0357
+    },
+    {
+      "part": "workshop",
+      "group": "facade",
+      "objects": 2,
+      "covered": 464435,
+      "overwritten": 15994,
+      "share": 0.0344
+    },
+    {
+      "part": "greenhouse",
+      "group": "house",
+      "objects": 5,
+      "covered": 382133,
+      "overwritten": 20293,
+      "share": 0.0531
+    },
+    {
+      "part": "greenhouse",
+      "group": "props",
+      "objects": 4,
+      "covered": 481425,
+      "overwritten": 11452,
+      "share": 0.0238
+    },
+    {
+      "part": "ground",
+      "group": "hard",
+      "objects": 7,
+      "covered": 423524,
+      "overwritten": 6950,
+      "share": 0.0164
+    },
+    {
+      "part": "ground",
+      "group": "soft",
+      "objects": 2,
+      "covered": 654171,
+      "overwritten": 1635,
+      "share": 0.0025
+    },
+    {
+      "part": "ring",
+      "group": "ring_lawn",
+      "objects": 1,
+      "covered": 520664,
+      "overwritten": 0,
+      "share": 0.0
+    },
+    {
+      "part": "ring",
+      "group": "ring_paths",
+      "objects": 2,
+      "covered": 266625,
+      "overwritten": 7523,
+      "share": 0.0282
+    },
+    {
+      "part": "neighbours",
+      "group": "neighbours_wall",
+      "objects": 24,
+      "covered": 226495,
+      "overwritten": 32394,
+      "share": 0.143
+    }
+  ]
+}

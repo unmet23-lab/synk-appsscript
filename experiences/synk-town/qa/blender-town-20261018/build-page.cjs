@@ -26,6 +26,14 @@ const table = (head, rows) => `<div class="table-wrap"><table><thead><tr>${head.
     await sharp(c.src).extract(c.box).resize({ width: Math.min(640, c.box.width * 2), kernel: 'nearest' }).webp({ quality: 90 }).toFile(path.join(out, 'shots', name));
     crops.push({ ...c, file: 'shots/' + name });
   }
+  // data.figures (optional): { title, lead, note, items: [{ src, label }] } — whole pictures, such as a before/after sheet.
+  const figs = [];
+  for (const [i, f] of (data.figures?.items || []).entries()) {
+    if (!fs.existsSync(f.src)) continue;
+    const name = `figure-${i}.webp`;
+    await sharp(f.src).webp({ quality: 88 }).toFile(path.join(out, 'shots', name));
+    figs.push({ ...f, file: 'shots/' + name });
+  }
   const V = data.variants;
   const metricRows = data.metrics.map(row => `<tr><th scope="row">${esc(row.label)}${row.note ? `<span class="note">${esc(row.note)}</span>` : ''}</th>${V.map(v => `<td class="${row.best === v.id ? 'best' : ''}">${esc(row.values[v.id] ?? '—')}</td>`).join('')}</tr>`).join('\n');
   const fpsRows = data.fps.map(row => `<tr><th scope="row">${esc(row.label)}</th>${V.map(v => `<td>${esc(row.values[v.id] ?? '—')}</td>`).join('')}</tr>`).join('\n');
@@ -109,6 +117,13 @@ ${cmp ? `<section aria-labelledby="cmp-h">
   <h2 id="cmp-h">${esc(cmp.title)}</h2>
   ${table(['항목', ...cmp.columns.map(c => c.label)], cmpRows)}
   ${cmp.note ? `<p class="small">${esc(cmp.note)}</p>` : ''}
+</section>` : ''}
+
+${figs.length ? `<section aria-labelledby="fig-h">
+  <h2 id="fig-h">${esc(data.figures.title)}</h2>
+  ${data.figures.lead ? `<p>${esc(data.figures.lead)}</p>` : ''}
+  ${figs.map(f => `<figure><img src="${f.file}" alt="${esc(f.label)}" loading="lazy"><figcaption>${esc(f.label)}</figcaption></figure>`).join('')}
+  ${data.figures.note ? `<p class="small">${esc(data.figures.note)}</p>` : ''}
 </section>` : ''}
 
 <section aria-labelledby="shots-h">

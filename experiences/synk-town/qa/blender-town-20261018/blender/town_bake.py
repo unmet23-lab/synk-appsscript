@@ -44,6 +44,11 @@ MARGIN_PX = float(arg('--margin', '6'))
 # lightmap pack (25% against 11%). uv_fill_try.py in ../../blender-merged-20261018 measures them.
 GROUP_MARGIN = {k: float(v) for k, v in (p.split('=') for p in (arg('--group-margin') or '').split(',') if p)}
 GROUP_METHOD = dict(p.split('=') for p in (arg('--group-method') or '').split(',') if p)
+# Per-group samples (10-18: the neighbour atlases are magnified a lot in close views,
+# so their per-texel noise showed as blotches on the plaster at 1024).
+GROUP_SAMPLES = {k: int(v) for k, v in (p.split('=') for p in (arg('--group-samples') or '').split(',') if p)}
+# Per-group smallest island width in texels (10-18: neighbour shutter battens, see unwrap).
+GROUP_MIN_ISLAND = {k: float(v) for k, v in (p.split('=') for p in (arg('--min-island') or '').split(',') if p)}
 # Town camera poses (position, target, vertical fov) from ../poses (PC 1280x900).
 PREVIEW_CAMERAS = {'core': ((0, 8.2, 12.4), (0, .2, -2.6), 42), 'home-close': ((-5.706, 2.11, 5.549), (-5.986, .69, 1.699), 42),
                    'greenhouse-close': ((2.6, 2.35, -2.75), (-.15, .95, -6.1), 42)}
@@ -382,8 +387,10 @@ def stage_build():
     json.dump({'parts': PARTS, 'triangles': tris, 'removedHiddenFaces': removed, 'seconds': round(time.time() - t0, 1)}, open(os.path.join(WORK, 'build.json'), 'w'), indent=2)
 
 # ---------------------------------------------------------------- bake (same passes as the cafe, 10-17)
-def fill_dead_texels(rgb, passes=8):
-    lum = rgb.mean(axis=2); valid = lum > 1e-4; out = rgb.copy()
+def fill_dead_texels(rgb, passes=8, valid=None):
+    """Grow the baked islands into the empty texels around them. `valid` (the
+    texels the full pass covered) keeps the sun pass's true shade from being filled."""
+    lum = rgb.mean(axis=2); valid = (lum > 1e-4) if valid is None else valid.copy(); out = rgb.copy()
     for _ in range(passes):
         acc = np.zeros_like(out); cnt = np.zeros(lum.shape, np.float32)
         for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
@@ -418,6 +425,41 @@ def unwrap(objs, res, group=None):
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
     bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=margin)
     bpy.ops.object.mode_set(mode='OBJECT')
+    if group in GROUP_MIN_ISLAND:
+        # Islands thinner than a texel or two never get a texel centre, stay
+        # unbaked and show black (10-18: the neighbours' shutter battens were
+        # 0.7 px tall). Widen them across, then pack again; twice, since each
+        # pack scales everything down a little.
+        for _ in range(2):
+            log('widened thin islands', group, widen_thin_islands(objs, res, GROUP_MIN_ISLAND[group] * 1.2))
+            bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
+            bpy.ops.uv.pack_islands(rotate=True, rotate_method='ANY', scale=True, shape_method='CONCAVE', margin_method='SCALED', margin=margin)
+            bpy.ops.object.mode_set(mode='OBJECT')
+        log('thin islands left', group, widen_thin_islands(objs, res, GROUP_MIN_ISLAND[group], dry=True))
+
+def widen_thin_islands(objs, res, min_px, dry=False):
+    """Stretch every UV island narrower than min_px texels along its thin axis
+    (principal axes of its UV points) to min_px. Returns how many islands."""
+    from bpy_extras import bmesh_utils
+    n = 0
+    for o in objs:
+        bm = bmesh.new(); bm.from_mesh(o.data); uv = bm.loops.layers.uv['bake']
+        for island in bmesh_utils.bmesh_linked_uv_islands(bm, uv):
+            loops = [l for f in island for l in f.loops]
+            pts = np.array([tuple(l[uv].uv) for l in loops]) * res
+            c = pts.mean(axis=0); q = pts - c
+            if len(pts) < 3 or not np.isfinite(q).all(): continue
+            _, vecs = np.linalg.eigh(q.T @ q)
+            minor = vecs[:, 0]; width = np.ptp(q @ minor)
+            if width >= min_px: continue
+            n += 1
+            if dry: continue
+            s = min_px / max(width, .05)
+            q = q + np.outer(q @ minor, minor) * (s - 1)
+            for l, p in zip(loops, (q + c) / res): l[uv].uv = p
+        if not dry: bm.to_mesh(o.data)
+        bm.free()
+    return n
 
 def groups_of(part):
     """Atlas groups of a part: the fixed Claude order, then any group the build stage set on the objects."""
@@ -447,6 +489,23 @@ def drop_live_ground_in_core():
         bm.free()
     return n
 
+def refresh_meshes(parts):
+    """Put back the build.blend meshes of these parts' baked objects (the objects,
+    their properties and materials stay). 10-18: the first face clean deleted a
+    neighbour's front wall and a gable inside bake.blend, so a resumed bake needs
+    the built meshes again before the better clean runs."""
+    objs = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and o.get('part') in parts and not o.get('glass')]
+    with bpy.data.libraries.load(os.path.join(WORK, 'build.blend'), link=False) as (src, dst):
+        dst.meshes = [o.data.name for o in objs]
+    n = 0
+    for o, me in zip(objs, dst.meshes):
+        if me is None: log('no built mesh for', o.name); continue
+        for i, m in enumerate(me.materials):
+            own = bpy.data.materials.get(re.sub(r'\.\d{3}$', '', m.name)) if m else None
+            if own and own is not m: me.materials[i] = own
+        old = o.data; name = old.name; o.data = me; bpy.data.meshes.remove(old); me.name = name; n += 1
+    return n
+
 def stage_bake():
     # --resume 1 continues a bake that stopped (10-18: the app quit with 15 of 16
     # atlases done): reopen bake.blend, which keeps the finished atlases' UVs, and
@@ -454,9 +513,26 @@ def stage_bake():
     resume = arg('--resume') == '1' and os.path.exists(os.path.join(WORK, 'bake.blend')) and os.path.exists(os.path.join(WORK, 'bake.json'))
     bpy.ops.wm.open_mainfile(filepath=os.path.join(WORK, 'bake.blend' if resume else 'build.blend'))
     samples = int(arg('--samples', '1024')); setup_cycles(samples); sc = bpy.context.scene
+    report = json.load(open(os.path.join(WORK, 'bake.json'))) if resume else {'samples': samples, 'resolution': RES, 'atlases': {}}
+    # --refresh and --clean touch only parts with no atlas baked yet: the meshes
+    # of a part carry the bake UVs of all its atlases, so a part with one atlas
+    # done keeps its meshes (clear all of its atlases to redo it).
+    def unbaked(names):
+        return [p for p in names if all(f'town-{VARIANT}-{p}-{g}' not in report['atlases'] for g in groups_of(p))]
+    # --refresh <part,...> (with --resume): those parts' meshes come back from build.blend.
+    if resume and arg('--refresh') and unbaked(arg('--refresh').split(',')):
+        parts = unbaked(arg('--refresh').split(','))
+        log('refreshed meshes', parts, refresh_meshes(parts))
     town = [o for o in bpy.data.collections['town'].objects if o.type == 'MESH' and not o['glass']]
     log('dropped live ground faces in the core', drop_live_ground_in_core())
-    report = json.load(open(os.path.join(WORK, 'bake.json'))) if resume else {'samples': samples, 'resolution': RES, 'atlases': {}}
+    # --clean <part,...>: flip inward faces and drop buried ones before unwrapping
+    # (../../blender-merged-20261018/blender/clean_faces.py; merged_build.py does
+    # the same at build time — this is for a resumed bake of an older build).
+    if arg('--clean') and unbaked(arg('--clean').split(',')):
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'blender-merged-20261018', 'blender'))
+        from clean_faces import clean_faces
+        parts = unbaked(arg('--clean').split(','))
+        log('cleaned faces', parts, clean_faces([o for o in town if o['part'] in parts]))
     for part in PARTS:
         # Ground layers lie 1-6 mm over each other (paths over gravel, beds over
         # lawn). Baked with each other as occluders, the lower layer went black
@@ -488,18 +564,25 @@ def stage_bake():
             bpy.ops.object.select_all(action='DESELECT')
             for o in objs: o.select_set(True)
             bpy.context.view_layer.objects.active = objs[0]
+            sc.cycles.samples = GROUP_SAMPLES.get(group, samples)
             target(images['full'])
-            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'INDIRECT', 'DIFFUSE', 'GLOSSY', 'EMIT'}, margin=16, margin_type='ADJACENT_FACES', use_clear=True, target='IMAGE_TEXTURES')
+            # No bake margin: Blender grows each object's margin on its own, over
+            # the islands of the other objects in the same atlas. With 2 px between
+            # the neighbour pieces, a wood door's margin painted the sage door planks
+            # of another house tan (10-18, albedo baked with margin 0 and 16).
+            # fill_dead_texels and compress-glb's push-pull fill the gaps instead.
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'INDIRECT', 'DIFFUSE', 'GLOSSY', 'EMIT'}, margin=0, use_clear=True, target='IMAGE_TEXTURES')
             strengths = [(n, n.inputs['Strength'].default_value) for n in sc.world.node_tree.nodes if n.type == 'BACKGROUND']
             for n, _ in strengths: n.inputs['Strength'].default_value = 0
-            fill = bpy.data.objects['fill']; fill.hide_render = True; sc.cycles.samples = max(128, samples // 2)
+            fill = bpy.data.objects['fill']; fill.hide_render = True; sc.cycles.samples = max(128, GROUP_SAMPLES.get(group, samples) // 2)
             target(images['sun'])
-            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'DIFFUSE'}, margin=16, margin_type='ADJACENT_FACES', use_clear=True, target='IMAGE_TEXTURES')
+            bpy.ops.object.bake(type='COMBINED', pass_filter={'DIRECT', 'DIFFUSE'}, margin=0, use_clear=True, target='IMAGE_TEXTURES')
             for n, s in strengths: n.inputs['Strength'].default_value = s
             fill.hide_render = False; sc.cycles.samples = samples
             def read(img):
                 a = np.empty(res * res * 4, dtype=np.float32); img.pixels.foreach_get(a); return a.reshape(res, res, 4)[..., :3]
-            full, sun = fill_dead_texels(read(images['full'])), read(images['sun'])
+            raw = read(images['full']); covered = raw.mean(axis=2) > 1e-4
+            full, sun = fill_dead_texels(raw), fill_dead_texels(read(images['sun']), valid=covered)
             lum_full, lum_sun = full.mean(axis=2), sun.mean(axis=2)
             share = np.clip(lum_sun / np.maximum(lum_full, 1e-4), 0, 1); share[lum_full < .03] = 0; share = box_blur(share, 2)
             enc = np.concatenate([np.clip(to_srgb(full * .5), 0, 1), share[..., None]], axis=2)

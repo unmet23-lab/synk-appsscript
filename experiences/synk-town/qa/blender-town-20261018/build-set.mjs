@@ -31,7 +31,7 @@ const parts = [
   ...['ring', 'neighbours'].map(id => ({ id, outer: true, src: ['raw', 'plain'].map(k => path.join(rawDir, `town-${variant}-${id}${k === 'raw' ? '-raw' : ''}.glb`)), png: pngDir }))
     .filter(part => part.src.some(f => fs.existsSync(f))),
 ];
-const manifest = { name: setName, builtAt: new Date().toISOString(), textures: { mode, pc, phone }, geometry: 'meshopt' + (args.level ? '-' + args.level : ''), parts: [] }, log = [];
+const manifest = { name: setName, builtAt: new Date().toISOString(), textures: { mode, pc, phone, ...(args.uastc ? { uastc: args.uastc } : {}) }, geometry: 'meshopt' + (args.level ? '-' + args.level : ''), parts: [] }, log = [];
 // --only=<id,...> repacks those parts and keeps the others from the last run (results/build-set-<variant>.json).
 const only = args.only ? args.only.split(',') : null;
 const previous = only ? JSON.parse(fs.readFileSync(resultsFile, 'utf8')) : null;
@@ -48,10 +48,11 @@ for (const part of parts) {
     const custom = args['size-' + part.id]?.split(',').map(Number);
     const size = custom ? custom[tier === 'pc' ? 0 : 1] : part.outer ? outerSize[tier] : coreSize;
     const file = `${setName}-${part.id}${tier === 'phone' ? '-phone' : ''}.glb`;
-    const res = execFileSync(process.execPath, [path.join(here, 'compress-glb.mjs'), src, part.png || '-', path.join(out, file), `--mode=${mode}`, `--size=${size}`, '--geo=meshopt', ...(args.level ? [`--level=${args.level}`] : []), ...(args.gain ? [`--gain=${args.gain}`] : []), ...(part.drop ? [`--drop=${part.drop}`] : []), ...(part.glass ? [`--glass=${part.glass}`] : [])],
+    // --uastc=<map name part>[;...]: those maps go UASTC inside the etc1s set (10-18: neighbour plaster).
+    const res = execFileSync(process.execPath, [path.join(here, 'compress-glb.mjs'), src, part.png || '-', path.join(out, file), `--mode=${mode}`, `--size=${size}`, '--geo=meshopt', ...(args.level ? [`--level=${args.level}`] : []), ...(args.gain ? [`--gain=${args.gain}`] : []), ...(args.uastc ? [`--uastc=${args.uastc}`] : []), ...(part.drop ? [`--drop=${part.drop}`] : []), ...(part.glass ? [`--glass=${part.glass}`] : [])],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], env: process.env });
     const line = res.split('\n').find(l => l.startsWith('{')); const r = JSON.parse(line);
-    log.push({ part: part.id, tier, file, glbBytes: r.glbBytes, textures: r.textures.map(t => ({ name: t.name, from: t.from, bytes: t.bytes })) });
+    log.push({ part: part.id, tier, file, glbBytes: r.glbBytes, textures: r.textures.map(t => ({ name: t.name, from: t.from, bytes: t.bytes, ...(t.mode ? { mode: t.mode } : {}) })) });
     entry[tier === 'pc' ? 'url' : 'phone'] = file;
     console.log(part.id, tier, r.glbBytes);
   }

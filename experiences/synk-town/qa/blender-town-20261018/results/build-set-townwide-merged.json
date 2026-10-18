@@ -1,11 +1,12 @@
 {
   "manifest": {
     "name": "townwide-merged",
-    "builtAt": "2026-10-18T08:52:59.173Z",
+    "builtAt": "2026-10-18T12:41:30.955Z",
     "textures": {
       "mode": "etc1s",
       "pc": 2048,
-      "phone": 1024
+      "phone": 1024,
+      "uastc": "neighbours_wall"
     },
     "geometry": "meshopt-high",
     "parts": [
@@ -293,17 +294,18 @@
       "part": "neighbours",
       "tier": "pc",
       "file": "townwide-merged-neighbours.glb",
-      "glbBytes": 2868360,
+      "glbBytes": 5283356,
       "textures": [
         {
           "name": "town-wide-neighbours-neighbours_roof",
           "from": "png",
-          "bytes": 1026089
+          "bytes": 987764
         },
         {
           "name": "town-wide-neighbours-neighbours_wall",
           "from": "png",
-          "bytes": 935176
+          "bytes": 3475361,
+          "mode": "uastc"
         }
       ]
     },
@@ -311,17 +313,18 @@
       "part": "neighbours",
       "tier": "phone",
       "file": "townwide-merged-neighbours-phone.glb",
-      "glbBytes": 1518412,
+      "glbBytes": 2194740,
       "textures": [
         {
           "name": "town-wide-neighbours-neighbours_roof",
           "from": "png",
-          "bytes": 312808
+          "bytes": 313580
         },
         {
           "name": "town-wide-neighbours-neighbours_wall",
           "from": "png",
-          "bytes": 298567
+          "bytes": 1060933,
+          "mode": "uastc"
         }
       ]
     }

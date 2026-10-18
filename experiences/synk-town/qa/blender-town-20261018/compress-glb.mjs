@@ -1,6 +1,6 @@
 // Re-encode the baked maps inside a GLB from their source PNGs (or the embedded
 // image when no PNG is given) and write a variant GLB.
-//   NODE_PATH=<tools>/node_modules;<repo>/desktop/node_modules node compress-glb.mjs <in.glb> <pngDir|-> <out.glb> --mode=webp|etc1s|uastc [--size=2048] [--q=…]
+//   NODE_PATH=<tools>/node_modules;<repo>/desktop/node_modules node compress-glb.mjs <in.glb> <pngDir|-> <out.glb> --mode=webp|etc1s|uastc [--size=2048] [--q=…] [--uastc=<map name part>;…]
 // webp:  sharp WebP (exact: keeps RGB under alpha 0, which is full shade in a bake)
 // etc1s: KTX2 Basis ETC1S, mipmaps, sRGB (small files, ~1 B/px on the GPU)
 // uastc: KTX2 Basis UASTC + RDO + Zstandard, mipmaps, sRGB (better quality, bigger files)
@@ -130,15 +130,20 @@ for (const texture of mode === 'keep' ? [] : doc.getRoot().listTextures()) {
     resized = await sharp(joined, { raw: { width: size, height: size, channels: 4 } }).png().toBuffer();
   }
   let bytes, mime;
-  if (mode === 'webp') { bytes = await sharp(resized).webp({ quality: Number(args.q || 88), alphaQuality: 100, exact: true, effort: 6, smartSubsample: true }).toBuffer(); mime = 'image/webp'; }
+  // --uastc=<name part>[;...] encodes matching maps as UASTC inside an etc1s set:
+  // ETC1S blocks turned the neighbours' near-white plaster into grey-green
+  // blotches in close views (10-18: gone with WebP and UASTC, still there at ETC1S
+  // quality 255), and the roof atlas next to it looks the same either way.
+  const texMode = mode === 'etc1s' && (args.uastc || '').split(';').filter(Boolean).some(k => name.includes(k)) ? 'uastc' : mode;
+  if (texMode === 'webp') { bytes = await sharp(resized).webp({ quality: Number(args.q || 88), alphaQuality: 100, exact: true, effort: 6, smartSubsample: true }).toBuffer(); mime = 'image/webp'; }
   else {
     const common = { isKTX2File: true, generateMipmap: true, isPerceptual: true, isSetKTX2SRGBTransferFunc: true, imageDecoder };
-    const options = mode === 'uastc' ? { ...common, isUASTC: true, uastcLDRQualityLevel: Number(args.q || 2), enableRDO: true, rdoQualityLevel: Number(args.rdo || 1), needSupercompression: true }
+    const options = texMode === 'uastc' ? { ...common, isUASTC: true, uastcLDRQualityLevel: Number(texMode === mode ? args.q || 2 : 2), enableRDO: true, rdoQualityLevel: Number(args.rdo || 1), needSupercompression: true }
       : { ...common, isUASTC: false, qualityLevel: Number(args.q || 160), compressionLevel: Number(args.c || 3) };
     bytes = Buffer.from(await encodeToKTX2(new Uint8Array(resized), options)); mime = 'image/ktx2';
   }
   texture.setImage(new Uint8Array(bytes)).setMimeType(mime);
-  report.textures.push({ name, from: png && fs.existsSync(png) ? 'png' : 'embedded', sourceWidth: meta.width, width: size, bytes: bytes.length });
+  report.textures.push({ name, from: png && fs.existsSync(png) ? 'png' : 'embedded', sourceWidth: meta.width, width: size, bytes: bytes.length, ...(texMode !== mode ? { mode: texMode } : {}) });
 }
 // --geo=meshopt: quantize + EXT_meshopt_compression (Town loads MeshoptDecoder).
 // Bake UVs keep 14 bits (a 2048 atlas needs better than half-texel placement).

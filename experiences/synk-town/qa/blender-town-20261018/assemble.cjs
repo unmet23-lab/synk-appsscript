@@ -57,7 +57,7 @@ const data = {
   variants: VARIANTS.map(v => ({ id: v.id, label: v.label, shots: shotsFor(v.id, v.dir), how: extra.how[v.id] })),
   metrics, fps,
   fpsNote: perf ? `정지 시점마다 ${perf.seconds}초씩 완성 프레임 수를 센 중앙값이고, 괄호는 회전 사이 최저–최고입니다. 기기 배율 ${perf.dpr}로 열고(Town 「가볍게」 규칙대로 PC 1.5배·휴대폰 1.25배로 그림) ${IDS.length}판을 순서를 돌려 가며 ${rounds === perf.rounds ? perf.rounds : rounds + '~' + perf.rounds}회전 쟀습니다. 헤드리스 Edge(${adapter}) 값이고 실물 휴대폰 값이 아닙니다.${extra.fpsNote ? ' ' + extra.fpsNote : ''}` : '',
-  compression: extra.compression, compare: extra.compare,
+  compression: extra.compression, compare: extra.compare, figures: extra.figures,
   unverified: extra.unverified, decide: extra.decide,
 };
 fs.writeFileSync(path.resolve(args.out), JSON.stringify(data, null, 2) + '\n');

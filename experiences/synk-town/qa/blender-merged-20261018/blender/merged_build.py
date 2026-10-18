@@ -137,7 +137,14 @@ def main():
         o['part'], o['group'], o['key'], o['glass'] = part, group, key, glass
         o.name = f'{part}__{group}__{key}'
         k = f'{part}/{group}'; tris[k] = tris.get(k, 0) + sum(len(p.vertices) - 2 for p in o.data.polygons)
-    for o in [o for o in town.objects if o.get('part') == 'neighbours']: split_by_house(o)
+    neighbours = [o for o in town.objects if o.get('part') == 'neighbours']
+    if neighbours:
+        # Argon's neighbour houses: flip faces pointing into a solid, drop buried
+        # faces and undersides (black bands at the wall foot, half the wall atlas
+        # black, 10-18; clean_faces.py).
+        sys.path.insert(0, HERE); from clean_faces import clean_faces
+        tb.log('cleaned neighbour faces', clean_faces([o for o in neighbours if not o['glass']]))
+    for o in neighbours: split_by_house(o)
     # Helpers the scripts left behind (imported references, temporary curves) do not belong in the bake.
     stray = [o for o in bpy.data.objects if o.name not in town.objects]
     tb.log('removed stray objects', [o.name for o in stray][:20], len(stray))
