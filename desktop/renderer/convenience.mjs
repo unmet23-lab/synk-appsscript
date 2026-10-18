@@ -1,4 +1,5 @@
 import {createNavigation,searchCommands,trayShortcuts,notificationPreferences,isQuiet,installationEvents,safeDiagnostics} from './convenience-state.mjs';
+import {mountCareNotifications} from './care-notifications.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=name=>`<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -28,6 +29,7 @@ export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,appl
   </div>
   <div class="settings-group"><div class="setting-row"><div><h2>단축키</h2><p>검색, 화면 이동과 글자 크기를 키보드로 조절하세요.</p></div><button class="ghost-button" id="keyboard-help">단축키 보기</button></div><div class="setting-row"><div><h2>문제 확인 정보</h2><p>버전, 연결 여부와 설치 상태만 복사합니다. 이름, 메모, 파일 경로와 로그인 정보는 포함하지 않습니다.</p></div><button class="ghost-button" id="copy-diagnostics">진단 정보 복사</button></div></div><p id="desktop-preference-message" role="status" class="fine-print"></p>`;
   $('view-settings').append(settings);
+  mountCareNotifications({bridge,container:settings});
   const searchLabel=document.createElement('label');searchLabel.className='search settings-search';searchLabel.innerHTML=`${svg('search')}<input id="settings-search" type="search" placeholder="설정 찾기" aria-label="설정 찾기" autocomplete="off">`;$('view-settings').querySelector('.section-title').after(searchLabel);
   const emptySettings=document.createElement('p');emptySettings.id='settings-empty';emptySettings.hidden=true;emptySettings.textContent='일치하는 설정이 없어요. 다른 말로 찾아보세요.';searchLabel.after(emptySettings);
   const help=document.createElement('dialog');help.className='convenience-dialog';help.id='keyboard-dialog';help.setAttribute('aria-labelledby','keyboard-title');help.innerHTML=`<div class="command-heading"><h2 id="keyboard-title">단축키</h2><form method="dialog"><button class="icon-button" aria-label="단축키 닫기">${svg('x')}</button></form></div><dl class="keyboard-list"><dt>빠른 검색과 이동</dt><dd><kbd>Ctrl / ⌘ K</kbd></dd><dt>뒤로 / 앞으로</dt><dd><kbd>Alt ← / →</kbd></dd><dt>검색 결과 이동</dt><dd><kbd>↑ / ↓</kbd></dd><dt>선택 / 닫기</dt><dd><kbd>Enter / Esc</kbd></dd><dt>화면 확대 / 축소</dt><dd><kbd>Ctrl / ⌘ + / −</kbd></dd><dt>기본 크기</dt><dd><kbd>Ctrl / ⌘ 0</kbd></dd></dl><p class="fine-print">글을 입력하는 동안 Alt+화살표는 입력칸의 기본 동작을 유지합니다.</p>`;document.body.append(help);

@@ -1,5 +1,16 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="care-native-closed-20261018"></a>
+## 2026-10-18 Chrome 완전 종료 뒤 플레저 PC 알림
+
+**Platform Preview 0.4.26 / build20261018.3**은 Chrome과 별개로 설치된 Windows SYNK의 트레이가 플레저 알림을 전달한다. ‘설정 → 플레저 PC 알림’에서 계정별·이 PC별로 켜고 한국 시간의 예약 시각을 정한다. 새 설치의 기본값은 꺼짐이며, 켜면 Windows 로그인 자동 시작·트레이 대기를 함께 설정한다. 이 PC는 사용자의 요청으로 **09:00**에 켰다. PC·SYNK 완전 종료 중이나 로그인하지 않은 상태는 수신 조건에 포함하지 않는다. 브라우저 기기 알림과 함께 켜면 중복될 수 있음을 웹과 설치본 설정에 안내했다.
+
+main의 기존 SYNK ID 인증 경로로 계정 수첩을 새로 읽고, 정본 Care 모델과 운영 푸시의 날짜 판정 함수를 묶어 예약 일정·날짜를 정한 후속 챙김만 확인한다. 수첩 본문·토큰은 새 알림 저장소에 복사하지 않는다. 기기 설정과 하루 수신 시도 기록은 계정·인증 설정에 묶어 암호화한다. 90분 수신 범위, 재시작 후 하루 중복 방지, 로그아웃·계정 전환 중 응답 차단, 저장 실패 시 표시 금지를 적용했다. 알림에는 개인 이름·이야기를 넣지 않는다. [Electron Notification 원문](https://www.electronjs.org/docs/latest/api/notification)을 확인했다.
+
+공개 0a92bd7은 세 설치파일·홈페이지 다운로드·기존 설치본용 feed·웹의 PC 알림 안내를 함께 전환했다. 동결 소스 **153개**의 SHA는 7f6ce6a102b0f7660073b683a0ed8b79064450251f050d28d77a6d13815d43be이며 기존 147개 파일은 그대로다. Windows x64·Mac arm64/x64의 [공통 설치·실행 CI](https://github.com/unmet23-lab/synk-policy/actions/runs/39123441446), 관련 검사 **103/103**, 세 공개 설치파일 전체 바이트/SHA, 공개 변경 **19/19**를 확인했다. 현재 PC는 설치 75파일·동결 소스153개·ASAR를 대조하고 정상 종료→설치→재실행 뒤 기존 로그인·구독 계정판·네 혜택과 최신 updater를 확인했다. 다른 기기의 실제 설치 완료를 뜻하지 않는다. [공개 확인](../.tmp/care-native-release-20261018/public-verification.json) · [설치 인수](../.tmp/care-native-release-20261018/native-update/native-handoff.json).
+
+**실제 수신:** Chrome 정상 종료(exit_type=Normal)·Chrome 프로세스 **0개**, SYNK 트레이 대기 상태에서 **20:58:54.079314 KST**에 Windows 알림 DB의 im.synk.platform.preview handler에 새 플레저 알림(**id1659**)이 기록됐다. 설치본의 시험 알림 API도 displayed=true를 확인했다. 현재 계정에는 오늘 보낼 예약 항목이 없어, 계정 저장 자료를 바꾸지 않고 **연결 확인용 시험 알림 1회**로 검증했다. 미래 오전9시의 실물 수신·배너 화면·클릭·절전·다른 기기는 이 결과에 포함하지 않는다. 계정 수첩 revision9와 SHA·09:00은 전후 같으며 Chrome은 마지막 세션으로 다시 실행했다. 정상 종료 뒤 세션6파일을 사용자 전용 DPAPI 사본으로 보존하고 복호화 SHA를 대조했다. 화면 입력·강제 종료·계정 자료 쓰기는 없었다. 첫 종료 시도는 창이 남아 알림 발송 전에 중단했으며, 새 시도는 계정과 프로세스를 다시 확인하고 자기 Chrome 창에만 정상 종료 메시지를 보냈다. [수신 종합](../.tmp/care-native-release-20261018/closed-chrome-check-attempt2/result.json) · [정상 종료](../.tmp/care-native-release-20261018/closed-chrome-check-attempt2/closed.json) · [Windows 수신 관찰](../.tmp/care-native-release-20261018/closed-chrome-check-attempt2/watch-result.json).
+
 <a id="member-benefits-next-release-20261018"></a>
 ## 2026-10-18 회원 혜택 릴리스 원천과 0.4.25 공개
 
