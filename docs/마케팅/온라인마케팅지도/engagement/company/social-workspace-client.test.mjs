@@ -725,3 +725,9 @@ test('a workspace detail refresh cannot replace a newer editor or a reopened rev
     assert.equal(f.run('socialWorkspaceState.editId'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.id'),scenario.next);assert.equal(f.run('socialWorkspaceState.detail.post.revision'),2);assert.equal(f.run('snswRows("posts").find(p=>p.id===next).revision'),2);assert.equal(f.run('socialWorkspaceState.draft.revision'),2);assert.equal(f.run('socialWorkspaceState.detailUnavailable'),false);assert.equal(f.run('socialWorkspaceState.error'),'');assert.equal(f.run('socialWorkspaceState.loading'),false);
   }
 });
+test('results offer the post address register link only to people who can write',()=>{
+  const f=fixture(),has=()=>f.run('snswResults()').includes('publicationAction=register');
+  assert.equal(has(),true);assert.match(f.run('snswResults()'),/게시 주소로 추가/);
+  f.context.state.user.role='viewer';assert.equal(has(),false);
+  f.context.state.user.role='admin';f.run('socialWorkspaceState.data.canWrite=false');assert.equal(has(),false);
+});
