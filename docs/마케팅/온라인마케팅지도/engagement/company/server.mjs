@@ -489,9 +489,11 @@ export function createCompanyApp(options={}) {
   }
   function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   function purgeExpired(at=clock()){store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if((row.expiresAt&&Date.parse(row.expiresAt)<=Date.parse(at))||(kind==='hypeObservations'&&(!Number.isFinite(Date.parse(row.checkedAt))||Date.parse(row.checkedAt)<=Date.parse(at)-HYPE_RETENTION_MS)))store.remove(kind,row.id);const postIds=new Set(store.all('posts').map(p=>p.id));for(const row of store.all('hypeObservations'))if(!postIds.has(row.postId))store.remove('hypeObservations',row.id);});}
-  function records(channels,{readOnly=false}={}){if(!readOnly)purgeExpired();const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  // Reads enforce retention immediately; scheduledTick owns physical expiry cleanup.
+  function records(channels){const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  function selectRecords(source,channels){const ids=new Set(channels.map(c=>c.id)),posts=source.posts.filter(p=>ids.has(p.channelId)),postIds=new Set(posts.map(p=>p.id));return{version:source.version,posts,snapshots:source.snapshots.filter(s=>postIds.has(s.postId)),channelSnapshots:source.channelSnapshots.filter(s=>ids.has(s.channelId))};}
   function assistantPerformance(user,{scope,asOf}){
-    const {catalog,data}=reportSource(user,new URLSearchParams({scope}),asOf,{readOnly:true});
+    const {catalog,data}=reportSource(user,new URLSearchParams({scope}),asOf);
     const team=typeof user.teamId==='string'&&user.teamId?store.get('teams',user.teamId):null;
     return {channelCount:catalog.channels.length,teamName:team?.active?team.name:null,growth:buildGrowthSummary(data,catalog,{asOf})};
   }
@@ -523,14 +525,15 @@ export function createCompanyApp(options={}) {
         postCount:group.posts.length,newPosts:group.posts.filter(post=>post.publishedDate>=start).length,metrics};
     })};
   }
-  function reportSource(user,query,end,{readOnly=false}={}){
+  function reportSource(user,query,end,{overview=false}={}){
     const all=scopedChannels(user,query);const ownerId=['admin','manager'].includes(user.role)?query.get('ownerId'):null;
     const candidates=all.filter(c=>(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel')));
-    const events=store.all('ownershipEvents'),raw=records(candidates,{readOnly});
+    // The overview and selected report share one read and one expiry cutoff.
+    const events=store.all('ownershipEvents'),overviewData=overview?records(all):null,raw=overviewData?selectRecords(overviewData,candidates):records(candidates);
     const selected=ownerId?recordsForOwner(raw,candidates,events,ownerId,end):{records:raw,channels:candidates};
     const channels=selected.channels;
     const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl,country:''}))};
-    return {all,ownerId,events,channels,catalog,data:selected.records};
+    return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
     const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
@@ -540,14 +543,14 @@ export function createCompanyApp(options={}) {
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
     dateRange(start,end);if(end>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
-    const {all,ownerId,events,catalog,data}=reportSource(user,query,end),result=analyze(data,catalog,{start,end});
+    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end});
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
     const groups=result.groups('channel');
     const users=visibleMembers(store,user);
     const memberGroups=users.map(u=>{const mine=recordsForOwner(data,catalog.channels,events,u.id,end);const item=analyze(mine.records,{channels:mine.channels},{start,end});return {id:u.id,name:u.name,active:u.active,teamId:u.teamId,channelCount:mine.channels.length,metrics:item.metrics};});
     const overviewCatalog={channels:all.map(c=>({...c,ready:true,brand:c.displayName,publicUrl:c.canonicalUrl}))};
-    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(records(all),overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
+    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
   }
   function saveCollection(channel,result,runId,withinTransaction=false,mode='full'){
     const live=store.get('channels',channel.id);
@@ -1506,7 +1509,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/team-trends'){
         const teams=store.all('teams').filter(team=>team.active===true),ids=new Set(teams.map(team=>team.id));
         const channels=store.all('channels').filter(channel=>ids.has(channel.teamId));
-        return send(res,200,buildTeamTrends({teams,channels,records:records(channels,{readOnly:true}),ownTeamId:user.teamId,query:url.searchParams,today:today()}));
+        return send(res,200,buildTeamTrends({teams,channels,records:records(channels),ownTeamId:user.teamId,query:url.searchParams,today:today()}));
       }
       if(path==='/api/studio-examples')return send(res,200,studio.examples(user));
       if(path==='/api/studio-workspace')return send(res,200,studio.workspace(user));

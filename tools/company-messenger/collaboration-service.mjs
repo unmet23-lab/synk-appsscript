@@ -125,7 +125,14 @@ export function createCollaborationService({ db, assert, textField, now, transac
     const external = (externalNotifications?.list(userId) || []).map(row => ({ ...row, _source: 'external' }));
     return [...messages, ...due, ...external].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
   }
-  function unreadCount(userId) { return visibleNotifications(userId).filter(row => !row.readAt).length; }
+  function unreadCount(userId) {
+    // Count notification rows, not messages: one message can have several kinds.
+    // Keep the same live room authorization without constructing message details.
+    const messages = all("SELECT m.channel_id,COUNT(*) AS unread FROM notifications n JOIN messages m ON m.id=n.message_id WHERE n.user_id=? AND (n.read_at IS NULL OR n.read_at='') GROUP BY m.channel_id", userId)
+      .filter(row => accessible(userId, row.channel_id)).reduce((sum, row) => sum + row.unread, 0);
+    const other = [...productivity.dueNotifications(userId), ...(externalNotifications?.list(userId) || [])];
+    return messages + other.filter(row => !row.readAt).length;
+  }
   function notificationsForPush(userId) {
     if (!activeUser(userId)) return [];
     return visibleNotifications(userId).filter(row => {
