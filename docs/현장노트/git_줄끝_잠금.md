@@ -275,6 +275,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: ① 도구는 `git rev-list --topo-order --reverse`로 차례를 다시 정한다. 가지 밖 변형 커밋은 다른 줄기라 본선 뒤로 간다. ② 그 세션이 「나눠 올리기」로 일부만 올리고 나머지를 로컬에 남겼다. 짝 판정은 커밋 단위라 이런 남은 줄을 못 본다. ③ `tools/git-storage-policy.json`의 `maxTotalBytes`(52,428,800)는 한 번 push 전체에 걸린다.
 - 고침: ① 변형 커밋에 기대는 커밋은 다음 묶음으로 미룬다(본선 → 변형·합친 줄 → 기댄 커밋 순서로 세 번). ② 짝 판정 뒤에 쌓은 판을 따로 대조한다 — 새로 생기는 파일은 로컬 HEAD 판과 바이트로 같은지, origin에 더해지는 줄은 모두 로컬 HEAD에도 그만큼 있는지(옛 판 줄이 되살아나거나 겹쳐 들어가는 것을 잡는다). ③ 커밋별 새 blob 크기로 50MB 아래 묶음을 나눈다. 같은 줄을 두 쪽이 따로 고쳤으면(트랙 긴 줄) 그 커밋에서 그 파일을 빼고, 두 쪽 글을 모두 품은 줄로 바꾸는 커밋을 origin 위에 따로 만들어 넘긴다. 도구는 `.tmp/push-leftover-20261019/tools/`(`invariant-check.mjs`·`new-file-gaps.mjs`·`batch-sizes.mjs`·`make-variant.mjs`·`make-b-line.mjs`).
 - 다시 확인: 10-19 origin `5fe9ecc24..d6d8a49f8`(28·7·1커밋). 다 쌓은 판에서 새 파일 322개가 로컬 HEAD 판과 같고, 더해지는 줄 가운데 로컬에 없는 것은 일부러 합친 댓글 DM 줄 하나뿐이다.
+- 덧붙임(올린 뒤 CI가 빨개짐): 커밋이 바꾼 시험 셋만 미리 돌렸더니, 노트북 이사 편(e82791890)의 새 허브 원고 `docs/마케팅/맞춤도구/manual/builds-index.html`가 바꾸지도 않은 `tests/지면폰트.test.js` ⑦을 깨뜨려 origin CI(run 39223084491)가 실패했다. 그 커밋은 로컬에서도 같은 시험을 깨뜨리고 있었다. 남의 커밋을 몰아 올릴 때는 CI가 도는 `tests/*.test.js` 전체를 올릴 판으로 `CI=true`를 주고 돌린다. 이번 고침은 `8bc6b4e2d`(줄인 SUIT를 사이트 절대 경로로 부르는 빌드 입력이라 ⑦에서 뺌, `CI=true` 8/8).
 
 ## 워크트리·연결 폴더·공간 정리
 
