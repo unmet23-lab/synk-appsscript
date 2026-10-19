@@ -99,6 +99,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 이 PC의 `core.autocrlf=true`가 archive에도 적용된다.
 - 고침: `git -c core.autocrlf=false archive <커밋> -- <경로들> | tar -x -C <폴더>`. 차이만 볼 때는 `diff --strip-trailing-cr`도 된다.
 - 다시 확인: 꺼낸 파일의 `tr -cd '\r' | wc -c`가 blob(`git cat-file blob <커밋>:<경로> | tr -cd '\r' | wc -c`)과 같다.
+- 10-19 덧붙임(`git apply`도 같다): SYNK-website처럼 `.gitattributes`가 `eol=lf`인 저장소를 archive로 꺼낸 사본은 LF로 나왔지만, 그 사본(저장소 밖 폴더)에서 `git apply <패치>`를 하자 고친 세 파일(build.mjs·site.css·site.js)만 모든 줄이 CRLF가 됐다. 저장소 밖에서는 `.gitattributes`를 보지 않고 시스템 `core.autocrlf=true`대로 쓴다. 홈페이지 빌드는 이 바이트로 `?v=` 토큰을 만들므로 공개본과 어긋난다. `git -c core.autocrlf=false apply`로 하거나, 패치를 만든 사본의 파일을 그대로 복사한다(10-19 질문창·서비스 시안). 확인은 Node로 CR 수를 센다(`(s.match(/\r/g)||[]).length`, 아래 「grep -c $'\r'」 항목).
 
 ### 워크트리에서 만든 묶음의 지도 판(map_ver)이 바뀐다
 - 증상: 워크트리에서 `node tools/build-game-learning.js`를 돌리자 묶음의 `map_ver`와 Strata 원본 sha256이 바뀐다(내용은 같음). 옮겨 쓴 `atlas-learning.js`가 메인 `--check`에서 「Learning source differs」로 실패한다(10-03).
