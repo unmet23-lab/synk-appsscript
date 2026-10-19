@@ -1,0 +1,768 @@
+/* 공개 — synk.im(공개 저장소 main)에 내 파일만 얹어 올리는 도구.
+ * 임시 bare 원격(file://, 부분 클론 허용)·로컬 HTTP 서버(공개 주소 흉내)·가짜 gh로 잰다.
+ * 실제 synk-policy·synk.im·GitHub·전역 git 설정은 건드리지 않는다. */
+'use strict';
+
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const http = require('node:http');
+const crypto = require('node:crypto');
+const { execFileSync } = require('node:child_process');
+
+const REPO = path.resolve(__dirname, '..');
+const 도구 = require(path.join(REPO, 'tools', '공개.js'));
+const 속 = 도구._시험;
+
+// 시험 git은 이 PC·CI의 시스템·전역 설정을 읽지 않는다. curl은 프록시를 타지 않는다.
+for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
+Object.assign(process.env, {
+  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(os.tmpdir(), 'synk-publish-test-no-global-config'),
+  GIT_TERMINAL_PROMPT: '0', GIT_AUTHOR_NAME: '시험', GIT_AUTHOR_EMAIL: 'test@example.invalid',
+  GIT_COMMITTER_NAME: '시험', GIT_COMMITTER_EMAIL: 'test@example.invalid',
+  NO_PROXY: '127.0.0.1,localhost', no_proxy: '127.0.0.1,localhost',
+});
+
+const 블롭id = (b) => crypto.createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${b.length}\0`), b])).digest('hex');
+const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
+const sha12 = (b) => sha(b).slice(0, 12);
+const 글 = (s) => Buffer.from(s, 'utf8');
+
+function 쓰기(폴더, 경로, 내용) {
+  const 파일 = path.join(폴더, ...경로.split('/'));
+  fs.mkdirSync(path.dirname(파일), { recursive: true });
+  fs.writeFileSync(파일, 내용);
+}
+
+/** 공개 저장소 .github/site-check/check.mjs의 도구 이름 단계와 같은 꼴(낱말 목록만 바꾼다) */
+const 점검원문 = (낱말) => [
+  '// 2. 도구 이름',
+  '  const skipDir = /(^|\\/)(vendor|node_modules)\\//;',
+  '  const skipPage = /^(en\\/)?(privacy|terms|data-deletion|brief)\\//;',
+  '  const skipFile = /(^|\\/)knowledge-engine\\.js$/;',
+  "  const listOf = b64 => new RegExp(Buffer.from(b64, 'base64').toString('utf8'), 'i');",
+  `  const words = listOf('${Buffer.from(낱말).toString('base64')}');`,
+  `  const tagWords = listOf('${Buffer.from('suno|\\budio\\b').toString('base64')}');`,
+  '    if (/\\.(html|js|mjs|css|json|txt|xml|md|svg|webmanifest)$/i.test(f)) {',
+  '',
+].join('\n');
+
+/** 임시 공개 저장소: bare origin(main) + 남이 올리는 작업본. 도구 사본(bare 부분 클론)은 도구가 따로 받는다. */
+function 새공개본(t, 파일 = {}) {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-publish-test-'));
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
+  const origin = path.join(뿌리, 'origin.git');
+  execFileSync('git', ['init', '-q', '--bare', '-b', 'main', origin]);
+  for (const [k, v] of [['uploadpack.allowFilter', 'true'], ['uploadpack.allowAnySHA1InWant', 'true']]) execFileSync('git', ['--git-dir', origin, 'config', k, v]);
+  const 작업 = path.join(뿌리, '남');
+  execFileSync('git', ['init', '-q', '-b', 'main', 작업]);
+  const g = (...a) => execFileSync('git', ['-C', 작업, '-c', 'core.autocrlf=false', '-c', 'core.quotepath=false', ...a], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  g('remote', 'add', 'origin', origin);
+  /** 남의 공개(다른 세션이 synk-policy에 직접 올림) */
+  const 올림 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개') => {
+    // 도구가 그사이 올린 커밋 위에서 고친다
+    try { g('fetch', '-q', 'origin'); g('reset', '-q', '--hard', 'origin/main'); } catch (_) { /* 첫 커밋 */ }
+    for (const [p, v] of Object.entries(바꿀)) 쓰기(작업, p, v);
+    for (const p of 지울) fs.rmSync(path.join(작업, ...p.split('/')));
+    g('add', '-A');
+    g('commit', '-q', '-m', 메시지);
+    g('push', '-q', 'origin', 'main');
+    return g('rev-parse', 'HEAD').trim();
+  };
+  const 바탕 = 올림({ '.github/site-check/check.mjs': 점검원문('suno|금지낱말'), ...파일 }, [], '바탕');
+  const 사본 = path.join(뿌리, '사본.git');
+  const 원격주소 = `file:///${origin.replace(/\\/g, '/')}`;
+  const og = (...a) => execFileSync('git', ['--git-dir', origin, '-c', 'core.quotepath=false', ...a], { stdio: ['pipe', 'pipe', 'pipe'] });
+  return {
+    뿌리, origin, 작업, 바탕, 올림, 사본, 원격주소,
+    머리: () => og('rev-parse', 'main').toString().trim(),
+    파일: (p, rev = 'main') => og('show', `${rev}:${p}`),
+    있나: (p, rev = 'main') => { try { og('cat-file', '-e', `${rev}:${p}`); return true; } catch (_) { return false; } },
+    og,
+    /** 로컬 폴더(빌드 출력 흉내) */
+    로컬: (이름, 파일들) => { const d = path.join(뿌리, 이름); fs.mkdirSync(d, { recursive: true }); for (const [p, v] of Object.entries(파일들)) 쓰기(d, p, v); return d; },
+    후보폴더: () => path.join(뿌리, `후보-${crypto.randomBytes(3).toString('hex')}`),
+    옵션: (덧 = {}) => ({ 사본, 원격주소, 주소: 'http://127.0.0.1:9', 점검안함: true, ...덧 }),
+  };
+}
+
+/** 공개 주소 흉내: 경로 → 바이트. 쿼리는 무시한다. */
+async function 공개서버(t) {
+  const 파일 = new Map();
+  const 요청 = [];
+  const 서버 = http.createServer((req, res) => {
+    const p = decodeURIComponent(new URL(req.url, 'http://x').pathname.slice(1));
+    요청.push(`${req.method} ${p}`);
+    const b = 파일.get(p);
+    if (!b) { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('없음'); return; }
+    res.writeHead(200, { 'content-length': b.length, 'x-cache': 'HIT' });
+    res.end(req.method === 'HEAD' ? undefined : b);
+  });
+  await new Promise((r) => 서버.listen(0, '127.0.0.1', r));
+  t.after(() => new Promise((r) => 서버.close(r)));
+  return { 주소: `http://127.0.0.1:${서버.address().port}`, 파일, 요청 };
+}
+
+/** 가짜 gh: run list는 목록(부른 차례) 함수가, run view는 실패 단계 하나, rerun은 기록만(다시실패면 던진다) */
+function 가짜gh(목록, { 다시실패 = false } = {}) {
+  const 부름 = [];
+  const gh = (args) => {
+    부름.push(args.join(' '));
+    if (args[0] === 'run' && args[1] === 'list') return JSON.stringify(목록(부름.filter((a) => a.startsWith('run list')).length));
+    if (args[0] === 'run' && args[1] === 'view') return JSON.stringify({ jobs: [{ steps: [{ name: '점검', conclusion: 'failure' }, { name: '준비', conclusion: 'success' }] }] });
+    if (args[0] === 'run' && args[1] === 'rerun') { if (다시실패) throw Object.assign(new Error('rerun 거절'), { 이유: 'gh run rerun 실패 — 권한 없음' }); return ''; }
+    throw new Error(`모르는 gh ${args.join(' ')}`);
+  };
+  gh.부름 = 부름;
+  return gh;
+}
+
+const 실행 = (id, sha, status, conclusion, attempt = 1, at = '2026-10-19T00:00:00Z') => ({ databaseId: id, headSha: sha, status, conclusion, createdAt: at, url: `u/${id}`, attempt });
+
+const 후보읽기 = (폴더, p) => fs.readFileSync(path.join(폴더, ...p.split('/')));
+const 종류들 = (r) => Object.fromEntries(r.항목.map((x) => [x.경로, x.종류]));
+
+// ── 미리 보기 ──────────────────────────────────────────────────────────────
+
+test('미리 보기: 공개본 + 내 파일만 · 같은 파일과 줄끝만 다른 파일은 뺀다 · 원격은 그대로 · 사본은 bare', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': 'A\n', 'b.txt': 'B\n', 'c.txt': 'C1\nC2\n' });
+  const 로컬 = 공.로컬('빌드', { 'a.txt': 'A2\n', 'b.txt': 'B\n', 'c.txt': 'C1\r\nC2\r\n', 'new/d.txt': 'D\n' });
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt', 'b.txt', 'c.txt', 'new/d.txt'] }));
+  assert.equal(r.결과, '미리 보기');
+  assert.deepEqual(종류들(r), { 'a.txt': '바꿈', 'new/d.txt': '새' });
+  assert.match(r.건너뜀.find((x) => x.경로 === 'b.txt').이유, /이미 공개본과 같다/);
+  assert.match(r.건너뜀.find((x) => x.경로 === 'c.txt').이유, /줄끝만 다르다/);
+  assert.match(r.계획, /^[0-9a-f]{12}$/);
+  assert.equal(공.머리(), 공.바탕, '미리 보기는 push하지 않는다');
+  assert.equal(execFileSync('git', ['--git-dir', 공.사본, 'rev-parse', '--is-bare-repository'], { encoding: 'utf8' }).trim(), 'true');
+  const 다시 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt', 'b.txt', 'c.txt', 'new/d.txt'] }));
+  assert.equal(다시.계획, r.계획, '같은 입력·같은 공개본이면 계획 해시가 같다');
+  const 줄끝도 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['c.txt'], 줄끝도: true }));
+  assert.deepEqual(종류들(줄끝도), { 'c.txt': '바꿈' });
+});
+
+test('3방향(--기준): 기준 뒤 남이 같은 파일을 고쳤으면 둘 다 살리고, 겹치면 멈춘다', async (t) => {
+  const 줄들 = Array.from({ length: 10 }, (_, i) => `줄 ${i + 1}`);
+  const 판 = (고침) => `${줄들.map((l, i) => 고침[i] ?? l).join('\n')}\n`;
+  const 공 = 새공개본(t, { 'page.html': 판({}), 'logo.webp': Buffer.from([1, 0, 2, 3]) });
+  const 기준 = 공.바탕;
+  공.올림({ 'page.html': 판({ 1: '줄 2 — 남이 공개본에서 고침' }), 'logo.webp': Buffer.from([1, 0, 9, 9]) });
+  const 내판 = 공.로컬('내판', { 'page.html': 판({ 8: '줄 9 — 내가 고침' }), 'logo.webp': Buffer.from([1, 0, 7, 7]) });
+
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['page.html'], 기준, 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기');
+  assert.match(r.항목[0].방법, /3방향/);
+  const 합친 = 후보읽기(후보, 'page.html').toString('utf8');
+  assert.match(합친, /줄 2 — 남이 공개본에서 고침/);
+  assert.match(합친, /줄 9 — 내가 고침/);
+
+  // 기준 없이 덮으면 남의 변경이 되돌아간다 — 하루 안에 남이 고친 파일이라고 알린다
+  const 덮기 = await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['page.html'] }));
+  assert.ok(덮기.알림.some((x) => x.검사 === '덮어쓰기' && x.경로 === 'page.html'));
+
+  // 같은 줄을 둘 다 고치면 멈춘다 · 그림을 둘 다 바꿔도 멈춘다
+  const 겹침 = 공.로컬('겹침', { 'page.html': 판({ 1: '줄 2 — 나도 고침' }) });
+  const g = await 도구.올리기(공.옵션({ 원본: 겹침, 항목: ['page.html'], 기준 }));
+  assert.equal(g.결과, '걸림');
+  assert.match(g.걸림[0].이유, /1곳 겹친다/);
+  const 그림 = await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['logo.webp'], 기준 }));
+  assert.equal(그림.결과, '걸림');
+  assert.match(그림.걸림[0].이유, /그림·바이너리/);
+  assert.equal(공.머리() !== 기준, true);
+});
+
+test('3방향(--기준폴더): 원고 빌드끼리 견줘 내가 바꾼 파일만 올리고 남의 직접 수정은 둔다 · 원고에서 지운 파일은 지운다', async (t) => {
+  const 공 = 새공개본(t, {
+    'world/a.js': 'A\n', 'world/b.js': 'B-공개본에서 직접 고침\n', 'world/c.js': 'C\n', 'world/old.js': 'OLD\n',
+    'world/index.html': `<script src="a.js?v=${sha12(글('A\n'))}"></script>\n<p>hi</p>\n<footer>f</footer>\n<!-- 공개본에만 -->\n`,
+    'world/live-only.txt': '남이 공개본에만 올린 파일\n',
+  });
+  const 기준빌드 = 공.로컬('기준빌드', {
+    'a.js': 'A\n', 'b.js': 'B\n', 'c.js': 'C\n', 'old.js': 'OLD\n',
+    'index.html': '<script src="a.js?v=aaaaaaaaaaaa"></script>\n<p>hi</p>\n<footer>f</footer>\n',
+  });
+  const 내빌드 = 공.로컬('내빌드', {
+    'a.js': 'A2\n', 'b.js': 'B\n', 'c.js': 'C\n',
+    'index.html': '<script src="a.js?v=bbbbbbbbbbbb"></script>\n<p>hi there</p>\n<footer>f</footer>\n',
+  });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 내빌드, 공개폴더: 'world', 항목: ['.'], 기준폴더: 기준빌드, 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.deepEqual(종류들(r), { 'world/a.js': '바꿈', 'world/index.html': '바꿈', 'world/old.js': '지움' });
+  assert.match(r.건너뜀.find((x) => x.경로 === 'world/b.js').이유, /기준과 같다/);
+  assert.equal(후보읽기(후보, 'world/index.html').toString('utf8'),
+    `<script src="a.js?v=${sha12(글('A2\n'))}"></script>\n<p>hi there</p>\n<footer>f</footer>\n<!-- 공개본에만 -->\n`,
+    '빌드 토큰은 공개본 값으로 맞춘 뒤 합치고, 바뀐 a.js 토큰만 새 값');
+  assert.ok(!r.항목.some((x) => x.경로 === 'world/live-only.txt'), '공개본에만 있는 남의 파일은 지우지 않는다');
+});
+
+test('3방향 지움: 지우려는 파일을 기준 뒤 남이 고쳤으면 멈추고, 그대로면 지운다', async (t) => {
+  const 공 = 새공개본(t, { 'site/old.txt': 'v1\n', 'site/keep.txt': 'k\n', 'site/gone.txt': 'g\n' });
+  const 기준 = 공.바탕;
+  공.올림({ 'site/old.txt': 'v2 — 남이 공개본에서 고침\n' });
+  const 직접 = await 도구.올리기(공.옵션({ 지움: ['site/old.txt', 'site/gone.txt'], 기준 }));
+  assert.equal(직접.결과, '걸림');
+  assert.deepEqual(직접.걸림.map((x) => `${x.경로}:${x.검사}`), ['site/old.txt:3방향']);
+  assert.match(직접.걸림[0].이유, /남이 바꿨다/);
+  // 기준폴더: 기준 빌드에만 있는 파일(원고에서 지운 파일)도 같은 규칙
+  const 기준빌드 = 공.로컬('기준빌드', { 'old.txt': 'v1\n', 'keep.txt': 'k\n', 'gone.txt': 'g\n' });
+  const 내빌드 = 공.로컬('내빌드', { 'keep.txt': 'k\n' });
+  const 폴더 = await 도구.올리기(공.옵션({ 원본: 내빌드, 공개폴더: 'site', 항목: ['.'], 기준폴더: 기준빌드 }));
+  assert.equal(폴더.결과, '걸림');
+  assert.deepEqual(폴더.걸림.map((x) => x.경로), ['site/old.txt']);
+  assert.deepEqual(종류들(폴더), { 'site/gone.txt': '지움' }, '남이 안 고친 파일은 지운다');
+  assert.equal(공.있나('site/old.txt'), true);
+});
+
+test('기준 없이 폴더를 주면 목록만 보이고 멈춘다(--전부면 미리 보기)', async (t) => {
+  const 공 = 새공개본(t, { 'site/a.css': 'a{}\n', 'site/b.css': 'b{}\n', 'site/live.css': 'live{}\n' });
+  const 빌드 = 공.로컬('빌드', { 'a.css': 'a{color:red}\n', 'b.css': 'b{}\n' });
+  const r = await 도구.올리기(공.옵션({ 원본: 빌드, 공개폴더: 'site', 항목: ['.'] }));
+  assert.equal(r.결과, '멈춤');
+  assert.match(r.이유, /목록만/);
+  assert.deepEqual(종류들(r), { 'site/a.css': '바꿈' });
+  assert.ok(r.알림.some((x) => /공개본에만 있는 파일 1개/.test(x.이유)));
+  const 전부 = await 도구.올리기(공.옵션({ 원본: 빌드, 공개폴더: 'site', 항목: ['.'], 전부: true }));
+  assert.equal(전부.결과, '미리 보기');
+});
+
+// ── ?v= ────────────────────────────────────────────────────────────────────
+
+test('?v= 갱신: 바뀐 파일을 부르는 토큰만, 사슬 끝까지 · 다른 사이트·.github·안 바뀐 파일·64자·이름 토큰·꼬리 맞춤', async (t) => {
+  const K1 = '{"q":1}\n', L1 = 'export const x = 1;\n', S = 'body{}\n', CS1 = '.care{}\n', W1 = Buffer.from([7, 7, 7]);
+  const app1 = `import { x } from './lib.js?v=${sha12(글(L1))}';\nfetch('/knowledge.json?v=${sha12(글(K1))}');\n`;
+  const 공개 = {
+    'knowledge.json': K1, 'lib.js': L1, 'style.css': S, 'app.js': app1,
+    'index.html': `<script type="module" src="./app.js?v=${sha12(글(app1))}"></script>\n<a href="https://www.youtube.com/watch?v=abcdefabcdef">영상</a>\n<link rel="stylesheet" href="/style.css?v=feedfacecafe">\n`,
+    'world/index.html': '<script src="../app.js?v=atlas-20261017"></script>\n',
+    'care/style.css': CS1,
+    'care/index.html': `<link rel="stylesheet" href="./style.css?v=${sha(글(CS1))}">\n`,
+    'world/assets/tutor-photos/onb/mongle-기본.webp': W1,
+    'world/data/photos.mjs': `export default {"onb":{"기본":"onb/mongle-기본.webp?v=${sha12(W1)}"}};\n`,
+    'world/data/app.mjs': "import 사진 from './photos.mjs';\n",
+    '.github/desktop-preview/index.html': `<script src="/app.js?v=${sha12(글(app1))}"></script>\n`,
+    // 어느 파일도 부르지 않는 옛 파일(루트 app.js 꼴) — 토큰을 고치지 않고 알린다. 주석 속 이름은 부르는 것이 아니다(site-bar.js 꼴).
+    'legacy.js': "fetch('/knowledge.json?v=dec311b1711a');\n",
+    'note.js': '// On the old page legacy.js and app.js did this.\nexport const 쉼 = 1;\n',
+    // 쓰는 파일인데 토큰이 CRLF 작업본으로 계산됐거나(en/sites.js 꼴) 옛 판의 해시다 — 그래도 따라 바꾼다
+    'en/sites.js': `fetch('/knowledge.json?v=${sha12(Buffer.from(K1.replace(/\n/g, '\r\n')))}');\n`,
+    'en/index.html': '<script type="module" src="./sites.js"></script>\n',
+  };
+  const 공 = 새공개본(t, 공개);
+  const K2 = '{"q":2}\n', CS2 = '.care{color:red}\n', W2 = Buffer.from([8, 8, 8, 8]);
+  const 로컬 = 공.로컬('빌드', { 'knowledge.json': K2, 'care/style.css': CS2, 'world/assets/tutor-photos/onb/mongle-기본.webp': W2 });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['knowledge.json', 'care/style.css', 'world/assets/tutor-photos/onb/mongle-기본.webp'], 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.deepEqual(종류들(r), {
+    'app.js': '토큰', 'care/index.html': '토큰', 'care/style.css': '바꿈', 'en/sites.js': '토큰', 'index.html': '토큰', 'knowledge.json': '바꿈',
+    'world/assets/tutor-photos/onb/mongle-기본.webp': '바꿈', 'world/data/photos.mjs': '토큰', 'world/index.html': '토큰',
+  });
+  const app2 = 후보읽기(후보, 'app.js').toString('utf8');
+  assert.equal(app2, `import { x } from './lib.js?v=${sha12(글(L1))}';\nfetch('/knowledge.json?v=${sha12(글(K2))}');\n`);
+  const index = 후보읽기(후보, 'index.html').toString('utf8');
+  assert.match(index, new RegExp(`\\./app\\.js\\?v=${sha12(글(app2))}"`), '사슬: knowledge.json → app.js → index.html');
+  assert.match(index, /watch\?v=abcdefabcdef/, '다른 사이트 주소는 그대로');
+  assert.match(index, /style\.css\?v=feedfacecafe/, '안 바뀐 파일의 토큰은 공개본 값 그대로');
+  assert.equal(후보읽기(후보, 'world/index.html').toString('utf8'), `<script src="../app.js?v=${sha12(글(app2))}"></script>\n`, '이름 토큰은 sha256 12자로');
+  assert.equal(후보읽기(후보, 'care/index.html').toString('utf8'), `<link rel="stylesheet" href="./style.css?v=${sha(글(CS2))}">\n`, '64자 토큰은 64자로');
+  assert.match(후보읽기(후보, 'world/data/photos.mjs').toString('utf8'), new RegExp(`mongle-기본\\.webp\\?v=${sha12(W2)}`), '기준 폴더가 다른 데이터 모듈은 꼬리 맞춤');
+  assert.ok(!r.항목.some((x) => x.경로.startsWith('.github/')), '.github 아래는 고치지 않는다');
+  assert.ok(!r.항목.some((x) => x.경로 === 'legacy.js'), '어느 파일도 부르지 않는 옛 파일은 고치지 않는다');
+  assert.ok(r.알림.some((x) => x.경로 === 'legacy.js' && /어느 파일도 부르지 않는/.test(x.이유)));
+  assert.match(후보읽기(후보, 'en/sites.js').toString('utf8'), new RegExp(`knowledge\\.json\\?v=${sha12(글(K2)).slice(0, 12)}`),
+    '쓰는 파일의 토큰은 공개본 값이 옛 내용 해시와 달라도(CRLF·옛 판) 따라 바꾼다');
+
+  const 정한 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['knowledge.json'], 토큰: 'rel-20261019', 후보폴더: 공.후보폴더() }));
+  const 앱 = 정한.항목.find((x) => x.경로 === 'app.js');
+  assert.deepEqual(앱.토큰.map((x) => x.후), ['rel-20261019']);
+  const 끔 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['knowledge.json'], 토큰안함: true }));
+  assert.deepEqual(종류들(끔), { 'knowledge.json': '바꿈' });
+});
+
+test('?v= 토큰 맞춤: 빌드 HTML의 토큰은 공개본 값으로 되돌리고 바뀐 파일만 새 값 · 지우는 파일을 부르면 알린다', async (t) => {
+  const 공 = 새공개본(t, {
+    'page.html': `<link href="a.css?v=${sha12(글('a{}\n'))}"><link href="b.css?v=222222222222">\n<p>x</p>\n`,
+    'a.css': 'a{}\n', 'b.css': 'b{}\n', 'gone.js': '1\n', 'uses-gone.html': '<script src="gone.js?v=333333333333"></script>\n',
+  });
+  const 빌드 = 공.로컬('빌드', {
+    'page.html': '<link href="a.css?v=aaaaaaaaaaaa"><link href="b.css?v=bbbbbbbbbbbb">\n<p>y</p>\n',
+    'a.css': 'a{color:red}\n',
+  });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 빌드, 항목: ['page.html', 'a.css'], 지움: ['gone.js'], 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.equal(후보읽기(후보, 'page.html').toString('utf8'), `<link href="a.css?v=${sha12(글('a{color:red}\n'))}"><link href="b.css?v=222222222222">\n<p>y</p>\n`);
+  assert.match(r.항목.find((x) => x.경로 === 'page.html').방법, /공개본 값으로/);
+  assert.ok(r.알림.some((x) => x.경로 === 'uses-gone.html' && /지우는 파일/.test(x.이유)));
+  assert.equal(r.항목.find((x) => x.경로 === 'gone.js').종류, '지움');
+
+  // 토큰만 다른 빌드 HTML은 공개본 그대로
+  const 공2 = 새공개본(t, { 'page.html': '<link href="a.css?v=111111111111">\n<p>x</p>\n', 'a.css': 'a{}\n' });
+  const 빌드2 = 공2.로컬('빌드', { 'page.html': '<link href="a.css?v=aaaaaaaaaaaa">\n<p>x</p>\n' });
+  const 같음 = await 도구.올리기(공2.옵션({ 원본: 빌드2, 항목: ['page.html'] }));
+  assert.equal(같음.결과, '올릴 것 없음');
+  assert.match(같음.건너뜀[0].이유, /토큰만/);
+  const 그대로 = await 도구.올리기(공2.옵션({ 원본: 빌드2, 항목: ['page.html'], 토큰안함: true }));
+  assert.deepEqual(종류들(그대로), { 'page.html': '바꿈' });
+});
+
+// ── 검사 ────────────────────────────────────────────────────────────────────
+
+test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표시·더한 줄의 AI 이름을 막는다(--허용은 AI 이름만)', async (t) => {
+  const 공 = 새공개본(t, { 'app.js': '// 기존 주석: gemini 이야기\nconst a = 1;\n', 'pulse/index.html': '<p>모델</p>\n' });
+  const 로컬 = 공.로컬('빌드', {
+    'lab/index.html': '<p>금지낱말로 만든 노래</p>\n',
+    'privacy/index.html': '<p>처리 위탁: 금지낱말 주식회사</p>\n',
+    'song.mp3': Buffer.concat([Buffer.from('ID3\u0003\u0000'), Buffer.from('TSSE Made with Suno', 'latin1'), Buffer.alloc(64)]),
+    'pic.png': Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.from('caBX c2pa.manifest', 'latin1')]),
+    'app.js': '// 기존 주석: gemini 이야기\nconst a = 1;\n// see https://claude.ai/x\n',
+    'pulse/index.html': '<p>모델</p>\n<p>AI로 만든 모델입니다</p>\n',
+    'lab2/index.html': '<p>AI로 만든 그림</p>\n',
+    'builds/manual/view.js': 'const 안내 = "계속 쓸 때는 ChatGPT와 Claude는 프로젝트의 지침, Gemini는 스킬";\n',
+  });
+  const 항목 = ['lab/index.html', 'privacy/index.html', 'song.mp3', 'pic.png', 'app.js', 'pulse/index.html', 'lab2/index.html', 'builds/manual/view.js'];
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목 }));
+  assert.equal(r.결과, '걸림');
+  assert.equal(r.규칙출처, '.github/site-check/check.mjs', '배포 점검 규칙을 후보의 check.mjs에서 읽는다');
+  const 걸린 = (p) => r.걸림.filter((x) => x.경로 === p).map((x) => x.검사);
+  assert.deepEqual(걸린('lab/index.html'), ['도구 이름'], '도구에 든 사본 목록에 없는 낱말도 check.mjs 목록으로 잡는다');
+  assert.deepEqual(걸린('privacy/index.html'), [], '처리 위탁 업체를 적는 페이지는 점검처럼 뺀다');
+  assert.deepEqual(걸린('song.mp3'), ['도구 이름']);
+  assert.deepEqual(걸린('pic.png'), ['제작 표시']);
+  assert.deepEqual(걸린('app.js'), ['AI 이름'], '더한 줄만 본다(이미 있던 줄의 이름은 다른 검사 몫)');
+  assert.deepEqual(걸린('pulse/index.html'), [], 'PULSE 가상 모델 고지는 남긴다');
+  assert.deepEqual(걸린('lab2/index.html'), ['AI 이름']);
+  assert.deepEqual(걸린('builds/manual/view.js'), [], 'AI 도구 사용법이 내용인 맞춤 도구 페이지는 AI 이름 검사에서 뺀다');
+  assert.equal(공.머리(), 공.바탕);
+
+  const 허용 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['app.js', 'song.mp3'], 허용: ['app.js', 'song.mp3'] }));
+  assert.deepEqual(허용.걸림.map((x) => `${x.경로}:${x.검사}`), ['song.mp3:도구 이름'], '배포 점검 규칙은 --허용으로 넘기지 않는다');
+  assert.ok(허용.알림.some((x) => x.경로 === 'app.js' && /--허용으로 넘김/.test(x.이유)));
+});
+
+test('공개 경로·제작 자료·저장 용량: 밑줄 폴더·qa/·-original 그림·큰 파일은 막고 Jekyll 머리말은 알린다', async (t) => {
+  const 공 = 새공개본(t, { 'index.html': '<p>홈</p>\n' });
+  const 로컬 = 공.로컬('빌드', {
+    '_shared/x.js': 'export {}\n', 'try/racing/qa/play.cjs': '//\n', 'art/mongle-original.png': Buffer.from([1, 0, 1]),
+    'notes/README.md': '# 안내\n', 'feed.xml': '---\ntitle: x\n---\n<rss/>\n', 'big.bin': Buffer.alloc(100, 1), 'mid.bin': Buffer.alloc(50, 1),
+  });
+  const 항목 = ['_shared/x.js', 'try/racing/qa/play.cjs', 'art/mongle-original.png', 'notes/README.md', 'feed.xml', 'big.bin', 'mid.bin'];
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목, 한도: { 파일: 60, 파일경고: 45 } }));
+  const 걸린 = r.걸림.map((x) => `${x.경로}:${x.검사}`).sort();
+  assert.deepEqual(걸린, ['_shared/x.js:공개 경로', 'art/mongle-original.png:제작 자료', 'big.bin:저장 용량', 'try/racing/qa/play.cjs:제작 자료']);
+  const 알린 = r.알림.map((x) => `${x.경로 || ''}:${x.검사}`);
+  for (const a of ['feed.xml:공개 경로', 'mid.bin:저장 용량']) assert.ok(알린.includes(a), a);
+  assert.ok(!알린.includes('notes/README.md:공개 경로'), '머리말 없는 .md는 그대로 나가니 알리지 않는다');
+  const 허용 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['art/mongle-original.png'], 허용: ['art/mongle-original.png'] }));
+  assert.equal(허용.결과, '미리 보기');
+});
+
+// ── 실행 ────────────────────────────────────────────────────────────────────
+
+test('--실행: 계획이 같을 때만 별도 인덱스로 커밋·push하고, 공개 주소 바이트와 배포 점검까지 본다', async (t) => {
+  const 옛 = 'a{}\n';
+  const 공 = 새공개본(t, { 'app.css': 옛, 'index.html': `<link rel="stylesheet" href="/app.css?v=${sha12(글(옛))}">\n`, 'gone.txt': '지울 파일\n' });
+  const 서버 = await 공개서버(t);
+  const 새 = 'a{color:blue}\n';
+  const 로컬 = 공.로컬('빌드', { 'app.css': 새 });
+  const 입력 = { 원본: 로컬, 항목: ['app.css'], 지움: ['gone.txt'] };
+  const 미리 = await 도구.올리기(공.옵션(입력));
+  assert.equal(미리.결과, '미리 보기');
+
+  const 틀린계획 = await 도구.올리기(공.옵션({ ...입력, 실행: true, 계획: '000000000000', 메시지: 'x' }));
+  assert.equal(틀린계획.결과, '멈춤');
+  assert.match(틀린계획.이유, /계획이 미리 보기와 다르다/);
+  assert.equal(공.머리(), 공.바탕);
+
+  // Pages가 새 판을 내준다고 치고, 배포 점검은 origin 머리의 실행이 통과한다
+  서버.파일.set('app.css', 글(새));
+  서버.파일.set('index.html', 글(`<link rel="stylesheet" href="/app.css?v=${sha12(글(새))}">\n`));
+  const gh = 가짜gh(() => [{ databaseId: 41, headSha: 공.머리(), status: 'completed', conclusion: 'success', createdAt: '2026-10-19T00:00:00Z', url: 'u', attempt: 1 }]);
+  const r = await 도구.올리기(공.옵션({ ...입력, 실행: true, 계획: 미리.계획, 메시지: 'Publish app.css\n\nSource: 시험', 주소: 서버.주소, 기다림: 0.1, 간격: 0.2, 점검안함: false, gh }));
+  assert.equal(r.결과, '올림', JSON.stringify(r.확인));
+  assert.equal(공.머리(), r.커밋);
+  assert.equal(r.원격머리, r.커밋);
+  assert.equal(공.og('rev-parse', `${r.커밋}^`).toString().trim(), 공.바탕, '부모는 미리 보기 때의 공개본');
+  assert.equal(공.og('log', '-1', '--format=%an <%ae>|%s', r.커밋).toString().trim(), 'yuho <301381929+unmet23-lab@users.noreply.github.com>|Publish app.css');
+  const 바뀜 = 공.og('diff-tree', '-r', '--no-renames', '--name-status', `${r.커밋}^`, r.커밋).toString().trim().split('\n').sort();
+  assert.deepEqual(바뀜, ['D\tgone.txt', 'M\tapp.css', 'M\tindex.html']);
+  assert.deepEqual({ 통과: r.확인.대조.통과, 같음: r.확인.대조.같음, 전체: r.확인.대조.전체 }, { 통과: true, 같음: 3, 전체: 3 }, '지운 파일은 404로 확인');
+  assert.equal(r.확인.점검.결과, '통과');
+  assert.equal(r.확인.점검.실행, 41);
+});
+
+test('--실행: 그사이 남이 다른 파일을 올렸으면 새 판 위에, 내 경로를 고쳤으면 멈춘다', async (t) => {
+  const 공 = 새공개본(t, { 'mine.txt': '1\n', 'other.txt': 'o\n' });
+  const 로컬 = 공.로컬('빌드', { 'mine.txt': '2\n' });
+  const 입력 = { 원본: 로컬, 항목: ['mine.txt'], 메시지: 'Publish mine' };
+  const 미리 = await 도구.올리기(공.옵션(입력));
+  const 남 = 공.올림({ 'other.txt': 'o2\n' });
+  const r = await 도구.올리기(공.옵션({ ...입력, 실행: true, 계획: 미리.계획, 기다림: 0.01, 간격: 0.1 }));
+  assert.match(r.결과, /^올림/);
+  assert.equal(공.og('rev-parse', `${r.커밋}^`).toString().trim(), 남, '새 공개본 위에 얹는다');
+  assert.equal(공.파일('other.txt').toString(), 'o2\n', '남의 변경을 지키고');
+  assert.equal(공.파일('mine.txt').toString(), '2\n');
+
+  const 로컬2 = 공.로컬('빌드2', { 'mine.txt': '3\n' });
+  const 미리2 = await 도구.올리기(공.옵션({ 원본: 로컬2, 항목: ['mine.txt'] }));
+  공.올림({ 'mine.txt': '남이 같은 파일을 고침\n' });
+  const 머리 = 공.머리();
+  const 멈춤 = await 도구.올리기(공.옵션({ 원본: 로컬2, 항목: ['mine.txt'], 실행: true, 계획: 미리2.계획, 메시지: 'x' }));
+  assert.equal(멈춤.결과, '멈춤');
+  assert.match(멈춤.이유, /계획이 미리 보기와 다르다/);
+  assert.equal(공.머리(), 머리, '아무것도 올리지 않았다');
+});
+
+test('push 경합: 커밋을 만든 뒤 남이 먼저 올리면 거절을 받고 새 판 위에서 다시 만든다', async (t) => {
+  const 공 = 새공개본(t, { 'mine.txt': '1\n', 'other.txt': 'o\n' });
+  const 로컬 = 공.로컬('빌드', { 'mine.txt': '2\n' });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['mine.txt'] }));
+  let 남 = null;
+  const r = await 도구.올리기(공.옵션({
+    원본: 로컬, 항목: ['mine.txt'], 실행: true, 계획: 미리.계획, 메시지: 'Publish mine', 기다림: 0.01, 간격: 0.1,
+    _밀기전: () => { if (!남) 남 = 공.올림({ 'other.txt': '경합\n' }); },
+  }));
+  assert.match(r.결과, /^올림/);
+  assert.equal(r.다시한수, 1);
+  assert.equal(공.og('rev-parse', `${r.커밋}^`).toString().trim(), 남);
+  assert.equal(공.파일('other.txt').toString(), '경합\n');
+});
+
+test('바이트 대조 실패: 공개 주소가 옛 바이트를 주면 「올림·확인 덜 됨」과 다른 파일을 알린다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n', 'b.txt': 'b\n' });
+  const 서버 = await 공개서버(t);
+  서버.파일.set('a.txt', 글('옛\n')); // Pages가 아직 옛 판을 내준다
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '새\n' });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'] }));
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 미리.계획, 메시지: 'Publish a', 주소: 서버.주소, 기다림: 0.02, 간격: 0.3 }));
+  assert.equal(r.결과, '올림·확인 덜 됨');
+  assert.equal(공.머리(), r.커밋, 'push는 됐다');
+  assert.equal(r.확인.대조.통과, false);
+  assert.deepEqual(r.확인.대조.다름.map((x) => [x.경로, x.상태]), [['a.txt', 200]]);
+  assert.match(속.올리기글(r, []), /바이트 대조 실패 0\/1[\s\S]*다름 a\.txt/);
+});
+
+test('확인: 올라간 커밋을 다시 대조하고(남의 공개도) 지운 파일은 404를 기다린다', async (t) => {
+  const 공 = 새공개본(t, { 'keep.txt': 'k\n', 'gone.txt': 'g\n', 'pic.webp': Buffer.from([1, 2, 3]) });
+  const 커밋 = 공.올림({ 'keep.txt': 'k2\n', 'pic.webp': Buffer.from([4, 5, 6, 7]), 'README.md': '# x\n', 'feed.xml': '---\nlayout: x\n---\n<rss/>\n' }, ['gone.txt']);
+  const 서버 = await 공개서버(t);
+  서버.파일.set('keep.txt', 글('k2\n'));
+  서버.파일.set('pic.webp', Buffer.from([4, 5, 6, 7]));
+  서버.파일.set('README.md', 글('# x\n')); // 머리말 없는 .md는 그대로 나간다
+  서버.파일.set('gone.txt', 글('g\n')); // 아직 안 지워짐
+  const 반쯤 = await 도구.확인(공.옵션({ 커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(반쯤.결과, '확인 덜 됨');
+  assert.deepEqual(반쯤.대조.다름.map((x) => x.경로), ['gone.txt']);
+  assert.deepEqual(반쯤.빠짐.map((x) => x.경로), ['feed.xml'], 'Jekyll 머리말 파일만 뺀다');
+  서버.파일.delete('gone.txt');
+  const 됨 = await 도구.확인(공.옵션({ 커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(됨.결과, '확인함');
+  assert.equal(됨.대조.같음, 4);
+  // --부터: 여러 커밋에 걸친 공개도 한 번에 본다
+  const 앞 = 공.올림({ 'a.txt': 'a\n' });
+  const 끝 = 공.올림({ 'b.txt': 'b\n' });
+  서버.파일.set('a.txt', 글('a\n'));
+  서버.파일.set('b.txt', 글('b\n'));
+  const 범위 = await 도구.확인(공.옵션({ 커밋: 끝, 부터: `${앞}^`, 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(범위.결과, '확인함');
+  assert.equal(범위.대조.전체, 2);
+  // 뒤 공개가 같은 파일을 다시 바꾸면 그 경로는 지금 main 판으로 대조한다(Pages는 main 머리를 내준다)
+  공.올림({ 'keep.txt': 'k3 — 뒤 공개\n' });
+  서버.파일.set('keep.txt', 글('k3 — 뒤 공개\n'));
+  const 뒤 = await 도구.확인(공.옵션({ 커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(뒤.결과, '확인함', JSON.stringify(뒤.대조));
+  assert.deepEqual(뒤.대조.뒤바뀜, ['keep.txt']);
+  assert.match(속.확인결과글(뒤), /지금 main\([0-9a-f]{7}\) 판으로 대조: keep\.txt/);
+});
+
+test('배포 점검: 취소된 내 실행은 뒤 커밋 실행으로, 실패는 바이트가 같을 때 한 번만 다시 돌린다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 내커밋 = 공.올림({ 'a.txt': '2\n' }, [], '내 공개');
+  const 뒤커밋 = 공.올림({ 'b.txt': 'b\n' }, [], '뒤 공개');
+  const 서버 = await 공개서버(t);
+  서버.파일.set('a.txt', 글('2\n'));
+  // 첫 응답: 내 실행만 취소된 채 보이고 뒤 실행은 아직 없다 — 실패가 아니라 기다릴 때다
+  const 취소 = 가짜gh((n) => (n === 1 ? [실행(1, 내커밋, 'completed', 'cancelled')]
+    : n === 2 ? [실행(1, 내커밋, 'completed', 'cancelled'), 실행(2, 뒤커밋, 'in_progress', '', 1, '2026-10-19T00:01:00Z')]
+      : [실행(1, 내커밋, 'completed', 'cancelled'), 실행(2, 뒤커밋, 'completed', 'success', 1, '2026-10-19T00:01:00Z')]));
+  const a = await 도구.확인(공.옵션({ 커밋: 내커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.05, 점검안함: false, gh: 취소 }));
+  assert.equal(a.점검.결과, '통과');
+  assert.equal(a.점검.실행, 2);
+  assert.equal(a.점검.뒤커밋, true);
+
+  const 다시 = 가짜gh((n) => (n === 1 ? [실행(5, 내커밋, 'completed', 'failure', 1)]
+    : n === 2 ? [실행(5, 내커밋, 'completed', 'failure', 1)] // 다시 돌린 직전: 아직 옛 시도가 보인다
+      : n === 3 ? [실행(5, 내커밋, 'in_progress', '', 2)]
+        : [실행(5, 내커밋, 'completed', 'success', 2)]));
+  const b = await 도구.확인(공.옵션({ 커밋: 내커밋, 주소: 서버.주소, 기다림: 0.01, 점검기다림: 0.2, 간격: 0.05, 점검안함: false, 재실행: true, gh: 다시 }));
+  assert.equal(b.점검.결과, '통과', JSON.stringify(b.점검));
+  assert.equal(b.점검.재실행, 5);
+  assert.equal(다시.부름.filter((x) => x.startsWith('run rerun')).length, 1);
+
+  const 실패 = 가짜gh(() => [실행(9, 내커밋, 'completed', 'failure', 1)]);
+  const c = await 도구.확인(공.옵션({ 커밋: 내커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.05, 점검안함: false, gh: 실패 }));
+  assert.equal(c.결과, '확인 덜 됨');
+  assert.equal(c.점검.결과, '실패');
+  assert.deepEqual(c.점검.실패단계, ['점검']);
+  assert.equal(실패.부름.filter((x) => x.startsWith('run rerun')).length, 0, '--재실행 없이는 다시 돌리지 않는다');
+});
+
+// ── 검수(10-19 Fable)로 더한 경우 ──────────────────────────────────────────
+
+test('미리 보기 뒤 내 로컬 파일이 바뀌면 --실행이 멈춘다(계획의 새 판이 다르다)', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '2\n' });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'] }));
+  쓰기(로컬, 'a.txt', '3 — 미리 보기 뒤에 고침\n');
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 미리.계획, 메시지: 'x' }));
+  assert.equal(r.결과, '멈춤');
+  assert.match(r.이유, /계획이 미리 보기와 다르다/);
+  assert.equal(공.머리(), 공.바탕);
+});
+
+test('3방향 줄끝: 공개본이 CRLF면 합친 뒤 CRLF로 돌리고, 줄끝이 섞인 판은 LF로 맞춰 합친다', async (t) => {
+  const 판 = (고침, 끝 = '\n') => `${['줄 1', '줄 2', '줄 3', '줄 4', '줄 5', '줄 6'].map((l, i) => 고침[i] ?? l).join(끝)}${끝}`;
+  const 공 = 새공개본(t, { 'p.html': 판({}), 'q.html': 판({}) });
+  const 기준 = 공.바탕;
+  // 남이 CRLF 작업본에서 줄 2를 고쳐 올렸다(q는 한 줄만 CRLF로 섞임)
+  공.올림({ 'p.html': 판({ 1: '줄 2 남' }, '\r\n'), 'q.html': `줄 1\r\n${판({ 1: '줄 2 남' }).slice('줄 1\n'.length)}` });
+  const 내판 = 공.로컬('내판', { 'p.html': 판({ 4: '줄 5 나' }), 'q.html': 판({ 4: '줄 5 나' }) });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['p.html', 'q.html'], 기준, 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.equal(후보읽기(후보, 'p.html').toString('utf8'), 판({ 1: '줄 2 남', 4: '줄 5 나' }, '\r\n'));
+  assert.equal(후보읽기(후보, 'q.html').toString('utf8'), 판({ 1: '줄 2 남', 4: '줄 5 나' }));
+  assert.match(r.항목.find((x) => x.경로 === 'q.html').방법, /섞인/);
+});
+
+test('?v= 슬래시 없는 참조: 이름이 하나뿐이면 꼬리 맞춤으로 고치고, 여럿이면 고치지 않고 알린다', async (t) => {
+  const 사진 = Buffer.from([1, 2, 3]);
+  const 공 = 새공개본(t, {
+    'world/brand-opening/assets/tutors/marin-기본.webp': 사진,
+    'world/brand-opening/tutor-profiles.mjs': `export default {"기본":"marin-기본.webp?v=${sha12(사진)}","표정":"face.webp?v=${sha12(사진)}","눈":"eye.webp?v=${sha12(사진)}"};\n`,
+    'world/brand-opening/app.mjs': "import 프로필 from './tutor-profiles.mjs';\n",
+    'world/a/face.webp': 사진, 'world/b/face.webp': 사진,
+    // 같은 이름 둘 중 하나만 토큰 해시와 맞는다 — 그쪽이 대상이다
+    'world/c/eye.webp': 사진, 'world/d/eye.webp': Buffer.from([5, 5]),
+  });
+  const 새사진 = Buffer.from([9, 9, 9, 9]);
+  const 로컬 = 공.로컬('빌드', { 'world/brand-opening/assets/tutors/marin-기본.webp': 새사진, 'world/a/face.webp': 새사진, 'world/c/eye.webp': 새사진 });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['world/brand-opening/assets/tutors/marin-기본.webp', 'world/a/face.webp', 'world/c/eye.webp'], 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  const 프로필 = 후보읽기(후보, 'world/brand-opening/tutor-profiles.mjs').toString('utf8');
+  assert.match(프로필, new RegExp(`marin-기본\\.webp\\?v=${sha12(새사진)}`));
+  assert.match(프로필, new RegExp(`eye\\.webp\\?v=${sha12(새사진)}`), '같은 이름이 여럿이어도 토큰 해시가 맞는 하나를 고른다');
+  assert.match(프로필, new RegExp(`face\\.webp\\?v=${sha12(사진)}`), '어느 face.webp인지 모르면(둘 다 맞으면) 그대로 둔다');
+  assert.ok(r.알림.some((x) => x.경로 === 'world/brand-opening/tutor-profiles.mjs' && /가리킬 수 있는 파일이 2개/.test(x.이유)));
+});
+
+test('지움: 밑줄 경로도 지울 수 있고, 기준 빌드와 공개본이 줄끝만 다르면 남이 바꾼 것으로 보지 않는다', async (t) => {
+  const 공 = 새공개본(t, { '_shared/x.js': 'x\n', 'site/crlf.txt': 'c1\r\nc2\r\n', 'site/keep.txt': 'k\n' });
+  const 밑줄 = await 도구.올리기(공.옵션({ 지움: ['_shared/x.js'] }));
+  assert.equal(밑줄.결과, '미리 보기', JSON.stringify(밑줄.걸림));
+  assert.deepEqual(종류들(밑줄), { '_shared/x.js': '지움' });
+  const 기준빌드 = 공.로컬('기준빌드', { 'crlf.txt': 'c1\nc2\n', 'keep.txt': 'k\n' });
+  const 내빌드 = 공.로컬('내빌드', { 'keep.txt': 'k\n' });
+  const r = await 도구.올리기(공.옵션({ 원본: 내빌드, 공개폴더: 'site', 항목: ['.'], 기준폴더: 기준빌드 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.deepEqual(종류들(r), { 'site/crlf.txt': '지움' });
+  assert.match(r.항목[0].방법, /줄끝/);
+});
+
+test('push가 세 번 다 거절되면 멈추고 아무것도 올리지 않는다', async (t) => {
+  const 공 = 새공개본(t, { 'mine.txt': '1\n', 'other.txt': 'o\n' });
+  const 로컬 = 공.로컬('빌드', { 'mine.txt': '2\n' });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['mine.txt'] }));
+  let 번 = 0;
+  const r = await 도구.올리기(공.옵션({
+    원본: 로컬, 항목: ['mine.txt'], 실행: true, 계획: 미리.계획, 메시지: 'x',
+    _밀기전: () => { 번++; 공.올림({ 'other.txt': `경합 ${번}\n` }); },
+  }));
+  assert.equal(r.결과, '멈춤');
+  assert.match(r.이유, /거절/);
+  assert.equal(번, 3);
+  assert.equal(공.파일('mine.txt').toString(), '1\n');
+});
+
+test('배포 점검: 실행이 안 보이면 못 찾음, 안 끝나면 기다림 끝, gh가 안 되면 못 찾음 · rerun이 실패해도 push 결과는 남는다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 커밋 = 공.올림({ 'a.txt': '2\n' });
+  const 서버 = await 공개서버(t);
+  서버.파일.set('a.txt', 글('2\n'));
+  const 짧게 = { 커밋, 주소: 서버.주소, 기다림: 0.01, 점검기다림: 0.005, 간격: 0.05, 점검안함: false };
+  const a = await 도구.확인(공.옵션({ ...짧게, gh: 가짜gh(() => []) }));
+  assert.equal(a.점검.결과, '못 찾음');
+  const b = await 도구.확인(공.옵션({ ...짧게, gh: 가짜gh(() => [실행(3, 커밋, 'in_progress', '', 1)]) }));
+  assert.equal(b.점검.결과, '기다림 끝');
+  const c = await 도구.확인(공.옵션({ ...짧게, gh: () => { throw Object.assign(new Error('x'), { 이유: 'gh 인증 없음' }); } }));
+  assert.equal(c.점검.결과, '못 찾음');
+  assert.match(c.점검.이유, /gh 인증 없음/);
+
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '3\n' });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'] }));
+  서버.파일.set('a.txt', 글('3\n'));
+  const gh = 가짜gh(() => [실행(8, 공.머리(), 'completed', 'failure', 1)], { 다시실패: true });
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 미리.계획, 메시지: 'x', ...짧게, 커밋: undefined, 재실행: true, gh }));
+  assert.equal(r.결과, '올림·확인 덜 됨');
+  assert.equal(공.머리(), r.커밋, 'push는 됐고 커밋이 결과에 남는다');
+  assert.equal(r.확인.점검.결과, '실패');
+  assert.match(r.확인.점검.재실행오류, /권한 없음/);
+
+  // 확인 자체가 오류로 끝나도(망이 끊김) push 결과와 커밋은 남는다
+  const 로컬2 = 공.로컬('빌드2', { 'a.txt': '4\n' });
+  const 미리2 = await 도구.올리기(공.옵션({ 원본: 로컬2, 항목: ['a.txt'] }));
+  const 끊김 = await 도구.올리기(공.옵션({
+    원본: 로컬2, 항목: ['a.txt'], 실행: true, 계획: 미리2.계획, 메시지: 'x', 점검안함: true,
+    받기: () => { throw new Error('망 끊김'); },
+  }));
+  assert.equal(끊김.결과, '올림·확인 덜 됨');
+  assert.equal(공.머리(), 끊김.커밋);
+  assert.match(끊김.확인.오류, /망 끊김/);
+  assert.match(속.올리기글(끊김, []), /확인 중 오류\(push는 됐다\): 망 끊김/);
+});
+
+test('?v= 순환: 서로를 부르는 두 파일이 같이 바뀌면 멈춘다(--토큰안함이면 그대로 올린다)', async (t) => {
+  const 공 = 새공개본(t, {
+    'a.js': "import './b.js?v=111111111111';\n", 'b.js': "import './a.js?v=222222222222';\n",
+    'index.html': '<script type="module" src="a.js?v=333333333333"></script>\n',
+  });
+  const 로컬 = 공.로컬('빌드', { 'a.js': "import './b.js?v=111111111111';\n// 새 줄\n" });
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.js'] }));
+  assert.equal(r.결과, '멈춤');
+  assert.match(r.이유, /서로를 부르며/);
+  const 끔 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.js'], 토큰안함: true }));
+  assert.equal(끔.결과, '미리 보기');
+});
+
+test('바이트 대조: 8MB 넘는 파일은 HEAD 크기가 다르면 몸을 받지 않는다', async (t) => {
+  const 큰 = Buffer.alloc(9 * 1024 * 1024, 3);
+  const 공 = 새공개본(t, { 'big.bin': Buffer.alloc(10, 1) });
+  const 서버 = await 공개서버(t);
+  서버.파일.set('big.bin', Buffer.alloc(10, 1)); // 아직 옛 판(크기부터 다름)
+  const 로컬 = 공.로컬('빌드', { 'big.bin': 큰 });
+  const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['big.bin'] }));
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['big.bin'], 실행: true, 계획: 미리.계획, 메시지: 'x', 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(r.결과, '올림·확인 덜 됨');
+  assert.ok(서버.요청.includes('HEAD big.bin'));
+  assert.ok(!서버.요청.includes('GET big.bin'), '크기가 다르면 9MB를 받지 않는다');
+  서버.파일.set('big.bin', 큰);
+  const 됨 = await 도구.확인(공.옵션({ 커밋: r.커밋, 주소: 서버.주소, 기다림: 0.01, 간격: 0.2 }));
+  assert.equal(됨.결과, '확인함');
+});
+
+test('후보폴더: 이 도구가 써 둔 폴더면 다시 쓰고, 다른 파일이 섞였으면 멈춘다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '2\n', 'b.txt': 'b\n' });
+  const 후보 = 공.후보폴더();
+  assert.equal((await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt', 'b.txt'], 후보폴더: 후보 }))).결과, '미리 보기');
+  const 다시 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 후보폴더: 후보 }));
+  assert.equal(다시.결과, '미리 보기');
+  assert.ok(!fs.existsSync(path.join(후보, 'b.txt')), '전에 쓴 후보를 비우고 다시 쓴다');
+  쓰기(후보, '남의파일.txt', 'x');
+  const 막힘 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 후보폴더: 후보 }));
+  assert.equal(막힘.결과, '멈춤');
+  assert.ok(fs.existsSync(path.join(후보, '남의파일.txt')), '남의 파일은 지우지 않는다');
+});
+
+test('채우기: 기본은 PATH 면접 영상 — 쿼리 없는 주소로 받고 HEAD로 x-cache를 적는다', async (t) => {
+  const 영상 = Buffer.alloc(3000, 7);
+  const 공 = 새공개본(t, {
+    'path/assets/interview/film/strict-question-4k.mp4': 영상, 'path/assets/interview/film/strict-question-720p.mp4': 영상,
+    'path/assets/interview/film/other.mp4': 영상, 'world/assets/videos/a.mp4': 영상,
+  });
+  const 서버 = await 공개서버(t);
+  서버.파일.set('path/assets/interview/film/strict-question-4k.mp4', 영상);
+  서버.파일.set('path/assets/interview/film/strict-question-720p.mp4', 영상);
+  const r = await 도구.채우기(공.옵션({ 주소: 서버.주소 }));
+  assert.equal(r.결과, '채움', JSON.stringify(r));
+  assert.deepEqual(r.파일.map((x) => [x.경로, x.상태, x.크기, x.캐시]), [
+    ['path/assets/interview/film/strict-question-4k.mp4', 200, 3000, 'HIT'],
+    ['path/assets/interview/film/strict-question-720p.mp4', 200, 3000, 'HIT'],
+  ]);
+  const 없음 = await 도구.채우기(공.옵션({ 주소: 서버.주소, 항목: ['world/assets/videos/*.mp4'] }));
+  assert.equal(없음.결과, '덜 참', '공개 주소가 404면 덜 참');
+});
+
+// ── 사용법·명령줄 ───────────────────────────────────────────────────────────
+
+test('사용법: --실행에는 --계획·메시지 · --위에는 미리 보기 전용 · 작업본(비 bare) 사본은 거절', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '2\n' });
+  await assert.rejects(도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 메시지: 'x' })), /--계획/);
+  await assert.rejects(도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 'abc' })), /메시지/);
+  await assert.rejects(도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 'abc', 메시지: 'x', 위에: 'main' })), /--위에/);
+  await assert.rejects(도구.올리기(공.옵션({ 항목: ['../a.txt=' + path.join(로컬, 'a.txt')] })), /\.\./);
+  const 작업본 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 사본: 공.작업 }));
+  assert.equal(작업본.결과, '멈춤');
+  assert.match(작업본.이유, /bare 저장소가 아니다/);
+  // 지난 공개 재현: --위에 바탕 위에서 만든다
+  공.올림({ 'a.txt': '남\n' });
+  const 재현 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], 위에: 공.바탕 }));
+  assert.equal(재현.위, 공.바탕);
+  assert.equal(재현.항목[0].전, 블롭id(글('1\n')));
+});
+
+test('명령줄: 미리 보기는 계획 해시가 붙은 올리는 명령을 보이고 종료 0, 걸리면 1, 잘못 쓰면 2', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '1\n' });
+  const 로컬 = 공.로컬('빌드', { 'a.txt': '2\n', 'bad.html': '<p>금지낱말</p>\n' });
+  const 찍힘 = [];
+  const 원래 = { log: console.log, error: console.error };
+  console.log = (s) => 찍힘.push(String(s));
+  console.error = () => {};
+  try {
+    const 공통 = ['--사본', 공.사본, '--원격주소', 공.원격주소];
+    assert.equal(await 도구.main(['올리기', '--원본', 로컬, 'a.txt', ...공통]), 0);
+    const 출력 = 찍힘.join('\n');
+    const m = /계획 ([0-9a-f]{12})/.exec(출력);
+    assert.ok(m, 출력);
+    assert.match(출력, new RegExp(`--실행 --계획 ${m[1]}`));
+    assert.equal(await 도구.main(['올리기', '--원본', 로컬, 'bad.html', ...공통]), 1);
+    assert.equal(await 도구.main(['올리기', '--모르는것']), 2);
+    assert.equal(await 도구.main(['올리기', '--원본', 로컬, 'a.txt', '--실행', ...공통]), 2);
+  } finally {
+    Object.assign(console, 원래);
+  }
+  assert.equal(공.머리(), 공.바탕);
+});
+
+test('작은 함수: 참조 풀기·토큰 값·점검 규칙 읽기·glob', () => {
+  const 있는 = new Set(['account/dist/platform.js', 'social-conversion.js', 'en/index.html', 'world/a/b.webp']);
+  const 있나 = (p) => 있는.has(p);
+  const 꼬리 = (u) => [...있는].filter((p) => p === u || p.endsWith(`/${u}`));
+  const 호스트 = new Set(['synk.im']);
+  assert.deepEqual(속.참조풀기('account/platform.html', './dist/platform.js', 있나, 꼬리, 호스트), { 경로: 'account/dist/platform.js' });
+  assert.deepEqual(속.참조풀기('account/platform.html', '/social-conversion.js', 있나, 꼬리, 호스트), { 경로: 'social-conversion.js' });
+  assert.deepEqual(속.참조풀기('x/y.html', 'https://synk.im/en/', 있나, 꼬리, 호스트), { 경로: 'en/index.html' });
+  assert.equal(속.참조풀기('x/y.html', 'https://www.youtube.com/watch', 있나, 꼬리, 호스트), null);
+  assert.equal(속.참조풀기('x/y.html', 'data:image/png;base64', 있나, 꼬리, 호스트), null);
+  assert.deepEqual(속.참조풀기('data/m.mjs', 'a/b.webp', 있나, 꼬리, 호스트), { 경로: 'world/a/b.webp', 꼬리: true });
+  const b = 글('x');
+  assert.equal(속.토큰값(b, '35983c432263'), sha12(b));
+  assert.equal(속.토큰값(b, 'atlas-20261017'), sha12(b));
+  assert.equal(속.토큰값(b, '2'), sha12(b));
+  assert.equal(속.토큰값(b, sha(글('y'))), sha(b));
+  assert.equal(속.토큰값(b, 'abc', 'rel-1'), 'rel-1');
+  const 사본 = 속.점검규칙읽기(null);
+  assert.equal(사본.출처, '도구 사본');
+  assert.match('made with suno', new RegExp(Buffer.from(사본.낱말, 'base64').toString(), 'i'));
+  const 읽음 = 속.점검규칙읽기(점검원문('x|y'));
+  assert.equal(읽음.출처, '.github/site-check/check.mjs');
+  assert.ok(읽음.skipPage.test('en/privacy/index.html') && 읽음.글.test('a.webmanifest'));
+  assert.ok(속.glob식('path/assets/interview/film/strict-*.mp4').test('path/assets/interview/film/strict-question-4k.mp4'));
+  assert.ok(!속.glob식('path/*.mp4').test('path/a/b.mp4'));
+  assert.ok(속.glob식('path/**/*.mp4').test('path/a/b/c.mp4') && 속.glob식('path/**/*.mp4').test('path/c.mp4'));
+  assert.ok(속.glob식('world/**').test('world/a/b.glb') && !속.glob식('world/**').test('worldx/a'));
+  assert.deepEqual(속.참조풀기('x/y.html', 'https://synk.im/', 있나, 꼬리, 호스트), null, '뿌리 index.html이 없으면 null');
+  assert.deepEqual(속.참조풀기('x/y.html', '/', (p) => p === 'index.html', 꼬리, 호스트), { 경로: 'index.html' });
+  // check.mjs의 목록은 이름으로 읽는다(순서가 바뀌어도)
+  const 바꾼순서 = 점검원문('a|b').split('\n');
+  const [w, tg] = [바꾼순서.findIndex((l) => l.includes('const words')), 바꾼순서.findIndex((l) => l.includes('const tagWords'))];
+  [바꾼순서[w], 바꾼순서[tg]] = [바꾼순서[tg], 바꾼순서[w]];
+  const 읽음2 = 속.점검규칙읽기(바꾼순서.join('\n'));
+  assert.equal(Buffer.from(읽음2.낱말, 'base64').toString(), 'a|b');
+});
