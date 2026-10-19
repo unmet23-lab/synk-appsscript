@@ -36,9 +36,13 @@ class FakeContext:
         self.poll_error = False
         self.native_log = ""
         self.cleanup = None
+        self.hooks = {}
 
     def on_unload(self, callback):
         self.cleanup = callback
+
+    def register_hook(self, name, callback):
+        self.hooks.setdefault(name, []).append(callback)
 
     def register_command(self, name, handler, **kwargs):
         self.commands[name] = handler
@@ -143,8 +147,9 @@ class PluginTests(unittest.TestCase):
         return {"state":"integrated","needs_attention":False,"verified":True}
 
     def test_registers_native_commands_and_tool(self):
-        self.assertEqual(set(self.ctx.commands), {"synk", "synk-status", "synk-tasks", "synk-claude", "synk-codex", "synk-release", "synk-recover", "synk-today"})
+        self.assertEqual(set(self.ctx.commands), {"synk", "synk-status", "synk-tasks", "synk-claude", "synk-codex", "synk-release", "synk-recover", "synk-today", "synk-continue"})
         self.assertEqual(set(self.ctx.tools), {"synk_work"})
+        self.assertEqual(self.ctx.hooks, {"pre_gateway_dispatch": [plugin._approval_dispatch]})
         self.assertIn("recover", plugin.SCHEMA["parameters"]["properties"]["action"]["enum"])
         self.assertIn("기존 팁 봇", self.ctx.commands["synk"](""))
 
@@ -1085,6 +1090,212 @@ prepareWorkspace({repo:args['--repo'],taskDir:args['--task-dir'],taskId:args['--
             self.assertEqual(argv[-2:],["--task-dir",str(plugin._tasks_dir()/record['id'])])
             self.assertEqual('apply' in argv,name=='integration')
             self.assertFalse(run.call_args.kwargs['shell'])
+
+    # ── 텔레그램 이어 가기(tools/텔레그램승인.js 훅이 남긴 막힘 기록 → 유호님 답장 → claude -p --resume) ──
+
+    def approval(self, session=None, *, kind="scheduled-task", name="synk-tip-claude-review-2", sentence="origin main에 강제 push해",
+                 state="notified", cwd=None, sent_at=None, message_id="tg-notice-1"):
+        from uuid import uuid4
+        session = session or str(uuid4())
+        transcript = self.root / "claude projects" / (session + ".jsonl")
+        transcript.parent.mkdir(parents=True, exist_ok=True)
+        transcript.write_text('{"type":"user"}\n', encoding="utf-8")
+        stamp = sent_at or plugin._now()
+        record = {"version": 1, "session_id": session, "transcript_path": str(transcript), "cwd": str(cwd or self.repo),
+                  "source": {"kind": kind, "name": name}, "state": state, "updated_at": stamp,
+                  "denials": [{"tool_name": "Bash", "command": "git push --force origin main", "reason": "[Git Destructive]"}],
+                  "notice": {"what": "origin main에 강제 push", "sentence": sentence, "sent_at": stamp, "message_id": message_id}}
+        plugin._approvals_dir().mkdir(parents=True, exist_ok=True)
+        plugin._write_approval(record)
+        return record
+
+    def telegram_event(self, text, *, reply_to=None, message_id="501", user="12345", chat_type="dm", internal=False):
+        source = types.SimpleNamespace(platform=types.SimpleNamespace(value="telegram"), chat_type=chat_type,
+                                       user_id=user, chat_id=user, message_id=message_id)
+        return types.SimpleNamespace(text=text, internal=internal, media_urls=[], message_id=message_id,
+                                     reply_to_message_id=reply_to, source=source)
+
+    def reply(self, text, **kwargs):
+        """게이트웨이 순서 그대로: pre_gateway_dispatch → 명령 인자(아이폰 대시 바꿈) → /synk_continue."""
+        event = self.telegram_event(text, **kwargs)
+        decision = self.ctx.hooks["pre_gateway_dispatch"][0](event=event, gateway=None, session_store=None)
+        if not decision:
+            return None
+        self.assertEqual(decision, {"action": "rewrite", "text": "/synk_continue " + text})
+        args = decision["text"].split(maxsplit=1)[1].replace("\u2014", "--").strip()
+        self.env["HERMES_SESSION_MESSAGE_ID"] = event.source.message_id
+        return self.ctx.commands["synk-continue"](args)
+
+    def test_scheduled_task_reply_continues_a_fork_with_the_exact_text(self):
+        notice = self.approval()
+        text = "origin main에 강제 push해 — 지금"
+        reply = self.reply(text, reply_to="tg-notice-1", message_id="701")
+        self.assertIn("이어 가기 시작", reply)
+        record = self.records()[0]
+        self.assertEqual((record["kind"], record["request"], record["continues_session"]), ("continue", text, notice["session_id"]))
+        self.assertEqual((plugin._tasks_dir() / record["id"] / "prompt.txt").read_text(encoding="utf-8"), text)
+        call = self.ctx.calls[0][1]
+        command = call["command"]
+        self.assertIn("--resume " + plugin.shlex.quote(notice["transcript_path"].replace("\\", "/")) + " --fork-session --session-id "
+                      + record["native_session_id"] + " --permission-mode auto < ", command)
+        self.assertIn(" SYNK_UNATTENDED=continue:scheduled-task ", command)
+        self.assertNotIn("강제", command)
+        self.assertEqual(call["workdir"], str(self.repo.resolve()))
+        self.assertTrue(call["background"] and call["persist_on_release"] and not call["notify"])
+        self.assertFalse(plugin._auto_policy(record))
+        self.assertEqual(plugin._read_approval(notice["session_id"])["state"], "continuing")
+        self.assertIn("텔레그램 답장 그대로 이어 간 실행", self.ctx.commands["synk-tasks"](record["id"]))
+
+    def test_only_owner_reply_or_notice_sentence_is_intercepted(self):
+        self.approval()
+        self.assertIsNotNone(plugin._approval_dispatch(event=self.telegram_event("origin main에 강제 push해.")))
+        for event in (self.telegram_event("오늘 날씨 어때"), self.telegram_event("/synk_tasks"),
+                      self.telegram_event("origin main에 강제 push해", user="999"),
+                      self.telegram_event("origin main에 강제 push해", chat_type="group"),
+                      self.telegram_event("origin main에 강제 push해", internal=True),
+                      self.telegram_event("다른 말", reply_to="another-message")):
+            with self.subTest(text=event.text, user=event.source.user_id, chat=event.source.chat_type):
+                self.assertIsNone(plugin._approval_dispatch(event=event))
+        with patch.dict(os.environ, {"TELEGRAM_ALLOWED_USERS": ""}):
+            self.assertIsNone(plugin._approval_dispatch(event=self.telegram_event("origin main에 강제 push해")))
+        self.assertEqual(self.ctx.calls, [])
+
+    def test_cancel_and_stale_or_started_notices_never_run_the_cli(self):
+        from datetime import datetime, timedelta, timezone
+        self.approval()
+        self.assertIn("건너뛴 채로", self.reply("취소", reply_to="tg-notice-1", message_id="801"))
+        self.assertEqual(plugin._approval_records()[0]["state"], "dismissed")
+        old = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+        self.approval(sentence="synk.im에 회의 도구 공개해", sent_at=old, message_id="tg-notice-2")
+        self.assertIn("7일", self.reply("synk.im에 회의 도구 공개해", reply_to="tg-notice-2", message_id="802"))
+        self.assertIsNone(self.reply("synk.im에 회의 도구 공개해", message_id="803"))  # 지난 알림의 문장은 가로채지 않는다
+        self.approval(state="continuing", sentence="다른 일 해", message_id="tg-notice-3")
+        self.assertIn("이미", self.reply("아무 말", reply_to="tg-notice-3", message_id="804"))
+        self.assertEqual(self.ctx.calls, [])
+        self.assertEqual(self.records(), [])
+
+    def test_folder_outside_synk_or_missing_session_record_is_refused(self):
+        outside = self.root / "elsewhere"
+        outside.mkdir()
+        self.approval(cwd=outside)
+        self.assertIn("SYNK 저장소 밖", self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="901"))
+        gone = self.approval(sentence="b 해", message_id="tg-notice-2")
+        Path(gone["transcript_path"]).unlink()
+        self.assertIn("기록 파일", self.reply("b 해", reply_to="tg-notice-2", message_id="902"))
+        self.assertEqual((self.ctx.calls, self.records()), ([], []))
+        self.assertEqual({record["state"] for record in plugin._approval_records()}, {"notified"})
+
+    def test_hermes_task_blocked_step_continues_in_same_task_and_reports_once(self):
+        self.request()
+        record = self.records()[0]
+        native = record["native_session_id"]
+        self.ctx.process_status = "exited"
+        self.ctx.native_log = json.dumps({"type": "result", "subtype": "success", "is_error": False, "session_id": native,
+                                          "result": "막힌 일: origin main에 강제 push하려다 막혔어요\n이어갈 문장: origin main에 강제 push해",
+                                          "permission_denials": [{"tool_name": "Bash", "tool_use_id": "t1", "tool_input": {"command": "git push --force origin main"}}]},
+                                         ensure_ascii=False)
+        self.approval(native, kind="hermes", name=record["id"], cwd=Path(record["workspace_root"]))
+        with patch.object(plugin, "_policy_tool") as tools:
+            self.assertTrue(plugin._deliver_finished(self.ctx, record, {"status": "exited", "exit_code": 0}))
+        tools.assert_not_called()
+        plugin._send_native_message.assert_not_called()  # 훅이 보낸 막힘 알림 한 통으로 끝난다
+        self.assertEqual((plugin._delivery(record)["via"], plugin._delivery(record)["message_id"]), ("approval_notice", "tg-notice-1"))
+        self.assertEqual(self.records()[0]["attention_reason"], "NATIVE_PERMISSION_DENIED")
+        self.ctx.calls.clear()
+        self.assertIn("같은 작업을 이어 가기", self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="601"))
+        command = self.ctx.calls[0][1]["command"]
+        self.assertIn("-p --output-format json --resume " + native + " --permission-mode auto < ", command)
+        self.assertNotIn("--session-id", command)
+        self.assertIn(" SYNK_UNATTENDED=hermes:" + record["id"] + " ", command)
+        self.assertNotIn("강제", command)
+        self.assertEqual(self.ctx.calls[0][1]["workdir"], record["workspace_root"])
+        directory = plugin._tasks_dir() / record["id"]
+        self.assertEqual((directory / "continue-1.txt").read_text(encoding="utf-8"), "origin main에 강제 push해")
+        self.assertTrue((directory / "runs" / "1" / "delivery.json").is_file())
+        self.assertFalse((directory / "delivery.json").exists() or (directory / "finalization.json").exists())
+        current = self.records()[0]
+        self.assertEqual((current["state"], current["finalization_state"], current["attention_reason"], current["report_on_success"], len(current["continuations"])),
+                         ("running", "pending", "", True, 1))
+        self.assertEqual(plugin._read_approval(native)["state"], "continuing")
+        # 이어 간 실행이 막힘 없이 끝나면 검증·원본 통합을 다시 하고, 유호님이 부른 일이라 결과를 한 번 알린다.
+        self.ctx.native_log = json.dumps({"type": "result", "subtype": "success", "is_error": False, "session_id": native,
+                                          "result": "강제 push 했습니다."}, ensure_ascii=False)
+        with patch.object(plugin, "_policy_tool", side_effect=self.policy_result) as tools:
+            self.assertTrue(plugin._deliver_finished(self.ctx, current, {"status": "exited", "exit_code": 0}))
+        self.assertEqual([call.args[0] for call in tools.call_args_list], ["validation", "integration"])
+        self.assertEqual(plugin._send_native_message.call_count, 1)
+        self.assertIn("검증 후 원본 작업 파일에 반영됨", plugin._send_native_message.call_args.args[1])
+        self.assertIn("텔레그램 답장으로 막힌 단계를 1번 이어 감", self.ctx.commands["synk-tasks"](record["id"]))
+        self.assertIn("이미", self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="602"))
+        self.assertEqual(sum(name == "terminal" for name, _, _ in self.ctx.calls), 1)
+
+    def test_failed_continue_launch_restores_the_blocked_task_for_another_reply(self):
+        self.request()
+        record = self.records()[0]
+        self.ctx.native_log = json.dumps({"type": "result", "subtype": "success", "is_error": False, "session_id": record["native_session_id"],
+                                          "result": "막혔어요", "permission_denials": [{"tool_name": "Bash"}]}, ensure_ascii=False)
+        self.approval(record["native_session_id"], kind="hermes", name=record["id"])
+        plugin._deliver_finished(self.ctx, record, {"status": "exited", "exit_code": 0})
+        blocked = self.records()[0]
+        self.ctx.terminal_error = "spawn failed"
+        self.assertIn("시작하지 못했어요", self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="611"))
+        self.assertEqual(self.records()[0], blocked)
+        directory = plugin._tasks_dir() / record["id"]
+        self.assertTrue((directory / "delivery.json").is_file())
+        self.assertFalse((directory / "continue-1.txt").exists() or (directory / "runs" / "1").exists())
+        self.assertEqual(plugin._read_approval(record["native_session_id"])["state"], "notified")
+        self.ctx.terminal_error = None
+        self.assertIn("같은 작업을 이어 가기", self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="612"))
+
+    def test_permission_denied_without_hook_notice_keeps_the_existing_attention_message(self):
+        self.request()
+        record = self.records()[0]
+        self.ctx.native_log = json.dumps({"type": "result", "subtype": "success", "is_error": False, "session_id": record["native_session_id"],
+                                          "result": "막혔어요", "permission_denials": [{"tool_name": "Bash"}]}, ensure_ascii=False)
+        self.assertTrue(plugin._deliver_finished(self.ctx, record, {"status": "exited", "exit_code": 0}))
+        self.assertEqual(plugin._send_native_message.call_count, 1)
+        self.assertIn("NATIVE_PERMISSION_DENIED", plugin._send_native_message.call_args.args[1])
+
+    def test_continue_run_blocked_again_is_announced_once_by_the_hook(self):
+        self.approval()
+        self.reply("origin main에 강제 push해", reply_to="tg-notice-1", message_id="951")
+        record = self.records()[0]
+        self.approval(record["native_session_id"], kind="continue", name="scheduled-task", message_id="tg-notice-9")
+        self.ctx.native_log = json.dumps({"type": "result", "subtype": "success", "is_error": False, "session_id": record["native_session_id"],
+                                          "result": "또 막혔어요", "permission_denials": [{"tool_name": "Bash"}]}, ensure_ascii=False)
+        self.assertTrue(plugin._deliver_finished(self.ctx, record, {"status": "exited", "exit_code": 0}))
+        plugin._send_native_message.assert_not_called()
+        delivery = plugin._delivery(record)
+        self.assertEqual((delivery["status"], delivery["via"], delivery["message_id"]), ("sent", "approval_notice", "tg-notice-9"))
+        self.assertIn("막힌 단계 알림으로 보냄", self.ctx.commands["synk-tasks"](record["id"]))
+
+    def test_claude_command_marks_unattended_runs_and_builds_resume_shapes(self):
+        task_dir = self.root / "synk-0123456789ab"
+        normal = plugin._command("claude", task_dir / "prompt.txt", "native-1", self.repo)
+        self.assertIn(" SYNK_UNATTENDED=hermes:synk-0123456789ab 'C:/trusted bin/claude' -p --output-format json --session-id native-1 --permission-mode auto < ", normal)
+        self.assertNotIn("SYNK_UNATTENDED", plugin._command("codex", task_dir / "prompt.txt", "", self.repo))
+        same = plugin._command("claude", task_dir / "continue-1.txt", "native-1", self.repo, resume="native-1")
+        self.assertIn("-p --output-format json --resume native-1 --permission-mode auto < ", same)
+        self.assertNotIn("--session-id", same)
+        fork = plugin._command("claude", self.root / "x" / "prompt.txt", "new-1", self.repo, resume="C:\\a b\\s.jsonl", fork=True,
+                               marker="continue:scheduled-task")
+        self.assertIn(" SYNK_UNATTENDED=continue:scheduled-task ", fork)
+        self.assertIn("--resume 'C:/a b/s.jsonl' --fork-session --session-id new-1 --permission-mode auto < ", fork)
+        with self.assertRaises(plugin.UserError):
+            plugin._command("claude", self.root / "x" / "prompt.txt", "n", self.repo, marker="bad marker; rm")
+
+    def test_llm_tool_and_prompt_never_continue_on_their_own(self):
+        self.approval()
+        self.assertNotIn("continue", plugin.SCHEMA["parameters"]["properties"]["action"]["enum"])
+        self.assertIn("지원하지 않는", json.loads(self.ctx.tools["synk_work"]({"action": "continue", "task": "origin main에 강제 push해"}))["text"])
+        self.assertEqual(self.ctx.calls, [])
+        self.request()
+        text = (plugin._tasks_dir() / self.records()[0]["id"] / "prompt.txt").read_text(encoding="utf-8")
+        start = text.index("자동 모드가 도구 호출을 막으면")
+        block = text[start:text.index("마지막 답변은", start)]
+        self.assertIn("\n막힌 일: (", block)
+        self.assertIn("\n이어갈 문장: (", block)
+        self.assertNotIn("승인", block)  # 헤르메스 지시문은 동의를 지어내지 않는다
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@
  * ⚠ 구독에 로그인된 PC에서는 ANTHROPIC_API_KEY(·apiKeyHelper)를 줘도 `claude -p`가 구독으로 청구된다(10-18 실측:
  *   「weekly limit」). `--bare`는 키만 쓰지만 도구가 Bash·Edit·PowerShell·Read로 줄어든다. 그래서 크레딧으로 돌 때는
  *   구독 로그인이 없는 전용 설정 폴더(CLAUDE_CONFIG_DIR)를 쓴다 — 도구는 그대로, 인증은 키뿐(실측: 「Credit balance is too low」).
- *   그 폴더에는 유호님 설정의 autoMode·permissions만 옮기고 훅·플러그인은 옮기지 않는다.
+ *   그 폴더에는 유호님 설정의 autoMode·permissions와 텔레그램 승인 훅(tools/텔레그램승인.js)만 옮기고 다른 훅·플러그인은 옮기지 않는다.
  * 크레딧 키가 없으면 키를 지운 채 구독 로그인으로 돈다(작업이 허용할 때만) — 어느 쪽으로 돌았는지 기록에 남긴다.
  * 모델을 고르거나 바꾸지 않고 결과를 다시 검수하는 반복도 없다 — 공식 CLI를 한 번 띄울 뿐이다.
  * 키 목록·상태·사용 기록은 클로드키와 같은 곳(저장소 밖 ~/SYNK_보안)이고, 실행 기록은 output/크레딧작업/<이름>/ 이다.
@@ -37,13 +37,16 @@ function claude실행파일() {
   return process.env.SYNK_CLAUDE_BIN || 'claude';
 }
 
-/** 크레딧 전용 설정 폴더 — 구독 로그인이 없어 키로만 인증된다. 유호님 설정에서 autoMode·permissions만 옮긴다. */
+/** 크레딧 전용 설정 폴더 — 구독 로그인이 없어 키로만 인증된다. 유호님 설정에서 autoMode·permissions와 텔레그램 승인 훅만 옮긴다. */
 function 설정폴더준비(폴더 = process.env.SYNK_CREDIT_CONFIG_DIR || path.join(process.env.LOCALAPPDATA || os.homedir(), 'synk-claude-credit'),
   사용자설정 = path.join(os.homedir(), '.claude', 'settings.json')) {
   fs.mkdirSync(폴더, { recursive: true });
   let 원본 = {};
   try { 원본 = JSON.parse(fs.readFileSync(사용자설정, 'utf8')); } catch { /* 없으면 기본값으로 돈다 */ }
   const 옮길것 = Object.fromEntries(['autoMode', 'permissions'].filter((k) => 원본[k]).map((k) => [k, 원본[k]]));
+  // 자동 모드에 막힌 단계를 폰에서 잇는 훅만은 옮긴다(헤르메스가 크레딧으로 띄운 실행도 같은 알림·이어 가기를 받게).
+  const 승인훅 = require('./텔레그램승인.js').승인훅만(원본.hooks);
+  if (승인훅) 옮길것.hooks = 승인훅;
   const 파일 = path.join(폴더, 'settings.json');
   const 새글 = JSON.stringify(옮길것, null, 2) + '\n';
   if (!fs.existsSync(파일) || fs.readFileSync(파일, 'utf8') !== 새글) fs.writeFileSync(파일, 새글);
@@ -143,7 +146,9 @@ async function 크레딧으로띄우기({ 이름, 인자만들기, 입력, cwd =
   for (;;) {
     const 크레딧 = !!고른.이름;
     if (!크레딧 && !구독대체) return { 경로: '없음', 키이름: null, 결과: null, 시도, 건너뛴키: 고른.건너뛴키 };
-    const r = await 띄우기({ 실행파일, 앞인자, 인자: 인자만들기({ 크레딧 }), 입력, env: 환경만들기(크레딧 ? 고른.값 : null, process.env, 폴더), cwd, 시간제한 });
+    // 사람 없는 실행 표시 — 자동 모드 실행이 막히면 tools/텔레그램승인.js 훅이 폰으로 알린다(dontAsk 작업에는 영향 없음).
+    const env = { ...환경만들기(크레딧 ? 고른.값 : null, process.env, 폴더), SYNK_UNATTENDED: process.env.SYNK_UNATTENDED || `credit-job:${이름}` };
+    const r = await 띄우기({ 실행파일, 앞인자, 인자: 인자만들기({ 크레딧 }), 입력, env, cwd, 시간제한 });
     const 결과 = 결과읽기(r.stdout);
     // stream-json이면 시작 줄의 인증 경로를 본다 — 크레딧으로 띄웠는데 키가 아니면 구독으로 샌 것이다.
     if (크레딧 && 결과.인증 && 결과.인증 !== 'ANTHROPIC_API_KEY') 결과.경고 = `크레딧으로 띄웠는데 인증이 ${결과.인증}`;

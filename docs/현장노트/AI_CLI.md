@@ -102,6 +102,12 @@
 - 고침: 10-19 손으로 다시 썼다 — 21칸을 모두 풀어 쓰고 운영 대상(synk-policy main·Releases·Apps Script 라이브·talk `--적용`·회사 서버), 공개 저장소 셋, 키 위치, Drive 백업처를 사실대로 적었다. clasp 규칙은 호출 방식과 상관없이 효과로 쓰고, allow·soft_deny는 맨 앞에 `$defaults`를 둔다. 비공개 저장소에서 만든 사이트 파일을 공개 저장소(synk-policy)로 보내는 공개는 단단 규칙(Data Exfiltration — 미리 허락으로 못 푼다)에 걸릴 수 있어, 「Data retention / declassification」 칸에 synk.im용 사이트 파일 공개 해제를 적었다. 도구 검사를 믿는 미리 허락은 여러 세션이 같은 작업본을 쓰므로 `git diff --quiet origin/master -- <도구>`를 앞에 붙인 꼴로만 연다(`HEAD` 기준이면 다른 세션이 고쳐 커밋만 한 판을 못 거른다). 페이블 검수·근거·적용 스크립트는 `.tmp/automode-review-20261019/`, 바꾸기 전 판은 `~/.claude/settings.json.bak-202610191939-automode`.
 - 다시 확인: `claude auto-mode config` → environment 22·allow 20·soft_deny 77·hard_deny 1(10-19). `claude auto-mode critique`로 새 모순이 없는지 본다 — 규칙이 길면 비평 출력이 중간에 끊긴다(10-19 여러 번 끊김, `--model opus`가 조금 더 길게 낸다). 끊긴 곳까지 고치고 다시 돌린다. 비평은 돌릴 때마다 더 좁은 빈틈을 내므로, 되돌릴 수 없는 손상과 이어지는 지적까지만 고친다.
 
+### 사람 없이 돌다 막힌 단계는 같은 세션을 유호님 문장으로 이어야 통과한다 — 대상 없는 「응 진행해」는 그때그때 다르다 (2026-10-19 Claude)
+- 증상: 10-19 재현에서 예약 작업처럼 사람 없이 돈 `claude -p`(자동 모드)가 강제 push를 「Git Destructive」로 건너뛰고 끝났다. 같은 세션을 이어 간 실행에 「응 진행해」만 보냈더니 한 번은 다시 막혔고(20:50) 한 번은 통과했다(21:45). 알림에 적힌 「이 작업 폴더의 main을 원격 origin의 main에 강제로 덮어써 줘.」는 통과했다.
+- 원인: 판정 모델은 막힌 호출 바로 뒤의 사용자 메시지를 그 호출의 재지시로 읽을 수 있다. 다만 대상 없는 짧은 말은 경계에 있어 판정이 흔들린다. 막힌 호출이 판정 모델에 보이려면 같은 세션(또는 그 갈래)이어야 한다.
+- 고침: `tools/텔레그램승인.js` 훅(PermissionDenied·Stop)이 사람 없는 실행(`SYNK_UNATTENDED` 표시, 또는 첫 메시지가 `<scheduled-task …>`)의 막힌 일과 「이어갈 문장」(행동과 대상을 이름 댄 한 줄)을 텔레그램으로 보낸다. 답장은 헤르메스 `/synk_continue`(알림에 단 답장은 자동으로 이리 돌림)가 한 글자도 보태지 않고 `claude -p --resume`에 넣는다. 앱 예약 작업은 원래 기록을 건드리지 않게 `--fork-session` 갈래로 잇는다. 「취소」 답장은 실행 없이 건너뛴 채로 둔다. `--permission-prompt-tool`은 쓰지 않는다 — `-p` 실행을 폰 답이 올 때까지 붙잡고, 앱 예약 작업에는 붙일 수 없다.
+- 다시 확인: `.tmp/tg-approval-20261019/e2e/`에서 `node 1_무인실행.cjs` → `python -X utf8 2_텔레그램답장.py "<알림 문장>"`(텔레그램 대신 `telegram-out/`에 글을 쓴다). 기록은 `logs/단계.jsonl`. 시험: `node --test tests/텔레그램승인.test.js`(11), `python tests/hermes-synk-plugin.test.py`(80), `node --test tests/크레딧실행.test.js`(8).
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

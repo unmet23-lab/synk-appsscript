@@ -32,6 +32,11 @@ _UNLOADED = False
 DELIVERY_MODE = "native_result_direct_v1"
 AUTO_INTEGRATION_POLICY = "auto_verified_v1"
 ATTENTION_NOTIFICATION_POLICY = "attention_only_v1"
+# 텔레그램 이어 가기(2026-10-19): 자동 모드에 막혀 건너뛴 단계를 유호님 문장 그대로 같은 세션에 잇는다.
+# 막힘 기록과 알림은 tools/텔레그램승인.js 훅이 runtime/synk-approvals/<세션 ID>.json 에 남긴다.
+APPROVAL_TTL_SECONDS = 7 * 24 * 3600
+APPROVAL_CANCEL_WORDS = {"취소", "그만", "하지마", "하지 마", "안해", "안 해", "건너뛰어", "넘어가"}
+_APPROVAL_MATCHES = {}
 DELIVERY_TERMINAL = {"sent", "sending", "unconfirmed", "suppressed_success"}
 HELP = """SYNK 작업
 /synk_status [검색어] — 원문과 실행 메타데이터 조회
@@ -41,6 +46,7 @@ HELP = """SYNK 작업
 /synk_today — 상태·맡긴 작업·확인이 필요한 일
 /synk_release <작업 ID> 종료확인 — 실행 상태 미확인 작업의 접수 잠금 정리
 /synk_recover — 미전달된 공식 작업 결과의 전달 재개
+/synk_continue <문장> — 자동 모드에 막혀 건너뛴 단계를 그 문장 그대로 이어 가기(막힘 알림에 답장해도 됨)
 
 예: /synk_status 바람길
 예: /synk_claude WORLD 화면에서 다음 할 일을 검토해줘
@@ -624,8 +630,16 @@ def _deliver_auto_finished(ctx, record: dict, snapshot: dict, stop: threading.Ev
                    "quota_limited": parsed["quota_limited"], "native_error": parsed["native_error"], "final_found": parsed["final_found"],
                    "exit_code": snapshot.get("exit_code"), "native_status": parsed["status"], "needs_attention": attention,
                    "integration_state": record["integration"], "validation_status": record["validation_status"]}
-        if not attention:
+        # 텔레그램 답장으로 이어 간 실행은 유호님이 직접 부른 일이라 성공도 한 번 알린다.
+        if not attention and not record.get("report_on_success"):
             receipt.update(status="suppressed_success", completed_at=_now(), reason="attention_only_v1; result preserved")
+            _write_json(directory / "delivery.json", receipt)
+            return True
+        notice = _approval_notice(parsed["native_session_id"]) if attention and reason == "NATIVE_PERMISSION_DENIED" else None
+        if notice:
+            # 막힘 훅이 이미 「막힌 일·이어갈 문장」 알림을 보냈다 — 같은 일로 두 번 알리지 않는다.
+            receipt.update(status="sent", sent_at=notice.get("sent_at") or _now(), message_id=str(notice["message_id"]),
+                           via="approval_notice", reason_code=reason)
             _write_json(directory / "delivery.json", receipt)
             return True
         if stop is not None and stop.is_set():
@@ -720,6 +734,12 @@ def _deliver_finished(ctx, record: dict, snapshot: dict, stop: threading.Event |
                     current["state"] = "unknown"
             current["native_session_id"] = parsed["native_session_id"]
             _write_json(directory / "request.json", current)
+        notice = _approval_notice(parsed["native_session_id"]) if parsed.get("permission_denials") else None
+        if notice:
+            # 이어 간 실행이 또 막혔고 훅이 이미 새 알림을 보냈다 — 결과는 보존하고 두 번 알리지 않는다.
+            receipt.update(status="sent", sent_at=notice.get("sent_at") or _now(), message_id=str(notice["message_id"]), via="approval_notice")
+            _write_json(directory / "delivery.json", receipt)
+            return True
         if stop is not None and stop.is_set():
             receipt["status"] = "unconfirmed"
             receipt["reason"] = "plugin_unloaded_before_send; no automatic retry"
@@ -1073,6 +1093,9 @@ goal_status는 completed, needs_decision, blocked 중 하나입니다. completed
 새 기능의 의미 있는 회귀시험 작성은 허용합니다. 필요한 소스·시험·tsconfig·JSON schema·화면 자산이 scope에 있어야 합니다. 정책·의존성 설정 변경·삭제·지원하지 않는 검사는 보류합니다. 통과를 위해 가짜·무관한 시험을 만들거나 실패를 숨기거나 원래 목표를 줄이지 마세요. 단순 조회처럼 변경이 없으면 checks는 빈 배열일 수 있습니다.
 완료 보고서를 작성한 뒤 최종 답변 전에 다음 고정 명령으로 같은 검증기를 먼저 실행하세요: node "{REPO_ROOT.resolve() / 'tools' / 'hermes-synk' / 'validation-preview.cjs'}" --task-dir "{Path(workspace['workspace_root']).parent}"
 사전 검사는 원본이나 최종 영수증을 쓰지 않으며 작업본의 .tmp/synk-validation-preview 안에 근거를 남깁니다. 일반 코드 오류·타입 오류·깨진 화면·빠진 회귀시험은 현재 공식 세션 안에서 수정하고 다시 검사해 마무리하세요. 사용자 의도·권한·충돌 선택이 꼭 필요하거나 현재 환경에서 해결할 수 없는 경우만 원인을 기록하고 남기세요. 다른 모델·계정·새 실행기·밖에서 CLI를 재호출하는 반복 루프를 만들지 마세요. 사전 검사 통과는 최종 원본 반영 승인이 아니며 종료 뒤 최신 원본과 합친 후보를 별도로 재검증합니다.
+자동 모드가 도구 호출을 막으면 같은 일을 다시 시도하거나 다른 길로 돌아가지 말고 그 단계는 건너뛰세요. 그런 단계가 있으면 마지막 답변 맨 끝에 아래 두 줄을 이 꼴 그대로 적으세요. 유호님이 텔레그램에서 그 문장을 보내면 이 세션이 그 말로 이어집니다.
+막힌 일: (무엇을 어디에 하려다 막혔는지 한 줄. 작업 ID·해시·명령어 없이 쉬운 말로)
+이어갈 문장: (유호님이 이어 가라고 보낼 짧은 명령문 한 줄. 할 행동과 그 대상을 이름 대어)
 마지막 답변은 한국어로 작업 ID와 실제로 한 일, 격리 작업본의 결과 파일 위치, 실제 실행한 관련 검사와 그 결과, 확인하지 못한 부분, 남은 일과 필요한 사용자 행동을 짧게 적으세요. ‘CLI 단계 원본 통합: 하지 않음 · 별도 검증·통합 대기’를 적으세요. 접수·준비·프로세스 종료·실제 목표 달성을 구분하고 거절된 도구나 실패를 완료로 보고하지 마세요. 가능한 공식 세션 식별자도 적으세요.
 
 --- 사용자의 요청 원문 ---
@@ -1080,7 +1103,8 @@ goal_status는 completed, needs_decision, blocked 중 하나입니다. completed
 """
 
 
-def _command(engine: str, prompt: Path, native_id: str, workspace: Path | None = None) -> str:
+def _command(engine: str, prompt: Path, native_id: str, workspace: Path | None = None, *,
+             resume: str = "", fork: bool = False, marker: str = "") -> str:
     # Only generated IDs, trusted paths and constant arguments enter the shell.
     # User content remains exclusively in stdin; Hermes' local backend uses Bash.
     quote = lambda value: shlex.quote(str(value).replace("\\", "/"))
@@ -1100,12 +1124,26 @@ def _command(engine: str, prompt: Path, native_id: str, workspace: Path | None =
             executable = executable[:-4]
         args = [executable, "-c", "windows.sandbox=mxc", "exec", "--json", "--sandbox", "workspace-write", "-C", str(workspace)]
         args.append("-")
+    if engine == "claude" and resume:
+        # 텔레그램 이어 가기: 공식 --resume 으로 같은 세션을 잇는다. 앱 예약 작업 같은 남의 세션은 원래 기록을
+        # 건드리지 않게 --fork-session 갈래로 잇고 새 세션 ID는 --session-id 로 정한다. 사용자 글은 표준입력으로만 간다.
+        position = args.index("--session-id")
+        if fork:
+            args[position:position] = ["--resume", resume, "--fork-session"]
+        else:
+            args[position:position + 2] = ["--resume", resume]
+    if engine == "claude" and not marker and re.fullmatch(r"synk-[0-9a-f]{12}", prompt.parent.name):
+        marker = "hermes:" + prompt.parent.name
+    if marker and not re.fullmatch(r"[a-z][a-z-]{1,30}:[A-Za-z0-9_.가-힣-]{0,80}", marker):
+        raise UserError("무인 실행 표시가 올바르지 않아 실행하지 않았습니다.")
+    # 사람 없는 실행 표시: tools/텔레그램승인.js 훅이 이 값을 보고 막힌 단계를 기록·알린다(사람이 보는 세션은 건드리지 않는다).
+    unattended = ["SYNK_UNATTENDED=" + marker] if engine == "claude" and marker else []
     # The user's native subscription auth stays authoritative even if an API
     # credential is later added to Hermes' own process environment.
     clean_auth = ["env", "-u", "ANTHROPIC_API_KEY", "-u", "ANTHROPIC_AUTH_TOKEN",
                   "-u", "ANTHROPIC_BASE_URL", "-u", "OPENAI_API_KEY", "-u", "OPENAI_BASE_URL"]
     directory = prompt.parent
-    invocation = " ".join(quote(argument) for argument in clean_auth + args) + " < " + quote(prompt)
+    invocation = " ".join(quote(argument) for argument in clean_auth + unattended + args) + " < " + quote(prompt)
     # The official terminal still owns the process. Fixed shell redirection keeps
     # native output even when its in-memory ProcessRegistry is lost at restart.
     return (invocation + " > " + quote(directory / "native.stdout.jsonl") + " 2> " + quote(directory / "native.stderr.log")
@@ -1229,6 +1267,10 @@ def _tasks(ctx, route: dict, requested_id: str) -> str:
                 label = "실행 종료 · 목표 달성은 결과 확인 필요" if record.get("exit_code") == 0 else f"실행 종료 · 오류/중단(코드 {record.get('exit_code')})"
             lines.append(f"\n{record['id']} · {record['engine']} · {label}")
             lines.append(_safe_text(record.get("request"), 180))
+            if record.get("kind") == "continue":
+                lines.append("자동 모드에 막혀 건너뛴 단계를 텔레그램 답장 그대로 이어 간 실행")
+            elif record.get("continuations"):
+                lines.append(f"텔레그램 답장으로 막힌 단계를 {len(record['continuations'])}번 이어 감")
             if record.get("native_session_id"):
                 lines.append("공식 세션: " + record["native_session_id"])
             if record.get("workspace_root"):
@@ -1242,7 +1284,9 @@ def _tasks(ctx, route: dict, requested_id: str) -> str:
             if record.get("output_unavailable_after_restart") and not _durable_snapshot(record):
                 lines.append("게이트웨이 재시작 후 실행만 복원돼 이전 출력은 확인할 수 없습니다.")
             delivery = _delivery(record)
-            if delivery.get("status") == "sent":
+            if delivery.get("via") == "approval_notice":
+                lines.append("결과 전달: 막힌 단계 알림으로 보냄 · 그 알림에 답장하면 이어 갑니다")
+            elif delivery.get("status") == "sent":
                 lines.append("결과 전달: 텔레그램 API 수신 확인 · 휴대폰 열람 여부 미확인")
             elif delivery.get("status") == "suppressed_success":
                 lines.append("결과 알림: 성공·무변경으로 생략 · 결과는 보존됨")
@@ -1293,6 +1337,305 @@ def _release(ctx, route: dict, task_id: str, confirmation: str) -> str:
                       close_reason="User explicitly confirmed the native process ended; no process signal sent.")
         _write_json(_tasks_dir() / task_id / "request.json", record)
         return f"{task_id}: 사용자의 종료 확인으로 접수 잠금만 정리했습니다. 프로세스 종료 명령은 실행하지 않았으며 실제 작업 완료로 판정한 것은 아닙니다. 새 작업을 맡길 수 있습니다."
+
+
+# ── 텔레그램 이어 가기 ─────────────────────────────────────────────────────────────
+# 자동 모드 판정 모델은 사용자 메시지만 동의로 읽는다. 그래서 유호님 답장을 한 글자도 보태지 않고 새 사용자
+# 메시지(표준입력)로 공식 `claude -p --resume`에 넣는다. 「승인됨」 같은 헤르메스의 말을 덧붙이지 않는다.
+# 이 길은 사람이 보낸 /synk_continue 명령과 그 명령으로 바꾼 답장에서만 열리고, LLM 도구(synk_work)에는 없다.
+
+_UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+
+def _approvals_dir() -> Path:
+    return _checked_spool_path(_home() / "runtime" / "synk-approvals")
+
+
+def _read_approval(session_id: str) -> dict | None:
+    if not re.fullmatch(_UUID, str(session_id or ""), re.IGNORECASE):
+        return None
+    path = _checked_spool_path(_approvals_dir() / (session_id + ".json"))
+    try:
+        if path.is_symlink() or path.stat().st_size > 200000:
+            return None
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return record if isinstance(record, dict) and record.get("session_id") == session_id else None
+
+
+def _approval_records() -> list[dict]:
+    directory = _approvals_dir()
+    if not directory.is_dir():
+        return []
+    names = [path.name[:-5] for path in directory.glob("*.json") if re.fullmatch(_UUID + r"\.json", path.name, re.IGNORECASE)]
+    return [record for record in (_read_approval(name) for name in names) if record]
+
+
+def _write_approval(record: dict) -> None:
+    _write_json(_approvals_dir() / (record["session_id"] + ".json"), record)
+
+
+def _approval_expired(record: dict) -> bool:
+    stamp = str((record.get("notice") or {}).get("sent_at") or record.get("updated_at") or "")
+    try:
+        sent = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+        if sent.tzinfo is None:
+            return True
+    except ValueError:
+        return True
+    return (datetime.now(timezone.utc) - sent).total_seconds() > APPROVAL_TTL_SECONDS
+
+
+def _sentence_key(text) -> str:
+    return re.sub(r"[\s.,!?。！？~…\"'`「」『』“”‘’]+", "", str(text or ""))
+
+
+def _active_approvals() -> list[dict]:
+    active = [record for record in _approval_records()
+              if record.get("state") in {"notified", "notify_failed"} and not _approval_expired(record)]
+    return sorted(active, key=lambda record: str((record.get("notice") or {}).get("sent_at") or ""), reverse=True)
+
+
+def _approval_by_sentence(text: str) -> dict | None:
+    key = _sentence_key(text)
+    return next((record for record in _active_approvals()
+                 if key and _sentence_key((record.get("notice") or {}).get("sentence")) == key), None)
+
+
+def _approval_notice(native_session_id: str) -> dict | None:
+    """훅이 이 세션의 막힘 알림을 실제로 보냈으면 그 알림(내용·텔레그램 ID)을 돌려준다."""
+    record = _read_approval(native_session_id)
+    notice = (record or {}).get("notice") or {}
+    return notice if record and record.get("state") == "notified" and notice.get("message_id") else None
+
+
+def _approval_dispatch(event=None, **_kwargs):
+    """pre_gateway_dispatch: 막힘 알림에 단 답장이나 알림의 「이어갈 문장」이면 LLM을 거치지 않고 /synk_continue 로 돌린다."""
+    try:
+        if event is None or getattr(event, "internal", False) or getattr(event, "media_urls", None):
+            return None
+        source = getattr(event, "source", None)
+        platform = getattr(source, "platform", None)
+        platform = getattr(platform, "value", platform)
+        user_id = str(getattr(source, "user_id", "") or "")
+        allowed = {part for part in re.split(r"[\s,;]+", os.environ.get("TELEGRAM_ALLOWED_USERS", "")) if part}
+        if (platform != "telegram" or str(getattr(source, "chat_type", "") or "") != "dm" or not user_id.isdecimal()
+                or user_id not in allowed or str(getattr(source, "chat_id", "") or "") != user_id):
+            return None
+        text = getattr(event, "text", None)
+        if not isinstance(text, str) or not text.strip() or text.lstrip().startswith("/") or len(text) > 2000:
+            return None
+        reply_to = str(getattr(event, "reply_to_message_id", "") or "")
+        approval = None
+        if reply_to:
+            approval = next((record for record in _approval_records()
+                             if str((record.get("notice") or {}).get("message_id") or "") == reply_to), None)
+        approval = approval or _approval_by_sentence(text)
+        if approval is None:
+            return None
+        # 명령 인자로 넘어가며 공백·대시가 바뀌지 않게 원래 글을 메시지 ID로 붙들어 둔다.
+        for key in {str(getattr(event, "message_id", "") or ""), str(getattr(source, "message_id", "") or "")} - {""}:
+            _APPROVAL_MATCHES[key] = (approval["session_id"], text)
+        while len(_APPROVAL_MATCHES) > 50:
+            _APPROVAL_MATCHES.pop(next(iter(_APPROVAL_MATCHES)))
+        return {"action": "rewrite", "text": "/synk_continue " + text}
+    except Exception:
+        return None
+
+
+def _ensure_idle(ctx, except_id: str = "") -> None:
+    """이어 가기도 새 작업처럼 한 번에 하나만 돈다(작업본·세션이 겹치지 않게)."""
+    for other in _load_records():
+        if other["id"] == except_id:
+            continue
+        if other.get("state") in {"exited", "launch_failed", "closed_by_user"} and not _pending_finalization(other):
+            continue
+        if _refresh(ctx, other).get("state") not in {"exited", "launch_failed"}:
+            raise UserError("다른 SYNK 작업이 진행 중이에요. /synk_tasks 로 확인한 뒤 같은 문장을 다시 보내 주세요.")
+
+
+def _continue(ctx, route: dict, session: str, text: str) -> str:
+    if not isinstance(text, str) or not text.strip() or len(text) > 2000 or "\x00" in text:
+        raise UserError("이어 갈 문장을 적어 주세요. 막힘 알림에 적힌 문장을 보내거나 그 알림에 답장하면 됩니다.")
+    approval = _read_approval(session) if session else None
+    approval = approval or _approval_by_sentence(text)
+    if approval is None:
+        active = _active_approvals()
+        if len(active) == 1:
+            approval = active[0]
+        elif not active:
+            raise UserError("이어 갈 막힌 단계를 찾지 못했어요. 알림이 7일을 넘었거나 이미 이어 갔을 수 있어요.")
+        else:
+            listed = "\n".join("· " + _safe_text((record.get("notice") or {}).get("what"), 120) for record in active[:5])
+            raise UserError("이어 갈 막힌 단계가 여러 개예요. 이어 갈 알림에 답장으로 보내 주세요.\n" + listed)
+    state = approval.get("state")
+    if state in {"continuing", "continued"}:
+        return "이 단계는 이미 이어 가기를 시작했어요. /synk_tasks 로 확인해 주세요."
+    if state == "dismissed":
+        return "이 단계는 건너뛴 채로 두기로 했어요."
+    if state not in {"notified", "notify_failed"} or _approval_expired(approval):
+        return "이 알림은 7일이 지나 이어 가지 않았어요. 필요하면 새로 맡겨 주세요."
+    if _sentence_key(text) in {_sentence_key(word) for word in APPROVAL_CANCEL_WORDS}:
+        approval.update(state="dismissed", dismissed_at=_now())
+        _write_approval(approval)
+        return "알겠어요. 그 단계는 건너뛴 채로 둘게요."
+    transcript = Path(str(approval.get("transcript_path") or ""))
+    if (not transcript.is_absolute() or transcript.suffix != ".jsonl" or not transcript.is_file()
+            or transcript.stem.lower() != str(approval.get("session_id", "")).lower()):
+        raise UserError("막힌 세션의 기록 파일을 찾지 못해 이어 가지 않았어요. PC에서 확인해야 합니다.")
+    if (approval.get("source") or {}).get("kind") == "hermes":
+        return _continue_task(ctx, route, approval, text)
+    return _continue_session(ctx, route, approval, text)
+
+
+def _continue_task(ctx, route: dict, approval: dict, text: str) -> str:
+    """휴대폰에서 맡긴 작업: 같은 작업 폴더·격리 작업본에서 같은 세션을 잇고, 끝나면 검증·원본 통합을 다시 한다."""
+    task_id = str((approval.get("source") or {}).get("name") or "")
+    task = _read_record(task_id) if re.fullmatch(r"synk-[0-9a-f]{12}", task_id) else {}
+    if not task or not _owned(route, task):
+        raise UserError("이 대화에서 맡긴 작업을 찾지 못해 이어 가지 않았어요.")
+    if (task.get("engine") != "claude" or not _auto_policy(task) or task.get("finalization_state") != "attention"
+            or task.get("attention_reason") != "NATIVE_PERMISSION_DENIED"
+            or task.get("native_session_id") != approval.get("session_id")):
+        raise UserError("이 작업은 자동 모드 거절로 멈춘 상태가 아니라 이어 가지 않았어요. /synk_tasks 로 확인해 주세요.")
+    directory = _task_directory(task)
+    workspace = Path(str(task.get("workspace_root") or ""))
+    if not workspace.is_dir() or workspace.resolve() != (directory / "workspace").resolve():
+        raise UserError("격리 작업본을 찾지 못해 이어 가지 않았어요. PC에서 확인해야 합니다.")
+    if any((directory / name).exists() for name in ("validation.json", "integration.json", "integration-plan.json", "integration-candidate")):
+        raise UserError("이 작업은 검증·통합 기록이 있어 같은 자리에서 이어 가지 않았어요. PC에서 확인해야 합니다.")
+    intake = _intake_path(route)
+    session_id = _existing_session_id(route)
+    if not session_id:
+        raise UserError("아직 이어갈 대화 기록이 없습니다. 먼저 일반 메시지로 ‘SYNK 연결 확인’이라고 보내고 다시 요청해 주세요.")
+    with _REQUEST_LOCK, _admission():
+        previous = _existing_intake(intake)
+        if previous:
+            return f"같은 메시지로 이미 이어 가기를 시작했어요. /synk_tasks {previous} 로 확인해 주세요."
+        _ensure_idle(ctx, task["id"])
+        task = _read_record(task_id)
+        if task.get("finalization_state") != "attention" or task.get("attention_reason") != "NATIVE_PERMISSION_DENIED":
+            return "이 작업은 이미 다른 처리로 넘어가 이어 가지 않았어요. /synk_tasks 로 확인해 주세요."
+        if not _claim_intake(intake, task["id"]):
+            return "같은 메시지의 접수 기록이 있어 중복 실행하지 않았어요."
+        before, before_state = dict(task), approval.get("state")
+        runs = _checked_spool_path(directory / "runs")
+        number = 1 + (sum(1 for path in runs.iterdir() if path.is_dir()) if runs.is_dir() else 0)
+        archive = runs / str(number)
+        archive.mkdir(parents=True, mode=0o700)
+        # 지난 실행의 결과·전달 기록은 runs/<n>/ 로 옮겨 보존한다. 같은 자리에서 새 실행·검증·통합을 다시 한다.
+        moved = []
+        for name in ("native.stdout.jsonl", "native.stderr.log", "native.exit", "native-result.json",
+                     "finalization.json", "result.txt", "delivery.json", "delivery.claim"):
+            if (directory / name).exists():
+                os.replace(directory / name, archive / name)
+                moved.append(name)
+        prompt = directory / f"continue-{number}.txt"
+        prompt.write_text(text, encoding="utf-8", newline="\n")
+        command = _command("claude", prompt, task["native_session_id"], workspace, resume=task["native_session_id"])
+        continuations = list(task.get("continuations") or []) + [{"at": _now(), "run": number, "prompt": prompt.name}]
+        _update_record(task, state="launching", finalization_state="pending", integration="not_merged", attention=None,
+                       attention_reason="", validation_status=None, exit_code=None, completion_reason=None,
+                       continuations=continuations, report_on_success=True)
+        approval.update(state="continuing", continued={"at": _now(), "task_id": task["id"], "run": number})
+        _write_approval(approval)
+        try:
+            result = _dispatch(ctx, "terminal", {"command": command, "workdir": str(workspace), "background": True,
+                                                  "notify": False, "persist_on_release": True}, session_id)
+        except Exception:
+            _update_record(task, state="unknown")
+            raise UserError("이어 가기 실행 접수 결과가 미확인입니다. 자동 재실행하지 않았습니다. PC에서 실행 상태를 확인해야 합니다.")
+        if result.get("error") or not result.get("session_id"):
+            # 시작도 못 했다: 옮긴 기록을 되돌려 처음처럼 다시 답장할 수 있게 한다.
+            for name in moved:
+                os.replace(archive / name, directory / name)
+            prompt.unlink(missing_ok=True)
+            try:
+                archive.rmdir()
+            except OSError:
+                pass
+            _write_json(directory / "request.json", before)
+            approval.update(state=before_state)
+            approval.pop("continued", None)
+            _write_approval(approval)
+            raise UserError("이어 가기를 시작하지 못했어요. PC의 Claude 로그인·연결을 확인한 뒤 다시 답장해 주세요.")
+        _update_record(task, state="running", process_id=result["session_id"], notify_on_complete=False)
+        started = _start_delivery_worker(ctx, task)
+    return ("보낸 문장 그대로 같은 작업을 이어 가기 시작했어요. 끝나면 검증·원본 반영까지 하고 결과를 이 대화로 알려 드릴게요."
+            if started else "이어 가기는 시작했지만 결과 전달 감시를 시작하지 못했어요. /synk_recover 또는 /synk_tasks 로 확인해 주세요.")
+
+
+def _continue_session(ctx, route: dict, approval: dict, text: str) -> str:
+    """앱 예약 작업 등: 원래 세션은 그대로 두고 그 갈래(--fork-session)를 원래 작업 폴더에서 잇는다."""
+    roots = [REPO_ROOT.resolve(), *_additional_workspaces()]
+    try:
+        cwd = Path(str(approval.get("cwd") or "")).resolve(strict=True)
+    except OSError:
+        cwd = None
+    if cwd is None or not cwd.is_dir() or not any(cwd == root or root in cwd.parents for root in roots):
+        raise UserError("막힌 세션의 작업 폴더가 없거나 SYNK 저장소 밖이라 이어 가지 않았어요. PC에서 확인해야 합니다.")
+    kind = str((approval.get("source") or {}).get("kind") or "unattended")
+    marker = "continue:" + (kind if re.fullmatch(r"[A-Za-z0-9_.-]{1,40}", kind) else "unattended")
+    intake = _intake_path(route)
+    session_id = _existing_session_id(route)
+    if not session_id:
+        raise UserError("아직 이어갈 대화 기록이 없습니다. 먼저 일반 메시지로 ‘SYNK 연결 확인’이라고 보내고 다시 요청해 주세요.")
+    with _REQUEST_LOCK, _admission():
+        previous = _existing_intake(intake)
+        if previous:
+            return f"같은 메시지로 이미 이어 가기를 시작했어요. /synk_tasks {previous} 로 확인해 주세요."
+        _ensure_idle(ctx)
+        task_id = "synk-" + uuid4().hex[:12]
+        native_id = str(uuid4())
+        if not _claim_intake(intake, task_id):
+            return "같은 메시지의 접수 기록이 있어 중복 실행하지 않았어요."
+        directory = _tasks_dir() / task_id
+        directory.mkdir(parents=True, mode=0o700)
+        prompt = directory / "prompt.txt"
+        prompt.write_text(text, encoding="utf-8", newline="\n")
+        record = {"version": 2, "id": task_id, "kind": "continue", "created_at": _now(), "engine": "claude",
+                  "repo_root": str(REPO_ROOT.resolve()), "route": route, "hermes_session_id": session_id,
+                  "native_session_id": native_id, "continues_session": approval["session_id"],
+                  "request": text, "summary": _safe_text(text, 180), "state": "launching", "source_root": str(cwd),
+                  "integration": "not_merged", "intake_key": intake.stem,
+                  "output_mode": "durable_cli_files_v1", "delivery_mode": DELIVERY_MODE}
+        command = _command("claude", prompt, native_id, cwd, resume=str(approval["transcript_path"]), fork=True, marker=marker)
+        _write_json(directory / "request.json", record)
+        before_state = approval.get("state")
+        approval.update(state="continuing", continued={"at": _now(), "task_id": task_id})
+        _write_approval(approval)
+        try:
+            result = _dispatch(ctx, "terminal", {"command": command, "workdir": str(cwd), "background": True,
+                                                  "notify": False, "persist_on_release": True}, session_id)
+        except Exception:
+            record["state"] = "unknown"
+            _write_json(directory / "request.json", record)
+            raise UserError(f"{task_id}: 이어 가기 실행 접수 결과가 미확인입니다. 자동 재실행하지 않았습니다. PC에서 실행 상태를 확인해야 합니다.")
+        if result.get("error") or not result.get("session_id"):
+            record["state"] = "launch_failed"
+            _write_json(directory / "request.json", record)
+            approval.update(state=before_state)
+            approval.pop("continued", None)
+            _write_approval(approval)
+            raise UserError("이어 가기를 시작하지 못했어요. PC의 Claude 로그인·연결을 확인한 뒤 다시 답장해 주세요.")
+        record.update(state="running", process_id=result["session_id"], notify_on_complete=False)
+        _write_json(directory / "request.json", record)
+        started = _start_delivery_worker(ctx, record)
+    return ("보낸 문장 그대로 그 작업을 이어 가기 시작했어요. 끝나면 결과를 이 대화로 알려 드릴게요."
+            if started else "이어 가기는 시작했지만 결과 전달 감시를 시작하지 못했어요. /synk_recover 또는 /synk_tasks 로 확인해 주세요.")
+
+
+def _continue_command(ctx, raw: str) -> str:
+    try:
+        route = _authorized()
+        message_id = _env("HERMES_SESSION_MESSAGE_ID")
+        session, text = _APPROVAL_MATCHES.pop(message_id, ("", raw)) if message_id else ("", raw)
+        return _continue(ctx, route, session, text)
+    except UserError as error:
+        return str(error)
+    except Exception:
+        return "이어 가기를 처리하지 못했습니다. 실행 상태는 미확인입니다. /synk_tasks 로 확인하거나 PC 연결을 점검해 주세요."
 
 
 def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = "", repository: str = "",
@@ -1366,6 +1709,11 @@ def register(ctx):
 
     ctx.register_command("synk-release", handler=release, description="사용자 종료 확인 후 미확인 작업 접수 잠금 정리", args_hint="<작업 ID> 종료확인")
     ctx.register_command("synk-recover", handler=lambda raw: _handle(ctx, "recover"), description="이 대화의 미전달 SYNK 결과 감시 재개")
+    ctx.register_command("synk-continue", handler=lambda raw: _continue_command(ctx, raw),
+                         description="자동 모드에 막혀 건너뛴 단계를 보낸 문장 그대로 이어 가기", args_hint="<문장>")
+    # 막힘 알림에 단 답장·알림의 문장은 LLM 대화로 보내지 않고 위 명령으로 돌린다(원래 글은 그대로).
+    if hasattr(ctx, "register_hook"):
+        ctx.register_hook("pre_gateway_dispatch", _approval_dispatch)
 
     def tool(args, **kwargs):
         result = _handle(ctx, str(args.get("action") or ""), query=str(args.get("query") or ""),

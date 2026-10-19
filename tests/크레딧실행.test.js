@@ -11,7 +11,7 @@ const 실행기 = require('../tools/크레딧실행.js');
 
 const 가짜claude = `const fs=require('fs');let input='';process.stdin.on('data',d=>input+=d).on('end',()=>{
 const key=process.env.ANTHROPIC_API_KEY||'';const args=process.argv.slice(2);
-if(process.env.FAKE_MARK)fs.appendFileSync(process.env.FAKE_MARK,JSON.stringify({key:key.slice(-4),cfg:!!process.env.CLAUDE_CONFIG_DIR,args,input:input.slice(0,40)})+'\\n');
+if(process.env.FAKE_MARK)fs.appendFileSync(process.env.FAKE_MARK,JSON.stringify({key:key.slice(-4),cfg:!!process.env.CLAUDE_CONFIG_DIR,args,input:input.slice(0,40),unattended:process.env.SYNK_UNATTENDED||null})+'\\n');
 if(key.endsWith('aaaa')){console.log(JSON.stringify({type:'result',is_error:true,result:'Credit balance is too low',total_cost_usd:0,num_turns:1}));process.exit(1);}
 console.log(JSON.stringify({type:'result',is_error:false,result:'{"ok":true,"key":"'+key.slice(-4)+'"}',total_cost_usd:0.42,num_turns:3,session_id:'s1'}));});`;
 
@@ -83,6 +83,7 @@ test('첫 턴에 크레딧 부족이면 그 키를 표시하고 다음 키로 �
     const 실행 = t.실행들();
     assert.deepEqual(실행.map((x) => x.key), ['aaaa', 'bbbb']);
     assert.ok(실행.every((x) => x.cfg), '크레딧 실행은 구독 로그인 없는 전용 설정 폴더로');
+    assert.ok(실행.every((x) => x.unattended === 'credit-job:시험작업'), '사람 없는 실행 표시(텔레그램 승인 훅이 읽는다)');
     assert.equal(실행[1].input, '합성 지시문');
     assert.equal(받은.사후[0].경로, '크레딧');
     assert.equal(JSON.parse(fs.readFileSync(path.join(t.방, '상태.json'), 'utf8')).A.상태, '소진');
@@ -154,5 +155,19 @@ test('크레딧 전용 설정 폴더에는 유호님 설정의 autoMode·permiss
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(폴더, 'settings.json'), 'utf8')), { autoMode: { soft_deny: ['clasp push'] }, permissions: { defaultMode: 'auto' } });
     const 없음 = 실행기.설정폴더준비(path.join(방, 'cfg2'), path.join(방, '없는파일.json'));
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(없음, 'settings.json'), 'utf8')), {});
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('텔레그램 승인 훅만은 크레딧 전용 설정 폴더로 옮긴다(다른 훅은 그대로 빠진다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-credit-cfg-'));
+  try {
+    const 승인 = { type: 'command', command: 'C:/Program Files/nodejs/node.exe', args: ['C:/repo/tools/텔레그램승인.js', '훅'], timeout: 60 };
+    const 남의훅 = { type: 'command', command: 'node other-hook.js' };
+    const 사용자 = path.join(방, 'user-settings.json');
+    fs.writeFileSync(사용자, JSON.stringify({ autoMode: { allow: ['$defaults'] }, hooks: {
+      PermissionDenied: [{ hooks: [승인, 남의훅] }], Stop: [{ hooks: [승인] }], PreToolUse: [{ matcher: 'Artifact', hooks: [남의훅] }] } }));
+    const 폴더 = 실행기.설정폴더준비(path.join(방, 'cfg'), 사용자);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(폴더, 'settings.json'), 'utf8')), {
+      autoMode: { allow: ['$defaults'] }, hooks: { PermissionDenied: [{ hooks: [승인] }], Stop: [{ hooks: [승인] }] } });
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
