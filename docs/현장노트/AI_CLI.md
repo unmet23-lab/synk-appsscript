@@ -208,6 +208,12 @@
 - 고침: 기존 결과 parser의 종료 코드·`is_error`·한도 문구 판정을 그대로 사용해 `NATIVE_QUOTA_LIMITED`로 보류했다. 계정·모델·API 경로를 바꾸거나 실패 영수증을 성공으로 고치지 않는다. 초기화 문구 `resets 12pm (Asia/Seoul)`에 없는 날짜는 추측하지 않는다.
 - 다시 확인: `.tmp/hermes-claude-20261018/`와 해당 작업의 `native.stdout.jsonl`·`finalization.json`·`delivery.json`. 19:41:27 Telegram API 수신은 휴대폰 열람 증거가 아니며 실제 완주는 한도 해제 뒤 새 요청으로 확인한다.
 
+### 개인 대화를 Claude로 바꿀 때 config.yaml은 줄끝이 섞여 있고, 보조 호출도 Claude로 나간다 (2026-10-19 Claude)
+- 증상: 개인 대화(6017495834)를 GPT에서 Claude Sonnet 5.5로 바꾸려고 config.yaml의 두 값과 주석 두 줄을 글자 그대로 찾았더니 한 줄도 맞지 않았다. 시험 호출 한 번에 대화 제목 짓기 보조 호출도 Claude로 나갔다.
+- 원인: config.yaml은 CRLF 줄(2,046)과 LF 줄(366)이 섞여 있어, 파일 전체를 한 가지 줄끝으로 나누면 줄이 합쳐진다. 보조 작업(제목·압축·그림 보기)은 「auto」면 그 대화의 주 제공자부터 쓴다(`agent/auxiliary_client.py`의 자동 사슬). 키는 `.env`의 `ANTHROPIC_API_KEY`가 찾아낸 OAuth보다 먼저 쓰인다(`agent/anthropic_credentials.py`).
+- 고침: 줄마다 원래 줄끝을 둔 채 두 값과 주석만 바꾸고, 바꾼 뒤 전체를 다시 읽어 두 값 말고는 그대로인지 대조했다(`.tmp/hermes-telegram-claude-20261019/switch.cjs`, 되돌리기는 `--restore`). 키는 synk.yuh 조직 키를 `%LOCALAPPDATA%\hermes\.env`에 넣었다. 복구 작업을 잠시 끄고 공식 `hermes gateway restart`(하던 일 마치고 내려감, 45초)로 다시 켠 뒤 복구 작업을 다시 켰다.
+- 다시 확인: `hermes chat -q "Reply with the single word OK." --oneshot --provider anthropic -m claude-sonnet-5-5 --max-turns 1` 뒤 agent.log에 `API call #1: model=claude-sonnet-5-5 provider=anthropic in=21870 … write=21866`가 찍힌다. 새 대화마다 약 2.2만 토큰을 캐시에 써서 약 $0.055가 든다. 휴대폰에서 온 메시지는 agent.log의 `conversation turn: … provider=anthropic platform=telegram`으로 본다. 게이트웨이 설정 읽기 코드를 헤르메스 파이썬으로 직접 부르면 `ruamel`을 못 찾아 그 길로는 확인하지 못했다.
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
