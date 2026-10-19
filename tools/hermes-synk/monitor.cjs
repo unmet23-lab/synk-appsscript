@@ -118,7 +118,8 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     const stateFile = path.join(folder,'state.json');
     const previous=readJSON(stateFile, null);
     const refresh = !previous || now.getTime() - Date.parse(previous.remoteRefreshAt || previous.baselineAt) >= 3600000;
-    const overview=await readOverview({root,hermesHome:home,now,remoteRefresh:refresh});
+    // Only this monitor persists the backup failure marks; ad-hoc /synk_today reads stay write-free.
+    const overview=await readOverview({root,hermesHome:home,now,remoteRefresh:refresh,persistState:true});
     const result=plan(previous, overview, now);
     result.state.remoteRefreshAt = refresh ? now.toISOString() : previous.remoteRefreshAt;
     for(const item of result.notifications) {

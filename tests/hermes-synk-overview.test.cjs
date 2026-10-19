@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const status = require('../tools/hermes-synk/status.cjs');
-const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE } = require('../tools/hermes-synk/overview.cjs');
+const { readOverview, readTaskRecords, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE } = require('../tools/hermes-synk/overview.cjs');
 const { plan } = require('../tools/hermes-synk/monitor.cjs');
 const NOW = new Date('2026-10-18T08:00:00Z');
 const ID = 'synk-123456abcdef';
@@ -30,6 +30,9 @@ function fixture(t) {
   write(root, 'tools/argon-schedules/configuration/docs.json', docs);
   const options = { root, hermesHome: home, now: NOW,
     readArgonRemote: async () => { throw new Error('OFFLINE_TEST'); },
+    // 시험은 회사 서버·이 PC의 실제 백업 상태 파일에 닿지 않는다.
+    readSnsRemote: async () => { throw new Error('OFFLINE_TEST'); },
+    backupHealthFile: path.join(directory, 'no-backup-health.json'), uptimeSeconds: 0,
     readStatus: options => status.readStatus({ ...options, readClaude: UNAVAILABLE, readCodexStatus: UNAVAILABLE }) };
   return { directory, root, home, docs, options };
 }
@@ -502,4 +505,99 @@ test('같은 조사 실패의 판단 키는 영수증 시각·캐시 경과로 �
   const second=await readOverview({...f.options,now:new Date(NOW.getTime()+LEDGER_TTL_MS+1)});
   const b=second.events.find(row=>row.id==='research-yt-tt');
   assert.equal(a.attention_fingerprint,b.attention_fingerprint);
+});
+
+function backupFile(f, components, checkedAt = '2026-10-18T07:50:00Z') {
+  const file = path.join(f.directory, 'backup-health.json');
+  fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, checkedAt, status: 'attention', components }), 'utf8');
+  return file;
+}
+const onedrive = (status, lastSuccessAt = '2026-10-18T03:00:00Z', codes = []) =>
+  ({ id: 'onedrive', label: 'OneDrive 문서·소스', status, lastSuccessAt, codes, task: { path: 'C:/private/path', result: 1 } });
+
+test('PC 백업 실패는 다음 성공까지 같은 판단으로 이어지고 실행 중으로 바뀌어도 다시 알리지 않는다', async t => {
+  const f = fixture(t);
+  const options = { ...f.options, backupHealthFile: backupFile(f, [onedrive('failed', undefined, ['SCHEDULE_LAST_RUN_FAILED'])]), persistState: true };
+  const failed = await readOverview(options);
+  const first = failed.events.find(row => row.id === 'backup-onedrive');
+  assert.equal(first.needs_attention, true);
+  assert.equal(first.severity, 'error');
+  assert.match(first.detail, /실패 · 마지막 성공 .* · SCHEDULE_LAST_RUN_FAILED/);
+  backupFile(f, [onedrive('running')]);
+  const later = new Date(NOW.getTime() + 5 * 60_000);
+  const running = await readOverview({ ...options, now: later });
+  const second = running.events.find(row => row.id === 'backup-onedrive');
+  assert.equal(second.needs_attention, true, '실패 뒤 다음 회차가 도는 동안에도 판단을 유지한다');
+  assert.equal(second.attention_fingerprint, first.attention_fingerprint);
+  let state = plan(null, { events: [] }, NOW).state;
+  const alerted = plan(state, failed, NOW);
+  assert.equal(alerted.notifications.length, 1);
+  assert.match(alerted.notifications[0].text, /PC 백업 · OneDrive/);
+  state = alerted.state;
+  assert.equal(plan(state, running, later).notifications.length, 0, '같은 실패를 30분마다 다시 보내지 않는다');
+  const cache = fs.readFileSync(path.join(f.home, BACKUP_CACHE), 'utf8');
+  assert.doesNotMatch(cache, /private|SCHEDULE_LAST_RUN_FAILED/, '캐시에는 실패 표시와 마지막 성공 시각만 둔다');
+  backupFile(f, [onedrive('healthy', '2026-10-18T08:04:00Z')]);
+  const healthy = await readOverview({ ...options, now: new Date(NOW.getTime() + 10 * 60_000) });
+  assert.equal(healthy.events.find(row => row.id === 'backup-onedrive').needs_attention, false);
+});
+
+test('PC 백업은 짧은 유예 안의 실패·켠 직후의 오래된 기록·일회성 조회에서는 알리지 않는다', async t => {
+  const f = fixture(t);
+  const fresh = await readOverview({ ...f.options, backupHealthFile: backupFile(f, [onedrive('failed', '2026-10-18T07:10:00Z')]) });
+  const row = fresh.events.find(item => item.id === 'backup-onedrive');
+  assert.equal(row.needs_attention, false, 'OneDrive는 두 시간 유예 안의 실패를 기다린다');
+  assert.equal(row.severity, 'warning');
+  assert.equal(fs.existsSync(path.join(f.home, BACKUP_CACHE)), false, '감시 프로세스가 아닌 조회는 파일을 쓰지 않는다');
+  const file = backupFile(f, [onedrive('healthy', '2026-10-18T04:00:00Z')], '2026-10-18T04:30:00Z');
+  const boot = await readOverview({ ...f.options, backupHealthFile: file, uptimeSeconds: 600 });
+  assert.equal(boot.events.find(item => item.id === 'backup-monitor'), undefined);
+  const stopped = await readOverview({ ...f.options, backupHealthFile: file, uptimeSeconds: 3600 });
+  assert.equal(stopped.events.find(item => item.id === 'backup-monitor').needs_attention, true);
+  assert.match(stopped.text, /PC 백업 1종/);
+});
+
+test('SNS 연결은 세 시간에 한 번만 읽고 코드·시각만 보관하며 끊김·지연·장기 미조회를 판단으로 올린다', async t => {
+  const f = fixture(t);
+  let calls = 0;
+  const payload = { appRunning: true, token: 'private-token',
+    connections: [
+      { platform: 'youtube', state: 'connected', errorCode: null, checkedAt: '2026-10-18T07:40:00Z', requiresReconnect: false, failureCode: null, accessToken: 'private-token' },
+      { platform: 'instagram', state: 'error', errorCode: 'OAUTH_EXPIRED', checkedAt: '2026-10-18T07:40:00Z', requiresReconnect: true, failureCode: null }],
+    inbox: [{ platform: 'facebook', lastStatus: 'partial', lastErrorCode: null, lastSyncedAt: '2026-10-18T07:50:00Z', body: 'private-body' }],
+    jobs: { total: 7, overdue: 1, overdueRefs: ['a'.repeat(12)], recentFailed: 0, recentFailedRefs: [] } };
+  const remote = async () => { calls++; return payload; };
+  const offline = await readOverview({ ...f.options, readSnsRemote: remote });
+  assert.equal(calls, 0, '기본 조회는 회사 서버를 읽지 않는다');
+  assert.equal(offline.snapshot.sns.available, false);
+  const fresh = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: remote });
+  assert.equal(calls, 1);
+  const byId = (report, id) => report.events.find(row => row.id === id);
+  assert.equal(byId(fresh, 'sns-connection-youtube').needs_attention, false);
+  assert.equal(byId(fresh, 'sns-connection-instagram').needs_attention, true);
+  assert.match(byId(fresh, 'sns-connection-instagram').detail, /OAUTH_EXPIRED/);
+  assert.equal(byId(fresh, 'sns-jobs').needs_attention, true);
+  assert.equal(byId(fresh, 'sns-comments-facebook').needs_attention, false);
+  assert.match(fresh.text, /SNS 연결 2개·댓글 수집 1개 · 확인 필요 2건/);
+  assert.doesNotMatch(fs.readFileSync(path.join(f.home, SNS_CACHE), 'utf8'), /private-token|private-body/);
+  const hour = await readOverview({ ...f.options, now: new Date(NOW.getTime() + 60 * 60_000), remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: remote });
+  assert.equal(calls, 1, '세 시간 안에는 다시 읽지 않는다');
+  assert.equal(byId(hour, 'sns-connection-instagram').attention_fingerprint, byId(fresh, 'sns-connection-instagram').attention_fingerprint);
+  const blocked = async () => { calls++; throw new Error('SSH_BLOCKED'); };
+  const failed = await readOverview({ ...f.options, now: new Date(NOW.getTime() + 4 * 60 * 60_000), remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: blocked });
+  assert.equal(calls, 2);
+  assert.equal(failed.snapshot.sns.available, true, '실패한 조회는 마지막 성공 사본을 지우지 않는다');
+  assert.equal(failed.snapshot.sns.refreshFailed, true);
+  assert.equal(byId(failed, 'coverage-sns'), undefined, '이틀 안의 조회 실패는 알리지 않는다');
+  const long = await readOverview({ ...f.options, now: new Date(NOW.getTime() + 49 * 60 * 60_000), remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: blocked });
+  assert.equal(byId(long, 'coverage-sns').needs_attention, true);
+  assert.equal(byId(long, 'sns-connection-youtube').needs_attention, true, '서버의 연결 점검 기록이 오래되면 판단으로 올린다');
+});
+
+test('SNS 응답 모양이 다르면 성공으로 저장하지 않는다', async t => {
+  const f = fixture(t);
+  const report = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: async () => ({ connections: [] }) });
+  assert.equal(report.snapshot.sns.available, false);
+  assert.equal(report.snapshot.sns.refreshFailed, true);
+  assert.equal(fs.existsSync(path.join(f.home, SNS_CACHE)), false);
 });
