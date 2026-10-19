@@ -46,6 +46,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ## 줄끝(CRLF·LF)
 
+### 서버 복사 원본인 systemd 단위는 끝 빈 줄 때문에 `--check`에 걸린다 (2026-10-19)
+- 증상: 10-19 Argon 월요일 수집 단위 6개(`tools/argon-schedules/production-units/synk-argon-ultra-scan-*.service·timer`)를 별도 인덱스로 올리자 `git diff --cached --check`가 모두 `new blank line at EOF`로 멈췄다.
+- 원인: 이 폴더의 단위는 10-18 커밋 판부터 파일 끝이 빈 줄로 끝나고(`tail -c 3`이 줄바꿈 셋), 서버 `/etc/systemd/system/`에 깔린 판의 복사 원본이다. 새 단위도 같은 꼴로 만들어 서버에 깔았다.
+- 고침: 바이트를 고치면 저장소 판이 서버 판과 달라지므로 손대지 않았다. 커밋 스크립트에서 그 폴더 단위 파일의 「EOF 빈 줄」만 허용하고 다른 공백 오류는 그대로 막았다. 검사를 통째로 끄지 않는다.
+- 다시 확인: 커밋 `557316313` 뒤 `git status --porcelain -- tools/argon-schedules`가 비어 있고(단위 blob = 작업본 바이트), 같은 커밋의 docs-io.py·run-check.py·alert-event.py·docs.json sha256이 서버 기록과 같다.
+
 ### 공용 문서 하나가 줄끝만 바뀌어 통째로 diff가 된다
 - 증상: `git diff HEAD`가 트랙 87줄 전부 바뀐 것으로 나온다(내용은 몇 줄만 바뀜). 파이썬으로 고친 LF 파일(`KidsQuestion.tsx` 226줄)이 통째로 CRLF가 된다.
 - 원인: 다른 도구가 작업본을 CRLF↔LF로 뒤집어 두었고, 「작업본 줄끝을 따르는」 스크립트가 그대로 이어 썼다. `sed -i`는 CRLF를 LF로, 파이썬 `open(p, 'w')`(text 모드)는 Windows에서 LF를 CRLF로 바꾼다. 한 파일 안에 CRLF 줄과 LF 줄이 섞여 있기도 하다(10-08 트랙 202줄 중 14줄 LF).
