@@ -107,6 +107,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 워크트리에서 묶기 전에 메인의 Strata 원본을 바이트 그대로 복사한다. 메인에 옮긴 뒤에는 묶음을 복사하지 말고 메인에서 생성기를 다시 돌린다. 지도 판은 학습 기록에 들어가므로 묶음 diff에 `map_ver`가 보이면 멈춘다.
 - 다시 확인: 메인에서 `node tools/build-game-learning.js --check`가 모두 verified다.
 - 10-19 덧붙임(워크트리째 LF로 맞추기): 앱 워크트리(`.claude/worktrees/<이름>`)에서 Atlas 생성 묶음 열넷을 다시 만들 때는 메인 원본을 복사하는 대신 워크트리를 리눅스 CI처럼 LF로 맞췄다. `git config --worktree core.autocrlf false`(공용 설정에 안 들어감) 뒤 `git ls-files --eol`이 `w/crlf`·`w/mixed`인 추적 파일만 지우고 `git checkout-index -u -z --stdin`으로 다시 꺼낸다(1만 5천 개, 3분). `git checkout-index -f -a`는 인덱스 stat가 같은 파일을 다시 쓰지 않아 2초 만에 끝나고 CRLF가 그대로 남는다. 확인: 남은 `w/crlf`가 blob 자체가 CRLF인 것(`i/crlf`)뿐이고 `git status`가 비어 있으며, 바탕 판에서 `node tools/sync-atlas.js --all --check --local`이 통과한다.
+- 10-19 덧붙임(맞춘 뒤에도 앱의 가지 맞추기는 CRLF로 쓴다): 위처럼 맞춘 워크트리에서 앱의 기본 가지 맞추기(`sync_with_base_branch`, 호스트에서 git을 돌린다)로 origin/master를 합치자, 병합으로 들어온 파일 26개가 다시 CRLF(`i/lf w/crlf`)로 써졌다. 워크트리 범위 `core.autocrlf=false`가 있는데도 그랬고 원인은 확인하지 못했다. 처음에는 줄끝만 다른 ` M`으로 보이지만, `git -c core.autocrlf=true status`를 한 번 돌리면 인덱스 stat가 새로 고쳐져 그 뒤 `git status`로는 깨끗하게 보인다. 맞추기·병합 뒤에는 `git ls-files --eol`로 `i/lf w/crlf`를 세고, 위 방법으로 그 파일만 다시 꺼낸 다음 검사를 돌린다(10-19 회원 활동 다시 만들기).
 
 ### 워크트리 안에서 쓴 git config가 공용 설정에 들어간다
 - 증상: 워크트리를 LF로 받으려고 `git config core.autocrlf false`를 썼더니 메인 작업본의 CRLF 파일이 전부 바뀐 것처럼 보인다(10-03, 6분간 모든 세션에 영향).
