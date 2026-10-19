@@ -23,4 +23,6 @@ Get-ScheduledTaskInfo -TaskName SYNK_Hermes_Gateway_Recovery
 
 2026-10-18 적용: 현재 전원 구성표에서 전원 연결 시 유휴 절전·최대절전을 각각 3,600초에서 0(사용 안 함)으로 변경했다. 배터리의 두 값은 모두 3,600초를 유지하고 덮개 닫기 동작도 유지했다. 원래 값과 복구 스크립트는 `.tmp/hermes-improve-20261018/runtime/`에 있다. 덮개를 닫아 절전하거나 로그아웃하면 휴대폰 요청은 즉시 처리되지 않는다.
 
+작업은 Windows에 들어 있는 Windows PowerShell 5.1(`%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`)로 돈다. 10-18 설치 때는 Codex 앱 셸의 `pwsh.exe`가 잡혀 작업이 그 앱 런타임에 묶였고, 10-19에 바꿨다(GPT를 끊어도 돌게).
+
 검증: 현재 게이트웨이를 건드리지 않은 채 스케줄러의 실제 실행이 성공 종료(0)했고 PID가 유지됐다. 프로세스 종료를 일부러 일으키는 장애 시험과 휴대폰 수신·응답의 전 과정은 이 복구 스크립트 검증에 포함하지 않았다.
