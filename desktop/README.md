@@ -342,7 +342,7 @@ WORLD·메신저의 실행 파일에 서비스와 데이터베이스를 포함�
 | WORLD | `im.synk.world` | `SYNKWorld` | `im.synk.world.preview` / `SYNKWorldPreview` |
 | 메신저 | `im.synk.messenger` | `SYNKMessenger` | `im.synk.messenger.preview` / `SYNKMessengerPreview` |
 
-Electron `userData`는 OS의 `appData/SYNK Desktop/<appId>`에, Chromium 세션은 그 안에 둔다. 세 앱과 개발판·정식판은 저장 공간을 공유하지 않는다. SYNK ID를 공통 계정으로 쓰는 것과 각 앱의 토큰·기록을 자동 복사하는 것은 별개다. 이번 셸은 인증 토큰을 앱 간 전달하지 않는다.
+Electron `userData`는 OS의 `appData/SYNK Desktop/<appId>`에, Chromium 세션은 그 안에 둔다. 세 앱과 개발판·정식판은 저장 공간을 공유하지 않는다. 패키징 안 된 소스 실행(`--synk-dev`)은 설치된 개발판과도 나눠 `<appId>.source` 폴더·단일 실행 잠금·작업 표시줄 ID를 쓰고, 앱끼리 로그인 선택을 맞추는 Suite 폴더도 `Suite/development.source/`를 쓴다(설치된 개발판은 `Suite/development/`, 2026-10-19). 설치 앱은 Care 알림 때문에 늘 켜져 있어 소스 실행 창이 그 프로필·잠금을 같이 쓰면 뜨지 못하고 설치 앱의 로그인·설정을 바꾸기 때문이다. 둘이 같이 켜지므로 소스 실행의 앱 이름(트레이 툴팁·창 제목)에는 「(소스 실행)」이 붙는다. 소스 실행이 띄우는 교사·제품 미리보기와 `npm run dev:care` 같은 단독 미리보기는 소스 실행 쪽 Suite의 마지막 선택을 따르고(기록이 없으면 자기 금고로만 로그인), 소스 실행에서 연 설치된 WORLD·Workspace는 설치된 Platform 쪽 Suite를 따른다. SYNK ID를 공통 계정으로 쓰는 것과 각 앱의 토큰·기록을 자동 복사하는 것은 별개다. 이번 셸은 인증 토큰을 앱 간 전달하지 않는다.
 
 Windows 설치 위치는 `%LOCALAPPDATA%/Programs/<실행 이름>/`, Mac 빌드의 앱 이름은 `<실행 이름>.app`이다. 실제 Electron Builder의 `productFilename`과 NSIS 설치 경로를 회귀시험으로 대조했다. 런처는 Windows의 해당 고정 위치와 Mac의 `/Applications/`만 찾는다.
 

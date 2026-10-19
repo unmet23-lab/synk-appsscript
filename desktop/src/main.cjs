@@ -1,7 +1,7 @@
 'use strict';
 const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
-const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity}=require('./catalog.cjs');
+const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity,sourceScope}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
 const {createClientLifecycle}=require('./client-lifecycle.cjs');
 const {resolveProgramRoot}=require('./program-root.cjs');
@@ -54,13 +54,14 @@ else {
 }
 if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode,runtime)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
 const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
-const current=identity(runtime.clientId,runtime.mode),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
+const current=identity(runtime.clientId,runtime.mode,{packaged}),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
 const publicApps=createPublicApps({clientId:runtime.clientId,mode:runtime.mode,openExternal:url=>shell.openExternal(url),accountStatus:()=>accountStatus()});
 const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
 const authConfig=configuration(runtime.mode==='development'&&!runtime.auth?.clients?.[runtime.clientId]?null:runtime.auth,runtime.clientId,runtime.mode);
 const teacherAuthConfig=runtime.clientId==='messenger'?configuration(runtime.auth?.clients?.teacher?runtime.auth:null,'teacher',runtime.mode):null;
 app.setName(current.productName);
+// 소스 실행은 current가 '.source' 범위라 이 폴더(그리고 이 폴더로 잡는 단일 실행 잠금)와 작업 표시줄 ID가 설치된 Preview와 갈린다(catalog.cjs sourceScope).
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
@@ -221,7 +222,7 @@ function beginPlatformStartup(recoveryCode=null,recoveryReleaseId=null){
 }
 function initializeMain(){
   if(mainInitialized||!startupAllowed||!appLocationReady)return;mainInitialized=true;
-  suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
+  suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),suiteBindingKey),key:suiteBindingKey}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
     desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,name:current.appId});
@@ -251,7 +252,7 @@ function createWindow(){
   if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads')});
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
-    const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,teacherKey),key:teacherKey}):null;
+    const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),teacherKey),key:teacherKey}):null;
     teacherService=createMessengerTeacherService({config:teacherAuthConfig,directory:path.join(app.getPath('userData'),'Teacher'),scope:current.sessionScope+'.teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>sendMessengerTeacherAuth(window,state,entry,runtime.clientId),suiteStore:teacherSuite,createTokenStore,createAuthService,createSuiteFollower});
     void teacherService.initialize();
   }
