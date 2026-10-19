@@ -629,3 +629,156 @@ test('right after "stop" the line to bring tips back is already there',async()=>
   assert.match(el.innerHTML,/<p class="mu-rest">쉬고 있는 팁 1개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기<\/button><\/p>/);
   board.dispose();
 });
+
+/* ---------- 초기화권(10-19) ---------- */
+test('reset passes come from Codex for GPT and from the member for Claude, and expired ones drop out',async()=>{
+  const {passesOf}=await import('../renderer/subscriptions.mjs');
+  const D=864e5;
+  const gpt=row({service:'gpt',label:'ChatGPT · Codex',live:{readAt:NOW,weekly:{usedPercent:100,resetsAt:NOW+5*D},resets:{count:2,until:[NOW+D,NOW+4*D]}}});
+  assert.deepEqual(passesOf(gpt,NOW),{count:2,until:NOW+D,manual:false});
+  // 읽은 뒤 하나가 만료되면 한 장만, 다음 만료일로. 개수만 아는 응답은 만료일 없이.
+  assert.deepEqual(passesOf(gpt,NOW+2*D),{count:1,until:NOW+4*D,manual:false});
+  assert.deepEqual(passesOf({...gpt,live:{...gpt.live,resets:{count:1,until:null}}},NOW),{count:1,until:null,manual:false});
+  assert.equal(passesOf({...gpt,live:{...gpt.live,resets:{count:0,until:[]}}},NOW),null);
+  assert.equal(passesOf({...gpt,live:{...gpt.live,resets:null}},NOW),null);
+  // Claude는 넣은 값. 만료가 지나면 없음.
+  const claude=row({passCount:1,passUntil:NOW+3*D});
+  assert.deepEqual(passesOf(claude,NOW),{count:1,until:NOW+3*D,manual:true});
+  assert.equal(passesOf(claude,NOW+4*D),null);
+  assert.deepEqual(passesOf(row({passCount:2,passUntil:null}),NOW),{count:2,until:null,manual:true});
+  assert.equal(passesOf(row({service:'gemini',passCount:1}),NOW),null);
+  assert.equal(passesOf(row({source:'manual',passCount:1}),NOW),null);
+});
+
+test('a blocked account with a reset pass says whether to use it now or keep it',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,H=3600e3,fresh=Date.now();
+  const gpt=(id,live)=>row({id,service:'gpt',label:'ChatGPT · Codex',email:`${id}@example.com`,plan:'pro',live:{readAt:fresh,...live}});
+  const draw=async rows=>{
+    const snapshot={ok:true,seq:1,tools:{},rows,settings:{usdKrw:1400},check:{at:fresh,total:rows.length,ok:rows.length},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}}};
+    const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}}),d=driver(el);
+    board.render(el,{signedIn:true,native:true});await tick();
+    await d.click({subs:'toggle',id:'g-gpt'});
+    const html=el.innerHTML;board.dispose();return html;
+  };
+  const withPass=gpt('a',{weekly:{usedPercent:100,resetsAt:fresh+5*D},resets:{count:1,until:[fresh+10*D]}});
+  // 둘 다 막혔고 먼저 풀리는 게 나흘 뒤: 서비스 줄에 장수, 「쓰면 지금 풀려요」 팁과 줄 안의 안내, 02에도.
+  let html=await draw([withPass,gpt('b',{weekly:{usedPercent:100,resetsAt:fresh+4*D}})]);
+  assert.match(html,/2개 중 <em>0개<\/em> 바로 써요 <span class="ms-soft">2개 다 씀 · 초기화권 1장<\/span>/);
+  assert.match(html,/GPT 계정이 모두 막혔어요\. 가장 먼저 풀리는 건 <b class="ms-num">[^<]+<\/b>예요\. <b>a<\/b> 계정의 초기화권을 쓰면 지금 풀려요\./);
+  assert.match(html,/<span class="ms-pass">초기화권\u00a01장 · [^<]+까지<\/span> · 지금 쓰면 풀려요<\/span><span class="ms-acc-act"><button type="button" class="ms-button ms-button-small" data-subs="help" data-link="codex-resets">쓰는 법<\/button>/);
+  assert.match(html,/<b>a<\/b> GPT · 주간 한도 · <span class="ms-pass">초기화권\u00a01장/);
+  // 같은 서비스에 넉넉한 계정이 있으면 아껴 두라고만 하고 팁은 없다.
+  html=await draw([withPass,gpt('c',{weekly:{usedPercent:20,resetsAt:fresh+3*D}})]);
+  assert.match(html,/ · 다른 계정이 넉넉해 아껴 둬도 돼요<\/span>/);
+  assert.ok(!html.includes('data-key="pass:gpt"'));
+  // 하루 안에 풀리면 아껴 둔다(30초는 그리는 사이 시간이 흘러도 시간 단위로 읽히게 둔 여유).
+  html=await draw([gpt('a',{weekly:{usedPercent:100,resetsAt:fresh+3*H+30e3},resets:{count:1,until:[fresh+10*D]}})]);
+  assert.match(html,/ · 3시간 뒤 풀려서 아껴 둬도 돼요<\/span>/);
+  assert.ok(!html.includes('data-key="pass:gpt"'));
+  // 줄 안내와 팁은 같은 기준: 다른 계정이 20시간 뒤 풀리면 초기화권 계정 줄도 그때까지 기다리라고 한다.
+  html=await draw([withPass,gpt('b',{weekly:{usedPercent:100,resetsAt:fresh+20*H+30e3}})]);
+  assert.match(html,/ · 20시간 뒤 b 계정이 풀려서 아껴 둬도 돼요<\/span>/);
+  assert.ok(!html.includes('data-key="pass:gpt"'));
+  // 못 읽은 계정이 섞이면 「모두 막혔어요」라고 하지 않고 그 계정부터 보게 한다.
+  html=await draw([withPass,row({id:'e',service:'gpt',label:'ChatGPT · Codex',email:'e@example.com',plan:'pro',state:'error',live:{readAt:fresh-3*H,weekly:{usedPercent:10,resetsAt:fresh+3*D}}})]);
+  assert.match(html,/ · 못 읽은 계정부터 확인해 보세요<\/span>/);
+  assert.ok(!html.includes('data-key="pass:gpt"'));
+  // 다시 로그인할 계정이면 손볼 것 띠와 같은 낱말로.
+  html=await draw([withPass,row({id:'l',service:'gpt',label:'ChatGPT · Codex',email:'l@example.com',plan:'pro',state:'needs-login',live:null})]);
+  assert.match(html,/ · 다시 로그인할 계정부터 확인해 보세요<\/span>/);
+});
+
+test('an expiring GPT pass warns that using it moves the weekly reset, and old values of unread accounts stay out of tips',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,H=3600e3,fresh=Date.now();
+  const draw=async rows=>{
+    const snapshot={ok:true,seq:1,tools:{},rows,settings:{usdKrw:1400},check:{at:fresh,total:rows.length,ok:rows.length},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}}};
+    const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
+    board.render(el,{signedIn:true,native:true});await tick();const html=el.innerHTML;board.dispose();return html;
+  };
+  const gpt=extra=>row({id:'g',service:'gpt',label:'ChatGPT · Codex',email:'g@example.com',plan:'pro',...extra});
+  // 주간 초기화(10시간 뒤)가 만료(이틀 뒤)보다 먼저 오면 지금 쓰지 말라고 한다 — GPT는 쓰면 그 초기화가 사라진다(공식).
+  let html=await draw([gpt({live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+10*H},resets:{count:1,until:[fresh+2*D]}}})]);
+  assert.match(html,/GPT 초기화권이 <b class="ms-num">[^<]+<\/b>에 만료돼요\. 그 전에 [^<]+에 주간 초기화가 와요 · 지금 쓰면 그 초기화가 사라지니 초기화 뒤 많이 쓴 다음 만료 전에 써요\./);
+  // 주간 초기화가 만료 뒤면 쓴 만큼 채워지되 주간 초기화 날짜가 바뀐다고 말한다.
+  html=await draw([gpt({live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+5*D},resets:{count:1,until:[fresh+2*D]}}})]);
+  assert.match(html,/에 만료돼요\. 지금 주간 70% 썼어요 · 쓰면 쓴 만큼 다시 채워지고, 주간 초기화는 다시 쓰기 시작한 날부터 일주일쯤 뒤로 바뀌어요\./);
+  // 못 읽은 계정의 옛 값(그사이 썼을 수 있다)으로는 팁을 띄우지 않는다. 줄의 장수는 남는다.
+  html=await draw([gpt({state:'error',live:{readAt:fresh-3*H,weekly:{usedPercent:70,resetsAt:fresh+5*D},resets:{count:1,until:[fresh+2*D]}}})]);
+  assert.ok(!html.includes('data-key="pass:gpt"'));
+  assert.match(html,/계정 1개 <span class="ms-soft">못 읽음 · 초기화권 1장<\/span>/);
+});
+
+test('a reset pass about to expire gets one tip, and the full week list shows when it goes',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now();
+  const keep=row({id:'keep',email:'keep@example.com',plan:'max_5x',passCount:1,passUntil:fresh+2*D,live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+4*D}}});
+  const out=row({id:'out',email:'out@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:100,resetsAt:fresh+D/2}}});
+  const snapshot={ok:true,seq:1,tools:{},rows:[keep,out],settings:{usdKrw:1400},check:{at:fresh,total:2,ok:2},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}}};
+  const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},help:async()=>({ok:true})}}}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  assert.match(el.innerHTML,/<b>keep<\/b> 계정의 초기화권이 <b class="ms-num">[^<]+<\/b>에 만료돼요\. 지금 주간 70% 썼어요 · 지금 쓰면 쓴 만큼 다시 채워지고, 주간 초기화도 원래대로 와요\./);
+  await d.click({subs:'tip-open',key:'pass:claude'});
+  assert.match(el.innerHTML,/<li>그 계정으로 로그인한 claude\.ai 웹이나 Claude 데스크톱의 설정 › 사용량에서 「Reset for free」를 눌러 써요\. Claude Code와 휴대폰 앱에서는 못 써요\.<\/li>/);
+  assert.match(el.innerHTML,/기준: 만료까지 3일 안 · 사실 확인 10\/19/);
+  assert.match(el.innerHTML,/data-subs="help" data-link="claude-usage">사용량 설정 열기<\/button><button type="button" class="ms-link ms-tip-more" data-subs="help" data-link="claude-resets">공식 안내<\/button>/);
+  // 앞으로 7일 일정을 펼치면 초기화권 만료도 날짜순으로.
+  await d.click({subs:'more'});
+  assert.match(el.innerHTML,/<b>keep<\/b> Claude · 초기화권 1장 만료/);
+  board.dispose();
+});
+
+test('Claude reset passes are typed in from the account menu and counted down after use',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now();
+  const claude=row({id:'cl',email:'cl@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}});
+  const gpt=row({id:'gp',service:'gpt',label:'ChatGPT · Codex',email:'gp@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D},resets:{count:1,until:[fresh+6*D]}}});
+  const none=row({id:'g0',service:'gpt',label:'ChatGPT · Codex',email:'g0@example.com',plan:'plus',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D},resets:{count:0,until:[]}}});
+  const gone=row({id:'gx',service:'gpt',label:'ChatGPT · Codex',email:'gx@example.com',plan:'plus',live:{readAt:fresh-2*D,weekly:{usedPercent:30,resetsAt:fresh+4*D},resets:{count:1,until:[fresh-D]}}});
+  const snapshot={ok:true,seq:1,tools:{},rows:[claude,gpt,none,gone],settings:{usdKrw:1400},check:{at:fresh,total:4,ok:4},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}}};
+  const saves=[],toasts=[],checks=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},help:async()=>({ok:true}),check:async ids=>{checks.push(ids);return {...snapshot,seq:snapshot.seq+saves.length+checks.length};},save:async patch=>{saves.push(patch);const r=snapshot.rows.find(x=>x.id===patch.row?.id);if(r)Object.assign(r,patch.row);return {...snapshot,seq:snapshot.seq+saves.length};}}};
+  const el=fakeContainer(),board=createSubscriptionsBoard({bridge,toast:m=>toasts.push(m)}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  await d.click({subs:'manage'});
+  // GPT 줄은 Codex가 알려 준 장수를 이름 옆에, ⋯에서 만료 때까지. 직접 넣는 칸은 없다.
+  assert.match(el.innerHTML,/<span class="ms-mname">gp@example\.com<small class="ms-pass-mark">초기화권 1장<\/small><\/span>/);
+  await d.click({subs:'menu',id:'gp'});
+  assert.match(el.innerHTML,/<p>초기화권 1장 · [^<]+까지 · Codex가 알려 준 값이에요<\/p>/);
+  assert.ok(!el.innerHTML.includes('data-subs="pass-edit" data-id="gp"'));
+  // 읽었는데 없는 0장은 「없음」으로 말한다(모름과 다르다).
+  await d.click({subs:'menu',id:'g0'});
+  assert.match(el.innerHTML,/<p class="ms-soft">초기화권 없음 · Codex가 알려 준 값이에요<\/p>/);
+  // 읽은 뒤 하나뿐인 초기화권이 만료된 줄은 그렇게 말한다.
+  await d.click({subs:'menu',id:'gx'});
+  assert.match(el.innerHTML,/<p class="ms-soft">읽은 뒤 초기화권이 만료됐어요 · 다시 확인하면 정확해요<\/p>/);
+  // Claude 줄은 ⋯ → 「초기화권」으로 넣는다. claude.ai는 브라우저에 로그인된 계정을 열어서 그 계정 이름을 적는다.
+  await d.click({subs:'menu',id:'cl'});
+  await d.click({subs:'pass-edit',id:'cl'});
+  assert.match(el.innerHTML,/<form class="ms-form ms-pass-form" data-subs-form="pass" data-id="cl">/);
+  assert.match(el.innerHTML,/<b>cl<\/b> 계정으로 로그인한 브라우저에서 claude\.ai 설정 › 사용량을 열고, Resets에 보이는 주간 초기화권 수와 만료 때를 넣어 주세요\(5시간용은 넣지 않아요\)\./);
+  assert.match(el.innerHTML,/data-subs="help" data-link="claude-usage">사용량 설정 열기<\/button>/);
+  const submit=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'pass',id:'cl'},querySelector:sel=>{const m=/\[name="([^"]+)"\]/.exec(sel);return m&&Object.hasOwn(values,m[1])?{value:values[m[1]]}:null;}})}});await tick();await tick();};
+  // 지난 날짜는 받지 않는다.
+  await submit({passCount:'1',passDate:'2020-01-01',passTime:''});
+  assert.equal(saves.length,0);assert.match(toasts.at(-1),/만료 때가 이미 지났어요/);
+  // 시각을 비우면 그날 23:59로 넣는다.
+  const day=new Date(fresh+10*D),date=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+  await submit({passCount:'2',passDate:date,passTime:''});
+  assert.deepEqual(saves.at(-1),{row:{id:'cl',passCount:2,passUntil:new Date(day.getFullYear(),day.getMonth(),day.getDate(),23,59,0,0).getTime()}});
+  assert.match(toasts.at(-1),/초기화권 2장을 넣었어요/);
+  // 쓴 뒤에는 한 장씩 줄이고 그 계정만 다시 읽는다. 다 쓰면 만료 때도 비운다.
+  await d.click({subs:'pass-used',id:'cl'});
+  assert.deepEqual(saves.at(-1),{row:{id:'cl',passCount:1}});
+  assert.deepEqual(checks,[['cl']]);
+  await d.click({subs:'pass-used',id:'cl'});
+  assert.deepEqual(saves.at(-1),{row:{id:'cl',passCount:0,passUntil:null}});
+  assert.match(toasts.at(-1),/초기화권을 다 썼어요/);
+  assert.deepEqual(checks,[['cl'],['cl']]);
+  board.dispose();
+});

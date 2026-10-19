@@ -1,7 +1,7 @@
 'use strict';
 // AI 구독 계정판(회원 혜택). 회원 PC에 설치된 공식 프로그램의 출력만 읽는다.
 // - Claude: Claude Code `claude -p /usage` · `claude auth status --json`
-// - GPT: Codex app-server `account/read` · `account/rateLimits/read`
+// - GPT: Codex app-server `account/read` · `account/rateLimits/read`(한도와 초기화권 개수·만료일. 초기화권을 쓰는 요청은 보내지 않는다)
 // - Higgsfield: `higgsfield account status --json` (계정마다 홈 폴더를 나눠 여러 계정)
 // - Gemini: Antigravity CLI `agy -p /usage --output-format json`(모델 호출 없음, 토큰 0)
 // - Typecast: 공식 API `GET /v1/users/me/subscription` — 회원이 넣은 API 키로만, 키는 이 PC에 암호화해 둔다
@@ -52,11 +52,15 @@ const HELP_LINKS=Object.freeze({
   'typecast-api':'https://studio.typecast.ai/developers/api',
   // 아끼는 팁의 근거(공식 도움말, 10-19 확인). Typecast 팁은 위 API 안내로 잇는다.
   'higgsfield-credits':'https://higgsfield.ai/creator-hub/help-center/credits/how-credits-work',
+  // 초기화권(10-19 확인): GPT는 Codex가 개수·만료일을 알려 주고, Claude는 웹·데스크톱 설정 › 사용량에서만 보고 쓴다.
+  'codex-resets':'https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work',
+  'claude-resets':'https://support.claude.com/en/articles/17007452-about-limit-resets',
+  'claude-usage':'https://claude.ai/settings/usage',
 });
 // 자동 읽기(사용 기록용): 앱이 켜 있는 동안 마지막 전체 확인에서 6시간이 지났을 때 · 계정마다 주간 초기화 10분 전 · 결제일 아침 9시 뒤 처음.
 const AUTO_EVERY=6*3600*1000,PRE_RESET=10*60*1000,BILL_HOUR=9,DAY_MS=864e5;
 // 팁 반응: 「도움 됐어요」는 같은 팁을 7일 쉬고(빈도를 늘리지 않는다), 「이런 팁 그만」은 4주, 두 번째부터 12주.
-const TIP_KEY=/^(spike|pace):(claude|gpt|gemini|higgsfield|typecast)$/;
+const TIP_KEY=/^(spike|pace|pass):(claude|gpt|gemini|higgsfield|typecast)$/;
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
 // 「로그인 필요」로 읽혔을 때 인터넷이 그 서비스까지 닿는지만 보는 고정 주소(로그인 정보는 보내지 않는다).
 const REACHABLE=Object.freeze({claude:'https://api.anthropic.com/',gpt:'https://auth.openai.com/',higgsfield:'https://higgsfield.ai/',gemini:'https://oauth2.googleapis.com/'});
@@ -109,6 +113,17 @@ function codexWindows(snapshot,at=Date.now()){
     return {usedPercent,resetsAt,windowMins};
   };
   return {session:shape(session),weekly:shape(weekly)};
+}
+// Codex 초기화권(banked reset): 같은 rateLimits 응답의 rateLimitResetCredits. 개수는 늘 오고, 만료일은 백엔드가 줄 때만 온다.
+// 쓸 수 있는(available) 것의 만료 시각만 남긴다(제목·설명·ID는 두지 않는다). 칸이 없으면 null — 0장과 다른 「모름」이다.
+function codexResets(summary,at=Date.now()){
+  if(!summary||typeof summary!=='object')return null;
+  const count=clampNumber(summary.availableCount,0,99);
+  if(count===null)return null;
+  const until=Array.isArray(summary.credits)
+    ?summary.credits.filter(c=>c&&c.status==='available').map(c=>isoOrNull(c.expiresAt)).filter(t=>t!==null&&t>at).sort((a,b)=>a-b).slice(0,10)
+    :null;
+  return {count:Math.round(count),until};
 }
 // agy /usage: 묶음(Gemini 모델, Claude·GPT 모델)마다 주간·5시간 버킷과 남은 비율을 준다.
 // Gemini 묶음을 본 한도로 쓰고, 나머지 묶음은 모델별 주간 줄로 보여 준다. 남은 비율이 없으면 모름(null)으로 둔다.
@@ -216,6 +231,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       billDay:clampNumber(row.billDay,1,31),credits:clampNumber(row.credits,-1e9,1e12),creditsAt:clampNumber(row.creditsAt,0,9e15),lowAt:clampNumber(row.lowAt,-1e9,1e12),
       resetDay:clampNumber(row.resetDay,0,6),resetHour:clampNumber(row.resetHour,0,23),resetMinute:clampNumber(row.resetMinute,0,59),
       usedUpAt:clampNumber(row.usedUpAt,0,9e15),note:cleanText(row.note,120),
+      // Claude 주간 초기화권(회원이 넣음): Claude Code가 알려 주지 않아 claude.ai 설정 › 사용량을 보고 개수·만료 때를 넣는다.
+      passCount:(n=>n===null?null:Math.round(n))(clampNumber(row.passCount,0,20)),passUntil:clampNumber(row.passUntil,0,9e15),
       // API 키로 연결한 줄: 같은 키를 두 번 넣었는지 가리는 지문(화면에는 안 보냄)과 끝 네 글자.
       keyId:source==='auto'&&known?.apiKey&&/^[0-9a-f]{16}$/.test(row.keyId||'')?row.keyId:null,
       keyHint:source==='auto'&&known?.apiKey?cleanText(row.keyHint,8)||null:null,
@@ -404,7 +421,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const windows=codexWindows(snap,now());
     // 한도 창을 하나도 주지 않으면 숫자 없이 「정상」으로 세지 않는다(Claude·Gemini와 같게).
     if(!windows.session&&!windows.weekly)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex가 사용 한도를 알려 주지 않았어요. ChatGPT 요금제 계정으로 로그인했는지 확인해 주세요.'};
-    return {state:'ok',email:account.email||null,plan:snap.planType||account.planType||null,live:{readAt:now(),session:windows.session,weekly:windows.weekly,models:[],reached:snap.rateLimitReachedType||null}};
+    return {state:'ok',email:account.email||null,plan:snap.planType||account.planType||null,live:{readAt:now(),session:windows.session,weekly:windows.weekly,models:[],reached:snap.rateLimitReachedType||null,resets:codexResets(limits.rateLimitResetCredits,now())}};
   }
   // 새 홈 폴더로 막 로그인하면 작업공간이 비어 「No workspace selected」가 난다. 이 혜택이 만든 계정 폴더에서만,
   // 내가 주인인 작업공간(없으면 하나뿐인 작업공간)을 고른다. 회원의 기본 CLI 설정은 바꾸지 않는다(크레딧이 나갈 곳이 바뀐다).
@@ -760,7 +777,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     }
     if(patch.row&&typeof patch.row==='object'){
       const row=b.rows.find(r=>r.id===patch.row.id);if(!row)return {ok:false,code:'UNKNOWN_ROW'};
-      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt',...(row.source==='manual'?['label','kind']:[])];
+      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt',...(row.source==='manual'?['label','kind']:[]),...(row.service==='claude'?['passCount','passUntil']:[])];
       const next={...row};for(const key of editable)if(Object.hasOwn(patch.row,key))next[key]=patch.row[key];
       if(Object.hasOwn(patch.row,'credits'))next.creditsAt=now();
       Object.assign(row,normalizeRow({...next,id:row.id,service:row.service,source:row.source,folder:row.folder,live:row.live,email:row.email}));
@@ -818,4 +835,4 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   };
 }
 
-module.exports={createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,parseAgyUsage,loginUrl,claudeNeedsLogin,candidatePaths,commandFor,SERVICES,INSTALLERS,HELP_LINKS};
+module.exports={createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,codexResets,parseAgyUsage,loginUrl,claudeNeedsLogin,candidatePaths,commandFor,SERVICES,INSTALLERS,HELP_LINKS};

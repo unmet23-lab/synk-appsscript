@@ -33,6 +33,14 @@ const SAVE_TIPS = {
 // 팁 발동: 크레딧은 지난 7일이 그 전 평균의 1.5배 그리고 서비스별 최소량 이상(Typecast는 1글자 1크레딧이라 크게),
 // 한도형은 바로 쓸 계정 전부가 가장 이른 풀리는 때보다 3시간 넘게 먼저 막힐 때. 화면에는 급한 것부터 둘까지.
 const SPIKE_RATIO = 1.5, SPIKE_MIN = { higgsfield: 300, typecast: 3000 }, PACE_MARGIN = 3 * 3600e3, MAX_TIPS = 2;
+// 초기화권(10-19): GPT는 Codex가 개수·만료일을 알려 주고, Claude는 Claude Code가 알려 주지 않아 회원이 claude.ai 설정 › 사용량을 보고 넣는다.
+// 「지금 쓰기」는 묶음의 모든 계정이 막혔고 가장 먼저 풀리는 때가 하루 넘게 남았을 때만(막힌 줄 안내와 팁이 같은 기준), 「곧 만료」는 3일 안일 때.
+// 쓰는 법·효과 문장은 두 회사 공식 도움말(10/19 확인)에 있는 것만. GPT는 쓰면 주간 초기화 날짜가 쓴 때부터 다시 시작되고, Claude는 그대로다.
+const PASS_WAIT = DAY_MS, PASS_SOON = 3 * DAY_MS;
+const PASS_TIPS = {
+  gpt: { link: 'codex-resets', open: null, checked: '10/19', items: ['Codex 앱·CLI·웹의 설정 › 사용량에서 「1 reset available」(또는 「Full reset」)을 누르고 만료일을 확인한 뒤 써요.', '쓰면 5시간·주간 한도가 다시 차요. 대신 다음 주간 초기화는 다시 쓰기 시작한 날부터 일주일쯤 뒤로 바뀌고, 원래 날짜의 초기화는 따로 오지 않아요.', '새로 채울 한도가 없으면 쓰이지 않고 그대로 남아요. 만료되면 되살리거나 다시 받을 수 없어요.'] },
+  claude: { link: 'claude-resets', open: 'claude-usage', checked: '10/19', items: ['그 계정으로 로그인한 claude.ai 웹이나 Claude 데스크톱의 설정 › 사용량에서 「Reset for free」를 눌러 써요. Claude Code와 휴대폰 앱에서는 못 써요.', '쓰면 그 한도가 바로 다시 차고, 주간 초기화는 원래 요일·시각에 그대로 와요. 쓴 뒤에는 되돌릴 수 없어요.', '요금제를 내리거나 해지하면 쓰지 않은 초기화권은 사라져요.'] },
+};
 const MANUAL_NAMES = ['Suno', 'Hugging Face', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Google AI Pro', 'Typecast'];
 const MANUAL_KIND = { suno: 'credit', typecast: 'credit', elevenlabs: 'credit', kling: 'credit', higgsfield: 'credit', claude: 'weekly', gpt: 'weekly', chatgpt: 'weekly' };
 const CODE_TEXT = {
@@ -162,6 +170,24 @@ export function accountState(row, now, checkAt = null) {
   return { state, g, left: g.left, focus: g.focus, unblock: state === 'out' ? g.resetsAt : null, projected: state !== 'out' && passed.length ? Math.max(...passed) : null };
 }
 
+// 초기화권: GPT는 Codex가 읽어 준 개수에서 그사이 만료된 것을 빼고, Claude는 회원이 넣은 개수(만료가 지났으면 없음).
+export function passesOf(row, now) {
+  if (row?.source !== 'auto') return null;
+  if (row.service === 'gpt') {
+    const r = row.live?.resets, total = num(r?.count);
+    if (!total || total <= 0) return null;
+    const list = Array.isArray(r.until) ? r.until.filter(Number.isFinite) : null;
+    const count = Math.max(0, total - (list ? list.filter(t => t <= now).length : 0));
+    return count ? { count, until: list ? list.filter(t => t > now).sort((a, b) => a - b)[0] ?? null : null, manual: false } : null;
+  }
+  if (row.service === 'claude') {
+    const count = num(row.passCount);
+    if (!count || count <= 0 || (row.passUntil && row.passUntil <= now)) return null;
+    return { count, until: row.passUntil || null, manual: true };
+  }
+  return null;
+}
+
 // 한눈에 화면의 서비스 묶음(직접 넣은 구독은 이름·종류마다). 월 구독만 넣은 줄은 한도가 없어 「요금·결제일」에만 보인다.
 // 묶음 안: 바로 쓸 계정(많이 남은 순, 같으면 큰 요금제) → 풀렸을 계정 → 직접 넣은 구독 → 다 쓴 계정(먼저 풀리는 순) → 못 읽음 → 다시 로그인 → 아직 안 읽음.
 export function serviceGroups(rows, now, checkAt = null) {
@@ -171,7 +197,7 @@ export function serviceGroups(rows, now, checkAt = null) {
     const auto = row.source === 'auto' && Object.hasOwn(AUTO, row.service), label = String(row.label || '').trim();
     const key = auto ? row.service : `m-${row.kind}-${label.toLowerCase()}`;
     if (!map.has(key)) map.set(key, { key, service: auto ? row.service : null, label: auto ? AUTO[row.service].short : label || '직접 넣은 구독', kind: row.kind, accounts: [] });
-    map.get(key).accounts.push({ row, name: nameOf(row), ...accountState(row, now, checkAt) });
+    map.get(key).accounts.push({ row, name: nameOf(row), ...accountState(row, now, checkAt), pass: passesOf(row, now) });
   }
   const amount = a => a.credits ?? a.left ?? -1, tier = a => TIER[planKey(a.row.plan)] || 0;
   const rank = (a, b) => amount(b) - amount(a) || tier(b) - tier(a);
@@ -193,17 +219,19 @@ export function serviceGroups(rows, now, checkAt = null) {
   return groups.sort((a, b) => order(a) - order(b) || a.label.localeCompare(b.label, 'ko'));
 }
 
-// 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill)를 시간순으로.
+// 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill) · 7일 안 초기화권 만료(pass)를 시간순으로.
 // 한눈에 화면은 unblock의 앞 셋만 보이고, 「모두 보기」를 누르면 그 자리에서 전부 펼친다.
 export function upcoming(rows, now, checkAt = null) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
   const items = [];
   for (const row of rows || []) {
-    const a = accountState(row, now, checkAt);
-    if (a.state === 'out' && a.unblock) items.push({ t: a.unblock, type: 'unblock', row, focus: a.focus, after: a.focus === 'session' && a.g.weekly ? a.g.weekly.left : null });
+    const a = accountState(row, now, checkAt), pass = passesOf(row, now);
+    if (a.state === 'out' && a.unblock) items.push({ t: a.unblock, type: 'unblock', row, focus: a.focus, after: a.focus === 'session' && a.g.weekly ? a.g.weekly.left : null, pass });
     else if ((a.state === 'ok' || a.state === 'low') && a.g?.weekly?.resetsAt && a.g.weekly.resetsAt - now <= 7 * DAY_MS) items.push({ t: a.g.weekly.resetsAt, type: 'reset', row });
     const dd = nextBill(row.billDay, now);
     if (dd !== null && dd <= 6) items.push({ t: today.getTime() + dd * DAY_MS, type: 'bill', row, days: dd });
+    // GPT는 초기화권마다 만료가 따로라 그때 사라지는 장수만, 직접 넣은 Claude는 한 만료 때에 넣은 장수 모두.
+    if (pass?.until && pass.until - now <= 7 * DAY_MS) items.push({ t: pass.until, type: 'pass', row, count: pass.manual ? pass.count : (row.live?.resets?.until || []).filter(t => t === pass.until).length || 1 });
   }
   return items.sort((a, b) => a.t - b.t);
 }
@@ -293,7 +321,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // view: 한눈에 보기(glance) · 계정 관리(manage). open: 펼친 서비스 줄. menu: ⋯을 연 계정 줄. help: 펼친 「막혔을 때」 질문.
   // relogin: 「다시 로그인」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
   // tipOpen: 펼친 팁. tipDone: 이 화면에서 반응한 팁(누른 뒤 한 줄을 보여 주고, 화면을 옮기면 사라진다). why: 「왜 이 숫자?」.
-  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false };
+  // passEditing: 초기화권을 넣는 칸을 연 Claude 줄.
+  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
@@ -324,7 +353,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   // 화면 바꾸기: 그 화면 맨 위(또는 to 구획)로 옮기고, 화면 제목에 초점을 둔다.
   function show(view, to = null) {
-    ui.view = view; ui.menu = null; ui.editing = null; ui.removeArmed = null; ui.tipDone = {};
+    ui.view = view; ui.menu = null; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; ui.tipDone = {};
     paint();
     const target = (to && container?.querySelector(`#${CSS.escape(to)}`)) || container?.querySelector('.member-subs');
     target?.scrollIntoView?.({ block: 'start' });
@@ -350,7 +379,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 팁 반응은 이 PC 판에 남는다(도움 됐어요 7일 · 그만 4주, 두 번째부터 12주). 누른 뒤 한 줄은 화면을 옮길 때까지 보인다.
     if (name === 'tip') { if (!['helpful', 'stop'].includes(data.act)) return; ui.tipDone[data.key] = data.act; return void act('tip', () => api.save({ tip: { key: data.key, action: data.act } })); }
     if (name === 'tip-reset') { ui.tipDone = {}; return void act('tip', async () => { const r = await api.save({ tip: { action: 'reset' } }); if (r?.rows) toast('쉬고 있던 팁을 다시 보여 드려요.'); return r; }); }
-    if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.removeArmed = null; return paint(); }
+    if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; return paint(); }
+    // Claude 초기화권: 넣는 칸 열기 · 쓴 뒤 한 장 줄이기(다 쓰면 만료 때도 비운다).
+    if (name === 'pass-edit') { ui.menu = id; ui.passEditing = ui.passEditing === id ? null : id; ui.editing = null; return paint(); }
+    // 쓴 직후 그 계정만 다시 읽어 막힘·다음에 풀려요가 바로 바뀌게 한다(못 읽으면 저장한 판을 그대로 둔다).
+    if (name === 'pass-used') { const row = rowById(id); if (!row) return; const left = Math.max(0, (num(row.passCount) || 0) - 1); return void act('pass', async () => { const r = await api.save({ row: { id, passCount: left, ...(left ? {} : { passUntil: null }) } }); if (!r?.rows) return r; toast(left ? `초기화권을 1장 줄였어요. ${left}장 남았어요.` : '초기화권을 다 썼어요.'); take(r); const c = api.check ? await api.check([id]).catch(() => null) : null; return c?.rows ? c : r; }); }
     if (name === 'cost-edit') { ui.menu = id; ui.editing = id; ui.removeArmed = null; paint(); container?.querySelector(`[data-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); return; }
     if (name === 'help-item') { ui.help.has(id) ? ui.help.delete(id) : ui.help.add(id); return paint(); }
     if (name === 'guide') return openGuide(service || 'claude');
@@ -366,7 +399,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'copy-url') { const url = snapshot?.login?.url; if (url) navigator.clipboard?.writeText(url).then(() => toast('로그인 주소를 복사했어요. 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 「로그인 페이지 다시 열기」를 써 주세요.')); return; }
     if (name === 'cancel-login') return void act('cancel', () => api.cancel(snapshot?.login?.id));
     if (name === 'relogin') { const row = rowById(id); if (row) openGuide(row.service, { email: row.email || '', relogin: row.id }); return; }
-    if (name === 'edit') { ui.menu = id; ui.editing = ui.editing === id ? null : id; return paint(); }
+    if (name === 'edit') { ui.menu = id; ui.editing = ui.editing === id ? null : id; ui.passEditing = null; return paint(); }
     if (name === 'remove') { if (ui.removeArmed !== id) { ui.removeArmed = id; return paint(); } ui.removeArmed = null; ui.menu = null; return void act('remove', () => api.save({ remove: id })); }
     if (name === 'used') { const row = rowById(id); if (row) return void act('used', () => api.save({ row: { id, usedUpAt: isUsedUp(row, Date.now()) ? null : Date.now() } })); }
     if (name === 'manual') { ui.manualOpen = !ui.manualOpen; return paint(); }
@@ -380,6 +413,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'code') { const code = ui.code.trim(); if (!code) return toast('브라우저에 보이는 코드를 붙여 넣어 주세요.'); return void act('code', async () => { const r = await api.submitCode(snapshot?.login?.id, code); if (r?.ok) ui.code = ''; return r; }); }
     if (name === 'key') { const key = ui.key.trim(), service = form.dataset.service; if (!key) return toast('복사한 API 키를 붙여 넣어 주세요.'); return void act('key', async () => { const replace = ui.relogin && rowById(ui.relogin)?.service === service ? ui.relogin : null; const r = await api.connectKey(service, key, replace ? { replace } : {}); if (!r?.ok) return r; ui.key = ''; ui.guide = null; ui.relogin = null; toast(`${AUTO[service]?.label || ''} 키를 연결했어요. 남은 크레딧을 읽었어요.`); return r.snapshot || r; }); }
     if (name === 'manual') { const v = formValues(form); if (!v.label) return toast(CODE_TEXT.LABEL_REQUIRED); return void act('manual', async () => { const r = await api.save({ add: v }); if (r?.rows) { ui.manualOpen = false; toast(`${v.label}를 넣었어요.`); } return r; }); }
+    // 만료 시각을 비우면 그날 23:59로 본다. 이미 지난 때는 받지 않는다.
+    if (name === 'pass') {
+      const id = form.dataset.id, get = n => form.querySelector(`[name="${n}"]`)?.value ?? '';
+      const count = Math.max(0, Math.min(20, Math.round(num(get('passCount')) ?? 0))), date = get('passDate');
+      const [h, m] = (get('passTime') || '23:59').split(':').map(x => parseInt(x, 10) || 0);
+      const [y, mo, d] = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split('-').map(Number) : [];
+      const until = count && y ? new Date(y, mo - 1, d, h, m, 0, 0).getTime() : null;
+      if (until !== null && until <= Date.now()) return toast('만료 때가 이미 지났어요. 날짜를 확인해 주세요.');
+      return void act('pass', async () => { const r = await api.save({ row: { id, passCount: count, passUntil: until } }); if (r?.rows) { ui.passEditing = null; toast(count ? `초기화권 ${count}장을 넣었어요.` : '초기화권을 비웠어요.'); } return r; });
+    }
     if (name === 'edit') { const id = form.dataset.id, row = rowById(id); if (!row) return; const v = formValues(form); const patch = { id, price: v.price, currency: v.currency, billDay: v.billDay, note: v.note }; if (row.source === 'manual') Object.assign(patch, { label: v.label || row.label, kind: v.kind, resetDay: v.resetDay, resetHour: v.resetHour, resetMinute: v.resetMinute }); if ((row.kind === 'credit' || v.kind === 'credit') && row.source === 'manual') Object.assign(patch, { credits: v.credits, lowAt: v.lowAt }); else if (row.kind === 'credit') patch.lowAt = v.lowAt; return void act('edit', async () => { const r = await api.save({ row: patch }); if (r?.rows) { ui.editing = null; toast('저장했어요.'); } return r; }); }
   }
   const rowById = id => snapshot?.rows?.find(row => row.id === id) || null;
@@ -431,12 +474,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   function countText(g) {
     const n = g.accounts.length, credit = g.kind === 'credit', low = g.usable.filter(a => a.state === 'low').length;
     const waiting = snapshot?.checking ? '확인 중' : '확인 전';
+    const passes = g.accounts.reduce((sum, a) => sum + (a.pass?.count || 0), 0), passWord = passes ? `초기화권 ${passes}장` : '';
     if (n === 1) {
       const a = g.accounts[0], unit = g.service === 'typecast' ? '키' : g.service ? '계정' : '구독';
-      const word = a.projected ? '풀렸을 거예요' : { low: credit ? '부족' : '거의 다 씀', out: '다 씀', error: '못 읽음', login: '다시 로그인', unknown: waiting }[a.state];
+      const word = [a.projected ? '풀렸을 거예요' : { low: credit ? '부족' : '거의 다 씀', out: '다 씀', error: '못 읽음', login: '다시 로그인', unknown: waiting }[a.state], passWord].filter(Boolean).join(' · ');
       return `${unit} 1개${word ? ` <span class="ms-soft">${word}</span>` : ''}`;
     }
-    const tail = [credit ? (low ? `${low}개 부족` : '') : (low ? `${low}개 거의 다 씀` : ''), g.projected.length ? `${g.projected.length}개 풀렸을 거예요` : '', g.out.length ? `${g.out.length}개 다 씀` : '', g.error.length ? `${g.error.length}개 못 읽음` : '', g.login.length ? `${g.login.length}개 다시 로그인` : '', g.pending.length ? `${g.pending.length}개 ${waiting}` : ''].filter(Boolean).join(' · ');
+    const tail = [credit ? (low ? `${low}개 부족` : '') : (low ? `${low}개 거의 다 씀` : ''), g.projected.length ? `${g.projected.length}개 풀렸을 거예요` : '', g.out.length ? `${g.out.length}개 다 씀` : '', g.error.length ? `${g.error.length}개 못 읽음` : '', g.login.length ? `${g.login.length}개 다시 로그인` : '', g.pending.length ? `${g.pending.length}개 ${waiting}` : '', passWord].filter(Boolean).join(' · ');
     return `${n}개 중 <em>${g.ready.length}개</em> ${credit ? '넉넉' : '바로 써요'}${tail ? ` <span class="ms-soft">${tail}</span>` : ''}`;
   }
   function valueHtml(g, now, stale) {
@@ -486,10 +530,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${100 - a.left}%"></i></span>`;
     const usable = g.usable.map(a => credit
       ? line(a, `<span class="ms-acc-sub">${a.state === 'low' ? '크레딧 부족' : ''}</span><span class="ms-acc-val"><b class="ms-num">${credits(a.credits)}</b></span>`)
-      : line(a, `<span class="ms-acc-sub">${esc(windowsText(a, now))}</span>${bar(a)}${value(a)}`)).join('');
-    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요${a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>${bar(a)}${value(a)}`)).join('');
+      : line(a, `<span class="ms-acc-sub">${[esc(windowsText(a, now)), a.pass ? passHtml(a.pass, now) : ''].filter(Boolean).join(' · ')}</span>${bar(a)}${value(a)}`)).join('');
+    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요${a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}${a.pass ? ` · ${passHtml(a.pass, now)}` : ''}</span>${bar(a)}${value(a)}`)).join('');
     const manual = g.manual.map(a => line(a, `<span class="ms-acc-when">${credit ? '잔액을 넣지 않았어요' : '직접 넣은 주간 구독이에요 · 다 쓰면 「다 씀 표시」를 눌러요'}</span>`, credit ? '' : usedButton(a.row, now))).join('');
-    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · ${useText('주간', 100 - a.g.weekly.left)}` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : '')).join('');
+    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · ${useText('주간', 100 - a.g.weekly.left)}` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}${a.pass ? ` · ${passHtml(a.pass, now)} · ${passAdvice(g, a, now)}` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : a.pass ? passButton(a.row, a.name) : '')).join('');
     // 긴 이유는 두 줄까지만 보이고(전문은 title과 계정 관리 ⋯), 마지막으로 읽은 값의 시각을 붙인다.
     const reason = a => `${a.row.stateMessage || '읽지 못했어요.'}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}`;
     const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
@@ -499,6 +543,42 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `<div class="ms-detail">${part(credit ? '남은 크레딧' : '바로 쓸 수 있어요', usable)}${part('풀렸을 거예요', projected)}${part('직접 넣은 구독', manual)}${part('막혀 있어요', out)}${part('손볼 것', error + login)}${part('확인 전', pending)}</div>`;
   }
   const usedButton = (row, now) => `<button type="button" class="ms-button ms-button-small" data-subs="used" data-id="${esc(row.id)}">${isUsedUp(row, now) ? '다 씀 풀기' : '다 씀 표시'}</button>`;
+  // 초기화권 한 덩이(만료 때가 있으면 붙인다). 쓰는 곳: Claude는 웹 설정 › 사용량, GPT는 Codex 공식 안내.
+  const passHtml = (p, now) => `<span class="ms-pass">초기화권\u00a0${p.count}장${p.until ? ` · ${esc(soon(p.until, now)).replace(/ /g, '\u00a0')}까지` : ''}</span>`;
+  // claude.ai는 브라우저에 로그인된 계정의 사용량을 연다. 계정이 여럿이면 다른 계정 값을 넣기 쉬워 단추에 그 계정을 적는다.
+  const passButton = (row, name) => (row.service === 'claude' ? `<button type="button" class="ms-button ms-button-small" data-subs="help" data-link="claude-usage" title="${esc(name)} 계정으로 로그인한 브라우저에서 열어 주세요">사용량 설정</button>` : '<button type="button" class="ms-button ms-button-small" data-subs="help" data-link="codex-resets">쓰는 법</button>');
+  // 초기화권을 지금 쓸 때인지(막힌 줄 안내와 팁이 같은 기준을 쓴다).
+  //  바로 쓸 계정·풀렸을 계정이 있으면 아껴 둔다 → 묶음에서 가장 먼저 풀리는 때가 하루 안이면 그때까지 기다린다 →
+  //  못 읽은·다시 로그인할·확인 전 계정이 있으면 그 계정부터 본다 → 모든 계정이 막혔고 하루 넘게 남았을 때만 「지금」.
+  function passPlan(g, now) {
+    const first = g.out.filter(a => a.unblock).sort((x, y) => x.unblock - y.unblock)[0] || null;
+    if (g.usable.length || g.projected.length) return { use: false, why: g.ready.some(a => a.state === 'ok') ? 'roomy' : g.projected.length ? 'projected' : 'low', first };
+    if (first && first.unblock - now < PASS_WAIT) return { use: false, why: 'soon', first };
+    if (g.error.length || g.login.length || g.pending.length) return { use: false, why: 'unread', first };
+    return { use: true, why: 'all', first };
+  }
+  function passAdvice(g, a, now) {
+    const plan = passPlan(g, now);
+    if (plan.why === 'roomy') return '다른 계정이 넉넉해 아껴 둬도 돼요';
+    if (plan.why === 'projected') return '다른 계정이 풀렸을 거예요 · 그 계정부터 써요';
+    if (plan.why === 'low') return '다른 계정을 다 쓴 뒤에 써도 돼요';
+    if (plan.why === 'soon') return `${after(plan.first.unblock - now)} ${plan.first.row.id === a.row.id ? '' : `${esc(plan.first.name)} 계정이 `}풀려서 아껴 둬도 돼요`;
+    // 손볼 것 띠와 같은 낱말로: 다시 로그인 → 못 읽음 → 확인 전.
+    if (plan.why === 'unread') return g.login.length ? '다시 로그인할 계정부터 확인해 보세요' : g.error.length ? '못 읽은 계정부터 확인해 보세요' : '확인 전 계정을 먼저 읽어 보세요';
+    return '지금 쓰면 풀려요';
+  }
+  // 「곧 만료」 한 줄: 주간 초기화가 만료보다 먼저 오면 GPT는 지금 쓰면 그 초기화가 사라지고(공식), Claude는 그대로라 하루 안일 때만 초기화 뒤를 권한다.
+  function expiryHint(g, a, now) {
+    // 못 읽은·다시 로그인할 계정의 %는 옛 값이라 쓰지 않는다(직접 넣은 Claude 장수만 팁에 남는 경우).
+    const stale = ['error', 'login'].includes(a.state), w = stale ? null : a.g?.weekly;
+    const used = w ? 100 - w.left : null, reset = w?.resetsAt || null, until = a.pass.until;
+    if (g.service === 'gpt') {
+      if (reset && reset < until) return ` 그 전에 ${whenText(reset, now)}에 주간 초기화가 와요 · 지금 쓰면 그 초기화가 사라지니 초기화 뒤 많이 쓴 다음 만료 전에 써요.`;
+      return used !== null && used >= 50 ? ` 지금 주간 ${used}% 썼어요 · 쓰면 쓴 만큼 다시 채워지고, 주간 초기화는 다시 쓰기 시작한 날부터 일주일쯤 뒤로 바뀌어요.` : ' 주간을 많이 쓴 뒤에 쓰면 가장 많이 채워져요 · 쓰면 주간 초기화 날짜가 바뀌어요.';
+    }
+    if (reset && reset < until && reset - now < PASS_WAIT) return ` 그 전에 ${whenText(reset, now)}에 주간 초기화가 와요 · 초기화 뒤 많이 쓴 다음 만료 전에 쓰면 더 많이 채워져요.`;
+    return used !== null && used >= 50 ? ` 지금 주간 ${used}% 썼어요 · 지금 쓰면 쓴 만큼 다시 채워지고, 주간 초기화도 원래대로 와요.` : ' 주간을 많이 쓴 뒤에 쓰면 가장 많이 채워져요.';
+  }
   function emptyCard() {
     const rows = snapshot?.rows || [];
     return `<div class="ms-empty"><h3>아직 연결한 계정이 없어요</h3><p>Claude · GPT · Gemini · Higgsfield · Typecast의 공식 프로그램이 이 PC에서만 사용량을 읽어요. 로그인 정보는 PC 밖으로 나가지 않아요.</p>${rows.length ? '<p class="ms-soft">직접 넣은 월 구독은 아래 「요금·결제일」에 모여요.</p>' : ''}<div class="ms-inline"><button type="button" class="ms-button ms-button-primary" data-subs="manage">계정 관리에서 연결</button></div></div>`;
@@ -512,8 +592,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function nextLine(item, now) {
     const label = labelOf(item.row), name = nameOf(item.row);
-    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${useText('주간', 100 - item.after)}` : ''}`
-      : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}`;
+    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${useText('주간', 100 - item.after)}` : ''}${item.pass ? ` · ${passHtml(item.pass, now)}` : ''}`
+      : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : item.type === 'pass' ? `${esc(label)} · 초기화권 ${item.count}장 만료` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}`;
     const time = item.type === 'bill' ? (item.days === 0 ? '오늘' : item.days === 1 ? '내일' : (d => `${d.getMonth() + 1}/${d.getDate()}`)(new Date(item.t))) : soon(item.t, now);
     const relText = item.type === 'bill' ? billWord(item.days) : after(item.t - now);
     return `<div class="ms-next-item is-${item.type} ${svcClass(item.row.source === 'auto' ? item.row.service : null)}"><span class="ms-next-time ms-num">${esc(time)}</span><span class="ms-next-rel">${esc(relText)}</span><span class="ms-next-who"><b>${esc(name)}</b> ${what}</span></div>`;
@@ -523,7 +603,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!unblocks.length) return '';
     const list = ui.more ? all : unblocks.slice(0, 3);
     const more = all.length > Math.min(3, unblocks.length) ? `<button type="button" class="ms-more" data-subs="more" aria-expanded="${ui.more}">${ui.more ? '접기' : `앞으로 7일 일정 ${all.length}개 모두 보기`}</button>` : '';
-    return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제를 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
+    return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제와 초기화권 만료를 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
   }
   /* 지난 7일 사용량(10-19): 본체가 읽기 기록으로 센 구간 막대 + 그 전 평균과 비교 + 서비스 줄 아래 팁 한 줄 */
   const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
@@ -586,9 +666,33 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       why: [`바로 쓸 ${many ? `계정 ${live.length}개` : '계정'}의 주간 한도 ${100 - Math.round(left / weight)}% 사용 · 최근 3일 하루 평균 ${Math.round(rate / weight)}%p씩`, '기준: 이 속도로 다 막히는 때가 가장 이른 풀리는 때보다 앞설 때(최근 3일 기록)'],
     };
   }
+  // 초기화권 팁: ① 모든 계정이 막혔고 가장 먼저 풀리는 때가 하루 넘게 남았으면 「쓰면 지금 풀려요」(먼저 만료되는 것부터, passPlan과 같은 기준)
+  // ② 아니면 만료가 3일 안인 것을 「만료 전에」. 못 읽은·다시 로그인할 GPT 계정의 옛 값은 그사이 썼을 수 있어 팁에 쓰지 않는다.
+  function passTip(g, now) {
+    const info = PASS_TIPS[g.service], holders = info ? g.accounts.filter(a => a.pass && (a.pass.manual || !['error', 'login'].includes(a.state))) : [];
+    if (!holders.length) return null;
+    const base = { key: `pass:${g.service}`, link: info.link, open: info.open, items: info.items }, many = g.accounts.length > 1, plan = passPlan(g, now);
+    const blocked = holders.filter(a => a.state === 'out').sort((x, y) => (x.pass.until ?? Infinity) - (y.pass.until ?? Infinity));
+    if (plan.use && blocked.length) {
+      const a = blocked[0], total = holders.reduce((sum, h) => sum + h.pass.count, 0), release = plan.first?.unblock || null;
+      const when = release ? ` ${many ? '가장 먼저 풀리는 건' : '초기화는'} <b class="ms-num">${whenText(release, now)}</b>예요.` : '';
+      return {
+        ...base, at: now,
+        head: `${many ? `${esc(g.label)} 계정이 모두 막혔어요.` : `${esc(g.label)} 한도를 다 썼어요.`}${when} ${many ? `<b>${esc(a.name)}</b> 계정의 ` : ''}초기화권을 쓰면 지금 풀려요.`,
+        why: [`초기화권 ${total}장${a.pass.until ? ` · ${many ? `${esc(a.name)} 것은 ` : ''}${whenText(a.pass.until, now)}까지` : ''}${release ? ` · 가장 먼저 풀리기까지 ${rel(release - now)}` : ''}`, `기준: 모든 계정이 막혔고 가장 먼저 풀리는 때가 하루 넘게 남았을 때 · 사실 확인 ${info.checked}`],
+      };
+    }
+    const soonest = holders.filter(a => a.pass.until && a.pass.until - now <= PASS_SOON).sort((x, y) => x.pass.until - y.pass.until)[0];
+    if (!soonest) return null;
+    return {
+      ...base, at: soonest.pass.until,
+      head: `${many ? `<b>${esc(soonest.name)}</b> 계정의 ` : `${esc(g.label)} `}초기화권이 <b class="ms-num">${whenText(soonest.pass.until, now)}</b>에 만료돼요.${expiryHint(g, soonest, now)}`,
+      why: [`초기화권 ${soonest.pass.count}장 · 만료까지 ${rel(soonest.pass.until - now)}${soonest.pass.manual ? ' · 직접 넣은 값' : ''}`, `기준: 만료까지 3일 안 · 사실 확인 ${info.checked}`],
+    };
+  }
   function tipHtml(t) {
     const open = ui.tipOpen.has(t.key), done = ui.tipDone[t.key], shown = open || !!done;
-    const more = t.link ? `<button type="button" class="ms-link ms-tip-more" data-subs="help" data-link="${t.link}">공식 안내</button>` : '';
+    const more = `${t.open ? `<button type="button" class="ms-link ms-tip-more" data-subs="help" data-link="${t.open}">사용량 설정 열기</button>` : ''}${t.link ? `<button type="button" class="ms-link ms-tip-more" data-subs="help" data-link="${t.link}">공식 안내</button>` : ''}`;
     const rest = Number(snapshot?.settings?.tips?.[t.key]?.stops) > 1 ? '12주' : '4주';
     const actions = done
       ? `<div class="ms-tip-actions"><p class="ms-tip-done">${done === 'helpful' ? '고마워요 · 이런 팁은 7일에 한 번만 보여 드려요' : `알겠어요 · 이 종류는 ${rest} 동안 쉬어요(칸 아래 「다시 보기」로 되돌릴 수 있어요)`}</p>${more}</div>`
@@ -620,8 +724,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const list = groups.filter(g => g.service && USAGE_UNIT[g.service]);
     if (!list.length) return '';
     const resting = key => (Number(snapshot.settings?.tips?.[key]?.until) || 0) > now && !ui.tipDone[key];
-    const candidates = list.map(g => { const u = snapshot.usage.services?.[g.service]; return u ? (g.kind === 'credit' ? spikeTip(g, u, now) : paceTip(g, now)) : null; })
-      .map((tip, i) => tip && !resting(tip.key) ? { service: list[i].service, tip } : null).filter(Boolean)
+    // 서비스마다 사용량 팁과 초기화권 팁 가운데 쉬지 않는 것 중 급한 하나(초기화권 팁은 기록이 없어도 뜬다).
+    const pick = g => { const u = snapshot.usage.services?.[g.service]; return [u ? (g.kind === 'credit' ? spikeTip(g, u, now) : paceTip(g, now)) : null, passTip(g, now)].filter(t => t && !resting(t.key)).sort((a, b) => a.at - b.at)[0] || null; };
+    const candidates = list.map(g => { const tip = pick(g); return tip ? { service: g.service, tip } : null; }).filter(Boolean)
       .sort((a, b) => a.tip.at - b.tip.at).slice(0, MAX_TIPS);
     const tips = new Map(candidates.map(c => [c.service, c.tip]));
     // 「다시 보기」 줄은 방금 「그만」을 누른 팁도 센다(누른 뒤 한 줄이 칸 아래 「다시 보기」를 가리킨다).
@@ -658,18 +763,46 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 읽은 시각은 제목 아래 「마지막 확인」과 다를 때만(따로 다시 읽었거나 이번 확인에서 못 읽은 계정) 줄에 쓴다.
     const checkAt = snapshot?.check?.at;
     const read = auto && row.live?.readAt && (!checkAt || Math.abs(row.live.readAt - checkAt) > 2 * 60e3) ? `${stamp(row.live.readAt, now)}에 읽음` : '';
-    return `<div class="ms-mrow${open ? ' open' : ''}" data-row="${esc(row.id)}"><div class="ms-mline"><span class="ms-mname">${esc(name)}</span><span class="ms-mplan">${esc(plan)}</span>${stateMark(row, now)}<span class="ms-mread">${esc(read)}</span><button type="button" class="ms-menu" data-subs="menu" data-id="${esc(row.id)}" aria-expanded="${open}" aria-label="${esc(name)} 관리 열기">${moreIcon}</button></div>${open ? menuPanel(row, now) : ''}</div>`;
+    const pass = passesOf(row, now);
+    return `<div class="ms-mrow${open ? ' open' : ''}" data-row="${esc(row.id)}"><div class="ms-mline"><span class="ms-mname">${esc(name)}${pass ? `<small class="ms-pass-mark">초기화권 ${pass.count}장</small>` : ''}</span><span class="ms-mplan">${esc(plan)}</span>${stateMark(row, now)}<span class="ms-mread">${esc(read)}</span><button type="button" class="ms-menu" data-subs="menu" data-id="${esc(row.id)}" aria-expanded="${open}" aria-label="${esc(name)} 관리 열기">${moreIcon}</button></div>${open ? menuPanel(row, now) : ''}</div>`;
   }
   function menuPanel(row, now) {
     const auto = row.source === 'auto', armed = ui.removeArmed === row.id, editing = ui.editing === row.id, dd = nextBill(row.billDay, now);
     const pay = [num(row.price) !== null ? `월 ${money(row.price, row.currency)}` : '', row.billDay ? `매월 ${row.billDay}일 결제(${billWord(dd)})` : ''].filter(Boolean).join(' · ');
-    const facts = [row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : '', `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
+    const facts = [row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : '', `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, passFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
+    const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id;
     const buttons = [
       auto ? `<button type="button" class="ms-button ms-button-small${row.state === 'needs-login' ? ' ms-button-primary' : ''}" data-subs="relogin" data-id="${esc(row.id)}">${reloginLabel(row)}</button>` : '',
       !auto && row.kind === 'weekly' ? usedButton(row, now) : '',
       `<button type="button" class="ms-button ms-button-small" data-subs="edit" data-id="${esc(row.id)}" aria-expanded="${editing}">${auto ? '요금·결제일' : '고치기'}</button>`,
+      claude ? `<button type="button" class="ms-button ms-button-small" data-subs="pass-edit" data-id="${esc(row.id)}" aria-expanded="${passOpen}">초기화권</button>` : '',
+      claude && passesOf(row, now) ? `<button type="button" class="ms-button ms-button-small" data-subs="pass-used" data-id="${esc(row.id)}">1장 썼어요</button>` : '',
       `<button type="button" class="ms-button ms-button-small${armed ? ' ms-button-danger' : ''}" data-subs="remove" data-id="${esc(row.id)}">${armed ? '한 번 더 누르면 지워요' : '지우기'}</button>`].join('');
-    return `<div class="ms-mpanel">${facts}<div class="ms-inline">${buttons}</div>${editing ? editForm(row) : ''}</div>`;
+    return `<div class="ms-mpanel">${facts}<div class="ms-inline">${buttons}</div>${editing ? editForm(row) : ''}${claude && passOpen ? passForm(row, now) : ''}</div>`;
+  }
+  // 초기화권 한 줄: GPT는 Codex가 알려 준 값, Claude는 넣은 값(만료가 지났으면 그렇게 말한다).
+  function passFact(row, now) {
+    if (row.source !== 'auto' || !['gpt', 'claude'].includes(row.service)) return '';
+    const p = passesOf(row, now), until = p?.until ? ` · ${esc(soon(p.until, now))}까지` : '';
+    // GPT: 0장(읽었는데 없음)과 모름(Codex가 칸을 주지 않음)을 나눈다. 모름이면 아무 말도 하지 않는다.
+    if (row.service === 'gpt') {
+      const read = num(row.live?.resets?.count);
+      return p ? `<p>초기화권 ${p.count}장${until} · Codex가 알려 준 값이에요</p>` : read === 0 ? '<p class="ms-soft">초기화권 없음 · Codex가 알려 준 값이에요</p>' : read > 0 ? '<p class="ms-soft">읽은 뒤 초기화권이 만료됐어요 · 다시 확인하면 정확해요</p>' : '';
+    }
+    if (p) return `<p>초기화권 ${p.count}장${until} · 직접 넣은 값이에요. 쓰면 「1장 썼어요」를 눌러 주세요.</p>`;
+    return num(row.passCount) > 0 && row.passUntil ? `<p class="ms-soft">넣어 둔 초기화권이 ${esc(md(row.passUntil))}에 만료됐어요.</p>` : '';
+  }
+  // Claude 초기화권 넣기: 개수와 만료 때(시각을 비우면 그날 23:59).
+  function passForm(row, now) {
+    const t = row.passUntil && row.passUntil > now ? new Date(row.passUntil) : null;
+    const date = t ? `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}` : '', time = t ? `${pad(t.getHours())}:${pad(t.getMinutes())}` : '';
+    return `<form class="ms-form ms-pass-form" data-subs-form="pass" data-id="${esc(row.id)}">
+      <p class="ms-wide ms-soft">Claude Code는 초기화권을 알려 주지 않아요. <b>${esc(nameOf(row))}</b> 계정으로 로그인한 브라우저에서 claude.ai 설정 › 사용량을 열고, Resets에 보이는 주간 초기화권 수와 만료 때를 넣어 주세요(5시간용은 넣지 않아요). <button type="button" class="ms-link" data-subs="help" data-link="claude-usage">사용량 설정 열기</button></p>
+      <label>주간 초기화권<input name="passCount" type="number" min="0" max="20" step="1" value="${num(row.passCount) ?? ''}" placeholder="1"></label>
+      <label>만료 날짜<input name="passDate" type="date" value="${date}"></label>
+      <label>만료 시각(선택)<input name="passTime" type="time" value="${time}"></label>
+      <div class="ms-wide ms-form-actions"><button type="submit" class="ms-button ms-button-primary">저장</button><button type="button" class="ms-button" data-subs="pass-edit" data-id="${esc(row.id)}">닫기</button></div>
+    </form>`;
   }
   function serviceBlocks(now, rows) {
     const tools = snapshot?.tools || {};

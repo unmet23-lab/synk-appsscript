@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
 const {EventEmitter}=require('node:events');
-const {createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,parseAgyUsage,loginUrl,claudeNeedsLogin,commandFor,candidatePaths}=require('../src/ai-subscriptions.cjs');
+const {createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,codexResets,parseAgyUsage,loginUrl,claudeNeedsLogin,commandFor,candidatePaths,HELP_LINKS}=require('../src/ai-subscriptions.cjs');
 
 const USAGE=`You are currently using your subscription to power your Claude Code usage
 
@@ -117,7 +117,7 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
         const send=v=>setImmediate(()=>child.stdout.emit('data',JSON.stringify(v)+'\n'));
         if(m.method==='initialize')send({id:m.id,result:{}});
         else if(m.method==='account/read')send({id:m.id,result:state.codexNoAccountTimes>0?(state.codexNoAccountTimes--,{account:null,requiresOpenaiAuth:true}):{account:{type:'chatgpt',email:'synk@example.com',planType:'pro'}}});
-        else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:state.codexEmptyLimits?{planType:'pro',primary:null,secondary:null}:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null}}});}};
+        else if(m.method==='account/rateLimits/read')send({id:m.id,result:{rateLimits:state.codexEmptyLimits?{planType:'pro',primary:null,secondary:null}:{planType:'pro',primary:{usedPercent:100,windowDurationMins:10080,resetsAt:Math.floor(NOW/1000)+86400},secondary:null},...(state.codexResetCredits!==undefined?{rateLimitResetCredits:state.codexResetCredits}:{})}});}};
     }
     else if(joined.includes('auth login')&&command.endsWith('higgsfield.exe')){
       // 실제 CLI처럼 주소를 찍고, 브라우저 승인이 끝나면 그 홈에 로그인을 두고 끝난다(작업공간은 비어 있음).
@@ -705,4 +705,60 @@ test('rested tips come back with one press',async()=>{
   await f.service.save({tip:{key:'spike:higgsfield',action:'stop'}});await f.service.save({tip:{key:'pace:claude',action:'helpful'}});
   const snap=await f.service.save({tip:{action:'reset'}});
   assert.deepEqual(snap.settings.tips,{});
+});
+
+test('reads Codex reset passes with their expiry and never asks Codex to use one',async()=>{
+  const sec=t=>Math.floor(t/1000),D=864e5;
+  // codex-cli 0.163.0 app-server 규격: 개수(availableCount)는 늘, 만료일은 백엔드가 줄 때만. 쓸 수 있는 것의 만료 시각만 남긴다.
+  assert.equal(codexResets(null),null);
+  assert.equal(codexResets({credits:[]}),null);
+  assert.deepEqual(codexResets({availableCount:0,credits:[]},NOW),{count:0,until:[]});
+  assert.deepEqual(codexResets({availableCount:1,credits:null},NOW),{count:1,until:null});
+  const mixed=codexResets({availableCount:3,credits:[
+    {id:'a',status:'available',resetType:'codexRateLimits',grantedAt:sec(NOW-D),expiresAt:sec(NOW+5*D),title:'Full reset',description:'x'},
+    {id:'b',status:'redeemed',resetType:'codexRateLimits',grantedAt:sec(NOW-D),expiresAt:sec(NOW+D)},
+    {id:'c',status:'available',resetType:'codexRateLimits',grantedAt:sec(NOW-D),expiresAt:sec(NOW+2*D)},
+    {id:'d',status:'available',resetType:'codexRateLimits',grantedAt:sec(NOW-D),expiresAt:null},
+    {id:'e',status:'available',resetType:'codexRateLimits',grantedAt:sec(NOW-9*D),expiresAt:sec(NOW-60)}]},NOW);
+  assert.deepEqual(mixed,{count:3,until:[sec(NOW+2*D)*1000,sec(NOW+5*D)*1000]});
+  // 계정판 읽기: 같은 rateLimits 응답에서 읽어 숫자만 남긴다(ID·제목·설명은 화면으로 보내지 않는다).
+  const f=fakeSystem();
+  f.state.codexResetCredits={availableCount:1,credits:[{id:'credit-1',status:'available',resetType:'codexRateLimits',grantedAt:sec(NOW-D),expiresAt:sec(NOW+3*D),title:'Full reset',description:'Promo grant'}]};
+  assert.equal((await f.service.useExisting('gpt')).ok,true);
+  const snap=await f.service.snapshot(),row=snap.rows.find(r=>r.service==='gpt');
+  assert.deepEqual(row.live.resets,{count:1,until:[sec(NOW+3*D)*1000]});
+  assert.ok(!JSON.stringify(snap).includes('credit-1')&&!JSON.stringify(snap).includes('Promo grant'));
+  // 초기화권을 쓰는 요청(account/rateLimitResetCredit/consume)은 보내지 않는다.
+  assert.ok(f.stdinWrites.some(t=>/account\/rateLimits\/read/.test(t)));
+  assert.ok(!f.stdinWrites.some(t=>/rateLimitResetCredit/.test(t)));
+  // 초기화권 칸이 없는 옛 응답은 0장이 아니라 「모름」(null)이다.
+  const old=fakeSystem();
+  assert.equal((await old.service.useExisting('gpt')).ok,true);
+  assert.equal((await old.service.snapshot()).rows.find(r=>r.service==='gpt').live.resets,null);
+});
+
+test('Claude reset passes are typed in by the member and kept only on Claude rows',async()=>{
+  const f=fakeSystem(),D=864e5;
+  assert.equal((await f.service.useExisting('claude')).ok,true);assert.equal((await f.service.useExisting('gpt')).ok,true);
+  let snap=await f.service.snapshot();
+  const claude=snap.rows.find(r=>r.service==='claude').id,gpt=snap.rows.find(r=>r.service==='gpt').id;
+  const get=id=>snap.rows.find(r=>r.id===id);
+  snap=await f.service.save({row:{id:claude,passCount:2.4,passUntil:NOW+3*D}});
+  assert.deepEqual([get(claude).passCount,get(claude).passUntil],[2,NOW+3*D]);
+  // 다 쓰면 개수 0 · 만료 때 비움. 범위를 벗어난 값은 받지 않는다.
+  snap=await f.service.save({row:{id:claude,passCount:0,passUntil:null}});
+  assert.deepEqual([get(claude).passCount,get(claude).passUntil],[0,null]);
+  snap=await f.service.save({row:{id:claude,passCount:99}});assert.equal(get(claude).passCount,null);
+  // GPT 줄은 Codex가 알려 주는 값만 쓰므로 직접 넣은 개수를 받지 않는다.
+  snap=await f.service.save({row:{id:gpt,passCount:3,passUntil:NOW+D}});
+  assert.deepEqual([get(gpt).passCount,get(gpt).passUntil],[null,null]);
+  // 팁 반응은 초기화권 팁(pass:서비스)도 받는다.
+  snap=await f.service.save({tip:{key:'pass:claude',action:'stop'}});assert.equal(snap.settings.tips['pass:claude'].stops,1);
+  // 쓰는 곳·공식 안내는 고정 주소로만 열고, 화면 쪽 허용 목록(preload)과 본체 목록이 같다.
+  assert.deepEqual(await f.service.openHelp('claude-usage'),{ok:true});assert.equal(f.opened.at(-1),'https://claude.ai/settings/usage');
+  assert.deepEqual(await f.service.openHelp('codex-resets'),{ok:true});assert.match(f.opened.at(-1),/^https:\/\/help\.openai\.com\/en\/articles\/20001498-/);
+  assert.deepEqual(await f.service.openHelp('claude-resets'),{ok:true});assert.match(f.opened.at(-1),/^https:\/\/support\.claude\.com\/en\/articles\/17007452-/);
+  const preload=fs.readFileSync(path.join(__dirname,'..','src','preload.cjs'),'utf8');
+  const allowed=JSON.parse(/SUBSCRIPTION_HELP=(\[[^\]]*\])/.exec(preload)[1].replace(/'/g,'"'));
+  assert.deepEqual([...allowed].sort(),Object.keys(HELP_LINKS).sort());
 });
