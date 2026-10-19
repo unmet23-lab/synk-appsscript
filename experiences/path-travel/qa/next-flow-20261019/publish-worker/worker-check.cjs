@@ -1,5 +1,6 @@
 // 확인 질문 워커 공개 확인: 실제 주소 synk.im/try/travel/에 후보 파일만 끼워(나머지는 공개본) 하루를 만들고
-// 워커 파일이 실제로 뜨는지, 화면이 직접 계산했다는 경고가 없는지, 질문이 붙는지, 결과 직후 「이곳은 유지」 누름이 얼마나 기다리는지 본다.
+// 워커 파일이 실제로 뜨는지, 화면이 직접 계산했다는 경고가 없는지, 질문이 붙는지, 미리보기(빠른 변경)를 받아들인 뒤 질문이 다시 붙는지,
+// 결과 직후 「이곳은 유지」 누름이 얼마나 기다리는지 본다.
 // 사용: node worker-check.cjs [후보 폴더] [live]  — live면 끼워 넣지 않고 공개본 그대로 연다(공개 뒤 확인).
 // 시간은 페이지 안 시계로 잰다(고정 시계를 쓰지 않는다 — ../tools/review-fixes2.cjs ②-2와 같은 방법).
 const path = require('path');
@@ -49,6 +50,17 @@ const files = new Set(fs.readdirSync(dir).filter(name => name !== 'report.json')
     await page.waitForFunction(() => document.querySelectorAll('#result-evidence [data-refine]').length > 0, null, { timeout: 30000 }).catch(() => {});
     const questionMs = Date.now() - t0, refine = await page.locator('#result-evidence [data-refine]').count();
     const question = await page.locator('#result-evidence .refinement h4').first().textContent().catch(() => null);
+    // 미리보기(빠른 변경 「덜 걷기」) → 「이 코스로 바꾸기」: 미리보기는 질문 없이 바로 보이고, 받아들인 뒤 질문이 워커로 붙는다(10-19 밤 미리보기 판).
+    const preview = {};
+    if (await page.locator('[data-adjust="less-walk"]').isVisible().catch(() => false)) {
+      const p0 = Date.now(); await page.locator('[data-adjust="less-walk"]').click();
+      await page.waitForSelector('#plan-change:not([hidden]) [data-action="accept-change"]', { timeout: 30000 }).catch(() => {});
+      preview.shownMs = Date.now() - p0; preview.label = await page.locator('#plan-change h4').first().textContent().catch(() => null);
+      const a0 = Date.now(); await page.locator('#plan-change [data-action="accept-change"]').click().catch(() => {});
+      await page.waitForFunction(() => document.querySelectorAll('#result-evidence [data-refine]').length > 0, null, { timeout: 30000 }).catch(() => {});
+      preview.questionAfterAcceptMs = Date.now() - a0; preview.refine = await page.locator('#result-evidence [data-refine]').count();
+      preview.question = await page.locator('#result-evidence .refinement h4').first().textContent().catch(() => null);
+    }
     // 같은 하루를 한 번 더 만들어 결과 0.3초 뒤에 누른다(질문 계산과 겹치는 때).
     await page.evaluate(() => { window.lockLog.length = 0; window.longTasks.length = 0; });
     await page.locator('[data-action="new-day"]').click().catch(() => {}); await page.waitForTimeout(400);
@@ -68,7 +80,7 @@ const files = new Set(fs.readdirSync(dir).filter(name => name !== 'report.json')
       const down = log[0], round = v => Number.isFinite(v) ? Math.round(v) : null;
       press = { inView: spot2.inView, inputDelayMs: round(down?.start - down?.at), pressedSeenMs: seenMs, longTasksAtOrAfterPressMs: tasks.filter(t => down && t.start + t.duration > down.at).map(t => round(t.duration)) };
     }
-    report.runs.push({ name, served: [...new Set(served)], workerResponses: worker, title: spot.title, shownMs, questionMs, refine, question, press, failed, errors, warnings, csp });
+    report.runs.push({ name, served: [...new Set(served)], workerResponses: worker, title: spot.title, shownMs, questionMs, refine, question, preview, press, failed, errors, warnings, csp });
     await ctx.close();
   }
   console.log(JSON.stringify(report, null, 1));

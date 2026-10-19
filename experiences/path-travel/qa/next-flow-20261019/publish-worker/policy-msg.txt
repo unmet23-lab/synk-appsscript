@@ -1,15 +1,15 @@
-perf(travel): ask the follow-up question from a module worker so taps right after a result are not held
+perf(travel): show change previews without waiting for the follow-up question, and ask it after the change is taken
 
-PATH planner from synk-appsscript a7b8ba9ff (origin master), applied on top of the live
-files only: planner-ui.mjs takes the change as the same path rewrite as before, and
-question-worker.mjs is new.
+PATH planner from synk-appsscript d141520fb (origin master), applied on top of the live
+files only: planner-ui.mjs takes the change as the same path rewrite as before.
 
-- After a day shows, the "which way fits better" question is computed in a module worker
-  with the same time and conditions, and attached only for the same request and the same
-  itinerary.
-- The worker reads the same walking map itself. If a worker cannot start, load or read the
-  map, the page computes the question as before and leaves one console warning.
-- A tap right after the result no longer waits for that computation (keep button 0.3 s after
-  the result on the live page: about 0.36 s before, a few ms with these files).
+- Quick changes, answers, adding or swapping a place and the rest-of-the-day replan now
+  compute their preview without the "which way fits better" question, so the preview shows
+  right away (on the live page the less-walking preview: about 0.9 s before, about 0.3-0.5 s
+  with this file).
+- When a preview is taken, the question is asked from the module worker with the same time
+  and conditions written down with the preview; the remaining-day replan passes only the picks
+  the planner actually used. Without a worker the page computes it as before and leaves one
+  console warning.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
