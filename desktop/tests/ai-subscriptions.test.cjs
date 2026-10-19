@@ -782,7 +782,7 @@ test('keeps the chosen tip goal and the tips-off switch, and refuses anything el
 });
 
 /* ---------- 3차(10-19): 요금표 · 결제 주기 · 한 달 요약 끄기 ---------- */
-const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices}=require('../src/ai-prices.cjs');
+const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices,toWire}=require('../src/ai-prices.cjs');
 const priceDoc=(services,deals=[])=>({schemaVersion:1,kind:'synk-ai-prices',services,deals});
 const claudeEntry=(checked,pro=22)=>({checked,source:'claude-plans',currency:'USD',tax:'included',plans:{pro:{month:pro,year:220},max5x:{month:110},max20x:{month:220}}});
 
@@ -811,6 +811,15 @@ test('the price table keeps only checked, known values and the newer check wins 
   const deal={service:'higgsfield',plans:['plus','ultra'],cycle:'year',from:'2026-11-27',until:'2026-12-01',checked:'2026-10-19',source:'higgsfield-pricing',off:30};
   const deals=validatePrices(priceDoc({},[deal,{...deal,until:'2027-02-01'},{...deal,until:'2026-11-26'},{...deal,cycle:'month'},{...deal,source:'claude-plans'},{...deal,plans:['team']},{...deal,off:95},{...deal,service:'gpt'}]),at).deals;
   assert.deepEqual(deals,[deal]);
+  // synk.im 공개본은 서비스·출처를 부호로 적는다(배포 점검이 공개 파일의 도구 이름을 막는다). 풀면 앱 기본 사본과 같고, 모르는 부호는 버린다.
+  const wireText=JSON.stringify(toWire(DEFAULT_PRICES));
+  assert.doesNotMatch(wireText,/claude|higgsfield|typecast/i);
+  assert.deepEqual(validatePrices(JSON.parse(wireText),at),base);
+  const wireDeal={...deal,service:'s2',source:'s2-pricing'};
+  assert.deepEqual(toWire(priceDoc({},[deal])).deals,[wireDeal]);
+  assert.deepEqual(validatePrices(priceDoc({s9:claudeEntry('2026-10-19')},[wireDeal,{...wireDeal,service:'s9'},{...wireDeal,source:'s1-plans'}]),at),{services:{},deals:[deal]});
+  // 부호와 이름이 한 파일에 같이 있으면 부호 쪽을 쓴다.
+  assert.equal(validatePrices(priceDoc({claude:claudeEntry('2026-10-19',30),s1:{...claudeEntry('2026-10-19',25),source:'s1-plans'}}),at).services.claude.plans.pro.month,25);
   // 합치기: 서비스마다 더 최근에 확인한 쪽, 같은 날이면 앞(기본 사본). 같은 할인은 하나만.
   const same=mergePrices(base,validatePrices(priceDoc({claude:claudeEntry('2026-10-19',25),higgsfield:{...DEFAULT_PRICES.services.higgsfield,checked:'2026-10-18'}},[deal]),at));
   assert.equal(same.services.claude.plans.pro.month,20);assert.equal(same.services.higgsfield.checked,'2026-10-19');
@@ -829,7 +838,8 @@ test('the price table comes from synk.im at most once a day, is checked before i
   const make=()=>createAiSubscriptions({root:data,platform:'win32',env:{},home:path.join(root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>clock,priceFetch,onChange:s=>changes.push(s)});
   let service=make();
   // 처음 열면 앱 기본 사본을 바로 보이고, 뒤에서 고정 주소에 한 번 묻는다(로그인 정보·기록 없이 Accept 하나, 넘겨주기 없이).
-  reply=()=>body(JSON.stringify(priceDoc({claude:claudeEntry('2026-10-20',25)})));
+  // synk.im이 내는 판은 부호로 적힌 공개본이다.
+  reply=()=>body(JSON.stringify(toWire(priceDoc({claude:claudeEntry('2026-10-20',25)}))));
   let snap=await service.snapshot();assert.equal(snap.prices.services.claude.plans.pro.month,20);
   await service.refreshPrices();
   assert.equal(asked.length,1);assert.equal(asked[0].url,PRICES_URL);assert.equal(asked[0].url,'https://synk.im/desktop/ai-prices.json');

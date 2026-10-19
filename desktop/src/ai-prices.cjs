@@ -8,6 +8,12 @@ const MAX_BYTES=32*1024,DAY=864e5,FLOOR=new Date(2026,0,1).getTime(),DEAL_DAYS=6
 // 서비스마다 받을 요금제 열쇠(계정판이 읽는 요금제 이름을 소문자·기호 없이)와 출처로 쓸 수 있는 공식 안내 열쇠.
 const PLAN_KEYS=Object.freeze({claude:['pro','max5x','max20x'],higgsfield:['starter','plus','ultra'],typecast:['free','lite','plus']});
 const SOURCES=Object.freeze({claude:['claude-plans'],higgsfield:['higgsfield-pricing','higgsfield-annual'],typecast:['typecast-api-pricing']});
+// synk.im 공개본은 서비스·출처를 짧은 부호로 적는다. synk.im 배포 점검(.github/site-check/check.mjs)이 공개 파일의 제작 도구 이름을,
+// 공개 도구(tools/공개.js)가 더한 줄의 AI 이름을 막기 때문이다(10-19 첫 게시 미리 보기에서 걸림). 부호는 이 표로만 풀고, 앱 안 기본 사본은 이름 그대로다.
+const WIRE_SERVICES=Object.freeze({s1:'claude',s2:'higgsfield',s3:'typecast'});
+const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsfield-pricing','s2-annual':'higgsfield-annual','s3-api':'typecast-api-pricing'});
+const swap=o=>Object.freeze(Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])));
+const SERVICE_WIRE=swap(WIRE_SERVICES),SOURCE_WIRE=swap(WIRE_SOURCES);
 // 앱 안 기본 사본(10-19 공식 요금표를 앱 안 브라우저로 직접 확인). month: 월 결제 한 달, year: 연간 결제 1년 치(없으면 연간 결제가 없다), credits: 한 달 크레딧.
 // 금액은 공식 기본값(세전)이고, krVat는 한국 결제에 붙는 부가세율이다 — 화면은 한국 결제 값(기본값 × (1 + krVat))을 「한국 결제 · 부가세 포함」으로 보인다(Fable 3차 시안 P2-4).
 const DEFAULT_PRICES=Object.freeze({
@@ -67,9 +73,26 @@ function cleanDeal(raw,now){
   if(off===undefined)return null;
   return {service:raw.service,...(plans?{plans}:{}),cycle:raw.cycle,from:raw.from,until:raw.until,checked:raw.checked,source:raw.source,...(off===null?{}:{off})};
 }
+// 공개본의 부호 → 이름. 부호로 적힌 서비스가 이름으로 적힌 같은 서비스보다 앞선다. 모르는 부호는 그대로 두어 아래 검사가 버린다.
+function fromWire(raw){
+  const source=entry=>plain(entry)&&Object.hasOwn(WIRE_SOURCES,entry.source)?{...entry,source:WIRE_SOURCES[entry.source]}:entry;
+  const services=plain(raw.services)?{...raw.services}:raw.services;
+  if(plain(services))for(const [code,name] of Object.entries(WIRE_SERVICES))if(Object.hasOwn(services,code)){services[name]=source(services[code]);delete services[code];}
+  const deals=Array.isArray(raw.deals)?raw.deals.map(d=>plain(d)&&Object.hasOwn(WIRE_SERVICES,d.service)?source({...d,service:WIRE_SERVICES[d.service]}):d):raw.deals;
+  return {...raw,services,deals};
+}
+// 이름 → 부호: synk.im에 올릴 판(desktop/ai-prices.json)을 만든다(desktop/tools/ai-prices-public.cjs). 모르는 서비스는 뺀다.
+function toWire(table){
+  const wire=entry=>Object.hasOwn(SOURCE_WIRE,entry.source)?{...entry,source:SOURCE_WIRE[entry.source]}:entry;
+  const services={};
+  for(const [name,entry] of Object.entries(table?.services||{}))if(Object.hasOwn(SERVICE_WIRE,name))services[SERVICE_WIRE[name]]=wire(entry);
+  const deals=(table?.deals||[]).filter(d=>Object.hasOwn(SERVICE_WIRE,d.service)).map(d=>wire({...d,service:SERVICE_WIRE[d.service]}));
+  return {schemaVersion:1,kind:'synk-ai-prices',services,deals};
+}
 // 받은 요금표 → 쓸 수 있는 모양(못 쓰면 null). 모르는 칸은 버린다. trusted: 앱 기본 사본(확인한 날 상한을 보지 않음).
 function validatePrices(raw,now=Date.now(),{trusted=false}={}){
   if(!plain(raw)||raw.schemaVersion!==1||raw.kind!=='synk-ai-prices')return null;
+  raw=fromWire(raw);
   const services={};
   for(const service of Object.keys(PLAN_KEYS)){const clean=cleanService(service,raw.services?.[service],now,trusted);if(clean)services[service]=clean;}
   const deals=(Array.isArray(raw.deals)?raw.deals.slice(0,20):[]).map(d=>cleanDeal(d,now)).filter(Boolean);
@@ -97,4 +120,4 @@ async function readCapped(res,max=MAX_BYTES){
   return Buffer.concat(chunks).toString('utf8');
 }
 
-module.exports={PRICES_URL,MAX_BYTES,DEFAULT_PRICES,PLAN_KEYS,SOURCES,validatePrices,mergePrices,readCapped,dayStamp};
+module.exports={PRICES_URL,MAX_BYTES,DEFAULT_PRICES,PLAN_KEYS,SOURCES,WIRE_SERVICES,WIRE_SOURCES,validatePrices,mergePrices,toWire,readCapped,dayStamp};
