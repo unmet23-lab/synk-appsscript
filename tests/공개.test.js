@@ -344,6 +344,53 @@ test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표�
   assert.ok(허용.알림.some((x) => x.경로 === 'app.js' && /--허용으로 넘김/.test(x.이유)));
 });
 
+test('AI 이름 한글·맨 GPT와 이 PC 경로: 10-19 공개본에서 샌 줄은 잡고, 공개본의 흔한 낱말 줄은 넘긴다', () => {
+  const 규칙 = 속.점검규칙읽기(점검원문('suno'));
+  const 검사 = (줄들, 옵션) => 속.검사하기(줄들.map(([경로, 새, 옛]) => ({ 경로, 버퍼: 글(새), 공개버퍼: 옛 === undefined ? null : 글(옛) })), 규칙, 옵션);
+  const 걸린 = (r) => r.걸림.map((x) => `${x.경로} ${x.검사}`).sort();
+  // 10-19 공개본(synk-policy e3909ee)에 실제로 실려 나간 줄과 같은 꼴
+  const 샌줄 = 검사([
+    ['world/brand-opening/first-run.mjs', '// 몽글 그림은 GPT 이미지 2.5로 한 판에 구워 나눔\n'],
+    ['world/korean-runner/course-motion.mjs', '// 수정을 옮김 — snapshot/gpt-games-local-20261006 course-motion.mjs).\n'],
+    ['world/hangul-stage/songs.mjs', '// 시각은 노래에서 목소리만 떼어(Demucs) 잰 음절 시작이다\n// Documents/synk-vendor/hangul-mascot-video/vowel-dance-full-v6/scripts/).\n'],
+    ['world/brand-opening/home-town.mjs', '// 다시 잰다(격자 사진: .tmp/world-firstrun-20261014).\n'],
+    ['brief/katana/view.js', '// 펠트 그림(10-13 GPT 이미지 2.5로 구워 오림, 판·지시문은 Documents/synk-vendor/katana-tool-felt/).\n'],
+    ['vendor/lib.js', '// built in C:\\Users\\me\\lib\n'],
+    ['a/path.js', "const 곳 = '/c/Users/me/x';\n"],
+    ['a/korean.js', '// 지피티로 만든 판 · (수노 노래) · 클로드가 다시 그림\n'],
+    ['a/mono.js', '// MonoGPT Biz-Pro로 구움\n'],
+    ['a/video.js', '// Veo 3.1로 만든 장면\n'],
+    ['.github/site-check/note.mjs', '// Documents/synk-vendor/x GPT 이미지\n'],
+  ]);
+  assert.deepEqual(걸린(샌줄), [
+    'a/korean.js AI 이름', 'a/mono.js AI 이름', 'a/path.js 내부 경로', 'a/video.js AI 이름',
+    'brief/katana/view.js 내부 경로',
+    'vendor/lib.js 내부 경로',
+    'world/brand-opening/first-run.mjs AI 이름',
+    'world/brand-opening/home-town.mjs 내부 경로',
+    'world/hangul-stage/songs.mjs AI 이름', 'world/hangul-stage/songs.mjs 내부 경로',
+    'world/korean-runner/course-motion.mjs AI 이름',
+  ], 'AI 이름은 맞춤 도구(brief/)·vendor에서 빼고, 이 PC 경로는 .github/만 뺀다');
+  assert.equal(샌줄.요약.경로줄, 11, '이 PC 경로는 .github/ 말고 모든 글 파일의 더한 줄을 본다');
+
+  // 공개본에 지금 있는 줄 — 흔한 낱말과 겹치는 이름·일부러 둔 글(10-19 e3909ee 948개로 잰 거짓 경보)
+  const 흔한줄 = 검사([
+    ['try/rhythm/index.html', '<canvas class="hero-runway" id="hero-runway"></canvas>\n'],
+    ['nombre/rules.js', "    if (w.startsWith('ll')) { out.push({ rule: 'll', src: 'll' }); i += 2; continue; } // llama 야마\n"],
+    ['path/models/whisper-base/tokenizer.json', '{"model": {"vocab": {"llama": 1, "runway": 2, "veo": 3, "sora": 4}}}\n'],
+    ['builds/move/content.js', "  { id: 'onedrive', title: 'OneDrive 동기화가 끝났는지 보기' },\n"],
+    ['homepage.css', '/* 규칙의 정본은 SYNK-appsscript/docs/디자인/플랫폼_시그널/README.md. */\n'],
+    ['a/links.html', '<a href="https://example.com/documents/guide.pdf">안내</a>\n'],
+    ['a/race.js', "const 글 = '사이클링 대회와 교수노조 회의';\nconst 임시 = 'cache.tmp/x';\n"],
+    ['world/hangul-stage/audio.mjs', '// 10-03 목소리는 Typecast로 정했다\nconst a = 2;\n', '// 10-03 목소리는 Typecast로 정했다\nconst a = 1;\n'],
+  ]);
+  assert.deepEqual(걸린(흔한줄), [], '흔한 낱말·원고 머리말·주소의 documents·이미 공개본에 있던 줄은 넘긴다');
+
+  const 허용 = 검사([['world/brand-opening/home-town.mjs', '// .tmp/world-firstrun-20261014 · 지피티\n']], { 허용: ['world/brand-opening/home-town.mjs'] });
+  assert.deepEqual(허용.걸림, []);
+  assert.deepEqual(허용.알림.map((x) => x.검사).sort(), ['AI 이름', '내부 경로'], '--허용은 사람이 본 AI 이름·이 PC 경로를 알림으로 넘긴다');
+});
+
 test('공개 경로·제작 자료·저장 용량: 밑줄 폴더·qa/·-original 그림·큰 파일은 막고 Jekyll 머리말은 알린다', async (t) => {
   const 공 = 새공개본(t, { 'index.html': '<p>홈</p>\n' });
   const 로컬 = 공.로컬('빌드', {
