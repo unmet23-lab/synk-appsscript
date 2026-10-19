@@ -71,14 +71,14 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
           if (!document) status = 'error';
           message = error === 'conflict' ? '다른 곳에서 이 내용을 바꿨어요. 최신 내용을 확인한 뒤 다시 수정해 주세요.'
             : error === 'version-conflict' ? '저장 형식이 업데이트됐어요. 최신 플랫폼에서 다시 열어 주세요.'
-            : mutation ? '저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.' : '확인·수정한 내용을 불러오지 못했어요. 다시 불러와 주세요.';
+            : mutation ? '저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.' : '고친 내역을 불러오지 못했어요. 다시 불러와 주세요.';
         }
       } finally { if (current(owner, token)) { if (mutation) pending--; emit(); } }
       return read();
     });
     queue = job.catch(() => {}); if (mutation) emit(); return job;
   }
-  function mutate(action, expected, expectedEditor = null) {
+  function mutate(action, expected, expectedEditor = null, savedMessage = null) {
     return enqueue(async (owner, token) => {
       const kind = action.type.includes('review') ? 'review' : 'override';
       const facetId = action.value?.facetId || action.facetId;
@@ -100,7 +100,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
           }
         }
         if (expectedEditor !== null && expectedEditor === editToken) editor = null;
-        error = null; message = action.type.startsWith('remove-') ? '이 확인·수정을 되돌렸어요. 원래 기록은 그대로예요.' : '확인·수정한 내용을 저장했어요.';
+        error = null; message = savedMessage || (action.type.startsWith('remove-') ? '되돌렸어요. 원래 연습 기록은 그대로예요.' : '고친 내용을 저장했어요.');
         return;
       }
     }, true);
@@ -125,10 +125,23 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
     editor.submission = clone(value);
     return mutate({ type: draft.mode, value }, draft.expected, expectedEditor);
   }
+  // One tap on an answer saves it at once, without an editor: a review of a repeated pattern
+  // (agree/disagree/contextual) or a practised topic's answer. The claim and choices are the
+  // rendered report's; a changed answer replaces the facet's earlier one.
+  function answer({ facetId, verdict = null, value = null, claim = null } = {}) {
+    sync(); if (stopped || status !== 'ready' || pending) return Promise.resolve(read());
+    const mode = value !== null ? 'override' : 'review';
+    if (mode === 'review' && (!['agree', 'disagree', 'contextual'].includes(verdict) || !claim || typeof claim !== 'object')) return Promise.resolve(read());
+    if (mode === 'override' && typeof value !== 'string') return Promise.resolve(read());
+    const previous = entry(document, mode, facetId);
+    const submission = { id: uuid(), facetId, ...(mode === 'review' ? { verdict, claim: clone(claim) } : { values: [value] }), note: '', at: new Date(now()).toISOString() };
+    editor = null; statementEditor = null; editToken++;
+    return mutate({ type: mode, value: submission }, clone(previous), null, '답을 저장했어요. 내가 고친 내역에서 되돌릴 수 있어요.');
+  }
   function remove({ kind, id, facetId } = {}) {
     sync(); if (status !== 'ready' || pending || !['review', 'override'].includes(kind)) return Promise.resolve(read());
     const previous = entry(document, kind, facetId);
-    if (!previous || previous.id !== id) { error = 'conflict'; message = '내용이 바뀌었어요. 최신 확인·수정 내역을 살펴봐 주세요.'; emit(); return Promise.resolve(read()); }
+    if (!previous || previous.id !== id) { error = 'conflict'; message = '내용이 바뀌었어요. 최신 고친 내역을 살펴봐 주세요.'; emit(); return Promise.resolve(read()); }
     return mutate({ type: 'remove-' + kind, facetId }, clone(previous));
   }
   function describe() {
@@ -188,7 +201,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
       statementEditor.previewInput = { text: statementEditor.text, at: preview.at, clarifications: clone(clarifications) };
       statementEditor.acceptedIds = []; statementEditor.submission = null;
       error = null; message = '';
-    } catch { error = 'interpretation'; message = '질문과 답변을 다시 확인해 주세요. 원문을 고치면 질문부터 다시 살펴볼 수 있어요.'; }
+    } catch { error = 'interpretation'; message = '질문과 답을 다시 확인해 주세요. 말을 고치면 질문부터 다시 볼 수 있어요.'; }
     emit(); return error === null;
   }
   function resetStatementAnswers() {
@@ -220,7 +233,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
           }
         }
         if (expectedEditor !== null && expectedEditor === editToken) statementEditor = null;
-        error = null; message = action.type === 'remove-statement' ? '이 해석의 반영을 되돌렸어요. 기존 기록은 그대로예요.' : '확인한 해석을 저장했어요. 다음 분석에도 이 뜻을 반영해요.';
+        error = null; message = action.type === 'remove-statement' ? '내 말을 되돌렸어요. 원래 연습 기록은 그대로예요.' : '내 말을 저장했어요. 고른 뜻을 이 화면 설명에 써요.';
         return;
       }
     }, true);
@@ -233,7 +246,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
     let value;
     try {
       value = statementEditor.submission || confirmMemberStatement({ preview: statementEditor.preview, text: statementEditor.text, clarifications: statementEditor.clarifications, acceptedIds: statementEditor.acceptedIds, id: uuid(), at: new Date(now()).toISOString() });
-    } catch { error = 'interpretation'; message = '반영할 해석을 선택해 주세요. 같은 상황의 서로 다른 뜻은 하나만 고를 수 있어요.'; emit(); return Promise.resolve(read()); }
+    } catch { error = 'interpretation'; message = '저장할 뜻을 골라 주세요. 같은 상황의 서로 다른 뜻은 하나만 고를 수 있어요.'; emit(); return Promise.resolve(read()); }
     statementEditor.submission = clone(value);
     return mutateStatement({ type: 'statement', value, replaceId: null }, null, editToken, clone(statementEditor.baseline));
   }
@@ -251,10 +264,10 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
       // Delete advances the existing revision even when no correction exists.
       const saved = await call('understandingDelete', { expected_revision: revision, document_version: document.version }, owner, token);
       if (!current(owner, token)) throw new Error('changed');
-      document = saved.document; revision = saved.revision; status = 'ready'; editor = null; statementEditor = null; editToken++; error = null; message = '확인·수정한 내용을 모두 지웠어요. 원래 이용·학습 기록은 그대로예요.';
+      document = saved.document; revision = saved.revision; status = 'ready'; editor = null; statementEditor = null; editToken++; error = null; message = '고친 내역을 모두 지웠어요. 원래 이용·연습 기록은 그대로예요.';
     }, true);
   }
-  return Object.freeze({ read, begin, updateDraft, save, remove, clear, describe, updateStatementDraft, previewStatement, editStatementText, answerStatement, resetStatementAnswers, confirmStatement, removeStatement,
+  return Object.freeze({ read, begin, updateDraft, save, answer, remove, clear, describe, updateStatementDraft, previewStatement, editStatementText, answerStatement, resetStatementAnswers, confirmStatement, removeStatement,
     refresh: () => enqueue(async (owner, token) => { await load(owner, token); if (!current(owner, token)) throw new Error('changed'); if (!editor && !statementEditor) { message = ''; error = null; } }),
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     cancel() { sync(); if (!pending) { editor = null; statementEditor = null; editToken++; message = ''; error = null; emit(); } },

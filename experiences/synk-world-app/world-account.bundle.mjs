@@ -10950,6 +10950,8 @@ function createDesktopAccountClient({ bridge, product, guard }) {
     load: () => request("load"),
     release: () => request("release"),
     atlasSummary: () => request("atlasSummary"),
+    // 「내 성향」 answers (read only); WORLD reads them to choose practice.
+    understandingLoad: () => request("understandingLoad"),
     setLearning: (enabled, expected_revision) => request("setLearning", { enabled, expected_revision }),
     updateProfile: (profile, expected_profile_revision) => request("updateProfile", { profile, expected_profile_revision }),
     revokeSession: (session_id) => request("revokeSession", { session_id }),
@@ -13358,6 +13360,49 @@ function clock(value) {
   if (!time(at)) throw TypeError("WORLD learning plan needs a valid time");
   return at;
 }
+var PACK_SITUATIONS = {
+  greetings: ["sit-people-greeting"],
+  cafe: ["sit-travel-order"],
+  store: ["sit-travel-shopping"],
+  directions: ["sit-travel-directions"],
+  transit: ["sit-travel-transport"],
+  plans: ["sit-career-schedule", "sit-people-messenger"]
+};
+var conceptId = (value) => typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
+var ANSWER_DAYS = 30;
+function worldTopicAnswers(state, { now = Date.now() } = {}) {
+  const interested = /* @__PURE__ */ new Set(), notNow = /* @__PURE__ */ new Set(), answered = /* @__PURE__ */ new Set();
+  if (!record(state) || !Array.isArray(state.overrides) || !Array.isArray(state.reviews)) return { interested: [], notNow: [] };
+  const at = clock(now);
+  for (const row of state.overrides) {
+    const id = typeof row?.facetId === "string" && row.facetId.startsWith("learning-topic:") ? row.facetId.slice(15) : null;
+    if (!conceptId(id) || !Array.isArray(row.values)) continue;
+    answered.add(id);
+    if (row.values[0] === "interested") interested.add(id);
+    else if (row.values[0] === "not-now") notNow.add(id);
+  }
+  for (const row of state.reviews) {
+    const id = typeof row?.facetId === "string" && row.facetId.startsWith("learning-topic:") ? row.facetId.slice(15) : null;
+    const when = Date.parse(row?.at);
+    if (!conceptId(id) || answered.has(id) || row.verdict !== "agree" || !Number.isFinite(when) || when > at || at - when > ANSWER_DAYS * 864e5) continue;
+    interested.add(id);
+  }
+  return { interested: [...interested].slice(0, 50), notNow: [...notNow].slice(0, 50) };
+}
+function answersOf(value) {
+  const pick = (list) => Array.isArray(list) ? [...new Set(list.filter(conceptId))].slice(0, 50) : [];
+  const interested = pick(value?.interested), notNow = pick(value?.notNow).filter((id) => !interested.includes(id));
+  return { interested, notNow };
+}
+function withAnswers(candidate, answers) {
+  if (!answers.interested.length && !answers.notNow.length) return candidate;
+  const situations = PACK_SITUATIONS[candidate.packId] || [];
+  const items = new Set(candidate.targets.flatMap((target) => Array.isArray(target.conceptIds) ? target.conceptIds : []));
+  const wanted = answers.interested.filter((id) => situations.includes(id) || items.has(id));
+  const later = candidate.route === "lesson" && situations.some((id) => answers.notNow.includes(id));
+  const targets = candidate.targets.filter((target) => !(target.conceptIds || []).some((id) => answers.notNow.includes(id)));
+  return { ...candidate, targets, goals: later ? [] : [.../* @__PURE__ */ new Set([...candidate.goals, ...wanted.map((id) => `interest.${id}`)])] };
+}
 function worldLearningSettings(settings = {}) {
   const value = record(settings) ? settings : {};
   const reasons = Array.isArray(value.reasons) ? [...new Set(value.reasons.filter((reason) => REASONS.includes(reason)))] : [];
@@ -13543,15 +13588,24 @@ function resumeCandidates(progress, settings, now) {
   });
   return result;
 }
-function createWorldLearningPlan({ summary = null, progress = {}, settings = {}, now = Date.now(), recommendActivities } = {}) {
+function createWorldLearningPlan({ summary = null, progress = {}, settings = {}, now = Date.now(), recommendActivities, answers = null } = {}) {
   if (typeof recommendActivities !== "function") throw TypeError("WORLD learning plan needs Core recommendActivities");
-  const at = clock(now), source = record(progress) ? progress : {}, normalized = worldLearningSettings(settings);
+  const at = clock(now), source = record(progress) ? progress : {}, normalized = worldLearningSettings(settings), told = answersOf(answers);
   const profile = record(summary) && Array.isArray(summary.skills) && typeof summary.evidenceComplete === "boolean" ? summary : { skills: [], evidenceComplete: false, asOf: iso(at) };
   const skills = new Set(profile.skills.map((skill2) => skill2.id));
   const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
   const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
-  const ready = candidates.map((candidate) => ({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }));
-  const ranked = recommendActivities({ profile, candidates: ready, settings: normalized, at: iso(at) });
+  const ready = candidates.map((candidate) => withAnswers({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }, told));
+  const ranking = told.interested.length ? { ...normalized, goals: [.../* @__PURE__ */ new Set([...normalized.goals, ...told.interested.map((id) => `interest.${id}`)])] } : normalized;
+  const chosen = recommendActivities({ profile, candidates: ready, settings: ranking, at: iso(at) });
+  const interest = (chosen.matchedGoals || []).find((goal) => goal.startsWith("interest."));
+  const pushed = interest && !(chosen.reasons || []).some((reason) => ["review.due", "activity.retry", "activity.assisted"].includes(reason) || reason.startsWith("practice."));
+  const label = interest ? (profile.concepts || []).find((concept) => concept?.id === interest.slice(9))?.label : null;
+  const ranked = pushed ? {
+    ...chosen,
+    reason: typeof label === "string" && label.trim() ? `\uB354 \uBC30\uC6B0\uACE0 \uC2F6\uB2E4\uACE0 \uC54C\uB824 \uC900 \u2018${label}\u2019 \uC5F0\uC2B5\uC774\uC5D0\uC694.` : "\uB354 \uBC30\uC6B0\uACE0 \uC2F6\uB2E4\uACE0 \uC54C\uB824 \uC900 \uB0B4\uC6A9\uC774 \uB4E4\uC5B4 \uC788\uB294 \uC5F0\uC2B5\uC774\uC5D0\uC694.",
+    reasons: [...chosen.reasons, "interest.declared"]
+  } : chosen;
   const excluded = new Set((ranked.excluded || []).map((item) => item.id));
   const offered = resumes.find((resume) => !excluded.has(resume.id) && [ranked.selected, ...ranked.alternatives || []].some((item) => item?.id === resume.id)) || null;
   const result = offered ? {
@@ -13577,6 +13631,7 @@ function createWorldLearningPlan({ summary = null, progress = {}, settings = {},
     resume: offered,
     presentation: presentationFor(settings),
     settings: normalized,
+    answers: told,
     learningEffectClaim: false,
     abilityClaim: false,
     grade: null
@@ -14060,6 +14115,19 @@ function createWorldAccount({
       throw error2;
     }
   }
+  async function topicAnswers() {
+    const expected = epoch;
+    if (closed || !owner || !session || typeof verifiedClient?.understandingLoad !== "function") return null;
+    const id = owner, client = verifiedClient;
+    try {
+      const data = await client.understandingLoad();
+      if (closed || expected !== epoch || owner !== id) return null;
+      if (data?.ok !== true || data.scope !== "synk-personal" || data.resource !== "member-understanding" || data.accountId !== id) return null;
+      return worldTopicAnswers(data.state, { now: now() });
+    } catch {
+      return null;
+    }
+  }
   async function prepareLifeProgress({ storage: cache = globalThis.localStorage, onStatus = () => {
   }, target = globalThis } = {}) {
     const expected = epoch, launch = ++lifeLaunch;
@@ -14227,6 +14295,7 @@ function createWorldAccount({
     logout,
     prepareGame,
     prepareLifeProgress,
+    topicAnswers,
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
       guard(epoch);

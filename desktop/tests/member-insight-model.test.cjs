@@ -25,7 +25,11 @@ test('empty history stays empty without inventing a trait, score, or growth', as
   const { buildMemberInsightReport } = await model, result = buildMemberInsightReport(fixture());
   assert.deepEqual(result.personal, []);assert.deepEqual(result.reasons, []);assert.equal(result.learning.empty, true);
   assert.equal(result.lastAt, null);assert.equal(result.asOf, asOf);assert.match(result.description, /아직 정리할 정보가 없/);
-  assert.deepEqual(Object.keys(result).sort(), ['asOf', 'description', 'headline', 'lastAt', 'learning', 'limits', 'personal', 'reasons', 'shared', 'activity', 'understanding'].sort());
+  assert.deepEqual(Object.keys(result).sort(), ['asOf', 'description', 'headline', 'lastAt', 'learning', 'limits', 'personal', 'reasons', 'shared', 'activity', 'understanding', 'now', 'settings', 'settingChoices', 'reasonIds', 'worldReadsAnswers', 'worldFollowsSettings', 'usageLine', 'learningRevision', 'learningEnabled'].sort());
+  assert.equal(result.worldReadsAnswers, true);assert.equal(result.worldFollowsSettings, true, 'both are true now that the server read path and that WORLD are live');
+  // Nothing is said beyond an honest empty state, and no setting is invented.
+  assert.equal(result.now.kind, 'empty');assert.match(result.now.headline, /아직 나를 설명할 기록이 없어요/);
+  assert.ok(Object.values(result.settings).every(value => value === null));assert.deepEqual(result.reasonIds, []);
   assert.equal(result.activity.status, 'unavailable');assert.equal(result.learning.periods, null);
 });
 
@@ -207,10 +211,12 @@ test('explicit choices change the next Core explanation and remain separate from
   assert.equal(result.understanding.status, 'ready');
   assert.match(result.understanding.paragraphs.join(' '), /여행지 음식·주문.*AI 도구 활용/);
   assert.match(result.understanding.paragraphs.join(' '), /먼저 혼자 시도/);
-  assert.match(result.understanding.paragraphs.join(' '), /직접 남긴 설명.*이 말은 직접 남긴 설명이에요/);
+  assert.match(result.understanding.paragraphs.join(' '), /덧붙인 말.*이 말은 직접 남긴 설명이에요/);
   assert.equal(result.understanding.history.find(row => row.facetId === 'topics').note, document.overrides[0].note);
   assert.equal(result.personal.find(row => row.id === 'support').value, '단계별로 도와줘요');
   assert.equal(input.summary.presentation.support, 'step');
+  // The screen-only correction of a setting never speaks for the setting the apps use.
+  assert.equal(result.settings.support, 'step');assert.doesNotMatch(result.now.support.join(' '), /혼자 해 보기|자세한 설명/);
 });
 
 test('agree, disagree and contextual confirmations affect current interpretation while preserving observed counts', async () => {

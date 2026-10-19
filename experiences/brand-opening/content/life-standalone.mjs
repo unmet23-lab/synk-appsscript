@@ -13688,7 +13688,7 @@ var progressLine = (done, total) => `<span class="life-progress" aria-hidden="tr
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
 var expressionOf = (lesson2, q) => lesson2?.expressions.find((e) => e.id === q?.expressionId) || { korean: q?.choices?.find((c) => c.id === q.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
-}, onNext = null }) {
+}, onNext = null, presentation = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
   content?.addEventListener("pointerdown", (event) => {
@@ -13736,11 +13736,16 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }, reduced: () => !!home.state?.reduced });
   const summary = () => getProgress().summary(PACKS, LESSONS);
   const preferences = () => {
+    let values = {}, chosen = {};
     try {
-      return getProgress().learningProfileValues?.() || {};
+      values = getProgress().learningProfileValues?.() || {};
     } catch {
-      return {};
     }
+    try {
+      chosen = presentation?.() || {};
+    } catch {
+    }
+    return { ...values, ...chosen };
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
   const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
@@ -14696,6 +14701,29 @@ function clock(value) {
   if (!time2(at)) throw TypeError("WORLD learning plan needs a valid time");
   return at;
 }
+var PACK_SITUATIONS = {
+  greetings: ["sit-people-greeting"],
+  cafe: ["sit-travel-order"],
+  store: ["sit-travel-shopping"],
+  directions: ["sit-travel-directions"],
+  transit: ["sit-travel-transport"],
+  plans: ["sit-career-schedule", "sit-people-messenger"]
+};
+var conceptId = (value) => typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
+function answersOf(value) {
+  const pick = (list) => Array.isArray(list) ? [...new Set(list.filter(conceptId))].slice(0, 50) : [];
+  const interested = pick(value?.interested), notNow = pick(value?.notNow).filter((id) => !interested.includes(id));
+  return { interested, notNow };
+}
+function withAnswers(candidate, answers) {
+  if (!answers.interested.length && !answers.notNow.length) return candidate;
+  const situations = PACK_SITUATIONS[candidate.packId] || [];
+  const items = new Set(candidate.targets.flatMap((target) => Array.isArray(target.conceptIds) ? target.conceptIds : []));
+  const wanted = answers.interested.filter((id) => situations.includes(id) || items.has(id));
+  const later = candidate.route === "lesson" && situations.some((id) => answers.notNow.includes(id));
+  const targets = candidate.targets.filter((target) => !(target.conceptIds || []).some((id) => answers.notNow.includes(id)));
+  return { ...candidate, targets, goals: later ? [] : [.../* @__PURE__ */ new Set([...candidate.goals, ...wanted.map((id) => `interest.${id}`)])] };
+}
 function worldLearningSettings(settings = {}) {
   const value = record(settings) ? settings : {};
   const reasons2 = Array.isArray(value.reasons) ? [...new Set(value.reasons.filter((reason) => REASONS.includes(reason)))] : [];
@@ -14881,15 +14909,24 @@ function resumeCandidates(progress2, settings, now) {
   });
   return result;
 }
-function createWorldLearningPlan({ summary = null, progress: progress2 = {}, settings = {}, now = Date.now(), recommendActivities } = {}) {
+function createWorldLearningPlan({ summary = null, progress: progress2 = {}, settings = {}, now = Date.now(), recommendActivities, answers = null } = {}) {
   if (typeof recommendActivities !== "function") throw TypeError("WORLD learning plan needs Core recommendActivities");
-  const at = clock(now), source = record(progress2) ? progress2 : {}, normalized = worldLearningSettings(settings);
+  const at = clock(now), source = record(progress2) ? progress2 : {}, normalized = worldLearningSettings(settings), told = answersOf(answers);
   const profile = record(summary) && Array.isArray(summary.skills) && typeof summary.evidenceComplete === "boolean" ? summary : { skills: [], evidenceComplete: false, asOf: iso2(at) };
   const skills = new Set(profile.skills.map((skill2) => skill2.id));
   const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
   const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
-  const ready = candidates.map((candidate) => ({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }));
-  const ranked = recommendActivities({ profile, candidates: ready, settings: normalized, at: iso2(at) });
+  const ready = candidates.map((candidate) => withAnswers({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }, told));
+  const ranking = told.interested.length ? { ...normalized, goals: [.../* @__PURE__ */ new Set([...normalized.goals, ...told.interested.map((id) => `interest.${id}`)])] } : normalized;
+  const chosen = recommendActivities({ profile, candidates: ready, settings: ranking, at: iso2(at) });
+  const interest = (chosen.matchedGoals || []).find((goal) => goal.startsWith("interest."));
+  const pushed = interest && !(chosen.reasons || []).some((reason) => ["review.due", "activity.retry", "activity.assisted"].includes(reason) || reason.startsWith("practice."));
+  const label = interest ? (profile.concepts || []).find((concept) => concept?.id === interest.slice(9))?.label : null;
+  const ranked = pushed ? {
+    ...chosen,
+    reason: typeof label === "string" && label.trim() ? `\uB354 \uBC30\uC6B0\uACE0 \uC2F6\uB2E4\uACE0 \uC54C\uB824 \uC900 \u2018${label}\u2019 \uC5F0\uC2B5\uC774\uC5D0\uC694.` : "\uB354 \uBC30\uC6B0\uACE0 \uC2F6\uB2E4\uACE0 \uC54C\uB824 \uC900 \uB0B4\uC6A9\uC774 \uB4E4\uC5B4 \uC788\uB294 \uC5F0\uC2B5\uC774\uC5D0\uC694.",
+    reasons: [...chosen.reasons, "interest.declared"]
+  } : chosen;
   const excluded = new Set((ranked.excluded || []).map((item) => item.id));
   const offered = resumes.find((resume) => !excluded.has(resume.id) && [ranked.selected, ...ranked.alternatives || []].some((item) => item?.id === resume.id)) || null;
   const result = offered ? {
@@ -14915,6 +14952,7 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
     resume: offered,
     presentation: presentationFor(settings),
     settings: normalized,
+    answers: told,
     learningEffectClaim: false,
     abilityClaim: false,
     grade: null
@@ -14930,7 +14968,7 @@ var radios = (name, options, value) => (Array.isArray(options) ? options : Objec
 var rows = (name, options, value) => Object.entries(options).map(([id, [label, note]]) => `<label class="study-option"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span><strong>${label}</strong><small>${note}</small></span></label>`).join("");
 function createWorldEducation({ home, getProgress, engine, createPlan, launchGame, startLesson, startReview, prepare = async () => {
 }, target = globalThis }) {
-  let stopped = false, coach = null, coachHost = null, current = null, refreshing = false, applied = null;
+  let stopped = false, coach = null, coachHost = null, current = null, refreshing = false;
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const check3 = () => {
@@ -14953,25 +14991,37 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
       coach?.disconnect?.();
       coach = null;
       coachHost = source;
-      applied = null;
     }
     if (!coach) coach = source ? source.createGame({ gameId: "world-home" }, engine.engine.createGame, engine.createLearningSync) : engine.engine.createGame({ gameId: "world-home", storage: target.localStorage });
     return coach;
   }
-  function applyPreferences() {
+  function applyPreferences({ explicit = false } = {}) {
+    if (!explicit) {
+      check3();
+      return true;
+    }
     check3();
     const progress2 = getProgress(), profile = progress2.learningProfile().profile;
-    if (["new", "skipped"].includes(profile.status)) return;
+    if (["new", "skipped"].includes(profile.status)) return true;
     const values = progress2.learningProfileValues(), source = target.SYNKLearningHost || null;
     const presentation = Object.fromEntries(["support", "explanation", "textSize", "motion"].filter((k) => values[k]).map((k) => [k, values[k]]));
-    const signature = JSON.stringify(presentation);
-    if (applied?.source === source && applied.signature === signature) return;
     const preferences = source?.preferences?.() || readCoach();
-    if (preferences) {
-      if (preferences.setPresentation(Object.keys(presentation).length ? presentation : null) === false) return false;
-      applied = { source, signature };
-    }
+    if (!preferences) return true;
+    const current2 = preferences.presentation?.() || {};
+    const next2 = Object.keys(presentation).length ? { ...current2, ...presentation } : Object.fromEntries(Object.entries(current2).filter(([k]) => !["support", "explanation"].includes(k)));
+    if (preferences.setPresentation(Object.keys(next2).length ? next2 : null) === false) return false;
     return true;
+  }
+  function settingsFor(values) {
+    let chosen = null;
+    try {
+      const source = target.SYNKLearningHost || null;
+      chosen = (source?.preferences?.() || readCoach())?.presentation?.() || null;
+    } catch {
+      chosen = null;
+    }
+    const pick = (key, list) => chosen && list.includes(chosen[key]) ? { [key]: chosen[key] } : {};
+    return { ...values, ...pick("support", ["choose", "step", "independent"]), ...pick("explanation", ["brief", "standard", "detailed"]) };
   }
   function refresh() {
     if (stopped || refreshing) return current;
@@ -14990,7 +15040,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
         applyPreferences();
       } catch {
       }
-      current = createPlan({ summary, progress: progress2.exportSnapshot(), settings: progress2.learningProfileValues(), now: Date.now(), recommendActivities: engine.recommendActivities });
+      current = createPlan({ summary, progress: progress2.exportSnapshot(), settings: settingsFor(progress2.learningProfileValues()), now: Date.now(), recommendActivities: engine.recommendActivities });
       home.updateStudy?.(current);
       return current;
     } catch {
@@ -15010,6 +15060,11 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     }
     await prepare();
     check3();
+    try {
+      await target.SYNKLearningHost?.ready?.();
+    } catch {
+    }
+    check3();
     const plan = refresh(), selected = plan?.selected;
     if (!selected) {
       home.toast(plan?.reason || "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC5F0\uC2B5\uC774 \uC5C6\uC5B4\uC694. \uD559\uC2B5 \uBAA9\uD45C\uC5D0\uC11C \uC2DC\uAC04\uACFC \uC18C\uB9AC\uB97C \uBC14\uAFD4 \uBCF4\uC138\uC694.");
@@ -15025,7 +15080,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
   }
   function open({ continueAfter = false } = {}) {
     check3();
-    const progress2 = getProgress(), saved = progress2.learningProfile(), profile = saved.profile, values = progress2.learningProfileValues();
+    const progress2 = getProgress(), saved = progress2.learningProfile(), profile = saved.profile, values = settingsFor(progress2.learningProfileValues());
     let revision2 = profile.revision;
     let summary = empty2;
     try {
@@ -15044,7 +15099,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     <fieldset class="study-group"><legend>\uC18C\uB9AC</legend><div class="study-pills study-segment">${radios("audio", { available: "\uB4E4\uC744 \uC218 \uC788\uC5B4\uC694", off: "\uC9C0\uAE08\uC740 \uBABB \uB4E4\uC5B4\uC694" }, values.audio === "off" ? "off" : "available")}</div></fieldset>
    </div>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD558\uAE30</strong><small>\uBAA9\uD45C\uC640 \uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uAE30\uC5B5\uD574 \uCD94\uCC9C\uC5D0 \uC368\uC694.</small></span></label>
-   <p class="study-scope">\uAE09\uC218\uB098 \uC131\uACA9\uC744 \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uC124\uC815\uC744 \uC9C0\uC6CC\uB3C4 \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
+   <p class="study-scope">\uAE09\uC218\uB098 \uC131\uACA9\uC744 \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uBAA9\uD45C\uB97C \uC9C0\uC6B0\uAC70\uB098 \uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAC8C \uD558\uBA74 ${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD55C \uB3C4\uC6C0 \uBC29\uC2DD\uACFC \uC124\uBA85 \uAE38\uC774\uB3C4 \uD568\uAED8 \uC9C0\uC6CC\uC838\uC694. \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
    <p class="study-save-status" role="status">${escape3(progress2.status().message)}</p>
    <div class="life-actions"><button class="felt-button" type="submit">${continueAfter ? "\uC800\uC7A5\uD558\uACE0 \uC2DC\uC791\uD558\uAE30" : "\uC800\uC7A5\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status === "new" ? "\uAC74\uB108\uB6F0\uAE30" : "\uB2EB\uAE30"}</button></div>
    ${profile.status === "active" ? '<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">\uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAE30</button><button type="button" class="quiet-button" data-study-clear="delete">\uBAA9\uD45C \uC9C0\uC6B0\uAE30</button></div>' : ""}
@@ -15068,7 +15123,16 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
         revision2 = progress2.learningProfile().profile.revision;
         await progress2.flush();
         valid();
-        if (applyPreferences() === false) throw Error("\uB3C4\uC6C0 \uBC29\uC2DD \uC800\uC7A5\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+        if (progress2.learningProfile().profile.status !== "skipped") {
+          await prepare();
+          valid();
+          try {
+            await target.SYNKLearningHost?.ready?.();
+          } catch {
+          }
+          valid();
+          if (applyPreferences({ explicit: true }) === false) throw Error("\uB3C4\uC6C0 \uBC29\uC2DD \uC800\uC7A5\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+        }
         refresh();
         home.closePanel();
         if (continueAfter) await next();
@@ -15099,7 +15163,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
   target.addEventListener?.("focus", onFocus);
   return { next, open, refresh, applyPreferences, presentation() {
     check3();
-    const values = getProgress().learningProfileValues();
+    const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
   }, metrics: () => ({ owner, plan: current }), dispose() {
     stopped = true;
@@ -15112,7 +15176,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
 function setupLife(home, asset) {
   let ui, education;
   const progress2 = createLifeProgress({ owner: "guest", now: () => Date.now(), onChange: () => ui?.refresh() });
-  ui = createLifeExperience({ home, getProgress: () => progress2, asset, onSummary: () => education?.refresh(), onNext: () => education?.next() });
+  ui = createLifeExperience({ home, getProgress: () => progress2, asset, onSummary: () => education?.refresh(), onNext: () => education?.next(), presentation: () => education?.presentation() });
   education = createWorldEducation({ home, getProgress: () => progress2, engine: import_game_browser.default, createPlan: createWorldLearningPlan, launchGame: home.openLearningGame, startLesson: ui.start, startReview: ui.reviewStart, target: window });
   home.connectEducation(education);
   education.refresh();

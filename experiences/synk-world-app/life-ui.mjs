@@ -26,7 +26,7 @@ const progressLine=(done,total)=>`<span class="life-progress" aria-hidden="true"
 const meter=(done,total,label=`${done} / ${total}`)=>`<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done,total)}%"></i></span><b>${label}</b></span>`;
 // 문제의 표현: 문제가 가리키는 레슨 표현(없으면 정답 문장).
 const expressionOf=(lesson,q)=>lesson?.expressions.find(e=>e.id===q?.expressionId)||{korean:q?.choices?.find(c=>c.id===q.answerId)?.text||'',meaning:''};
-export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null}){
+export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null,presentation=null}){
  const panel=document.querySelector('#world-panel'),content=document.querySelector('#panel-content');
  // 10-17 움직임: 고른 답의 초록이 손끝 자리에서 번지도록 마지막으로 누른 자리를 기억한다. 진행 막대는 같은 레슨에서 늘 때만 움직인다.
  let lastPoint=null,justChose=false,barMemo={key:'',value:-1};
@@ -51,7 +51,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 이야기 장면 디테일(글자 한 자씩·말소리·넘기는 손맛·형광펜, life-story.mjs). 형광펜을 누르면 표현 도움이 그 표현에 맞춰 열린다.
  const story=createStoryDetail({content,isActive:()=>shown&&panel.open&&context?.phase==='story',onNext:()=>turnScene(1),onPrev:()=>turnScene(-1),onMark:index=>{if(!companion?.openGuide)return;play('open');haptic('tap');companion.openGuide({expression:index});},reduced:()=>!!home.state?.reduced});
  const summary=()=>getProgress().summary(PACKS,LESSONS);
- const preferences=()=>{try{return getProgress().learningProfileValues?.()||{};}catch{return {};}};
+ // Help style and explanation length come from the account's choice when the host gives one
+ // (world-learning-ui.mjs presentation()); the rest of WORLD's own answers stay as they are.
+ const preferences=()=>{let values={},chosen={};try{values=getProgress().learningProfileValues?.()||{};}catch{}try{chosen=presentation?.()||{};}catch{}return {...values,...chosen};};
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
  function updateHome(){if(ended)return;try{const value=summary();home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}

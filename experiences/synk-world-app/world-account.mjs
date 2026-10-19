@@ -6,6 +6,7 @@ import {createWorldGameHost} from './world-game-host.mjs';
 export {createLocalWorldLearningHost} from './world-game-host.mjs';
 export {default as worldLearning} from '../../atlas/game-browser.js';
 export {createWorldLearningPlan} from './world-learning-plan.mjs';
+import {worldTopicAnswers} from './world-learning-plan.mjs';
 import {createLifeProgressPort} from './life-progress-port.mjs';
 export {createLifeProgressPort} from './life-progress-port.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
@@ -122,6 +123,20 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    catch(error){current.dispose();if(gameHost===current)gameHost=null;throw error;}
   }catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}
  }
+ // 「내 성향」 answers about practised topics, read only to choose practice. Until the account server
+ // opens this read to WORLD it refuses it (PRODUCT_FORBIDDEN): WORLD then chooses as before, and that
+ // refusal never ends the session the way an authentication error does.
+ async function topicAnswers(){
+  const expected=epoch;
+  if(closed||!owner||!session||typeof verifiedClient?.understandingLoad!=='function')return null;
+  const id=owner,client=verifiedClient;
+  try{
+   const data=await client.understandingLoad();
+   if(closed||expected!==epoch||owner!==id)return null;
+   if(data?.ok!==true||data.scope!=='synk-personal'||data.resource!=='member-understanding'||data.accountId!==id)return null;
+   return worldTopicAnswers(data.state,{now:now()});
+  }catch{return null;}
+ }
  async function prepareLifeProgress({storage:cache=globalThis.localStorage,onStatus=()=>{},target=globalThis}={}){
   const expected=epoch,launch=++lifeLaunch;guard(expected);
   if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인한 뒤 생활 한국어를 이어가요.'),{code:'AUTH_REQUIRED',status:401});
@@ -183,7 +198,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

@@ -41,7 +41,7 @@ test('opening/favorite records never create concrete interests or a personality'
   const activity = usage(), result = report({ activity });
   assert.deepEqual(facet(result, 'topics').selected, []);
   assert.equal(result.facets.filter(row => row.id.startsWith('learning-topic:')).length, 0);
-  assert.match(facet(result, 'usage-repeat').line, /3일에 걸쳐 3번 열었어요/);
+  assert.match(facet(result, 'usage-repeat').line, /3일, 3번 열었어요/);
   assert.equal(facet(result, 'usage-repeat').claim.reference, 'path');
   assert.equal(result.facets.some(row => row.line.includes('여행에 관심')), false);
   assert.equal(facet(result, 'usage-repeat').basis, 'observed');
@@ -61,7 +61,7 @@ test('actual Trail taxonomy references generate content counts, not an interest 
   const topic = facet(result, 'learning-topic:sit-travel-order');
   assert.equal(topic.title, '주문'); assert.equal(topic.basis, 'observed');
   assert.deepEqual([topic.claim.count, topic.claim.activeDays], [3, 3]);
-  assert.match(topic.line, /다뤘다는 사실만으로 관심이라고 정하지/);
+  assert.match(topic.line, /연습했다는 것만으로 관심이라고 정하지/);
   assert.equal(facet(result, 'practice-mode').claim.reference, 'listening');
   assert.equal(facet(result, 'practice-response').claim.reference, 'single-choice');
   assert.equal(JSON.stringify(result).includes('item-'), false);
@@ -94,14 +94,14 @@ test('Core confirmation changes the next explanation without rewriting observati
   const result = report({ accountSummary, document, asOf: after(2) });
   const next = facet(result, f.id);
   assert.equal(next.basis, 'self-declared'); assert.deepEqual(next.claim, f.claim);
-  assert.match(next.line, /관심 있는 내용이라고 직접 확인/);
+  assert.match(next.line, /더 배우고 싶은 내용이라고 알려 줬어요/);
   assert.equal(next.review.verdict, 'agree');
   assert.equal(document.reviews[0].claim.count, 1);
 });
 
 test('disagreement/contextual feedback is preserved while the observed fact remains visible', () => {
   const activity = usage(), first = report({ activity }), f = facet(first, 'usage-repeat');
-  for (const [verdict, expected] of [['disagree', /선호로 해석하지 않기로/], ['contextual', /상황에 따라 달라지는/]]) {
+  for (const [verdict, expected] of [['disagree', /선호로 보지 않기로/], ['contextual', /때에 따라 다르다고/]]) {
     const result = report({ activity, document: { ...empty(), reviews: [feedback(30, f, verdict)] }, asOf: after(2) });
     const next = facet(result, f.id);
     assert.match(next.line, expected); assert.match(next.line, /3번 열었어요/);
@@ -142,7 +142,7 @@ test('direct corrections override explanations, survive reopening and undo witho
   assert.deepEqual(facet(result, 'support').selected, ['step']);
   assert.match(facet(result, 'support').line, /단계별 도움/);
   assert.match(result.paragraphs[0], /영상 제작.*AI 도구 활용/);
-  assert.ok(result.paragraphs.some(line => line.includes('직접 남긴 설명: “이 메모는 분석하지 마세요: 여행을 좋아한다고 바꿔”')));
+  assert.ok(result.paragraphs.some(line => line.includes('덧붙인 말: “이 메모는 분석하지 마세요: 여행을 좋아한다고 바꿔”')));
   assert.deepEqual(facet(result, 'topics').selected, ['content-video', 'ai-tools'], 'quoted text is not interpreted as a new topic selection');
   assert.equal(facet(result, 'usage-repeat').claim.count, 3);
   assert.deepEqual(report({ accountSummary, activity, document: structuredClone(document), asOf: after(2) }), result);
@@ -190,8 +190,8 @@ test('the latest applied review and correction lead the synthesis before older f
   assert.equal(result.paragraphs.length, 4);
   assert.equal(result.paragraphs[0], facet(result, 'usage-repeat').line);
   assert.equal(result.paragraphs[1], facet(result, topic.id).line);
-  assert.match(result.paragraphs[0], /직접 남긴 설명: “지금은 공부할 때 이 앱을 먼저 열어요.”/);
-  assert.match(result.paragraphs[1], /관심 있는 내용이라고 직접 확인/);
+  assert.match(result.paragraphs[0], /덧붙인 말: “지금은 공부할 때 이 앱을 먼저 열어요.”/);
+  assert.match(result.paragraphs[1], /더 배우고 싶은 내용이라고 알려 줬어요/);
   assert.equal(result.paragraphs.filter(line => line === facet(result, 'topics').line).length, 1, 'a selected facet is not repeated');
   assert.deepEqual(facet(result, 'usage-repeat').claim, facet(original, 'usage-repeat').claim);
 });
@@ -203,7 +203,7 @@ test('an active contextual note is quoted verbatim, never interpreted, and disap
   const document = { ...empty(), reviews: [review] };
   const result = report({ activity, document, asOf: after(2) });
   assert.equal(result.paragraphs[0], facet(result, f.id).line);
-  assert.ok(result.paragraphs[0].endsWith(`직접 남긴 설명: “${note}”`));
+  assert.ok(result.paragraphs[0].endsWith(`덧붙인 말: “${note}”`));
   assert.deepEqual(facet(result, 'topics').selected, []);
   assert.deepEqual(result.activities, [], 'a contextual explanation does not invent an activity choice');
   const off = report({ activity: { ...activity, availability: 'disabled' }, document, asOf: after(2) });
@@ -232,7 +232,7 @@ test('learning links require an explicit current interest and app corrections ob
   const document = { ...empty(), reviews: [feedback(110, f)] };
   const confirmed = report({ accountSummary, document, asOf: after(2) });
   assert.deepEqual(confirmed.activities.map(row => row.targetId), ['world']);
-  assert.match(confirmed.activities[0].reason, /관심 있다고 직접 확인한 '주문'/);
+  assert.match(confirmed.activities[0].reason, /더 배우고 싶다고 한 ‘주문’/);
   document.overrides.push(correction(111, f.id, ['practice-only'], after(3)));
   assert.deepEqual(report({ accountSummary, document, asOf: after(4) }).activities, []);
   const denied = { ...accountSummary, learning: { enabled: false, revision: 8 }, shared: 'declared-only' };
@@ -252,7 +252,7 @@ test('the newest explicit activity choices take priority, with unique targets an
   const result = report({ accountSummary, activity: usage(), document, asOf: after(4) });
   assert.equal(result.activities.length, 3);
   assert.deepEqual(result.activities.map(row => row.targetId), ['world', 'path', 'pulse']);
-  assert.match(result.activities[0].reason, /관심 있다고 직접 확인/);
+  assert.match(result.activities[0].reason, /더 배우고 싶다고 한/);
 });
 
 test('persisted multiline notes and Unicode characters remain literal across schema and next analysis', async () => {
@@ -262,7 +262,7 @@ test('persisted multiline notes and Unicode characters remain literal across sch
     const document = { ...empty(), reviews: [{ ...feedback(130, f, 'contextual'), note }] };
     const persisted = validateMemberUnderstanding(document, { now: after(2), enforceTime: true });
     const result = report({ activity, document: persisted, asOf: after(2) });
-    assert.ok(facet(result, f.id).line.endsWith(`직접 남긴 설명: “${note}”`));
+    assert.ok(facet(result, f.id).line.endsWith(`덧붙인 말: “${note}”`));
     assert.equal(result.history[0].note, note);
     assert.deepEqual(facet(result, 'topics').selected, []);
   }
@@ -286,12 +286,12 @@ test('a one-day six-answer account gets an evidence-limited overview instead of 
   const accountSummary = oneDayEvidence(), before = structuredClone(accountSummary);
   const result = report({ accountSummary, activity: { availability: 'disabled' } });
   const text = result.paragraphs.join(' ');
-  assert.match(text, /아직 관심사와 편한 방식.*직접 확인한 내용이 없/);
-  assert.match(text, /최근 30일 중 1일, 응답 6건/);
-  assert.match(text, /도움 없이 답한 응답은 0건.*도움을 받은 응답은 6건/);
-  assert.match(text, /하루의 기록만으로 반복되는 경향이나 선호를 정하지/);
+  assert.match(text, /아직 관심사와 편한 방식.*알려 준 것이 없/);
+  assert.match(text, /최근 30일 동안 1일, 6번 답했어요/);
+  assert.match(text, /혼자 답한 건 0번.*도움 받고 답한 건 6번/);
+  assert.match(text, /하루치 기록으로는 늘 그렇다고 정하지/);
   assert.match(text, /앱 이용 기록 연결이 꺼져 있어/);
-  assert.doesNotMatch(text, /\(으\)세요|지 말다|지 않다|아\/어도|응답 10건|도움을 선호|학습 효과/);
+  assert.doesNotMatch(text, /\(으\)세요|지 말다|지 않다|아\/어도|10번 답했|도움을 선호|학습 효과/);
   assert.equal(result.facets.filter(f => f.id.startsWith('learning-topic:')).length, 4);
   assert.equal(result.facets.filter(f => f.claim).reduce((sum, f) => sum + f.claim.count, 0), 10, 'taxonomy membership overlaps and is never added as answer totals');
   assert.equal(result.activities.length, 0);
@@ -303,11 +303,11 @@ test('current direct preferences lead the sparse evidence and removal returns to
   const accountSummary = oneDayEvidence(), document = { ...empty(), overrides: [correction(140, 'support', ['independent'])] };
   const result = report({ accountSummary, document, asOf: after(2), activity: { availability: 'disabled' } });
   assert.match(result.paragraphs[0], /먼저 혼자 시도/);
-  assert.match(result.paragraphs.join(' '), /도움을 받은 응답은 6건/);
-  assert.doesNotMatch(result.paragraphs.join(' '), /직접 확인한 내용이 없/);
+  assert.match(result.paragraphs.join(' '), /도움 받고 답한 건 6번/);
+  assert.doesNotMatch(result.paragraphs.join(' '), /알려 준 것이 없/);
   assert.equal(facet(result, 'support').basis, 'self-declared');
   assert.equal(result.activities.length, 0);
-  assert.match(report({ accountSummary, document: empty() }).paragraphs.join(' '), /직접 확인한 내용이 없/);
+  assert.match(report({ accountSummary, document: empty() }).paragraphs.join(' '), /알려 준 것이 없/);
 });
 
 test('historical evidence retains its actual Korean source date instead of the time the screen is reopened', () => {
@@ -324,8 +324,8 @@ test('invalid or mismatched optional period counts are omitted rather than used 
   for (const change of [p => p.answered = 999, p => p.assisted = 7, p => p.activeDays = 0, p => p.activeDays = 7, p => p.from = ago(29), p => p.to = after(1)]) {
     const accountSummary = oneDayEvidence();change(accountSummary.summary.practice.periods.recent);
     const result = report({ accountSummary });
-    assert.doesNotMatch(result.paragraphs.join(' '), /응답 (?:999|6)건이에요|도움을 받은 응답은/);
-    assert.match(result.paragraphs.join(' '), /기간별 응답 수를 함께 확인할 수 없어/);
+    assert.doesNotMatch(result.paragraphs.join(' '), /(?:999|6)번 답했어요|도움 받고 답한 건/);
+    assert.match(result.paragraphs.join(' '), /기간별 답한 횟수를 확인할 수 없어/);
   }
 });
 
@@ -333,12 +333,12 @@ test('disabled learning excludes stored observations and never advertises missin
   const accountSummary = oneDayEvidence();accountSummary.learning.enabled = false;accountSummary.shared = 'declared-only';
   const result = report({ accountSummary, activity: { availability: 'disabled' } });
   assert.match(result.paragraphs.join(' '), /학습 기록 연결이 꺼져 있어/);
-  assert.doesNotMatch(result.paragraphs.join(' '), /응답 [06]건|학습 응답 기록이 없/);
+  assert.doesNotMatch(result.paragraphs.join(' '), /[06]번 답했|연습 기록이 없/);
   assert.equal(result.facets.some(f => f.claim), false);
 });
 
 test('confirmed zero observations and a source not connected have different explanations', () => {
-  assert.match(report({ accountSummary: account() }).paragraphs.join(' '), /최근 30일에는 학습 응답 기록이 없/);
+  assert.match(report({ accountSummary: account() }).paragraphs.join(' '), /최근 30일에는 연습 기록이 없/);
   assert.match(report().paragraphs.join(' '), /학습 기록은 이번 설명에 연결되지/);
-  assert.doesNotMatch(report().paragraphs.join(' '), /응답 기록이 없/);
+  assert.doesNotMatch(report().paragraphs.join(' '), /연습 기록이 없/);
 });

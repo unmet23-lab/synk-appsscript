@@ -5,6 +5,7 @@ import {MEMBER_BENEFITS,memberBenefit,benefitPreviewAvailable} from './benefits.
 import {createMemberInsight} from './member-insight.mjs';
 import {createMemberActivity} from './member-activity-controller.mjs';
 import {createMemberUnderstanding} from './member-understanding-controller.mjs';
+import {createMemberSettings} from './member-settings.mjs';
 import {bindMemberUnderstandingEditor,captureMemberUnderstandingFocus} from './member-understanding-host.mjs';
 import {renderMemberInsight} from './member-insight-view.mjs';
 import {createSubscriptionsBoard} from './subscriptions.mjs';
@@ -25,8 +26,9 @@ let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Pro
 let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false;
 const memberActivity=createMemberActivity({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params),getFavorites:()=>effectivePrefs().favorites});
 const memberUnderstanding=createMemberUnderstanding({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params)});
-const memberInsight=createMemberInsight({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params),activity:memberActivity,understanding:memberUnderstanding,onChange:()=>{if(view==='benefits'&&selectedBenefit==='insight')renderInsight();}});
-bindMemberUnderstandingEditor($('benefit-detail'),{controller:memberUnderstanding,getReport:()=>memberInsight.read().report});
+const memberSettings=createMemberSettings({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params)});
+const memberInsight=createMemberInsight({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params),activity:memberActivity,understanding:memberUnderstanding,settings:memberSettings,onChange:()=>{if(view==='benefits'&&selectedBenefit==='insight')renderInsight();}});
+bindMemberUnderstandingEditor($('benefit-detail'),{controller:memberUnderstanding,getReport:()=>memberInsight.read().report,settings:memberSettings,getSettingsContext:()=>memberInsight.settingsContext(),onSettingsSaved:()=>void memberInsight.refresh({quiet:true})});
 function renderInsight(){const restoreInsightFocus=captureMemberUnderstandingFocus($('benefit-detail'));const target=$('benefit-detail'),active=target.contains(document.activeElement),action=document.activeElement?.dataset.insightAction,app=document.activeElement?.dataset.insightTarget;target.innerHTML=renderMemberInsight(memberInsight.read(),{native:true,poster:benefitPoster('insight')});if(active)(action?[...target.querySelectorAll('[data-insight-action]')].find(node=>node.dataset.insightAction===action&&node.dataset.insightTarget===app):target.querySelector('#benefit-title'))?.focus({preventScroll:true});restoreInsightFocus();}
 const memberHome=mountMemberHome($('view-home'),{storage:localStore,getSnapshot:()=>({library,personal:personalState,prefs:effectivePrefs(),clients:clients.map(row=>client(row.id))}),getAppAction,onLaunch:launchFromHome,onRetry:()=>refreshAuth({reload:true}),onApp:selectApp,onPurpose:choosePurpose,onAccount:()=>$('account-dialog').showModal(),onBenefits:()=>showView('benefits'),onToast:toast});
 const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:()=>$('favorite').click(),onToast:toast,request:typeof bridge?.pulseRequest==='function'?(operation,params)=>bridge.pulseRequest(operation,params):undefined});
