@@ -1,0 +1,62 @@
+# 공개 도구 재현 2026-10-19T08:41:27.002Z · 도구 tools\공개.js
+## b7ed6f0 Show what is inside the SYNK platform on the home page, add public channels to every footer
+  실제 바뀐 파일 37개(지움 0) · 도구 결과 미리 보기 · 후보 37개 · 판정 같음 — 같은 blob 37/37
+  ?v= 손댄 파일: atlas/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/atlas/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/founder/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/lab/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/path/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/pulse/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); en/shift/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); founder/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); lab/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); path/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); pulse/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신); shift/index.html(내 판 · ?v= 3개 공개본 값으로 · ?v= 3개 갱신)
+  알림 3개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 17개 파일
+## 11617ab WORLD follows the help style saved in the account and reads practice-topic answers
+  실제 바뀐 파일 5개(지움 0) · 도구 결과 미리 보기 · 후보 8개 · 판정 다름 — 같은 blob 5/5
+  후보에만: world/desktop.html, world/index.html, world/mobile.html (world/desktop.html: ?v= 1개 갱신; world/index.html: ?v= 1개 갱신; world/mobile.html: ?v= 1개 갱신)
+  ?v= 손댄 파일: world/desktop.html(?v= 1개 갱신); world/index.html(?v= 1개 갱신); world/mobile.html(?v= 1개 갱신)
+  알림 1개: [덮어쓰기] 2개 파일
+## 07d1c17 Publish unified Platform 0.4.29 downloads and update feed
+  실제 바뀐 파일 23개(지움 0) · 도구 결과 미리 보기 · 후보 23개 · 판정 같음 — 같은 blob 23/23
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 3개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 11개 파일
+## a1860be feat(travel): rebuild the PATH planner screen around an itinerary and a pinned map
+  실제 바뀐 파일 4개(지움 0) · 도구 결과 미리 보기 · 후보 4개 · 판정 같음 — 같은 blob 4/4
+  알림 2개: [?v=] try/travel/planner.css · [?v=] try/travel/planner-ui.mjs
+## 30ddd40 Publish unified Platform 0.4.28 downloads and update feed
+  실제 바뀐 파일 25개(지움 0) · 도구 결과 미리 보기 · 후보 25개 · 판정 같음 — 같은 blob 25/25
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 5개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 9개 파일 · [덮어쓰기] 2개 파일 …
+## 81ad293 Publish unified Platform 0.4.27 downloads and update feed
+  실제 바뀐 파일 22개(지움 0) · 도구 결과 미리 보기 · 후보 22개 · 판정 같음 — 같은 blob 22/22
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 5개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 7개 파일 · [덮어쓰기] .github/desktop-preview/unified/source/renderer/benefits.mjs …
+## 0a92bd7 Publish Platform 0.4.26 while preserving concurrent site changes
+  실제 바뀐 파일 26개(지움 0) · 도구 결과 미리 보기 · 후보 26개 · 판정 같음 — 같은 blob 26/26
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 4개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 7개 파일 · [덮어쓰기] 2개 파일
+## 04181db Publish unified Platform 0.4.26 downloads and update feed
+  실제 바뀐 파일 26개(지움 0) · 도구 결과 미리 보기 · 후보 26개 · 판정 같음 — 같은 blob 26/26
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 4개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 7개 파일 · [덮어쓰기] 2개 파일
+## a9a38c6 Publish the Signal redraws of /brief/meeting and /builds/manual, and the new /brief/skills
+  실제 바뀐 파일 68개(지움 0) · 도구 결과 미리 보기 · 후보 68개 · 판정 같음 — 같은 blob 68/68
+  알림 18개: [?v=] brief/meeting/app.css · [?v=] brief/meeting/atlas-engine.js · [?v=] brief/meeting/content.js · [?v=] brief/meeting/view.js …
+## 86e77d5 Bring the AI subscription board introduction up to the new board
+  실제 바뀐 파일 2개(지움 0) · 도구 결과 미리 보기 · 후보 2개 · 판정 같음 — 같은 blob 2/2
+  ?v= 손댄 파일: account/platform.html(?v= 1개 갱신)
+  알림 1개: [덮어쓰기] account/dist/platform.js
+## 994a598 Publish the Signal redraw of /brief/computer
+  실제 바뀐 파일 25개(지움 0) · 도구 결과 미리 보기 · 후보 25개 · 판정 같음 — 같은 blob 25/25
+  알림 6개: [?v=] brief/computer/app.css · [?v=] brief/computer/atlas-engine.js · [?v=] brief/computer/content.js · [?v=] brief/computer/rules.js …
+## 496457d Publish unified Platform 0.4.25 downloads and update feed
+  실제 바뀐 파일 21개(지움 0) · 도구 결과 미리 보기 · 후보 21개 · 판정 같음 — 같은 blob 21/21
+  ?v= 손댄 파일: atlas/index.html(?v= 1개 갱신); en/atlas/index.html(?v= 1개 갱신); en/founder/index.html(?v= 1개 갱신); en/index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); en/lab/index.html(?v= 1개 갱신); en/path/index.html(?v= 1개 갱신); en/pulse/index.html(?v= 1개 갱신); en/shift/index.html(?v= 1개 갱신); founder/index.html(?v= 1개 갱신); index.html(내 판 · ?v= 1개 공개본 값으로 · ?v= 1개 갱신); lab/index.html(?v= 1개 갱신); path/index.html(?v= 1개 갱신); pulse/index.html(?v= 1개 갱신); shift/index.html(?v= 1개 갱신)
+  알림 3개: [?v=] app.js · [?v=] en/app.js · [덮어쓰기] 8개 파일
+## e9cf357 Point the web subscription card to its PC-app introduction
+  실제 바뀐 파일 3개(지움 0) · 도구 결과 미리 보기 · 후보 3개 · 판정 같음 — 같은 blob 3/3
+  ?v= 손댄 파일: account/platform.html(?v= 1개 갱신)
+  알림 2개: [?v=] account/platform.css · [덮어쓰기] account/dist/platform.js
+## cb7005c Clarify the public AI subscription benefit introduction
+  실제 바뀐 파일 2개(지움 0) · 도구 결과 미리 보기 · 후보 2개 · 판정 같음 — 같은 blob 2/2
+  ?v= 손댄 파일: account/platform.html(?v= 1개 갱신)
+  알림 1개: [덮어쓰기] account/dist/platform.js
+## 6aa13b8 Bring the rebaked member-benefit felt objects to the web platform
+  실제 바뀐 파일 9개(지움 0) · 도구 결과 미리 보기 · 후보 9개 · 판정 같음 — 같은 blob 9/9
+  알림 3개: [?v=] account/benefits.css · [?v=] account/member-insight.css · [?v=] account/dist/platform.js
+## 9b0bd9d Add yuhobuilds tool: my PC move list (/builds/move/), and list it on the /builds/ hub
+  실제 바뀐 파일 29개(지움 0) · 도구 결과 미리 보기 · 후보 29개 · 판정 같음 — 같은 blob 29/29
+  알림 7개: [?v=] builds/move/app.css · [?v=] builds/move/atlas-engine.js · [?v=] builds/move/content.js · [?v=] builds/move/rules.js …
+# 전체 판정: 다른 것이 있음
