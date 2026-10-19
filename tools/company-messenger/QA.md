@@ -1,5 +1,414 @@
 # 검증 기록 · 2026-09-27
 
+## 직원 음성 통화 백엔드 · 2026-10-17 로컬
+
+<a id="master-align-20261019"></a>
+### master 원문 맞추기 · 2026-10-19
+
+로컬 master에만 있던 통화·메신저 커밋 6개(Claude `5ba0721fb`·`24d027d64`·`ccbe7607d`, GPT `ac2b0c6bb`·`910a52eeb`·`7251bd654`)의 조각을 지금 운영 원문(`30c93e84…`, 부모는 통화 보안 합본 `6ab425…`)의 manifest와 경로마다 견줘 origin/master에 맞췄다. 통화 화면·SDK·초대·사용량, 메신저 `app.js`·협업, 회사 `workspace.css`·Docker 목록 등 18경로는 GPT `b7a5e24a5`로 이미 같은 판이 master에 있었다. 운영 배포와 로컬 master 정리는 하지 않았다.
+
+| 조각 | 결정 | 까닭 |
+|---|---|---|
+| 회사 `server.mjs`의 공개 JS·CSS 내용 버전(`7251bd654`)·메신저 정적 파일 압축 연결(`910a52eeb`)·분석 읽기에 남은 `readOnly` 인자 정리(`ac2b0c6bb`), `static-response.mjs`, 시험 `server-static-versions`·`server-messenger-static` | 넣음 | 운영 원문에 있는데 master에 빠져 있었다. master 판 서버는 메신저 JS·CSS를 압축 없이 내보냈다. |
+| 대화 분류 시험 3개·첫 연결 시험 2개(`ccbe7607d`) | 넣음 | 운영 원문에 있다. `workspace-open-ui`의 운영 판에는 `voiceController` 대역 한 줄만 없다. |
+| 통화 초대 푸시를 초대 만료(45초)에 맞추는 `web-push-service.mjs`의 `sourceExpiry`와 시험(`5ba0721fb`) | 넣음 | 아래 2차 검증이 적은 「초대 45초 만료가 큐·공급자 TTL에 적용」 계약이다. GPT 통화 후보가 고른 원본 23개에 들지 않아 운영에는 아직 없다. 통화 기능이 꺼져 있어 지금은 차이가 없고, 켤 때 같은 릴리스에 싣는다. |
+| QA 도구 `qa/voice-fixture`·`voice-live`·`voice-scenarios`·`voice-screen-pattern.html`과 시험 `voice-fixture`·`voice-live` | 넣음 | 이 문서가 가리키는 실행기다. 실제 키는 저장소 밖 `~/SYNK_보안/voice-live-test.env`에서만 읽고, 시험은 합성 값과 임시 폴더만 쓴다. 운영 원문에는 넣지 않는다(시험·qa 경로 제외). |
+| 루트 감싸개 `tests/company-analytics-read`·`company-messenger-unread`·`company-static-versions` | 넣음 | 세 회귀를 CI 기본 묶음(`tests/*.test.js`)에서 돌린다. 분석 시험 수는 origin 판에 맞춰 고쳤다. |
+| 이 문서·API·README·WORKSPACE의 통화 절, GPT 통화 보안 운영 반영 기록([CLOUD-OPERATIONS 절](../../docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md#voice-security-production-20261018)·[결과 JSON](../../docs/_ops/qa/company-voice-security-20261018/result.json)·현장노트 항목), 결정 표 10-17 두 행 | 넣음 | master에는 통화 기록이 없었다. GPT 기록은 `codex/voice-security-publish-20261018`(`af486e6c3`)에만 있었다. API의 토큰 철회 설명 두 문장은 보안 고침 전 동작이라 지금 코드(`RemoveParticipant` 명시 철회와 새 JWT 보류)에 맞게 고쳤다. |
+| 로컬의 옛 `voice-encryption`·`voice-livekit`·`voice-service`·`voice-sharing`·`public/voice.js`와 그 시험 | 뺌 | GPT 보안 고침 `c9c4fa7cd`(최근 JWT가 권한 정지·공유 중지를 우회하던 결함)이 대체했고 운영도 그 판이다. |
+| 다른 사이트 링크로 메신저 문서를 여는 예외(메신저 `server.mjs`의 `publicNavigation`)와 회사 `server-messenger` 시험의 같은 항목 | 뺌 | GPT 통화 후보가 「exclude unrelated navigation exception」으로 뺐고 `90e3bdd51`에서 엄격한 요청 검사로 맞췄다. 운영도 엄격한 판이다. |
+| 로컬의 옛 회사 `workspace.js`·`server-analytics-read` 시험 | 뺌 | origin 판이 더 새것이다(배경 다시 그리기·첫 로드 state 방어, 내려간 게시 집계 제외 시험). |
+| PULSE M03 줄(회사 `server.mjs`의 M03 파일 목록, `static-response.mjs`의 `static-media`) | 뺌 | PULSE 회사 릴리스 묶음의 몫이다. 운영에는 이미 있다. |
+| 운영 Dockerfile의 COPY 7줄(`90e3bdd51`) | 그대로 | master의 `company/*.mjs`·`public` 폴더 복사가 같은 파일을 싣는다(`container-delivery.test.mjs` 4/4). |
+
+### 통화·화면 공유 화면과 SDK 연결 · 2026-10-17
+
+백엔드 계약 위에 Claude가 메신저 화면·LiveKit SDK·부모/iframe 정책을 연결했다. 기본 꺼짐은 그대로이고 가입·결제·운영 반영은 하지 않았다. 계약 요약은 [API의 화면·SDK 연결](API.md#화면sdk-연결--2026-10-17).
+
+#### 구현 위치
+
+- [public/voice.js](public/voice.js)가 통화 수명을 맡는다. 통화는 메신저 iframe 문서가 소유해 채팅 렌더링·방 이동·워크스페이스 메뉴 이동과 무관하다. SDK Room·E2EE worker·키 흐름·화면 공유·초대·개인 통화 알림·방 통화 설정 창을 포함한다. 스타일은 [voice.css](public/voice.css). [app.js](public/app.js)에는 방 머리 단추, `voice*` 실시간 신호, 알림함의 통화 초대 항목, 로그인 변경 시 정리만 연결했다.
+- SDK는 [livekit-client 2.22.4 원본](public/vendor/livekit-client/README.md)(npm 무결성·SHA-256 기록)을 통화를 시작할 때만 불러온다.
+- 회사 [workspace.js](../../docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.js)는 통화가 켜진 회사에서만 메신저 iframe을 미리 불러 둔다. 그래서 메뉴를 옮겨도 통화가 이어지고 다른 메뉴에서도 초대가 울린다. iframe에는 `allow="microphone; display-capture; autoplay; fullscreen"`을 붙였다. 메신저 밖 메뉴에는 미니 조작(상태·마이크·공유 중지·통화 화면 열기·나가기)과 초대 카드(수락·거절)가 뜬다. 로그아웃은 iframe을 지워 SDK와 캡처를 끝낸다.
+- [server.mjs](server.mjs)의 메신저 응답은 통화가 켜졌을 때만 `microphone=(self), display-capture=(self)`와 `connect-src 'self' wss://*.livekit.cloud https://*.livekit.cloud`를 연다. `worker-src 'self'`를 명시했고 카메라는 계속 `camera=()`다. 꺼진 회사는 이전과 같다.
+
+#### 로컬 검증(합성)
+
+- 새 [tests/voice-client.test.mjs](tests/voice-client.test.mjs) **21/21**: 순수 규칙(ACK 증명, 지원 검사, 오래된 관측을 '없음'으로 안 보이기, 자리 예약을 연결로 안 보이기, 울릴 초대), 정책 헤더·정적 전달·SDK 해시, 가짜 SDK로 E2EE 참가 순서·키 교체·화면 공유 순서·선택 취소·나가기·서버 쪽 종료·초대 알림 열기·연결 실패 재시도 간격, 아래 검수 지적 5건의 재발 방지.
+- 회귀: 메신저 시험 전체와 회사 메신저·통화·워크스페이스 시험 **786개 중 785개 통과**([TAP](../../.tmp/company-voice-20261017/frontend-sdk/regression.tap)). 실패 1건(`deadline-overlaps-client`의 오늘 겹침 표시)은 HEAD의 app.js로도 같은 실패라 이번 변경과 무관하다. 회사 레일·탭 시험 3건(demo-messenger-navigation·growth-home·marin-home)도 HEAD 사본에서 같은 실패를 확인했다. Docker 정적 전달 시험 4/4(이미지 파일 592개, 새 통화 화면·SDK 파일 포함, 이미지 빌드 없음).
+- 격리 실행기 합성 모드 + 헤드리스 Chrome 두 세션(가짜 마이크): 참가 전 마이크 막대, iframe 미리 불러오기, 키 교체 때 새 worker 1개·새 join 0회, 메뉴 이동 중 유지·미니 조작 음소거·나가기, 다른 메뉴의 초대 거절, 메신저 안 초대 수락, 휴대폰 폭 가로 넘침 없음, 로그아웃 때 iframe 제거·worker 전부 종료·자리 회수와 남은 사람의 키 교체([캡처·기록](../../.tmp/company-voice-20261017/frontend-sdk/local-synthetic/)). 이 과정에서 미디어 연결이 실패하면 SDK의 끊김 이벤트와 실패 처리가 겹쳐 `current`·`resume`을 초당 10회 넘게 부르던 문제를 찾아 고쳤다(같은 55초 동안 740회 → 4회, 이후 2→4→8→15초 간격).
+- Fable 검수(10-17)에서 실제 통화에서 드러날 문제를 찾아 고쳤다. ① 암호화 ACK 요청이 한 번 실패하면 다시 보내지 않아 30초 뒤 통화 전원이 끊기던 문제 → proof를 ACK 성공까지 메모리에 두고 재전송. ② SDK가 스스로 끊긴 뒤 SDK가 멈춘 마이크 트랙을 그대로 재발행해 상대에게 무음이던 문제 → 끊기면 트랙을 버리고 새로 만든다. ③ 마이크 권한 창이 떠 있는 동안 누른 음소거가 무시되던 문제 → 트랙을 만든 뒤 음소거를 다시 확인. ④ `share/start` 응답의 넓은 토큰이 다음 재접속·키 교체에 쓰일 수 있던 문제 → 참가·ACK·resume 응답의 토큰만 쓴다. ⑤ 새로고침 뒤 끊긴 통화가 있을 때 초대를 수락하면 복구 카드가 사라지던 문제 → 다시 연결하거나 나가기 전에는 새 참가·수락을 막는다. 뒤로/앞으로 캐시에서 복원된 페이지도 `current`부터 다시 본다.
+
+#### 실제 LiveKit Cloud 검증 · 한 PC의 두 브라우저 세션
+
+`synk-voice-test` 시험 프로젝트에 실행기 livekit 모드로 붙었다. 헤드리스 Chrome의 서로 분리된 두 세션(로그인 쿠키 분리)이 가짜 마이크·가짜 화면으로 실제 Cloud를 통해 주고받았다([캡처·기록](../../.tmp/company-voice-20261017/frontend-sdk/cloud-one-pc/), 토큰은 가림).
+
+- 첫 연결 3.8~6초. 두 번째 참가 때 첫 사람이 새 worker로 키를 바꿔 재연결했고 새 join은 없었다. 서버는 두 사람을 실제 연결로 관측했고 트랙 암호화 판정(`GCM`)을 통과해 철회하지 않았다.
+- 상대 소리를 복호화해 재생했다(양방향 최대 진폭 1.0). 화면 공유는 1280×720으로 수신되어 프레임이 갱신됐고 화면 소리 트랙도 받았다. 서버 공유 상태는 `sharing` → 중지 뒤 비었고 음성은 이어졌다.
+- 메뉴를 옮겨도 소리가 이어졌다. 미니 조작으로 음소거하자 상대 쪽 진폭 0과 서버의 `muted:true` 관측이 일치했고, 해제하면 돌아왔다.
+- 새로고침 뒤 끊긴 통화가 보였고 '다시 연결'을 누르자 1초 만에 같은 참가로 복구됐다(새 join 0회).
+- 상대가 로그아웃하자 그 iframe·worker가 끝나고 서버 자리가 회수됐으며, 남은 사람은 키를 바꿔 연결을 유지했다.
+- 앱 사용량(검수 반영 뒤 마지막 실행): 자리 시간 3.41분·관측 2.91분, 추정 수신 4.71MB, 클라이언트 보고 수신 1.26MB. 앱 추정치이며 공급자 청구와 대조하지 않았다. 검수 반영 전·후 두 번 같은 순서로 돌려 모두 통과했다.
+- 나간 뒤 통화가 끝나고 worker 4개가 모두 종료됐으며 정리 대기는 없었다.
+
+키는 SYNK 서버가 관리하고 `mediaVerified:false`를 유지한다. 복호화된 소리·화면과 GCM 판정은 정당한 참가자 사이의 SDK 암호화가 동작했다는 근거이지, SYNK 서버·운영자로부터의 보호나 이전 키 차단을 입증하지 않는다. 화면에도 '암호화(서버 관리 키)'까지만 표시한다.
+
+#### 추가 실기 확인 · 10-18
+
+같은 시험 프로젝트에 실행기 livekit 모드로 붙고, 헤드리스 Chrome(가짜 마이크·가짜 화면)으로 확인했다.
+
+- **HTTPS에서 워크스페이스 안 메신저:** 실행기를 `https://voice-qa.localhost:8453` 출처로 띄우고 자체 인증서 TLS 프록시를 앞에 뒀다(회사 세션 쿠키 `Secure` 확인). 로그인 직후 홈 화면에서 iframe이 `/messenger/`를 불러 준비 신호까지 받았다. 이어서 메신저 탭·통화 참가·양방향 소리, 다른 메뉴 세 곳(내 작업실·내 수업·SNS)을 옮기는 동안 소리 유지, 미니 조작 음소거(상대 진폭 0, 서버 `muted:true`), 메신저로 돌아온 뒤 새 join 0회, 나가기 정리를 확인했다([기록](../../.tmp/company-voice-20261018/https-local-repro/)). 당시 ngrok의 `about:blank`와 자동화 도구의 문서 처리 정지를 관측했지만 모든 HTTPS 지연의 원인을 도구로 확정하지 않는다. 아래 10-18 운영 후속에서 도구가 없는 사용자 Chrome의 지연과 앱의 재탐색 결함도 확인했다. ngrok을 거친 실제 기기 표시는 두 기기 시험에서 확인한다.
+- **브라우저의 '공유 중지':** 공유 중인 화면 영상 트랙을 브라우저가 끝낼 때와 같은 `ended` 이벤트로 끝냈다. `share/stop` 200, 상대 화면 사라짐, 공유 단추 복귀, 음성 유지. Chrome 공유 막대의 단추를 직접 누른 것은 아니다.
+- **E2EE worker 실패:** worker 파일을 막거나(로드 실패) 초기화 응답을 주지 않게 하면(8초 시간 초과) 두 경우 모두 LiveKit 소켓을 열지 않고 나가기를 보낸 뒤 '평문으로 연결하지 않아요' 안내를 띄웠다.
+- **연달아 참가:** 두 명이 통화 중일 때 두 명이 2.5초 간격으로 들어와도 네 명 모두 연결됐다.
+
+<a id="발견한-백엔드-문제--gpt-인계p1"></a>
+
+#### 키 교체 중복 정지 문제(P1) · 10-18 수정·회귀 확인
+
+키 교체가 끝나기 전에 참가자 구성이 다시 바뀌면, 이미 새 키를 받은 기존 참가자의 통화가 `encryption_pause_failed`로 끝난다.
+
+- 재현(두 사람): A 혼자 통화 중 → B 참가 → B의 E2EE 준비가 8초 늦다가 실패해 나감 → A도 종료. 세 사람(A·B 연결 중, C가 참가 직후 worker 실패로 나감)에서는 두 번 실행 모두 A·B가 끝났다. 반대로 A가 새 키를 받기 전에 B가 나가면 A는 유지됐다. 타이밍에 달린 경쟁 상태다.
+- 원인: 계약([API의 E2EE 필수 참가와 키 교체](API.md#e2ee-필수-참가와-키-교체) '클라이언트 연결 순서' 2~3단계)대로 화면은 새 키를 받으면 이전 Room을 버리고, 모두 ACK할 때까지 공급자 방에 없다. 그 사이 참가 집합이 바뀌면 [voice-encryption.mjs](voice-encryption.mjs)의 새 라운드가 `token_issued` 참가자 모두에게 `UpdateParticipant`(일시 정지)를 다시 보낸다. 방에 없는 참가자에게 Cloud는 404 `not_found`를 준다(시험 프로젝트에서 직접 확인했고, 같은 경우 `RemoveParticipant`+`revoke_token_ts`는 200). 서버는 이 실패를 받은 참가자를 `invalidate(row,'encryption_pause_failed')`로 끝낸다.
+- 고칠 방향(백엔드 판단): 일시 정지가 `not_found`면 공급자에 흐르는 미디어가 없으니 참가를 끝내지 말고, 남은 토큰은 다른 방식으로 막는다. 예를 들어 일시 정지에 성공한 참가자는 새 토큰을 받기 전까지 다시 멈출 대상에서 빼거나, `revoke_token_ts`로 철회한다(같은 identity로 곧 새 토큰을 발급하므로 시각 경계를 확인해야 한다). 연결 중·재연결 중이라 잠시 방에 없는 참가자도 같은 경로를 탄다.
+- 근거: [실기 기록](../../.tmp/company-voice-20261018/edge-cloud/)의 `rotation-s1-silent`(두 사람)·`diag-shots`(세 사람)에 참가 상태·감사 기록을 3초 간격으로 남겼다. 실행 스크립트와 Cloud 응답 확인 스크립트는 같은 폴더의 `scripts/`에 있다.
+
+- 수정: 정지 완료 상태를 라운드 대신 **이미 발급한 자격**에 연결해 새 JWT 발급 전까지 보존했다. 참가 집합이 바뀌어도 정지를 중복 요청하지 않고 원격 트랙 확인은 계속한다. 연결 중·재연결 중 부재에 대한 첫 `UpdateParticipant`404 `not_found`는 `RemoveParticipant`+`revoke_token_ts` 성공으로 대체한다. 철회 시각 경계 전에는 모두 ACK했어도 `token:null`이며 같은 참가의 resume으로 기다린다. 다른404·401·503이나 철회 실패는 계속 오류다. 새 JWT 발급 뒤 다음 교체에서는 반드시 다시 정지한다.
+- 합성 검증: 원래 A→B 참가→A의 Room 폐기→8초 뒤 B 퇴장 회귀는 수정 전 `ended !== active`로 실패했고 수정 후 통과했다. 연결 중/재연결 중 부재·철회 시각 직전/경계·다음 JWT 뒤 재정지·오류 범위까지 백엔드 **105/105**, 준비 완료 후 토큰 대기→자동 resume을 포함한 클라이언트 **22/22** 통과. 이 시험은 실제 미디어 검증과 구분한다.
+- 실제 Cloud 제어 API: 수정한 어댑터로 시험용 빈 방의 `UpdateParticipant`404 `not_found`→`RemoveParticipant`200→`ListParticipants`200/0명, 경계 뒤 교체 JWT 생성과 `DeleteRoom`200 정리를 확인했다([기록](../../.tmp/company-voice-20261018/p1-fix/cloud-adapter-result.json)). 옛 JWT의 실제 연결 거절·두 기기 미디어까지 입증한 기록은 아니다.
+- 실제 회사 HTTP→Cloud 연동도 확인했다. A에게 JWT 발급 후 아직 방에 없는 상태에서 B 참가→A의 새 키 ACK→8초 대기→B 퇴장 때 **같은 A 참가가 active로 유지**되고 정지가 중복되지 않았다. 다음 키 ACK 뒤 JWT를 받은 A는 C 참가 때 다시 정지/철회됐다. 원격 정리 대기 없이 격리 환경을 종료했다([기록](../../.tmp/company-voice-20261018/p1-fix/cloud-http-churn-result.json)). SDK worker·미디어를 연결하지 않은 제어 시험이다. 메신저 초기 연결 보완을 합친 관련 회귀는 **190/190**([TAP](../../.tmp/company-voice-20261018/p1-fix/combined.tap)).
+- **10-18 실제 SDK 재현 통과:** Codex Chrome 확장의 정상 UI로 격리된 두 가상 계정을 연결했다. A는 원본 SDK/worker로 Cloud ACTIVE, B만 시험용 loopback 프록시에서 worker 초기화 응답을 주지 않았다. B worker 요청 뒤 **8.077초에 자동 leave200**, 그전에 A의 새 epoch ACK와 **Cloud 방에서 실제로 비어 있던 구간**을 확인했다. B 퇴장 **1.585초 뒤 A가 같은 admissionId·joinedAt으로 ACTIVE 복구**, 화면도 `connected`였다. A 재참가0·중복 정지0·`encryption_pause_failed`0, B ACK/JWT/Cloud 참가0. 복구 후74초 이상 유지됐고 정상 나가기 뒤 두 참가 ended/left·방 없음·종료 `cleanupPending:false`를 확인했다. [안전한 상태 요약](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792290217799/sdk-worker-analysis.json) · [전체 관측·정리](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792290217799/report.json) · [A 복구 화면](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792290217799/a-survives-worker-failure.png). 실제 SDK의8초 실패 경로이며 음소거 연결 시험이다. 양방향 소리·화면 공유·두 실제 기기·수정 후3인 재현을 확인한 것으로 확대하지 않는다. 프록시/장애 주입은 종료했고 제품 소스·worker 파일은 바꾸지 않았다.
+- **10-18 Claude 수정 후 재현(실제 Cloud·헤드리스 Chrome 두~세 세션):** 처음 실패를 재현한 스크립트 그대로 다시 돌렸다. 두 사람(A 혼자 통화 → B 참가 뒤 worker가 응답하지 않아 8초 뒤 퇴장)에서 A는 끊기지 않고 같은 참가로 다시 연결됐다. 세 사람(A·B 연결, C가 worker 로드 실패·초기화 무응답으로 연달아 퇴장)에서도 A·B가 유지됐고 양방향 소리(최대 진폭 1.0), 화면 공유 '공유 중지' 이벤트 처리도 통과했다. 이어서 HTTPS 출처로 메뉴 세 곳 이동 중 통화 유지·미니 조작 음소거·새 join 0회를 다시 확인했다([기록](../../.tmp/company-voice-20261018/edge-cloud-after-fix/), [HTTPS](../../.tmp/company-voice-20261018/https-local-after-fix/)). 통화 관련 단위 시험 141/141.
+- **Claude 검토 반영:** 메신저 첫 연결 자동 복구에서, 권한 오류 같은 영구 실패 화면이 뒤로/앞으로 캐시로 복원되면 '다시 연결' 단추가 아무 일도 하지 않던 문제를 고쳤다(`pageshow`에서 복구 단계를 풀어 둔다). [bootstrap-recovery-client 시험](tests/bootstrap-recovery-client.test.mjs)에 재발 방지 1건을 더했다.
+
+#### 이전 키·토큰 철회 실기 보완 · 10-18
+
+사용자 승인2·3번 범위로 기존 시험 프로젝트·분리된 Chrome·가상 계정·합성 음성/화면을 사용했다. 물리 두 기기 시험(1번)은 사용자 요청으로 보류했다. 이 절의 실기 당시에는 로컬·시험 Cloud에만 적용했다. 이후 소프트웨어 운영 반영은 아래 v5 합본 기록을 따르며 운영 통화 활성화와 구분한다.
+
+- **실제 결함과 수정:** 연결 중 UpdateParticipant200 뒤 최근 원본 JWT(잔여57초)와 SDK 갱신 JWT(잔여598초) 모두 재접속·마이크 발행에 성공했다. 화면 공유 중지도 이전 넓은 JWT로 음성/화면2트랙을 발행할 수 있었다. [수정 전](../../.tmp/company-voice-20261018/security-usage-final/token-before/token-cloud.json) · [공유 권한 재현](../../.tmp/company-voice-20261018/security-usage-final/share-token-before/token-cloud.json). 기본 철회의 시간 여유가 원인이다. 연결 중/부재 모두 명시적 revoke_token_ts를 적용하고, 공유 중지도 같은 자격 발급 경계를 지키도록 고쳤다. SDK 연결401을 회사 API401과 구분해 정상 참가를 종료하지 않고 current/resume으로 회복한다.
+- **철회 실기 통과:** 연결 중 정지·부재 정지·나가기·공유 중지4경로의 원본/갱신 JWT8개가 만료 전에 Cloud401 invalid token: revoked로 거절됐고, 경계 뒤 새 JWT4개는 연결됐다. 시험 방4개 DeleteRoom200 정리. [수정 후](../../.tmp/company-voice-20261018/security-usage-final/token-after/token-cloud.json).
+- **이전 키 차단 통과:** A/B/C 정상 K0 연결 후 C 퇴장으로 독립 K1을 생성했다. 시험 제어부만 K1 ACK를 수행하고 수신자의 새 Room/worker에는 K0만 넣었다(수신 JWT는 현재의 유효한 것).5초 동안 암호문363패킷/145,666바이트가 더 도착했지만 영상 복호화0프레임·음성 에너지0·진폭0이었다. 같은 수신기에 K1을 공급하자5초에45프레임과 진폭0.2045를 복원했다. API 차단/네트워크 무수신을 복호화 실패로 오인하지 않은 음성·영상의 이전 키 실패/현재 키 성공 대조다. [기록](../../.tmp/company-voice-20261018/security-usage-final/e2ee-after/e2ee-cloud.json). 키/토큰 값은 저장하지 않았다.
+- **실제 화면 회귀:** worker8초 초기화 실패 뒤 A는 같은 참가를 유지했다([v3의 해당 단계](../../.tmp/company-voice-20261018/security-usage-final/ui-after-v3/ui-regression.json); 그 실행의 후속 소리 측정은 트랙이 오기 전0을 읽어 전체실패로 보존). 트랙·RTP·복호화 소리를 함께 확인한 [최종 공유 중지 시험](../../.tmp/company-voice-20261018/security-usage-final/ui-after-v6/ui-regression.json)은 동일 참가로 자동 복구·마이크 live·양쪽 RTP·상대 진폭1.0·host join1회·cleanupPending:false를 확인했다. 공유 중지부터 소리 확인까지4.182초로 순간적인 음성 중단이 있으며 끊김 없는 중지로 보고하지 않는다. 중간2실행의 방 생성 시간 초과도 실패 기록으로 보존했다.
+- **관련 합성 회귀:** voice+voice-client142/142 통과, 정확한 사용량/UTC/원격 철회 실패/보고 중복/연결 수 경계8/8 통과. [사용량 경계](../../.tmp/company-voice-20261018/security-usage-final/usage/synthetic-1792312603107/report.json).
+- **실제 Cloud 사용 한도 통과:** 새 budget 환경에서 두 참가자가 합성음을 양방향 복호화하다가 앱1참가자분 한도에서 모두 usage_limit으로 종료됐다. 종료 집계1.00987참가자분, 추정470,744바이트·SDK 수신보고420,960바이트로1MB 한도 미만이어서 시간 한도 종료임을 분리 확인했다. Cloud 참가자0명·SDK2개 disconnected·잔여31초 옛 JWT401 revoked·정리 완료. [실기 기록](../../.tmp/company-voice-20261018/security-usage-final/usage/live-budget-final-1/live-budget.json).35.3초 안에 시험/정리를 끝냈으며 앱 집계를 공급자 청구량으로 해석하지 않는다.
+- **공급자 대조는 미완료:** 공식 Analytics 조회가401 scale plan or higher is required로 거절됐다([응답](../../.tmp/company-voice-20261018/security-usage-final/analytics-access-detail.json)). 현재 Chrome 도구 설정 차단으로 콘솔을 읽지 못해 사용자에게 Usage 기간·단위 화면을 요청했다. 앱의 예약 시간·SDK 보고량은 공급자 청구량으로 대신하지 않는다. SDK60초 보고 사이/종료 직전 누락과 LiveKit의 단위 올림도 구분한다([공식 단위](https://docs.livekit.io/deploy/admin/billing/)). providerBillingVerified:false·mediaVerified:false를 유지한다.
+
+#### 보안 수정 운영 후보 통합 검증 · 10-18
+
+사용자가 보안 수정의 운영 배포와 통화·화면 공유 확인을 요청했고, LiveKit은 **운영 전용 프로젝트를 분리**하기로 선택했다. 18:19 KST 운영 조회에서는 통화 기능·공급자 설정이 없었다. 진행 중인 SNS/PULSE 배포가 완료되면 그 실제 완료본을 부모로 연결한다. 아래는 배포 전 후보 검증이며 운영 통화 활성화 증거가 아니다.
+
+- **정확한 통합 후보:** SNS/PULSE 후보 c5c80352…를 보존하고 통화 SDK·서버·화면 의존성을 포함한 d25433e7…(원문1,055개·이미지 파일618개·변경25개)을 준비했다. 로컬 회귀 **1,191/1,191**, 원문 전체 SHA 전후 동일. [회귀 기록](../../.tmp/company-voice-security-preview-v2-20261018/qa/result.json). 옛 개인 알림 시험의 voice adapter 미연결 가정을 실제 연결 계약에 맞췄으며 실행 코드는 실기 통과 후보와 동일하다.
+- **실제 Cloud + 격리 Chrome:** B worker가8초 동안 초기화하지 못해 나가도 A는 같은 참가로 유지됐고, 두 참가자의 음성 복호화·화면 공유·공유 중지 후 자동 음성 복구를 통과했다. [전체 실행](../../.tmp/company-voice-20261018/security-candidate-ui-run2/candidate-ui-result.json). 별도 측정에서 수신 영상1280×720·복호화3프레임 이상을 확인했다. 공유 중지 후 음성 확인4.045초(전체 실행5.864초)로 일시 중단이 있으며 즉시 복구로 보고하지 않는다. [영상 프레임 실행](../../.tmp/company-voice-20261018/security-candidate-ui-frames1/candidate-ui-result.json). 시험 방·참가 정리 완료, 물리 기기 시험 아님.
+- **메신저 자동 복구:** 동일 후보의 가상 계정·격리 Chrome·로컬 HTTP에서 새로고침3회821/941/987ms, 초기 bootstrap503 두 번 뒤4,951ms에 자동 회복했다. 재연결 클릭0·JS 오류0,4/4 통과. [기록](../../.tmp/company-voice-security-preview-v2-20261018/ui-independent-baseline-1792315946258/report.json). 운영 HTTPS·로그인 계정의 직접 계측으로 대신하지 않는다.
+- **통화 활성화 상태의 메신저:** 같은 후보에 합성 공급자만 연결하고 voice enabled/E2EE required를 확인한 뒤 새로고침579/612/836ms, 초기 bootstrap503 두 번 뒤4,777ms로4/4 통과했다. 미리 불러오기 경로에서도 재연결 클릭0·JS 오류0·공급자 호출0이었다. [기록](../../.tmp/company-voice-security-preview-v2-20261018/ui-independent-baseline-1792316756509/report.json). 이는 로컬 HTTP의 화면·자동 복구 시험이며 통화 미디어 시험은 위 실제 Cloud 기록을 따른다.
+- **남은 실행:** 앞선 SNS/PULSE 배포의 백업·복원·HA 완료 확인 → 이 후보 Linux 이미지·운영 반영 → 별도 운영 LiveKit 프로젝트/키·웹훅 연결 → 운영 기능 활성화와 실기 확인. 통화를 처음 켜면 표가 생성되므로 소프트웨어만 바꾸는 무스키마 배포와 활성화 단계를 구분한다. Chrome 도구는 여전히 설정 차단이며 사용자에게 연결을 요청했다. 테스트 키를 운영에 복사하지 않는다.
+
+#### 성과 수집 완료본 위 통화 합성 후보 · 10-18 20:06 KST
+
+앞선 SNS/PULSE의 c5 복원과 최종 HA는 완료됐다. 이후 통화와 성과 수집 작업이 대기 서버 검증에서 겹쳐 통화의 첫 Linux 시험이 안전하게 중단됐다. 사용자 승인으로 성과 수집 v4가 먼저 최종 HA를 마친 뒤, 그 완료본 위에 통화를 올리는 순서로 조정했다. 아래는 새 후보 검증 결과이며 운영 통화 활성화 증거가 아니다.
+
+- **동결 합성:** 성과 수집 부모 `3000c7cf632e…`의 변경25개와 통화 `d25433e7f1df…`의 변경25개는 경로 겹침0이다. 새 후보 `30538fc02e24ff112025a6a703205039c7073074c81b1f9b07d699836a98e307`은 원문1,064개·이미지636개이며 회사 서버를 포함한 성과 수정과 PULSE 자산을 보존했다. Windows94파일 **1,404/1,404**, 실패·취소·건너뜀0, 원문 SHA 전후 동일. [후보 근거](../../.tmp/company-voice-security-preview-v3-20261018/preview-proof.json).
+- **실제 SDK·시험 Cloud:** B의8초 worker 초기화 실패 뒤 A가 같은 참가로 유지됐고, 원격 화면1280×720·복호화6프레임과 양방향 음성을 확인했다. 공유 중지 후 같은 참가에서 자동 복구됐고 방·참가 정리를 완료했다. [전체 실행](../../.tmp/company-voice-20261018/security-candidate-v3-ui/candidate-ui-result.json). 운영 계정이나 물리 두 기기 시험은 아니다.
+- **공유 중지의 음성 확인 시간:** 전체 시험 중10,440ms, Windows 전체 시험이 끝난 뒤 worker 실패 단계만 생략한 재측정에서5,491ms에 양방향 음성을 확인했다. [재측정](../../.tmp/company-voice-20261018/security-candidate-v3-share-repeat/candidate-ui-result.json). 두 값은 시험 대기2.2초·음성 샘플링 등을 포함한 확인 상한이며 최초 음성이 나온 정확한 시각은 아니다. 외부 제어 요청 합계1,958→246ms 차이는 관측했지만 나머지 SDK/미디어 협상 구간의 원인을 특정하지 못했다. 일시적인 음성 중단이 남아 있으며 끊김 없는 복구로 보고하지 않는다.
+- **메신저 자동 복구:** 같은 후보의 통화 활성화·합성 공급자·격리 Chrome·로컬 HTTP에서 새로고침1,182/999/754ms, 초기 bootstrap503 두 번 뒤5,356ms로4/4 통과했다. 재연결 클릭0·JS오류0·공급자 호출0이다. [화면 기록](../../.tmp/company-voice-security-preview-v3-20261018/ui-independent-baseline-1792321322255/report.json). 운영 HTTPS 실제 사용자 속도로 대체하지 않는다.
+- **소스 보존 대조:** 보안 수정과 저장소 검사 보완을 담은 `f4ca46f…`에 이어 후보의 Docker COPY7줄과 메신저 요청 출처 검사를 맞춘 `90e3bdd…`도 별도 인덱스로 커밋·푸시했고 원격 SHA 일치를 확인했다. 통화 변경25경로는 UTF-8 CRLF→LF만 정규화하면 모두 후보와 일치하며18개는 원문 바이트도 같다. 나머지는 줄끝 차이이고 공유 작업본은 바꾸지 않았다. 합성 후보 전체1,064개를 이 브랜치의 단일 소스와 동일하다고 보지는 않는다. [소스 대조](../../.tmp/company-voice-security-release-v2-20261018/published-source-normalized.json) · [푸시 근거](../../.tmp/company-voice-security-release-v2-20261018/source-followup-pushed.json). 최종 문서 푸시는 운영 검증 뒤 마무리한다.
+- **당시 남은 인수:** 성과 수집의 최종 HA3핀 → 새 통화 후보의 Linux·운영 교체·새 백업·격리 복원·HA 검증이었다.30538의 Linux 검증 뒤 실제 운영 반영은 아래 v5 합본6ab로 진행했다. 별도 운영 LiveKit 프로젝트/키·웹훅 연결과 통화 활성화는 미완료다.20:06 및 이후 재확인에서도 브라우저 도구가 `Local browser use is disabled in Work settings`로 차단됐으며 테스트 키는 운영에 복사하지 않았다.
+
+#### 성과 화면 v5와 통화 보안 통합 운영 반영 · 10-18
+
+운영 부모 `3000c7cf632e…` 위에 통화 보안과 승인된 화면 v5를 합쳐 `6ab425e5addeda880226839083839400eea32cccdb60ca7708fa70bc77d3896f`로 배포했다. 앞의 `30538fc02e24…`는 Linux1,404/1,404·호환2/2까지 통과했지만 운영에 배포하지 않고 보존했다. 현재 릴리스는 원문1,072개·이미지646개·변경42개이며, 실제 이미지 ID는 `sha256:0abeca32642a5d5cc4339ebfbe3d92595d0395a80f062e5d01bd515a25c9027c`다.
+
+- **전체 회귀:** Windows와 실제 Linux 이미지에서 각각116파일 **1,667/1,667**, 실패·취소·건너뜀0. Linux 호환2/2·이미지646파일 해시 일치, 외부 통신 차단·운영 자료 미마운트·서비스/설정 보존을 확인했다. [Linux 기록](../../.tmp/company-voice-security-release-v3-20261018/deployment/rootqa/stage-execution-1792330272615.json). 통화24경로는 앞 후보와 바이트가 같고, 단일 겹침 `workspace.js`는 승인된 화면 재렌더 처리를 합쳤다.
+- **실제 SDK·시험 Cloud:** worker8초 실패 뒤 같은 A 참가 유지, 양방향 음성 복호화, 통화 중 메뉴/화면 재렌더 뒤 동일 iframe·문서·PeerConnection 유지, 화면 공유 복호화와 중지 뒤 음성 자동 복구를 통과했다. 시험 방·참가 정리 완료. [실행](../../.tmp/company-voice-20261018/security-candidate-v5-ui/candidate-ui-result.json). 가상 계정·합성 미디어·한 PC의 분리 브라우저 시험이며 운영 계정이나 물리 두 기기를 쓰지 않았다.
+- **버튼 없는 자동 복구:** 같은 후보의 통화 활성화·합성 공급자·격리 Chrome·로컬 HTTP에서 새로고침368/354/393ms, 초기 bootstrap503 두 번 뒤4,658ms로4/4 통과했다. iframe1개·재연결 클릭0·JS오류0. [기록](../../.tmp/company-voice-security-release-v3-20261018/ui-independent-baseline-1792330049713/report.json). 운영 HTTPS 사용자의 체감 시간과 구분한다.
+- **운영 교체:** 양쪽 원문1,072개·폐쇄 목록·읽기 전용 권한과 실제 이미지 일치를 확인한 뒤 정상 배포를 완료했다. [실행 검증](../../.tmp/company-voice-security-release-v3-20261018/deployment/runtime-live-postcheck-1792332033647.json)에서 교체 직전 정지 상태의 전체 논리 자료 보존·재시작 후 스키마 보존, [공개 응답](../../.tmp/company-voice-security-release-v3-20261018/deployment/public-messenger-verification-1792332037242.json)12/12·health200·익명 API401을 확인했다. 재시작 뒤 identity 세션2행의 전체 해시가 달라 정상 로그인/만료 활동과 구분할 수 없으므로 개별 세션 연속성을 이 검사로 증명하지 않는다. 기존 PULSE14파일·Range6개도 운영 원문과 일치했다.
+- **실제 화면 확인 범위:** 사용자 승인을 받은 화면 개선 대화가 로그인된 운영 Chrome에서 정적8개·성과8건/순서·배경 렌더 뒤 스크롤/포커스 보존을 확인했다. [최종 화면 기록](../../.tmp/post-performance-release-v5-20261018/live-verification-final.json). 성과 비교 원본의 `status:held`는 캡처 시각만 달랐기 때문이며, 성과 SHA와 순서는 같다는 판정만 별도로 인용한다. 실제 팀 자료0건으로 팀 표의 실자료 검증은 미확인이다. 초기 `state` 정의 전 이벤트 예외10건은 이전 운영본에서도 같은 VM 재현10→초기화 후0으로 확인된 기존 P2이며, 이 오류만으로 cold load20초·`/api/state`9.92초의 서버 원인을 단정하지 않는다.
+- **새 백업·격리 복원:** 같은 운영 릴리스의 새 묶음519,574,762바이트·SHA `9c3e18a7ef6ef838f558353172db2b5706aabae607cd900c909c1662544f4750`·GCS generation `1792333016959757`을 검증·업로드했다. [격리 복원](../../.tmp/company-voice-security-release-v3-20261018/rearm/dr/restore-v1.json)에서 원문1,072개·원본 묶음 보존·기존 standby 설정/런타임/환경·운영 컨테이너 보존과 시험 컨테이너 정리를 통과했다. 실제 운영 장애·강제 전환 시험은 아니다.
+- **복원 공간:** 이전 완료 DR의 파생4개와 로컬 원문/설정/로그 전체 폐쇄가 일치하는 사용 종료 stage4개를 정리했다. 원본 백업·GCS 사본·현재/직전 canonical 소스·모든 Docker 이미지는 보존했다. Debian 다운로드 목록50,060,337바이트는 압축 보존하고 해제 SHA를 확인했으며, 복원 시험 뒤 원래 위치에 같은 바이트로 되돌렸다. 설치 패키지는 바꾸지 않았다. [정리](../../.tmp/company-voice-security-release-v3-20261018/cleanup-known-stages-run-1792335542472.json) · [목록 복구](../../.tmp/company-voice-security-release-v3-20261018/apt-metadata-restored-result.json).
+- **최종 HA:** 복원 계정 기준의 보존 대조를 통과하고 2026-10-19 00:28:12 KST 실제 재무장 후검사에서 같은6ab 릴리스·armed:true·replicaHealthy:true·primary epoch7 단일 writer·standby 대기·공개 HTTPS 정상 상태를 확인했다. [최종 상태](../../.tmp/company-voice-security-release-v3-20261018/rearm/arm-postcheck-final-v2.json) · [간결한 결과](../../docs/_ops/qa/company-voice-security-20261018/result.json).
+- **운영 통화 상태:** LiveKit 운영 전용 프로젝트/키 연결과 기능 활성화는 미완료다. 시험 키는 운영에 복사하지 않았고 운영 기본 꺼짐을 유지했다. 실제 시험 Cloud 통화 성공과 운영 통화 활성화를 구분한다.
+
+#### 아직 확인하지 않은 범위
+
+- 서로 다른 두 실제 기기·다른 망(휴대폰 포함), Wi-Fi·모바일망 전환. 브라우저 오프라인 흉내 6초는 이미 맺어진 연결을 끊지 못해 망 복구를 검증하지 못했다.
+- Chrome 공유 막대의 단추 자체(같은 이벤트로는 확인), Safari·Firefox, 모바일 백그라운드.
+- 공급자 사용량·청구 대조(콘솔 자료 대기). 이전 키/옛 JWT의 한 PC 실기는 위에서 확인했으며 물리 두 기기의 음질·망 전환은 별도다. 웹훅 배달은 아래 HTTPS 실행 기록(10-18 GPT)을 따른다.
+
+실제 두 기기 시험은 [HTTPS 실행기](#voice-live-https-setup)의 공개 주소가 준비되면 같은 화면으로 진행한다. 수정 후 두 세션의 worker 실패/중첩 교체는 위에서 확인했다. 실행 스크립트는 `.tmp/company-voice-20261017/frontend-sdk/scripts/`, `.tmp/company-voice-20261018/*/scripts/`, 이번 CUA 전용 시험 프록시는 `.tmp/company-voice-20261018/sdk-worker-followup/run.mjs`에 있다.
+
+### 실제 통화·화면 공유 검증 환경 준비
+
+실행기는 [qa/voice-fixture.mjs](qa/voice-fixture.mjs), 시나리오 정본은 [qa/voice-scenarios.mjs](qa/voice-scenarios.mjs)다. **검증 준비이며 실제 통화/E2EE 성공 기록이 아니다.** 실제 회사 데이터를 가져오지 않고 OS 임시 폴더의 새 회사/메신저 SQLite, 가상 직원6명과 방5개를 만든다. 현재 작업본의 회사·메신저 화면을 그대로 제공하므로 Claude의 SDK 연결 뒤 같은 실행기를 사용한다. 새 npm 패키지·공개 배포는 필요 없다.
+
+#### 실행
+
+저장소 루트에서 Node24로 실행한다.
+
+```powershell
+# 외부 미디어 없이 현재 HTTP 계약을 검사하고 서버/임시 DB를 정리한다.
+node tools/company-messenger/qa/voice-fixture.mjs --check
+
+# 로컬 화면·API 확인용 서버를 유지한다. 종료는 실행 터미널에서 Ctrl+C.
+node tools/company-messenger/qa/voice-fixture.mjs --mode=synthetic
+```
+
+출력은 접속 주소·본 프로세스 PID·임시 폴더·`credentialsFile`·`evidenceDirectory` 위치만 알려준다. 가상 계정의 무작위 비밀번호는 임시 폴더의 `accounts.private.json`에서 확인하고 다른 계정의 비밀번호를 재사용하지 않는다. 비밀번호·회사 쿠키·CSRF·LiveKit JWT·키·ACK proof·기기 주소는 증거/채팅에 옮기지 않는다. 실제 두 사람의 시험은 서로 독립된 로그인 세션이 필요하며 같은 브라우저의 일반 탭 두 개는 로그인 쿠키를 공유한다.
+
+기본 합성 공급자는 `.invalid` 주소를 쓰며 토큰 발급만으로 미디어 접속을 꾸미지 않는다. `--check`가 주입한 ACTIVE/GCM/공유 관측은 **제어 계약용 합성 입력**이다. 브라우저 SDK·음성·화면·암호화 미디어를 확인한 결과가 아니다. 실제 미디어용 SDK를 합성 주소에 연결해 성공을 기대하지 않는다.
+
+#### 계정과 방
+
+| 계정 별칭 | 역할·소속 | 용도 |
+|---|---|---|
+| host | member·검증팀 | 사적 방 생성자·통화/공유 진행자 |
+| peer | member·검증팀 | 두 번째 실제 기기 |
+| third | member·검증팀 | 세 번째 참가·초대·키 교체 |
+| listener | viewer·검증팀 | 기본 입장 거부·명시적 청취 허용 |
+| outsider | member·다른 팀 | 사적 방 접근 거부 |
+| admin | admin·다른 팀 | 직원 비활성화·사적 방 우회 거부 |
+
+`main`·`audio`·`listening`·`locked`는 host/peer/third/listener만 선택된 사적 방이다. 기본 방은 화면 소리와 viewer 입장이 꺼져 있다. `audio`는 화면 소리만 허용하고 `listening`은 viewer 입장만 허용하며 `locked`는 새 참가를 잠근다. `public`은 전체 직원 공개 방이다. 실행마다 UUID가 바뀌므로 계정/방 ID는 `run.json`에서 확인한다. 환경에는 별도 인증 우회/QA HTTP 제어 경로가 없다.
+
+#### 실제 LiveKit 연결 준비
+
+실제 모드는 현재 프로세스에 지정한 **시험 전용** `SYNK_VOICE_TEST_LIVEKIT_URL`, `SYNK_VOICE_TEST_LIVEKIT_API_KEY`, `SYNK_VOICE_TEST_LIVEKIT_API_SECRET`만 읽는다. 기존 `SYNK_VOICE_LIVEKIT_*`·회사 데이터·보안 폴더의 실제 키를 자동으로 가져오지 않는다. 시험 프로젝트의 사용량/예산을 확인한 뒤 승인된 실제 연결 범위에서 실행한다. 격리 실행기의 자동 시험은 합성 입력을 사용한다. 10-17 실제 테스트 프로젝트의 키 설정·Cloud 읽기 검증 결과는 아래 통합 실행 준비에 기록했다.
+
+```powershell
+# 시험 전용 환경변수3개를 준비한 뒤 같은 PC의 실제 SDK 연결에 사용한다.
+node tools/company-messenger/qa/voice-fixture.mjs --mode=livekit
+
+# 두 물리 기기를 연결할 때: 별도 시험 HTTPS 프록시 준비 후 사용할 주소 예시다.
+node tools/company-messenger/qa/voice-fixture.mjs --mode=livekit --port=4299 --origin=https://voice-qa.example.test
+```
+
+`voice-qa.example.test`는 설명용 주소이며 DNS·인증서·프록시는 구성하지 않았다. 실행기는 항상 `127.0.0.1`에만 바인딩한다. 휴대폰의 localhost는 이 PC가 아니므로 두 물리 기기에는 별도 시험 HTTPS 주소→이 프로세스의 루프백 포트 연결이 필요하다. 기존 `workspace.synk.im`/`synk.im`을 시험 origin으로 쓰지 않는다. 호스트/포트 보안·방화벽·운영 프록시를 이 실행기가 바꾸지 않는다. 실제 웹훅 목적지는 시험 HTTPS 주소의 `/messenger/api/voice/webhook`이며 시험 프로젝트에 별도로 설정한 뒤 CLOUD-01에서 확인한다.
+
+실행기 매니페스트의 `frontendSdkStatus:'not_checked'`는 실행 시점의 초기값이다. 10-17 화면·SDK 연결과 그 검증 결과는 위 [통화·화면 공유 화면과 SDK 연결](#통화화면-공유-화면과-sdk-연결--2026-10-17)에 있다. 기기 푸시·SYNK ID·교사/고객 연동·마케팅 수집·AI·Drive는 이 환경에서 연결하지 않는다. 통화 초대의 앱 내 UI는 시험할 수 있지만 OS 푸시 실물 검증을 대신하지 않는다.
+
+<a id="voice-live-https-setup"></a>
+
+#### LiveKit·HTTPS 통합 실행 준비 · 2026-10-17~18
+
+[qa/voice-live.mjs](qa/voice-live.mjs)는 위 격리 실행기를 재사용한다. 별도 테스트 LiveKit 프로젝트와 ngrok 계정/도구를 준비한 뒤, 읽기 전용 Cloud 접속 점검→임시 워크스페이스→HTTPS 터널을 시작한다. 운영 프로젝트의 키·DB는 자동으로 읽지 않는다. 신규 결제·자동충전·유료 전환은 이 실행기가 처리하지 않는다.
+
+**현재 상태(10-18 후속):** 실제 Cloud의 시험 웹훅이 HTTPS 서버에서400으로 거절됨을 재현했다. 인증 후 형식 분류에서 `EV_…` 이벤트ID·숫자 문자열 시각을 확인했고, 클라이언트용 UUID 검사를 공급자 이벤트ID에 적용하던 오류를 고쳤다. 수정 뒤 **Cloud→ngrok→서버200**을01:20:55 KST에 확인했다. 같은 공개 주소에서 서명 없음·위조 서명은각401이다. 중복/충돌·잘못된ID·서명 검사 회귀도 통과했다. [수정 전400](../../.tmp/company-voice-20261018/https-webhook-format/webhook-receipts.json) · [수정 후200/401](../../.tmp/company-voice-20261018/https-ready/webhook-receipts.json) · [공개 음성 이벤트 거절 검사](../../.tmp/company-voice-20261018/https-ready/webhook-negative-probes.json). Cloud의 시험 이벤트는 실제 참가자 미디어나 옛JWT 철회를 입증하지 않는다.
+
+**10-17 설정 기록:** 앱 재시작 뒤 Chrome 연결이 복구됐다. `synk-voice-test`(`p_61k3v9d3yc0`)의 Build 요금제·다음 청구 예상 $0.00·당시 사용량0을 확인하고, 사용자 승인으로 `synk-voice-test-local-qa-20261017` 키를 발급해 저장소 밖 전용 env에 저장했다. `--check-cloud`는 실제 Cloud의 임의 미존재 방 조회에 성공했다(방 생성0·참가0·미디어 미검증). 같은 키로 서명하는 테스트 웹훅도 `https://trading-fernlike-scuff.ngrok-free.dev/messenger/api/voice/webhook`에 저장했다.
+
+ngrok 무료 계정·개발 도메인 `trading-fernlike-scuff.ngrok-free.dev`와 공식 Windows 에이전트3.39.11을 준비했다(Authenticode Valid·발행자 ngrok, Inc.). 최초 토큰의 도구 출력 노출 뒤 사용자가 직접 교체를 완료했다. 새 값이 이전 값과 다른 것을 확인해 출력 없이 전용 env에 저장했고, 설정 검사6항목과 Cloud 읽기 인증을 확인한 뒤 **HTTPS 서버를 실행했다.** 신규 결제·유료 전환은 하지 않았다. [준비 상태](../../.tmp/company-voice-20261017/cloud-https-setup/setup-progress.json) · [요금제 화면](../../.tmp/company-voice-20261017/cloud-https-setup/livekit-build-plan.png) · [개발 도메인](../../.tmp/company-voice-20261017/cloud-https-setup/ngrok-dev-domain.png) · [웹훅 저장](../../.tmp/company-voice-20261017/cloud-https-setup/livekit-test-webhook.png).
+
+**실제 공개 접속 확인:** 10-17 Chrome에서 HTTPS 로그인·메신저 직접 주소·기본 시험 방의 통화 참가 단추·실시간 연결 표시를 확인했다. 별도 로컬 HTTP 클라이언트가 정상 로그인한 가상 동료로 보낸 메시지가 공개 HTTPS 브라우저에 새로고침 없이 나타났다([화면](../../.tmp/company-voice-20261017/cloud-https-setup/https-messenger-sse.png), [관측](../../.tmp/company-voice-20261017/https-live-20261017-ready/sse-smoke.json)). 당시 콘솔의 `Test webhook event sent`만 확인하고 수신 상태를 미확인으로 남겼으며,10-18 위 수신 기록으로 보완했다.
+
+**현재 실행(10-18 앱 재시작 후):** 이전 PID35928/터널52208과 로컬 리스너가 모두 없음을 확인하고, 같은 P1 수정 코드를 **PID28864/터널36156**으로 다시 시작했다. 표준 프로필(동시4명·최대600초), [현재 run.json](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/run.json)의 `credentialsFile`에 새 가상 계정 비밀번호가 있다. PC는 `host`, 휴대폰은 `peer` 계정을 사용한다. 비밀번호는 임시 파일에서만 확인한다. Cloud 읽기·터널 준비·Chrome의 새 진행자 HTTPS 로그인과 내장 화면 표시를 확인했다. 아래 반복 새로고침은3회 중2회 성공·1회 문서 로딩 정지였고, 이 실행의 새 웹훅/미디어 검증을 이전 실행 결과로 채우지 않는다. 이전 실행 기록은 [run.json](../../.tmp/company-voice-20261018/rekey-refresh-1792289339826/run.json)에 보존한다.
+
+1. PC/휴대폰에서 [테스트 워크스페이스](https://trading-fernlike-scuff.ngrok-free.dev/)를 열고 ngrok의 `Visit Site` 안내를 통과한 뒤 해당 가상 계정으로 로그인한다.
+2. 로그인 뒤 [메신저 직접 주소](https://trading-fernlike-scuff.ngrok-free.dev/messenger/)를 연다. `전체채팅` → `통화 검증 · 기본`에서 시작한다.
+3. **워크스페이스 빈 화면 보완·실제 Chrome 확인:** 고정 iframe이 로딩 안내를 덮던 문제에 이어,12초 지연 시 안내와 `메신저만 열기` 새 탭 링크를 제공한다. 준비 완료·재시도·로그아웃은 지연 타이머/표시를 정리하며 준비 완료 전후의 같은 프레임을 유지한다. 실제 Chrome HTTPS에서 **내장 메신저·실시간 연결·메뉴 왕복 후 초안 유지·가상 계정 메시지 전송/표시**를 확인했다([화면](../../.tmp/company-voice-20261018/chrome-recheck-1792287897996/workspace-embedded-ready.png), [관측](../../.tmp/company-voice-20261018/chrome-recheck-1792287897996/chrome-observation.json)). 새로고침 때 지연이 한 번 재현돼 [복구 안내](../../.tmp/company-voice-20261018/chrome-recheck-1792287897996/workspace-delay.png)를 보여주었고 `다시 연결`로 메시지까지 복구했다. 초기 지연의 내부 원인은 미확정이다. `Fetch.requestPaused`/원시CDP 불가 오류는 정상 내장 화면에서도 남았으므로 이 신호만으로 앱의 영구 실패를 단정하지 않는다. 사용자 관측 대기는 해소했으며 실제 통화 중 메뉴 이동은 별도 미디어 시험이다. Chrome 화면·SDK 관련44/44(메뉴23·통화 클라이언트21) 통과.
+
+**10-18 초기 연결 후속:** 첫 메시지/읽음 조회가 끝날 때까지 완성된 shell까지 부모가 숨기는 구조를 고쳤다. 이제 shell과 메시지 로더를 먼저 보이고, 같은 부모의 준비 상태 재확인 요청에 다시 응답한다. 초기 준비 신호가 없으면12초 뒤 확인 요청→1초 대기→같은 iframe 재탐색을 최대2회 수행한다. 준비 완료·활성 통화에서는 자동 재탐색하지 않고 로그아웃 시 대기 작업을 지운다. 관련 합성190/190에 대기 중 shell 표시·신호 유실 복구·자동 재시도 상한·통화 보호를 포함했다. 실제 Chrome에서는 버튼을 누르지 않고 문서 요청3회가 발생한 것까지 확인했으나, 각 `/messenger/` 문서가200 `Fetch.requestPaused`에 머물고 자식 app.js/bootstrap 요청이 시작되지 않아 **자동 복구 성공은 미확인**이다. 부모 문서는 complete였고 다른 API는200/h2라 부모 load 대기나 HTTP/1 소켓 한도로 보지 않는다. [상태/경로만 남긴 추적](../../.tmp/company-voice-20261018/chrome-recheck-1792287897996/refresh-before-sanitized.json) · [자동 재시도 관측](../../.tmp/company-voice-20261018/chrome-recheck-1792287897996/refresh-auto-observation.json). 브라우저 도구가 문서 응답을 처리 중이라는 제한을 우회하지 않았다. 이전 정상 Chrome 표시 기록과 현재 도구 차단을 구분한다.
+
+이전 PID35928 실행에서도 수동 `다시 연결` 뒤 내장 메신저·실시간 연결·가상 방 목록·기본 방의 참가 단추가 정상 표시됐다([화면](../../.tmp/company-voice-20261018/rekey-refresh-1792289339826/workspace-ready-after-manual-recovery.png), [관측 범위](../../.tmp/company-voice-20261018/rekey-refresh-1792289339826/chrome-observation.json)). 자동 복구 성공으로 기록하지 않았으며 통화/마이크를 시작하지 않았다.
+
+**10-18 SDK 재현과 함께 확인한 초기 연결 추가 수정:** SSE가 첫 대화 GET→읽음 POST→채널 GET 완료를 기다리던 의존성을 없앴다. shell과 초기 채널 상태 직후 실시간 연결을 시작하고 읽음 처리는 메시지 표시와 분리한다. 먼저 끝난 실시간 재조회가 있으면 늦은 초기 기록/오류가 덮지 않으며, 재조회 실패 때 초기 기록은 사용할 수 있다. 수정 전3건 실패→수정 후 관련 client101/101, 최종 직접 관련50/50([TAP](../../.tmp/company-voice-20261018/sdk-worker-followup/client-regression.tap)). 같은 Chrome에서 로컬 A 새로고침, B 워크스페이스 진입과 새로고침 후 **수동 재연결0회·내장 메신저·실시간 연결됨**을 확인했다([화면](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792290217799/workspace-local-auto-ready.png)). 단 B 최초 로그인 preload 때와 공개 ngrok HTTPS 두 탭에서는 자식 문서 로딩 정지가 다시 관측됐다. 최초 iframe src를 DOM 연결 다음 task로 미루는 실험도 효과 없어 원복했다. 따라서 **모든 HTTPS 새로고침의 자동 표시까지 완료했다고 보고하지 않는다**. 이 제한은 실제 SDK 복구 성공과 별도다.
+
+**10-18 초기 bootstrap 자동 복구 추가:** 초기 GET이 한 번 실패하면 오류 화면이 부모에 ready를 보내 자동 복구가 끝나던 경로를 보완했다. bootstrap만10초 제한, 네트워크 오류·5xx·429·시간 초과는2→4→8→16→최대30초 간격으로 다시 요청한다. 숨겨진 화면에서는 대기하고 온라인/화면 복귀 때 재시도한다. 동시 요청은1개이며 성공·로그인 전환·페이지 종료는 타이머/요청/늦은 응답을 무효화한다. 브라우저 캐시로 돌아온 미완료 초기화도 재개한다.401은 기존 회사 로그인 이동,403/404 등은 자동 재시도하지 않는다. 직접 관련 **66/66**([TAP](../../.tmp/company-voice-20261018/sdk-worker-followup/bootstrap-regression.tap)), 클라이언트 범위 **351/352**([TAP](../../.tmp/company-voice-20261018/sdk-worker-followup/final-client-regression.tap)); 실패1건은 업무 기한 화면의 `고객 합의 기한` 기대값과 `합의한 전달일` 표시 차이로 HEAD의 app.js에서도 같은 실패를 확인했다([HEAD 비교](../../.tmp/company-voice-20261018/sdk-worker-followup/head-check/result.tap)). 시험 프록시에 `--mode=synthetic --bootstrap-failures=2`를 준비했으나 최종 Chrome 검증 시작 시 도구가 `Local browser use is disabled in Work settings`로 차단됐다. 이 **503 두 번 뒤 실제 화면 자동 복구와 공개 HTTPS 반복 새로고침은 미확인**이며 합성 시험을 실제 화면 결과로 대체하지 않는다.
+
+**10-18 앱 재시작 뒤 실제 Chrome 후속 검증:** 로컬 브라우저 설정 차단은 해소됐다. 격리 프록시에서 bootstrap503을2회 주입하고, **재연결 클릭0회로 첫 오류 뒤6.878초에 bootstrap200·내장 대화 목록·실시간 연결됨**을 확인했다. [관측](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792291851997/ui-observation.json) · [복구 화면](../../.tmp/company-voice-20261018/sdk-worker-followup/run-1792291851997/automatic-recovery.png). 시험 프록시는 정상 종료했고 `cleanupPending:false`다. 공개 ngrok HTTPS에서도 최초 진입은 자동 복구했고, 이어진 새로고침1·2회는 수동 조작 없이 내장 화면과SSE가 표시됐다. 하지만3회째는70초 관측까지 실패했다. 부모는complete/visible, iframe 문서200이3회(최초+자동 재탐색2회)였지만 해당 자식의 `Page.frameNavigated`가 없었고 도구의 읽기 전용 `Page.getFrameTree`도 `paused document response` 처리 중이라 거절됐다. 정상1·2회에서는 같은200 뒤 자식 탐색 완료가 관측됐다. 따라서 **일시 API 오류 자동 복구는 실화면 통과, HTTPS 간헐 문서 정지는 미해결**이다. 내부 원인을 앱 또는 확장 중 하나로 확정하거나 도구의 문서 처리를 우회하지 않는다. [HTTPS3회 기록](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/ui-observation.json) · [문서 탐색 기록](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/refresh-network-followup.json) · [남은 지연 화면](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/https-refresh-stalled.png). 이번 재검증에서 제품 코드는 추가 변경하지 않았다.
+
+**10-18 브라우저 도구와 앱 분리·장기 초기 연결 복구 수정:** 사용자가 격리 Chrome·Playwright 비교 시험을 명시적으로 승인했다. 같은 ngrok HTTPS·Chrome155.0.8059.85·가상 진행자 계정으로, 저장된 사용자 프로필/확장 없는 Chrome에서 정상 TLS 검증을 유지했다. 수정 전 headless 새로고침 **10/10**(1.8~3.9초), 일반 창 **3/3**(2.5~3.4초)이 내장 화면·SSE·초기 기록 로딩 완료까지 통과했다. [10회](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/baseline-1792292736464/report.json) · [일반 창3회](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/baseline-1792292786608/report.json). 당시 비교에서는 CUA 경로의 문서200 뒤70초 탐색 미완료와 격리 Chrome 정상 동작의 차이를 확인했다. 프로필/확장 내부의 직접 원인까지 확정한 것은 아니며, 아래 운영 후속 결과 때문에 일반적인 새로고침 지연을 도구 문제로 한정하지 않는다. ngrok 최초 방문 안내에서 멈춘 실행2건은 앱 시험 전 준비 실패이며13회 집계에 포함하지 않았다.
+
+앱에도 독립 결함이 있었다. 부모가 초기 재시도2회를 소진한 뒤 약39초에 타이머를 없애, 이후 네트워크가 회복돼도 수동 버튼이 필요했다. 이제 준비 전·통화 없음 상태에서 첫2회 뒤 **30초 간격으로 계속 재시도**하고, hidden/offline에서는 대기하며 online/visible/BFcache 복귀 시 준비 상태를 재확인한다. ready·통화·로그아웃·페이지 종료는 타이머를 취소하고 옛 콜백은 세대로 무효화한다. 수정 전4개 회귀 실패→수정 후 관련 **69/69**([수정 전](../../.tmp/company-voice-20261018/iframe-recovery-before.tap), [수정 후](../../.tmp/company-voice-20261018/iframe-recovery-related.tap)). 최종 파일 해시를 고정한 공개 HTTPS 시험에서는 문서를 **45초 동안503으로 주입**해 최초/자동2회까지 실패시킨 뒤 **61.215초에 내장 화면·SSE 자동 복구**, iframe1개·aria-busy=false·재연결 클릭0·JS오류0을 확인했다. [45초 장애와 복구](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/document-outage-1792292977860/report.json) · [복구 화면](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/document-outage-1792292977860/ready-1.png). 최종 수정본의 정상 새로고침도 **3/3** 통과했다([기록](../../.tmp/company-voice-20261018/https-refresh-restart-20261018/baseline-1792292925157/report.json)). CUA의 응답 처리 자체를 중지하거나 우회하지 않았고, 이 수정으로 도구 내부 정지까지 해소됐다고 보고하지 않는다. 이 시험 당시에는 작업본과 기존 테스트 서버에만 반영했다.
+
+**10-18 운영 반영과 사용자 새로고침:** `524499e0ed98…`를 운영에 반영했다. 배포 범위는 자동 복구에 필요한 메신저 `app.js`와 회사 `workspace.js` 두 실행 파일이며, Windows/Linux 관련137/137·이미지 호환2/2를 확인했다. 운영에서 기존 로그인·메신저 메뉴의 대화·입력창을 확인한 뒤, 사용자가 도구 연결 전 새 Chrome 탭에서 새로고침했다. 처음에는 재시도 안내가 보였지만 **기다린 뒤 자동 진입했다고 직접 확인**했고, 이어 화면에서 기존 메시지·입력창·실시간 연결을 확인했다([사용자 확인](../../.tmp/company-messenger-recovery-release-20261018/ui/production-user-refresh-confirmation.json) · [복구 화면](../../.tmp/company-messenger-recovery-release-20261018/ui/production-user-refresh-recovered.png)). 대기 시간은 재지 않았고 운영 새로고침1회의 관측이다. 따라서 자동 복구는 확인했지만 지연 해소까지 완료된 것은 아니다.
+
+**10-18 느린 다운로드 후속 수정 · 14:36 KST 운영 반영:** `app.js` 요청마다14초 지연을 주면 부모의13초 재탐색이 정상 다운로드를 두 번 취소해 표시까지40.496초가 걸렸다. 실제 같은 출처 `/messenger/` 문서가 loading/interactive이면 현재 탐색을 최대60초 보존하도록 고쳤다. 빈 문서·완료된 오류·다른 출처·60초 초과는 기존 재시도를 유지하고 hidden/online 재개로 기한을 연장하지 않는다. 현 운영 소스에서 실행 파일1개·기존 시험1개만 바꾼 후보 `f239f3c8c4e3…`는 Windows **142/142**, 정확한 후보 전체를 사용한 격리 Chrome·로컬 HTTP·합성 계정 **7/7**을 통과했다. 같은14초 지연은 **문서1회·14.536초**, 첫 스크립트 무응답은60.616초,45초 문서503은56.950초에 자동 복구했다. 정상 새로고침3회와 bootstrap503 두 번도 통과했으며 전부 재연결 클릭0·JS오류0이다([회귀](../../.tmp/company-messenger-loading-release-20261018/qa/result.json) · [화면 검증](../../.tmp/company-messenger-loading-release-20261018/qa/browser-result.json)). 운영 배포는 FINALIZE12·recovered=false로 완료했고 [실행/데이터 후검사](../../.tmp/company-messenger-loading-release-20261018/deployment/runtime-live-postcheck-1792301760178.json)와 [공개 메신저8파일/HTTPS](../../.tmp/company-messenger-loading-release-20261018/deployment/public-messenger-verification-1792301745782.json)를 통과했다. 교체 후 백업·격리 복원·계정/세션 보존 검증을 통과했고15:05:53 KST [HA 재무장 후검사](../../.tmp/company-messenger-loading-release-20261018/rearm/arm-postcheck-final-v1.json)에서 armed=true·A epoch7·B 대기·복제 healthy·HTTPS200/ready/TLS·루프 재시작0을 확인했다. 이번 판의 강제 장애 전환 시험은 하지 않았다. 실제 사용자 HTTPS 속도는 아직 재지 않았다. 사용자가 앞선 자동 복구에10초 넘게 걸렸다고 알려와 정적 압축과 초기 다운로드 대기를 별도로 최적화하고 있다.
+
+**10-18 정적 전송 최적화 · 15:43 KST 운영 반영:** 사용자 보고10초 초과 대기에 대해 정확한 운영 부모 `f239f3c8…`에서 측정했다. 메신저 JS·CSS가 회사의 기존 압축 응답기를 우회해 무압축·no-store로 매번 내려오던 부분을 고쳤다. 회사 정적 응답기를 주입하여 최종 CSS 경로 변환 뒤 Brotli/gzip·ETag·304를 적용하고 HTML·API·인증·첨부·오류의 no-store는 유지했다. 후보 `6b6471d02385…`는 실행2·신규시험1, 원문1,026·이미지594이며 기존1,023파일을 보존했다. Windows146/146·집중10/10, 원문 불변 통과. 소스 커밋 `910a52eeb5df3ee6a6cf46a4636b86a8a7b1a02c`(푸시 없음).
+
+격리 Chrome·가상 계정·로컬 자체 인증서 HTTPS/H2에서 같은 합성 회선(다운로드2Mbps·지연100ms)으로 전후 각각3회씩 **입력창·실시간 연결·초기 기록 표시 완료**를 쟀다. 첫 진입 중앙값 **9.867→7.174초**, 새로고침 **5.494→2.705초**; 전체 관측의 JS오류0. 정상 loopback도 전후 모두1초 미만이었다. 글꼴 preload 우선순위 변경은 개선 근거가 없어 넣지 않았고, 회사 state 조회 대기만 줄이는 변경도 제외했다. [전후 측정](../../.tmp/company-messenger-startup-perf-20261018/compression-comparison.json) · [후보146검사](../../.tmp/company-messenger-static-performance-20261018/qa/result.json). **실제 운영 계정·공개망·휴대폰의 소요 시간이 아니며 운영 속도 개선 완료를 뜻하지 않는다.** 후속 운영 승인으로 RUN3 배포 `6f29c9cd26c5f4b705f84cedc0604646`가 FINALIZE12·recovered=false로 끝났다. Linux146+호환2·worker152·재무장Node120/Python35, 공개8파일, br/gzip 4파일·304·HTML/API no-store 검사를 통과했다. 기동 전 데이터/원키 보존·기동 후 스키마 보존 확인; identity 세션1행 해시는 달라 전체 세션 동일성은 주장하지 않는다. 첫 사후검사는 별도 복원 시험 컨테이너 때문에 PHYSICAL_WRITER_SET으로 보류됐고, 담당 작업의 정상 종료/정리 뒤 같은 검사로 통과했다. 사용자가 실제 Chrome 새로고침은 버튼 없이 **4~10초**라고 답했다(직접 계측 아님). Chrome 도구의 설정 차단은 계속되어 에이전트의 실제 로그인 화면 검증은 미완료이며, **16:23 KST 새 백업·격리 복원·HA 재무장까지 통과했다.** 백업 generation1792306627310693·복원 원문1,026개·원키·계정9개 표·활성 세션/토큰·파일24개 보존과 격리 기동을 확인했다. 최종 `rearm/arm-postcheck-final-v1.json`은 armed=true·A epoch7·B standby·복제 정상·HTTPS/TLS200, 동일 controller41.736초·재시작0이며 이번 판의 강제 장애 시험은 하지 않았다. 잔여 지연 개선 후보는 아래 캐시 후속 항목에서 이어간다. 근거: `.tmp/company-messenger-performance-release-20261018/deployment/runtime-live-postcheck-1792305995532.json`, `static-transfer-verification-1792305796871.json`, `production-user-refresh-confirmation.json`.
+
+### 새로고침 4~10초 후속 · 내용 해시 캐시 운영 반영 (2026-10-18)
+
+부모가 JS 54개·CSS 49개를 먼저 요청하고 마지막 defer app 실행 후 인증 → state → 메신저 iframe을 여는 순서다. child preload는 같은 격리 조건에서 실제 새로고침 중앙값2.658→3.234초로 악화하고 CSS44,983B가 중복돼 제외했다. 공개 JS/CSS에 현재 전송 바이트의 SHA-256 URL을 붙이고 정확히 일치할 때만 장기 캐시를 주는 후보를 준비했다. HTML과 개인 API는 no-store, 워커는 기존 재검증을 유지한다.
+
+RUN3 exact source 기반 실행3파일·신규 시험1파일이다. 운영용 코드로 가상 계정·자체 인증서 HTTPS/H2·합성2Mbps/100ms의 실제 page.reload3회가1.143/1.154/1.118초, 중앙값 **1.143초**였다(동일 실험 baseline2.801초). 부모103+메신저4개 JS/CSS 재검증 요청107→0, JS오류0·수동재연결0. 첫 방문은 약7.2초로 개선되지 않았다. 기존/신규 회귀18/18, 독립 경계7/7과 HTML2개·최종 자산107개 해시 대조를 통과했다. **이 수치는 격리 시험의 결과이며 실제 운영 사용자 속도 측정이 아니다.**
+
+인수 원문은 `.tmp/company-messenger-startup-perf-20261018/digest-experiment/handoff.json`이다. 같은 폴더의 `apply-to-candidate.mjs`는 다른 백엔드 수정 부분을 보존하며 새 scratch 후보에만 적용한다. `expected-public-html.mjs`로 결합 후보의 변환 HTML 기대값을 다시 생성한다. 승인된 백엔드 개선 작업에 결합한 최종 v4 `c516b0e11d30…`는 Linux 제품225/225·호환2/2를 통과했고, **16:49 KST 운영 반영**됐다(배포 `01e714956bb97015c40b0b467298966a`, 이미지 `06bde74c…`). FINALIZE·runtime·공개8파일 검사 통과. 기동 전 정지 자료/원키의 정확한 보존을 확인했고, 기동 후 identity 세션1행 집계 해시와 tokens2→3 변화는 기록했으므로 모든 로그인 행의 연속성을 증명했다고 해석하지 않는다.
+
+최종 결합 소스1,030개를 시험 전후 대조한 격리 Chrome12회도 통과했다. 2Mbps/100ms 실제 새로고침은 **1.136/1.179/1.134초, 중앙1.136초**, 부모103+메신저4개 자산의 서버 요청0, 초기 history 수신·입력창·실시간 연결 준비, JS오류0·수동재연결0이었다. 외부 전송0, 시험 서버/브라우저/임시DB 정리 완료. 첫 실행의 이전 iframe 응답을 잡은 계측 실패는 보존하고 계측만 고쳤다. [결합 UI 증거](../../.tmp/company-messenger-startup-perf-20261018/digest-experiment/v4-run-1792309588584/summary.json).
+
+**16:50 KST 운영 공개 캐시123/123 통과:** HTML2개 최종 바이트/no-store, JS/CSS107개 최종 바이트/digest/ETag/immutable, 버전 없음·잘못된/중복/추가 쿼리8건 재검증, worker3개 재검증, API3개 no-store/인증거절/health를 엄격한 TLS로 대조했다. 인증쿠키·변경 요청0. 이 검사는 GET 범위이며 HEAD/304는 앞선 회귀 검사와 구분한다. [공개 검증](../../.tmp/company-messenger-startup-perf-20261018/digest-experiment/production-cache-1792309804127.json), SHA `ce329f7a2347d5df3c039f935c29a1fded78e0de18100b556c54e826d78b51b6`. **17:27 KST 새 버전 백업·격리 복원·HA 인수 완료:** 백업 generation1792310491636086·421,416,068B·SHA `2f04606eb62971a91a0045396c2058e3cd6d811002c84297a6e0c1928b3f8420`의 보관과 정확한 복원 연결을 확인했다. 원문1,030개·원래 키·활성 세션/토큰 보존, 자격증명14개 복호화·파일24개 검증, 격리 앱 기동·외부 요청0·시험 컨테이너 제거를 통과했다. 계정9개 표 중8개는 완전히 같고, tokens4→3은 기동 전 이미 만료된 OAuth1개 정리이며 미만료 토큰 삭제·추가·변경은0이다. 실제 사용자 로그인 시험과 DB 간 동일 시점 스냅샷을 증명한 것은 아니다. 최종 HA는 armed=true·A owner epoch7·B alive/standby·복제 정상·HTTPS200/ready/TLS, 동일 controller invocation/PID32.159초·재시작0이다. 현재 판의 강제 장애 전환 시험은 하지 않았다. [완료 백업](../../.tmp/company-backend-read-release-v4-20261018/rearm/dr/backup-status-1792310470348.json) · [격리 복원](../../.tmp/company-backend-read-release-v4-20261018/rearm/dr/restore-v1.json) · [최종 HA](../../.tmp/company-backend-read-release-v4-20261018/rearm/arm-postcheck-final-v1.json)(SHA `3db77bc24767dd7e6220f779c77237424721b9f84dfdfccfeb066d4e53e09a85`). Chrome 도구는 설정 차단을 반환한다. **16:57 KST 사용자 체감 확인:** 운영 링크와 F5 재확인 안내 뒤 사용자가 “오우 훨씬 빨라. 고마워”라고 답했다. 운영에서 체감 속도가 개선됐다는 직접 사용자 확인이며, 초 단위 계측이나 브라우저 종류·버튼 조작을 에이전트가 관측한 결과는 아니다. 첫 접속에는 새 자산 다운로드가 필요하다.
+
+
+이 HTTPS 실행에서는 휴대폰 접속·마이크·실제 통화/화면 공유/E2EE를 실행하지 않았고23개 시나리오는 아직 `not_run`이다. CLOUD-01 중 웹훅 배달 부분만 이전 실행에서 확인했으며, 실제 두 기기의 통과 기록으로 해석하지 않는다.
+
+재현하거나 다른 PC에 준비할 때는 Chrome의 별도 테스트 프로젝트에서 요금제·한도를 확인하고, ngrok의 무료 도메인·토큰·공식 에이전트를 준비한다. 기존 승인 범위를 벗어난 가입·약관·접근 권한 확대는 동작 직전에 확인하며 신규 결제는 진행하지 않는다. 앱/실시간 이벤트 통과 여부는 실제 공개 주소에서 확인한다.
+
+다음 명령은 저장소 밖 `~/SYNK_보안/voice-live-test.env`를 **최초 한 번만** 만든다. 이미 있는 파일은 덮지 않는다. 이 PC에는 아래6항목을 모두 저장하고 검사를 마쳤으므로 다시 초기화하지 않는다.
+
+```powershell
+node tools/company-messenger/qa/voice-live.mjs --init
+```
+
+해당 파일에는 아래 값을 저장한다. 키/토큰은 채팅·Git·검증 결과에 붙이지 않는다. ngrok 실행 파일은 압축을 푼 실제 파일의 절대경로를 적는다.
+
+| 설정 | 값의 출처 |
+|---|---|
+| `SYNK_VOICE_TEST_LIVEKIT_URL` | 테스트 프로젝트의 `wss://…livekit.cloud` 주소 |
+| `SYNK_VOICE_TEST_LIVEKIT_API_KEY` | 같은 프로젝트의 테스트 API 키 |
+| `SYNK_VOICE_TEST_LIVEKIT_API_SECRET` | 위 키의 Secret |
+| `SYNK_VOICE_TEST_HTTPS_ORIGIN` | ngrok에서 할당된 `https://…` 도메인, 끝의 `/` 제외 |
+| `SYNK_VOICE_TEST_NGROK_BIN` | 내려받은 `ngrok.exe`의 절대경로 |
+| `SYNK_VOICE_TEST_NGROK_AUTHTOKEN` | ngrok 테스트 계정의 Authtoken |
+
+```powershell
+# 로컬 값·실행 파일 존재만 확인한다. 빈 항목이 있으면 이름만 출력하고 종료코드2.
+node --env-file="$env:USERPROFILE/SYNK_보안/voice-live-test.env" tools/company-messenger/qa/voice-live.mjs --check
+
+# LiveKit의 임의 미존재 방을 1회 조회한다. 방/참가/토큰/미디어는 생성하지 않는다.
+node --env-file="$env:USERPROFILE/SYNK_보안/voice-live-test.env" tools/company-messenger/qa/voice-live.mjs --check-cloud
+
+# 두 기기용 서버 + 지정한 HTTPS 도메인 터널. 기본은 4299와 standard 프로필.
+node --env-file="$env:USERPROFILE/SYNK_보안/voice-live-test.env" tools/company-messenger/qa/voice-live.mjs
+```
+
+`--profile=short`·`--profile=budget`·`--port=빈포트`·`--out=새폴더`를 지정할 수 있다. `--port=0`이면 빈 루프백 포트를 자동 선택한다. 이 실행은 LiveKit 인증 확인 후 터널 에이전트가 지정한 HTTPS 도메인과 자신의 임시 워크스페이스를 연결했는지 로컬 API로 대조한다. 다른 실행 중인 ngrok 에이전트/설정에는 붙지 않는다. HTTP 검사 기록은 `--inspect=false`로 끄며 에이전트에 LiveKit 키를 넘기지 않고 원시 에이전트 로그도 결과에 저장하지 않는다. ngrok3.39.11의 실행 옵션·격리 설정 `config check`·실제 터널 기동과 정상 종료를 확인했다. 기존 실행을 먼저 종료하고 재시작하며, 새 실행마다 계정 비밀번호·방 UUID·증거 폴더가 바뀐다.
+
+출력의 `url`을 PC Chrome과 휴대폰에서 각각 열고 서로 다른 가상 계정으로 로그인한다. **에이전트의 연결 확인만으로 공개 HTTPS·쿠키·SSE·iframe·마이크·WSS·E2EE가 검증된 것은 아니다.** ngrok의 방문자 확인 화면이 나오면 각 기기에서 직접 통과한 뒤 로그인하고, 메시지 실시간 수신도 확인한다. LiveKit 테스트 프로젝트의 웹훅 주소를 출력된 `webhookUrl`(`/messenger/api/voice/webhook`)로 설정하고 서명에 쓰는 키가 테스트 서버 설정과 일치하는지 CLOUD-01에서 확인한다.
+
+증거 폴더의 `environment.json`은 생성 시 Cloud 읽기 접속과 터널 설정 확인만 기록하며 `browserHttpsVerified`·`cloudWebhookConfigured`·`mediaVerified`를 `false`로 시작한다. 현재 실행에는 위 실제 브라우저/콘솔 근거를 덧붙였다. 이후 시나리오의 일부 사전 관측과 전체 통과를 구분하고, 실제 기기·웹훅·미디어 결과는 근거와 함께 `results.json`에 기록한다.
+
+`webhook-receipts.json`은 시험 서버가 받은 정확한 웹훅 경로의POST에 대해 수신/응답 시각·상태 코드·Authorization 존재 여부를 최대64건 보존한다. `verifiedFormats`도 인증에 성공한 뒤 ID/시각의 형식 분류·이벤트 이름 존재 여부만 최대64건 남긴다. 인증값·요청 본문·이벤트 값·IP는 남기지 않는다.10-18 관련 통화/HTTPS109/109·워크스페이스 메뉴22/22시험을 통과했다([범위](../../.tmp/company-voice-20261018/iframe-webhook/verification.json)).
+
+정상 종료는 **Ctrl+C**다. 미디어 철회를 시도한 뒤 이 실행기가 만든 터널 프로세스만 종료하고 결과를 보존한다. `cleanupPending:true`이면 원래 fixture DB를 보존하므로 위의 `--cleanup`을 같은 `--env-file`과 함께 사용한다. `httpsCleanupPending:true`가 나오면 출력된 `tunnelPid`의 명령줄을 확인해 이 실행의 ngrok인지 대조하고 해당 프로세스만 정리한다.
+
+기존 실행기/HTTPS 시작·취소/키 격리/증거 보존14/14에 이어, 실제 Chrome에서 발견한 메신저 외부 링크403을 보완했다. 공개 HTML의 최상위 GET 탐색만 허용하며 다른 출처 API·iframe·Origin 불일치와 인증/CSRF 검사는 유지한다. 회사 메신저 통합·격리 fixture·HTTPS 실행기 **30/30** 통과([로그](../../.tmp/company-voice-20261017/cloud-https-setup/https-final-regression.log)). 자동 시험의 공급자/터널은 합성 입력이며, 실제 Cloud·HTTPS 관측은 위 현재 상태와 분리했다.
+
+#### 시험 한도
+
+| 프로필 | 전체 인원 | 최대 시간 | 월 참가자분 | 월 추정/보고 수신량 가드 |
+|---|---:|---:|---:|---:|
+| standard | 4 | 600초 | 100분 | 100MB |
+| short | 4 | 60초 | 100분 | 100MB |
+| budget | 4 | 600초 | 1분 | 1MB |
+
+`--profile=short`는 최대 시간, `--profile=budget`은 한도 소진 시나리오용이다. 각 프로필은 새 환경으로 실행한다. 앱 운영 기본값을 변경하지 않으며 공급자 청구 상한을 보장하지 않는다. 기본 공유 슬롯은 전체1명이고 키 준비30초·초대45초·heartbeat25초·임대75초·재접속30초 계약은 그대로다. 합성 선행 검사의 시계 전진은 실제 소요 시간이나2시간 통화 실측으로 기록하지 않는다.
+
+#### 시나리오와 증거
+
+실행별 `evidenceDirectory`에 `run.json`, `scenarios.json`, `results.json`, `screen-pattern.html`을 만든다. **23개 시나리오의 최초 상태는 전부 `not_run`**이며 환경 생성이나 합성 선행 검사가 실제 시나리오를 통과로 바꾸지 않는다. 성공·실패·진행 불가·미지원(`pass`/`fail`/`blocked`/`unsupported`)과 기기/OS/브라우저/SDK 버전, 시작·종료 시각, 관측 결과·증거 파일을 기록한다. 실제 결과는 임시 DB 폴더가 아닌 내보낸 증거 폴더의 `results.json`에 남겨 종료 뒤에도 보존한다.
+
+| 시나리오 | 확인할 결과 |
+|---|---|
+| ENV-01·CLOUD-01 | 지원/정책·실제 Cloud 권한/옛 JWT·GCM 필드·서명 웹훅 |
+| CALL-01~04 | 양방향 청취·장치/음소거·메뉴 이동·망 전환·새로고침/중복 로그인 |
+| SHARE-01~05 | 화면/창/탭·선택적 소리·브라우저 중지·대기 중 취소/재전송·전체 공유1명 |
+| E2EE-01~03 | 참가 집합별 새 키·퇴장자/이전 키 차단·미지원/worker 오류/기한 종료 |
+| AUTH-01~03 | 듣기 전용·사적 방/관리자·로그아웃/비활성화/방 이탈 |
+| INVITE-01~02 | 동의·45초 만료·다중 기기·방해 금지/무음·재호출 제한 |
+| USAGE-01·LIMIT-01~02·LIFE-01 | 통계 대조·낮은 예산/시간 소진·서버 종료/미정리 복구 |
+
+공유할 원본은 [시험 화면](qa/voice-screen-pattern.html)을 별도 탭/창으로 연다. 바뀌는 시계·색·24/16/12px 글자와 사용자가 누르는10초 시험음만 있으며 자동 녹음·카메라·네트워크 호출은 없다. 원본 자체의 갱신과 수신 화면을 비교하고, 시험음은 마이크로 들어간 소리와 탭 소리를 구분한다. 실제 캡처/오디오 출력은 이번 준비에서 실행하지 않았다.
+
+키는 SYNK 서버가 관리하는 방식이다. SDK ACK·GCM 메타데이터만으로 실제 프레임 암호화/복호화 또는 서버 운영자로부터의 보호를 입증하지 않는다. 기존 `mediaVerified:false`를 유지하고, 실제 E2EE·서버 신뢰 범위와 미확인 기기를 구분해 보고한다.
+
+#### 종료·복구 정리
+
+Ctrl+C로 정상 종료한다. 원격 철회가 확인되면 임시 계정/SQLite만 지우며 내보낸 증거는 남긴다. 실패하면 `cleanupPending:true`와 `retainedDirectory`를 출력하고 DB를 보존한다. 광범위한 node 프로세스 종료나 임시 폴더 일괄 삭제를 하지 않는다.
+
+```powershell
+# 원래 서버 종료 후, 같은 시험 프로젝트의 환경변수를 유지한 상태에서 재시도한다.
+node tools/company-messenger/qa/voice-fixture.mjs --cleanup=보존된_임시폴더_절대경로
+```
+
+실행 중인 fixture·시험 프로젝트 URL이 다른 키 설정·임시 fixture 밖 경로·링크가 든 삭제 대상은 거부한다. 새 실행은 옛 키/참가를 복원하지 않는다.
+
+#### 준비 검증 기록
+
+실행기 시험5개와 기존 회사 실제 라우터 통화 시험1개, 총 **6/6**을 통과했다([TAP](../../.tmp/company-voice-20261017/test-environment/preparation-final.tap)). 합성 제어 흐름, 운영 키 자동 상속 차단, 가짜 시험 키를 넣은 실제 공급자 모드의 시작/정리 외부 호출0회, 미정리 DB 보존/재정리, 증거와 로그인 파일 분리/종료 후 보존, 잘못된 실행 옵션/경로를 확인했다. 별도 `--check`에서 사적 방/역할·키/CSRF·키 교체·공유 중지/재전송·초대 동의·로그아웃 철회 **6/6**을 확인했다([실행 결과](../../.tmp/company-voice-20261017/test-environment/prepared-evidence/preflight.json)). 실제 시나리오23개는 모두 `not_run`이다([기록 틀](../../.tmp/company-voice-20261017/test-environment/prepared-evidence/results.json)). Docker 정적 전달도1/1이다([TAP](../../.tmp/company-voice-20261017/test-environment/container.tap)). 실제 LiveKit/SDK/두 기기 미디어는 미실행이며 선행 검사 뒤 임시 서버/DB는 정리했다.
+
+### 3차 후속 점검 · 동시 요청·종료·상태 보완
+
+통화99개·회사 실제 라우터 통화1개·푸시33개·협업8개·기존 회귀61개, 총 **202/202**을 통과했다([최종 TAP](../../.tmp/company-voice-20261017/audit-followup/regression.tap), 앞선 점검201/201에 취소 요청 재전송 회귀1개 추가). 아래 3차와 같은 선택 회귀 파일을 실행했으며 전체 저장소 시험을 뜻하지 않는다. 앞선 새 회귀11개는 수정 전 소스를 메모리에서 주입한 재현에서 모두 실패했다([수정 전 TAP](../../.tmp/company-voice-20261017/audit/original-reproduction.tap), 공용 작업본을 되돌리지 않음). 첫 참가 응답의 오래된 상태도 기존 E2EE 시험에 단언을 추가해 실패를 확인하고 고쳤다.
+
+- **공유 중지/정책 철회와 상태 조회의 경합:** 공급자에 남아 있는 기존 공유를 새 무허가 트랙으로 판단해 음성 전체를 철회했다. 공유 권한을 먼저 줄이고 트랙 정리를 확인한 뒤 미디어 정책을 대조하도록 순서를 고쳤다. 직접 서비스와 실제 HTTP 경로에서 음성 유지·공유 슬롯 반환·타인/CSRF 없는 중지 거부를 확인했다. 정리 확인 실패 시 전체 철회와 슬롯 유지도 기존 회귀로 확인했다.
+- **느린 공유 시작 응답:** 원격 권한 상승 중 임대·최대 수명·월 사용량이 끝나도 넓은 JWT를 반환할 수 있었다. 반환 직전에 현재 권한/참가·시간·누적 사용량을 다시 대조하며 세 경우 모두 토큰 없이 종료하는지 확인했다.
+- **퇴장/캡처 취소의 선행 처리:** leave가 원격 대기열에 묶인 동안 새 JWT를 반환하거나, 공유 예약 전 상태 조회 중의 stop을 잊고 공유를 시작했다. 퇴장은 즉시 참가·키를 차단하고 공유 중지는 아직 예약이 없는 진행 중 시작 요청도 취소한다. 늦은 권한 응답 뒤 발급이 없고 취소한 공유 자리가 남지 않는지 확인했다.
+- **암호화 준비 상태:** 공급자의 이전 ACTIVE 연결이 `securing`과 키 준비 기한을 덮거나 첫 join 응답이 옛 `connecting` 상태를 반환했다. 준비 중에는 실제 연결 목록에 올리지 않고 현재 참가 행으로 응답한다. 기존 모든 참가자 ACK·기한·퇴장자 키 차단 시험도 통과했다.
+- **정리 대기열 누적:** 방4개의 조회가 각각3초 걸리는 합성 공급자에서 반복 점검10개가 heartbeat를 밀어 임대를 종료했다. 대기 중 점검을 한 번으로 합치고, 실행 중 새 변경의 후속 점검은 남겨 연결 유지를 확인했다. 실제 3초 지연 호출이나 외부 트래픽을 발생시키지는 않았다.
+- **취소한 공유 요청의 재전송:** 최초 조회 중 취소한 시작 요청은 진행 중 실행만 막았고 같은UUID로 다시 보내면 권한이 열렸다([수정 전 실패](../../.tmp/company-voice-20261017/audit-followup/replay-before.tap)). 기존 공유 표에 종료 영수증을 남겨 같은 요청 재전송은 차단하고 새UUID의 명시적 공유는 허용했다. 슬롯·토큰·원격 권한 상승이 없는지 확인했다.
+
+Docker 정적 전달 검사도 **1/1** 통과했다([TAP](../../.tmp/company-voice-20261017/audit-followup/container.tap), payload586파일·전이 import145개). 런타임 수정은 `voice-service.mjs`와 `voice-sharing.mjs`이며 화면/SDK 코드는 이 점검에서 변경하지 않았다. API 경로·입력 필드는 유지한다.
+
+공식 [RoomService](https://docs.livekit.io/reference/other/roomservice-api/)의 Cloud 권한 변경/토큰 철회와 `revoke_token_ts`, [프로토콜 원문](https://github.com/livekit/protocol/blob/main/protobufs/livekit_models.proto)의 `TrackInfo.encryption`·`Encryption.Type.GCM=1`을 사용자 Chrome에서 다시 대조했다. 앞선 확장 오류로 못 읽었던 프로토콜 원문은 이번에 Raw 보기로 확인했다. **이는 문서/코드 계약 대조이며 실제 Cloud의 철회 시각, SDK E2EE worker·두 기기 암호화/복호화·공유 소리·다른 망·실제 소비량 검증은 여전히 남아 있다.** 기본 꺼짐·가입/결제/실제 미디어/운영 반영 없음은 유지한다.
+
+### 화면 공유·E2EE · 3차 후속
+
+통화87개·회사 실제 라우터 통화1개·푸시33개·협업8개·기존 회귀61개, 총 **190/190**을 통과했다. [TAP 원본](../../.tmp/company-voice-20261017/phase3-final.tap). 기존1·2차 합성 회귀는 명시적인 `e2eeRequired:false` 호환 옵션으로 유지했고, 새3차 시험에서 기본 E2EE 필수 흐름을 별도로 검증했다. 임시 SQLite·합성 직원·루프백 HTTP·독립 HMAC과 가짜 미디어 공급자를 사용했다. 회사 실제 라우터도 E2EE 필수 기본값으로 키 준비 → 토큰 발급 → 로그아웃/직원 비활성화/서버 종료 철회를 확인했다.
+
+- 지원 신고가 없는 참가의426, 키 확인 전 JWT 없음, 본인/원래 로그인/현재 방/CSRF/공개 HTTPS 검사, 다른admin/직원의 키 조회 차단, key·challenge가 DB/공개 상태/SSE에 섞이지 않는지를 확인했다. 종료 대기와 키 요청이 겹칠 때 키 반환을 막고, 잘못된 MAC·과거epoch·SDK 암호화 끄기·시간 초과·재시작을 평문 폴백으로 우회하지 않았다.
+- 참가자 추가로 기존 발행/구독을 중단하고 모두 새 키를 확인한 뒤에만 토큰을 발급했다. 퇴장자의 원격 철회 실패·권한 일시 중단 실패·기존 미디어가 계속 남는 경우 새 키를 제공하지 않았고,30초 준비 만료를 확인했다. 초대의 수락 동의가 E2EE 준비를 건너뛰지 않는지, 허용된 viewer도 암호화된 듣기 준비만 하는지 확인했다.
+- 전체 공유 슬롯1개·동일 요청 재전송·별도 화면 소리 허용·카메라/data 미허용, 실제 공유 트랙 관측과 브라우저 캡처 종료, 수락 대기 중 공유 취소/권한 회수·정리 실패 때 자리를 유지하는 동작을 확인했다. 공유만 정상 회수하면 음성 참가를 유지하고, 미허가/암호화 미확인 트랙은 철회했다.
+- 화면 예약의1.5Mbit/s 추정이 기존 월 수신량에 추가되고 기존1GB 한도를 올리지 않는지 확인했다. 실제 프레임·bitrate·공급자 청구를 측정한 결과는 아니다. 공급자 `UpdateParticipant`의 소스별 요청 필드와 JWT의 screen_share/screen_share_audio·발행/구독 중단, 트랙 GCM 메타데이터 정규화도 합성 응답으로 확인했다.
+- 새 두 모듈을 Docker COPY/ignore의 명시 목록에 추가했다. 정적 import graph **1/1**을 통과했다([원본](../../.tmp/company-voice-20261017/phase3-container.tap), payload586파일·전이 import145개). 실제 이미지 빌드·운영 배포·HA 전환 시험은 하지 않았다.
+
+아래 명령에 기존2차와 같은 선택 회귀를 포함했다. 전체 저장소/회사 전체 시험을 통과했다는 뜻은 아니다.
+
+```powershell
+node --test tools/company-messenger/tests/voice.test.mjs tools/company-messenger/tests/web-push.test.mjs tools/company-messenger/tests/collaboration.test.mjs tools/company-messenger/tests/api.test.mjs tools/company-messenger/tests/project-membership.test.mjs tools/company-messenger/tests/project-leave.test.mjs tools/company-messenger/tests/project-deletion.test.mjs tools/company-messenger/tests/chat-categories.test.mjs tools/company-messenger/tests/bootstrap-session-client.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/server-messenger.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/server-voice.test.mjs
+```
+
+**아직 확인하지 않은 범위:** 실제 LiveKit Cloud/SDK가 기존 트랙·JWT를 회수하는 시각과 `TrackInfo.encryption` 호환, 새 E2EE worker/공유 키로 두 기기가 실제 미디어를 암호화·복호화하는지, 여러 브라우저/모바일·다른 망·백그라운드·공유 소리·실제 소비량. 공식 E2EE·시작 가이드·RoomService·화면 공유 본문은 사용자 Chrome에서 확인했지만 추가 SDK/프로토콜 GitHub 원문 대조는 확장 연결 오류로 완료하지 못했다. 소스 전체 검토나 실제 암호화 검증을 마쳤다고 보고하지 않는다.
+
+기본은 꺼짐이고 가입/결제/외부 푸시/실제 미디어/유료AI/운영 반영은 실행하지 않았다. E2EE 키는 SYNK 서버가 관리하며 SYNK 서버를 신뢰하는 범위다. 키 교체마다 SDK Room/worker를 다시 준비해야 하므로 잠깐 통화가 중단될 수 있다. 다음은 Claude의 통화·공유·초대/설정 화면과 SDK/마이크/부모 iframe 수명 연결, 실제 기기/공급자 호환·미디어 보호 검증이다. [현재 API 계약](API.md#직원-음성-통화-백엔드--2026-10-17-로컬).
+
+
+### 동료 초대·수락·통화 방해 금지 · 2차 후속
+
+통화66개·회사 실제 라우터 통화1개·푸시33개·협업8개·기존 회귀61개, 총 **169/169**을 통과했다. [TAP 원본](../../.tmp/company-voice-20261017/phase2-final.tap). 아래 명령과 임시 SQLite/합성 회사 사용자·공급자만 사용했으며 실계정·실제 미디어·외부 푸시를 보내지 않았다.
+
+```powershell
+node --test tools/company-messenger/tests/voice.test.mjs tools/company-messenger/tests/web-push.test.mjs tools/company-messenger/tests/collaboration.test.mjs tools/company-messenger/tests/api.test.mjs tools/company-messenger/tests/project-membership.test.mjs tools/company-messenger/tests/project-leave.test.mjs tools/company-messenger/tests/project-deletion.test.mjs tools/company-messenger/tests/chat-categories.test.mjs tools/company-messenger/tests/bootstrap-session-client.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/server-messenger.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/server-voice.test.mjs
+```
+
+- 초대만으로 상대 자리/토큰을 만들지 않고 현재 호출 참여자의 현재 방에만 연결했다. 동일 요청 재전송은 새 알림을 만들지 않으며 수락한 원래 로그인/요청만 같은 참가를 다시 확인한다. 다른 기기의 수락은 충돌하고, 종료된 참가나 초대를 되살리지 않았다.
+- 수락이 원격 응답을 기다리는 동안 취소·방해 금지·발신자 나가기를 처리해 상대 토큰 반환을 막았다. 거절/취소의 재시도·45초 만료·다른 통화 중/이미 수신 대기 중·현재 방 잠금·회사 로그아웃·탈퇴 후 재초대·재시작/기능 끄기를 확인했다. 수락이 끝난 통화는 이후 방해 금지만으로 끊지 않았다.
+- 본인 설정의 CSRF/Origin/revision/형식·기간 검증, viewer 개인 설정 허용과 호출 금지, 다른admin/외부인의 사적 초대 조회·수락 차단, 듣기 전용 수락과 전체 인원/월 사용량 제한을 확인했다. 방해 금지/차단 상세나 다른 사람의 미디어 토큰을 응답하지 않았다.
+- 무음은 앱 내 초대를 유지하면서 통화 푸시를 제외하고, 통화 알림 끄기·방 무음·방해 금지는 수신 대기를 종료했다. 기간이 끝나도 옛 호출은 복원하지 않았다. 재호출 제한은 같은 요청을 중복 계산하지 않으면서 차단된 새 요청과 다른 수신자의 연속 호출·재시작을 포함해 적용했다.
+- 기존 알림함/읽음/전체 읽음을 재사용하고 읽음은 참가로 취급하지 않았다. 수락/종료/접근 철회 후 현재 알림함과 푸시 원본에서 빠지는지, 초대의45초 만료가 큐/공급자 요청 TTL에 적용되는지, 전송 직전 원본 취소가 권한 확인을 실패시키는지 확인했다. 수락 대기 중 명단 이름 변경도 별도 트랜잭션으로 동기화돼 정상 수락을 유지했다.
+- `voice-invitations.mjs`를 Docker COPY/ignore의 명시 목록에 추가하고 정적 import graph **1/1**을 통과했다([원본](../../.tmp/company-voice-20261017/phase2-container.tap), payload584파일·전이 import143개). 실제 이미지 빌드·공개 반영·HA 전환 결과는 아니다.
+
+기본 꺼짐·음성만·전체4명·계정당1참가·2시간·월1000참가자분/1GB 추정 한도를 유지했다. 설정/호출의 최소 영수증만 저장하며 직원의 활동 감시·음성 녹음·자동 요약은 추가하지 않았다. 2차 검증 당시의 다음 범위는 화면 공유/E2EE였으며, 현재 3차 상태와 남은 실기/화면 연결은 위 기록을 따른다. 실제 알림 소리·즉시 수신·이미 사업자가 접수한 푸시 회수는 검증하지 않았으며 전화 앱 수준으로 보장하지 않는다. [현재 API 계약](API.md#직원-음성-통화-백엔드--2026-10-17-로컬).
+
+
+### 실제 상태·복구·권한·사용량 · 1차 후속 검증 이력
+
+통화 관련43개와 기존 회귀61개, 총 **104/104**을 통과했다. [TAP 원본](../../.tmp/company-voice-20261017/phase1-final.tap). 실제 HTTP·임시 SQLite·독립 HMAC 서명과 합성 공급자만 사용했으며 실제 Cloud/마이크/운영 자료는 사용하지 않았다.
+
+- 자리 예약과 신호 연결만으로 미디어 connected를 만들지 않는지, 공급자 ACTIVE 조회와 트랙/mute 관측, 웹훅 누락 시 폴링 복구를 확인했다. 늦은 입퇴장·같은ID 중복·다른 본문·다른 room SID·위조/만료/미래/다른issuer/다른alg/본문 변조를 검증했다.
+- 같은 로그인에서의 resume은 자리·재접속 유예·최대 시간을 늘리지 않는다. 첫 연결/복구 유예 만료, 경계 시각 직전 복구, 상태 조회 장애 후 복구/장기 장애, 조회 대기 중 권한 회수·다른 크루 이름 변경에 따른 명단 동기화와 통화 저장 트랜잭션 분리, 미허가 참가/화면 트랙 철회와 실패 후 재시작 정리를 확인했다.
+- 정책 revision/CSRF/현재 방 관리자, 사적 방에 대한 다른admin의 우회 차단, 새 입장만 막는 잠금, 방/전체 인원 상한, 발언권 변경 시 토큰 철회, 명시적 viewer 듣기 허용·비활성화와 전체 사용량 조회 제한을 확인했다.
+- UTC 월 경계, 관측/미확인 시간 분리, 이전 스키마 마이그레이션과 재시작 후 미확인 시간 보존, 월 자리 시간·추정/보고 전송량 한도, 누적 바이트 중복/카운터 감소/위조 상태 필드/다른 소유자 거절을 확인했다. 실제 청구나 실제 네트워크 전송량을 검증한 결과는 아니다.
+- 회사 실제 라우터의 로그아웃·직원 비활성화·종료 철회를 유지하고, 쿠키 없는 provider callback도 해당 검증 경로에 도달해 서명 없이401이 되는지 확인했다. 기존 채팅·프로젝트·SYNK ID/회사 메신저 회귀를 함께 실행했다.
+- 세 런타임 모듈의 정적 Docker COPY/import graph 검사 **1/1**도 통과했다([원본](../../.tmp/company-voice-20261017/phase1-container.tap), payload583파일·전이 import142개). 실제 이미지 빌드·배포·HA 전환 시험은 하지 않았다.
+
+기본 전체4명·2시간을 유지하며 월1000참가자분·1GB 추정 다운스트림을 낮은 앱 시험 예산으로 추가했다. 기본 꺼짐·새 런타임 패키지/가입/결제/실제 미디어 호출/운영 반영 없음. 1차 검증 당시의 다음 범위는 초대·수락·방해 금지였으며, 현재 2차 상태는 위 기록을 따른다. 남은 범위는 화면 공유/E2EE·Claude 화면 연결, 실제 두 기기/다른 망과 공급자 사용량 확인이다. [현재 API 계약](API.md#직원-음성-통화-백엔드--2026-10-17-로컬).
+
+### 초기 참가·철회 기반 검증 이력
+
+
+초기 참가·철회 기반은 새 통화 시험17개와 기존 인증·대화방·메신저 회귀61개, 총 **78/78**을 통과했다. [TAP 원본](../../.tmp/company-voice-20261017/final.tap). `tools/company-messenger/tests/voice.test.mjs`와 회사 `server-voice.test.mjs`가 새 시험이며 기존 `api`·`project-membership`·`project-leave`·`project-deletion`·`chat-categories`·`bootstrap-session-client`·회사 `server-messenger`를 함께 실행했다.
+
+- 합성 provider와 임시 SQLite/합성 회사 계정으로 참가·같은 요청 재시도·전체 4명 상한·중복 기기·대화방 격리·CSRF·본인 나가기·임대/2시간 만료를 확인했다. 외부 제어 대기 중 로그아웃·권한 변경·방 삭제/복원 버전 변경은 토큰을 반환하지 않는다.
+- 회사의 실제 라우터 코드를 이용해 로그아웃·직원 비활성화·정상 종료가 미디어 철회 요청으로 이어짐을 확인했다. 실제 운영 계정이나 회사 자료로 시험한 것이 아니다. 프로세스 재시작 복구는 같은 SQLite의 저장 상태를 새 서비스에서 읽는 합성 시험이며 실제 서버 강제 장애 시험과 구분한다.
+- 철회 실패는 DB에 남고 새 참가는 차단된다. 재시작·기능 끄기 뒤 이전 자격증명을 이용한 정리와, 자격증명이 없을 때 `cleanupPending`을 유지하는 경계를 확인했다. 30일이 지난 완료 영수증 정리는 미정리 철회 건을 지우지 않는다.
+- LiveKit HTTP 호출은 가짜 응답으로 검사했고 JWT는 별도의 HMAC 검증으로 서명·60초 만료·microphone만 송신·원격 관리자 권한 미노출을 확인했다. HTTPS 제어 주소·리디렉션 차단·서버 실패/404 때 정리 완료로 오인하지 않는 처리·명시적 Cloud 토큰 철회 시각을 확인했다. [공식 SDK AccessToken](https://github.com/livekit/node-sdks/blob/main/packages/livekit-server-sdk/src/AccessToken.ts)과 [grant 직렬화](https://github.com/livekit/node-sdks/blob/main/packages/livekit-server-sdk/src/grants.ts)도 10-17 원문으로 대조했다. SDK/Cloud 실제 호환 통화 시험을 대신하지 않는다.
+- 기본 꺼짐에서는 통화 표·외부 호출을 만들지 않는다. 새 Runtime 의존성·외부 서비스 가입·결제·AI 호출·운영 배포는 없다. 화면·CSP/마이크/iframe 권한 연결·실제 두 기기 음성 송수신·다른 망/모바일/화면 공유·음질/사용량은 아직 확인하지 않았다. Claude 화면 연결과 LiveKit 설정 후 이 범위를 이어 검증한다.
+
+새 두 모듈을 회사 `Dockerfile`과 `Dockerfile.dockerignore`의 명시적 목록에도 추가했다. 기존 컨테이너 전달 시험의 정적 import graph 검사 **1/1**을 별도로 통과했다([원본](../../.tmp/company-voice-20261017/container-allowlist.tap)). Docker 이미지 빌드·배포는 실행하지 않았다.
+
+실행 명령과 계약은 [API의 음성 통화 절](API.md#직원-음성-통화-백엔드--2026-10-17-로컬)을 따른다. 전체 저장소나 회사 전체 시험 결과로 확대하지 않는다.
+
 ## 로그인 복구 대기 중 첨부 재시도 · 2026-10-09
 
 **07:55 KST 공개 반영·기존 세션/자료 인수 완료.** 새 로그인 복구 연결에서 첨부를 키보드로 재시도한 뒤 저장 결과404와 로그인 복구 실패가 이어지면 버튼 초점이 사라지는 P2를 재현했다. 실제 Chromium의 수정 전 결과는 활성 재시도 버튼이 있어도 초점이 BODY에 남았다. 수정 전 운영 메신저 v6에는 이 신규 경로가 없어 해당 영향은 없었다. [수정 전 브라우저](../../.tmp/messenger-continuation-20261009/keyboard-before/report.json).

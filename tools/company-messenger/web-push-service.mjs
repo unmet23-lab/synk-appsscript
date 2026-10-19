@@ -130,6 +130,8 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     check(Array.isArray(rows), 500, '기기 알림 원본 연결을 확인해 주세요.');
     return rows.filter(row => row && typeof row.id === 'string' && row.id.length <= 1000 && Number.isFinite(Date.parse(row.createdAt)));
   };
+  const sourceExpiry = source => Math.min(Date.parse(source.createdAt) + TTL_MS,
+    typeof source.expiresAt === 'string' && Number.isFinite(Date.parse(source.expiresAt)) ? Date.parse(source.expiresAt) : Infinity);
   const usable = row => configured && row?.enabled === 1 && row.public_key === publicKey && !!row.endpoint;
   const metadata = (row, sessionHash, active) => ({ id: row.id, label: row.label, endpointHash: row.endpoint_hash, createdAt: row.created_at, lastAcceptedAt: row.last_accepted_at || null, enabled: usable(row) && active, currentSession: row.session_hash === sessionHash });
   function disable(id) {
@@ -192,8 +194,8 @@ export function createWebPushService({ db, enabled = false, publicKey = null, pr
     transaction(() => {
       run("UPDATE web_push_queue SET state='pending',lease_until=NULL WHERE subscription_id=? AND state='sending' AND lease_until<=?", subscription.id, at);
       for (const source of visible.values()) {
-        if (Date.parse(source.createdAt) < Date.parse(subscription.created_at) || Date.parse(source.createdAt) > Date.parse(at) || Date.parse(source.createdAt) + TTL_MS <= Date.parse(at)) continue;
-        run("INSERT OR IGNORE INTO web_push_queue(subscription_id,notification_id,source_created_at,expires_at,state,next_attempt_at) VALUES(?,?,?,?,'pending',?)", subscription.id, source.id, source.createdAt, iso(Date.parse(source.createdAt) + TTL_MS), at);
+        if (Date.parse(source.createdAt) < Date.parse(subscription.created_at) || Date.parse(source.createdAt) > Date.parse(at) || sourceExpiry(source) <= Date.parse(at)) continue;
+        run("INSERT OR IGNORE INTO web_push_queue(subscription_id,notification_id,source_created_at,expires_at,state,next_attempt_at) VALUES(?,?,?,?,'pending',?)", subscription.id, source.id, source.createdAt, iso(sourceExpiry(source)), at);
       }
       for (const row of all("SELECT * FROM web_push_queue WHERE subscription_id=? AND state IN ('pending','sending')", subscription.id)) {
         if (!visible.has(row.notification_id) || row.expires_at <= at) run("UPDATE web_push_queue SET state='skipped',lease_until=NULL WHERE subscription_id=? AND notification_id=?", subscription.id, row.notification_id);

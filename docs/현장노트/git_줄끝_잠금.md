@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -131,6 +131,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 도구가 새 표 줄을 `\n`으로 끼운다. 작업본(`core.autocrlf true`)은 CRLF라 그 한 줄만 줄끝이 섞인다.
 - 고침: 넣은 뒤 파일 전체를 CRLF로 맞춘다(`t.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n')`를 임시 파일 → rename). 10-19부터는 도구가 표 구간의 줄끝을 따라 새 줄을 넣는다(CRLF 표면 새 줄 끝에 `\r`을 붙임). 그 전에 섞인 작업본은 위처럼 한 번 맞춘다.
 - 다시 확인: `(t.match(/(^|[^\r])\n/g)||[]).length`가 0이다. 도구 쪽은 `node --test tests/결정정본.test.js`의 「⑥-2」가 CRLF 정본에 넣은 뒤 CR 없는 줄바꿈이 0인지 본다(10-19 고치기 전 실패 → 고친 뒤 20/20).
+
+### 그대로 들여온 외부 배포 파일의 해시가 커밋 뒤 달라진다
+- 증상: 10-17 메신저 통화의 npm `livekit-client` ESM을 그대로 넣고 README에 SHA-256을 적었는데, 커밋 트리만 꺼낸 시험에서 해시가 맞지 않았다(1,396,433 → 1,396,348바이트).
+- 원인: 원본 파일에 CRLF 줄 85개가 섞여 있었다. `core.autocrlf=true`라 `git add`가 CR을 지웠고, 새로 체크아웃하면 모든 줄이 CRLF가 되어 어느 쪽도 원본 바이트가 아니다.
+- 고침: 들여온 배포 폴더에 `.gitattributes`로 `<폴더>/** -text -diff`를 걸고 다시 올린다. 바이트 그대로 저장·체크아웃된다.
+- 다시 확인: `git cat-file blob <커밋>:<경로> | sha256sum`이 원본·README의 해시와 같다. 들여오기 전에 원본의 CR 개수부터 센다.
 
 ## index.lock
 

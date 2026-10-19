@@ -6,6 +6,124 @@ Google Cloud 서버 배포·데이터 이전·직원과 고객의 실제 SYNK ID
 
 예전 `127.0.0.1:4191` 주소가 열리지 않으면 공용 주소 또는 위 바로가기로 접속하세요. 공용 서버 연결 문제의 확인 위치는 [운영 기록](CLOUD-OPERATIONS.md)입니다. 현재 사용 입구를 복구하려고 이전용 로컬 서버를 다시 시작하지 않습니다. 로그인 시작 링크는 로그에 저장하지 않습니다.
 
+## 직원 음성 통화 백엔드 · 2026-10-17 로컬
+
+직원끼리 통화하며 작업하는 후속 요청으로 메신저 백엔드에 참가/나가기·현재 회사/방 권한 철회를 추가하고, 1차 후속으로 실제 미디어 상태의 공급자 조회/서명 웹훅 대조·끊김 복구·방별 입장/발언/관리 정책·UTC 월 사용량 추정/한도를 구현했다. 2차로 동료 초대·수락/거절/취소/45초 만료, 개인 통화 알림·무음·기간 지정 방해 금지, 재호출 제한을 기존 개인 알림함/선택형 푸시에 연결했다. 3차로 전체 화면 공유1명·화면 소리 별도 허용/철회, E2EE 필수 준비·RAM 공유 키·참가자 변경 시 키 교체를 추가했다. 후속 백엔드 점검에서 공유 중지/권한 철회·퇴장/취소·느린 응답 뒤 토큰 발급의 경합, 취소 요청 재전송, 암호화 준비 상태와 주기 점검 대기열 누적을 고쳤다. SYNK 서버를 신뢰하는 키 관리이며 키 교체 중 SDK Room/worker 재준비가 필요하다. 기본 전체 동시4명·계정당 참가1건·1회 최대2시간이며 월 앱 시험 예산은1000참가자분·1GB 추정 다운스트림이다. 통화·알림/푸시·기존 회귀202개와 Docker 정적 전달1개를 통과했으며 실제 음성 송수신·공급자 청구를 확인한 결과는 아니다. 기본은 꺼짐이며 Cloud 가입·결제·미디어 호출·운영 반영은 하지 않았다. [API 계약](../../../../../tools/company-messenger/API.md#직원-음성-통화-백엔드--2026-10-17-로컬)과 [검증 범위](../../../../../tools/company-messenger/QA.md#직원-음성-통화-백엔드--2026-10-17-로컬)를 따른다.
+
+화면·마이크 권한·메뉴 이동 중 통화 유지·SDK 연결은 Claude 담당 범위다. 10-17 Claude가 통화·공유·초대·설정 화면, 메뉴 이동에도 남는 iframe과 미니 조작, LiveKit SDK·E2EE worker·키 교체, 마이크·화면 캡처 정책을 연결했고 한 PC의 두 브라우저 세션으로 실제 Cloud 송수신을 확인했다([검증](../../../../../tools/company-messenger/QA.md#통화화면-공유-화면과-sdk-연결--2026-10-17)). 그 전 백엔드 점검에서는 화면 코드를 변경하지 않았으며 두 기기 음성/화면 송수신·E2EE 검증 결과는 아직 없다. 교사 수업·학생·고객 상담·외부 게스트 권한과 통화 기록/Atlas 개인화는 연결하지 않는다.
+
+<a id="discord-backend-study-20261017"></a>
+### Discord 기능 조사와 백엔드 개발 후보 · 2026-10-17
+
+**목적:** 직원이 원하는 동료와 통화하면서 기존 대화·업무·자료 화면에서 계속 일할 수 있게 한다. 아래 표는 조사 당시의 제안이다. 유호님은 같은 날 추천 개발 순서를 채택하고 1차 실제 상태·복구·권한·사용량 개발을 요청했다. 1차와 동료 초대·수락·통화 방해 금지 2차, 화면 공유/E2EE 백엔드 3차를 위 API/검증 원문대로 로컬 구현했고, 나머지 개별 후보의 구현·운영 반영은 별도 후속이다. 교사 수업·학생·고객·외부 게스트로 범위를 넓히지 않는다.
+
+#### 조사 범위와 한계
+
+- 유호 Chrome에서 Discord 공식 도움말의 Basics·Server Settings·Account Settings에 속한 **17개 분류의 문서 목록 246개**를 확인했다. 그중 통화·협업에 관련된 본문과, 별도 Safety/Troubleshooting 분류의 암호화·오류 안내를 합해 **핵심 문서 30개**에서 관련 동작을 확인했다. 246개 본문 전체를 읽거나 모든 요금제·OS·계정에서 기능을 직접 실행한 전수 시험은 아니다.
+- 사용자 반응은 공개 App Store 두 지역 화면의 **리뷰 20개**와 Discord 공식 피드백 **원글 2개·댓글 2개**를 읽었다. 리뷰의 작성 범위는 2020-06~2026-07이고, 공식 피드백은 2023-09~2024-09다. 표시 순서대로 읽은 편의 표본이며 최근 30일·한국 직원 집단·전체 Discord 이용자를 대표하지 않는다. Reddit의 통화·알림·공개 상태 관련 원문은 접근 차단/사람 확인 화면 때문에 확인하지 못했다. 검색 요약은 반응 근거로 쓰지 않았다.
+- 폴란드 App Store는 4.7/5·74k Ratings, 남아공은 4.7/5·24k Ratings로 표시됐다. 이는 확인일의 지역별 평가 표시값이며 다운로드·활성 사용자 수나 개별 기능의 효과 측정값이 아니다. 검토 대상은 사용자가 지정한 Discord이며 경쟁 서비스 전체의 우열을 판정한 조사는 아니다.
+- Nitro/Shop/Boost의 상품·결제 조건, 광고·Quests·프로모션, 게임/콘솔별 연동, 정책·개발자 문서 전체는 본문 전수 범위에서 제외했다. 서버 검색·공개 커뮤니티·학생/보호자 기능은 목록을 분류했지만 직원 통화의 개발 대상으로 선정하지 않았다.
+
+| 목록을 확인한 공식 분류 | 문서 수 |
+|---|---:|
+| [Getting Started](https://support.discord.com/hc/en-us/sections/360008206871-Getting-Started) | 11 |
+| [Messaging and Chat](https://support.discord.com/hc/en-us/sections/115000458672-Messaging-and-Chat) | 30 |
+| [Voice, Video, and Streaming](https://support.discord.com/hc/en-us/sections/201110537-Voice-Video-and-Streaming) | 22 |
+| [Friends](https://support.discord.com/hc/en-us/sections/24452288971927-Friends) | 6 |
+| [Features](https://support.discord.com/hc/en-us/sections/201110577-Features) | 20 |
+| [Server Features](https://support.discord.com/hc/en-us/sections/202857957-Server-Features) | 30 |
+| [Roles, Permissions, and Moderation](https://support.discord.com/hc/en-us/sections/202856377-Roles-Permissions-and-Moderation) | 26 |
+| [Integrations](https://support.discord.com/hc/en-us/sections/24453080763799-Integrations) | 8 |
+| [Communities and Discovery](https://support.discord.com/hc/en-us/sections/360007770572-Communities-and-Discovery) | 24 |
+| [Invites](https://support.discord.com/hc/en-us/sections/201131298-Invites) | 6 |
+| [Account Management](https://support.discord.com/hc/en-us/sections/360007770532-Account-Management) | 10 |
+| [Account Security](https://support.discord.com/hc/en-us/sections/360009072571-Account-Security) | 17 |
+| [Notifications](https://support.discord.com/hc/en-us/sections/360007875151-Notifications) | 10 |
+| [Profiles](https://support.discord.com/hc/en-us/sections/24452878723607-Profiles) | 7 |
+| [Status](https://support.discord.com/hc/en-us/sections/24452694774551-Status) | 7 |
+| [Connections](https://support.discord.com/hc/en-us/sections/360007770552-Connections) | 11 |
+| [Account Customization](https://support.discord.com/hc/en-us/sections/360007875131-Account-Customization) | 1 |
+
+#### 사용자 반응 → 채택할 장점 → SYNK 적용 → 확인할 결과
+
+| 원문에서 읽은 반응 | 채택할 장점과 SYNK 적용 제안 | 실제 사용에서 확인할 결과 |
+|---|---|---|
+| [폴란드 App Store](https://apps.apple.com/pl/app/discord-talk-play-hang-out/id985746746?see-all=reviews&platform=iphone)의 2026-07-17 리뷰는 음질·채널·화면 공유·기기 간 사용을 호평한다. 2023~2024 리뷰에서는 음소거 표시·출력 선택·검색·화면 복잡성에 불만이 있다. | 현재 방에서 통화하고 자료 화면을 오가며 유지한다. 마이크·스피커·연결 상태와 나가기 동작을 바로 찾을 수 있게 한다. 채팅/검색 백엔드를 새 통화 전용 사본으로 나누지 않는다. | 동료 두 명이 도움 없이 참가하고 문서/업무 화면 이동 중 양방향 음성이 유지되는지, 음소거가 상대에게도 정확히 보이는지 확인한다. |
+| [남아공 App Store](https://apps.apple.com/za/app/discord-talk-play-hang-out/id985746746?see-all=reviews&platform=ipad)의 2020/2024 리뷰는 연결 대기·임의 이탈을, 2021 리뷰는 스레드 때문에 중요 대화를 놓친 경험을 설명한다. 2022 리뷰는 접근성과 사용 편의를 호평한다. 과거 불만의 현재 지속 여부는 확인하지 않았다. | 연결 중/미디어 연결됨/재접속 중/종료를 구분하고 실패 이유와 다음 행동을 안내한다. 주제별 대화를 추가해도 기존 알림함·검색·캐치업에서 누락되지 않게 한다. | 다른 망 전환·새로고침·재시작에서 참가자가 유령으로 남거나 중복되지 않는지, 관련 알림을 한곳에서 찾는지 확인한다. |
+| [통화 입퇴장 소리 피드백](https://support.discord.com/hc/en-us/community/posts/17821772237591-Mobile-voice-call-notifications), 2023-09-26 원글·10-20 댓글은 알림을 유지하면서 소리만 줄이고 싶다는 요구다. [수신 알림 피드백](https://support.discord.com/hc/en-us/community/posts/26042882075159-Incoming-call-notification-on-mobile-needs-to-be-completely-fixed), 2024-08-31 원글·09-29 댓글은 취소 뒤 남는 알림·앱 밖에서 놓치는 통화를 지적한다. | 개인별 통화 알림·소리·방해 금지를 구분한다. 수락/취소/만료 상태를 서버가 관리하고 낡은 알림을 열면 현재 상태부터 확인한다. 웹 푸시를 전화 앱 수준의 수신 보장으로 표현하지 않는다. | 취소된 호출이 다시 울리지 않고, 여러 탭·기기 중 한 곳만 수락하며, 무음/방해 금지가 실제 동작하는지 확인한다. |
+
+위 반응을 바탕으로 한 개발 우선순위는 SYNK에 대한 설계 가설이다. Discord의 평점만으로 생산성·학습 효과가 입증됐다고 해석하지 않는다. 직원 통화 내용을 Atlas 기억이나 직원 성과 측정에 자동 연결하지 않는다.
+
+#### 기능별 비교와 추가 후보
+
+아래 상태는 조사 시점의 로컬 `tools/company-messenger/API.md`, `server.mjs`, `voice-service.mjs`, `voice-livekit.mjs`와 회사 통합 계약을 대조한 기록이다. 이후 1·2·3차 구현의 현재 계약은 위 [음성 통화 API](../../../../../tools/company-messenger/API.md#직원-음성-통화-백엔드--2026-10-17-로컬)를 따른다. 아래의 당시 미구현 설명을 현재 상태로 읽지 않는다. 기존 기능의 운영 상태는 해당 QA/운영 기록을 따른다.
+
+| 기능 묶음 | Discord에서 확인한 기준 | SYNK 조사 당시 상태와 적용 제안 | 담당 범위·순서 |
+|---|---|---|---|
+| 상시 음성방 | 음성방에 권한이 있는 사람이 자유롭게 입퇴장한다. 방 상태를 설정할 수 있다. | 기존 일반/팀/프로젝트방에 연결되는 통화를 사용한다. ‘작업 중 같이 있어도 됨’ 방은 필요한 일반방으로 만들 수 있다. 기본 공지/정보/수다방은 현재 통화 제외이므로 이름만으로 해제하지 않는다. | 기존 참가 API 재사용, 방 정책은 1차 |
+| 특정 동료 호출·그룹 통화 | DM/GDM에서도 통화하며 음성방과 입구가 다르다. | 대상에게 요청→수락/거절/취소/만료. 호출만으로 상대를 통화에 연결하지 않는다. 선택형 비공개 프로젝트방이 소규모 그룹 대화를 이미 지원하므로 새 그룹 DM 모델은 필요성을 먼저 확인한다. | 초대 상태·현재 멤버십, 2차 |
+| 실제 접속·참가자 상태 | 음성방 참가와 마이크/스피커 상태를 구분한다. | 현재 `reservations`는 서버 자리 예약이고 실제 미디어 접속 증거가 없다. LiveKit 웹훅·참가자 조회 대조를 추가하고 SDK의 연결/음소거 상태와 구분한다. | 백엔드+SDK, 1차 |
+| 통화 가능한 상태 | Online/Idle/DND/Invisible 및 만료 가능한 사용자 상태가 있다. | 통화 가능·집중 중·자리 비움·표시 안 함을 본인이 선택하도록 제안한다. 접속 여부·실제 통화 중 여부·받고 싶은 상태는 각각 계산한다. 활동 시간/작업 앱 감시는 추가하지 않는다. | 개인 설정·세션 상태, 2차 |
+| 통화 알림 | 서버/방별 알림·무음·수신/발신 소리를 조절한다. | 기존 all/mentions/mute·개인 알림함·선택형 기기 푸시는 재사용한다. 통화 알림은 별도 개인 선호·재호출 제한·짧은 만료를 추가한다. 다른 방 구성원 전체에게 매번 울리지 않는다. | 백엔드+클라이언트, 2차 |
+| 방별 통화 권한 | 역할·채널 권한으로 보기·접속·발언·영상 등을 제어한다. | 현재 회사 작성 권한을 통화에도 적용한다. 이후 canJoin/canSpeak/canShare/canModerate를 분리하되 회사 역할·현재 방 참여의 교집합을 지킨다. 관리자에게 사적 방 우회를 새로 주지 않는다. | 권한 계산·회수, 1차 |
+| 진행자 제어·감사 | 역할 계층·Timeout·Stage 진행자 제어가 있다. | 필요 범위는 방 잠금·발언 제한·퇴장·종료와 행위자/대상/시각의 최소 감사 기록이다. 관리자 음소거와 개인 음소거를 구분하며 원격 마이크 켜기는 제공하지 않는다. | 서버 제어+감사, 1차 기반/3차 확장 |
+| 화면 공유 | 창/화면 선택·공유 중지·보기 방식·공유 권한이 있다. 오디오 지원은 OS/브라우저별로 다르다. | 현재 토큰은 microphone만 허용하며 화면 공유는 꺼져 있다. screen_share와 필요한 screen_share_audio만 별도 허용하고 카메라 권한과 분리한다. 권한 회수 때 이미 발행 중인 트랙도 종료해야 한다. | 백엔드+브라우저 캡처, 3차 |
+| 여러 화면 동시 보기·카메라 | 여러 스트림·집중/격자/팝아웃·영상 통화를 지원한다. | 먼저 음성+공유 화면 하나에 집중한다. 다중 공유/카메라는 참가 규모와 실제 사용량을 본 뒤 판단한다. 화면 배치는 클라이언트 작업이다. | 후속·트래픽 증가 |
+| 메뉴 이동·작은 통화창 | 통화 중 채팅·팝아웃으로 다른 작업을 함께 한다. | 회사 부모 화면에서 통화 수명을 유지하고 현재 메신저/업무 API를 사용한다. iframe 제거·재생성으로 통화가 끊기지 않게 해야 한다. | 주로 프론트, 기존 후속 유지 |
+| 재접속·기기 바꾸기 | 클라이언트의 연결 상태와 오류 대응을 제공한다. | 계정당 한 연결 제한은 유지한다. 새 기기의 명시적 인계는 이전 연결 철회 확인 후 허용한다. 새로고침/다른 망의 SDK 복구가 예약 lease·로그아웃·권한 철회와 충돌하지 않게 설계한다. | 백엔드+SDK, 1차 복구/후속 인계 |
+| 마이크 시험·장치 선택 | Mic Test·입출력 장치·음소거·Deafen·Push-to-talk가 있다. | 입장 전 장치/권한/소리 시험과 실패 안내가 필요하다. 브라우저/SDK 기능을 사용하며 음성 처리를 Node 서버에 새로 구현하지 않는다. | 클라이언트 필수, 백엔드는 capability/오류 계약 |
+| 소음·에코·개인 음량 | Krisp는 기기에서 동작하며 소음 억제를 끌 수 있다. | 브라우저/SDK의 noise suppression·echo cancellation부터 검토한다. 개인별 듣기 음량은 로컬 처리한다. Discord의 Krisp 제공 조건을 SYNK에서도 무료라고 해석하지 않는다. | 클라이언트, 외부 SDK 계약은 별도 확인 |
+| 연결 품질·장애 안내 | 음성 지역 선택·입력/출력·스트림 오류별 복구 안내가 있다. | SDK의 품질·패킷 손실·지연과 권한/장치/연결 실패를 구분한다. 백엔드에는 오류 코드·짧은 보존의 비식별 진단을 둔다. 지역 강제 선택 UI는 실제 지연 문제가 확인된 뒤 검토한다. | 백엔드+SDK, 1차 |
+| 참가 인원·사용량 | 기능·요금제별 한도가 있다. | 현재 전체 4명·계정당 한 연결·1회 2시간은 시험값이다. 방별 인원/전체 인원/동시 공유 수/월 사용량을 설정 가능하게 하되 먼저 낮은 한도를 유지한다. 인원×시간과 미디어 전송량 추정·공급자 사용량 대조가 필요하다. | 백엔드 운영 기반, 1차부터 |
+| 예약 통화·참석 알림 | Scheduled Events와 관심 등록/시작 알림이 있다. | 기존 업무/알림 실행기를 재사용해 제목·시간·참가 의사·방 링크를 연결한다. 예약이 자동 참가나 마이크 허용을 뜻하지 않게 한다. | 4차 후보 |
+| 발표·손들기·청취 | Stage는 진행자/발언자/청중과 발언 요청을 나눈다. | 직원 소규모 협업에서는 우선순위가 낮다. 전사 발표 수요가 확인되면 듣기 전용 참가와 손들기부터 검토한다. 학생 수업 권한으로 확장하지 않는다. | 4차 후보 |
+| 투표 | 여러 선택지·마감·복수 응답·수정 가능한 표를 지원한다. | 기존 리액션은 있지만 정식 투표는 없다. 일정/시안 선택 수요가 있을 때 방 권한·중복 투표·종료 시각을 가진 투표를 추가한다. 초기에는 실명 투표가 명확하며 익명 모드는 별도 설계한다. | 4차 후보 |
+| 비동기 음성 메시지 | 짧게 녹음해 메시지로 보내고 기기에서 듣는다. | 오디오 파일 업로드는 있지만 녹음·재생 중심의 음성 메시지 계약은 없다. 기존 파일/전송 복구를 재사용하고 보내기 전 미리 듣기·명시적 전송을 제안한다. | 후속, 저장량 증가 |
+| 통화 중 채팅·파일 | 음성방 안에서도 링크·파일·메시지를 주고받는다. | 채팅·파일·검색·답글·핀·저장·리마인더가 이미 있다. 별도 통화 채팅 DB를 만들지 않고 현재 방을 함께 보여 준다. | 기존 백엔드 재사용 |
+| 스레드·포럼 | 주제별 참가/알림·태그·검색·닫기/잠금이 있다. | 현재 직접 답글 목록은 있지만 독립 제목/구독/닫기 기능의 스레드·포럼 모델은 없다. 필요하면 기존 답글을 확장한다. 통화 도입의 선행 작업으로 삼지 않는다. | 후속, 알림/검색 누락 검증 |
+| 검색·핀·저장·알림함 | 메시지 검색·Inbox·Bookmark/Reminder가 있다. | 대부분 기존 구현이다. Discord와 기능 이름이 비슷하다는 이유로 새 저장/알림 체계를 만들지 않는다. 접근권한 철회·원문 삭제 시 현재 필터를 유지한다. | 기존 기능 유지 |
+| 메시지 전달·링크 미리보기 | 전달은 원문 시점 사본이며 수정과 연동되지 않는다. | 현재 권한을 확인하는 Workspace 카드 방식이 있다. 사적 방 내용을 다른 방으로 복사하는 전달이나 임의 URL 수집은 기본 추가하지 않는다. 필요하면 출처/수신자 권한을 검사하는 원문 링크부터 검토한다. | 낮은 우선순위 |
+| 봇·웹훅·슬래시 명령 | 외부 이벤트를 방에 게시하는 Webhook이 있다. | 기존 업무·확정본·고객/SNS 이벤트와 알림을 먼저 재사용한다. 향후 외부 연동은 범위 제한 자격증명·서명/재전송 방지·중복 방지를 가진다. 미디어 상태 웹훅과 일반 업무 연동 웹훅을 구분한다. | 필요가 확인된 연동만 후속 |
+| 통화 후 결정·다음 행동 | Discord에는 대화 탐색/요약 실험이 있다. | SYNK의 기존 업무·확정 기록·캐치업에 사람이 적은 요점과 원문 링크를 연결하는 방향을 제안한다. 음성 자동 녹음/AI 요약 없이 시작할 수 있다. AI 적용 시 담당 엔진 원문·동의·추가 비용을 따로 확인한다. | 기존 업무 API 활용, 후속 |
+| 종단간 암호화 | Discord는 2026-03-02부터 일반 음성/영상·Go Live에 E2EE 지원을 요구한다고 안내한다. Stage·스트림 미리보기는 안내된 예외다. | 현재 SYNK에는 SDK/키 분배가 없고 E2EE를 구현했다고 말할 수 없다. LiveKit의 E2EE 지원을 사용하되 키 생성·분배·참가자 변동 때 교체·지원 기기·위협 모델을 설계해야 한다. | 공개 사용 전 설계·실기 검증, 백엔드+클라이언트 |
+| 녹화·Clips·자동 요약 | Clips는 로컬 저장·편집·공유 기능이며 제한/실험 조건이 있다. 대화 요약도 일부 서버 실험이다. | 자동 녹음/녹화·전사·AI 요약은 초기 추가 대상에서 보류한다. 참가자 동의·표시·보존·삭제·비용·E2EE와의 관계가 먼저 필요하다. | 별도 요구 때 검토 |
+| 외부 초대·게스트 | 초대 유효 기간/사용 횟수/철회·중단이 있다. | 현재 직원 SYNK ID·회사 역할·방 멤버십을 유지한다. 직원 호출 요청에 외부 입장 권한을 싣지 않는다. 게스트는 분리된 대상·기한·호스트·대기실 계약이 필요하다. | 초기 범위 제외 |
+| 계정·보안·개인정보 | MFA·기기/계정 관리·안전 기능이 있다. | 공통 SYNK ID·현재 회사 세션·CSRF·퇴사/탈퇴 철회를 재사용한다. 통화 전용 비밀번호/계정 체계를 추가하지 않는다. 관리자 제어도 본래 방 접근 범위를 지킨다. | 공통 기반 유지 |
+| 접근성·단축키 | 키보드·Reduced Motion·화면/음성 표시를 조절한다. | 통화 시작/나가기/음소거를 키보드로 사용하고 상태를 색·소리에만 의존하지 않도록 한다. 메인 화면을 벗어나도 통화 제어를 찾을 수 있게 한다. | 프론트 검증 필수 |
+| 게임·장식·공개 성장 기능 | Soundboard·게임 활동·아바타 꾸미기·공개 발견·Quests 등이 있다. | 직원이 동료와 작업한다는 현재 목적의 성공 기준과 직접 연결되지 않는다. 후보 목록에만 남기고 초기 백엔드에 추가하지 않는다. | 초기 제외 |
+
+#### 백엔드 개발 순서와 검증 기준
+
+1. **실제 상태·복구·권한·사용량 기반.** 기존 `voice_calls`/`voice_admissions`를 확장한다. 예약 상태와 미디어 상태를 구분하고, 참가자/트랙/연결 중단 웹훅을 검증해 반영한다. 공급자 조회와 주기적으로 대조해 누락을 복구한다. 방별 capability와 현재 사용자에게 허용된 조작, 사유가 있는 종료/거부 코드, 최소 감사와 사용량 추정을 제공한다. 다음 단계가 읽을 기반이므로 먼저 구현한다.
+2. **특정 동료 초대·수락·방해 금지.** 활성 방 구성원만 대상으로 하는 요청 상태를 저장한다. 요청 ID·만료·취소·거절·수락을 멱등 처리하고 여러 기기의 동시 수락은 하나만 성공하게 한다. 통화 중/집중 중·방 무음·개인 통화 알림·재호출 제한을 전송 직전에 재검사한다. 기존 SSE/개인 알림/선택형 푸시에 연결하되 현재 30초 점검 푸시만으로 즉시 수신·잠금 화면 전화 UI를 보장하지 않는다. 취소 이후 이미 전송된 푸시는 되돌릴 수 없으므로 열기 시 서버 상태를 다시 읽는다.
+3. **화면 공유·암호화 계약 완성 후 화면 연결.** 공유 소스별 권한·동시 공유 수·정지/철회·트래픽 기준과 E2EE 모드/키 수명을 정한다. Claude의 상시 통화 제어·입장 전 장치 시험·브라우저 권한·iframe/부모 수명 연결에 같은 계약을 제공한다. 카메라·녹화·외부 게스트를 묶어서 열지 않는다.
+
+위 순서에서 유지할 검증 기준:
+
+- 서명/본문 해시/토큰 시각을 확인하지 못한 웹훅은 상태를 바꾸지 않는다. 이벤트 ID 중복·지연된 이전 참가자의 퇴장·잘못된 방/identity·순서 역전·서버 재시작에도 종료된 참가가 되살아나지 않아야 한다. 상태 변경은 기존 단일 writer와 원자적 저장을 따른다.
+- LiveKit 웹훅은 전달 보장이 없다. `participant_joined`는 미디어 연결 후의 이벤트이며, SDK `ParticipantConnected`는 신호 연결 단계이므로 같은 뜻으로 쓰지 않는다. 공급자 조회/SDK/서버 관측 시각을 구분하고, 연결 확인을 실제 양방향 소리 시험의 대체물로 쓰지 않는다.
+- 초대 생성·수락·재접속·공유 허용·관리자 조작과 결과 조회에서 현재 회사 세션·역할·방 접근을 다시 검사한다. 로그아웃·퇴사·프로젝트 삭제/탈퇴 이후 알림·참가자 목록·미디어가 노출되지 않게 한다. 이름/방 제목/사내 자료는 공급자 식별자·토큰·외부 푸시 본문에 넣지 않는다.
+- 여러 탭/기기 수락 경쟁·호출 취소/만료·집중 상태·무음·망 전환·브라우저 절전·프로세스 중단을 시험한다. 재접속 편의를 위해 기존 권한 철회·폐기 대기 차단을 무시하지 않는다. 모바일 백그라운드 유지와 즉시 수신은 실물 기기 확인 전 지원 완료로 쓰지 않는다.
+- 월 참가자 분과 송수신량은 추정과 공급자 청구 기준을 구분한다. 웹훅 누락 시 임의로 0으로 정산하지 않고 마지막 관측·불확실성을 남긴다. 참가/시간/공유 한도와 여유분·운영 차단을 정하되, 앱의 추정 한도만으로 공급자 과금이 절대 발생하지 않는다고 보장하지 않는다.
+- E2EE는 WebRTC 전송 암호화와 다르다. 지원 SDK·모든 참가자의 암호화 활성·키 교체·지원 불가 기기의 거부를 확인한다. 앱 서버가 키를 생성/보유하는 방식은 LiveKit에 내용을 숨기는 것과 SYNK 운영자에게도 키를 숨기는 것을 구분한다. 신호/참가 메타데이터와 기존 SQLite 채팅까지 E2EE라고 표시하지 않는다.
+- 구현 단위의 합성 시험 후 두 실제 기기·서로 다른 망에서 송수신/재접속/권한 회수/공유 중지와 공급자 사용량을 확인한다. 현재 78개 합성 시험과 Docker 포함 검사는 이 실기 확인을 대신하지 않는다.
+
+**비용 관점:** 초대·개인 상태·권한·기본 로그는 기존 서버/DB로 구현할 수 있다. 실제 통화의 참가자 분·다운스트림과 화면 공유는 별도 서비스 사용량이다. 녹화/전사/AI 요약은 저장·모델 호출 비용도 추가한다. 이번 조사는 새 가입·결제·공급자 설정·미디어 호출·운영 반영을 수행하지 않았다.
+
+#### 본문을 확인한 공식 기능 자료 30개
+
+모두 2026-10-17 열람. 아래 묶음은 조사 출처이며 전부 SYNK에 채택한다는 의미가 아니다.
+
+- 통화/방/공유: [1. Group Chat and Calls](https://support.discord.com/hc/en-us/articles/223657667-Group-Chat-and-Calls), [2. Voice Channels](https://support.discord.com/hc/en-us/articles/19583625604887-Voice-Channels-FAQs), [3. Text Chat in Voice Channels](https://support.discord.com/hc/en-us/articles/4412085582359-Text-Channels-Text-Chat-In-Voice-Channels), [4. Go Live and Screen Share](https://support.discord.com/hc/en-us/articles/360040816151-Go-Live-and-Screen-Share).
+- 상태/알림: [5. Notifications](https://support.discord.com/hc/en-us/articles/215253258-Notifications-Settings-101), [6. Inbox](https://support.discord.com/hc/en-us/articles/360045027712-Inbox-FAQ), [7. Online Status](https://support.discord.com/hc/en-us/articles/227779547-Changing-Online-Status), [8. Custom Status](https://support.discord.com/hc/en-us/articles/360035407531-Custom-Status).
+- 권한/대화 구조: [9. Channel Permissions](https://support.discord.com/hc/en-us/articles/10543994968087-Channel-Permissions-Settings-101), [10. Roles and Permissions](https://support.discord.com/hc/en-us/articles/214836687-Discord-Roles-and-Permissions), [11. Scheduled Events](https://support.discord.com/hc/en-us/articles/4409494125719-Scheduled-Events), [12. Forum Channels](https://support.discord.com/hc/en-us/articles/6208479917079-Forum-Channels-FAQ), [13. Threads](https://support.discord.com/hc/en-us/articles/4403205878423-Threads-FAQ), [14. Polls](https://support.discord.com/hc/en-us/articles/22163184112407-Polls-FAQ).
+- 보안/장애: [15. E2EE](https://support.discord.com/hc/en-us/articles/25968222946071-End-to-End-Encryption-for-Audio-and-Video), [16. Minimum Client Versions](https://support.discord.com/hc/en-us/articles/38025123604631-Minimum-Client-Version-Requirements-for-Voice-Chat), [17. Audio/Video Error Codes](https://support.discord.com/hc/en-us/articles/30952914470807-Discord-Audio-and-Video-Error-Codes-Troubleshooting-Guide), [18. Voice/Video/Streaming Guide](https://support.discord.com/hc/en-us/articles/33030151293079-Discord-Voice-Video-Streaming-Guide).
+- 확장: [19. Stage Channels](https://support.discord.com/hc/en-us/articles/1500005513722-Stage-Channels-FAQ), [20. Krisp](https://support.discord.com/hc/en-us/articles/360040843952-Krisp-FAQ), [21. Voice Regions](https://support.discord.com/hc/en-us/articles/1500007645701-Voice-Regions-on-Discord-FAQ), [22. Voice Messages](https://support.discord.com/hc/en-us/articles/13091096725527-Voice-Messages), [23. Invites](https://support.discord.com/hc/en-us/articles/208866998-Invites-101), [24. Conversation Summaries](https://support.discord.com/hc/en-us/articles/12926016807575-In-Channel-Conversation-Summaries).
+- 연동/관리/보관: [25. Webhooks](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks), [26. Time Out](https://support.discord.com/hc/en-us/articles/4413305239191-Time-Out-FAQ), [27. Slowmode](https://support.discord.com/hc/en-us/articles/360016150952-Slowmode-FAQ), [28. Clips](https://support.discord.com/hc/en-us/articles/16861982215703-Clips), [29. Forwarding](https://support.discord.com/hc/en-us/articles/24640649961367-Message-Forwarding), [30. Bookmarks/Reminders](https://support.discord.com/hc/en-us/articles/26442819646999-Message-Bookmarks-and-Reminders).
+
+백엔드 구현의 추가 근거는 LiveKit [웹훅·SDK 이벤트와 전달 한계](https://docs.livekit.io/intro/basics/rooms-participants-tracks/webhooks-events/), [참가자 조회·권한·트랙 제어](https://docs.livekit.io/reference/other/roomservice-api/), [E2EE와 애플리케이션의 키 관리 책임](https://docs.livekit.io/transport/encryption/)이다. 공식 [피드백 접수 안내](https://support.discord.com/hc/en-us/articles/213490807-Where-can-I-submit-Feature-Requests-Feedback-and-Suggestions)는 현재 비공개 폼 안내이므로 최근 공개 반응의 근거로 쓰지 않았다.
+
+
 ## 작업실 자동화 운영 반영 · 2026-10-13
 
 로컬에서 확인한 **1~35번의 구현 코드**를 [운영 작업실](https://workspace.synk.im/)에 반영했다. 29번과 36번은 제외한다. 기존 화면을 새로고침해 사용하며, 로컬 합성 예시는 운영 고객 기록과 별개로 보존한다. 운영 정적 파일·실행 코드와 설정 대조 근거는 [운영 검증](WORKSPACE_QA.md#workroom-production-20261013)을 따른다.

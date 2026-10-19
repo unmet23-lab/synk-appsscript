@@ -103,6 +103,40 @@ test('a message load completing after a switch to an empty category cannot repai
   assert.equal(f.state.channelId,null);assert.equal(f.state.chatCategory,'team');assert.equal(f.state.messages.length,0);assert.equal(f.get('#message-list').innerHTML,empty);assert.deepEqual(f.reads,[]);assert.deepEqual(f.renders,[]);
 });
 
+test('a realtime refresh wins over a late initial history response or error',async()=>{
+  for(const fails of [false,true]){
+    const f=fixture(),loading=f.run("selectChannel('dm')"),initial=f.requests[0];
+    const refreshing=f.run('refreshMessages()');
+    f.requests[1].resolve({messages:[{id:'new',body:'실시간 최신 대화'}],hasMore:false});await refreshing;
+    const markup=f.get('#message-list').innerHTML;
+    if(fails)initial.reject(new Error('늦은 첫 요청 실패'));else initial.resolve({messages:[{id:'old',body:'오래된 첫 대화'}],hasMore:true});
+    await loading;
+    assert.equal(f.state.messages[0].id,'new');assert.equal(f.state.hasMore,false);
+    assert.equal(f.get('#message-list').innerHTML,markup);assert.deepEqual(f.renders,['dm']);assert.deepEqual(f.reads,['dm']);
+  }
+});
+
+test('an initial history response is still usable if the concurrent refresh failed',async()=>{
+  const f=fixture(),loading=f.run("selectChannel('dm')"),initial=f.requests[0];
+  const refreshing=f.run('refreshMessages()'),rejected=assert.rejects(refreshing,/재조회 실패/);
+  f.requests[1].reject(new Error('재조회 실패'));await rejected;
+  initial.resolve({messages:[{id:'initial',body:'첫 대화'}],hasMore:false});await loading;
+  assert.equal(f.state.messages[0].id,'initial');assert.deepEqual(f.renders,['dm']);assert.deepEqual(f.reads,['dm']);
+});
+
+test('pending read receipts do not hold initial history or realtime refresh completion',async()=>{
+  const f=fixture();let finishRead;f.context.readPending=new Promise(resolve=>{finishRead=resolve;});
+  f.run('markRead=()=>readPending');
+  let selected=false,refreshed=false;
+  const loading=f.run("selectChannel('dm')").then(()=>{selected=true;});
+  f.requests[0].resolve({messages:[{id:'initial',body:'첫 대화'}],hasMore:false});
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(selected,true);assert.equal(f.state.messages[0].id,'initial');
+  const refreshing=f.run('refreshMessages()').then(()=>{refreshed=true;});
+  f.requests[1].resolve({messages:[{id:'new',body:'최신 대화'}],hasMore:false});
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(refreshed,true);assert.equal(f.state.messages[0].id,'new');
+  finishRead();await Promise.all([loading,refreshing]);
+});
+
 test('a pending DM or team-room creation cannot pull the user back after a category change',async()=>{
   for(const kind of ['dm','team']){
     const f=fixture();f.state.channels=f.state.channels.filter(room=>room.kind==='self');f.run('refreshChannels=async()=>{};refreshDirectory=async()=>{};');
