@@ -26,7 +26,7 @@ test('empty history stays empty without inventing a trait, score, or growth', as
   assert.deepEqual(result.personal, []);assert.deepEqual(result.reasons, []);assert.equal(result.learning.empty, true);
   assert.equal(result.lastAt, null);assert.equal(result.asOf, asOf);assert.match(result.description, /아직 정리할 정보가 없/);
   assert.deepEqual(Object.keys(result).sort(), ['asOf', 'description', 'headline', 'lastAt', 'learning', 'limits', 'personal', 'reasons', 'shared', 'activity', 'understanding', 'now', 'settings', 'settingChoices', 'reasonIds', 'worldReadsAnswers', 'worldFollowsSettings', 'usageLine', 'learningRevision', 'learningEnabled'].sort());
-  assert.equal(result.worldReadsAnswers, false);assert.equal(result.worldFollowsSettings, false, 'both turn on in the release that ships WORLD with them');
+  assert.equal(result.worldReadsAnswers, true);assert.equal(result.worldFollowsSettings, true, 'both are true now that the server read path and that WORLD are live');
   // Nothing is said beyond an honest empty state, and no setting is invented.
   assert.equal(result.now.kind, 'empty');assert.match(result.now.headline, /아직 나를 설명할 기록이 없어요/);
   assert.ok(Object.values(result.settings).every(value => value === null));assert.deepEqual(result.reasonIds, []);

@@ -17,14 +17,14 @@ const SETTING_WORDS = Object.freeze({
 // Strata kinds of practised content (trail-member-observations.js).
 const TOPIC_KINDS = new Set(['situation', 'topic', 'word', 'grammar_point', 'skill', 'concept']);
 const STATUSES = new Set(['unseen', 'checking', 'practice', 'supported', 'recent-independent', 'review']);
-// Whether WORLD's practice choice already reads the answers given here (topic interest and "not
-// now"). It turns true in the release that ships WORLD's reading and the account server's read
-// path together; until then the screen does not promise it (docs/_ops/트랙.md).
-export const WORLD_READS_ANSWERS = false;
+// Whether WORLD's practice choice reads the answers given here (topic interest and "not now").
+// True since 2026-10-19: the account server's read path (talk synk-personal v48) and WORLD's reading
+// (synk.im 11617ab) are both live (docs/_ops/트랙.md).
+export const WORLD_READS_ANSWERS = true;
 // Whether WORLD follows the help style and explanation length saved here (world-learning-ui.mjs
-// reads the account's presentation and writes it only on an explicit save). Until that WORLD ships,
-// opening WORLD would write its own goals back, so this screen shows the values without editing.
-export const WORLD_FOLLOWS_SETTINGS = false;
+// reads the account's presentation and writes it only on an explicit save). True since that WORLD
+// went live on 2026-10-19 (synk.im 11617ab); before it, opening WORLD wrote its own goals back.
+export const WORLD_FOLLOWS_SETTINGS = true;
 const ACTIVITY_TARGETS = Object.freeze({ world: 'WORLD에서 연습 고르기', messenger: 'Workspace 열기', path: 'PATH 열기', pulse: 'PULSE 열기' });
 const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
