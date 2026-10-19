@@ -1,0 +1,15 @@
+perf(travel): ask the follow-up question from a module worker so taps right after a result are not held
+
+PATH planner from synk-appsscript a7b8ba9ff (origin master), applied on top of the live
+files only: planner-ui.mjs takes the change as the same path rewrite as before, and
+question-worker.mjs is new.
+
+- After a day shows, the "which way fits better" question is computed in a module worker
+  with the same time and conditions, and attached only for the same request and the same
+  itinerary.
+- The worker reads the same walking map itself. If a worker cannot start, load or read the
+  map, the page computes the question as before and leaves one console warning.
+- A tap right after the result no longer waits for that computation (keep button 0.3 s after
+  the result on the live page: about 0.36 s before, a few ms with these files).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

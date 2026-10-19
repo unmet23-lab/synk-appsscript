@@ -21,4 +21,14 @@ function CI에없는로컬자료(rel, 왜) {
   return `CI 체크아웃에는 없다 — ${rel} (${왜})`;
 }
 
-module.exports = { CI인가, CI에없는로컬자료 };
+/** 되살리지 않기로 한 옛 로컬 자료 — 없으면 개발 PC에서도 건너뜀 사유, 있으면 null(있으면 그대로 잰다).
+ *  10-06·10-10 공간 정리가 Drive로 옮기고 지운 옛 기록·후보 그림은 10-19 유호님 결정으로 되살리지 않는다
+ *  (필요한 그림은 지금 판으로 새로 굽는다). 지금 쓰는 자료에는 쓰지 않는다 — 그건 위 CI 갈래가 지킨다.
+ *  정리는 파일만 지우고 빈 폴더를 남겨 두었다 — 빈 폴더도 «없음»으로 센다. */
+function 되살리지않는옛자료(rel, 왜) {
+  const 자리 = path.join(루트, rel);
+  if (fs.existsSync(자리) && !(fs.statSync(자리).isDirectory() && fs.readdirSync(자리).length === 0)) return null;
+  return `이 체크아웃에 없다(빈 폴더 포함) — ${rel} (${왜} · 지운 옛 로컬 자료는 되살리지 않는다, 10-19)`;
+}
+
+module.exports = { CI인가, CI에없는로컬자료, 되살리지않는옛자료 };

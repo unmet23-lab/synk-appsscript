@@ -32,27 +32,54 @@ export function createFirstRun({steps={}}={}){
 }
 
 // 「한글을 읽을 수 있어요?」 한 장. read()는 저장된 답(없으면 null), save(answer)는 'new'|'reads'를 저장한다(계정이면 계정, 손님이면 기기).
-// 그림은 한글 만나기의 펠트 사진, 소리는 한글 만나기의 실제 녹음 「안녕」, 시범은 소리에 맞춰 글자가 하나씩 켜지는 것.
+// 그림은 몽글 시범 두 칸이다(10-19, 이 화면에 맞게 장면과 한 장으로 새로 구워 나눔 — 원판과 승인 기록은 HOME.md 첫 실행 줄):
+// ① 펠트 「안녕」 단추에서 나는 소리를 몽글이 눈 감고 듣고 ② 올라타 누르면 글자가 켜진다.
+// 소리는 한글 만나기의 실제 녹음 「안녕」, 시범은 소리가 실제로 나기 시작할 때 글자를 하나씩 켜고 ① → ② 칸을 차례로 또렷하게 하는 것.
+const DEMO_FRAMES=Object.freeze([['listen','assets/world-felt/hangul-demo-listen.webp'],['press','assets/world-felt/hangul-demo-press.webp']]);
 export function createHangulStep({home,asset,read,save}){
  const T=FIRST_RUN_TEXT.hangul,glyphs=[...T.word];
  const icon=kind=>kind==='new'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.2 9.1a2.9 2.9 0 1 1 4 2.7c-.8.4-1.2 1-1.2 1.9v.6"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg>'
   :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.6l4.2 4.1 8.8-9.4"/></svg>';
- const markup=()=>`<div class="first-hangul"><div class="first-hangul-card"><span class="w-print first-hangul-print" aria-hidden="true"><img src="${asset('assets/world-felt/hangul.webp')}" alt="" width="640" height="640" decoding="async"></span><button type="button" class="first-hangul-word" data-first-hangul-listen aria-label="${escape(T.listen)}">${glyphs.map(g=>`<span class="first-hangul-glyph">${escape(g)}</span>`).join('')}<i class="first-hangul-speaker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></i></button></div><p class="first-hangul-ask" id="first-hangul-ask">${escape(T.ask)}</p><div class="first-hangul-choices" role="group" aria-labelledby="first-hangul-ask"><button type="button" data-first-hangul="new">${icon('new')}<span>${escape(T.no)}</span></button><button type="button" data-first-hangul="reads">${icon('reads')}<span>${escape(T.yes)}</span></button></div><p class="first-hangul-status" role="status" aria-live="polite"></p></div>`;
+ const frame=([id,path])=>`<span class="first-hangul-frame" data-frame="${id}"><img src="${asset(path)}" alt="" width="520" height="590" decoding="async"></span>`;
+ const next='<i class="first-hangul-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12.5 6.5 18 12l-5.5 5.5"/></svg></i>';
+ // 사진 속 펠트 단추를 눌러도 같은 시범이 난다(글을 못 읽는 사람은 사진부터 누른다). 읽어 주는 기기에는 아래 「안녕」 단추 하나만 보인다.
+ const markup=()=>`<div class="first-hangul"><div class="first-hangul-card"><div class="first-hangul-demo" data-first-hangul-listen aria-hidden="true">${frame(DEMO_FRAMES[0])}${next}${frame(DEMO_FRAMES[1])}</div><button type="button" class="first-hangul-word" data-first-hangul-listen aria-label="${escape(T.listen)}">${glyphs.map(g=>`<span class="first-hangul-glyph">${escape(g)}</span>`).join('')}<i class="first-hangul-speaker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></i></button></div><p class="first-hangul-ask" id="first-hangul-ask">${escape(T.ask)}</p><div class="first-hangul-choices" role="group" aria-labelledby="first-hangul-ask"><button type="button" data-first-hangul="new">${icon('new')}<span>${escape(T.no)}</span></button><button type="button" data-first-hangul="reads">${icon('reads')}<span>${escape(T.yes)}</span></button></div><p class="first-hangul-status" role="status" aria-live="polite"></p></div>`;
  let clips=null;
  const voice=()=>clips||(clips=fetch(asset('../hangul-stage/assets/voice/voices.json')).then(r=>r.ok?r.json():null).then(v=>v?.approved&&v.clips?.[T.word]?asset('../hangul-stage/assets/voice/'+v.clips[T.word]):null).catch(()=>null));
  function open(){
   return new Promise(resolve=>{
-   let settled=false,busy=false,audio=null;const timers=new Set();
-   const stop=()=>{timers.forEach(clearTimeout);timers.clear();audio?.pause();audio=null;document.querySelectorAll('.first-hangul-glyph.is-lit').forEach(el=>el.classList.remove('is-lit'));};
+   let settled=false,busy=false,audio=null,run=null;const timers=new Set();
+   const stop=()=>{run=null;timers.forEach(clearTimeout);timers.clear();audio?.pause();audio=null;document.querySelectorAll('.first-hangul-glyph.is-lit').forEach(el=>el.classList.remove('is-lit'));document.querySelector('.first-hangul-demo')?.removeAttribute('data-step');};
    const finish=value=>{if(settled)return;settled=true;stop();document.removeEventListener('click',click);resolve(value);};
-   // 시범: 소리를 들려주며 글자를 하나씩 켠다(움직임 줄이기에서는 소리만).
+   // 시범: 소리를 들려주며 글자를 하나씩 켜고, 그동안 ① 듣기 칸 → 끝나면 ② 누르기 칸을 잠깐 또렷하게 한 뒤 두 칸을 같게 되돌린다
+   // (움직임 줄이기에서는 소리만, 두 칸은 그대로). 글자는 소리가 실제로 나기 시작할 때(playing) 켠다 — 10-19 실측에서 미리 정한 시각으로
+   // 켜면 처음 열 때 「안」이 소리보다 0.2초(망 지연 150ms 흉내에서는 0.27초) 먼저 켜졌다.
    async function demo(){
     stop();const root=document.querySelector('.first-hangul');if(!root)return;
-    const lit=[...root.querySelectorAll('.first-hangul-glyph')],light=!home.state?.reduced&&motionOn();
-    if(light)lit.forEach((el,i)=>{const timer=setTimeout(()=>{timers.delete(timer);el.classList.add('is-lit');},120+i*360);timers.add(timer);});
-    const end=setTimeout(()=>{timers.delete(end);lit.forEach(el=>el.classList.remove('is-lit'));},260+lit.length*360+600);timers.add(end);
-    const src=await voice();if(settled||!src)return;
-    const clip=new Audio(src);audio=clip;clip.play().catch(()=>{if(audio===clip)audio=null;});
+    const token=run={},lit=[...root.querySelectorAll('.first-hangul-glyph')],scene=root.querySelector('.first-hangul-demo'),light=!home.state?.reduced&&motionOn();
+    const later=(ms,fn)=>{const timer=setTimeout(()=>{timers.delete(timer);if(run===token)fn();},ms);timers.add(timer);};
+    // ② 칸(글자가 켜진 그림)을 또렷하게 하는 동안에는 큰 단추의 글자도 켜 두었다가 함께 되돌린다.
+    const show=slot=>{
+     if(light&&scene)scene.dataset.step='listen';
+     if(light)lit.forEach((el,i)=>later(40+i*slot,()=>el.classList.add('is-lit')));
+     const end=40+lit.length*slot+500;
+     if(light&&scene)later(end,()=>{scene.dataset.step='press';});
+     later(light?end+1400:end,()=>{lit.forEach(el=>el.classList.remove('is-lit'));scene?.removeAttribute('data-step');});
+    };
+    const src=await voice();if(settled||run!==token)return;
+    if(!src){show(360);return;}
+    // 녹음은 앞뒤 무음을 걷은 파일이라 음절이 길이를 고르게 나눈다(「안녕」 0.70초 실측: 안 0.04초 · 녕 0.27초에 시작).
+    // 재생이 막히거나(거절·오류) 1.5초 안에 소리가 안 나면 글자 시범만 먼저 하고, 그 뒤에 소리가 나면 그때 다시 맞춘다.
+    const clip=new Audio(src);audio=clip;let shown=null;
+    const begin=kind=>{
+     if(run!==token||shown==='sound'||(shown&&kind!=='sound'))return;
+     if(shown){timers.forEach(clearTimeout);timers.clear();lit.forEach(el=>el.classList.remove('is-lit'));}
+     shown=kind;show(kind==='sound'&&Number.isFinite(clip.duration)&&clip.duration>0?Math.max(200,(clip.duration*1000-160)/lit.length):360);
+    };
+    clip.addEventListener('playing',()=>begin('sound'),{once:true});
+    clip.addEventListener('error',()=>begin('fallback'),{once:true});
+    later(1500,()=>begin('fallback'));
+    clip.play().catch(()=>{if(audio===clip)audio=null;begin('fallback');});
    }
    async function choose(answer){
     if(busy)return;busy=true;const root=document.querySelector('.first-hangul'),status=root?.querySelector('.first-hangul-status');

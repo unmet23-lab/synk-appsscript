@@ -6,15 +6,18 @@ function validatePatch(patch){
   if(!patch||typeof patch!=='object'||Array.isArray(patch))return false;
   return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
 }
-function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},onShow=null,platform=process.platform,enabled=true,packaged=false,executable=process.execPath,appRoot,name='SYNKPlatform'}){
-  const file=path.join(directory,'desktop-preferences.json'),supported=enabled&&platform==='win32';
-  const startup={path:executable,args:packaged?['--synk-autostart']:[appRoot,'--synk-dev','--client=platform','--synk-autostart'],name};
+function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},onShow=null,platform=process.platform,enabled=true,packaged=false,executable=process.execPath,name='SYNKPlatform'}){
+  // A source run (--synk-dev) has the installed Preview build's appId and profile,
+  // so its login item would replace or delete that app's Run value of the same
+  // name. Only a packaged build reads or writes Windows startup.
+  const file=path.join(directory,'desktop-preferences.json'),supported=enabled&&platform==='win32',startupSupported=supported&&packaged;
+  const startup={path:executable,args:['--synk-autostart'],name};
   let values={...DEFAULTS},registered='',shortcutError=null;
   if(enabled)try{const text=fs.readFileSync(file,'utf8');if(text.length<4096){const parsed=JSON.parse(text);if(validatePatch(parsed))values={...values,...parsed};}}catch{}
   function showSearch(){if(onShow){onShow({type:'command-menu'});return;}const window=getWindow();if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();onAction({type:'command-menu'});}
   function loginState(strict=false){
     try{
-      if(!supported||typeof app.getLoginItemSettings!=='function')return {registered:values.launchAtLogin,enabled:values.launchAtLogin};
+      if(!startupSupported||typeof app.getLoginItemSettings!=='function')return {registered:values.launchAtLogin,enabled:values.launchAtLogin};
       const result=app.getLoginItemSettings(startup);
       // openAtLogin matches our complete command, but ignores StartupApproved.
       // launchItems.args omits switches in Electron, so use openAtLogin for
@@ -28,12 +31,12 @@ function createDesktopPreferences({directory,app,globalShortcut,getWindow,onActi
       return {registered:result.openAtLogin===true,enabled:result.openAtLogin===true&&result.executableWillLaunchAtLogin!==false};
     }catch(error){if(strict)throw error;return {registered:values.launchAtLogin,enabled:values.launchAtLogin};}
   }
-  function snapshot(){return {ok:true,preferences:{...values,launchAtLogin:loginState().enabled},capabilities:{launchAtLogin:supported,globalShortcut:supported},...(shortcutError?{warning:shortcutError}:{})};}
+  function snapshot(){return {ok:true,preferences:{...values,launchAtLogin:loginState().enabled},capabilities:{launchAtLogin:startupSupported,globalShortcut:supported},...(shortcutError?{warning:shortcutError}:{})};}
   function initialize(){if(supported&&values.globalShortcut)try{if(globalShortcut.register(values.globalShortcut,showSearch))registered=values.globalShortcut;else shortcutError='SHORTCUT_UNAVAILABLE';}catch{shortcutError='SHORTCUT_UNAVAILABLE';}}
   function update(patch){
     if(!enabled)return {ok:false,code:'DESKTOP_UNAVAILABLE'};
     if(!validatePatch(patch))return {ok:false,code:'INVALID_DESKTOP_PREFERENCES'};
-    if(!supported&&['launchAtLogin','globalShortcut'].some(key=>Object.hasOwn(patch,key)))return {ok:false,code:'DESKTOP_UNAVAILABLE'};
+    if(!startupSupported&&Object.hasOwn(patch,'launchAtLogin')||!supported&&Object.hasOwn(patch,'globalShortcut'))return {ok:false,code:'DESKTOP_UNAVAILABLE'};
     let previousStartup;try{previousStartup=loginState(Object.hasOwn(patch,'launchAtLogin'));}catch{return {ok:false,code:'STARTUP_UNAVAILABLE'};}
     const previous={...values,launchAtLogin:previousStartup.enabled},next={...previous,...patch},shortcutRequested=Object.hasOwn(patch,'globalShortcut');let newlyRegistered=false,startupApplied=false;
     if(shortcutRequested&&next.globalShortcut!==registered&&next.globalShortcut){try{newlyRegistered=globalShortcut.register(next.globalShortcut,showSearch);}catch{}if(!newlyRegistered)return {ok:false,code:'SHORTCUT_UNAVAILABLE'};}
