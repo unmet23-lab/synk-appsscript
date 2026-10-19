@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판) · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -223,6 +223,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: 커밋 뒤 `git diff --stat -- <파일>`이 남의 줄 수와 같고, `git diff --cached --name-only`가 비어 있다.
 
 ## 당기기·push
+
+### 워크트리끼리 같이 보는 `origin/master`로 판을 만들면 남의 새 줄이 내 변경에 섞인다 (2026-10-19)
+- 증상: 10-19 통화·메신저 맞추기에서 워크트리를 origin/master로 빨리감기한 뒤 `git cat-file blob origin/master:<경로>`에 내 항목을 끼운 판을 썼는데, `git diff --numstat`의 이 파일이 예상한 +7이 아니라 +13이었다. 다른 세션이 막 올린 항목 하나가 내 변경처럼 들어 있었다(커밋 전에 줄 수로 발견).
+- 원인: `refs/remotes/origin/*`는 공용 `.git`에 하나만 있어 모든 워크트리가 같이 본다. 그사이 다른 세션이 fetch해서 origin/master는 앞으로 갔고 내 HEAD는 빨리감기한 판 그대로였다. 앞선 origin 판 위에 만든 파일은 HEAD와 견주면 남의 새 줄까지 내 변경으로 잡힌다.
+- 고침: 판을 만들 바탕은 `origin/master`가 아니라 고정한 커밋(HEAD)으로 준다. 만들기 직전에 `git rev-parse HEAD origin/master`가 같은지 보고 다르면 먼저 빨리감기한다. 이번에는 쓴 경로만 되돌리고 빨리감기한 뒤 바탕을 HEAD로 고정해 다시 만들었다.
+- 다시 확인: 만든 뒤 `git diff --numstat`의 경로별 줄 수가 넣은 양과 같다(10-19 이 파일 +13 → +7).
 
 ### 작업본을 새 HEAD로 당길 때 남의 미커밋 수정이 옛 HEAD 위에 남는다
 - 증상: 남의 미커밋 파일을 「남겨 두기」만 하면 그 세션이 나중에 통째로 커밋할 때 우리 변경이 조용히 되돌아간다(10-03 talk 정리).
