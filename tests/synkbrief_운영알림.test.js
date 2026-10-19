@@ -47,6 +47,7 @@ test('「직접 확인하고 답드릴게요」 답은 운영 상태 해시와 �
   assert.equal(f.run().state,'unchanged','운영 상태 해시와 정상 판정은 그대로다');
   assert.equal(f.emails.length,1);assert.equal(f.emails[0].to,'owner@example.test');assert.equal(f.emails[0].subject,'[SYNK DM] 직접 답할 DM이 있어요');
   assert.match(f.emails[0].body,/DM함\(메시지 요청함 포함\)/);
+  assert.match(f.emails[0].body,/안내 자료에 답이 없는 질문/);assert.match(f.emails[0].body,/질문과 답을 Claude에게 알려 주세요\. FAQ에 넣어/);
   assert.match(f.emails[0].body,/@yuhobuilds \| 최근 24시간 1건 \| 마지막 2026-10-19 14:03 KST/);
   assert.doesNotMatch(JSON.stringify(f.emails)+f.values.get('SYNKBRIEF_OPS_DIRECT_NOTICE'),/PRIVATE|test-only/);
   f.payload.checked_at=new Date().toISOString();f.run();assert.equal(f.emails.length,1,'같은 escalation은 다시 알리지 않는다');

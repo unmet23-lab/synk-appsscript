@@ -363,7 +363,8 @@ function synkbrief정기점검() {
   } finally { lock.releaseLock(); }
 }
 
-// 자동 답이 「직접 확인하고 답드릴게요」라고 약속한 대화(escalation)를 계정 주인이 놓치지 않게 따로 메일로 알린다.
+// 자동 답이 「직접 확인하고 답드릴게요」라고 약속한 대화(escalation: 계속되는 문제, AI가 켜졌을 때 자료에 답이 없는 질문)를
+// 계정 주인이 놓치지 않게 따로 메일로 알린다.
 // 서버는 계정별 최근 24시간 건수와 마지막 발송 시각만 준다. 받는 사람·DM 원문은 없다. 운영 이상/복구 해시와 섞지 않는다.
 function synkbrief_직접답알림_(p, status) {
   const items = status.validated === true && Array.isArray(status.attention) ? status.attention : [];
@@ -386,8 +387,11 @@ function synkbrief_직접답알림_(p, status) {
     MailApp.sendEmail({
       to: to,
       subject: '[SYNK DM] 직접 답할 DM이 있어요',
-      body: '같은 문제를 다시 알려 주신 분께 자동 답이 「직접 확인하고 답드릴게요」라고 안내했어요.\n'
-        + '인스타그램 앱의 DM함(메시지 요청함 포함)에서 그 시각 무렵 이 문장이 나간 대화를 찾아 직접 답해 주세요.\n\n'
+      // 문제가 계속되는 분과, 안내 자료에 답이 없는 질문(AI 답이 켜졌을 때) 둘 다 같은 약속이다.
+      // 외국어 DM에는 그 언어로 나가므로 문장 그대로가 아니라 뜻으로 찾게 쓴다.
+      body: '자동 답이 「직접 확인하고 답드릴게요」라고 안내한 DM이 있어요. 같은 문제가 계속되는 분이거나, 안내 자료에 답이 없는 질문이에요.\n'
+        + '인스타그램 앱의 DM함(메시지 요청함 포함)에서 그 시각 무렵 직접 확인해 답드리겠다고 안내한 대화를 찾아 답해 주세요.\n'
+        + '질문에 답하셨다면 그 질문과 답을 Claude에게 알려 주세요. FAQ에 넣어 다음부터는 자동으로 답해요.\n\n'
         + items.map(item => item.name + ' | 최근 24시간 ' + item.count + '건 | 마지막 ' + kst(item.last)).join('\n'),
       name: 'SYNK'
     });
