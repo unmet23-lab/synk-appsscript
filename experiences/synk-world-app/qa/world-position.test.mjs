@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {POSITION_POLICY,POSITION_CELLS,positionCell,buildPositionMap,DIAGNOSTIC_POLICY,selectDiagnostic,createDiagnosticSession,ESTIMATE_POLICY,estimateGate} from '../world-position.mjs';
+import {POSITION_POLICY,POSITION_CELLS,positionCell,buildPositionMap,DIAGNOSTIC_POLICY,selectDiagnostic,createDiagnosticSession,hangulStageProgress,showsHangulBoard,ESTIMATE_POLICY,estimateGate} from '../world-position.mjs';
 
 // WORLD와 같은 입구(atlas/game-browser.js)의 실제 Core 코치로 상태를 만든다. 상태를 흉내 낸 가짜 요약은 쓰지 않는다.
 const require=createRequire(import.meta.url);
@@ -258,4 +258,32 @@ test('처음 보는 문항·혼자·시간 제한·실제 구성·기간을 하�
  const stricter={...ESTIMATE_POLICY,version:'world-topik-estimate-qa',minEvidence:40};
  assert.equal(estimateGate({evidence:rows(15,15),asOf,policy:stricter}).status,'too-early','정책 판이 기준 수를 바꾼다');
  assert.throws(()=>estimateGate({evidence:[],asOf:'not a time'}),TypeError);
+});
+
+// 한글 만나기 진도: 그 게임의 실제 판단 함수로 만든 진도에서 숫자만 꺼낸다.
+test('한글 진도는 만난 글자·다 익힌 핵심 단원·졸업을 그 게임의 진도 그대로 읽는다',async()=>{
+ const fs=await import('node:fs');
+ const layer=JSON.parse(fs.readFileSync(new URL('../../../strata/hangul.json',import.meta.url),'utf8'));
+ const core=await import('../../hangul-stage/core.mjs');
+ const empty=hangulStageProgress(null,layer);
+ assert.deepEqual(empty,{started:false,met:0,total:49,mastered:0,units:7,unitsDone:0,graduated:false,skipped:false});
+ const first=layer.units[0].letters,at='2026-10-19T01:00:00.000Z';
+ const progress=core.meet(core.emptyProgress(),[...first,layer.units[1].letters[0]],at);
+ for(const id of first)progress.letters[id]={...progress.letters[id],state:'mastered',best:'mastered'};
+ const read=hangulStageProgress(JSON.parse(JSON.stringify(progress)),layer);
+ assert.equal(read.started,true);assert.equal(read.met,first.length+1);assert.equal(read.mastered,first.length);assert.equal(read.unitsDone,1);
+ assert.equal(hangulStageProgress(core.graduate(progress,at),layer).graduated,true);
+ assert.equal(hangulStageProgress({...progress,skipped:true},layer).skipped,true);
+ assert.deepEqual(hangulStageProgress({v:2,letters:{}},layer),empty,'모르는 판의 진도는 빈 진도');
+ assert.throws(()=>hangulStageProgress(progress,{}),TypeError);
+});
+
+test('한글 판은 「아직 못 읽어요」를 고르고 아직 졸업하지 않은 사람에게만',()=>{
+ const stage={graduated:false,skipped:false};
+ assert.equal(showsHangulBoard({reading:{version:1,answer:'new',at:1,via:'question'},stage}),true);
+ assert.equal(showsHangulBoard({reading:{version:1,answer:'reads',at:1,via:'question'},stage}),false);
+ assert.equal(showsHangulBoard({reading:null,stage}),false,'답이 없으면 항목 지도');
+ assert.equal(showsHangulBoard({reading:{answer:'new'},stage:{graduated:true}}),false,'졸업 뒤에는 항목 지도');
+ assert.equal(showsHangulBoard({reading:{answer:'new'},stage:{skipped:true}}),false,'한글을 이미 읽는다고 건너뛰면 항목 지도');
+ assert.equal(showsHangulBoard({reading:{answer:'new'}}),true,'한글 진도를 못 읽어도 고른 답을 따른다');
 });
