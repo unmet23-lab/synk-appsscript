@@ -898,6 +898,38 @@ function retryYoutube401(fetchImpl, { retries = 5, delayMs = 2000 } = {}) {
   };
 }
 
+// 자막 언어는 파일 이름(subtitles-<언어>.srt)에서, 없으면 항목 언어. 올리기·이어 올리기(tools/유튜브이어올리기.cjs)가 같은 셈을 쓴다.
+function subtitleLanguage(item, subtitlePath) {
+  return /subtitles-([a-z-]+)\.srt$/i.exec(path.basename(subtitlePath))?.[1] || item.language || 'ko';
+}
+
+async function youtubeSetThumbnail(videoId, thumbnailFile, token, fetchImpl = fetch) {
+  const response = await fetchWithRetry(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(videoId)}&uploadType=media`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': mimeFor(thumbnailFile) },
+    body: fs.readFileSync(thumbnailFile),
+  }, { fetchImpl });
+  const body = await responseJson(response);
+  if (!response.ok) throw new Error(`YouTube 썸네일 업로드 실패 ${response.status}: ${apiMessage(body)}`);
+  return true;
+}
+
+async function youtubeUploadCaption(videoId, subtitleFile, language, token, fetchImpl = fetch) {
+  const boundary = `synk-${crypto.randomBytes(12).toString('hex')}`;
+  const metadataPart = Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ snippet: { videoId, language, name: language, isDraft: false } })}\r\n`);
+  const mediaHead = Buffer.from(`--${boundary}\r\nContent-Type: application/x-subrip\r\n\r\n`);
+  const media = fs.readFileSync(subtitleFile);
+  const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+  const response = await fetchWithRetry('https://www.googleapis.com/upload/youtube/v3/captions?part=snippet&uploadType=multipart', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': `multipart/related; boundary=${boundary}` },
+    body: Buffer.concat([metadataPart, mediaHead, media, tail]),
+  }, { fetchImpl });
+  const body = await responseJson(response);
+  if (!response.ok) throw new Error(`YouTube ${language} 자막 업로드 실패 ${response.status}: ${apiMessage(body)}`);
+  return { language, id: body.id || null };
+}
+
 async function youtubeUpload(item, account, credential, options = {}) {
   const fetchImpl = retryYoutube401(options.fetchImpl || fetch, options.retry401);
   const { token, channel } = await youtubeChannel(credential, fetchImpl);
@@ -979,34 +1011,13 @@ async function youtubeUpload(item, account, credential, options = {}) {
     // Persist the remote ID before any request that can fail after video creation.
     await checkpoint();
     if (item.thumbnail) {
-      const thumbnailFile = resolveRepoPath(item.thumbnail);
-      const response = await fetchWithRetry(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(video.id)}&uploadType=media`, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': mimeFor(thumbnailFile) },
-        body: fs.readFileSync(thumbnailFile),
-      }, { fetchImpl });
-      const body = await responseJson(response);
-      if (!response.ok) throw new Error(`YouTube 썸네일 업로드 실패 ${response.status}: ${apiMessage(body)}`);
+      await youtubeSetThumbnail(video.id, resolveRepoPath(item.thumbnail), token, fetchImpl);
       partial.thumbnail = true;
       await checkpoint();
     }
 
     for (const subtitlePath of item.subtitles || []) {
-      const subtitleFile = resolveRepoPath(subtitlePath);
-      const language = /subtitles-([a-z-]+)\.srt$/i.exec(path.basename(subtitleFile))?.[1] || item.language || 'ko';
-      const boundary = `synk-${crypto.randomBytes(12).toString('hex')}`;
-      const metadataPart = Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ snippet: { videoId: video.id, language, name: language, isDraft: false } })}\r\n`);
-      const mediaHead = Buffer.from(`--${boundary}\r\nContent-Type: application/x-subrip\r\n\r\n`);
-      const media = fs.readFileSync(subtitleFile);
-      const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
-      const response = await fetchWithRetry('https://www.googleapis.com/upload/youtube/v3/captions?part=snippet&uploadType=multipart', {
-        method: 'POST',
-        headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': `multipart/related; boundary=${boundary}` },
-        body: Buffer.concat([metadataPart, mediaHead, media, tail]),
-      }, { fetchImpl });
-      const body = await responseJson(response);
-      if (!response.ok) throw new Error(`YouTube ${language} 자막 업로드 실패 ${response.status}: ${apiMessage(body)}`);
-      partial.captions.push({ language, id: body.id || null });
+      partial.captions.push(await youtubeUploadCaption(video.id, resolveRepoPath(subtitlePath), subtitleLanguage(item, subtitlePath), token, fetchImpl));
       await checkpoint();
     }
     if (item.playlist?.title) {
@@ -1306,7 +1317,7 @@ async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, rea
     // A changed plan/hash or force must not create another video after a partial
     // success. An interrupted attempt without an ID is also not safe to repeat.
     if (previous && ['partial', 'publishing'].includes(previous.state)) {
-      throw new Error(`${item.id}는 ${previous.state} 상태입니다${previous.id ? ` (기존 영상 ${previous.id})` : ''}. 원격 결과를 확인하기 전 재발행하지 않습니다.`);
+      throw new Error(`${item.id}는 ${previous.state} 상태입니다${previous.id ? ` (기존 영상 ${previous.id})` : ''}. 원격 결과를 확인하기 전 재발행하지 않습니다.${previous.state === 'partial' && previous.id ? ' 빠진 자막·재생목록은 node tools/유튜브이어올리기.cjs로 채웁니다.' : ''}`);
     }
     const credential = account.publisher.startsWith('direct')
       ? readCredentialImpl(item.accountKey, { allowLegacy: true }) : null;
@@ -1480,6 +1491,14 @@ module.exports = {
   migrateLegacyYoutubeLab,
   googleAccessToken,
   youtubeChannel,
+  matchesYoutubeAccount,
+  fetchWithRetry,
+  retryYoutube401,
+  responseJson,
+  apiMessage,
+  subtitleLanguage,
+  youtubeSetThumbnail,
+  youtubeUploadCaption,
   checkConnection,
   checkAllConnections,
   authorizeYoutube,
