@@ -28,6 +28,13 @@
 - 원인: x264 결과에는 B프레임이 있어 저장 순서와 화면 순서가 다르다. 패킷 N개에서 끊으면 화면 순서로는 중간이 빠진다. `-shortest`도 같다.
 - 고침: 프레임 수를 맞춰 자를 땐 `-vf trim=start_frame=0:end_frame=N,setpts=PTS-STARTPTS -frames:v N`으로 다시 인코딩하고 소리는 따로 복사해 붙인다.
 - 다시 확인: 완성본 `ffprobe -show_entries packet=pts_time`에서 1/fps가 아닌 간격이 0곳이고 프레임 수가 기준 판과 같다.
+- 10-19 다시(하린 색감 판): 영상은 `-c:v copy`, 소리만 새로 붙이며 `-shortest`를 쓰자 소리(20.52초)가 영상(20.54초)보다 짧아 엔드카드 정지 화면 끝 4프레임이 빠졌다(493 → 489장). 영상 길이(프레임 수 ÷ fps)로 `-t`를 주고 소리 끝은 `apad`로 무음을 채운다(`가편집/편집_색감.py`).
+
+### 이미 AAC인 소리를 다시 AAC로 뽑으면 순간 최대가 올라간다
+- 증상: 10-19 하린 최종본에 확정 판(AAC 256k)의 소리를 꺼내 AAC 384k로 다시 압축하자 순간 최대가 −1.1 dBTP로 기준(−1.5)을 넘었다. 믹스 단계의 표본 최대는 −2.0 dBFS였다.
+- 원인: 손실 압축을 두 번 거치며 봉우리가 조금씩 더 솟는다.
+- 고침: 믹스 원본 WAV(`효과음/믹스_<이름>.wav`)를 한 번만 압축하고, 압축 전에 `alimiter=limit=0.75:level=false`로 봉우리만 살짝 누른다 → −14.0 LUFS · −2.1 dBTP.
+- 다시 확인: 완성본을 `ebur128=peak=true`로 재서 통합 음량 −14 안팎, 순간 최대 −1.5 dBTP 이하인지 본다.
 
 ### `ffmpeg -ss`로 뽑은 확인 프레임이 한두 프레임 밀린다
 - 증상: 이음새 확인 프레임이 실제 컷 자리와 달라 이음새를 잘못 봤다(10-14, 장부 S18 깨졌던 경우).
@@ -52,6 +59,14 @@
 - 원인: 필터를 지난 프레임에 그 값이 없으면 libx264가 프레임 쪽 값을 따라 VUI의 원색·감마 칸을 비운다(추정).
 - 고침: 인코딩에는 `-x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709`를 함께 준다. 이미 뽑은 파일은 다시 인코딩하지 않고 `ffmpeg -i in.mp4 -map 0 -c copy -bsf:v "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1" out.mp4`로 태그만 고친다(10-19 다섯 판, 몇 초).
 - 다시 확인: `ffprobe -v error -select_streams v:0 -show_entries stream=color_space,color_primaries,color_transfer -of csv=p=0 <파일>`이 `bt709,bt709,bt709`인지.
+
+### 다시 인코딩하며 bt709 표시를 붙이면 화면이 2~6단계 어두워지고, 표시만 붙이면 붉은색이 뜬다
+- 증상: 10-19 지유 부분 보정 시험에서 `본편_편집.py`가 색감을 입힌 프레임과 최종 v3b 파일의 같은 프레임을 견주니 파일이 고르게 어두웠다(ffmpeg로 rgb24로 풀어 평균 −3.5, PSNR 35.6dB — 이 가운데 −1 안팎은 ffmpeg 풀기 몫이고, yuv420p 원본을 709 행렬로 직접 풀면 R −2.5 · G −1.6 · B −2.6, 10-19 Fable). 색 칸을 같은 두 단계 사슬(rgb24 파이프 → libx264 crf 14, 다시 `noise` → crf 18 + bt709 표시)에 통과시키면 피부 (226,180,160)이 (−6,−4,−5), 검정 머리 (25,22,22)가 (−4,−1,−6) 내려갔다. 입자(`noise`)는 원인이 아니었다(빼도 같음).
+- 원인: 1단계는 표시 없이 ffmpeg 기본(BT.601) 행렬로 YUV를 만든다. 2단계에 출력 옵션 `-colorspace bt709`를 주면 ffmpeg 9.0이 표시 없는 입력을 bt709로 바꾸는 변환을 끼워 넣는데, 색상은 맞추면서 밝기가 내려간다(회색 경사 −2.3, 파일 Y 평면 평균 125.1 → 124.1). 반대로 변환 없이 표시만 붙이면(`-x264-params`만 · 입력 옵션 · `h264_metadata` bsf) 밝기는 그대로지만 601 데이터를 709로 읽어 입술 (200,110,110)이 (+6,+8,−1), 파랑이 (−6,+5,+4) 옮겨진다. 위 항목의 bsf로 표시만 고치는 길도 표시 없이 뽑은(601) 파일에 쓰면 이 경우다. v3b는 인코딩 때 `-colorspace bt709`를 준 쪽이라 색상은 맞고 어두워진 경우다(ffmpeg로 풀면 RGB 고르게 −3.5 · −3.0 · −3.5, 709 행렬로 직접 풀면 −2.5 · −1.6 · −2.6 — 위 숫자들도 ffmpeg로 푼 값이라 −1 안팎 풀기 몫이 섞여 있다).
+- 고침: 1단계부터 709로 넣는다: `-vf scale=out_color_matrix=bt709:out_range=tv,format=yuv420p`에 `-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709`. 그러면 2단계는 입력이 이미 bt709라 변환 없이 입자만 얹고, 색 칸 넷 모두 ±2 안(회색 경사 −0.46)이었다. 이미 뽑은 v3b 다섯 판은 유호님 확인을 기다리는 중이라 손대지 않았다(다음 판을 뽑을 때 반영할 일).
+- 다시 확인: 색을 입힌 프레임 한 장과 최종 mp4의 같은 프레임을 견주고, 색 칸(피부 · 입술 · 검정 · 파랑)을 같은 사슬에 통과시켜 ±2 안인지 본다. 풀 때 ffmpeg `-pix_fmt rgb24` 변환은 그 자체로 RGB 평균 (−0.9, −1.4, −0.9)쯤을 더한다(반올림 · 크로마 보간, 10-19 지유 v3c에서 같은 프레임을 709 행렬로 직접 풀면 +0.02~+0.12). 그래서 ±1 안을 보려면 `-pix_fmt yuv420p` 원본을 받아 709 방송 범위 행렬로 직접 풀거나 그 몫을 빼고 본다.
+- 다시 확인(10-19 하린 엔드카드): 하린 최종본은 「표시만 붙이면」 쪽이었다 — `synk-vendor/harin-iced-coffee-h3-20261017/엔드카드/엔드카드.py`의 apply가 rgb24로 풀어 표시 없이 다시 인코딩(BT.601 행렬)하고, `가편집/편집_색감.py` 마지막 합치기가 `h264_metadata` bsf로 bt709 표시만 붙였다. 색 견본 차 초록 (−7,−12,−5) · 노란 티 (0,−4,−6) · 입술 (+5,+7,−2) · 피부 (+3,+1,−2), 실제 최종본 일곱 장은 화면 평균 R +1.4~2.0 · G +0.9~1.5 · B −0.6~−0.9로 얼굴 · 티 · 커피가 따뜻하게 떴다. 엔드카드 인코딩에 위 고침(`scale=out_color_matrix=bt709:out_range=tv,format=yuv420p` + 표시 넷 + x264-params)을 넣자 견본 최대 ±3(평균 −1.3 — 처음엔 두 번 인코딩한 몫으로 봤지만, 지유 v3c에서 같은 크기의 −1 안팎이 ffmpeg rgb24 풀기 몫으로 확인됐다), 실제 프레임은 의도한 색과 평균 ±0.2. swscale `accurate_rnd` · `full_chroma_int` 플래그는 남은 −1~−3을 줄이지 못했다(같은 값). 최종본 · 폰 판은 같은 이름으로 다시 구웠고, 비교는 `harin-iced-coffee-h3-20261017/색감/비교/최종_색고침_전후.jpg`.
+- 다시 확인(10-19 지유 v3c): `jiyu-skincare-20261018/본편_편집.py`에 같은 고침(1단계 `-vf scale=out_color_matrix=bt709:out_range=tv,format=yuv420p` + 표시 넷 + x264-params, 2단계는 같은 표시만 주어 변환 없이 입자만)을 넣어 다섯 판을 다시 뽑았다. v3c 파일을 ffmpeg로 풀어 인코딩 전 프레임과 견주니 다섯 판 · 여섯 순간 모두 평균 (−0.9, −1.4, −0.9), 64px 칸 최대 2.7, PSNR 39~43dB(v3b 같은 비교 (−3.5, −3.1, −3.6)). 색 견본 여덟 칸 모두 ±2. 남은 −1 안팎은 파일 몫이 아니었다 — Fable이 yuv420p 원본을 709 행렬로 직접 풀어 보니 다섯 판 × 여섯 프레임 평균 +0.03~+0.3, 칸 최대 0.6~1.4, 밝기 구간 · 자리별 ±0.2(내가 다시 풀어도 f24 · f168 · f312 +0.02~+0.12). 601로 풀면 살갗이 5~9 틀어지니 파일은 표시대로 709다. 파일은 v3b보다 15% 작아졌다(9:16 19.9 → 16.8MB, 2단계 색 변환이 없어진 몫으로 보임 — 추정). 확인 스크립트 `jiyu-skincare-20261018/색감/v3c_확인/v3c_확인.py`.
 
 ## 렌더(HyperFrames·GSAP)
 
@@ -219,6 +234,25 @@
 - 고침: 모자란 패키지만 `pip install --no-deps --target C:/SYNK-LoRA/tools/seedvr2-extra <패키지==판…>`으로 따로 깔고, `PYTHONPATH`로 그 폴더를 붙여 `PYTHONIOENCODING=utf-8 venv/Scripts/python.exe -X utf8 custom_nodes/ComfyUI-SeedVR2_VideoUpscaler/inference_cli.py`로 돌린다. ComfyUI 서버를 다시 켤 필요가 없다. 가중치는 `ComfyUI/models/SEEDVR2/`(numz/SeedVR2_comfyUI의 fp16·fp8).
 - 다시 확인: `--help`가 뜨는지, 뜰 때 「SageAttention ❌ | Flash Attention ❌」 줄(윈도우는 sdpa로 돈다)을 본다.
 - 10-19 지유 광고: 출력 폴더가 한글 경로(`synk-vendor/…/영상_H3/업/`)면 기록에는 저장했다고 나오는데 PNG가 0장이었다(노드가 `cv2.imwrite`로 쓰고 실패 값을 보지 않는다. [윈도우_셸](윈도우_셸.md)의 cv2 한글 경로와 같은 원인). 입력도 영문 이름으로 복사해 `C:\SYNK-LoRA\work\jiyu_up`에서 돌리고 결과를 옮긴다(광고 폴더 `영상_다듬기.py`). 그렇게 돌린 6구간은 48·72장이 모두 나왔다(구간당 4.6~6.9분). VRAM을 23GB 가까이 써 LoRA 학습과 같이 못 도니, 학습 사이 틈에 끼운다(`C:\SYNK-LoRA\validation\_v2공통\학습_사슬.py`).
+
+### 목소리 따라 하기 TTS(CosyVoice3)가 말을 끝맺지 못하고 최대 길이까지 뭉개진 소리를 낸다
+- 증상: 10-19 하린 숨·웃음을 굽으려고 `FunAudioLLM/Fun-CosyVoice3-0.5B-2512`(`C:/SYNK-LoRA/tools/cosyvoice/`)를 시스템 파이썬 3.14 + torch 2.14 venv에 깔았더니, 결과가 모두 글 길이 × 20토큰(0.04초씩)의 최대 길이에서 잘렸고 말도 숨도 아닌 딸깍거리는 소리였다. 평범한 한국어 한 문장이 3초 대신 10.4초, 중국어 예문이 5초 대신 25.6초로 나왔다.
+- 원인: transformers 4.57에서는 CosyVoice의 Qwen2 한 걸음 생성(`forward_one_step`, KV 캐시)이 어긋나 끝 토큰이 나오지 않는다. 저장소 requirements의 판은 4.51.3이다.
+- 고침: venv에 **`transformers==4.51.3`**(tokenizers 0.21)을 깐다. 그 뒤 같은 문장이 3.28초·5.44초로 정상이었다. 그 밖에 깔 때 막힌 것: Matcha-TTS 쪽이 `lightning`·`gdown`·`pyarrow`를 부른다. `pyworld`(학습용 음높이)는 3.14 휠이 없어 빈 모듈로 채운다. `modelscope`는 받기용이라 빈 모듈이다. torchaudio 2.11 CPU의 `load`는 torchcodec이 있어야 해서 soundfile로 바꿔 끼운다(`소리만들기.py`). 가중치는 `받기.sh`(잠금 폴더 + `par_dl.py`)로 받고, TensorRT용 onnx는 받지 않는다(약 7.4GB). 빠진 모듈은 `불러보기.py`가 설정 파일의 모듈을 모두 불러 한 번에 찍는다. GPU를 LoRA 학습이 쓰고 있으면 CPU로 돈다(짧은 소리 하나에 수 초).
+- 다시 확인: 굽기 전에 평범한 문장 하나(`작업_진단.json`)로 길이가 말 빠르기에 맞는지 본다. `[sigh]`만 넣으면 글이 한 토큰이라 최대 0.8초에서 잘리니 짧은 말 앞에 표시를 넣고 숨 부분만 오린다. 같은 날 `fishaudio/s1-mini`는 허깅페이스 이용 동의가 필요한 저장소였다(q121235 계정 미동의). 지금 fish-speech 코드는 S2-Pro(11GB, 동의 불필요, GPU 24GB 권장)·Drama 3(48GB 이상)를 쓴다.
+
+### 다빈치 리졸브 무료판(21.1)은 파이썬 스크립트로 조종할 수 없다
+- 증상: 10-19 「편집·소리·색을 다빈치에서 끝낼지, 스크립트로 할지」를 따지려고 보니 이 PC의 리졸브는 무료판 21.1(`Resolve.exe` 제품 이름 「DaVinci Resolve」, Studio 아님)이고 스크립트 안내 파일(Developer/Scripting README)도 없었다.
+- 원인: 블랙매직이 21.1 업데이트에서 「We have moved the ability to script in Python to the Studio version」으로 무료판의 파이썬 스크립트를 뺐다(Puget Systems 2026-09-10). 그 전에도 무료판은 바깥 프로그램에서 부르는 스크립트가 안 되고 프로그램 안 콘솔에서만 됐다(블랙매직 포럼 2018).
+- 고침: 편집 · 소리 · 색은 파이썬 + ffmpeg 스크립트로 한다(하린 `편집_Wan.py` · `믹스.py` · `엔드카드.py`, 지유 `본편_편집.py`, PULSE `색감.py`). 다빈치에서 손으로 다듬어야 할 때는 색감을 `.cube`로 내보내 쓴다(`색감.py 큐브`). 다빈치를 스크립트로 몰려면 Studio(영구 295달러)가 필요하다.
+- 다시 확인: `(Get-Item 'C:\Program Files\Blackmagic Design\DaVinci Resolve\Resolve.exe').VersionInfo.ProductName`이 「DaVinci Resolve Studio」면 스크립트 길이 열린다.
+
+### SAM으로 얼굴만 따라가는 마스크를 만들 때 처리기가 torchvision을 찾고, 점 입력 단수가 틀리면 멈춘다
+- 증상: 10-19 하린 5b 「얼굴만 살짝 밝히기」 시험에서 transformers 5.20.1 `Sam2VideoProcessor`가 「Sam2ImageProcessor requires the Torchvision library」로 멈췄고, 고친 뒤에는 「Input points must be a nested list with 4 levels … Got 5」로 멈췄다.
+- 원인: SAM 2 처리기가 torchvision을 부른다. 점은 `[영상, 대상, 점, 좌표]` 4단, 표시(양성 1 · 음성 0)는 `[영상, 대상, 점]` 3단이어야 한다.
+- 고침: `C:/SYNK-LoRA/tools/sam/`에 시스템 torch를 공유하는 venv + `transformers==5.20.1`(SAM 2 · SAM 3 영상 모델이 다 들어 있음) + `torchvision==0.29.1+cu130`(pytorch cu130 색인, `--no-deps`). 가중치는 `받기.ps1`(잠금 폴더 + `par_dl.py`)로 `sam2.1-hiera-large/`(0.9GB, Apache-2.0). 첫 프레임에 얼굴 점 셋(양성)과 머리카락 · 포니테일 · 옷 점 셋(음성)을 찍어 `마스크_만들기.py`로 48프레임을 따라가니 26초(모델 읽기 포함), 그래픽 메모리 최대 2.4GB(LoRA 학습 15GB와 같이 돎), 이웃 프레임 겹침 평균 0.992 · 최저 0.966이었다. 마스크는 얼굴 · 귀 · 목 · 쇄골 피부만 잡았다. 마스크 안 보정은 공용 색감 폴더의 `부분보정.py`(선형 빛 +0.25스톱, 경계 18px 흐림, 움직임을 맞춘 이웃 프레임 1:2:1 평균)로 얼굴 평균 +9.3/255, 마스크 밖 최대 0.16/255, 경계 빛무리 없음. 전후 영상 `전후_영상.py`(이름표는 PIL — ffmpeg drawtext의 한글 · 경로 이스케이프 함정을 피함).
+- 다시 확인: `잰값.json`의 「겹침_최저」가 낮으면 먼저 움직임 때문인지 본다(10-19 4a 잔은 0.48이었지만 한 프레임 12px 이동이었고, 움직임을 빼면 0.82~0.97). 움직임을 빼고도 0.8 아래면 점을 다시 찍거나 중간 프레임에 점을 더한다. SAM 3(`facebook/sam3`, 3.44GB)은 메타 수동 승인 저장소다. 10-19에 크롬(q121235 로그인)에서 신청했고, 양식의 직함은 고르는 칸이라 「Founder」가 없어 「Other」로 냈다. 승인 확인 · 받기는 `sam3_받기.ps1`(승인 전에는 HTTP 403만 찍음, 큰 파일은 인증이 필요해 `par_dl.py` 대신 `hf_hub_download`). 신청 당일(10-19 13:35) 승인돼 있었다. `hf_hub_download`는 Xet 방식이라 3.44GB를 파일이 아니라 프로세스 메모리에 쌓으며 받다가 끝에 한 번에 쓴다(`.incomplete`가 0MB로 보여도 멈춘 게 아니다 — 프로세스 메모리가 느는지 본다, 약 10분). SAM 3 영상은 `Sam3VideoProcessor.init_video_session(video=프레임, inference_device="cuda", processing_device="cpu", video_storage_device="cpu")` → `add_text_prompt(세션, "glass")` → `model.propagate_in_video_iterator(inference_session=세션)` → `postprocess_outputs(세션, 출력)["masks"]`(대상별 참거짓 마스크). 보정 영역으로 쓸 때의 한계는 색감 README 「부분 보정」. SAM 3로 찾고 SAM 2.1로 따라가는 자동 점(`--자동 잔|피부`)을 만들며 막힌 것 둘: ① 같은 글의 후보를 합치면 엉뚱한 것을 따라간다 — 4a 「glass」가 뒤 골목 분홍 간판(점수 0.54)까지 잡았고, 손가락을 뺀 잔보다 간판 안쪽이 더 깊어 양성 점이 간판에 찍혀 손 마스크와 겹침 0이었다 → 점수가 가장 높은 후보 하나만 쓴다(0.95, 겹침 0.979). ② SAM 3 사진 모드 마스크가 정수 배열로 와서 `~`가 비트 반전이 되어 「대상 밖 거리」가 어긋났고 음성 점이 화면 구석(0, 40)에 찍혔다 → `.astype(bool)`로 바꾼다.
+- 10-19 지유 시험(프레임 폴더 입력)에서 찾은 것: 증상 — 업스케일 PNG 폴더(`영상_H3/업/<컷>/<컷>`)를 원본으로 넘기자 `잰값.json`엔 `"장수": 48`이 적히지만 실제로는 폴더의 PNG를 모두 썼고, 같은 폴더에 프레임을 다시 만들어도 `마스크_준비`가 예전 마스크를 그대로 돌려줄 수 있다(코드를 읽다 찾음, 이번 컷은 폴더 처음부터 끝까지 써서 틀린 마스크를 입히진 않았다). 원인 — `마스크_만들기.load_frames`는 폴더면 `--시작` · `--장수`를 무시하고, 「원본_크기 · 원본_시각」은 영상 파일일 때만 적으며, `마스크_준비`는 폴더면 원본이 같다고 보고 장수만 맞으면 끝낸다. 고침 — 컷이 처음부터 끝까지 들어 있는 폴더만 넣고(지유 업스케일 폴더가 그렇다), 업스케일을 다시 하면 그 컷의 보관 폴더를 비운 뒤 다시 만든다. 10-19 고침: `마스크_만들기.py`가 폴더도 「원본_지문」(PNG 크기 합 · 가장 늦은 시각 · 장수)을 적고, `부분보정.마스크_준비`가 그 지문을 견준다(지문 없는 예전 폴더 기록은 한 번 다시 만듦, 다시 만든 뒤 `_raw` 캐시를 비움 — 같은 프로세스에서 예전 값을 읽던 것도 막음). 다시 확인 — `synk-vendor/…/색감/부분보정_시험/폴더지문_전후.py`처럼 임시 폴더의 PNG를 바꿔 다시 부르면 「새로_만듦」이 찍히고(고치기 전 판은 0초 만에 예전 마스크), 바꾼 것 없이 부르면 바로 돌아온다. 폴더를 넣을 땐 「프레임」이 그 컷의 장수와 같은지도 본다.
 
 ### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
 - 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).

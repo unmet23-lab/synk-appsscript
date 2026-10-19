@@ -1,0 +1,572 @@
+[
+  {
+    "name": "Ba_401_s10",
+    "row": "여름 기준 ⓐ 45도 상반신",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 960,
+    "height": 1280,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, relaxed closed-mouth expression, looking slightly off camera, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Ba_401_s10_00001_.png"
+    ],
+    "seconds": 11.2
+  },
+  {
+    "name": "Ba_402_s10",
+    "row": "여름 기준 ⓐ 45도 상반신",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 960,
+    "height": 1280,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, relaxed closed-mouth expression, looking slightly off camera, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Ba_402_s10_00001_.png"
+    ],
+    "seconds": 10.7
+  },
+  {
+    "name": "Ba_403_s10",
+    "row": "여름 기준 ⓐ 45도 상반신",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 960,
+    "height": 1280,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, relaxed closed-mouth expression, looking slightly off camera, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Ba_403_s10_00001_.png"
+    ],
+    "seconds": 10.7
+  },
+  {
+    "name": "Ba_404_s10",
+    "row": "여름 기준 ⓐ 45도 상반신",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 960,
+    "height": 1280,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, relaxed closed-mouth expression, looking slightly off camera, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Ba_404_s10_00001_.png"
+    ],
+    "seconds": 10.8
+  },
+  {
+    "name": "Bb_401_s10",
+    "row": "여름 기준 ⓑ 정면 전신",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, full body shot from head to toe with space above her head and below her shoes, front view, standing naturally with her arms relaxed at her sides, camera at chest height, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, light-wash denim mini skirt, plain white low sneakers, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Bb_401_s10_00001_.png"
+    ],
+    "seconds": 9.9
+  },
+  {
+    "name": "Bb_402_s10",
+    "row": "여름 기준 ⓑ 정면 전신",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, full body shot from head to toe with space above her head and below her shoes, front view, standing naturally with her arms relaxed at her sides, camera at chest height, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, light-wash denim mini skirt, plain white low sneakers, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Bb_402_s10_00001_.png"
+    ],
+    "seconds": 8.6
+  },
+  {
+    "name": "Bb_403_s10",
+    "row": "여름 기준 ⓑ 정면 전신",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, full body shot from head to toe with space above her head and below her shoes, front view, standing naturally with her arms relaxed at her sides, camera at chest height, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, light-wash denim mini skirt, plain white low sneakers, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Bb_403_s10_00001_.png"
+    ],
+    "seconds": 8.9
+  },
+  {
+    "name": "Bb_404_s10",
+    "row": "여름 기준 ⓑ 정면 전신",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, full body shot from head to toe with space above her head and below her shoes, front view, standing naturally with her arms relaxed at her sides, camera at chest height, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, light-wash denim mini skirt, plain white low sneakers, standing in front of a plain warm-grey plaster wall of a Seoul alley cafe, open shade, hard sun from camera left on one side of her face, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/Bb_404_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K1_401_s10",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_401_s10_00001_.png"
+    ],
+    "seconds": 9.3
+  },
+  {
+    "name": "K1_402_s10",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_402_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K1_403_s10",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_403_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K1_404_s10",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_404_s10_00001_.png"
+    ],
+    "seconds": 8.7
+  },
+  {
+    "name": "K1_401_s08",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 401 · LoRA 0.8",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_401_s08_00001_.png"
+    ],
+    "seconds": 11.3
+  },
+  {
+    "name": "K1_402_s08",
+    "row": "컷 1 · 차양 끝 햇빛, 찡그림",
+    "col": "시드 402 · LoRA 0.8",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, face turned 20 degrees to camera left, squinting against the glare, letting out a short breath, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, standing at the sunny edge of the awning, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K1_402_s08_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K4a_401_s10",
+    "row": "컷 4a · 45도 한 모금",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table at the sunny edge of the awning shade, holding a clear glass of iced coffee to her lips with both hands mid-sip, eyes half closed, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4a_401_s10_00001_.png"
+    ],
+    "seconds": 9.7
+  },
+  {
+    "name": "K4a_402_s10",
+    "row": "컷 4a · 45도 한 모금",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table at the sunny edge of the awning shade, holding a clear glass of iced coffee to her lips with both hands mid-sip, eyes half closed, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4a_402_s10_00001_.png"
+    ],
+    "seconds": 8.7
+  },
+  {
+    "name": "K4a_403_s10",
+    "row": "컷 4a · 45도 한 모금",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table at the sunny edge of the awning shade, holding a clear glass of iced coffee to her lips with both hands mid-sip, eyes half closed, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4a_403_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K4a_404_s10",
+    "row": "컷 4a · 45도 한 모금",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table at the sunny edge of the awning shade, holding a clear glass of iced coffee to her lips with both hands mid-sip, eyes half closed, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4a_404_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K4b_401_s10",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_401_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K4b_402_s10",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_402_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K4b_403_s10",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_403_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K4b_404_s10",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_404_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K4b_401_s08",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 401 · LoRA 0.8",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_401_s08_00001_.png"
+    ],
+    "seconds": 9.7
+  },
+  {
+    "name": "K4b_402_s08",
+    "row": "컷 4b · 정면 눈 감고 숨",
+    "col": "시드 402 · LoRA 0.8",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, shoulders-up, front view, eyes closed, breathing out with relief, lips closed, shoulders dropping slightly, sitting in the awning shade, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K4b_402_s08_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K5a_401_s10",
+    "row": "컷 5a · 어깨 너머 뒤, 바람",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, seen from slightly behind and above her shoulder, the back of her head, her face hidden, her high ponytail swept to one side by a gust of wind, the edge of the striped awning lifting in the wind, looking down the sunlit empty alley, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct midday sunlight from camera left, strong contrast, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5a_401_s10_00001_.png"
+    ],
+    "seconds": 9.7
+  },
+  {
+    "name": "K5a_402_s10",
+    "row": "컷 5a · 어깨 너머 뒤, 바람",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, seen from slightly behind and above her shoulder, the back of her head, her face hidden, her high ponytail swept to one side by a gust of wind, the edge of the striped awning lifting in the wind, looking down the sunlit empty alley, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct midday sunlight from camera left, strong contrast, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5a_402_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K5a_403_s10",
+    "row": "컷 5a · 어깨 너머 뒤, 바람",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, seen from slightly behind and above her shoulder, the back of her head, her face hidden, her high ponytail swept to one side by a gust of wind, the edge of the striped awning lifting in the wind, looking down the sunlit empty alley, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct midday sunlight from camera left, strong contrast, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5a_403_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K5a_404_s10",
+    "row": "컷 5a · 어깨 너머 뒤, 바람",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, seen from slightly behind and above her shoulder, the back of her head, her face hidden, her high ponytail swept to one side by a gust of wind, the edge of the striped awning lifting in the wind, looking down the sunlit empty alley, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct midday sunlight from camera left, strong contrast, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5a_404_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K5b_401_s10",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_401_s10_00001_.png"
+    ],
+    "seconds": 9.3
+  },
+  {
+    "name": "K5b_402_s10",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_402_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K5b_403_s10",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_403_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K5b_404_s10",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_404_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K5b_401_s08",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 401 · LoRA 0.8",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_401_s08_00001_.png"
+    ],
+    "seconds": 9.8
+  },
+  {
+    "name": "K5b_402_s08",
+    "row": "컷 5b · 골목을 보는 가슴 위",
+    "col": "시드 402 · LoRA 0.8",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up at eye level, eyes open, looking off toward the sunlit alley at camera left, lips relaxed and closed, a breeze moving the loose wisps at her temples, wispy see-through bangs on her forehead, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, sitting in the awning shade, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left, strong contrast, crisp shadow edge across her face, the camera-left side of her face brightly lit, deep shade on the camera-right half of her face, bright slightly overexposed empty alley behind, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 50mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 0.8,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K5b_402_s08_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K7_401_s10",
+    "row": "컷 7 · 엔드카드, 카메라 봄",
+    "col": "시드 401 · LoRA 1.0",
+    "seed": 401,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table in the awning shade, a clear glass of iced coffee standing at the lower left of the frame, looking into the camera with a small friendly closed-mouth smile, plain shaded plaster wall in the upper left, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left lighting one side of her face, the other side in shade, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K7_401_s10_00001_.png"
+    ],
+    "seconds": 9.8
+  },
+  {
+    "name": "K7_402_s10",
+    "row": "컷 7 · 엔드카드, 카메라 봄",
+    "col": "시드 402 · LoRA 1.0",
+    "seed": 402,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table in the awning shade, a clear glass of iced coffee standing at the lower left of the frame, looking into the camera with a small friendly closed-mouth smile, plain shaded plaster wall in the upper left, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left lighting one side of her face, the other side in shade, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K7_402_s10_00001_.png"
+    ],
+    "seconds": 9.1
+  },
+  {
+    "name": "K7_403_s10",
+    "row": "컷 7 · 엔드카드, 카메라 봄",
+    "col": "시드 403 · LoRA 1.0",
+    "seed": 403,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table in the awning shade, a clear glass of iced coffee standing at the lower left of the frame, looking into the camera with a small friendly closed-mouth smile, plain shaded plaster wall in the upper left, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left lighting one side of her face, the other side in shade, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K7_403_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  },
+  {
+    "name": "K7_404_s10",
+    "row": "컷 7 · 엔드카드, 카메라 봄",
+    "col": "시드 404 · LoRA 1.0",
+    "seed": 404,
+    "width": 768,
+    "height": 1344,
+    "prompt": "pls_f02, a young Korean woman, chest-up, body turned 45 degrees to camera right, sitting at the old oak table in the awning shade, a clear glass of iced coffee standing at the lower left of the frame, looking into the camera with a small friendly closed-mouth smile, plain shaded plaster wall in the upper left, high ponytail tied at the crown with loose wisps at the temples and wispy see-through bangs, warm medium chestnut brown hair, pale yellow short-sleeve fine-knit top, small cafe terrace under a faded navy-and-white striped canvas awning in an empty Seoul residential alley, old oak table, hot July afternoon around 2 pm, harsh direct sunlight from camera left lighting one side of her face, the other side in shade, unretouched skin with visible pores and fine vellus hair, slight natural asymmetry, a little shine on the nose from the heat, live-action film still, full-frame cinema camera, 65mm, moderate depth of field",
+    "lora": "f02_harin_v2\\f02_harin_v2.safetensors",
+    "lora_strength": 1.0,
+    "files": [
+      "f02_harin_v2\\keyframe_B/K7_404_s10_00001_.png"
+    ],
+    "seconds": 9.2
+  }
+]

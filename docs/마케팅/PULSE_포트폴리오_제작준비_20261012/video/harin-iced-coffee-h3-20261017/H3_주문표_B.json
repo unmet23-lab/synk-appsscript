@@ -1,0 +1,114 @@
+{
+ "설명": "하린 아이스커피 v4 · B판(LoRA) H3 주문표. 그림은 10-18 MCP(ultra) 계정에 올림. 탐침(①)·컷 6(④)은 A판 제품 키프레임이 생기면 A판 주문표에서 내고 결과를 B판에도 쓴다. 탐침이 실패하면 ②를 컷마다 4초 넷(②′)으로 나눈다. 주문 전 유호님 승인.",
+ "합계": 38,
+ "주문": [
+  {
+   "순서": "② 하린 멀티샷(탐침 통과 시)",
+   "견적": 20,
+   "params": {
+    "model": "minimax_h3",
+    "duration": 10,
+    "aspect_ratio": "9:16",
+    "prompt": "GLOBAL STYLE: Live-action footage from a Korean summer iced-coffee commercial, vertical 9:16, a hot July afternoon around 2 pm on a small café terrace in a Seoul alley under a faded navy-and-white striped awning. Real-time speed throughout, no slow motion, no time dilation. Four shots with hard cuts at 2, 5 and 7.5 seconds. No fade in or out; the first and last frames are full-exposure frames.\nREFERENCES: the start image is the first frame of shot 1; @Image 1 to @Image 3 are the first frames of shots 2 to 4, in order; keep each shot's framing, light and wardrobe exactly as its image. @Image 4 and @Image 5 define her face; @Image 6 and @Image 7 define her outfit and ponytail. Keep her exactly this person in every shot.\nTEXTURE AND REALISM: She looks like a real young woman filmed on location: unretouched skin with visible pores, slight asymmetry, a little shine from the heat, natural skin color variation, neutral skin color with no yellow cast. Natural motion blur on fast movement. No beauty filter, no airbrushed or glowing skin, no advertising-model expression, no added grain, no added sharpening, no plastic sheen.\nLIGHT: The sun is always high and to camera left. In every shot one side of her face is lit hard by the sun and the other side stays in shade; her face is never lit evenly from the front.\nCHARACTER: Harin, a young Korean woman in her early twenties, warm medium chestnut brown hair in a high ponytail with loose wisps at the temples, pale yellow short-sleeve knit top, light-wash denim mini skirt. Her wispy see-through bangs always stay on her forehead and never part; her hairstyle and hair color never change.\nACTING: Each shot is an ordinary moment caught in progress, not a pose. One action per shot. She blinks naturally and her small eye and mouth movements are physically natural; expressions change quickly and briefly, never a slow morph. No fixed smile, no nodding loop, no facial reshaping. No talking, no humming, no big grin, no teeth showing.\nCAMERA: A real cinema camera held steady by an operator, with only slight natural breathing; no zoom, no orbit, no other camera moves. Keep her face readable and correctly focused whenever it is in frame.\nShot 1 (0-2s, start image): chest-up, 45 degrees, 65mm, seated at the table at the edge of the shade. She takes one sip of iced coffee from the glass, both hands simply holding it.\nShot 2 (2-5s, @Image 1): shoulders-up from the front, 65mm. The glass is already lowered out of frame; eyes closed, she breathes out once with relief and her shoulders drop a little. Lips stay closed.\nShot 3 (5-7.5s, @Image 2): from slightly behind and above her shoulder, 50mm. Her face stays hidden and she does not turn toward the camera. A gust of wind lifts the edge of the striped awning and swings only her ponytail to one side; her bangs stay in place.\nShot 4 (7.5-10s, @Image 3): chest-up at eye level, 50mm, eyes already open, looking off toward the sunlit alley at frame left. The breeze moves only the loose wisps at her temples. She breathes and watches the alley; about one second into the shot her eyes curve into a soft half-moon smile with the outer corners turning down, lips closed, and she stays smiling until the shot ends.\nCONSISTENCY: the same woman, outfit, ponytail and bangs in all four shots; the same awning, table and alley; the sun from camera left in every shot. No other people, no signs, no text, no logos, no license plates, no subtitles.",
+    "medias": [
+     {
+      "role": "start_image",
+      "value": "b461e002-2042-43ca-87b2-77cbf864c1bf"
+     },
+     {
+      "role": "image_references",
+      "value": "51ea76ba-5919-49b7-99fb-bb0b0e3e5151"
+     },
+     {
+      "role": "image_references",
+      "value": "00b7d3b7-2341-4cb7-b683-f97e398eb1c2"
+     },
+     {
+      "role": "image_references",
+      "value": "43b9569e-a542-4af8-bb99-60d289388e65"
+     },
+     {
+      "role": "image_references",
+      "value": "d1f091ac-45e4-4e99-943a-a88256e57915"
+     },
+     {
+      "role": "image_references",
+      "value": "f87995cb-7de6-4c19-8ae6-c8afed8000de"
+     },
+     {
+      "role": "image_references",
+      "value": "03caee98-e4fd-436f-80d6-3d965753212d"
+     },
+     {
+      "role": "image_references",
+      "value": "2b96ab5c-cb67-48a0-a707-127bd24a5695"
+     }
+    ]
+   }
+  },
+  {
+   "순서": "③ 컷 1",
+   "견적": 8,
+   "params": {
+    "model": "minimax_h3",
+    "duration": 4,
+    "aspect_ratio": "9:16",
+    "prompt": "GLOBAL STYLE: Live-action footage from a Korean summer iced-coffee commercial, vertical 9:16, a hot July afternoon around 2 pm on a small café terrace in a Seoul alley under a faded navy-and-white striped awning. Real-time speed throughout, no slow motion, no time dilation. No fade in or out; the first and last frames are full-exposure frames.\nREFERENCES: the start image is the first frame of this single shot; keep its framing, light and wardrobe exactly. @Image 1 and @Image 2 define her face; @Image 3 and @Image 4 define her outfit and ponytail. Keep her exactly this person.\nTEXTURE AND REALISM: She looks like a real young woman filmed on location: unretouched skin with visible pores, slight asymmetry, a little shine from the heat, natural skin color variation, neutral skin color with no yellow cast. Natural motion blur on fast movement. No beauty filter, no airbrushed or glowing skin, no advertising-model expression, no added grain, no added sharpening, no plastic sheen.\nLIGHT: The sun is always high and to camera left. In every shot one side of her face is lit hard by the sun and the other side stays in shade; her face is never lit evenly from the front.\nCHARACTER: Harin, a young Korean woman in her early twenties, warm medium chestnut brown hair in a high ponytail with loose wisps at the temples, pale yellow short-sleeve knit top, light-wash denim mini skirt. Her wispy see-through bangs always stay on her forehead and never part; her hairstyle and hair color never change.\nACTING: Each shot is an ordinary moment caught in progress, not a pose. One action per shot. She blinks naturally and her small eye and mouth movements are physically natural; expressions change quickly and briefly, never a slow morph. No fixed smile, no nodding loop, no facial reshaping. No talking, no humming, no big grin, no teeth showing.\nCAMERA: A real cinema camera held steady by an operator, with only slight natural breathing; no zoom, no orbit, no other camera moves. Keep her face readable and correctly focused whenever it is in frame.\nSingle shot, chest-up, her face turned about 20 degrees toward camera left, 65mm, at the sunny edge of the awning with the hard sun from camera left only on the camera-left side of her face (her right cheek and ear). She squints against the glare and lets out one short breath, then simply stays in the heat. No hands near her face, no sweat, no heat haze. The alley behind is bright and slightly overexposed.\nCONSISTENCY: the same woman, outfit, ponytail and bangs; the same awning, table and alley; the sun from the left of the frame. No other people, no signs, no text, no logos, no license plates, no subtitles.",
+    "medias": [
+     {
+      "role": "start_image",
+      "value": "d7431048-24d4-42df-b707-3440ef88bd80"
+     },
+     {
+      "role": "image_references",
+      "value": "d1f091ac-45e4-4e99-943a-a88256e57915"
+     },
+     {
+      "role": "image_references",
+      "value": "f87995cb-7de6-4c19-8ae6-c8afed8000de"
+     },
+     {
+      "role": "image_references",
+      "value": "03caee98-e4fd-436f-80d6-3d965753212d"
+     },
+     {
+      "role": "image_references",
+      "value": "2b96ab5c-cb67-48a0-a707-127bd24a5695"
+     }
+    ]
+   }
+  },
+  {
+   "순서": "⑤ 컷 7",
+   "견적": 10,
+   "params": {
+    "model": "minimax_h3",
+    "duration": 5,
+    "aspect_ratio": "9:16",
+    "prompt": "GLOBAL STYLE: Live-action footage from a Korean summer iced-coffee commercial, vertical 9:16, a hot July afternoon around 2 pm on a small café terrace in a Seoul alley under a faded navy-and-white striped awning. Real-time speed throughout, no slow motion, no time dilation. No fade in or out; the first and last frames are full-exposure frames.\nREFERENCES: the start image is the first frame of this single shot; keep its framing, light and wardrobe exactly. @Image 1 and @Image 2 define her face; @Image 3 and @Image 4 define her outfit and ponytail. Keep her exactly this person.\nTEXTURE AND REALISM: She looks like a real young woman filmed on location: unretouched skin with visible pores, slight asymmetry, a little shine from the heat, natural skin color variation, neutral skin color with no yellow cast. Natural motion blur on fast movement. No beauty filter, no airbrushed or glowing skin, no advertising-model expression, no added grain, no added sharpening, no plastic sheen.\nLIGHT: The sun is always high and to camera left. In every shot one side of her face is lit hard by the sun and the other side stays in shade; her face is never lit evenly from the front.\nCHARACTER: Harin, a young Korean woman in her early twenties, warm medium chestnut brown hair in a high ponytail with loose wisps at the temples, pale yellow short-sleeve knit top, light-wash denim mini skirt. Her wispy see-through bangs always stay on her forehead and never part; her hairstyle and hair color never change.\nACTING: Each shot is an ordinary moment caught in progress, not a pose. One action per shot. She blinks naturally and her small eye and mouth movements are physically natural; expressions change quickly and briefly, never a slow morph. No fixed smile, no nodding loop, no facial reshaping. No talking, no humming, no big grin, no teeth showing.\nCAMERA: A real cinema camera held steady by an operator, with only slight natural breathing; no zoom, no orbit, no other camera moves. Keep her face readable and correctly focused whenever it is in frame.\nSingle shot, chest-up, 45 degrees, 65mm, locked camera. Sitting in the awning's shade with the glass at the lower left and the sun from camera left on one side of her face, she holds her gaze on the lens with the small, friendly closed-mouth smile and blinks once; the smile stays. The plain shaded wall in the upper left stays empty.\nCONSISTENCY: the same woman, outfit, ponytail and bangs; the same awning, table and alley; the sun from the left of the frame. No other people, no signs, no text, no logos, no license plates, no subtitles.",
+    "medias": [
+     {
+      "role": "start_image",
+      "value": "d2f654a2-77bf-41ff-86d8-fea8dda3322f"
+     },
+     {
+      "role": "image_references",
+      "value": "d1f091ac-45e4-4e99-943a-a88256e57915"
+     },
+     {
+      "role": "image_references",
+      "value": "f87995cb-7de6-4c19-8ae6-c8afed8000de"
+     },
+     {
+      "role": "image_references",
+      "value": "03caee98-e4fd-436f-80d6-3d965753212d"
+     },
+     {
+      "role": "image_references",
+      "value": "2b96ab5c-cb67-48a0-a707-127bd24a5695"
+     }
+    ]
+   }
+  }
+ ]
+}
