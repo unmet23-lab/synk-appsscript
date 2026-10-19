@@ -9,9 +9,16 @@ const DAY = 86400000;
 const plain = value => value !== null && typeof value === 'object' && !Array.isArray(value)
   && [Object.prototype, null].includes(Object.getPrototypeOf(value))
   && Object.keys(value).every(key => !['__proto__', 'prototype', 'constructor'].includes(key));
-const dateValid = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith('0000-')
-  && Number.isFinite(Date.parse(value + 'T00:00:00.000Z')) && new Date(value + 'T00:00:00.000Z').toISOString().slice(0, 10) === value;
-const day = value => Date.parse(value + 'T00:00:00.000Z') / DAY;
+// A planner search runs these date checks thousands of times for one day.
+// They are pure, so recent answers are remembered (bounded) and stay identical.
+const remember = fn => { const memo = new Map(); return value => {
+  if (memo.has(value)) return memo.get(value);
+  if (memo.size >= 4096) memo.clear();
+  const result = fn(value); memo.set(value, result); return result;
+}; };
+const dateValid = remember(value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith('0000-')
+  && Number.isFinite(Date.parse(value + 'T00:00:00.000Z')) && new Date(value + 'T00:00:00.000Z').toISOString().slice(0, 10) === value);
+const day = remember(value => Date.parse(value + 'T00:00:00.000Z') / DAY);
 const timeValid = value => typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
 const minute = value => value === '24:00' ? 1440 : Number(value.slice(0, 2)) * 60 + Number(value.slice(3));
 const https = value => { try { const url = new URL(value); return typeof value === 'string' && url.protocol === 'https:' && !url.username && !url.password; } catch { return false; } };
@@ -24,11 +31,13 @@ export function normalizeRealQuery(input = {}) {
   if (budget !== null && (!Number.isSafeInteger(budget) || budget < 0 || budget > REAL_CONDITION_MAX_BUDGET)) invalid('budget', '한 곳의 성인 1명 예산을 0~1,000,000원 정수로 입력해 주세요.');
   return { date, time, budget: budget === 0 ? 0 : budget };
 }
-function koreanToday(now) {
-  const value = now ?? new Date().toISOString();
+const todayAt = remember(value => {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)
     || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString() !== value) invalid('now', '조건을 확인하는 시각이 올바르지 않습니다.');
   return new Date(Date.parse(value) + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+});
+function koreanToday(now) {
+  return todayAt(now ?? new Date().toISOString());
 }
 const check = (status, reason, extra = {}) => ({ status, label: REAL_CONDITION_LABELS[status], reason, ...extra });
 const partialReason = (...sources) => sources.map(source => source?.note).find(note => typeof note === 'string' && note.trim())
@@ -40,7 +49,16 @@ function freshIssue(data, date, today) {
   if (date && day(date) - day(data.verifiedAt) > REAL_CONDITION_MAX_AGE_DAYS) return '방문일이 안내 확인일로부터 30일을 넘어 다시 확인해야 해요.';
   return null;
 }
+// The shipped calendar is frozen; its answer for one date and day is remembered.
+const calendarMemo = new WeakMap();
 function calendarStatus(calendar, date, today) {
+  if (!calendar || typeof calendar !== 'object' || !Object.isFrozen(calendar)) return checkCalendar(calendar, date, today);
+  if (!calendarMemo.has(calendar)) calendarMemo.set(calendar, new Map());
+  const memo = calendarMemo.get(calendar), key = `${date}|${today}`;
+  if (!memo.has(key)) memo.set(key, checkCalendar(calendar, date, today));
+  return memo.get(key);
+}
+function checkCalendar(calendar, date, today) {
   if (freshIssue(calendar, date, today) || !dateValid(calendar.from) || !dateValid(calendar.through)
     || day(calendar.from) > day(calendar.through) || day(date) < day(calendar.from) || day(date) > day(calendar.through)
     || !Array.isArray(calendar.holidays) || calendar.holidays.length > 370 || new Set(calendar.holidays).size !== calendar.holidays.length
@@ -83,7 +101,8 @@ function scheduleCheck(place, query, today, calendar, stayMinutes = null) {
     if (overrideIssue) return check('unknown', overrideIssue);
     sourceUrl = override.sourceUrl ?? sourceUrl;
     scope = override.scope ?? (override.closed === true ? 'full' : scope);
-    if (scope === 'partial') return check('unknown', partialReason(override, hours), { sourceUrl });
+    // A partial notice that lists its own slots still bounds the visit below.
+    if (scope === 'partial' && (!Object.hasOwn(override, 'slots') || override.closed !== undefined)) return check('unknown', partialReason(override, hours), { sourceUrl });
     if (override.closed === true && !Object.hasOwn(override, 'slots')) return check('unmatched', '해당 날짜는 공식 안내상 휴관·휴무예요.', { sourceUrl });
     if (override.closed !== undefined && override.closed !== false) return check('unknown', '해당 날짜의 휴관 여부가 명확하지 않아요.');
     slots = override.slots;
@@ -97,7 +116,8 @@ function scheduleCheck(place, query, today, calendar, stayMinutes = null) {
     if (!plain(hours.weekly) || Object.keys(hours.weekly).some(value => !/^[0-6]$/.test(value))) return check('unknown', '요일별 운영 안내가 충분하지 않아요.');
     slots = hours.weekly[String(new Date(query.date + 'T00:00:00.000Z').getUTCDay())];
   }
-  if (!slotsValid(slots)) return check('unknown', scope === 'partial' ? partialReason(hours) : '해당 요일의 운영시간·입장 마감 안내를 확인해 주세요.');
+  const partialNote = () => override !== undefined ? partialReason(override, hours) : partialReason(hours);
+  if (!slotsValid(slots)) return check('unknown', scope === 'partial' ? partialNote() : '해당 요일의 운영시간·입장 마감 안내를 확인해 주세요.');
   const weekday = new Date(query.date + 'T00:00:00.000Z').getUTCDay();
   const partial = partialAt(hours, query, weekday);
   if (partial === null) return check('unknown', '기간 한정 일부 공간의 운영 안내를 다시 확인해 주세요.');
@@ -105,9 +125,12 @@ function scheduleCheck(place, query, today, calendar, stayMinutes = null) {
   // areas on otherwise open days must not mask this confirmed closure. A
   // sourced holiday override or partial extension is resolved above first.
   if (!slots.length && !partial) return check('unmatched', '해당 요일은 공식 안내상 휴관·휴무예요.', { sourceUrl });
-  if (scope === 'partial') return check('unknown', partialReason(hours), { sourceUrl });
+  // Listed slots are the sourced opening hours even when only part of the venue
+  // is confirmed (sources that disagree on hours list no slots): a visit outside
+  // them is a closure, and inside them the rest of the venue stays to confirm.
+  const open = reason => scope === 'partial' ? check('unknown', partialNote(), { sourceUrl }) : check('matched', reason, { sourceUrl });
   if (!slots.length && !query.time && partial) return check('unknown', '해당 날짜에는 일부 공간의 연장 운영만 안내되어 있어요. 대상 공간을 확인해 주세요.', { sourceUrl: partial.sourceUrl ?? sourceUrl });
-  if (!query.time) return check('matched', '해당 날짜는 안내상 운영일이에요. 방문 시각과 당일 변동은 별도로 확인해 주세요.', { sourceUrl });
+  if (!query.time) return open('해당 날짜는 안내상 운영일이에요. 방문 시각과 당일 변동은 별도로 확인해 주세요.');
   const current = minute(query.time);
   const matchingSlot = slots.find(slot => current >= minute(slot.open) && current < minute(slot.lastEntry ?? slot.close));
   if (matchingSlot && stayMinutes !== null) {
@@ -119,13 +142,13 @@ function scheduleCheck(place, query, today, calendar, stayMinutes = null) {
       if (extension) return check('unknown', '체류 중 일반 운영시간이 끝나 일부 공간의 연장 운영 대상인지 확인이 필요해요.', { sourceUrl: extension.sourceUrl ?? sourceUrl });
       return check('unmatched', '입장은 가능한 시각이지만 입력한 체류가 운영 종료나 쉬는 시간을 넘어요.', { sourceUrl });
     }
-    return check('matched', matchingSlot.lastEntry
+    return open(matchingSlot.lastEntry
       ? '도착은 안내된 입장·운영시간 안이고 입력한 체류도 같은 운영 구간 안에 끝나요. 당일 변동은 확인해 주세요.'
-      : '도착과 입력한 체류가 같은 운영 구간 안에 있어요. 입장·주문 마감과 당일 변동은 별도로 확인해 주세요.', { sourceUrl });
+      : '도착과 입력한 체류가 같은 운영 구간 안에 있어요. 입장·주문 마감과 당일 변동은 별도로 확인해 주세요.');
   }
-  if (matchingSlot) return check('matched', matchingSlot.lastEntry
+  if (matchingSlot) return open(matchingSlot.lastEntry
     ? '고른 시각은 공식 안내의 운영시간과 입장 마감 안에 있어요. 당일 변동은 확인해 주세요.'
-    : '고른 시각은 공식 안내의 운영시간 안이에요. 입장·주문 마감과 당일 변동은 별도로 확인해 주세요.', { sourceUrl });
+    : '고른 시각은 공식 안내의 운영시간 안이에요. 입장·주문 마감과 당일 변동은 별도로 확인해 주세요.');
   if (partial) return check('unknown', '고른 시각에는 일부 공간의 연장 운영만 안내되어 있어요. 대상 공간과 입장 조건을 확인해 주세요.', { sourceUrl: partial.sourceUrl ?? sourceUrl });
   return check('unmatched', '고른 시각은 공식 안내의 운영시간·입장 마감 밖이에요.', { sourceUrl });
 }

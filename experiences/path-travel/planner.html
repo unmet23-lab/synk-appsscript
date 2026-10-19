@@ -3,84 +3,102 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#ffffff"><title>나에게 맞는 서울의 하루 · SYNK PATH</title>
-<meta name="description" content="취향과 시간, 예산으로 고르는 서울 여행. 실제 장소와 지도, 고쳐 쓰는 하루 일정.">
+<meta name="description" content="하고 싶은 것과 쓸 시간만 고르면, 서울 종로의 실제 장소로 하루를 짜 드려요.">
+<link rel="icon" href="./assets/logo-synk.webp" type="image/webp">
 <link rel="stylesheet" href="../synk-account/src/account-notebook.css"><link rel="stylesheet" href="./planner.css"><script type="module" src="./planner-ui.mjs"></script>
 </head>
 <body>
-<a class="skip" href="#trip-form">여행 조건으로 건너뛰기</a>
+<a class="skip" href="#before-result">본문으로 건너뛰기</a>
 <header class="masthead"><div class="wrap masthead-inner">
 <a class="brand" href="https://synk.im/#products"><img src="./assets/logo-synk.webp" width="103" height="49" alt="SYNK"><span>PATH</span></a>
-<nav aria-label="주요 메뉴"><a href="#trip-form">여행 만들기</a><a href="#explore">장소 둘러보기</a><button id="memory-open" class="nav-button">내 여행</button></nav>
+<nav aria-label="주요 메뉴"><a href="#travel-product-content">하루 만들기</a><a href="#explore">장소 둘러보기</a><button id="memory-open" class="nav-button">내 여행</button></nav>
 </div></header>
 <main id="travel-product-content">
-<section class="planner-section wrap" aria-labelledby="intro-title">
+<section class="planner-section wrap" aria-labelledby="chooser-title">
  <div class="workbench">
  <div class="result-column">
-  <section class="intro">
-   <figure class="cover">
-    <img id="hero-photo" alt="" hidden>
-    <figcaption class="cover-caption">
-     <p class="cover-kicker" id="hero-place-count">가입 없이 시작 · 서울 종로권 실제 장소</p>
-     <h1 id="intro-title">서울에서 찾는,<br>내 취향의 하루.</h1>
-     <p class="intro-description">좋아하는 것에 더 머물고, 부담스러운 건 조금 덜어내세요.</p>
-     <a class="button primary cover-cta" href="#generate">내 하루 만들기 <span aria-hidden="true">↓</span></a>
-    </figcaption>
-    <small id="hero-credit" class="cover-credit"></small>
-   </figure>
-  </section>
   <section id="progress-summary" class="progress-summary" hidden aria-live="polite"></section>
   <div id="plan-change" hidden></div>
-  <section id="before-result" class="before-result" aria-labelledby="preset-title">
-   <div class="block-head"><h2 id="preset-title">이런 하루는 어때요?</h2></div>
-   <div class="presets">
-    <button class="preset" data-preset="culture"><span class="preset-photo" data-preset-photo="mmca-seoul"></span><span class="preset-text"><span class="preset-no">01</span><strong>전시 보고, 차 한 잔</strong><small>실내 위주 · 미술과 공예</small></span></button>
-    <button class="preset" data-preset="food"><span class="preset-photo" data-preset-photo="tongin-market"></span><span class="preset-text"><span class="preset-no">02</span><strong>잘 먹는 서울 여행</strong><small>한 끼를 중심으로 · 가까운 문화</small></span></button>
-    <button class="preset" data-preset="slow"><span class="preset-photo" data-preset-photo="changgyeonggung"></span><span class="preset-text"><span class="preset-no">03</span><strong>적게 걷고, 깊게 보기</strong><small>두 곳에 느긋하게 · 짧은 이동</small></span></button>
+  <section id="before-result" class="chooser">
+   <p class="chooser-return" id="chooser-back" hidden><button class="link-button" type="button" data-action="previous-plan"><span aria-hidden="true">←</span> 지금 일정으로 돌아가기</button></p>
+   <div class="chooser-card" id="chooser-card" data-sky="3">
+    <div class="chooser-step" id="step-intent">
+     <div class="chooser-top"><span class="step-pill">1 / 2</span><button class="link-button" type="button" data-step="2" aria-label="하고 싶은 것 고르지 않고 넘어가기">건너뛰기</button></div>
+     <p class="chooser-kicker" id="hero-place-count">가입 없이 시작 · 서울 종로의 실제 장소</p>
+     <h1 class="chooser-title" id="chooser-title" tabindex="-1">오늘, 뭐 하고 싶어요?</h1>
+     <p class="chooser-sub">세 개까지 고를 수 있어요. 안 골라도 괜찮아요.</p>
+     <div class="intent-grid" role="group" aria-label="하고 싶은 것">
+      <button type="button" class="intent" data-intent="food" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-food.webp" alt="" width="150" height="150"><span class="intent-name">맛있는 한 끼</span></button>
+      <button type="button" class="intent" data-intent="tea" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-tea.webp" alt="" width="150" height="150"><span class="intent-name">차 한 잔</span></button>
+      <button type="button" class="intent" data-intent="art" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-art.webp" alt="" width="150" height="150"><span class="intent-name">전시 보기</span></button>
+      <button type="button" class="intent" data-intent="palace" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-palace.webp" alt="" width="150" height="150"><span class="intent-name">궁궐·역사</span></button>
+      <button type="button" class="intent" data-intent="alley" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-alley.webp" alt="" width="150" height="150"><span class="intent-name">골목 산책</span></button>
+      <button type="button" class="intent" data-intent="market" aria-pressed="false"><span class="intent-glow" aria-hidden="true"></span><img src="./assets/felt/intent-market.webp" alt="" width="150" height="150"><span class="intent-name">시장 구경</span></button>
+     </div>
+     <div class="chooser-actions"><button class="button primary" type="button" data-step="2">다음 <span aria-hidden="true">→</span></button><p class="pick-note" id="pick-note" aria-live="polite">고르지 않으면 가까운 곳을 고루 섞어요.</p></div>
+    </div>
+    <div class="chooser-step" id="step-time" hidden>
+     <div class="chooser-top"><span class="step-pill">2 / 2</span><button class="link-button" type="button" data-step="1"><span aria-hidden="true">←</span> 이전</button></div>
+     <h2 class="chooser-title" id="time-title" tabindex="-1">몇 시간 있어요?</h2>
+     <p class="chooser-sub" id="time-context">안국역에서 출발해요</p>
+     <div class="time-layout">
+      <div class="dial" aria-hidden="true"><svg viewBox="0 0 200 200"><circle class="ring-track" cx="100" cy="100" r="84"/><circle class="ring-fill" id="ring-fill" cx="100" cy="100" r="84" pathLength="100" stroke-dasharray="37.5 100" transform="rotate(-90 100 100)"/></svg><img class="dial-clock" id="dial-clock" src="./assets/sticker-time.webp" alt="" width="200" height="196"></div>
+      <div class="time-side">
+       <p class="dial-value"><b id="dial-hours">3시간</b><span id="dial-range"></span></p>
+       <div class="time-chips" role="group" aria-label="쓸 시간">
+        <button class="chip" type="button" aria-pressed="false" data-hours="1">1시간</button>
+        <button class="chip" type="button" aria-pressed="false" data-hours="2">2시간</button>
+        <button class="chip" type="button" aria-pressed="true" data-hours="3">3시간</button>
+        <button class="chip" type="button" aria-pressed="false" data-hours="5">반나절</button>
+        <button class="chip" type="button" aria-pressed="false" data-hours="8">하루</button>
+       </div>
+       <div class="fit"><span class="fit-objs" id="fit-objs" aria-hidden="true"></span><p id="fit-text" aria-live="polite"></p></div>
+      </div>
+     </div>
+     <div class="chooser-actions"><button class="button primary" type="button" id="make-day" data-action="make-day">이 시간으로 하루 만들기 <span aria-hidden="true">↗</span></button><button class="link-button" type="button" data-action="choose-origin">출발지 바꾸기</button></div>
+    </div>
    </div>
-   <p class="micro preset-help">고르면 조건이 채워져요. 날짜·인원·예산만 확인하고 하루를 만드세요.</p>
    <ul class="promise" aria-label="여행안에 담기는 것">
     <li><img src="./assets/sticker-search.webp" alt="" width="37" height="50"><div><strong>실제 장소로만</strong><span>공식 안내를 확인한 종로·북촌·서촌의 식당·찻집·궁·박물관</span></div></li>
-    <li><img src="./assets/sticker-time.webp" alt="" width="50" height="49"><div><strong>시간표와 걷는 길</strong><span>실제 길 자료로 걷는 시간을 재고, 도착·마칠 시각을 맞춰요</span></div></li>
-    <li><span class="promise-mark" aria-hidden="true">↺</span><div><strong>고쳐 쓰는 하루</strong><span>마음에 든 곳은 유지하고 나머지만 바꿔 다시 맞춰요</span></div></li>
+    <li><img src="./assets/sticker-time.webp" alt="" width="50" height="49"><div><strong>시간표와 걷는 길</strong><span>실제 길 자료로 걷는 시간을 재고, 고른 시간에 맞춰 채워요</span></div></li>
+    <li><span class="promise-mark" aria-hidden="true">↺</span><div><strong>고쳐 쓰는 하루</strong><span>마음에 든 곳은 두고 나머지만 바꿔 다시 맞춰요</span></div></li>
    </ul>
   </section>
   <section id="result" hidden aria-labelledby="result-title">
    <div class="result-head">
     <div class="result-top"><div><p class="result-kicker" id="result-kicker">YOUR SEOUL DAY</p><h2 id="result-title" tabindex="-1">나에게 맞춘 서울의 하루</h2></div><button id="save-open" class="button secondary">여행 가져가기</button></div>
-    <div id="plan-overview"></div>
-    <div id="quick-actions" class="quick-actions" role="group" aria-label="일정 빠르게 바꾸기">
+    <div id="journey-strip" class="journey-strip"></div>
+   </div>
+   <aside class="result-aside" aria-label="하루 요약과 빠른 변경">
+    <div class="aside-card">
+     <div id="plan-overview"></div>
+     <button class="map-open" type="button" data-action="open-map"><span class="map-thumb" id="map-thumb" aria-hidden="true"></span><span class="map-open-label">큰 지도로 동선 보기 <span aria-hidden="true">↗</span></span></button>
+    </div>
+    <div id="quick-actions" class="quick-actions" role="group" aria-labelledby="quick-title">
+     <p class="quick-title" id="quick-title">이렇게 바꿔 볼까요?</p>
      <button class="chip" data-adjust="less-walk">덜 걷고 싶어요</button>
      <button class="chip" data-adjust="less-cost">예산을 줄일래요</button>
      <button class="chip" data-adjust="indoors">비가 와요 · 실내 위주</button>
      <button class="chip" data-adjust="later">30분 늦게 시작</button>
     </div>
-    <div class="view-tabs" aria-label="일정 보기"><button class="active" data-view="timeline" aria-pressed="true">하루 일정</button><button data-view="map" aria-pressed="false">지도 보기</button></div>
-   </div>
-   <div id="map-panel" class="map-panel">
-    <div class="map-frame">
-     <div class="map-toolbar"><span>이동 경로</span><div><button id="map-zoom-in" aria-label="지도 확대">+</button><button id="map-zoom-out" aria-label="지도 축소">−</button></div></div>
-     <div id="route-map"></div>
-    </div>
-    <p class="map-credit"><span>지도 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors · ODbL</a></span> <a href="./assets/jongno-walking.json" download>지도 자료 받기</a></p>
-    <p class="micro map-note">초록 선은 도로망 기준 예상, 갈색 점선은 확인하지 못한 연결 구간이에요. 신호·공사·입구 상황은 지도 앱에서 확인하세요.</p>
-   </div>
-   <div class="result-body">
-    <div id="timeline"></div>
-    <div id="alternatives" class="alternatives"></div>
-    <div id="result-evidence"></div>
-   </div>
+    <div class="aside-links" id="aside-links"></div>
+   </aside>
+   <div id="timeline"></div>
+   <div id="alternatives" class="alternatives"></div>
+   <div id="result-evidence"></div>
+   <button class="map-fab" type="button" data-action="open-map">지도로 보기</button>
   </section>
   <section id="empty-result" hidden class="empty-result" aria-live="polite"></section>
  </div>
- <details id="conditions-panel" class="conditions" open>
-  <summary><span class="conditions-title">이번 여행의 조건</span><span id="condition-chips" class="condition-chips"></span><span class="conditions-toggle" aria-hidden="true"></span></summary>
+ <details id="conditions-panel" class="conditions">
+  <summary><span class="conditions-title when-plan">이번 여행의 조건</span><span class="conditions-title when-start">날짜·인원·예산까지 직접 정하기</span><span id="condition-chips" class="condition-chips"></span><span class="conditions-toggle" aria-hidden="true"></span></summary>
   <form id="trip-form" novalidate><div class="form-col">
   <div class="field"><label for="trip-date">언제 갈까요?</label><input id="trip-date" type="date" required></div>
   <div class="field-row"><div class="field"><label for="start-time">시작</label><input id="start-time" type="time" value="11:00" required></div><div class="field"><label for="end-time">마칠 시간</label><input id="end-time" type="time" value="17:00" required></div></div>
   <div class="field"><label for="origin">어디에서 출발하나요?</label><select id="origin"><option value="anguk">안국역</option><option value="gyeongbokgung">경복궁역</option><option value="jonggak">종각역</option><option value="gwanghwamun">광화문역</option></select><button class="link-button" type="button" data-action="choose-origin">지도·숙소에서 고르기 →</button></div>
   </div><div class="form-col"><div class="field-row"><div class="field"><label for="adults">성인</label><input id="adults" type="number" min="1" max="20" value="1" inputmode="numeric"></div><div class="field"><label for="children">아이</label><input id="children" type="number" min="0" max="20" value="0" inputmode="numeric"></div></div>
   <div class="field"><label for="budget">일행 전체의 식사·관람 예산 <span>원</span></label><input id="budget" type="number" min="0" max="10000000" step="1000" value="60000" inputmode="numeric"><small>확인한 메뉴·관람료 기준. 교통·추가 주문은 별도예요.</small></div>
-  <div class="field-row"><div class="field"><label for="walking">이동하며 걷기</label><select id="walking"><option value="20">20분 이내</option><option value="40">40분 이내</option><option value="60" selected>1시간 이내</option><option value="90">1시간 30분 이내</option><option value="150">2시간 30분 이내</option></select></div><div class="field"><label for="stop-count">최대 몇 곳을 둘러볼까요?</label><select id="stop-count"><option value="2">2곳 · 여유롭게</option><option value="3" selected>3곳 · 적당하게</option><option value="4">4곳 · 다양하게</option><option value="5">5곳 · 알차게</option></select></div></div><p class="micro">출발점·방문 장소·도착점 사이의 예상 합계예요. 출발역은 대표 위치 기준이고, 시설 안 걷기는 빼요.</p>
+  <div class="field-row"><div class="field"><label for="walking">이동하며 걷기</label><select id="walking"><option value="20">20분 이내</option><option value="40">40분 이내</option><option value="60" selected>1시간 이내</option><option value="90">1시간 30분 이내</option><option value="150">2시간 30분 이내</option></select></div><div class="field"><label for="stop-count">최대 몇 곳을 둘러볼까요?</label><select id="stop-count"><option value="1">1곳 · 가볍게</option><option value="2">2곳 · 여유롭게</option><option value="3" selected>3곳 · 적당하게</option><option value="4">4곳 · 다양하게</option><option value="5">5곳 · 알차게</option></select></div></div><p class="micro">출발점·방문 장소·도착점 사이의 예상 합계예요. 출발역은 대표 위치 기준이고, 시설 안 걷기는 빼요.</p>
   </div><div class="form-col"><fieldset class="preferences"><legend>이번에는 이런 곳이 좋아요</legend><div class="choice-grid"><label class="choice"><input type="checkbox" name="preference" value="food"><span>맛있는 한 끼</span></label><label class="choice"><input type="checkbox" name="preference" value="tea"><span>차와 카페</span></label><label class="choice"><input type="checkbox" name="preference" value="art"><span>미술과 공예</span></label><label class="choice"><input type="checkbox" name="preference" value="history"><span>서울의 역사</span></label><label class="choice"><input type="checkbox" name="preference" value="indoor"><span>실내에서 느긋하게</span></label><label class="choice"><input type="checkbox" name="preference" value="outdoor"><span>바깥 풍경</span></label></div></fieldset>
   <details class="more-conditions" id="more-conditions"><summary class="more-title"><span>조건 더 맞추기</span><small>음식 취향 · 쉬는 간격 · 피할 것 · 필수 조건 · 동행 · 식사와 예약</small></summary><details class="required taste-details"><summary>음식·카페 취향을 더 맞춰볼까요?</summary><p class="micro">메뉴를 확인한 장소끼리 비교해요. 따로 고르지 않으면 저장한 평소 취향을 참고합니다.</p><div class="taste-grid"><div class="taste-row"><label for="taste-noodles">면 요리</label><select name="taste" id="taste-noodles" data-taste="noodles"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-dumplings">만두</label><select name="taste" id="taste-dumplings" data-taste="dumplings"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-soup">국물 요리</label><select name="taste" id="taste-soup" data-taste="soup"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-templeFood">사찰 음식</label><select name="taste" id="taste-templeFood" data-taste="templeFood"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-marketFood">시장 음식</label><select name="taste" id="taste-marketFood" data-taste="marketFood"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-coffee">커피</label><select name="taste" id="taste-coffee" data-taste="coffee"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-bakery">베이커리</label><select name="taste" id="taste-bakery" data-taste="bakery"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div><div class="taste-row"><label for="taste-traditionalTea">전통차</label><select name="taste" id="taste-traditionalTea" data-taste="traditionalTea"><option value="">따로 고르지 않기</option><option value="true">좋아요</option><option value="false">피하고 싶어요</option></select></div></div><p class="micro">메뉴 취향은 알레르기·식이 제한 확인을 대신하지 않아요.</p></details>
   <details class="required pace-details"><summary>걷기와 쉬는 간격도 맞추기</summary><div class="field"><label for="max-leg-walk">한 번 이동할 때 걷기</label><select id="max-leg-walk"><option value="">따로 제한하지 않기</option><option value="10">10분 이내</option><option value="15">15분 이내</option><option value="20">20분 이내</option><option value="30">30분 이내</option></select></div><div class="field-row"><div class="field"><label for="rest-every">쉬는 여유 간격</label><select id="rest-every"><option value="">따로 넣지 않기</option><option value="30">약 30분마다</option><option value="60">약 1시간마다</option><option value="90">약 1시간 30분마다</option><option value="120">약 2시간마다</option></select></div><div class="field"><label for="rest-duration">한 번 쉴 때</label><select id="rest-duration"><option value="5">5분</option><option value="10" selected>10분</option><option value="15">15분</option><option value="20">20분</option><option value="30">30분</option></select></div></div><p class="micro">쉬는 시간까지 넣어 여행 종료 시각을 맞춰요. 이동 중이면 다음 장소에서 쉬도록 배치해 간격이 늦어질 수 있어요. 좌석·쉼터는 확인되지 않았습니다.</p></details>
@@ -122,6 +140,17 @@
 <p>공식 안내와 공개 지도 자료를 바탕으로 한 여행 계획이에요. 실시간 영업·예약 가능 여부는 방문 전 각 장소에서 확인하세요.</p>
 <a href="https://synk.im/#products">다른 SYNK 경험 ↗</a>
 </footer>
+<dialog id="map-dialog" class="map-dialog" aria-labelledby="map-title"><button class="dialog-close" aria-label="지도 닫기">×</button>
+ <p class="eyebrow">걸어서 잇는 길</p><h2 id="map-title">오늘의 동선</h2>
+ <div id="map-panel" class="map-panel">
+  <div class="map-frame">
+   <div class="map-toolbar"><span>이동 경로</span><div><button id="map-zoom-in" aria-label="지도 확대">+</button><button id="map-zoom-out" aria-label="지도 축소">−</button></div></div>
+   <div id="route-map"></div>
+  </div>
+  <p class="map-credit"><span>지도 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors · ODbL</a></span> <a href="./assets/jongno-walking.json" download>지도 자료 받기</a></p>
+  <p class="micro map-note">초록 선은 도로망 기준 예상, 갈색 점선은 확인하지 못한 연결 구간이에요. 신호·공사·입구 상황은 지도 앱에서 확인하세요.</p>
+ </div>
+</dialog>
 <dialog id="place-dialog" class="place-dialog"><button class="dialog-close" aria-label="장소 상세 닫기">×</button><div id="place-detail"></div></dialog>
 <dialog id="memory-dialog" class="memory-dialog"><button class="dialog-close" aria-label="내 여행 닫기">×</button><p class="eyebrow">내 여행</p><h2>내 여행을 이어가세요.</h2><div id="memory-content"></div></dialog>
 <dialog id="swap-dialog" class="swap-dialog"><button class="dialog-close" aria-label="장소 바꾸기 닫기">×</button><p class="eyebrow">같은 날, 다른 선택</p><h2>이곳 대신, 어디가 좋을까요?</h2><div id="swap-content"></div></dialog>

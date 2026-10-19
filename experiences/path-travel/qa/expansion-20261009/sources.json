@@ -1,0 +1,1377 @@
+{
+  "version": 1,
+  "checkedAt": "2026-10-09",
+  "scope": "Five actual places within the existing Jongno walking graph; local product data and licensed product assets only. No contact, booking, payment, paid API or deployment.",
+  "coverage": {
+    "before": {
+      "places": 20,
+      "dayPlaces": 18,
+      "photos": 11
+    },
+    "after": {
+      "places": 25,
+      "dayPlaces": 23,
+      "photos": 13
+    },
+    "walkingGraphBbox": [
+      37.564,
+      126.962,
+      37.59,
+      127.001
+    ]
+  },
+  "records": [
+    {
+      "id": "imun-seolnongtang",
+      "url": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+      "coordinates": {
+        "lat": 37.57276066579764,
+        "lon": 126.98389816796981
+      },
+      "details": [
+        [
+          "주소",
+          "서울 종로구 우정국로 38-13"
+        ],
+        [
+          "운영",
+          "월~토 08:00~21:00, 일 08:00~20:00; 매일 15:00~16:30 휴식; 점심 주문14:30, 저녁 월~토20:30/일19:30; 재료 소진 시 조기마감"
+        ],
+        [
+          "대표 메뉴",
+          "설농탕·도가니탕·머리탕·수육. 공식 표시가격 미확인"
+        ]
+      ],
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
+    },
+    {
+      "id": "gwanghwamun-mijin",
+      "url": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+      "coordinates": {
+        "lat": 37.57084452357933,
+        "lon": 126.97992365586322
+      },
+      "details": [
+        [
+          "주소",
+          "서울 종로구 종로 19"
+        ],
+        [
+          "운영",
+          "10:30~21:00, 마지막 주문20:30; 연중무휴 안내"
+        ],
+        [
+          "대표 메뉴",
+          "냉메밀·메밀전병·보쌈정식·돌우동. 공식 표시가격 미확인"
+        ]
+      ],
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
+    },
+    {
+      "id": "onion-anguk",
+      "url": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+      "coordinates": {
+        "lat": 37.5775179548045,
+        "lon": 126.986675890193
+      },
+      "details": [
+        [
+          "주소",
+          "서울 종로구 계동길 5"
+        ],
+        [
+          "운영",
+          "평일07:00~22:00, 주말09:00~22:00; 연중무휴 안내"
+        ],
+        [
+          "대표 메뉴",
+          "바닐라빈 라테·판도로·소금빵·아메리카노. 공식 표시가격 미확인"
+        ]
+      ],
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
+    },
+    {
+      "id": "beautiful-tea-museum",
+      "url": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043",
+      "coordinates": {
+        "lat": 37.5723102414532,
+        "lon": 126.985842786834
+      },
+      "details": [
+        [
+          "주소",
+          "서울 종로구 인사동길 19-11"
+        ],
+        [
+          "운영",
+          "관광공사 박물관 안내11:30~20:00/연중무휴와 별도 다원 안내10:30~21:50/명절휴무가 다름; 다원 시간 판정은 미확인"
+        ],
+        [
+          "요금",
+          "박물관 입장 무료와 다원 주문비는 별개; 카페 이용은 1인1메뉴 주문. 차 가격 미확인"
+        ]
+      ],
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
+    },
+    {
+      "id": "national-museum-contemporary-history",
+      "url": "https://www.much.go.kr/MUCH/contents/M01020100000.do",
+      "coordinateSourceUrl": "https://korean.visitseoul.net/attractions/대한민국역사박물관/KOP006667",
+      "coordinates": {
+        "lat": 37.573834870218086,
+        "lon": 126.97769503939544
+      },
+      "details": [
+        [
+          "주소",
+          "서울 종로구 세종대로 198"
+        ],
+        [
+          "운영",
+          "월·화·목·금·일10:00~18:00, 수·토10:00~21:00; 입장마감30분전; 1월1일·설날당일·추석당일휴관"
+        ],
+        [
+          "요금",
+          "일반관람 무료. 연령 제한 없음"
+        ],
+        [
+          "편의시설",
+          "1층 안내데스크에서 신분증 보관 후 유모차·휠체어 무료 대여; 유모차36개월이하 증빙 필요; 실내사용 한정"
+        ]
+      ],
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinateEvidence": "서울관광재단 장소 안내 HTML 지도 lat/lng. 공식 박물관 주소와 일치"
+    }
+  ],
+  "sourceUpdates": [
+    {
+      "id": "nine-tree-insadong",
+      "url": "https://www.ninetreehotels.com/ko/insadong",
+      "httpStatus": 200,
+      "checkedAt": "2026-10-09",
+      "coordinates": {
+        "lat": 37.574721,
+        "lon": 126.983216
+      },
+      "coordinateSourceUrl": "https://www.ninetreehotels.com/ko/hub/hotel-find",
+      "coordinateEvidence": "호텔찾기 공식 화면의 인사동 호텔 marker 설정(pointer). 지도 중심이나 다른 지점 좌표가 아님. 입구 실측은 미확인",
+      "details": [
+        [
+          "주소",
+          "서울 종로구 인사동길 49"
+        ]
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "imun-seolnongtang",
+      "conditions": {
+        "hours": {
+          "weekly": {
+            "0": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00",
+                "lastEntry": "19:30"
+              }
+            ],
+            "1": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "2": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "3": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "4": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "5": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "6": [
+              {
+                "open": "08:00",
+                "close": "15:00",
+                "lastEntry": "14:30"
+              },
+              {
+                "open": "16:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ]
+          },
+          "scope": "full",
+          "holidayPolicy": "unknown",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "note": "매일15:00~16:30 준비시간. 재료소진 조기마감은 실시간 확인 불가"
+        },
+        "price": {
+          "kind": "unknown",
+          "label": "메뉴별 현재 가격 미확인",
+          "scope": "menu-item",
+          "taxStatus": "not-stated",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780"
+        }
+      },
+      "featuresByKey": {
+        "noodles": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "dumplings": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "soup": {
+          "kind": "fact",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "verifiedAt": "2026-10-09",
+          "scope": "한국관광공사 대표 메뉴 설농탕·도가니탕·머리탕"
+        },
+        "templeFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "marketFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "coffee": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "bakery": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "traditionalTea": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        }
+      },
+      "menuItems": [
+        {
+          "name": "설농탕",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "도가니탕",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "머리탕",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "수육",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        }
+      ],
+      "visitInfo": {
+        "hoursNote": "월~토 08:00~21:00, 일요일 08:00~20:00. 매일 15:00~16:30 준비시간이며 점심 주문은 14:30, 저녁은 월~토 20:30·일요일 19:30에 마감합니다. 재료 소진 시 일찍 마감될 수 있습니다.",
+        "reservationNote": "예약 가능 여부는 공식 자료에서 확인하지 못했습니다. 방문일 운영은 02-733-6526으로 확인해 주세요.",
+        "entranceNote": "우정국로 38-13. 주소의 골목 안 점포이며 출입구 단차·식탁 접근성은 확인하지 못했습니다.",
+        "sourceUrls": [
+          "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780"
+        ],
+        "verifiedAt": "2026-10-09"
+      },
+      "coordinates": {
+        "lat": 37.57276066579764,
+        "lon": 126.98389816796981,
+        "sourceUrl": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "planningStayMinutes": 55,
+      "planningStayProvenance": "estimated"
+    },
+    {
+      "id": "gwanghwamun-mijin",
+      "conditions": {
+        "hours": {
+          "weekly": {
+            "0": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "1": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "2": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "3": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "4": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "5": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "6": [
+              {
+                "open": "10:30",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ]
+          },
+          "scope": "full",
+          "holidayPolicy": "unknown",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "note": "10:30~21:00·주문마감20:30. 당일 변경 별도 확인"
+        },
+        "price": {
+          "kind": "unknown",
+          "label": "메뉴별 현재 가격 미확인",
+          "scope": "menu-item",
+          "taxStatus": "not-stated",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484"
+        }
+      },
+      "featuresByKey": {
+        "noodles": {
+          "kind": "fact",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "verifiedAt": "2026-10-09",
+          "scope": "한국관광공사 대표 메뉴 냉메밀과 돌우동"
+        },
+        "dumplings": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "soup": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "templeFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "marketFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "coffee": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "bakery": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "traditionalTea": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        }
+      },
+      "menuItems": [
+        {
+          "name": "냉메밀",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "메밀전병",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "보쌈정식",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "돌우동",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·주문 인분·추가 주문비 미확인",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        }
+      ],
+      "visitInfo": {
+        "hoursNote": "10:30~21:00, 주문마감 20:30, 연중무휴로 안내합니다. 임시 휴무와 공휴일 당일 변경은 확인하지 못했습니다.",
+        "reservationNote": "공식 관광 안내에서 예약 가능 여부는 확인하지 못했습니다. 문의 02-730-6198.",
+        "entranceNote": "종로 19의 광화문 미진입니다. 다른 지점의 운영시간·가격을 합치지 않았으며 출입구 단차는 미확인입니다.",
+        "sourceUrls": [
+          "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484"
+        ],
+        "verifiedAt": "2026-10-09"
+      },
+      "coordinates": {
+        "lat": 37.57084452357933,
+        "lon": 126.97992365586322,
+        "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "planningStayMinutes": 55,
+      "planningStayProvenance": "estimated"
+    },
+    {
+      "id": "onion-anguk",
+      "conditions": {
+        "hours": {
+          "weekly": {
+            "0": [
+              {
+                "open": "09:00",
+                "close": "22:00"
+              }
+            ],
+            "1": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ],
+            "2": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ],
+            "3": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ],
+            "4": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ],
+            "5": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ],
+            "6": [
+              {
+                "open": "09:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "scope": "full",
+          "holidayPolicy": "unknown",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "note": "평일07:00~22:00·주말09:00~22:00. 주문마감 미확인"
+        },
+        "price": {
+          "kind": "unknown",
+          "label": "음료·베이커리 가격 및 추가주문 금액 미확인",
+          "scope": "menu-item",
+          "taxStatus": "not-stated",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233"
+        }
+      },
+      "featuresByKey": {
+        "noodles": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "dumplings": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "soup": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "templeFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "marketFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "coffee": {
+          "kind": "fact",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "scope": "한국관광공사 안국점 메뉴의 바닐라빈 라테·아메리카노"
+        },
+        "bakery": {
+          "kind": "fact",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "scope": "한국관광공사 안국점 메뉴의 판도로·소금빵"
+        },
+        "traditionalTea": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        }
+      },
+      "menuItems": [
+        {
+          "name": "바닐라빈 라테",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·당일 재고·주문 인분 미확인",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "아메리카노",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·당일 재고·주문 인분 미확인",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "판도로",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·당일 재고·주문 인분 미확인",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        },
+        {
+          "name": "소금빵",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "공식 관광 안내의 메뉴 이름 · 현재 가격·당일 재고·주문 인분 미확인",
+          "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        }
+      ],
+      "visitInfo": {
+        "hoursNote": "평일 07:00~22:00, 주말 09:00~22:00, 연중무휴로 안내합니다. 주문마감·당일 재고·임시 변경은 미확인입니다.",
+        "reservationNote": "예약 가능 여부는 공식 자료에서 확인하지 못했습니다. 안국점 문의 070-7543-2123.",
+        "entranceNote": "계동길 5의 한옥 매장입니다. 공식 소개는 마루와 마당을 안내하지만 좌석 선택·단차·휠체어 이동은 확인하지 못했습니다.",
+        "sourceUrls": [
+          "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233"
+        ],
+        "verifiedAt": "2026-10-09"
+      },
+      "coordinates": {
+        "lat": 37.5775179548045,
+        "lon": 126.986675890193,
+        "sourceUrl": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "planningStayMinutes": 50,
+      "planningStayProvenance": "estimated"
+    },
+    {
+      "id": "beautiful-tea-museum",
+      "conditions": {
+        "hours": {
+          "weekly": {},
+          "scope": "partial",
+          "holidayPolicy": "unknown",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043",
+          "note": "박물관과 별도 다원 안내의 운영시간·명절휴무 표기가 달라 방문일 확인 필요"
+        },
+        "price": {
+          "kind": "unknown",
+          "label": "박물관 입장 무료와 별개로 다원은 1인1메뉴. 메뉴가격 미확인",
+          "scope": "menu-item",
+          "taxStatus": "not-stated",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043"
+        }
+      },
+      "featuresByKey": {
+        "noodles": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "dumplings": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "soup": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "templeFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "marketFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "coffee": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "bakery": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "traditionalTea": {
+          "kind": "fact",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=49c4c224-5ff4-442d-b8b7-cf94b2c8d1f7",
+          "verifiedAt": "2026-10-09",
+          "scope": "한국관광공사 다원 안내에서 전통차 제공을 명시"
+        }
+      },
+      "menuItems": [
+        {
+          "name": "전통차",
+          "amount": null,
+          "currency": "KRW",
+          "unit": "menu-item",
+          "taxStatus": "not-stated",
+          "availabilityNote": "카페는 1인1메뉴 주문. 무료 박물관 입장을 음료 0원으로 계산하지 않음",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=49c4c224-5ff4-442d-b8b7-cf94b2c8d1f7",
+          "verifiedAt": "2026-10-09",
+          "servings": null
+        }
+      ],
+      "visitInfo": {
+        "hoursNote": "박물관 안내는 11:30~20:00·연중무휴, 별도 다원 안내는 10:30~21:50·명절휴무를 표시합니다. 방문일 다원 운영은 확인이 필요해요.",
+        "reservationNote": "차 주문은 1인1메뉴로 안내하며 정확한 가격과 예약 가능 여부는 미확인입니다. 문의 02-735-6678.",
+        "entranceNote": "인사동길 19-11. 박물관 전시와 다원 주문은 별개입니다. 출입구 단차와 실내 전체 동선은 확인하지 못했습니다.",
+        "sourceUrls": [
+          "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043",
+          "https://chinese.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=99946",
+          "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=49c4c224-5ff4-442d-b8b7-cf94b2c8d1f7"
+        ],
+        "verifiedAt": "2026-10-09"
+      },
+      "coordinates": {
+        "lat": 37.5723102414532,
+        "lon": 126.985842786834,
+        "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "planningStayMinutes": 50,
+      "planningStayProvenance": "estimated"
+    },
+    {
+      "id": "national-museum-contemporary-history",
+      "conditions": {
+        "hours": {
+          "weekly": {
+            "0": [
+              {
+                "open": "10:00",
+                "close": "18:00",
+                "lastEntry": "17:30"
+              }
+            ],
+            "1": [
+              {
+                "open": "10:00",
+                "close": "18:00",
+                "lastEntry": "17:30"
+              }
+            ],
+            "2": [
+              {
+                "open": "10:00",
+                "close": "18:00",
+                "lastEntry": "17:30"
+              }
+            ],
+            "3": [
+              {
+                "open": "10:00",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ],
+            "4": [
+              {
+                "open": "10:00",
+                "close": "18:00",
+                "lastEntry": "17:30"
+              }
+            ],
+            "5": [
+              {
+                "open": "10:00",
+                "close": "18:00",
+                "lastEntry": "17:30"
+              }
+            ],
+            "6": [
+              {
+                "open": "10:00",
+                "close": "21:00",
+                "lastEntry": "20:30"
+              }
+            ]
+          },
+          "scope": "full",
+          "holidayPolicy": "unknown",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://www.much.go.kr/MUCH/contents/M01020100000.do",
+          "note": "수·토21:00, 그 외18:00 폐관·입장30분전마감. 1월1일·설날당일·추석당일휴관. 공휴일 예외 별도 확인"
+        },
+        "price": {
+          "kind": "free",
+          "label": "일반 관람",
+          "scope": "adult-one",
+          "taxStatus": "included",
+          "amount": 0,
+          "note": "별도 프로그램·구매·대관 비용 제외",
+          "verifiedAt": "2026-10-09",
+          "sourceUrl": "https://www.much.go.kr/MUCH/contents/M01020100000.do"
+        },
+        "childPrice": {
+          "allChildren": true,
+          "kind": "free",
+          "amount": 0,
+          "label": "일반 관람",
+          "scope": "child-one",
+          "taxStatus": "included",
+          "sourceUrl": "https://www.much.go.kr/MUCH/contents/M01020100000.do",
+          "verifiedAt": "2026-10-09",
+          "note": "일반관람 무료 안내에 연령제한 없음. 별도 예약 프로그램 제외"
+        }
+      },
+      "featuresByKey": {
+        "noodles": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "dumplings": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "soup": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "templeFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "marketFood": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "coffee": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "bakery": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        },
+        "traditionalTea": {
+          "kind": "unknown",
+          "sourceUrl": null,
+          "verifiedAt": null,
+          "scope": "공식 자료에서 해당 세부 취향의 제공·미제공을 확인하지 못함"
+        }
+      },
+      "menuItems": [],
+      "visitInfo": {
+        "hoursNote": "월·화·목·금·일 10:00~18:00, 수·토 10:00~21:00. 입장마감은 폐관 30분 전이며 1월1일·설날·추석 당일은 휴관합니다.",
+        "reservationNote": "일반관람 무료. 단체관람·해설·교육은 별도 신청 안내를 확인해 주세요. 프로그램 예약을 포함한 추천이 아닙니다.",
+        "entranceNote": "세종대로 198. 1층 안내데스크에서 신분증을 맡기고 휠체어·유모차를 무료 대여할 수 있습니다. 유모차는 36개월 이하 증빙이 필요하며 대여품은 실내에서만 사용 가능합니다. 전체 무장애 동선은 미확인입니다.",
+        "sourceUrls": [
+          "https://www.much.go.kr/MUCH/contents/M01020100000.do"
+        ],
+        "verifiedAt": "2026-10-09"
+      },
+      "coordinates": {
+        "lat": 37.573834870218086,
+        "lon": 126.97769503939544,
+        "sourceUrl": "https://korean.visitseoul.net/attractions/대한민국역사박물관/KOP006667",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "planningStayMinutes": 75,
+      "planningStayProvenance": "estimated"
+    }
+  ],
+  "existingPlaceUpdates": [
+    {
+      "id": "nine-tree-insadong",
+      "coordinates": {
+        "lat": 37.574721,
+        "lon": 126.983216,
+        "sourceUrl": "https://www.ninetreehotels.com/ko/hub/hotel-find",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "childPrice": null,
+      "visitInfo": null
+    },
+    {
+      "id": "seoul-museum-craft-art",
+      "coordinates": {
+        "lat": 37.5766481740232,
+        "lon": 126.983533363501,
+        "sourceUrl": "https://korean.visitseoul.net/palace/%EC%84%9C%EC%9A%B8%EA%B3%B5%EC%98%88%EB%B0%95%EB%AC%BC%EA%B4%80/KOP038092",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "childPrice": {
+        "allChildren": true,
+        "kind": "free",
+        "amount": 0,
+        "label": "일반 전시 관람",
+        "scope": "child-one",
+        "taxStatus": "included",
+        "sourceUrl": "https://craftmuseum.seoul.go.kr/preview/visit",
+        "verifiedAt": "2026-10-09",
+        "note": "연령 제한 없는 일반전시 무료 안내. 어린이박물관 사전예약·대관전시·별도 프로그램은 포함하지 않음"
+      },
+      "visitInfo": {
+        "hoursNote": "일반 전시는 10:00~18:00·입장 17:30 마감입니다. 가을 야간개관은 일부 전시동만 적용되며 10월13~25일 전시1동 로비 제한 등 기존 날짜별 조건을 확인해 주세요.",
+        "reservationNote": "개인 일반전시는 자유 관람입니다. 어린이박물관은 사전예약 확인 후 입장하며 대관전시는 유료일 수 있습니다.",
+        "entranceNote": "안국역 1번 출구 안내. 안내데스크에서 신분증을 맡기고 유모차·휠체어를 무료 대여할 수 있으며 전시동별 승강기·장애인화장실 위치가 공식 지도에 표시됩니다. 외부부터 모든 전시실까지의 무장애 경로는 미확인입니다.",
+        "sourceUrls": [
+          "https://craftmuseum.seoul.go.kr/preview/visit",
+          "https://craftmuseum.seoul.go.kr/preview/facilities",
+          "https://craftmuseum.seoul.go.kr/preview/floor_guide"
+        ],
+        "verifiedAt": "2026-10-09"
+      }
+    },
+    {
+      "id": "seoul-history-museum",
+      "coordinates": {
+        "lat": 37.5705002796,
+        "lon": 126.9703743087,
+        "sourceUrl": "https://korean.visitseoul.net/attractions/%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/KOP002722",
+        "verifiedAt": "2026-10-09",
+        "accuracy": "approximate",
+        "note": "공식 안내 지도에 표시된 장소 대표 좌표. 입구·보행 경로의 실측 좌표가 아닙니다."
+      },
+      "childPrice": {
+        "allChildren": true,
+        "kind": "free",
+        "amount": 0,
+        "label": "일반 관람",
+        "scope": "child-one",
+        "taxStatus": "included",
+        "sourceUrl": "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
+        "verifiedAt": "2026-10-09",
+        "note": "공식 관람료 무료 안내에 연령 제한 없음. 별도 체험·유료 프로그램 제외"
+      },
+      "visitInfo": {
+        "hoursNote": "2026년9월15일~11월30일 화·수·금·토·일 09:00~21:00, 목요일 18:00까지입니다. 입장은 폐관30분 전 마감, 월요일·1월1일 휴관이며 공휴일 월요일은 개관합니다.",
+        "reservationNote": "일반관람 무료·개인 자유 관람. 교육·체험·별도 프로그램은 신청 조건을 따로 확인해 주세요.",
+        "entranceNote": "정문으로 들어와 왼쪽 화장실 앞에 엘리베이터가 있습니다. 유아24개월 미만·노약자를 위한 유모차·휠체어 이용 안내와 1층 아기쉼터가 있습니다. 외부에서 이어지는 전체 무장애 동선은 미확인입니다.",
+        "sourceUrls": [
+          "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
+          "https://museum.seoul.go.kr/www/guide/fac/convenientFacilities.jsp?sso=ok"
+        ],
+        "verifiedAt": "2026-10-09"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://big5chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=99780",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 205705,
+      "sha256": "69d3215a94972b5069f34c02eede40d0f3da948f2341d1a5e3a82978711efa4d",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=82484",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 220954,
+      "sha256": "e9afcbd4daa8a359e1200ab6ae299aa49cf10f4267b0dc4d7654ed8b31ac3b76",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://chinese.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=191233",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 207794,
+      "sha256": "70e665c0b6b0f2f6befa5b8c54b730a833ea5492157aba8822c6b58ffd978e4b",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=104043",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 225571,
+      "sha256": "f44dd1ed9c1cb64f35a5cd8c8a2bb16b14733149e80f913ab7eae90ca5b2617a",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://www.much.go.kr/MUCH/contents/M01020100000.do",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 36149,
+      "sha256": "0194a26af53dbcc244fd338cc333ff2e67662ca3c95c31275c3147d798abfd6d",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://korean.visitseoul.net/attractions/대한민국역사박물관/KOP006667",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 221272,
+      "sha256": "8d3a6dc1d1c8f934c1ece58c2ee3440d0bfe2f87ef202f08b3c9dda4e55cea41",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://chinese.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=99946",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 210117,
+      "sha256": "8b5e55741b93530012b72f0d48cf0387e00de67dfb825feca01e26c51d26a773",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=49c4c224-5ff4-442d-b8b7-cf94b2c8d1f7",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 118286,
+      "sha256": "6cce33d14fb9818b9a9ec68792a7c57df5058976bfa387ff1b687131954b5afb",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://craftmuseum.seoul.go.kr/preview/visit",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 45758,
+      "sha256": "d0bf7b52bd30cd032ced499ae61f85d6ebc3fb0261215d6ab86728078b35ae95",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://craftmuseum.seoul.go.kr/preview/facilities",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 40435,
+      "sha256": "29154738cfb2cd7b380b4708b3ba6727dfe613657e7c8fd2412ebe2567c75213",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://craftmuseum.seoul.go.kr/preview/floor_guide",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 58084,
+      "sha256": "3eddeefb2a6f3e593a8dc0f5ea528a56af745ba9394c4d18a3f588c085c823ee",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 115170,
+      "sha256": "af060400f9e3deb2785c128ddff09a6c995cca8c71dd787e0743abf4b6c89a3c",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://museum.seoul.go.kr/www/guide/fac/convenientFacilities.jsp?sso=ok",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 111133,
+      "sha256": "bdf6309a97d9fc4a68c63a5d8083318c5793c13424cb9624e33a96e45d5bf523",
+      "purpose": "Official place, menu, opening or visitor facility source; only selected facts paraphrased in records"
+    },
+    {
+      "url": "https://www.ninetreehotels.com/ko/hub/hotel-find",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 194504,
+      "sha256": "9c52a664edbb4f10aa3ebd9de0d24c9a0fc11f422636374df3706b69befe97c4",
+      "purpose": "Hotel finding page whose public map script defines the Insadong marker"
+    },
+    {
+      "url": "https://www.ninetreehotels.com/hub-assets/_next/static/chunks/app/%5Blocale%5D/hub/(parnas-layout)/hotel-find/page-08dbe97410b3fac3.js",
+      "checkedAt": "2026-10-09",
+      "httpStatus": 200,
+      "bytes": 16490,
+      "sha256": "6511a6c2d6c8fa77d51e9a88f7f166bf51f538e97df9f54fac63f5edc836a977",
+      "purpose": "Public presentation bundle: only pointer lat37.574721/lng126.983216 beside insadong branch is used; no API credentials used"
+    }
+  ],
+  "photos": [
+    {
+      "id": "imun-seolnongtang",
+      "title": "File:Imun Seolnongtang 01.jpg",
+      "src": "./assets/places/imun-seolnongtang.jpg",
+      "alt": "이문설농탕 건물 입구와 간판",
+      "author": "Seefooddiet",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Imun_Seolnongtang_01.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/07/Imun_Seolnongtang_01.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Imun_Seolnongtang_01.jpg/960px-Imun_Seolnongtang_01.jpg",
+      "photographedAt": "2024-07-16 18:43:47",
+      "checkedAt": "2026-10-09",
+      "modifications": "Wikimedia 960px thumbnail; otherwise unmodified",
+      "bytes": 281812,
+      "sha256": "3c1b608414cd6b9ef6a526ee8f2ac174b348e4ad8b0be203f5e58af36c8ae67a",
+      "visuallyReviewed": true
+    },
+    {
+      "id": "national-museum-contemporary-history",
+      "title": "File:20240413 National Museum of Korean Contemporary History.jpg",
+      "src": "./assets/places/national-museum-contemporary-history.jpg",
+      "alt": "대한민국역사박물관 건물 외관",
+      "author": "Jjw",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:20240413_National_Museum_of_Korean_Contemporary_History.jpg",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3e/20240413_National_Museum_of_Korean_Contemporary_History.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/20240413_National_Museum_of_Korean_Contemporary_History.jpg/960px-20240413_National_Museum_of_Korean_Contemporary_History.jpg",
+      "photographedAt": "2024-04-13 13:49:31",
+      "checkedAt": "2026-10-09",
+      "modifications": "Wikimedia 960px thumbnail; otherwise unmodified",
+      "bytes": 206986,
+      "sha256": "296d3ce00474d4c7042a37ae442e21199262ae2c2269ab8cd6e322641674737b",
+      "visuallyReviewed": true
+    }
+  ],
+  "photoRightsReview": [
+    {
+      "placeId": "imun-seolnongtang",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Imun_Seolnongtang_01.jpg",
+      "creator": "Seefooddiet",
+      "ownWork": true,
+      "license": "CC BY-SA 4.0",
+      "permission": "Commercial reuse and adaptations allowed with attribution, licence link, changes indication and share-alike for adapted image",
+      "review": "File summary and structured author agree. Actual entrance and shop sign visually inspected; no current entrance accessibility inferred."
+    },
+    {
+      "placeId": "national-museum-contemporary-history",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:20240413_National_Museum_of_Korean_Contemporary_History.jpg",
+      "creator": "Jjw",
+      "ownWork": true,
+      "license": "CC BY 4.0",
+      "permission": "Commercial reuse and adaptations allowed with attribution, licence link and changes indication",
+      "review": "File summary and structured creator agree. Museum sign/exterior visually inspected. Used uploader photo rather than museum-authored file with ambiguous upload ownership."
+    }
+  ],
+  "exclusions": [
+    {
+      "placeId": "beautiful-tea-museum",
+      "field": "hours",
+      "reason": "Official museum listing11:30–20:00/open-all-year and separate cafe listing10:30–21:50/holiday closure differ. Cafe weekly remains empty/partial."
+    },
+    {
+      "placeId": "beautiful-tea-museum",
+      "field": "price",
+      "reason": "Museum admission free is not cafe price; cafe requires1 menu item per person. Amount remains null."
+    },
+    {
+      "placeId": "bluebottle-samcheong",
+      "field": "catalogue",
+      "reason": "Official store page has branch-specific map link but unrelated Seongsu coordinates elsewhere in page. No verified branch point was acquired; not added."
+    },
+    {
+      "placeId": "orakai-insadong-suites",
+      "field": "coordinates",
+      "sourceUrl": "https://insa.orakaihotels.com/kr/about/location.asp?mCode=1",
+      "reason": "Official page contains old Songdo script coordinates and a Google map viewport center. Neither confirms hotel marker. Keep null."
+    },
+    {
+      "placeId": "onion-anguk",
+      "field": "photo",
+      "reason": "Official tourism images have no per-image public reuse permission verified; Commons search found no relevant actual-place file. Not downloaded."
+    },
+    {
+      "placeId": "gwanghwamun-mijin",
+      "field": "photo",
+      "reason": "No relevant Commons photograph/public reuse licence verified. Official tourism photos not copied."
+    },
+    {
+      "placeId": "beautiful-tea-museum",
+      "field": "photo",
+      "reason": "No relevant Commons photograph/public reuse licence verified. Official tourism photos not copied."
+    }
+  ],
+  "limits": [
+    "Official published information checked on2026-10-09 is not live operation, availability or firsthand travel verification.",
+    "No new current numeric meal/coffee price was verified. All new menu amounts, servings and child menu costs remain null/unknown.",
+    "Annual open notices do not prove this specific public holiday; holidayPolicy remains unknown.",
+    "Coordinates are source map representative points, not measured entrances. Walking graph connection can still be estimated.",
+    "Facility availability is recorded in visitInfo, but quiet, queue, spicy, step-free route and allergy suitability remain unknown.",
+    "Photos were taken in2024; current appearance and crowding may differ.",
+    "Stay duration is a product suggestion excluding queue time."
+  ],
+  "routeProbe": {
+    "checkedAt": "2026-10-09",
+    "origin": {
+      "lat": 37.5765,
+      "lon": 126.9855
+    },
+    "graphSha256": "f3189be4273a9e00fc46879e566f254d40c423f5dd90bb471356b71c56d027d3",
+    "graphSourceTimestamp": "2026-10-08T15:09:14Z",
+    "results": [
+      {
+        "id": "imun-seolnongtang",
+        "connected": true,
+        "connectorMeters": 9,
+        "distanceMeters": 726
+      },
+      {
+        "id": "gwanghwamun-mijin",
+        "connected": true,
+        "connectorMeters": 30,
+        "distanceMeters": 1057
+      },
+      {
+        "id": "onion-anguk",
+        "connected": true,
+        "connectorMeters": 18,
+        "distanceMeters": 192
+      },
+      {
+        "id": "beautiful-tea-museum",
+        "connected": true,
+        "connectorMeters": 15,
+        "distanceMeters": 735
+      },
+      {
+        "id": "national-museum-contemporary-history",
+        "connected": false,
+        "connectorMeters": null,
+        "distanceMeters": null
+      },
+      {
+        "id": "nine-tree-insadong",
+        "connected": true,
+        "connectorMeters": 31,
+        "distanceMeters": 386
+      }
+    ],
+    "limitation": "The museum representative point lies inside the bbox but is not connected from Anguk in this snapshot. Do not move the sourced point without evidence; model must label approximate fallback."
+  }
+}

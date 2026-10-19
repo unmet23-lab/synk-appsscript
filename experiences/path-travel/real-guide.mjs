@@ -1,5 +1,5 @@
-import { REAL_PLACES, REAL_META, REAL_CONDITION_CALENDAR } from './real-places.mjs?v=20261007-halfday1';
-import { normalizeRealQuery, evaluateRealConditions } from './real-conditions.mjs?v=20261007-halfday1';
+import { REAL_PLACES, REAL_META, REAL_CONDITION_CALENDAR } from './real-places.mjs?v=20261019-hours';
+import { normalizeRealQuery, evaluateRealConditions } from './real-conditions.mjs?v=20261019-hours';
 import * as DomainModule from '../../atlas/domain.js';
 
 const Domain = DomainModule.default ?? globalThis.SynkAtlasDomain;

@@ -1,6 +1,8 @@
 import { TRAVEL_PLACES, TRAVEL_META } from './places-v2.mjs';
-import { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput, plannerInputFingerprint, assessCompanionFit, PREFERENCE_LABELS } from './planner.mjs';
+import { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput, plannerInputFingerprint, assessCompanionFit, estimateWalkingLeg, PREFERENCE_LABELS } from './planner.mjs';
 import { createWalkingRouter } from './walking-router.mjs';
+import { evaluateRealStay } from './real-conditions.mjs';
+import { REAL_CONDITION_CALENDAR } from './real-places.mjs';
 import { ORIGIN_BOUNDS, originPoint, originPosition, createMapOrigin } from './planner-origin.mjs';
 import { createTravelMemory, validateTravelMemory, defaultTravelQuery, loadTravelMemory, saveTravelMemory, clearTravelMemory, setTravelConsent, exportTravelMemory, importTravelMemory, TRAVEL_STORAGE_KEY, TRAVEL_MAX_BYTES } from './planner-storage.mjs';
 import { recordPlanDecision, recordPlanExposure, recordVisit, recordTripOutcome, proposeVisitPreference, confirmTravelPreference, removeTravelPreference, editTravelVisit, removeTravelVisit, clearTravelHistory, TRAVEL_VISIT_REASONS } from './planner-feedback.mjs';
@@ -18,6 +20,23 @@ const categoryLabel={food:'한 끼의 즐거움',tea:'차와 카페',culture:'�
 const categoryShort={food:'한 끼',tea:'차와 카페',culture:'문화와 산책',stay:'숙소'};
 const seoulDay=date=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short'}).format(new Date(date+'T12:00:00+09:00'));
 const budgetLabel=value=>value>=10000&&value%10000===0?value/10000+'만 원':money(value);
+// 하고 싶은 것 → 엔진 취향(prefs)과 실제 장소 표시(check). 궁궐은 역사+산책, 골목은 산책+야외라서
+// 취향으로 서로 갈리고, 넣었는지는 진짜 궁·한옥 골목·시장 표시로 확인한다.
+const INTENTS={food:{short:'맛집',prefs:{food:true},check:{category:'food'}},tea:{short:'차',prefs:{tea:true},check:{category:'tea'}},art:{short:'전시',prefs:{art:true},check:{feature:'art'}},
+ palace:{short:'궁궐',prefs:{history:true,walk:true},check:{feature:'palace'}},alley:{short:'골목',prefs:{walk:true,outdoor:true},check:{feature:'hanok',category:'culture'}},market:{short:'시장',prefs:{marketFood:true},check:{feature:'market'}}};
+const MANAGED=new Set(Object.values(INTENTS).flatMap(intent=>Object.keys(intent.prefs)));
+// 쓸 시간 → 장소 수·걷기 상한. 상한은 넉넉히 두고 엔진이 덜 걷는 쪽을 고른다.
+const HOURS={1:{label:'1시간',stops:1,walk:20},2:{label:'2시간',stops:2,walk:50},3:{label:'3시간',stops:3,walk:70},5:{label:'반나절',stops:4,walk:100},8:{label:'하루',stops:5,walk:150}};
+// 사진이 없는 곳은 그곳 대표 메뉴를 펠트로 구운 그림을 쓴다(2026-10-19 굽기).
+const FELT={'gaeseong-mandu-koong':'mandu',hwangsaengga:'kalguksu',tosokchon:'samgyetang','gwanghwamun-mijin':'memil','balwoo-gongyang':'baru','kyungin-traditional-teahouse':'tea-table','osulloc-bukchon':'green-tea','beautiful-tea-museum':'tea-tin','fritz-wonseo':'croissant','onion-anguk':'pandoro'};
+const feltSrc=name=>`./assets/felt/${name}.webp`;
+const minutesOf=value=>Number(value.slice(0,2))*60+Number(value.slice(3));
+const clockText=value=>String(Math.floor(value/60)).padStart(2,'0')+':'+String(value%60).padStart(2,'0');
+const reducedMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+let picks=[],pickHours=3,dialFrame=0,foodByHand=false,handWhen=null,animatedPlan=null,chooserIssue=null,chooserChanges={appointments:[],kept:[],meal:null};const dial={value:3,velocity:0};
+// 폼에서 직접 켠 취향. 고르기는 이것을 끄지 않는다.
+const handPrefs=new Set();
+let mapLoaded;const mapReady=new Promise(resolve=>{mapLoaded=resolve;});
 const origins=[{id:'anguk',name:'안국역',lat:37.5765,lon:126.9854},{id:'gyeongbokgung',name:'경복궁역',lat:37.57585,lon:126.9731},{id:'jonggak',name:'종각역',lat:37.57016,lon:126.98306},{id:'gwanghwamun',name:'광화문역',lat:37.57153,lon:126.9766}];
 let memory=createTravelMemory(), outcome=null, pending=null, routeLeg=null, network=null, mapZoom=1, selectedCategory='all', toastTimer, activeDecision=null, formDirty=false, restored=false, editingVisit=null;
 let exposureObserver=null, formPreferences={}, formRequiredFeatures={}, formRequiredCategories=[];
@@ -65,6 +84,8 @@ function restoreGuestDraft(draft){
  $('#origin-dialog h2').textContent=draft.originHeading;$('#origin-footer').innerHTML=draft.originFooter;
  labelOriginPicker();syncScheduleFields();updateCompanionCount();
  for(const field of draft.originControls){const control=$('#'+field.id);if(control)control.value=field.value;}
+ picksFromQuery({preferences:readPreferences()});
+ if(draft.formDirty)handWhen={date:$('#trip-date').value,start:$('#start-time').value};
  if(draft.originOpen)$('#origin-dialog').showModal();
 }
 function loginFieldKey(control){
@@ -93,14 +114,18 @@ function restoreLoginDraft(raw){
  }
  clearRecovery();pending=null;$('#plan-change').hidden=true;formDirty=draft.formDirty;
  $('#conditions-panel').open=draft.panels.conditions;$('#companions-details').open=draft.panels.companions;$('#schedule-details').open=draft.panels.schedule;
- syncScheduleFields();updateCompanionCount();
+ syncScheduleFields();updateCompanionCount();picksFromQuery({preferences:readPreferences()});
+ // 로그인 전에 폼을 고치던 중이면 돌아온 날짜·출발 시각을 직접 정한 것으로 둔다(고르기가 다시 덮지 않게).
+ if(draft.formDirty)handWhen={date:$('#trip-date').value,start:$('#start-time').value};
 }
 function applyAccountState(value,{guest=false}={}){
  accountApplying=true;
  try{
   closeTravelDialogs();memory=validateTravelMemory({...value,consent:guest?value.consent:false});
   resetOriginChoices();editingVisit=null;$('#place-detail').innerHTML='';$('#progress-content').innerHTML='';$('#swap-content').innerHTML='';
-  writeInput(memory.query);restorePlan({snapshot:true});renderMemory();
+  writeInput(memory.query);picksFromQuery(memory.query);restorePlan({snapshot:true});renderMemory();
+  // 계정 화면이 잠겨 있던 동안 넘긴 뒤로·앞으로를 지금 보이는 화면에 맞춘다.
+  history.replaceState({pathView:memory.plan?'result':'intent'},'');
  }finally{accountApplying=false;}
 }
 function showAccount(){closeTravelDialogs();$('#travel-account-panel').scrollIntoView({behavior:'smooth',block:'center'});$('#travel-account').focus({preventScroll:true});}
@@ -116,14 +141,16 @@ async function connectTravelAccount(){
 }
 function photo(place,cls='',loading='lazy'){return place.photo?`<img class="${e(cls)}" src="${e(place.photo.src)}" alt="${e(place.photo.alt||place.name+'의 모습')}" loading="${loading}" decoding="async">`:'';}
 function credit(place){const p=place.photo;return p?`<a href="${e(safeUrl(p.sourceUrl))}" target="_blank" rel="noopener noreferrer">${e(p.title||place.name)}</a> © ${e(p.author)} · <a href="${e(safeUrl(p.licenseUrl))}" target="_blank" rel="noopener noreferrer">${e(p.license)}</a> · ${e(p.modifications||'변경 없음')}`:'';}
-function shortCredit(place){const p=place.photo;return p?`사진 <a href="${e(safeUrl(p.sourceUrl))}" target="_blank" rel="noopener noreferrer">${e(p.author)}</a> · <a href="${e(safeUrl(p.licenseUrl))}" target="_blank" rel="noopener noreferrer">${e(p.license)}</a>`:'';}
 // 사진이 없는 곳은 다른 곳 사진을 빌리지 않고, 같은 크기의 정보 카드로 보여 준다.
 function placeTile(place,{compact=false,show='menu'}={}){
  const menus=place.menuItems?.slice(0,2)??[],first=menus[0]?.name,old=menus.some(item=>item.sourcePublishedAt);
  if(compact){const text=show==='name'?place.name:first||categoryShort[place.category]||place.name;return `<span class="tile tile-${e(place.category)} tile-compact"><strong>${e(text)}</strong>${show!=='name'&&first?`<span class="tile-cat">${e(categoryShort[place.category])}</span>`:''}</span>`;}
  return `<span class="tile tile-${e(place.category)}"><span class="tile-cat">${menus.length?(old?'예전에 소개된 메뉴':'확인한 메뉴'):e(categoryShort[place.category]||'')}</span><strong>${menus.length?menus.map(item=>e(item.name)).join('<br>'):e(place.area||'종로')+' · 공식 안내로 확인'}</strong></span>`;
 }
-function placeCover(place){return place.photo?photo(place):placeTile(place);}
+// 사진 → 펠트 그림 → 정보 카드 순서. 펠트 그림은 이름 옆에만 쓰여 글로 다시 읽지 않는다.
+function feltImage(place,cls=''){return FELT[place.id]?`<img class="${e(cls)}" src="${feltSrc(FELT[place.id])}" alt="" loading="lazy" decoding="async">`:'';}
+function placeCover(place){return place.photo?photo(place):FELT[place.id]?`<span class="felt-cover tint-${e(place.category)}">${feltImage(place)}</span>`:placeTile(place);}
+function placeThumb(place){return place.photo?photo(place):FELT[place.id]?`<span class="thumb-felt tint-${e(place.category)}">${feltImage(place)}</span>`:placeTile(place,{compact:true,show:'name'});}
 function placeLink(place){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name+' '+place.address)}`;}
 function directionLink(from,to){const p=from.coordinates??from,destination=to.address?to.name+' '+to.address:(to.coordinates??to).lat+','+(to.coordinates??to).lon;return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(p.lat+','+p.lon)}&destination=${encodeURIComponent(destination)}&travelmode=walking`;}
 function readCompanions(){
@@ -275,18 +302,25 @@ function acceptOrigin(){
  clearRecovery();if(originTarget==='trip'){formDirty=true;pending=null;$('#plan-change').hidden=true;$('#form-error').hidden=true;}
  $('#origin-dialog').close();select.focus();
 }
-function readInput(){
- if(memory.progress?.finished)throw new TypeError('마친 여행은 진행 기록으로 남아 있어요. 새 여행 만들기로 시작해 주세요.');
- if(memory.progress&&$('#trip-date').value!==memory.progress.date)throw new TypeError('여행 중 날짜는 유지해 주세요. 다른 날짜는 새 여행 만들기에서 시작할 수 있어요.');
- if(memory.progress&&$('#start-time').value<memory.progress.currentTime)throw new TypeError('진행 기록보다 이른 시각으로 되돌릴 수 없어요. 현재 이후의 출발 시각을 골라 주세요.');
+function readPreferences(){
  const preferences={...formPreferences};
  for(const input of $$('[name=preference]')){if(input.checked)preferences[input.value]=true;else if(preferences[input.value]===true)delete preferences[input.value];}
  for(const input of $$('[name=avoid]')){if(input.checked)preferences[input.value]=false;else if(preferences[input.value]===false)delete preferences[input.value];}
- for(const id of ['budget','adults','children'])if($('#'+id).value===''){const error=new TypeError('예산과 인원을 숫자로 입력해 주세요.');error.field=id==='budget'?'budget':'party';throw error;}
  for(const select of $$('[data-taste]')){const key=select.dataset.taste;if(select.value==='')delete preferences[key];else preferences[key]=select.value==='true';}
+ return preferences;
+}
+// patch는 폼 값을 검사하기 전에 덮어쓸 때만 쓴다(첫 화면 고르기).
+function readInput(patch=null){
+ if(memory.progress?.finished)throw new TypeError('마친 여행은 진행 기록으로 남아 있어요. 새 여행 만들기로 시작해 주세요.');
+ if(memory.progress&&$('#trip-date').value!==memory.progress.date)throw new TypeError('여행 중 날짜는 유지해 주세요. 다른 날짜는 새 여행 만들기에서 시작할 수 있어요.');
+ if(memory.progress&&$('#start-time').value<memory.progress.currentTime)throw new TypeError('진행 기록보다 이른 시각으로 되돌릴 수 없어요. 현재 이후의 출발 시각을 골라 주세요.');
+ const preferences=readPreferences();
+ for(const id of ['budget','adults','children'])if($('#'+id).value===''){const error=new TypeError('예산과 인원을 숫자로 입력해 주세요.');error.field=id==='budget'?'budget':'party';throw error;}
  const requiredFeatures={...formRequiredFeatures};for(const key of ['indoor','vegetarian','stepFree']){if($('#require-'+(key==='stepFree'?'stepfree':key)).checked)requiredFeatures[key]=true;else if(requiredFeatures[key]===true)delete requiredFeatures[key];}
  const requiredCategories=formRequiredCategories.filter(key=>key!=='food');if($('#require-food').checked)requiredCategories.push('food');
- return normalizePlannerInput({...readScheduleInput(),companions:readCompanions(),planningMode:memory.query.planningMode??'day',date:$('#trip-date').value,startTime:$('#start-time').value,endTime:$('#end-time').value,origin:origins.find(p=>p.id===$('#origin').value),party:{adults:Number($('#adults').value),children:Number($('#children').value)},budget:Number($('#budget').value),maxWalkMinutes:Number($('#walking').value),maxLegWalkMinutes:$('#max-leg-walk').value===''?null:Number($('#max-leg-walk').value),restEveryMinutes:$('#rest-every').value===''?null:Number($('#rest-every').value),restDurationMinutes:Number($('#rest-duration').value),stopCount:Number($('#stop-count').value),preferences,requiredFeatures,requiredCategories,lockedIds:memory.query.lockedIds??[],excludedIds:memory.query.excludedIds??[]},{places:TRAVEL_PLACES});
+ const raw={...readScheduleInput(),companions:readCompanions(),planningMode:memory.query.planningMode??'day',date:$('#trip-date').value,startTime:$('#start-time').value,endTime:$('#end-time').value,origin:origins.find(p=>p.id===$('#origin').value),party:{adults:Number($('#adults').value),children:Number($('#children').value)},budget:Number($('#budget').value),maxWalkMinutes:Number($('#walking').value),maxLegWalkMinutes:$('#max-leg-walk').value===''?null:Number($('#max-leg-walk').value),restEveryMinutes:$('#rest-every').value===''?null:Number($('#rest-every').value),restDurationMinutes:Number($('#rest-duration').value),stopCount:Number($('#stop-count').value),preferences,requiredFeatures,requiredCategories,lockedIds:memory.query.lockedIds??[],excludedIds:memory.query.excludedIds??[]};
+ patch?.(raw);
+ return normalizePlannerInput(raw,{places:TRAVEL_PLACES});
 }
 function writeInput(input){
  formPreferences={...input.preferences};
@@ -297,8 +331,6 @@ function writeInput(input){
  $('#adults').value=input.party.adults;$('#children').value=input.party.children;$('#budget').value=input.budget;
  if(![...$('#walking').options].some(o=>Number(o.value)===input.maxWalkMinutes)){const option=document.createElement('option');option.value=input.maxWalkMinutes;option.textContent=input.maxWalkMinutes+'분 이내';$('#walking').append(option);}
  $('#walking').value=input.maxWalkMinutes;
- if(input.planningMode==='remaining'&&![...$('#stop-count').options].some(o=>String(o.value)==='1')){const option=document.createElement('option');option.value='1';option.textContent='1곳 · 마무리';$('#stop-count').append(option);}
- if(input.planningMode!=='remaining')[...$('#stop-count').options].find(o=>String(o.value)==='1')?.remove?.();
  $('#stop-count').value=input.stopCount;
  for(const [id,value,label] of [['max-leg-walk',input.maxLegWalkMinutes??'','분 이내'],['rest-every',input.restEveryMinutes??'','분마다'],['rest-duration',input.restDurationMinutes??10,'분']]){const select=$('#'+id);if(![...select.options].some(o=>String(o.value)===String(value))){const option=document.createElement('option');option.value=value;option.textContent=value+label;select.append(option);}select.value=value;}
  for(const select of $$('[data-taste]'))select.value=typeof input.preferences[select.dataset.taste]==='boolean'?String(input.preferences[select.dataset.taste]):'';
@@ -307,7 +339,230 @@ function writeInput(input){
  $('#require-food').checked=input.requiredCategories.includes('food');$('#require-indoor').checked=input.requiredFeatures.indoor===true;$('#require-vegetarian').checked=input.requiredFeatures.vegetarian===true;$('#require-stepfree').checked=input.requiredFeatures.stepFree===true;
  writeScheduleInput(input);writeCompanions(input.companions??[]);
 }
-function settings(){return {now:new Date().toISOString(),feedback:memory.confirmedPreferences,routeLeg};}
+function settings(query=memory.query){
+ return {now:new Date().toISOString(),feedback:memory.confirmedPreferences,routeLeg,intents:intentSpecs(query)};
+}
+// 고른 것은 취향에서 알아보고, 엔진에는 진짜 궁·한옥 골목·시장 같은 장소 표시로 알린다(여행 조건에는 들어가지 않는다).
+function intentSpecs(query){return dayIntents(query).map(id=>({id,...INTENTS[id].check}));}
+// ── 첫 화면 고르기: 하고 싶은 것 → 몇 시간. 둘 다 건너뛰어도 하루가 나온다. ──
+// 고르기는 아래 폼에 바로 적는다. 폼이 하나뿐인 원본이라 「이 시간으로 하루 만들기」와 폼 단추가 같은 조건을 쓴다.
+function seoulClock(){return minutesOf(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()));}
+function nextDate(date){const day=new Date(date+'T00:00:00Z');day.setUTCDate(day.getUTCDate()+1);return day.toISOString().slice(0,10);}
+// 폼에서 날짜·출발 시각을 직접 정했으면 그날 그 시각부터(오늘이면 지금 이후로). 아니면 오늘 남은 시간에 들어갈 때
+// 10분 뒤 출발, 안 되면 내일 10시. 긴 일정은 저녁 8시, 짧은 일정은 9시까지 끝낸다.
+// 고르기가 폼에 써 넣은 날짜·시각은 직접 정한 것으로 보지 않고 매번 다시 계산한다.
+function chooserWindow(hours){
+ const today=koreanDate(new Date().toISOString()),tomorrow=nextDate(today),span=hours*60,latest=hours>=5?1200:1260;
+ const soon=Math.ceil((seoulClock()+10)/10)*10,soonest=Math.max(600,soon);
+ if(handWhen&&handWhen.date>=today){
+  const asked=/^\d\d:\d\d$/.test(handWhen.start)?minutesOf(handWhen.start):600,first=handWhen.date===today?Math.max(540,soon):540,start=Math.max(first,Math.min(asked,latest-span));
+  // 직접 정한 시각을 옮겼으면 까닭(이미 지남·너무 이른 시각·늦게 끝남)을 같이 돌려준다.
+  const shift=asked===start?null:asked>start?'late':handWhen.date===today&&asked<soon?'past':'early';
+  if(start+span<=latest)return {date:handWhen.date,start,end:start+span,when:handWhen.date===today?'오늘':handWhen.date===tomorrow?'내일':seoulDay(handWhen.date),today:handWhen.date===today,asked,shift};
+ }
+ return soonest+span<=latest?{date:today,start:soonest,end:soonest+span,when:'오늘',today:true}:{date:tomorrow,start:600,end:600+span,when:'내일',moved:true};
+}
+const lunchIncluded=(span,hours)=>hours>=5&&span.start<=720&&span.end>=810;
+const servesPick=(place,id)=>{const rule=INTENTS[id].check;return (!rule.category||place.category===rule.category)&&(!rule.feature||place.features?.[rule.feature]===true);};
+// 고른 것마다 출발점에서 갈 수 있는 곳의 걷는 상단·걷고 머무는 시간. 엔진이 일정을 짜기 전에 시간 화면에서 미리 알려 준다.
+// 그 시간에 고르기가 잡을 날짜·시각에 문을 연 곳만 센다(쉬는 날인 궁·미술관은 빼고, 안내가 없는 곳은 엔진처럼 후보로 둔다).
+const pickCache=new Map();
+function pickOptions(id,hours){
+ const origin=origins.find(row=>row.id===$('#origin').value)??origins[0],span=chooserWindow(hours),key=[id,origin.lat,origin.lon,Boolean(routeLeg),span.date,span.start,span.end].join('|');
+ if(!pickCache.has(key)){
+  const at=new Date().toISOString();
+  const opens=(place,walk)=>{for(let arrive=span.start+walk;arrive+place.planningStayMinutes<=span.end;arrive+=30)if(evaluateRealStay(place,{date:span.date,time:clockText(arrive),stayMinutes:place.planningStayMinutes},{now:at,calendar:REAL_CONDITION_CALENDAR}).status!=='unmatched')return true;return false;};
+  pickCache.set(key,TRAVEL_PLACES.filter(place=>place.dayPlannerEligible!==false&&place.coordinates&&servesPick(place,id)).map(place=>{const leg=estimateWalkingLeg(origin,place,{routeLeg});return {place,walk:leg.maxMinutes,total:leg.maxMinutes+place.planningStayMinutes};}).filter(row=>opens(row.place,row.walk)));
+ }
+ return pickCache.get(key);
+}
+const pickFits=(id,hours)=>pickOptions(id,hours).some(row=>row.total<=hours*60&&row.walk<=HOURS[hours].walk);
+// 한 곳을 더 붙일 여유(가장 짧은 다른 곳 ≈ 40분)가 있는지
+const pickPairs=(id,hours)=>pickOptions(id,hours).some(row=>row.total+40<=hours*60&&row.walk<=HOURS[hours].walk);
+const pickMinutes=(id,hours)=>Math.min(...pickOptions(id,hours).filter(row=>row.walk<=HOURS[hours].walk).map(row=>row.total));
+// 고른 두 가지를 그 시간에 한 일정으로 이을 수 있는지: 모든 후보 짝을 두 순서로, 엔진과 같은 걷기 추정(상단)·머무는 시간·
+// 운영 시각으로 본다. 여는 시각까지는 15분씩 1시간까지 기다려 본다. 길 찾기는 직선거리 하한으로 거른 짝에만 돌린다.
+const legCache=new Map();
+const legBetween=(a,b)=>{const key=[a.id,b.id,Boolean(routeLeg)].join('|');if(!legCache.has(key))legCache.set(key,estimateWalkingLeg(a,b,{routeLeg}).maxMinutes);return legCache.get(key);};
+// 길 찾기(경로 거리÷50+3분)와 직선 추정 어느 쪽보다도 길지 않은 하한
+const legFloor=(a,b)=>{const plain=estimateWalkingLeg(a,b);return Math.min(Math.max(2,Math.ceil(plain.distanceMeters/50+3)),plain.maxMinutes);};
+function pairFits(a,b,hours){
+ const span=chooserWindow(hours),at=new Date().toISOString(),rows=id=>pickOptions(id,hours).filter(row=>row.walk<=HOURS[hours].walk);
+ const opens=(place,arrive)=>evaluateRealStay(place,{date:span.date,time:clockText(arrive),stayMinutes:place.planningStayMinutes},{now:at,calendar:REAL_CONDITION_CALENDAR}).status!=='unmatched';
+ const enter=(place,from)=>{for(let arrive=from;arrive<=from+60&&arrive+place.planningStayMinutes<=span.end;arrive+=15)if(opens(place,arrive))return arrive;return null;};
+ for(const x of rows(a))for(const y of rows(b))for(const [first,second] of [[x,y],[y,x]]){
+  if(first.place.id===second.place.id)continue;
+  const stay=second.place.planningStayMinutes,earliest=span.start+first.walk+first.place.planningStayMinutes;
+  if(earliest+legFloor(first.place,second.place)+stay>span.end)continue;
+  const arrive=enter(first.place,span.start+first.walk);if(arrive===null)continue;
+  const next=enter(second.place,arrive+first.place.planningStayMinutes+legBetween(first.place,second.place));
+  if(next!==null)return true;
+ }
+ return false;
+}
+// 이 시간에 넣을 고른 것과 들어갈 곳 수. 2시간에 다른 곳과 짝을 못 짓는 긴 곳(전시·궁궐 등)을 고르면 그 한 곳으로 잡고,
+// 같이 고른 다른 것은 이번에 빼며 몇 시간부터 같이 들어가는지 알린다. 곳 수는 고른 곳의 걷고 머무는 시간으로 어림한다.
+function chooserPlan(fits){
+ const hours=HOURS[pickHours],long=hours.stops===2?fits.find(id=>!pickPairs(id,pickHours)):undefined;
+ if(long){
+  const left=fits.filter(id=>id!==long),both=[long,...left];
+  return {long,left,count:1,used:picks.filter(id=>!left.includes(id)),together:[3,5,8].find(h=>both.every(id=>pickFits(id,h))&&both.reduce((sum,id)=>sum+pickMinutes(id,h),0)<=h*60)};
+ }
+ // 고른 곳들의 걷고 머무는 시간에 짧은 곳(≈40분)을 더해 몇 곳쯤 들어갈지 어림한다.
+ const estimate=list=>{const need=list.slice(0,hours.stops).map(id=>pickMinutes(id,pickHours));let count=need.length,used=need.reduce((sum,value)=>sum+value,0);
+  while(count<hours.stops&&(!need.length||used+40<=pickHours*60)){count++;used+=40;}return count;};
+ let count=estimate(fits);
+ // 따로는 들어가도 한 일정으로 잇지 못하는 두 가지(예: 늦은 오후의 궁궐과 찻집)는 미리 알리고, 긴 쪽 없이 곳 수를 다시 어림한다.
+ const shown=fits.slice(0,Math.min(hours.stops,count));let apart=null;
+ for(let i=0;i<shown.length&&!apart;i++)for(let j=i+1;j<shown.length&&!apart;j++)if(!pairFits(shown[i],shown[j],pickHours))apart=[shown[i],shown[j]];
+ if(apart){const longer=pickMinutes(apart[0],pickHours)>=pickMinutes(apart[1],pickHours)?apart[0]:apart[1];count=estimate(fits.filter(id=>id!==longer));}
+ return {long,left:[],count:Math.max(1,count),used:picks,apart};
+}
+// 받침이 있으면 '은', 없으면 '는'
+function withEun(word){const code=word.charCodeAt(word.length-1)-0xAC00;return word+(code>=0&&code<11172&&code%28?'은':'는');}
+// 받침에 따라 조사를 붙인다.
+function josa(word,yes,no){const code=word.charCodeAt(word.length-1)-0xAC00;return word+(code>=0&&code<11172&&code%28?yes:no);}
+let hoursChosen=false;
+// 고른 것 아래 안내. 시간을 고른 뒤라면 그 시간에 실제로 넣는 것만 말한다.
+function pickNote(){
+ if(!picks.length)return '고르지 않으면 가까운 곳을 고루 섞어요.';
+ const names=list=>list.map(id=>INTENTS[id].short).join(' · ');
+ if(hoursChosen){
+  const fits=picks.filter(id=>pickFits(id,pickHours)),plan=chooserPlan(fits),kept=fits.filter(id=>!plan.left.includes(id));
+  if(kept.length<picks.length)return kept.length?`${names(picks)} — 고른 ${HOURS[pickHours].label}에는 ${names(kept)}만 넣어요.`:`${names(picks)} — 고른 ${HOURS[pickHours].label}에는 넣기 어려워요. 시간을 늘려 보세요.`;
+ }
+ return `${names(picks)} — 하나씩은 꼭 넣을게요.`;
+}
+function syncPicks(note){
+ for(const button of $$('[data-intent]'))button.setAttribute('aria-pressed',String(picks.includes(button.dataset.intent)));
+ $('#pick-note').textContent=note||pickNote();
+}
+// 고른 것은 바로 아래 폼의 취향에도 적는다(폼이 하나뿐인 원본). 폼에서 직접 켠 취향은 고르기가 끄지 않는다.
+function writePicks(){
+ const owned=new Set(picks.flatMap(id=>Object.keys(INTENTS[id].prefs))),current=readPreferences();
+ for(const key of MANAGED){
+  const box=$(`[name=preference][value="${key}"]`),avoid=$(`[name=avoid][value="${key}"]`),taste=$(`[data-taste="${key}"]`);
+  if(owned.has(key)){formPreferences[key]=true;if(box)box.checked=true;if(avoid)avoid.checked=false;if(taste)taste.value='true';}
+  else if(current[key]===true&&!handPrefs.has(key)){delete formPreferences[key];if(box)box.checked=false;if(taste)taste.value='';}
+ }
+}
+// 고른 것을 빼면 그 취향은 폼에서 직접 켰더라도 같이 끈다. 마지막으로 누른 쪽을 따른다.
+// 세 개까지 — 넘치면(폼에서 넷 이상 켠 뒤에도) 먼저 고른 것부터 뺀다.
+function togglePick(id){
+ const dropped=picks.includes(id)?[id]:picks.slice(0,Math.max(0,picks.length-2));
+ for(const drop of dropped)for(const key of Object.keys(INTENTS[drop].prefs))handPrefs.delete(key);
+ picks=picks.includes(id)?picks.filter(x=>x!==id):[...picks.slice(dropped.length),id];
+ writePicks();syncPicks(dropped.length&&dropped[0]!==id?`세 개까지 고를 수 있어요. ${josa(dropped.map(x=>INTENTS[x].short).join('·'),'을','를')} 뺐어요.`:'');
+}
+// 폼에서 고친 취향이 고른 것과 같아지면 고르기에도 그대로 보인다.
+function picksFromForm(control){
+ const key=control.dataset.taste??control.value;if(!MANAGED.has(key))return;
+ const prefs=readPreferences(),derived=Object.keys(INTENTS).filter(id=>Object.entries(INTENTS[id].prefs).every(([name,value])=>prefs[name]===value));
+ if(prefs[key]===true)handPrefs.add(key);else handPrefs.delete(key);
+ picks=[...picks.filter(id=>derived.includes(id)),...derived.filter(id=>!picks.includes(id))];syncPicks();
+}
+// 저장된 조건이나 되돌린 조건에서 고른 것을 다시 읽는다. 고른 것에 속하지 않는 켠 취향은 직접 켠 것으로 둔다.
+function picksFromQuery(query){
+ picks=dayIntents(query);handPrefs.clear();
+ const owned=new Set(picks.flatMap(id=>Object.keys(INTENTS[id].prefs)));
+ for(const [key,value] of Object.entries(query.preferences??{}))if(MANAGED.has(key)&&value===true&&!owned.has(key))handPrefs.add(key);
+ syncPicks();
+}
+function pushView(view){if(history.state?.pathView!==view)history.pushState({pathView:view},'');}
+function showStep(step,{push=true}={}){
+ $('#step-intent').hidden=step!==1;$('#step-time').hidden=step!==2;
+ if(step===2){hoursChosen=true;applyChooser();renderTimeStep();}else syncPicks();
+ if(push)pushView(step===2?'time':'intent');
+ (step===2?$('#time-title'):$('#chooser-title')).focus({preventScroll:true});
+ $('#before-result').scrollIntoView({behavior:reducedMotion()?'instant':'smooth',block:'start'});
+}
+// 지금 일정은 새 하루를 받아들일 때까지 그대로 둔다. 고르기 화면에서 언제든 돌아갈 수 있다.
+function showChooser(step=1,{push=true}={}){
+ document.body.classList.remove('has-plan');$('#result').hidden=true;$('#empty-result').hidden=true;$('#before-result').hidden=false;
+ $('#chooser-back').hidden=!memory.plan;showStep(step,{push});
+}
+// 시간 고리 하나만 Loom 스프링으로 움직인다.
+function animateDial(target){
+ const ring=$('#ring-fill'),draw=value=>ring.setAttribute('stroke-dasharray',`${Math.max(0,Math.min(100,value/8*100)).toFixed(2)} 100`);
+ cancelAnimationFrame(dialFrame);
+ if(reducedMotion()){dial.value=target;dial.velocity=0;draw(target);return;}
+ let last=null;
+ const frame=time=>{if(last===null)last=time;Loom.advanceSpring(dial,target,.3,Math.min((time-last)/1000,.04));last=time;draw(dial.value);
+  if(Math.abs(dial.value-target)>.005||Math.abs(dial.velocity)>.02)dialFrame=requestAnimationFrame(frame);else{dial.value=target;dial.velocity=0;draw(target);}};
+ dialFrame=requestAnimationFrame(frame);
+}
+function renderTimeStep(){
+ const span=chooserWindow(pickHours),hours=HOURS[pickHours],origin=origins.find(row=>row.id===$('#origin').value)??origins[0];
+ const fits=picks.filter(id=>pickFits(id,pickHours)),misses=picks.filter(id=>!fits.includes(id)),plan=chooserPlan(fits);
+ $('#chooser-card').dataset.sky=String(pickHours);
+ $('#time-context').textContent=`${span.today?'지금 '+clockText(seoulClock())+' · ':''}${origin.name}에서 출발해요`;
+ $('#dial-hours').textContent=hours.label;
+ $('#dial-range').textContent=`${span.when} ${clockText(span.start)}–${clockText(span.end)}`;
+ for(const chip of $$('.time-chips [data-hours]'))chip.setAttribute('aria-pressed',String(Number(chip.dataset.hours)===pickHours));
+ const fitted=plan.used.filter(id=>fits.includes(id)),shown=fitted.slice(0,plan.count),names=list=>list.map(id=>INTENTS[id].short).join('·');
+ $('#fit-objs').innerHTML=Array.from({length:plan.count},(_,i)=>shown[i]?`<img src="${feltSrc('intent-'+shown[i])}" alt="">`:'<i></i>').join('');
+ // 이 시간에 못 들어가는 것은 몇 시간부터 넉넉한지, 고르기가 폼에서 무엇을 맞췄는지 미리 알린다.
+ // 식사 안내는 폼에 실제로 적힌 「식사를 꼭 포함」을 그대로 읽는다.
+ // 시간을 늘리면 창이 다른 날(오늘 → 내일)로 넘어가면 그 날을 같이 말한다.
+ const later=misses.map(id=>{
+  const short=INTENTS[id].short,sameDay=[1,2,3,5,8].find(h=>chooserWindow(h).date===span.date&&pickFits(id,h)),anyDay=sameDay??[1,2,3,5,8].find(h=>pickFits(id,h));
+  if(!anyDay)return `${short} 갈 곳을 지금 출발점에서 찾지 못했어요`;
+  if(sameDay)return `${withEun(short)} ${HOURS[sameDay].label}부터 넉넉해요`;
+  return `${withEun(short)} ${span.when==='오늘'?'오늘은 어렵고 ':''}${chooserWindow(anyDay).when} ${josa(HOURS[anyDay].label,'이면','면')} 넉넉해요`;
+ });
+ const notes=chooserIssue?[`아래 조건에서 먼저 고칠 곳이 있어요 · ${chooserIssue.message}`]:[...later,
+  plan.long?`${withEun(INTENTS[plan.long].short)} 한 곳으로 시간이 꽉 차요`:'',
+  plan.left.length?`${withEun(names(plan.left))} ${plan.together?HOURS[plan.together].label+'부터 같이 들어가요':'이번에는 빼요'}`:'',
+  plan.apart?`${withEun(names(plan.apart))} 이 시간에 한 일정으로 잇기 어려워 들어가는 쪽을 넣어요`:'',
+  $('#require-food').checked?'식사 한 끼 포함':'',
+  span.moved?'오늘은 남은 시간이 짧아 내일로 잡았어요':'',
+  span.shift?`직접 정한 ${clockText(span.asked)} 출발${{past:'은 이미 지나',early:'은 너무 일러',late:`로는 ${josa(hours.label,'이','가')} 늦게 끝나`}[span.shift]} ${clockText(span.start)}부터 잡았어요`:'',
+  ...chooserChanges.appointments.map(row=>`${row.time} ${placeMap.get(row.placeId)?.name??''} 약속은 이 시간 밖이라 빼요`),
+  chooserChanges.meal?`정한 식사 시간대(${chooserChanges.meal.startTime}–${chooserChanges.meal.endTime})는 이 시간 밖이라 빼요`:'',
+  fitted.length>plan.count?'고른 게 많아 들어가는 만큼 넣어요':shown.length<plan.count&&plan.count>1?(shown.length?`나머지 ${plan.count-shown.length}곳은 가까운 곳으로 골라요`:'가까운 곳을 고루 섞어요'):''].filter(Boolean);
+ $('#fit-text').innerHTML=`<b>${plan.count===1?(plan.long?'한 곳에 넉넉히 머물러요':'가까운 1곳이 딱 맞아요'):plan.count+'곳쯤 들어가요'}</b>${e(notes.join(' · ')||'남는 시간은 머무는 시간으로 넉넉히 채워요')}`;
+ animateDial(pickHours);
+}
+// 고른 것이 아닌 폼의 선택(피하기·세부 맛·필수 조건·동행·인원·예산·출발점·직접 정한 날짜와 시각)은 그대로 두고,
+// 고른 것·시간만 덮어 이번 여행 조건을 만든다. 폼 값을 먼저 검사하지 않고 덮은 뒤 한 번만 검사한다.
+function chooserQuery(){
+ // 여행 중 기록은 그날의 남은 일정에 묶여 있다. 새 날짜의 하루는 「새 여행 만들기」 뒤에 고른다.
+ if(memory.progress)throw new TypeError('여행 중에는 「여행 중이라면」에서 남은 일정을 맞춰 주세요. 새 하루는 내 여행의 「새 여행 만들기」로 시작해요.');
+ const span=chooserWindow(pickHours),hours=HOURS[pickHours],fits=picks.filter(id=>pickFits(id,pickHours)),plan=chooserPlan(fits);
+ chooserChanges={appointments:[],kept:[],meal:null};
+ return readInput(raw=>{
+  Object.assign(raw,{planningMode:'day',date:span.date,startTime:clockText(span.start),endTime:clockText(span.end),stopCount:plan.long?1:hours.stops,maxWalkMinutes:hours.walk,lockedIds:[],excludedIds:[]});
+  // 이번에 넣을 고른 것의 취향만 켜고, 고르기가 켰던 나머지는 끈다. 폼에서 직접 켠 것과 피하기는 그대로 둔다.
+  const owned=new Set(plan.used.flatMap(id=>Object.keys(INTENTS[id].prefs)));
+  for(const key of MANAGED)if(owned.has(key))raw.preferences[key]=true;else if(raw.preferences[key]===true&&!handPrefs.has(key))delete raw.preferences[key];
+  if(raw.meal.mode==='none'&&plan.used.includes('food'))raw.meal={mode:'any',startTime:'12:00',endTime:'13:00'};
+  if(raw.meal.mode==='window'&&(raw.meal.endTime<raw.startTime||raw.meal.startTime>=raw.endTime)){chooserChanges.meal={...raw.meal};raw.meal={mode:'any',startTime:'12:00',endTime:'13:00'};}
+  // 식사 필수는 직접 고친 폼 값을 따르고, 아니면 이 시간에 들어가는 맛집을 골랐거나 반나절 이상이 점심을 걸칠 때만 넣는다.
+  const meal=foodByHand?raw.requiredCategories.includes('food'):raw.meal.mode!=='none'&&(plan.used.includes('food')&&fits.includes('food')||lunchIncluded(span,pickHours));
+  raw.requiredCategories=[...raw.requiredCategories.filter(key=>key!=='food'),...(meal?['food']:[])];
+  // 이 시간 밖의 예약·약속은 빼고 시간 화면에 알린다.
+  const inside=row=>row.time>=raw.startTime&&row.time<raw.endTime;
+  chooserChanges.kept=raw.appointments;chooserChanges.appointments=raw.appointments.filter(row=>!inside(row));raw.appointments=raw.appointments.filter(inside);
+ });
+}
+// 폼이 잘못된 상태면 폼은 그대로 두고 그 까닭을 시간 화면에 보인다. 만들 때는 폼을 열어 그 칸을 알려 준다.
+// 이 시간 밖이라 뺀 예약·식사 시간대는 폼에서 지우지 않아, 시간을 바꾸면 다시 들어간다.
+function applyChooser(){
+ try{
+  const query=chooserQuery();writeInput(query);
+  if(chooserChanges.appointments.length||chooserChanges.meal)writeScheduleInput({...query,appointments:chooserChanges.kept,meal:chooserChanges.meal??query.meal});
+  chooserIssue=null;return true;
+ }catch(error){chooserIssue=error;return false;}
+}
+// 지도 자료가 오기 전에 만들면 모든 구간이 직선 추정이 된다. 잠깐(최대 8초) 기다린다.
+async function waitForMap(button){if(network)return;button.textContent='지도 자료를 불러오는 중…';await Promise.race([mapReady,new Promise(resolve=>setTimeout(resolve,8000))]);}
+async function makeDay(){
+ const button=$('#make-day');button.disabled=true;
+ try{await waitForMap(button);button.textContent='하루를 맞추는 중…';await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  const input=chooserQuery();writeInput(input);planThenAsk(input);}
+ catch(error){if(formField(error.field))showFormError(error);else toast(error.message);}
+ finally{button.disabled=false;button.innerHTML='이 시간으로 하루 만들기 <span aria-hidden="true">↗</span>';}
+}
 function scheduleNote(input){
  const rows=[];
  if(input.meal?.mode==='none')rows.push('식당 방문 생략');
@@ -337,27 +592,39 @@ function acceptResult(result,{scroll=true,record=true}={}){
   memory.query=result.input;memory.plan=result.primary;memory.updatedAt=now();writeInput(result.input);
   outcome=result;
   if(record)memory=recordPlanDecision(memory,{planId:result.primary.id,candidateIds:[result.primary,...result.alternatives].map(p=>p.id),now:now()});
-  renderResult();persist();beginExposure();
+  renderResult();persist();beginExposure();pushView('result');
   if(scroll){$('#result-title').focus({preventScroll:true});$('#result').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});}
   formDirty=false;
  }else{renderUnavailable(result);}
 }
+const FORM_FIELDS={date:'#trip-date',startTime:'#start-time',endTime:'#end-time',budget:'#budget',party:'#adults',maxWalkMinutes:'#walking',maxLegWalkMinutes:'#max-leg-walk',restEveryMinutes:'#rest-every',restDurationMinutes:'#rest-duration',meal:'#meal-mode',appointments:'#appointment-place-0',destination:'#destination',companions:'#companions-count'};
+const formField=field=>Object.hasOwn(FORM_FIELDS,field??'')?FORM_FIELDS[field]:null;
+// 폼의 어느 칸이 문제인지 폼을 열어 그 칸으로 보낸다.
+function showFormError(error){
+ notice(error.message);$('#conditions-panel').open=true;
+ if(/^(meal|appointments|destination)/.test(error.field??'')){$('#more-conditions').open=true;$('#schedule-details').open=true;}
+ if(error.field==='companions'){$('#more-conditions').open=true;$('#companions-details').open=true;}
+ $(formField(error.field)||'#trip-date').focus();
+}
 async function generate(event){
  event?.preventDefault();$('#form-error').hidden=true;const button=$('#generate');button.disabled=true;button.textContent='당신의 하루를 맞추는 중…';
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- try{const input=readInput();acceptResult(planTravel(input,settings()));}
- catch(error){notice(error.message);$('#conditions-panel').open=true;if(/^(meal|appointments|destination)/.test(error.field??'')){$('#more-conditions').open=true;$('#schedule-details').open=true;}if(error.field==='companions'){$('#more-conditions').open=true;$('#companions-details').open=true;}const fields={date:'#trip-date',startTime:'#start-time',endTime:'#end-time',budget:'#budget',party:'#adults',maxWalkMinutes:'#walking',maxLegWalkMinutes:'#max-leg-walk',restEveryMinutes:'#rest-every',restDurationMinutes:'#rest-duration',meal:'#meal-mode',appointments:'#appointment-place-0',destination:'#destination',companions:'#companions-count'};$(fields[error.field]||'#trip-date').focus();}
+ try{await waitForMap(button);button.textContent='당신의 하루를 맞추는 중…';
+  // 첫 화면에서 고른 것은 이미 폼에 적혀 있어 폼 그대로 쓴다.
+  const input=readInput();
+  planThenAsk(input);}
+ catch(error){showFormError(error);}
  finally{button.disabled=false;button.innerHTML='내 조건으로 하루 만들기 <span aria-hidden="true">↗</span>';}
 }
 function renderUnavailable(result){
  $('#empty-result').hidden=false;$('#before-result').hidden=true;$('#result').hidden=true;
  const rows=[...result.unknowns,...result.blocked],unique=[...new Set(rows.map(row=>row.reason))].slice(0,5);
- $('#empty-result').innerHTML=`<p class="eyebrow">하나만 바꿔 볼게요</p><h3>이 조건을 모두 지키는<br>여행안을 아직 찾지 못했어요.</h3><ul>${unique.map(reason=>`<li>${e(reason)}</li>`).join('')}</ul><p>필수 조건은 임의로 풀지 않았어요. 확인이 필요한 조건을 다시 보거나, 시간·예산·걷기 범위를 직접 바꿔 보세요.</p>${memory.plan?'<button class="button secondary" data-action="previous-plan">이전 여행안으로 돌아가기</button>':''}`;
+ $('#empty-result').innerHTML=`<p class="eyebrow">하나만 바꿔 볼게요</p><h3 id="empty-title" tabindex="-1">이 조건을 모두 지키는<br>여행안을 아직 찾지 못했어요.</h3><ul>${unique.map(reason=>`<li>${e(reason)}</li>`).join('')}</ul><p>필수 조건은 임의로 풀지 않았어요. 확인이 필요한 조건을 다시 보거나, 시간·예산·걷기 범위를 직접 바꿔 보세요.</p>${memory.progress?'':'<button class="button secondary" type="button" data-action="back-to-chooser">하고 싶은 것·시간 다시 고르기</button>'}${memory.plan?'<button class="button secondary" data-action="previous-plan">이전 여행안으로 돌아가기</button>':''}`;
  $('#empty-result').insertAdjacentHTML('beforeend',renderRecovery(result));
- $('#empty-result').scrollIntoView({behavior:'smooth',block:'start'});
+ $('#empty-title').focus({preventScroll:true});$('#empty-result').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderRecovery(result,progress=null){
- const recovery=suggestTravelRecovery(result.input,settings());
+ const recovery=suggestTravelRecovery(result.input,settings(result.input));
  recoveryChoices=recovery.suggestions.map(choice=>({...choice,progress:progress?structuredClone(progress):null}));
  if(!recoveryChoices.length)return '<p class="micro">작은 시간·걷기·예산 조정으로 가능한 안도 아직 없어요. 필수 조건의 자료를 확인하거나 다른 출발점·날짜로 직접 바꿔주세요.</p>';
  const labels={endTime:'마칠 시각',maxWalkMinutes:'걷기 상한',budget:'일행 예산',lockedIds:'유지할 장소'};
@@ -380,29 +647,95 @@ function renderConditionChips(){
  const chips=[seoulDay(q.date),q.startTime+'–'+q.endTime,q.origin.name+' 출발','성인 '+q.party.adults+(q.party.children?' · 아이 '+q.party.children:''),budgetLabel(q.budget),'걷기 '+q.maxWalkMinutes+'분 이내','최대 '+q.stopCount+'곳'];
  $('#condition-chips').innerHTML=chips.map(text=>`<span class="cond-chip">${e(text)}</span>`).join('');
 }
+function dayIntents(q){return Object.keys(INTENTS).filter(id=>Object.entries(INTENTS[id].prefs).every(([key,value])=>q.preferences?.[key]===value));}
+function durationText(value){const h=Math.floor(value/60),m=value%60;return value<=0?'':h?`${h}시간${m?' '+m+'분':''}`:`${m}분`;}
+// 받침이 없거나 ㄹ이면 '로', 아니면 '으로'
+function withRo(word){const code=word.charCodeAt(word.length-1)-0xAC00,last=code>=0&&code<11172?code%28:0;return word+(last===0||last===8?'로':'으로');}
+function dayTitle(q,plan){
+ if(q.planningMode==='remaining')return '지금부터, 남은 '+plan.stops.length+'곳';
+ const span=minutesOf(q.endTime)-minutesOf(q.startTime),length=span===480?'하루':span===300?'반나절':durationText(span);
+ // 고른 것 가운데 실제로 넣은 것만 제목에 쓴다.
+ const places=plan.stops.map(stop=>placeMap.get(stop.placeId)),covered=dayIntents(q).filter(id=>places.some(place=>servesPick(place,id)));
+ return covered.length?`${withRo(covered.map(id=>INTENTS[id].short).join(' · '))} 채운 ${length}`:`${plan.stops.length}곳에 담은 ${length}`;
+}
+// 지도 창을 열기 전 요약 카드에 보이는 작은 동선 그림. 길 자료가 없어도 장소 좌표만으로 그린다.
+// 그리는 칸의 실제 크기로 그려 빈 띠 없이 채운다.
+function routeThumb(plan,W=320,H=156){
+ const q=memory.query,legs=[...plan.legs,...(plan.returnLeg?[plan.returnLeg]:[])];
+ const points=[q.origin,...plan.stops.map(s=>placeMap.get(s.placeId).coordinates),...legs.flatMap(l=>l.coordinates.map(([lon,lat])=>({lon,lat})))];
+ const minX=Math.min(...points.map(p=>p.lon)),maxX=Math.max(...points.map(p=>p.lon)),minY=Math.min(...points.map(p=>p.lat)),maxY=Math.max(...points.map(p=>p.lat));
+ const k=Math.cos(37.57*Math.PI/180),rx=Math.max((maxX-minX)*k,.0004),ry=Math.max(maxY-minY,.0004),s=Math.min((W-48)/rx,(H-40)/ry);
+ const ox=(W-rx*s)/2,oy=20+(H-40-ry*s)/2,xy=(lon,lat)=>[ox+(lon-minX)*k*s,oy+(maxY-lat)*s];
+ const line=coords=>coords.map(([lon,lat],i)=>(i?'L':'M')+xy(lon,lat).map(n=>n.toFixed(1)).join(',')).join('');
+ const [sx,sy]=xy(q.origin.lon,q.origin.lat);
+ return `<svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#eef2ea"/>${legs.map(l=>`<path d="${line(l.coordinates)}" fill="none" stroke="#54734f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"${l.source==='osm-walking-network'?'':' stroke-dasharray="5 5"'}/>`).join('')}<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="5" fill="#fff" stroke="#39523f" stroke-width="3"/>${plan.stops.map((stop,i)=>{const c=placeMap.get(stop.placeId).coordinates,[x,y]=xy(c.lon,c.lat);return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="#39523f" stroke="#fff" stroke-width="2.5"/><text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="InterTight,SUIT,sans-serif">${i+1}</text>`;}).join('')}</svg>`;
+}
+function openMap(){if(!memory.plan)return;mapZoom=1;$('#map-dialog').showModal();requestAnimationFrame(()=>renderMap());}
+// 결과 화면의 주인공: 경로 띠·하루 막대·요약 카드·이야기 카드. 사진이 없는 곳은 그곳 메뉴를 구운 펠트 그림.
+function renderJourney(plan){
+ const q=memory.query,stops=plan.stops,today=defaultTravelQuery().date,free=Math.max(0,minutesOf(q.endTime)-minutesOf(plan.endTime));
+ $('#result-title').textContent=dayTitle(q,plan);
+ const end=(name,last)=>`<li class="route-end"><span class="route-dot${last?' is-end':''}" aria-hidden="true"></span><span>${e(name)}</span></li>`;
+ const pin=(stop,i)=>{const place=placeMap.get(stop.placeId);return `<li><a class="route-pin tint-${e(place.category)}${place.photo?'':' is-felt'}" href="#stop-${e(place.id)}" aria-label="${i+1}번째 ${e(place.name)} 카드로">${place.photo?`<img src="${e(place.photo.src)}" alt="" loading="lazy" decoding="async">`:feltImage(place)}<b aria-hidden="true">${i+1}</b></a></li>`;};
+ const parts=[];
+ stops.forEach((stop,i)=>{if(plan.legs[i].maxMinutes)parts.push(['walk',plan.legs[i].maxMinutes]);if(stop.waitMinutes)parts.push(['wait',stop.waitMinutes]);parts.push(['stay',stop.stayMinutes]);});
+ if(plan.returnLeg?.maxMinutes)parts.push(['walk',plan.returnLeg.maxMinutes]);
+ if(free)parts.push(['free',free]);
+ const total=kind=>parts.filter(([key])=>key===kind).reduce((sum,[,value])=>sum+value,0),names={stay:'머무름',walk:'걷기',wait:'기다림',free:'여유'};
+ const key=Object.keys(names).filter(kind=>total(kind)).map(kind=>`${names[kind]} ${durationText(total(kind))}`);
+ $('#journey-strip').innerHTML=`<ol class="route-strip" aria-label="${e(q.origin.name)}에서 ${stops.map(s=>e(placeMap.get(s.placeId).name)).join(', ')} 차례로">${end(q.origin.name)}${stops.map(pin).join('')}${plan.destination?end(plan.destination.name,true):''}</ol><div class="daybar" role="img" aria-label="${e(q.startTime)}부터 ${e(q.endTime)}까지 · ${e(key.join(', '))}">${parts.map(([kind,value])=>`<i class="${kind}" data-w="${value}"></i>`).join('')}</div><p class="daybar-key" aria-hidden="true">${Object.keys(names).filter(kind=>total(kind)).map(kind=>`<span class="k-${kind}">${names[kind]} ${durationText(total(kind))}</span>`).join('')}</p>`;
+ for(const part of $$('#journey-strip .daybar i'))part.style.flexGrow=part.dataset.w;
+ const picked=dayIntents(q),unknownCost=plan.cost.unknownPlaceIds.length;
+ const fit=picked.length?`<ul class="intent-fit">${picked.map(id=>{const names=stops.map(s=>placeMap.get(s.placeId)).filter(place=>servesPick(place,id)).map(place=>place.name);return `<li><img src="${feltSrc('intent-'+id)}" alt="" width="30" height="30"><b>${e(INTENTS[id].short)}</b><span>${names.length?e(names.join(', ')):'이번 시간에는 넣지 못했어요'}</span></li>`;}).join('')}</ul>`:`<p class="plan-note">고른 것이 없어서 가까운 곳을 고루 섞었어요.</p>`;
+ $('#plan-overview').innerHTML=`<dl class="facts"><div><dt>${memory.progress?'남은 일정':'시간'}</dt><dd>${e(plan.startTime)}–${e(plan.endTime)}<small>${stops.length}곳 · ${q.party.adults}명${q.party.children?' + 아이 '+q.party.children+'명':''}</small></dd></div><div><dt>걷기</dt><dd>${plan.walking.minMinutes}–${plan.walking.maxMinutes}분<small>시설 안 걷기는 별도</small></dd></div><div><dt>${unknownCost?'비용':'표시 비용'}</dt><dd>${unknownCost?(plan.cost.knownAmount?money(plan.cost.knownAmount)+'부터':'확인 필요'):money(plan.cost.knownAmount)}<small>${unknownCost?(plan.cost.knownAmount?unknownCost+'곳은 금액 확인 필요':unknownCost+'곳 · 공식 안내에서 확인'):'교통·추가 주문 별도'}</small></dd></div><div><dt>여유</dt><dd>${free?durationText(free):'딱 맞음'}<small>${free?'끝나고 남는 시간':'고른 시간을 다 썼어요'}</small></dd></div></dl>${q.planningMode==='remaining'?'':fit}${plan.status==='partial'?`<p class="plan-note">확인할 항목이 남은 초안이에요. 운영·비용·접근은 카드마다 아래 안내에서 이유와 공식 링크를 볼 수 있어요.</p>`:''}${restored?'<p class="warning-note">'+(restored==='progress'?'마지막으로 적용한 남은 일정입니다. 진행 상황 수정에서 현재 시각·위치·예산을 확인해 다시 맞출 수 있어요.':restored==='snapshot'?'저장 당시의 일정과 예상 수치입니다. 현재 운영·가격을 확인한 새 추천이 아니에요. 방문 기록을 이어 쓰거나 날짜를 바꿔 새 여행을 만들 수 있어요.':'저장한 계획을 현재 장소 자료로 다시 계산했어요. 유지할 장소와 이전 방문 기록은 그대로 이어집니다.')+'</p>':''}`;
+ const legRow=(leg,from,to)=>`<div class="leg"><img class="leg-shoes" src="${feltSrc('shoes')}" alt="" width="34" height="28"><span>${leg.maxMinutes?`${e(from.name)}에서 걸어서 ${leg.minMinutes}–${leg.maxMinutes}분`:`${e(from.name)} 바로 옆`}${leg.source!=='osm-walking-network'?' · 위치 기반 추정':''}</span><a href="${e(directionLink(from,to))}" target="_blank" rel="noopener noreferrer">길 확인 ↗</a></div>`;
+ const skippable=q.date===today&&!memory.progress?.finished;
+ $('#timeline').innerHTML=stops.map((stop,i)=>{
+  const place=placeMap.get(stop.placeId),from=i?placeMap.get(stops[i-1].placeId):q.origin;
+  const locked=q.lockedIds.includes(place.id),appointment=(q.appointments??[]).find(row=>row.placeId===place.id);
+  const media=place.photo?photo(place,'story-photo',i?'lazy':'eager'):FELT[place.id]?feltImage(place,'story-felt'):placeTile(place);
+  return `${legRow(plan.legs[i],from,place)}${stop.preStartPause?`<p class="rest-slot"><strong>${e(stop.preStartPause.startTime)}–${e(stop.preStartPause.endTime)} · 시작 전 ${stop.preStartPause.durationMinutes}분 쉬는 여유</strong><span>기다리는 시간에 포함했어요. 좌석·쉼터는 미확인이에요.</span></p>`:''}<article class="story tint-${e(place.category)} ${place.photo?'has-photo':'has-felt'}" id="stop-${e(place.id)}"><div class="story-media"><button class="story-media-button" data-place="${e(place.id)}" tabindex="-1" aria-label="${e(place.name)} 자세히">${media}</button><span class="story-time"><b>${e(stop.arrivalTime)}</b>–${e(stop.departureTime)}</span><div class="story-cap"><p class="story-kind">${e(categoryShort[place.category])} · ${durationText(stop.stayMinutes)} 머물기</p><h3><button class="stop-title" data-place="${e(place.id)}">${e(place.name)}</button></h3></div></div><div class="story-body">${appointment?`<p class="schedule-note">${e(appointment.time)} 예약·약속 시각 고정</p>`:''}<p class="stop-reason">${e(stop.reasons.slice(0,2).join(' · ')||place.description)}</p><p class="stop-cost">${stop.cost.status==='unknown'?(stop.cost.knownAmount?money(stop.cost.knownAmount)+' + 확인 필요':'금액 확인 필요'):money(stop.cost.knownAmount)}</p>${(stop.pauses??[]).map(p=>`<p class="rest-slot"><strong>${e(p.startTime)}–${e(p.endTime)} · ${p.durationMinutes}분 쉬는 여유</strong><span>이 장소에서 쉴 시간으로 잡았어요. 좌석·쉼터는 미확인이에요.</span></p>`).join('')}<div class="stop-actions"><button class="act ${locked?'locked':''}" data-lock="${e(place.id)}" aria-pressed="${locked}" aria-label="${e(place.name)} 유지">${locked?'유지 중 ✓':'이곳은 유지'}</button><button class="act" data-swap="${e(place.id)}" aria-label="${e(place.name)} 대신 다른 곳으로 바꾸기">다른 곳으로 바꾸기</button>${skippable?`<button class="act act-quiet" data-skip-stop="${e(place.id)}" aria-label="${e(place.name)} 건너뛰기">건너뛰기</button>`:''}<button class="act act-quiet" data-place="${e(place.id)}" aria-label="${e(place.name)} 자세히">자세히</button></div><details class="stop-details"><summary>${stop.schedule.status==='unknown'?'운영 확인 필요':'운영 안내와 비용 근거'}</summary><p>${e(stop.schedule.reason)}</p>${plan.checks.filter(c=>c.kind==='route'&&c.placeId===place.id).map(c=>`<p class="warning-note">${e(c.reason)}</p>`).join('')}<p>${e(stop.cost.unknowns.join(' ')||place.costNote)}</p>${stop.waitMinutes?`<p>예정 시작까지 ${stop.waitMinutes}분 기다리는 시간이에요.</p>`:''}<p>머무는 ${stop.stayMinutes}분은 계획용 제안이에요. ${e(place.openingNote||'')}</p><a href="${e(safeUrl(place.visitSourceUrl||place.sourceUrl))}" target="_blank" rel="noopener noreferrer">공식 안내 확인 ↗</a>${place.photo?`<p class="photo-credit">${credit(place)}</p>`:''}</details></div></article>`;
+ }).join('')+(free>=10&&!plan.destination?`<div class="free-row"><img src="${feltSrc('bench')}" alt="" width="76" height="62"><div><strong>여유 ${durationText(free)}</strong><span>${e(plan.endTime)}에 일정이 끝나요. 근처에서 쉬거나 마음에 든 곳에 더 머물러도 돼요.</span></div></div>`:'');
+ const fresh=animatedPlan!==plan.id;animatedPlan=plan.id;
+ [...$('#timeline').querySelectorAll('.story')].forEach((card,i)=>{if(fresh)card.style.animationDelay=Math.min(i,5)*80+'ms';else card.classList.add('settled');});
+ $('#aside-links').innerHTML=`${q.date===today&&!memory.progress?.finished?'<button class="link-button" type="button" data-action="open-progress">여행 중이라면 · 지금부터 다시 맞추기</button>':''}${memory.progress?'':'<button class="link-button" type="button" data-action="new-day">새 하루 만들기</button>'}`;
+ renderMapThumb(plan);
+}
+function renderMapThumb(plan){const box=$('#map-thumb');box.innerHTML=routeThumb(plan,box.clientWidth||320,box.clientHeight||156);}
 function renderResult(){
  const plan=memory.plan;if(!plan)return;
  renderProgressSummary();
  document.body.classList.add('has-plan');$('#result').hidden=false;$('#before-result').hidden=true;$('#empty-result').hidden=true;
  $('#conditions-panel').open=false;renderConditionChips();
- $('#result-kicker').textContent=seoulDay(memory.query.date)+' · 서울 종로';
- $('#result-title').textContent=memory.query.planningMode==='remaining'?'지금부터, 남은 '+plan.stops.length+'곳':plan.stops.length+'곳에 담은, 나의 서울';
-
- $('#plan-overview').innerHTML=`<div class="summary-strip"><div><span>${memory.progress?'남은 일정의 시간':'오늘의 시간'}</span><strong>${e(plan.startTime)}–${e(plan.endTime)}</strong><small>${memory.query.party.adults}명${memory.query.party.children?' + 아이 '+memory.query.party.children+'명':''} · ${plan.stops.length}곳</small></div><div><span>${plan.cost.unknownPlaceIds.length?'확인된 비용':'확인된 표시 비용'}</span><strong>${money(plan.cost.knownAmount)}</strong><small>${plan.cost.unknownPlaceIds.length?'+ 금액 미확인 '+plan.cost.unknownPlaceIds.length+'곳':'교통·추가 주문 별도'}</small></div><div><span>${memory.progress?'앞으로의 예상 도보':'일정의 예상 도보'}</span><strong>${plan.walking.minMinutes}–${plan.walking.maxMinutes}분</strong><small>시설 안 걷기는 별도</small></div></div><p class="plan-note">${e(plan.reasons.filter(r=>!r.includes('초안')).slice(0,2).join(' ')||'출발점과 시간·예산을 함께 비교해 가까운 장소를 연결했어요.')}</p>${plan.status==='partial'?`<p class="warning-note"><strong>확인이 남은 여행 초안</strong> · 운영·비용·접근 경로에 확인할 항목이 있어요. 상세 일정에서 이유와 공식 안내를 볼 수 있어요.</p>`:''}${restored?'<p class="warning-note">'+(restored==='progress'?'마지막으로 적용한 남은 일정입니다. 진행 상황 수정에서 현재 시각·위치·예산을 확인해 다시 맞출 수 있어요.':restored==='snapshot'?'저장 당시의 일정과 예상 수치입니다. 현재 운영·가격을 확인한 새 추천이 아니에요. 방문 기록을 이어 쓰거나 날짜를 바꿔 새 여행을 만들 수 있어요.':'저장한 계획을 현재 장소 자료로 다시 계산했어요. 유지할 장소와 이전 방문 기록은 그대로 이어집니다.')+'</p>':''}`;
- if(plan.stops.length<memory.query.stopCount)$('#plan-overview').insertAdjacentHTML('beforeend',`<p class="micro">시간·동선·취향을 비교해 최대 ${memory.query.stopCount}곳 중 ${plan.stops.length}곳을 골랐어요. 더 넣고 싶은 장소는 아래에서 직접 골라도 좋아요.</p>`);
+ $('#result-kicker').textContent=seoulDay(memory.query.date)+' · '+memory.query.origin.name+'에서 출발';
+ renderJourney(plan);
+ if(plan.stops.length<memory.query.stopCount)$('#plan-overview').insertAdjacentHTML('beforeend',`<p class="micro">시간·동선·취향을 비교해 최대 ${memory.query.stopCount}곳 가운데 ${plan.stops.length}곳으로 ${plan.stops.some(stop=>stop.reasons.some(reason=>reason.includes('더 머물게')))?'잡고 머무는 시간을 늘렸어요':'잡았어요'}. 더 넣고 싶은 곳은 아래 장소 둘러보기에서 골라도 좋아요.</p>`);
  // Saved estimates still allow explicit replanning for an upcoming/current day.
  $('#quick-actions').hidden=memory.query.date<defaultTravelQuery().date;
- $('#timeline').innerHTML=`<div class="journey-start"><span class="start-dot" aria-hidden="true"></span><p><strong>${e(plan.startTime)}</strong> ${e(memory.query.origin.name)}에서 출발</p>${memory.query.date<defaultTravelQuery().date?'':'<button class="act act-quiet" data-action="open-progress">여행 중이라면 →</button>'}</div>`+plan.stops.map((stop,i)=>{
-  const place=placeMap.get(stop.placeId),leg=plan.legs[i],from=i?placeMap.get(plan.stops[i-1].placeId):memory.query.origin;
-  const locked=memory.query.lockedIds.includes(place.id),appointment=(memory.query.appointments??[]).find(row=>row.placeId===place.id);
-  return `<div class="transfer"><span class="rail" aria-hidden="true"></span><span>${e(from.name)}에서 걸어서 ${leg.minMinutes}–${leg.maxMinutes}분${leg.source!=='osm-walking-network'?' · 위치 기반 추정':''}</span><a href="${e(directionLink(from,place))}" target="_blank" rel="noopener noreferrer">길 확인 ↗</a></div>${stop.preStartPause?`<p class="rest-slot"><strong>${e(stop.preStartPause.startTime)}–${e(stop.preStartPause.endTime)} · 시작 전 ${stop.preStartPause.durationMinutes}분 쉬는 여유</strong><span>기다리는 시간에 포함했어요. 좌석·쉼터는 미확인이에요.</span></p>`:''}<article class="stop-card" id="stop-${e(place.id)}"><div class="stop-no" aria-hidden="true">${i+1}</div><button class="stop-media" data-place="${e(place.id)}" tabindex="-1" aria-label="${e(place.name)} 자세히">${place.photo?photo(place,'stop-photo'):placeTile(place,{compact:true})}</button><div class="stop-body"><p class="stop-time"><strong>${e(stop.arrivalTime)}</strong> 도착 · ${stop.stayMinutes}분 머물기</p><h3><button class="stop-title" data-place="${e(place.id)}">${e(place.name)}</button></h3>${appointment?`<p class="schedule-note">${e(appointment.time)} 예약·약속 시각 고정</p>`:''}<p class="stop-reason">${e(stop.reasons.slice(0,2).join(' · ')||place.description)}</p><p class="stop-cost">${stop.cost.status==='unknown'?(stop.cost.knownAmount?money(stop.cost.knownAmount)+' + 확인 필요':'금액 확인 필요'):money(stop.cost.knownAmount)}</p></div><div class="stop-foot">${(stop.pauses??[]).map(p=>`<p class="rest-slot"><strong>${e(p.startTime)}–${e(p.endTime)} · ${p.durationMinutes}분 쉬는 여유</strong><span>이 장소에서 쉴 시간으로 잡았어요. 좌석·쉼터는 미확인이에요.</span></p>`).join('')}<div class="stop-actions"><button class="act ${locked?'locked':''}" data-lock="${e(place.id)}" aria-pressed="${locked}">${locked?'유지 중 ✓':'이곳은 유지'}</button><button class="act" data-swap="${e(place.id)}">다른 곳으로 바꾸기</button><button class="act act-quiet" data-place="${e(place.id)}">자세히</button></div><details class="stop-details"><summary>${stop.schedule.status==='unknown'?'운영 확인 필요':'운영 안내와 비용 근거'}</summary><p>${e(stop.schedule.reason)}</p>${plan.checks.filter(c=>c.kind==='route'&&c.placeId===place.id).map(c=>`<p class="warning-note">${e(c.reason)}</p>`).join('')}<p>${e(stop.cost.unknowns.join(' ')||place.costNote)}</p>${stop.waitMinutes?`<p>예정 시작까지 ${stop.waitMinutes}분 기다리는 시간이에요.</p>`:''}<p>체류 ${stop.stayMinutes}분은 계획용 제안이에요. ${e(place.openingNote||'')}</p><a href="${e(safeUrl(place.visitSourceUrl||place.sourceUrl))}" target="_blank" rel="noopener noreferrer">공식 안내 확인 ↗</a>${place.photo?`<p class="photo-credit">${credit(place)}</p>`:''}</details></div></article>`;
- }).join('');
  if(plan.destination&&plan.returnLeg){const leg=plan.returnLeg,last=placeMap.get(plan.stops.at(-1).placeId);$('#timeline').insertAdjacentHTML('beforeend',`<article class="journey-arrival"><p class="kicker">마지막 도착</p><h4>${e(leg.arrivalTime)} · ${e(plan.destination.name)}</h4><p>${e(last.name)}에서 ${e(leg.departureTime)} 출발 · 도보 ${leg.minMinutes}–${leg.maxMinutes}분 예상</p><p>마칠 시각 ${e(memory.query.endTime)}까지의 이동을 포함했어요. 도착점에서의 체류·시설 이용은 포함하지 않습니다.</p>${plan.checks.filter(c=>c.kind==='route.return').map(c=>`<p class="micro">${e(c.reason)}</p>`).join('')}<a href="${e(directionLink(last,plan.destination))}" target="_blank" rel="noopener noreferrer">마지막 이동 길 확인 ↗</a></article>`);}
  $('#plan-overview').insertAdjacentHTML('beforeend',scheduleNote(memory.query)+companionSummary(plan,memory.query));
  renderMap();renderAlternatives();
- const q=outcome?.question;
- $('#result-evidence').innerHTML=`${q?renderQuestion(q):''}<details class="engine-evidence"><summary>추천에 반영한 조건과 자료 보기</summary><p>이번 날짜·출발점·인원·시간·예산, 직접 고른 취향과 확인한 평소 취향을 비교했어요. 취향이 확인되지 않은 장소 특성은 만들어내지 않아요.</p><p>장소 안내 확인: ${e(TRAVEL_META.checkedAt)} · 지도 자료: ${e(network?.sourceTimestamp?.slice(0,10)||'불러오지 못함')}. 이동은 예상 범위이며 현장 안내를 우선해 주세요.</p><p>추천·조건 검사: SYNK Atlas Core. 선택·방문 기록: Trail. 실제 노출과 방문 후 결과 구분: Temper. 지도 표현의 움직임: Loom.</p></details>`;
+ renderEvidence();
  $('#plan-change').hidden=true;
+}
+// 확인 질문과 추천 근거. 질문은 일정을 먼저 보인 뒤 계산해 붙일 수 있어 따로 그린다.
+function renderEvidence(){
+ const q=outcome?.question,open=$('#result-evidence .engine-evidence')?.open;
+ $('#result-evidence').innerHTML=`${q?renderQuestion(q):''}<details class="engine-evidence"${open?' open':''}><summary>추천에 반영한 조건과 자료 보기</summary><p>이번 날짜·출발점·인원·시간·예산, 직접 고른 취향과 확인한 평소 취향을 비교했어요. 취향이 확인되지 않은 장소 특성은 만들어내지 않아요.</p><p>장소 안내 확인: ${e(TRAVEL_META.checkedAt)} · 지도 자료: ${e(network?.sourceTimestamp?.slice(0,10)||'불러오지 못함')}. 이동은 예상 범위이며 현장 안내를 우선해 주세요.</p><p>추천·조건 검사: SYNK Atlas Core. 선택·방문 기록: Trail. 실제 노출과 방문 후 결과 구분: Temper. 지도 표현의 움직임: Loom.</p></details>`;
+}
+// 일정을 먼저 보이고, 확인 질문(만들기 시간의 대부분)은 같은 시각·같은 조건으로 다시 계산해 같은 일정일 때만 붙인다.
+// 결과가 한 번 그려진 다음 프레임 뒤에 계산해 화면이 질문 계산을 기다리지 않게 한다.
+let questionToken=0;
+function planThenAsk(input){
+ const options=settings(input),result=planTravel(input,{...options,ask:false}),token=++questionToken;
+ acceptResult(result);
+ if(!result.primary)return;
+ requestAnimationFrame(()=>setTimeout(()=>{
+  if(token!==questionToken||outcome!==result)return;
+  const full=planTravel(input,options);
+  if(token!==questionToken||outcome!==result||full.primary?.id!==result.primary.id||!full.question)return;
+  result.question=full.question;renderEvidence();
+ },30));
 }
 function progressPlaceIds(){
  return [...(memory.progress?.completed??[]).map(row=>row.placeId),...(memory.progress?.skippedIds??[])];
@@ -416,7 +749,8 @@ function progressOrigins(){
  const rows=[...origins.filter(origin=>!origin.id.startsWith('place:')).map(origin=>({...origin,key:['anguk','gyeongbokgung','jonggak','gwanghwamun'].includes(origin.id)?'station:'+origin.id:'origin:'+origin.id})),...TRAVEL_PLACES.filter(p=>p.coordinates).map(p=>({id:'place:'+p.id,key:'place:'+p.id,name:p.name,lat:p.coordinates.lat,lon:p.coordinates.lon}))];
  return rows;
 }
-function showProgress(){
+// skipId: 오늘 카드의 「건너뛰기」로 열면 그 장소를 건너뛸 곳으로 미리 골라 둔다. 적용은 창에서 직접.
+function showProgress(skipId=null){
  clearRecovery();
  if(formDirty){
   if(!memory.progress?.finished){toast('수정 중인 여행 조건을 먼저 적용해 주세요.');return;}
@@ -430,7 +764,7 @@ function showProgress(){
  const locations=progressOrigins(),current=locations.find(o=>o.id===memory.query.origin.id)?.key??locations[0].key;
  const timeNow=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());
  const start=[memory.query.startTime,progress?.currentTime??'00:00',timeNow].sort().at(-1);
- $('#progress-content').innerHTML=`<form id="progress-form"><p>다녀온 곳과 건너뛸 곳을 고른 뒤, 다시 출발할 조건을 알려주세요. 적용 전까지 기존 일정은 유지됩니다.</p><div class="progress-places">${ids.map(id=>{const state=progress?.completed.some(row=>row.placeId===id)?'completed':progress?.skippedIds.includes(id)?'skipped':'remaining';return `<div class="progress-place"><label for="progress-${e(id)}">${e(placeMap.get(id).name)}${memory.query.lockedIds.includes(id)?'<small>유지 설정 중 · 완료/건너뜀 선택 시 유지 해제</small>':''}${(memory.query.appointments??[]).some(row=>row.placeId===id)?'<small>예약·약속 시각 고정 · 완료/건너뜀 선택 시 남은 일정에서 해제</small>':''}</label><select id="progress-${e(id)}" data-progress-place="${e(id)}"><option value="remaining" ${state==='remaining'?'selected':''}>앞으로 갈 후보</option><option value="completed" ${state==='completed'?'selected':''}>다녀왔어요</option><option value="skipped" ${state==='skipped'?'selected':''}>이번에는 건너뛰기</option></select></div>`;}).join('')}</div><p class="micro">다녀온 시각은 아래에 입력한 시각까지 방문했다는 본인의 표시로 남아요. 건너뛰기는 취향이나 방문 평가로 사용하지 않습니다.</p><div class="field-row"><div class="field"><label for="progress-time">다시 출발할 시각</label><input id="progress-time" type="time" value="${e(start)}" required></div><div class="field"><label for="progress-end">여행 마칠 시각</label><input id="progress-end" type="time" value="${e(memory.query.endTime)}" required></div></div><div class="field"><label for="progress-origin">현재 출발 위치를 직접 골라주세요</label><select id="progress-origin">${locations.map(o=>`<option value="${e(o.key)}" ${o.key===current?'selected':''}>${e(o.name)}${o.key.startsWith('station:')?' · 대표 역 위치':o.key.startsWith('place:')?' · 장소 위치':' · 저장한 출발점'}</option>`).join('')}</select><small>이전 출발지를 표시해 두었어요. 현재 위치로 직접 바꿔주세요. GPS를 사용하지 않으며 실제 출구·입구와 차이가 있어요.</small><button class="button secondary" type="button" data-action="choose-progress-origin">지도·숙소에서 출발점 고르기</button></div><div class="field"><label for="progress-budget">앞으로 쓸 일행 전체 예산 · 원</label><input id="progress-budget" type="number" min="0" max="10000000" step="1000" inputmode="numeric" placeholder="남은 금액을 직접 입력"><small>이미 쓴 돈을 추정해 빼지 않아요. 추가 주문·교통비는 별도예요.</small></div><div class="field-row"><div class="field"><label for="progress-walk">앞으로 이동하며 걷기 · 분</label><input id="progress-walk" type="number" min="0" max="360" value="${memory.query.maxWalkMinutes}" inputmode="numeric"></div><div class="field"><label for="progress-stops">앞으로 최대 몇 곳?</label><select id="progress-stops">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===Math.max(1,memory.plan?.stops.length??1)?'selected':''}>${n}곳</option>`).join('')}</select></div></div><p class="micro">앞으로 갈 후보는 모두 방문한다는 뜻은 아니에요. 유지한 장소는 계속 지킵니다. 이미 마친 분야의 필수 포함은 충족된 것으로 보되 취향은 유지해요. 식사를 이미 했다면 아래에서 식사 생략을 직접 골라주세요. 한 구간 걷기와 쉬는 간격도 기존 설정을 이어갑니다.</p>${progressMealFields()}<p class="micro">${memory.query.destination?`마지막 도착점은 ${e(memory.query.destination.name)}입니다. 바꾸려면 이 창을 닫고 여행 조건의 마지막 도착점을 수정해 주세요.`:'마지막 방문지에서 마칩니다.'}</p><p id="progress-error" class="error" role="alert" hidden></p><div id="progress-recovery"></div><div class="progress-actions"><button class="button primary" type="submit">남은 일정 비교하기</button><button class="button secondary" type="button" data-action="finish-trip">오늘은 여기서 마치기</button></div><p class="micro">마치기는 남은 계획을 끝내고 직접 표시한 진행 기록을 보관해요. 예산 입력은 필요 없으며, 위 시각을 마친 시각으로 기록합니다.</p></form>`;
+ $('#progress-content').innerHTML=`<form id="progress-form"><p>다녀온 곳과 건너뛸 곳을 고른 뒤, 다시 출발할 조건을 알려주세요. 적용 전까지 기존 일정은 유지됩니다.</p><div class="progress-places">${ids.map(id=>{const state=progress?.completed.some(row=>row.placeId===id)?'completed':progress?.skippedIds.includes(id)||id===skipId?'skipped':'remaining';return `<div class="progress-place"><label for="progress-${e(id)}">${e(placeMap.get(id).name)}${memory.query.lockedIds.includes(id)?'<small>유지 설정 중 · 완료/건너뜀 선택 시 유지 해제</small>':''}${(memory.query.appointments??[]).some(row=>row.placeId===id)?'<small>예약·약속 시각 고정 · 완료/건너뜀 선택 시 남은 일정에서 해제</small>':''}</label><select id="progress-${e(id)}" data-progress-place="${e(id)}"><option value="remaining" ${state==='remaining'?'selected':''}>앞으로 갈 후보</option><option value="completed" ${state==='completed'?'selected':''}>다녀왔어요</option><option value="skipped" ${state==='skipped'?'selected':''}>이번에는 건너뛰기</option></select></div>`;}).join('')}</div><p class="micro">다녀온 시각은 아래에 입력한 시각까지 방문했다는 본인의 표시로 남아요. 건너뛰기는 취향이나 방문 평가로 쓰지 않아요. 그래서 같은 분야의 다른 곳은 남은 일정에 다시 들어올 수 있어요.</p><div class="field-row"><div class="field"><label for="progress-time">다시 출발할 시각</label><input id="progress-time" type="time" value="${e(start)}" required></div><div class="field"><label for="progress-end">여행 마칠 시각</label><input id="progress-end" type="time" value="${e(memory.query.endTime)}" required></div></div><div class="field"><label for="progress-origin">현재 출발 위치를 직접 골라주세요</label><select id="progress-origin">${locations.map(o=>`<option value="${e(o.key)}" ${o.key===current?'selected':''}>${e(o.name)}${o.key.startsWith('station:')?' · 대표 역 위치':o.key.startsWith('place:')?' · 장소 위치':' · 저장한 출발점'}</option>`).join('')}</select><small>이전 출발지를 표시해 두었어요. 현재 위치로 직접 바꿔주세요. GPS를 사용하지 않으며 실제 출구·입구와 차이가 있어요.</small><button class="button secondary" type="button" data-action="choose-progress-origin">지도·숙소에서 출발점 고르기</button></div><div class="field"><label for="progress-budget">앞으로 쓸 일행 전체 예산 · 원</label><input id="progress-budget" type="number" min="0" max="10000000" step="1000" inputmode="numeric" placeholder="남은 금액을 직접 입력"><small>이미 쓴 돈을 추정해 빼지 않아요. 추가 주문·교통비는 별도예요.</small></div><div class="field-row"><div class="field"><label for="progress-walk">앞으로 이동하며 걷기 · 분</label><input id="progress-walk" type="number" min="0" max="360" value="${memory.query.maxWalkMinutes}" inputmode="numeric"></div><div class="field"><label for="progress-stops">앞으로 최대 몇 곳?</label><select id="progress-stops">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===Math.max(1,memory.plan?.stops.length??1)?'selected':''}>${n}곳</option>`).join('')}</select></div></div><p class="micro">앞으로 갈 후보는 모두 방문한다는 뜻은 아니에요. 유지한 장소는 계속 지킵니다. 이미 마친 분야의 필수 포함은 충족된 것으로 보되 취향은 유지해요. 식사를 이미 했다면 아래에서 식사 생략을 직접 골라주세요. 한 구간 걷기와 쉬는 간격도 기존 설정을 이어갑니다.</p>${progressMealFields()}<p class="micro">${memory.query.destination?`마지막 도착점은 ${e(memory.query.destination.name)}입니다. 바꾸려면 이 창을 닫고 여행 조건의 마지막 도착점을 수정해 주세요.`:'마지막 방문지에서 마칩니다.'}</p><p id="progress-error" class="error" role="alert" hidden></p><div id="progress-recovery"></div><div class="progress-actions"><button class="button primary" type="submit">남은 일정 비교하기</button><button class="button secondary" type="button" data-action="finish-trip">오늘은 여기서 마치기</button></div><p class="micro">마치기는 남은 계획을 끝내고 직접 표시한 진행 기록을 보관해요. 예산 입력은 필요 없으며, 위 시각을 마친 시각으로 기록합니다.</p></form>`;
  syncScheduleFields('progress-');$('#progress-dialog').showModal();
 }
 function collectProgress(){
@@ -474,12 +808,12 @@ function renderQuestion(q){
  return `<section class="change-preview refinement"><p class="kicker">하나만 더 알려주세요</p><h4>${e(q.label)}</h4><p>답하기 전에, 같은 조건에서 달라지는 여행안을 비교해 보세요.</p><div class="refinement-grid">${q.options.map(option=>{
   const p=option.preview;if(!p)return '';
   const changed=p.changes,walk=changed.walkMaxDelta;
-  return `<article class="refinement-option"><div class="refinement-photos">${p.stops.slice(0,3).map(s=>{const place=placeMap.get(s.placeId);return place?.photo?photo(place):place?placeTile(place,{compact:true,show:'name'}):`<span class="tile tile-compact"><strong>${e(s.name)}</strong></span>`;}).join('')}</div><h5>${e(option.label)}</h5><p class="refinement-route">${p.stops.map(s=>e(s.name)).join(' → ')}</p><dl><dt>예상 도보</dt><dd>${p.walking.minMinutes}–${p.walking.maxMinutes}분 <small>(${walk===0?'현재와 같음':`${walk>0?'+':''}${walk}분`})</small></dd><dt>${p.costStatus==='unknown'?'확인된 부분합':'확인된 표시 비용'}</dt><dd>${money(p.knownAmount)}${p.costStatus==='unknown'?' + 미확인':''}</dd><dt>마칠 시각</dt><dd>${e(p.endTime)}</dd></dl><button class="chip" data-refine="${e(q.about)}" data-value="${option.value}">이쪽으로 비교하기</button>${p.stops.some(s=>placeMap.get(s.placeId)?.photo)?`<details><summary>사진 출처</summary>${p.stops.filter(s=>placeMap.get(s.placeId)?.photo).map(s=>`<p class="photo-credit">${credit(placeMap.get(s.placeId))}</p>`).join('')}</details>`:''}</article>`;
+  return `<article class="refinement-option"><div class="refinement-photos">${p.stops.slice(0,3).map(s=>{const place=placeMap.get(s.placeId);return place?placeThumb(place):`<span class="tile tile-compact"><strong>${e(s.name)}</strong></span>`;}).join('')}</div><h5>${e(option.label)}</h5><p class="refinement-route">${p.stops.map(s=>e(s.name)).join(' → ')}</p><dl><dt>예상 도보</dt><dd>${p.walking.minMinutes}–${p.walking.maxMinutes}분 <small>(${walk===0?'현재와 같음':`${walk>0?'+':''}${walk}분`})</small></dd><dt>${p.costStatus==='unknown'?'확인된 부분합':'확인된 표시 비용'}</dt><dd>${money(p.knownAmount)}${p.costStatus==='unknown'?' + 미확인':''}</dd><dt>마칠 시각</dt><dd>${e(p.endTime)}</dd></dl><button class="chip" data-refine="${e(q.about)}" data-value="${option.value}">이쪽으로 비교하기</button>${p.stops.some(s=>placeMap.get(s.placeId)?.photo)?`<details><summary>사진 출처</summary>${p.stops.filter(s=>placeMap.get(s.placeId)?.photo).map(s=>`<p class="photo-credit">${credit(placeMap.get(s.placeId))}</p>`).join('')}</details>`:''}</article>`;
  }).join('')}</div><p class="micro">${e(q.caveat)}</p></section>`;
 }
 function renderAlternatives(){
  const plans=outcome?.alternatives??[];
- $('#alternatives').innerHTML=plans.length?`<h4>다른 방향의 하루도 있어요.</h4><div class="alt-grid">${plans.slice(0,2).map((p,i)=>`<article class="alternative"><h5>${e(p.label)}</h5><p>${p.stops.map(s=>e(placeMap.get(s.placeId).name)).join(' → ')}</p><p>도보 ${p.walking.minMinutes}–${p.walking.maxMinutes}분 · 확인 금액 ${money(p.cost.knownAmount)}${p.cost.unknownPlaceIds.length?' + 미확인':''}</p><button class="chip" data-alternative="${i}">이 여행안 비교하기</button></article>`).join('')}</div>`:'';
+ $('#alternatives').innerHTML=plans.length?`<h4>다른 방향의 하루도 있어요.</h4><div class="alt-grid">${plans.slice(0,2).map((p,i)=>`<article class="alternative"><div class="alt-thumbs" aria-hidden="true">${p.stops.slice(0,5).map(s=>placeThumb(placeMap.get(s.placeId))).join('')}</div><h5>${e(p.label)}</h5><p>${p.stops.map(s=>e(placeMap.get(s.placeId).name)).join(' → ')}</p><p>도보 ${p.walking.minMinutes}–${p.walking.maxMinutes}분 · 확인 금액 ${money(p.cost.knownAmount)}${p.cost.unknownPlaceIds.length?' + 미확인':''}</p><button class="chip" data-alternative="${i}">이 여행안 비교하기</button></article>`).join('')}</div>`:'';
 }
 function renderMap(){
  const plan=memory.plan;if(!plan)return;
@@ -522,11 +856,11 @@ function previewChange(result,label){
 function adjust(kind){
  if(formDirty){toast('수정 중인 여행 조건을 먼저 적용해 주세요.');return;}
  const input=structuredClone(memory.query);let label='여행안 바꾸기';
- if(kind==='less-walk'){input.maxWalkMinutes=Math.max(5,Math.floor(input.maxWalkMinutes*.7));input.preferences.walk=false;label='걷기 상한을 '+input.maxWalkMinutes+'분으로 줄였어요.';}
+ if(kind==='less-walk'){input.maxWalkMinutes=Math.max(5,Math.floor(input.maxWalkMinutes*.7));if(input.preferences.walk!==true)input.preferences.walk=false;label='걷기 상한을 '+input.maxWalkMinutes+'분으로 줄였어요.';}
  if(kind==='less-cost'){input.budget=Math.floor(input.budget*.75/1000)*1000;label='예산을 '+money(input.budget)+'으로 줄였어요.';}
  if(kind==='indoors'){input.preferences.indoor=true;input.preferences.outdoor=false;label='방문지는 실내를 우선했어요. 장소 사이 이동은 야외예요.';}
  if(kind==='later'){const t=Number(input.startTime.slice(0,2))*60+Number(input.startTime.slice(3))+30;input.startTime=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');label='출발을 30분 늦춰 다시 맞췄어요.';}
- try{previewChange(planTravel(input,settings()),label);}catch(error){toast(error.message);}
+ try{previewChange(planTravel(input,settings(input)),label);}catch(error){toast(error.message);}
 }
 function renderVenueFacts(place){
  const items=place.menuItems??[],visit=place.visitInfo;if(!items.length&&!visit)return '';
@@ -535,12 +869,12 @@ function renderVenueFacts(place){
 }
 function showPlace(id){
  const place=placeMap.get(id);if(!place)return;editingVisit=null;
- $('#place-detail').innerHTML=`${place.photo?photo(place,'detail-image')+`<p class="photo-credit">${credit(place)}</p>`:placeTile(place)}<p class="stop-type">${e(categoryLabel[place.category])}</p><h2>${e(place.name)}</h2><p class="detail-description">${e(place.description)}</p><dl class="detail-grid"><dt>어디에</dt><dd>${e(place.address)}</dd><dt>운영 안내</dt><dd>${e(place.openingNote||'공식 안내에서 확인해 주세요.')}</dd><dt>비용</dt><dd>${e(place.costNote)}</dd><dt>나에게 맞는 점</dt><dd>${Object.entries(place.features??{}).filter(([k,v])=>v&&PREFERENCE_LABELS[k]).map(([k])=>e(PREFERENCE_LABELS[k])).join(' · ')||'아직 비교할 취향 자료가 부족해요.'}</dd><dt>기본 안내 확인</dt><dd>${e(place.verifiedAt||place.checkedAt)} · ${e(place.sourceLabel)}</dd></dl><div class="detail-actions"><a class="button secondary" href="${e(safeUrl(place.bookingUrl||place.sourceUrl))}" target="_blank" rel="noopener noreferrer">공식 안내·예약 확인 ↗</a><a class="button secondary" href="${e(placeLink(place))}" target="_blank" rel="noopener noreferrer">지도에서 보기 ↗</a>${place.dayPlannerEligible!==false?(memory.plan?.stops.some(stop=>stop.placeId===id)?'<p class="micro">지금 일정에 들어 있는 곳이에요.</p>':`<button class="button primary" data-include="${e(id)}">이곳을 넣어 여행 만들기</button>`):'<p class="micro">숙박 날짜별 요금·객실 비교는 아직 연결하지 않았어요.</p>'}</div>${renderVenueFacts(place)}${Object.entries(place.provenance?.featuresByKey??{}).filter(([,v])=>v.freshnessNote).map(([key,v])=>`<p class="micro">${e(PREFERENCE_LABELS[key])} 자료: ${e(v.freshnessNote)}</p>`).join('')}<section class="review-section"><h3>다녀왔다면, 어땠나요?</h3><p class="micro">방문한 경험만 남겨주세요. 저장이나 추천 선택을 방문으로 보지 않아요.</p><form id="visit-form" data-place-id="${e(id)}"><label for="visit-rating">이 장소에서의 경험</label><br><select id="visit-rating"><option value="5">5 · 정말 좋았어요</option><option value="4">4 · 좋았어요</option><option value="3" selected>3 · 보통이었어요</option><option value="2">2 · 아쉬웠어요</option><option value="1">1 · 많이 아쉬웠어요</option></select><div class="reason-checks">${TRAVEL_VISIT_REASONS.map(r=>`<label><input name="visit-reason" type="checkbox" value="${r.id}"> ${e(r.label)}</label>`).join('')}</div><button class="button secondary" type="submit">방문 경험 남기기</button></form><div id="preference-suggestions"></div></section>`;
+ $('#place-detail').innerHTML=`${place.photo?photo(place,'detail-image')+`<p class="photo-credit">${credit(place)}</p>`:placeCover(place)}<p class="stop-type">${e(categoryLabel[place.category])}</p><h2>${e(place.name)}</h2><p class="detail-description">${e(place.description)}</p><dl class="detail-grid"><dt>어디에</dt><dd>${e(place.address)}</dd><dt>운영 안내</dt><dd>${e(place.openingNote||'공식 안내에서 확인해 주세요.')}</dd><dt>비용</dt><dd>${e(place.costNote)}</dd><dt>나에게 맞는 점</dt><dd>${Object.entries(place.features??{}).filter(([k,v])=>v&&PREFERENCE_LABELS[k]).map(([k])=>e(PREFERENCE_LABELS[k])).join(' · ')||'아직 비교할 취향 자료가 부족해요.'}</dd><dt>기본 안내 확인</dt><dd>${e(place.verifiedAt||place.checkedAt)} · ${e(place.sourceLabel)}</dd></dl><div class="detail-actions"><a class="button secondary" href="${e(safeUrl(place.bookingUrl||place.sourceUrl))}" target="_blank" rel="noopener noreferrer">공식 안내·예약 확인 ↗</a><a class="button secondary" href="${e(placeLink(place))}" target="_blank" rel="noopener noreferrer">지도에서 보기 ↗</a>${place.dayPlannerEligible!==false?(memory.plan?.stops.some(stop=>stop.placeId===id)?'<p class="micro">지금 일정에 들어 있는 곳이에요.</p>':`<button class="button primary" data-include="${e(id)}">이곳을 넣어 여행 만들기</button>`):'<p class="micro">숙박 날짜별 요금·객실 비교는 아직 연결하지 않았어요.</p>'}</div>${renderVenueFacts(place)}${Object.entries(place.provenance?.featuresByKey??{}).filter(([,v])=>v.freshnessNote).map(([key,v])=>`<p class="micro">${e(PREFERENCE_LABELS[key])} 자료: ${e(v.freshnessNote)}</p>`).join('')}<section class="review-section"><h3>다녀왔다면, 어땠나요?</h3><p class="micro">방문한 경험만 남겨주세요. 저장이나 추천 선택을 방문으로 보지 않아요.</p><form id="visit-form" data-place-id="${e(id)}"><label for="visit-rating">이 장소에서의 경험</label><br><select id="visit-rating"><option value="5">5 · 정말 좋았어요</option><option value="4">4 · 좋았어요</option><option value="3" selected>3 · 보통이었어요</option><option value="2">2 · 아쉬웠어요</option><option value="1">1 · 많이 아쉬웠어요</option></select><div class="reason-checks">${TRAVEL_VISIT_REASONS.map(r=>`<label><input name="visit-reason" type="checkbox" value="${r.id}"> ${e(r.label)}</label>`).join('')}</div><button class="button secondary" type="submit">방문 경험 남기기</button></form><div id="preference-suggestions"></div></section>`;
  $('#place-dialog').showModal();
 }
 function showSwap(id){
  const place=placeMap.get(id);if(!place)return;
- $('#swap-content').innerHTML=`<p class="micro">${e(place.name)} 대신 넣을 곳을 골라주세요. 운영·동선·시간·예산을 다시 비교한 뒤 적용해요.</p>${TRAVEL_PLACES.filter(p=>p.category===place.category&&p.id!==id&&!progressPlaceIds().includes(p.id)&&!memory.plan.stops.some(s=>s.placeId===p.id)&&p.dayPlannerEligible!==false).map(p=>`<article class="swap-row">${p.photo?photo(p):placeTile(p,{compact:true})}<div><h3>${e(p.name)}</h3><p>${e(p.costNote)}</p></div><button class="chip" data-replace-from="${e(id)}" data-replace-to="${e(p.id)}">이곳으로 비교</button></article>`).join('')||'<p>지금 자료에서 같은 분야의 대안을 찾지 못했어요.</p>'}`;$('#swap-dialog').showModal();
+ $('#swap-content').innerHTML=`<p class="micro">${e(place.name)} 대신 넣을 곳을 골라주세요. 운영·동선·시간·예산을 다시 비교한 뒤 적용해요.</p>${TRAVEL_PLACES.filter(p=>p.category===place.category&&p.id!==id&&!progressPlaceIds().includes(p.id)&&!memory.plan.stops.some(s=>s.placeId===p.id)&&p.dayPlannerEligible!==false).map(p=>`<article class="swap-row">${placeThumb(p)}<div><h3>${e(p.name)}</h3><p>${e(p.costNote)}</p></div><button class="chip" data-replace-from="${e(id)}" data-replace-to="${e(p.id)}">이곳으로 비교</button></article>`).join('')||'<p>지금 자료에서 같은 분야의 대안을 찾지 못했어요.</p>'}`;$('#swap-dialog').showModal();
 }
 function renderExplore(){
  const term=$('#place-search').value.trim().toLowerCase(),mixed=(()=>{const a=TRAVEL_PLACES.filter(p=>p.photo),b=TRAVEL_PLACES.filter(p=>!p.photo),out=[];while(a.length||b.length){out.push(...a.splice(0,2),...b.splice(0,1));}return out;})(),filtered=mixed.filter(p=>(selectedCategory==='all'||p.category===selectedCategory)&&(p.name+' '+p.description).toLowerCase().includes(term));
@@ -622,21 +956,18 @@ document.addEventListener('click',event=>{
   if(target.dataset.originPlace){const place=placeMap.get(target.dataset.originPlace);setOriginPoint(place.coordinates,place.name);return;}
   if(target.dataset.recovery!==undefined){applyRecovery(target.dataset.recovery);return;}
   if(target.dataset.mapPlace){showPlace(target.dataset.mapPlace);return;}
-  if(target.dataset.preset){const input=readInput();input.preferences={};input.requiredCategories=[];
-   if(target.dataset.preset==='culture'){input.preferences={art:true,tea:true,indoor:true};input.stopCount=3;}
-   if(target.dataset.preset==='food'){input.preferences={food:true,tea:true};input.requiredCategories=['food'];input.stopCount=3;}
-   if(target.dataset.preset==='slow'){input.preferences={indoor:true};input.stopCount=2;input.maxWalkMinutes=20;}
-   writeInput(input);formDirty=true;pending=null;$('#plan-change').hidden=true;$('#conditions-panel').open=true;$$('.preset').forEach(b=>b.setAttribute('aria-pressed',b===target));(innerWidth<=900?$('#trip-form'):$('#generate')).scrollIntoView({behavior:'smooth',block:innerWidth<=900?'start':'center'});toast('예시 조건을 채웠어요. 날짜·인원·예산을 확인해 주세요.');return;
-  }
+  if(target.dataset.intent){togglePick(target.dataset.intent);return;}
+  if(target.dataset.step){showStep(Number(target.dataset.step));return;}
+  if(target.dataset.hours){pickHours=Number(target.dataset.hours);applyChooser();renderTimeStep();return;}
+  if(target.dataset.skipStop){showProgress(target.dataset.skipStop);return;}
   if(target.dataset.category){selectedCategory=target.dataset.category;$$('[data-category]').forEach(b=>{const selected=b===target;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});renderExplore();return;}
-  if(target.dataset.view){const map=target.dataset.view==='map';$('#map-panel').style.display=map?'block':'none';$('#timeline').hidden=map;$$('[data-view]').forEach(b=>{b.classList.toggle('active',b===target);b.setAttribute('aria-pressed',b===target);});if(map)renderMap();if(innerWidth<=900)(map?$('#map-panel'):$('#timeline')).scrollIntoView({behavior:'smooth',block:'start'});return;}
-  if(target.dataset.lock){invalidatePreferencePreview();const id=target.dataset.lock,locks=memory.query.lockedIds;memory.query.lockedIds=locks.includes(id)?locks.filter(x=>x!==id):[...locks,id];memory.plan.lockedIds=[...memory.query.lockedIds];memory.plan.inputFingerprint=plannerInputFingerprint(memory.query);persist();renderResult();toast(memory.query.lockedIds.includes(id)?'다음 변경에서도 이곳을 유지할게요.':'유지 설정을 해제했어요.');return;}
+  if(target.dataset.lock){invalidatePreferencePreview();const id=target.dataset.lock,locks=memory.query.lockedIds;memory.query.lockedIds=locks.includes(id)?locks.filter(x=>x!==id):[...locks,id];memory.plan.lockedIds=[...memory.query.lockedIds];memory.plan.inputFingerprint=plannerInputFingerprint(memory.query);persist();renderResult();document.querySelector?.('[data-lock="'+id+'"]')?.focus();toast(memory.query.lockedIds.includes(id)?'다음 변경에서도 이곳을 유지할게요.':'유지 설정을 해제했어요.');return;}
   if(target.dataset.swap){if((memory.query.appointments??[]).some(row=>row.placeId===target.dataset.swap)){toast('시각을 고정한 장소예요. 여행 조건에서 예약·약속을 먼저 수정해 주세요.');return;}showSwap(target.dataset.swap);return;}
   if(target.dataset.replaceFrom){if(progressPlaceIds().includes(target.dataset.replaceTo)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const result=replanTravel(memory.query,{...settings(),replace:{fromId:target.dataset.replaceFrom,toId:target.dataset.replaceTo}});$('#swap-dialog').close();previewChange(result,'장소를 바꾸고 전체 일정을 다시 맞췄어요.');return;}
-  if(target.dataset.include){const id=target.dataset.include;if(progressPlaceIds().includes(id)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const input=readInput();input.lockedIds=[...new Set([...input.lockedIds,id])];input.excludedIds=input.excludedIds.filter(x=>x!==id);$('#place-dialog').close();const result=planTravel(input,settings());if(memory.plan)previewChange(result,'선택한 장소를 포함한 여행안');else acceptResult(result);return;}
+  if(target.dataset.include){const id=target.dataset.include;if(progressPlaceIds().includes(id)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const input=readInput();input.lockedIds=[...new Set([...input.lockedIds,id])];input.excludedIds=input.excludedIds.filter(x=>x!==id);$('#place-dialog').close();const result=planTravel(input,settings(input));if(memory.plan)previewChange(result,'선택한 장소를 포함한 여행안');else acceptResult(result);return;}
   if(target.dataset.adjust){adjust(target.dataset.adjust);return;}
   if(target.dataset.alternative!==undefined){const p=outcome.alternatives[Number(target.dataset.alternative)];previewChange({...outcome,primary:p,alternatives:[memory.plan,...outcome.alternatives.filter(x=>x.id!==p.id)]},p.label);return;}
-  if(target.dataset.refine){const input=structuredClone(memory.query);input.preferences[target.dataset.refine]=target.dataset.value==='true';previewChange(planTravel(input,settings()),'답해주신 취향으로 다시 골랐어요.');return;}
+  if(target.dataset.refine){const input=structuredClone(memory.query);input.preferences[target.dataset.refine]=target.dataset.value==='true';previewChange(planTravel(input,settings(input)),'답해주신 취향으로 다시 골랐어요.');return;}
   if(target.dataset.forgetPref){memory=removeTravelPreference(memory,target.dataset.forgetPref,{now:now()});invalidatePreferencePreview();persist();renderMemory();toast('이 취향을 다음 추천에서 빼었어요. 현재 일정은 유지해요.');return;}
   if(target.dataset.deleteVisit){memory=removeTravelVisit(memory,target.dataset.deleteVisit,{now:now()});invalidatePreferencePreview();persist();renderMemory();toast('방문 기록과 그 기록에서 확인한 취향을 지웠어요.');return;}
   if(target.dataset.editVisit){const visit=memory.visits.find(v=>v.id===target.dataset.editVisit);$('#memory-dialog').close();showPlace(visit.placeId);editingVisit=visit.id;$('#visit-rating').value=visit.rating;$$('[name=visit-reason]').forEach(c=>c.checked=visit.reasons.includes(c.value));$('#visit-form button').textContent='방문 경험 수정하기';return;}
@@ -649,17 +980,21 @@ document.addEventListener('click',event=>{
    case 'accept-origin':acceptOrigin();break;
    case 'origin-coordinates':try{if($('#origin-lat').value===''||$('#origin-lon').value==='')throw Error('위도와 경도를 모두 입력해 주세요.');setOriginPoint({lat:Number($('#origin-lat').value),lon:Number($('#origin-lon').value)},$('#origin-name').value);}catch(error){$('#origin-error').textContent=error.message;$('#origin-error').hidden=false;}break;
    case 'open-progress':showProgress();break;
+   case 'make-day':makeDay();break;
+   case 'open-map':openMap();break;
+   case 'back-to-chooser':clearRecovery();$('#empty-result').hidden=true;$('#before-result').hidden=false;showStep(picks.length?2:1);break;
    case 'finish-trip':finishTrip();break;
    case 'open-memory':showMemory();break;
    case 'accept-change':if(pending)acceptResult(pending);break;
    case 'cancel-change':clearRecovery();pending=null;$('#plan-change').hidden=true;if(memory.progress?.finished)restorePlan();break;
-   case 'previous-plan':clearRecovery();$('#empty-result').hidden=true;writeInput(memory.query);formDirty=false;renderResult();break;
+   case 'previous-plan':clearRecovery();$('#empty-result').hidden=true;writeInput(memory.query);picksFromQuery(memory.query);formDirty=false;renderResult();pushView('result');$('#result-title').focus({preventScroll:true});break;
+   case 'new-day':showChooser(1);break;
    case 'export-json':download(exportTravelMemory(memory),`SYNK-PATH-${memory.query.date}.json`,'application/json');break;
    case 'export-text':exportText();break;
    case 'import-json':$('#import-file').click();break;
-   case 'new-trip':delete memory.progress;memory.query=defaultTravelQuery();memory.plan=null;outcome=null;pending=null;activeDecision=null;formDirty=false;exposureObserver?.disconnect();writeInput(memory.query);restorePlan();persist();$('#memory-dialog').close();$('#conditions-panel').open=true;$('#trip-form').scrollIntoView({behavior:'smooth'});toast('방문 기록과 확인한 평소 취향을 가지고 새 여행을 시작해요.');break;
+   case 'new-trip':delete memory.progress;memory.query=defaultTravelQuery();memory.plan=null;outcome=null;pending=null;activeDecision=null;formDirty=false;exposureObserver?.disconnect();writeInput(memory.query);picksFromQuery(memory.query);foodByHand=false;handWhen=null;restorePlan();persist();$('#memory-dialog').close();$('#step-time').hidden=true;$('#step-intent').hidden=false;$('#before-result').scrollIntoView({behavior:'smooth',block:'start'});toast('방문 기록과 확인한 평소 취향은 이어 가요. 새 하루를 골라 주세요.');break;
    case 'clear-history':memory=clearTravelHistory(memory,{now:now()});activeDecision=null;invalidatePreferencePreview();persist();renderMemory();toast('방문 기록과 평소 취향을 지웠어요. 여행 계획은 유지해요.');break;
-   case 'reset-all':if(!accountSession?.active)clearTravelMemory();memory=createTravelMemory();persist();clearRecovery();outcome=null;pending=null;formDirty=false;$('#plan-change').hidden=true;activeDecision=null;editingVisit=null;exposureObserver?.disconnect();resetOriginChoices();writeInput(memory.query);document.body.classList.remove('has-plan');$('#result').hidden=true;$('#empty-result').hidden=true;$('#before-result').hidden=false;$('#conditions-panel').open=true;renderProgressSummary();renderMemory();toast(accountSession?.active?'현재 계정에 빈 여행을 저장해요. 로그인 전 기록은 유지했어요.':'이 브라우저의 새 여행 기록을 초기화했어요.');break;
+   case 'reset-all':if(!accountSession?.active)clearTravelMemory();memory=createTravelMemory();persist();clearRecovery();outcome=null;pending=null;formDirty=false;$('#plan-change').hidden=true;activeDecision=null;editingVisit=null;exposureObserver?.disconnect();resetOriginChoices();writeInput(memory.query);picksFromQuery(memory.query);foodByHand=false;handWhen=null;document.body.classList.remove('has-plan');$('#result').hidden=true;$('#empty-result').hidden=true;$('#before-result').hidden=false;$('#step-time').hidden=true;$('#step-intent').hidden=false;renderProgressSummary();renderMemory();toast(accountSession?.active?'현재 계정에 빈 여행을 저장해요. 로그인 전 기록은 유지했어요.':'이 브라우저의 새 여행 기록을 초기화했어요.');break;
   }
  }catch(error){toast(error.message);}
 });
@@ -687,6 +1022,7 @@ document.addEventListener('change',event=>{
  if(accountLocked())return;
  if(event.target.id==='meal-mode')syncScheduleFields();if(event.target.id==='progress-meal-mode')syncScheduleFields('progress-');
  if(event.target.matches('[name=preference],[name=avoid]')&&event.target.checked){const other=event.target.name==='preference'?'avoid':'preference';for(const input of $$('[name='+other+']'))if(input.value===event.target.value)input.checked=false;}
+ if(event.target.closest('#trip-form')&&(event.target.matches('[name=preference],[name=avoid]')||event.target.dataset.taste))picksFromForm(event.target);
  try{if(event.target.id==='save-consent'){if(accountSession?.active){renderMemory();return;}memory=setTravelConsent(memory,event.target.checked);if(memory.consent)persist();else clearTravelMemory();toast(memory.consent?'이 브라우저에 보관했어요.':'이 기기의 저장본을 지웠어요. 현재 화면은 유지돼요.');}
  if(event.target.id==='import-file')importFile(event.target.files[0]);}catch(error){toast(error.message);}
 });
@@ -697,18 +1033,40 @@ $('#map-zoom-in').addEventListener('click',()=>animateZoom(Math.min(3,mapZoom*1.
 $('#map-zoom-out').addEventListener('click',()=>animateZoom(Math.max(.7,mapZoom/1.3)));
 window.addEventListener('storage',event=>{if(event.key===TRAVEL_STORAGE_KEY||event.key===null){if(accountSession?.active){accountSession.invalidateGuestConsent();return;}memory.consent=false;toast('다른 탭에서 저장본이 바뀌었어요. 현재 작업은 유지하고 자동 저장을 멈췄어요.');if($('#memory-dialog').open)renderMemory();}});
 window.addEventListener('pagehide',()=>accountSession?.suspend());
+window.addEventListener('popstate',event=>{
+ const view=event.state?.pathView;if(!view||accountLocked())return;
+ closeTravelDialogs();
+ // 여행 중이거나 마친 여행에는 새 하루 고르기가 없어 결과에 머문다.
+ if(view==='result'||memory.progress){
+  if(view!=='result')history.replaceState({pathView:'result'},'');
+  if(memory.plan){clearRecovery();writeInput(memory.query);picksFromQuery(memory.query);renderResult();$('#result-title').focus({preventScroll:true});$('#result').scrollIntoView({behavior:'instant',block:'start'});}
+  return;
+ }
+ if($('#before-result').hidden){showChooser(view==='time'?2:1,{push:false});return;}
+ showStep(view==='time'?2:1,{push:false});
+});
+$('#require-food').addEventListener('change',()=>{foodByHand=true;});
+// 고르기 시간은 사용자가 폼에서 직접 고친 날짜·출발 시각을 따른다(고르기가 써 넣은 값은 세지 않는다).
+for(const id of ['trip-date','start-time'])$('#'+id).addEventListener('change',()=>{handWhen={date:$('#trip-date').value,start:$('#start-time').value};});
 window.addEventListener('pageshow',event=>{if(event.persisted)void accountSession?.resume();});
-window.addEventListener('resize',()=>{const map=$('[data-view=map]').getAttribute('aria-pressed')==='true';$('#timeline').hidden=innerWidth<=900&&map;$('#map-panel').style.display=innerWidth>900||map?'block':'none';if(memory.plan)renderMap();});
+window.addEventListener('resize',()=>{if(!memory.plan)return;if($('#map-dialog').open)renderMap();if(!$('#result').hidden)renderMapThumb(memory.plan);});
+// 출발지를 바꾸고 돌아오면 시간 고르기의 「어디에서 출발」 문구도 새로 쓴다.
+$('#origin-dialog').addEventListener('close',()=>{if(!$('#before-result').hidden&&!$('#step-time').hidden){applyChooser();renderTimeStep();}});
+// 건너뛰기 링크는 지금 보이는 첫 제목(고르기·결과·결과 없음)으로 간다.
+$('.skip').addEventListener('click',event=>{const target=['#result-title','#empty-title','#time-title','#chooser-title'].map(selector=>$(selector)).find(el=>el?.offsetParent);if(!target)return;event.preventDefault();target.focus();target.scrollIntoView({block:'start'});});
+// 휴대폰의 「지도로 보기」는 아래로 읽어 내려갈 때 비켜 주고, 위로 올라오면 다시 나온다.
+let lastScroll=scrollY;
+window.addEventListener('scroll',()=>{const y=scrollY;if(Math.abs(y-lastScroll)<12)return;$('.map-fab')?.classList.toggle('is-away',y>lastScroll&&y>200);lastScroll=y;},{passive:true});
 window.addEventListener('beforeunload',event=>{if(formDirty){event.preventDefault();event.returnValue='';}});
 try{const saved=loadTravelMemory();if(saved){memory=saved;restored=true;}}catch(error){toast(error.message);}
-writeInput(memory.query);renderExplore();
-$('#hero-place-count').textContent='가입 없이 시작 · 서울 종로권 실제 장소 '+TRAVEL_PLACES.length+'곳';
-const hero=TRAVEL_PLACES.find(p=>p.id==='bukchon-hanok'&&p.photo)||TRAVEL_PLACES.find(p=>p.photo);
-if(hero){$('#hero-photo').src=hero.photo.src;$('#hero-photo').alt=hero.photo.alt||hero.name;$('#hero-photo').hidden=false;$('#hero-credit').innerHTML=shortCredit(hero);}
-for(const slot of $$('[data-preset-photo]')){const place=placeMap.get(slot.dataset.presetPhoto);if(place?.photo)slot.innerHTML=photo(place);}
+writeInput(memory.query);renderExplore();picksFromQuery(memory.query);
+handWhen=memory.query.date>koreanDate(new Date().toISOString())?{date:memory.query.date,start:memory.query.startTime}:null;
+$('#hero-place-count').textContent='가입 없이 시작 · 서울 종로의 실제 장소 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳';
 $('#photo-credit-list').innerHTML=TRAVEL_PLACES.filter(p=>p.photo).map(p=>`<p class="photo-credit"><strong>${e(p.name)}</strong> · ${credit(p)}</p>`).join('');
 try{const response=await fetch('./assets/jongno-walking.json');if(!response.ok)throw Error('map unavailable');network=await response.json();routeLeg=createWalkingRouter(network);$('#load-status').textContent='실제 장소 '+TRAVEL_PLACES.length+'곳 · 지도 기반 예상 이동으로 비교해요.';}
 catch(error){$('#load-status').textContent='지도를 불러오지 못했어요. 위치 기반 추정으로 비교하며 실제 경로는 따로 확인해 주세요.';}
+mapLoaded();
+history.replaceState({pathView:memory.plan?'result':'intent'},'');
 // Startup must leave saved bytes untouched until the OAuth handoff is read.
 // Stored estimates remain a snapshot until an explicit planning action.
 restorePlan({snapshot:true});

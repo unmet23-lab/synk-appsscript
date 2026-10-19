@@ -1,11 +1,11 @@
-import { REAL_PLACES, REAL_META, REAL_CONDITION_CALENDAR } from './real-places.mjs?v=20261007-halfday1';
-import { createRealCourseUI } from './real-course-ui.mjs?v=20261007-halfday1';
-import { normalizeRealQuery, evaluateRealConditions } from './real-conditions.mjs?v=20261007-halfday1';
+import { REAL_PLACES, REAL_META, REAL_CONDITION_CALENDAR } from './real-places.mjs?v=20261019-hours';
+import { createRealCourseUI } from './real-course-ui.mjs?v=20261019-hours';
+import { normalizeRealQuery, evaluateRealConditions } from './real-conditions.mjs?v=20261019-hours';
 import {
   CATEGORIES, REAL_STORAGE_KEY, VISIT_REASONS, normalizeRealState, rankRealPlaces,
   readRealState, serializeRealState, mapLink, exportRealMemo, formatRealQuery,
   setRealReaction, setRealVisit, setRealCategoryPreference, clearRealFeedback,
-} from './real-guide.mjs?v=20261007-halfday1';
+} from './real-guide.mjs?v=20261019-hours';
 
 const $ = selector => document.querySelector(selector);
 const byId = new Map(REAL_PLACES.map(item => [item.id, item]));

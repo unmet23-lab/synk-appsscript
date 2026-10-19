@@ -79,8 +79,9 @@ export function normalizePlannerInput(value, { places } = {}) {
   if (!integer(restDurationMinutes, 5, 30)) fail('restDurationMinutes', '한 번 쉬는 시간은 5~30분으로 입력해 주세요.');
   const planningMode = value.planningMode === undefined ? 'day' : value.planningMode;
   if (!['day', 'remaining'].includes(planningMode)) fail('planningMode', '하루 일정 또는 남은 일정 중 계획 범위를 확인해 주세요.');
-  const minimumStops = planningMode === 'remaining' ? 1 : 2, stopCount = value.stopCount ?? 3;
-  if (!integer(stopCount, minimumStops, 5)) fail('stopCount', `희망 방문 수는 ${minimumStops}~5곳으로 골라 주세요.`);
+  // A one-hour outing may be a single place; a longer day still prefers two or more.
+  const stopCount = value.stopCount ?? 3;
+  if (!integer(stopCount, 1, 5)) fail('stopCount', '희망 방문 수는 1~5곳으로 골라 주세요.');
   const preferences = boolMap(value.preferences ?? {}, 'preferences');
   const requiredFeatures = boolMap(value.requiredFeatures ?? {}, 'requiredFeatures');
   const companions = normalizeCompanions(value.companions === undefined ? [] : value.companions, value.party.adults + value.party.children);
@@ -209,8 +210,8 @@ function companionUtility(stops, companions) {
     person.preferences.reduce((sum, row) => sum + Number(row.status === 'reflected') - Number(row.status === 'conflict'), 0) / person.preferences.length);
   return values.length ? { minimum: Math.min(...values), average: values.reduce((sum, value) => sum + value, 0) / values.length } : null;
 }
-function preferenceFeature(stops, key) {
-  const values = relevantStops(stops, key).map(stop => semanticFeature(stop.place, key));
+function preferenceFeature(stops, key, wanted, slots = stops.length) {
+  const relevant = relevantStops(stops, key), values = relevant.map(stop => semanticFeature(stop.place, key));
   if (!values.length) return null;
   if (Object.hasOwn(DETAIL_PREFERENCE_CATEGORIES, key)) {
     // Presence may be evidenced by one venue. Absence requires every relevant
@@ -218,9 +219,48 @@ function preferenceFeature(stops, key) {
     if (values.includes(true)) return 1;
     return values.every(value => value === false) ? 0 : null;
   }
+  if (['food', 'tea'].includes(key)) return Number(values.some(Boolean));
+  if (wanted === true) {
+    // A venue without the record never counts for the visitor, and a neutral
+    // extra stop never makes a fuller day look less like what was asked. A
+    // quality (not a kind of stop) stops paying after two venues, so far-apart
+    // look-alikes are not collected at the cost of walking.
+    const found = values.filter(value => value === true).length;
+    const room = key === 'culture' ? slots : relevant.length === stops.length ? Math.min(2, slots) : values.length;
+    return Math.min(1, found / Math.max(1, room));
+  }
+  // An avoided quality is compared only on fully recorded routes. Confirmed
+  // conflicts are penalized separately; a venue without the record is never a
+  // successful avoidance.
   if (values.some(value => value === null)) return null;
-  return ['food', 'tea'].includes(key) ? Number(values.some(Boolean)) : values.reduce((n, value) => n + Number(value), 0) / values.length;
+  return values.filter(Boolean).length / values.length;
 }
+// The visitor's picks on the first screen ("궁궐", "골목", "시장") name real kinds
+// of places. They arrive as planning settings, not trip input, and are checked
+// against sourced place records: a palace pick wants a palace, not any old site.
+function intentRules(value) {
+  if (!Array.isArray(value) || value.length > 6 || value.some(row => !plain(row) || !token(row.id)
+    || row.feature != null && !token(row.feature) || row.category != null && !CATEGORIES.includes(row.category) || row.feature == null && row.category == null)) fail('intents', '고른 것을 확인해 주세요.');
+  return value.map(row => ({ id: row.id, feature: row.feature ?? null, category: row.category ?? null }));
+}
+const servesIntent = (place, rule) => (!rule.category || place.category === rule.category) && (!rule.feature || place.features?.[rule.feature] === true);
+const intentsCovered = (stops, intents) => intents.filter(rule => stops.some(stop => servesIntent(stop.place, rule))).length;
+const longestLeg = (legs, returnLeg) => Math.max(0, ...legs.map(leg => leg.maxMinutes), returnLeg?.maxMinutes ?? 0);
+// Each quality the visitor asked for should appear at least once when it can.
+function chosenCoverage(stops, preferences) {
+  const wanted = preferences.filter(row => row.value === true);
+  if (!wanted.length) return null;
+  const covered = wanted.filter(row => relevantStops(stops, row.field).some(stop => semanticFeature(stop.place, row.field) === true));
+  return { share: covered.length / wanted.length, score: covered.reduce((n, row) => n + row.importance, 0) };
+}
+const MEAL_TIMES = [[690, 780], [1050, 1140]];
+// Minutes a meal starts away from the heart of lunch (11:30–13시) and dinner (17:30–19시).
+function offMealMinutes(stop) {
+  if (stop.place.category !== 'food') return 0;
+  const at = minutes(stop.arrivalTime);
+  return Math.min(...MEAL_TIMES.map(([from, to]) => at < from ? from - at : at > to ? at - to : 0));
+}
+const adjacentSame = (stops, category) => stops.some((stop, i) => i > 0 && stop.place.category === category && stops[i - 1].place.category === category);
 function walkingChecks(leg, placeId) {
   const reasons = [];
   if (leg.source === 'coordinate-distance-estimate') reasons.push('연결된 보행 길을 확인하지 못해 직선거리로 추정했어요. 실제 통행 가능한 경로를 확인해 주세요.');
@@ -309,8 +349,9 @@ function effectivePreferences(input, feedback, at) {
   return SEMANTIC_KEYS.filter(key => selected.has(key)).map(key => selected.get(key));
 }
 const scope = Object.freeze({ domain: 'PATH', workspace: 'path-real-planner', subject: 'local-visitor' });
-function policy(preferences) {
-  return { id: 'path-real-semantic', version: '2', purpose: 'choose-real-route',
+function policy(preferences, intents = []) {
+  const wanted = preferences.filter(row => row.value === true);
+  return { id: 'path-real-semantic', version: '3', purpose: 'choose-real-route',
     fields: SEMANTIC_KEYS.map(id => ({ id, kind: 'number', range: [0, 1] })),
     criteria: preferences.map(row => ({ id: row.field, field: row.field, feature: row.field, weight: row.importance, prefer: 'match' })),
     objectives: [
@@ -320,20 +361,37 @@ function policy(preferences) {
       { id: 'known-details', feature: 'knownRatio', range: [0, 1], weight: 0.3, prefer: 'higher' },
       { id: 'avoid-repeated-meals', feature: 'repeatedMeals', range: [0, 1], weight: 1.4, prefer: 'lower' },
       { id: 'avoid-adjacent-meals', feature: 'adjacentMeals', range: [0, 1], weight: 1.2, prefer: 'lower' },
-      ...preferences.filter(row => row.value === false && Object.hasOwn(DETAIL_PREFERENCE_CATEGORIES, row.field)).map(row => ({
+      { id: 'avoid-repeated-cafes', feature: 'repeatedCafes', range: [0, 1], weight: 1, prefer: 'lower' },
+      { id: 'avoid-adjacent-cafes', feature: 'adjacentCafes', range: [0, 1], weight: 1.2, prefer: 'lower' },
+      { id: 'meal-at-meal-time', feature: 'offMealTime', range: [0, 1], weight: 0.8, prefer: 'lower' },
+      { id: 'short-longest-leg', feature: 'longestLeg', range: [0, 1], weight: 1, prefer: 'lower' },
+      // As heavy as the asked qualities themselves: one of each before more of one.
+      ...(wanted.length ? [{ id: 'include-each-chosen', feature: 'chosenCoverage', range: [0, 1], weight: wanted.reduce((n, row) => n + row.importance, 0), prefer: 'higher' }] : []),
+      ...(intents.length ? [{ id: 'include-each-pick', feature: 'intentCoverage', range: [0, 1], weight: 3 * intents.length, prefer: 'higher' }] : []),
+      // Every avoided quality except a whole kind of stop (food, tea, culture) is
+      // compared by confirmed conflicts, so an avoidance works without unknowns counting as success.
+      ...preferences.filter(row => row.value === false && !CATEGORIES.includes(row.field)).map(row => ({
         id: `avoid-known-${row.field}`, feature: `knownUnwanted-${row.field}`, range: [0, 1], weight: row.importance, prefer: 'lower',
       })),
     ] };
 }
-function routeFeatures(route, input, preferences) {
+function routeFeatures(route, input, preferences, intents = []) {
   const features = { walkRatio: Math.min(1, route.walking.maxMinutes / Math.max(1, input.maxWalkMinutes)), stopRatio: route.stops.length / input.stopCount,
+    longestLeg: Math.min(1, longestLeg(route.legs, route.returnLeg) / 60),
     waitRatio: Math.min(1, route.stops.reduce((n, stop) => n + stop.waitMinutes, 0) / 120), knownRatio: route.checks.filter(row => row.status === 'matched').length / Math.max(1, route.checks.length),
     repeatedMeals: Math.min(1, Math.max(0, route.stops.filter(stop => stop.place.category === 'food').length - 1) / 2),
-    adjacentMeals: Number(route.stops.some((stop, i) => i > 0 && stop.place.category === 'food' && route.stops[i - 1].place.category === 'food')) };
+    adjacentMeals: Number(adjacentSame(route.stops, 'food')),
+    repeatedCafes: Math.min(1, Math.max(0, route.stops.filter(stop => stop.place.category === 'tea').length - 1) / 2),
+    adjacentCafes: Number(adjacentSame(route.stops, 'tea')) };
+  // A chosen meal window is already a hard rule; with "any" a meal still belongs near mealtime.
+  if (input.meal.mode === 'any') features.offMealTime = Math.min(1, route.stops.reduce((n, stop) => n + offMealMinutes(stop), 0) / 180);
+  const coverage = chosenCoverage(route.stops, preferences);
+  if (coverage) features.chosenCoverage = coverage.share;
+  if (intents.length) features.intentCoverage = intentsCovered(route.stops, intents) / intents.length;
   for (const row of preferences) {
-    const value = preferenceFeature(route.stops, row.field);
+    const value = preferenceFeature(route.stops, row.field, row.value, input.stopCount);
     if (value !== null) features[row.field] = value;
-    if (row.value === false && Object.hasOwn(DETAIL_PREFERENCE_CATEGORIES, row.field)) {
+    if (row.value === false && !CATEGORIES.includes(row.field)) {
       // This policy counts confirmed unwanted venues. Zero is an absence of
       // confirmed conflicts, never a claim that unknown menus exclude the food.
       features[`knownUnwanted-${row.field}`] = Number(relevantStops(route.stops, row.field).some(stop => semanticFeature(stop.place, row.field) === true));
@@ -341,9 +399,9 @@ function routeFeatures(route, input, preferences) {
   }
   return features;
 }
-function rankRoutes(routes, input, preferences, at) {
-  const contract = policy(preferences);
-  const candidates = routes.map(route => ({ id: route.id, features: routeFeatures(route, input, preferences) }));
+function rankRoutes(routes, input, preferences, at, intents = []) {
+  const contract = policy(preferences, intents);
+  const candidates = routes.map(route => ({ id: route.id, features: routeFeatures(route, input, preferences, intents) }));
   const utilities = routes.map(route => companionUtility(route.stops, input.companions));
   if (utilities.some(Boolean)) {
     // Rank distinct utility levels, rather than guess a large constant weight.
@@ -427,7 +485,7 @@ function usefulQuestion({ primary, plans, input, preferences, eligible, at, sett
   const screened = Ask.rank({ questions, decide: answers => {
     if (!Object.keys(answers).length) return questionDecision(primary);
     const hypothetical = [...preferences, ...Object.entries(answers).map(([field, value]) => ({ field, value, importance: 3, at, sourceId: `hypothesis-${field}` }))];
-    return questionDecision(byId.get(rankRoutes(plans, input, hypothetical, at).selected?.id));
+    return questionDecision(byId.get(rankRoutes(plans, input, hypothetical, at, intentRules(settings.intents ?? [])).selected?.id));
   } });
   // Search pruning depends on preferences. Recompute both answer branches for
   // the displayed question so a preview is the exact plan applying that answer
@@ -450,13 +508,16 @@ function usefulQuestion({ primary, plans, input, preferences, eligible, at, sett
  * No model calls, network, storage, reservation or fabricated venue attributes.
  * The bounded beam is a product search policy, not a globally optimal route claim.
  */
-export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], routeLeg, calendar = REAL_CONDITION_CALENDAR, ask = true } = {}) {
+export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], routeLeg, calendar = REAL_CONDITION_CALENDAR, ask = true, intents: rawIntents = [] } = {}) {
+  const intents = intentRules(rawIntents);
   if (!Array.isArray(places) || places.length > 80 || places.some(place => !plain(place) || !token(place.id)) || new Set(places.map(place => place.id)).size !== places.length) fail('places', '장소 자료를 확인해 주세요.');
   const input = normalizePlannerInput(raw, { places }), at = clock(now), preferences = effectivePreferences(input, feedback, at);
   const requiredFeatures = combinedRequiredFeatures(input.requiredFeatures, input.companions);
   const today = new Date(Date.parse(at) + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
   if (input.date < today) fail('date', '지난 날짜로 새 여행 일정을 만들 수 없어요. 오늘 이후 날짜를 골라 주세요.');
-  const starts = minutes(input.startTime), ends = minutes(input.endTime), minimumStops = input.planningMode === 'remaining' ? 1 : 2, rejected = new Map(), unknown = new Map();
+  const starts = minutes(input.startTime), ends = minutes(input.endTime), rejected = new Map(), unknown = new Map();
+  // A day has two or more places unless the visitor asked for a single one.
+  const minimumStops = input.planningMode === 'remaining' ? 1 : Math.min(2, input.stopCount);
   const appointmentTimes = new Map(input.appointments.map(row => [row.placeId, minutes(row.time)]));
   const mandatoryIds = [...new Set([...input.lockedIds, ...appointmentTimes.keys()])];
   const record = (row, target = rejected) => { const key = `${row.kind}:${row.placeId ?? ''}:${row.reason}`; const previous = target.get(key); target.set(key, { ...row, count: (previous?.count ?? 0) + 1 }); };
@@ -489,90 +550,133 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
     return scheduleCache.get(key);
   };
   const finalRoutes = [];
-  const finishRoute = row => {
+  let explored = 0, walkingUncertainCandidates = 0;
+  const searchNote = (row, target = rejected) => { if (row.kind === 'walking' && target === unknown) walkingUncertainCandidates++; record(row, target); };
+  const quiet = () => {};
+  const finishRoute = (row, note = record) => {
     if (!input.destination) return { ...row, returnLeg: null };
     const from = row.stops.at(-1).place, leg = walkingLeg(from, input.destination);
     if (requiredFeatures.stepFree === true && leg.stepFreeVerified !== true) {
-      record(requiredWalkingCheck(leg, from.id, true), unknown); return null;
+      note(requiredWalkingCheck(leg, from.id, true), unknown); return null;
     }
     const walkMin = row.walkMin + leg.minMinutes, walkMax = row.walkMax + leg.maxMinutes;
     if (walkMax > input.maxWalkMinutes || input.maxLegWalkMinutes !== null && leg.maxMinutes > input.maxLegWalkMinutes) {
       const uncertain = walkMin <= input.maxWalkMinutes && (input.maxLegWalkMinutes === null || leg.minMinutes <= input.maxLegWalkMinutes);
-      record(check('walking.return', uncertain ? 'unknown' : 'unmatched', '마지막 도착지까지 이동하면 전체 또는 한 구간 걷기 상한을 넘어요.', { placeId: from.id }), uncertain ? unknown : rejected); return null;
+      note(check('walking.return', uncertain ? 'unknown' : 'unmatched', '마지막 도착지까지 이동하면 전체 또는 한 구간 걷기 상한을 넘어요.', { placeId: from.id }), uncertain ? unknown : rejected); return null;
     }
     const cursor = row.cursor + leg.maxMinutes;
-    if (cursor > ends) { record(check('destination.time', 'unmatched', '마지막 도착지까지 이동하면 여행 종료 시각을 넘어요.', { placeId: from.id })); return null; }
+    if (cursor > ends) { note(check('destination.time', 'unmatched', '마지막 도착지까지 이동하면 여행 종료 시각을 넘어요.', { placeId: from.id })); return null; }
     return { ...row, cursor, walkMin, walkMax,
       returnLeg: { ...leg, departureTime: time(row.cursor), arrivalTime: time(cursor) },
       checks: [...row.checks, ...walkingChecks(leg, from.id).map(row => ({ ...row, kind: 'route.return', reason: `마지막 도착지까지: ${row.reason}` }))] };
   };
-  let explored = 0, walkingUncertainCandidates = 0;
-  let beam = [{ stops: [], legs: [], checks: [], cursor: starts, knownAmount: 0, walkMin: 0, walkMax: 0, activeSincePause: 0 }];
+  // Append one visit to a partial route. The search and the stretching of a
+  // finished day share these walking, timing, opening-hours and budget rules;
+  // `note` receives each reason a visit was left out.
+  const visit = (partial, place, visitMinutes, note) => {
+    const info = placeInfo.get(place.id), from = partial.stops.at(-1)?.place ?? input.origin;
+    const leg = walkingLeg(from, place), walkMin = partial.walkMin + leg.minMinutes, walkMax = partial.walkMax + leg.maxMinutes;
+    if (requiredFeatures.stepFree === true && leg.stepFreeVerified !== true) {
+      note(requiredWalkingCheck(leg, place.id), unknown); return null;
+    }
+    if (walkMax > input.maxWalkMinutes) {
+      const uncertain = walkMin <= input.maxWalkMinutes;
+      note(check('walking', uncertain ? 'unknown' : 'unmatched', uncertain ? '도보 추정 상단이 걷기 상한을 넘어서 추천에서 뺐어요. 더 짧은 길을 확인해야 해요.' : '도보 추정 하단도 걷기 상한을 넘어요.'), uncertain ? unknown : rejected); return null;
+    }
+    if (input.maxLegWalkMinutes !== null && leg.maxMinutes > input.maxLegWalkMinutes) {
+      const uncertain = leg.minMinutes <= input.maxLegWalkMinutes;
+      note(check('walking.leg', uncertain ? 'unknown' : 'unmatched', `한 구간 예상 도보 ${leg.minMinutes}~${leg.maxMinutes}분이 한 번에 걷는 상한 ${input.maxLegWalkMinutes}분을 넘어서 제외했어요.`, { placeId: place.id }), uncertain ? unknown : rejected); return null;
+    }
+    let arrival = partial.cursor + leg.maxMinutes;
+    const firstArrival = arrival;
+    const appointment = appointmentTimes.get(place.id), mealWindow = place.category === 'food' && input.meal.mode === 'window';
+    const latestStart = mealWindow ? Math.min(ends, minutes(input.meal.endTime)) : ends;
+    let activeOnVisit = partial.activeSincePause + leg.maxMinutes, preStartPause;
+    // A fixed visit/meal start is an activity start, not the start of a rest.
+    // Explicitly put an already-due pause in the early-arrival waiting time;
+    // ordinary waiting never silently counts as a confirmed place to rest.
+    if ((appointment !== undefined || mealWindow) && input.restEveryMinutes !== null && activeOnVisit >= input.restEveryMinutes) {
+      preStartPause = { startTime: time(arrival), endTime: time(arrival + input.restDurationMinutes),
+        durationMinutes: input.restDurationMinutes, kind: 'planned-rest', locationStatus: 'unverified' };
+      arrival += input.restDurationMinutes; activeOnVisit = 0;
+    }
+    if (appointment !== undefined) {
+      if (arrival > appointment) { note(check('appointment.late', 'unmatched', preStartPause
+        ? `${place.name}에 도착한 뒤 필요한 휴식을 넣으면 ${time(appointment)} 예약 시각에 시작할 수 없어요.`
+        : `${place.name}의 ${time(appointment)} 예약 시각에 도착할 수 없어요.`, { placeId: place.id })); return null; }
+      arrival = appointment;
+    } else if (mealWindow) arrival = Math.max(arrival, minutes(input.meal.startTime));
+    if (arrival > latestStart) { note(check('meal.time', 'unmatched', preStartPause
+      ? '도착 후 필요한 휴식을 마치면 식사를 시작할 수 있는 시간대를 지나서 이 식당을 넣지 않았어요.'
+      : '식사를 시작할 수 있는 시간대를 지나서 이 식당을 넣지 않았어요.', { placeId: place.id })); return null; }
+    let stay = planStay(arrival, visitMinutes, activeOnVisit, input);
+    if (arrival + stay.duration > ends) { note(check('time', 'unmatched', '이동과 머무를 시간·쉬는 여유를 넣으면 종료 시각을 넘어요.')); return null; }
+    let operating = schedule(place, arrival, stay.duration);
+    if (operating.status === 'unmatched' && appointment === undefined) {
+      // Wait only for a sourced operating window; unknown schedules are never invented.
+      for (let later = arrival + 1; later <= Math.min(mealWindow ? latestStart : arrival + 120, ends - stay.duration); later += 1) {
+        const checked = schedule(place, later, stay.duration);
+        if (checked.status === 'matched') { arrival = later; operating = checked; break; }
+      }
+    }
+    if (operating.status === 'unmatched') { note(check('schedule', 'unmatched', operating.reason, { placeId: place.id })); return null; }
+    const knownAmount = partial.knownAmount + info.cost.knownAmount;
+    if (knownAmount > input.budget) { note(check('budget', 'unmatched', '표시 메뉴·일반 관람의 알려진 비용만으로 일행 예산을 넘어요.')); return null; }
+    const checks = [...partial.checks, ...info.checks, ...walkingChecks(leg, place.id), check('schedule', operating.status, operating.reason, { placeId: place.id }),
+      check('cost', info.cost.status, info.cost.unknowns.join(' ') || '일행의 일반 관람 표시 비용을 확인했어요.', { placeId: place.id })];
+    stay = planStay(arrival, visitMinutes, activeOnVisit, input);
+    if (preStartPause || stay.pauses.length) checks.push(check('rest-place', 'unknown', preStartPause
+      ? '도착 후 방문을 시작하기 전에 쉬는 시간을 따로 넣었어요. 대기 중 쉴 장소·좌석과 이용 가능 여부는 미확인이며, 방문 중 쉬는 시간도 별도로 표시해요.'
+      : '시설 안에서 쉴 여유를 일정에 더했어요. 좌석·쉼터·앉을 수 있는지는 미확인이며, 걷는 중 쉬는 간격을 넘으면 다음 장소에 도착한 뒤 쉬어요.', { placeId: place.id }));
+    const stop = { placeId: place.id, place, arrivalTime: time(arrival), departureTime: time(arrival + stay.duration), stayMinutes: stay.duration,
+      stayProvenance: 'estimated', waitMinutes: arrival - firstArrival, schedule: operating, cost: info.cost, reasons: [],
+      ...(preStartPause ? { preStartPause } : {}), ...(stay.pauses.length ? { pauses: stay.pauses } : {}) };
+    return { stops: [...partial.stops, stop], legs: [...partial.legs, { ...leg, departureTime: time(partial.cursor), arrivalTime: time(firstArrival) }],
+      checks, cursor: arrival + stay.duration, knownAmount, walkMin, walkMax, activeSincePause: stay.activeSincePause };
+  };
+  // A finished day keeps its places and order. When the chosen hours still have
+  // room, visits grow (museums and palaces most, meals least) up to a short
+  // closing margin and are checked again; whatever is left stays free time.
+  // A booked visit or a meal in a chosen window keeps the length it was planned with.
+  const margin = Math.min(30, Math.max(10, Math.floor((ends - starts) * 0.08 / 5) * 5));
+  const STRETCH = { culture: [0.5, 45], tea: [0.5, 30], food: [0.25, 20] };
+  const empty = { stops: [], legs: [], checks: [], cursor: starts, knownAmount: 0, walkMin: 0, walkMax: 0, activeSincePause: 0 };
+  const fixedLength = stop => appointmentTimes.has(stop.placeId) || stop.place.category === 'food' && input.meal.mode === 'window';
+  const relaxRoute = row => {
+    const spare = ends - margin - row.cursor;
+    if (input.planningMode !== 'day' || spare < 15) return row;
+    const bases = row.stops.map(stop => placeInfo.get(stop.placeId).duration);
+    const room = row.stops.map((stop, i) => {
+      if (fixedLength(stop)) return 0;
+      const [share, cap] = STRETCH[stop.place.category];
+      return Math.max(0, Math.min(cap, 240 - bases[i], Math.floor(bases[i] * share / 5) * 5));
+    });
+    const total = room.reduce((n, value) => n + value, 0);
+    if (!total) return row;
+    const order = room.map((value, i) => i).sort((a, b) => room[b] - room[a] || a - b);
+    for (const share of [1, 0.75, 0.5, 0.25]) {
+      // Hand out five-minute steps in turn, the roomiest visit first.
+      const extra = room.map(() => 0);
+      for (let steps = Math.floor(Math.min(spare, total) * share / 5), moved = true; steps > 0 && moved;) {
+        moved = false;
+        for (const i of order) if (steps > 0 && extra[i] + 5 <= room[i]) { extra[i] += 5; steps--; moved = true; }
+      }
+      if (!extra.some(Boolean)) break;
+      let rebuilt = empty;
+      for (const [i, stop] of row.stops.entries()) if (!(rebuilt = visit(rebuilt, stop.place, bases[i] + extra[i], quiet))) break;
+      if (rebuilt) rebuilt = finishRoute(rebuilt, quiet);
+      if (rebuilt && rebuilt.cursor <= ends - margin) return rebuilt;
+    }
+    return row;
+  };
+  let beam = [empty];
   for (let depth = 1; depth <= input.stopCount; depth++) {
     const next = [];
     for (const partial of beam) for (const place of eligible) {
       if (partial.stops.some(stop => stop.placeId === place.id)) continue;
       explored++;
-      const info = placeInfo.get(place.id), from = partial.stops.at(-1)?.place ?? input.origin;
-      const leg = walkingLeg(from, place), walkMin = partial.walkMin + leg.minMinutes, walkMax = partial.walkMax + leg.maxMinutes;
-      if (requiredFeatures.stepFree === true && leg.stepFreeVerified !== true) {
-        record(requiredWalkingCheck(leg, place.id), unknown); continue;
-      }
-      if (walkMax > input.maxWalkMinutes) {
-        const uncertain = walkMin <= input.maxWalkMinutes;
-        if (uncertain) walkingUncertainCandidates++;
-        record(check('walking', uncertain ? 'unknown' : 'unmatched', uncertain ? '도보 추정 상단이 걷기 상한을 넘어서 추천에서 뺐어요. 더 짧은 길을 확인해야 해요.' : '도보 추정 하단도 걷기 상한을 넘어요.'), uncertain ? unknown : rejected); continue;
-      }
-      if (input.maxLegWalkMinutes !== null && leg.maxMinutes > input.maxLegWalkMinutes) {
-        const uncertain = leg.minMinutes <= input.maxLegWalkMinutes;
-        record(check('walking.leg', uncertain ? 'unknown' : 'unmatched', `한 구간 예상 도보 ${leg.minMinutes}~${leg.maxMinutes}분이 한 번에 걷는 상한 ${input.maxLegWalkMinutes}분을 넘어서 제외했어요.`, { placeId: place.id }), uncertain ? unknown : rejected); continue;
-      }
-      let arrival = partial.cursor + leg.maxMinutes;
-      const firstArrival = arrival;
-      const appointment = appointmentTimes.get(place.id), mealWindow = place.category === 'food' && input.meal.mode === 'window';
-      const latestStart = mealWindow ? Math.min(ends, minutes(input.meal.endTime)) : ends;
-      let activeOnVisit = partial.activeSincePause + leg.maxMinutes, preStartPause;
-      // A fixed visit/meal start is an activity start, not the start of a rest.
-      // Explicitly put an already-due pause in the early-arrival waiting time;
-      // ordinary waiting never silently counts as a confirmed place to rest.
-      if ((appointment !== undefined || mealWindow) && input.restEveryMinutes !== null && activeOnVisit >= input.restEveryMinutes) {
-        preStartPause = { startTime: time(arrival), endTime: time(arrival + input.restDurationMinutes),
-          durationMinutes: input.restDurationMinutes, kind: 'planned-rest', locationStatus: 'unverified' };
-        arrival += input.restDurationMinutes; activeOnVisit = 0;
-      }
-      if (appointment !== undefined) {
-        if (arrival > appointment) { record(check('appointment.late', 'unmatched', preStartPause
-          ? `${place.name}에 도착한 뒤 필요한 휴식을 넣으면 ${time(appointment)} 예약 시각에 시작할 수 없어요.`
-          : `${place.name}의 ${time(appointment)} 예약 시각에 도착할 수 없어요.`, { placeId: place.id })); continue; }
-        arrival = appointment;
-      } else if (mealWindow) arrival = Math.max(arrival, minutes(input.meal.startTime));
-      if (arrival > latestStart) { record(check('meal.time', 'unmatched', preStartPause
-        ? '도착 후 필요한 휴식을 마치면 식사를 시작할 수 있는 시간대를 지나서 이 식당을 넣지 않았어요.'
-        : '식사를 시작할 수 있는 시간대를 지나서 이 식당을 넣지 않았어요.', { placeId: place.id })); continue; }
-      let stay = planStay(arrival, info.duration, activeOnVisit, input);
-      if (arrival + stay.duration > ends) { record(check('time', 'unmatched', '이동과 머무를 시간·쉬는 여유를 넣으면 종료 시각을 넘어요.')); continue; }
-      let operating = schedule(place, arrival, stay.duration);
-      if (operating.status === 'unmatched' && appointment === undefined) {
-        // Wait only for a sourced operating window; unknown schedules are never invented.
-        for (let later = arrival + 1; later <= Math.min(mealWindow ? latestStart : arrival + 120, ends - stay.duration); later += 1) {
-          const checked = schedule(place, later, stay.duration);
-          if (checked.status === 'matched') { arrival = later; operating = checked; break; }
-        }
-      }
-      if (operating.status === 'unmatched') { record(check('schedule', 'unmatched', operating.reason, { placeId: place.id })); continue; }
-      const knownAmount = partial.knownAmount + info.cost.knownAmount;
-      if (knownAmount > input.budget) { record(check('budget', 'unmatched', '표시 메뉴·일반 관람의 알려진 비용만으로 일행 예산을 넘어요.')); continue; }
-      const checks = [...partial.checks, ...info.checks, ...walkingChecks(leg, place.id), check('schedule', operating.status, operating.reason, { placeId: place.id }),
-        check('cost', info.cost.status, info.cost.unknowns.join(' ') || '일행의 일반 관람 표시 비용을 확인했어요.', { placeId: place.id })];
-      stay = planStay(arrival, info.duration, activeOnVisit, input);
-      if (preStartPause || stay.pauses.length) checks.push(check('rest-place', 'unknown', preStartPause
-        ? '도착 후 방문을 시작하기 전에 쉬는 시간을 따로 넣었어요. 대기 중 쉴 장소·좌석과 이용 가능 여부는 미확인이며, 방문 중 쉬는 시간도 별도로 표시해요.'
-        : '시설 안에서 쉴 여유를 일정에 더했어요. 좌석·쉼터·앉을 수 있는지는 미확인이며, 걷는 중 쉬는 간격을 넘으면 다음 장소에 도착한 뒤 쉬어요.', { placeId: place.id }));
-      const stop = { placeId: place.id, place, arrivalTime: time(arrival), departureTime: time(arrival + stay.duration), stayMinutes: stay.duration,
-        stayProvenance: 'estimated', waitMinutes: arrival - firstArrival, schedule: operating, cost: info.cost, reasons: [],
-        ...(preStartPause ? { preStartPause } : {}), ...(stay.pauses.length ? { pauses: stay.pauses } : {}) };
-      const row = { stops: [...partial.stops, stop], legs: [...partial.legs, { ...leg, departureTime: time(partial.cursor), arrivalTime: time(firstArrival) }],
-        checks, cursor: arrival + stay.duration, knownAmount, walkMin, walkMax, activeSincePause: stay.activeSincePause };
+      const row = visit(partial, place, placeInfo.get(place.id).duration, searchNote);
+      if (!row) continue;
       const missingLocks = mandatoryIds.filter(id => !row.stops.some(stop => stop.placeId === id));
       if (missingLocks.length > input.stopCount - depth) continue;
       if (missingLocks.some(id => appointmentTimes.has(id) && appointmentTimes.get(id) < row.cursor)) {
@@ -580,16 +684,19 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
       }
       const fulfilled = input.requiredCategories.filter(category => row.stops.some(stop => stop.place.category === category)).length;
       const preferenceFit = preferences.reduce((n, pref) => {
-        const value = preferenceFeature(row.stops, pref.field);
+        const value = preferenceFeature(row.stops, pref.field, pref.value, input.stopCount);
         const fit = value === null ? 0 : 1 - Math.abs(Number(pref.value) - value);
-        const knownConflict = pref.value === false && Object.hasOwn(DETAIL_PREFERENCE_CATEGORIES, pref.field)
+        const knownConflict = pref.value === false && !CATEGORIES.includes(pref.field)
           && relevantStops(row.stops, pref.field).some(stop => semanticFeature(stop.place, pref.field) === true);
         return n + (fit - Number(knownConflict)) * pref.importance;
       }, 0);
-      const repeatedMeals = Math.max(0, row.stops.filter(stop => stop.place.category === 'food').length - 1);
-      const adjacentMeal = row.stops.length > 1 && place.category === 'food' && row.stops.at(-2).place.category === 'food';
+      const covered = (chosenCoverage(row.stops, preferences)?.score ?? 0) + intentsCovered(row.stops, intents) * 3;
+      const count = category => row.stops.filter(stop => stop.place.category === category).length;
+      const adjacent = place.category !== 'culture' && row.stops.length > 1 && row.stops.at(-2).place.category === place.category;
+      const offMeal = input.meal.mode === 'any' ? Math.min(1, row.stops.reduce((n, stop) => n + offMealMinutes(stop), 0) / 180) : 0;
       row.companionUtility = companionUtility(row.stops, input.companions);
-      row.searchScore = preferenceFit + fulfilled + (mandatoryIds.length - missingLocks.length) * 2 - walkMax / 360 - (row.cursor - starts) / 1440 - repeatedMeals * 0.7 - Number(adjacentMeal) * 0.8;
+      row.searchScore = preferenceFit + covered + fulfilled + (mandatoryIds.length - missingLocks.length) * 2 - row.walkMax / 360 - longestLeg(row.legs) / 90 - (row.cursor - starts) / 1440
+        - Math.max(0, count('food') - 1) * 0.7 - Math.max(0, count('tea') - 1) * 0.6 - Number(adjacent) * 0.8 - offMeal * 0.6;
       next.push(row);
       if (depth >= minimumStops && !missingLocks.length && input.requiredCategories.every(category => row.stops.some(stop => stop.place.category === category))
         && (input.meal.mode !== 'window' || row.stops.some(stop => stop.place.category === 'food'))) {
@@ -606,15 +713,18 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
   // Final candidates from each depth are bounded too, independently of catalogue order.
   finalRoutes.sort((a, b) => (b.companionUtility?.minimum ?? 0) - (a.companionUtility?.minimum ?? 0)
     || (b.companionUtility?.average ?? 0) - (a.companionUtility?.average ?? 0) || b.searchScore - a.searchScore || a.cursor - b.cursor);
-  const unique = new Map();
+  const unique = new Map(), seen = new Set();
   // Reserve capacity for every length so cheap two-stop prefixes cannot crowd
   // all four/five-stop candidates out before Core evaluates the full plans.
   for (let length = minimumStops; length <= input.stopCount; length++) {
     let kept = 0;
     for (const row of finalRoutes.filter(row => row.stops.length === length)) {
-      const id = `route-${fingerprint([input, row.stops.map(stop => [stop.placeId, stop.arrivalTime])])}`;
+      const order = fingerprint(row.stops.map(stop => [stop.placeId, stop.arrivalTime]));
+      if (seen.has(order)) continue;
+      seen.add(order);
+      const relaxed = relaxRoute(row), id = `route-${fingerprint([input, relaxed.stops.map(stop => [stop.placeId, stop.arrivalTime])])}`;
       if (unique.has(id)) continue;
-      unique.set(id, { id, ...row });
+      unique.set(id, { id, ...relaxed });
       if (++kept >= 225) break;
     }
   }
@@ -643,7 +753,7 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
         notes: ['성인·아이 인원에 따른 일반 관람과 표시 메뉴만 비교해요. 교통·추가 주문·할인·예약 비용은 별도예요.'] },
       startTime: input.startTime, endTime: time(row.cursor), reasons: [], lockedIds: [...input.lockedIds], inputFingerprint: fingerprint(input) };
   });
-  const choice = rankRoutes(plans, input, preferences, at), byId = new Map(plans.map(route => [route.id, route]));
+  const choice = rankRoutes(plans, input, preferences, at, intents), byId = new Map(plans.map(route => [route.id, route]));
   for (const ranked of choice.ranked) {
     const route = byId.get(ranked.id); route.score = ranked.score;
     route.reasons = ranked.reasons.filter(reason => reason.contribution > 0).map(reason => `${PREFERENCE_LABELS[reason.field]} ${reason.value === 1 ? '선호' : '피하기'}를 확인된 장소 특성과 비교했어요.`);
@@ -654,6 +764,8 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
       stop.reasons = preferences.filter(pref => relevantStops([stop], pref.field).length && semanticFeature(stop.place, pref.field) === pref.value).map(pref => `${PREFERENCE_LABELS[pref.field]} ${pref.value ? '선호' : '피하기'} 반영`);
       if (appointmentTimes.has(stop.placeId)) stop.reasons.unshift(`${time(appointmentTimes.get(stop.placeId))} 예약 시각을 유지했어요.`);
       if (stop.place.category === 'food' && input.meal.mode === 'window') stop.reasons.push(`식사 시작 ${input.meal.startTime}~${input.meal.endTime} 안에 맞췄어요.`);
+      const visited = stop.stayMinutes - (stop.pauses ?? []).reduce((n, pause) => n + pause.durationMinutes, 0), planned = placeInfo.get(stop.placeId).duration;
+      if (visited > planned) stop.reasons.push(`고른 시간에 맞춰 ${visited - planned}분 더 머물게 잡았어요.`);
     });
   }
   const primary = choice.selected ? byId.get(choice.selected.id) : null, alternatives = [];
@@ -666,7 +778,7 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
       if (alternatives.length === 3) break;
     }
   }
-  const question = ask ? usefulQuestion({ primary, plans, input, preferences, eligible, at, settings: { places, feedback, routeLeg, calendar } }) : null;
+  const question = ask ? usefulQuestion({ primary, plans, input, preferences, eligible, at, settings: { places, feedback, routeLeg, calendar, intents } }) : null;
   if (!primary && !rejected.size && !unknown.size) record(check('combination', 'unmatched', `유지한 장소·필수 분야를 포함하는 ${minimumStops}곳 이상의 일정을 만들 수 없어요. 조건을 조정해 주세요.`));
   return { version: PLANNER_VERSION, status: primary?.status ?? 'unavailable', input, primary, alternatives, question,
     blocked: [...rejected.values()], unknowns: [...unknown.values()],
@@ -674,7 +786,7 @@ export function planTravel(raw, { places = TRAVEL_PLACES, now, feedback = [], ro
     engineAudit: { domainVersion: Domain.VERSION, travelVersion: Travel.VERSION, askVersion: Ask.VERSION, semanticPreferences: preferences,
       companionPolicy: { order: 'least-then-average-then-group-and-route', profiles: input.companions.length, rankedProfiles: input.companions.filter(person => Object.keys(person.preferences).length).length,
         normalization: 'one-person-one-normalized-utility', scope: 'bounded-search-candidates', calibration: false },
-      selectedId: primary?.id ?? null, decisionReasons: choice.selected?.reasons ?? [], calibrated: false, externalCalls: 0,
+      intents: intents.map(rule => rule.id), selectedId: primary?.id ?? null, decisionReasons: choice.selected?.reasons ?? [], calibrated: false, externalCalls: 0,
       reused: ['Core Domain', 'Core travel feasibility', 'Ask'], scope: 'Confirmed user preferences and sourced venue features; travel times are planning estimates.' } };
 }
 
@@ -750,9 +862,12 @@ export function replanRemainingTravel(raw, options = {}) {
   }, { places });
   if (!timeValid(currentTime) || minutes(currentTime) < minutes(input.startTime) || minutes(currentTime) >= minutes(input.endTime)) fail('currentTime', '현재 시각은 기존 시작 이후, 같은 날의 여행 종료 이전으로 입력해 주세요.');
   if (!integer(stopCount, 1, 5)) fail('stopCount', '앞으로 방문할 수는 1~5곳으로 골라 주세요.');
+  // A pick a completed visit already served is not chased again; preferences stay.
+  // A skipped place says nothing about the pick, so its kind may still come back.
+  const intents = intentRules(settings.intents ?? []).filter(rule => !completed.some(id => servesIntent(byId.get(id), rule)));
   return planTravel({ ...input, planningMode: 'remaining', startTime: currentTime, origin, budget: remainingBudget, maxWalkMinutes, stopCount,
     lockedIds: input.lockedIds.filter(id => !done.has(id)), excludedIds: [...new Set([...input.excludedIds, ...done])],
     appointments: input.appointments.filter(row => !done.has(row.placeId)),
     requiredCategories: input.requiredCategories.filter(category => !completedCategories.has(category)),
-  }, { ...settings, places });
+  }, { ...settings, places, intents });
 }

@@ -86,7 +86,7 @@ function validatePlan(plan, query) {
     || !token(plan.id) || !['ready', 'partial'].includes(plan.status) || !token(plan.inputFingerprint)
     || !time(plan.startTime) || !time(plan.endTime) || minute(plan.startTime) >= minute(plan.endTime)
     || plan.startTime !== query.startTime || minute(plan.endTime) > minute(query.endTime)
-    || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === 'remaining' ? 1 : 2) || plan.stops.length > query.stopCount
+    || !texts(plan.reasons) || !Array.isArray(plan.stops) || plan.stops.length < (query.planningMode === 'remaining' ? 1 : Math.min(2, query.stopCount)) || plan.stops.length > query.stopCount
     || !Array.isArray(plan.legs) || plan.legs.length !== plan.stops.length
     || Object.hasOwn(plan, 'score') && !Number.isFinite(plan.score)
     || Object.hasOwn(plan, 'label') && !text(plan.label, 160)) fail('저장된 여행안의 구조를 확인하지 못했어요. 현재 기록은 유지했어요.');

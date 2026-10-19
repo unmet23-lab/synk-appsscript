@@ -48,7 +48,7 @@ export function createServer({ port = 4303, accountConfigPath = new URL('./confi
     if (common) return send(200, common.body, common.type);
     let file = PUBLIC.get(pathname === '/' ? '/index.html' : pathname);
     if (!file && pathname.startsWith('/assets/') && ASSETS.has(pathname.slice(8))) file = new URL('.' + pathname, import.meta.url);
-    if (!file && (pathname === '/assets/jongno-walking.json' || /^\/assets\/places\/[a-z0-9-]+\.jpg$/.test(pathname))) file = new URL('.' + pathname, import.meta.url);
+    if (!file && (pathname === '/assets/jongno-walking.json' || /^\/assets\/places\/[a-z0-9-]+\.jpg$/.test(pathname) || /^\/assets\/felt\/[a-z0-9-]+\.webp$/.test(pathname))) file = new URL('.' + pathname, import.meta.url);
     if (!file) return send(404, { error: '찾을 수 없는 파일이에요.' });
     try { return send(200, await readFile(file), MIME[path.extname(file.pathname)]); }
     catch { return send(404, { error: '찾을 수 없는 파일이에요.' }); }

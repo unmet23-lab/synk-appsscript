@@ -1,0 +1,30 @@
+// 검수 지적 사례를 엔진으로 다시 돌린다: 피하기·하루 궁궐 걷기·월요일 궁궐·2시간 전시(한 곳)·2시간 시장.
+import { readFileSync } from 'node:fs';
+const root = process.argv[2] ?? 'file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/path-travel/';
+const { planTravel } = await import(root + 'planner.mjs');
+const { createWalkingRouter } = await import(root + 'walking-router.mjs');
+const routeLeg = createWalkingRouter(JSON.parse(readFileSync(new URL(root + 'assets/jongno-walking.json'), 'utf8')));
+const origin = { id: 'anguk', name: '안국역', lat: 37.5765, lon: 126.9854 };
+const now = '2026-10-19T03:00:00.000Z';
+const INTENT = { food: { category: 'food' }, tea: { category: 'tea' }, art: { feature: 'art' }, palace: { feature: 'palace' }, alley: { feature: 'hanok', category: 'culture' }, market: { feature: 'market' } };
+const PREF = { food: { food: true }, tea: { tea: true }, art: { art: true }, palace: { history: true, walk: true }, alley: { walk: true, outdoor: true }, market: { marketFood: true } };
+const run = (label, input, picks = []) => {
+  const intents = picks.map(id => ({ id, ...INTENT[id] }));
+  const r = planTravel({ origin, party: { adults: 1, children: 0 }, budget: 60000, ...input, preferences: { ...Object.assign({}, ...picks.map(id => PREF[id])), ...(input.preferences ?? {}) } }, { now, routeLeg, ask: false, intents });
+  const p = r.primary;
+  if (!p) return console.log(label, '→ 일정 없음', r.blocked.slice(0, 2).map(b => b.reason));
+  const legs = [...p.legs, ...(p.returnLeg ? [p.returnLeg] : [])].map(l => l.maxMinutes);
+  console.log(label, '→', p.stops.map(s => `${s.arrivalTime} ${s.place.name}`).join(' / '), `| 끝 ${p.endTime} | 걷기 ${p.walking.minMinutes}–${p.walking.maxMinutes} | 가장 긴 구간 ${Math.max(...legs)}분`);
+};
+run('화 10–15 4곳 고르지 않음', { date: '2026-10-20', startTime: '10:00', endTime: '15:00', stopCount: 4, maxWalkMinutes: 100 });
+run('화 10–15 4곳 미술 피하기', { date: '2026-10-20', startTime: '10:00', endTime: '15:00', stopCount: 4, maxWalkMinutes: 100, preferences: { art: false } });
+run('화 10–15 4곳 역사 피하기', { date: '2026-10-20', startTime: '10:00', endTime: '15:00', stopCount: 4, maxWalkMinutes: 100, preferences: { history: false } });
+run('화 하루 궁궐', { date: '2026-10-20', startTime: '10:00', endTime: '18:00', stopCount: 5, maxWalkMinutes: 150, requiredCategories: ['food'] }, ['palace']);
+run('화 하루 골목', { date: '2026-10-20', startTime: '10:00', endTime: '18:00', stopCount: 5, maxWalkMinutes: 150, requiredCategories: ['food'] }, ['alley']);
+run('월 3시간 궁궐', { date: '2026-10-19', startTime: '13:00', endTime: '16:00', stopCount: 3, maxWalkMinutes: 70 }, ['palace']);
+run('월 2시간 전시(한 곳)', { date: '2026-10-19', startTime: '13:00', endTime: '15:00', stopCount: 1, maxWalkMinutes: 50 }, ['art']);
+run('월 2시간 전시(두 곳까지)', { date: '2026-10-19', startTime: '13:00', endTime: '15:00', stopCount: 2, maxWalkMinutes: 50 }, ['art']);
+run('수 2시간 시장(한 곳)', { date: '2026-10-21', startTime: '12:00', endTime: '14:00', stopCount: 1, maxWalkMinutes: 50, requiredCategories: ['food'] }, ['market']);
+run('수 3시간 맛집+시장', { date: '2026-10-21', startTime: '11:30', endTime: '14:30', stopCount: 3, maxWalkMinutes: 70, requiredCategories: ['food'] }, ['food', 'market']);
+run('수 반나절 차+전시', { date: '2026-10-21', startTime: '12:30', endTime: '17:30', stopCount: 4, maxWalkMinutes: 100 }, ['tea', 'art']);
+run('수 하루 맛집+궁궐+차', { date: '2026-10-21', startTime: '10:00', endTime: '18:00', stopCount: 5, maxWalkMinutes: 150, requiredCategories: ['food'] }, ['food', 'palace', 'tea']);
