@@ -442,8 +442,8 @@ test('가져온 화면 복원이 실패하면 이전 여행과 저장본을 먼�
 
 // 하루 만들기의 확인 질문: 가짜 워커로 planThenAsk·startQuestionWorker를 돌린다. 메인은 질문 없이 한 번만 계산하고,
 // 워커를 못 쓰면 예전처럼 다음 프레임 뒤 메인에서 계산한다.
-function questionHarness({ refuseWorker = false } = {}) {
-  const h = harness(originalMemory, ['planThenAsk', 'askHere', 'attachQuestion', 'startQuestionWorker']);
+function questionHarness({ refuseWorker = false, functions = [] } = {}) {
+  const h = harness(originalMemory, ['planThenAsk', 'askQuestion', 'askHere', 'attachQuestion', 'startQuestionWorker', ...functions]);
   const workers = [], calls = [], renders = [], queue = [], warnings = [];
   class FakeWorker {
     constructor(url, options) { if (refuseWorker) throw new Error('blocked by policy'); Object.assign(this, { url, options, posted: [], listeners: {}, terminated: false }); workers.push(this); }
@@ -456,7 +456,7 @@ function questionHarness({ refuseWorker = false } = {}) {
   const question = { id: 'refine-indoor', about: 'indoor', options: [] };
   Object.assign(h.context, {
     Worker: FakeWorker, questionWorkerUrl: 'question-worker-url', questionToken: 0, questionWorker: null, questionAsked: null,
-    network: { sourceTimestamp: 'map-1' }, input: { date: '2026-10-21' }, settings: () => options,
+    network: { sourceTimestamp: 'map-1' }, routeLeg, input: { date: '2026-10-21' }, settings: () => options,
     planTravel: (input, settings) => { calls.push(settings); return settings.ask === false ? { primary: { id: 'plan-a' }, alternatives: [] } : { primary: { id: 'plan-a' }, alternatives: [], question }; },
     acceptResult: result => { h.context.outcome = result; }, renderEvidence: () => renders.push(h.context.outcome.question),
     requestAnimationFrame: callback => queue.push(callback), setTimeout: callback => queue.push(callback),
@@ -570,4 +570,165 @@ test('일정을 만들지 못하면 질문을 묻지 않는다', () => {
   assert.equal(q.workers.length, 0);
   assert.equal(q.queue.length, 0);
   assert.equal(q.calls.length, 1);
+});
+
+// 바꾸기 전 비교(빠른 변경·답하기·장소 넣기·바꾸기·남은 일정)도 질문 없이 계산하고, 받아들일 때 같은 시각·조건으로 워커에 묻는다.
+// 엔진은 부른 조건을 적는 가짜로 바꾸고, 결과는 실제 일정 모양을 써서 미리보기 화면 함수가 그대로 돈다.
+function previewHarness(options = {}) {
+  const p = questionHarness({ ...options, functions: ['readInput', 'writeInput', 'withoutQuestion', 'acceptChange', 'previewChange', 'adjust', 'progressPlaceIds', 'previewRemaining', 'collectProgress', 'progressOrigins', 'progressBaseQuery'] });
+  const engine = [];
+  // used: 엔진이 실제로 쓴 고른 것(engineAudit.intents). 남은 일정은 다녀온 곳이 채운 것을 뺀다.
+  const fake = (name, used) => (input, settings) => {
+    engine.push({ name, input: copy(input), settings });
+    const result = copy(originalResult);
+    result.primary.id = 'preview-plan'; result.input = { ...copy(input), checkedBy: name };
+    result.question = settings.ask === false ? null : { id: 'main-question' };
+    result.engineAudit = { intents: used ?? settings.intents.map(rule => rule.id) };
+    return result;
+  };
+  Object.assign(p.context, { planTravel: fake('planTravel'), replanTravel: fake('replanTravel'), replanRemainingTravel: fake('replanRemainingTravel'),
+    money: String, scheduleNote: () => '', companionSummary: () => '', renderRecovery: () => '', validateTravelMemory: () => {} });
+  const click = (prefix, dataset) => {
+    const line = source.split('\n').find(row => row.trim().startsWith(prefix));
+    assert.ok(line, prefix);
+    p.context.target = { dataset }; p.run(`(()=>{${line}})()`);
+  };
+  return { ...p, engine, fake, click };
+}
+// 진행 창: 첫 곳을 다녀왔다고 고르고 13:00 안국역에서 다시 출발한다.
+function fillProgress(p, completedId) {
+  for (const [id, value] of [['#progress-budget', '40000'], ['#progress-walk', '60'], ['#progress-time', '13:00'], ['#progress-end', '18:00'], ['#progress-origin', 'station:anguk'], ['#progress-stops', '2']]) p.get(id).value = value;
+  const select = p.context.$$;
+  p.context.$$ = selector => selector === '[data-progress-place]' ? [{ dataset: { progressPlace: completedId }, value: 'completed' }] : select(selector);
+}
+const firstStop = originalResult.primary.stops[0].placeId, inPlan = id => originalResult.primary.stops.some(stop => stop.placeId === id);
+const swapTo = TRAVEL_PLACES.find(place => place.category === TRAVEL_PLACES.find(row => row.id === firstStop).category && !inPlan(place.id) && place.dayPlannerEligible !== false);
+const addPlace = TRAVEL_PLACES.find(place => place.dayPlannerEligible !== false && place.category !== 'stay' && !inPlan(place.id));
+
+test('바꾸기 전 비교는 질문 없이 계산하고, 받아들이면 그때 같은 시각·조건으로 워커에 묻는다', () => {
+  const cases = [
+    ['빠른 변경', 'planTravel', p => p.run("adjust('less-walk')")],
+    ['답하기', 'planTravel', p => p.click('if(target.dataset.refine)', { refine: 'indoor', value: 'true' })],
+    ['장소 넣기', 'planTravel', p => { p.run('writeInput(memory.query)'); p.click('if(target.dataset.include)', { include: addPlace.id }); }],
+    ['바꾸기', 'replanTravel', p => p.click('if(target.dataset.replaceFrom)', { replaceFrom: firstStop, replaceTo: swapTo.id })],
+    ['남은 일정', 'replanRemainingTravel', p => { fillProgress(p, firstStop); p.run('previewRemaining()'); }],
+  ];
+  for (const [label, name, act] of cases) {
+    const p = previewHarness();
+    act(p);
+    assert.deepEqual(p.engine.map(row => [row.name, row.settings.ask]), [[name, false]], `${label}: 누를 때는 질문 없이 한 번만 계산한다`);
+    assert.equal(p.workers.length + p.queue.length, 0, `${label}: 미리보기 동안에는 묻지 않는다`);
+    assert.equal(p.read('pending.question'), null, label);
+    // 계정 화면을 오가면 미리보기를 복제하므로 적어 둔 조건에는 경로 함수가 없어야 한다.
+    assert.deepEqual(p.read('pending.questionLater'), { planId: 'preview-plan', now, feedback: p.options.feedback, routed: true, intents: p.options.intents }, label);
+    assert.doesNotThrow(() => structuredClone(p.context.pending), label);
+    // 「이 코스로 바꾸기」 누름 처리 그대로 받아들인다.
+    const accept = source.match(/case 'accept-change':([^]*?)break;/)?.[1];
+    assert.ok(accept); p.run(accept);
+    const [worker] = p.workers;
+    assert.deepEqual(worker.posted, [{ token: 1, input: p.read('outcome.input'), now, feedback: p.options.feedback, intents: p.options.intents, routed: true, mapStamp: 'map-1' }], label);
+    assert.equal(worker.posted[0].input.checkedBy, name, `${label}: 엔진이 정리한 조건(result.input)을 보낸다`);
+    assert.equal(p.queue.length, 0, `${label}: 받아들인 뒤에도 화면에서는 계산하지 않는다`);
+    worker.emit('message', { data: { token: 1, primaryId: 'preview-plan', question: p.question } });
+    assert.deepEqual(p.renders, [p.question], label);
+    assert.deepEqual(p.read('outcome.question'), p.question, label);
+    assert.deepEqual(p.warnings, [], label);
+  }
+});
+
+test('남은 일정 미리보기는 엔진이 실제로 쓴 고른 것만 적어 두고 그 조건으로 묻는다', () => {
+  const p = previewHarness();
+  p.options.intents.push({ id: 'palace', feature: 'palace' });
+  p.context.replanRemainingTravel = p.fake('replanRemainingTravel', ['palace']);
+  fillProgress(p, firstStop); p.run('previewRemaining()');
+  assert.equal(p.get('#progress-error').textContent, undefined, '남은 일정 비교가 오류 없이 끝난다');
+  assert.deepEqual(p.read('pending.questionLater.intents'), [{ id: 'palace', feature: 'palace' }]);
+  p.run('acceptChange()');
+  assert.deepEqual(p.workers[0].posted[0].intents, [{ id: 'palace', feature: 'palace' }]);
+  assert.equal(p.read('outcome.progress.completed[0].placeId'), firstStop, '진행 기록도 같이 받아들인다');
+});
+
+test('받아들인 뒤 다시 계산한 질문은 누를 때 계산하던 것과 같다 — 남은 일정은 다녀온 곳이 채운 고른 것을 빼고', () => {
+  // 차+궁궐 13–18시 4곳에서 운현궁을 다녀온 뒤 남은 일정. 궁궐을 빼지 않고 다시 계산하면 일정 id는 같은데 질문이 달라진다.
+  const intents = [{ id: 'tea', category: 'tea' }, { id: 'palace', feature: 'palace' }];
+  const day = planTravel({ ...query, startTime: '13:00', endTime: '18:00', stopCount: 4, preferences: { tea: true, history: true, walk: true } }, { now, intents, ask: false });
+  const stop = day.primary?.stops.find(row => row.placeId === 'unhyeongung');
+  assert.ok(stop, '엔진이 바뀌어 운현궁이 일정에 없다 — 궁궐을 채운 곳이 있는 다른 조건으로 바꿔야 한다');
+  const place = TRAVEL_PLACES.find(row => row.id === stop.placeId);
+  const remaining = settings => replanRemainingTravel(copy(day.input), { ...settings, completedIds: [stop.placeId], skippedIds: [], currentTime: stop.departureTime,
+    origin: { id: 'place:' + place.id, name: place.name, lat: place.coordinates.lat, lon: place.coordinates.lon }, remainingBudget: 50000, maxWalkMinutes: 100, stopCount: 2 });
+  const before = remaining({ now, feedback: [], intents });
+  assert.ok(before.primary && before.question, '질문이 나오는 조건이어야 대조가 된다');
+  const h = harness(originalMemory, ['withoutQuestion']);
+  Object.assign(h.context, { remaining, options: { now, feedback: [], routeLeg: null, intents } });
+  h.run('globalThis.preview=withoutQuestion(remaining,options)');
+  const later = h.read('preview.questionLater');
+  assert.deepEqual(later.intents, [{ id: 'tea', category: 'tea' }], '다녀온 운현궁이 채운 궁궐은 엔진이 뺀다');
+  assert.equal(later.routed, false);
+  assert.equal(h.read('preview.question'), null);
+  assert.equal(h.read('preview.primary.id'), before.primary.id);
+  const again = planTravel(h.read('preview.input'), { now: later.now, feedback: later.feedback, intents: later.intents, routeLeg: null });
+  assert.equal(again.primary.id, before.primary.id);
+  assert.deepEqual(again.question, before.question);
+  // 거르지 않으면 일정 id는 같아도 질문이 달라진다 — 화면의 일정 id 검사로는 막지 못한다.
+  const unfiltered = planTravel(h.read('preview.input'), { now, feedback: [], intents, routeLeg: null });
+  assert.equal(unfiltered.primary.id, before.primary.id);
+  assert.notDeepEqual(unfiltered.question, before.question);
+});
+
+test('다른 안을 받아들이면 새로 묻지 않고, 계정 화면을 오가며 복제된 미리보기는 받아들일 때 묻는다', () => {
+  const p = previewHarness();
+  p.run("adjust('later')"); p.run('acceptChange()');
+  const [worker] = p.workers;
+  worker.emit('message', { data: { token: 1, primaryId: 'preview-plan', question: p.question } });
+  // 받아들인 결과의 다른 안을 비교해 받아들인다: 적힌 일정(preview-plan)과 달라 묻지 않고 지금 결과의 질문을 그대로 가져간다.
+  p.context.outcome.alternatives = [{ ...copy(originalResult.primary), id: 'alternative-plan', label: '이동을 줄인 안' }];
+  p.click('if(target.dataset.alternative!==undefined)', { alternative: '0' });
+  assert.equal(p.read('pending.primary.id'), 'alternative-plan');
+  p.run('acceptChange()');
+  assert.equal(worker.posted.length, 1, '다른 안은 새로 묻지 않는다');
+  assert.equal(p.read('outcome.primary.id'), 'alternative-plan');
+  assert.deepEqual(p.read('outcome.question'), p.question);
+  // 계정 화면을 오가면 미리보기는 복제본으로 돌아온다(captureGuestDraft). 받아들이면 적어 둔 조건으로 묻는다.
+  p.run("adjust('less-cost')");
+  p.context.pending = structuredClone(p.context.pending);
+  p.run('acceptChange()');
+  assert.deepEqual(worker.posted.map(row => row.token), [1, 2]);
+  worker.emit('message', { data: { token: 2, primaryId: 'preview-plan', question: { id: 'cloned' } } });
+  assert.deepEqual(p.read('outcome.question'), { id: 'cloned' });
+  // 미리보기를 취소하면 묻지 않는다.
+  p.run("adjust('indoors')");
+  const cancel = source.match(/case 'cancel-change':([^]*?)break;/)?.[1];
+  assert.ok(cancel); p.run(cancel);
+  assert.equal(p.context.pending, null);
+  assert.equal(worker.posted.length, 2);
+});
+
+test('받아들인 뒤 워커를 못 쓰면 경로 함수까지 든 같은 조건으로 다음 프레임 뒤 화면에서 계산한다', () => {
+  const p = previewHarness({ refuseWorker: true });
+  p.click('if(target.dataset.refine)', { refine: 'indoor', value: 'false' });
+  p.run('acceptChange()');
+  assert.equal(p.queue.length, 1);
+  assert.equal(p.warnings.length, 1);
+  assert.match(p.warnings[0], /워커를 띄우지 못해/);
+  p.flush();
+  const last = p.engine.at(-1);
+  assert.equal(p.engine.length, 2);
+  assert.equal(last.input.checkedBy, 'planTravel', '엔진이 정리한 조건(result.input)으로 다시 계산한다');
+  assert.equal(last.settings.routeLeg, p.context.routeLeg, '지도를 썼으면 화면의 경로 함수로 계산한다');
+  assert.deepEqual(copy({ ...last.settings, routeLeg: null }), { now, feedback: p.options.feedback, intents: p.options.intents, routeLeg: null });
+  assert.deepEqual(p.renders, [{ id: 'main-question' }]);
+});
+
+test('일정이 없을 때 장소 넣기는 하루 만들기처럼 바로 받아들이고 워커에 묻는다', () => {
+  const p = previewHarness();
+  p.context.memory.plan = null;
+  p.run('writeInput(memory.query)');
+  p.click('if(target.dataset.include)', { include: addPlace.id });
+  assert.deepEqual(p.engine.map(row => [row.name, row.settings.ask]), [['planTravel', false]]);
+  assert.equal(p.context.pending, null);
+  assert.equal(p.read('outcome.primary.id'), 'preview-plan');
+  const [worker] = p.workers;
+  assert.equal(worker.posted.length, 1);
+  assert.ok(worker.posted[0].input.lockedIds.includes(addPlace.id));
 });

@@ -732,8 +732,25 @@ let questionToken=0,questionWorker=null,questionAsked=null;
 function planThenAsk(input){
  const options=settings(input),result=planTravel(input,{...options,ask:false}),token=++questionToken;
  acceptResult(result);
- if(!result.primary)return;
- const asked={token,input,options,result},worker=startQuestionWorker();
+ if(result.primary)askQuestion({token,input,options,result});
+}
+// 바꾸기 전 비교(빠른 변경·답하기·장소 넣기·바꾸기·남은 일정)도 질문 없이 계산해 바로 보인다. 미리보기는 질문을 쓰지 않고,
+// 받아들이면(acceptChange) 같은 시각·같은 조건으로 묻는다. 그 조건은 미리보기에 적어 둔다 —
+// 계정 화면을 오가면 미리보기를 복제하므로 경로 함수는 빼고 지도를 썼는지만 적는다.
+function withoutQuestion(plan,options){
+ const result=plan({...options,ask:false});
+ // 남은 일정은 다녀온 곳이 채운 고른 것을 엔진이 뺀다. 엔진이 실제로 쓴 것만 적어야 같은 일정·질문이 나온다.
+ if(result.primary)result.questionLater=structuredClone({planId:result.primary.id,now:options.now,feedback:options.feedback,routed:Boolean(options.routeLeg),intents:options.intents.filter(rule=>result.engineAudit.intents.includes(rule.id))});
+ return result;
+}
+// 다른 안 비교는 지금 결과를 펼쳐 일정만 바꾼 것이라 적힌 일정과 달라 새로 묻지 않는다(지금 결과의 질문을 그대로 가져간다).
+function acceptChange(){
+ const result=pending,later=result.questionLater;
+ acceptResult(result);
+ if(later?.planId===result.primary?.id)askQuestion({token:++questionToken,input:result.input,result,options:{now:later.now,feedback:later.feedback,intents:later.intents,routeLeg:later.routed?routeLeg:null}});
+}
+function askQuestion(asked){
+ const {token,input,options}=asked,worker=startQuestionWorker();
  // 지도 경로 함수는 넘길 수 없어 지도를 썼는지와 그 지도의 판만 알린다.
  if(worker)try{worker.postMessage({token,input,now:options.now,feedback:options.feedback,intents:options.intents,routed:Boolean(options.routeLeg),mapStamp:network?.sourceTimestamp??null});questionAsked=asked;return;}
  catch(error){console.warn('확인 질문을 워커에 보내지 못해 화면에서 계산해요.',error);}
@@ -814,7 +831,7 @@ function previewRemaining(event){
   for(const id of ['progress-budget','progress-walk'])if($('#'+id).value==='')throw new TypeError('남은 예산과 걷기 시간을 직접 입력해 주세요.');
   const progress=collectProgress(),origin=progressOrigins().find(row=>row.key===$('#progress-origin').value);
   const base=progressBaseQuery(progress);base.endTime=$('#progress-end').value;base.meal=readMeal('progress-');
-  const result=replanRemainingTravel(base,{...settings(),completedIds:progress.completed.map(row=>row.placeId),skippedIds:progress.skippedIds,currentTime:progress.currentTime,origin,remainingBudget:Number($('#progress-budget').value),maxWalkMinutes:Number($('#progress-walk').value),stopCount:Number($('#progress-stops').value)});
+  const result=withoutQuestion(options=>replanRemainingTravel(base,{...options,completedIds:progress.completed.map(row=>row.placeId),skippedIds:progress.skippedIds,currentTime:progress.currentTime,origin,remainingBudget:Number($('#progress-budget').value),maxWalkMinutes:Number($('#progress-walk').value),stopCount:Number($('#progress-stops').value)}),settings());
   if(!result.primary){$('#progress-error').textContent='현재 조건으로 남은 일정을 찾지 못했어요. 기존 일정과 진행 기록은 유지됩니다.';$('#progress-error').hidden=false;$('#progress-recovery').innerHTML=renderRecovery(result,progress);return;}
   validateTravelMemory({...memory,query:result.input,plan:result.primary,progress,updatedAt:progress.updatedAt},{now:now()});
   pending={...result,progress};$('#progress-dialog').close();
@@ -889,7 +906,7 @@ function adjust(kind){
  if(kind==='less-cost'){input.budget=Math.floor(input.budget*.75/1000)*1000;label='예산을 '+money(input.budget)+'으로 줄였어요.';}
  if(kind==='indoors'){input.preferences.indoor=true;input.preferences.outdoor=false;label='방문지는 실내를 우선했어요. 장소 사이 이동은 야외예요.';}
  if(kind==='later'){const t=Number(input.startTime.slice(0,2))*60+Number(input.startTime.slice(3))+30;input.startTime=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');label='출발을 30분 늦춰 다시 맞췄어요.';}
- try{previewChange(planTravel(input,settings(input)),label);}catch(error){toast(error.message);}
+ try{previewChange(withoutQuestion(options=>planTravel(input,options),settings(input)),label);}catch(error){toast(error.message);}
 }
 function renderVenueFacts(place){
  const items=place.menuItems??[],visit=place.visitInfo;if(!items.length&&!visit)return '';
@@ -992,11 +1009,11 @@ document.addEventListener('click',event=>{
   if(target.dataset.category){selectedCategory=target.dataset.category;$$('[data-category]').forEach(b=>{const selected=b===target;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});renderExplore();return;}
   if(target.dataset.lock){invalidatePreferencePreview();const id=target.dataset.lock,locks=memory.query.lockedIds;memory.query.lockedIds=locks.includes(id)?locks.filter(x=>x!==id):[...locks,id];memory.plan.lockedIds=[...memory.query.lockedIds];memory.plan.inputFingerprint=plannerInputFingerprint(memory.query);persist();renderResult();document.querySelector?.('[data-lock="'+id+'"]')?.focus();toast(memory.query.lockedIds.includes(id)?'다음 변경에서도 이곳을 유지할게요.':'유지 설정을 해제했어요.');return;}
   if(target.dataset.swap){if((memory.query.appointments??[]).some(row=>row.placeId===target.dataset.swap)){toast('시각을 고정한 장소예요. 여행 조건에서 예약·약속을 먼저 수정해 주세요.');return;}showSwap(target.dataset.swap);return;}
-  if(target.dataset.replaceFrom){if(progressPlaceIds().includes(target.dataset.replaceTo)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const result=replanTravel(memory.query,{...settings(),replace:{fromId:target.dataset.replaceFrom,toId:target.dataset.replaceTo}});$('#swap-dialog').close();previewChange(result,'장소를 바꾸고 전체 일정을 다시 맞췄어요.');return;}
-  if(target.dataset.include){const id=target.dataset.include;if(progressPlaceIds().includes(id)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const input=readInput();input.lockedIds=[...new Set([...input.lockedIds,id])];input.excludedIds=input.excludedIds.filter(x=>x!==id);$('#place-dialog').close();const result=planTravel(input,settings(input));if(memory.plan)previewChange(result,'선택한 장소를 포함한 여행안');else acceptResult(result);return;}
+  if(target.dataset.replaceFrom){if(progressPlaceIds().includes(target.dataset.replaceTo)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const result=withoutQuestion(options=>replanTravel(memory.query,{...options,replace:{fromId:target.dataset.replaceFrom,toId:target.dataset.replaceTo}}),settings());$('#swap-dialog').close();previewChange(result,'장소를 바꾸고 전체 일정을 다시 맞췄어요.');return;}
+  if(target.dataset.include){const id=target.dataset.include;if(progressPlaceIds().includes(id)){toast('완료·건너뛴 곳은 진행 상황에서 먼저 정정해 주세요.');return;}const input=readInput();input.lockedIds=[...new Set([...input.lockedIds,id])];input.excludedIds=input.excludedIds.filter(x=>x!==id);$('#place-dialog').close();if(memory.plan)previewChange(withoutQuestion(options=>planTravel(input,options),settings(input)),'선택한 장소를 포함한 여행안');else planThenAsk(input);return;}
   if(target.dataset.adjust){adjust(target.dataset.adjust);return;}
   if(target.dataset.alternative!==undefined){const p=outcome.alternatives[Number(target.dataset.alternative)];previewChange({...outcome,primary:p,alternatives:[memory.plan,...outcome.alternatives.filter(x=>x.id!==p.id)]},p.label);return;}
-  if(target.dataset.refine){const input=structuredClone(memory.query);input.preferences[target.dataset.refine]=target.dataset.value==='true';previewChange(planTravel(input,settings(input)),'답해주신 취향으로 다시 골랐어요.');return;}
+  if(target.dataset.refine){const input=structuredClone(memory.query);input.preferences[target.dataset.refine]=target.dataset.value==='true';previewChange(withoutQuestion(options=>planTravel(input,options),settings(input)),'답해주신 취향으로 다시 골랐어요.');return;}
   if(target.dataset.forgetPref){memory=removeTravelPreference(memory,target.dataset.forgetPref,{now:now()});invalidatePreferencePreview();persist();renderMemory();toast('이 취향을 다음 추천에서 빼었어요. 현재 일정은 유지해요.');return;}
   if(target.dataset.deleteVisit){memory=removeTravelVisit(memory,target.dataset.deleteVisit,{now:now()});invalidatePreferencePreview();persist();renderMemory();toast('방문 기록과 그 기록에서 확인한 취향을 지웠어요.');return;}
   if(target.dataset.editVisit){const visit=memory.visits.find(v=>v.id===target.dataset.editVisit);$('#memory-dialog').close();showPlace(visit.placeId);editingVisit=visit.id;$('#visit-rating').value=visit.rating;$$('[name=visit-reason]').forEach(c=>c.checked=visit.reasons.includes(c.value));$('#visit-form button').textContent='방문 경험 수정하기';return;}
@@ -1014,7 +1031,7 @@ document.addEventListener('click',event=>{
    case 'back-to-chooser':clearRecovery();$('#empty-result').hidden=true;$('#before-result').hidden=false;showStep(picks.length?2:1);break;
    case 'finish-trip':finishTrip();break;
    case 'open-memory':showMemory();break;
-   case 'accept-change':if(pending)acceptResult(pending);break;
+   case 'accept-change':if(pending)acceptChange();break;
    case 'cancel-change':clearRecovery();pending=null;$('#plan-change').hidden=true;if(memory.progress?.finished)restorePlan();break;
    case 'previous-plan':clearRecovery();$('#empty-result').hidden=true;writeInput(memory.query);picksFromQuery(memory.query);formDirty=false;renderResult();pushView('result');$('#result-title').focus({preventScroll:true});break;
    case 'new-day':showChooser(1);break;
