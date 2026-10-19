@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateReportContract} from './validate-report.mjs';
+import {validateResearchReport} from '../../docs/마케팅/온라인마케팅지도/engagement/company/creative-research.mjs';
+const at='2026-10-18T06:00:00.000Z';
+const entry=()=>({source:'youtube-trends',kind:'recent-video',title:'Synthetic page observation',sourceUrl:'https://www.youtube.com/watch?v=abcdefghijk',checkedAt:'2026-10-18T05:01:00.000Z',metrics:{views:12},research:{summary:'Synthetic summary',whyNow:'Existing public page checked in this run',brands:[],priority:'watch',observedFacts:[{text:'Page title was read'}],evidenceLevel:'page-read',limitations:'Video not played',publishedAt:null,applications:[]}});
+const report=()=>({schemaVersion:1,provider:'gemini-spark',reportId:'synk-creative-yt-tt-2026-10-18-140200',date:'2026-10-18',researchStartedAt:'2026-10-18T05:00:00.000Z',asOfAt:'2026-10-18T05:00:00.000Z',researchCompletedAt:'2026-10-18T05:02:00.000Z',entries:[entry()]});
+const validate=r=>validateReportContract(r,{validateResearchReport,role:'yt-tt',at});
+test('accepts strict canonical report without altering input',()=>{const r=report(),before=JSON.stringify(r);assert.deepEqual(validate(r),{valid:true,entries:1});assert.equal(JSON.stringify(r),before)});
+test('rejects actual failure shapes: renamed keys, omitted date, nested CTR',()=>{for(const mutate of [r=>{r.timeZone='Asia/Seoul'},r=>{delete r.date},r=>{r.entries[0].platform=r.entries[0].source;delete r.entries[0].source},r=>{r.entries[0].metrics.ctrTopPercent=99}]){const r=report();mutate(r);assert.throws(()=>validate(r))}});
+test('preserves time, identity, source and evidence safety checks',()=>{for(const mutate of [r=>{r.researchCompletedAt='2026-10-19T05:02:00.000Z'},r=>{r.entries.push(entry())},r=>{r.entries[0].sourceUrl='https://example.com/not-a-source'},r=>{r.entries[0].research.evidenceLevel='search-only'},r=>{r.entries[0].research.publishedAt='2026-10-17'}]){const r=report();mutate(r);assert.throws(()=>validate(r))}});
+test('rejects cross-role content without weakening valid app schema',()=>{const r=report();r.entries[0]={source:'facebook',kind:'reel',title:'Synthetic',sourceUrl:'https://www.facebook.com/reel/123456789',checkedAt:r.entries[0].checkedAt};assert.doesNotThrow(()=>validateResearchReport(r,{at}));assert.throws(()=>validate(r),/ROLE_MISMATCH/)});

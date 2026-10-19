@@ -21,13 +21,21 @@ WORK = HOME / 'work'
 BACKUPS = HOME / 'docs-backups'
 CONFIG = Path('/etc/synk-argon-77yuhbs/docs.json')
 GWS = '/opt/synk-google-workspace-cli/0.22.5-musl/bin/gws'
+REPORT_NODE = '/opt/synk-argon-77yuhbs/bin/node'
+REPORT_VALIDATOR = Path('/opt/synk-argon-77yuhbs/report-contract/validate-report.mjs')
 FIXED_DOCS = {
     'full': '10LfWPhwWO1Lzk8V_HddA0a5vVNJ0NVQXZgNyUplcwvk',
     'yt-tt': '1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI',
     'meta-brand': '1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ',
 }
-ROLES = frozenset((*FIXED_DOCS, 'synkbrief'))
+# Monday trend-scan collection (2026-10-19). Free-text Docs like synkbrief, but the
+# body is one JSON object + a final marker line so the Monday review can parse it.
+WEEKLY_ROLES = ('scan-lab', 'scan-ai', 'scan-platform')
+ROLES = frozenset((*FIXED_DOCS, 'synkbrief', *WEEKLY_ROLES))
 MARKER = 'SYNK_CREATIVE_RESEARCH_COMPLETE'
+WEEKLY_MARKER = 'SYNK_WEEKLY_SCAN_COMPLETE'
+WEEKLY_SOURCE_KINDS = frozenset(('공식', '보도', '업계', '내부'))
+WEEKLY_MAX_ITEMS = 150
 MAX_CONTENT = 1024 * 1024
 MAX_JSON_ARGUMENT = 120 * 1024  # Linux has a 128 KiB single-argument ceiling.
 
@@ -215,8 +223,40 @@ def content_file(filename):
     return text
 
 
+def validate_weekly(role, text):
+    """Light shape check only; the Monday review re-verifies every fact it uses."""
+    cleaned = text.rstrip('\n')
+    suffix = '\n' + WEEKLY_MARKER
+    if not cleaned.endswith(suffix):
+        raise Refused('MISSING_WEEKLY_COMPLETION_MARKER')
+    value = strict_json(cleaned[:-len(suffix)])
+    if not isinstance(value, dict) or type(value.get('schemaVersion')) is not int or value['schemaVersion'] != 1:
+        raise Refused('INVALID_SCHEMA_VERSION')
+    if value.get('kind') != 'synk-weekly-scan' or value.get('role') != role:
+        raise Refused('WEEKLY_KIND_OR_ROLE_MISMATCH')
+    week = value.get('weekOf')
+    if not isinstance(week, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', week):
+        raise Refused('WEEKLY_WEEK_OF_INVALID')
+    items = value.get('items')
+    if not isinstance(items, list) or not items or len(items) > WEEKLY_MAX_ITEMS:
+        raise Refused('WEEKLY_ITEMS_INVALID')
+    for item in items:
+        if not isinstance(item, dict):
+            raise Refused('WEEKLY_ITEM_NOT_OBJECT')
+        title, url = item.get('title'), item.get('url')
+        if not isinstance(title, str) or not title.strip() or len(title) > 400:
+            raise Refused('WEEKLY_ITEM_TITLE_INVALID')
+        if not isinstance(url, str) or not re.fullmatch(r'https?://\S{3,2000}', url):
+            raise Refused('WEEKLY_ITEM_URL_INVALID')
+        if item.get('sourceKind') not in WEEKLY_SOURCE_KINDS:
+            raise Refused('WEEKLY_ITEM_SOURCE_KIND_INVALID')
+
+
 def validate_creative(role, text):
     if role == 'synkbrief':
+        return
+    if role in WEEKLY_ROLES:
+        validate_weekly(role, text)
         return
     cleaned = text.rstrip('\n')
     suffix = '\n' + MARKER
@@ -233,6 +273,35 @@ def validate_creative(role, text):
     pattern = r'synk-creative-' + re.escape(role) + r'-\d{4}-\d{2}-\d{2}-\d{6}'
     if not isinstance(report, str) or not re.fullmatch(pattern, report):
         raise Refused('REPORT_ID_ROLE_OR_FORMAT_MISMATCH')
+    validate_workspace_contract(role, value)
+
+
+def validate_workspace_contract(role, value):
+    # Fail before the first Docs read/write. Reuse the application's actual
+    # strict validator; do not create a more permissive producer schema.
+    try:
+        result = subprocess.run(
+            [REPORT_NODE, str(REPORT_VALIDATOR), role], input=pack(value),
+            shell=False, capture_output=True, text=True, encoding='utf-8',
+            timeout=20, check=False, cwd=str(REPORT_VALIDATOR.parent),
+            env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8'})
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise Refused('WORKSPACE_REPORT_VALIDATOR_UNAVAILABLE') from exc
+    if len(result.stdout.encode('utf-8')) > 4096:
+        raise Refused('WORKSPACE_REPORT_VALIDATOR_RESPONSE_INVALID')
+    try:
+        outcome = strict_json(result.stdout)
+    except Refused as exc:
+        raise Refused('WORKSPACE_REPORT_VALIDATOR_RESPONSE_INVALID') from exc
+    if not isinstance(outcome, dict):
+        raise Refused('WORKSPACE_REPORT_VALIDATOR_RESPONSE_INVALID')
+    if result.returncode != 0 or outcome.get('valid') is not True:
+        diagnostic = outcome.get('error', '')
+        if not isinstance(diagnostic, str) or len(diagnostic) > 500 or re.search(r'[\x00-\x1f]', diagnostic):
+            diagnostic = 'INVALID_REPORT'
+        raise Refused('WORKSPACE_REPORT_CONTRACT_INVALID: ' + diagnostic)
+    if outcome.get('entries') != len(value['entries']):
+        raise Refused('WORKSPACE_REPORT_VALIDATOR_RESPONSE_INVALID')
 
 
 def backup_document(role, state, raw):
@@ -329,13 +398,19 @@ def write_document(role, target, filename, expected_revision):
 
 
 def main(argv):
-    if len(argv) not in (3, 5) or argv[1] not in ('read', 'snapshot', 'write'):
-        raise Refused('USAGE: read ROLE | snapshot ROLE | write ROLE CONTENT_FILE EXPECTED_REVISION')
+    if len(argv) not in (3, 4, 5) or argv[1] not in ('read', 'snapshot', 'validate', 'write'):
+        raise Refused('USAGE: read ROLE | snapshot ROLE | validate ROLE CONTENT_FILE | write ROLE CONTENT_FILE EXPECTED_REVISION')
     action, role = argv[1:3]
-    if (action in ('read', 'snapshot') and len(argv) != 3) or (action == 'write' and len(argv) != 5):
+    if (action in ('read', 'snapshot') and len(argv) != 3) or (action == 'validate' and len(argv) != 4) or (action == 'write' and len(argv) != 5):
         raise Refused('INVALID_ARGUMENT_COUNT')
     target = document_id(role)
-    if action == 'read':
+    if action == 'validate':
+        text = content_file(argv[3])
+        validate_creative(role, text)
+        value = {'status': 'content-validated', 'documentId': target,
+                 'sha256': sha(text), 'utf8Bytes': len(text.encode('utf-8')),
+                 'networkRequests': 0, 'writes': 0}
+    elif action == 'read':
         value = public(read_document(target)[0])
     elif action == 'snapshot':
         value = snapshot_document(role, target)

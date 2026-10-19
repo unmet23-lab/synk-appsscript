@@ -22,7 +22,8 @@ LOG_NAME = 'projects/' + PROJECT + '/logs/synk_argon_ops'
 METADATA_URL = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token'
 LOGGING_URL = 'https://logging.googleapis.com/v2/entries:write'
 UNITS = {'synk-argon-ultra-' + role + '.service': role
-         for role in ('full', 'yt-tt', 'meta-brand', 'synkbrief')}
+         for role in ('full', 'yt-tt', 'meta-brand', 'synkbrief',
+                      'scan-lab', 'scan-ai', 'scan-platform')}
 UNITS['synk-argon-alert-test.service'] = 'alert-test'
 RESULTS = {'success', 'resources', 'timeout', 'exit-code', 'signal', 'core-dump',
            'watchdog', 'start-limit-hit', 'protocol', 'exec-condition', 'oom-kill', 'unknown'}

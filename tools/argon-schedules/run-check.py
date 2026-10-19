@@ -3,7 +3,7 @@
 import json,os,sys,pathlib,datetime,subprocess,re,hashlib,stat,tempfile
 H=pathlib.Path('/var/lib/synk-argon-77yuhbs')
 role=sys.argv[2] if len(sys.argv)==3 else ''
-if role not in ('full','yt-tt','meta-brand','synkbrief'):raise SystemExit(2)
+if role not in ('full','yt-tt','meta-brand','synkbrief','scan-lab','scan-ai','scan-platform'):raise SystemExit(2)
 state=H/'run-status';state.mkdir(exist_ok=True,mode=0o700)
 log=H/'logs'/(role+'.stream.jsonl');err=H/'logs'/(role+'.stderr.log');record=state/(role+'.json')
 now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()

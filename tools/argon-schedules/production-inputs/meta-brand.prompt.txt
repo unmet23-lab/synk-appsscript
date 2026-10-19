@@ -6,10 +6,12 @@
 2. run_command로 /usr/bin/python3 /opt/synk-argon-77yuhbs/docs-io.py snapshot meta-brand 를 실행한다. 짧은 응답의 documentId/title/revisionId/sha256/contentPath를 보존하고 contentPath 파일을 view_file로 읽는다. 길면 view_file의 범위 읽기로 끝까지 확인한다. 동일 명령의 역할을 full/yt-tt/meta-brand/synkbrief로 바꾼 읽기는 이전 결과 중복 확인에만 사용한다. 다른 역할 문서에는 쓰지 않는다. 기존 본문의 줄바꿈 제어문자가 JSON을 깨면 이전 결과의 읽기 한계를 밝히고 원문은 도구 백업으로 보존한다.
 3. 공식 search_web와 read_url_content를 사용해 아래 품질계약대로 현재 원문을 조사한다. 도구가 받은 시스템 생성 content.md는 view_file로 확인한다. 실제 읽은 범위만 관찰로 보고한다. 검색 요약·색인에서만 본 항목은 확정 후보에서 제외하고 원문 확인 대기로 따로 쓴다. 서버의 Gemini 공식 도구를 사용하며 사용자 Chrome에서 봤다고 쓰지 않는다. 영상재생이나 계정별 자료를 확인할 도구가 없으면 그 한계를 쓰고 관찰을 만들지 않는다. shell HTTP/개인 로그인/보안경고 우회/새 브라우저 설치는 금지한다.
 4. 조사 후 실제 시각을 다시 읽고 결과를 write_to_file로 /var/lib/synk-argon-77yuhbs/work/meta-brand-result.txt 에 저장한다. UTF-8 일반 텍스트이며 본문 총량은 110 KiB 이하로 유지한다. 수량을 채우려고 근거와 품질을 줄이지 말고 양질의 적은 수를 고른다.
+4-1. [저장 전 실제 v1 검증] run_command로 /usr/bin/python3 /opt/synk-argon-77yuhbs/docs-io.py validate meta-brand /var/lib/synk-argon-77yuhbs/work/meta-brand-result.txt 를 실행한다. 이 명령은 네트워크·Docs 쓰기 없이 실제 Workspace의 엄격한 v1 스키마를 검사한다. content-validated가 아니면 기존 조사 시각·출처·수치·근거 수준을 보존하며 로컬 형식만 바로잡고 다시 검증한다. 새 관찰을 만들거나 허용 키·한도를 바꾸지 않는다. 완료하지 못하면 기존 Doc를 유지한다. 검증 통과한 같은 파일만 아래 write에 전달한다. 이 로컬 검증 교정은 외부 쓰기 재시도가 아니다.
 5. run_command로 /usr/bin/python3 /opt/synk-argon-77yuhbs/docs-io.py write meta-brand /var/lib/synk-argon-77yuhbs/work/meta-brand-result.txt '처음 읽은 revisionId' 를 실행한다. 이 고정 보조도구는 공식 gws로 지정 Doc만 쓰며, 기존본 백업·revision 충돌 방지·원자 저장·본문 재읽기 일치를 확인한다. 결과 status=saved-and-readback-verified 또는 unchanged와 반환 sha256을 확인한다. 충돌/거절/오류/불명확한 결과는 자동 재시도하지 않는다. 본문의 옛 재시도 문구보다 이 규칙이 우선한다.
 6. 최종 응답 첫 줄은 SYNK_RUN_COMPLETE: meta-brand : 반환된 실제 sha256 으로 쓴다. 그 아래 확인한 원문/새 후보수/제한을 짧게 적는다. 도구가 실패하면 SYNK_RUN_FAILED: meta-brand : 실제 사유로 시작하고 완료를 주장하지 않는다. 실제 조사 결과 새로 쓸 유효한 내용이 전혀 없으면 기존 문서를 보존하고 SYNK_RUN_NO_CHANGE: meta-brand 로 시작해 확인 범위·이유를 설명한다. 과거 결과를 시각만 바꿔 새 결과로 쓰지 않는다.
 
 저장 계약:
+필수 JSON 최상위는 schemaVersion/reportId/date/provider/researchStartedAt/asOfAt/researchCompletedAt/entries다. date는 실제 완료 시각의 한국 날짜다. timeZone/overallSummary/brandPlaybooks를 최상위에 추가하지 않는다. entries의 원문 종류 키는 source/kind이고 platform/sourceKind/id를 쓰지 않는다. 작성자 키는 creator다. metrics에는 views/likes/comments/shares/saves/reach만 두며 TikTok ctrTopPercent는 entry 최상위에 둔다. summary/whyNow/brands/priority/observedFacts/evidenceLevel/limitations/publishedAt/applications/productionGuide는 entry.research 안에 둔다. observedFacts는 문자열 배열이 아니라 {text,sourceUrl} 객체 배열이다. 아래 원문 계약의 제작 가이드와 applications 형식을 그대로 따른다. 재생하지 않은 컷·대사·타이밍은 관찰로 쓰지 않으며 실제 제공을 확인하지 않은 서비스는 신청 가능하다고 쓰지 않는다.
 JSON 객체 하나 + 실제 줄바꿈 + 마지막 줄 SYNK_CREATIVE_RESEARCH_COMPLETE만 쓴다. schemaVersion=1, provider=gemini-spark. reportId는 실제 완료 한국날짜/시각으로 synk-creative-meta-brand-YYYY-MM-DD-HHMMSS 형태다. 완전한 품질 스키마는 아래 본문을 따른다. JSON 코드 fence, 설명, VT/PUA 제어문자를 쓰지 않는다.
 Docs 저장·CLI 결과·systemd 상태로 결과를 남긴다. 실행 실패는 AI 없는 후처리에서 실패 상태로 기록한다. 기존 Gemini Task 대화에 자동 회신할 수 있다고 주장하지 않는다. 이메일/메신저/SNS 발송, 공개 게시, 권한/설정/서버 수정, 자격증명/토큰 파일 읽기, 새 스케줄/문서 생성은 금지한다. 내용은 아래 원문계약을 따르되 실행·저장 방법이 충돌하면 이 상단 계약을 우선한다.
 
@@ -319,3 +321,10 @@ SYNK_CREATIVE_RESEARCH_COMPLETE
 최종 Doc 전달은 일반 문단의 JSON 객체 하나 + 실제 줄바꿈 + 마지막 한 줄 SYNK_CREATIVE_RESEARCH_COMPLETE만 허용한다. Markdown fence·Google Docs 코드블록·제목·사람용 설명·PUA 문자를 본문에 넣지 않는다. CLI 최종 응답의 설명용 JSON 코드블록과 Doc 저장 형식을 혼동하지 않는다.
 
 저장 뒤 같은 전용 Doc의 실제 plain-text 본문을 다시 읽는다. 앞의 transport BOM은 별도 기록하고 첫 비공백 문자가 {인지, 마지막 비공백 줄이 정확한 완료 표식인지, PUA가 0인지 확인한다. 마지막 표식 한 줄을 분리한 앞부분을 JSON 객체 하나로 파싱하고 최종 객체의 reportId·실행시각·항목·문자열 escaping 의미가 동일한지 대조한다. 전역 unescape·PUA 임의 삭제·변환한 파생본을 실제 저장 성공 증거로 쓰지 않는다. 실제 저장, 재읽기 검증, 서버 수신, 직원 화면 반영을 각각 구분한다. 실패 시 기존 완료 Doc를 보존하고 실패 범위를 알린다. 저장 재시도는 기존 동일 payload/reportId/시각, 총3회/10분 한도를 그대로 따른다.
+
+[도구 규칙 · 2026-10-19 추가]
+- 이 실행은 사람이 없는 예약이라 허용 목록 밖의 도구를 쓰면 자동으로 거절되고, 거절된 뒤 빈 응답으로 끝나면 회차 전체가 실패로 기록된다.
+- 명령 실행은 이 지시문에 적힌 docs-io.py 명령과 date 명령만, 적힌 그대로 쓴다. python3 -c, cat, ls, grep, curl 같은 다른 명령은 쓰지 않는다.
+- 웹 페이지는 read_url_content로 읽는다. 이미 저장된 페이지 원문(.system_generated/steps/…/content.md)은 view_file로 필요한 줄만 본다. 스크립트로 파싱하지 않는다.
+- docs-io.py의 사용법이 필요하면 view_file로 /opt/synk-argon-77yuhbs/docs-io.py를 읽는다.
+- 어떤 도구가 거절되거나 실패하면 그 단계만 건너뛰고, 모은 근거로 결과 파일을 끝까지 쓴 뒤 이 지시문의 검증·저장 절차를 마친다. 거절이나 실패 때문에 빈 응답으로 끝내지 않는다.

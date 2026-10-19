@@ -15,7 +15,7 @@
     {
       "displayName": "Argon run or Docs verification failed",
       "conditionMatchedLog": {
-        "filter": "resource.type=\"gce_instance\"\nresource.labels.project_id=\"synk-bake-unmet27\"\nresource.labels.instance_id=\"8318146427425792493\"\nlog_id(\"synk_argon_ops\")\nseverity>=ERROR\njsonPayload.event=\"SYNK_ARGON_RUN_FAILED\"\n(jsonPayload.role=~\"^(full|yt-tt|meta-brand|synkbrief)$\" OR (jsonPayload.role=\"alert-test\" AND jsonPayload.test=true))",
+        "filter": "resource.type=\"gce_instance\"\nresource.labels.project_id=\"synk-bake-unmet27\"\nresource.labels.instance_id=\"8318146427425792493\"\nlog_id(\"synk_argon_ops\")\nseverity>=ERROR\njsonPayload.event=\"SYNK_ARGON_RUN_FAILED\"\n(jsonPayload.role=~\"^(full|yt-tt|meta-brand|synkbrief|scan-lab|scan-ai|scan-platform)$\" OR (jsonPayload.role=\"alert-test\" AND jsonPayload.test=true))",
         "labelExtractors": {
           "role": "EXTRACT(jsonPayload.role)",
           "error": "EXTRACT(jsonPayload.error)",

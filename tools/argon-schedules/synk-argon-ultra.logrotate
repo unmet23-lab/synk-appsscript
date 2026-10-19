@@ -11,7 +11,7 @@
     create 0600 synk-argon-ultra synk-argon-ultra
     sharedscripts
     prerotate
-        for role in full yt-tt meta-brand synkbrief validation; do
+        for role in full yt-tt meta-brand synkbrief scan-lab scan-ai scan-platform validation; do
             state=$(/usr/bin/systemctl show --property=ActiveState --value "synk-argon-ultra-$role.service")
             case "$state" in active|activating|deactivating) exit 1 ;; esac
         done

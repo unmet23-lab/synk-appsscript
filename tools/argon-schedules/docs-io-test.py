@@ -172,6 +172,74 @@ class DocsIoTest(unittest.TestCase):
             io.write_document('full', TARGET, self.path, 'r1')
         gws.assert_not_called()
 
+    def test_contract_rejection_preserves_previous_doc_without_network(self):
+        value = {'schemaVersion': 1, 'provider': 'gemini-spark', 'entries': [],
+                 'reportId': 'synk-creative-yt-tt-2026-10-18-140730', 'timeZone': 'Asia/Seoul'}
+        self.path.write_text(json.dumps(value) + '\n' + io.MARKER, encoding='utf-8', newline='')
+        rejected = subprocess.CompletedProcess([], 1, json.dumps({'valid': False, 'error': 'WRONG_SCHEMA'}), '')
+        with patch.object(io.subprocess, 'run', return_value=rejected) as child, \
+                self.assertRaisesRegex(io.Refused, 'WORKSPACE_REPORT_CONTRACT_INVALID'):
+            io.write_document('yt-tt', TARGET, self.path, 'r1')
+        self.assertEqual(child.call_count, 1)
+        self.assertEqual(child.call_args.args[0][0], io.REPORT_NODE)
+        self.assertNotIn('GOOGLE_WORKSPACE_CLI_CONFIG_DIR', child.call_args.kwargs['env'])
+
+    def weekly(self, **changes):
+        value = {'schemaVersion': 1, 'kind': 'synk-weekly-scan', 'role': 'scan-lab',
+                 'weekOf': '2026-10-19', 'generatedAt': '2026-10-19T01:00:00+09:00',
+                 'items': [{'title': '예시', 'url': 'https://www.youtube.com/shorts/abc',
+                            'sourceKind': '업계'}]}
+        value.update(changes)
+        return json.dumps(value, ensure_ascii=False) + '\n' + io.WEEKLY_MARKER
+
+    def test_weekly_scan_shape_passes_without_network_or_company_validator(self):
+        self.path.write_text(self.weekly(), encoding='utf-8', newline='')
+        with patch.object(io.subprocess, 'run') as child:
+            io.validate_creative('scan-lab', io.content_file(self.path))
+        child.assert_not_called()
+
+    def test_weekly_scan_rejects_bad_shapes_before_network(self):
+        bad = {
+            'MISSING_WEEKLY_COMPLETION_MARKER': self.weekly().replace(io.WEEKLY_MARKER, 'DONE'),
+            'WEEKLY_KIND_OR_ROLE_MISMATCH': self.weekly(role='scan-ai'),
+            'WEEKLY_WEEK_OF_INVALID': self.weekly(weekOf='10-19'),
+            'WEEKLY_ITEMS_INVALID': self.weekly(items=[]),
+            'WEEKLY_ITEM_URL_INVALID': self.weekly(items=[{'title': 'x', 'url': 'javascript:1', 'sourceKind': '공식'}]),
+            'WEEKLY_ITEM_SOURCE_KIND_INVALID': self.weekly(items=[{'title': 'x', 'url': 'https://a.b/c', 'sourceKind': 'blog'}]),
+        }
+        for code, text in bad.items():
+            self.path.write_text(text, encoding='utf-8', newline='')
+            with self.subTest(code=code), patch.object(io.subprocess, 'run') as gws, \
+                    self.assertRaisesRegex(io.Refused, code):
+                io.write_document('scan-lab', TARGET, self.path, 'r1')
+            gws.assert_not_called()
+
+    def test_weekly_roles_are_part_of_the_exact_config_role_set(self):
+        self.assertTrue(set(io.WEEKLY_ROLES) <= io.ROLES)
+        self.assertEqual(len(io.ROLES), 7)
+
+    def test_contract_validator_timeout_is_fail_closed(self):
+        with patch.object(io.subprocess, 'run', side_effect=subprocess.TimeoutExpired([], 20)), \
+                self.assertRaisesRegex(io.Refused, 'VALIDATOR_UNAVAILABLE'):
+            io.validate_workspace_contract('yt-tt', {'entries': []})
+
+    def test_contract_validator_malformed_or_wrong_count_is_fail_closed(self):
+        for output in ['not-json', '[]', '{"valid":true,"entries":1}', '{"valid":false}']:
+            with self.subTest(output=output), patch.object(io.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, output, '')), \
+                    self.assertRaises(io.Refused):
+                io.validate_workspace_contract('yt-tt', {'entries': []})
+
+    def test_validate_action_cannot_write_or_read_docs(self):
+        value = {'schemaVersion': 1, 'provider': 'gemini-spark', 'entries': [],
+                 'reportId': 'synk-creative-yt-tt-2026-10-18-140730'}
+        text = json.dumps(value) + '\n' + io.MARKER
+        self.path.write_text(text, encoding='utf-8', newline='')
+        with patch.object(io, 'validate_workspace_contract'), patch.object(io, 'document_id', return_value=TARGET), \
+                patch.object(io, 'run_gws') as gws, redirect_stdout(StringIO()) as output:
+            io.main(['docs-io.py', 'validate', 'yt-tt', str(self.path)])
+        gws.assert_not_called()
+        self.assertEqual(json.loads(output.getvalue())['sha256'], io.sha(text))
+
     def test_linux_argument_ceiling_refuses_before_write(self):
         self.path.write_text('가' * 42000, encoding='utf-8')
         fake = FakeGws()
