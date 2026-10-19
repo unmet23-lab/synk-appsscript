@@ -273,7 +273,12 @@ async function checkRepository(options, repo = process.cwd(), env = process.env)
   if (options.cached) {
     const known = base ? objectIds(git, base) : new Set();
     newIds = new Set(changes.map(row => row.oid).filter(oid => !known.has(oid)));
-  } else newIds = objectIds(git, `${base}..${head}`);
+  } else {
+    // Divergent histories can list the same blob in the range and the base.
+    // Count only new objects; keep all changed paths for alias policy checks.
+    const known = objectIds(git, base);
+    newIds = new Set([...objectIds(git, `${base}..${head}`)].filter(oid => !known.has(oid)));
+  }
   const info = objectInfo(git, [...newIds, ...changes.map(row => row.oid)]);
   const newBlobs = new Map([...newIds].filter(oid => info.get(oid).type === 'blob').map(oid => [oid, info.get(oid).bytes]));
   const exceptions = new Map();
