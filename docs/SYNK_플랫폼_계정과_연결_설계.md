@@ -11,7 +11,7 @@
 - **웹 계정 화면.** 공개본 `account/dist/platform.js`의 회원 성향 묶음을 0.4.30 동결 원천에서 다시 묶었다(0.4.29 원천으로 다시 묶으면 공개본과 바이트까지 같다). 바깥 코드는 9곳만 바꿨고, 되돌리면 공개본과 같다. `member-insight.css`와 `platform.html`의 `?v=` 두 값도 함께 바꿨다. 합성 회원 다섯 명 화면 26장과 설정 저장 흐름을 확인했다. Fable 검수(10-19)는 웹 후보·동결 원천·두 스위치 약속 모두 문제 없음이었다.
 - **공개.** 공개 `12b1a30`(16:23)이 세 설치파일·홈페이지 다운로드·feed와 계정 화면 세 파일을 한 커밋으로 전환했다(공개마다 CDN 캐시가 비워지니 두 번으로 나누지 않았다). 세 설치파일은 공개 주소에서 Range로 다시 받아 전체 바이트·SHA를 대조했고, synk.im 공개 파일 23/23개가 올린 바이트와 같았다. Pages 배포와 「synk.im 배포 점검」(39215652614·39215652835)이 통과했다. 실제 계정 화면 주소를 로그인 없이 넓은 창·휴대폰 폭으로 열어 새 번들·CSS가 `?v=`로 200이고 페이지·콘솔 오류가 0인 것을 봤다. 로그인한 실제 계정의 화면은 보지 않았다. PATH 면접 영상 14개는 캐시를 다시 채웠다(두 번째 읽기 모두 HIT). [공개 확인](../.tmp/member-insight-release-20261019/public-verification.json) · [릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.30).
 - **이 PC.** 앱이 꺼져 있어 앱 스스로의 자동 업데이트가 돌 수 없었다. 같은 공개 설치파일을 설치 엔진(창·실행 없음)으로 16:26에 넣고, payload 75개·원천 155개·ASAR·로그인 설정 지문과 보호 파일 4개가 그대로인 것을 확인했다. 앱은 켜지 않았다. 다른 기기의 실제 업데이트 완료를 뜻하지 않는다. [설치 확인](../.tmp/member-insight-release-20261019/native-update/installed-verification.json).
-- 남은 일은 master에 합치기다([트랙](_ops/트랙.md)). 증거는 `.tmp/member-insight-release-20261019/`.
+- master에는 10-19 `e241b2f77`로 합쳤다. 그때 문장 규칙은 atlas 압축 기준(한 제품만 쓰는 기능은 그 제품 폴더)에 따라 `experiences/synk-account/src/vellum-insight.cjs`로 옮겼다([트랙](_ops/트랙.md)). 증거는 `.tmp/member-insight-release-20261019/`.
 
 <a id="care-native-closed-20261018"></a>
 ## 2026-10-18 Chrome 완전 종료 뒤 플레저 PC 알림
