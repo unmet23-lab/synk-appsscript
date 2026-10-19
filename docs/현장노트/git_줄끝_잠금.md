@@ -294,6 +294,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 정리 목록에서 `git ls-files` 경로를 뺀다. 추적 파일이 정말 크면 지우지 말고 sparse-checkout으로 작업본에서만 뺀다. 폴더를 통째로 지우기 전에 그 안 어디에든 `.git`(폴더든 파일이든)이 있는지 보고, 있으면 그 아래는 빼고 따로 본다. 지워진 추적 파일은 `git status --porcelain | grep '^ D'` 목록을 `GIT_LITERAL_PATHSPECS=1 git restore --worktree --pathspec-from-file=<목록>`으로 되살린다(공용 인덱스는 그대로). 정리 기록(`removed*.jsonl`의 경로·sha256)이 있으면 바이트까지 맞춘다: 별도 인덱스(`read-tree HEAD`)의 `checkout-index`(체크아웃 판, autocrlf 적용)와 HEAD blob(LF) 가운데 기록된 해시와 같은 쪽을 쓴다(10-10 349개). 내용이 같아도 인덱스에 적힌 크기와 다르면 status가 ` M`으로 남으니, 지우기 직전 바이트 그대로 되살린다(`git ls-files --debug`의 size로 확인). 단 낡은 것을 일부러 없앤 정리라면 되살리지 않는다 — 정리 기록·커밋·진행 중인 GPT 작업으로 가리고, 헷갈리면 유호님께 여쭌다.
 - 다시 확인: 정리 뒤 `GIT_OPTIONAL_LOCKS=0 git ls-files --deleted | wc -l`이 0이다(10-17 0). 정리가 아직 돌고 있을 수 있으니 정리 기록 파일의 수정 시각이 멈췄는지도 본다.
 
+### `align.cjs`가 새 PC에 없다 — 갈라진 talk master는 `align_merge.py` 사본 + 이력 판 대조로
+- 증상: 10-19 talk 공용 작업본 master(`f8e3ba7`, 남의 미푸시 커밋 1개)를 origin/master에 맞추려는데, 위 절차의 `align.cjs`(side-session-notes)가 노트북 교체 뒤 없고 git 이력에도 없었다. 10-18 appsscript용 `align_merge.py`를 그대로 돌리면 3방향 「resolved」가 옛 줄과 새 줄을 섞고(synkbrief 문서 절 순서가 뒤엉킴), 미추적 사본 20개를 「살펴볼 경로」로 멈춘다.
+- 원인: `align_merge.py`는 OLD(로컬 master) 기준 3방향만 하고 「작업본이 이력 속 어느 판인지」를 보지 않는다. 공용 작업본에는 다른 세션의 옛 미추적 사본(origin 조상 판 그대로)과 GPT codex 가지 판이 섞여 있다.
+- 고침: appsscript `.tmp/talk-master-align-20261019/`에 `align_merge.py`(REPO·RESOLVE만 바꾼 사본, 계획만) → `analyze.py`(경로마다 작업본과 가장 가까운 이력 판: 0줄 차이 + origin 조상 = 옛 판 → 새 판, 0줄 + 다른 가지 = 그 가지 판 → 손대지 않음, 차이 있음 → 그 판 기준 3방향) → `analyze3.py`(작업본이 더한 줄이 새 판에 있는지) → 문서·`.jsonl`은 손으로 만든 미리보기(`resolve_dm_doc.py`, 장부는 줄 합집합) → `apply.py --check`/`--go`(경로별 결정 고정, 쓰기 직전 해시 재대조, 백업, 병합 커밋 `commit-tree T -p 로컬 -p origin`, `update-ref` CAS, 계획 경로만 `reset --pathspec-from-file`, 적용 뒤 수정·미추적 전부 sha256 대조). 계획 뒤 origin이 움직이면 승인 계획을 보관하고 다시 계획해 「달라진 경로」만 따로 보인다.
+- 다시 확인: 10-19 13:12 `f8e3ba7`→`d82c82e`(부모 로컬·`bd9dafa`, push 안 함), 199경로 중 쓰기 49·유지 150, 잃은 파일 0·계획 밖 변경 0·스테이징 0, synkbrief-dm 함수 파일이 운영 v68과 15/15 같음. 결과 `result.json`, 백업 `backup-20261019-131249/`.
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다
