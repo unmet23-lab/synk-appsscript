@@ -4,7 +4,7 @@
   "코드": "M02",
   "키": "M30sa",
   "이름": "태준",
-  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 장면 사진·학습은 아직 없음.",
+  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 10-19 데이터셋·LoRA 칸을 더함(추가컷 칸은 아직).",
   "기준파일": {
     "대표사진": "raw/M30-sexy-v3-1.png",
     "전신": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m02-fullbody-v1.webp"
@@ -81,6 +81,36 @@
       "내용": "흑발을 이마 쪽으로 흘러내리게 넘겨요."
     }
   ],
+  "데이터셋": {
+    "트리거": "pls_m02",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/M02_taejun/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (M02_taejun/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/M02_taejun/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (M02_taejun/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장(생성 19번)",
+      "장면": "C:/SYNK-LoRA/validation/M02_taejun/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/M02_taejun/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M02_taejun/job_config_v2.json",
+    "학습": "2026-10-19 17:35~22:07, 3,300스텝(19:10 재부팅으로 1,286스텝에서 멈춰 1,250 저장점부터 이어 감, 재부팅 뒤 GPU 전력 한도 84W라 스텝당 4.2초)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_m02",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m02_taejun_v2/m02_taejun_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m02_taejun_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m02, a Korean man, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-19, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 태준으로 보인다. 약한 칸: V08 전신(얼굴 104px라 눈이 작고 꺼지며 수염이 콧수염·턱수염으로 자라 대여섯 살 더 들어 보임 — 얼굴 다시 그리기로 고침), V09 밤 사무실 형광등(「focused expression」이 노트북을 내려다보는 눈이 되고 뺨에 점 십여 개·누런 피부·어두운 입술로 지쳐 보임). 옆얼굴 +60°로 진짜 옆얼굴에 가깝고 좌우 방향은 V02 왼쪽·V03 오른쪽은 따랐으나 V09는 왼쪽. 파란 해 질 녘 무표정(V07)·맨얼굴 플래시(V01)에서도 눈매·턱·머리가 유지됨. 1,286스텝에서 멈춰 1,250 저장점부터 이어 간 흔적 없음",
+      "검증표": "C:/SYNK-LoRA/validation/M02_taejun/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M02_taejun/verify_v2_jobs.json",
+      "주의": "수염은 안 적어도 10/10 나오고 역광·촛불에서 짙어지며 작은 얼굴에선 콧수염으로 자라니(V08) 깔끔한 컷은 clean-shaven, 기준대로면 short light stubble을 적고 턱·인중을 확인. 점이 뺨에 생기고(V06·V09) 창가 옆얼굴엔 땀방울이 맺히니(V03) 클로즈업은 clear smooth skin·dry matte skin을 적고 후보정. focused는 시선이 내려가니 eyes on the laptop screen처럼 대상을 적거나 looking at the camera, calm intense gaze로, squinting은 미간 주름이 따라오니 relaxed brow를 붙인다. 전신은 얼굴이 작아 눈이 꺼지니 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 좌우 방향은 대체로 따르지만 소품 쪽을 보고 45°는 15~17°에 그치니 각도를 잰다. 입술은 어두운 빛에서 적갈색으로 쏠려 muted rose-brown lips를 적는다. 자세한 판정 C:/SYNK-LoRA/validation/M02_taejun/v2_validate/Fable_판정.md"
+    }
+  },
   "목소리": [
     {
       "번호": 1,

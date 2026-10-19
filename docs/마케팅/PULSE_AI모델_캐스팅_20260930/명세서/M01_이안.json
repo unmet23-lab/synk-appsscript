@@ -4,7 +4,7 @@
   "코드": "M01",
   "키": "M20b",
   "이름": "이안",
-  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 장면 사진·학습은 아직 없음.",
+  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 10-19 데이터셋·LoRA 칸을 더함(추가컷 칸은 아직).",
   "기준파일": {
     "대표사진": "raw/M20-hero-b.png",
     "전신": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/m01-fullbody-v1.webp"
@@ -81,6 +81,36 @@
       "내용": "갈색 가운데 가르마 웨이브를 볼륨 있게 세워요."
     }
   ],
+  "데이터셋": {
+    "트리거": "pls_m01",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/M01_ian/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (M01_ian/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/M01_ian/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (M01_ian/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장(생성 19번)",
+      "장면": "C:/SYNK-LoRA/validation/M01_ian/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/M01_ian/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M01_ian/job_config_v2.json",
+    "학습": "2026-10-19 14시 무렵~17:30, 3,300스텝(유호 이어 학습·얼굴 다시 그리기 시험 때 두 번 멈췄다 저장점에서 이어 감)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_m01",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m01_ian_v2/m01_ian_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m01_ian_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m01, a young Korean man, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-19, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 이안으로 보인다. 약한 칸: V08 전신(얼굴 136px라 둥글고 눈이 작아지며 입술이 어두움 — 얼굴 다시 그리기로 고침), V09 밤 사무실 형광등(「focused expression」이 무거운 눈꺼풀·굵은 눈썹·넓은 턱으로 서너 살 더 들어 보임). 좌우 방향 지시를 따르고(V02 왼쪽, V03·V09 오른쪽) 옆얼굴은 +42° 반측면에 그침. 파란 해 질 녘 무표정(V07)·맨얼굴 플래시(V01)에서도 눈매·머리가 유지됨",
+      "검증표": "C:/SYNK-LoRA/validation/M01_ian/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M01_ian/verify_v2_jobs.json",
+      "주의": "굳은 표정(focused·serious)은 눈꺼풀이 무거워지고 턱이 넓어지니 시선 대상(eyes on the screen)과 slight smile을 적는다. 옆얼굴은 side profile만으로는 45°에 그치니 true 90-degree profile, only one eye visible로 적고 각도를 잰다(좌우 방향은 적은 대로 돎). 전신은 얼굴이 작아 둥글어지니 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 수염 자국은 안 적어도 늘 나오고 측광에서 짙어지며 눈썹이 기준보다 굵게 나오니 깔끔한 컷은 clean-shaven·soft natural eyebrows를 적고 후보정. 입술은 밝은 빛에서 분홍, 어두운 빛에서 적갈색으로 쏠려 muted rose-brown lips를 적는다. 자세한 판정 C:/SYNK-LoRA/validation/M01_ian/v2_validate/Fable_판정.md"
+    }
+  },
   "목소리": [
     {
       "번호": 1,
