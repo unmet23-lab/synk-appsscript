@@ -14064,6 +14064,345 @@ async function createLifeProgressPort({ accountId: id, client, guard, storage: c
   }
 }
 
+// experiences/synk-world-app/guest-trial.mjs
+var GUEST_TRIAL_GAMES = Object.freeze(["runner", "rhythm"]);
+var GUEST_TRIAL_KEY = "synk.world.guest-trial.v1";
+var trialObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var trialTime = (value) => Number.isSafeInteger(value) && value >= 0;
+var trialFail = (code, message) => Object.assign(new Error(message || code), { code });
+var trialClone = (value) => JSON.parse(JSON.stringify(value));
+function createGuestTrials({ storage = globalThis.localStorage, now = Date.now } = {}) {
+  const finished = /* @__PURE__ */ new Map();
+  function stored() {
+    try {
+      const value = JSON.parse(storage?.getItem(GUEST_TRIAL_KEY) || "null");
+      return trialObject(value) && value.version === 1 && trialObject(value.games) ? value.games : {};
+    } catch {
+      return {};
+    }
+  }
+  const used = (game) => GUEST_TRIAL_GAMES.includes(game) && (finished.has(game) || trialTime(stored()[game]?.finishedAt));
+  function finish(game) {
+    if (!GUEST_TRIAL_GAMES.includes(game)) throw TypeError("Unknown guest trial game");
+    if (used(game)) return false;
+    const at = now();
+    finished.set(game, at);
+    try {
+      storage?.setItem(GUEST_TRIAL_KEY, JSON.stringify({ version: 1, games: { ...stored(), [game]: { finishedAt: at } } }));
+    } catch {
+    }
+    return true;
+  }
+  return Object.freeze({ games: GUEST_TRIAL_GAMES, used, finish, open: () => GUEST_TRIAL_GAMES.filter((game) => !used(game)) });
+}
+function createGuestTrialPlayHost({ game, onRound = () => {
+}, signIn = () => {
+} } = {}) {
+  if (!GUEST_TRIAL_GAMES.includes(game)) throw TypeError("Unknown guest trial game");
+  const records = /* @__PURE__ */ new Map(), listeners = /* @__PURE__ */ new Set(), purse = emptyPlayState().wallet;
+  let stopped = false, used = false;
+  const check2 = () => {
+    if (stopped) throw trialFail("PLAY_SESSION_ENDED", "\uCCB4\uD5D8 \uD310 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694.");
+  };
+  const status = () => ({
+    accountId: null,
+    phase: stopped ? "stopped" : "guest",
+    trial: true,
+    game,
+    used,
+    pending: 0,
+    rejected: 0,
+    revision: 0,
+    canImport: false,
+    message: used ? "\uCCB4\uD5D8 \uD310\uC744 \uB9C8\uCCE4\uC5B4\uC694. \uAE30\uB85D\uACFC \uCF54\uC778\uC740 SYNK ID\uB85C \uB85C\uADF8\uC778\uD55C \uB4A4\uBD80\uD130 \uC800\uC7A5\uB3FC\uC694." : "\uCCB4\uD5D8 \uD310\uC774\uC5D0\uC694. \uAE30\uB85D\uACFC \uCF54\uC778\uC740 SYNK ID\uB85C \uB85C\uADF8\uC778\uD55C \uB4A4\uBD80\uD130 \uC800\uC7A5\uB3FC\uC694."
+  });
+  function emit() {
+    const value = status();
+    for (const fn of listeners) try {
+      fn(value);
+    } catch {
+    }
+  }
+  const storage = Object.freeze({
+    get length() {
+      check2();
+      return records.size + 1;
+    },
+    key(index) {
+      check2();
+      return [PLAY_WALLET_KEY, ...records.keys()][index] ?? null;
+    },
+    getItem(key) {
+      check2();
+      if (key === PLAY_WALLET_KEY) return JSON.stringify(purse);
+      if (!isPlayRecordKey(key)) throw trialFail("INVALID_PLAY_KEY");
+      return records.get(key) ?? null;
+    },
+    setItem(key, value) {
+      check2();
+      if (key === PLAY_WALLET_KEY || !isPlayRecordKey(key)) throw trialFail("INVALID_PLAY_KEY");
+      records.set(key, validatePlayValue(key, value));
+    },
+    removeItem(key) {
+      check2();
+      if (key === PLAY_WALLET_KEY || !isPlayRecordKey(key)) throw trialFail("INVALID_PLAY_KEY");
+      records.delete(key);
+    }
+  });
+  async function wallet(method, args = []) {
+    check2();
+    if (["awardMiniGame", "awardBeginnerPractice"].includes(method)) {
+      const round = args[0];
+      if (!used && trialObject(round) && round.game === game && round.automatic !== true) {
+        used = true;
+        try {
+          onRound({ game, round: trialClone(round) });
+        } catch {
+        }
+        emit();
+      }
+      return { coins: 0, reason: "guest-trial", saved: false, state: trialClone(purse), breakdown: [], newAchievements: [] };
+    }
+    return { ok: false, reason: "guest-trial", saved: false, state: trialClone(purse) };
+  }
+  return Object.freeze({
+    trial: true,
+    game,
+    status,
+    wallet,
+    ready: async () => {
+      check2();
+      return status();
+    },
+    retry: async () => status(),
+    flush: async () => status(),
+    storage: () => {
+      check2();
+      return storage;
+    },
+    snapshot: () => {
+      check2();
+      return { accountId: null, revision: 0, state: { wallet: trialClone(purse), records: Object.fromEntries(records), imported: false } };
+    },
+    hasLegacy: () => false,
+    importLegacy: async () => {
+      throw trialFail("PLAY_GUEST_TRIAL", "\uCCB4\uD5D8 \uD310\uC740 \uACC4\uC815\uC5D0 \uC62E\uAE30\uC9C0 \uC54A\uC544\uC694.");
+    },
+    resolve: async () => {
+      throw trialFail("PLAY_GUEST_TRIAL");
+    },
+    subscribe(fn) {
+      check2();
+      listeners.add(fn);
+      fn(status());
+      return () => listeners.delete(fn);
+    },
+    signIn() {
+      if (!stopped) signIn(game);
+    },
+    stop() {
+      if (stopped) return;
+      stopped = true;
+      emit();
+      listeners.clear();
+    }
+  });
+}
+
+// experiences/synk-world-app/device-records.mjs
+var HANGUL_DEVICE_KEY = "synk.hangul-stage.v1";
+var GUEST_LIFE_KEY = "synk.life-korean.progress.v1:guest";
+var DEVICE_RECORDS_KEY = "synk.world.device-records.v1";
+var RECORD_ANSWERS = /* @__PURE__ */ new Set(["new", "reads"]);
+var RECORD_VIA = /* @__PURE__ */ new Set(["question", "graduation", "skip", "unskip"]);
+var recordObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var recordTime = (value) => Number.isSafeInteger(value) && value >= 0;
+var recordEscape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function hangulAccountKey(status) {
+  if (!recordObject(status) || !/^[a-zA-Z0-9_.:-]{1,120}$/.test(String(status.accountKey)) || !Number.isInteger(status.revision)) return null;
+  return `synk.account.${status.accountKey}.r${status.revision}.hangul-stage.v1`;
+}
+function hangulProgressSummary(value) {
+  if (!recordObject(value) || value.v !== 1) return null;
+  const letters = recordObject(value.letters) ? Object.values(value.letters).filter(recordObject) : [];
+  const met = letters.filter((letter) => ["met", "learning", "mastered"].includes(letter.state)).length, mastered = letters.filter((letter) => letter.state === "mastered").length;
+  const graduated = recordObject(value.graduated), skipped = value.skipped === true, sessions = Array.isArray(value.sessions) ? value.sessions.length : 0;
+  return met || graduated || skipped || sessions ? { met, mastered, graduated, skipped, sessions } : null;
+}
+function readHangul(storage, key) {
+  const raw = storage.getItem(key);
+  if (raw === null) return null;
+  try {
+    return hangulProgressSummary(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+function deviceHangulAnswer(storage) {
+  try {
+    const value = JSON.parse(storage?.getItem(GUEST_LIFE_KEY) || "null"), hangul = value?.owner === "guest" ? value.hangul : null;
+    return recordObject(hangul) && hangul.version === 1 && RECORD_ANSWERS.has(hangul.answer) && RECORD_VIA.has(hangul.via) && recordTime(hangul.at) ? { answer: hangul.answer, via: hangul.via } : null;
+  } catch {
+    return null;
+  }
+}
+function planDeviceRecords({ storage = globalThis.localStorage, learning = null, accountAnswer = null } = {}) {
+  let device, answer, target, accountHas = false;
+  try {
+    device = readHangul(storage, HANGUL_DEVICE_KEY);
+    answer = deviceHangulAnswer(storage);
+    target = hangulAccountKey(learning);
+    if (target) accountHas = storage.getItem(target) !== null;
+  } catch {
+    return null;
+  }
+  if (device && !target) return null;
+  const hangul = device && !accountHas ? { from: HANGUL_DEVICE_KEY, to: target, summary: device } : null, moveAnswer = answer && !accountAnswer ? answer : null;
+  if (!hangul && !moveAnswer) return null;
+  return { hangul, answer: moveAnswer, kept: { hangul: !!device && accountHas, answer: !!answer && !!accountAnswer } };
+}
+async function applyDeviceRecords(plan, { storage = globalThis.localStorage, accountAnswer = () => null, setAccountAnswer }) {
+  const result = { hangul: null, answer: null, errors: [] };
+  if (plan?.hangul) {
+    try {
+      const raw = storage.getItem(plan.hangul.from);
+      if (storage.getItem(plan.hangul.to) !== null) result.hangul = "exists";
+      else if (raw === null || !readHangul(storage, plan.hangul.from)) result.hangul = "gone";
+      else {
+        storage.setItem(plan.hangul.to, raw);
+        result.hangul = "moved";
+      }
+    } catch (error2) {
+      result.errors.push(error2);
+    }
+  }
+  if (plan?.answer) {
+    try {
+      if (accountAnswer()) result.answer = "exists";
+      else {
+        await setAccountAnswer(plan.answer.answer, { via: plan.answer.via });
+        result.answer = "moved";
+      }
+    } catch (error2) {
+      result.errors.push(error2);
+    }
+  }
+  return result;
+}
+function deviceRecordsDecision(storage, accountId) {
+  try {
+    const value = JSON.parse(storage?.getItem(DEVICE_RECORDS_KEY) || "null"), accounts = recordObject(value) && value.version === 1 && recordObject(value.accounts) ? value.accounts : {};
+    const entry = Object.hasOwn(accounts, accountId) ? accounts[accountId] : null;
+    return recordObject(entry) && ["moved", "kept"].includes(entry.decision) ? entry.decision : null;
+  } catch {
+    return null;
+  }
+}
+function saveDeviceRecordsDecision(storage, accountId, decision, at = Date.now()) {
+  if (!["moved", "kept"].includes(decision)) throw TypeError("Invalid device records decision");
+  let accounts = {};
+  try {
+    const value = JSON.parse(storage.getItem(DEVICE_RECORDS_KEY) || "null");
+    if (recordObject(value) && value.version === 1 && recordObject(value.accounts)) accounts = value.accounts;
+  } catch {
+  }
+  try {
+    storage.setItem(DEVICE_RECORDS_KEY, JSON.stringify({ version: 1, accounts: { ...accounts, [accountId]: { decision, at } } }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+var DEVICE_RECORDS_TEXT = Object.freeze({
+  title: "\uD55C\uAE00 \uAE30\uB85D \uC774\uC5B4 \uAC00\uAE30",
+  lead: "\uC774 \uAE30\uAE30\uC5D0\uC11C \uD55C \uD55C\uAE00 \uAE30\uB85D\uC744 \uB0B4 \uACC4\uC815\uC5D0\uC11C \uC774\uC5B4 \uAC08\uAE4C\uC694?",
+  move: "\uB0B4 \uACC4\uC815\uC5D0\uC11C \uC774\uC5B4 \uAC00\uAE30",
+  keep: "\uCC98\uC74C\uBD80\uD130 \uD558\uAE30",
+  snapshot: "\uC9C0\uAE08 \uC9C4\uB3C4\uB9CC \uC62E\uACA8\uC694",
+  snapshotBody: "\uC9C0\uB098\uAC04 \uC5F0\uC2B5 \uD558\uB098\uD558\uB098\uAC00 \uC544\uB2C8\uB77C \uC9C0\uAE08 \uC0C1\uD0DC\uB9CC \uACC4\uC815\uC5D0 \uB2F4\uC544\uC694. \uC774 \uAE30\uAE30\uC758 \uC190\uB2D8 \uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC544\uC694.",
+  moving: "\uACC4\uC815\uC73C\uB85C \uC62E\uAE30\uACE0 \uC788\uC5B4\uC694.",
+  failed: "\uC62E\uAE30\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.",
+  moved: "\uD55C\uAE00 \uAE30\uB85D\uC744 \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
+  partly: "\uC62E\uAE38 \uC218 \uC788\uB294 \uD55C\uAE00 \uAE30\uB85D\uB9CC \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
+  kept: "\uACC4\uC815\uC740 \uCC98\uC74C\uBD80\uD130 \uC2DC\uC791\uD574\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB0A8\uC544 \uC788\uC5B4\uC694."
+});
+function hangulLine(summary) {
+  if (summary.graduated) return "\uC878\uC5C5\uD588\uC5B4\uC694";
+  const met = summary.met ? `\uAE00\uC790 ${summary.met}\uAC1C\uB97C \uB9CC\uB0AC${summary.mastered ? `\uACE0 ${summary.mastered}\uAC1C\uB97C \uC775\uD614` : ""}\uC5B4\uC694` : "";
+  return [met, summary.skipped ? "\uAC74\uB108\uB6F0\uAE30\uB97C \uACE8\uB790\uC5B4\uC694" : ""].filter(Boolean).join(" \xB7 ") || "\uC5F0\uC2B5\uC744 \uC2DC\uC791\uD588\uC5B4\uC694";
+}
+function describeDeviceRecords(plan) {
+  const rows2 = [];
+  if (plan?.hangul) rows2.push({ label: "\uD55C\uAE00 \uB9CC\uB098\uAE30", value: hangulLine(plan.hangul.summary) });
+  if (plan?.answer) rows2.push({ label: "\uCC98\uC74C \uACE0\uB978 \uB2F5", value: plan.answer.answer === "new" ? "\uD55C\uAE00\uC744 \uC544\uC9C1 \uBABB \uC77D\uC5B4\uC694" : "\uD55C\uAE00\uC744 \uC77D\uC744 \uC218 \uC788\uC5B4\uC694" });
+  const notes = [];
+  if (plan?.kept.hangul) notes.push("\uD55C\uAE00 \uB9CC\uB098\uAE30\uB294 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC9C4\uB3C4\uAC00 \uC788\uC5B4 \uACC4\uC815 \uC9C4\uB3C4\uB85C \uC774\uC5B4 \uAC00\uC694.");
+  if (plan?.kept.answer) notes.push("\uCC98\uC74C \uACE0\uB978 \uB2F5\uC740 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC788\uC5B4 \uACC4\uC815 \uAC83\uC744 \uC368\uC694.");
+  return { rows: rows2, notes };
+}
+function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningStatus = () => null, accountAnswer = () => null, setAccountAnswer, present, close, toast = () => {
+}, head = "", now = Date.now, defer = (fn) => setTimeout(fn, 0) }) {
+  const asked = /* @__PURE__ */ new Set();
+  let current = null;
+  function markup(plan) {
+    const T = DEVICE_RECORDS_TEXT, { rows: rows2, notes } = describeDeviceRecords(plan);
+    return `<div class="ws-signin"><div class="ws-signin-head"><p class="ws-lead">${recordEscape(T.lead)}</p>${head}</div><div class="world-notice" data-tone="ok" data-label="DEVICE"><strong>${rows2.map((row) => `${recordEscape(row.label)} \xB7 ${recordEscape(row.value)}`).join("<br>")}</strong><span>${recordEscape(T.snapshotBody)}</span></div>` + notes.map((note) => `<p class="dialog-note">${recordEscape(note)}</p>`).join("") + `<div class="world-actions"><button class="felt-button" data-world="device-records" data-choice="move">${recordEscape(T.move)}</button><button class="plain-button" data-world="device-records" data-choice="keep">${recordEscape(T.keep)}</button></div><p class="dialog-note" data-device-records-status role="status" aria-live="polite"></p></div>`;
+  }
+  function finish(job, value) {
+    if (current !== job) return;
+    current = null;
+    job.resolve(value);
+  }
+  function offer({ owner } = {}) {
+    if (typeof owner !== "string" || !owner || owner === "guest" || asked.has(owner) || deviceRecordsDecision(storage, owner)) return null;
+    let plan = null;
+    try {
+      plan = planDeviceRecords({ storage, learning: learningStatus(), accountAnswer: accountAnswer() });
+    } catch {
+      plan = null;
+    }
+    if (!plan) return null;
+    asked.add(owner);
+    return new Promise((resolve) => {
+      const job = { owner, plan, resolve, busy: false };
+      current = job;
+      present({ title: DEVICE_RECORDS_TEXT.title, html: markup(plan), onClose: () => finish(job, "dismissed") });
+    });
+  }
+  function done(job, value, message) {
+    finish(job, value);
+    close();
+    if (message) defer(() => toast(message));
+    return value;
+  }
+  async function choose(choice, { owner, status = () => {
+  } } = {}) {
+    const job = current;
+    if (!job || job.busy || !["move", "keep"].includes(choice)) return null;
+    if (owner !== job.owner) {
+      done(job, "dismissed");
+      return null;
+    }
+    job.busy = true;
+    if (choice === "keep") {
+      saveDeviceRecordsDecision(storage, job.owner, "kept", now());
+      return done(job, "kept", DEVICE_RECORDS_TEXT.kept);
+    }
+    status(DEVICE_RECORDS_TEXT.moving, true);
+    const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer });
+    if (current !== job) return null;
+    const moved = [result.hangul, result.answer].includes("moved");
+    if (result.errors.length && !moved) {
+      job.busy = false;
+      status(DEVICE_RECORDS_TEXT.failed, false);
+      return null;
+    }
+    saveDeviceRecordsDecision(storage, job.owner, "moved", now());
+    return done(job, "moved", result.errors.length || result.hangul === "exists" || result.answer === "exists" || !moved ? DEVICE_RECORDS_TEXT.partly : DEVICE_RECORDS_TEXT.moved);
+  }
+  return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
+}
+
 // experiences/synk-world-app/operating-mode.mjs
 function publicWorldConfig(value, base) {
   if (!value || !["rehearsal", "account"].includes(value.mode)) throw new TypeError("WORLD connection mode is required");
@@ -14603,6 +14942,10 @@ function createWorldAccount({
 }
 var export_worldLearning = import_game_browser2.default;
 export {
+  GUEST_TRIAL_GAMES,
+  createDeviceRecordsOffer,
+  createGuestTrialPlayHost,
+  createGuestTrials,
   createLifeProgressPort,
   createLocalWorldLearningHost,
   createWorldAccount,

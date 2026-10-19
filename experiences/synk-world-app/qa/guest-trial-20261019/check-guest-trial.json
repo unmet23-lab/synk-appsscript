@@ -1,0 +1,318 @@
+{
+ "checkedAt": "2026-10-19T10:28:15.265Z",
+ "mode": "account",
+ "syntheticAccount": true,
+ "liveProviderCalls": false,
+ "viewports": {
+  "390": {
+   "trial": {
+    "planStart": {
+     "selected": "world.play.runner",
+     "route": "game",
+     "excluded": []
+    },
+    "runnerLobby": {
+     "trial": true,
+     "mode": "account",
+     "note": "체험 판이에요. 한 판 해 보고, 기록과 코인은 로그인한 뒤부터 저장돼요.",
+     "coinLineHidden": true
+    },
+    "runnerResult": {
+     "trialClass": true,
+     "coins": "체험 판이라 코인은 쌓이지 않았어요",
+     "card": "기록을 남기려면 로그인해 주세요 이번 판은 체험이라 저장하지 않았어요. 로그인하면 다음 판부터 기록과 코인이 내 계정에 쌓여요.",
+     "cardShown": true,
+     "login": "SYNK ID로 로그인하기",
+     "room": true,
+     "replayShown": [],
+     "used": true,
+     "overflow": false
+    },
+    "trialKeyAfterRunner": {
+     "version": 1,
+     "games": {
+      "runner": {
+       "finishedAt": 1792405704303
+      }
+     }
+    },
+    "signInAfterRunner": {
+     "iframes": 0,
+     "lead": "바람길 체험 판을 마쳤어요. SYNK ID로 들어오면 기록과 코인이 이어져요",
+     "host": false
+    },
+    "planAfterRunner": {
+     "selected": "world.play.rhythm",
+     "route": "game",
+     "excluded": [
+      "world.play.runner"
+     ]
+    },
+    "runnerAgain": {
+     "iframes": 0,
+     "screen": "world-signin"
+    },
+    "rhythmLobby": {
+     "trial": true,
+     "mode": "account",
+     "note": "체험 판이에요. 한 곡 해 보고, 기록과 코인은 로그인한 뒤부터 저장돼요.",
+     "coinLineHidden": true
+    },
+    "rhythmResult": {
+     "trialClass": true,
+     "coins": "체험 판이라 코인은 쌓이지 않았어요",
+     "card": "기록을 남기려면 로그인해 주세요 이번 곡은 체험이라 저장하지 않았어요. 로그인하면 다음 곡부터 기록과 코인이 내 계정에 쌓여요.",
+     "cardShown": true,
+     "login": "SYNK ID로 로그인하기",
+     "room": true,
+     "replayShown": [],
+     "used": true,
+     "overflow": false
+    },
+    "planAfterBoth": {
+     "selected": "world.life.01.greetings",
+     "route": "lesson",
+     "excluded": [
+      "world.play.runner",
+      "world.play.rhythm"
+     ]
+    },
+    "afterBothPress": {
+     "screen": "life-lesson",
+     "lesson": "greetings-expressions"
+    },
+    "trialKey": {
+     "version": 1,
+     "games": {
+      "runner": {
+       "finishedAt": 1792405704303
+      },
+      "rhythm": {
+       "finishedAt": 1792405710002
+      }
+     }
+    },
+    "deviceCoins": null,
+    "accountCalls": 0,
+    "errors": [],
+    "external": []
+   },
+   "device": {
+    "choice": "move",
+    "guestPlan": {
+     "selected": "world.play.hangul",
+     "route": "game",
+     "excluded": []
+    },
+    "guestKey": "synk.hangul-stage.v1",
+    "guestSnapshot": {
+     "ids": [
+      "v-a",
+      "v-eo",
+      "v-o"
+     ],
+     "raw": "{\"v\":1,\"core\":\"hangul-core-2\",\"letters\":{\"v-a\":{\"state\":\"learning\",\"best\":\"learning\",\"streak\":1,\"streakSessions\":[\"check-session\"],\"step\":1,\"due\":\"2026-10-20T10:28:33.334Z\",\"lapses\":0,\"seen\":1,\"correct\":1,\"lastAt\":\"2026-10-19T10:28:33.334Z\",\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-eo\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-o\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"}},\"pairs\":{},\"recent\":[{\"ok\":true}],\"sessions\":[],\"difficulty\":1,\"trend\":0,\"amount\":10,\"skipped\":false,\"demoSeen\":[],\"wordStreak\":0,\"graduated\":null}"
+    },
+    "offer": {
+     "title": "한글 기록 이어 가기",
+     "text": "이 기기에서 한 한글 기록을 내 계정에서 이어 갈까요? 한글 만나기 · 글자 3개를 만났어요 처음 고른 답 · 한글을 아직 못 읽어요 지나간 연습 하나하나가 아니라 지금 상태만 계정에 담아요. 이 기기의 손님 기록은 지우지 않아요. 내 계정에서 이어 가기 처음부터 하기",
+     "owner": "11111111-1111-4111-8111-111111111111",
+     "entry": "offering"
+    },
+    "accountKey": "synk.account.local:11111111-1111-4111-8111-111111111111.r1.hangul-stage.v1",
+    "afterChoice": {
+     "panel": "tutor",
+     "hangulQuestion": 0,
+     "toast": "한글 기록을 내 계정으로 옮겼어요."
+    },
+    "accountHangul": "{\"v\":1,\"core\":\"hangul-core-2\",\"letters\":{\"v-a\":{\"state\":\"learning\",\"best\":\"learning\",\"streak\":1,\"streakSessions\":[\"check-session\"],\"step\":1,\"due\":\"2026-10-20T10:28:33.334Z\",\"lapses\":0,\"seen\":1,\"correct\":1,\"lastAt\":\"2026-10-19T10:28:33.334Z\",\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-eo\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-o\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"}},\"pairs\":{},\"recent\":[{\"ok\":true}],\"sessions\":[],\"difficulty\":1,\"trend\":0,\"amount\":10,\"skipped\":false,\"demoSeen\":[],\"wordStreak\":0,\"graduated\":null}",
+    "decision": {
+     "version": 1,
+     "accounts": {
+      "11111111-1111-4111-8111-111111111111": {
+       "decision": "moved",
+       "at": 1792405713904
+      }
+     }
+    },
+    "guestKept": "{\"v\":1,\"core\":\"hangul-core-2\",\"letters\":{\"v-a\":{\"state\":\"learning\",\"best\":\"learning\",\"streak\":1,\"streakSessions\":[\"check-session\"],\"step\":1,\"due\":\"2026-10-20T10:28:33.334Z\",\"lapses\":0,\"seen\":1,\"correct\":1,\"lastAt\":\"2026-10-19T10:28:33.334Z\",\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-eo\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"},\"v-o\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:33.334Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:33.334Z\"}},\"pairs\":{},\"recent\":[{\"ok\":true}],\"sessions\":[],\"difficulty\":1,\"trend\":0,\"amount\":10,\"skipped\":false,\"demoSeen\":[],\"wordStreak\":0,\"graduated\":null}",
+    "accountLifeHangul": {
+     "version": 1,
+     "answer": "new",
+     "at": 1792405713892,
+     "via": "question"
+    },
+    "accountStage": {
+     "hosted": true,
+     "key": "synk.account.local:11111111-1111-4111-8111-111111111111.r1.hangul-stage.v1",
+     "metLetters": 3
+    },
+    "askedAgain": 0,
+    "playWrites": [
+     "synk.life-korean.progress.v1"
+    ],
+    "errors": [],
+    "external": []
+   }
+  },
+  "1440": {
+   "trial": {
+    "planStart": {
+     "selected": "world.play.runner",
+     "route": "game",
+     "excluded": []
+    },
+    "runnerLobby": {
+     "trial": true,
+     "mode": "account",
+     "note": "체험 판이에요. 한 판 해 보고, 기록과 코인은 로그인한 뒤부터 저장돼요.",
+     "coinLineHidden": true
+    },
+    "runnerResult": {
+     "trialClass": true,
+     "coins": "체험 판이라 코인은 쌓이지 않았어요",
+     "card": "기록을 남기려면 로그인해 주세요 이번 판은 체험이라 저장하지 않았어요. 로그인하면 다음 판부터 기록과 코인이 내 계정에 쌓여요.",
+     "cardShown": true,
+     "login": "SYNK ID로 로그인하기",
+     "room": true,
+     "replayShown": [],
+     "used": true,
+     "overflow": false
+    },
+    "trialKeyAfterRunner": {
+     "version": 1,
+     "games": {
+      "runner": {
+       "finishedAt": 1792405721288
+      }
+     }
+    },
+    "signInAfterRunner": {
+     "iframes": 0,
+     "lead": "바람길 체험 판을 마쳤어요. SYNK ID로 들어오면 기록과 코인이 이어져요",
+     "host": false
+    },
+    "planAfterRunner": {
+     "selected": "world.play.rhythm",
+     "route": "game",
+     "excluded": [
+      "world.play.runner"
+     ]
+    },
+    "runnerAgain": {
+     "iframes": 0,
+     "screen": "world-signin"
+    },
+    "rhythmLobby": {
+     "trial": true,
+     "mode": "account",
+     "note": "체험 판이에요. 한 곡 해 보고, 기록과 코인은 로그인한 뒤부터 저장돼요.",
+     "coinLineHidden": true
+    },
+    "rhythmResult": {
+     "trialClass": true,
+     "coins": "체험 판이라 코인은 쌓이지 않았어요",
+     "card": "기록을 남기려면 로그인해 주세요 이번 곡은 체험이라 저장하지 않았어요. 로그인하면 다음 곡부터 기록과 코인이 내 계정에 쌓여요.",
+     "cardShown": true,
+     "login": "SYNK ID로 로그인하기",
+     "room": true,
+     "replayShown": [],
+     "used": true,
+     "overflow": false
+    },
+    "planAfterBoth": {
+     "selected": "world.life.01.greetings",
+     "route": "lesson",
+     "excluded": [
+      "world.play.runner",
+      "world.play.rhythm"
+     ]
+    },
+    "afterBothPress": {
+     "screen": "life-lesson",
+     "lesson": "greetings-expressions"
+    },
+    "trialKey": {
+     "version": 1,
+     "games": {
+      "runner": {
+       "finishedAt": 1792405721288
+      },
+      "rhythm": {
+       "finishedAt": 1792405726953
+      }
+     }
+    },
+    "deviceCoins": null,
+    "accountCalls": 0,
+    "errors": [],
+    "external": []
+   },
+   "device": {
+    "choice": "keep",
+    "guestPlan": {
+     "selected": "world.play.hangul",
+     "route": "game",
+     "excluded": []
+    },
+    "guestKey": "synk.hangul-stage.v1",
+    "guestSnapshot": {
+     "ids": [
+      "v-a",
+      "v-eo",
+      "v-o"
+     ],
+     "raw": "{\"v\":1,\"core\":\"hangul-core-2\",\"letters\":{\"v-a\":{\"state\":\"learning\",\"best\":\"learning\",\"streak\":1,\"streakSessions\":[\"check-session\"],\"step\":1,\"due\":\"2026-10-20T10:28:50.190Z\",\"lapses\":0,\"seen\":1,\"correct\":1,\"lastAt\":\"2026-10-19T10:28:50.190Z\",\"metAt\":\"2026-10-19T10:28:50.190Z\"},\"v-eo\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:50.190Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:50.190Z\"},\"v-o\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:50.190Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:50.190Z\"}},\"pairs\":{},\"recent\":[{\"ok\":true}],\"sessions\":[],\"difficulty\":1,\"trend\":0,\"amount\":10,\"skipped\":false,\"demoSeen\":[],\"wordStreak\":0,\"graduated\":null}"
+    },
+    "offer": {
+     "title": "한글 기록 이어 가기",
+     "text": "이 기기에서 한 한글 기록을 내 계정에서 이어 갈까요? 한글 만나기 · 글자 3개를 만났어요 처음 고른 답 · 한글을 아직 못 읽어요 지나간 연습 하나하나가 아니라 지금 상태만 계정에 담아요. 이 기기의 손님 기록은 지우지 않아요. 내 계정에서 이어 가기 처음부터 하기",
+     "owner": "11111111-1111-4111-8111-111111111111",
+     "entry": "offering"
+    },
+    "accountKey": "synk.account.local:11111111-1111-4111-8111-111111111111.r1.hangul-stage.v1",
+    "afterChoice": {
+     "panel": "tutor",
+     "hangulQuestion": 2,
+     "toast": "계정은 처음부터 시작해요. 이 기기의 기록은 그대로 남아 있어요."
+    },
+    "accountHangul": null,
+    "decision": {
+     "version": 1,
+     "accounts": {
+      "11111111-1111-4111-8111-111111111111": {
+       "decision": "kept",
+       "at": 1792405730749
+      }
+     }
+    },
+    "guestKept": "{\"v\":1,\"core\":\"hangul-core-2\",\"letters\":{\"v-a\":{\"state\":\"learning\",\"best\":\"learning\",\"streak\":1,\"streakSessions\":[\"check-session\"],\"step\":1,\"due\":\"2026-10-20T10:28:50.190Z\",\"lapses\":0,\"seen\":1,\"correct\":1,\"lastAt\":\"2026-10-19T10:28:50.190Z\",\"metAt\":\"2026-10-19T10:28:50.190Z\"},\"v-eo\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:50.190Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:50.190Z\"},\"v-o\":{\"state\":\"met\",\"best\":\"met\",\"streak\":0,\"streakSessions\":[],\"step\":0,\"due\":\"2026-10-19T10:28:50.190Z\",\"lapses\":0,\"seen\":0,\"correct\":0,\"lastAt\":null,\"metAt\":\"2026-10-19T10:28:50.190Z\"}},\"pairs\":{},\"recent\":[{\"ok\":true}],\"sessions\":[],\"difficulty\":1,\"trend\":0,\"amount\":10,\"skipped\":false,\"demoSeen\":[],\"wordStreak\":0,\"graduated\":null}",
+    "accountLifeHangul": {
+     "version": 1,
+     "answer": "reads",
+     "at": 1792405731154,
+     "via": "question"
+    },
+    "accountStage": {
+     "hosted": true,
+     "key": "synk.account.local:11111111-1111-4111-8111-111111111111.r1.hangul-stage.v1",
+     "metLetters": 0
+    },
+    "askedAgain": 0,
+    "playWrites": [
+     "synk.life-korean.progress.v1"
+    ],
+    "errors": [],
+    "external": []
+   }
+  }
+ },
+ "health": {
+  "ok": true,
+  "mode": "account",
+  "rehearsal": false,
+  "database": null,
+  "production": false
+ },
+ "dataDirCreated": false
+}

@@ -42,7 +42,9 @@ export function tutorSelectionStatus({owner,progress,ready}){
 
 // A title can finish before account restoration. Never make the first choice
 // against that temporary guest, or let an old owner's chooser open their home.
-export function createWorldEntryGate({restore,prepare,read,choose,onState=()=>{},onEnter=()=>{},onError=()=>{}}){
+// offer: 로그인 뒤 한 번 묻는 일(이 기기의 손님 기록 옮기기, 공개판 설계 §2). 물을 것이 없으면 거짓값을, 판을 띄웠으면
+// 고르거나 닫으면 끝나는 약속을 돌려준다. 튜터 고르기 앞에서 열고, 옮기지 못해도 들어가는 길은 막지 않는다.
+export function createWorldEntryGate({restore,prepare,read,choose,offer=null,onState=()=>{},onEnter=()=>{},onError=()=>{}}){
  let revision=0,phase='idle',selectedOwner=null;
  const identity=value=>`${value.owner}:${value.generation}`;
  const state=(next,extra={})=>{phase=next;onState({phase:next,...extra});};
@@ -59,6 +61,14 @@ export function createWorldEntryGate({restore,prepare,read,choose,onState=()=>{}
     break;
    }
    selectedOwner=identity(value);
+   let offered=null;try{offered=offer?.(value)||null;}catch{offered=null;}
+   if(offered){
+    state('offering');
+    try{await offered;}catch{/* 옮기기를 못 해도 이어 간다 */}
+    if(ticket!==revision)return false;
+    const latest=read();if(identity(latest)!==selectedOwner){void start();return false;}
+    value=latest;
+   }
    const enter=()=>{
     if(ticket!==revision)return false;
     if(phase==='ready')return true;

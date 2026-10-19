@@ -28,6 +28,10 @@ function announce(text) { const n = $('sr-live'); n.textContent = ''; setTimeout
 // LAB 단독 화면은 이 분기를 하나도 타지 않는다(r2/games/standalone-proof.cjs로 계산 스타일·DOM·캔버스 픽셀 차이 0 확인).
 const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
 const wt = (lab, world) => (WORLD ? world : lab);   // 보이는 글: LAB 그대로 · WORLD 새 문구
+// WORLD 손님 체험 판(10-19 결정 「WORLD 손님」): WORLD가 체험 호스트(trial)를 건네면 한 곡만 하고, 결과에서 로그인을 안내한다.
+// 코인은 그 호스트가 저장하지 않는다. LAB 화면과 계정 호스트에는 trial이 없다.
+const TRIAL = WORLD && globalThis.SynkPlayAccount?.status?.().trial === true;
+let trialDone = false;
 let worldSound = null;   // 공통 소리·진동·연출 스위치 — WORLD 안에서만 불러오고, 못 불러오면 조용히 넘어간다
 if (WORLD) import('../brand-opening/world-sound.mjs').then((m) => { worldSound = m; m.bindTaps(document); }).catch(() => {});
 
@@ -155,6 +159,7 @@ function tip(text) { $('tip').hidden = !text; if (text) $('tip').textContent = t
 /* ── 한 곡 ── */
 async function start() {
   if (state.loading) return;
+  if (TRIAL && trialDone) { show('results'); $('w-trial-login')?.focus({ preventScroll: true }); return; }   // 체험은 한 곡: 한 곡 더는 로그인 뒤
   if (needsCalibration() && openCalibration()) return;   // WORLD 처음 한 번: 박자 맞추기 → 「노래 시작하기」로 다시 여기
   state.loading = true;
   const generation = ++startGeneration;
@@ -438,6 +443,7 @@ function finish() {
   resetQuestion(); tip(null);
   show('results');
   tutorEvent('finish');
+  if (TRIAL) { trialDone = true; $('results').classList.add('w-trial'); }
   if (WORLD) $('result-title').textContent = '말의\u00a0리듬, 끝!';   // 줄이 바뀌면 「말의 리듬, / 끝!」으로
   const correct = r.correctCount, total = r.questions.length, stars = correct >= total ? 3 : correct >= total - 1 ? 2 : correct >= Math.ceil(total / 2) ? 1 : 0;
   $('r-kicker').textContent = `${r.track.title} · ${LEVELS[r.levelName].label}`;
@@ -456,7 +462,7 @@ function finish() {
   const coins = $('r-coins');
   coins.textContent = '공통 코인을 계산하고 있어요.';
   globalThis.SynkPlayCollection?.award({ game: 'rhythm', total, correct, completed: true, automatic: false, roundId: collectionRoundId })
-    .then((result) => { if (state.round === r) coins.textContent = globalThis.SynkPlayCollection.rewardText(result); });
+    .then((result) => { if (state.round === r) coins.textContent = result?.reason === 'guest-trial' ? '체험 판이라 코인은 쌓이지 않았어요' : globalThis.SynkPlayCollection.rewardText(result); });
   const next = renderRecommendation();
   $('r-next-reason').textContent = next.candidate
     ? nextTrackLine(next.candidate.label, next.reason)
@@ -590,6 +596,7 @@ function setupWorld() {
   const bar = document.createElement('div'); bar.className = 'w-room-bar';
   bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
   bar.firstChild.addEventListener('click', backToRoom); $('results').append(bar);
+  if (TRIAL) setupTrial(bar);
   const cal = document.createElement('dialog'); cal.id = 'w-calibrate'; cal.className = 'paper lab-dialog w-calibrate'; cal.setAttribute('aria-labelledby', 'w-cal-title');
   cal.innerHTML = '<span class="kicker">TIMING CHECK</span><h2 id="w-cal-title">박자 맞추기</h2>'
     + '<p data-w-copy>딸깍 소리가 날 때마다 아래 원을 눌러요. 여덟 번이면 끝나요. 이어폰이나 스피커가 소리를 늦게 내는 만큼을 한 번 맞춰 둬요.</p>'
@@ -605,6 +612,24 @@ function setupWorld() {
   cal.querySelector('[data-w-go]').addEventListener('click', () => { if (cal.dataset.step === 'done') { cal.close(); start(); } else void runCalibration(); });
   cal.querySelector('[data-w-skip]').addEventListener('click', () => { stopCalibration(); store.set(CAL_KEY, '1'); cal.close(); start(); });
   cal.addEventListener('close', stopCalibration);
+}
+/** 손님 체험 판: 입구는 코인 줄 대신 안내 한 줄, 결과는 한 곡 더·다른 곡 대신 로그인 안내 한 장 + 흰 알약 「SYNK ID로 로그인하기」(「우리 동네로」는 선 알약). */
+function setupTrial(bar) {
+  const line = document.querySelector('.start-card>.synk-collection-line'), note = document.createElement('p');
+  note.className = 'w-trial-note'; note.textContent = '체험 판이에요. 한 곡 해 보고, 기록과 코인은 로그인한 뒤부터 저장돼요.';
+  if (line) { line.hidden = true; line.after(note); } else document.querySelector('.start-card')?.append(note);
+  const card = document.createElement('section'); card.className = 'w-trial-card'; card.setAttribute('aria-label', '체험 판 안내');
+  card.innerHTML = '<strong>기록을 남기려면 로그인해 주세요</strong><span>이번 곡은 체험이라 저장하지 않았어요. 로그인하면 다음 곡부터 기록과 코인이 내 계정에 쌓여요.</span>';
+  document.querySelector('.res-grid')?.append(card);
+  const login = document.createElement('button'); login.id = 'w-trial-login'; login.type = 'button'; login.className = 'felt-cta w-trial-login';
+  login.innerHTML = '<span>SYNK ID로 로그인하기</span><i class="disc" aria-hidden="true"></i>';
+  login.addEventListener('click', trialSignIn); bar.classList.add('w-trial'); bar.prepend(login);
+}
+/** 체험 결과의 로그인: WORLD의 체험 호스트가 이 판을 닫고 계정 연결을 연다(같은 출처 틀). 닿지 않으면 우리 동네로. */
+function trialSignIn() {
+  music.stop();
+  try { const host = window.parent?.SYNKPlayHost; if (host?.trial && typeof host.signIn === 'function') { host.signIn(); return; } } catch { /* 다른 출처 */ }
+  backToRoom();
 }
 /** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
 function backToRoom() {

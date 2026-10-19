@@ -150,6 +150,16 @@
 /* 흰 알약 「우리 동네로」: 결과 아래에 붙어 언제나 한 번에 누른다(결과 → 방 1탭) */
 :root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px -12px -28px;padding:28px 18px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(12,13,16,0),var(--w-panel) 42%)}
 :root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
+/* 손님 체험 판(10-19 「WORLD 손님」): 입구는 코인 줄 대신 안내 한 줄. 결과는 한 곡 더·다른 곡 대신 로그인 안내 한 장,
+   흰 알약은 「SYNK ID로 로그인하기」 하나이고 「우리 동네로」는 선 알약으로 내린다 */
+:root[data-host=world] .w-trial-note{margin:4px 0 0;padding-top:14px;border-top:1px solid var(--w-line);font:450 13.5px/1.55 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .results.w-trial .res-grid .next{display:none}
+:root[data-host=world] .w-trial-card{order:5;display:grid;gap:6px;margin:0 6px;padding:20px 0 4px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .w-trial-card>strong{font:650 16px/1.4 var(--w-sans);letter-spacing:-.01em;color:var(--w-ink)}
+:root[data-host=world] .w-trial-card>span{font:450 14px/1.6 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .w-room-bar.w-trial{display:grid;gap:8px}
+:root[data-host=world] .w-room-bar.w-trial>.w-room{min-height:50px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .w-room-bar.w-trial>.w-room .disc{display:none}
 
 /* ── 입구: 코랄 포스터 머리 + 밤 판 ── */
 :root[data-host=world] .lobby{position:relative;min-height:100svh;padding:12px 12px 28px;background:var(--w-panel)}
