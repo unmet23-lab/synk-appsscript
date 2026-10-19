@@ -506,7 +506,7 @@ function payload(root, row, data = fs.readFileSync(within(rowRoot(root, row), ro
     `> 보조: [GitHub 게시본](${original})은 현재 작업 파일과의 일치를 확인하지 않았으며, 아직 없거나 이전 내용일 수 있다. 다른 기기에서 로컬 원본에 접근하지 못하면 최신 여부는 미확인이다.\n\n`;
   return Buffer.from(banner + body, 'utf8');
 }
-function copy(root, destination, rows, { google = false, previousFiles = [], recordFiles = false } = {}) {
+function copy(root, destination, rows, { google = false, previousFiles = [], recordFiles = false, onProgress = () => {} } = {}) {
   // 사용자 파일은 자동 삭제하지 않는다. 선택된 파일만 검증해서 갱신한다.
   for (const row of rows) { within(rowRoot(root, row), row.source); within(destination, row.brand + '/' + row.target); }
   const plan = google ? { selected: rows.filter(row => !row.oneDriveOnly), rejected: [] } : oneDrivePlan(root, rows);
@@ -517,6 +517,7 @@ function copy(root, destination, rows, { google = false, previousFiles = [], rec
   const previous = new Map(previousFiles.map(row => [path.resolve(row.target), row]));
   const files = [], sourceDrift = [], disappeared = [];
   for (const row of plan.selected) {
+    onProgress();
     const source = within(rowRoot(root, row), row.source);
     const target = within(destination, row.brand + '/' + row.target);
     if (linkedSource(source) || linkedTarget(target)) throw new Error('링크·reparse 경로는 복사하지 않습니다');

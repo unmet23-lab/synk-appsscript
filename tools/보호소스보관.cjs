@@ -148,12 +148,17 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
         Date.now() - at > 3 * 3600000 || at > Date.now() + 60000) throw new Error('PROTECTED_SOURCE_INVENTORY_NOT_CURRENT');
     const roots = suppliedRoots || authorizedRoots(root);
     for (const row of inventory.files) verifyPriorMedia(row, vault);
-    // 목록 뒤에 원본이나 그 작업트리 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
-    // 범위 밖 경로·남아 있는 폴더의 범위 불일치는 그대로 전체를 멈춘다(10-19).
+    // 목록 뒤에 원본이나 그 범위 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
+    // 범위 폴더는 작업트리이거나, Documents 바로 아래에 만든 임시 작업트리처럼 자기 이름의 저장소 범위로 잡힌 폴더다(10-19 talk-wt-path).
+    // 범위 밖 경로·남아 있는 폴더의 범위 불일치는 그대로 전체를 멈추고, 어느 줄인지 남긴다(10-19).
     const vanished = (row, error) => error.code === 'ENOENT' ||
-      (error.message === 'PROTECTED_SOURCE_SCOPE_MISMATCH' && row.worktree === true && !fs.existsSync(row.sourceRoot));
+      (error.message === 'PROTECTED_SOURCE_SCOPE_MISMATCH' && typeof row.sourceRoot === 'string' &&
+        path.isAbsolute(row.sourceRoot) && !fs.existsSync(row.sourceRoot));
     for (const row of inventory.files) {
-      try { sourceLocation(row, roots); } catch (error) { if (!vanished(row, error)) throw error; }
+      try { sourceLocation(row, roots); } catch (error) {
+        if (vanished(row, error)) continue;
+        error.row = { sourceScope: row.sourceScope, source: row.source }; throw error;
+      }
     }
     const checkedPaths = inventory.files.flatMap(row => {
       const selected = receiptPaths(row, vault); return [row.sourcePath, selected.file, selected.manifest];
@@ -203,7 +208,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
       report.issues.push({ code: 'PROTECTED_SOURCE_REPARSE_AFTER_CHECK', source: item.row.source });
     report.status = report.issues.length ? 'attention' : 'success';
   } catch (error) {
-    report.status = 'attention'; report.issues.push({ code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'PROTECTED_SOURCE_INVENTORY_UNAVAILABLE' });
+    report.status = 'attention'; report.issues.push({ code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'PROTECTED_SOURCE_INVENTORY_UNAVAILABLE', ...(error.row || {}) });
   } finally {
     clearInterval(timer); report.finishedAt = report.checkedAt = new Date().toISOString();
     if (report.status === 'success') report.lastSuccessAt = report.finishedAt;

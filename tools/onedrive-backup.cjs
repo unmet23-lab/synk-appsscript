@@ -49,17 +49,22 @@ function changedWorktreeSources(tree) {
     policy.문서인가(relative) && !policy.금지인가(relative) && !policy.excludedPath(relative) &&
     fs.existsSync(path.join(tree.root, relative)));
 }
-function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktrees(root) } = {}) {
+// onProgress: 오래 걸리는 단계 안에서도 실행 영수증의 heartbeat를 남기게 한다(통합 감시는 15분 넘게 멈춘 heartbeat를 실행 중단으로 본다, 10-19).
+function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktrees(root), onProgress = () => {} } = {}) {
   const destination = path.join(vault, '작업문서_미통합_자동');
-  const candidates = trees.flatMap(tree => [...new Set([...policy.workTextFiles(tree.root),
-    ...(tree.changedSources || changedWorktreeSources(tree))])].map(relativePath =>
-    ({ ...tree, relativePath, source: path.join(tree.root, relativePath), primaryPath: path.join(tree.primary, relativePath) })));
+  const candidates = trees.flatMap(tree => {
+    const rows = [...new Set([...policy.workTextFiles(tree.root), ...(tree.changedSources || changedWorktreeSources(tree))])].map(relativePath =>
+      ({ ...tree, relativePath, source: path.join(tree.root, relativePath), primaryPath: path.join(tree.primary, relativePath) }));
+    onProgress();
+    return rows;
+  });
   const linked = policy.linkPaths(candidates.flatMap(row => [row.source, row.primaryPath]));
   const filesDirectory = path.join(destination, 'files');
   if (policy.linkPaths([filesDirectory])(filesDirectory)) throw new Error('worktree preservation destination is linked');
   const entries = [], rejected = [], primaryHashes = new Map(), unique = new Set();
   let written = 0, sameAsPrimary = 0, preservedBytes = 0, sourceFiles = 0;
   for (const row of candidates) {
+    onProgress();
     let reason = linked(row.source) ? 'link-or-reparse-point' : null;
     try {
       const stat = fs.statSync(row.source);
@@ -255,7 +260,8 @@ function worktreePrimaryDrift(root, vault, files) {
   return mismatches;
 }
 function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun = false,
-  checkOnly = false, collectWorktrees = preserveWorktreeDocuments, getRows = policy.목록, checkProvider = providerStatus } = {}) {
+  checkOnly = false, collectWorktrees = preserveWorktreeDocuments, getRows = policy.목록, checkProvider = providerStatus,
+  heartbeatEveryMs = 60 * 1000, clock = Date.now } = {}) {
   const vault = path.resolve(root, '../SYNK_원본창고');
   stateDir ||= path.join(vault, '상태/OneDrive');
   const latestFile = path.join(stateDir, 'latest.json'), manifestFile = path.join(stateDir, 'copy-manifest.json');
@@ -266,6 +272,16 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
     lastSuccessAt: previous.lastSuccessAt || null, copySucceededAt: previous.copySucceededAt || null,
     providerVerifiedAt: previous.providerVerifiedAt || null, destination, deletes: 0, directCloudCalls: 0,
     remoteChecksumVerified: false, note: 'Local SHA checks and Windows provider metadata; no independent remote checksum claim.' };
+  // 작업트리 수집·복사처럼 긴 단계 안에서도 1분마다 영수증 heartbeat를 남긴다.
+  // 통합 감시는 실행 중 heartbeat가 15분 넘게 멈추면 실행 중단으로 본다(10-19, 부하 속 작업트리 수집 17분).
+  let lastBeat = clock();
+  const beat = (force = false) => {
+    const at = clock();
+    if (dryRun || (!force && at - lastBeat < heartbeatEveryMs)) return;
+    lastBeat = at; state.heartbeatAt = new Date(at).toISOString();
+    // 감시가 읽는 순간 Windows가 교체를 거절하면 다음 박동에 다시 쓴다. 박동 하나가 빠졌다고 백업 실패로 세지 않는다.
+    try { writeJson(latestFile, state); } catch (error) { if (!['EPERM', 'EBUSY', 'EACCES'].includes(error.code)) throw error; }
+  };
   let lock;
   try {
     if (dryRun && checkOnly) throw new Error('dry-run-and-check-only-are-mutually-exclusive');
@@ -292,10 +308,10 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
         [row.source, { source: row.source, reason: row.protectedSource }])).values()];
       state.worktreePrimaryDrift = worktreePrimaryDrift(root, vault, manifest.files);
     } else {
-      state.worktrees = collectWorktrees(root, vault, { dryRun });
+      state.worktrees = collectWorktrees(root, vault, { dryRun, onProgress: beat });
       if (!dryRun) state.safeMarkdown = preserveSafeMarkdown(root, vault);
       if (!dryRun) state.recoveryIndex = policy.writeSafeRecoveryIndex(vault);
-      if (!dryRun) { state.heartbeatAt = new Date().toISOString(); writeJson(latestFile, state); }
+      beat(true);
       const rows = getRows(root), plan = policy.oneDrivePlan(root, rows);
       state.scopes = rows.scopes || [];
       if (state.scopes.some(scope => scope.status !== 'available')) throw new Error('required-source-scope-missing');
@@ -307,7 +323,8 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
       const protectedInventory = protectedSourceInventory(root, vault, state.scopes, plan.rejected, protectedFiles);
       writeJson(path.join(stateDir, 'protected-sources.json'), protectedInventory);
       state.protectedInventory = { checkedAt: protectedInventory.checkedAt, files: protectedInventory.files.length };
-      const result = policy.copy(root, destination, plan.selected, { recordFiles: true, previousFiles: previousManifest.files });
+      beat(true);
+      const result = policy.copy(root, destination, plan.selected, { recordFiles: true, previousFiles: previousManifest.files, onProgress: beat });
       if (result.sourceDrift.length) {
         state.sourceDrift = result.sourceDrift.map(({ source, reason }) => ({ source, reason }));
         throw new Error('source-changed-during-copy');

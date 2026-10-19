@@ -172,6 +172,45 @@ test('a source deleted between planning and copying is skipped and counted, not 
   assert.equal(fs.existsSync(path.join(f.destination, 'SYNK/gone.md')), false);
 });
 
+test('worktree collection reports progress per tree and per file so a long scan can refresh the heartbeat (10-19)', t => {
+  const f = fixture(t), tree = path.join(f.temp, 'worktree'), vault = path.join(f.temp, 'vault');
+  f.put(tree, 'one.md', '# One'); f.put(tree, 'two.md', '# Two');
+  let calls = 0;
+  backup.preserveWorktreeDocuments(f.root, vault, { trees: [{ repository: 'SYNK-appsscript', primary: f.root, root: tree, changedSources: [] }],
+    onProgress: () => calls++ });
+  assert.equal(calls, 3, 'one call after listing the tree and one per candidate file');
+});
+
+test('long phases keep the running receipt heartbeat fresh so the monitor does not call the run interrupted (10-19)', t => {
+  const f = fixture(t); f.put(f.root, 'a.js', 'module.exports = 1;'); f.put(f.root, 'b.js', 'module.exports = 2;');
+  // 통합 감시는 실행 중 heartbeat가 15분 넘게 멈추면 실행 중단으로 본다. 시계를 박동 간격보다 크게 넘겨 매 진행마다 기록되는지 본다.
+  let step = 61 * 1000, now = Date.now(), last;
+  const clock = () => (last = now += step);
+  const latestFile = path.join(f.stateDir, 'latest.json'), latest = () => backup.readJson(latestFile);
+  const writes = [], originalRename = fs.renameSync;
+  t.mock.method(fs, 'renameSync', function (from, to, ...rest) {
+    writes.push(path.resolve(to) === path.resolve(latestFile) ? backup.readJson(from) : path.basename(to));
+    return originalRename.call(this, from, to, ...rest);
+  });
+  const result = backup.run({ ...f, clock, heartbeatEveryMs: 60 * 1000, checkProvider: healthy,
+    getRows: () => ['a.js', 'b.js'].map(source => ({ brand: 'SYNK', source, target: source, kind: 'system' })),
+    collectWorktrees: (root, vault, { onProgress }) => {
+      onProgress();
+      assert.equal(latest().status, 'running');
+      assert.equal(latest().heartbeatAt, new Date(last).toISOString());
+      const held = latest().heartbeatAt;
+      step = 1000; onProgress(); step = 61 * 1000;
+      assert.equal(latest().heartbeatAt, held, 'progress inside one interval does not rewrite the receipt');
+      return {};
+    } });
+  assert.equal(result.status, 'healthy');
+  const copyStart = writes.indexOf('protected-sources.json'), copyEnd = writes.indexOf('copy-manifest.json');
+  assert.ok(copyStart >= 0 && copyEnd > copyStart);
+  const copyBeats = writes.slice(copyStart + 1, copyEnd).filter(row => typeof row === 'object');
+  assert.equal(copyBeats.length, 3, 'one beat before copying and one per copied file');
+  assert.ok(copyBeats.every(row => row.status === 'running' && row.pid === process.pid));
+});
+
 test('a formerly safe source becoming protected keeps old bytes and fails until resolved', t => {
   const f = fixture(t); f.put(f.root, 'source.js', 'module.exports = 1;'); f.put(f.root, 'keep.md', '# Keep');
   const rows = () => ['source.js', 'keep.md'].filter(name => fs.existsSync(path.join(f.root, name)))

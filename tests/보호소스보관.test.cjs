@@ -122,6 +122,23 @@ test('a removed worktree skips only its rows while an existing unauthorized root
   assert.equal(strict.status, 'attention'); assert.deepEqual(strict.issues.map(issue => issue.code), ['PROTECTED_SOURCE_SCOPE_MISMATCH']);
 });
 
+test('a temporary repository folder removed after the inventory skips only its rows; a remaining one stops and names the row (10-19)', { skip: !crypt }, async t => {
+  // Documents 바로 아래 임시 작업트리(talk-wt-path-20261019)는 작업트리 표시 없이 자기 이름의 저장소 범위로 목록에 올랐다.
+  const f = await fixture(t), gone = path.join(f.root, 'talk-wt-path');
+  const row = { ...f.row, sourceScope: 'talk-wt-path', sourceRoot: gone, sourcePath: path.join(gone, 'configuration.js') };
+  const file = path.join(f.vault, '상태/OneDrive/protected-sources.json'); fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ status: 'success', checkedAt: new Date().toISOString(), files: [f.row, row] }));
+  const options = { vault: f.vault, root: f.root, apply: true, roots: f.options.roots, cryptoTool: f.options.cryptoTool };
+  const skipped = await reconcile(options);
+  assert.deepEqual(skipped.files.map(item => item.status), ['awaiting-drive-verification', 'source-disappeared']);
+  assert.equal(skipped.issues.some(issue => issue.code === 'PROTECTED_SOURCE_SCOPE_MISMATCH'), false);
+  fs.mkdirSync(gone); fs.copyFileSync(f.sourcePath, row.sourcePath);
+  const strict = await reconcile(options);
+  assert.equal(strict.status, 'attention');
+  assert.deepEqual(strict.issues, [{ code: 'PROTECTED_SOURCE_SCOPE_MISMATCH', sourceScope: 'talk-wt-path', source: 'configuration.js' }]);
+  assert.deepEqual(strict.files, [], 'an unauthorized remaining folder stops the batch before any row is read');
+});
+
 test('prior OneDrive copy re-reads a ctime-only change once but never accepts persistent or content drift', { skip: !crypt }, async t => {
   const f = await fixture(t), safe = Buffer.from('body{color:black}');
   fs.writeFileSync(f.sourcePath, Buffer.from(['body{background:url("da', 'ta:im', 'age/png;base', '64,AAAA")}'].join('')));
