@@ -4,7 +4,7 @@
 
 <a id="classroom-lessons-20261019"></a>
 
-## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(synk.im/world 공개 · PC 설치본은 다음 Platform 판)
+## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(synk.im/world · PC 설치본 Platform 0.4.32 공개)
 
 10-19 TOPIK 4급 온라인 반 재개 결정(결정 표 맨 위)에 따라, 반 학생이 WORLD에서 실시간·예정·복습 수업을 여는 칸을 붙였다.
 
@@ -12,10 +12,10 @@
 - **뜻:** 학생 앱 「우리 반 수업 · 실시간 / 복습」(SYNK-talk `src/수업영상화면.js`)과 같은 상태 이름·안내, 같은 묶는 차례(실시간 → 확인이 필요한 수업 → 예정 → 복습), 30초 확인, 돌아오면 다시 묻기, 실패하면 링크 비우기. 「지금 수업 중」은 서버가 150초 안에 동기화된 live로 줄 때만 보인다. 반이 없거나 불러오는 중·실패일 때는 제목과 그 안내만 보인다.
 - **통로:** `classroom-client.mjs`가 학생 앱과 같은 classroom 함수를 같은 머리(apikey · Bearer · `X-Contract-Ver: c16`)로 부른다. 게이트웨이 401만 한 번 갱신해 다시 묻는다. 함수가 낸 `AUTH_REQUIRED`(학생 명부에 없는 계정)는 빈 목록으로 보고, WORLD의 다른 요청처럼 로그아웃시키지 않는다. 토큰은 `world-account.mjs`의 `readClassrooms()` 안에만 있다(묶음은 `node tools/build-world-account.mjs`). 서버 함수·DB·반/학생 권한·비밀값은 바꾸지 않았다.
 - **화면:** `classroom-lessons.mjs`와 `app-shell.css`의 「우리 반 수업」. 흰 알약은 「실시간 수업 보기」 하나, 수업 줄은 1px 선이다. 링크는 새 탭으로 열고 유튜브 영상·재생목록과 Meet·Zoom 주소만 받는다. 개발 서버(`server.mjs`)와 공개 빌드(`tools/build-world-app-public.mjs`) 목록에 새 파일을 더했다.
-- **PC 앱(native):** 토큰은 본체에만 있어 본체가 대신 묻는다. `desktop/src/world-requests.cjs`의 `classroom` 경로(GET, 본문·쿼리·classId 없음)에 `X-Contract-Ver: c16`을 싣고, `desktop/src/auth-service.cjs`가 401 두 갈래를 웹과 같은 뜻으로 다룬다. 함수의 `AUTH_REQUIRED`는 빈 목록(`empty_reason:'NO_LEARNER'`)이고, 게이트웨이 401만 한 번 갱신하며, 그 밖의 수업 실패는 이 조회만 실패한다. 어느 경우도 로그아웃하지 않는다. 본체가 환경(`getEnvironment().worldRoutes`)에 `classroom`을 알릴 때만 `supportsClassroom`이 참이라, 그 경로가 없는 옛 PC 앱은 지금처럼 칸을 숨긴다. PC 창은 새 탭 링크를 `desktop/src/security.cjs`의 `externalDestination`으로만 내보내므로, 수업 링크(유튜브 영상·재생목록, Meet 코드, Zoom `/j/숫자`)를 웹 판 `safeClassroomLink`와 같은 규칙으로 WORLD 클라이언트에만 열었다(10-19 0.4.32 검수 P1 — 그 전에는 PC 학생이 목록만 보고 수업을 못 열었다). 반영은 다음 Platform 판부터다 — 10-19 계정판 3차 세션이 준비하는 0.4.32에 파일 둘과 `main.cjs` 두 조각(`WORLD_ROUTE_NAMES` 불러오기, 환경 응답의 `worldRoutes`)을 함께 싣기로 했다.
+- **PC 앱(native):** 토큰은 본체에만 있어 본체가 대신 묻는다. `desktop/src/world-requests.cjs`의 `classroom` 경로(GET, 본문·쿼리·classId 없음)에 `X-Contract-Ver: c16`을 싣고, `desktop/src/auth-service.cjs`가 401 두 갈래를 웹과 같은 뜻으로 다룬다. 함수의 `AUTH_REQUIRED`는 빈 목록(`empty_reason:'NO_LEARNER'`)이고, 게이트웨이 401만 한 번 갱신하며, 그 밖의 수업 실패는 이 조회만 실패한다. 어느 경우도 로그아웃하지 않는다. 본체가 환경(`getEnvironment().worldRoutes`)에 `classroom`을 알릴 때만 `supportsClassroom`이 참이라, 그 경로가 없는 옛 PC 앱은 지금처럼 칸을 숨긴다. PC 창은 새 탭 링크를 `desktop/src/security.cjs`의 `externalDestination`으로만 내보내므로, 수업 링크(유튜브 영상·재생목록, Meet 코드, Zoom `/j/숫자`)를 웹 판 `safeClassroomLink`와 같은 규칙으로 WORLD 클라이언트에만 열었다(10-19 0.4.32 검수 P1 — 그 전에는 PC 학생이 목록만 보고 수업을 못 열었다). 10-19 Platform 0.4.32(synk-policy `a972c19`, 피드 20261019.5, 통합 빌드 39262918326 세 판 통과)로 공개했다. 태그 `platform-preview-0.4.32`의 동결 원천에서 `world-requests.cjs`·`security.cjs`는 master와 같은 판이고, `auth-service.cjs`의 수업 조각과 `main.cjs` 두 조각(`WORLD_ROUTE_NAMES` 불러오기, 환경 응답의 `worldRoutes`)이 들어 있음을 확인했다.
 - **확인:** `node --test experiences/synk-world-app/qa/classroom-lessons.test.mjs`(19개 — 학생 앱 원문·계약판·회의 주소·presentClass 대조, 옛·새 PC 앱 포함), `desktop/tests/world-requests·auth·public-apps.test.cjs`(본체 경로·머리·401 두 갈래·환경 알림), `qa/classroom-lessons-browser.test.mjs`(계정 모드 Edge, 합성 계정·합성 수업 10상태 × 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추 0, 새로고침·실패 뒤 다시 불러오기·탭 복귀·시트 닫기·로그인 유지). `qa/account-browser.test.mjs`에는 반 연결 전 401과 연결 뒤 재조회를 더했다. 캡처는 `qa/classroom-lessons-20261019/`(그림은 git 밖), 측정은 같은 폴더 `result.json`.
 - **공개(10-19):** synk.im/world에 synk-policy `b424778`로 올렸다. 바탕 `c8dc69a0f`와 이번 판 `afb587f9a`를 같은 조건(구운 마을 세트·메뉴 영상을 두 빌드에 똑같이)으로 공개 빌드하고, 「공개본 + (바탕 → 이번 판)」 3방향으로 바뀐 것만 얹었다(`tools/공개.js --기준폴더`). 바뀐 것은 앱 셸 JS·CSS, 새 `classroom-lessons.mjs`, 계정 묶음, 진입 페이지 셋의 `?v=`다. 계정 묶음은 공개본에만 있던 다른 세션의 변경 49줄을 보존했고, 「후보 − 공개본」이 「이번 판 − 바탕」 96줄과 같다. 앱 셸이 묶음에서 가져오는 이름이 바탕과 같아 한 번에 올렸다(새 앱 셸에 캐시된 옛 묶음이 붙으면 이 칸만 잠깐 숨는다). 공개 주소 바이트 7/7, 배포 점검 통과(39255679243). 실제 주소를 손님과 합성 계정(운영 API 주소는 route로 통째로 막음)으로 390·1280에서 열어 페이지 오류·실패 요청 0과 「우리 반 수업」의 실시간·확인 필요·예정·복습을 확인했다.
-- **남은 일:** 초대·이용권을 설정한 뒤 실제 학생 계정(WORLD SYNK ID)으로 운영 classroom 조회, 2026-11 현장 송출 시험, PC 설치본에서 같은 학생 계정으로 확인(Platform 판 공개 뒤), TOPIK II 4급 연습·쓰기 첨삭 콘텐츠, 비공개 영상 초대 자동화 여부.
+- **남은 일:** 초대·이용권을 설정한 뒤 실제 학생 계정(WORLD SYNK ID)으로 운영 classroom 조회, 2026-11 현장 송출 시험, PC 설치본(0.4.32)에서 같은 학생 계정으로 확인, TOPIK II 4급 연습·쓰기 첨삭 콘텐츠, 비공개 영상 초대 자동화 여부.
 
 ## 2026-10-14 화면 전면 리디자인 · 공용 작업본 반영(공개 전)
 
