@@ -28,6 +28,7 @@ SPACE_GUARD = {'id': 'space', 'taskName': 'SYNK 공간 지킴이', 'receipt': '�
                'ledger': '상태/공간지킴이/내려놓은목록.jsonl', 'maxStaleHours': 2, 'maxRunHours': 2}
 # The ledger is also copied to OneDrive (10MiB limit in 이어하기꾸러미.js). Once over it, the copied file turns into
 # previously-backed-source-now-protected and every OneDrive run fails, so warn while it can still be split.
+# The guard continues the ledger in 내려놓은목록-002.jsonl, -003… at 4MiB; a part reaching this size means that stopped.
 SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 
 
@@ -112,6 +113,17 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None)
             'scope': item.get('scope'), 'receiptPath': item['receipt']}
 
 
+def ledger_parts(root, item=SPACE_GUARD):
+    # Same naming as 공간지킴이.py ledger_parts: the original name, then -002, -003… (three or more digits).
+    base = Path(root) / item['ledger']
+    pattern = re.compile(re.escape(base.stem) + r'(?:-[0-9]{3,})?' + re.escape(base.suffix))
+    try:
+        names = os.listdir(base.parent)
+    except FileNotFoundError:
+        return []
+    return [base.parent / n for n in names if pattern.fullmatch(n) and (base.parent / n).is_file()]
+
+
 def space_guard(root, lib, task, now, item=SPACE_GUARD):
     # Not registered yet means waiting for the owner's go-ahead (10-19 「예약은 아직 등록하지 마」), not a failure.
     task = task or {'exists': False}
@@ -154,12 +166,12 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD):
         if (task.get('state') != 'Running' and task.get('result') not in (0, 267009, 267011, None)
                 and last_run and (not checked or last_run > checked)):
             state = 'attention'; codes.append('SCHEDULE_LAST_RUN_FAILED'); notes.append('마지막 점검 실패')
-    ledger = root / item['ledger']
-    size = ledger.stat().st_size if ledger.is_file() else 0
+    # Every part is checked, so the part being written now (the last one) is always covered.
+    size, name = max(((p.stat().st_size, p.name) for p in ledger_parts(root, item)), default=(0, None))
     if size >= SPACE_LEDGER_WARN_BYTES:
         if state not in BAD: state = 'attention'
         codes.append('SPACE_LEDGER_NEAR_ONEDRIVE_LIMIT')
-        notes.append(f'내려놓은 장부 {size / 1048576:.1f}MiB(OneDrive 10MiB 한도 전에 나눠야 함)')
+        notes.append(f'내려놓은 장부 {name} {size / 1048576:.1f}MiB(OneDrive 10MiB 한도 전에 나눠야 함)')
     good_check = guard in ('ok', 'low') and checked
     return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
             'checkedAt': lib.stamp(checked) if checked else None,

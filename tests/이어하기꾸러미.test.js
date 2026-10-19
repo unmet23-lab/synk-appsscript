@@ -398,7 +398,7 @@ test('git 무시·QA·미디어 폴더의 작업 MD와 창고 복원 목록을 �
   assert.equal(fs.readFileSync(path.join(f.dest, 'SYNK/시스템/Videos/한강/media/콘티.md'), 'utf8'), '# 영상 원문');
 });
 
-test('공간 지킴이 장부·마지막 점검·Drive에 없는 목록은 담고 다른 상태 파일은 계속 뺀다(10-19)', t => {
+test('공간 지킴이 장부(이어 쓴 조각 포함)·마지막 점검·Drive에 없는 목록은 담고 다른 상태 파일은 계속 뺀다(10-19)', t => {
   const f = fixture(t), { execFileSync } = require('node:child_process');
   execFileSync('git', ['init', '-q'], { cwd: f.root });
   const vault = path.join(f.dir, 'SYNK_원본창고');
@@ -409,10 +409,15 @@ test('공간 지킴이 장부·마지막 점검·Drive에 없는 목록은 담�
     driveFileId: '1SyntheticDriveFileId000000000ab' }) + '\n';
   const kept = {
     '상태/공간지킴이/내려놓은목록.jsonl': ledger,
+    // 지킴이는 OneDrive 10MiB 한도 전에 4MiB마다 다음 조각에 이어 쓴다(공간지킴이.py ledger_parts).
+    '상태/공간지킴이/내려놓은목록-002.jsonl': ledger.replace('"offloaded"', '"restored"'),
+    '상태/공간지킴이/내려놓은목록-1000.jsonl': ledger,
     '상태/공간지킴이/latest.json': '{"schemaVersion":1,"status":"ok","freeAfter":386395611136}\n',
     '상태/공간지킴이/SYNK이전_원드라이브_Drive에없음.json': '{"files":1,"paths":[["Desktop/a.lnk",2301]]}\n',
   };
   const left = {
+    '상태/공간지킴이/내려놓은목록-02.jsonl': ledger,
+    '상태/공간지킴이/내려놓은목록-새.jsonl': ledger,
     '상태/공간지킴이/점검.log': '{"check":"ok"}\n',
     '상태/공간지킴이/예약-이전-20261019-120000.xml': '<Task/>\n',
     '상태/공간지킴이/중간결과.json': '{}\n',

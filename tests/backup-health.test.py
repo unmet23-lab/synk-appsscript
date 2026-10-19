@@ -264,6 +264,22 @@ class SpaceGuardTests(unittest.TestCase):
         with (self.root / health.SPACE_GUARD['ledger']).open('ab') as ledger: ledger.write(b'\n')
         self.assertEqual(self.guard()['codes'], ['SPACE_LEDGER_NEAR_ONEDRIVE_LIMIT'])
 
+    def test_ledger_parts_are_each_checked_including_the_one_being_written(self):
+        # The guard continues the ledger in 내려놓은목록-002.jsonl, -003… at 4MiB. A part that still grows to 8MiB is reported.
+        self.receipt()
+        base = self.root / health.SPACE_GUARD['ledger']
+        base.write_bytes(b'{}\n')
+        part = base.with_name('내려놓은목록-002.jsonl')
+        with part.open('wb') as ledger: ledger.truncate(health.SPACE_LEDGER_WARN_BYTES - 1)
+        for other in ('내려놓은목록-02.jsonl', '내려놓은목록-002.jsonl.tmp', '점검.log'):  # not ledger parts
+            with base.with_name(other).open('wb') as f: f.truncate(health.SPACE_LEDGER_WARN_BYTES)
+        self.assertEqual(self.guard()['status'], 'healthy')
+        with part.open('ab') as ledger: ledger.write(b'\n')
+        row = self.guard()
+        self.assertEqual((row['status'], row['codes']), ('attention', ['SPACE_LEDGER_NEAR_ONEDRIVE_LIMIT']))
+        self.assertEqual(row['detail'], '내려놓은 장부 내려놓은목록-002.jsonl 8.0MiB(OneDrive 10MiB 한도 전에 나눠야 함)')
+        self.assertEqual([p.name for p in sorted(health.ledger_parts(self.root))], ['내려놓은목록-002.jsonl', '내려놓은목록.jsonl'])
+
     def test_schedule_query_adds_the_guard_to_a_temporary_copy_only(self):
         config = self.root / 'backup-health-config.json'
         original = json.dumps({'components': [{'id': 'onedrive', 'taskName': 'SYNK OneDrive 문서 백업'}]}, ensure_ascii=False)
