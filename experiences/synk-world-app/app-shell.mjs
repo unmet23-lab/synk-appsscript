@@ -14,6 +14,9 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 const $=s=>document.querySelector(s);
+// pagehide closes this capability object; a restored document must reverify it.
+// 첫 await보다 먼저 듣는다: 입장(세션 복원·학습 준비·오프닝)이 끝나기 전에 떠났다가 돌아온 문서도 다시 불러야 한다(10-19).
+window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 const connection=await loadWorldConfig();
 const operating=connection.mode==='account';
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
@@ -482,6 +485,3 @@ await openingReady;
 if(!home.isMaru&&!restored&&!localStorage.getItem('synk-world-v1-welcomed'))welcome();
 renderStatus();
 if(new URLSearchParams(location.search).get('tutor')==='choose')home.chooseTutor?.();
-
-// pagehide closes this capability object; a restored document must reverify it.
-window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
