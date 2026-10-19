@@ -1,5 +1,18 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-insight-v2-20261019"></a>
+## 2026-10-19 내 성향 새 뼈대 — 계정 화면·PC 0.4.30 공개
+
+유호님 「계정 화면 웹 공개와 PC 릴리스를 진행해 줘. 운영 정책 learningSync부터 확인하고 두 스위치를 켜서 내보내.」(10-19). 확정한 새 뼈대([결정 10-19](_ops/결정.md))를 talk `synk-personal` v48과 WORLD(synk.im `11617ab`)에 이어 웹 계정 화면과 PC 설치본으로 내보냈다.
+
+- **learningSync 확인.** 운영 release policy의 값은 읽지 않고 결과로 확인했다. 정책 마지막 갱신(10-02 15:04Z) 뒤에 만든 활성 계정 4개가 모두 학습 연결이 켜졌고, 그중 cohort 구간 98인 계정이 있어 비율은 99% 이상이다. 학습 기억 쓰기도 받아들여졌다(구간 94·97 계정).
+- **두 스위치.** `desktop/renderer/member-insight-model.mjs`의 `WORLD_FOLLOWS_SETTINGS`·`WORLD_READS_ANSWERS`를 true로 켰다(origin `claude/member-insight-v2-20261019` `489656425`). 화면에서 도움 방식·설명 길이를 고치면 계정 학습 기억 presentation에 바로 저장되고 WORLD 연습도 같은 값을 쓴다. 연습 주제 답은 WORLD 연습 고르기에 쓴다.
+- **PC 0.4.30 / build20261019.3.** 공개 0.4.29 동결 원천 154개 중 desktop 11개를 바꾸고 `renderer/member-settings.mjs`를 더했다(155개, 원천 SHA-256 `52eea38a3aafe18260f1d8e9185e74b9541c91e43e7846c4ef944db4fd272a0d`). 관련 시험 283개·릴리스 도구 92개와 Windows x64·Mac arm64/x64 [공통 CI](https://github.com/unmet23-lab/synk-policy/actions/runs/39213204470)가 통과했다.
+- **웹 계정 화면.** 공개본 `account/dist/platform.js`의 회원 성향 묶음을 0.4.30 동결 원천에서 다시 묶었다(0.4.29 원천으로 다시 묶으면 공개본과 바이트까지 같다). 바깥 코드는 9곳만 바꿨고, 되돌리면 공개본과 같다. `member-insight.css`와 `platform.html`의 `?v=` 두 값도 함께 바꿨다. 합성 회원 다섯 명 화면 26장과 설정 저장 흐름을 확인했다. Fable 검수(10-19)는 웹 후보·동결 원천·두 스위치 약속 모두 문제 없음이었다.
+- **공개.** 공개 `12b1a30`(16:23)이 세 설치파일·홈페이지 다운로드·feed와 계정 화면 세 파일을 한 커밋으로 전환했다(공개마다 CDN 캐시가 비워지니 두 번으로 나누지 않았다). 세 설치파일은 공개 주소에서 Range로 다시 받아 전체 바이트·SHA를 대조했고, synk.im 공개 파일 23/23개가 올린 바이트와 같았다. Pages 배포(39215652614)가 통과했다. 실제 계정 화면 주소를 로그인 없이 넓은 창·휴대폰 폭으로 열어 새 번들·CSS가 `?v=`로 200이고 페이지·콘솔 오류가 0인 것을 봤다. 로그인한 실제 계정의 화면은 보지 않았다. PATH 면접 영상 14개는 캐시를 다시 채웠다(두 번째 읽기 모두 HIT). [공개 확인](../.tmp/member-insight-release-20261019/public-verification.json) · [릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.30).
+- **이 PC.** 앱이 꺼져 있어 앱 스스로의 자동 업데이트가 돌 수 없었다. 같은 공개 설치파일을 설치 엔진(창·실행 없음)으로 16:26에 넣고, payload 75개·원천 155개·ASAR·로그인 설정 지문과 보호 파일 4개가 그대로인 것을 확인했다. 앱은 켜지 않았다. 다른 기기의 실제 업데이트 완료를 뜻하지 않는다. [설치 확인](../.tmp/member-insight-release-20261019/native-update/installed-verification.json).
+- 남은 일은 master에 합치기다([트랙](_ops/트랙.md)). 증거는 `.tmp/member-insight-release-20261019/`.
+
 <a id="care-native-closed-20261018"></a>
 ## 2026-10-18 Chrome 완전 종료 뒤 플레저 PC 알림
 
