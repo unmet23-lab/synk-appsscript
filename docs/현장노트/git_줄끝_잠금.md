@@ -119,6 +119,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 그림·글꼴·소리(`.jpg·png·webp·gif·woff2·ttf·mp3·mp4·wav`)는 `git show`의 바이트를 그대로 쓰고, 작업본에 다른 판이 있으면 충돌로 멈춘다. 쓰기 전에 합친 결과를 폴더로 꺼내 작업본과 diff해 내 줄만 더해졌는지 본다.
 - 다시 확인: 착지 뒤 `cmp <(git show master:<그림>) <그림>`이 같다(10-18 두 장 통과).
 
+### 3방향 착지에서 새 사본 파일을 체크아웃 형식으로 쓰면 바이트 대조 시험이 깨진다 (2026-10-19)
+- 증상: WORLD 고장 묶음 가지를 공용 master에 착지한 뒤 `node --test experiences/play-common/kit.test.mjs`의 「brand-opening/kit에는 받침 조사 사본 한 파일만 있고 원본과 같다」가 실패했다. 원본 바이트로 다시 쓴 뒤에는 내용이 HEAD와 같은데도 `git status`에 ` M`으로 남았다.
+- 원인: 착지 스크립트가 새 파일을 `git cat-file --filters`(체크아웃 형식, CRLF)로 썼는데 공용 작업본의 원본 `play-common/kit/josa.mjs`와 다른 사본들은 LF였다. 다시 쓰자 파일 크기가 공용 인덱스가 착지 때 기록한 크기와 달라져, git이 내용을 비교하지 않고 바뀐 것으로 봤다.
+- 고침: 생성기가 바이트 그대로 복사하는 사본(`kit/`·`collection.js` 등)은 작업본 원본의 바이트로 쓴다(원본이 HEAD blob과 같은지 먼저 본다). 크기만 다른 ` M`은 작업본 내용이 HEAD blob과 같을 때 그 경로만 `git add -- <경로>`로 인덱스 기록을 새로 고친다. 한 줄만 LF인 작업본 파일은 줄마다 원래 줄끝을 두고 새 줄만 그 파일의 주된 줄끝으로 쓴다(10-19 `account-browser.test.mjs`·`build-kit.mjs`).
+- 다시 확인: `cmp experiences/play-common/kit/josa.mjs experiences/brand-opening/kit/josa.mjs`가 같고 kit 시험이 통과하며 `git status --porcelain -- <경로>`가 비어 있다(10-19 병합 `035c329ca`).
+
 ### `tools/결정.js --추가`가 CRLF 결정 표에 LF 줄을 넣는다
 - 증상: 결정을 넣은 뒤 git이 「LF will be replaced by CRLF」를 경고했고, 결정 표에서 LF만인 줄이 1개였다(10-18).
 - 원인: 도구가 새 표 줄을 `\n`으로 끼운다. 작업본(`core.autocrlf true`)은 CRLF라 그 한 줄만 줄끝이 섞인다.
