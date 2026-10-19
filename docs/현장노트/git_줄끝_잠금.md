@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판) · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -289,6 +289,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: ① 변형 커밋에 기대는 커밋은 다음 묶음으로 미룬다(본선 → 변형·합친 줄 → 기댄 커밋 순서로 세 번). ② 짝 판정 뒤에 쌓은 판을 따로 대조한다 — 새로 생기는 파일은 로컬 HEAD 판과 바이트로 같은지, origin에 더해지는 줄은 모두 로컬 HEAD에도 그만큼 있는지(옛 판 줄이 되살아나거나 겹쳐 들어가는 것을 잡는다). ③ 커밋별 새 blob 크기로 50MB 아래 묶음을 나눈다. 같은 줄을 두 쪽이 따로 고쳤으면(트랙 긴 줄) 그 커밋에서 그 파일을 빼고, 두 쪽 글을 모두 품은 줄로 바꾸는 커밋을 origin 위에 따로 만들어 넘긴다. 도구는 `.tmp/push-leftover-20261019/tools/`(`invariant-check.mjs`·`new-file-gaps.mjs`·`batch-sizes.mjs`·`make-variant.mjs`·`make-b-line.mjs`).
 - 다시 확인: 10-19 origin `5fe9ecc24..d6d8a49f8`(28·7·1커밋). 다 쌓은 판에서 새 파일 322개가 로컬 HEAD 판과 같고, 더해지는 줄 가운데 로컬에 없는 것은 일부러 합친 댓글 DM 줄 하나뿐이다.
 - 덧붙임(올린 뒤 CI가 빨개짐): 커밋이 바꾼 시험 셋만 미리 돌렸더니, 노트북 이사 편(e82791890)의 새 허브 원고 `docs/마케팅/맞춤도구/manual/builds-index.html`가 바꾸지도 않은 `tests/지면폰트.test.js` ⑦을 깨뜨려 origin CI(run 39223084491)가 실패했다. 그 커밋은 로컬에서도 같은 시험을 깨뜨리고 있었다. 남의 커밋을 몰아 올릴 때는 CI가 도는 `tests/*.test.js` 전체를 올릴 판으로 `CI=true`를 주고 돌린다. 이번 고침은 `8bc6b4e2d`(줄인 SUIT를 사이트 절대 경로로 부르는 빌드 입력이라 ⑦에서 뺌, `CI=true` 8/8).
+
+### 다시 쌓기를 파이프로 거르면 충돌을 못 보고 push까지 돈다 (2026-10-19 Claude)
+- 증상: 격리 작업본에서 `git rebase origin/master 2>&1 | tail -1 && … && git push origin HEAD:master`를 한 줄로 돌렸더니, 둘째 커밋이 충돌로 멈췄는데도 push가 돌아 첫 커밋만 올라갔다(`d6714e877`, 올리려던 커밋이라 피해는 없었다).
+- 원인: 파이프의 종료 코드는 마지막 명령(`tail`)의 것이라 `&&`가 rebase 실패를 못 봤다. rebase가 멈춘 동안 HEAD는 그때까지 다시 쌓은 커밋을 가리킨다.
+- 고침: rebase·merge·push처럼 멈출 수 있는 git 명령은 파이프 없이 돌려 종료 코드를 받거나(`git rebase …; rc=$?`), 한 줄 앞에 `set -o pipefail`을 건다. push 전에 `git status`에 「rebase in progress」가 없는지 본다.
+- 다시 확인: Git Bash에서 `false | tail -1 && echo 돎`은 「돎」을 찍고, `set -o pipefail; false | tail -1 && echo 돎`은 안 찍는다.
 
 ## 워크트리·연결 폴더·공간 정리
 
