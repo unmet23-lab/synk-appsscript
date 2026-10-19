@@ -53,7 +53,7 @@ if(!process.versions.electron){
     if(worker){
       const shortcut=argument('shortcut');let controller;
       try{
-        controller=createDesktopPreferences({directory,app,globalShortcut,getWindow:()=>null,appRoot:root,name});controller.initialize();
+        controller=createDesktopPreferences({directory,app,globalShortcut,getWindow:()=>null,packaged:true,name});controller.initialize();
         let previous='';
         if(worker==='contention')for(const candidate of ['Control+Alt+Shift+F21','Control+Alt+Shift+F20','Control+Alt+Shift+F19'])if(controller.update({globalShortcut:candidate}).ok){previous=candidate;break;}
         const result=controller.update({globalShortcut:shortcut}),own=globalShortcut.isRegistered(shortcut);
@@ -65,7 +65,8 @@ if(!process.versions.electron){
     }
     let preferences,window,error;const checks=[],requests=[],details={};
     const check=(name,ok,extra={})=>{checks.push({name,ok:!!ok,...extra});if(!ok)throw Error(name);};
-    const startup={path:process.execPath,args:[root,'--synk-dev','--client=platform','--synk-autostart'],name};
+    // The module touches Windows startup only as a packaged build, so the controllers below say packaged.
+    const startup={path:process.execPath,args:['--synk-autostart'],name};
     const runWorker=async mode=>{
       const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
       const result=await new Promise(resolve=>execFile(process.execPath,[__filename,'--profile='+profile,'--qa-name='+name,'--worker='+mode,'--shortcut='+details.shortcut],{cwd:root,windowsHide:true,env,encoding:'utf8',timeout:12000},(error,stdout,stderr)=>resolve({status:error?error.code:0,error,stdout,stderr})));
@@ -87,12 +88,12 @@ if(!process.versions.electron){
       placement.attach(window,{maximized:bounds.maximized});
       await window.loadURL('data:text/html,<title>SYNK isolated OS QA</title>');
       check('remembered-maximized-window-does-not-show-on-hidden-start',!window.isVisible()&&!window.isMaximized());
-      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,appRoot:root,name});preferences.initialize();
+      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,packaged:true,name});preferences.initialize();
       check('actual-windows-startup-initially-off',!preferences.snapshot().preferences.launchAtLogin);
       const enabled=preferences.update({launchAtLogin:true,startHidden:true});details.enableResult=enabled;
       check('module-enables-real-windows-login-item',enabled.ok&&enabled.preferences.launchAtLogin&&app.getLoginItemSettings(startup).openAtLogin===true);
       const registered=query(RUN,name);
-      check('windows-run-registry-has-exact-qa-executable-and-autostart-arguments',registered.status===0&&registered.stdout.includes(process.execPath)&&registered.stdout.includes(root)&&registered.stdout.includes('--synk-dev')&&registered.stdout.includes('--client=platform')&&registered.stdout.includes('--synk-autostart'));
+      check('windows-run-registry-has-exact-qa-executable-and-autostart-arguments',registered.status===0&&registered.stdout.includes(process.execPath)&&registered.stdout.includes('--synk-autostart')&&!registered.stdout.includes('--synk-dev'));
       check('startup-write-does-not-show-hidden-window',!window.isVisible());
       const disabled=preferences.update({launchAtLogin:false});
       check('module-disables-real-windows-login-item',disabled.ok&&!disabled.preferences.launchAtLogin&&!app.getLoginItemSettings(startup).openAtLogin);
@@ -111,7 +112,7 @@ if(!process.versions.electron){
       check('module-can-register-again-after-other-process-cleanup',preferences.update({globalShortcut:details.shortcut}).ok&&globalShortcut.isRegistered(details.shortcut));
       preferences.dispose();
       check('module-dispose-releases-shortcut',!globalShortcut.isRegistered(details.shortcut));
-      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,appRoot:root,name});preferences.initialize();
+      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,packaged:true,name});preferences.initialize();
       check('saved-hotkey-registers-again-on-new-controller-initialize',globalShortcut.isRegistered(details.shortcut)&&preferences.snapshot().preferences.globalShortcut===details.shortcut);
       preferences.dispose();
       check('restored-hotkey-releases-on-dispose',!globalShortcut.isRegistered(details.shortcut));
