@@ -1,15 +1,11 @@
-perf(travel): show change previews without waiting for the follow-up question, and ask it after the change is taken
+fix(travel): the follow-up question card measures walking differences against the plan on screen
 
-PATH planner from synk-appsscript d141520fb (origin master), applied on top of the live
-files only: planner-ui.mjs takes the change as the same path rewrite as before.
+PATH planner from synk-appsscript aee827113 (origin master), applied on top of the live file only:
+planner-ui.mjs takes the change with the same path rewrite as before.
 
-- Quick changes, answers, adding or swapping a place and the rest-of-the-day replan now
-  compute their preview without the "which way fits better" question, so the preview shows
-  right away (on the live page the less-walking preview: about 0.9 s before, about 0.3-0.5 s
-  with this file).
-- When a preview is taken, the question is asked from the module worker with the same time
-  and conditions written down with the preview; the remaining-day replan passes only the picks
-  the planner actually used. Without a worker the page computes it as before and leaves one
-  console warning.
+- When another option from the result is taken, the question stays the one computed for the
+  original plan, so its walking differences were measured against that plan (a day with up to
+  60 minutes of walking still showed "same as now" after taking an 18-minute option). The card
+  now measures them against the plan on screen; for a normal result the values are unchanged.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

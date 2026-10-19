@@ -4,6 +4,8 @@
 // 사용: node pub-candidate.cjs [지난 공개 소스] [새 소스] [바꾼 글 파일,…] [새 파일,…]  — 후보는 candidate/, 기록은 candidate/report.json
 //   인자 없이 돌리면 확인 질문 워커 공개(10-19 밤: 8c8ef19e2 → a7b8ba9ff, planner-ui.mjs 수정 · question-worker.mjs 추가)와 같다.
 //   미리보기 질문 공개(10-19 밤): node pub-candidate.cjs a7b8ba9ff d141520fb planner-ui.mjs ""
+//   다른 안 도보 차이 공개(10-19 밤): node pub-candidate.cjs d141520fb aee827113 planner-ui.mjs "" — 이때부터 올리기는 policy-commit.cjs 대신
+//     node tools/공개.js 올리기 try/travel/planner-ui.mjs=<이 폴더>/candidate/planner-ui.mjs(미리 보기 → -m … --실행 --계획 <해시>)로 했다.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
