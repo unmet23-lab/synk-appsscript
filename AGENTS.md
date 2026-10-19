@@ -18,6 +18,7 @@
 - `index.lock`이 생기면 잠시 뒤 재시도한다. 10초 넘게 남으면 `node tools/git잠금.js`로 확인하고 `--정리`는 주인 없는 잠금에만 쓴다.
 
 - 커밋은 `node tools/내커밋.js 커밋 <경로…> -m "…"`, push는 `node tools/내커밋.js 올리기 <커밋…>`로 한다. 기본은 미리 보기이고 `--실행`을 붙여야 반영한다. 커밋은 별도 인덱스로 내 경로만 올리고(트랙·결정 같은 공용 문서는 `--조각`으로 내 줄만) 공용 인덱스의 그 경로를 맞추며, 올리기는 origin/master 위에 내 커밋만 다시 쌓아 push한다. 두 명령이 커밋 전 `npm run check:storage`, 푸시 전 `node tools/git-storage-check.cjs --base origin/master`와 같은 기준의 저장 용량 검사를 안에서 돌린다. 도구 밖에서 커밋·push할 때만 그 두 검사를 직접 돌린다. 원본 보존·복원은 [Git 자산 보관](docs/_ops/github-storage/README.md)을 따른다.
+- 이 저장소는 2026-10-19부터 당분간 **공개**다(CI 무료, [결정](docs/_ops/결정.md)). push한 것은 바로 누구나 볼 수 있으므로 비밀값·학생 정보·미공개 특허 내용·남의 개인정보는 커밋하지 않는다.
 
 ## Code Review Rules
 
