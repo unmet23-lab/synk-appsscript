@@ -1,0 +1,25 @@
+{
+ "createdAt": "2026-10-19T08:48:24.245Z",
+ "changed": 2,
+ "unchanged": 826,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck3-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.reasonRetry",
+     "previous": "Эхэндээ алдсан хэсгээ дахин давтъя."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.reasonRetryGoal",
+     "previous": "Эхэндээ алдсан хэсгээ дахин давтъя. Энэ нь таны сонгосон зорилготой холбогдоно."
+    }
+   ]
+  }
+ ]
+}

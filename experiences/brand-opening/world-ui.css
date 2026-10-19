@@ -12,6 +12,10 @@
 @font-face{font-family:'World Latin';src:url(assets/SYNKLatin-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
 @font-face{font-family:'World Latin';src:url(assets/SYNKLatin-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
 @font-face{font-family:'World Latin';src:url(assets/SYNKLatin-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
+/* 몽골어(키릴)는 같은 Inter Tight에서 키릴 범위만 뗀 판(10-19 화면 언어 1판, tools/build-world-cyrillic-font.py). SUIT·SYNK Latin에는 키릴이 없어 시스템 서체로 떨어지지 않게 한다. */
+@font-face{font-family:'World Cyrillic';src:url(assets/SYNKCyrillic-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:'World Cyrillic';src:url(assets/SYNKCyrillic-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:'World Cyrillic';src:url(assets/SYNKCyrillic-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0400-052F,U+2116}
 /* 화살표 글자만 Inter Tight로: SUIT는 →를 꺾쇠처럼 그린다. */
 @font-face{font-family:'World Arrow';src:url(assets/InterTight.woff2) format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+2190-2199;size-adjust:112%}
 /* DM Mono는 띄어쓰기를 뺀 범위만: 한글이 섞인 라벨이 고정폭 공백으로 벌어지지 않게. */
@@ -20,8 +24,8 @@
 @font-face{font-family:'World Story Serif';src:url(assets/NotoSerifKR-story.woff2) format('woff2');font-weight:450 650;font-display:swap}
 
 :root{
-  --w-sans:'World Arrow','World Latin','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  --w-mono:'World Mono','World SUIT',ui-monospace,monospace;
+  --w-sans:'World Arrow','World Latin','World Cyrillic','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Mono','World Cyrillic','World SUIT',ui-monospace,monospace;
   /* 글자 단계 — 이 이름으로만 쓴다 */
   --t-hero:clamp(34px,9vw,48px);--t-display:30px;--t-title-l:24px;--t-title:20px;--t-title-s:17px;
   --t-lead:17px;--t-body:15.5px;--t-help:14px;--t-label:13px;--t-mono:11px;

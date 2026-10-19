@@ -1,0 +1,114 @@
+{
+ "createdAt": "2026-10-19T08:46:05.132Z",
+ "changed": 16,
+ "unchanged": 812,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck2-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "pref.sound.note",
+     "previous": "Товч, зөв хариулт, дуусгах үеийн богино дуу. Ярианы дуунаас намуухан сонсогдоно."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "pref.storyVoice.title",
+     "previous": "Түүхийн ярианы дуу"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "goal.support.independentNote",
+     "previous": "Тусламж зөвхөн та дарахад нээгдэнэ."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "life.checkProgress.note",
+     "previous": "Мэдээллийг устгаагүй. Бүртгэлээсээ холболтын төлвийг шалгана уу."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "account.pendingTitle",
+     "previous": "Одоохондоо хадгалж чадаагүй"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "account.conflictNote",
+     "previous": "Зоос, худалдан авсан зүйлс бүртгэлээр баталгаажсан үр дүнг дагана."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.accountProgressDevice",
+     "previous": "Бүртгэлийн явцтай холбогдож чадаагүй тул энэ төхөөрөмжийн мэдээллээр үргэлжилнэ."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "msg.progressNotSaved",
+     "previous": "Явцыг хараахан хадгалж чадаагүй."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "msg.lifeNotSynced",
+     "previous": "Өдөр тутмын солонгос хэлний явц SYNK бүртгэлд хараахан хадгалагдаагүй. Эх хувийг энэ төхөөрөмжид хадгалсан."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "msg.reasonRetry",
+     "previous": "Эхэндээ алдсан хэсгээ дахин дасгал хийцгээе."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "msg.reasonRetryGoal",
+     "previous": "Эхэндээ алдсан хэсгээ дахин дасгал хийцгээе. Энэ нь таны сонгосон зорилготой холбогдоно."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "msg.reasonGoal",
+     "previous": "Таны сонгосон зорилготой холбогдох үйл ажиллагаа. Богинохон эхэлцгээе."
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "msg.reasonNew",
+     "previous": "Дасгалын мэдээлэл одоохондоо цөөн байна. Богино дасгал хийх явцад тань тааруулна."
+    },
+    {
+     "line": 14,
+     "source": "life-content-lang",
+     "key": "expression.greet-hello",
+     "previous": "Анх уулзсан ч, хэнтэй ч уулзахдаа эелдгээр мэндлэх үг."
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "finish.song",
+     "previous": "Дуугаар давтах · «첫 인사 세 마디» 30 секунд"
+    }
+   ]
+  },
+  {
+   "file": "recheck2-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "grad.title",
+     "previous": "Солонгос үсгийн шатыг төгслөө!"
+    }
+   ]
+  }
+ ]
+}
