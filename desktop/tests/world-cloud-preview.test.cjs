@@ -49,6 +49,27 @@ test('tutor home stays native while ID links leave only at fixed canonical desti
   assert.equal(downloadSpec({...request,url:'blob:https://evil.invalid/synthetic'}),null);
 });
 
+// 「우리 반 수업」은 실시간·복습·재생목록·화상 링크를 새 탭(_blank)으로 연다. PC 창은 setWindowOpenHandler → externalDestination만 거치므로,
+// 여기서 막히면 PC 학생은 목록만 보고 수업을 못 연다(0.4.32 검수 P1). 웹 판 safeClassroomLink와 같은 주소만 시스템 브라우저로 나간다.
+test('「우리 반 수업」 links leave the WORLD window only where the web classroom rule opens them',async()=>{
+  const lessons=['https://www.youtube.com/watch?v=w3TueLive01','https://www.youtube.com/watch?v=w2ThuReplay&t=90','https://www.youtube.com/playlist?list=PLsynkTopik4Class1','https://meet.google.com/abc-defg-hij','https://zoom.us/j/123456789','https://us02web.zoom.us/j/987'];
+  for(const value of lessons){
+    for(const at of [entry,DEV_URLS.world])for(const mode of ['development','release'])assert.equal(externalDestination(value,at,'world',mode),value,value);
+    assert.equal(externalDestination(value,PLATFORM_ENTRY,'platform','release'),null,'platform '+value);
+    assert.equal(externalDestination(value,DEV_URLS.messenger,'messenger','development'),null,'messenger '+value);
+  }
+  const refused=['http://www.youtube.com/watch?v=w3TueLive01','https://youtube.com/watch?v=w3TueLive01','https://m.youtube.com/watch?v=w3TueLive01','https://www.youtube.com/watch?v=short','https://www.youtube.com:8443/watch?v=w3TueLive01',
+   'https://user:secret@www.youtube.com/watch?v=w3TueLive01','https://www.youtube.com/embed/w3TueLive01','https://www.youtube.com.evil.invalid/watch?v=w3TueLive01','https://www.youtube.com/playlist?list=short',
+   'https://meet.google.com/ABC-defg-hij','https://meet.google.com/abc-defg-hij/extra','https://zoom.us/j/12a','https://evilzoom.us/j/1','https://zoom.us.evil.invalid/j/1','javascript:alert(1)','file:///C:/lesson.mp4'];
+  for(const value of refused)assert.equal(externalDestination(value,entry,'world','release'),null,value);
+  // 웹 판 규칙과 같은지: 저장소에 WORLD 원천이 있으면 그 함수로 같은 표를 판정해 견준다(데스크톱 원천만 있는 사본에서는 건너뛴다).
+  const world=path.resolve(__dirname,'../../experiences/synk-world-app/classroom-lessons.mjs');
+  if(fs.existsSync(world)){
+    const {safeClassroomLink}=await import(require('node:url').pathToFileURL(world).href);
+    for(const value of [...lessons,...refused])assert.equal(externalDestination(value,entry,'world','release')!==null,safeClassroomLink(value),value);
+  }
+});
+
 test('returning from public games accepts one named play intent and rejects polluted query values',()=>{
   for(const play of ['learning-hub','korean-racing','korean-runner','korean-rhythm','order-rush','entry-check','story-classroom','blank-slice']){
     const value=accountEntry+'&play='+play;assert.equal(trustedEntry(value,entry,'world'),true);assert.equal(allowedNavigation(value,entry,'world'),true);

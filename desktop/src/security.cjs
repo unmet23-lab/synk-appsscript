@@ -57,8 +57,18 @@ function allowedNavigation(value,entry,clientId) {
   }
   return false;
 }
+// 「우리 반 수업」 링크(실시간·복습·재생목록·화상): WORLD 창이 새 탭으로 여는 그 주소만 시스템 브라우저로 넘긴다.
+// 웹 판 experiences/synk-world-app/classroom-lessons.mjs의 safeClassroomLink와 같은 규칙이다(계정 정보는 아래에서 먼저 거른다).
+function classroomDestination(u) {
+  if(u.protocol!=='https:'||u.port)return null;
+  const youtube=u.hostname==='www.youtube.com'&&((u.pathname==='/watch'&&/^[A-Za-z0-9_-]{11}$/.test(u.searchParams.get('v')??''))||(u.pathname==='/playlist'&&/^[A-Za-z0-9_-]{10,100}$/.test(u.searchParams.get('list')??'')));
+  const meet=u.hostname==='meet.google.com'&&/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(u.pathname);
+  const zoom=(u.hostname==='zoom.us'||/^[a-z0-9-]+\.zoom\.us$/.test(u.hostname))&&/^\/j\/\d+$/.test(u.pathname);
+  return youtube||meet||zoom?u.href:null;
+}
 function externalDestination(value,entry,clientId,mode) {
   try {const u=new URL(value),base=new URL(entry);if(u.username||u.password)return null;
+    if(clientId==='world'){const lesson=classroomDestination(u);if(lesson)return lesson;}
     if(clientId==='platform'&&value==='https://synk.im/account/client.html?product=platform')return value;
     if(clientId==='platform'&&Object.values(PUBLIC_APP_URLS).includes(value))return value;
     if(clientId==='world'&&entry!==WORLD_CLOUD_PREVIEW_ENTRY&&value==='https://synk.im/world/')return value;
