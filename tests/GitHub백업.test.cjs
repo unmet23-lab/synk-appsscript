@@ -5,7 +5,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
-const { inspectRepository, remoteIdentity, codeContentReason, acquireLock, requestArchiveTransfer, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
+const { inspectRepository, remoteIdentity, codeContentReason, acquireLock, requestArchiveTransfer, onlyArchiveTransferPending, deferNewSinceApply,
+  replaceFile, PREFIX } = require('../tools/GitHub백업.cjs');
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'github-backup-test-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -139,4 +140,20 @@ test('only a confirmed active transfer turns pure verification waiting into pend
   assert.equal(onlyArchiveTransferPending({ ...report, issues: [] }), false);
   assert.equal(onlyArchiveTransferPending({ ...report, repositories: [] }), false);
   assert.equal(onlyArchiveTransferPending({ ...report, repositories: [{ status: 'failed' }] }), false);
+});
+test('a receipt rename that Windows refuses for a moment is retried, while other errors still fail at once (10-19)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'receipt-rename-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const temp = path.join(dir, 'status.json.tmp'), file = path.join(dir, 'status.json');
+  fs.writeFileSync(file, 'old'); fs.writeFileSync(temp, 'new');
+  const original = fs.renameSync; let calls = 0;
+  const mocked = t.mock.method(fs, 'renameSync', function (...args) {
+    // 백신·색인기가 파일을 여는 동안의 거절을 두 번 흉내 낸다.
+    if (++calls <= 2) throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' });
+    return original.apply(this, args);
+  });
+  replaceFile(temp, file);
+  mocked.mock.restore();
+  assert.equal(calls, 3); assert.equal(fs.readFileSync(file, 'utf8'), 'new'); assert.equal(fs.existsSync(temp), false);
+  assert.throws(() => replaceFile(path.join(dir, 'missing.tmp'), file), error => error.code === 'ENOENT');
 });

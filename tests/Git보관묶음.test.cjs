@@ -4,8 +4,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const { Readable } = require('node:stream');
-const { createBundle, preserveRecord, BundleInspector, fileDigest, verifyDriveCoverage, selection, isolatedBundleRepository, archiveRefs } = require('../tools/Git보관묶음.cjs');
-const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApply } = require('../tools/GitHub백업.cjs');
+const { createBundle, preserveRecord, BundleInspector, fileDigest, verifyDriveCoverage, selection, isolatedBundleRepository, archiveRefs,
+  verifyPrerequisites } = require('../tools/Git보관묶음.cjs');
+const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
 const cryptoPath = path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptoPath) ? require(cryptoPath) : null;
 function fixture(t) {
@@ -216,6 +217,14 @@ test('a new branch name on a bundled commit stays covered by the last verified b
   const damaged = { repositories: [{ ...current, refs: [{ sha: f.head, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/renamed-copy'] }] }] };
   await reconcileEncryptedArchives(damaged, state, false);
   assert.equal(damaged.repositories[0].refs[0].status, 'public-origin-unpublished');
+});
+
+test('a failing git call leaves a fixed code naming the command and never its output (10-19)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'git-bundle-code-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const sha = 'a'.repeat(40), receipt = { requiredCommits: [sha], prerequisites: [{ sha, ref: PREFIX + sha }] };
+  // 저장소가 아닌 폴더에서 ls-remote가 실패한다. 오류 원문(경로·주소)은 메시지에 남지 않는다.
+  assert.throws(() => verifyPrerequisites({ path: dir, private: true }, receipt), error => error.message === 'GIT_LS_REMOTE_FAILED');
 });
 
 test('a branch that moves after the scan still bundles the scanned commit without touching the original refs (10-19)',

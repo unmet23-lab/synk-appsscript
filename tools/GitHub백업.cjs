@@ -217,11 +217,22 @@ function inspectRepository(repo, { apply = false, github = null, git = reader(re
   result.finishedAt = new Date().toISOString();
   return result;
 }
+// Windows는 백신·색인기나 영수증을 읽는 다른 도구가 그 파일을 잠깐 여는 동안 이름 바꾸기를 EPERM·EACCES·EBUSY로 거절한다.
+// 영수증을 몇 초마다 다시 쓰는 긴 단계(묶음·보호 소스)가 그 한 번으로 통째로 실패하지 않게 조금씩 기다리며 다시 바꾼다(10-19).
+function replaceFile(temp, file) {
+  for (let attempt = 1; ; attempt++) {
+    try { return fs.renameSync(temp, file); }
+    catch (error) {
+      if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= 20) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50 * attempt);
+    }
+  }
+}
 function atomicJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const temp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(temp, JSON.stringify(value, null, 2) + '\n');
-  fs.renameSync(temp, file);
+  replaceFile(temp, file);
 }
 function acquireLock(file) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -407,7 +418,7 @@ async function main(argv = process.argv.slice(2)) {
   return report.status === 'success' || report.status === 'pending' ? 0 : 1;
   } finally { unlock(); }
 }
-module.exports = { inspectRepository, inspectNewObjects, remoteIdentity, parseRefs, codeContentReason, acquireLock,
+module.exports = { inspectRepository, inspectNewObjects, remoteIdentity, parseRefs, codeContentReason, acquireLock, replaceFile,
   reconcileEncryptedArchives, deferNewSinceApply, requestArchiveTransfer, onlyArchiveTransferPending, main, PREFIX };
 if (require.main === module) main().then(code => { process.exitCode = code; }, () => {
   console.error('GITHUB_BACKUP_RUNNER_FAILED'); process.exitCode = 2;

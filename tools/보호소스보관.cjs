@@ -4,14 +4,14 @@
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const policy = require('./이어하기꾸러미.js');
 const { worktrees } = require('./onedrive-backup.cjs');
-const { acquireLock } = require('./GitHub백업.cjs');
+const { acquireLock, replaceFile } = require('./GitHub백업.cjs');
 const { fileDigest, verifyDriveCoverage } = require('./Git보관묶음.cjs');
 const SHA = /^[0-9a-f]{64}$/;
 const folded = file => path.resolve(file).toLowerCase();
 function atomicJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const temporary = file + '.' + process.pid + '.tmp';
-  fs.writeFileSync(temporary, JSON.stringify(value, null, 2) + '\n'); fs.renameSync(temporary, file);
+  fs.writeFileSync(temporary, JSON.stringify(value, null, 2) + '\n'); replaceFile(temporary, file);
 }
 function authorizedRoots(root) {
   const values = policy.systemScopes(root).map(row => ({ scope: row.name, root: row.root }));
@@ -208,7 +208,9 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
       report.issues.push({ code: 'PROTECTED_SOURCE_REPARSE_AFTER_CHECK', source: item.row.source });
     report.status = report.issues.length ? 'attention' : 'success';
   } catch (error) {
-    report.status = 'attention'; report.issues.push({ code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message : 'PROTECTED_SOURCE_INVENTORY_UNAVAILABLE', ...(error.row || {}) });
+    // 코드 꼴이 아닌 오류도 시스템 오류 코드(EPERM 등)는 남긴다. 메시지 원문은 남기지 않는다(10-19).
+    report.status = 'attention'; report.issues.push({ code: /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message
+      : /^E[A-Z]{2,20}$/.test(String(error.code)) ? 'PROTECTED_SOURCE_SYSTEM_' + error.code : 'PROTECTED_SOURCE_INVENTORY_UNAVAILABLE', ...(error.row || {}) });
   } finally {
     clearInterval(timer); report.finishedAt = report.checkedAt = new Date().toISOString();
     if (report.status === 'success') report.lastSuccessAt = report.finishedAt;

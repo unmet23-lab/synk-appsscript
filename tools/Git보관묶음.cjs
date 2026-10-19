@@ -5,17 +5,25 @@
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 const { spawn, execFileSync } = require('node:child_process');
 const { Transform } = require('node:stream');
-const { acquireLock, parseRefs, remoteIdentity, PREFIX } = require('./GitHub백업.cjs');
+const { acquireLock, parseRefs, remoteIdentity, replaceFile, PREFIX } = require('./GitHub백업.cjs');
 const OID = /^[0-9a-f]{40}$/;
 function gitReader(repo) {
-  return (args, input) => execFileSync('git', ['--no-optional-locks', '-C', repo, ...args], { input,
-    env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_TERMINAL_PROMPT: '0', GIT_NO_LAZY_FETCH: '1' },
-    windowsHide: true, timeout: 120000, maxBuffer: 64 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] });
+  return (args, input) => {
+    try {
+      return execFileSync('git', ['--no-optional-locks', '-C', repo, ...args], { input,
+        env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_TERMINAL_PROMPT: '0', GIT_NO_LAZY_FETCH: '1' },
+        windowsHide: true, timeout: 120000, maxBuffer: 64 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] });
+    } catch (error) {
+      // git 출력에는 주소·자격 정보가 섞일 수 있다. GitHub백업.cjs처럼 고정 코드만 남기되, 어느 명령이 실패했는지와
+      // 시간 초과인지는 남긴다. 예약 실행의 묶음 실패가 코드 없이 끝나 원인을 볼 수 없었다(10-19).
+      throw new Error('GIT_' + String(args[0]).toUpperCase().replace(/[^A-Z]+/g, '_') + (error.code === 'ETIMEDOUT' ? '_TIMEOUT' : '_FAILED'));
+    }
+  };
 }
 function atomicJson(file, data) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const temp = file + '.' + process.pid + '.tmp';
-  fs.writeFileSync(temp, JSON.stringify(data, null, 2) + '\n'); fs.renameSync(temp, file);
+  fs.writeFileSync(temp, JSON.stringify(data, null, 2) + '\n'); replaceFile(temp, file);
 }
 async function fileDigest(file) {
   let bytes = 0; const sha = crypto.createHash('sha256'), md5 = crypto.createHash('md5');
@@ -218,8 +226,13 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   const identity = remoteIdentity(git(['remote', 'get-url', 'origin']).toString().trim());
   if (!identity || identity !== record.repository || remoteIdentity(git(['remote', 'get-url', '--push', 'origin']).toString().trim()) !== identity)
     throw new Error('BUNDLE_ORIGIN_MISMATCH');
-  const info = github || JSON.parse(execFileSync('gh', ['api', `repos/${identity}`, '--jq', '{private: .private, full_name: .full_name}'],
-    { windowsHide: true, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'] }));
+  let info = github;
+  if (!info) {
+    try {
+      info = JSON.parse(execFileSync('gh', ['api', `repos/${identity}`, '--jq', '{private: .private, full_name: .full_name}'],
+        { windowsHide: true, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'] }));
+    } catch (error) { throw new Error(error.code === 'ETIMEDOUT' ? 'GITHUB_API_TIMEOUT' : 'GITHUB_API_FAILED'); }
+  }
   if (typeof info.private !== 'boolean' || info.full_name.toLowerCase() !== identity.toLowerCase()) throw new Error('BUNDLE_ORIGIN_IDENTITY_INVALID');
   if (info.private !== record.private) throw new Error('BUNDLE_ORIGIN_VISIBILITY_CHANGED');
   const { heads, sourceMappings, selectionHash, relative, file, manifestFile } = selection(record, vault);
@@ -294,8 +307,10 @@ async function main(argv = process.argv.slice(2)) {
       startedAt: new Date().toISOString(), checkedAt: new Date().toISOString(), heartbeatAt: new Date().toISOString(), status: 'running', bundles: [] };
     const destination = path.join(vault, 'git-bundle-status.json'); atomicJson(destination, status);
     const heartbeat = setInterval(() => { status.checkedAt = status.heartbeatAt = new Date().toISOString(); atomicJson(destination, status); }, 15000);
+    let current = null;
     try {
       for (const record of report.repositories.filter(repo => archiveRefs(repo).length)) {
+        current = record.name;
         const receipt = await preserveRecord(record, vault, cryptoTool, () => {
           status.checkedAt = status.heartbeatAt = new Date().toISOString(); atomicJson(destination, status);
         });
@@ -313,7 +328,10 @@ async function main(argv = process.argv.slice(2)) {
       return 0;
     } catch (error) {
       status.status = 'failed'; status.code = 'GIT_ENCRYPTED_BUNDLE_FAILED'; status.finishedAt = new Date().toISOString();
-      if (/^[A-Z][A-Z0-9_]{2,80}$/.test(error.message)) status.detailCode = error.message;
+      // 코드 꼴이 아닌 오류(파일 잠금·디스크 등)도 시스템 오류 코드와 저장소 이름은 남긴다. 메시지 원문은 남기지 않는다(10-19).
+      status.detailCode = /^[A-Z][A-Z0-9_]{2,80}$/.test(error.message) ? error.message
+        : /^E[A-Z]{2,20}$/.test(String(error.code)) ? 'SYSTEM_' + error.code : 'UNCLASSIFIED_ERROR';
+      if (current) status.failedRepository = current;
       atomicJson(destination, status); return 1;
     } finally { clearInterval(heartbeat); }
   } finally { unlock(); }
