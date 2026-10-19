@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..');
 const base=path.join(root,'docs/홍보물/계정별콘텐츠_20260909');
 const loom=require('../tools/lib/loom.js');
 const {assetNeedsRefresh,ASSET_TRANSFORM}=require('../docs/홍보물/계정별콘텐츠_20260909/만들기.cjs');
-const {CI에없는로컬자료}=require('./_git밖.js');
+const {CI에없는로컬자료,되살리지않는옛자료}=require('./_git밖.js');
 // Historical logo provenance is optional; current card layout is measured afresh.
 const 로고갱신='docs/홍보물/계정별콘텐츠_20260909/_검토/로고갱신_20260910.json',검토밖='검토 기록은 09-17 포괄 규칙으로 git 밖';
 let liveLayout;
@@ -79,7 +79,7 @@ test('완성 조합은 현행 승인 명세와 일치하며 사업명 원본과 
   const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
   const kit=path.join(root,'docs/홍보물/마케팅실행_20260909/브랜드킷');
   const approved=JSON.parse(fs.readFileSync(path.join(kit,'배치명세.json'),'utf8'));
-  const 없음=CI에없는로컬자료(로고갱신,검토밖);if(없음)t.diagnostic(없음);
+  const 없음=되살리지않는옛자료(로고갱신,검토밖);if(없음)t.diagnostic(없음);
   const applied=없음?null:JSON.parse(fs.readFileSync(path.join(base,'_검토/로고갱신_20260910.json'),'utf8'));
   assert.equal(approved.version,2);assert.equal(approved.items.length,8);
   for(const item of approved.items){

@@ -18,7 +18,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { CI에없는로컬자료 } = require('./_git밖.js');
+const { 되살리지않는옛자료 } = require('./_git밖.js');
 
 const 루트 = path.join(__dirname, '..');
 const 무대글 = fs.readFileSync(path.join(루트, 'bots/오버레이/무대.html'), 'utf8');
@@ -80,8 +80,9 @@ test('기본 편성은 공통 털 까몽 8컷과 공통 경계를 사용하고 �
   const 파일들 = [...컷[1].matchAll(/:\s*'([^']+\.webp)'/g)].map((m) => m[1]);
   assert.strictEqual(new Set(파일들).size, 8, '기본 까몽은 승인된 8컷이다. 기쁨은 눈웃음의 별칭이다');
   const 컷방 = path.resolve(path.dirname(path.join(루트, 'bots/오버레이/마스코트.html')), 경로[1]);
-  /* 10-03: 이 후보 자산 폴더는 git 에 없다(로컬에만 있다) — CI 체크아웃에서는 파일 확인만 건너뛴다(tests/_git밖.js). */
-  const 없음 = CI에없는로컬자료(path.relative(루트, 컷방).split(path.sep).join('/'), '까몽 후보 자산 폴더는 git 밖');
+  /* 10-03: 이 후보 자산 폴더는 git 에 없다(로컬에만 있다). 10-10 공간 정리가 지웠고 10-19에 되살리지 않기로 했다 —
+     라디오 DJ 화면은 GPT 이미지 2.5로 장면째 새로 굽는다. 폴더가 없으면 어디서든 파일 확인만 건너뛴다(tests/_git밖.js). */
+  const 없음 = 되살리지않는옛자료(path.relative(루트, 컷방).split(path.sep).join('/'), '까몽 후보 자산 폴더는 git 밖');
   if (없음) t.diagnostic(없음);
   else for (const 파일 of new Set(파일들)) {
     const p = path.join(컷방, 파일);
