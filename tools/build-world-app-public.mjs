@@ -59,11 +59,11 @@ function publicToolName(relative,bytes){
  if(/(^|\/)(vendor|node_modules)\//.test(relative)||/(^|\/)knowledge-engine\.js$/.test(relative))return null;
  if(/\.(html|js|mjs|css|json|txt|xml|md|svg|webmanifest)$/i.test(relative)){
   const text=bytes.toString('utf8').replace(/data:[^"')\s]+/g,'').replace(/[A-Za-z0-9+/=]{300,}/g,'');
-  return text.match(/suno|higgsfield|nano banana|midjourney|gpt[- ]image|edge[-_ ]tts|elevenlabs|gemini-[0-9][\w.-]*tts|ko-KR-[A-Za-z]+Neural|made with (suno|udio)/i)?.[0]||null;
+  return text.match(/suno|higgsfield|nano banana|midjourney|gpt[- ]image|edge[-_ ]tts|elevenlabs|typecast|gemini-[0-9][\w.-]*tts|ko-KR-[A-Za-z]+Neural|made with (suno|udio)/i)?.[0]||null;
  }
  if(/\.mp3$/i.test(relative)){
   const head=bytes.subarray(0,8192).toString('latin1');
-  return head.startsWith('ID3')?(head.match(/suno|\budio\b|gemini|elevenlabs|openai|edge[-_ ]?tts/i)?.[0]||null):null;
+  return head.startsWith('ID3')?(head.match(/suno|\budio\b|gemini|elevenlabs|typecast|openai|edge[-_ ]?tts/i)?.[0]||null):null;
  }
  return null;
 }
