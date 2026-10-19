@@ -99,17 +99,49 @@ async function receiptFromManifest(record, vault, manifestRelative) {
     throw new Error('BUNDLE_EXISTING_RECEIPT_MISMATCH');
   return { ...prior, reused: true, manifestPath: manifestFile, filePath: file };
 }
+// 원격 ref가 가리키는 커밋 가운데 이 저장소에 있는 것만 고른다(아직 받지 않은 끝은 뺀다).
+function presentCommits(git, remoteRefs) {
+  const ids = [...new Set(remoteRefs.map(row => row.sha))];
+  if (!ids.length) return [];
+  return git(['cat-file', '--batch-check=%(objectname) %(objecttype)'], Buffer.from(ids.join('\n') + '\n'))
+    .toString().trim().split('\n').filter(line => line.endsWith(' commit')).map(line => line.split(' ')[0]);
+}
+// sha가 원격 끝(tips) 가운데 하나에서 닿는지 한 번에 본다: `rev-list <sha> ^<끝>…`이 비면 닿는다.
+function reachedBy(git, tips, sha) {
+  if (!tips.length) return false;
+  if (tips.includes(sha)) return true;
+  return !git(['rev-list', '--max-count=1', '--stdin'], Buffer.from([sha, ...tips.map(tip => '^' + tip)].join('\n') + '\n')).toString().trim();
+}
+// 공개 원격의 선행 커밋에 닿는 원격 ref 하나(가지 먼저). 복원할 때 그 공개 저장소를 받으면 선행 커밋이 따라온다.
+function reachingRef(git, remoteRefs, tips, sha) {
+  if (!reachedBy(git, tips, sha)) return null;
+  const present = new Set(tips);
+  return remoteRefs.filter(row => present.has(row.sha))
+    .sort((a, b) => Number(b.ref.startsWith('refs/heads/')) - Number(a.ref.startsWith('refs/heads/')))
+    .find(row => reachedBy(git, [row.sha], sha)) || null;
+}
 function verifyPrerequisites(record, receipt) {
+  // 선행 커밋 행은 두 가지다. 비공개 원격에 refs/synk-backup/<sha>로 고정한 행과, 공개 원격에는 쓰지 않으므로
+  // 그 커밋에 닿는 공개 ref만 적은 행(public: true, 10-19). 저장소 공개 여부가 나중에 바뀌어도 행 종류대로 확인한다.
+  const pinnedRow = (row, sha) => row.sha === sha && row.ref === PREFIX + sha;
+  const publicRow = (row, sha) => row.sha === sha && row.public === true && typeof row.ref === 'string' && row.ref.startsWith('refs/');
   if (!Array.isArray(receipt.requiredCommits) || !Array.isArray(receipt.prerequisites) ||
       receipt.requiredCommits.length !== receipt.prerequisites.length ||
-      receipt.requiredCommits.some(sha => !OID.test(sha) || !receipt.prerequisites.some(row => row.sha === sha && row.ref === PREFIX + sha)))
+      receipt.requiredCommits.some(sha => !OID.test(sha) || !receipt.prerequisites.some(row => pinnedRow(row, sha) || publicRow(row, sha))))
     throw new Error('BUNDLE_PREREQUISITE_RECEIPT_INVALID');
-  if (!record.private && (receipt.prerequisites.length || receipt.requiredCommits.length))
-    throw new Error('PUBLIC_BUNDLE_MUST_BE_SELF_CONTAINED');
   if (!receipt.prerequisites.length) return;
-  const remote = parseRefs(gitReader(record.path)(['ls-remote', '--refs', 'origin', PREFIX + '*']));
-  if (receipt.prerequisites.some(required => !remote.some(row => row.sha === required.sha && row.ref === required.ref)))
-    throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
+  const git = gitReader(record.path);
+  const pinned = receipt.prerequisites.filter(row => pinnedRow(row, row.sha));
+  if (pinned.length) {
+    const remote = parseRefs(git(['ls-remote', '--refs', 'origin', PREFIX + '*']));
+    if (pinned.some(required => !remote.some(row => row.sha === required.sha && row.ref === required.ref)))
+      throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
+  }
+  const published = receipt.prerequisites.filter(row => publicRow(row, row.sha));
+  if (published.length) {
+    const tips = presentCommits(git, parseRefs(git(['ls-remote', '--refs', 'origin'])));
+    if (published.some(required => !reachedBy(git, tips, required.sha))) throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
+  }
 }
 async function verifyDriveCoverage(receipt, vault, { now = Date.now(), verification = null } = {}) {
   const verificationPath = path.join(vault, '상태', 'Git-보관', 'verify-status.json');
@@ -244,11 +276,10 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   if (prior) { verifyPrerequisites(record, prior); return prior; }
   if (fs.existsSync(file)) throw new Error('BUNDLE_UNRECEIPTED_DESTINATION');
   const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin']));
-  const ids = [...new Set(remoteRefs.map(row => row.sha))];
-  // Public origins never receive backup refs. Include complete ancestry so a
-  // future rewrite/deletion of a public branch cannot invalidate this archive.
-  const exclusions = info.private ? git(['cat-file', '--batch-check=%(objectname) %(objecttype)'], Buffer.from(ids.join('\n') + '\n'))
-    .toString().trim().split('\n').filter(line => line.endsWith(' commit')).map(line => line.split(' ')[0]) : [];
+  // 원격에 이미 있는 커밋은 공개 여부와 상관없이 뺀다. 비공개 원격은 경계 커밋을 refs/synk-backup에 고정하고,
+  // 공개 원격은 쓰지 않으므로 경계 커밋에 닿는 공개 ref만 적는다. 공개 원격도 전체 이력을 담으면 SYNK-appsscript는
+  // 실행마다 6.9GB 묶음이 됐다(10-19). 공개 원격의 끝이 이 저장소에 하나도 없을 때만 예전처럼 전체 이력을 담는다.
+  const exclusions = presentCommits(git, remoteRefs);
   if (info.private && !exclusions.length && remoteRefs.length) throw new Error('BUNDLE_REMOTE_PREREQUISITES_MISSING');
   const stageDir = path.join(vault, '.git-bundle-staging'); fs.mkdirSync(stageDir, { recursive: true });
   const staging = path.join(stageDir, crypto.randomUUID() + '.enc');
@@ -259,8 +290,14 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   try { detail = await createBundle({ repo: isolated.path, heads, exclusions, staging,
     pubPem: fs.readFileSync(cryptoTool.PUB(), 'utf8'), encryptStream: cryptoTool.encryptStream,
     onHeader(inspector) {
-      if (!info.private && inspector.prerequisites.length) throw new Error('PUBLIC_BUNDLE_MUST_BE_SELF_CONTAINED');
       for (const sha of inspector.prerequisites) {
+        if (!info.private) {
+          const reaching = reachingRef(git, remoteRefs, exclusions, sha);
+          if (!reaching) throw new Error('BUNDLE_PREREQUISITE_REMOTE_MISSING');
+          pinned.push({ sha, ref: reaching.ref, public: true, verifiedAt: new Date().toISOString() });
+          onProgress();
+          continue;
+        }
         const ref = PREFIX + sha;
         const present = remoteRefs.find(row => row.ref === ref);
         if (present && present.sha !== sha) throw new Error('BUNDLE_PREREQUISITE_COLLISION');
@@ -281,11 +318,13 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
     finishedAt: new Date().toISOString(), status: 'awaiting-drive-verification', group: 'Git-보관',
     relativePath: relative, manifestRelativePath: path.relative(path.join(vault, 'Git-보관'), manifestFile).replaceAll('\\', '/'),
     encrypted, ...detail, ...(sourceMappings.length ? { sourceMappings } : {}), prerequisites: pinned,
-    ...(info.private ? {} : { originVisibility: 'public', selfContained: true, remoteWrites: false }),
+    ...(info.private ? {} : { originVisibility: 'public', selfContained: !pinned.length, remoteWrites: false }),
     restore: { encryptedWithExistingUserKey: true, noPlaintextFileWritten: true,
       instruction: info.private
         ? 'Decrypt with the existing locked key and password. Fetch each prerequisite ref from the original private GitHub repository, then run git bundle verify and fetch this bundle in a separate clone.'
-        : 'Decrypt with the existing locked key and password. This public-origin archive has no prerequisites; verify and fetch it into a separate empty repository.' } };
+        : pinned.length
+          ? 'Decrypt with the existing locked key and password. Clone the public GitHub repository, which holds every prerequisite commit, then run git bundle verify and fetch this bundle in that clone.'
+          : 'Decrypt with the existing locked key and password. This public-origin archive has no prerequisites; verify and fetch it into a separate empty repository.' } };
   atomicJson(manifestFile, receipt);
   // Only this invocation's encrypted staging file is removed after two byte checks.
   if (path.dirname(staging) === stageDir && fs.existsSync(staging)) fs.unlinkSync(staging);

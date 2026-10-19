@@ -118,7 +118,7 @@ test('detached commits bundle from isolated refs without changing any original r
   assert.deepEqual(fs.readFileSync(path.join(f.source, '.git', 'index')), beforeIndex);
   assert.deepEqual(fs.readFileSync(path.join(f.source, 'history.bin')), beforeFile);
 });
-test('public unpublished heads, stash, and detached history archive without a remote write and restore into an empty repository',
+test('public unpublished heads, stash, and detached history archive only what the public origin lacks, without a remote write (10-19)',
   { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
   const f = fixture(t), remote = path.join(f.root, 'public.git'), empty = path.join(f.root, 'empty.git');
   f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]);
@@ -137,8 +137,11 @@ test('public unpublished heads, stash, and detached history archive without a re
   } };
   const cryptoTool = { PUB: () => pub, encryptStream: crypt.encryptStream };
   const receipt = await preserveRecord(record, f.root, cryptoTool, () => {}, dependencies);
-  assert.equal(receipt.selfContained, true); assert.equal(receipt.remoteWrites, false);
-  assert.deepEqual(receipt.requiredCommits, []); assert.deepEqual(receipt.prerequisites, []);
+  assert.equal(receipt.selfContained, false); assert.equal(receipt.remoteWrites, false);
+  // 공개 원격에 이미 있는 base는 묶지 않고, 그 커밋에 닿는 공개 가지만 적는다(10-19).
+  assert.deepEqual(receipt.requiredCommits, [f.base]);
+  assert.deepEqual(receipt.prerequisites.map(({ sha, ref, public: shown }) => ({ sha, ref, shown })),
+    [{ sha: f.base, ref: 'refs/heads/main', shown: true }]);
   assert.equal(receipt.heads.length, 3); assert.equal(calls.some(args => args[0] === 'push'), false);
   assert.equal((await verifyDriveCoverage(receipt, f.root)).code, 'GIT_ARCHIVE_AWAITING_DRIVE');
   const again = await preserveRecord(record, f.root, cryptoTool, () => {}, dependencies);
@@ -159,14 +162,16 @@ test('public unpublished heads, stash, and detached history archive without a re
     checkedAt: new Date().toISOString(), missing_or_bad: 0, historicalBad: 0, verifiedFiles }));
   await reconcileEncryptedArchives(report, state, false);
   assert.equal(record.status, 'success'); assert.equal(record.refs[0].status, 'encrypted-drive-verified');
-  const restored = path.join(f.root, 'public-restored.bundle');
+  const restored = path.join(f.root, 'public-restored.bundle'), publicClone = path.join(f.root, 'public-clone.git');
   await crypt.decryptFile(keys.privateKey, receipt.filePath, restored);
-  f.git(['init', '--bare', empty], f.root); f.git(['bundle', 'verify', restored], empty);
+  f.git(['init', '--bare', empty], f.root);
+  assert.throws(() => f.git(['bundle', 'verify', restored], empty), 'an empty repository lacks the public prerequisite');
+  f.git(['clone', '--bare', remote, publicClone], f.root); f.git(['bundle', 'verify', restored], publicClone);
   for (let i = 0; i < receipt.heads.length; i++) {
     const head = receipt.heads[i], target = 'refs/heads/recovered-' + i;
-    f.git(['fetch', restored, head.ref + ':' + target], empty);
-    assert.equal(f.git(['rev-parse', target], empty).toString().trim(), f.head);
-    assert.deepEqual(f.git(['show', target + ':history.bin'], empty), fs.readFileSync(path.join(f.source, 'history.bin')));
+    f.git(['fetch', restored, head.ref + ':' + target], publicClone);
+    assert.equal(f.git(['rev-parse', target], publicClone).toString().trim(), f.head);
+    assert.deepEqual(f.git(['show', target + ':history.bin'], publicClone), fs.readFileSync(path.join(f.source, 'history.bin')));
   }
   assert.equal(f.git(['show-ref'], remote).toString(), beforeRemote);
   assert.equal(f.git(['show-ref']).toString(), beforeLocal);
@@ -247,9 +252,50 @@ test('a branch that moves after the scan still bundles the scanned commit withou
   assert.equal(f.git(['rev-parse', 'archive-source']).toString().trim(), moved, 'the live branch keeps its newer commit');
   assert.equal(f.git(['show-ref']).toString(), beforeRefs);
   assert.deepEqual(fs.readdirSync(path.join(f.root, '.git-bundle-staging')), [], 'the pinned temporary repository is removed');
-  const restored = path.join(f.root, 'moved-restored.bundle'), empty = path.join(f.root, 'empty.git');
+  const restored = path.join(f.root, 'moved-restored.bundle'), publicClone = path.join(f.root, 'public-clone.git');
+  await crypt.decryptFile(keys.privateKey, receipt.filePath, restored);
+  f.git(['clone', '--bare', remote, publicClone], f.root); f.git(['bundle', 'verify', restored], publicClone);
+  f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/recovered'], publicClone);
+  assert.equal(f.git(['rev-parse', 'recovered'], publicClone).toString().trim(), f.head);
+});
+
+test('a public origin with no refs yet still gets a self-contained bundle that restores into an empty repository (10-19)',
+  { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
+  const f = fixture(t), keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
+  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); // 아직 아무것도 올리지 않은 공개 저장소
+  const record = { name: 'public-fixture', path: f.source, repository: 'unmet23-lab/public-fixture', private: false,
+    refs: [{ sha: f.head, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/archive-source'] }] };
+  const dependencies = { github: { private: false, full_name: record.repository }, git(args, input) {
+    if (args[0] === 'remote' && args[1] === 'get-url') return Buffer.from('git@github.com:unmet23-lab/public-fixture.git\n');
+    return f.git(args, f.source, input);
+  } };
+  const receipt = await preserveRecord(record, f.root, { PUB: () => pub, encryptStream: crypt.encryptStream }, () => {}, dependencies);
+  assert.equal(receipt.selfContained, true); assert.deepEqual(receipt.requiredCommits, []); assert.deepEqual(receipt.prerequisites, []);
+  const restored = path.join(f.root, 'self-contained.bundle'), empty = path.join(f.root, 'empty.git');
   await crypt.decryptFile(keys.privateKey, receipt.filePath, restored);
   f.git(['init', '--bare', empty], f.root); f.git(['bundle', 'verify', restored], empty);
   f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/recovered'], empty);
   assert.equal(f.git(['rev-parse', 'recovered'], empty).toString().trim(), f.head);
+});
+
+test('prerequisite rows are checked by their kind, whatever the origin visibility is now (10-19)', t => {
+  const f = fixture(t), remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  const reachable = { requiredCommits: [f.base], prerequisites: [{ sha: f.base, ref: 'refs/heads/main', public: true }] };
+  // 공개일 때 만든 묶음은 저장소를 다시 비공개로 돌려도 같은 확인으로 통과한다.
+  verifyPrerequisites({ path: f.source, private: false }, reachable);
+  verifyPrerequisites({ path: f.source, private: true }, reachable);
+  // 원격 어디에서도 닿지 않는 선행 커밋(로컬에만 있는 커밋)은 받을 수 없다.
+  assert.throws(() => verifyPrerequisites({ path: f.source, private: false },
+    { requiredCommits: [f.head], prerequisites: [{ sha: f.head, ref: 'refs/heads/main', public: true }] }),
+  error => error.message === 'BUNDLE_PREREQUISITE_REMOTE_MISSING');
+  // 고정 ref도 공개 표시도 없는 행은 영수증부터 틀렸다.
+  assert.throws(() => verifyPrerequisites({ path: f.source, private: false },
+    { requiredCommits: [f.base], prerequisites: [{ sha: f.base, ref: 'refs/heads/main' }] }),
+  error => error.message === 'BUNDLE_PREREQUISITE_RECEIPT_INVALID');
+  // 비공개일 때 고정한 행은 그 고정 ref가 원격에 있으면 공개가 된 뒤에도 통과한다.
+  f.git(['push', 'origin', `${f.base}:${PREFIX}${f.base}`]);
+  verifyPrerequisites({ path: f.source, private: false }, { requiredCommits: [f.base], prerequisites: [{ sha: f.base, ref: PREFIX + f.base }] });
 });
