@@ -50,3 +50,33 @@ test('14일 넘게 손대지 않은 폴더만 후보로 — 최근 파일이 하
     assert.equal(정리.글로(정리.목록만들기({ 임시: path.join(방, '없음'), 대기 })).includes('정리할 폴더 없음'), true);
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
+
+test('최근 작업이 경로로 끌어 쓰는 옛 폴더와 그 폴더가 다시 가리키는 폴더는 후보에서 뺀다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-refs-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('release-20261019/deploy/run.cjs', "const h=require('../../platform-ha-20261011/remote.cjs');");
+    쓰기('release-20261019/plan.json', '{"evidence":".tmp/old-evidence-20261012/result.json"}');
+    쓰기('release-20261019/README.md', '문서에만 적힌 `.tmp/doc-only-20261003/x.png`는 도구를 깨뜨리지 않는다.');
+    쓰기('release-20261019/isolated-source/copy.cjs', "require('../../copied-only-20261004/a.cjs')");
+    쓰기('platform-ha-20261011/remote.cjs', "require('../server-latency-20261013/common.cjs')");
+    쓰기('server-latency-20261013/common.cjs', '// 접속 도우미');
+    쓰기('old-evidence-20261012/result.json', '{}');
+    쓰기('doc-only-20261003/x.png', 'png');
+    쓰기('copied-only-20261004/a.cjs', '//');
+    쓰기('unrelated-20261001/a.cjs', "require('../../release-20261019/x.cjs')");
+    쓰기('video-20261002/clip.cjs', "// ../../.. 같은 점 경로만 있다");
+    for (const 이름 of ['platform-ha-20261011', 'server-latency-20261013', 'old-evidence-20261012', 'doc-only-20261003', 'copied-only-20261004', 'unrelated-20261001', 'video-20261002']) 옛날로(path.join(임시, 이름), 30);
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['copied-only-20261004', 'doc-only-20261003', 'unrelated-20261001', 'video-20261002'],
+      '옛 폴더가 최근 폴더를 가리키는 것·문서·소스 사본 안의 경로는 남길 이유가 아니다');
+    assert.deepEqual(목록.참조로남김.map((x) => x.이름), ['old-evidence-20261012', 'platform-ha-20261011', 'server-latency-20261013']);
+    assert.deepEqual(목록.참조로남김.find((x) => x.이름 === 'server-latency-20261013').가리킨, ['platform-ha-20261011']);
+    assert.match(정리.글로(목록), /최근 작업이 경로로 끌어 써서 목록에서 뺀 폴더 3개/);
+    const r = 정리.옮기기(['platform-ha-20261011', 'video-20261002'], { 임시, 대기, 지금: new Date(2026, 10, 1).getTime() });
+    assert.deepEqual(r.옮김, ['video-20261002']);
+    assert.ok(fs.existsSync(path.join(임시, 'platform-ha-20261011', 'remote.cjs')), '참조되는 폴더는 승인 목록에 있어도 옮기지 않는다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});

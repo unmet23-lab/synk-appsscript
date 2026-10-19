@@ -59,11 +59,55 @@ function git정보(폴더) {
   };
 }
 
+// 코드와 작은 설정 파일만 본다. 문서·로그·소스 사본은 경로를 적어도 도구를 깨뜨리지 않고, 읽기만 오래 걸린다.
+const 참조확장자 = new Map([['.cjs', 512 * 1024], ['.mjs', 512 * 1024], ['.js', 512 * 1024], ['.py', 512 * 1024], ['.ps1', 512 * 1024], ['.sh', 512 * 1024], ['.json', 64 * 1024]]);
+const 건너뛸폴더 = new Set(['node_modules', '.git', 'isolated-source', 'candidate', 'candidates', 'source', 'sources', 'snapshot', 'snapshots',
+  'dist', 'build', 'out', 'payload', 'images', 'frames', 'media', 'renders', '__pycache__']);
+// `../../옛폴더/…`·`.tmp/옛폴더/…`처럼 다른 .tmp 폴더를 가리키는 경로. 점으로 시작하는 이름(`..`)은 폴더 이름이 아니다.
+const 참조식 = /(?:(?:\.\.[\\/])+|\.tmp[\\/])([^.\\/'"`\s)\]][^\\/'"`\s)\]]*)/g;
+
+/**
+ * 주어진 폴더들의 코드·설정 파일에서 다른 .tmp 폴더를 가리키는 경로를 모은다(이름 → 가리킨 폴더들).
+ * 10-19: 회사 서버 릴리스 도구가 10-11~14 폴더(서버 접속 고정 정보·도우미)를 경로로 끌어 써서,
+ * 날짜만 보고 옮기면 최근 작업이 깨진다. 읽기만 하며 폴더마다·전체 파일 수에 상한을 둔다.
+ */
+function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: 2000, 전체: 60000 }) {
+  const 찾은 = new Map();
+  let 전체 = 0;
+  for (const 폴더 of 폴더들) {
+    const 쌓기 = [path.join(임시, 폴더)];
+    let 본파일 = 0;
+    while (쌓기.length && 본파일 < 상한.폴더당 && 전체 < 상한.전체) {
+      const 지금 = 쌓기.pop();
+      let 항목;
+      try { 항목 = fs.readdirSync(지금, { withFileTypes: true }); } catch { continue; }
+      for (const e of 항목) {
+        if (e.isSymbolicLink()) continue;
+        const p = path.join(지금, e.name);
+        if (e.isDirectory()) { if (!건너뛸폴더.has(e.name)) 쌓기.push(p); continue; }
+        const 최대 = 참조확장자.get(path.extname(e.name).toLowerCase());
+        if (!최대) continue;
+        let 글;
+        try { if (fs.statSync(p).size > 최대) continue; 글 = fs.readFileSync(p, 'utf8'); } catch { continue; }
+        본파일++; 전체++;
+        for (const m of 글.matchAll(참조식)) {
+          const 이름 = m[1];
+          if (이름 === 폴더 || !이름들.has(이름)) continue;
+          if (!찾은.has(이름)) 찾은.set(이름, new Set());
+          찾은.get(이름).add(폴더);
+        }
+      }
+    }
+  }
+  return 찾은;
+}
+
 function 목록만들기(옵션 = {}) {
   const { 임시, 대기, 일수 } = { ...기본, ...옵션 };
   const 지금 = 옵션.지금 || Date.now();
   const 기준 = 지금 - 일수 * 24 * 60 * 60 * 1000;
-  const 후보 = [];
+  let 후보 = [];
+  const 최근 = [];
   let 오래된파일 = 0, 오래된파일크기 = 0;
   for (const e of fs.existsSync(임시) ? fs.readdirSync(임시, { withFileTypes: true }) : []) {
     const p = path.join(임시, e.name);
@@ -73,12 +117,23 @@ function 목록만들기(옵션 = {}) {
       if (st.mtimeMs < 기준) { 오래된파일++; 오래된파일크기 += st.size; }
       continue;
     }
-    if (fs.existsSync(path.join(p, '_보존.txt'))) continue;
+    if (fs.existsSync(path.join(p, '_보존.txt'))) { 최근.push(e.name); continue; }
     const 잰것 = 훑기(p);
-    if (잰것.최신 >= 기준) continue;
+    if (잰것.최신 >= 기준) { 최근.push(e.name); continue; }
     후보.push({ 이름: e.name, MB: +(잰것.크기 / 1048576).toFixed(1), 파일: 잰것.파일, 마지막: new Date(잰것.최신).toISOString().slice(0, 10), git: git정보(p) });
   }
+  // 최근·보존 폴더가 끌어 쓰는 옛 폴더는 남긴다. 남긴 폴더가 다시 가리키는 폴더도 따라가며 남긴다.
+  const 참조로남김 = [];
+  let 볼곳 = 최근;
+  while (볼곳.length && 후보.length) {
+    const 찾은 = 참조모으기(임시, 볼곳, new Set(후보.map((c) => c.이름)));
+    if (!찾은.size) break;
+    for (const [이름, 가리킨] of 찾은) 참조로남김.push({ 이름, 가리킨: [...가리킨].sort() });
+    후보 = 후보.filter((c) => !찾은.has(c.이름));
+    볼곳 = [...찾은.keys()];
+  }
   후보.sort((a, b) => b.MB - a.MB);
+  참조로남김.sort((a, b) => a.이름.localeCompare(b.이름));
   let 대기폴더 = 0, 대기MB = 0;
   if (fs.existsSync(대기)) {
     for (const e of fs.readdirSync(대기, { withFileTypes: true })) {
@@ -87,7 +142,7 @@ function 목록만들기(옵션 = {}) {
       대기MB += 훑기(path.join(대기, e.name)).크기 / 1048576;
     }
   }
-  return { 후보, 오래된파일, 오래된파일MB: +(오래된파일크기 / 1048576).toFixed(1), 대기폴더, 대기MB: +대기MB.toFixed(1), 일수 };
+  return { 후보, 참조로남김, 오래된파일, 오래된파일MB: +(오래된파일크기 / 1048576).toFixed(1), 대기폴더, 대기MB: +대기MB.toFixed(1), 일수 };
 }
 
 function 글로(목록) {
@@ -97,6 +152,7 @@ function 글로(목록) {
     const g = c.git ? ` · git(미커밋 ${c.git.미커밋 ?? '?'} · 안 올린 커밋 ${c.git.안올린커밋 ?? '?'})` : '';
     줄.push(`- ${c.이름} · ${c.MB}MB · ${c.파일}개 · 마지막 ${c.마지막}${g}`);
   }
+  if (목록.참조로남김?.length) 줄.push(`오래됐지만 최근 작업이 경로로 끌어 써서 목록에서 뺀 폴더 ${목록.참조로남김.length}개: ${목록.참조로남김.slice(0, 8).map((x) => x.이름).join(', ')}${목록.참조로남김.length > 8 ? ' 외' : ''}`);
   if (목록.오래된파일) 줄.push(`맨 위 파일 중 ${목록.일수}일 넘은 것 ${목록.오래된파일}개 · ${목록.오래된파일MB}MB`);
   if (목록.대기폴더) 줄.push(`정리 대기(C:\\Users\\q1212\\SYNK_정리대기)에 지난 폴더 ${목록.대기폴더}개 · ${목록.대기MB}MB — 확인이 끝났으면 직접 지우시면 돼요.`);
   if (목록.후보.length) {
@@ -122,7 +178,7 @@ function 옮기기(이름들, 옵션 = {}) {
   return { ...결과, 위치: 목적 };
 }
 
-module.exports = { 목록만들기, 글로, 옮기기, 훑기 };
+module.exports = { 목록만들기, 글로, 옮기기, 훑기, 참조모으기 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);

@@ -1,5 +1,15 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="next-company-release-post-performance-20261019"></a>
+## 다음 회사 릴리스 후보 — 게시 성과 고침 (2026-10-19 Claude 준비 · 운영 전)
+
+유호님 「GPT에 넘기지 말고 전부 네가」(10-19). 위 PULSE 묶음은 10-19 17시 현재 별도 릴리스(`.tmp/pulse-client-care-release-20261019/`, 후보 `9f11564d…`)로 진행 중이라 끼우지 않고, 그다음 Claude 회사 릴리스에 싣는다. PULSE 묶음을 얹은 트리 위에서도 충돌 0이므로 새 부모 위에 `apply.cjs`로 3방향 적용한다.
+
+- **묶음:** [`.tmp/post-performance-fix-20261019/release/`](../../../../../.tmp/post-performance-fix-20261019/release/README.md). 기준은 같은 운영 부모 `30c93e84…`의 후보 원문, 파일 6개(코드 3·시험 3), 삭제·그림·스키마·환경변수·권한 변경 0. 운영 부모 사본에 PULSE 묶음 → 이 묶음 순서로 얹으면 충돌 0이다(`server.mjs` 3방향 병합).
+- **서버:** 비공개·일부 공개(`options.privacy`가 `private`·`unlisted`) 작업실 게시는 성과 관측에 등록하지 않고 연결을 끝낸다. 10-19 SNS 7일 시험 영상 두 지점이 공개 수치를 못 읽어 `POST_NOT_IN_RESPONSE` 재시도만 하던 원인이다. 게시 학습 카드의 지표 비교에 같은 계정·형식 이전 4편 이상일 때 `standing`(nearest-rank 상위·하위 25%)을 붙이고, 판정이 모두 같은 방향이면 v2 §6 다음 할 일(같은 형식 세 편 더 / 도입을 바꾼 판을 다른 계정에서)을 실험 맨 앞에 더한다.
+- **화면:** `public/publication-flow.js` 지표 줄에 「상위 25% · 이전 n편 기준」.
+- **운영 완료 조건:** 합본 후보의 전체·Linux 시험, `publication-flow.js` 공개 SHA 대조, 다음 공개 게시의 관측 등록과 비공개 예약 게시의 `performanceEntryId=null` 확인(읽기만), 새 백업·격리 복원·HA 재무장.
+
 <a id="first-load-state-production-20261019"></a>
 ## 첫 로드 state 이벤트 방어 운영 인수 · 2026-10-19
 
