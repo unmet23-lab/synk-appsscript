@@ -25,7 +25,8 @@
  *      .github/ 아래, 어느 파일도 부르지 않는 css·js·데이터 파일(지금 안 쓰는 옛 루트 app.js 등 — 알린다), 같은 이름의 파일이 여럿이라
  *      어느 것인지 모르는 참조(공개본 토큰 해시가 맞는 후보가 하나면 그것으로 본다 — 아니면 알린다).
  *   4. 검사: 배포 점검과 같은 도구 이름 규칙(후보의 .github/site-check/check.mjs에서 읽음) · 그림·영상의 생성 도구 표시(C2PA 등, --허용) ·
- *      더한 줄의 AI 이름(--허용) · 저장 용량(GitHub 한도 100MiB, 경고 50MiB) · 공개 경로(밑줄 폴더·제작 자료·Jekyll 머리말).
+ *      더한 줄의 AI 이름(영문·한글, --허용) · 더한 줄의 이 PC·작업 자리 경로(synk-vendor·Documents/ 등, --허용) ·
+ *      저장 용량(GitHub 한도 100MiB, 경고 50MiB) · 공개 경로(밑줄 폴더·제작 자료·Jekyll 머리말).
  *   5. --실행 --계획 <해시>: 계획 해시(경로마다 공개본 판 → 새 판)가 미리 보기와 같을 때만 별도 인덱스 → commit-tree → fetch 재확인 →
  *      push(강제 없음). 그사이 origin/main이 움직였으면 새 판 위에 다시 만들고, 계획이 바뀌면(남이 내 경로를 고침) 멈춘다(세 번까지).
  *   6. push 뒤 확인을 한다.
@@ -62,9 +63,22 @@ const 미디어파일 = /\.(png|jpe?g|webp|avif|gif|heic|mp4|m4v|mov|webm|m4a|wa
  * `c2pa.claim`·`c2pa.signature`처럼 점이 붙는다 — 맨 `c2pa` 넉 자는 큰 영상에서 우연히 나와(10-19 검수) 점까지 본다.
  */
 const 제작표시 = /c2pa\.|openai|chatgpt|gpt-image|trainedAlgorithmicMedia/i;
-/** 배포 점검에는 없는 AI 이름(더한 줄만 본다). 화면·데이터·주석에 도구 이름을 남기지 않는 원칙. */
-const AI이름 = /\b(?:claude(?:\.ai)?|anthropic|chatgpt|openai|codex|gpt-?[0-9][\w.]*|gpt[- ]?image|gemini|copilot|midjourney|higgsfield|suno|nano[ -]?banana|elevenlabs|seedance|kling|typecast)\b/i;
+/**
+ * 배포 점검에는 없는 AI 이름(더한 줄만 본다). 화면·데이터·주석에 도구 이름을 남기지 않는 원칙.
+ * 맨 `gpt`는 10-19 몽글 시범 공개에서 「GPT 이미지」가 새어 더했다(`\b`라 MonoGPT·gpt2 같은 붙은 이름은 따로 적는다).
+ * runway·llama·sora·veo처럼 흔한 낱말과 같은 이름은 숫자가 붙은 꼴만 본다(10-19 공개본 948개로 잰 거짓 경보: CSS runway,
+ * 스페인어 llama, 받아쓰기 모델 tokenizer.json).
+ */
+const AI이름 = /\b(?:claude(?:\.ai)?|anthropic|chatgpt|openai|codex|gpt-?[0-9][\w.]*|gpt[- ]?image|gpt|monogpt|gemini|copilot|midjourney|higgsfield|suno|udio|nano[ -]?banana|elevenlabs|seedance|kling|typecast|demucs|cosy ?voice|mmaudio|seedvr2?|hyperframes|comfy ?ui|qwen|hailuo|veo[- ]?[0-9]|sora[- ]?[0-9]|flux[ .-]?[0-9])\b/i;
+/** 한글로 적은 AI 이름. 다른 낱말 속에 들어가기 쉬운 것(사이클링·교수노조)은 앞 글자가 한글이 아닐 때만 본다. */
+const AI한글이름 = /지피티|제미나이|타입캐스트|힉스필드|나노 ?바나나|미드저니|일레븐 ?랩스|앤[트스]로픽|오픈 ?(?:AI|에이아이)|코파일럿|(?<![가-힣])(?:클로드|클링|수노|코덱스|제미니|[씨시]댄스)/i;
 const AI표현 = /AI ?생성|AI로 만든|AI가 만든|AI-generated|generated (?:by|with) AI|made (?:by|with) AI/i;
+/**
+ * 이 PC·작업 자리 경로(더한 줄만 본다). 10-19 몽글 시범 공개에서 `Documents/synk-vendor/…`가 주석에 실려 나갔다.
+ * AI 이름과 달리 맞춤 도구·vendor·처리방침까지 본다(`brief/katana/view.js`에도 있었다). 대소문자를 가린다 — 주소의 `/documents/`는 뺀다.
+ * 원고 위치 머리말 `SYNK-appsscript/docs/…`와 PC 이사 안내의 OneDrive는 일부러 둔 글이라 넣지 않는다.
+ */
+const 내부경로 = /synk-vendor|SYNK-worktrees|SYNK_보안|원본창고|\bq1212\b|\bAppData\b|\bDocuments[\\/]|\b[A-Za-z]:[\\/]{1,2}Users\b|\/c\/Users\b|\.claude[\\/]|scratchpad[\\/]|(?<![\w.-])\.tmp[\\/]/;
 /** AI 도구 사용법 자체가 내용인 맞춤 도구 페이지(배포 점검이 빼는 brief/와 같은 성격) — AI 이름 검사만 뺀다 */
 const 도구안내 = /^(en\/)?builds\//;
 /** 공개 묶음에 넣지 않는 제작 자료(10-02 첫 공개에 섞여 나간 꼴, 레이싱 qa/ 함정). */
@@ -587,7 +601,7 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
   const 허용 = new Set((옵션.허용 || []).map((p) => 공개경로(p)));
   const 한 = { ...한도, ...(옵션.한도 || {}) }; // 시험만 줄인다
   const 낱말 = 목록(규칙.낱말), 태그 = 목록(규칙.태그);
-  const 요약 = { 글: 0, mp3: 0, 미디어: 0, 더한줄: 0, 새바이트: 0, 새blob: 0 };
+  const 요약 = { 글: 0, mp3: 0, 미디어: 0, 더한줄: 0, 경로줄: 0, 새바이트: 0, 새blob: 0 };
   for (const x of 항목들) {
     if (!x.버퍼) continue;
     const p = x.경로;
@@ -614,17 +628,27 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
         if (허용.has(p)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` }); else 걸림.push(항);
       }
     }
-    // 3) 더한 줄의 AI 이름·「AI로 만든」 표현 — 사람이 보고 --허용으로 넘길 수 있다. 도구 사용법이 내용인 맞춤 도구(/builds/)도 뺀다.
-    if (!점검밖 && !도구안내.test(p) && !이진인가(x.버퍼) && /\.(html?|css|m?js|json|txt|xml|svg|webmanifest|md)$/i.test(p)) {
+    // 3) 더한 줄의 AI 이름(영문·한글)·「AI로 만든」 표현·이 PC 경로 — 사람이 보고 --허용으로 넘길 수 있다. AI 이름은 배포 점검이 빼는
+    //    곳과 도구 사용법이 내용인 맞춤 도구(/builds/)를 빼고, 이 PC 경로는 그런 곳까지 본다(.github/만 뺀다).
+    const 글파일 = !숨김 && !이진인가(x.버퍼) && /\.(html?|css|m?js|json|txt|xml|svg|webmanifest|md)$/i.test(p);
+    if (글파일) {
+      const 이름칸 = !점검밖 && !도구안내.test(p);
       const 줄들 = 더한줄(x.공개버퍼 || Buffer.alloc(0), x.버퍼);
-      요약.더한줄 += 줄들.length;
+      if (이름칸) 요약.더한줄 += 줄들.length;
+      요약.경로줄 += 줄들.length;
+      const 넘김 = (항) => { if (허용.has(p)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` }); else 걸림.push(항); };
+      let 이름봄 = !이름칸, 경로봄 = false;
       for (const 줄 of 줄들) {
         const 글 = 덩어리빼기(줄);
-        const m = 글.match(AI이름) || (/^(en\/)?pulse\//.test(p) ? null : 글.match(AI표현));
-        if (!m) continue;
-        const 항 = { 경로: p, 검사: 'AI 이름', 이유: `더한 줄에 “${글조각(글, m.index, m[0].length)}”` };
-        if (허용.has(p)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` }); else 걸림.push(항);
-        break;
+        if (!이름봄) {
+          const m = 글.match(AI이름) || 글.match(AI한글이름) || (/^(en\/)?pulse\//.test(p) ? null : 글.match(AI표현));
+          if (m) { 넘김({ 경로: p, 검사: 'AI 이름', 이유: `더한 줄에 “${글조각(글, m.index, m[0].length)}”` }); 이름봄 = true; }
+        }
+        if (!경로봄) {
+          const m = 글.match(내부경로);
+          if (m) { 넘김({ 경로: p, 검사: '내부 경로', 이유: `더한 줄에 이 PC·작업 자리 경로 “${글조각(글, m.index, m[0].length)}”` }); 경로봄 = true; }
+        }
+        if (이름봄 && 경로봄) break;
       }
     }
     // 4) 저장 용량(GitHub: 100MiB 넘는 파일은 push 거절, 50MiB 넘으면 경고)
@@ -1435,7 +1459,7 @@ function 올리기글(r, argv) {
   }
   if (r.검사) {
     const s = r.검사;
-    줄.push(`검사 — 도구 이름(${r.규칙출처}) 글 ${s.글}·MP3 ${s.mp3} · 제작 표시 미디어 ${s.미디어} · AI 이름 더한 줄 ${s.더한줄} · 저장 용량 새 blob ${s.새blob}개 ${바이트글(s.새바이트)}`);
+    줄.push(`검사 — 도구 이름(${r.규칙출처}) 글 ${s.글}·MP3 ${s.mp3} · 제작 표시 미디어 ${s.미디어} · AI 이름 더한 줄 ${s.더한줄} · 이 PC 경로 더한 줄 ${s.경로줄} · 저장 용량 새 blob ${s.새blob}개 ${바이트글(s.새바이트)}`);
   }
   for (const x of r.걸림 || []) 줄.push(`  걸림 [${x.검사}] ${x.경로 || ''} — ${x.이유}`);
   for (const x of r.알림 || []) {
