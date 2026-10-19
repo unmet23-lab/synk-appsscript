@@ -22,7 +22,7 @@
   }
   const reasonLi = x => `<li>${keepDots(x.t)}${badge(x.src)}</li>`;
 
-  // 화면마다 내용을 설명하는 펠트 그림(10-13 GPT 이미지 2.5로 한 판에 구워 오림, 판·지시문은 Documents/synk-vendor/katana-tool-felt/).
+  // 화면마다 내용을 설명하는 펠트 그림(10-13, 한 판에 구워 오림 — 만든 길과 판·지시문의 자리는 ../README.md 「파일」 표의 katana 줄).
   // 유호님 「각 사진마다 너무 똑같아서 별로야. 항상 내용에 도움이 되는 사진을 넣어야해」 → 같은 그림을 되풀이하지 않는다.
   const ART = {
     intro: ['katana-art-intro.webp', 605, 680],     // 말풍선 붙은 클래퍼보드: 말로 요청하면 영상이 된다
