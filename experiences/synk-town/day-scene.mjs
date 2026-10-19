@@ -167,7 +167,9 @@ function townFadeMesh(object, faded, mode, fadedMaterials) {
   if (!entry) {
     const original = object.material, list = Array.isArray(original) ? original : [original];
     const roof = list.some(material => material.userData.townSurface === 'roof');
-    const variants = roof ? [] : list.map(material => { const copy = material.clone(); copy.transparent = true; copy.opacity = material.opacity * .14; copy.depthWrite = false; return copy; });
+    // Material.clone() drops shader hooks; the baked district's sun-share hook
+    // (day-district.mjs bakedMaterial) has to stay on the faded copy too.
+    const variants = roof ? [] : list.map(material => { const copy = material.clone(); copy.onBeforeCompile = material.onBeforeCompile; copy.customProgramCacheKey = material.customProgramCacheKey; copy.transparent = true; copy.opacity = material.opacity * .14; copy.depthWrite = false; return copy; });
     entry = { original, roof, variants, fadedMaterial: Array.isArray(original) ? variants : variants[0], castShadow: object.castShadow, receiveShadow: object.receiveShadow, visible: object.visible };
     fadedMaterials.set(object, entry);
   }

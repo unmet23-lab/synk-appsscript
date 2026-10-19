@@ -195,7 +195,11 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
     // A missing or broken file restores the approved v20 town untouched.
     state.failed = String(error?.message || error); giveOuterBack(); ground.restore();   // outer first: it cut what the core cut left
     for (const root of attached) root.parent?.remove(root);
-    for (const object of hidden) object.visible = true; state.loaded = false; return state;
+    for (const object of hidden) object.visible = true; state.loaded = false;
+    // Occlusion volumes were rebuilt around the baked meshes as they attached;
+    // build them again around the v20 meshes that are back.
+    for (const root of [...targets, ...houses]) replaceVolume?.(root);
+    return state;
   };
   // Hide before the first frame so occlusion fading remembers hidden meshes.
   const places = request.set ? request.places : [request.placeId], targets = places.map(id => buildings.find(b => b.userData.placeId === id));
