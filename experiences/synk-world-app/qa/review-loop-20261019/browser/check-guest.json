@@ -1,0 +1,62 @@
+{
+ "mode": {
+  "operating": true,
+  "owner": "guest"
+ },
+ "plan": {
+  "owner": "guest",
+  "goals": [
+   "exam"
+  ],
+  "selected": "world.life.01.greetings",
+  "route": "lesson",
+  "excluded": [
+   [
+    "world.play.runner",
+    "activity.unavailable"
+   ],
+   [
+    "world.play.rhythm",
+    "activity.unavailable"
+   ]
+  ]
+ },
+ "homeTutor": {
+  "kind": "start",
+  "title": "첫 인사 세 마디",
+  "command": "learn",
+  "label": "맞춤 연습 시작",
+  "reason": "아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요."
+ },
+ "afterPress": {
+  "screen": "life-lesson",
+  "panel": "첫 인사 세 마디",
+  "lesson": "greetings-expressions"
+ },
+ "directGame": {
+  "screen": "world-signin",
+  "title": "계정 연결"
+ },
+ "errors": [],
+ "blockedHosts": [],
+ "guestHangul": {
+  "plan": {
+   "selected": "world.play.hangul",
+   "reasons": [
+    "progress.prerequisite"
+   ],
+   "excluded": [
+    "world.play.runner",
+    "world.play.rhythm"
+   ]
+  },
+  "opened": {
+   "screen": "game",
+   "title": "한글 만나기",
+   "src": "http://127.0.0.1:4638/world/hangul-stage/",
+   "host": false
+  },
+  "deviceProgressKey": [],
+  "errors": []
+ }
+}

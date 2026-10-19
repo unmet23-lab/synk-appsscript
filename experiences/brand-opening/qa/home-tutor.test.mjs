@@ -51,8 +51,12 @@ test('a first visit offers its real first lesson and an interrupted lesson keeps
  const lesson=LESSONS.find(l=>l.id==='plans-story');f.progress.startLesson(lesson);
  f.progress.setStage(lesson.id,{phase:'story',sceneIndex:1,questionIndex:0});
  const before=f.progress.exportSnapshot();
- assert.deepEqual(f.recommend(),{kind:'resume',title:lesson.title,command:'learn',label:'하던 학습 이어 하기'});
+ // 10-19: 열어 보기만 한 레슨(답한 문항 없음)은 다음 레슨으로 남지만(제목·자리 그대로) 「하던 학습」이 아니다 — 돌아온 복습을 가리지 않게.
+ assert.deepEqual(f.recommend(),{kind:'start',title:lesson.title,command:'learn',label:'오늘의 학습 시작'});
  assert.deepEqual(f.progress.exportSnapshot(),before);
+ assert.equal(f.progress.lessonState(lesson.id).stage.sceneIndex,1,'the opened lesson keeps its own position');
+ answer(f,lesson,0,{correct:true});
+ assert.deepEqual(f.recommend(),{kind:'resume',title:lesson.title,command:'learn',label:'하던 학습 이어 하기'});
 });
 
 test('a selected activity keeps its main action while actual difficulties remain available as guided help',()=>{

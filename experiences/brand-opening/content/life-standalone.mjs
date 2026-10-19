@@ -7164,6 +7164,7 @@ var require_vellum = __commonJS({
       const goal = reasons2.includes("goal.declared");
       if (reasons2.includes("activity.retry")) return `\uCC98\uC74C\uC5D0 \uB193\uCE5C \uBD80\uBD84\uC744 \uB2E4\uC2DC \uC5F0\uC2B5\uD574 \uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (reasons2.includes("activity.assisted")) return `\uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0B8 \uBD80\uBD84\uC774\uC5D0\uC694. \uD55C \uBC88 \uB354 \uC0B4\uD3B4\uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
+      if (reasons2.includes("practice.spent")) return `\uC774 \uD65C\uB3D9\uC758 \uC0C8 \uBB38\uD56D\uC740 \uBAA8\uB450 \uB9CC\uB0AC\uC5B4\uC694. \uB2E4\uC2DC \uD574\uB3C4 \uC88B\uC9C0\uB9CC \uC5F0\uC2B5 \uAE30\uB85D\uC740 \uC0C8 \uBB38\uD56D\uC73C\uB85C\uB9CC \uBC14\uB00C\uC5B4\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (goal) return "\uC9C1\uC811 \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694. \uC9E7\uAC8C \uC2DC\uC791\uD574 \uBD10\uC694.";
       if (reasons2.includes("history.incomplete")) return "\uAE30\uB85D\uC744 \uBAA8\uB450 \uD655\uC778\uD558\uAE30 \uC804\uC774\uB77C \uAE30\uBCF8 \uD65C\uB3D9\uC73C\uB85C \uC2DC\uC791\uD574\uC694.";
@@ -7754,7 +7755,7 @@ var require_learning = __commonJS({
         const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
         const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history.family.has(key));
         const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
-        ranked.push({ candidate, focus, score, lift, count });
+        ranked.push({ candidate, focus, score, lift, count, exhausted });
       }
       ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
       return ranked;
@@ -7808,21 +7809,22 @@ var require_learning = __commonJS({
           excluded.push({ id: candidate.id, reasons: blocked });
           continue;
         }
-        const target = targets[0] || null, state = target?.focus.status || "unseen";
+        const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
+        const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
         const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
         const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY2 ? candidate.practiceNeed : null;
-        const urgent = due || hostNeed || ["practice", "supported", "review"].includes(state);
-        const tier = urgent ? 0 : state === "recent-independent" ? 2 : 1;
+        const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
+        const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
         const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
         const reasons2 = [
           ...due ? ["review.due"] : [],
           ...hostNeed ? [`activity.${hostNeed.kind}`] : [],
-          ...target && state !== "unseen" ? [`practice.${state}`] : [],
+          ...spent ? ["practice.spent"] : target && state !== "unseen" ? [`practice.${state}`] : [],
           ...matchedGoals.length ? ["goal.declared"] : [],
           ...!profile.evidenceComplete ? ["history.incomplete"] : [],
-          ...!due && !hostNeed && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
+          ...!due && !hostNeed && !spent && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
         ];
-        ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons: reasons2 });
+        ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons: reasons2, spent });
       }
       ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
       const best = ranked[0];
@@ -12740,6 +12742,8 @@ var time = (value) => Number.isSafeInteger(value) && value >= 0;
 var empty = (owner) => ({ version: LIFE_PROGRESS_VERSION, owner, revision: 0, activeLessonId: null, activeReview: null, lessons: {}, reviews: {} });
 var TUTORS = /* @__PURE__ */ new Set(["marin", "kkamong", "mongle"]);
 var OUTCOMES = /* @__PURE__ */ new Set(["independent", "assisted", "retry"]);
+var HANGUL_ANSWERS = /* @__PURE__ */ new Set(["new", "reads"]);
+var HANGUL_VIA = /* @__PURE__ */ new Set(["question", "graduation", "skip", "unskip"]);
 var dailyId = (value) => safeId(value) && !["constructor", "prototype"].includes(value);
 var DAILY_MAX_TIME = 253402268399999;
 var dailyTime = (value) => time(value) && value <= DAILY_MAX_TIME;
@@ -12818,8 +12822,8 @@ function validate(raw, owner) {
   for (const [id, lesson2] of Object.entries(value.lessons)) {
     if (!safeId(id) || !object2(lesson2) || !safeId(lesson2.attemptId) || !time(lesson2.startedAt) || lesson2.completedAt !== null && !time(lesson2.completedAt) || !object2(lesson2.answers) || Object.keys(lesson2.answers).length > 100 || !Array.isArray(lesson2.questionIds) || lesson2.questionIds.length > 100 || !lesson2.questionIds.every(safeId) || new Set(lesson2.questionIds).size !== lesson2.questionIds.length) throw fail("LIFE_PROGRESS_UNREADABLE");
     if (lesson2.questionIds.some((id2) => !safeId(id2)) || Object.keys(lesson2.answers).some((id2) => !lesson2.questionIds.includes(id2))) throw fail("LIFE_PROGRESS_UNREADABLE");
-    for (const [qid, answer] of Object.entries(lesson2.answers)) if (!object2(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time(answer.at) || answer.choiceId !== null && !safeId(answer.choiceId) || answer.order !== void 0 && (id !== CAFE_COMPOSE_ID || qid !== "cafe-compose-order" || !isCafeOrder(answer.order, { complete: true })) || answer.input !== void 0 && (!isCafeLesson(id) || !isCafeListen(answer.input))) throw fail("LIFE_PROGRESS_UNREADABLE");
-    if (lesson2.stage !== void 0 && (!object2(lesson2.stage) || !["intro", "story", "questions"].includes(lesson2.stage.phase) || !time(lesson2.stage.sceneIndex) || !time(lesson2.stage.questionIndex) || lesson2.stage.sceneIndex > 100 || lesson2.stage.questionIndex > 100 || lesson2.stage.helped !== void 0 && typeof lesson2.stage.helped !== "boolean")) throw fail("LIFE_PROGRESS_UNREADABLE");
+    for (const [qid, answer] of Object.entries(lesson2.answers)) if (!object2(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time(answer.at) || answer.choiceId !== null && !safeId(answer.choiceId) || answer.helpSource !== void 0 && (answer.helpSource !== "setting" || answer.helped !== true) || answer.order !== void 0 && (id !== CAFE_COMPOSE_ID || qid !== "cafe-compose-order" || !isCafeOrder(answer.order, { complete: true })) || answer.input !== void 0 && (!isCafeLesson(id) || !isCafeListen(answer.input))) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (lesson2.stage !== void 0 && (!object2(lesson2.stage) || !["intro", "story", "questions"].includes(lesson2.stage.phase) || !time(lesson2.stage.sceneIndex) || !time(lesson2.stage.questionIndex) || lesson2.stage.sceneIndex > 100 || lesson2.stage.questionIndex > 100 || lesson2.stage.helped !== void 0 && typeof lesson2.stage.helped !== "boolean" || lesson2.stage.helpSource !== void 0 && (lesson2.stage.helpSource !== "setting" || lesson2.stage.helped !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
     if (lesson2.stage?.cafe !== void 0 && (!isCafeLesson(id) || lesson2.stage.phase !== "questions" || !isCafeCheckpoint(lesson2.stage.cafe, id) || lesson2.stage.questionIndex !== lesson2.stage.cafe.step || lesson2.stage.sceneIndex !== lesson2.stage.cafe.step || lesson2.stage.cafe.phase === "complete" && lesson2.questionIds.some((qid) => !lesson2.answers[qid]))) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
   for (const [id, review] of Object.entries(value.reviews)) {
@@ -12833,6 +12837,7 @@ function validate(raw, owner) {
   }
   if (value.daily !== void 0) validateDaily(value.daily);
   if (value.tutor !== void 0 && (!object2(value.tutor) || value.tutor.version !== 1 || !TUTORS.has(value.tutor.selected) || Object.keys(value.tutor).some((key) => !["version", "selected"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
+  if (value.hangul !== void 0 && (!object2(value.hangul) || value.hangul.version !== 1 || !HANGUL_ANSWERS.has(value.hangul.answer) || !time(value.hangul.at) || !HANGUL_VIA.has(value.hangul.via) || Object.keys(value.hangul).some((key) => !["version", "answer", "at", "via"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
   return value;
 }
 function createLifeProgress({ storage = globalThis.localStorage, owner = "guest", now = Date.now, uuid = () => crypto.randomUUID(), onChange = () => {
@@ -12930,7 +12935,10 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const saved = state.lessons[id], lesson2 = lessons.get(id), ids = lesson2?.questions.map((q) => q.id) || saved?.questionIds || [];
     const cursor = ids.findIndex((qid) => !saved?.answers[qid]);
     const position = cursor < 0 ? ids.length : cursor, stage = clone2(saved?.stage || { phase: "intro", sceneIndex: 0, questionIndex: 0, helped: false });
-    if (!stage.cafe && stage.phase === "questions" && stage.questionIndex !== position) stage.helped = false;
+    if (!stage.cafe && stage.phase === "questions" && stage.questionIndex !== position) {
+      stage.helped = false;
+      delete stage.helpSource;
+    }
     return { id, status: !saved ? "new" : saved.completedAt !== null ? "completed" : "started", cursor: position, total: ids.length, answers: clone2(saved?.answers || {}), stage, attemptId: saved?.attemptId || null, completedAt: saved?.completedAt ?? null };
   }
   function startLesson(value, { replay = false } = {}) {
@@ -12950,10 +12958,10 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     }
     return lessonState(lesson2.id);
   }
-  function stageValue(id, run, { phase, sceneIndex = 0, questionIndex = 0, helped = false, cafe } = {}) {
-    if (!run || !["intro", "story", "questions"].includes(phase) || !time(sceneIndex) || !time(questionIndex) || sceneIndex > 100 || questionIndex > run.questionIds.length || typeof helped !== "boolean") throw TypeError("Invalid lesson stage");
+  function stageValue(id, run, { phase, sceneIndex = 0, questionIndex = 0, helped = false, helpSource, cafe } = {}) {
+    if (!run || !["intro", "story", "questions"].includes(phase) || !time(sceneIndex) || !time(questionIndex) || sceneIndex > 100 || questionIndex > run.questionIds.length || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource)) throw TypeError("Invalid lesson stage");
     if (cafe !== void 0 && (!isCafeLesson(id) || phase !== "questions" || !isCafeCheckpoint(cafe, id) || questionIndex !== cafe.step || sceneIndex !== cafe.step || cafe.phase === "complete" && run.questionIds.some((qid) => !run.answers[qid]))) throw TypeError("Invalid cafe stage");
-    return { phase, sceneIndex, questionIndex, helped, ...cafe !== void 0 ? { cafe: clone2(cafe) } : {} };
+    return { phase, sceneIndex, questionIndex, helped, ...helped && helpSource === "setting" ? { helpSource: "setting" } : {}, ...cafe !== void 0 ? { cafe: clone2(cafe) } : {} };
   }
   function setStage(id, value = {}) {
     check3();
@@ -12962,18 +12970,20 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     commit(next);
     return lessonState(id);
   }
-  function recordAnswer({ lessonId, questionId, question: question2, correct, helped = false, choiceId = null, stage, order: order2, input } = {}) {
+  function recordAnswer({ lessonId, questionId, question: question2, correct, helped = false, helpSource, choiceId = null, stage, order: order2, input } = {}) {
     check3();
     if (question2) questionId = question2.id;
     const run = state.lessons[lessonId], q = questions.get(questionId) || question2;
-    if (!run || !q || !safeId(q.skillId) || !safeId(q.review?.id) || !run.questionIds.includes(questionId) || q.lessonId && q.lessonId !== lessonId || typeof correct !== "boolean" || typeof helped !== "boolean" || choiceId !== null && !safeId(choiceId)) throw TypeError("Invalid life answer");
+    if (!run || !q || !safeId(q.skillId) || !safeId(q.review?.id) || !run.questionIds.includes(questionId) || q.lessonId && q.lessonId !== lessonId || typeof correct !== "boolean" || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource) || choiceId !== null && !safeId(choiceId)) throw TypeError("Invalid life answer");
     if (order2 !== void 0 && (lessonId !== CAFE_COMPOSE_ID || questionId !== "cafe-compose-order" || !isCafeOrder(order2, { complete: true })) || input !== void 0 && (!isCafeLesson(lessonId) || !isCafeListen(input) || input.mode === "listen" && !input.heard && !input.textShown)) throw TypeError("Invalid cafe response");
     if (run.answers[questionId]) return { ...lessonState(lessonId), duplicate: true };
-    helped = helped || input?.mode === "listen" && input.textShown || run.stage?.phase === "questions" && run.stage?.questionIndex === run.questionIds.indexOf(questionId) && run.stage?.helped === true;
+    const staged = run.stage?.phase === "questions" && run.stage?.questionIndex === run.questionIds.indexOf(questionId) && run.stage?.helped === true;
+    helped = helped || input?.mode === "listen" && input.textShown || staged;
+    const source = !helped ? null : helpSource === "setting" || helpSource == null && staged && run.stage.helpSource === "setting" ? "setting" : "user";
     const at = now(), next = clone2(state), id = q.review.id, old = next.reviews[id];
-    next.lessons[lessonId].answers[questionId] = { correct, helped, choiceId, at, ...order2 !== void 0 ? { order: clone2(order2) } : {}, ...input !== void 0 ? { input: clone2(input) } : {} };
+    next.lessons[lessonId].answers[questionId] = { correct, helped, choiceId, at, ...source === "setting" ? { helpSource: "setting" } : {}, ...order2 !== void 0 ? { order: clone2(order2) } : {}, ...input !== void 0 ? { input: clone2(input) } : {} };
     if (stage !== void 0) next.lessons[lessonId].stage = stageValue(lessonId, next.lessons[lessonId], stage);
-    const difficult = !correct || helped;
+    const difficult = !correct || helped && source !== "setting";
     const dueAt = old ? difficult ? Math.min(old.dueAt, at + MINUTE) : old.dueAt : at + (difficult ? MINUTE : DAY);
     next.reviews[id] = {
       id,
@@ -13003,16 +13013,17 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (!duplicate || state.activeLessonId === id) commit(next);
     return { id, completed: true, duplicate, completedAt: next.lessons[id].completedAt, totalCompleted: Object.values(state.lessons).filter((v) => v.completedAt !== null).length };
   }
-  function dueReviews(limit = 100) {
+  function dueReviews(limit = 100, horizon = now()) {
     check3();
-    return Object.values(state.reviews).filter((v) => v.dueAt <= now()).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
+    return Object.values(state.reviews).filter((v) => v.dueAt <= horizon).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
   }
-  function startReview(limit = 6, preferredId = null, allowedIds = null) {
+  function startReview(limit = 6, preferredId = null, allowedIds = null, { soon = false } = {}) {
     check3();
     const existing = state.activeReview;
     if (existing && existing.ids.some((id) => !existing.answers[id])) return clone2(existing);
     if (allowedIds !== null && (!Array.isArray(allowedIds) || allowedIds.length > 100 || new Set(allowedIds).size !== allowedIds.length || allowedIds.some((id) => !safeId(id) || !state.reviews[id]))) throw TypeError("Invalid review selection");
-    const due = dueReviews(100).filter((row) => allowedIds === null || allowedIds.includes(row.id));
+    if (soon && allowedIds === null) throw TypeError("An early review needs its expressions");
+    const due = dueReviews(100, now() + (soon ? MINUTE : 0)).filter((row) => allowedIds === null || allowedIds.includes(row.id));
     if (preferredId) {
       const index = due.findIndex((r) => r.id === preferredId);
       if (index > 0) due.unshift(...due.splice(index, 1));
@@ -13090,6 +13101,20 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     commit(next, { preserveDaily: true });
     return { tutor, duplicate: false, status: status() };
   }
+  function hangulReading() {
+    check3();
+    if (readError) throw readError;
+    return state.hangul ? clone2(state.hangul) : null;
+  }
+  function setHangulReading(answer, { via = "question" } = {}) {
+    checkDailyWrite();
+    if (!HANGUL_ANSWERS.has(answer) || !HANGUL_VIA.has(via)) throw TypeError("Invalid Hangul reading answer");
+    if (state.hangul?.answer === answer) return { hangul: clone2(state.hangul), duplicate: true, status: status() };
+    const next = clone2(state);
+    next.hangul = { version: 1, answer, at: now(), via };
+    commit(next, { preserveDaily: true });
+    return { hangul: clone2(next.hangul), duplicate: false, status: status() };
+  }
   function learningProfile() {
     check3();
     if (readError) throw readError;
@@ -13125,13 +13150,14 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const cafeNext = latest && isCafeLesson(latest.id) ? nextVisit || ordered.find((l) => l.packId === "cafe" && state.lessons[l.id]?.completedAt == null) : null;
     const next = active || cafeNext || ordered.find((lesson2) => state.lessons[lesson2.id]?.completedAt == null) || null;
     const due = dueReviews(), total = ordered.length, completed = ordered.filter((lesson2) => state.lessons[lesson2.id]?.completedAt != null).length;
+    const resume = !!active && Object.keys(state.lessons[active.id]?.answers || {}).length > 0;
     return {
       owner,
       completed,
       total,
       allCompleted: total > 0 && completed === total,
       nextLesson: next ? { ...next, progress: lessonState(next.id) } : null,
-      resume: !!active,
+      resume,
       cafe: { completed: visits.filter((l) => state.lessons[l.id]?.completedAt != null).length, total: visits.length, nextNumber: next && isCafeLesson(next.id) ? CAFE_LESSON_IDS.indexOf(next.id) + 1 : null },
       dueCount: due.length,
       dueReviews: due.slice(0, 6),
@@ -13180,6 +13206,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     markDayComplete,
     selectedTutor,
     selectTutor,
+    hangulReading,
+    setHangulReading,
     learningProfile,
     learningProfileValues,
     updateLearningProfile,
@@ -13697,7 +13725,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
+  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
   let sittingSince = Date.now(), hiddenSince = 0, restKey = null;
@@ -13811,6 +13839,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (context.phase === "cafe") {
       if (tutorState().requiresHearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
+      helpBy = "user";
       persistCafe();
       renderCafe();
       return;
@@ -13818,6 +13847,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!["questions", "review"].includes(context.phase)) return;
     if (!lastFeedback) {
       helped = true;
+      helpBy = "user";
       if (context.phase === "questions") persistStage();
       else getProgress().markReviewHelp(context.reviewId);
     }
@@ -13830,6 +13860,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const value = tutorState();
     if (value.questionId !== id || value.answered) return;
     helped = true;
+    helpBy = "user";
     if (context.phase === "cafe") persistCafe();
     else if (context.phase === "questions") persistStage();
     else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
@@ -14056,6 +14087,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     reviewRun = null;
     lastFeedback = null;
     helped = state.stage.helped === true;
+    helpBy = helped ? state.stage.helpSource === "setting" ? "setting" : "user" : null;
     cafeRun = null;
     cafeView = "";
     if (isCafeLesson(id)) {
@@ -14072,7 +14104,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     renderLesson();
   }
   function cafeStage(value = cafeRun) {
-    return { phase: "questions", sceneIndex: value.step, questionIndex: value.step, helped, cafe: value };
+    return { phase: "questions", sceneIndex: value.step, questionIndex: value.step, helped, helpSource: helpBy || void 0, cafe: value };
   }
   function persistCafe() {
     getProgress().setStage(context.lessonId, cafeStage());
@@ -14083,6 +14115,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const q = cafeQuestion(cafeRun.step, context.lessonId), first = q ? getProgress().lessonState(context.lessonId).answers[q.id] : null;
     if (!first && !helped && preferences().support === "step" && ["choose", "repair", "response"].includes(cafeRun.phase)) {
       helped = true;
+      helpBy = "setting";
       if (cafeRun.listen?.mode === "listen") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       persistCafe();
     }
@@ -14097,7 +14130,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     ensureHeard();
     speech.stop();
     const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id), correct = choiceId === q.answerId;
-    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct, helped, stage: cafeStage(next2), input: cafeRun.listen });
+    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct, helped, helpSource: helpBy || void 0, stage: cafeStage(next2), input: cafeRun.listen });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
@@ -14107,7 +14140,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     ensureHeard();
     const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
     speech.stop();
-    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId: next2.choiceId, correct: next2.choiceId === q.answerId, helped, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
+    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId: next2.choiceId, correct: next2.choiceId === q.answerId, helped, helpSource: helpBy || void 0, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
@@ -14136,6 +14169,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     speech.stop();
     const next2 = advanceCafe(cafeRun, context.lessonId);
     helped = false;
+    helpBy = null;
     getProgress().setStage(context.lessonId, cafeStage(next2));
     cafeRun = next2;
     if (next2.phase === "complete") finishCafe();
@@ -14157,7 +14191,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function persistStage() {
     const p = getProgress();
-    if (context) p.setStage(context.lessonId, { phase: context.phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, helped });
+    if (context) p.setStage(context.lessonId, { phase: context.phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, helped, helpSource: helpBy || void 0 });
   }
   function lessonHeader(l) {
     const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context.phase;
@@ -14205,9 +14239,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
     if (!q) return finish();
     const previous = getProgress().lessonState(l.id).answers[q.id];
-    if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q, helped: previous.helped };
+    if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q, helped: previous.helped, helpBy: previous.helped ? previous.helpSource === "setting" ? "setting" : "user" : null };
     if (!lastFeedback && !helped && preferences().support === "step") {
       helped = true;
+      helpBy = "setting";
       persistStage();
     }
     paint(l.title, `${lessonHeader(l)}${questionMarkup(q, lastFeedback, { lesson: l, packId: l.packId, rest: restLine(`question:${l.id}`) })}`, { type: "life-question", focus: ".life-question-title" });
@@ -14215,9 +14250,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function questionMarkup(q, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
     const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape2(c.text)}</span></button>`).join("");
-    const result = feedback ? feedback.correct && !feedback.helped ? "ok" : feedback.correct ? "assisted" : "retry" : "";
+    const result = !feedback ? "" : !feedback.correct ? "retry" : !feedback.helped ? "ok" : feedback.helpBy === "setting" ? "guided" : "assisted";
     const answer = q.choices.find((c) => c.id === q.answerId)?.text || "";
-    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape2(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape2(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small>${retryButton(q)}</div>` : ""}</div>` : "";
+    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "guided" ? "\uB3C4\uC6C0\uC744 \uD3BC\uCCD0 \uB450\uACE0 \uB9DE\uD614\uC5B4\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape2(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape2(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>${result === "guided" ? "\uB2E4\uC74C \uBCF5\uC2B5\uC5D0\uC11C\uB294 \uBA3C\uC800 \uD63C\uC790 \uACE8\uB77C \uBD10\uC694." : "\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694."}</small>${retryButton(q)}</div>` : ""}</div>` : "";
     const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape2(q.context || lesson2?.title || "")}</p></div>` : "";
     return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape2(origin)}</small>` : ""}<h3>${escape2(q.prompt)}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape2(q.explanation)}</p>${rest}</section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div></section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
   }
@@ -14225,24 +14260,35 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (lastFeedback) return;
     const p = getProgress(), l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
     const correct = choiceId === q.answerId;
-    p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped });
-    lastFeedback = { question: q, choiceId, correct, helped };
+    p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped, helpSource: helpBy || void 0 });
+    lastFeedback = { question: q, choiceId, correct, helped, helpBy };
     justChose = true;
     renderQuestion();
     judge(correct);
   }
   const nextLink = (nextLesson) => `<button class="quiet-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${onNext ? "\uB2E4\uC74C \uC5F0\uC2B5" : nextLesson ? "\uB2E4\uC74C \uB808\uC2A8" : "\uD329 \uBAA9\uB85D \uBCF4\uAE30"}</button>`;
+  function resultGroups(l, answers) {
+    const rows2 = l.questions.flatMap((q) => {
+      const a = answers[q.id];
+      return a ? [{ q, a, expression: expressionOf(l, q) }] : [];
+    });
+    return { alone: rows2.filter((r) => r.a.correct && !r.a.helped), guided: rows2.filter((r) => r.a.correct && r.a.helped && r.a.helpSource === "setting"), again: rows2.filter((r) => !r.a.correct || r.a.helped && r.a.helpSource !== "setting") };
+  }
+  const resultList = (rows2, { group, label, count, note = () => "" }) => `<section class="${group === "again" ? "life-result-again" : "life-result-learned"}" data-group="${group}" aria-label="${escape2(count)}"><p class="life-section-label">${label}</p><p class="life-result-count">${escape2(count)}</p><ul>${rows2.map((r) => `<li><strong>${escape2(r.expression.korean)}</strong>${note(r) ? `<small>${escape2(note(r))}</small>` : ""}</li>`).join("")}</ul></section>`;
   function finish() {
     const p = getProgress(), l = lessonById(context.lessonId);
     p.finishLesson(l.id);
     const s = summary(), done = p.lessonState(l.id);
     context.phase = "complete";
     const pack2 = packById(l.packId), packState = s.packs.find((x) => x.id === pack2.id), complete = packState.completed === packState.total, [word] = packWords[pack2.id] || [pack2.title];
-    const missed = l.questions.find((q) => {
-      const a = done.answers[q.id];
-      return a && (!a.correct || a.helped);
-    }), again = missed ? expressionOf(l, missed) : null;
-    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${learnedList(l.expressions)}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${escape2(again.korean)}</strong><div><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815</button></div></section>` : ""}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape2(word)} \uD329 \uB3C4\uC7A5` : `${escape2(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${nextLink(s.nextLesson)}</div>`, { type: "life-complete" });
+    const { alone, guided, again } = resultGroups(l, done.answers);
+    const lists = [
+      alone.length ? resultList(alone, { group: "alone", label: "ON YOUR OWN", count: `\uD63C\uC790 \uB9DE\uD798 ${alone.length}\uAC1C` }) : "",
+      guided.length ? resultList(guided, { group: "guided", label: "WITH HELP", count: `\uB3C4\uC6C0\uC744 \uD3BC\uCCD0 \uB450\uACE0 \uB9DE\uD798 ${guided.length}\uAC1C`, note: () => "\uB2E4\uC74C \uBCF5\uC2B5\uC5D0\uC11C \uBA3C\uC800 \uD63C\uC790 \uACE8\uB77C \uBD10\uC694." }) : "",
+      again.length ? resultList(again, { group: "again", label: "AGAIN", count: `\uB2E4\uC2DC \uBCFC \uAC83 ${again.length}\uAC1C`, note: (r) => r.a.correct ? "\uB3C4\uC6C0\uC744 \uC5F4\uACE0 \uB9DE\uD614\uC5B4\uC694" : "\uB2E4\uB978 \uD45C\uD604\uC744 \uACE8\uB790\uC5B4\uC694" }) : ""
+    ].join("");
+    const quiet = again.length ? `<button class="quiet-button" data-life-review-lesson="${escape2(l.id)}" data-life-review-ids="${escape2(again.map((r) => r.q.review.id).join(","))}">\uC0C8 \uC7A5\uBA74\uC73C\uB85C \uB2E4\uC2DC \uBCF4\uAE30</button>` : nextLink(s.nextLesson);
+    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${lists}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape2(word)} \uD329 \uB3C4\uC7A5` : `${escape2(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${quiet}</div>`, { type: "life-complete" });
     celebrate();
     const ticket = generation;
     p.flush().catch(() => {
@@ -14259,6 +14305,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context = null;
     lastFeedback = null;
     helped = false;
+    helpBy = null;
     reviewRun = null;
     const s = summary(), future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot();
     const items = s.dueReviews.map((r) => {
@@ -14267,13 +14314,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }).filter((i) => i.korean);
     paint("\uBCF5\uC2B5", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `\uB3CC\uC544\uC628 \uD45C\uD604 ${s.dueCount}\uAC1C` : future ? "\uB2E4\uC74C \uBCF5\uC2B5" : "\uC544\uC9C1 \uBCF5\uC2B5\uC774 \uC5C6\uC5B4\uC694"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C\uC694." : future ? `${escape2(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB808\uC2A8\uC744 \uD558\uB098 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uD560 \uD45C\uD604\uC774 \uC0DD\uACA8\uC694."}</p></section>${items.length ? `<section class="life-review-list" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong>${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uBCF5\uC2B5 \uC2DC\uC791\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C</button>'}</div>`, { type: "life-review" });
   }
-  function reviewStart(lessonId = null, requestedIds = null) {
-    const p = getProgress(), ids = Array.isArray(requestedIds) ? requestedIds : null;
-    reviewRun = p.startReview(ids ? Math.min(6, ids.length) : 6, ids?.[0] || null, ids);
+  function reviewStart(lessonId = null, requestedIds = null, { soon = false } = {}) {
+    const p = getProgress(), ids = Array.isArray(requestedIds) && requestedIds.length ? requestedIds : null;
+    reviewRun = p.startReview(ids ? Math.min(6, ids.length) : 6, ids?.[0] || null, ids, { soon: soon && !!ids });
     if (!reviewRun) return review();
     for (const id of reviewRun.ids) if (exposedTransfers.has(id) && !reviewRun.answers[id]) p.markReviewHelp(id);
     lastFeedback = null;
     helped = false;
+    helpBy = null;
     renderReview();
   }
   function renderReview() {
@@ -14292,12 +14340,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       return;
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q2) => q2.id === record2.questionId), q = original.review;
-    if (!lastFeedback) helped = run.pendingHelp?.[id] === true;
-    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
-    if (!lastFeedback && !helped && preferences().support === "step") {
-      helped = true;
-      getProgress().markReviewHelp(id);
+    if (!lastFeedback) {
+      helped = run.pendingHelp?.[id] === true;
+      helpBy = helped ? "user" : null;
     }
+    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
     paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape2(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { packId: record2.packId, origin: `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604`, rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
@@ -14306,7 +14353,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const q = context.reviewQuestion, p = getProgress(), correct = id === q.answerId;
     p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct, helped });
     helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
-    lastFeedback = { question: q, choiceId: id, correct, helped };
+    helpBy = helped ? "user" : null;
+    lastFeedback = { question: q, choiceId: id, correct, helped, helpBy };
     const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context.reviewId}`) });
     paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${escape2(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
@@ -14358,16 +14406,19 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (context.phase === "review") {
         lastFeedback = null;
         helped = false;
+        helpBy = null;
         renderReview();
       } else {
         context.questionIndex++;
         lastFeedback = null;
         helped = false;
+        helpBy = null;
         persistStage();
         renderLesson();
       }
     },
-    "review-start": reviewStart,
+    "review-start": () => reviewStart(),
+    "review-lesson": (el) => reviewStart(el.dataset.lifeReviewLesson, (el.dataset.lifeReviewIds || "").split(",").filter(Boolean), { soon: true }),
     pause,
     "cafe-choice": (el) => cafeChoose(el.dataset.lifeCafeChoice),
     "cafe-next": cafeNext,
@@ -14396,6 +14447,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     "cafe-transcript": () => {
       cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
+      helpBy = "user";
       persistCafe();
       renderCafe();
       content.querySelector(".cafe-staff>p")?.focus({ preventScroll: true });
@@ -14409,6 +14461,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     },
     "cafe-help": () => {
       helped = true;
+      helpBy = "user";
       persistCafe();
       renderCafe();
       content.querySelector("[data-life-cafe-help]")?.focus({ preventScroll: true });
@@ -14445,7 +14498,21 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   document.addEventListener("click", click);
   timer = setInterval(updateHome, 15e3);
   updateHome();
-  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
+  function hangulReading() {
+    try {
+      return getProgress().hangulReading();
+    } catch {
+      return null;
+    }
+  }
+  async function setHangulReading(answer, options) {
+    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    const p = getProgress(), result = p.setHangulReading(answer, options);
+    updateHome();
+    await p.flush();
+    return result;
+  }
+  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, hangulReading, setHangulReading, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
     ended = true;
     speech.dispose();
     story.dispose();
@@ -14788,7 +14855,7 @@ function practiceNeed(review, progress2, now) {
   if (!latest || latest.at < review.lastAt || !["retry", "assisted"].includes(latest.kind)) return null;
   return { kind: latest.kind, at: iso2(latest.at), evidenceRefs: [`life.${review.lessonId}.${review.questionId}`] };
 }
-function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {}, now = Date.now() } = {}) {
+function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {}, now = Date.now(), openGames = null } = {}) {
   const at = clock(now), source = record(progress2) ? progress2 : {}, candidates = [];
   PACKS.forEach((pack, index) => {
     const next = pack.lessons.find((lesson2) => !time2(source.lessons?.[lesson2.id]?.completedAt));
@@ -14835,6 +14902,7 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       conceptIds: [...target.conceptIds]
     };
   });
+  const access = (id) => !Array.isArray(openGames) || openGames.includes(id) ? {} : { available: false, accountRequired: true };
   candidates.push(
     {
       id: "world.play.runner",
@@ -14847,7 +14915,8 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       goals: ["exam", "prepare", "listening", "travel"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("runner")
     },
     {
       id: "world.play.rhythm",
@@ -14860,7 +14929,8 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       goals: ["exam", "prepare", "listening", "culture", "hobby", "explore"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("rhythm")
     },
     {
       id: "world.play.hangul",
@@ -14873,7 +14943,8 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       goals: ["study", "culture", "hobby", "explore"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("hangul")
     }
   );
   return candidates;
@@ -14881,7 +14952,8 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
 function resumeCandidates(progress2, settings, now) {
   const result = [];
   const lesson2 = knownLessons.get(progress2?.activeLessonId), saved = lesson2 && progress2.lessons?.[lesson2.id];
-  if (lesson2 && saved && time2(saved.startedAt) && saved.startedAt <= now) {
+  const answered = record(saved?.answers) && Object.keys(saved.answers).length > 0;
+  if (lesson2 && saved && answered && time2(saved.startedAt) && saved.startedAt <= now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
@@ -14909,13 +14981,13 @@ function resumeCandidates(progress2, settings, now) {
   });
   return result;
 }
-function createWorldLearningPlan({ summary = null, progress: progress2 = {}, settings = {}, now = Date.now(), recommendActivities, answers = null } = {}) {
+function createWorldLearningPlan({ summary = null, progress: progress2 = {}, settings = {}, now = Date.now(), recommendActivities, answers = null, openGames = null } = {}) {
   if (typeof recommendActivities !== "function") throw TypeError("WORLD learning plan needs Core recommendActivities");
   const at = clock(now), source = record(progress2) ? progress2 : {}, normalized = worldLearningSettings(settings), told = answersOf(answers);
   const profile = record(summary) && Array.isArray(summary.skills) && typeof summary.evidenceComplete === "boolean" ? summary : { skills: [], evidenceComplete: false, asOf: iso2(at) };
   const skills = new Set(profile.skills.map((skill2) => skill2.id));
   const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
-  const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
+  const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at, openGames }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
   const ready = candidates.map((candidate) => withAnswers({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }, told));
   const ranking = told.interested.length ? { ...normalized, goals: [.../* @__PURE__ */ new Set([...normalized.goals, ...told.interested.map((id) => `interest.${id}`)])] } : normalized;
   const chosen = recommendActivities({ profile, candidates: ready, settings: ranking, at: iso2(at) });
@@ -14928,28 +15000,30 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
     reasons: [...chosen.reasons, "interest.declared"]
   } : chosen;
   const excluded = new Set((ranked.excluded || []).map((item) => item.id));
-  const offered = resumes.find((resume) => !excluded.has(resume.id) && [ranked.selected, ...ranked.alternatives || []].some((item) => item?.id === resume.id)) || null;
-  const result = offered ? {
+  const listed = [ranked.selected, ...ranked.alternatives || []].filter(Boolean);
+  const offered = resumes.find((resume) => !excluded.has(resume.id) && listed.some((item) => item.id === resume.id)) || null;
+  const prerequisite = !offered && source.hangul?.answer === "new" ? listed.find((item) => item.route === "game" && item.gameId === "hangul") || null : null;
+  const lead = offered || prerequisite;
+  const result = lead ? {
     ...ranked,
     status: "ready",
-    selected: offered,
-    alternatives: [ranked.selected, ...ranked.alternatives || []].filter((item) => item && item.id !== offered.id),
-    reason: "\uD558\uB358 \uD559\uC2B5\uC758 \uAC19\uC740 \uC790\uB9AC\uC5D0\uC11C \uC774\uC5B4\uAC00\uC694. \uB2E4\uB978 \uD65C\uB3D9\uC744 \uACE8\uB77C\uB3C4 \uC9C0\uAE08 \uC9C4\uB3C4\uB294 \uB0A8\uC544 \uC788\uC5B4\uC694.",
-    reasons: ["progress.resume"],
-    basis: "host-progress",
-    id: offered.id,
+    selected: lead,
+    alternatives: listed.filter((item) => item.id !== lead.id),
+    ...offered ? { reason: "\uD558\uB358 \uD559\uC2B5\uC758 \uAC19\uC740 \uC790\uB9AC\uC5D0\uC11C \uC774\uC5B4\uAC00\uC694. \uB2E4\uB978 \uD65C\uB3D9\uC744 \uACE8\uB77C\uB3C4 \uC9C0\uAE08 \uC9C4\uB3C4\uB294 \uB0A8\uC544 \uC788\uC5B4\uC694.", reasons: ["progress.resume"], basis: "host-progress" } : { reason: "\uD55C\uAE00\uBD80\uD130 \uB9CC\uB098\uC694. \uC18C\uB9AC\uB97C \uB4E3\uACE0 \uAE00\uC790\uB97C \uACE0\uB974\uBA70 \uC77D\uB294 \uBC95\uC744 \uC775\uD600\uC694.", reasons: ["progress.prerequisite"], basis: "host-prerequisite" },
+    id: lead.id,
     evidence: [],
     hostEvidence: null,
-    reviewAt: offered.reviewAt || null,
-    reviewSource: offered.reviewAt ? "host-schedule" : null,
+    reviewAt: lead.reviewAt || null,
+    reviewSource: lead.reviewAt ? "host-schedule" : null,
     focusSkillId: null,
     state: null,
-    matchedGoals: offered.goals.filter((goal) => normalized.goals.includes(goal))
+    matchedGoals: lead.goals.filter((goal) => normalized.goals.includes(goal))
   } : ranked;
   return {
     ...result,
     candidates: ready,
     resume: offered,
+    prerequisite,
     presentation: presentationFor(settings),
     settings: normalized,
     answers: told,
@@ -15034,13 +15108,23 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
         home.updateStudy?.(null);
         return null;
       }
-      let summary = empty2;
+      let summary = empty2, coachNow = null;
       try {
-        summary = readCoach()?.summary() || empty2;
+        coachNow = readCoach();
+        summary = coachNow?.summary() || empty2;
         applyPreferences();
       } catch {
       }
-      current = createPlan({ summary, progress: progress2.exportSnapshot(), settings: settingsFor(progress2.learningProfileValues()), now: Date.now(), recommendActivities: engine.recommendActivities });
+      const recommendActivities = (input) => {
+        if (summary !== empty2 && typeof coachNow?.recommendActivities === "function") {
+          try {
+            return coachNow.recommendActivities(input.candidates, { settings: input.settings, at: input.at });
+          } catch {
+          }
+        }
+        return engine.recommendActivities(input);
+      };
+      current = createPlan({ summary, progress: progress2.exportSnapshot(), settings: settingsFor(progress2.learningProfileValues()), now: Date.now(), recommendActivities });
       home.updateStudy?.(current);
       return current;
     } catch {
@@ -15054,7 +15138,12 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
   async function next() {
     check3();
     const profile = getProgress().learningProfile().profile;
-    if (profile.status === "new") {
+    let reading = null;
+    try {
+      reading = getProgress().hangulReading?.()?.answer || null;
+    } catch {
+    }
+    if (profile.status === "new" && reading !== "new") {
       open({ continueAfter: true });
       return;
     }

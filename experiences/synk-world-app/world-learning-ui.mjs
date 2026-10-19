@@ -54,15 +54,20 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   try{
    check();const progress=getProgress(),save=progress.status();
    if(['unreadable','conflict','loading'].includes(save.phase)||save.rejected){current=null;home.updateStudy?.(null);return null;}
-   let summary=empty;
-   try{summary=readCoach()?.summary()||empty;applyPreferences();}catch{/* Unavailable account evidence remains unknown. */}
-   current=createPlan({summary,progress:progress.exportSnapshot(),settings:settingsFor(progress.learningProfileValues()),now:Date.now(),recommendActivities:engine.recommendActivities});
+   let summary=empty,coachNow=null;
+   try{coachNow=readCoach();summary=coachNow?.summary()||empty;applyPreferences();}catch{/* Unavailable account evidence remains unknown. */}
+   // The coach's own call also hands Core what was already presented, so an activity whose items are
+   // all used (practice.spent) is told apart from one that still has new items. Any failure keeps the plain call.
+   const recommendActivities=input=>{if(summary!==empty&&typeof coachNow?.recommendActivities==='function'){try{return coachNow.recommendActivities(input.candidates,{settings:input.settings,at:input.at});}catch{}}return engine.recommendActivities(input);};
+   current=createPlan({summary,progress:progress.exportSnapshot(),settings:settingsFor(progress.learningProfileValues()),now:Date.now(),recommendActivities});
    home.updateStudy?.(current);return current;
   }catch{current=null;home.updateStudy?.(null);return null;}finally{refreshing=false;}
  }
  async function next(){
   check();const profile=getProgress().learningProfile().profile;
-  if(profile.status==='new'){open({continueAfter:true});return;}
+  // 첫 실행에 「아직 못 읽어요」를 고른 사람에게 한국어 글로 된 목표 창을 먼저 내밀지 않는다. 한글 만나기가 먼저다(10-19).
+  let reading=null;try{reading=getProgress().hangulReading?.()?.answer||null;}catch{}
+  if(profile.status==='new'&&reading!=='new'){open({continueAfter:true});return;}
   await prepare();check();
   // The account's first memory read is bounded; wait for it so a help style chosen on another
   // screen or device is the one this plan uses. Device-local practice still starts without it.

@@ -36,7 +36,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  try{
   const health=await waitServer();assert.equal(health.mode,'account');assert.equal(health.database,null);assert.equal(health.rehearsal,false);
   assert.equal((await fetch(url+'/api/world/rehearsal/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accountKey:'player-a'})})).status,404);
-  browserServer=await playwright.chromium.launchServer({channel:'msedge',headless:true,ignoreDefaultArgs:['--disable-back-forward-cache'],timeout:30000});browser=await playwright.chromium.connect(browserServer.wsEndpoint());
+  browserServer=await playwright.chromium.launchServer({channel:'chrome',headless:true,ignoreDefaultArgs:['--disable-back-forward-cache'],timeout:30000});browser=await playwright.chromium.connect(browserServer.wsEndpoint());
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});context.setDefaultTimeout(20000);
   // Only the isolated static server and the exact fixtures below may receive traffic.
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
@@ -79,6 +79,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);assert.equal(await page.evaluate(()=>window.__synkHome.isMaru),true);
   // First visit asks for an AI tutor (10-12 gate). Choose one so the home becomes interactive.
+  // 10-19: 「한글을 읽을 수 있어요?」 comes first (first-run.mjs); this account answers that it reads Hangul.
+  await passHangulStep();
   await page.waitForFunction(()=>document.querySelector('.tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
   if(await page.locator('.tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>document.querySelector('.world-shell')?.dataset.entry==='ready');}
   // 「나」 moved from the tab bar to the profile capsule in the 10-14 redesign (same data-view="me").
@@ -117,7 +119,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The 3D room hides the old next-lesson pill (10-12). Its path now is the 배우기 tab's 「지금 할 일」 poster,
   // which opens the same summary.nextLesson (10-14 redesign).
   // Each owner (account or guest) chooses a tutor once; pass that gate when it appears.
-  async function passTutorGate(){await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] .tutor-option'));}}
+  async function passHangulStep(){await page.waitForFunction(()=>document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] [data-first-hangul="reads"]').count()){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}}
+  async function passTutorGate(){await passHangulStep();await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] .tutor-option'));}}
   async function learnFromHome(){await passTutorGate();await page.locator('.world-nav [data-view="packs"]').click();const next=page.locator('.life-now [data-life-lesson]');await next.waitFor();await next.click();}
   await page.waitForFunction(()=>{try{return window.__synkWorld.life()?.owner==='11111111-1111-4111-8111-111111111111';}catch{return false;}});
   const lifeLesson=LESSONS.find(lesson=>lesson.id==='greetings-expressions'),lifeStory=LESSONS.find(lesson=>lesson.id==='greetings-story');

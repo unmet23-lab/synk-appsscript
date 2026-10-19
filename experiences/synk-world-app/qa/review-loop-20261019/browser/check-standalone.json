@@ -1,0 +1,17 @@
+{
+ "connected": null,
+ "firstStep": "hangul",
+ "plan": {
+  "selected": "world.play.hangul",
+  "reasons": [
+   "progress.prerequisite"
+  ],
+  "hangul": {
+   "version": 1,
+   "answer": "new",
+   "at": 1792394262708,
+   "via": "question"
+  }
+ },
+ "errors": []
+}

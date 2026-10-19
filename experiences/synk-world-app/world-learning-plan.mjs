@@ -110,7 +110,10 @@ function practiceNeed(review,progress,now){
  return {kind:latest.kind,at:iso(latest.at),evidenceRefs:[`life.${review.lessonId}.${review.questionId}`]};
 }
 
-export function buildWorldLearningCandidates({progress={},settings={},now=Date.now()}={}){
+// openGames: 지금 열 수 있는 게임 ID 목록(null이면 전부). 공개판(계정 모드) 손님은 10-19 결정으로 한글 만나기만 열고
+// 바람길·리듬은 로그인부터 연다. 열 수 없는 게임은 「지금 열 수 없음」으로 넘겨 Core가 빼게 하고(activity.unavailable)
+// 다음 후보를 고르게 한다 — 손님이 같은 로그인 창을 맴돌지 않게.
+export function buildWorldLearningCandidates({progress={},settings={},now=Date.now(),openGames=null}={}){
  const at=clock(now),source=record(progress)?progress:{},candidates=[];
  PACKS.forEach((pack,index)=>{
   const next=pack.lessons.find(lesson=>!time(source.lessons?.[lesson.id]?.completedAt));
@@ -127,13 +130,14 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
  }
  const runnerTargets=LISTENING_CHECKS.map(item=>{const target=checkMetadata(item);return {id:target.id,skillIds:[target.skillId],difficulty:target.difficulty,
   modality:target.modality,responseFormat:target.responseFormat,familyKeys:[target.familyKey],itemKey:target.itemKey,conceptIds:[...target.conceptIds]};});
+ const access=id=>!Array.isArray(openGames)||openGames.includes(id)?{}:{available:false,accountRequired:true};
  candidates.push(
   {id:'world.play.runner',label:'바람길 · 짧은 지시 듣기',route:'game',gameId:'runner',minutes:3,minutesEstimated:true,targets:runnerTargets,
-   goals:['exam','prepare','listening','travel'],audioRequired:true,modality:'listening',presentation:presentationFor(settings)},
+   goals:['exam','prepare','listening','travel'],audioRequired:true,modality:'listening',presentation:presentationFor(settings),...access('runner')},
   {id:'world.play.rhythm',label:'말의 리듬 · 듣고 내용 확인',route:'game',gameId:'rhythm',minutes:4,minutesEstimated:true,targets:copy(RHYTHM_CANDIDATES),
-   goals:['exam','prepare','listening','culture','hobby','explore'],audioRequired:true,modality:'listening',presentation:presentationFor(settings)},
+   goals:['exam','prepare','listening','culture','hobby','explore'],audioRequired:true,modality:'listening',presentation:presentationFor(settings),...access('rhythm')},
   {id:'world.play.hangul',label:'한글 만나기 · 소리와 글자',route:'game',gameId:'hangul',minutes:5,minutesEstimated:true,targets:[],
-   goals:['study','culture','hobby','explore'],audioRequired:true,modality:'listening',presentation:presentationFor(settings)},
+   goals:['study','culture','hobby','explore'],audioRequired:true,modality:'listening',presentation:presentationFor(settings),...access('hangul')},
  );
  return candidates;
 }
@@ -141,7 +145,9 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
 function resumeCandidates(progress,settings,now){
  const result=[];
  const lesson=knownLessons.get(progress?.activeLessonId),saved=lesson&&progress.lessons?.[lesson.id];
- if(lesson&&saved&&time(saved.startedAt)&&saved.startedAt<=now){
+ // A lesson only opened (no answered question) is not 「하던 자리」: it must not jump ahead of a returned review.
+ const answered=record(saved?.answers)&&Object.keys(saved.answers).length>0;
+ if(lesson&&saved&&answered&&time(saved.startedAt)&&saved.startedAt<=now){
   const index=PACKS.findIndex(pack=>pack.id===lesson.packId);
   result.push({...lessonCandidate(lesson,index,settings),id:`world.resume.lesson.${lesson.id}`,resume:true,label:`${lesson.title} · 이어 하기`});
  }
@@ -157,13 +163,13 @@ function resumeCandidates(progress,settings,now){
 }
 
 // `answers` ({interested, notNow}: worldTopicAnswers) are the person's own answers on 「내 성향」.
-export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null}={}){
+export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null,openGames=null}={}){
  if(typeof recommendActivities!=='function')throw TypeError('WORLD learning plan needs Core recommendActivities');
  const at=clock(now),source=record(progress)?progress:{},normalized=worldLearningSettings(settings),told=answersOf(answers);
  const profile=record(summary)&&Array.isArray(summary.skills)&&typeof summary.evidenceComplete==='boolean'?summary:{skills:[],evidenceComplete:false,asOf:iso(at)};
  const skills=new Set(profile.skills.map(skill=>skill.id));
  const resumes=resumeCandidates(source,settings,at),resumingReview=resumes.some(candidate=>candidate.route==='review');
- const candidates=[...resumes,...buildWorldLearningCandidates({progress:source,settings,now:at}).filter(candidate=>
+ const candidates=[...resumes,...buildWorldLearningCandidates({progress:source,settings,now:at,openGames}).filter(candidate=>
   !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId))];
  // A partial/empty host summary cannot manufacture missing ability cells. The
  // activities remain available through declared goals, without a skill claim.
@@ -177,11 +183,18 @@ export function createWorldLearningPlan({summary=null,progress={},settings={},no
  const ranked=pushed?{...chosen,reason:typeof label==='string'&&label.trim()?`더 배우고 싶다고 알려 준 ‘${label}’ 연습이에요.`:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',
   reasons:[...chosen.reasons,'interest.declared']}:chosen;
  const excluded=new Set((ranked.excluded||[]).map(item=>item.id));
- const offered=resumes.find(resume=>!excluded.has(resume.id)&&[ranked.selected,...(ranked.alternatives||[])].some(item=>item?.id===resume.id))||null;
- const result=offered?{...ranked,status:'ready',selected:offered,alternatives:[ranked.selected,...(ranked.alternatives||[])].filter(item=>item&&item.id!==offered.id),
-  reason:'하던 학습의 같은 자리에서 이어가요. 다른 활동을 골라도 지금 진도는 남아 있어요.',reasons:['progress.resume'],basis:'host-progress',
-  id:offered.id,evidence:[],hostEvidence:null,reviewAt:offered.reviewAt||null,reviewSource:offered.reviewAt?'host-schedule':null,
-  focusSkillId:null,state:null,matchedGoals:offered.goals.filter(goal=>normalized.goals.includes(goal))}:ranked;
- return {...result,candidates:ready,resume:offered,presentation:presentationFor(settings),settings:normalized,answers:told,
+ const listed=[ranked.selected,...(ranked.alternatives||[])].filter(Boolean);
+ const offered=resumes.find(resume=>!excluded.has(resume.id)&&listed.some(item=>item.id===resume.id))||null;
+ // 한글부터(첫 실행에 「아직 못 읽어요」를 고른 사람, 10-19): 생활 레슨과 듣기 게임은 한글을 읽는다고 보고 짜여 있어
+ // WORLD가 한글 만나기를 선행 단계로 Core 순위보다 먼저 둔다. 한글 만나기를 마치거나 건너뛰면 답이 reads로 바뀌어 끝난다.
+ // 사람이 시작한 하던 학습은 그보다 먼저이고, 한글 만나기를 지금 열 수 없으면(손님·소리 꺼짐) Core 순위를 그대로 쓴다.
+ const prerequisite=!offered&&source.hangul?.answer==='new'?listed.find(item=>item.route==='game'&&item.gameId==='hangul')||null:null;
+ const lead=offered||prerequisite;
+ const result=lead?{...ranked,status:'ready',selected:lead,alternatives:listed.filter(item=>item.id!==lead.id),
+  ...(offered?{reason:'하던 학습의 같은 자리에서 이어가요. 다른 활동을 골라도 지금 진도는 남아 있어요.',reasons:['progress.resume'],basis:'host-progress'}
+   :{reason:'한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요.',reasons:['progress.prerequisite'],basis:'host-prerequisite'}),
+  id:lead.id,evidence:[],hostEvidence:null,reviewAt:lead.reviewAt||null,reviewSource:lead.reviewAt?'host-schedule':null,
+  focusSkillId:null,state:null,matchedGoals:lead.goals.filter(goal=>normalized.goals.includes(goal))}:ranked;
+ return {...result,candidates:ready,resume:offered,prerequisite,presentation:presentationFor(settings),settings:normalized,answers:told,
   learningEffectClaim:false,abilityClaim:false,grade:null};
 }

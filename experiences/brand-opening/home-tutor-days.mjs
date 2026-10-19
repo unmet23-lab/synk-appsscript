@@ -1,5 +1,6 @@
 import {lifeTutorExpression} from './life-tutor-lines.mjs';
 import {getTutor} from './game-tutor-lines.mjs';
+import {josa} from './kit/josa.mjs';
 export const homeDayKey=at=>new Date(at+9*3600000).toISOString().slice(0,10);
 const activity=item=>Math.max(item.observedAt||0,item.guidedAt||0);
 
@@ -36,14 +37,15 @@ export function homeTutorDayLine(id,day,{finished=false}={}){
 
 export function homeTutorMemoryLine(id,memory){
  if(!memory)return '';
- const {when,title,kind}=memory,word=`「${title}」`,together=['guided','assisted'].includes(kind);
+ // 받침에 맞춰 「안녕하세요.」를 · 「감사합니다.」를 · 「저는 몽글이에요.」를 — 끝 문장부호·낫표는 건너뛰고 앞 글자를 본다(kit/josa.mjs).
+ const {when,title,kind}=memory,word=`「${title}」`,eul=josa(title,'을','를'),together=['guided','assisted'].includes(kind);
  const previous=kind==='guided'?getTutor(memory.tutorId):null;
  const partner=previous&&previous.id!==id?`${previous.name}과 `:'';
  const marinHelp=previous?`${partner}함께 확인했다`:'도움과 함께 확인했다';
  const kkamongHelp=previous?`${partner||'나랑 '}같이 봤지`:'도움과 함께 확인했지';
  const mongleHelp=previous?`${partner}같이 확인했지`:'도움과 함께 확인했지';
- if(memory.tryAlone)return id==='marin'?`복귀 확인. ${when} ${word}을 ${marinHelp}. 오늘은 네가 먼저 고른다. …옆에 있겠다.`:id==='kkamong'?`${when} ${word}, ${kkamongHelp}? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.`:`${when} ${word}, ${mongleHelp}? 오늘은 네가 먼저 골라 볼까? 같이 확인하자!`;
- if(id==='marin')return `${when}의 기록. ${word}${together?`을 ${marinHelp}`:kind==='independent'?'을 혼자 찾았다':'을 다시 살피기로 했다'}. …오늘도 이어 간다.`;
+ if(memory.tryAlone)return id==='marin'?`복귀 확인. ${when} ${word}${eul} ${marinHelp}. 오늘은 네가 먼저 고른다. …옆에 있겠다.`:id==='kkamong'?`${when} ${word}, ${kkamongHelp}? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.`:`${when} ${word}, ${mongleHelp}? 오늘은 네가 먼저 골라 볼까? 같이 확인하자!`;
+ if(id==='marin')return `${when}의 기록. ${word}${eul}${together?` ${marinHelp}`:kind==='independent'?' 혼자 찾았다':' 다시 살피기로 했다'}. …오늘도 이어 간다.`;
  if(id==='kkamong')return `${when} ${word}, ${together?kkamongHelp:kind==='independent'?'네가 혼자 찾았지':'다시 볼 말로 남아 있지'}? …오늘도 내 옆자리 비었어.`;
  return `${when} ${word}, ${together?mongleHelp:kind==='independent'?'혼자 찾아냈지':'다시 만나 보기로 했지'}? 오늘도 같이 해 보자!`;
 }

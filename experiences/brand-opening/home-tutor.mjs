@@ -5,7 +5,7 @@ import {homeTutorDays} from './home-tutor-days.mjs';
 import {createHomeTutorRecap} from './home-tutor-recap.mjs';
 
 export function createHomeTutor({container,getTutor,learn,choose,profile,reduced=()=>false}){
- let data=null,companion=null,identity='',recommendation={kind:'loading'},practiceRecommendation=null,completed='',active=true,practiceRecord=null,recap=null,days=homeTutorDays(null),dayButton=null,practiceButton=null;
+ let data=null,companion=null,identity='',recommendation={kind:'loading'},practiceRecommendation=null,completed='',active=true,practiceRecord=null,recap=null,days=homeTutorDays(null),dayButton=null,practiceButton=null,reviewButton=null;
  const practised=new Map();
  const note=document.createElement('p');note.className='home-tutor-context';
  function openPractice(candidate){
@@ -23,7 +23,7 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
  }
  function refresh(){
   const selected=getTutor(),key=`${selected.owner}:${selected.tutor||''}`;
-  if(identity!==key){closeRecap({focus:false});companion?.dispose();companion=null;dayButton=null;practiceButton=null;container.replaceChildren();identity=key;practised.clear();completed='';practiceRecord=null;}
+  if(identity!==key){closeRecap({focus:false});companion?.dispose();companion=null;dayButton=null;practiceButton=null;reviewButton=null;container.replaceChildren();identity=key;practised.clear();completed='';practiceRecord=null;}
   const ownsData=data?.snapshot?.owner===selected.owner&&data?.summary?.owner===selected.owner;
   const nextDays=homeTutorDays(ownsData?data.snapshot:null,data?.lessons);if(nextDays.date!==days.date){practised.clear();completed='';}days=nextDays;
   recommendation=homeTutorRecommendation({owner:selected.owner,summary:data?.summary,snapshot:data?.snapshot,lessons:data?.lessons,practised});
@@ -62,6 +62,8 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
    companion.element.querySelector('.life-tutor-help').classList.replace('life-tutor-help','home-tutor-action');
    companion.element.querySelector('.game-tutor-message').append(note);
    practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='home-tutor-practice';practiceButton.textContent='헷갈린 표현 연습하기';practiceButton.addEventListener('click',()=>openPractice(practiceRecommendation));container.append(practiceButton);
+   // 하던 레슨을 이어 갈 때도 돌아온 복습은 같이 보인다(이어 하기가 복습을 가리지 않게).
+   reviewButton=document.createElement('button');reviewButton.type='button';reviewButton.className='home-tutor-practice home-tutor-review';reviewButton.addEventListener('click',()=>{completed='';learn('review');});container.append(reviewButton);
    dayButton=document.createElement('button');dayButton.type='button';dayButton.className='home-tutor-day';dayButton.addEventListener('click',openRecap);container.append(dayButton);
    companion.setActive(active);
   }
@@ -71,6 +73,8 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   container.dataset.recommendation=recommendation.kind;
   practiceButton.hidden=!practiceRecommendation||recommendation.command==='practice';
   practiceButton.setAttribute('aria-label',practiceRecommendation?`헷갈린 표현 연습하기 · ${practiceRecommendation.title}`:'헷갈린 표현 연습하기');
+  const due=recommendation.kind==='resume'&&data?.summary?.owner===selected.owner?data.summary.dueCount||0:0;
+  reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=`돌아온 표현 ${due}개 복습하기`;
   const pending=data?.summary.status?.phase==='unsaved';
   note.textContent=(completed?'방금 함께 연습했어요':recommendation.reason|| (recommendation.kind==='difficult'?`지난 학습에서 다시 볼 말 · ${recommendation.lessonTitle}`:recommendation.kind==='review'?'다시 볼 표현이 있어요':recommendation.kind==='resume'?'하던 곳에서 이어서':recommendation.kind==='start'?'다음 레슨':''))+(pending?' · 저장 대기 중':'');
   dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?'오늘 기록 다시 보기':`오늘 배운 표현 ${days.today.count}개 정리하기`;

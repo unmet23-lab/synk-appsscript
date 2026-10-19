@@ -10,7 +10,8 @@ export const KIT_SRC = path.join(here, 'kit');
 // 키트로 옮긴 게임. 옮길 때마다 여기에 더한다.
 export const KIT_GAMES = ['talk-rally', 'order-rush', 'story-classroom', 'korean-rhythm', 'korean-runner', 'korean-racing', 'blank-slice', 'entry-check', 'word-magic'];
 // 키트 화면을 쓰지 않는 게임도 받침 조사는 같은 원본을 쓴다 — kit/에 josa.mjs 한 파일만 복사한다.
-export const JOSA_ONLY_GAMES = ['hangul-stage', 'daily-fortune'];
+// brand-opening(WORLD 홈·튜터 말)도 같다(10-19: 「「안녕하세요.」을」·「‘빈’와」 같은 받침 조사 오류를 고치며 더함).
+export const JOSA_ONLY_GAMES = ['hangul-stage', 'daily-fortune', 'brand-opening'];
 export const JOSA_FILE = 'josa.mjs';
 
 export function kitFiles(dir = KIT_SRC, base = '') {

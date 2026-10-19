@@ -1,4 +1,5 @@
 import {practiceStep} from './tutor-practice-core.mjs';
+import {josa} from './kit/josa.mjs';
 
 const types=['control','timing','language','unanswered','audio'];
 const clean=(value,max=200)=>typeof value==='string'?value.replace(/[\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max):'';
@@ -58,9 +59,9 @@ export function runnerCheckSupport(item,choice,feedback){return [{id:item.id,typ
 export function hangulSupport({id:sourceId,target,selected,options,glyph,heard=true}){
  const choices=options.map(o=>typeof o==='string'?o:o.text);
  const correct=choices.indexOf(target),pick=choices.indexOf(selected);
- return [{id:id(sourceId)||'letter-'+[...target].map(c=>c.codePointAt(0).toString(16)).join('-'),type:heard?'language':'audio',title:'소리·글자 다시 만나기',hint:heard?`고른 ‘${selected}’와 알맞은 ‘${target}’를 다시 비교해 보세요.`:'소리를 끝까지 확인하지 못했어요. 소리를 먼저 듣고 골라 보세요.',review:{prompt:'소리를 듣고 알맞은 글자를 골라요.',options:choices,correct,selected:pick,glyph:glyph||target}}];
+ return [{id:id(sourceId)||'letter-'+[...target].map(c=>c.codePointAt(0).toString(16)).join('-'),type:heard?'language':'audio',title:'소리·글자 다시 만나기',hint:heard?`고른 ‘${selected}’${josa(selected,'과','와')} 알맞은 ‘${target}’${josa(target,'을','를')} 다시 비교해 보세요.`:'소리를 끝까지 확인하지 못했어요. 소리를 먼저 듣고 골라 보세요.',review:{prompt:'소리를 듣고 알맞은 글자를 골라요.',options:choices,correct,selected:pick,glyph:glyph||target}}];
 }
-export function firstSupport(question,result,selectedId){const options=question.options.map(o=>o.text),correct=question.options.findIndex(o=>o.optionId===result.correctOptionId);return [{id:question.questionId,type:'language',title:'상황에 맞는 표현',hint:correct>=0?`이 상황에 어울리는 표현은 ‘${options[correct]}’예요.`:'상황과 표현을 다시 비교해 보세요.',review:{prompt:question.prompt,options,correct,selected:question.options.findIndex(o=>o.optionId===selectedId)}}];}
+export function firstSupport(question,result,selectedId){const options=question.options.map(o=>o.text),correct=question.options.findIndex(o=>o.optionId===result.correctOptionId);return [{id:question.questionId,type:'language',title:'상황에 맞는 표현',hint:correct>=0?`이 상황에 어울리는 표현은 ‘${options[correct]}’${josa(options[correct],'이에요','예요')}.`:'상황과 표현을 다시 비교해 보세요.',review:{prompt:question.prompt,options,correct,selected:question.options.findIndex(o=>o.optionId===selectedId)}}];}
 export const supportLabel=(entry,game)=>entry.type==='language'?(game==='hangul'?'소리·글자':'문장 뜻'):({control:'조작',timing:'타이밍',unanswered:'답 고르기',audio:'다시 듣기'})[entry.type]||'다시 확인';
 const controlWords={left:'왼쪽 단추나 ←·A로 한 칸 옮긴다.',right:'오른쪽 단추나 →·D로 한 칸 옮긴다.',middle:'끝 길에서 가운데로 한 칸 옮긴다.',jump:'↑·Space로 점프한다.',slide:'↓·S로 숙인다.',stay:'뛰거나 숙이지 않고 기다린다.',beat:'왼쪽 단추를 크림색 선에서 누른다.','beat-left':'왼쪽 단추를 크림색 선에서 누른다.','beat-x':'오른쪽 단추를 크림색 선에서 누른다.','beat-right':'오른쪽 단추를 크림색 선에서 누른다.','hold-left':'왼쪽 단추를 끝까지 누른다.','hold-right':'오른쪽 단추를 끝까지 누른다.'};
 const cues={'시간':'오늘과 내일을','장소':'어디에 있는지','대조':'앞뒤에서 달라진 내용을','대신':'대신 고른 것을','변경된 시간':'바뀐 시간을','원인과 결과':'이유와 결과를','목적':'왜 갔는지','진행':'지금 하는 일인지','이유':'부탁한 이유를','조건':'무엇을 해야 하는지','비교':'비교한 내용을','의견':'찬성과 반대를','일정':'바뀐 일정을','생활':'달라진 상황을','부정 지시':'하지 않아도 되는 동작을','부정 · 방향':'하지 말라는 쪽과 가라는 쪽을','순서':'먼저와 그다음을','순서 · 방향':'움직이는 순서를'};

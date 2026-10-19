@@ -1,0 +1,1118 @@
+{
+ "scenario": "TOPIK goal, all 12 바람길 checks and two life lessons on day 1, then 30 days x 3 presses (09/13/20 KST)",
+ "startedAt": "2026-10-18T15:00:00.000Z",
+ "runs": [
+  {
+   "mode": "before",
+   "days": 30,
+   "presses": 90,
+   "runnerPresses": 69,
+   "rhythmPresses": 15,
+   "hangulPresses": 0,
+   "lessonPresses": 0,
+   "reviewPresses": 6,
+   "completedLessons": 2,
+   "dueReviews": 24,
+   "unansweredDue": 6,
+   "maxReviewWaitDays": 17,
+   "log": [
+    {
+     "day": 1,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 1,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 2,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 2,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 2,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 3,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 3,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 3,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 4,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 4,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 4,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 5,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 5,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 5,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 6,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 6,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 6,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 7,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 7,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 7,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 8,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 8,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 8,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 9,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 9,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 9,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 10,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 10,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 10,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 11,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 11,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 11,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 12,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 12,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 12,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 13,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 13,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 13,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 14,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 14,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 14,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 15,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 15,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 15,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 16,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 16,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 16,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 17,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 17,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 17,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 18,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 18,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 18,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 19,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 19,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 19,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 20,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 20,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 20,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 21,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 21,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 21,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 22,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 22,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 22,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 23,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 23,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 23,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 24,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 24,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 24,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 25,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 25,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 25,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 26,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 26,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 26,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 27,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 27,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 27,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 28,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 28,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 28,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 29,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 29,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 29,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 30,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 30,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.runner"
+    },
+    {
+     "day": 30,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.runner"
+    }
+   ]
+  },
+  {
+   "mode": "after",
+   "days": 30,
+   "presses": 90,
+   "runnerPresses": 0,
+   "rhythmPresses": 3,
+   "hangulPresses": 0,
+   "lessonPresses": 19,
+   "reviewPresses": 68,
+   "completedLessons": 21,
+   "dueReviews": 204,
+   "unansweredDue": 0,
+   "maxReviewWaitDays": 5.3,
+   "log": [
+    {
+     "day": 1,
+     "hour": 9,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 1,
+     "hour": 13,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "route": "game",
+     "id": "world.play.rhythm"
+    },
+    {
+     "day": 2,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 2,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 2,
+     "hour": 20,
+     "route": "lesson",
+     "id": "world.life.03.store"
+    },
+    {
+     "day": 3,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.04.directions"
+    },
+    {
+     "day": 3,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 3,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 4,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.store-expressions"
+    },
+    {
+     "day": 4,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.directions-expressions"
+    },
+    {
+     "day": 4,
+     "hour": 20,
+     "route": "lesson",
+     "id": "world.life.05.transit"
+    },
+    {
+     "day": 5,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.06.plans"
+    },
+    {
+     "day": 5,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.store-expressions"
+    },
+    {
+     "day": 5,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.directions-expressions"
+    },
+    {
+     "day": 6,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.transit-expressions"
+    },
+    {
+     "day": 6,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.plans-expressions"
+    },
+    {
+     "day": 6,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 7,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 7,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.transit-expressions"
+    },
+    {
+     "day": 7,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.plans-expressions"
+    },
+    {
+     "day": 8,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.01.greetings"
+    },
+    {
+     "day": 8,
+     "hour": 13,
+     "route": "lesson",
+     "id": "world.life.01.greetings"
+    },
+    {
+     "day": 8,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.store-expressions"
+    },
+    {
+     "day": 9,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.directions-expressions"
+    },
+    {
+     "day": 9,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.greetings-story"
+    },
+    {
+     "day": 9,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-apply"
+    },
+    {
+     "day": 10,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.02.cafe"
+    },
+    {
+     "day": 10,
+     "hour": 13,
+     "route": "lesson",
+     "id": "world.life.02.cafe"
+    },
+    {
+     "day": 10,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-story"
+    },
+    {
+     "day": 11,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.greetings-apply"
+    },
+    {
+     "day": 11,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-story"
+    },
+    {
+     "day": 11,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-apply"
+    },
+    {
+     "day": 12,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.plans-expressions"
+    },
+    {
+     "day": 12,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.transit-expressions"
+    },
+    {
+     "day": 12,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-story"
+    },
+    {
+     "day": 13,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-apply"
+    },
+    {
+     "day": 13,
+     "hour": 13,
+     "route": "lesson",
+     "id": "world.life.02.cafe"
+    },
+    {
+     "day": 13,
+     "hour": 20,
+     "route": "lesson",
+     "id": "world.life.02.cafe"
+    },
+    {
+     "day": 14,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 14,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.greetings-apply"
+    },
+    {
+     "day": 14,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-visit-taste"
+    },
+    {
+     "day": 15,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-visit-soldout"
+    },
+    {
+     "day": 15,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 15,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-story"
+    },
+    {
+     "day": 16,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-story"
+    },
+    {
+     "day": 16,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-apply"
+    },
+    {
+     "day": 16,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-visit-soldout"
+    },
+    {
+     "day": 17,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-visit-taste"
+    },
+    {
+     "day": 17,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.directions-expressions"
+    },
+    {
+     "day": 17,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.store-expressions"
+    },
+    {
+     "day": 18,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.02.cafe"
+    },
+    {
+     "day": 18,
+     "hour": 13,
+     "route": "lesson",
+     "id": "world.life.03.store"
+    },
+    {
+     "day": 18,
+     "hour": 20,
+     "route": "lesson",
+     "id": "world.life.03.store"
+    },
+    {
+     "day": 19,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.04.directions"
+    },
+    {
+     "day": 19,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-visit-change"
+    },
+    {
+     "day": 19,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.plans-expressions"
+    },
+    {
+     "day": 20,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-visit-soldout"
+    },
+    {
+     "day": 20,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-visit-taste"
+    },
+    {
+     "day": 20,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-visit-change"
+    },
+    {
+     "day": 21,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.directions-story"
+    },
+    {
+     "day": 21,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.store-apply"
+    },
+    {
+     "day": 21,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-apply"
+    },
+    {
+     "day": 22,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.store-story"
+    },
+    {
+     "day": 22,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.directions-story"
+    },
+    {
+     "day": 22,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.store-apply"
+    },
+    {
+     "day": 23,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.greetings-story"
+    },
+    {
+     "day": 23,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-story"
+    },
+    {
+     "day": 23,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-apply"
+    },
+    {
+     "day": 24,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.cafe-visit-change"
+    },
+    {
+     "day": 24,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.store-story"
+    },
+    {
+     "day": 24,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.transit-expressions"
+    },
+    {
+     "day": 25,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.04.directions"
+    },
+    {
+     "day": 25,
+     "hour": 13,
+     "route": "lesson",
+     "id": "world.life.05.transit"
+    },
+    {
+     "day": 25,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.directions-story"
+    },
+    {
+     "day": 26,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.store-apply"
+    },
+    {
+     "day": 26,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.directions-apply"
+    },
+    {
+     "day": 26,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.transit-story"
+    },
+    {
+     "day": 27,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.05.transit"
+    },
+    {
+     "day": 27,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-visit-soldout"
+    },
+    {
+     "day": 27,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.cafe-visit-taste"
+    },
+    {
+     "day": 28,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.directions-apply"
+    },
+    {
+     "day": 28,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.cafe-expressions"
+    },
+    {
+     "day": 28,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.store-story"
+    },
+    {
+     "day": 29,
+     "hour": 9,
+     "route": "review",
+     "id": "world.review.transit-apply"
+    },
+    {
+     "day": 29,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.transit-story"
+    },
+    {
+     "day": 29,
+     "hour": 20,
+     "route": "review",
+     "id": "world.review.greetings-expressions"
+    },
+    {
+     "day": 30,
+     "hour": 9,
+     "route": "lesson",
+     "id": "world.life.06.plans"
+    },
+    {
+     "day": 30,
+     "hour": 13,
+     "route": "review",
+     "id": "world.review.transit-apply"
+    },
+    {
+     "day": 30,
+     "hour": 20,
+     "route": "lesson",
+     "id": "world.life.06.plans"
+    }
+   ]
+  }
+ ]
+}

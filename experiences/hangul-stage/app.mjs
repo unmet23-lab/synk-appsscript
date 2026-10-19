@@ -35,6 +35,18 @@ function backToRoom() {
   try { const town = window.parent.__synkHome?.goTown; if (town) { town(); return true; } const close = window.parent.document.getElementById('panel-close'); if (close) { close.click(); return true; } } catch { /* 다른 출처 */ }
   return false;
 }
+// WORLD 첫 실행의 「한글을 읽을 수 있어요?」 답을 이 단계의 결과로 바꾼다(졸업·건너뛰기 → reads, 다시 배우기 → new).
+// 그 답이 홈 추천의 「한글부터」를 끝내거나 다시 켠다. WORLD 밖이나 다른 출처면 조용히 넘어간다.
+function tellWorld(answer, via) {
+  if (!IN_WORLD) return;
+  try { const result = window.parent.__synkHome?.setHangulReading?.(answer, via); result?.catch?.(() => {}); } catch { /* 다른 출처 */ }
+}
+// 졸업 뒤 WORLD의 생활 한국어 첫 레슨으로(놀이 판을 닫고 그 레슨을 연다).
+const FIRST_LIFE_LESSON = 'greetings-expressions';
+function toFirstLesson() {
+  try { const start = window.parent.__synkHome?.startLifeLesson; if (start) { start(FIRST_LIFE_LESSON); return true; } } catch { /* 다른 출처 */ }
+  return false;
+}
 const pad2 = n => String(n).padStart(2, '0');
 
 const $ = id => document.getElementById(id);
@@ -150,8 +162,8 @@ $('start').addEventListener('click', () => startSession());
 $('effects').addEventListener('click', () => { audio.setEffects(!audio.effectsEnabled()); renderHome(); });
 $('skip').addEventListener('click', () => { $('sheet').hidden = false; $('sheet-stay').focus(); });
 $('sheet-stay').addEventListener('click', () => { $('sheet').hidden = true; });
-$('sheet-skip').addEventListener('click', () => { progress = readProgress({ ...progress, skipped: true }); save(); $('sheet').hidden = true; renderHome(); });
-$('unskip').addEventListener('click', () => { progress = readProgress({ ...progress, skipped: false }); save(); renderHome(); });
+$('sheet-skip').addEventListener('click', () => { progress = readProgress({ ...progress, skipped: true }); save(); $('sheet').hidden = true; renderHome(); tellWorld('reads', 'skip'); });
+$('unskip').addEventListener('click', () => { progress = readProgress({ ...progress, skipped: false }); save(); renderHome(); tellWorld('new', 'unskip'); });
 
 // ── 한 회차 ──────────────────────────────────────────────
 let S = null;
@@ -473,7 +485,7 @@ function renderListen(item) {
     const mongle = head?.querySelector('.mongle');
     const react = mongle ? ok => { if (ok) mongle.src = 'assets/brand/teach-smile.webp'; } : null;
     feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : `정답은 ${item.target.text}`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}),
-      { react, reason: correct ? (item.type === 'teach' ? `‘${item.target.text}’를 들었어요.` : `‘${item.target.text}’ 소리예요.`) : `고른 ‘${o.text}’와 정답 소리를 차례로 들려줘요.` });
+      { react, reason: correct ? (item.type === 'teach' ? `‘${item.target.text}’${josa(item.target.text, '을', '를')} 들었어요.` : `‘${item.target.text}’ 소리예요.`) : `고른 ‘${o.text}’${josa(o.text, '과', '와')} 정답 소리를 차례로 들려줘요.` });
     if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }
     // 여러 목소리 음절은 맞혀도 정답 소리를 같은 목소리로 한 번 더(HVPT — 고르자마자 정답 소리를 들려준다)
     else if (audio.talkerCount(item.target.text) > 1) { await audio.wait(250); await audio.say(item.target.text, { talker }); }
@@ -561,7 +573,7 @@ function renderBuild(item) {
     const wrongPart = !cOk ? t.consonant : !vOk ? t.vowel : !fOk ? t.final : null;
     if (wrongPart) S.missed.add(wrongPart);
     feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`,correct?[]:hangulSupport({id:item.id,target:t.text,selected:made,options:[made,t.text],heard:state.heard}),
-      { reason: correct ? `‘${t.text}’를 만들었어요.` : '만든 소리와 정답 소리를 차례로 들려줘요.' });
+      { reason: correct ? `‘${t.text}’${josa(t.text, '을', '를')} 만들었어요.` : '만든 소리와 정답 소리를 차례로 들려줘요.' });
     if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
   }
   const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };
@@ -677,7 +689,12 @@ function showGraduation() {
   $('grad-words').replaceChildren(...shown.map(w => el('button', { class: 'example', type: 'button', 'aria-label': `${w.text} 듣기`, onclick: () => audio.say(w.text) }, w.text, icon('speaker'))));
   $('grad-games').hidden = !HUB || IN_WORLD; if (HUB) $('grad-games').href = HUB;
   $('grad-note').hidden = !(hosted || IN_WORLD);
+  // WORLD 안: 졸업이 「한글부터」를 끝내고, 주 단추는 생활 한국어 첫 레슨으로 잇는다(우리 동네로는 둘째 단추).
+  const lifeNext = IN_WORLD && (() => { try { return typeof window.parent.__synkHome?.startLifeLesson === 'function'; } catch { return false; } })();
+  $('grad-life').hidden = !lifeNext;
+  $('grad-done').classList.toggle('coral', !lifeNext); $('grad-done').classList.toggle('cream', !!lifeNext);
   $('grad-done-label').textContent = IN_WORLD ? '우리 동네로' : '처음으로 가기';
+  tellWorld('reads', 'graduation');
   show('graduation');
   if (IN_WORLD) finishSound(true); else setTimeout(() => audio.effect('joy'), 700);
 }
@@ -685,6 +702,7 @@ $('again').addEventListener('click', () => startSession());
 $('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song, 'review'));
 // 끝 → 홈: WORLD 안에서는 한 번에 우리 동네로(동네로 돌아가기 · 없으면 놀이 판 닫기), 단독 화면에서는 한글 입구로.
 $('grad-done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
+$('grad-life').addEventListener('click', () => { if (IN_WORLD && toFirstLesson()) return; renderHome(); show('home'); });
 $('done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
   audio.stop();

@@ -12,6 +12,8 @@ const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)
 const time=value=>Number.isSafeInteger(value)&&value>=0;
 const empty=owner=>({version:LIFE_PROGRESS_VERSION,owner,revision:0,activeLessonId:null,activeReview:null,lessons:{},reviews:{}});
 const TUTORS=new Set(['marin','kkamong','mongle']),OUTCOMES=new Set(['independent','assisted','retry']);
+// 첫 실행의 「한글을 읽을 수 있어요?」 답(10-19). 능력 판정이 아니라 고른 출발점이고, 한글 만나기를 마치거나 건너뛰면 바뀐다.
+const HANGUL_ANSWERS=new Set(['new','reads']),HANGUL_VIA=new Set(['question','graduation','skip','unskip']);
 const dailyId=value=>safeId(value)&&!['constructor','prototype'].includes(value);
 const DAILY_MAX_TIME=253402268399999;
 const dailyTime=value=>time(value)&&value<=DAILY_MAX_TIME;
@@ -83,8 +85,8 @@ function validate(raw,owner){
  for(const [id,lesson]of Object.entries(value.lessons)){
   if(!safeId(id)||!object(lesson)||!safeId(lesson.attemptId)||!time(lesson.startedAt)||lesson.completedAt!==null&&!time(lesson.completedAt)||!object(lesson.answers)||Object.keys(lesson.answers).length>100||!Array.isArray(lesson.questionIds)||lesson.questionIds.length>100||!lesson.questionIds.every(safeId)||new Set(lesson.questionIds).size!==lesson.questionIds.length)throw fail('LIFE_PROGRESS_UNREADABLE');
   if(lesson.questionIds.some(id=>!safeId(id))||Object.keys(lesson.answers).some(id=>!lesson.questionIds.includes(id)))throw fail('LIFE_PROGRESS_UNREADABLE');
-  for(const [qid,answer]of Object.entries(lesson.answers))if(!object(answer)||typeof answer.correct!=='boolean'||typeof answer.helped!=='boolean'||!time(answer.at)||answer.choiceId!==null&&!safeId(answer.choiceId)||answer.order!==undefined&&(id!==CAFE_COMPOSE_ID||qid!=='cafe-compose-order'||!isCafeOrder(answer.order,{complete:true}))||answer.input!==undefined&&(!isCafeLesson(id)||!isCafeListen(answer.input)))throw fail('LIFE_PROGRESS_UNREADABLE');
-  if(lesson.stage!==undefined&&(!object(lesson.stage)||!['intro','story','questions'].includes(lesson.stage.phase)||!time(lesson.stage.sceneIndex)||!time(lesson.stage.questionIndex)||lesson.stage.sceneIndex>100||lesson.stage.questionIndex>100||lesson.stage.helped!==undefined&&typeof lesson.stage.helped!=='boolean'))throw fail('LIFE_PROGRESS_UNREADABLE');
+  for(const [qid,answer]of Object.entries(lesson.answers))if(!object(answer)||typeof answer.correct!=='boolean'||typeof answer.helped!=='boolean'||!time(answer.at)||answer.choiceId!==null&&!safeId(answer.choiceId)||answer.helpSource!==undefined&&(answer.helpSource!=='setting'||answer.helped!==true)||answer.order!==undefined&&(id!==CAFE_COMPOSE_ID||qid!=='cafe-compose-order'||!isCafeOrder(answer.order,{complete:true}))||answer.input!==undefined&&(!isCafeLesson(id)||!isCafeListen(answer.input)))throw fail('LIFE_PROGRESS_UNREADABLE');
+  if(lesson.stage!==undefined&&(!object(lesson.stage)||!['intro','story','questions'].includes(lesson.stage.phase)||!time(lesson.stage.sceneIndex)||!time(lesson.stage.questionIndex)||lesson.stage.sceneIndex>100||lesson.stage.questionIndex>100||lesson.stage.helped!==undefined&&typeof lesson.stage.helped!=='boolean'||lesson.stage.helpSource!==undefined&&(lesson.stage.helpSource!=='setting'||lesson.stage.helped!==true)))throw fail('LIFE_PROGRESS_UNREADABLE');
   if(lesson.stage?.cafe!==undefined&&(!isCafeLesson(id)||lesson.stage.phase!=='questions'||!isCafeCheckpoint(lesson.stage.cafe,id)||lesson.stage.questionIndex!==lesson.stage.cafe.step||lesson.stage.sceneIndex!==lesson.stage.cafe.step||lesson.stage.cafe.phase==='complete'&&lesson.questionIds.some(qid=>!lesson.answers[qid])))throw fail('LIFE_PROGRESS_UNREADABLE');
  }
  for(const [id,review]of Object.entries(value.reviews)){
@@ -97,6 +99,7 @@ function validate(raw,owner){
  }
  if(value.daily!==undefined)validateDaily(value.daily);
  if(value.tutor!==undefined&&(!object(value.tutor)||value.tutor.version!==1||!TUTORS.has(value.tutor.selected)||Object.keys(value.tutor).some(key=>!['version','selected'].includes(key))))throw fail('LIFE_PROGRESS_UNREADABLE');
+ if(value.hangul!==undefined&&(!object(value.hangul)||value.hangul.version!==1||!HANGUL_ANSWERS.has(value.hangul.answer)||!time(value.hangul.at)||!HANGUL_VIA.has(value.hangul.via)||Object.keys(value.hangul).some(key=>!['version','answer','at','via'].includes(key))))throw fail('LIFE_PROGRESS_UNREADABLE');
  return value;
 }
 
@@ -152,7 +155,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();const saved=state.lessons[id],lesson=lessons.get(id),ids=lesson?.questions.map(q=>q.id)||saved?.questionIds||[];
   const cursor=ids.findIndex(qid=>!saved?.answers[qid]);
   const position=cursor<0?ids.length:cursor,stage=clone(saved?.stage||{phase:'intro',sceneIndex:0,questionIndex:0,helped:false});
-  if(!stage.cafe&&stage.phase==='questions'&&stage.questionIndex!==position)stage.helped=false;
+  if(!stage.cafe&&stage.phase==='questions'&&stage.questionIndex!==position){stage.helped=false;delete stage.helpSource;}
   return {id,status:!saved?'new':saved.completedAt!==null?'completed':'started',cursor:position,total:ids.length,answers:clone(saved?.answers||{}),stage,attemptId:saved?.attemptId||null,completedAt:saved?.completedAt??null};
  }
  function startLesson(value,{replay=false}={}){
@@ -162,26 +165,32 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   else if(state.activeLessonId!==lesson.id){const next=clone(state);next.activeLessonId=lesson.id;commit(next);}
   return lessonState(lesson.id);
  }
- function stageValue(id,run,{phase,sceneIndex=0,questionIndex=0,helped=false,cafe}={}){
-  if(!run||!['intro','story','questions'].includes(phase)||!time(sceneIndex)||!time(questionIndex)||sceneIndex>100||questionIndex>run.questionIds.length||typeof helped!=='boolean')throw TypeError('Invalid lesson stage');
+ function stageValue(id,run,{phase,sceneIndex=0,questionIndex=0,helped=false,helpSource,cafe}={}){
+  if(!run||!['intro','story','questions'].includes(phase)||!time(sceneIndex)||!time(questionIndex)||sceneIndex>100||questionIndex>run.questionIds.length||typeof helped!=='boolean'||helpSource!==undefined&&helpSource!==null&&!['setting','user'].includes(helpSource))throw TypeError('Invalid lesson stage');
   if(cafe!==undefined&&(!isCafeLesson(id)||phase!=='questions'||!isCafeCheckpoint(cafe,id)||questionIndex!==cafe.step||sceneIndex!==cafe.step||cafe.phase==='complete'&&run.questionIds.some(qid=>!run.answers[qid])))throw TypeError('Invalid cafe stage');
-  return {phase,sceneIndex,questionIndex,helped,...(cafe!==undefined?{cafe:clone(cafe)}:{})};
+  // Only help the 「한 단계씩」 setting opened on its own is marked; a missing source means the person asked.
+  return {phase,sceneIndex,questionIndex,helped,...(helped&&helpSource==='setting'?{helpSource:'setting'}:{}),...(cafe!==undefined?{cafe:clone(cafe)}:{})};
  }
  function setStage(id,value={}){
   check();const next=clone(state);next.lessons[id].stage=stageValue(id,next.lessons[id],value);commit(next);return lessonState(id);
  }
- function recordAnswer({lessonId,questionId,question,correct,helped=false,choiceId=null,stage,order,input}={}){
+ function recordAnswer({lessonId,questionId,question,correct,helped=false,helpSource,choiceId=null,stage,order,input}={}){
   check();if(question)questionId=question.id;
   const run=state.lessons[lessonId],q=questions.get(questionId)||question;
-  if(!run||!q||!safeId(q.skillId)||!safeId(q.review?.id)||!run.questionIds.includes(questionId)||q.lessonId&&q.lessonId!==lessonId||typeof correct!=='boolean'||typeof helped!=='boolean'||choiceId!==null&&!safeId(choiceId))throw TypeError('Invalid life answer');
+  if(!run||!q||!safeId(q.skillId)||!safeId(q.review?.id)||!run.questionIds.includes(questionId)||q.lessonId&&q.lessonId!==lessonId||typeof correct!=='boolean'||typeof helped!=='boolean'||helpSource!==undefined&&helpSource!==null&&!['setting','user'].includes(helpSource)||choiceId!==null&&!safeId(choiceId))throw TypeError('Invalid life answer');
   if(order!==undefined&&(lessonId!==CAFE_COMPOSE_ID||questionId!=='cafe-compose-order'||!isCafeOrder(order,{complete:true}))||input!==undefined&&(!isCafeLesson(lessonId)||!isCafeListen(input)||input.mode==='listen'&&!input.heard&&!input.textShown))throw TypeError('Invalid cafe response');
   if(run.answers[questionId])return {...lessonState(lessonId),duplicate:true};
-  helped=helped||input?.mode==='listen'&&input.textShown||run.stage?.phase==='questions'&&run.stage?.questionIndex===run.questionIds.indexOf(questionId)&&run.stage?.helped===true;
+  const staged=run.stage?.phase==='questions'&&run.stage?.questionIndex===run.questionIds.indexOf(questionId)&&run.stage?.helped===true;
+  helped=helped||input?.mode==='listen'&&input.textShown||staged;
+  // Help stays in the record either way (honest evidence). Help the 「한 단계씩」 setting opened by itself
+  // is not a difficulty, so it no longer pulls the review back to a minute; help the person asked for still does.
+  // Without a stated source, the saved stage's source decides, and unknown help counts as asked.
+  const source=!helped?null:helpSource==='setting'||helpSource==null&&staged&&run.stage.helpSource==='setting'?'setting':'user';
   const at=now(),next=clone(state),id=q.review.id,old=next.reviews[id];
-  next.lessons[lessonId].answers[questionId]={correct,helped,choiceId,at,...(order!==undefined?{order:clone(order)}:{}),...(input!==undefined?{input:clone(input)}:{})};
+  next.lessons[lessonId].answers[questionId]={correct,helped,choiceId,at,...(source==='setting'?{helpSource:'setting'}:{}),...(order!==undefined?{order:clone(order)}:{}),...(input!==undefined?{input:clone(input)}:{})};
   // The first response and its physical cafe state share one storage write.
   if(stage!==undefined)next.lessons[lessonId].stage=stageValue(lessonId,next.lessons[lessonId],stage);
-  const difficult=!correct||helped;
+  const difficult=!correct||helped&&source!=='setting';
   // Lesson replay cannot reschedule a transfer review. A new difficult answer
   // may only pull its appointment forward; spacing grows in answerReview alone.
   const dueAt=old?(difficult?Math.min(old.dueAt,at+MINUTE):old.dueAt):at+(difficult?MINUTE:DAY);
@@ -200,12 +209,15 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   if(!duplicate||state.activeLessonId===id)commit(next);
   return {id,completed:true,duplicate,completedAt:next.lessons[id].completedAt,totalCompleted:Object.values(state.lessons).filter(v=>v.completedAt!==null).length};
  }
- function dueReviews(limit=100){check();return Object.values(state.reviews).filter(v=>v.dueAt<=now()).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
- function startReview(limit=6,preferredId=null,allowedIds=null){
+ function dueReviews(limit=100,horizon=now()){check();return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
+ // soon: a lesson result may open its just-missed expressions in a new scene right away. Those are
+ // due at most a minute after the answer, so only reviews coming due within that minute are added.
+ function startReview(limit=6,preferredId=null,allowedIds=null,{soon=false}={}){
   check();const existing=state.activeReview;
   if(existing&&existing.ids.some(id=>!existing.answers[id]))return clone(existing);
   if(allowedIds!==null&&(!Array.isArray(allowedIds)||allowedIds.length>100||new Set(allowedIds).size!==allowedIds.length||allowedIds.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
-  const due=dueReviews(100).filter(row=>allowedIds===null||allowedIds.includes(row.id));if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
+  if(soon&&allowedIds===null)throw TypeError('An early review needs its expressions');
+  const due=dueReviews(100,now()+(soon?MINUTE:0)).filter(row=>allowedIds===null||allowedIds.includes(row.id));if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
   const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
@@ -251,6 +263,15 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state);next.tutor={version:1,selected:tutor};commit(next,{preserveDaily:true});
   return {tutor,duplicate:false,status:status()};
  }
+ // 「한글을 읽을 수 있어요?」의 답. 튜터 선택처럼 이 진도 기록(계정이면 계정, 손님이면 이 기기)에 둔다.
+ function hangulReading(){check();if(readError)throw readError;return state.hangul?clone(state.hangul):null;}
+ function setHangulReading(answer,{via='question'}={}){
+  checkDailyWrite();if(!HANGUL_ANSWERS.has(answer)||!HANGUL_VIA.has(via))throw TypeError('Invalid Hangul reading answer');
+  if(state.hangul?.answer===answer)return {hangul:clone(state.hangul),duplicate:true,status:status()};
+  // A first-run answer must not trim or reattribute any learning evidence.
+  const next=clone(state);next.hangul={version:1,answer,at:now(),via};commit(next,{preserveDaily:true});
+  return {hangul:clone(next.hangul),duplicate:false,status:status()};
+ }
  function learningProfile(){check();if(readError)throw readError;return readWorldLearningProfile(state.learningProfile,{owner,at:now()});}
  function learningProfileValues(){check();if(readError)throw readError;return worldLearningProfileValues(state.learningProfile,{owner,at:now()});}
  function updateLearningProfile(options={}){
@@ -275,7 +296,10 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const cafeNext=latest&&isCafeLesson(latest.id)?nextVisit||ordered.find(l=>l.packId==='cafe'&&state.lessons[l.id]?.completedAt==null):null;
   const next=active||cafeNext||ordered.find(lesson=>state.lessons[lesson.id]?.completedAt==null)||null;
   const due=dueReviews(),total=ordered.length,completed=ordered.filter(lesson=>state.lessons[lesson.id]?.completedAt!=null).length;
-  return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume:!!active,
+  // Only a lesson with an answered question is 「하던 자리」. One merely opened stays the next lesson,
+  // but a returned review is not hidden behind it.
+  const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;
+  return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume,
    cafe:{completed:visits.filter(l=>state.lessons[l.id]?.completedAt!=null).length,total:visits.length,nextNumber:next&&isCafeLesson(next.id)?CAFE_LESSON_IDS.indexOf(next.id)+1:null},
    dueCount:due.length,dueReviews:due.slice(0,6),nextReviewAt:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
    packs:packs.map(pack=>{const ids=(pack.lessons||[]).map(value=>typeof value==='string'?value:value.id);return {id:pack.id,completed:ids.filter(id=>state.lessons[id]?.completedAt!=null).length,total:ids.length};}),status:status()};
@@ -284,7 +308,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
+ const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

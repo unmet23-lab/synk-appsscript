@@ -1,0 +1,788 @@
+{
+ "scenario": "step support, 8 days x 3 presses (09/13/20 KST), every answer correct",
+ "startedAt": "2026-10-18T15:00:00.000Z",
+ "runs": [
+  {
+   "mode": "before",
+   "completedLessons": 1,
+   "reviewPresses": 23,
+   "lessonPresses": 1,
+   "skippedGames": 0,
+   "mostRepeatedReview": 23,
+   "firstLessonIntervals": {
+    "greetings-expressions-hello-transfer": [
+     0
+    ],
+    "greetings-expressions-thanks-transfer": [
+     0
+    ],
+    "greetings-expressions-name-transfer": [
+     0
+    ]
+   },
+   "presses": [
+    {
+     "day": 1,
+     "hour": 9,
+     "route": "lesson",
+     "label": "첫 인사 세 마디"
+    },
+    {
+     "day": 1,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 2,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 2,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 2,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 5,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 5,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 5,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 6,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 6,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 6,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    }
+   ]
+  },
+  {
+   "mode": "after",
+   "completedLessons": 8,
+   "reviewPresses": 16,
+   "lessonPresses": 8,
+   "skippedGames": 0,
+   "mostRepeatedReview": 3,
+   "firstLessonIntervals": {
+    "greetings-expressions-hello-transfer": [
+     1,
+     3,
+     7
+    ],
+    "greetings-expressions-thanks-transfer": [
+     1,
+     3,
+     7
+    ],
+    "greetings-expressions-name-transfer": [
+     1,
+     3,
+     7
+    ]
+   },
+   "presses": [
+    {
+     "day": 1,
+     "hour": 9,
+     "route": "lesson",
+     "label": "첫 인사 세 마디"
+    },
+    {
+     "day": 1,
+     "hour": 13,
+     "route": "lesson",
+     "label": "카페에서 하는 말"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "route": "lesson",
+     "label": "계산대 앞 세 마디"
+    },
+    {
+     "day": 2,
+     "hour": 9,
+     "route": "lesson",
+     "label": "어디로 가면 될까요?"
+    },
+    {
+     "day": 2,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 2,
+     "hour": 20,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 9,
+     "route": "review",
+     "label": "계산대 앞 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "store-expressions-price-transfer",
+      "store-expressions-bag-transfer",
+      "store-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 13,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 9,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 13,
+     "route": "review",
+     "label": "계산대 앞 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "store-expressions-price-transfer",
+      "store-expressions-bag-transfer",
+      "store-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 20,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 5,
+     "hour": 9,
+     "route": "lesson",
+     "label": "버스 타기 전후"
+    },
+    {
+     "day": 5,
+     "hour": 13,
+     "route": "lesson",
+     "label": "언제, 어디서 만날까요?"
+    },
+    {
+     "day": 5,
+     "hour": 20,
+     "route": "lesson",
+     "label": "이름표를 찾아서"
+    },
+    {
+     "day": 6,
+     "hour": 9,
+     "route": "lesson",
+     "label": "내 첫 모임"
+    },
+    {
+     "day": 6,
+     "hour": 13,
+     "route": "review",
+     "label": "버스 타기 전후 · 새 상황 복습",
+     "reviewIds": [
+      "transit-expressions-route-transfer",
+      "transit-expressions-alight-transfer",
+      "transit-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 6,
+     "hour": 20,
+     "route": "review",
+     "label": "언제, 어디서 만날까요? · 새 상황 복습",
+     "reviewIds": [
+      "plans-expressions-time-transfer",
+      "plans-expressions-place-transfer",
+      "plans-expressions-delay-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 13,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 20,
+     "route": "review",
+     "label": "내 첫 모임 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-apply-introduction-transfer",
+      "greetings-apply-thanks-transfer",
+      "greetings-apply-hello-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 9,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 13,
+     "route": "review",
+     "label": "이름표를 찾아서 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-story-name-transfer",
+      "greetings-story-thanks-transfer",
+      "greetings-story-hello-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 20,
+     "route": "review",
+     "label": "언제, 어디서 만날까요? · 새 상황 복습",
+     "reviewIds": [
+      "plans-expressions-time-transfer",
+      "plans-expressions-place-transfer",
+      "plans-expressions-delay-transfer"
+     ]
+    }
+   ]
+  },
+  {
+   "mode": "choose",
+   "completedLessons": 8,
+   "reviewPresses": 16,
+   "lessonPresses": 8,
+   "skippedGames": 0,
+   "mostRepeatedReview": 3,
+   "firstLessonIntervals": {
+    "greetings-expressions-hello-transfer": [
+     1,
+     3,
+     7
+    ],
+    "greetings-expressions-thanks-transfer": [
+     1,
+     3,
+     7
+    ],
+    "greetings-expressions-name-transfer": [
+     1,
+     3,
+     7
+    ]
+   },
+   "presses": [
+    {
+     "day": 1,
+     "hour": 9,
+     "route": "lesson",
+     "label": "첫 인사 세 마디"
+    },
+    {
+     "day": 1,
+     "hour": 13,
+     "route": "lesson",
+     "label": "카페에서 하는 말"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "route": "lesson",
+     "label": "계산대 앞 세 마디"
+    },
+    {
+     "day": 2,
+     "hour": 9,
+     "route": "lesson",
+     "label": "어디로 가면 될까요?"
+    },
+    {
+     "day": 2,
+     "hour": 13,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 2,
+     "hour": 20,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 9,
+     "route": "review",
+     "label": "계산대 앞 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "store-expressions-price-transfer",
+      "store-expressions-bag-transfer",
+      "store-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 13,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 3,
+     "hour": 20,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 9,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 13,
+     "route": "review",
+     "label": "계산대 앞 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "store-expressions-price-transfer",
+      "store-expressions-bag-transfer",
+      "store-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 4,
+     "hour": 20,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 5,
+     "hour": 9,
+     "route": "lesson",
+     "label": "버스 타기 전후"
+    },
+    {
+     "day": 5,
+     "hour": 13,
+     "route": "lesson",
+     "label": "언제, 어디서 만날까요?"
+    },
+    {
+     "day": 5,
+     "hour": 20,
+     "route": "lesson",
+     "label": "이름표를 찾아서"
+    },
+    {
+     "day": 6,
+     "hour": 9,
+     "route": "lesson",
+     "label": "내 첫 모임"
+    },
+    {
+     "day": 6,
+     "hour": 13,
+     "route": "review",
+     "label": "버스 타기 전후 · 새 상황 복습",
+     "reviewIds": [
+      "transit-expressions-route-transfer",
+      "transit-expressions-alight-transfer",
+      "transit-expressions-card-transfer"
+     ]
+    },
+    {
+     "day": 6,
+     "hour": 20,
+     "route": "review",
+     "label": "언제, 어디서 만날까요? · 새 상황 복습",
+     "reviewIds": [
+      "plans-expressions-time-transfer",
+      "plans-expressions-place-transfer",
+      "plans-expressions-delay-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 9,
+     "route": "review",
+     "label": "첫 인사 세 마디 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-name-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 13,
+     "route": "review",
+     "label": "카페에서 하는 말 · 새 상황 복습",
+     "reviewIds": [
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-takeout-transfer"
+     ]
+    },
+    {
+     "day": 7,
+     "hour": 20,
+     "route": "review",
+     "label": "내 첫 모임 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-apply-introduction-transfer",
+      "greetings-apply-thanks-transfer",
+      "greetings-apply-hello-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 9,
+     "route": "review",
+     "label": "어디로 가면 될까요? · 새 상황 복습",
+     "reviewIds": [
+      "directions-expressions-where-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-beside-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 13,
+     "route": "review",
+     "label": "이름표를 찾아서 · 새 상황 복습",
+     "reviewIds": [
+      "greetings-story-name-transfer",
+      "greetings-story-thanks-transfer",
+      "greetings-story-hello-transfer"
+     ]
+    },
+    {
+     "day": 8,
+     "hour": 20,
+     "route": "review",
+     "label": "언제, 어디서 만날까요? · 새 상황 복습",
+     "reviewIds": [
+      "plans-expressions-time-transfer",
+      "plans-expressions-place-transfer",
+      "plans-expressions-delay-transfer"
+     ]
+    }
+   ]
+  }
+ ]
+}

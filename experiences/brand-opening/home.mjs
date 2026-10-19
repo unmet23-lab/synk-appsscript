@@ -1,4 +1,5 @@
 import {createTutorOnboarding} from './tutor-onboarding.mjs';
+import {createFirstRun,createHangulStep} from './first-run.mjs';
 import {createGameTutor} from './game-tutor.mjs';
 import {createLifeTutor} from './life-tutor.mjs';
 import {createHomeTutor} from './home-tutor.mjs';
@@ -27,7 +28,7 @@ let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displ
 let learningUI=null,learningLoader=null,education=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
 let orientationTask=Promise.resolve();
-let tutorUI,homeTutor;
+let tutorUI,homeTutor,firstRun;
 // 홈의 자리: 'town'(우리 동네, 첫 장면) 또는 'room'(우리 집 안 3D 방). 3D 방은 들어갔을 때만 그린다.
 // trip: 지금 도는 문 열림 전환(go). 한 번에 하나만 돈다.
 let place='town',trip=null;
@@ -185,8 +186,29 @@ function openGame(id){
  if(games[id])void openTutor({then:()=>launchGame(id)});
 }
 async function openTutor({then=null,force=false}={}){
- try{if(host?.prepareTutor&&await host.prepareTutor()===false)return;tutorUI.open({then,force});}
+ try{
+  if(host?.prepareTutor&&await host.prepareTutor()===false)return;
+  // 처음 온 사람(튜터를 아직 안 고름)은 첫 실행 단계를 차례로 지난다: (언어 고르기 자리) → 한글 질문 → 튜터 고르기.
+  if(!force&&!tutorUI.choice()){void firstRun.run({then}).catch(error=>toast(error?.message||'첫 화면을 열지 못했어요. 다시 시도해 주세요.'));return;}
+  tutorUI.open({then,force});
+ }
  catch(error){toast(error.message||'튜터 연결을 다시 확인해 주세요.');}
+}
+// 「한글을 읽을 수 있어요?」의 답은 생활 진도 기록(계정이면 계정, 손님이면 이 기기)에 둔다. 한글 만나기의 졸업·건너뛰기도 여기로 온다.
+async function hangulReading(){
+ const owner=tutorUI.metrics().owner;
+ if(host)return typeof host.hangulReading==='function'?host.hangulReading(owner):{answer:'unknown'};
+ return (await loadLearning()).hangulReading();
+}
+async function setHangulReading(answer,via='question'){
+ const owner=tutorUI.metrics().owner;
+ if(host){if(typeof host.setHangulReading!=='function')throw Error('아직 연결을 준비하고 있어요. 잠시 뒤 다시 골라 주세요.');return host.setHangulReading(answer,owner,{via});}
+ return (await loadLearning()).setHangulReading(answer,{via});
+}
+// 한글 만나기 졸업 화면의 「생활 한국어 첫 레슨」: 놀이 판을 닫고 그 레슨을 연다.
+function startLifeLesson(id){
+ closePanel();
+ queueMicrotask(()=>void openTutor({then:async()=>{if(host){callHost('lesson',id);return;}try{(await loadLearning())?.start?.(id);}catch{}}}));
 }
 function launchGame(id){
  const game=games[id];if(!game)return;
@@ -244,7 +266,7 @@ function updateStudy(plan){
  $('#life-next-button').setAttribute('aria-label',`맞춤 학습 · ${next.label||next.title}`);
 }
 function showPlay(){
- const more=host?`<section class="play-more" aria-label="더 둘러보기"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>첫 문장 놀이</strong><small>문장 세 개를 맞히면 선물을 받아요</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>싱크타운</strong><small>내 차림 그대로 광장을 걸어요</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>노래 듣기</strong><small>한글 노래와 뮤직비디오</small></span></button></section>`:'';
+ const more=host?`<section class="play-more" aria-label="더 둘러보기"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>첫 문장 놀이</strong><small>문장 세 개를 끝까지 하면 처음 한 번 선물을 받아요</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>싱크타운</strong><small>내 차림 그대로 광장을 걸어요</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>노래 듣기</strong><small>한글 노래와 뮤직비디오</small></span></button></section>`:'';
  openPanel('놀이',`<div class="play-list">${Object.entries(games).map(([id,g],i)=>`<button data-game="${id}"><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span><span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`).join('')}</div><p class="panel-note">한글이 처음이면 ‘한글 만나기’부터 시작해요.</p>${more}`,{eyebrow:'PLAY',nav:'play'});
 }
 function showWardrobe(){if(callHost('wardrobe'))return;openPanel('옷장',`<span class="panel-print w-print"><img src="${asset('assets/world-felt/wardrobe.webp')}" alt="옷걸이에 걸린 펠트 목도리"></span><p class="panel-description">세 친구에게 옷을 입혀 보고 사진으로 남길 수 있어요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">옷장 열기 <span aria-hidden="true">↗</span></a></div><p class="panel-note">계정을 연결하면 가진 옷과 차림이 저장돼요.</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
@@ -315,6 +337,7 @@ export const home={
  // 사진은 3D 방에서 찍는다. 동네에서 부르면 문 열림 없이 바로 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
  photo:()=>{if(place!=='room'||trip)void go('room',{instant:true});return photo();},
  connectEducation(value){education=value;},openLearningGame:launchGame,
+ hangulReading,setHangulReading,startLifeLesson,firstRun:()=>({order:[...firstRun.order],active:firstRun.active()}),
  scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,moving:trip?.to||null,...town.metrics()}),enterRoom:()=>go('room'),leaveRoom:()=>go('town'),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
  applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
@@ -333,6 +356,12 @@ tutorUI=createTutorOnboarding({home,asset,commitChoice:(id,owner)=>host?.selectT
  living.setTutor(tutor?.id||null);
  homeTutor?.refresh();
 }});
+// 첫 실행 단계(first-run.mjs): 언어 고르기는 다음 작업에서 들어온다. 한글 질문은 답이 없을 때만, 튜터 고르기는 고른 튜터가 없을 때만 연다.
+firstRun=createFirstRun({steps:{
+ hangul:createHangulStep({home,asset,read:hangulReading,save:answer=>setHangulReading(answer,'question')}),
+ tutor:{needed:()=>!tutorUI.choice(),open:then=>tutorUI.open({then})}
+}});
+bindPress(document,'#world-panel.tutor-panel :is(.first-hangul-choices>button,.first-hangul-word)');
 homeTutor=createHomeTutor({container:$('#home-tutor'),getTutor:()=>tutorUI.metrics(),learn:command=>void callLearning(command),choose:()=>home.chooseTutor(),profile:showMe,reduced:()=>home.state.reduced});
 homeTutor.refresh();
 const initialTutor=tutorUI.choice();

@@ -42,8 +42,14 @@
 .home-entry-status small::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
 .home-entry-status p{font-size:16px;font-weight:var(--wt-label)}
 .world-shell[data-entry]:not([data-entry=ready]) .world-topbar,.world-shell[data-entry]:not([data-entry=ready]) .place-heading,.world-shell[data-entry]:not([data-entry=ready]) .lobby-action,.world-shell[data-entry]:not([data-entry=ready]) .world-nav{visibility:hidden}
-/* 3D 방에서는 튜터 카드의 흰 알약이 주 행동이다. 다음 학습 알약·진도 글·바로가기는 넓은 화면에서만. */
-.life-next-button,#life-progress-caption,.life-home-shortcuts{display:none!important}
+/* 3D 방에서는 튜터 카드의 흰 알약이 주 행동이다(월드 시그널 「주 행동은 흰 알약 하나」). 그래서 다음 학습 흰 알약은 어디서나 숨기고,
+ * 진도 글(N / 22 학습 완료)·바로가기(카페·생활 팩·복습 개수·이야기)는 넓은 화면(PC 가로 틀)에서만 보인다. 10-19 전에는 폭 조건 없이 모두 숨었다. */
+.life-next-button{display:none!important}
+#life-progress-caption,.life-home-shortcuts{display:none}
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+ [data-layout=landscape] #life-progress-caption{display:block}
+ [data-layout=landscape] .life-home-shortcuts{display:grid}
+}
 .memory-detail{text-align:center;padding:8px 4px 12px}
 .memory-detail small{font-family:var(--w-mono);font-size:var(--t-mono);letter-spacing:var(--track-mono);color:var(--w-ink-3)}
 .memory-detail h3{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-title);line-height:1.4;margin:10px 0 8px;text-wrap:balance}

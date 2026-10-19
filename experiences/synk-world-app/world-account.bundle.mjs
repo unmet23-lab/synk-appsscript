@@ -7618,6 +7618,7 @@ var require_vellum = __commonJS({
       const goal = reasons.includes("goal.declared");
       if (reasons.includes("activity.retry")) return `\uCC98\uC74C\uC5D0 \uB193\uCE5C \uBD80\uBD84\uC744 \uB2E4\uC2DC \uC5F0\uC2B5\uD574 \uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (reasons.includes("activity.assisted")) return `\uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0B8 \uBD80\uBD84\uC774\uC5D0\uC694. \uD55C \uBC88 \uB354 \uC0B4\uD3B4\uBD10\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
+      if (reasons.includes("practice.spent")) return `\uC774 \uD65C\uB3D9\uC758 \uC0C8 \uBB38\uD56D\uC740 \uBAA8\uB450 \uB9CC\uB0AC\uC5B4\uC694. \uB2E4\uC2DC \uD574\uB3C4 \uC88B\uC9C0\uB9CC \uC5F0\uC2B5 \uAE30\uB85D\uC740 \uC0C8 \uBB38\uD56D\uC73C\uB85C\uB9CC \uBC14\uB00C\uC5B4\uC694.${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694." : ""}`;
       if (goal) return "\uC9C1\uC811 \uACE0\uB978 \uBAA9\uD45C\uC640 \uC774\uC5B4\uC9C0\uB294 \uD65C\uB3D9\uC774\uC5D0\uC694. \uC9E7\uAC8C \uC2DC\uC791\uD574 \uBD10\uC694.";
       if (reasons.includes("history.incomplete")) return "\uAE30\uB85D\uC744 \uBAA8\uB450 \uD655\uC778\uD558\uAE30 \uC804\uC774\uB77C \uAE30\uBCF8 \uD65C\uB3D9\uC73C\uB85C \uC2DC\uC791\uD574\uC694.";
@@ -8208,7 +8209,7 @@ var require_learning = __commonJS({
         const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
         const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history2.family.has(key));
         const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
-        ranked.push({ candidate, focus, score, lift, count });
+        ranked.push({ candidate, focus, score, lift, count, exhausted });
       }
       ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
       return ranked;
@@ -8262,21 +8263,22 @@ var require_learning = __commonJS({
           excluded.push({ id: candidate.id, reasons: blocked });
           continue;
         }
-        const target = targets[0] || null, state = target?.focus.status || "unseen";
+        const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
+        const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
         const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
         const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY ? candidate.practiceNeed : null;
-        const urgent = due || hostNeed || ["practice", "supported", "review"].includes(state);
-        const tier = urgent ? 0 : state === "recent-independent" ? 2 : 1;
+        const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
+        const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
         const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
         const reasons = [
           ...due ? ["review.due"] : [],
           ...hostNeed ? [`activity.${hostNeed.kind}`] : [],
-          ...target && state !== "unseen" ? [`practice.${state}`] : [],
+          ...spent ? ["practice.spent"] : target && state !== "unseen" ? [`practice.${state}`] : [],
           ...matchedGoals.length ? ["goal.declared"] : [],
           ...!profile.evidenceComplete ? ["history.incomplete"] : [],
-          ...!due && !hostNeed && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
+          ...!due && !hostNeed && !spent && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
         ];
-        ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons });
+        ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
       }
       ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
       const best = ranked[0];
@@ -13467,7 +13469,7 @@ function practiceNeed(review, progress, now) {
   if (!latest || latest.at < review.lastAt || !["retry", "assisted"].includes(latest.kind)) return null;
   return { kind: latest.kind, at: iso(latest.at), evidenceRefs: [`life.${review.lessonId}.${review.questionId}`] };
 }
-function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date.now() } = {}) {
+function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date.now(), openGames = null } = {}) {
   const at = clock(now), source = record(progress) ? progress : {}, candidates = [];
   PACKS.forEach((pack, index) => {
     const next = pack.lessons.find((lesson2) => !time(source.lessons?.[lesson2.id]?.completedAt));
@@ -13514,6 +13516,7 @@ function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date
       conceptIds: [...target.conceptIds]
     };
   });
+  const access = (id) => !Array.isArray(openGames) || openGames.includes(id) ? {} : { available: false, accountRequired: true };
   candidates.push(
     {
       id: "world.play.runner",
@@ -13526,7 +13529,8 @@ function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date
       goals: ["exam", "prepare", "listening", "travel"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("runner")
     },
     {
       id: "world.play.rhythm",
@@ -13539,7 +13543,8 @@ function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date
       goals: ["exam", "prepare", "listening", "culture", "hobby", "explore"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("rhythm")
     },
     {
       id: "world.play.hangul",
@@ -13552,7 +13557,8 @@ function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date
       goals: ["study", "culture", "hobby", "explore"],
       audioRequired: true,
       modality: "listening",
-      presentation: presentationFor(settings)
+      presentation: presentationFor(settings),
+      ...access("hangul")
     }
   );
   return candidates;
@@ -13560,7 +13566,8 @@ function buildWorldLearningCandidates({ progress = {}, settings = {}, now = Date
 function resumeCandidates(progress, settings, now) {
   const result = [];
   const lesson2 = knownLessons.get(progress?.activeLessonId), saved = lesson2 && progress.lessons?.[lesson2.id];
-  if (lesson2 && saved && time(saved.startedAt) && saved.startedAt <= now) {
+  const answered = record(saved?.answers) && Object.keys(saved.answers).length > 0;
+  if (lesson2 && saved && answered && time(saved.startedAt) && saved.startedAt <= now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
@@ -13588,13 +13595,13 @@ function resumeCandidates(progress, settings, now) {
   });
   return result;
 }
-function createWorldLearningPlan({ summary = null, progress = {}, settings = {}, now = Date.now(), recommendActivities, answers = null } = {}) {
+function createWorldLearningPlan({ summary = null, progress = {}, settings = {}, now = Date.now(), recommendActivities, answers = null, openGames = null } = {}) {
   if (typeof recommendActivities !== "function") throw TypeError("WORLD learning plan needs Core recommendActivities");
   const at = clock(now), source = record(progress) ? progress : {}, normalized = worldLearningSettings(settings), told = answersOf(answers);
   const profile = record(summary) && Array.isArray(summary.skills) && typeof summary.evidenceComplete === "boolean" ? summary : { skills: [], evidenceComplete: false, asOf: iso(at) };
   const skills = new Set(profile.skills.map((skill2) => skill2.id));
   const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
-  const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
+  const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at, openGames }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId))];
   const ready = candidates.map((candidate) => withAnswers({ ...candidate, targets: candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id))) }, told));
   const ranking = told.interested.length ? { ...normalized, goals: [.../* @__PURE__ */ new Set([...normalized.goals, ...told.interested.map((id) => `interest.${id}`)])] } : normalized;
   const chosen = recommendActivities({ profile, candidates: ready, settings: ranking, at: iso(at) });
@@ -13607,28 +13614,30 @@ function createWorldLearningPlan({ summary = null, progress = {}, settings = {},
     reasons: [...chosen.reasons, "interest.declared"]
   } : chosen;
   const excluded = new Set((ranked.excluded || []).map((item) => item.id));
-  const offered = resumes.find((resume) => !excluded.has(resume.id) && [ranked.selected, ...ranked.alternatives || []].some((item) => item?.id === resume.id)) || null;
-  const result = offered ? {
+  const listed = [ranked.selected, ...ranked.alternatives || []].filter(Boolean);
+  const offered = resumes.find((resume) => !excluded.has(resume.id) && listed.some((item) => item.id === resume.id)) || null;
+  const prerequisite = !offered && source.hangul?.answer === "new" ? listed.find((item) => item.route === "game" && item.gameId === "hangul") || null : null;
+  const lead = offered || prerequisite;
+  const result = lead ? {
     ...ranked,
     status: "ready",
-    selected: offered,
-    alternatives: [ranked.selected, ...ranked.alternatives || []].filter((item) => item && item.id !== offered.id),
-    reason: "\uD558\uB358 \uD559\uC2B5\uC758 \uAC19\uC740 \uC790\uB9AC\uC5D0\uC11C \uC774\uC5B4\uAC00\uC694. \uB2E4\uB978 \uD65C\uB3D9\uC744 \uACE8\uB77C\uB3C4 \uC9C0\uAE08 \uC9C4\uB3C4\uB294 \uB0A8\uC544 \uC788\uC5B4\uC694.",
-    reasons: ["progress.resume"],
-    basis: "host-progress",
-    id: offered.id,
+    selected: lead,
+    alternatives: listed.filter((item) => item.id !== lead.id),
+    ...offered ? { reason: "\uD558\uB358 \uD559\uC2B5\uC758 \uAC19\uC740 \uC790\uB9AC\uC5D0\uC11C \uC774\uC5B4\uAC00\uC694. \uB2E4\uB978 \uD65C\uB3D9\uC744 \uACE8\uB77C\uB3C4 \uC9C0\uAE08 \uC9C4\uB3C4\uB294 \uB0A8\uC544 \uC788\uC5B4\uC694.", reasons: ["progress.resume"], basis: "host-progress" } : { reason: "\uD55C\uAE00\uBD80\uD130 \uB9CC\uB098\uC694. \uC18C\uB9AC\uB97C \uB4E3\uACE0 \uAE00\uC790\uB97C \uACE0\uB974\uBA70 \uC77D\uB294 \uBC95\uC744 \uC775\uD600\uC694.", reasons: ["progress.prerequisite"], basis: "host-prerequisite" },
+    id: lead.id,
     evidence: [],
     hostEvidence: null,
-    reviewAt: offered.reviewAt || null,
-    reviewSource: offered.reviewAt ? "host-schedule" : null,
+    reviewAt: lead.reviewAt || null,
+    reviewSource: lead.reviewAt ? "host-schedule" : null,
     focusSkillId: null,
     state: null,
-    matchedGoals: offered.goals.filter((goal) => normalized.goals.includes(goal))
+    matchedGoals: lead.goals.filter((goal) => normalized.goals.includes(goal))
   } : ranked;
   return {
     ...result,
     candidates: ready,
     resume: offered,
+    prerequisite,
     presentation: presentationFor(settings),
     settings: normalized,
     answers: told,

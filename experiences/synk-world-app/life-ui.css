@@ -314,6 +314,8 @@ mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outl
 .life-feedback>strong::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
 .life-feedback[data-result=assisted]>strong::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
 .life-feedback[data-result=retry]>strong::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+/* 설정(한 단계씩)이 펼쳐 둔 도움과 함께 맞힘: 안내 점(청금석) — 도움이었지만 다시 볼 것은 아니다 */
+.life-feedback[data-result=guided]>strong::before{background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
 .life-feedback-answer{padding:2px 0 0 18px;font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;color:var(--w-ink)}
 .life-explanation>summary{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;list-style:none}
 .life-explanation>summary::-webkit-details-marker{display:none}
@@ -348,6 +350,12 @@ mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outl
 .life-result-again strong{font-size:24px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:-.022em;color:var(--w-ink)}
 .life-result-again>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 12px}
 .life-result-again small{font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+/* 10-19 결과 갈래: 혼자 맞힘 n개 / 도움을 펼쳐 두고 맞힘 n개 / 다시 볼 것 n개 — 개수 한 줄 + 표현 목록 */
+.life-result-count{margin:-2px 0 8px;font-size:15px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.life-result-again ul{display:grid;margin:0 0 10px;padding:0;list-style:none;border-top:1px solid var(--w-line)}
+.life-result-again li{display:grid;gap:3px;padding:11px 0;border-bottom:1px solid var(--w-line)}
+.life-result-again li:last-child{border-bottom:0}
+.life-result-again li strong{font-size:20px;line-height:1.38}
 .life-result-got>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
 .life-result-got .w-led{align-self:center}
 .life-result-got strong{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}

@@ -7146,6 +7146,7 @@ var SynkLearning = (() => {
         const goal = reasons.includes("goal.declared");
         if (reasons.includes("activity.retry")) return `처음에 놓친 부분을 다시 연습해 봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
         if (reasons.includes("activity.assisted")) return `도움과 함께 해낸 부분이에요. 한 번 더 살펴봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+        if (reasons.includes("practice.spent")) return `이 활동의 새 문항은 모두 만났어요. 다시 해도 좋지만 연습 기록은 새 문항으로만 바뀌어요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
         if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
         if (goal) return "직접 고른 목표와 이어지는 활동이에요. 짧게 시작해 봐요.";
         if (reasons.includes("history.incomplete")) return "기록을 모두 확인하기 전이라 기본 활동으로 시작해요.";
@@ -7736,7 +7737,7 @@ var SynkLearning = (() => {
           const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
           const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history.family.has(key));
           const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
-          ranked.push({ candidate, focus, score, lift, count });
+          ranked.push({ candidate, focus, score, lift, count, exhausted });
         }
         ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
         return ranked;
@@ -7790,21 +7791,22 @@ var SynkLearning = (() => {
             excluded.push({ id: candidate.id, reasons: blocked });
             continue;
           }
-          const target = targets[0] || null, state = target?.focus.status || "unseen";
+          const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
+          const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
           const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
           const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY ? candidate.practiceNeed : null;
-          const urgent = due || hostNeed || ["practice", "supported", "review"].includes(state);
-          const tier = urgent ? 0 : state === "recent-independent" ? 2 : 1;
+          const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
+          const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
           const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
           const reasons = [
             ...due ? ["review.due"] : [],
             ...hostNeed ? [`activity.${hostNeed.kind}`] : [],
-            ...target && state !== "unseen" ? [`practice.${state}`] : [],
+            ...spent ? ["practice.spent"] : target && state !== "unseen" ? [`practice.${state}`] : [],
             ...matchedGoals.length ? ["goal.declared"] : [],
             ...!profile.evidenceComplete ? ["history.incomplete"] : [],
-            ...!due && !hostNeed && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
+            ...!due && !hostNeed && !spent && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
           ];
-          ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons });
+          ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
         }
         ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
         const best = ranked[0];

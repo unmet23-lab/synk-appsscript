@@ -112,7 +112,7 @@ function rankLearning({ profile, candidates, presentations = [], audioAvailable 
     const exhausted = !!candidate.familyKeys && candidate.familyKeys.every(key => history.family.has(key));
     const score = focus.priority - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0)
       - (exhausted ? .5 : 0);
-    ranked.push({ candidate, focus, score, lift, count });
+    ranked.push({ candidate, focus, score, lift, count, exhausted });
   }
   ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
   return ranked;
@@ -174,20 +174,26 @@ function recommendActivities({ profile, candidates, settings = {}, at = profile?
     if (settings.audioAvailable === false && (candidate.audioRequired || (candidate.targets.length && !targets.length))) blocked.push('audio.unavailable');
     if (settings.support && settings.support !== 'choose' && candidate.supports && !candidate.supports.includes(settings.support)) blocked.push('support.mismatch');
     if (blocked.length) { excluded.push({ id: candidate.id, reasons: blocked }); continue; }
-    const target = targets[0] || null, state = target?.focus.status || 'unseen';
+    // An item whose every family was already presented gives no new first try. When all of an
+    // activity's items are like that (spent), their state, often a 7-day 'review', cannot make the
+    // activity urgent: it would win every time and starve a host's due review. It stays available,
+    // behind the activities that still can teach something new.
+    const fresh = targets.filter(row => !row.exhausted), spent = targets.length > 0 && !fresh.length;
+    const target = fresh[0] || targets[0] || null, state = target?.focus.status || 'unseen';
     const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
     // A host may have its own assessed activity (for example a language's letter practice).
     // Keep that recent first-response/help fact separate from Trail skill evidence. The host
     // withdraws it when corrected; Core neither persists it nor manufactures a skill mapping.
     const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY
       ? candidate.practiceNeed : null;
-    const urgent = due || hostNeed || ['practice', 'supported', 'review'].includes(state);
-    const tier = urgent ? 0 : state === 'recent-independent' ? 2 : 1;
+    const urgent = due || hostNeed || (!spent && ['practice', 'supported', 'review'].includes(state));
+    const tier = urgent ? 0 : spent || state === 'recent-independent' ? 2 : 1;
     const matchedGoals = (candidate.goals || []).filter(goal => goals.has(goal));
-    const reasons = [...(due ? ['review.due'] : []), ...(hostNeed ? [`activity.${hostNeed.kind}`] : []), ...(target && state !== 'unseen' ? [`practice.${state}`] : []),
+    const reasons = [...(due ? ['review.due'] : []), ...(hostNeed ? [`activity.${hostNeed.kind}`] : []),
+      ...(spent ? ['practice.spent'] : target && state !== 'unseen' ? [`practice.${state}`] : []),
       ...(matchedGoals.length ? ['goal.declared'] : []), ...(!profile.evidenceComplete ? ['history.incomplete'] : []),
-      ...(!due && !hostNeed && state === 'unseen' && !matchedGoals.length ? ['practice.unseen'] : [])];
-    ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons });
+      ...(!due && !hostNeed && !spent && state === 'unseen' && !matchedGoals.length ? ['practice.unseen'] : [])];
+    ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
   }
   ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length
     || Number(b.due) - Number(a.due) || (b.target?.score ?? .65) - (a.target?.score ?? .65)

@@ -15,6 +15,9 @@ import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 const $=s=>document.querySelector(s);
 const connection=await loadWorldConfig();
 const operating=connection.mode==='account';
+// 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
+// 바람길·말의 리듬의 손님 한 판 체험(저장만 로그인 뒤)은 다음 작업이라, 그때까지는 로그인부터 연다(launchGame·추천 같은 목록).
+const GUEST_GAMES=new Set(['hangul']);
 const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
 const {firstSupport}=await import(worldUrl('brand-opening/game-tutor-support.mjs'));
 const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
@@ -178,6 +181,22 @@ async function selectTutor(tutor,owner){
  catch(error){if(error.code==='REVISION_CONFLICT')showLifeRecovery();throw error;}
  finally{refreshLife();}
 }
+// 첫 실행 「한글을 읽을 수 있어요?」의 답: 튜터 선택처럼 생활 진도 기록(계정이면 계정, 손님이면 이 기기)에 둔다.
+async function hangulReading(owner){
+ if(!lifeReady)initializeLife();await lifeReady;
+ if(owner!==(client.snapshot?.accountId||'guest')||owner!==lifeOwner||!lifeUI)return null;
+ return lifeUI.hangulReading();
+}
+async function setHangulReading(answer,owner,{via='question'}={}){
+ const generation=client.generation;
+ const guard=()=>{if(owner!==(client.snapshot?.accountId||'guest')||generation!==client.generation)throw Object.assign(Error('계정 연결이 바뀌었어요. 다시 골라 주세요.'),{code:'ACCOUNT_CHANGED'});};
+ guard();await lifeReady;guard();
+ if(owner!=='guest'&&!lifePort){await initializeLife();guard();}
+ if(!lifeUI)throw Error('학습 기록을 아직 준비하고 있어요. 잠시 뒤 다시 골라 주세요.');
+ try{return await lifeUI.setHangulReading(answer,{via});}
+ catch(error){if(error.code==='REVISION_CONFLICT')showLifeRecovery();throw error;}
+ finally{refreshLife();}
+}
 async function refreshTutorAccount(){
  if(tutorRefresh||!client.snapshot||!tutorReady||tutorStatus().blocked)return;
  const epoch=lifeEpoch,port=lifePort;
@@ -216,8 +235,9 @@ function initializeLife(){
 function mountLifeLearning(){
  education?.dispose();education=null;
  lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation()});
- education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,target:window,
-  createPlan:args=>createWorldLearningPlan({...args,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null}),
+ // 공개판(계정 모드)의 손님은 GUEST_GAMES만 바로 열고 나머지 게임은 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
+ const createPlan=options=>createWorldLearningPlan({...options,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null,openGames:operating&&!client.snapshot?[...GUEST_GAMES]:null});
+ education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,createPlan,target:window,
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
   prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
  home.connectEducation?.(education);window.__synkEducation=education;
@@ -348,7 +368,8 @@ async function launchGame(id){
  const game=games[id];if(!game)return;
  if(home.ensureTutor&&!home.tutor()?.tutor)return home.ensureTutor(()=>launchGame(id));
  let session;
- if(operating){
+ // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로 연다(계정 호스트를 설치하지 않는다).
+ if(operating&&!(GUEST_GAMES.has(id)&&!client.snapshot)){
   if(!client.snapshot)return signIn();
   const accountId=client.snapshot.accountId;
   show(game.title,'<p class="panel-description" role="status">내 놀이 기록을 불러오는 중이에요.</p>','world-game-loading');
@@ -410,7 +431,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.sn
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);enrollmentView?.dispose();enrollmentView=null;townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;}});
 window.__synkWorld={client,screen:()=>screen,wardrobe:()=>wardrobeStudio?.metrics(),life:()=>lifeUI?.metrics()};
-home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,tutorStatus,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),pack:id=>openLife('pack',id),replayOpening:()=>{close();return startOpening(true);}});
+home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,tutorStatus,hangulReading,setHangulReading,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),pack:id=>openLife('pack',id),lesson:id=>openLife('start',id),replayOpening:()=>{close();return startOpening(true);}});
 entryGate=createWorldEntryGate({
  restore:async()=>{await initialRestoreReady;if(sessionTask)await sessionTask;else if(!sessionConfirmed)await restoreSession();},
  prepare:prepareWorldTutor,

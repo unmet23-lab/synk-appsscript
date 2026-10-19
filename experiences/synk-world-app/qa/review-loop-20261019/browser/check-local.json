@@ -1,0 +1,177 @@
+{
+ "A.firstRunOrder": {
+  "order": [
+   "language",
+   "hangul",
+   "tutor"
+  ],
+  "active": true
+ },
+ "A.panel": {
+  "kind": "world-panel panel-dialog tutor-panel",
+  "title": "한글",
+  "ask": "한글을 읽을 수 있어요?",
+  "buttons": [
+   "new:아직 못 읽어요",
+   "reads:읽을 수 있어요"
+  ],
+  "tutorOptions": 0
+ },
+ "A.voiceRequests": [
+  [
+   200,
+   "voices.json"
+  ],
+  [
+   206,
+   "12ywz11.mp3"
+  ]
+ ],
+ "A.afterAnswer": {
+  "tutorPanel": true,
+  "hangul": {
+   "version": 1,
+   "answer": "new",
+   "at": 1792393476525,
+   "via": "question"
+  }
+ },
+ "A.plan": {
+  "selected": "world.play.hangul",
+  "reasons": [
+   "progress.prerequisite"
+  ],
+  "reason": "한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요.",
+  "prerequisite": "world.play.hangul"
+ },
+ "A.homeTutor": {
+  "recommendation": {
+   "kind": "start",
+   "title": "한글 만나기 · 소리와 글자",
+   "command": "learn",
+   "label": "맞춤 연습 시작",
+   "reason": "한글부터 만나요. 소리를 듣고 글자를 고르며 읽는 법을 익혀요."
+  },
+  "action": "맞춤 연습 시작"
+ },
+ "A.gameFrame": {
+  "src": "http://127.0.0.1:4637/hangul-stage/"
+ },
+ "A.afterSkip": {
+  "version": 1,
+  "answer": "reads",
+  "at": 1792393479474,
+  "via": "skip"
+ },
+ "A.afterUnskip": {
+  "version": 1,
+  "answer": "new",
+  "at": 1792393479521,
+  "via": "unskip"
+ },
+ "A.afterGradLife": {
+  "lesson": "greetings-expressions",
+  "phase": "intro",
+  "panelTitle": "첫 인사 세 마디",
+  "frame": false
+ },
+ "A.errors": {
+  "errors": [],
+  "failed": []
+ },
+ "B.hangulAnswer": {
+  "version": 1,
+  "answer": "reads",
+  "at": 1792393482493,
+  "via": "question"
+ },
+ "B.support": "step",
+ "B.q1": {
+  "lesson": "greetings-expressions",
+  "step": 0,
+  "hintVisible": true
+ },
+ "B.band1": {
+  "result": "guided",
+  "title": "도움을 펼쳐 두고 맞혔어요",
+  "foot": "다음 복습에서는 먼저 혼자 골라 봐요."
+ },
+ "B.q2": {
+  "lesson": "greetings-expressions",
+  "step": 1,
+  "hintVisible": true
+ },
+ "B.band2": "retry",
+ "B.band3": "assisted",
+ "B.result": {
+  "groups": [
+   {
+    "group": "guided",
+    "count": "도움을 펼쳐 두고 맞힘 1개",
+    "items": [
+     "안녕하세요."
+    ]
+   },
+   {
+    "group": "again",
+    "count": "다시 볼 것 2개",
+    "items": [
+     "감사합니다.",
+     "저는 몽글이에요."
+    ]
+   }
+  ],
+  "quiet": "새 장면으로 다시 보기",
+  "reviewIds": "greetings-expressions-thanks-transfer,greetings-expressions-name-transfer"
+ },
+ "B.schedule": [
+  {
+   "id": "hello-transfer",
+   "inMinutes": 1440,
+   "interval": 1,
+   "lapses": 0
+  },
+  {
+   "id": "thanks-transfer",
+   "inMinutes": 1,
+   "interval": 0,
+   "lapses": 1
+  },
+  {
+   "id": "name-transfer",
+   "inMinutes": 1,
+   "interval": 0,
+   "lapses": 1
+  }
+ ],
+ "B.review": {
+  "count": "1 / 2",
+  "hintVisible": false,
+  "help": "false"
+ },
+ "B.home390": {
+  "caption": "none",
+  "shortcuts": "none",
+  "nextPill": "none",
+  "reviewButton": null,
+  "recommendation": "resume"
+ },
+ "B.errors": {
+  "errors": [],
+  "failed": []
+ },
+ "C.home1440": {
+  "layout": "landscape",
+  "caption": [
+   "block",
+   "0 / 22 학습 완료 · 이 기기의 진도"
+  ],
+  "shortcuts": "grid",
+  "nextPill": "none",
+  "plan": "world.life.01.greetings"
+ },
+ "C.errors": {
+  "errors": [],
+  "failed": []
+ }
+}
