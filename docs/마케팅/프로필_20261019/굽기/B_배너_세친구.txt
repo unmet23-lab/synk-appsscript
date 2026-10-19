@@ -1,0 +1,23 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — wide channel-banner background, a real needle-felt craft photograph, NO TEXT.
+
+Make the image landscape and as wide as the tool allows (16:9 if available, otherwise 3:2).
+
+Backdrop: one continuous soft cream wool-felt sweep (#F6EFE3-ish) filling the entire frame. It is a seamless backdrop that curves gently into the floor, so there is no visible horizon line, edge or corner anywhere. Very even and calm, fine wool fibres visible, slightly brighter in the middle. Warm soft daylight from the upper left.
+
+Characters (attached reference photos, in this order; use them ONLY for shape, colour and material):
+1. Mongle — coral felt bell/ghost shape with a scalloped hem and a cream running stitch, happy closed eyes stitched as two small upward arcs (like the reference). No mouth, no arms, no legs.
+2. Kkamong — a small dark-brown fluffy fur creature with cat ears and green eyes; it may hold its little coral felt paddle.
+3. Marin — a navy felt round helmet-head with two big yellow felt eyes on a small beige felt body with a tiny cross-body bag.
+
+Placement (very important; positions are measured from the left and top edges of the whole image):
+- Mongle stands at about 72% from the left edge, its vertical centre at 50% from the top, its height about 25% of the image height. It is the main character, facing the camera.
+- Marin sits small near the bottom-left: centre at about 9% from the left and 80% from the top, height about 16% of the image height.
+- Kkamong sits small near the bottom-right: centre at about 92% from the left and 80% from the top, height about 16% of the image height.
+- The whole area between 15% and 63% from the left, at every height, is empty cream felt — nothing there at all, because text will be added later.
+- Nothing touches the image edges.
+
+All three are photographed together in the same scene: they stand on the felt with soft natural contact shadows and the same light, like real felt toys on a photo table. No white outlines, no sticker borders, no cut-out look, nothing floating.
+
+Style: macro-lens photo of real handmade needle felt, true colours, calm and warm. No text, no letters, no numbers, no logos, no watermark anywhere.

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 배너·커버 · 2026-10-19</title>
+<!-- 배너_짓기.py가 지은 파일이다. 고칠 때는 ../문안.json·짓기 스크립트를 고친다. -->
+<link rel="stylesheet" href="../../../디자인/SNS키트/kit.css">
+<style>
+  @font-face{font-family:'LAB JP';font-weight:700 900;src:local('Noto Sans JP Bold'),local('NotoSansJP-Bold'),local('Yu Gothic Bold'),local('YuGothic-Bold')}
+  @font-face{font-family:'LAB TC';font-weight:700 900;src:local('Microsoft JhengHei UI Bold'),local('Microsoft JhengHei Bold'),local('MicrosoftJhengHeiUIBold'),local('MicrosoftJhengHeiBold')}
+  @font-face{font-family:'LAB MY';font-weight:700 900;src:local('Myanmar Text Bold'),local('MyanmarText-Bold')}
+  @font-face{font-family:'LAB TH';font-weight:700 900;src:local('Leelawadee UI Bold'),local('LeelawadeeUI-Bold')}
+  @font-face{font-family:'LAB IN';font-weight:700 900;src:local('Nirmala UI Bold'),local('NirmalaUI-Bold')}
+  body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+  .k-slide{font-family:var(--k-sans);color:#14110f}
+  .bg-yt{background:url("bg_yt.png") center/100% 100% no-repeat,#f3ebdf}
+  .bg-fb{background:url("bg_fb.png") center/100% 100% no-repeat,#f3ebdf}
+  .abs{position:absolute}
+  .label{margin:0;font:600 var(--ls,30px)/1.1 var(--k-mono);letter-spacing:.08em;color:#ae322a}
+  .title{margin:0;font-weight:900;letter-spacing:-.03em}
+  .title .ln{display:block;white-space:nowrap}
+  .title.script{letter-spacing:0}
+  .sub{margin:0;font-weight:600;line-height:1.25;letter-spacing:-.02em;opacity:.88}
+  .hl-ink{background:linear-gradient(transparent 62%,rgba(255,224,122,.95) 62% 92%,transparent 92%)}
+  /* Myanmar Text는 글꼴 아래 여백이 커서 62~92% 띠가 글자 밑에 뜬다(10-19 Fable 검수) */
+  [lang="my"] .hl-ink{background:linear-gradient(transparent 40%,rgba(255,224,122,.95) 40% 66%,transparent 66%)}
+</style>
+<script>
+  // 제목 한 줄이 칸보다 길면 넘치지 않을 때까지 글자를 줄인다(줄바꿈으로 세 줄이 되지 않게)
+  document.fonts.ready.then(() => document.querySelectorAll('.fit').forEach((el) => {
+    let fs = parseFloat(getComputedStyle(el).fontSize);
+    const over = () => [...el.querySelectorAll('.ln')].some((l) => l.scrollWidth > el.clientWidth + 1);
+    while (over() && fs > 40) { fs -= 2; el.style.fontSize = fs + 'px'; }
+  }));
+</script>
+</head>
+<body>
+
+<!-- lab-us-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="en" data-fmt="yt-banner" data-name="lab-us-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · UNITED STATES</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Say <span class="hl-ink">what you mean</span>,</span><span class="ln">in Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-au-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="en" data-fmt="yt-banner" data-name="lab-au-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · AUSTRALIA</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Say <span class="hl-ink">what you mean</span>,</span><span class="ln">in Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-nz-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="en" data-fmt="yt-banner" data-name="lab-nz-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · NEW ZEALAND</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Say <span class="hl-ink">what you mean</span>,</span><span class="ln">in Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-ca-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="en" data-fmt="yt-banner" data-name="lab-ca-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · CANADA</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Say <span class="hl-ink">what you mean</span>,</span><span class="ln">in Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-ph-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="fil" data-fmt="yt-banner" data-name="lab-ph-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · PHILIPPINES</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Sabihin ang <span class="hl-ink">gusto mong sabihin</span>,</span><span class="ln">sa Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-py-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="es" data-fmt="yt-banner" data-name="lab-py-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · PARAGUAY</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Lo que quieras decir</span>,</span><span class="ln">decilo en coreano.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-mx-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="es" data-fmt="yt-banner" data-name="lab-mx-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · MÉXICO</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Lo que quieras decir</span>,</span><span class="ln">dilo en coreano.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-br-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="pt" data-fmt="yt-banner" data-name="lab-br-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · BRASIL</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">O que você quer falar</span>,</span><span class="ln">em coreano.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-tw-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="zh-Hant" data-fmt="yt-banner" data-name="lab-tw-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · TAIWAN</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:84px;line-height:1.2;font-family:'LAB TC',var(--k-sans)"><span class="ln"><span class="hl-ink">想說的話</span></span><span class="ln">用韓語說</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-th-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="th" data-fmt="yt-banner" data-name="lab-th-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · THAILAND</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:80px;line-height:1.4;font-family:'LAB TH',var(--k-sans)"><span class="ln"><span class="hl-ink">อยากพูดอะไร</span></span><span class="ln">พูดเป็นภาษาเกาหลี</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-id-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="id" data-fmt="yt-banner" data-name="lab-id-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · INDONESIA</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Ungkapkan <span class="hl-ink">maksudmu</span></span><span class="ln">dalam bahasa Korea.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-my-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="ms" data-fmt="yt-banner" data-name="lab-my-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · MALAYSIA</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Nak cakap apa pun</span>,</span><span class="ln">cakap dalam bahasa Korea.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-in-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="hi" data-fmt="yt-banner" data-name="lab-in-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · INDIA</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:80px;line-height:1.35;font-family:'LAB IN',var(--k-sans)"><span class="ln"><span class="hl-ink">जो कहना है</span>,</span><span class="ln">कोरियन में कहो।</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-kg-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="ky" data-fmt="yt-banner" data-name="lab-kg-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · KYRGYZSTAN</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Айткың келгенди</span></span><span class="ln">корейче айт.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-lk-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="si" data-fmt="yt-banner" data-name="lab-lk-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · SRI LANKA</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:74px;line-height:1.45;font-family:'LAB IN',var(--k-sans)"><span class="ln"><span class="hl-ink">කියන්න ඕන දේ</span>,</span><span class="ln">කොරියානුවෙන් කියමු.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-mm-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="my" data-fmt="yt-banner" data-name="lab-mm-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · MYANMAR</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:68px;line-height:1.6;font-family:'LAB MY',var(--k-sans)"><span class="ln"><span class="hl-ink">ပြောချင်တာ</span>ကို</span><span class="ln">ကိုရီးယားလို ပြောမယ်။</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-jp-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="ja" data-fmt="yt-banner" data-name="lab-jp-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · JAPAN</p>
+    <h1 class="title fit script" style="margin-top:12px;font-size:84px;line-height:1.2;font-family:'LAB JP',var(--k-sans)"><span class="ln"><span class="hl-ink">言いたいこと</span>を、</span><span class="ln">韓国語で。</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-vn-youtube · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="vi" data-fmt="yt-banner" data-name="lab-vn-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · VIETNAM</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Nói <span class="hl-ink">điều bạn muốn nói</span></span><span class="ln">bằng tiếng Hàn.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-youtube-en · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="en" data-fmt="yt-banner" data-name="lab-youtube-en" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln">Say <span class="hl-ink">what you mean</span>,</span><span class="ln">in Korean.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-mn · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다. 몽글은 바탕 사진 안(x1645~1956, y570~870) -->
+<section class="k-slide bg-yt" lang="mn" data-fmt="yt-banner" data-name="lab-mn" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px">
+  <div class="abs" style="left:560px;top:528px;width:1040px">
+    <p class="label" style="--ls:44px">SYNK LAB · MONGOLIA</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Хөгжилтэй</span></span><span class="ln">солонгос хэл</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">한국어가 재밌어지는 곳</p>
+  </div>
+</section>
+
+<!-- lab-np-facebook · 페이스북 1640×596 · 휴대폰은 좌우를 잘라 가운데 1061px만 보인다. 몽글은 바탕 사진 안(x1101~1318) -->
+<section class="k-slide bg-fb" lang="ne" data-fmt="fb-cover" data-name="lab-np-facebook" data-acc="lab"
+  style="--w:1640px;--h:596px;--safe-t:50px;--safe-b:50px;--safe-l:290px;--safe-r:290px">
+  <div class="abs" style="left:340px;top:140px;width:720px">
+    <p class="label" style="--ls:24px">SYNK LAB · NEPAL</p>
+    <h1 class="title fit script" style="margin-top:16px;font-size:62px;line-height:1.4;font-family:'LAB IN',var(--k-sans)"><span class="ln"><span class="hl-ink">भन्न मन लागेको कुरा</span>,</span><span class="ln">कोरियनमा भनौँ।</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:30px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-kh-facebook · 페이스북 1640×596 · 휴대폰은 좌우를 잘라 가운데 1061px만 보인다. 몽글은 바탕 사진 안(x1101~1318) -->
+<section class="k-slide bg-fb" lang="km" data-fmt="fb-cover" data-name="lab-kh-facebook" data-acc="lab"
+  style="--w:1640px;--h:596px;--safe-t:50px;--safe-b:50px;--safe-l:290px;--safe-r:290px">
+  <div class="abs" style="left:340px;top:140px;width:720px">
+    <p class="label" style="--ls:24px">SYNK LAB · CAMBODIA</p>
+    <h1 class="title fit script" style="margin-top:16px;font-size:58px;line-height:1.55;font-family:'LAB TH',var(--k-sans)"><span class="ln"><span class="hl-ink">អ្វីដែលចង់និយាយ</span></span><span class="ln">និយាយជាភាសាកូរ៉េ។</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:30px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-lk-facebook · 페이스북 1640×596 · 휴대폰은 좌우를 잘라 가운데 1061px만 보인다. 몽글은 바탕 사진 안(x1101~1318) -->
+<section class="k-slide bg-fb" lang="si" data-fmt="fb-cover" data-name="lab-lk-facebook" data-acc="lab"
+  style="--w:1640px;--h:596px;--safe-t:50px;--safe-b:50px;--safe-l:290px;--safe-r:290px">
+  <div class="abs" style="left:340px;top:140px;width:720px">
+    <p class="label" style="--ls:24px">SYNK LAB · SRI LANKA</p>
+    <h1 class="title fit script" style="margin-top:16px;font-size:60px;line-height:1.45;font-family:'LAB IN',var(--k-sans)"><span class="ln"><span class="hl-ink">කියන්න ඕන දේ</span>,</span><span class="ln">කොරියානුවෙන් කියමු.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:30px">하고 싶은 말, 한국어로</p>
+  </div>
+</section>
+
+<!-- lab-mn · 페이스북 1640×596 · 휴대폰은 좌우를 잘라 가운데 1061px만 보인다. 몽글은 바탕 사진 안(x1101~1318) -->
+<section class="k-slide bg-fb" lang="mn" data-fmt="fb-cover" data-name="lab-mn" data-acc="lab"
+  style="--w:1640px;--h:596px;--safe-t:50px;--safe-b:50px;--safe-l:290px;--safe-r:290px">
+  <div class="abs" style="left:340px;top:140px;width:720px">
+    <p class="label" style="--ls:24px">SYNK LAB · MONGOLIA</p>
+    <h1 class="title fit k-latin" style="margin-top:16px;font-size:64px;line-height:1.08"><span class="ln"><span class="hl-ink">Хөгжилтэй</span></span><span class="ln">солонгос хэл</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:30px">한국어가 재밌어지는 곳</p>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — square social-media profile picture, a real needle-felt craft photograph.
+
+Character: Mongle, the coral needle-felted wool mascot in the attached reference photo (use it ONLY for its shape and look): a bell/ghost shape made of coral wool (#E8735F-ish) with fuzzy visible fibres, a scalloped bottom hem with a cream running stitch, and two large glossy round black bead eyes. No mouth, no cheeks, no arms, no legs, no hands, no accessories.
+
+Scene: Mongle sits on a soft cream needle-felt surface, and the same cream felt curves up behind it as one seamless backdrop (no horizon line, no corners, no props, nothing else in the picture). Warm, soft, even studio light from the front-left. A gentle natural contact shadow under the hem. Mongle and the cream felt are one photograph: the wool fibres of Mongle touch and softly shade the felt surface. No white outline, no sticker edge, no cut-out look, not floating.
+
+Framing: square 1:1. Front-facing and perfectly centred left to right. Mongle's whole body is visible; its height is about 58% of the image height and its centre sits slightly below the image centre. Leave even cream margins on every side so the picture still reads well when cropped to a circle and when shown very small.
+
+Style: macro-lens photo of real handmade needle felt, crisp wool fibres, cute but calm, colours true to the reference (coral body, cream stitches, black bead eyes, cream backdrop). No text, no letters, no numbers, no logos, no watermark anywhere.

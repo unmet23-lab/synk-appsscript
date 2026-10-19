@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — wide 16:9 channel-banner background, a real needle-felt craft photograph, NO TEXT. This is a second try: in the first try the main character was too big and too high, so follow the measurements below exactly.
+
+Backdrop: one continuous soft cream wool-felt sweep (#F6EFE3-ish) filling the entire frame. It is a seamless backdrop that curves gently into the floor, so there is no visible horizon line, edge or corner anywhere. Very even and calm, fine wool fibres visible, slightly brighter in the middle. Warm soft daylight from the upper left.
+
+Characters (attached reference photos, in this order; use them ONLY for shape, colour and material):
+1. Mongle — coral felt bell/ghost shape with a scalloped hem and a cream running stitch, happy closed eyes stitched as two small upward arcs (like the reference). No mouth, no arms, no legs.
+2. Kkamong — a small dark-brown fluffy fur creature with cat ears and green eyes; it may hold its little coral felt paddle.
+3. Marin — a navy felt round helmet-head with two big yellow felt eyes on a small beige felt body with a tiny cross-body bag.
+
+Exact placement (positions measured from the left and top edges of the whole 16:9 image):
+- Mongle is SMALL in the frame: the top of its head is at 40% from the top and the bottom of its hem is at 61% from the top (so it is only about one fifth of the image height). Its left side is at 65% from the left and its right side at 79% from the left. It faces the camera.
+- Marin is small and low in the bottom-left corner: its top at 76% from the top, its bottom at 93% from the top, centred at 10% from the left.
+- Kkamong is small and low in the bottom-right corner: its top at 76% from the top, its bottom at 93% from the top, centred at 90% from the left.
+- Keep everything else empty cream felt. In particular: nothing at all between 15% and 62% from the left at any height, and nothing between 25% and 75% from the top except Mongle. Text will be added later in the empty area.
+- Nothing touches the image edges.
+
+All three are photographed together in the same scene: they stand on the felt with soft natural contact shadows and the same light, like real felt toys on a photo table. No white outlines, no sticker borders, no cut-out look, nothing floating.
+
+Style: macro-lens photo of real handmade needle felt, true colours, calm and warm. No text, no letters, no numbers, no logos, no watermark anywhere.

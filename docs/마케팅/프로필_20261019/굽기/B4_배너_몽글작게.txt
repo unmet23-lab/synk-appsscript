@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — wide 16:9 channel-banner background, a real needle-felt craft photograph, NO TEXT. Follow the measurements below exactly; the last try made Mongle too big. Only ONE character in the whole picture.
+
+Backdrop: one continuous soft cream wool-felt sweep (#F6EFE3-ish) filling the entire frame. It is a seamless backdrop that curves gently into the floor, so there is no visible horizon line, edge or corner anywhere. Very even and calm, fine wool fibres visible, slightly brighter in the middle. Warm soft daylight from the upper left.
+
+Character (attached reference photo; use it ONLY for shape, colour and material):
+Mongle — coral felt bell/ghost shape with a scalloped hem and a cream running stitch, happy closed eyes stitched as two small upward arcs (like the reference). No mouth, no arms, no legs.
+
+Exact placement (positions measured from the left and top edges of the whole 16:9 image):
+- Mongle is TINY in the frame, as if the camera is further away: the top of its head is at 42% from the top and the bottom of its hem is at 58% from the top, so Mongle is only about one sixth of the image height (much smaller than a typical product shot). Its left side is at 66% from the left and its right side at 76% from the left. It faces the camera.
+- No other characters, toys, props or objects anywhere. Everything except Mongle and its soft shadow is empty cream felt. Text will be added later in the empty area on the left.
+- Nothing touches the image edges.
+
+Mongle stands on the felt with a soft natural contact shadow, lit by the same light as the backdrop, like a real felt toy on a photo table. No white outline, no sticker border, no cut-out look, not floating.
+
+Style: macro-lens photo of real handmade needle felt, true colours, calm and warm. No text, no letters, no numbers, no logos, no watermark anywhere.

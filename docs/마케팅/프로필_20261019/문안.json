@@ -1,0 +1,149 @@
+{
+  "revision": "2026-10-19 v4(캐나다 앱 줄·불어 이름 줄: Fable 최종 점검)",
+  "note": "유호님 10-19 「전부 다 진행해줘. 글부터 시안까지 설정까지 전부 부탁해」. 점검 결과 docs/마케팅/온라인마케팅지도/LAB계정_점검_20261019.md. 유튜브 소개글은 첫 줄에 「배우다+퀴즈」를 넣고(Fable·Claude), 10-02판 본문의 장면·리액션 말을 지금 올리는 관용구 퀴즈에 맞춘다. 링크는 나라 채널 모두 영어판 LAB 페이지(synk.im/en/lab/), 영어·스페인어·포르투갈어권에는 이름 도구(synk.im/nombre/)를 더한다. 몽골어는 새 문장을 짓지 않고 이미 공개된 문장만 다시 쓴다(몽골어는 사람 확인 원칙).",
+  "youtube": {
+    "lab-us-youtube": "Learn Korean with 3-second quizzes.\n\nGuess Korean idioms and everyday phrases in 3 seconds, hear how Koreans really say them, then say them out loud yourself. Short videos for beginners, with English subtitles.\n\nMongle, Kkamong and Marin, our three felt friends, play along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nYour name in Korean: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-au-youtube": "Learn Korean with 3-second quizzes.\n\nGuess Korean idioms and everyday phrases in 3 seconds, hear how Koreans really say them, then say them out loud yourself. Short videos for beginners, with English subtitles.\n\nMongle, Kkamong and Marin, our three felt friends, play along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nYour name in Korean: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-nz-youtube": "Learn Korean with 3-second quizzes.\n\nGuess Korean idioms and everyday phrases in 3 seconds, hear how Koreans really say them, then say them out loud yourself. Short videos for beginners, with English subtitles.\n\nMongle, Kkamong and Marin, our three felt friends, play along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nYour name in Korean: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-ca-youtube": "Learn Korean with 3-second quizzes.\nApprends le coréen avec des quiz de 3 secondes.\n\nGuess Korean idioms and everyday phrases in 3 seconds, hear how Koreans really say them, then say them out loud yourself. Short videos for beginners, with subtitles.\nDevine des expressions coréennes du quotidien en 3 secondes, écoute comment les Coréens les disent vraiment, puis répète-les à voix haute. De courtes vidéos pour débutants, avec sous-titres.\n\nMongle, Kkamong and Marin, our three felt friends, play along with you.\nMongle, Kkamong et Marin, nos trois amis en feutre, jouent avec toi.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\nOn prépare aussi une appli pour apprendre le coréen, et c'est ici que tu en entendras parler en premier.\n\nYour name in Korean / Ton nom en coréen : https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-ph-youtube": "Matuto ng Korean sa 3-second quizzes.\n\nHulaan ang Korean idioms at everyday phrases sa loob ng 3 segundo, pakinggan kung paano talaga ito sinasabi ng mga Koreano, tapos sabihin mo nang malakas. Maiikling video para sa beginners, may Filipino subtitles.\n\nKasama mo sina Mongle, Kkamong at Marin, ang tatlo naming felt friends, sa bawat quiz.\n\nGumagawa rin kami ng Korean learning app, at dito mo unang malalaman ang balita.\n\nYour name in Korean: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-py-youtube": "Aprendé coreano con quizzes de 3 segundos y usalo al toque.\n\nSaludar, pedir algo en una cafetería o comentar un video que te gusta. ¡Probemos esa frase nueva en una situación cotidiana!\n\nSYNK LAB Paraguay es para quienes empiezan a aprender coreano.\nVamos a leer hangul, practicar expresiones de todos los días y conocer las bases del TOPIK con videos cortos y pequeñas preguntas.\n\nDecilo en voz alta, elegí una respuesta y armá tu propia frase. Sin apuro, a tu ritmo.\n¿Qué te gustaría decir en coreano? ¡Contanos en los comentarios de los videos!\n\nTu nombre en coreano: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-mx-youtube": "Aprende coreano con quizzes de 3 segundos y úsalo al instante.\n\nSaludar, pedir algo en una cafetería o comentar un video que te gusta. ¡Probemos esa frase nueva en una situación de todos los días!\n\nSYNK LAB México es para quienes empiezan a aprender coreano.\nVamos a leer hangul, practicar expresiones cotidianas y conocer las bases del TOPIK con videos cortos y preguntas rápidas.\n\nDilo en voz alta, elige una respuesta y arma tu propia frase. Sin prisa, a tu ritmo.\n¿Qué te gustaría decir en coreano? ¡Cuéntanos en los comentarios de los videos!\n\nTu nombre en coreano: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-br-youtube": "Aprenda coreano com quizzes de 3 segundos.\n\nAdivinhe expressões coreanas do dia a dia em 3 segundos, escute como os coreanos falam de verdade e depois repita em voz alta. Vídeos curtos para iniciantes, legendados em português.\n\nMongle, Kkamong e Marin, nossos três amigos de feltro, jogam junto com você.\n\nTambém estamos criando um app para aprender coreano, e as novidades saem primeiro aqui.\n\nSeu nome em coreano: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-tw-youtube": "用3秒小測驗學韓語。\n\n3秒猜出韓語慣用語和日常說法，聽聽韓國人真正怎麼說，再大聲跟著說一遍。給初學者的短影片，附中文字幕。\n\n羊毛氈好朋友 Mongle、Kkamong、Marin 會陪你一起猜、一起笑。\n\n我們也在做韓語學習 App，最新消息會先在這裡公布。\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-th-youtube": "เรียนภาษาเกาหลีกับควิซ 3 วินาที\n\nทายสำนวนและประโยคเกาหลีที่ใช้ในชีวิตประจำวันภายใน 3 วินาที ฟังว่าคนเกาหลีพูดกันจริง ๆ ยังไง แล้วลองพูดออกเสียงตาม คลิปสั้นสำหรับมือใหม่ พร้อมซับไทย\n\nMongle, Kkamong และ Marin สามเพื่อนตุ๊กตาสักหลาด จะร่วมทายไปพร้อมกับคุณ\n\nเรากำลังทำแอปเรียนภาษาเกาหลีด้วย ข่าวใหม่จะแจ้งที่นี่ก่อนใคร\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-id-youtube": "Belajar bahasa Korea lewat kuis 3 detik.\n\nTebak idiom dan ungkapan sehari-hari bahasa Korea dalam 3 detik, dengarkan cara orang Korea benar-benar mengucapkannya, lalu ucapkan dengan lantang. Video singkat untuk pemula, lengkap dengan subtitle bahasa Indonesia.\n\nMongle, Kkamong, dan Marin, tiga teman flanel kami, ikut main bersamamu.\n\nKami juga sedang membuat aplikasi belajar bahasa Korea, dan kabarnya akan muncul di sini lebih dulu.\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-my-youtube": "Belajar bahasa Korea dengan kuiz 3 saat.\n\nTeka idiom dan ungkapan harian bahasa Korea dalam 3 saat, dengar cara orang Korea menyebutnya, kemudian sebut dengan kuat. Video pendek untuk yang baru mula belajar, dengan sari kata bahasa Melayu.\n\nMongle, Kkamong dan Marin, tiga kawan felt kami, turut bermain bersama anda.\n\nKami juga sedang membina aplikasi belajar bahasa Korea, dan beritanya akan keluar di sini dahulu.\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-in-youtube": "3 सेकंड के क्विज़ से कोरियन सीखो।\n\nकोरियन मुहावरे और रोज़ के वाक्य 3 सेकंड में पहचानो, सुनो कि कोरियाई लोग उन्हें सच में कैसे बोलते हैं, फिर ज़ोर से बोलकर देखो। शुरुआत करने वालों के लिए छोटे वीडियो, सबटाइटल के साथ।\n\nMongle, Kkamong और Marin, हमारे तीन फ़ेल्ट दोस्त, हर क्विज़ में तुम्हारे साथ खेलेंगे।\n\nहम कोरियन सीखने का एक ऐप भी बना रहे हैं, उसकी ख़बर सबसे पहले यहीं मिलेगी।\n\nLearn Korean with 3-second quizzes: guess Korean idioms and everyday phrases, with subtitles.\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-kg-youtube": "Корей тилин 3 секунддук викторина менен үйрөн.\n\nКорей идиомаларын жана күнүмдүк сөз айкаштарын 3 секундда тап, корейлер аларды чындап кантип айтарын угуп, анан үн чыгарып айтып көр. Жаңы баштагандар үчүн кыска видеолор, кыргызча субтитр менен.\n\nКийиз достор Mongle, Kkamong жана Marin сени менен бирге ойнойт.\n\nКорей тилин үйрөнүүчү тиркеме да жасап жатабыз, жаңылыктар биринчи ушул жерде.\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-lk-youtube": "කොරියානු කියමන් තත්පර 3න් අනුමාන කරමින් කොරියානු භාෂාව ඉගෙන ගමු.\n\nකොරියානු කියමන් සහ එදිනෙදා වාක්‍ය තත්පර 3න් අනුමාන කරන්න, කොරියානුවන් ඒවා ඇත්තටම කියන විදිය අහන්න, ඊට පස්සේ හයියෙන් කියලා බලන්න. ආරම්භකයින්ට කෙටි වීඩියෝ, සිංහල උපසිරැසි සමඟ.\n\nMongle, Kkamong සහ Marin කියන යාළුවෝ තුන්දෙනා ඔබත් එක්කම සෙල්ලම් කරනවා.\n\nඅපි කොරියානු ඉගෙනීමේ ඇප් එකකුත් හදනවා, ඒ ගැන ආරංචි මුලින්ම මෙතැනින්.\n\n3 வினாடிகளில் கொரிய மரபுத்தொடர்களை யூகித்து, சப்டைட்டில்களுடன் கொரிய மொழியைக் கற்போம்.\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-mm-youtube": "၃ စက္ကန့် ဉာဏ်စမ်းတွေနဲ့ ကိုရီးယားစကား လေ့လာကြမယ်။\n\nကိုရီးယားဆိုရိုးစကားနဲ့ နေ့စဉ်သုံးစကားတွေကို ၃ စက္ကန့်အတွင်း ခန့်မှန်းပြီး ကိုရီးယားလူမျိုးတွေ တကယ်ပြောတဲ့ပုံစံကို နားထောင်ပါ၊ ပြီးရင် အသံထွက်ပြောကြည့်ပါ။ စတင်လေ့လာသူတွေအတွက် ဗီဒီယိုတိုလေးတွေကို မြန်မာစာတန်းထိုးနဲ့ ပြပေးသွားပါမယ်။\n\nMongle၊ Kkamong နဲ့ Marin ဆိုတဲ့ ချစ်စရာ သူငယ်ချင်းသုံးယောက်နဲ့ အတူတူ ကစားကြမယ်။\n\nကိုရီးယားစာ သင်ယူတဲ့ app လည်း လုပ်နေပါတယ်၊ သတင်းတွေကို ဒီမှာ အရင်ဆုံး ကြားရမယ်။\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-jp-youtube": "3秒クイズで、学んですぐ使える韓国語。\n\nあいさつをしたり、カフェで注文したり、好きな動画にコメントしたり。\n覚えたひと言を、身近な場面で使ってみよう。\n\nSYNK LAB Japanは、韓国語を初めて学ぶ人のためのチャンネルです。\nハングルの読み方、日常で使える表現、TOPIKの基礎を、短い動画やクイズで紹介していきます。\n\n声に出して、答えを選んで、自分のペースで少しずつ。\n知りたい韓国語があったら、動画のコメントで教えてね。\n\nSYNK LAB · https://synk.im/en/lab/",
+    "lab-vn-youtube": "Học tiếng Hàn qua câu đố 3 giây, dùng được ngay!\n\nChào hỏi, gọi đồ uống hay bình luận dưới video yêu thích — cùng thử dùng những câu vừa học vào các tình huống quen thuộc nhé.\n\nSYNK LAB Vietnam dành cho bạn mới bắt đầu học tiếng Hàn.\nCùng học cách đọc Hangul, những câu dùng hằng ngày và kiến thức TOPIK cơ bản qua video ngắn và câu đố.\n\nThử đọc thành tiếng, chọn đáp án rồi tập dùng câu vừa học. Cứ học từng chút một, theo nhịp của bạn.\nBạn muốn biết cách nói câu gì bằng tiếng Hàn? Hãy để lại bình luận dưới video nhé!\n\nSYNK LAB · https://synk.im/en/lab/"
+  },
+  "youtubeKoreanMeaning": {
+    "firstLine": "3초 퀴즈로 배우는 한국어.",
+    "body": "한국어 관용구와 일상 표현을 3초 안에 맞히고, 한국 사람이 실제로 어떻게 말하는지 듣고, 소리 내어 말해 보기. 초보자용 짧은 영상, (그 나라 말) 자막.",
+    "mascot": "펠트 친구 몽글·까몽·마린이 함께 놀아요(퀴즈를 같이 풀어요).",
+    "nombre": "내 이름을 한국어로: synk.im/nombre/"
+  },
+  "banners": {
+    "_korean": "하고 싶은 말, 한국어로",
+    "lab-br-youtube": {
+      "label": "SYNK LAB · BRASIL",
+      "title": [
+        "O que você quer falar,",
+        "em coreano."
+      ],
+      "hl": "O que você quer falar"
+    },
+    "lab-my-youtube": {
+      "label": "SYNK LAB · MALAYSIA",
+      "title": [
+        "Nak cakap apa pun,",
+        "cakap dalam bahasa Korea."
+      ],
+      "hl": "Nak cakap apa pun"
+    },
+    "lab-ph-youtube": {
+      "label": "SYNK LAB · PHILIPPINES",
+      "title": [
+        "Sabihin ang gusto mong sabihin,",
+        "sa Korean."
+      ],
+      "hl": "gusto mong sabihin"
+    },
+    "lab-youtube-en": {
+      "label": "SYNK LAB",
+      "title": [
+        "Say what you mean,",
+        "in Korean."
+      ],
+      "hl": "what you mean",
+      "note": "@synkkorean을 영어 기준 채널로 바꿀 때만(유호님 확인 뒤)"
+    },
+    "lab-mn": {
+      "label": "SYNK LAB · MONGOLIA",
+      "title": [
+        "Хөгжилтэй",
+        "солонгос хэл"
+      ],
+      "hl": "Хөгжилтэй",
+      "korean": "한국어가 재밌어지는 곳",
+      "note": "@synkkorean 채널 이름(09-20)의 「Хөгжилтэй солонгос хэл」. 옛 배너 「…хөгжилтэй сурья」는 몽골어 검문(10-19)에서 맞춤법(суръя)·부사형 지적"
+    },
+    "lab-py-youtube": {
+      "label": "SYNK LAB · PARAGUAY",
+      "title": [
+        "Lo que quieras decir,",
+        "decilo en coreano."
+      ],
+      "hl": "Lo que quieras decir",
+      "note": "10-02 json의 querés(=뜻하다로도 읽힘)를 접속법 quieras로"
+    },
+    "lab-mx-youtube": {
+      "label": "SYNK LAB · MÉXICO",
+      "title": [
+        "Lo que quieras decir,",
+        "dilo en coreano."
+      ],
+      "hl": "Lo que quieras decir",
+      "note": "새로(10-02엔 멕시코 B판이 없음). 파라과이판의 tú판"
+    }
+  },
+  "other": {
+    "lab-instagram": {
+      "how": "앱에서만(인스타 웹 저장 실패 기록, 크롬 인스타는 활성 계정 바꾸지 않음)",
+      "name": "SYNK LAB | Солонгос хэл",
+      "bio": "Хөгжилтэй солонгос хэл\nХангыль · Өдөр тутмын яриа · TOPIK · Хэлц үг",
+      "korean": "재밌는 한국어 / 한글 · 일상 회화 · TOPIK · 관용구",
+      "source": "@synkkorean 배너(09-20)·@synk.mn 게시물 「ХЭЛЦ ҮГ」(10-18)에 이미 공개된 말"
+    },
+    "lab-tiktok": {
+      "how": "틱톡 웹 프로필 편집",
+      "bio": "Хөгжилтэй солонгос хэл\nХангыль · Өдөр тутмын яриа · TOPIK · Хэлц үг"
+    },
+    "lab-facebook": {
+      "how": "페이스북 페이지 설정(크롬)",
+      "intro": "Хөгжилтэй солонгос хэл\nХангыль · Өдөр тутмын яриа · TOPIK · Хэлц үг",
+      "category": "「언어 치료사」 빼고 「교육 웹사이트」(나라 페이지 셋과 같게)"
+    },
+    "lab-telegram": {
+      "how": "텔레그램 채널 정보",
+      "description": "Хөгжилтэй солонгос хэл\nХангыль · Өдөр тутмын яриа · TOPIK · Хэлц үг\nsynk.im/en/lab/"
+    },
+    "lab-uz-telegram": {
+      "how": "텔레그램 채널 정보",
+      "description": "Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va 3 soniyalik testlar — yangi boshlovchilar uchun qisqa videolar. Bitta iborani o‘rganib, darrov aytib ko‘r.",
+      "korean": "한국어를 즐겁게 배워요! 한글, 일상 표현, 3초 퀴즈 — 초보자용 짧은 영상. 한 표현을 배우고 바로 말해 봐."
+    },
+    "lab-mm-tiktok": {
+      "how": "틱톡 웹 프로필 편집",
+      "name": "SYNK LAB Myanmar"
+    },
+    "lab-cn-xiaohongshu": {
+      "how": "앱에서만",
+      "name": "SYNK LAB 韩语",
+      "bio": "想说的话，用韩语说。3秒猜一个韩语惯用语，轻松学韩语。",
+      "korean": "하고 싶은 말, 한국어로. 3초 안에 한국어 관용구 하나 맞히기, 가볍게 배우는 한국어."
+    }
+  },
+  "synkkoreanEnglish": {
+    "note": "유호님이 @synkkorean을 영어 기준 채널로 바꾸기로 할 때만 적용. 영어판 원본을 올리는 채널(제작 방식 §4-3)이고 최근 영상 제목이 모두 영어다. 몽골어판은 인스타 @synk.mn·페이스북 synkworld가 맡는다.",
+    "name": "SYNK LAB | Learn Korean",
+    "description": "Learn Korean with 3-second quizzes and songs.\n\nGuess Korean idioms in 3 seconds, sing your way through Hangul, and pick up the phrases Koreans really use. Short videos for beginners, in English.\n\nMongle, Kkamong and Marin, our three felt friends, play and sing along with you.\n\nStudy music too: SYNK Radio, lofi beats to study Korean to.\n\nYour name in Korean: https://synk.im/nombre/\nSYNK LAB · https://synk.im/en/lab/",
+    "keywords": [
+      "learn korean",
+      "korean language",
+      "korean for beginners",
+      "korean idioms",
+      "korean quiz",
+      "hangul",
+      "korean songs",
+      "TOPIK",
+      "korean shorts",
+      "study korean"
+    ],
+    "banner": "banners.lab-youtube-en"
+  }
+}

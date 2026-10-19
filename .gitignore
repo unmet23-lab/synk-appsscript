@@ -284,3 +284,17 @@ docs/_ops/qa/atlas-*/**/*.png
 !/docs/캐릭터/마린몽글표정교정_20261011/원본_*
 !/docs/캐릭터/마린몽글표정교정_20261011/*생성원본*
 !/docs/캐릭터/마린몽글표정교정_20261011/*마스크*
+
+# LAB 계정 손질(10-19): 배너·커버 장별 PNG와 바탕·프로필 PNG는 구운 원본 A·B4에서 다시 만든다(순서는 docs/마케팅/프로필_20261019/README.md)
+# 시트·검사 기록·구운 원본만 남기고, 버린 시안 B·B2·B3은 이 PC에만 둔다
+docs/마케팅/프로필_20261019/배너/out/[0-9]*.png
+docs/마케팅/프로필_20261019/배너/bg_*.png
+docs/마케팅/프로필_20261019/프로필_몽글_*.png
+docs/마케팅/프로필_20261019/굽기/B_*.png
+docs/마케팅/프로필_20261019/굽기/B2_*.png
+docs/마케팅/프로필_20261019/굽기/B3_*.png
+# 나라별판 표지(remotion 현지어_렌더.mjs의 renderStill)와 intl-youtube build.cjs 중간 산출물(경로 SVG·미리보기)
+docs/마케팅/LAB_관용구퀴즈2_20261017/게시/03-나라별/*/cover.png
+docs/마케팅/온라인마케팅지도/intl-youtube/*.svg
+docs/마케팅/온라인마케팅지도/intl-youtube/*.display.png
+docs/마케팅/온라인마케팅지도/intl-youtube/*.mobile.png

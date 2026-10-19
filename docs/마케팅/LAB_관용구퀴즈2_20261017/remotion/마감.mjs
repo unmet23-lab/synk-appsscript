@@ -16,7 +16,7 @@ const before = measure(src);
 const gain = (-14 - before.I).toFixed(2);
 execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', src, '-c:v', 'copy',
   '-af', `volume=${gain}dB,alimiter=limit=0.84:attack=1:release=60:level=false`,
-  '-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart', out]);
+  '-c:a', 'aac', '-b:a', '384k', '-ar', '48000', '-movflags', '+faststart', out]); // 유튜브 권장 AAC 스테레오 384kbps·48kHz
 const after = measure(out);
 const ok = Math.abs(after.I + 14.5) <= 0.5 && after.peak <= -1.2;
 console.log(`${before.I} LUFS / ${before.peak} dBFS → +${gain}dB → ${after.I} LUFS / ${after.peak} dBFS ${ok ? '통과' : '⚠ 범위 밖'} → ${out}`);

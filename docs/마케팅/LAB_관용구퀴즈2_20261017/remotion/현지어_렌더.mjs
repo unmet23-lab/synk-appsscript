@@ -22,7 +22,8 @@ for (const c of list) {
   const id = `kids-quiz-v5b-${c.cc}`;
   const composition = await selectComposition({ serveUrl, id, envVariables: ENV });
   const raw = path.join(ROOT, 'out', `${id}.mp4`);
-  await renderMedia({ composition, serveUrl, codec: 'h264', outputLocation: raw, envVariables: ENV, imageFormat: 'jpeg', jpegQuality: 92, chromiumOptions: { gl: 'angle' } });
+  // 올림 화질(제작 방식 v2 §2-4, 10-19): 프레임은 PNG(손실 없음), H.264 12Mbps·slow, yuv420p·BT.709
+  await renderMedia({ composition, serveUrl, codec: 'h264', outputLocation: raw, envVariables: ENV, imageFormat: 'png', videoBitrate: '12M', x264Preset: 'slow', pixelFormat: 'yuv420p', colorSpace: 'bt709', chromiumOptions: { gl: 'angle' } });
   execFileSync('node', [path.join(ROOT, '마감.mjs'), raw], { stdio: 'inherit' });
   const dir = path.join(POST, c.id);
   fs.mkdirSync(dir, { recursive: true });

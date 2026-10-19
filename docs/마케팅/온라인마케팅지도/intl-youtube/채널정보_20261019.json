@@ -1,0 +1,430 @@
+{
+  "revision": "2026-10-19-lab-youtube-channel-info",
+  "note": "유호님 10-19 「화질이랑 채널정보 싹다 고쳐줘」. 소개글은 영상이 올라간 뒤에도 남아 있던 「첫 영상 준비 중」 문장만 빼고 나머지는 그대로 둔다. 멕시코는 비어 있던 소개글을 파라과이판의 멕시코 스페인어(tú)판으로, 배너는 다른 나라와 같은 틀(intl-youtube 틀, 마스코트 누끼 없음)로 넣는다. 거주 국가는 바꾸지 않는다.",
+  "channels": [
+    {
+      "key": "lab-youtube",
+      "channelId": "UCmZplYKuNHLPng4iL2AbLLg",
+      "authuser": "",
+      "language": [
+        "mn",
+        "몽골어"
+      ],
+      "keywords": [
+        "солонгос хэл",
+        "солонгос хэл сурах",
+        "хангыль",
+        "TOPIK",
+        "learn korean",
+        "korean language",
+        "korean for beginners",
+        "korean idioms",
+        "korean quiz",
+        "korean shorts"
+      ],
+      "remove": "Анхны хичээлийн бичлэгээ бэлтгэж байна. ",
+      "descriptionAfter": "Сураад шууд хэрэглэж болох солонгос хэл.\n\nМэндлэх, кафед уух зүйл захиалах, дуртай бичлэгтээ сэтгэгдэл үлдээх. Шинээр сурсан үгээ өдөр тутамдаа хэрэглээд үзье!\n\nSYNK LAB Mongolia нь солонгос хэлийг анхлан суралцагчдад зориулсан суваг.\nХангыль унших, өдөр тутмын хэллэг, TOPIK-ийн суурь мэдлэгийг богино бичлэг, жижиг асуулт хариултаар сурна.\n\nЧангаар хэлж, хариултаа сонгоод, өөрийн өгүүлбэрийг зохиогоод үзээрэй. Яарах хэрэггүй, өөрийн хэмнэлээр суръя.\nСолонгосоор юу хэлж сурмаар байна? Бичлэгийн доор сэтгэгдэл үлдээгээрэй!\n\nСуралцахдаа сонсох K-LOFI хөгжмийг мөн хуваалцана.\nSYNK LAB · https://synk.im/\n"
+    },
+    {
+      "key": "lab-us-youtube",
+      "channelId": "UCWpKsFuvNi0LfUeYirNrRww",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "en",
+        "영어"
+      ],
+      "keywords": [
+        "learn korean",
+        "korean language",
+        "korean for beginners",
+        "korean idioms",
+        "korean vocabulary",
+        "korean quiz",
+        "hangul",
+        "TOPIK",
+        "study korean",
+        "korean shorts"
+      ],
+      "remove": "First episodes are on the way. ",
+      "descriptionAfter": "Say what you mean — in Korean.\n\nShort everyday scenes and the Korean phrases people really use, with English subtitles. Watch the moment, catch the phrase, then say it out loud — your way.\n\nMongle, Kkamong and Marin, our three felt friends, react right along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-au-youtube",
+      "channelId": "UCSTmpu2wPZYimD3jkXzr3aQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "en",
+        "영어"
+      ],
+      "keywords": [
+        "learn korean",
+        "korean language",
+        "korean for beginners",
+        "korean idioms",
+        "korean vocabulary",
+        "korean quiz",
+        "hangul",
+        "TOPIK",
+        "study korean",
+        "korean shorts"
+      ],
+      "remove": "First episodes are on the way. ",
+      "descriptionAfter": "Say what you mean — in Korean.\n\nShort everyday scenes and the Korean phrases people really use, with English subtitles. Watch the moment, catch the phrase, then say it out loud — your way.\n\nMongle, Kkamong and Marin, our three felt friends, react right along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-nz-youtube",
+      "channelId": "UCN0hYfLSOCuaIc_f0QW2Iww",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "en",
+        "영어"
+      ],
+      "keywords": [
+        "learn korean",
+        "korean language",
+        "korean for beginners",
+        "korean idioms",
+        "korean vocabulary",
+        "korean quiz",
+        "hangul",
+        "TOPIK",
+        "study korean",
+        "korean shorts"
+      ],
+      "remove": "First episodes are on the way. ",
+      "descriptionAfter": "Say what you mean — in Korean.\n\nShort everyday scenes and the Korean phrases people really use, with English subtitles. Watch the moment, catch the phrase, then say it out loud — your way.\n\nMongle, Kkamong and Marin, our three felt friends, react right along with you.\n\nWe're also building a Korean learning app, and you'll hear about it here first.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-ca-youtube",
+      "channelId": "UCtw3xrupij61YVBR_IgBVUQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "en",
+        "영어"
+      ],
+      "keywords": [
+        "learn korean",
+        "korean language",
+        "korean for beginners",
+        "korean idioms",
+        "korean quiz",
+        "hangul",
+        "TOPIK",
+        "apprendre le coréen",
+        "coréen pour débutants",
+        "korean shorts"
+      ],
+      "remove": "First episodes are on the way. · Les premiers épisodes arrivent bientôt.\n\n",
+      "descriptionAfter": "Say what you mean — in Korean.\nDis ce que tu veux dire — en coréen.\n\nShort everyday scenes and the Korean phrases people really use, with subtitles. Watch the moment, catch the phrase, then say it out loud — your way.\nDe courtes scènes du quotidien et les expressions que les Coréens utilisent vraiment, avec sous-titres. Regarde la scène, écoute l'expression, puis dis-la à voix haute, à ta façon.\n\nMongle, Kkamong and Marin, our three felt friends, react right along with you.\nMongle, Kkamong et Marin, nos trois amis en feutre, réagissent avec toi.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-ph-youtube",
+      "channelId": "UCojw4LpKyelcfgniVxng-Ew",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "fil",
+        "필리핀어"
+      ],
+      "keywords": [
+        "learn korean",
+        "Korean sa Tagalog",
+        "matuto ng Korean",
+        "korean for beginners",
+        "hangul",
+        "TOPIK",
+        "korean idioms",
+        "korean quiz",
+        "study korean",
+        "korean shorts"
+      ],
+      "remove": "Malapit na ang unang episodes. ",
+      "descriptionAfter": "Sabihin ang gusto mo — sa Korean.\n\nMaiikling eksena sa araw-araw at mga Korean phrase na talagang ginagamit ng mga Koreano, may English subtitles. Panoorin ang eksena, pakinggan ang phrase, tapos sabihin mo nang malakas sa sarili mong paraan.\n\nKasama mo sina Mongle, Kkamong at Marin, ang tatlo naming felt friends, sa bawat reaction.\n\nGumagawa rin kami ng Korean learning app, at dito mo unang malalaman ang balita.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-py-youtube",
+      "channelId": "UCyYm3TWZQWliVyHF_dc3Tbg",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "es-419",
+        "스페인어(라틴 아메리카)"
+      ],
+      "keywords": [
+        "aprender coreano",
+        "coreano para principiantes",
+        "idioma coreano",
+        "clases de coreano",
+        "expresiones en coreano",
+        "vocabulario coreano",
+        "hangul",
+        "TOPIK",
+        "coreano fácil",
+        "learn korean"
+      ],
+      "remove": "Estamos preparando la primera lección. ¡Nos vemos pronto!\n",
+      "descriptionAfter": "Coreano que aprendés y usás al toque.\n\nSaludar, pedir algo en una cafetería o comentar un video que te gusta. ¡Probemos esa frase nueva en una situación cotidiana!\n\nSYNK LAB Paraguay es para quienes empiezan a aprender coreano.\nVamos a leer hangul, practicar expresiones de todos los días y conocer las bases del TOPIK con videos cortos y pequeñas preguntas.\n\nDecilo en voz alta, elegí una respuesta y armá tu propia frase. Sin apuro, a tu ritmo.\n¿Qué te gustaría decir en coreano? ¡Contanos en los comentarios de los videos!\n\nSYNK LAB · https://synk.im/\n"
+    },
+    {
+      "key": "lab-mx-youtube",
+      "channelId": "UCgVd9xnRPn28UaaRFxR0ARQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "es-MX",
+        "스페인어(멕시코)"
+      ],
+      "keywords": [
+        "aprender coreano",
+        "coreano para principiantes",
+        "idioma coreano",
+        "clases de coreano",
+        "expresiones en coreano",
+        "vocabulario coreano",
+        "hangul",
+        "TOPIK",
+        "coreano fácil",
+        "learn korean"
+      ],
+      "banner": "docs/마케팅/온라인마케팅지도/intl-youtube/lab-mx-youtube.png",
+      "descriptionAfter": "Coreano que aprendes y usas al instante.\n\nSaludar, pedir algo en una cafetería o comentar un video que te gusta. ¡Probemos esa frase nueva en una situación de todos los días!\n\nSYNK LAB México es para quienes empiezan a aprender coreano.\nVamos a leer hangul, practicar expresiones cotidianas y conocer las bases del TOPIK con videos cortos y preguntas rápidas.\n\nDilo en voz alta, elige una respuesta y arma tu propia frase. Sin prisa, a tu ritmo.\n¿Qué te gustaría decir en coreano? ¡Cuéntanos en los comentarios de los videos!\n\nSYNK LAB · https://synk.im/\n"
+    },
+    {
+      "key": "lab-br-youtube",
+      "channelId": "UCe5MsB-r8rbtoabKluoJcig",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "pt-BR",
+        "포르투갈어(브라질)"
+      ],
+      "keywords": [
+        "aprender coreano",
+        "coreano para iniciantes",
+        "língua coreana",
+        "aulas de coreano",
+        "expressões em coreano",
+        "vocabulário coreano",
+        "hangul",
+        "TOPIK",
+        "coreano fácil",
+        "learn korean"
+      ],
+      "remove": "Os primeiros episódios estão chegando. ",
+      "descriptionAfter": "O que você quer dizer, em coreano.\n\nCenas curtas do dia a dia — e aquelas situações bem de dorama — com as frases que os coreanos usam de verdade, legendadas em português. Veja a cena, escute a frase e depois fale em voz alta, do seu jeito.\n\nMongle, Kkamong e Marin, nossos três amigos de feltro, reagem junto com você.\n\nTambém estamos criando um app para aprender coreano, e as novidades saem primeiro aqui.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-tw-youtube",
+      "channelId": "UC3BeJKEOQ-wqLf93N_vIGqg",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "zh-TW",
+        "중국어(대만)"
+      ],
+      "keywords": [
+        "學韓文",
+        "韓語學習",
+        "韓文入門",
+        "韓語慣用語",
+        "韓文單字",
+        "韓語會話",
+        "韓文字母",
+        "TOPIK",
+        "韓國語",
+        "learn korean"
+      ],
+      "remove": "第一集準備中。",
+      "descriptionAfter": "想說的話，用韓語說。\n\n日常生活的小片段，加上韓國人真的會用的說法，附中文字幕。看完情境、聽完句子，換成你自己的話，大聲說出來。\n\n羊毛氈好朋友 Mongle、Kkamong、Marin 會陪你一起反應。\n\n我們也在做韓語學習 App，最新消息會先在這裡公布。\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-th-youtube",
+      "channelId": "UCyGr1LIjHGp_lZTtq-48EdA",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "th",
+        "태국어"
+      ],
+      "keywords": [
+        "เรียนภาษาเกาหลี",
+        "ภาษาเกาหลี",
+        "ภาษาเกาหลีเบื้องต้น",
+        "คำศัพท์ภาษาเกาหลี",
+        "สำนวนเกาหลี",
+        "ฮันกึล",
+        "TOPIK",
+        "เรียนเกาหลีด้วยตัวเอง",
+        "learn korean"
+      ],
+      "remove": "ตอนแรกใกล้มาแล้ว ",
+      "descriptionAfter": "อยากพูดอะไร พูดเป็นภาษาเกาหลี\n\nฉากสั้น ๆ ในชีวิตประจำวัน กับประโยคที่คนเกาหลีใช้จริง พร้อมซับไทย ดูสถานการณ์ ฟังประโยค แล้วลองพูดออกเสียงในแบบของตัวเอง\n\nMongle, Kkamong และ Marin สามเพื่อนตุ๊กตาสักหลาด จะรีแอ็กไปพร้อมกับคุณ\n\nเรากำลังทำแอปเรียนภาษาเกาหลีด้วย ข่าวใหม่จะแจ้งที่นี่ก่อนใคร\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-id-youtube",
+      "channelId": "UC2hBQHVItJj6-YC_qsP7stQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "id",
+        "인도네시아어"
+      ],
+      "keywords": [
+        "belajar bahasa korea",
+        "bahasa korea",
+        "bahasa korea untuk pemula",
+        "kosakata bahasa korea",
+        "idiom korea",
+        "hangul",
+        "TOPIK",
+        "belajar korea",
+        "learn korean"
+      ],
+      "remove": "Episode pertama segera hadir. ",
+      "descriptionAfter": "Ungkapkan maksudmu dalam bahasa Korea.\n\nAdegan singkat sehari-hari dan ungkapan yang benar-benar dipakai orang Korea, lengkap dengan subtitle bahasa Indonesia. Tonton situasinya, dengarkan ungkapannya, lalu ucapkan dengan gayamu sendiri.\n\nMongle, Kkamong, dan Marin, tiga teman flanel kami, ikut bereaksi bersamamu.\n\nKami juga sedang membuat aplikasi belajar bahasa Korea, dan kabarnya akan muncul di sini lebih dulu.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-my-youtube",
+      "channelId": "UCyZ4fygi4pMnNRgUrcNqnAQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "ms",
+        "말레이어"
+      ],
+      "keywords": [
+        "belajar bahasa korea",
+        "bahasa korea",
+        "bahasa korea untuk pemula",
+        "perkataan korea",
+        "idiom korea",
+        "hangul",
+        "TOPIK",
+        "kelas bahasa korea",
+        "learn korean"
+      ],
+      "remove": "Episod pertama akan tiba tidak lama lagi. ",
+      "descriptionAfter": "Apa yang nak dikata, cakaplah dalam bahasa Korea.\n\nBabak pendek kehidupan seharian dan ungkapan yang benar-benar digunakan orang Korea, dengan sari kata bahasa Melayu. Tonton situasinya, dengar ungkapannya, kemudian sebut dengan kuat ikut gaya anda sendiri.\n\nMongle, Kkamong dan Marin, tiga kawan felt kami, turut memberi reaksi bersama anda.\n\nKami juga sedang membina aplikasi belajar bahasa Korea, dan beritanya akan keluar di sini dahulu.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-in-youtube",
+      "channelId": "UCgpWbvOtTCz5TIrZ9yf-96A",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "hi",
+        "힌디어"
+      ],
+      "keywords": [
+        "कोरियन सीखें",
+        "कोरियाई भाषा",
+        "कोरियन भाषा",
+        "कोरियन शब्द",
+        "हंगुल",
+        "TOPIK",
+        "learn korean",
+        "korean in hindi",
+        "korean for beginners"
+      ],
+      "remove": "पहले एपिसोड जल्द आ रहे हैं। ",
+      "descriptionAfter": "जो कहना है, कोरियन में कहो।\n\nरोज़ के छोटे-छोटे सीन और वो वाक्य जो कोरियाई लोग सच में बोलते हैं, सबटाइटल के साथ। सीन देखो, वाक्य सुनो, फिर अपने अंदाज़ में ज़ोर से बोलकर देखो।\n\nMongle, Kkamong और Marin, हमारे तीन फ़ेल्ट दोस्त, हर पल तुम्हारे साथ रिएक्ट करेंगे।\n\nहम कोरियन सीखने का एक ऐप भी बना रहे हैं, उसकी ख़बर सबसे पहले यहीं मिलेगी।\n\nSay what you mean, in Korean: short everyday scenes and real Korean phrases, with subtitles.\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-kg-youtube",
+      "channelId": "UC9bdSh8r5iAtQS1r8_jS2hQ",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "ky",
+        "키르기스어"
+      ],
+      "keywords": [
+        "корей тили",
+        "корей тилин үйрөнүү",
+        "хангыль",
+        "TOPIK",
+        "корейский язык",
+        "корейский для начинающих",
+        "learn korean"
+      ],
+      "remove": "Алгачкы эпизоддор жакында чыгат. ",
+      "descriptionAfter": "Айткың келгенди корейче айт.\n\nКүнүмдүк турмуштан кыска көрүнүштөр жана корейлер чындап колдонгон сөз айкаштары, кыргызча субтитр менен. Көрүнүштү көрүп, сөздү угуп, анан өз сөзүң менен үн чыгарып айтып көр.\n\nКийиз достор Mongle, Kkamong жана Marin сени менен бирге реакция кылат.\n\nКорей тилин үйрөнүүчү тиркеме да жасап жатабыз, жаңылыктар биринчи ушул жерде.\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-lk-youtube",
+      "channelId": "UCoz4Uv4iE6Dd4cNe-C1eXng",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "si",
+        "싱할라어"
+      ],
+      "keywords": [
+        "කොරියානු භාෂාව",
+        "කොරියන් භාෂාව ඉගෙන ගමු",
+        "හංගුල්",
+        "TOPIK",
+        "EPS TOPIK",
+        "learn korean",
+        "korean in sinhala",
+        "korean for beginners"
+      ],
+      "remove": "පළමු කථාංග ළඟදීම. ",
+      "descriptionAfter": "කියන්න ඕන දේ, කොරියානුවෙන් කියමු.\n\nඑදිනෙදා ජීවිතයේ කෙටි දර්ශන සහ කොරියානුවන් ඇත්තටම භාවිත කරන වාක්‍ය, උපසිරැසි සමඟ. දර්ශනය බලන්න, වාක්‍යය අහන්න, ඊට පස්සේ ඔබේම විදියට හයියෙන් කියලා බලන්න.\n\nMongle, Kkamong සහ Marin කියන යාළුවෝ තුන්දෙනා ඔබත් එක්කම ප්‍රතිචාර දක්වනවා.\n\nඅපි කොරියානු ඉගෙනීමේ ඇප් එකකුත් හදනවා, ඒ ගැන ආරංචි මුලින්ම මෙතැනින්.\n\nசொல்ல நினைப்பதை கொரிய மொழியில் சொல்லுங்கள்: அன்றாடக் குறுங்காட்சிகள், உண்மையான கொரிய சொற்றொடர்கள், சப்டைட்டில்களுடன்.\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-mm-youtube",
+      "channelId": "UCEbtgcX5zd6jX8r1o9iIgdw",
+      "authuser": "unmet23@gmail.com",
+      "language": [
+        "my",
+        "버마어"
+      ],
+      "keywords": [
+        "ကိုရီးယားစာ",
+        "ကိုရီးယားစာ လေ့လာခြင်း",
+        "ကိုရီးယားဘာသာ",
+        "TOPIK",
+        "EPS TOPIK",
+        "learn korean",
+        "korean in myanmar"
+      ],
+      "remove": "ပထမဆုံး အပိုင်းတွေကို ပြင်ဆင်နေပါတယ်။ ",
+      "descriptionAfter": "ပြောချင်တာကို ကိုရီးယားလို ပြောကြမယ်။\n\nနေ့စဉ်ဘဝက မြင်ကွင်းတိုလေးတွေနဲ့ ကိုရီးယားလူတွေ တကယ်သုံးတဲ့ စကားတွေကို မြန်မာစာတန်းထိုးနဲ့ ပြပေးမယ်။ မြင်ကွင်းကို ကြည့်၊ စကားကို နားထောင်ပြီး ကိုယ့်ပုံစံနဲ့ အသံထွက်ပြောကြည့်ပါ။\n\nMongle၊ Kkamong နဲ့ Marin ဆိုတဲ့ ချစ်စရာ သူငယ်ချင်းသုံးယောက်က အတူတူ တုံ့ပြန်ပေးမယ်။\n\nကိုရီးယားစာ သင်ယူတဲ့ app လည်း လုပ်နေပါတယ်၊ သတင်းတွေကို ဒီမှာ အရင်ဆုံး ကြားရမယ်။\n\nSYNK LAB · https://synk.im/lab/\n"
+    },
+    {
+      "key": "lab-jp-youtube",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow",
+      "authuser": "77yuhbs@gmail.com",
+      "language": [
+        "ja",
+        "일본어"
+      ],
+      "keywords": [
+        "韓国語",
+        "韓国語勉強",
+        "韓国語学習",
+        "韓国語初心者",
+        "ハングル",
+        "韓国語単語",
+        "韓国語 慣用句",
+        "TOPIK",
+        "韓国語クイズ",
+        "learn korean"
+      ],
+      "remove": "最初の韓国語レッスン動画を準備中です。\n",
+      "descriptionAfter": "学んですぐ使える韓国語。\n\nあいさつをしたり、カフェで注文したり、好きな動画にコメントしたり。\n覚えたひと言を、身近な場面で使ってみよう。\n\nSYNK LAB Japanは、韓国語を初めて学ぶ人のためのチャンネルです。\nハングルの読み方、日常で使える表現、TOPIKの基礎を、短い動画やクイズで紹介していきます。\n\n声に出して、答えを選んで、自分のペースで少しずつ。\n知りたい韓国語があったら、動画のコメントで教えてね。\n\nSYNK LAB · https://synk.im/\n"
+    },
+    {
+      "key": "lab-vn-youtube",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+      "authuser": "77yuhbs@gmail.com",
+      "language": [
+        "vi",
+        "베트남어"
+      ],
+      "keywords": [
+        "học tiếng Hàn",
+        "tiếng Hàn",
+        "tiếng Hàn cho người mới bắt đầu",
+        "từ vựng tiếng Hàn",
+        "thành ngữ tiếng Hàn",
+        "hangul",
+        "TOPIK",
+        "tự học tiếng Hàn",
+        "learn korean"
+      ],
+      "remove": "Video học tiếng Hàn đầu tiên đang được chuẩn bị. Hẹn gặp bạn sớm!\n",
+      "descriptionAfter": "Học tiếng Hàn, dùng ngay!\n\nChào hỏi, gọi đồ uống hay bình luận dưới video yêu thích — cùng thử dùng những câu vừa học vào các tình huống quen thuộc nhé.\n\nSYNK LAB Vietnam dành cho bạn mới bắt đầu học tiếng Hàn.\nCùng học cách đọc Hangul, những câu dùng hằng ngày và kiến thức TOPIK cơ bản qua video ngắn và câu đố.\n\nThử đọc thành tiếng, chọn đáp án rồi tập dùng câu vừa học. Cứ học từng chút một, theo nhịp của bạn.\nBạn muốn biết cách nói câu gì bằng tiếng Hàn? Hãy để lại bình luận dưới video nhé!\n\nSYNK LAB · https://synk.im/\n"
+    }
+  ]
+}
