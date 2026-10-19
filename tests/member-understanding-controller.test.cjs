@@ -266,3 +266,29 @@ test('account changes in promise handoffs cannot publish a prior load/save/delet
     }
   }
 });
+
+// 「내 성향」 2026-10-19: answers are one tap. A verdict on a repeated pattern is a review with the
+// rendered claim; a practised topic's answer is an override. Neither opens an editor or keeps a note.
+const claim = (reference = 'listening') => ({ version: 1, kind: 'practice-mode', source: 'learning', generation: 7, reference, value: 'fits',
+  from: iso(NOW - 30 * 86400000 - 3600000), to: iso(NOW - 3600000), count: 4, total: 6, activeDays: 3, lastAt: iso(NOW - 7200000) });
+test('one tap saves a verdict on a repeated pattern, and a second tap replaces it', async () => {
+  const f = fixture(); await f.controller.refresh();
+  await f.controller.answer({ facetId: 'practice-mode', verdict: 'agree', claim: claim() });
+  let saved = f.saved().state;
+  assert.equal(saved.reviews.length, 1);assert.equal(saved.reviews[0].verdict, 'agree');assert.deepEqual(saved.reviews[0].claim, claim());assert.equal(saved.reviews[0].note, '');
+  assert.equal(f.controller.read().editor, null);assert.match(f.controller.read().message, /답을 저장했어요/);
+  await f.controller.answer({ facetId: 'practice-mode', verdict: 'contextual', claim: claim() });
+  saved = f.saved().state;
+  assert.equal(saved.reviews.length, 1, 'one answer per pattern');assert.equal(saved.reviews[0].verdict, 'contextual');
+});
+test('one tap saves a practised topic\'s answer as a choice, and bad input never writes', async () => {
+  const f = fixture(); await f.controller.refresh();
+  await f.controller.answer({ facetId: 'learning-topic:sit-cafe', value: 'not-now' });
+  assert.deepEqual(f.saved().state.overrides.map(row => [row.facetId, row.values]), [['learning-topic:sit-cafe', ['not-now']]]);
+  const writes = () => f.calls.filter(call => call.operation === 'understandingSave').length, before = writes();
+  await f.controller.answer({ facetId: 'practice-mode', verdict: 'maybe', claim: claim() });
+  await f.controller.answer({ facetId: 'practice-mode', verdict: 'agree' });
+  await f.controller.answer({ facetId: 'learning-topic:sit-cafe', value: 42 });
+  assert.equal(writes(), before);
+  const off = fixture({ signedIn: false }); await off.controller.answer({ facetId: 'practice-mode', verdict: 'agree', claim: claim() }); assert.equal(off.calls.length, 0);
+});

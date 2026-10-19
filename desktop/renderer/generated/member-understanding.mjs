@@ -559,136 +559,266 @@ var require_member_understanding_contract = __commonJS({
   }
 });
 
-// atlas/vellum.js
-var require_vellum = __commonJS({
-  "atlas/vellum.js"(exports, module) {
+// atlas/vellum-insight.js
+var require_vellum_insight = __commonJS({
+  "atlas/vellum-insight.js"(exports, module) {
     "use strict";
-    var SUPPORTS = ["choose", "step", "independent"];
-    var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
-    var STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
-    function reviewOpen({ verdict, support = "choose", retried = false, hasCue = false, unsure = false }) {
-      if (!VERDICTS.includes(verdict) || !SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid review state");
-      if (verdict === "correct") return unsure ? "answer" : null;
-      if (verdict === "unassessed" || retried || support === "choose" || !hasCue) return "answer";
-      return "cue";
-    }
-    function offerCue({ support = "choose", elapsedMs = 0, misses = 0, offered = false, declined = false, hasCue = false, stuck = STUCK }) {
-      if (!SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid support");
-      if (offered || declined || !hasCue || support === "independent") return false;
-      return elapsedMs >= stuck.afterMs || misses >= stuck.misses;
-    }
-    function particle(label, withFinal, without) {
-      for (let i = label.length - 1; i >= 0; i -= 1) {
-        const code = label.charCodeAt(i);
-        if (code >= 44032 && code <= 55203) return (code - 44032) % 28 ? withFinal : without;
+    var DAY = 864e5;
+    var fail = (what) => {
+      throw new TypeError(`Vellum insight: invalid ${what}`);
+    };
+    var count = (value) => Number.isSafeInteger(value) && value >= 0;
+    var label = (value) => typeof value === "string" && value.trim().length > 0 && value.length <= 200;
+    var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+    var DIGIT_FINALS = { 0: 21, 1: 8, 3: 16, 6: 1, 7: 8, 8: 8 };
+    var LATIN_FINALS = { l: 8, m: 16, n: 4, k: 1, c: 1, p: 17, b: 17, t: 7, g: 21 };
+    function finalOf(word) {
+      for (const char of [...String(word ?? "")].reverse()) {
+        const code = char.codePointAt(0);
+        if (code >= 44032 && code <= 55203) return (code - 44032) % 28;
+        if (/[0-9]/.test(char)) return DIGIT_FINALS[char] || 0;
+        if (/[A-Za-z]/.test(char)) return LATIN_FINALS[char.toLowerCase()] || 0;
+        if (/[\s)\]」』"'’”.·…~-]/.test(char)) continue;
+        return 0;
       }
-      return without;
+      return 0;
     }
-    function learningReason({ status, label }) {
-      if (typeof label !== "string") throw new TypeError("Vellum: invalid learning reason");
-      const topic = `${label}${particle(label, "은", "는")}`, object = `${label}${particle(label, "을", "를")}`;
-      const reasons = {
-        unseen: `${topic} 아직 기록이 적어요. 짧게 확인해 봐요.`,
-        checking: `${object} 조금 더 확인해 봐요.`,
-        practice: `최근 놓친 ${object} 조금 더 연습해 봐요.`,
-        supported: `${object} 도움과 함께 해냈어요. 이어서 살펴봐요.`,
-        "recent-independent": `${object} 최근 혼자 해냈어요. 가볍게 이어가요.`,
-        review: `${object} 다시 살펴볼 때예요.`
+    var josa = (word, withFinal, withoutFinal) => `${word}${finalOf(word) ? withFinal : withoutFinal}`;
+    var euro = (word) => {
+      const final = finalOf(word);
+      return `${word}${final && final !== 8 ? "으로" : "로"}`;
+    };
+    function joinAnd(words) {
+      if (words.length <= 1) return words[0] || "";
+      return `${words.length > 2 ? words.slice(0, -2).join(", ") + ", " : ""}${josa(words.at(-2), "과", "와")} ${words.at(-1)}`;
+    }
+    var COUNTERS = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열"];
+    var countWord = (n) => COUNTERS[n] || String(n);
+    var seoul = (value) => new Date(Date.parse(value) + 9 * 36e5);
+    var seoulDay = (value) => {
+      const d = seoul(value);
+      return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    };
+    function dayLabel(value, at = null) {
+      if (!instant(value)) fail("date");
+      const d = seoul(value), year = at && instant(at) && seoul(at).getUTCFullYear() !== d.getUTCFullYear() ? `${d.getUTCFullYear()}년 ` : "";
+      return `${year}${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
+    }
+    var RELATIVE = ["오늘", "어제", "이틀 전", "사흘 전", "나흘 전", "닷새 전", "엿새 전"];
+    function relativeDay(value, at) {
+      if (!instant(value) || !instant(at)) fail("date");
+      const days = Math.round((seoulDay(at) - seoulDay(value)) / DAY);
+      return days <= 0 ? "오늘" : RELATIVE[days] || dayLabel(value, at);
+    }
+    var kindWord = (kind) => ["grammar_point", "word"].includes(kind) ? "표현" : kind === "situation" ? "상황" : "주제";
+    var STATEMENT_VERBS = Object.freeze({
+      support: Object.freeze({ example: "예시부터 보고", step: "단계별로 도움을 받고", independent: "혼자 해 보고", choose: "필요할 때 도움을 골라 받고", together: "함께 해 보고" }),
+      explanation: Object.freeze({ brief: "짧은 설명을 보고", standard: "보통 길이 설명을 보고", detailed: "자세한 설명을 보고" })
+    });
+    var STATEMENT_CONDITIONS = Object.freeze({
+      "first-try": "처음 배울 땐",
+      familiar: "익숙한 내용은",
+      busy: "바쁠 땐",
+      "after-example": "예시를 본 다음엔",
+      "first-try-after-example": "예시를 본 다음엔",
+      "familiar-after-example": "익숙한 내용은 예시를 본 다음엔",
+      "busy-after-example": "바쁠 땐 예시를 본 다음엔",
+      meeting: "회의할 땐",
+      teamwork: "함께 일할 땐",
+      planning: "계획을 세울 땐",
+      decision: "결정할 땐"
+    });
+    function memberInsightStatement(meanings = []) {
+      if (!Array.isArray(meanings) || meanings.length > 8 || meanings.some((m) => !m || typeof m !== "object")) fail("statement");
+      if (!meanings.length || meanings.some((m) => m.polarity !== "prefer" || !STATEMENT_VERBS[m.field]?.[m.value] || m.condition != null && !Object.hasOwn(STATEMENT_CONDITIONS, m.condition))) return "";
+      const parts = meanings.map((m, index) => {
+        const prefix = index && /after-example$/.test(m.condition || "") ? "그다음엔" : m.condition ? STATEMENT_CONDITIONS[m.condition] : "";
+        return `${prefix ? prefix + " " : ""}${STATEMENT_VERBS[m.field][m.value]}`;
+      });
+      return `${parts.join(", ")} 싶다고 알려 줬어요.`;
+    }
+    function periodOf(value, what) {
+      if (value == null) return null;
+      if (!value || typeof value !== "object" || !["answered", "independent", "assisted", "activeDays"].every((key) => count(value[key])) || value.independent + value.assisted > value.answered) fail(what);
+      return value;
+    }
+    function memberInsightNow({ connected, reasons = [], chosen = [], interests = [], statement = [], practice = null, at } = {}) {
+      if (typeof connected !== "boolean" || !instant(at) || !Array.isArray(reasons) || !reasons.every(label) || !Array.isArray(chosen) || !chosen.every(label) || !Array.isArray(interests) || !interests.every(label)) fail("summary");
+      const said = memberInsightStatement(statement);
+      const recent = periodOf(practice?.recent, "recent practice"), previous = periodOf(practice?.previous, "earlier practice");
+      const answered = practice?.answered ?? 0, independent = practice?.independent ?? 0;
+      if (!count(answered) || !count(independent) || practice?.lastAt != null && !instant(practice.lastAt) || practice?.strong != null && !label(practice.strong)) fail("practice");
+      const topics = Array.isArray(practice?.topics) ? practice.topics : [];
+      if (topics.some((topic) => !topic || !label(topic.label) || typeof topic.kind !== "string" || !count(topic.count) || !count(topic.activeDays))) fail("topics");
+      const top = [...topics].sort((a, b) => b.count - a.count || b.activeDays - a.activeDays)[0] || null;
+      const declaredLine = () => said || (reasons.length && chosen.length ? `${joinAnd(reasons)} 때문에 배우고, ${josa(joinAnd(chosen), "을", "를")} 골랐어요.` : reasons.length ? `${joinAnd(reasons)} 때문에 배우고 있어요.` : chosen.length ? `${josa(joinAnd(chosen), "을", "를")} 골랐어요.` : "");
+      const lines = (...rows) => rows.filter(Boolean).slice(0, 2);
+      if (!connected) return {
+        kind: "disconnected",
+        headline: "학습 기록 연결이 꺼져 있어 연습 기록은 보지 않아요.",
+        support: [reasons.length ? "배우는 이유만 보여요. 연결을 켜면 해 본 것과 다음에 할 것도 함께 봐요." : "연결을 켜면 해 본 것과 다음에 할 것을 여기서 함께 봐요."]
       };
-      if (!Object.hasOwn(reasons, status)) throw new TypeError("Vellum: invalid learning reason");
-      return reasons[status];
+      const practised = answered > 0, topicLine = top ? `요즘은 ${josa(top.label, "을", "를")} 가장 많이 연습했어요.` : "";
+      if (practised && practice.comparable === true && recent && previous && recent.independent > previous.independent) {
+        const headline = previous.independent ? `최근 30일, 혼자 답한 횟수가 ${previous.independent}번에서 ${recent.independent}번으로 늘었어요.` : independent === recent.independent ? `최근 30일, 처음으로 혼자 ${recent.independent}번 답했어요.` : `최근 30일, 혼자 답한 횟수가 0번에서 ${recent.independent}번으로 늘었어요.`;
+        return { kind: "growth", headline, support: lines(declaredLine(), topicLine) };
+      }
+      if (practised && practice.strong) return { kind: "strong", headline: `${josa(practice.strong, "을", "를")} 최근 혼자 해냈어요.`, support: lines(declaredLine(), topicLine) };
+      if (practised && recent?.answered && recent.activeDays >= 2)
+        return { kind: "volume", headline: `최근 30일 동안 ${recent.activeDays}일, ${recent.answered}번 답했어요.`, support: lines(declaredLine(), topicLine) };
+      if (practised && recent?.answered) {
+        const when = practice.lastAt ? relativeDay(practice.lastAt, at) : "최근";
+        const first = recent.activeDays === 1 && previous?.answered === 0 && answered === recent.answered;
+        const word = top ? kindWord(top.kind) : "";
+        const alike = top ? topics.filter((topic) => kindWord(topic.kind) === word).length : 0;
+        const did = top ? `${alike > 1 ? `${top.label} 같은 ${word} ${countWord(alike)} 가지를` : josa(top.label, "을", "를")} ${recent.independent ? "" : "도움 받으며 "}연습했어요.` : "연습 기록이 생겼어요.";
+        return {
+          kind: "one-day",
+          headline: first ? `${when}, 처음으로 ${recent.answered}번 답했어요.` : `${when} ${recent.answered}번 답했어요.`,
+          support: [did, recent.independent ? "같은 걸 한 번 더 해 볼까요?" : "이번엔 혼자 한 번 해 볼까요? 틀려도 괜찮아요."]
+        };
+      }
+      if (practised) {
+        const headline = recent && practice.lastAt ? `최근 30일에는 연습 기록이 없어요. 마지막 연습은 ${dayLabel(practice.lastAt, at)}이에요.` : `지금까지 ${answered}번 답했어요.`;
+        return { kind: "quiet", headline, support: lines(declaredLine(), "다시 연습하면 해 본 것과 다음에 할 것을 여기서 이어서 보여 드려요.") };
+      }
+      if (reasons.length || said || chosen.length || interests.length) {
+        const told = [
+          reasons.length ? `${joinAnd(reasons)} 때문에 배우기로 했어요.` : "",
+          said,
+          chosen.length ? `${josa(joinAnd(chosen), "을", "를")} 골랐어요.` : "",
+          interests.length ? `관심 주제로 ${josa(joinAnd(interests), "을", "를")} 골랐어요.` : ""
+        ].filter(Boolean);
+        return { kind: "declared", headline: told[0], support: lines(told[1], "첫 연습을 하면 해 본 것과 다음에 할 것을 여기서 보여 드려요.") };
+      }
+      return {
+        kind: "empty",
+        headline: "아직 나를 설명할 기록이 없어요. 하나만 하면 다음엔 달라져요.",
+        support: ["연습을 하면 해 본 것과 다음에 할 것을 여기서 보여 드려요. 기록이 없다고 실력이 없다는 뜻은 아니에요."]
+      };
     }
-    function situationLine({ when }) {
-      if (typeof when !== "string" || !when.trim()) throw new TypeError("Vellum: invalid situation line");
-      return `${when} 쓰는 말이라 골랐어요.`;
+    function memberInsightPracticeFact({ recent, correct, assisted = 0 } = {}) {
+      if (!count(recent) || !count(correct) || !count(assisted) || correct > recent) fail("practice fact");
+      if (!recent) return assisted ? `도움을 받으며 ${assisted}번 맞혔어요.` : "아직 기록이 적어요.";
+      return `이 연습에서 최근 혼자 답한 ${recent}번 중 ${correct}번 맞혔어요.${assisted ? ` 도움 받고 맞힌 건 ${assisted}번이에요.` : ""}`;
     }
-    function activityReason({ reasons = [], state = "unseen", label } = {}) {
-      if (!Array.isArray(reasons)) throw new TypeError("Vellum: invalid activity reason");
-      if (reasons.includes("activity.none")) return "지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.";
-      if (reasons.includes("review.due")) return "복습할 시간이 된 내용이 있어요. 짧게 다시 만나 봐요.";
-      const goal = reasons.includes("goal.declared");
-      if (reasons.includes("activity.retry")) return `처음에 놓친 부분을 다시 연습해 봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
-      if (reasons.includes("activity.assisted")) return `도움과 함께 해낸 부분이에요. 한 번 더 살펴봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
-      if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
-      if (goal) return "직접 고른 목표와 이어지는 활동이에요. 짧게 시작해 봐요.";
-      if (reasons.includes("history.incomplete")) return "기록을 모두 확인하기 전이라 기본 활동으로 시작해요.";
-      return "아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.";
+    function memberInsightUsage({ label: name, count: times, activeDays } = {}) {
+      if (!label(name) || !count(times) || !count(activeDays) || activeDays > times) fail("usage");
+      return `${josa(name, "을", "를")} ${activeDays}일 동안 ${times}번 열었어요.`;
     }
-    function memberActivityReason({ kind, action = false } = {}) {
-      if (!["favorite", "opened"].includes(kind)) throw new TypeError("Vellum: invalid member activity basis");
-      if (kind === "favorite") return action ? "직접 즐겨찾기에 고른 앱에서 이어서 시작해요." : "직접 즐겨찾기에 고른 앱이에요. 이용 횟수와는 별개의 선택이에요.";
-      return action ? "최근 60일에 열어 본 앱에서 이어서 시작해요." : "연결을 허용한 뒤 최근 60일에 앱을 연 기록이에요. 실제 활동 완료나 좋아하는 정도를 뜻하지 않아요.";
-    }
-    function periodComparisonReason({ source, state } = {}) {
-      if (!["activity", "practice"].includes(source) || !["ready", "empty", "partial", "disabled"].includes(state)) throw new TypeError("Vellum: invalid period comparison");
-      if (state === "disabled") return "앱 이용 기록 연결이 꺼져 있어요. 연결을 허용한 뒤의 기록부터 모아요.";
-      if (state === "partial") return "연결 시작 시점이나 보관 범위 때문에 두 기간의 기록을 모두 확인할 수 없어요. 있는 기록만 보여드리고 차이는 계산하지 않아요.";
-      if (state === "empty") return "두 기간 모두에 기록이 있어야 차이를 비교해요. 기록이 없는 기간을 성향이나 실력의 변화로 판단하지 않아요.";
-      return source === "activity" ? "같은 길이의 두 기간에 앱을 연 횟수와 날짜를 비교해요. 활동 완료나 관심의 강도를 뜻하지 않아요." : "같은 길이의 두 기간에 답한 횟수를 비교해요. 혼자 응답에는 오답도 포함하며, 실력 성장이나 학습 효과를 뜻하지 않아요.";
+    function memberInsightQuestion({ facet, label: name, kind = null } = {}) {
+      if (!label(name)) fail("question");
+      if (facet === "practice-mode") return `${euro(name)} 하는 연습이 나와 맞나요?`;
+      if (facet === "practice-response") return "이런 문제가 나에게 편한가요?";
+      if (facet === "learning-topic") {
+        const word = kindWord(kind);
+        return word === "표현" ? "더 연습하고 싶은 표현인가요?" : `더 배우고 싶은 ${word}인가요?`;
+      }
+      return fail("question");
     }
     var memberDate = (value) => {
-      const time = typeof value === "string" ? Date.parse(value) : NaN;
-      if (!Number.isFinite(time)) throw new TypeError("Vellum: invalid member evidence date");
-      const [year, month, day] = new Date(time + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
-      return `${year}년 ${month}월 ${day}일`;
+      if (!instant(value)) fail("member evidence date");
+      const d = seoul(value);
+      return `${d.getUTCFullYear()}년 ${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
     };
-    function memberUnderstandingLine({ kind, label, count = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
-      if (typeof label !== "string" || !["observed", "agreed", "contextual", "disagreed", "declared", "empty", "disabled"].includes(state)) throw new TypeError("Vellum: invalid member understanding");
-      if (state === "disabled") return "이 자료의 연결이 꺼져 있어 관찰과 그에 대한 확인을 요약에 사용하지 않아요.";
-      if (state === "empty") return "아직 여러 날의 기록이 충분하지 않아요. 지금 선호하는 방식을 직접 고를 수 있어요.";
+    var FACET_WORDS = Object.freeze({ topics: "관심 주제", support: "도움 방식", explanation: "설명 길이", "usage-repeat": "이어서 쓸 앱", "practice-mode": "연습 방식", "practice-response": "문제 방식" });
+    function choiceLine(facet, labels) {
+      const what = FACET_WORDS[facet];
+      if (!what) return `${josa(joinAnd(labels), "을", "를")} 골랐어요.`;
+      if (labels.length > 1) return `${euro(what)} ${josa(joinAnd(labels), "을", "를")} 골랐어요.`;
+      return `${euro(what)} ‘${labels[0]}’${finalOf(labels[0]) ? "을" : "를"} 골랐어요.`;
+    }
+    function memberUnderstandingLine({ kind, label: name, labels = null, count: times = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
+      if (typeof name !== "string" || !["observed", "agreed", "contextual", "disagreed", "declared", "empty", "disabled"].includes(state)) fail("member understanding");
+      if (state === "disabled") return "이 기록은 연결이 꺼져 있어 쓰지 않아요.";
+      if (state === "empty") return "아직 여러 날의 기록이 없어요. 원하는 방식을 직접 고를 수 있어요.";
       if (state === "declared") {
         if (kind === "learning-topic") {
-          if (selection === "interested") return `${label}에 관심이 있다고 직접 알려 줬어요. 다음 설명에서도 이 선택을 먼저 참고해요.`;
-          if (selection === "practice-only") return `${label}${particle(label, "은", "는")} 연습에서 다룬 내용일 뿐이라고 직접 알려 줬어요.`;
-          if (selection === "not-now") return `${label}${particle(label, "은", "는")} 지금 관심 있는 내용이 아니라고 직접 알려 줬어요.`;
-          throw new TypeError("Vellum: invalid member topic selection");
+          if (selection === "interested") return `${josa(name, "을", "를")} 더 배우고 싶다고 알려 줬어요.`;
+          if (selection === "practice-only") return `${josa(name, "은", "는")} 연습에서 나온 것뿐이라고 알려 줬어요.`;
+          if (selection === "not-now") return `${josa(name, "은", "는")} 지금 배우고 싶은 게 아니라고 알려 줬어요.`;
+          fail("member topic selection");
         }
-        return `직접 고른 내용: ${label}. 다음 설명에서도 이 선택을 먼저 참고해요.`;
+        const chosen = Array.isArray(labels) && labels.length && labels.every(label) ? labels : [name];
+        return choiceLine(kind, chosen);
       }
-      if (!Number.isSafeInteger(count) || !Number.isSafeInteger(activeDays)) throw new TypeError("Vellum: invalid member observation count");
+      if (!Number.isSafeInteger(times) || !Number.isSafeInteger(activeDays)) fail("member observation count");
       const period = periodEnd ? `${memberDate(periodEnd)} 기준 최근 30일` : "최근 30일";
-      const fact = kind === "usage-repeat" ? `${period}의 연결된 기록에서 ${label}${particle(label, "을", "를")} ${activeDays}일에 걸쳐 ${count}번 열었어요.` : kind === "learning-topic" ? `${period}의 학습 기록에서 ${label}${particle(label, "을", "를")} 다룬 응답이 ${activeDays}일에 걸쳐 ${count}건 있어요.` : `${period}의 학습 기록에서 ${label} 방식의 응답이 ${activeDays}일에 걸쳐 ${count}건 있어요.`;
-      if (state === "agreed") return `${fact} ${kind === "learning-topic" ? "관심 있는 내용이라고 직접 확인했어요." : "자신에게 맞는 이용 방식이라고 직접 확인했어요."}`;
-      if (state === "contextual") return `${fact} 다만 상황에 따라 달라지는 내용이라고 직접 알려 줬어요.`;
-      if (state === "disagreed") return `${fact} 이 기록을 자신의 관심이나 선호로 해석하지 않기로 했어요.`;
-      return `${fact} ${kind === "learning-topic" ? "다뤘다는 사실만으로 관심이라고 정하지 않아요." : "기록된 방식이며 선호나 효과를 뜻하지는 않아요."}`;
+      const fact = kind === "usage-repeat" ? `${period} 동안 ${josa(name, "을", "를")} ${activeDays}일, ${times}번 열었어요.` : kind === "learning-topic" ? `${period} 동안 ${josa(name, "을", "를")} ${activeDays}일에 걸쳐 ${times}번 연습했어요.` : `${period} 동안 ${euro(name)} ${activeDays}일에 걸쳐 ${times}번 답했어요.`;
+      if (state === "agreed") return `${fact} ${kind === "learning-topic" ? "더 배우고 싶은 내용이라고 알려 줬어요." : "나에게 맞는 방식이라고 알려 줬어요."}`;
+      if (state === "contextual") return `${fact} 때에 따라 다르다고 알려 줬어요.`;
+      if (state === "disagreed") return `${fact} 내 관심이나 선호로 보지 않기로 했어요.`;
+      return `${fact} ${kind === "learning-topic" ? "연습했다는 것만으로 관심이라고 정하지 않아요." : "기록된 방식일 뿐 선호를 뜻하지 않아요."}`;
+    }
+    var ANSWERS = Object.freeze({ interested: "더 배우고 싶다고 답했어요.", "practice-only": "연습에서 나온 것뿐이라고 답했어요.", "not-now": "지금은 아니라고 답했어요." });
+    function memberCorrectionLine({ kind, verdict = null, labels = [], answer = null, facet = null } = {}) {
+      if (kind === "review") {
+        const lines = { agree: "맞다고 답했어요.", disagree: "아니라고 답했어요.", contextual: "때에 따라 다르다고 답했어요." };
+        if (!Object.hasOwn(lines, verdict)) fail("correction");
+        return lines[verdict];
+      }
+      if (kind !== "override") fail("correction");
+      if (answer !== null) {
+        if (!Object.hasOwn(ANSWERS, answer)) fail("correction");
+        return ANSWERS[answer];
+      }
+      if (!Array.isArray(labels) || !labels.length || !labels.every(label)) fail("correction");
+      return choiceLine(facet, labels);
     }
     function memberUnderstandingSummary({ hasDeclaration, hasFeedback, practice = null, learning, usage, learningAt = null, usageAt = null }) {
-      if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning) || !["ready", "disabled", "unavailable"].includes(usage)) throw new TypeError("Vellum: invalid member summary");
+      if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning) || !["ready", "disabled", "unavailable"].includes(usage)) fail("member summary");
       let observation = "";
       if (learning === "ready" && practice) {
         const { answered, independent, assisted, activeDays, to } = practice;
-        if (![answered, independent, assisted, activeDays].every((n) => Number.isSafeInteger(n) && n >= 0) || independent + assisted > answered || activeDays > Math.min(answered, 31)) throw new TypeError("Vellum: invalid member practice summary");
+        if (![answered, independent, assisted, activeDays].every((n) => Number.isSafeInteger(n) && n >= 0) || independent + assisted > answered || activeDays > Math.min(answered, 31)) fail("member practice summary");
         const period = `${memberDate(to)} 기준 최근 30일`;
-        observation = answered ? `학습 기록은 ${period} 중 ${activeDays}일, 응답 ${answered}건이에요. 그중 도움 없이 답한 응답은 ${independent}건, 도움을 받은 응답은 ${assisted}건이에요. ${activeDays === 1 ? "하루의 기록만으로 반복되는 경향이나 선호를 정하지 않아요." : "연습에서 사용한 방식과 본인이 원하는 방식은 다를 수 있어요."}` : `${period}에는 학습 응답 기록이 없어요. 기록이 없다는 사실을 관심이나 실력이 없다는 뜻으로 보지 않아요.`;
+        observation = answered ? `${period} 동안 ${activeDays}일, ${answered}번 답했어요. 그중 혼자 답한 건 ${independent}번, 도움 받고 답한 건 ${assisted}번이에요. ${activeDays === 1 ? "하루치 기록으로는 늘 그렇다고 정하지 않아요." : "연습에서 쓴 방식과 내가 원하는 방식은 다를 수 있어요."}` : `${period}에는 연습 기록이 없어요. 기록이 없다고 관심이나 실력이 없다는 뜻은 아니에요.`;
       }
       const scope = [];
-      if (learning === "disabled") scope.push("학습 기록 연결이 꺼져 있어 이번 설명에 사용하지 않았어요.");
+      if (learning === "disabled") scope.push("학습 기록 연결이 꺼져 있어 이번 설명에 쓰지 않았어요.");
       else if (learning === "unavailable") scope.push("학습 기록은 이번 설명에 연결되지 않았어요.");
-      else if (!practice) scope.push(learningAt ? `학습 자료는 ${memberDate(learningAt)} 기준이며, 기간별 응답 수를 함께 확인할 수 없어 요약하지 않았어요.` : "기간별 학습 응답 수를 확인할 수 없어 요약하지 않았어요.");
-      else if (hasDeclaration) scope.push(`학습 기록은 ${memberDate(practice.to)} 기준 최근 30일의 자료예요. 직접 알려준 선호와 연습에서 관찰한 사실을 구분해요.`);
-      if (usage === "disabled") scope.push("앱 이용 기록 연결이 꺼져 있어 이번 설명에 사용하지 않았어요.");
+      else if (!practice) scope.push(learningAt ? `학습 기록은 ${memberDate(learningAt)} 기준이에요. 기간별 답한 횟수를 확인할 수 없어 줄여 말하지 않았어요.` : "기간별 답한 횟수를 확인할 수 없어 줄여 말하지 않았어요.");
+      else if (hasDeclaration) scope.push(`학습 기록은 ${memberDate(practice.to)} 기준 최근 30일이에요. 내가 알려 준 것과 연습에서 보인 것을 나눠 봐요.`);
+      if (usage === "disabled") scope.push("앱 이용 기록 연결이 꺼져 있어 이번 설명에 쓰지 않았어요.");
       else if (usage === "unavailable") scope.push("앱 이용 기록은 이번 설명에 연결되지 않았어요.");
-      else if (usageAt) scope.push(`앱 이용 기록은 ${memberDate(usageAt)} 기준으로 확인했어요. 앱을 연 사실만으로 구체적인 관심을 정하지 않아요.`);
+      else if (usageAt) scope.push(`앱 이용 기록은 ${memberDate(usageAt)} 기준이에요. 앱을 열었다는 것만으로 관심을 정하지 않아요.`);
       return {
-        headline: hasDeclaration ? "내가 확인한 선호와 지금의 기록" : "아직 나의 선호를 알아가는 중이에요",
-        opening: hasDeclaration ? "" : hasFeedback ? "기록에 대한 본인의 확인을 먼저 반영했어요. 아직 확인하지 않은 관심이나 편한 방식은 추측하지 않아요." : "아직 관심사와 편한 방식을 정리할 만큼 직접 확인한 내용이 없어요. 원하는 방식을 직접 알려 주면 다음 설명에 먼저 반영해요.",
+        headline: hasDeclaration ? "내가 알려 준 것과 지금의 기록" : "아직 나를 알아 가는 중이에요",
+        opening: hasDeclaration ? "" : hasFeedback ? "기록에 대한 내 답을 먼저 썼어요. 아직 답하지 않은 관심이나 편한 방식은 짐작하지 않아요." : "아직 관심사와 편한 방식을 정리할 만큼 알려 준 것이 없어요. 원하는 방식을 알려 주면 다음 설명에 먼저 써요.",
         observation,
         scope: scope.join(" ")
       };
     }
     function memberUnderstandingNote({ line, note }) {
-      if (typeof line !== "string" || typeof note !== "string" || [...note].length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(note)) throw new TypeError("Vellum: invalid member note");
-      return note.trim() ? `${line} 직접 남긴 설명: “${note}”` : line;
+      if (typeof line !== "string" || typeof note !== "string" || [...note].length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(note)) fail("member note");
+      return note.trim() ? `${line} 덧붙인 말: “${note}”` : line;
     }
     function memberUnderstandingActivityReason({ kind, labels }) {
-      if (!["topic", "learning", "app"].includes(kind) || !Array.isArray(labels) || !labels.length || labels.some((label) => typeof label !== "string")) throw new TypeError("Vellum: invalid member activity link");
+      if (!["topic", "learning", "app"].includes(kind) || !Array.isArray(labels) || !labels.length || labels.some((name) => typeof name !== "string")) fail("member activity link");
       const named = labels.join(" · ");
-      if (kind === "learning") return `관심 있다고 직접 확인한 '${named}'에서 이어서 학습을 골라 볼 수 있어요.`;
-      if (kind === "app") return `이어서 이용할 앱으로 ${named}${particle(named, "을", "를")} 직접 골랐어요.`;
-      return `직접 고른 '${named}' 관심과 연결되는 앱이에요.`;
+      if (kind === "learning") return `더 배우고 싶다고 한 ‘${named}’ 연습을 WORLD에서 골라 볼 수 있어요.`;
+      if (kind === "app") return `${josa(named, "을", "를")} 이어서 쓸 앱으로 골랐어요.`;
+      return `고른 관심 주제 ‘${named}’${finalOf(named) ? "과" : "와"} 이어지는 앱이에요.`;
     }
-    module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason, memberActivityReason, periodComparisonReason, memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason };
+    module.exports = {
+      finalOf,
+      josa,
+      euro,
+      joinAnd,
+      dayLabel,
+      relativeDay,
+      kindWord,
+      memberInsightStatement,
+      memberInsightNow,
+      memberInsightPracticeFact,
+      memberInsightUsage,
+      memberInsightQuestion,
+      memberCorrectionLine,
+      memberUnderstandingLine,
+      memberUnderstandingSummary,
+      memberUnderstandingNote,
+      memberUnderstandingActivityReason
+    };
   }
 });
 
@@ -11507,7 +11637,8 @@ var require_member_understanding = __commonJS({
     var Interpretation = require_interpretation();
     var Domain = require_domain();
     var Contract = require_member_understanding_contract();
-    var { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason } = require_vellum();
+    var Insight = require_vellum_insight();
+    var { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason, memberCorrectionLine } = Insight;
     var Periods = require_trail_periods();
     var Statements = require_member_statement();
     var { understandingFacet, validateUnderstandingClaim, validateUnderstandingValues } = Contract;
@@ -11647,7 +11778,7 @@ var require_member_understanding = __commonJS({
       const overrides = new Map(stored.overrides.map((row) => [row.facetId, row]));
       const reviews = new Map(stored.reviews.map((row) => [row.facetId, row]));
       const facets = [], appliedAt = /* @__PURE__ */ new Map();
-      function add(id, { label = null, claim = null, available = true, declared = null } = {}) {
+      function add(id, { label = null, claim = null, available = true, declared = null, topicKind = null } = {}) {
         const definition = understandingFacet(id), kind = claim?.kind || id;
         if (claim) validateUnderstandingClaim(claim, { facetId: id });
         const storedOverride = overrides.get(id), activeOverride = available ? storedOverride : null;
@@ -11658,7 +11789,7 @@ var require_member_understanding = __commonJS({
         let line, basis = "empty";
         if (!available) line = memberUnderstandingLine({ label: "", state: "disabled" });
         else if (selectedLabels.length) {
-          line = memberUnderstandingLine({ kind, label: kind === "learning-topic" ? label : selectedLabels.join(" · "), selection: selected[0], state: "declared" });
+          line = memberUnderstandingLine({ kind, label: kind === "learning-topic" ? label : selectedLabels.join(" · "), labels: kind === "learning-topic" ? null : selectedLabels, selection: selected[0], state: "declared" });
           basis = "self-declared";
         } else if (claim) {
           line = memberUnderstandingLine({ kind, label, count: claim.count, activeDays: claim.activeDays, state: review?.meaning || "observed", periodEnd: claim.to });
@@ -11675,6 +11806,7 @@ var require_member_understanding = __commonJS({
           line,
           basis,
           claim: available ? claim : null,
+          topicKind: id.startsWith("learning-topic:") ? topicKind : null,
           evidenceLine,
           choices: copy(definition.choices),
           multiple: definition.multiple,
@@ -11724,6 +11856,7 @@ var require_member_understanding = __commonJS({
       }
       for (const row of observations?.topics.slice(0, 4) || []) add(`learning-topic:${row.id}`, {
         label: row.label,
+        topicKind: row.kind,
         claim: makeClaim("learning-topic", row, observations, observations.total)
       });
       const byFacet = new Map(facets.map((facet) => [facet.id, facet]));
@@ -11733,7 +11866,7 @@ var require_member_understanding = __commonJS({
           id: row.id,
           facetId: row.facetId,
           title: byFacet.get(row.facetId)?.title || understandingFacet(row.facetId).title,
-          line: { agree: "이 설명이 맞다고 확인했어요.", disagree: "이 설명을 자신의 관심이나 선호로 보지 않기로 했어요.", contextual: "상황에 따라 다르다고 알려 줬어요." }[row.verdict],
+          line: memberCorrectionLine({ kind: "review", verdict: row.verdict }),
           note: row.note,
           at: row.at
         })),
@@ -11742,7 +11875,7 @@ var require_member_understanding = __commonJS({
           id: row.id,
           facetId: row.facetId,
           title: byFacet.get(row.facetId)?.title || understandingFacet(row.facetId).title,
-          line: `직접 선택: ${understandingFacet(row.facetId).choices.filter((choice) => row.values.includes(choice.id)).map((choice) => choice.label).join(" · ")}`,
+          line: row.facetId.startsWith("learning-topic:") ? memberCorrectionLine({ kind: "override", answer: row.values[0] }) : memberCorrectionLine({ kind: "override", facet: row.facetId, labels: understandingFacet(row.facetId).choices.filter((choice) => row.values.includes(choice.id)).map((choice) => choice.label) }),
           note: row.note,
           at: row.at
         }))
@@ -11806,7 +11939,10 @@ var require_member_understanding = __commonJS({
         if (!meanings.length) continue;
         const positives = meanings.filter((row) => row.polarity === "prefer"), choices = positives.map((row) => row.value).filter((value) => facet.choices.some((choice) => choice.id === value));
         const kept = facet.selected.filter((value) => !meanings.some((row) => row.value === value && row.polarity === "avoid"));
-        facet.line = meanings.map((row) => `직접 확인한 내용은 ‘${Statements.meaningLabel(row)}’예요.`).join(" ");
+        facet.line = meanings.map((row) => {
+          const said = Statements.meaningLabel(row);
+          return `‘${said}’${Insight.finalOf(said) ? "이라고" : "라고"} 알려 줬어요.`;
+        }).join(" ");
         if (facet.id === "topics") choices.splice(0, choices.length, .../* @__PURE__ */ new Set([...kept, ...choices]));
         else if (!positives.length) choices.push(...kept);
         choices.splice(understandingFacet(facet.id).max);
@@ -11842,6 +11978,11 @@ var require_member_understanding = __commonJS({
       const currentTopicTargets = new Set(facets.find((f) => f.id === "topics").selected.map((id) => statementTargets[id]).filter(Boolean));
       const appTarget = app.available && app.override ? app.selected[0] : null;
       const finalActivities = [...textActivities, ...activities.filter((row) => !textActivities.some((a) => a.targetId === row.targetId) && (!spokenFields.has("topics") || !originalTopicTargets.has(row.targetId) || currentTopicTargets.has(row.targetId) || appTarget === row.targetId))].slice(0, 3);
+      const storedMeanings = new Map((stored.statements || []).flatMap((row) => row.meanings.map((meaning) => [`${row.id}\0${meaning.id}`, meaning])));
+      const statementHistory = synthesis.statementHistory.map((row) => ({ ...row, meanings: row.meanings.map((meaning) => {
+        const source = storedMeanings.get(`${row.id}\0${meaning.id}`);
+        return { ...meaning, field: source?.field ?? null, value: source?.value ?? null, polarity: source?.polarity ?? null };
+      }) }));
       return {
         version: 1,
         headline: overview.headline,
@@ -11850,7 +11991,7 @@ var require_member_understanding = __commonJS({
         history,
         activities: finalActivities,
         relations: synthesis.relations,
-        statementHistory: synthesis.statementHistory,
+        statementHistory,
         limitations: [
           "앱을 연 사실에서 구체적인 취향이나 활동 완료를 추측하지 않아요.",
           "학습에서 다룬 내용과 직접 밝힌 관심을 구분해요. 성격·실력·학습 효과를 단정하지 않아요.",
@@ -11863,7 +12004,14 @@ var require_member_understanding = __commonJS({
       previewMemberStatement: Statements.previewMemberStatement,
       confirmMemberStatement: Statements.confirmMemberStatement,
       validateMemberStatement: Statements.validateMemberStatement,
-      summarizeMemberUnderstanding
+      summarizeMemberUnderstanding,
+      // The insight screen's sentences (vellum-insight.js), shared by the web and the desktop renderer.
+      memberInsightNow: Insight.memberInsightNow,
+      memberInsightPracticeFact: Insight.memberInsightPracticeFact,
+      memberInsightUsage: Insight.memberInsightUsage,
+      memberInsightQuestion: Insight.memberInsightQuestion,
+      insightKindWord: Insight.kindWord,
+      insightDayLabel: Insight.dayLabel
     };
   }
 });

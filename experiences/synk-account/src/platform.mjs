@@ -6,6 +6,7 @@ import { createPlatformAccount } from './platform-account.mjs';
 import { createMemberInsight } from '../../../desktop/renderer/member-insight.mjs';
 import { createMemberActivity } from '../../../desktop/renderer/member-activity-controller.mjs';
 import { createMemberUnderstanding } from '../../../desktop/renderer/member-understanding-controller.mjs';
+import { createMemberSettings } from '../../../desktop/renderer/member-settings.mjs';
 import { bindMemberUnderstandingEditor, captureMemberUnderstandingFocus } from '../../../desktop/renderer/member-understanding-host.mjs';
 import { mountPlatformLibrary } from './platform-library-view.mjs';
 import { platformRoute, searchRoute, shortcutDestination } from './platform-home.mjs';
@@ -29,14 +30,16 @@ const insightIdentity=()=>typeof window.synkDesktop?.authStatus==='function'?nat
 const insightRequest=(operation,params)=>typeof window.synkDesktop?.authStatus==='function'?window.synkDesktop.accountRequest(operation,params):browserAccount.request(operation,params);
 const memberActivity=createMemberActivity({getIdentity:insightIdentity,request:insightRequest,getFavorites:()=>library.read().favorites});
 const memberUnderstanding=createMemberUnderstanding({getIdentity:insightIdentity,request:insightRequest});
+const memberSettings=createMemberSettings({getIdentity:insightIdentity,request:insightRequest});
 const memberInsight = createMemberInsight({
  getIdentity: insightIdentity,
  request: insightRequest,
  activity:memberActivity,
  understanding:memberUnderstanding,
+ settings:memberSettings,
  onChange: () => { if (route().page === 'benefits' && route().id === 'insight') render(); },
 });
-bindMemberUnderstandingEditor(root,{controller:memberUnderstanding,getReport:()=>memberInsight.read().report});
+bindMemberUnderstandingEditor(root,{controller:memberUnderstanding,getReport:()=>memberInsight.read().report,settings:memberSettings,getSettingsContext:()=>memberInsight.settingsContext(),onSettingsSaved:()=>void memberInsight.refresh({quiet:true})});
 const labels = { home:'내 홈', benefits:'회원 혜택', discover:'둘러보기', library:'내 라이브러리', updates:'새소식', downloads:'다운로드', settings:'플랫폼 설정', help:'도움말', app:'앱 상세' };
 const news = [
  {id:'clients',app:'platform',label:'플랫폼',title:'하나의 시작점, 독립적인 두 클라이언트',body:'SYNK 플랫폼에서 WORLD와 워크스페이스를 관리해요. 두 앱은 각각 설치되고 별도 창에서 실행됩니다. 플랫폼을 설치해도 두 앱이 자동으로 설치되지는 않아요.'},

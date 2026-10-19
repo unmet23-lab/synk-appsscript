@@ -9,7 +9,22 @@ const SETTINGS = Object.freeze({
   motion: { title: '화면 움직임', values: { full: '움직임 그대로', reduced: '움직임 줄이기' } },
   audio: { title: '소리 이용 방식', values: { off: '소리 끄기', available: '소리 쓰기' } },
 });
+// The same help and explanation choices said inside a sentence (「…을 골랐어요」).
+const SETTING_WORDS = Object.freeze({
+  support: { step: '단계별 도움', choose: '필요할 때 고르는 도움', independent: '혼자 해 보기' },
+  explanation: { brief: '짧은 설명', standard: '보통 길이 설명', detailed: '자세한 설명' },
+});
+// Strata kinds of practised content (trail-member-observations.js).
+const TOPIC_KINDS = new Set(['situation', 'topic', 'word', 'grammar_point', 'skill', 'concept']);
 const STATUSES = new Set(['unseen', 'checking', 'practice', 'supported', 'recent-independent', 'review']);
+// Whether WORLD's practice choice already reads the answers given here (topic interest and "not
+// now"). It turns true in the release that ships WORLD's reading and the account server's read
+// path together; until then the screen does not promise it (docs/_ops/트랙.md).
+export const WORLD_READS_ANSWERS = false;
+// Whether WORLD follows the help style and explanation length saved here (world-learning-ui.mjs
+// reads the account's presentation and writes it only on an explicit save). Until that WORLD ships,
+// opening WORLD would write its own goals back, so this screen shows the values without editing.
+export const WORLD_FOLLOWS_SETTINGS = false;
 const ACTIVITY_TARGETS = Object.freeze({ world: 'WORLD에서 연습 고르기', messenger: 'Workspace 열기', path: 'PATH 열기', pulse: 'PULSE 열기' });
 const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
@@ -93,14 +108,27 @@ function practiceOf(value, asOf) {
     if (!STATUSES.has(row.status)) invalid();
     const recent = count(row.recent), correct = count(row.correct), helped = count(row.assisted);
     if (recent > 12 || correct > recent) invalid();
-    return { id: row.id, label: text(row.label, 160), status: row.status, line: text(row.line), recent, correct, assisted: helped, lastAt: optionalInstant(row.lastAt, asOf) };
+    return { id: row.id, label: text(row.label, 160), status: row.status, line: text(row.line), recent, correct, assisted: helped, lastAt: optionalInstant(row.lastAt, asOf),
+      fact: Understanding.memberInsightPracticeFact({ recent, correct, assisted: helped }) };
   });
   const content = uniqueRows(value.content, 12).map(row => {
     if (!['practice', 'review'].includes(row.status)) invalid();
     return { id: row.id, label: text(row.label, 160), status: row.status };
   });
   const periods = own(value, 'periods') && value.periods !== null ? periodsOf(value.periods, ['answered', 'independent', 'assisted'], asOf) : null;
-  return { answered, independent, assisted, skills, content, empty: !answered && !skills.length && !content.length, lastAt, periods };
+  return { answered, independent, assisted, skills, content, topics: topicsOf(value.observations), empty: !answered && !skills.length && !content.length, lastAt, periods };
+}
+// Practised topics of the recent window, only to say which one came up most. A malformed list
+// leaves the sentence out; it never breaks the rest of the summary.
+function topicsOf(value) {
+  try {
+    if (value == null) return [];
+    if (!record(value) || !Array.isArray(value.topics) || value.topics.length > 12) invalid();
+    return uniqueRows(value.topics, 12).map(row => {
+      if (!TOPIC_KINDS.has(row.kind) || !Number.isSafeInteger(row.count) || row.count < 1 || !Number.isSafeInteger(row.activeDays) || row.activeDays < 1 || row.activeDays > 31) invalid();
+      return { id: row.id, label: text(row.label, 160), kind: row.kind, word: Understanding.insightKindWord(row.kind), count: row.count, activeDays: row.activeDays };
+    });
+  } catch { return []; }
 }
 
 function understandingOf({ accountSummary, activity, document, status, asOf }) {
@@ -130,7 +158,14 @@ function understandingOf({ accountSummary, activity, document, status, asOf }) {
         if (!record(row.override)) invalid();
         override = { values: Understanding.validateUnderstandingValues(row.id, row.override.values), at: instant(row.override.at, asOf) };
       }
-      return { id: row.id, title: text(row.title, 160), line: literalText(row.line), basis: row.basis, claim,
+      const topic = row.id.startsWith('learning-topic:');
+      const topicKind = row.topicKind == null ? null : topic && TOPIC_KINDS.has(row.topicKind) ? row.topicKind : invalid();
+      // A repeated pattern is asked about, never concluded (vellum-insight.js).
+      const asked = topic ? 'learning-topic' : ['practice-mode', 'practice-response'].includes(row.id) ? row.id : null;
+      const askedLabel = !claim || !asked ? null : topic ? row.title : choices.find(choice => choice.id === claim.reference)?.label;
+      const question = askedLabel ? Understanding.memberInsightQuestion({ facet: asked, label: askedLabel, kind: topicKind }) : null;
+      return { id: row.id, title: text(row.title, 160), line: literalText(row.line), basis: row.basis, claim, topicKind,
+        topicWord: topicKind ? Understanding.insightKindWord(topicKind) : null, question,
         evidenceLine: row.evidenceLine === '' ? '' : text(row.evidenceLine), choices, multiple: row.multiple, selected, review, override, available: row.available };
     });
     if (!Array.isArray(value.history) || value.history.length > 100) invalid();
@@ -161,9 +196,12 @@ function understandingOf({ accountSummary, activity, document, status, asOf }) {
     });
     const statementHistory = uniqueRows(value.statementHistory === undefined ? [] : value.statementHistory, 20).map(row => {
       if (typeof row.active !== 'boolean') invalid();
+      const vocabulary = value => value == null ? null : typeof value === 'string' && /^[a-z][a-z0-9-]{0,40}$/.test(value) ? value : invalid();
       const meanings = uniqueRows(row.meanings, 8).map(meaning => {
-        if (typeof meaning.active !== 'boolean' || ![null, 'first-try', 'familiar', 'busy', 'after-example', 'first-try-after-example', 'familiar-after-example', 'busy-after-example', 'meeting', 'teamwork', 'planning', 'decision'].includes(meaning.condition)) invalid();
-        return { id: meaning.id, line: unicodeText(meaning.line, 300), condition: meaning.condition, quote: unicodeText(meaning.quote, 500), active: meaning.active };
+        if (typeof meaning.active !== 'boolean' || ![null, 'first-try', 'familiar', 'busy', 'after-example', 'first-try-after-example', 'familiar-after-example', 'busy-after-example', 'meeting', 'teamwork', 'planning', 'decision'].includes(meaning.condition)
+          || meaning.polarity != null && !['prefer', 'avoid'].includes(meaning.polarity)) invalid();
+        return { id: meaning.id, line: unicodeText(meaning.line, 300), condition: meaning.condition, quote: unicodeText(meaning.quote, 500), active: meaning.active,
+          field: vocabulary(meaning.field), value: vocabulary(meaning.value), polarity: meaning.polarity ?? null };
       });
       const answers = row.clarificationAnswers === undefined ? [] : row.clarificationAnswers;
       if (!Array.isArray(answers) || answers.length > 12) invalid();
@@ -196,7 +234,9 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
   // Both flags must allow practice. An inconsistent or stale response never reveals it.
   const shared = result.learning.enabled && result.shared === 'practice-and-settings' ? 'practice-and-settings' : 'declared-only';
   const personal = declared.length ? [{ id: 'reasons', title: '직접 밝힌 관심과 목표', value: declared.map(reason => REASONS[reason]).join(' · '), basis: 'self-declared', detail: '한국어를 배우는 이유로 직접 고른 내용이에요. 다른 관심사나 성격까지 뜻하지는 않아요.' }] : [];
-  let practice = { answered: 0, independent: 0, assisted: 0, skills: [], content: [], empty: true, lastAt: null, periods: null };
+  let practice = { answered: 0, independent: 0, assisted: 0, skills: [], content: [], topics: [], empty: true, lastAt: null, periods: null };
+  // The chosen values themselves, for editing them in place (the learning memory's presentation).
+  const settings = Object.fromEntries(Object.keys(SETTINGS).map(field => [field, null]));
   if (shared === 'practice-and-settings') {
     if (summary.presentation !== null && !record(summary.presentation)) invalid();
     for (const [field, value] of Object.entries(summary.presentation || {})) {
@@ -204,7 +244,7 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
     }
     for (const [field, setting] of Object.entries(SETTINGS)) {
       const value = summary.presentation?.[field];
-      if (value !== undefined) personal.push({ id: field, title: setting.title, value: setting.values[value], basis: 'self-declared', detail: '직접 고른 이용 설정이에요. 실제 수행 능력이나 고정된 성향을 판단한 결과는 아니에요.' });
+      if (value !== undefined) { settings[field] = value; personal.push({ id: field, title: setting.title, value: setting.values[value], basis: 'self-declared', detail: '직접 고른 이용 설정이에요. 실제 수행 능력이나 고정된 성향을 판단한 결과는 아니에요.' }); }
     }
     practice = practiceOf(summary.practice, asOf);
   }
@@ -226,11 +266,38 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
   let activityReport;
   try { activityReport = activityOf(activity, activityStatus); }
   catch { activityReport = { status: 'error', enabledAt: null, periods: null, interests: [], activities: [] }; }
+  const analysisAt = understandingAsOf || asOf;
   const understandingReport = understandingOf({ accountSummary: result,
     activity: ['ready', 'empty', 'disabled'].includes(activityReport.status) ? activity : null,
-    document: understanding, status: understandingStatus, asOf: understandingAsOf || asOf });
+    document: understanding, status: understandingStatus, asOf: analysisAt });
+  // 「지금의 나」: Vellum says it (vellum-insight.js); the facts come from this summary and, once
+  // loaded, the person's own answers. Their newest confirmed statement is said back if it can be.
+  const ready = understandingReport.status === 'ready';
+  const statement = ready ? understandingReport.statementHistory.find(row => row.active)?.meanings.filter(meaning => meaning.active) || [] : [];
+  const topicsFacet = ready ? understandingReport.facets.find(facet => facet.id === 'topics') : null;
+  let now = null;
+  try {
+    now = Understanding.memberInsightNow({ connected: shared === 'practice-and-settings', at: analysisAt,
+      reasons: declared.map(reason => REASONS[reason]),
+      chosen: ['support', 'explanation'].map(field => SETTING_WORDS[field][settings[field]]).filter(Boolean),
+      interests: (topicsFacet?.selected || []).map(value => topicsFacet.choices.find(choice => choice.id === value)?.label).filter(Boolean),
+      statement: statement.map(({ field, value, polarity, condition }) => ({ field, value, polarity, condition })),
+      practice: shared === 'practice-and-settings' ? { answered: learning.answered, independent: learning.independent, lastAt,
+        recent: learning.periods?.recent || null, previous: learning.periods?.previous || null, comparable: learning.periods?.sufficient === true,
+        strong: learning.skills.find(skill => skill.status === 'recent-independent')?.label || null,
+        topics: learning.topics.map(({ label, kind, count, activeDays }) => ({ label, kind, count, activeDays })) } : null });
+  } catch { now = null; }
+  // The app opened on most days, only while the app-use connection is on.
+  const usage = ready && ['ready', 'empty'].includes(activityReport.status) ? understandingReport.facets.find(facet => facet.id === 'usage-repeat' && facet.claim) : null;
+  let usageLine = '';
+  try { const name = usage?.choices.find(choice => choice.id === usage.claim.reference)?.label; usageLine = name ? Understanding.memberInsightUsage({ label: name, count: usage.claim.count, activeDays: usage.claim.activeDays }) : ''; }
+  catch { usageLine = ''; }
+  // The choices offered when a setting is changed here, in the words of the account's own buttons.
+  const settingChoices = Object.fromEntries(['support', 'explanation'].map(field => [field, Object.entries(SETTINGS[field].values).map(([id, label]) => ({ id, label }))]));
   return {
-    asOf, lastAt, shared,
+    asOf, lastAt, shared, now, settings, settingChoices, reasonIds: [...declared], worldReadsAnswers: WORLD_READS_ANSWERS, worldFollowsSettings: WORLD_FOLLOWS_SETTINGS, usageLine,
+    // The learning memory's fence (synk-learning ?view=memory) for saving a setting from here.
+    learningRevision: result.learning.revision, learningEnabled: result.learning.enabled,
     headline: '내가 고른 방향과 실제 이용에서 보인 모습',
     description: personal.length || !learning.empty || activityReport.interests.length
       ? '직접 밝힌 관심과 이용 방식, 연결을 허용한 앱 이용·연습 기록을 두 영역으로 정리했어요.'

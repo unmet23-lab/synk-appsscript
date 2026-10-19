@@ -104,7 +104,7 @@ test('web benefit posters use the PC felt objects, and every object the web draw
   }
   // 성향 소개도 PC 앱처럼 포스터(물건·번호 라벨·상태 스티커)를 받아 다른 소개 머리와 같은 틀로 연다.
   const insight = benefitDetail('insight', 'https://synk.im/platform/');
-  assert.ok(insight.includes('<header class="mi-hero has-art"><img class="mi-object" src="./assets/member/benefit-insight.webp"'));
+  assert.ok(insight.includes('<header class="mi2-poster"><img class="mi2-object" src="./assets/member/benefit-insight.webp"'));
   assert.ok(insight.includes(`SYNK FOR YOU · 01 / ${total}`));
   const care = benefitDetail('care', 'https://synk.im/platform/');
   assert.ok(care.includes('<header class="benefit-detail-hero benefit-care"><img class="benefit-object" src="./assets/member/benefit-care.webp"'));

@@ -164,3 +164,21 @@ test('native subscription is released on stop and cannot reopen a disposed WORLD
  f.emit(signed(B,2));await new Promise(resolve=>setImmediate(resolve));assert.equal(f.connected(),0);
  await assert.rejects(f.account.restore(),{code:'ACCOUNT_CHANGED'});
 });
+
+// 「내 성향」 answers about practised topics: WORLD reads them to choose practice (world-learning-plan.mjs).
+test('native WORLD reads 「내 성향」 topic answers read-only, and a refusal neither signs out nor guesses',async t=>{
+ const state={version:1,reviews:[],overrides:[{id:'o1',facetId:'learning-topic:sit-travel-order',values:['interested'],note:'적은 메모',at:'2026-10-18T03:00:00.000Z'},
+  {id:'o2',facetId:'learning-topic:sit-travel-shopping',values:['not-now'],note:'',at:'2026-10-18T03:00:00.000Z'},{id:'o3',facetId:'topics',values:['ai-tools'],note:'',at:'2026-10-18T03:00:00.000Z'}]};
+ const reply=accountId=>({ok:true,scope:'synk-personal',resource:'member-understanding',accountId,revision:3,state});
+ const f=fixture({request:operation=>operation==='understandingLoad'?reply(A):undefined});t.after(()=>f.account.stop());
+ await f.client.restore();
+ assert.deepEqual(await f.account.topicAnswers(),{interested:['sit-travel-order'],notNow:['sit-travel-shopping']});
+ assert.deepEqual(f.calls.filter(call=>call.operation==='understandingLoad').map(call=>call.params),[{}],'a read with no parameters');
+ assert.equal(f.calls.some(call=>/understanding(Save|Delete)/.test(call.operation)),false);
+ const other=fixture({request:operation=>operation==='understandingLoad'?reply(B):undefined});t.after(()=>other.account.stop());
+ await other.client.restore();assert.equal(await other.account.topicAnswers(),null,'another account\'s document is never used');
+ const refused=fixture({request:operation=>operation==='understandingLoad'?{ok:false,error:{code:'PRODUCT_FORBIDDEN',status:403}}:undefined});t.after(()=>refused.account.stop());
+ await refused.client.restore();assert.equal(await refused.account.topicAnswers(),null);
+ assert.equal(refused.client.snapshot.accountId,A,'a refused read does not end the session');
+ assert.equal(refused.calls.some(call=>call.operation==='signOut'),false);
+});

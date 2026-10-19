@@ -38,7 +38,14 @@ test('understanding operations fix member-understanding resource and accept only
     { resource: 'member-understanding', action: 'save', expected_revision: 2, state: document() });
   assert.equal(requestSpec('understandingDelete', { expected_revision: 2 }, '1', 'platform', 'platform').body.action, 'delete');
   for (const [product, client] of [['world', 'world'], ['messenger', 'messenger'], ['platform', 'path'], ['platform', 'member-understanding'], ['platform', undefined]])
-    for (const operation of ['understandingLoad', 'understandingSave', 'understandingDelete']) assert.throws(() => requestSpec(operation, {}, '1', product, client), { code: 'INVALID_REQUEST' });
+    for (const operation of ['understandingLoad', 'understandingSave', 'understandingDelete']) {
+      if (product === 'world' && operation === 'understandingLoad') continue;
+      assert.throws(() => requestSpec(operation, {}, '1', product, client), { code: 'INVALID_REQUEST' });
+    }
+  // WORLD reads the same document to choose practice (「내 성향」 answers), and only reads it.
+  assert.equal(requestSpec('understandingLoad', {}, '1', 'world', 'world').path, 'synk-personal?resource=member-understanding');
+  for (const params of [{ resource: 'platform-library' }, { accountId: 'other' }, []]) assert.throws(() => requestSpec('understandingLoad', params, '1', 'world', 'world'), { code: 'INVALID_REQUEST' });
+  assert.throws(() => requestSpec('understandingLoad', {}, '1', 'world', 'platform'), { code: 'INVALID_REQUEST' });
   for (const params of [{ accountId: 'other' }, { resource: 'platform-library' }, { url: 'https://other.invalid' }])
     assert.throws(() => requestSpec('understandingLoad', params, '1', 'platform', 'platform'), { code: 'INVALID_REQUEST' });
   assert.throws(() => requestSpec('personalLoad', {}, '1', 'platform', 'member-understanding'), { code: 'INVALID_REQUEST' });
@@ -77,11 +84,19 @@ test('foreign account, scope, or resource never reaches the renderer and clears 
 });
 
 test('other native clients are rejected before transport and oversized replies cannot reach the screen', async t => {
-  for (const entry of [{ product: 'world', clientKey: 'world' }, { product: 'messenger', clientKey: 'messenger' }, { product: 'platform', clientKey: 'path' }]) {
+  for (const entry of [{ product: 'messenger', clientKey: 'messenger' }, { product: 'platform', clientKey: 'path' }]) {
     const f = await fixture(t, entry), count = f.requests.length;
     assert.equal((await f.service.accountRequest('understandingLoad', {})).error.code, 'INVALID_REQUEST');
     assert.equal(f.requests.length, count);
   }
+  // WORLD reads its member's answers (「내 성향」) as a plain GET and can never save or delete them.
+  const world = await fixture(t, { product: 'world', clientKey: 'world' }), sent = world.requests.length;
+  for (const [operation, params] of [['understandingSave', { expected_revision: 0, state: document() }], ['understandingDelete', { expected_revision: 0 }]])
+    assert.equal((await world.service.accountRequest(operation, params)).error.code, 'INVALID_REQUEST');
+  assert.equal(world.requests.length, sent);
+  assert.equal((await world.service.accountRequest('understandingLoad', {})).resource, 'member-understanding');
+  const read = world.requests.at(-1);
+  assert.match(read.url, /\/functions\/v1\/synk-personal\?resource=member-understanding$/);assert.equal(read.body, undefined);
   const f = await fixture(t, { oversized: true });
   assert.equal((await f.service.accountRequest('understandingLoad', {})).error.code, 'AUTH_FAILED');
 });

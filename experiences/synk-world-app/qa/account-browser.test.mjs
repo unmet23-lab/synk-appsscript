@@ -66,6 +66,12 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
    else if(target.pathname.endsWith('/town/sharing')){binding.sharing={...binding.sharing,enabled:body.enabled,revision:binding.sharing.revision+1};data={ok:true,sharing:binding.sharing};}
    else if(target.pathname.endsWith('/enrollment/preview'))data={ok:true,invite:{className:'합성 해바라기반',learnerLabel:'합성 학생 1',expiresAt:new Date(Date.now()+3600000).toISOString()}};
    else if(target.pathname.endsWith('/enrollment/claim'))data={ok:true,linked:true,classId:C,learnerId:A,sharing:{enabled:false,revision:1},townSharing:{enabled:false,revision:1}};
+   else if(target.pathname.endsWith('/synk-personal')){
+    // WORLD reads the 「내 성향」 topic answers read-only. Today's account server keeps synk-personal to the
+    // platform and refuses it; that refusal must leave the account signed in and practice going.
+    assert.equal(req.method(),'GET');assert.equal(target.searchParams.get('resource'),'member-understanding');assert.equal(body,null);
+    await route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({ok:false,error:{code:'PRODUCT_FORBIDDEN'}}),headers:{'Access-Control-Allow-Origin':'*'}});return;
+   }
    else if(!target.pathname.startsWith('/auth/v1/logout'))throw Error('Unexpected fixture endpoint '+target.pathname);
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
@@ -130,6 +136,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   assert.equal(firstSaved.owner,A);assert.equal(firstSaved.activeLessonId,lifeLesson.id);assert.equal(Object.keys(firstSaved.lessons[lifeLesson.id].answers).length,1);
   assert.equal(firstSaved.lessons[lifeLesson.id].answers[lifeLesson.questions[0].id].correct,true);
   assert.ok(calls.some(call=>call.path.endsWith('/synk-play')&&call.body?.changes?.some(change=>change.key===lifeKey)));
+  assert.ok(calls.some(call=>call.path.endsWith('/synk-personal')&&call.method==='GET'&&call.body===null),'WORLD asked for the 「내 성향」 answers read-only');
+  assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot?.accountId),A,'a refused read leaves the account signed in');
   lifeEvidence.firstAnswerSaved=true;lifeEvidence.storageKey=lifeKey;
   await page.locator('[data-life-pause]').click();await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');

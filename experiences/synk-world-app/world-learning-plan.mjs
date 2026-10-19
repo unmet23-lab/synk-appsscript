@@ -19,6 +19,52 @@ const copy=value=>JSON.parse(JSON.stringify(value));
 const knownLessons=new Map(LESSONS.map(lesson=>[lesson.id,lesson]));
 const iso=value=>new Date(value).toISOString();
 function clock(value){const at=value instanceof Date?value.getTime():typeof value==='string'?Date.parse(value):value;if(!time(at))throw TypeError('WORLD learning plan needs a valid time');return at;}
+// The Strata situations each pack is about (strata/maps/topik-i.json). Game items carry their own
+// concept ids; a practised topic the person answered about on 「내 성향」 matches either.
+const PACK_SITUATIONS={greetings:['sit-people-greeting'],cafe:['sit-travel-order'],store:['sit-travel-shopping'],
+ directions:['sit-travel-directions'],transit:['sit-travel-transport'],plans:['sit-career-schedule','sit-people-messenger']};
+const conceptId=value=>typeof value==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
+const ANSWER_DAYS=30;
+
+// 「내 성향」 answers about practised topics (member-understanding learning-topic facets), read only.
+// 「더 배우고 싶어요」 is an interest; 「지금은 아니에요」 asks WORLD not to push that topic now. An
+// earlier "맞아요" counts as interest while it is recent. Notes, statements and other facets are ignored.
+export function worldTopicAnswers(state,{now=Date.now()}={}){
+ const interested=new Set(),notNow=new Set(),answered=new Set();
+ if(!record(state)||!Array.isArray(state.overrides)||!Array.isArray(state.reviews))return {interested:[],notNow:[]};
+ const at=clock(now);
+ for(const row of state.overrides){
+  const id=typeof row?.facetId==='string'&&row.facetId.startsWith('learning-topic:')?row.facetId.slice(15):null;
+  if(!conceptId(id)||!Array.isArray(row.values))continue;answered.add(id);
+  if(row.values[0]==='interested')interested.add(id);else if(row.values[0]==='not-now')notNow.add(id);
+ }
+ for(const row of state.reviews){
+  const id=typeof row?.facetId==='string'&&row.facetId.startsWith('learning-topic:')?row.facetId.slice(15):null;
+  const when=Date.parse(row?.at);
+  if(!conceptId(id)||answered.has(id)||row.verdict!=='agree'||!Number.isFinite(when)||when>at||at-when>ANSWER_DAYS*86400000)continue;
+  interested.add(id);
+ }
+ return {interested:[...interested].slice(0,50),notNow:[...notNow].slice(0,50)};
+}
+function answersOf(value){
+ const pick=list=>Array.isArray(list)?[...new Set(list.filter(conceptId))].slice(0,50):[];
+ const interested=pick(value?.interested),notNow=pick(value?.notNow).filter(id=>!interested.includes(id));
+ return {interested,notNow};
+}
+// An interest is a declared goal Core already ranks by: it orders equally urgent activities and
+// never moves one past a more urgent need. "Not now" stops that topic from pushing an activity
+// forward, its own missed items included, because the person put that topic off: a lesson of that
+// situation loses its goals, a game loses the items of that topic, and everything stays available
+// to choose. Other topics' needs and a review that is due (an activity's own schedule) stay as they are.
+function withAnswers(candidate,answers){
+ if(!answers.interested.length&&!answers.notNow.length)return candidate;
+ const situations=PACK_SITUATIONS[candidate.packId]||[];
+ const items=new Set(candidate.targets.flatMap(target=>Array.isArray(target.conceptIds)?target.conceptIds:[]));
+ const wanted=answers.interested.filter(id=>situations.includes(id)||items.has(id));
+ const later=candidate.route==='lesson'&&situations.some(id=>answers.notNow.includes(id));
+ const targets=candidate.targets.filter(target=>!(target.conceptIds||[]).some(id=>answers.notNow.includes(id)));
+ return {...candidate,targets,goals:later?[]:[...new Set([...candidate.goals,...wanted.map(id=>`interest.${id}`)])]};
+}
 
 export function worldLearningSettings(settings={}){
  const value=record(settings)?settings:{};
@@ -110,9 +156,10 @@ function resumeCandidates(progress,settings,now){
  return result;
 }
 
-export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities}={}){
+// `answers` ({interested, notNow}: worldTopicAnswers) are the person's own answers on 「내 성향」.
+export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null}={}){
  if(typeof recommendActivities!=='function')throw TypeError('WORLD learning plan needs Core recommendActivities');
- const at=clock(now),source=record(progress)?progress:{},normalized=worldLearningSettings(settings);
+ const at=clock(now),source=record(progress)?progress:{},normalized=worldLearningSettings(settings),told=answersOf(answers);
  const profile=record(summary)&&Array.isArray(summary.skills)&&typeof summary.evidenceComplete==='boolean'?summary:{skills:[],evidenceComplete:false,asOf:iso(at)};
  const skills=new Set(profile.skills.map(skill=>skill.id));
  const resumes=resumeCandidates(source,settings,at),resumingReview=resumes.some(candidate=>candidate.route==='review');
@@ -120,14 +167,21 @@ export function createWorldLearningPlan({summary=null,progress={},settings={},no
   !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId))];
  // A partial/empty host summary cannot manufacture missing ability cells. The
  // activities remain available through declared goals, without a skill claim.
- const ready=candidates.map(candidate=>({...candidate,targets:candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)))}));
- const ranked=recommendActivities({profile,candidates:ready,settings:normalized,at:iso(at)});
+ const ready=candidates.map(candidate=>withAnswers({...candidate,targets:candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)))},told));
+ const ranking=told.interested.length?{...normalized,goals:[...new Set([...normalized.goals,...told.interested.map(id=>`interest.${id}`)])]}:normalized;
+ const chosen=recommendActivities({profile,candidates:ready,settings:ranking,at:iso(at)});
+ // When an interest the person gave is what put this activity first, say so in their words.
+ const interest=(chosen.matchedGoals||[]).find(goal=>goal.startsWith('interest.'));
+ const pushed=interest&&!(chosen.reasons||[]).some(reason=>['review.due','activity.retry','activity.assisted'].includes(reason)||reason.startsWith('practice.'));
+ const label=interest?(profile.concepts||[]).find(concept=>concept?.id===interest.slice(9))?.label:null;
+ const ranked=pushed?{...chosen,reason:typeof label==='string'&&label.trim()?`더 배우고 싶다고 알려 준 ‘${label}’ 연습이에요.`:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',
+  reasons:[...chosen.reasons,'interest.declared']}:chosen;
  const excluded=new Set((ranked.excluded||[]).map(item=>item.id));
  const offered=resumes.find(resume=>!excluded.has(resume.id)&&[ranked.selected,...(ranked.alternatives||[])].some(item=>item?.id===resume.id))||null;
  const result=offered?{...ranked,status:'ready',selected:offered,alternatives:[ranked.selected,...(ranked.alternatives||[])].filter(item=>item&&item.id!==offered.id),
   reason:'하던 학습의 같은 자리에서 이어가요. 다른 활동을 골라도 지금 진도는 남아 있어요.',reasons:['progress.resume'],basis:'host-progress',
   id:offered.id,evidence:[],hostEvidence:null,reviewAt:offered.reviewAt||null,reviewSource:offered.reviewAt?'host-schedule':null,
   focusSkillId:null,state:null,matchedGoals:offered.goals.filter(goal=>normalized.goals.includes(goal))}:ranked;
- return {...result,candidates:ready,resume:offered,presentation:presentationFor(settings),settings:normalized,
+ return {...result,candidates:ready,resume:offered,presentation:presentationFor(settings),settings:normalized,answers:told,
   learningEffectClaim:false,abilityClaim:false,grade:null};
 }

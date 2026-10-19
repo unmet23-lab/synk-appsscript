@@ -19,7 +19,8 @@ const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
 const {firstSupport}=await import(worldUrl('brand-opening/game-tutor-support.mjs'));
 const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
 let client,townSession,enrollmentView,lifeUI=null,lifeProgress=null,lifePort=null,lifeOwner=null,lifeGeneration=-1,lifeEpoch=0,lifeReady=null,lifeRecoveryShown=false;
-let tutorReady=false,tutorRefresh=null,education=null,localLearning=null;
+// topicAnswers: 「내 성향」 answers about practised topics for the signed-in owner, read when life starts.
+let tutorReady=false,tutorRefresh=null,education=null,localLearning=null,topicAnswers=null;
 let entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
 let finishInitialRestore;const initialRestoreReady=new Promise(resolve=>{finishInitialRestore=resolve;});
 // Loading and session restoration run behind the company splash. A failed
@@ -203,6 +204,8 @@ function initializeLife(){
   if(notice){const status=lifeProgress.status;lifeProgress=Object.freeze({...lifeProgress,status:()=>({...status(),message:notice})});}
   if(!operating&&owner!=='guest')localLearning=createLocalWorldLearningHost({owner,guard,target:window,storage:localStorage});
   if(operating&&owner!=='guest')try{await account.prepareGame({target:window});guard();}catch{guard();}
+  topicAnswers=null;
+  if(operating&&owner!=='guest')void account.topicAnswers?.().then(value=>{if(epoch===lifeEpoch&&value){topicAnswers={owner,...value};education?.refresh();}},()=>{});
   mountLifeLearning();
   window.__synkLife=lifeUI;
   tutorReady=true;restoreTutor();
@@ -212,8 +215,9 @@ function initializeLife(){
 }
 function mountLifeLearning(){
  education?.dispose();education=null;
- lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next()});
- education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,createPlan:createWorldLearningPlan,target:window,
+ lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation()});
+ education=createWorldEducation({home,getProgress:()=>lifeProgress,engine:worldLearning,target:window,
+  createPlan:args=>createWorldLearningPlan({...args,answers:topicAnswers&&topicAnswers.owner===lifeOwner?topicAnswers:null}),
   launchGame,startLesson:id=>lifeUI.start(id),startReview:(id,ids)=>lifeUI.reviewStart(id,ids),
   prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});}});
  home.connectEducation?.(education);window.__synkEducation=education;

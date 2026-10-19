@@ -5,7 +5,8 @@
 const Interpretation = require('./interpretation');
 const Domain = require('./domain');
 const Contract = require('./member-understanding-contract');
-const { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason } = require('./vellum');
+const Insight = require('./vellum-insight');
+const { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason, memberCorrectionLine } = Insight;
 const Periods = require('./trail-periods');
 const Statements = require('../experiences/synk-account/src/member-statement.cjs');
 const { understandingFacet, validateUnderstandingClaim, validateUnderstandingValues } = Contract;
@@ -149,7 +150,7 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
   const overrides = new Map(stored.overrides.map(row => [row.facetId, row]));
   const reviews = new Map(stored.reviews.map(row => [row.facetId, row]));
   const facets = [], appliedAt = new Map();
-  function add(id, { label = null, claim = null, available = true, declared = null } = {}) {
+  function add(id, { label = null, claim = null, available = true, declared = null, topicKind = null } = {}) {
     const definition = understandingFacet(id), kind = claim?.kind || id;
     if (claim) validateUnderstandingClaim(claim, { facetId: id });
     const storedOverride = overrides.get(id), activeOverride = available ? storedOverride : null;
@@ -159,7 +160,7 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
     const evidenceLine = claim ? memberUnderstandingLine({ kind, label, count: claim.count, activeDays: claim.activeDays, periodEnd: claim.to }) : '';
     let line, basis = 'empty';
     if (!available) line = memberUnderstandingLine({ label: '', state: 'disabled' });
-    else if (selectedLabels.length) { line = memberUnderstandingLine({ kind, label: kind === 'learning-topic' ? label : selectedLabels.join(' · '), selection: selected[0], state: 'declared' }); basis = 'self-declared'; }
+    else if (selectedLabels.length) { line = memberUnderstandingLine({ kind, label: kind === 'learning-topic' ? label : selectedLabels.join(' · '), labels: kind === 'learning-topic' ? null : selectedLabels, selection: selected[0], state: 'declared' }); basis = 'self-declared'; }
     else if (claim) { line = memberUnderstandingLine({ kind, label, count: claim.count, activeDays: claim.activeDays, state: review?.meaning || 'observed', periodEnd: claim.to }); basis = review && review.meaning !== 'disagreed' ? 'self-declared' : 'observed'; }
     else line = id === 'topics' ? '관심 있는 구체적인 주제를 직접 골라 두면 다음 요약에 반영해요.'
       : ['support', 'explanation'].includes(id) ? '현재 원하는 방식을 직접 고를 수 있어요.' : memberUnderstandingLine({ label: '', state: 'empty' });
@@ -168,8 +169,10 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
       appliedAt.set(id, applied.at);
       line = memberUnderstandingNote({ line, note: applied.note });
     }
+    // A practised topic keeps its Strata kind (word, grammar point, situation...) so the screen can
+    // call it an expression, a situation or a topic. Other facets have none.
     facets.push({ id, title: id.startsWith('learning-topic:') ? label : definition.title, line, basis, claim: available ? claim : null,
-      evidenceLine, choices: copy(definition.choices), multiple: definition.multiple, selected,
+      topicKind: id.startsWith('learning-topic:') ? topicKind : null, evidenceLine, choices: copy(definition.choices), multiple: definition.multiple, selected,
       review: review ? { verdict: review.verdict, at: review.at } : null,
       override: activeOverride ? { values: [...activeOverride.values], at: activeOverride.at } : null, available });
   }
@@ -196,15 +199,16 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
     add(id, { available: learning, ...(row ? { label: understandingFacet(id).choices.find(choice => choice.id === row.id).label,
       claim: makeClaim(id, row, observations, observations.total) } : {}) });
   }
-  for (const row of observations?.topics.slice(0, 4) || []) add(`learning-topic:${row.id}`, { label: row.label,
+  for (const row of observations?.topics.slice(0, 4) || []) add(`learning-topic:${row.id}`, { label: row.label, topicKind: row.kind,
     claim: makeClaim('learning-topic', row, observations, observations.total) });
   const byFacet = new Map(facets.map(facet => [facet.id, facet]));
   const history = [...stored.reviews.map(row => ({ kind: 'review', id: row.id, facetId: row.facetId,
     title: byFacet.get(row.facetId)?.title || understandingFacet(row.facetId).title,
-    line: ({ agree: '이 설명이 맞다고 확인했어요.', disagree: '이 설명을 자신의 관심이나 선호로 보지 않기로 했어요.', contextual: '상황에 따라 다르다고 알려 줬어요.' })[row.verdict], note: row.note, at: row.at })),
+    line: memberCorrectionLine({ kind: 'review', verdict: row.verdict }), note: row.note, at: row.at })),
   ...stored.overrides.map(row => ({ kind: 'override', id: row.id, facetId: row.facetId,
     title: byFacet.get(row.facetId)?.title || understandingFacet(row.facetId).title,
-    line: `직접 선택: ${understandingFacet(row.facetId).choices.filter(choice => row.values.includes(choice.id)).map(choice => choice.label).join(' · ')}`, note: row.note, at: row.at }))]
+    line: row.facetId.startsWith('learning-topic:') ? memberCorrectionLine({ kind: 'override', answer: row.values[0] })
+      : memberCorrectionLine({ kind: 'override', facet: row.facetId, labels: understandingFacet(row.facetId).choices.filter(choice => row.values.includes(choice.id)).map(choice => choice.label) }), note: row.note, at: row.at }))]
     .sort((a, b) => b.at.localeCompare(a.at) || a.id.localeCompare(b.id));
   const paragraphs = [], included = new Set();
   const addParagraph = facet => {
@@ -258,7 +262,7 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
     if (!meanings.length) continue;
     const positives = meanings.filter(row => row.polarity === 'prefer'), choices = positives.map(row => row.value).filter(value => facet.choices.some(choice => choice.id === value));
     const kept = facet.selected.filter(value => !meanings.some(row => row.value === value && row.polarity === 'avoid'));
-    facet.line = meanings.map(row => `직접 확인한 내용은 ‘${Statements.meaningLabel(row)}’예요.`).join(' ');
+    facet.line = meanings.map(row => { const said = Statements.meaningLabel(row); return `‘${said}’${Insight.finalOf(said) ? '이라고' : '라고'} 알려 줬어요.`; }).join(' ');
     if (facet.id === 'topics') choices.splice(0, choices.length, ...new Set([...kept, ...choices]));
     else if (!positives.length) choices.push(...kept);
     choices.splice(understandingFacet(facet.id).max);
@@ -291,10 +295,20 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
   const appTarget = app.available && app.override ? app.selected[0] : null;
   const finalActivities = [...textActivities, ...activities.filter(row => !textActivities.some(a => a.targetId === row.targetId)
     && (!spokenFields.has('topics') || !originalTopicTargets.has(row.targetId) || currentTopicTargets.has(row.targetId) || appTarget === row.targetId))].slice(0, 3);
+  // The structured meaning (field, value, polarity) travels with each saved statement so the screen
+  // can say it back in Vellum's words; the stored quotation stays the source.
+  const storedMeanings = new Map((stored.statements || []).flatMap(row => row.meanings.map(meaning => [`${row.id}\u0000${meaning.id}`, meaning])));
+  const statementHistory = synthesis.statementHistory.map(row => ({ ...row, meanings: row.meanings.map(meaning => {
+    const source = storedMeanings.get(`${row.id}\u0000${meaning.id}`);
+    return { ...meaning, field: source?.field ?? null, value: source?.value ?? null, polarity: source?.polarity ?? null };
+  }) }));
   return { version: 1, headline: overview.headline, paragraphs: finalParagraphs, facets, history, activities: finalActivities,
-    relations: synthesis.relations, statementHistory: synthesis.statementHistory,
+    relations: synthesis.relations, statementHistory,
     limitations: ['앱을 연 사실에서 구체적인 취향이나 활동 완료를 추측하지 않아요.', '학습에서 다룬 내용과 직접 밝힌 관심을 구분해요. 성격·실력·학습 효과를 단정하지 않아요.',
       '확인과 수정은 언제든 지울 수 있어요. 원래의 관찰 횟수는 바꾸지 않으며 연결이 꺼진 자료는 다음 설명에 사용하지 않아요.'] };
 }
 module.exports = { ...Contract, previewMemberStatement: Statements.previewMemberStatement, confirmMemberStatement: Statements.confirmMemberStatement,
-  validateMemberStatement: Statements.validateMemberStatement, summarizeMemberUnderstanding };
+  validateMemberStatement: Statements.validateMemberStatement, summarizeMemberUnderstanding,
+  // The insight screen's sentences (vellum-insight.js), shared by the web and the desktop renderer.
+  memberInsightNow: Insight.memberInsightNow, memberInsightPracticeFact: Insight.memberInsightPracticeFact, memberInsightUsage: Insight.memberInsightUsage,
+  memberInsightQuestion: Insight.memberInsightQuestion, insightKindWord: Insight.kindWord, insightDayLabel: Insight.dayLabel };

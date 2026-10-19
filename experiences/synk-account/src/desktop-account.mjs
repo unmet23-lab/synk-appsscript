@@ -20,6 +20,8 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
       mutate: body => request('playMutate', body),
     }),
     load: () => request('load'), release: () => request('release'), atlasSummary: () => request('atlasSummary'),
+    // 「내 성향」 answers (read only); WORLD reads them to choose practice.
+    understandingLoad: () => request('understandingLoad'),
     setLearning: (enabled, expected_revision) => request('setLearning', { enabled, expected_revision }),
     updateProfile: (profile, expected_profile_revision) => request('updateProfile', { profile, expected_profile_revision }),
     revokeSession: session_id => request('revokeSession', { session_id }),

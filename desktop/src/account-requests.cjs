@@ -4,6 +4,11 @@ const {worldRequestSpec}=require('./world-requests.cjs');
 const {PERSONAL_OPERATIONS,PLATFORM_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
+  // WORLD reads the person's 「내 성향」 answers to choose practice: a read of the same document, never a write.
+  if(operation==='understandingLoad'&&product==='world'&&clientKey==='world'){
+    if(!params||typeof params!=='object'||Array.isArray(params)||Object.keys(params).length)throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    return {path:'synk-personal?resource=member-understanding'};
+  }
   if(Object.hasOwn(PLATFORM_OPERATIONS,operation)){
     if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
     return personalRequestSpec(operation.replace(/^(platform|insight|understanding)/,'personal'),params,product,PLATFORM_OPERATIONS[operation]);

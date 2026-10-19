@@ -47,3 +47,59 @@ test('a new clarification receives focus rather than a similarly named option fr
   captureMemberUnderstandingFocus(container)();
   assert.equal(wrongFocus, false); assert.equal(headingFocus, true);
 });
+
+// One-tap answers, the settings editor and the jump to the basis (2026-10-19 skeleton).
+function insightFixture({ report = {}, saved = { error: null, editor: null } } = {}) {
+  const listeners = new Map(), calls = [];
+  const details = { tagName: 'DETAILS', open: false, scrollIntoView() { calls.push({ name: 'scroll' }); }, querySelector: () => ({ focus() { calls.push({ name: 'focus' }); } }) };
+  const root = { contains: () => true, addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name), querySelector: selector => selector === '#mi2-why' ? details : null };
+  const controller = Object.fromEntries(['answer', 'begin', 'cancel'].map(name => [name, value => { calls.push({ name, value }); return Promise.resolve({}); }]));
+  controller.read = () => ({});
+  const settings = { begin: value => calls.push({ name: 'settings.begin', value }), choose: value => calls.push({ name: 'settings.choose', value }), cancel: () => calls.push({ name: 'settings.cancel' }),
+    save: async value => { calls.push({ name: 'settings.save', value }); return saved; } };
+  bindMemberUnderstandingEditor(root, { controller, getReport: () => report, settings, getSettingsContext: () => ({ revision: 7, enabled: true, shared: 'practice-and-settings' }), onSettingsSaved: () => calls.push({ name: 'saved' }) });
+  const click = (action, dataset = {}, form = null) => {
+    const button = { disabled: false, dataset: { insightAction: action, ...dataset }, closest: () => form };
+    listeners.get('click')({ target: { closest: () => button }, preventDefault() {}, stopImmediatePropagation() {} });
+  };
+  return { calls, click, details };
+}
+const facets = [
+  { id: 'practice-mode', available: true, claim: { version: 1, reference: 'listening' }, choices: [{ id: 'listening', label: '듣기' }] },
+  { id: 'learning-topic:sit-cafe', available: true, claim: { version: 1, reference: 'sit-cafe' }, choices: [{ id: 'interested' }, { id: 'practice-only' }, { id: 'not-now' }] },
+  { id: 'learning-topic:gone', available: false, claim: null, choices: [{ id: 'interested' }] },
+];
+
+test('an answer tap sends the facet and the report\'s own claim, never a value from the page', () => {
+  const f = insightFixture({ report: { understanding: { facets } } });
+  f.click('understanding-answer', { insightFacet: 'practice-mode', insightVerdict: 'agree', insightClaim: '{"forged":true}' });
+  assert.deepEqual(f.calls.at(-1), { name: 'answer', value: { facetId: 'practice-mode', verdict: 'agree', claim: facets[0].claim } });
+  f.click('understanding-answer', { insightFacet: 'learning-topic:sit-cafe', insightValue: 'not-now' });
+  assert.deepEqual(f.calls.at(-1), { name: 'answer', value: { facetId: 'learning-topic:sit-cafe', value: 'not-now' } });
+  const before = f.calls.length;
+  f.click('understanding-answer', { insightFacet: 'learning-topic:sit-cafe', insightValue: 'teleport' });
+  f.click('understanding-answer', { insightFacet: 'learning-topic:gone', insightValue: 'interested' });
+  f.click('understanding-answer', { insightFacet: 'unknown', insightVerdict: 'agree' });
+  assert.equal(f.calls.length, before, 'unknown choices and unavailable facets are ignored');
+});
+
+test('settings open with the stored value, save with the summary\'s fence, and re-read the summary only after a save', async () => {
+  const f = insightFixture({ report: { settings: { support: 'step' } } });
+  f.click('settings-edit', { insightField: 'support' });
+  assert.deepEqual(f.calls.at(-1), { name: 'settings.begin', value: { field: 'support', value: 'step' } });
+  const form = { querySelector: () => ({ value: 'independent' }) };
+  f.click('settings-save', {}, form); await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(f.calls.slice(-3).map(call => call.name), ['settings.choose', 'settings.save', 'saved']);
+  assert.deepEqual(f.calls.find(call => call.name === 'settings.save').value, { revision: 7, enabled: true, shared: 'practice-and-settings' });
+  const failed = insightFixture({ report: { settings: {} }, saved: { error: 'FEATURE_DISABLED', editor: { field: 'support' } } });
+  failed.click('settings-save', {}, form); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(failed.calls.some(call => call.name === 'saved'), false);
+  failed.click('settings-cancel'); assert.equal(failed.calls.at(-1).name, 'settings.cancel');
+});
+
+test('「왜 이렇게 봤나요?」 opens the basis on the same page without a route change', () => {
+  const f = insightFixture();
+  f.click('jump', { insightTarget: 'mi2-why' });
+  assert.equal(f.details.open, true); assert.deepEqual(f.calls.map(call => call.name), ['scroll', 'focus']);
+  f.click('jump', { insightTarget: 'x"]); alert(1); //' }); assert.equal(f.calls.length, 2, 'an unexpected target is ignored');
+});

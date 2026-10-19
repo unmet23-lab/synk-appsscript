@@ -10,7 +10,7 @@ const rows=(name,options,value)=>Object.entries(options).map(([id,[label,note]])
 // WORLD supplies meaningful candidates; the existing Core decides among them.
 // This controller owns no identity, grading, second event log, or server API.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},target=globalThis}){
- let stopped=false,coach=null,coachHost=null,current=null,refreshing=false,applied=null;
+ let stopped=false,coach=null,coachHost=null,current=null,refreshing=false;
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const check=()=>{if(stopped||getProgress()?.owner!==owner)throw Error('학습 계정이 바뀌었어요. 설정을 다시 열어 주세요.');};
@@ -18,20 +18,36 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   check();const source=target.SYNKLearningHost||null;
   if(!source&&owner!=='guest')return null;
   if(coach&&coachHost===source){try{coach.summary();return coach;}catch{coach.disconnect?.();coach=null;}}
-  if(coachHost!==source){coach?.disconnect?.();coach=null;coachHost=source;applied=null;}
+  if(coachHost!==source){coach?.disconnect?.();coach=null;coachHost=source;}
   if(!coach)coach=source?source.createGame({gameId:'world-home'},engine.engine.createGame,engine.createLearningSync):engine.engine.createGame({gameId:'world-home',storage:target.localStorage});
   return coach;
  }
- function applyPreferences(){
+ // Restoring a product profile is a read, not a new account-wide choice.
+ // Launchers keep this hook; only the form's explicit save/clear may write Core.
+ function applyPreferences({explicit=false}={}){
+  if(!explicit){check();return true;}
   check();const progress=getProgress(),profile=progress.learningProfile().profile;
-  if(['new','skipped'].includes(profile.status))return;
+  if(['new','skipped'].includes(profile.status))return true;
   const values=progress.learningProfileValues(),source=target.SYNKLearningHost||null;
   const presentation=Object.fromEntries(['support','explanation','textSize','motion'].filter(k=>values[k]).map(k=>[k,values[k]]));
-  const signature=JSON.stringify(presentation);
-  if(applied?.source===source&&applied.signature===signature)return;
   const preferences=source?.preferences?.()||readCoach();
-  if(preferences){if(preferences.setPresentation(Object.keys(presentation).length?presentation:null)===false)return false;applied={source,signature};}
+  if(!preferences)return true;
+  // The account's presentation is shared with 「내 성향」 and the games: a save puts this form's
+  // choices over it, and clearing the goals forgets only the help style and explanation this form
+  // shows. Text size, motion and sound chosen elsewhere stay as they are.
+  const current=preferences.presentation?.()||{};
+  const next=Object.keys(presentation).length?{...current,...presentation}:Object.fromEntries(Object.entries(current).filter(([k])=>!['support','explanation'].includes(k)));
+  if(preferences.setPresentation(Object.keys(next).length?next:null)===false)return false;
   return true;
+ }
+ // Help style and explanation length are account-wide choices: the learning memory's presentation,
+ // which this form and the account's 「내 성향」 both save, leads. WORLD's own answers stand in only
+ // where nothing is chosen there, so a choice made elsewhere is what lessons, plans and this form use.
+ function settingsFor(values){
+  let chosen=null;
+  try{const source=target.SYNKLearningHost||null;chosen=(source?.preferences?.()||readCoach())?.presentation?.()||null;}catch{chosen=null;}
+  const pick=(key,list)=>chosen&&list.includes(chosen[key])?{[key]:chosen[key]}:{};
+  return {...values,...pick('support',['choose','step','independent']),...pick('explanation',['brief','standard','detailed'])};
  }
  function refresh(){
   if(stopped||refreshing)return current;refreshing=true;
@@ -40,14 +56,18 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(['unreadable','conflict','loading'].includes(save.phase)||save.rejected){current=null;home.updateStudy?.(null);return null;}
    let summary=empty;
    try{summary=readCoach()?.summary()||empty;applyPreferences();}catch{/* Unavailable account evidence remains unknown. */}
-   current=createPlan({summary,progress:progress.exportSnapshot(),settings:progress.learningProfileValues(),now:Date.now(),recommendActivities:engine.recommendActivities});
+   current=createPlan({summary,progress:progress.exportSnapshot(),settings:settingsFor(progress.learningProfileValues()),now:Date.now(),recommendActivities:engine.recommendActivities});
    home.updateStudy?.(current);return current;
   }catch{current=null;home.updateStudy?.(null);return null;}finally{refreshing=false;}
  }
  async function next(){
   check();const profile=getProgress().learningProfile().profile;
   if(profile.status==='new'){open({continueAfter:true});return;}
-  await prepare();check();const plan=refresh(),selected=plan?.selected;
+  await prepare();check();
+  // The account's first memory read is bounded; wait for it so a help style chosen on another
+  // screen or device is the one this plan uses. Device-local practice still starts without it.
+  try{await target.SYNKLearningHost?.ready?.();}catch{/* the launcher reports account problems */}
+  check();const plan=refresh(),selected=plan?.selected;
   if(!selected){home.toast(plan?.reason||'지금 조건에 맞는 연습이 없어요. 학습 목표에서 시간과 소리를 바꿔 보세요.');return;}
   if(applyPreferences()===false){home.toast('도움 방식 저장을 다시 확인해 주세요.');return;}
   if(selected.route==='game')return launchGame(selected.gameId);
@@ -55,7 +75,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   return startLesson(selected.lessonId);
  }
  function open({continueAfter=false}={}){
-  check();const progress=getProgress(),saved=progress.learningProfile(),profile=saved.profile,values=progress.learningProfileValues();let revision=profile.revision;
+  check();const progress=getProgress(),saved=progress.learningProfile(),profile=saved.profile,values=settingsFor(progress.learningProfileValues());let revision=profile.revision;
   let summary=empty;try{summary=readCoach()?.summary()||empty;}catch{}
   const observed=summary.evidenceComplete?summary.skills.filter(s=>stateNames[s.status]).slice(0,4):[];
   const reason=values.primaryReason||values.reasons?.[0]||'';
@@ -70,7 +90,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
     <fieldset class="study-group"><legend>소리</legend><div class="study-pills study-segment">${radios('audio',{available:'들을 수 있어요',off:'지금은 못 들어요'},values.audio==='off'?'off':'available')}</div></fieldset>
    </div>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent?'checked':''}><span><strong>${progress.status().scoped?'내 계정':'이 기기'}에 저장하기</strong><small>목표와 도움 방식을 기억해 추천에 써요.</small></span></label>
-   <p class="study-scope">급수나 성격을 판정하지 않아요. 설정을 지워도 진도와 복습 기록은 남아요.</p>
+   <p class="study-scope">급수나 성격을 판정하지 않아요. 목표를 지우거나 추천에 쓰지 않게 하면 ${progress.status().scoped?'내 계정':'이 기기'}에 저장한 도움 방식과 설명 길이도 함께 지워져요. 진도와 복습 기록은 남아요.</p>
    <p class="study-save-status" role="status">${escape(progress.status().message)}</p>
    <div class="life-actions"><button class="felt-button" type="submit">${continueAfter?'저장하고 시작하기':'저장하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status==='new'?'건너뛰기':'닫기'}</button></div>
    ${profile.status==='active'?'<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">추천에 쓰지 않기</button><button type="button" class="quiet-button" data-study-clear="delete">목표 지우기</button></div>':''}
@@ -79,7 +99,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const form=target.document.querySelector('#world-study-form');if(!form)return;
   const status=form.querySelector('.study-save-status');let busy=false;
   const valid=()=>{check();if(progress!==getProgress()||!form.isConnected)throw Error('설정을 다시 열어 주세요.');};
-  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(applyPreferences()===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');refresh();home.closePanel();if(continueAfter)await next();else home.toast('목표에 맞춰 다음 연습을 바꿨어요.');}catch(error){if(form.isConnected)status.textContent=error.message||'저장을 확인한 뒤 다시 시도해 주세요.';}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(continueAfter)await next();else home.toast('목표에 맞춰 다음 연습을 바꿨어요.');}catch(error){if(form.isConnected)status.textContent=error.message||'저장을 확인한 뒤 다시 시도해 주세요.';}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
   form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent='저장하려면 「저장하기」 스위치를 켜 주세요. 건너뛰어도 기본 연습은 할 수 있어요.';return;}
    const reason=form.elements.reason.value,minutes=Number(form.elements.minutes.value);
    void run(()=>progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}}));
@@ -88,5 +108,5 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision}))));
  }
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
- return {next,open,refresh,applyPreferences,presentation(){check();const values=getProgress().learningProfileValues();return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,refresh,applyPreferences,presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
 }

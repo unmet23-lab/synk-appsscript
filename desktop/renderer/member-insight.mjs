@@ -2,7 +2,9 @@ import { buildMemberInsightReport } from './member-insight-model.mjs';
 
 // This is a view of the existing Core/Trail/Vellum account summary. It never
 // persists a second profile or reads another product's private records.
-export function createMemberInsight({ getIdentity, request, activity = null, understanding = null, onChange = () => {}, timeoutMs = 12000, now = Date.now } = {}) {
+// `settings` (member-settings.mjs) saves the help style and explanation length into the account's
+// learning memory; after a save the summary is read again without blanking the screen.
+export function createMemberInsight({ getIdentity, request, activity = null, understanding = null, settings = null, onChange = () => {}, timeoutMs = 12000, now = Date.now } = {}) {
   let state = { status: 'loading', report: null }, binding = '', revision = 0, pending = null;
   let visible = false, stopped = false, response = null;
   let projection = null;
@@ -22,7 +24,20 @@ export function createMemberInsight({ getIdentity, request, activity = null, und
     }
     return account;
   }
-  function read() { sync();const value=snapshot(),feedback=understanding?.read();return feedback&&value.status==='ready'?{...value,understandingEditor:feedback.editor,understandingStatementEditor:feedback.statementEditor,understandingPending:feedback.pending,understandingMessage:feedback.message,understandingError:feedback.error}:value; }
+  function read() {
+    sync();
+    const value = snapshot();
+    if (value.status !== 'ready') return value;
+    const feedback = understanding?.read(), chosen = settings?.read();
+    return { ...value,
+      ...(feedback ? { understandingEditor: feedback.editor, understandingStatementEditor: feedback.statementEditor, understandingPending: feedback.pending, understandingMessage: feedback.message, understandingError: feedback.error } : {}),
+      ...(chosen ? { settingsEditor: chosen.editor, settingsPending: chosen.pending, settingsMessage: chosen.message, settingsError: chosen.error, settingsWritable: chosen.writable } : {}) };
+  }
+  // What a setting save needs from the summary on screen: the learning memory's fence.
+  function settingsContext() {
+    const report = state.status === 'ready' ? state.report : null;
+    return report ? { revision: report.learningRevision, enabled: report.learningEnabled, shared: report.shared } : {};
+  }
   function project(editorChange = false){
     const account=sync();if(!response||!visible||!account.signedIn||stopped)return;
     const feedback=understanding?.read();
@@ -40,7 +55,10 @@ export function createMemberInsight({ getIdentity, request, activity = null, und
   }
   const unsubscribe=activity?.subscribe(()=>{if(response)project();});
   const unsubscribeUnderstanding=understanding?.subscribe(()=>{if(response)project(true);});
-  async function refresh() {
+  // A settings editor lives in its own controller; its changes only need a new render.
+  const unsubscribeSettings=settings?.subscribe(()=>{if(response&&!stopped)onChange(snapshot());});
+  // `quiet` keeps the shown report while the summary is read again (after a setting is saved).
+  async function refresh({ quiet = false } = {}) {
     const account = sync();
     if (stopped || !visible || !account.signedIn) return snapshot();
     if (pending) return pending.promise;
@@ -50,19 +68,23 @@ export function createMemberInsight({ getIdentity, request, activity = null, und
     // Queue the request so re-entrant renders already see a pending read.
     job.promise = Promise.resolve().then(async () => {
       let timer;
+      const keep = quiet && state.status === 'ready';
       try {
         if (!current()) return snapshot();
-        projection = null;
-        emit({ status: 'loading', report: null });
-        if(activity)void activity.refresh();
-        if(understanding)void understanding.refresh();
+        if (!keep) {
+          projection = null;
+          emit({ status: 'loading', report: null });
+          if(activity)void activity.refresh();
+          if(understanding)void understanding.refresh();
+        }
         const result = await Promise.race([
           Promise.resolve().then(() => request('atlasSummary', {})),
           new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), timeoutMs); }),
         ]);
-        if (current()) {response=result;project();}
+        if (current()) {response=result;projection=null;project();}
       } catch {
-        if (current()) {response=null;projection=null;emit({ status: 'error', report: null, message: '내 기록을 불러오지 못했어요. 계정 연결을 확인하거나 다시 불러와 주세요.' });}
+        // A quiet read that fails keeps what is on screen; the saved setting is already stored.
+        if (current() && !keep) {response=null;projection=null;emit({ status: 'error', report: null, message: '내 기록을 불러오지 못했어요. 계정 연결을 확인하거나 다시 불러와 주세요.' });}
       } finally {
         clearTimeout(timer);
         if (pending === job) pending = null;
@@ -73,13 +95,13 @@ export function createMemberInsight({ getIdentity, request, activity = null, und
   }
   function setVisible(value) {
     const next = value === true;
-    if (!next && visible) { revision++; pending = null; binding = ''; response=null; projection=null; understanding?.hide(); state = { status: 'loading', report: null }; }
+    if (!next && visible) { revision++; pending = null; binding = ''; response=null; projection=null; understanding?.hide(); settings?.hide(); state = { status: 'loading', report: null }; }
     visible = next;
     sync();
     if (visible && state.status === 'loading') void refresh();
   }
-  return Object.freeze({ read, refresh, setVisible,
-    invalidate() { revision++; pending = null; binding = ''; response=null;projection=null;understanding?.hide(); state = { status: 'loading', report: null }; },
-    stop() { stopped = true; visible = false; revision++; pending = null; response=null;projection=null;unsubscribe?.();unsubscribeUnderstanding?.();understanding?.stop();state = { status: 'loading', report: null }; },
+  return Object.freeze({ read, refresh, setVisible, settingsContext,
+    invalidate() { revision++; pending = null; binding = ''; response=null;projection=null;understanding?.hide();settings?.hide(); state = { status: 'loading', report: null }; },
+    stop() { stopped = true; visible = false; revision++; pending = null; response=null;projection=null;unsubscribe?.();unsubscribeUnderstanding?.();unsubscribeSettings?.();understanding?.stop();settings?.stop();state = { status: 'loading', report: null }; },
   });
 }

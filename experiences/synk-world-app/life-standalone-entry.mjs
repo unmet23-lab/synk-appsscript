@@ -6,7 +6,7 @@ import {createWorldEducation} from './world-learning-ui.mjs';
 export function setupLife(home,asset){
  let ui,education;
  const progress=createLifeProgress({owner:'guest',now:()=>Date.now(),onChange:()=>ui?.refresh()});
- ui=createLifeExperience({home,getProgress:()=>progress,asset,onSummary:()=>education?.refresh(),onNext:()=>education?.next()});
+ ui=createLifeExperience({home,getProgress:()=>progress,asset,onSummary:()=>education?.refresh(),onNext:()=>education?.next(),presentation:()=>education?.presentation()});
  education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:createWorldLearningPlan,launchGame:home.openLearningGame,startLesson:ui.start,startReview:ui.reviewStart,target:window});
  home.connectEducation(education);education.refresh();
  window.__synkEducation=education;
