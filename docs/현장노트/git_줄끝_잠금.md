@@ -121,8 +121,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### `tools/결정.js --추가`가 CRLF 결정 표에 LF 줄을 넣는다
 - 증상: 결정을 넣은 뒤 git이 「LF will be replaced by CRLF」를 경고했고, 결정 표에서 LF만인 줄이 1개였다(10-18).
 - 원인: 도구가 새 표 줄을 `\n`으로 끼운다. 작업본(`core.autocrlf true`)은 CRLF라 그 한 줄만 줄끝이 섞인다.
-- 고침: 넣은 뒤 파일 전체를 CRLF로 맞춘다(`t.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n')`를 임시 파일 → rename). 도구 자체를 고치는 건 따로 할 일이다.
-- 다시 확인: `(t.match(/(^|[^\r])\n/g)||[]).length`가 0이다.
+- 고침: 넣은 뒤 파일 전체를 CRLF로 맞춘다(`t.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n')`를 임시 파일 → rename). 10-19부터는 도구가 표 구간의 줄끝을 따라 새 줄을 넣는다(CRLF 표면 새 줄 끝에 `\r`을 붙임). 그 전에 섞인 작업본은 위처럼 한 번 맞춘다.
+- 다시 확인: `(t.match(/(^|[^\r])\n/g)||[]).length`가 0이다. 도구 쪽은 `node --test tests/결정정본.test.js`의 「⑥-2」가 CRLF 정본에 넣은 뒤 CR 없는 줄바꿈이 0인지 본다(10-19 고치기 전 실패 → 고친 뒤 20/20).
 
 ## index.lock
 

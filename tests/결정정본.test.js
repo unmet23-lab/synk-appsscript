@@ -170,6 +170,26 @@ test('⑥ 추가한 줄은 구분선 «뒤»에 들어가고 그대로 다시 �
   }
 });
 
+test('⑥-2 CRLF 정본에 추가해도 새 줄이 CRLF다 — LF 한 줄이 섞이면 파일 전체 줄끝을 다시 맞춰야 한다', () => {
+  const 임시 = fs.mkdtempSync(path.join(require('node:os').tmpdir(), '결정-'));
+  try {
+    const 정본자리 = path.join(임시, 'docs', '_ops', '결정.md');
+    fs.mkdirSync(path.dirname(정본자리), { recursive: true });
+    fs.writeFileSync(정본자리, 본문(줄('2026-08-01', '확정', '기존 줄')).replace(/\n/g, '\r\n'), 'utf8');
+    const r = require('node:child_process').spawnSync(
+      process.execPath,
+      [path.join(REPO, 'tools', '결정.js'), '--추가', '줄끝 시험', '--근거', '합성 입력'],
+      { env: { ...process.env, CLAUDE_PROJECT_DIR: 임시 }, encoding: 'utf8', windowsHide: true },
+    );
+    assert.equal(r.status, 0, r.stderr);
+    const 새문 = fs.readFileSync(정본자리, 'utf8');
+    assert.equal((새문.match(/(?<!\r)\n/g) || []).length, 0, 'CR 없는 줄바꿈이 생기면 안 된다');
+    assert.ok(읽기문(새문, '2026-08-19').목록.some((d) => d.결정 === '줄끝 시험'), '추가한 줄이 다시 읽혀야 한다');
+  } finally {
+    fs.rmSync(임시, { recursive: true, force: true });
+  }
+});
+
 /* ── ⑦ 자기 처방을 막지 않는다 (F103) ────────────────────────────────────── */
 
 test('⑦ 차단문이 「아는 것」이라 부른 낱말은 전부 실제로 통과한다', () => {

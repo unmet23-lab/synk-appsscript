@@ -165,7 +165,8 @@ function 추가(결정, 근거, 성격) {
   const 줄들 = 구간.몸.split('\n');
   let 자리 = 줄들.findIndex((l) => /^\s*\|\s*-+/.test(l));
   자리 = 자리 < 0 ? 줄들.length : 자리 + 1;
-  줄들.splice(자리, 0, 새줄);
+  /* 작업본이 CRLF면 `\n`으로 가른 줄마다 `\r`이 남는다 — 새 줄에도 붙여야 LF 한 줄이 섞이지 않는다(10-18 현장 노트). */
+  줄들.splice(자리, 0, 구간.몸.includes('\r\n') ? 새줄 + '\r' : 새줄);
 
   fs.writeFileSync(정본, 구간.앞 + 줄들.join('\n') + 구간.뒤, 'utf8');
   return { 새줄, 성격: 쓸성격 };
