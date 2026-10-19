@@ -18,7 +18,8 @@ function planConfig(config, chatKey) {
   const telegram = next.platforms?.telegram;
   if (!telegram?.enabled || !telegram.channel_overrides?.[chatKey]) throw new Error('기존 개인 텔레그램 대화 설정을 찾지 못했습니다.');
   const channel = telegram.channel_overrides[chatKey];
-  if (channel.provider !== 'openai-codex') throw new Error('기존 GPT 접수 채널인지 확인할 수 없습니다.');
+  // The private intake route ran on GPT (openai-codex) until 2026-10-19 and on Claude (anthropic) since.
+  if (!['openai-codex', 'anthropic'].includes(channel.provider)) throw new Error('기존 개인 대화 접수 채널인지 확인할 수 없습니다.');
   // Keep the existing model, reasoning, local CLI default and other channels.
   channel.system_prompt = CHANNEL_PROMPT;
   next.fallback_providers = [];

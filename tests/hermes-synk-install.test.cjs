@@ -19,8 +19,15 @@ test('installation plan is idempotent and does not duplicate tools', () => {
   assert.deepEqual(planConfig(once, 'allowed'), once);
   assert.deepEqual(once.platform_toolsets.telegram, ['terminal', 'vision', 'skills', 'synk-work']);
 });
-test('unknown or non GPT channel fails without inventing a route', () => {
+test('unknown channel or another provider fails without inventing a route', () => {
   assert.throws(() => planConfig(fixture(), 'missing'));
   const input = fixture(); input.platforms.telegram.channel_overrides.allowed.provider = 'custom';
   assert.throws(() => planConfig(input, 'allowed'));
+});
+test('the Claude intake route used since 10-19 is kept like the earlier GPT route', () => {
+  const input = fixture(); input.platforms.telegram.channel_overrides.allowed.provider = 'anthropic';
+  const next = planConfig(input, 'allowed');
+  assert.equal(next.platforms.telegram.channel_overrides.allowed.provider, 'anthropic');
+  assert.equal(next.platforms.telegram.channel_overrides.allowed.model, 'existing-model');
+  assert.deepEqual(next.fallback_providers, []);
 });
