@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -129,6 +129,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 별도 인덱스 커밋은 공용 인덱스를 건드리지 않는다. 공용 인덱스는 옛 HEAD 판을 스테이징한 채로 남는다.
 - 고침: 위 절차 5를 커밋과 같은 스크립트 안에서 곧바로 한다. 잠금에 막히면 판별·정리 뒤 바로 다시 한다.
 - 다시 확인: `git diff --cached --name-only`에 내 경로가 없다.
+- 10-19 재발: 손으로 짠 커밋 스크립트가 `commit-tree`까지만 하고 `update-ref`는 따로 돌려서 5단계가 빠졌다. 계정판 코드·문서 16경로가 1시간 남짓(10:50~12:06) 「MM」·「D 」로 남았고, 새 파일 셋은 작업본에서 「??」로 보였다. 그사이 다른 세션 커밋 넷이 들어왔지만 이 경로를 되돌린 것은 없었다. reset 전에 `git ls-files -s`의 blob이 내 커밋 부모 판과 같은지(남이 올린 스테이징이 아닌지) 경로마다 대조하고 `git reset -q -- <경로들>`로 맞췄다. 커밋 스크립트는 `update-ref`와 reset까지 한 몸으로 짠다(보기 `tools/참고카드_커밋.js`).
 
 ### 미리 만든 「HEAD 판 + 내 줄」을 나중에 커밋하면 남의 줄이 옛 판으로 돌아간다
 - 증상: 트랙의 「HEAD+내 줄」 파일을 만들어 두고 25분 뒤 커밋했더니 그사이 들어온 다른 세션 커밋 셋의 줄 다섯이 사라졌다(10-03 `44b49d06d`).
