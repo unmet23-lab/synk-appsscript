@@ -449,7 +449,7 @@ D안은 외부 돈 없이 열 수 있지만, 시장이 있어도 SYNK반 정원�
 1. **몽골 채널에 힘을 모은다.** 2027-03부터 몽골어 게시를 주 3편 이상.
 2. **문의를 세는 장치부터 붙인다.** 「개원 알림·상담 신청」 한 곳과 게시물별 추적 링크, @synk.mn DM 자동 전달.
 3. **작은 광고 시험(2027-03~06, 월 30만₮):** 몽골어 메타 광고로 문의 1건 값과 등록 1명 값을 잰다. 이 설계의 「광고로 학생 1명 8만₮」은 9월 산정(5.1만₮)을 보수화한 가정이다.
-4. **개원 전 대기자 명단:** 기본 가정 개원 첫 달 등록은 약 {{n0(row('기본','2027-09').lab.newStudents + I.scenarios['기본'].labPreReg)}}명(사전 등록 {{I.scenarios['기본'].labPreReg}}명 포함)이다. 문의 10건에 등록 1명꼴이면 개원 전 문의가 그 열 배 필요하다. 2027-04 공사 계약 전 점검에서 이 흐름이 보이지 않으면 4실 공사 대신 D안으로 연다(13절).
+4. **개원 전 대기자 명단:** 기본 가정 개원 첫 달 등록은 약 {{n0(row('기본','2027-09').lab.newStudents + I.scenarios['기본'].labPreReg)}}명(사전 등록 {{I.scenarios['기본'].labPreReg}}명 포함)이다. 문의 10건에 등록 1명꼴이면 개원 전 문의가 그 열 배 필요하다. 운영 계획(첫 달 약 {{n0(OG.target)}}명)이면 개원 달까지 문의가 약 {{n0(OG.leads)}}건 필요하다(13절 제안). 2027-04 공사 계약 전 점검에서 이 흐름이 보이지 않으면 4실 공사 대신 D안으로 연다(13절).
 5. **만드는 손을 늘린다.** 개원 뒤 몽골어 게시는 울란바토르 제작팀과 운영 담당이 나눠 맡는다.
 
 **BM에 넣은 방법:** LAB에 오려는 사람의 {{pct(I.market.paidShare)}}는 광고로 온다고 보고 광고비 = 그 수 × 광고로 학생 1명을 데려오는 값(기본 8만₮)으로 붙였다. 나머지는 콘텐츠·소개·WORLD로 온다. 정원이 차면 광고를 쓰지 않는다.
@@ -469,9 +469,53 @@ D안은 외부 돈 없이 열 수 있지만, 시장이 있어도 SYNK반 정원�
 1. 2027-02: TOPIK 4급 온라인 반 사전 신청 10명이 모이면 연다.
 2. 2027-03~04: 77평 후보 매물 실측·가계약, 원장 채용, 몽골 법인 등록 준비(울란바토르 답사 1주).
 3. 몽골어 계정의 주별 문의 수와 「개원 알림 신청」 누적, 광고 시험의 문의 1건 값과 체험 1명 값.
-4. **2027-04 공사 계약 전 관문:** ① 4실을 열 투자·차입(기본 {{eok(FN('기본').need)}})이 확정됐는지 ② 개원 알림 신청이 목표의 80%({{I.lab.openGate.waitlist}}건, 6월 목표 {{I.lab.openGate.waitlistTarget}}건 기준)를 향해 가는지. 둘 다면 4실 공사, 돈이 안 되면 D안(SYNK반)으로 열고, 수요 증거도 없으면 C안으로 연다.
+4. **2027-04 공사 계약 전 관문:** 운영 계획(학원 80%)은 아래 「운영 계획에 맞춘 개원 전 관문」(제안)을 따른다. 시장 몫 방식으로 열 때의 옛 문턱 가운데 ②(개원 알림 신청이 6월 목표 {{I.lab.openGate.waitlistTarget}}건의 80%인 {{I.lab.openGate.waitlist}}건을 향해 가는지)는 D안(SYNK반)과 C안을 가르는 데만 쓴다. 4실을 열 돈(옛 ①, 기본 {{eok(FN('기본').need)}})의 확정 여부와 여는 실 수는 아래 관문으로 정한다.
 5. **2027-06 점검:** 지원금 선정 여부, 한국 쪽 2027 상반기 매출 1,000만원 이상, PULSE·SHIFT 2027-04~06 월평균 매출 150만원 이상. 못 채우면 한국 담당자 채용을 미루고(수요 기준으로), 대표 생활비를 150만원에 묶는다.
-6. 8월 무료 체험 참석 수와 체험 뒤 등록 약속 수.
+6. 8월 무료 체험 참석 수와 체험 뒤 등록 약속 수(운영 계획 문턱은 아래 표 2027-08 줄의 등록 약속 선).
+
+**운영 계획(학원 80%)에 맞춘 개원 전 관문 — 제안(유호님 확정 전)**
+
+운영 계획은 개원 달(2027-09)에 몽골 학원 학생 약 {{n0(OG.target)}}명을 받는다고 셌다(0-1절). 위 4번의 옛 문턱(6월 알림 {{I.lab.openGate.waitlist}}건)은 D안 SYNK반(첫 달 약 {{n0(row('기본','2027-09').lab.newStudents + I.scenarios['기본'].labPreReg)}}명)의 수요 증거로 세운 것이라 이 계획에는 맞지 않는다(같은 전환식으로 그 {{n0(row('기본','2027-09').lab.newStudents + I.scenarios['기본'].labPreReg)}}명을 거꾸로 세도 6월 약 {{n0((row('기본','2027-09').lab.newStudents + I.scenarios['기본'].labPreReg) / OG.conv * OGc('2027-06').share)}}건이다). 그래서 같은 전환 가정(문의 → 체험 {{pct(I.lab.opGate.trialRate)}} → 등록 25%, 문의 가운데 {{pct(OG.conv)}}가 등록)으로 {{n0(OG.target)}}명에서 거꾸로 셌다. 「개원 알림·상담 신청」을 문의로 세고(12-2절), 문의는 {{OG.months[0]}}부터 개원 달까지 달 계절 값({{OG.months.map((m) => `${Number(m.slice(5))}월 ${I.lab.season[Number(m.slice(5))]}`).join(' · ')}})대로 쌓인다고 봤다.
+
+여는 실 수는 그달 문의 누적이 그달 목표의 몇 %인지로 정한다. 실 하나를 더 여는 선은 실 수별 정원의 {{pct(I.lab.opGate.planFill)}}가 개원 달 목표에서 차지하는 몫이다 — {{OG.rooms.map((r) => `${r.rooms}실 ${r.classes}반 약 ${n0(r.students)}명(목표의 ${pct(r.share)})`).join(' · ')}}. 그래서 {{pct(OG.bandMin[4])}} 이상이면 4실 24반, {{pct(OG.bandMin[3])}}~{{pct(OG.bandMin[4])}}면 3실 18반, {{pct(OG.bandMin[2])}}~{{pct(OG.bandMin[3])}}면 2실 12반으로 열고, {{pct(OG.bandMin[2])}} 아래면 4실을 짓지 않는다.
+
+| 점검(그달 말) | 누적 몫 | 문의 누적 목표 | 4실 24반 | 3실 18반 | 2실 12반 | 체험 신청(누적) | 등록 약속(누적, 상한) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 2027-04(공사 계약 전) | {{pct(OGc('2027-04').share)}} | {{n0(OGc('2027-04').leads)}}건 | 문의 {{n0(OGc('2027-04').leads4)}}건 이상 | {{n0(OGc('2027-04').leads3)}}~{{n0(OGc('2027-04').leads4)}}건 | {{n0(OGc('2027-04').leads2)}}~{{n0(OGc('2027-04').leads3)}}건(그 아래는 D안) | {{n0(OGc('2027-04').trialApps)}}명 | {{n0(OGc('2027-04').promise)}}명 |
+| 2027-06 | {{pct(OGc('2027-06').share)}} | {{n0(OGc('2027-06').leads)}}건 | 문의 {{n0(OGc('2027-06').leads4)}}건 이상 | {{n0(OGc('2027-06').leads3)}}~{{n0(OGc('2027-06').leads4)}}건 | {{n0(OGc('2027-06').leads3)}}건 아래 | {{n0(OGc('2027-06').trialApps)}}명 | {{n0(OGc('2027-06').promise)}}명 |
+| 2027-08(개원 전) | {{pct(OGc('2027-08').share)}} | {{n0(OGc('2027-08').leads)}}건 | 등록 약속 {{n0(OGc('2027-08').promise4)}}명 이상 | {{n0(OGc('2027-08').promise3)}}~{{n0(OGc('2027-08').promise4)}}명 | {{n0(OGc('2027-08').promise3)}}명 아래 | {{n0(OGc('2027-08').trialApps)}}명 | {{n0(OGc('2027-08').promise)}}명 |
+| 2027-09(개원 달) | 100% | {{n0(OG.leads)}}건 | — | — | — | {{n0(OGc('2027-09').trialApps)}}명 | 등록 {{n0(OG.target)}}명 |
+
+- 체험 신청은 문의의 {{pct(I.lab.opGate.trialRate)}}다. 체험 수업은 개원 전 {{OG.trialMonths.map((m) => Number(m.slice(5))).join('·')}}월(폐쇄 시험·공개 체험)에 열고, 그 전 신청은 WORLD 무료 체험·설명회 예약으로 받는다.
+- 등록 약속 열은 그때까지 문의의 {{pct(OG.conv)}}가 모두 개원 전에 등록을 약속(선납 또는 서면)했을 때의 상한이다. 문의한 사람 가운데 개원 달에 와서야 등록하는 몫이 있어 실제 약속은 이보다 적으므로, 8월 선은 상한에 약속률 {{pct(I.lab.opGate.promiseRate)}}(가정: 8월까지 문의해 9월에 등록할 사람 가운데 개원 전에 약속하는 몫)를 곱한 예상 약속 {{n0(OGc('2027-08').promiseExp)}}명의 {{pct(OG.bandMin[4])}}·{{pct(OG.bandMin[3])}}로 잡았다. 9월에 들어오는 문의(계절 {{I.lab.season[9]}}, 전체의 {{pct(1 - OGc('2027-08').share)}})는 이 열에 없다. 계산은 {{n0(OG.target)}}명을 9월에 한 번에 세고 선납 현금도 9월에 들어온다고 봤다(선납이 먼저 들어오면 현금은 그만큼 낫다).
+
+- **문의 1건 값:** 2027-03~06 광고 시험의 문의 1건 값이 {{n0(OG.leadCostCap)}}₮(= 광고로 학생 1명 {{n0(I.lab.acquisition.cacMNT['기본'])}}₮ × 문의→등록 {{pct(OG.conv)}}) 아래여야 운영 계획의 광고비 가정이 들어맞는다. {{n0(OG.leadCostCap)}}~{{n0(OG.leadCostAlarm)}}₮이면 광고비를 그만큼 늘려 같은 구간으로 판단하고(개원 전 광고비가 는다), {{n0(OG.leadCostAlarm)}}₮(보수 가정 1명 {{n0(I.lab.acquisition.cacMNT['보수'])}}₮)을 넘으면 한 구간 낮춰(실 하나 적게, 4월에 2실 구간이면 D안) 연다. 광고 시험 예산(월 {{mnt(I.lab.other.adTest.mnt)}})으로 모이는 문의는 {{OG.adTestLeads.months}}개월에 약 {{n0(OG.adTestLeads.total)}}건(6월 목표의 {{pct(OG.adTestLeads.total / OGc('2027-06').leads)}})이라, 나머지는 콘텐츠·WORLD·설명회와 본 광고로 모은다.
+- **광고비 시기:** 운영 계획은 개원 달 등록의 절반(약 {{n0(OG.target * I.market.paidShare)}}명)을 광고로 데려오는 값 {{mnt(OG.adTotalMNT)}}을 9월에 붙였다. 문의를 3~8월에 모으면 그 가운데 약 {{mnt(OG.adBeforeOpenMNT)}}(약 {{man(OG.adBeforeKRW)}})을 개원 전에 쓴다. 3·4월에 쓰는 몫(약 {{man(OG.adTotalMNT * OGc('2027-04').share / I.fx.mntPerKrw)}}, 예비비를 더해 {{man(OG.base80.cashBeforeBuild - OG.early.cashBeforeBuild)}})만큼 공사 전(2027-04 말) 현금이 {{eok(OG.base80.cashBeforeBuild)}} → {{jo(eok(OG.early.cashBeforeBuild), '으로')}} 줄어 필요 자금이 {{eok(OG.base80.need)}} → {{jo(eok(OG.early.need), '으로')}} 늘고, 8월까지 쓰는 몫 때문에 가장 낮은 현금도 {{eok(OG.base80.minCash)}} → {{jo(eok(OG.early.minCash), '으로')}} 내려간다. 2027 영업이익이 약 {{man(OG.base80.ebitda[2027] - OG.early.ebitda[2027])}} 더 낮은 것은 9월 교실 영업이익이 커진 만큼 이익 나눔·개원 멤버 보너스(그달 영업이익의 25% 한도)가 늘기 때문이다(이 판은 위 숫자와 같은 모델에서 광고비만 앞당겨 다시 셌다).
+- **2027-04 말(공사 계약 전) 결정:** 4실을 열 돈(약 {{eok(OG.base80.need)}}, 광고비를 앞당기면 {{eok(OG.early.need)}})이 확정됐으면 문의 누적으로 실 수를 정한다 — {{n0(OGc('2027-04').leads4)}}건 이상 4실 24반, {{n0(OGc('2027-04').leads3)}}~{{n0(OGc('2027-04').leads4)}}건 3실 18반, {{n0(OGc('2027-04').leads2)}}~{{n0(OGc('2027-04').leads3)}}건 2실 12반(공사는 4실 모두 하고 차면 한 실씩 더 연다. 문의 1건 값이 {{n0(OG.leadCostAlarm)}}₮을 넘으면 한 구간 낮추고, 2실 구간이면 4실을 짓지 않고 D안으로 간다). 돈이 확정되지 않았거나 문의가 {{n0(OGc('2027-04').leads2)}}건 아래면 4실을 짓지 않고 D안(SYNK반)으로 가고, 6월 점검(옛 관문)에서 알림 {{I.lab.openGate.waitlist}}건도 못 넘으면 C안으로 연다.
+- **2027-06 말:** 같은 구간으로 강사 채용 인원을 맞춘다 — 문의 {{n0(OGc('2027-06').leads4)}}건 이상 24반, {{n0(OGc('2027-06').leads3)}}~{{n0(OGc('2027-06').leads4)}}건 18반, 그 아래 12반.
+- **2027-08 말(개원 전):** 등록 약속 수로 연다 — {{n0(OGc('2027-08').promise4)}}명 이상 4실 24반, {{n0(OGc('2027-08').promise3)}}~{{n0(OGc('2027-08').promise4)}}명 3실 18반, 그 아래 2실 12반. 9월 등록은 약속 ÷ ({{pct(OGc('2027-08').share)}} × 약속률 {{pct(I.lab.opGate.promiseRate)}})로 어림한다({{n0(OGc('2027-08').promise4)}}명이면 약 {{n0(OGc('2027-08').promise4 / (OGc('2027-08').share * I.lab.opGate.promiseRate))}}명 = 3실 정원의 {{pct(I.lab.opGate.planFill)}}). 약속률은 가정이라 첫 개원 뒤 실제 값으로 바꾼다.
+- **개원 뒤:** 학생이 한 실 적은 정원의 {{pct(I.lab.opGate.closeFill)}}(4실이면 약 {{n0(OG.rooms[2].closeBelow)}}명, 3실이면 약 {{n0(OG.rooms[1].closeBelow)}}명)에도 두 달 연속 못 미치면 반을 합쳐 실 하나를 비운다(2실 아래로는 줄이지 않는다). 여는 선({{pct(I.lab.opGate.planFill)}})과 {{Math.round((I.lab.opGate.planFill - I.lab.opGate.closeFill) * 100)}}%p 사이를 두어, 구간 아래 끝에서 연 반(4실 24반이면 반 평균 약 {{n1(OG.rooms[2].lowAvg)}}명, 3실 18반이면 약 {{n1(OG.rooms[1].lowAvg)}}명, 좌석 환산)이 곧바로 합쳐지지 않게 했다. 넓힐 때는 아래 「넓히는 규칙」을 따른다.
+- **유학(PATH) 관문:** 상담을 연 첫 석 달({{OG.pathGate.first.from}}~{{OG.pathGate.first.to}}) 계약 목표는 약 {{n0(OG.pathGate.first.contracts)}}건이다. 상담 담당 {{OG.pathGate.first.fte}}명(그중 팀장 {{OG.pathGate.first.lead}}명)을 {{OG.pathGate.first.from}}까지 뽑아 두는 것이 이 숫자의 전제다. 재원생 입학 지원을 연 첫 석 달({{OG.pathGate.second.from}}~{{OG.pathGate.second.to}})은 재원생 계약 약 {{n0(OG.pathGate.second.labContracts)}}건(전체 약 {{n0(OG.pathGate.second.contracts)}}건)이다. 각 {{pct(I.lab.opGate.pathPass)}}(약 {{n0(OG.pathGate.first.contracts * I.lab.opGate.pathPass)}}건 · 재원생 {{n0(OG.pathGate.second.labContracts * I.lab.opGate.pathPass)}}건)에 못 미치면 상담 담당은 계약만큼만 두고, 다음 해 몽골 유학 몫({{pct(I.targets.pathShare)}})과 학원에서 유학 가는 몫({{pct(I.path.labToKorea['기본'])}})을 실제 값으로 다시 센다. 개원 전에는 문의 양식에 「유학 상담 희망」을 함께 받아 유학 수요도 미리 잰다.
+
+**못 미칠 때의 길 — 몽골만(2027~2029)**
+
+| 경우 | 2027 영업이익 | 2028 | 2029 | 가장 낮은 현금(달) | 필요 자금 |
+|---|---:|---:|---:|---:|---:|
+| 운영 계획 · 24반, 학원 {{pct(I.targets.labFill)}}·유학 {{pct(I.targets.pathShare)}} | {{eok(OG.base80.ebitda[2027])}} | {{eok(OG.base80.ebitda[2028])}} | {{eok(OG.base80.ebitda[2029])}} | {{eok(OG.base80.minCash)}}({{OG.base80.minCashMonth}}) | {{eok(OG.base80.need)}} |
+| 운영 계획 · 광고비를 개원 전에 앞당김 | {{eok(OG.early.ebitda[2027])}} | {{eok(OG.early.ebitda[2028])}} | {{eok(OG.early.ebitda[2029])}} | {{eok(OG.early.minCash)}}({{OG.early.minCashMonth}}) | {{eok(OG.early.need)}} |
+| 24반 · 학원 {{pct(OG.fill[0].labFill)}}·유학 {{pct(I.targets.pathShare)}} | {{eok(OG.fill[0].ebitda[2027])}} | {{eok(OG.fill[0].ebitda[2028])}} | {{eok(OG.fill[0].ebitda[2029])}} | {{eok(OG.fill[0].minCash)}}({{OG.fill[0].minCashMonth}}) | {{eok(OG.fill[0].need)}} |
+| 24반 · 학원 {{pct(OG.fill[1].labFill)}}·유학 {{pct(I.targets.pathShare)}} | {{eok(OG.fill[1].ebitda[2027])}} | {{eok(OG.fill[1].ebitda[2028])}} | {{eok(OG.fill[1].ebitda[2029])}} | {{eok(OG.fill[1].minCash)}}({{OG.fill[1].minCashMonth}}) | {{eok(OG.fill[1].need)}} |
+| 24반 · 학원 {{pct(OG.both.labFill)}}·유학 {{pct(OG.both.pathShare)}} | {{eok(OG.both.ebitda[2027])}} | {{eok(OG.both.ebitda[2028])}} | {{eok(OG.both.ebitda[2029])}} | {{eok(OG.both.minCash)}}({{OG.both.minCashMonth}}) | {{eok(OG.both.need)}} |
+| 4실을 짓고 2실로 열어 차면 넓힘(시장 몫 방식 기본) | {{eok(DY('기본',2027).ebitda)}} | {{eok(DY('기본',2028).ebitda)}} | {{eok(DY('기본',2029).ebitda)}} | {{eok(Dm('기본').minCash)}}({{Dm('기본').minCashMonth}}) | {{eok(FN('기본').need)}} |
+| D안 · 첫해 기존 기관 안 SYNK반 | {{eok(sens('D안 · 첫해').ebitda2027)}} | {{eok(sens('D안 · 첫해').ebitda2028)}} | {{eok(sens('D안 · 첫해').ebitda2029)}} | {{eok(sens('D안 · 첫해').minCash)}}({{sens('D안 · 첫해').minCashMonth}}) | {{eok(sens('D안 · 첫해').need)}} |
+| C안 · 현지 파트너 운영 + 사용료 10% | {{eok(sens('C안').ebitda2027)}} | {{eok(sens('C안').ebitda2028)}} | {{eok(sens('C안').ebitda2029)}} | {{eok(sens('C안').minCash)}}({{sens('C안').minCashMonth}}) | {{eok(sens('C안').need)}} |
+
+- **필요 자금은 공사 결정에서 정해진다.** 4실을 지으면 학원이 얼마나 차든 약 {{eok(OG.base80.need)}}(광고비를 앞당기면 {{eok(OG.early.need)}})이 든다(2027-05 공사·보증금). 그래서 4월 관문이 돈을 쓰기 전 마지막 판단이다.
+- **학원 절반은 2028년부터, 유학 절반은 2029년부터 비슷한 크기로 이익을 깎는다.** 2028년은 학원 {{pct(I.targets.labFill)}}→{{pct(OG.both.labFill)}}가 {{eok(OG.fill.find((f) => f.labFill === OG.both.labFill).ebitda[2028] - OG.base80.ebitda[2028])}}, 그 위에 유학 {{pct(I.targets.pathShare)}}→{{pct(OG.both.pathShare)}}가 {{eok(OG.both.ebitda[2028] - OG.fill.find((f) => f.labFill === OG.both.labFill).ebitda[2028])}}이고, 2029년은 {{eok(OG.fill.find((f) => f.labFill === OG.both.labFill).ebitda[2029] - OG.base80.ebitda[2029])}} · {{eok(OG.both.ebitda[2029] - OG.fill.find((f) => f.labFill === OG.both.labFill).ebitda[2029])}}이다. 첫 석 달 유학 계약 수가 학원 등록 수만큼 중요하다.
+- **유학 몫이 크면 개원 첫해(2027-09~2028-08) 현금이 더 낮다.** 상담 담당 급여는 상담을 연 달부터 나가고 입학 지원 값은 계약 {{pct(I.path.milestones[0].share)}}·합격 {{pct(I.path.milestones[1].share)}}({{I.path.milestones[1].lag}}개월 뒤)·비자 {{pct(I.path.milestones[2].share)}}({{I.path.milestones[2].lag}}개월 뒤)로 나눠 들어와서, 학원 {{pct(OG.both.labFill)}}에서 유학 {{pct(I.targets.pathShare)}} 판의 현금 바닥({{eok(OG.fill.find((f) => f.labFill === OG.both.labFill).minCash)}}, {{OG.fill.find((f) => f.labFill === OG.both.labFill).minCashMonth}})이 {{pct(OG.both.pathShare)}} 판({{eok(OG.both.minCash)}}, {{OG.both.minCashMonth}})보다 낮다.
+- 24반 줄들은 반을 24개 그대로 두고 강사비도 그대로 낸 값이라 「반을 줄이지 않았을 때의 아래쪽」이다(학원 {{pct(OG.both.labFill)}}면 반 평균 약 {{n0(OG.both.labFill * CF('mn').cap4 * CF('mn').seatEq / 24)}}명). 위 구간 규칙대로 반을 줄이면 이보다 낫다.
+- **수요가 시장 몫 방식 수준이면** 4실을 지어도 2028년 {{eok(DY('기본',2028).ebitda)}}에 가장 낮은 현금이 {{eok(Dm('기본').minCash)}}이라 같은 {{eok(FN('기본').need)}}이 필요하다. D안은 외부 돈 없이 2028년 {{eok(sens('D안 · 첫해').ebitda2028)}} · 2029년 {{eok(sens('D안 · 첫해').ebitda2029)}}이다.
+- 시장 몫 방식·D안·C안 줄은 학원·유학 수요를 시장 몫(울란바토르 준비 인원의 몇 %)으로 세고 WORLD도 옛 곡선으로 센 값이다(0-5절과 같은 주의). 운영 계획 줄과 견줄 때는 영업이익 전체가 아니라 학원·유학 이익의 차이만 본다(WORLD·PULSE·SHIFT는 세는 법이 다르다).
 
 **첫 측정(2027-09 ~ 2027-12) — 이 넷이 BM 전체를 가른다**
 1. 첫 석 달 등록 수 ÷ 울란바토르 준비 인원 = 실제로 잡은 몫(기본 가정 {{pct1(I.market.labCapture['기본'][0].v)}})
@@ -493,7 +537,7 @@ D안은 외부 돈 없이 열 수 있지만, 시장이 있어도 SYNK반 정원�
 ## 14. 유호님이 정할 것(급한 순서)
 
 1. **LAB이 잡는 몫** — 기본 {{I.market.labCapture['기본'].map((x) => pct1(x.v)).join(' → ')}}, 보수 {{I.market.labCapture['보수'].map((x) => pct1(x.v)).join(' → ')}}, 상방 {{I.market.labCapture['상방'].map((x) => pct1(x.v)).join(' → ')}}. 울란바토르 비중 {{pct(I.market.mongolia.ubShare)}}와 성장 {{pct(I.market.growth)}}도 함께.
-2. **4실을 열 돈과 그 관문** — 2027-04 공사 계약 전까지 투자·차입 약 {{eok(FN('기본').need)}}을 마련할지, 못 하면 D안으로 열지(13절 4).
+2. **4실을 열 돈과 그 관문** — 2027-04 공사 계약 전까지 투자·차입 약 {{eok(FN('기본').need)}}을 마련할지, 못 하면 D안으로 열지(13절 4). 운영 계획용 문턱(13절 제안: 4월 말 문의 {{n0(OGc('2027-04').leads4)}}건이면 4실 24반 · {{n0(OGc('2027-04').leads2)}}건 아래면 D안, 문의 1건 값 {{n0(OG.leadCostCap)}}₮, 8월 말 등록 약속 {{n0(OGc('2027-08').promise4)}}명, 유학 첫 석 달 {{n0(OG.pathGate.first.contracts * I.lab.opGate.pathPass)}}건 · 재원생 첫 석 달 {{n0(OG.pathGate.second.labContracts * I.lab.opGate.pathPass)}}건)도 함께 정한다.
 3. **PATH 가정** — 한국 가는 몫 {{pct(I.path.labToKorea['기본'])}}, LAB 밖 몫 {{I.path.extShare['기본'].map((x) => pct1(x.v)).join(' → ')}}, 협약 대학 비중 {{pct(I.scenarios['기본'].partnerUnivShare)}}, 재원생 입학 지원 {{mnt(I.path.prices.admissionLab)}}, 외부 {{mnt(I.path.prices.admissionExternal)}}, 진학 지원 {{man(I.path.transfer.priceKRW)}}, 상담 담당 늘리는 방식.
 4. **4실 편제** — 원장 코어 반 0, 위성 강사 셋(뷰티·보컬 포함), 운영 2명, 토요일 반 강사비(반당 31.5만₮). 영어(재헌이형)를 넣을지.
 5. **한국 담당자와 유호님 회화 수업(한 결정)** — 회화 위성 세 묶음(월 65시간)을 맡으면 담당자를 2027-07에 두 조건으로 뽑고, 맡지 않으면 수요를 보고 뽑는다.
@@ -529,6 +573,7 @@ D안은 외부 돈 없이 열 수 있지만, 시장이 있어도 SYNK반 정원�
 
 ## 17. 검수 기록
 
+- **운영 계획용 개원 전 관문(제안) · 페이블 8차(Claude · Claude Fable 5.1, 2026-10-19 오후):** 운영 계획(학원 80%를 개원 달부터, 몽골 첫 달 약 {{n0(OG.target)}}명)에 맞춘 문의 → 체험 → 등록 깔때기, 4·6·8월 문턱, 문의 1건 값, 유학 관문, 못 미칠 때의 길을 13절에 제안으로 넣었다(유호님 확정 전). [페이블 8차 검수](검수/페이블_검수_20261019_8차_관문.md): P1 1건(광고비를 개원 전에 앞당기면 필요 자금도 {{eok(OG.base80.need)}} → {{jo(eok(OG.early.need), '으로')}} 는다 — 앞당긴 판을 다시 셌다), P2 7건(실 수 구간을 실 정원 × {{pct(I.lab.opGate.planFill)}} 기준으로, 8월은 등록 약속 구간, 유학 2차 관문은 재원생 계약으로 등), P3 8건을 고쳤다. 처리 내역은 [반영표](검수/페이블_검수_20261019_8차_반영.md). [페이블 9차 확인](검수/페이블_검수_20261019_9차_관문확인.md): 8차 16건 가운데 15건 반영(P2-1은 일부), 숫자 오류 없음. 새 지적 P2 1건·P3 6건을 고쳤다(옛 문턱 ①의 쓰임, 8월 선에 약속률 {{pct(I.lab.opGate.promiseRate)}} 가정, 개원 뒤 줄이는 선을 한 실 적은 정원의 {{pct(I.lab.opGate.closeFill)}}로, 문의가 쌓이는 달을 개원 달 기준으로 등). 약속률은 처음 60%로 넣었다가 유호님 「60%까지는 안 나올 것 같고 30%로」에 따라 {{pct(I.lab.opGate.promiseRate)}}로 낮췄다(8월 4실 선 약속 {{n0(OGc('2027-08').promise4)}}명).
 - **새 나라 학원 편제 확정(2026-10-19 오후):** 유호님 「새 나라 학원도 몽골 4실 편제 그대로 두자」(결정 표에 기록). 계산은 이미 이 편제라 숫자는 그대로이고, 08 문서 5절의 「다시 짤 것」을 확정에 맞게 고쳤다.
 - **몽골 운영 계획 확정(2026-10-19 오후):** 유호님 「몽골 운영 계획도 학원 80%·유학 10% 그대로 두자」(결정 표에 기록)로 미정 표시를 확정으로 바꿨다. 숫자는 그대로다(운영 계획의 몽골 줄은 이미 이 값이었다).
 - **유학 몫 두 판 · 새 눈 검수 7차(Claude, 2026-10-19 오후):** 유호님 「10%는 투자 자료의 성공 시나리오로만 두고, 운영 계획은 새 나라 1.5%부터 시작하는 걸로 하자」(결정 표에 기록)에 맞춰 운영 계획 판(새 나라 유학 1.5%)을 따로 세고, 세 지표(유학 10%)는 투자 자료의 성공 시나리오로 이름 붙였다. 페이블 7차는 사용 한도로 멈춰 [새 눈 검수 7차](검수/검수_새눈_20261019_7차.md)로 대신했다: 숫자·계산 문제 없음, 정하지 않은 몽골 값을 「확정」과 나눠 쓰기 등 글을 고쳤다.

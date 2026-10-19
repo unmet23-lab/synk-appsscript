@@ -73,6 +73,8 @@ const HY = (R.planHorizon && R.planHorizon.years) || [2027, 2028, 2029]; const L
 // 유학 몫 견주기: PC('운영 계획에서 새 나라 몫을 3%', '평균적').ebitda[2030] · PC('모든 나라', '성공적').contracts[2030]
 const PC = (prefix, p) => { const c = (R.planChecks || []).find((x) => x.label.startsWith(prefix)); if (!c) throw new Error(`no planCheck ${prefix}`); return c.byPlan[p]; };
 const PCL = (prefix) => { const c = (R.planChecks || []).find((x) => x.label.startsWith(prefix)); if (!c) throw new Error(`no planCheck ${prefix}`); return c.label; };
+// 운영 계획용 개원 전 관문 [제안 · 10-19]: OG = R.opGate, OGc('2027-04') = 그달 점검 줄
+const OG = R.opGate; const OGc = (m) => { const c = (R.opGate && R.opGate.checks || []).find((x) => x.month === m); if (!c) throw new Error(`no opGate check ${m}`); return c; };
 // 조사 붙이기: jo('베트남', '은', '는') → 베트남은 · jo('52만원', '을', '를') → 52만원을 · jo('몽골', '으로') → 몽골로
 const jo = (w, a, b) => {
   const str = String(w); const t = str.replace(/[^가-힣0-9a-zA-Z]+$/, ''); const ch = t[t.length - 1] || '';
@@ -92,7 +94,7 @@ const pay = (s, m) => {
 const ysum = (s, y, f) => R.scenarios[s].rows.filter((r) => r.m.startsWith(String(y))).reduce((a, r) => a + (f(r) || 0), 0);
 const toKRW = (mntv) => mntv / I.fx.mntPerKrw;
 const hrs = (s, m) => Math.round(row(s, m).hours.total); // 그달 대표 시간
-const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON };
+const names = { R, I, man, eok, mnt, n0, n1, pct, pct1, DY, AY, core, Dm, Am, SC, row, sens, ad, deal, dl, gate, hit, move, B, CAP, LTV, SUB, pay, ysum, toKRW, hrs, PY, Pm, DP, FN, rooms, U, MK, PT, prow, pysum, pcore, PL, PN, CF, PU, cname, PLANS, jo, PC, PCL, pct2, HY, LY, OP, ON, OG, OGc };
 const keys = Object.keys(names); const vals = Object.values(names);
 
 const tplRoot = path.join(here, '틀');

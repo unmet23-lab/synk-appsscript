@@ -24,6 +24,12 @@ function monthList(start, end) {
 }
 const moy = (label) => Number(label.slice(5));
 const yearOf = (label) => Number(label.slice(0, 4));
+// [10-19 관문] 개원 전 문의가 쌓이는 달(개원 달 lab.opGate.leadMonthsBefore달 전 ~ 개원 달)과 그 계절 가중치 — 나라마다 그 나라 개원 달 기준 [페이블 9차 P3-5]
+function leadWeights(L) {
+  const months = []; for (let mm = addMonths(L.openMonth, -L.opGate.leadMonthsBefore); mm <= L.openMonth; mm = addMonths(mm, 1)) months.push(mm);
+  const w = months.map((mm) => L.season[Number(mm.slice(5))]);
+  return { months, w, sum: w.reduce((a, x) => a + x, 0) };
+}
 function addMonths(label, n) {
   let [y, m] = label.split('-').map(Number);
   m += n;
@@ -371,6 +377,10 @@ function run(inp, scName, opts = {}) {
     lab.materials = isOpen ? o.materialsSW[stageKey] : 0;
     lab.marketing = isOpen ? o.marketing[stageKey] + adBudget : (isPreOpen ? o.preOpenMarketing : 0);
     if (o.adTest && m >= o.adTest.from && m <= o.adTest.to) lab.marketing += o.adTest.mnt; // 개원 전 광고 시험
+    if (opts.adShift && L.opGate && m >= addMonths(L.openMonth, -L.opGate.leadMonthsBefore) && m <= L.openMonth) { // [10-19 관문 · 페이블 8차] 개원 달 광고비를 문의가 쌓이는 달(계절 몫)대로 앞당겨 쓴다
+      const lw = leadWeights(L); const k = lw.months.indexOf(m);
+      if (m < L.openMonth) lab.marketing += opts.adShift * lw.w[k] / lw.sum; else lab.marketing -= opts.adShift * (1 - lw.w[k] / lw.sum);
+    }
     lab.cu = isOpen ? o.cuPerClass * lab.classes + o.cuBase : 0;
     lab.benefits = isOpen ? students * (o.topikFeeSupport / 12 + o.jacket / 24) : 0;
     lab.appAI = isOpen ? students * o.appAIperStudentKRW * fx.mntPerKrw : 0;
@@ -1083,6 +1093,57 @@ const plans = Object.fromEntries(planNames.map((p) => [p, runPlan(p)]));
 const opPlans = base.opPlan ? Object.fromEntries(planNames.map((p) => [p, runPlan(p, { newOnly: base.opPlan.newPathShare })])) : null;
 // 유학 몫 견주기(inputs.pathShareChecks): 세 지표마다 해마다(2027~2030) 영업이익과 유학 계약
 const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, byPlan: Object.fromEntries(planNames.map((p) => { const r = runPlan(p, { newOnly: ck.newOnly, all: ck.all }); return [p, { ebitda: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].ebitda])), contracts: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].path.contracts])), revenue2029: r.years[2029].revenue, contracts2029: r.years[2029].path.contracts, pathProfit2029: r.years[2029].path.profit, byC2029: Object.fromEntries(Object.entries(r.years[2029].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit }])), byCLast: Object.fromEntries(Object.entries(r.years[lastY].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit, ebitda: v.ebitda }])), need: r.need }]; })) }));
+// 운영 계획용 개원 전 관문 [제안 · 10-19, inputs.lab.opGate]: 몽골(보수적 지표) 운영 계획의 개원 달 등록에서 거꾸로 센 문의·체험·사전 등록 문턱과,
+// 못 미칠 때 몽골만 다시 센 값(24반을 다 열었는데 학원만 덜 참 · 학원과 유학이 함께 반쯤), 유학 첫 석 달 계약 문턱
+const opGate = base.lab.opGate && opPlans ? (() => {
+  const OG = base.lab.opGate; const L = base.lab; const A = L.acquisition; const P = base.path;
+  const conv = A.leadToStudent['기본'];
+  const op80 = opPlans['보수적']; const mnRows = op80.rows;
+  const rowAt = (m) => { const r = mnRows.find((x) => x.m === m); if (!r) throw new Error(`opGate: ${m} 줄 없음`); return r.parts[0].r; };
+  const target = rowAt(L.openMonth).lab.newStudents; // 개원 달 새 등록(4실 정원 × labFill)
+  const leads = target / conv;
+  const lw = leadWeights(L);
+  const shareTo = (m) => lw.months.reduce((a, mm, i) => a + (mm <= m ? lw.w[i] : 0), 0) / lw.sum;
+  // 실 수별 정원(설계 16석)과 그 planFill이 개원 달 목표에서 차지하는 몫(2실 50% · 3실 75% · 4실 100%) [페이블 8차 P2-2]
+  const S4 = L.stages.v23; const capR = (r) => labCapacityV23(base, r * S4.weekdaySlotsPerRoom, r * S4.satSlotsPerRoom, S4.seatsPerClass);
+  const seatEq = (1 - L.lightShare) + 0.5 * L.lightShare; // 반 평균은 좌석 환산(라이트 과정은 격일이라 0.5석)
+  const rooms = [2, 3, 4].map((r) => {
+    const classes = r * S4.slotsPerRoom; const low = r === 2 ? target * OG.dCut : capR(r - 1) * OG.planFill; // 그 실 수로 여는 구간의 아래 끝
+    const x = { rooms: r, classes, cap: capR(r), students: capR(r) * OG.planFill, share: capR(r) * OG.planFill / target, lowAvg: low * seatEq / classes };
+    if (r > 2) { x.closeBelow = capR(r - 1) * OG.closeFill; x.closeAvg = x.closeBelow * seatEq / classes; } // 개원 뒤 줄이는 선: 한 실 적은 정원 × closeFill [페이블 9차 P3-2]
+    return x;
+  });
+  const bandMin = { 4: rooms[1].share, 3: rooms[0].share, 2: OG.dCut }; // 그 몫 이상이면 그 실 수로 연다. dCut 아래는 4실을 짓지 않고 D안
+  const checks = [...OG.checks, L.openMonth].map((m) => {
+    const share = shareTo(m); const ld = leads * share; const open = m === L.openMonth;
+    const promise = open ? target : ld * conv; // 등록 약속 상한: 그때까지 문의 × 문의→등록(모두 개원 전에 약속할 때)
+    const promiseExp = open ? target : promise * OG.promiseRate; // 약속률을 곱한 예상 약속 — 8월 선은 이 값의 몫으로 잡는다 [페이블 9차 P3-3]
+    return { month: m, share, leads: ld, leads4: ld * bandMin[4], leads3: ld * bandMin[3], leads2: ld * bandMin[2], trialApps: ld * OG.trialRate,
+      promise, promiseExp, promise4: promiseExp * bandMin[4], promise3: promiseExp * bandMin[3], promise2: promiseExp * bandMin[2] };
+  });
+  // 체험 수업을 여는 달: 개원 전 preOpenMonths달(폐쇄 시험·공개 체험) [페이블 9차 P3-5]
+  const trialMonths = []; for (let m = addMonths(L.openMonth, -L.preOpenMonths); m < L.openMonth; m = addMonths(m, 1)) trialMonths.push(m);
+  const leadCostCap = A.cacMNT['기본'] * conv; const leadCostAlarm = A.cacMNT['보수'] * conv;
+  const adTotalMNT = rowAt(L.openMonth).lab.adBudget; // 운영 계획이 개원 달에 붙인 광고비(광고로 오는 등록 × CAC)
+  const adBeforeOpenMNT = adTotalMNT * shareTo(addMonths(L.openMonth, -1)); // 문의를 개원 전에 모으면 그만큼 앞당겨 쓴다(크기는 같음)
+  const t = L.other.adTest; let testMonths = 0; for (let m = t.from; m <= t.to; m = addMonths(m, 1)) testMonths += 1;
+  const adTestLeads = { months: testMonths, perMonth: t.mnt / leadCostCap, total: testMonths * t.mnt / leadCostCap };
+  // 광고비를 실제로 앞당겨 다시 센 판: 2027-04 말 현금이 줄어 공사 때 모자라는 돈과 현금 바닥이 함께 바뀐다 [페이블 8차 P1]
+  const early = runPlan('보수적', { newOnly: base.opPlan.newPathShare, adShift: adTotalMNT });
+  const fdiOf = (r) => r.runs[0].res.fdi || {};
+  const pick = (r) => ({ ebitda: Object.fromEntries([2027, 2028, 2029].map((y) => [y, r.years[y].ebitda])), need: r.need, minCash: r.minCash, minCashMonth: r.minCashMonth, contracts2028: r.years[2028].path.contracts, labProfit2028: r.years[2028].lab.profit, cashBeforeBuild: fdiOf(r).cashBefore });
+  const fill = OG.fillChecks.map((x) => ({ labFill: x, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: x })) }));
+  const both = { ...OG.bothHalf, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: OG.bothHalf.labFill, all: OG.bothHalf.pathShare })) };
+  // 유학 관문: 상담을 연 첫 석 달(전체 계약) · 재원생 입학 지원을 연 첫 석 달(재원생 계약) [페이블 8차 P2-7 · P3-7]
+  const pathSum = (from, f) => { let s = 0; let m = from; for (let i = 0; i < OG.pathFirstMonths; i++) { s += f(rowAt(m).path); m = addMonths(m, 1); } return s; };
+  const endOf = (from) => addMonths(from, OG.pathFirstMonths - 1);
+  const pathGate = {
+    first: { from: P.startUB, to: endOf(P.startUB), contracts: pathSum(P.startUB, (p) => p.admissions), fte: rowAt(P.startUB).path.fte, lead: rowAt(P.startUB).path.lead },
+    second: { from: P.labConvFrom, to: endOf(P.labConvFrom), contracts: pathSum(P.labConvFrom, (p) => p.admissions), labContracts: pathSum(P.labConvFrom, (p) => p.admLab || 0) },
+  };
+  return { target, conv, leads, months: lw.months, wSum: lw.sum, seatEq, rooms, bandMin, checks, trialMonths, leadCostCap, leadCostAlarm, adTotalMNT, adBeforeOpenMNT, adBeforeKRW: adBeforeOpenMNT / base.fx.mntPerKrw, adTestLeads,
+    early: pick(early), base80: pick(op80), fill, both, pathGate };
+})() : null;
 // 나라별 학생 1명당 경제와 나라 사실(성공적 지표의 나라 판에서)
 const widest = planNames.reduce((a, p) => (base.plans[p].countries.length > base.plans[a].countries.length ? p : a), planNames[0]);
 const planUnits = Object.fromEntries(base.plans[widest].countries.map((c, k) => [c, unitEconomics(k === 0 ? base : countryInp(c), '기본', plans[widest].runs[k].res, lastY)])); // [10-19] 세 나라 모두 한 해를 다 도는 2030
@@ -1152,6 +1213,15 @@ if (opPlans) {
   md += `### ${base.opPlan.label} — 새 나라 유학 몫 ${(base.opPlan.newPathShare * 100).toFixed(1)}%부터\n\n10-19 유호님 확정: 위 세 지표(유학 ${pct(base.targets.pathShare)})는 투자 자료의 성공 시나리오로만 쓰고, 운영 계획은 새 나라(둘째 나라부터)의 유학 몫을 ${(base.opPlan.newPathShare * 100).toFixed(1)}%로 둔다(2030년까지 그대로). 몽골은 운영 계획도 세 지표와 같은 학원 ${pct(base.targets.labFill)}·유학 ${pct(base.targets.pathShare)}이고(10-19 유호님 확정), 학원·WORLD는 두 판이 같다.\n\n| 지표 | 연도 | 매출 | 영업이익 | LAB 이익 | PATH 이익 | 유학 계약 | 나라별 유학 계약 | 연말 현금 |\n|---|---|---:|---:|---:|---:|---:|---|---:|\n`;
   for (const p of planNames) for (const y of planHz.years) { const v = opPlans[p].years[y]; md += `| ${p} | ${y} | ${won(v.revenue)} | ${won(v.ebitda)} | ${won(v.lab.profit)} | ${won(v.path.profit)} | ${fmt(v.path.contracts)} | ${base.plans[p].countries.map((c) => `${cname(c)} ${fmt(v.byC[c].contracts)}`).join(' · ')} | ${won(v.endCash)} |\n`; }
   md += `\n필요 자금: ${planNames.map((p) => `${p} ${won(opPlans[p].need)}(${opPlans[p].needMonth || '—'} 전)`).join(' · ')}\n\n`;
+}
+if (opGate) {
+  const og = opGate; const og4 = (v) => Math.round(v).toLocaleString('ko-KR'); const OGi = base.lab.opGate; const openM = base.lab.openMonth;
+  md += `\n### 운영 계획용 개원 전 관문(제안, 몽골)\n\n개원 달 등록 ${n1(og.target)}명 ÷ 문의→등록 ${pct(og.conv)} = 문의 ${og4(og.leads)}건(${og.months[0]}~${og.months[og.months.length - 1]}, 계절 가중 합 ${n1(og.wSum)}). 실 수별 정원 × ${pct(OGi.planFill)}: ${og.rooms.map((r) => `${r.rooms}실 ${r.classes}반 ${og4(r.students)}명(목표의 ${pct(r.share)})`).join(' · ')}. 구간 아래 끝에서 열 때 반 평균(좌석 환산): ${og.rooms.map((r) => `${r.rooms}실 ${n1(r.lowAvg)}명`).join(' · ')}. 개원 뒤 줄이는 선(한 실 적은 정원 × ${pct(OGi.closeFill)}): ${og.rooms.filter((r) => r.closeBelow).map((r) => `${r.rooms}실 ${og4(r.closeBelow)}명 아래(반 평균 ${n1(r.closeAvg)}명)`).join(' · ')}. 체험 수업 ${og.trialMonths.join('·')}. 문의 1건 값 문턱 ${og4(og.leadCostCap)}₮(경보 ${og4(og.leadCostAlarm)}₮), 광고 시험으로 모이는 문의 ${og4(og.adTestLeads.total)}건(${og.adTestLeads.months}달). 광고비를 개원 전에 앞당겨 쓰면(${mnt(og.adBeforeOpenMNT)}) 공사 전 현금 ${won(og.base80.cashBeforeBuild)} → ${won(og.early.cashBeforeBuild)}, 필요 자금 ${won(og.base80.need)} → ${won(og.early.need)}, 가장 낮은 현금 ${won(og.base80.minCash)} → ${won(og.early.minCash)}.\n\n| 점검 | 누적 몫 | 문의 목표 | 4실(${pct(og.bandMin[4])} 이상) | 3실(${pct(og.bandMin[3])} 이상) | 2실(${pct(og.bandMin[2])} 이상) | 체험 신청 | 등록 약속 상한 | 예상 약속(약속률 ${pct(OGi.promiseRate)}) | 4실 · 3실 · 2실 약속 선 |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---|\n`;
+  for (const c of og.checks) { const o = c.month === openM; md += `| ${c.month} | ${pct(c.share)} | ${og4(c.leads)} | ${o ? '—' : og4(c.leads4)} | ${o ? '—' : og4(c.leads3)} | ${o ? '—' : og4(c.leads2)} | ${og4(c.trialApps)} | ${og4(c.promise)} | ${og4(c.promiseExp)} | ${o ? '—' : `${og4(c.promise4)} · ${og4(c.promise3)} · ${og4(c.promise2)}`} |\n`; }
+  md += `\n| 경우(몽골만) | 2027 | 2028 | 2029 | 가장 낮은 현금(달) | 필요 자금 |\n|---|---:|---:|---:|---:|---:|\n`;
+  for (const [lb, v] of [['운영 계획 · 학원 80%·유학 10%', og.base80], ['운영 계획 · 광고비를 개원 전에 앞당김', og.early], ...og.fill.map((f) => [`24반 · 학원 ${pct(f.labFill)}·유학 10%`, f]), [`24반 · 학원 ${pct(og.both.labFill)}·유학 ${pct(og.both.pathShare)}`, og.both]]) md += `| ${lb} | ${won(v.ebitda[2027])} | ${won(v.ebitda[2028])} | ${won(v.ebitda[2029])} | ${won(v.minCash)} (${v.minCashMonth}) | ${won(v.need)} |\n`;
+  const g = og.pathGate;
+  md += `\n유학 관문: ${g.first.from}~${g.first.to} 계약 ${n1(g.first.contracts)}건(상담 ${g.first.fte}명, 그중 팀장 ${g.first.lead}명) · ${g.second.from}~${g.second.to} 재원생 계약 ${n1(g.second.labContracts)}건(전체 ${n1(g.second.contracts)}건)\n\n`;
 }
 md += `### 나라 가정\n\n| 나라 | 개원 | 학원 학생(4실 정원의 ${pct(base.targets.labFill)}) | 한 해 새 한국 유학생(2025) · 성장 | 유학 계약(한 해, 10%) | 물가 배수(값 · 임금 · 임대 · 공사) | 메모 |\n|---|---|---:|---:|---:|---|---|\n`;
 for (const c of Object.keys(base.countries)) { const C0 = base.countries[c]; const inpC = c === 'mn' ? base : countryInp(c); const mn0 = inpC.market.mongolia; const capC = labCapacityV23(inpC, inpC.lab.stages.v23.rooms * inpC.lab.stages.v23.weekdaySlotsPerRoom, inpC.lab.stages.v23.rooms * inpC.lab.stages.v23.satSlotsPerRoom, inpC.lab.stages.v23.seatsPerClass); /* 세 지표와 같이 설계 좌석 기준 */ const sc0 = C0.scale || {}; md += `| ${C0.name} | ${C0.open} | ${fmt(capC * base.targets.labFill)}명 | ${fmt(mn0.newStudents)} · ${pct(inpC.market.growth)} | ${fmt(mn0.newStudents * Math.pow(1 + inpC.market.growth, lastY - inpC.market.baseYear) * base.targets.pathShare)}(${lastY}) | ${[sc0.price, sc0.wage, sc0.rent, sc0.capex].map((x) => (x ?? 1).toFixed(2)).join(' · ')} | ${C0.note || ''} |\n`; }
@@ -1269,7 +1339,7 @@ const out = { asOf: base.asOf, main: '4실 직영', checks,
   opPlans: opPlans && Object.fromEntries(planNames.map((p) => [p, { countries: base.plans[p].countries, years: opPlans[p].years, minCash: opPlans[p].minCash, minCashMonth: opPlans[p].minCashMonth, need: opPlans[p].need, needMonth: opPlans[p].needMonth }])),
   plans: Object.fromEntries(planNames.map((p) => [p, { countries: base.plans[p].countries, years: plans[p].years, minCash: plans[p].minCash, minCashMonth: plans[p].minCashMonth, need: plans[p].need, needFloor: plans[p].needFloor, needAtOpen: plans[p].needAtOpen, needMonth: plans[p].needMonth, monthly: plans[p].rows.map((r) => ({ m: r.m, revenue: r.revenue, ebitda: r.ebitda, cash: r.cash, byC: Object.fromEntries(r.parts.map((q) => [q.c, { students: q.r.lab.students, labProfit: q.r.labKRW.profit, pathProfit: q.r.pathKRW.profit, contracts: q.r.path.admissions }])) })) }])),
   dPlan: Object.fromEntries(scenarioNames.map((s) => [s, { summary: dPlan[s].sum, fdi: dPlan[s].res.fdi, s2Start: dPlan[s].res.s2Start, hostAddFrom: dPlan[s].res.hostAddFrom, hostAddMonths: dPlan[s].res.hostAddMonths, directSwitch: dPlan[s].res.directSwitch, leadFrom: dPlan[s].res.leadFrom, ...(s === '기본' ? { rows: dPlan[s].res.rows } : {}) }])),
-  funding: Object.fromEntries(scenarioNames.map((s) => [s, { need: needFor(results[s], summaries[s]), needCashFloor: needFunding(summaries[s]), needAtOpen: results[s].fdi && results[s].fdi.gap, needMonth: results[s].fdi && results[s].fdi.month, minCash: summaries[s].minCash, minCashMonth: summaries[s].minCashMonth, v23AddMonths: results[s].v23AddMonths }])), leadCheck, noStop: Object.fromEntries(scenarioNames.map((s) => [s, { minCash: noStop[s].minCash, minCashMonth: noStop[s].minCashMonth, endCash2029: noStop[s].years[2029].endCash }])), bep: bepDetail, capacity: capDetail, ltv: ltvBase, units, market: marketRows, pathYears: pathRows, subShare, summaries, sensitivity: sensRows, adLever: adRows, dealCompare, gateCheck, hostIncomeTable, juneCheck,
+  funding: Object.fromEntries(scenarioNames.map((s) => [s, { need: needFor(results[s], summaries[s]), needCashFloor: needFunding(summaries[s]), needAtOpen: results[s].fdi && results[s].fdi.gap, needMonth: results[s].fdi && results[s].fdi.month, minCash: summaries[s].minCash, minCashMonth: summaries[s].minCashMonth, v23AddMonths: results[s].v23AddMonths }])), leadCheck, noStop: Object.fromEntries(scenarioNames.map((s) => [s, { minCash: noStop[s].minCash, minCashMonth: noStop[s].minCashMonth, endCash2029: noStop[s].years[2029].endCash }])), bep: bepDetail, capacity: capDetail, ltv: ltvBase, units, market: marketRows, pathYears: pathRows, subShare, summaries, sensitivity: sensRows, adLever: adRows, dealCompare, gateCheck, hostIncomeTable, juneCheck, opGate,
   aPlan: Object.fromEntries(scenarioNames.map((s) => [s, { summary: aPlan[s].sum, fdi: aPlan[s].res.fdi, s2Start: aPlan[s].res.s2Start }])),
   scenarios: Object.fromEntries(scenarioNames.map((s) => [s, { s2Start: results[s].s2Start, leadFrom: results[s].leadFrom, fdi: results[s].fdi, hostAddFrom: results[s].hostAddFrom, directSwitch: results[s].directSwitch, rows: results[s].rows }])) };
 writeFileSync(path.join(here, 'results.json'), JSON.stringify(out, null, 1));
