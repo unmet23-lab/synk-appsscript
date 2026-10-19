@@ -5,8 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
-const { inspectRepository, remoteIdentity, codeContentReason, acquireLock, requestArchiveTransfer, onlyArchiveTransferPending, deferNewSinceApply,
-  scanAndArchive, bundleRefMoved, PREFIX } = require('../tools/GitHub백업.cjs');
+const { inspectRepository, remoteIdentity, codeContentReason, acquireLock, requestArchiveTransfer, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'github-backup-test-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -140,27 +139,4 @@ test('only a confirmed active transfer turns pure verification waiting into pend
   assert.equal(onlyArchiveTransferPending({ ...report, issues: [] }), false);
   assert.equal(onlyArchiveTransferPending({ ...report, repositories: [] }), false);
   assert.equal(onlyArchiveTransferPending({ ...report, repositories: [{ status: 'failed' }] }), false);
-});
-test('an apply run rescans and bundles again when a branch moves between scanning and bundling, at most three times (10-19)', async () => {
-  const run = async moved => {
-    const calls = [];
-    const attempts = await scanAndArchive({ scan: () => calls.push('scan'), archive: async () => calls.push('archive'), refMoved: () => moved.shift() });
-    return { attempts, calls };
-  };
-  assert.deepEqual(await run([false]), { attempts: 1, calls: ['scan', 'archive'] });
-  assert.deepEqual(await run([true, false]), { attempts: 2, calls: ['scan', 'archive', 'scan', 'archive'] });
-  assert.equal((await run([true, true, true, true])).attempts, 3, 'a branch that keeps moving stops after three tries');
-});
-test('only this process\'s own failed bundle with a moved source ref asks for a rescan (10-19)', t => {
-  const vault = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-moved-'));
-  t.after(() => fs.rmSync(vault, { recursive: true, force: true }));
-  const write = status => fs.writeFileSync(path.join(vault, 'git-bundle-status.json'), JSON.stringify(status));
-  assert.equal(bundleRefMoved(vault), false, 'no bundle receipt');
-  write({ pid: process.pid, status: 'failed', detailCode: 'BUNDLE_SOURCE_REF_MOVED' });
-  assert.equal(bundleRefMoved(vault), true);
-  assert.equal(bundleRefMoved(vault, process.pid + 1), false, 'another process wrote the receipt');
-  write({ pid: process.pid, status: 'failed', detailCode: 'BUNDLE_ORIGIN_MISMATCH' });
-  assert.equal(bundleRefMoved(vault), false, 'other bundle failures stay failures');
-  write({ pid: process.pid, status: 'success', bundles: [] });
-  assert.equal(bundleRefMoved(vault), false);
 });

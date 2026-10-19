@@ -341,21 +341,6 @@ function deferNewSinceApply(report, lastApply) {
   }
   return deferred;
 }
-// 적용 실행이 훑은 뒤 묶기 전에 다른 세션이 브랜치를 옮기면(공용 master에는 수시로 커밋이 쌓인다) 묶음이 BUNDLE_SOURCE_REF_MOVED로
-// 멈추고, 그때 본 차단 커밋이 다음 적용 실행(2시간 뒤)까지 「묶음 없음」으로 남는다. 처음부터 다시 훑어 세 번까지 묶는다.
-// 묶음 쪽의 ref 검사(Git보관묶음.cjs)는 그대로 엄격하다(10-19).
-async function scanAndArchive({ scan, archive, refMoved, attempts = 3 }) {
-  for (let attempt = 1; ; attempt++) {
-    await scan(); await archive();
-    if (attempt >= attempts || !refMoved()) return attempt;
-  }
-}
-function bundleRefMoved(vault, pid = process.pid) {
-  try {
-    const status = JSON.parse(fs.readFileSync(path.join(vault, 'git-bundle-status.json'), 'utf8'));
-    return status.pid === pid && status.status === 'failed' && status.detailCode === 'BUNDLE_SOURCE_REF_MOVED';
-  } catch (_) { return false; }
-}
 function onlyArchiveTransferPending(report) {
   const accepted = new Set(['GIT_ARCHIVE_AWAITING_DRIVE', 'GIT_ARCHIVE_DRIVE_VERIFICATION_NOT_CURRENT']);
   return report.repositories.length > 0 && !report.repositories.some(repo => repo.status === 'failed') &&
@@ -382,19 +367,15 @@ async function main(argv = process.argv.slice(2)) {
   atomicJson(state, report);
   const repos = fs.readdirSync(parent, { withFileTypes: true }).filter(entry => entry.isDirectory() &&
     !entry.isSymbolicLink() && fs.existsSync(path.join(parent, entry.name, '.git'))).map(entry => path.join(parent, entry.name));
-  const scan = () => {
-    report.repositories = [];
-    for (const repo of repos) {
-      try { report.repositories.push(inspectRepository(repo, { apply, onProgress() {
-        report.heartbeatAt = report.checkedAt = new Date().toISOString(); atomicJson(state, report);
-      } })); }
-      catch (error) { report.repositories.push({ name: path.basename(repo), path: repo, status: 'failed', code: error.message }); }
-      report.heartbeatAt = report.checkedAt = new Date().toISOString();
-      atomicJson(state, report);
-    }
-  };
-  report.archiveAttempts = await scanAndArchive({ scan, archive: () => reconcileEncryptedArchives(report, state, apply),
-    refMoved: () => apply && bundleRefMoved(path.dirname(state)) });
+  for (const repo of repos) {
+    try { report.repositories.push(inspectRepository(repo, { apply, onProgress() {
+      report.heartbeatAt = report.checkedAt = new Date().toISOString(); atomicJson(state, report);
+    } })); }
+    catch (error) { report.repositories.push({ name: path.basename(repo), path: repo, status: 'failed', code: error.message }); }
+    report.heartbeatAt = report.checkedAt = new Date().toISOString();
+    atomicJson(state, report);
+  }
+  await reconcileEncryptedArchives(report, state, apply);
   if (apply) report.lastApply = { at: report.startedAt,
     heads: Object.fromEntries(report.repositories.map(repo => [repo.name, (repo.refs || []).map(row => row.sha)])) };
   else report.awaitingNextApply = deferNewSinceApply(report, report.lastApply);
@@ -427,7 +408,7 @@ async function main(argv = process.argv.slice(2)) {
   } finally { unlock(); }
 }
 module.exports = { inspectRepository, inspectNewObjects, remoteIdentity, parseRefs, codeContentReason, acquireLock,
-  reconcileEncryptedArchives, deferNewSinceApply, requestArchiveTransfer, onlyArchiveTransferPending, scanAndArchive, bundleRefMoved, main, PREFIX };
+  reconcileEncryptedArchives, deferNewSinceApply, requestArchiveTransfer, onlyArchiveTransferPending, main, PREFIX };
 if (require.main === module) main().then(code => { process.exitCode = code; }, () => {
   console.error('GITHUB_BACKUP_RUNNER_FAILED'); process.exitCode = 2;
 });

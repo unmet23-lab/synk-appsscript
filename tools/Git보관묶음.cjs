@@ -224,10 +224,9 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   if (info.private !== record.private) throw new Error('BUNDLE_ORIGIN_VISIBILITY_CHANGED');
   const { heads, sourceMappings, selectionHash, relative, file, manifestFile } = selection(record, vault);
   if (!heads.length) return null;
-  for (const row of heads) {
-    if (row.ref.startsWith('refs/synk-detached/')) git(['cat-file', '-e', row.sha + '^{commit}']);
-    else if (git(['rev-parse', row.ref]).toString().trim() !== row.sha) throw new Error('BUNDLE_SOURCE_REF_MOVED');
-  }
+  // 훑은 뒤 묶기 전에 다른 세션이 가지를 옮겨도(공용 master에는 1~2분마다 커밋이 쌓인다) 훑은 그 커밋을 묶는다.
+  // 커밋이 원 저장소에 있는지만 보고, 아래에서 늘 그 커밋에 고정한 임시 bare 저장소로 묶는다. 옮겨 간 새 커밋은 다음 적용 실행이 묶는다(10-19).
+  for (const row of heads) git(['cat-file', '-e', row.sha + '^{commit}']);
   const prior = await existingReceipt(record, vault);
   if (prior) { verifyPrerequisites(record, prior); return prior; }
   if (fs.existsSync(file)) throw new Error('BUNDLE_UNRECEIPTED_DESTINATION');
@@ -242,9 +241,9 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   const staging = path.join(stageDir, crypto.randomUUID() + '.enc');
   const pinned = [];
   const createdAt = new Date().toISOString();
-  const isolated = sourceMappings.length ? isolatedBundleRepository(record.path, heads, stageDir) : null;
+  const isolated = isolatedBundleRepository(record.path, heads, stageDir);
   let detail;
-  try { detail = await createBundle({ repo: isolated?.path || record.path, heads, exclusions, staging,
+  try { detail = await createBundle({ repo: isolated.path, heads, exclusions, staging,
     pubPem: fs.readFileSync(cryptoTool.PUB(), 'utf8'), encryptStream: cryptoTool.encryptStream,
     onHeader(inspector) {
       if (!info.private && inspector.prerequisites.length) throw new Error('PUBLIC_BUNDLE_MUST_BE_SELF_CONTAINED');
@@ -259,7 +258,7 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
         pinned.push({ sha, ref, verifiedAt: new Date().toISOString() });
         onProgress();
       }
-    } }); } finally { isolated?.cleanup(); }
+    } }); } finally { isolated.cleanup(); }
   const encrypted = await fileDigest(staging);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.copyFileSync(staging, file, fs.constants.COPYFILE_EXCL);

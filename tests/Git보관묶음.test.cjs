@@ -217,3 +217,30 @@ test('a new branch name on a bundled commit stays covered by the last verified b
   await reconcileEncryptedArchives(damaged, state, false);
   assert.equal(damaged.repositories[0].refs[0].status, 'public-origin-unpublished');
 });
+
+test('a branch that moves after the scan still bundles the scanned commit without touching the original refs (10-19)',
+  { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
+  const f = fixture(t), keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
+  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const remote = path.join(f.root, 'public.git');
+  f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
+  const record = { name: 'public-fixture', path: f.source, repository: 'unmet23-lab/public-fixture', private: false,
+    refs: [{ sha: f.head, status: 'public-origin-unpublished', sourceRefs: ['refs/heads/archive-source'] }] };
+  // 훑은 뒤 묶기 전에 다른 세션이 같은 가지에 커밋한 경우(10-19 18:10·18:20 적용 실행이 이 경쟁으로 묶음을 못 만들었다).
+  fs.writeFileSync(path.join(f.source, 'moved.md'), '# moved after the scan\n'); f.git(['add', 'moved.md']); f.git(['commit', '-m', 'moved']);
+  const moved = f.git(['rev-parse', 'HEAD']).toString().trim(), beforeRefs = f.git(['show-ref']).toString();
+  const dependencies = { github: { private: false, full_name: record.repository }, git(args, input) {
+    if (args[0] === 'remote' && args[1] === 'get-url') return Buffer.from('git@github.com:unmet23-lab/public-fixture.git\n');
+    return f.git(args, f.source, input);
+  } };
+  const receipt = await preserveRecord(record, f.root, { PUB: () => pub, encryptStream: crypt.encryptStream }, () => {}, dependencies);
+  assert.deepEqual(receipt.heads, [{ ref: 'refs/heads/archive-source', sha: f.head }]);
+  assert.equal(f.git(['rev-parse', 'archive-source']).toString().trim(), moved, 'the live branch keeps its newer commit');
+  assert.equal(f.git(['show-ref']).toString(), beforeRefs);
+  assert.deepEqual(fs.readdirSync(path.join(f.root, '.git-bundle-staging')), [], 'the pinned temporary repository is removed');
+  const restored = path.join(f.root, 'moved-restored.bundle'), empty = path.join(f.root, 'empty.git');
+  await crypt.decryptFile(keys.privateKey, receipt.filePath, restored);
+  f.git(['init', '--bare', empty], f.root); f.git(['bundle', 'verify', restored], empty);
+  f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/recovered'], empty);
+  assert.equal(f.git(['rev-parse', 'recovered'], empty).toString().trim(), f.head);
+});
