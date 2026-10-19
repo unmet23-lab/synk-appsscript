@@ -224,10 +224,11 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   world.updateMatrixWorld(true);
   const fixedSupports = []; for (const building of buildings) building.traverse(object => { if (object.isMesh && object.userData.townSupportSurface) fixedSupports.push(object); });
   const occlusionVolumes = (environmentArt.occlusionRoots || buildings).map(root => townOcclusionVolume(root, buildings.includes(root) || root.userData.neighbourhoodHouse === true));
-  // Comparison only (?district=<name>): one district is drawn from a baked GLB.
-  // The module is fetched only then; the approved v20 path loads nothing extra.
+  // Baked town (day-district.mjs): inside WORLD the whole merged town by default
+  // (10-19), elsewhere only with ?district=<name>. The module is fetched only
+  // then; the plain local v20 path loads nothing extra.
   let bakedDistrict = null;
-  const bakedDistrictReady = /[?&]district=/.test(location.search) ? import('./day-district.mjs').then(({ swapDistrict }) => {
+  const bakedDistrictReady = /[?&]district=/.test(location.search) || globalThis.__SYNK_WORLD_TOWN__ ? import('./day-district.mjs').then(({ swapDistrict }) => {
     bakedDistrict = swapDistrict({ THREE, world, buildings, liveGlass: m.glass, renderer, phone: canvas.clientWidth < 600, replaceVolume: root => {
       const index = occlusionVolumes.findIndex(volume => volume.root === root); if (index >= 0) occlusionVolumes[index] = townOcclusionVolume(root, true);
     } });

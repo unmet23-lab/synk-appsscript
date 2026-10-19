@@ -1,4 +1,4 @@
-// Baked district swap for side-by-side comparison (2026-10-17/18 Blender tests).
+// Baked district swap (2026-10-17/18 Blender tests; the default inside WORLD since 10-19).
 // ?district=<name> replaces only what is drawn with baked GLBs:
 //   cafe-<variant>  one district: assets/district/<name>.glb (10-17)
 //   town-<variant>  the core town: assets/district/<name>.json lists one GLB per
@@ -21,9 +21,14 @@ export const BAKED_SETS = Object.freeze({
   townwide: Object.freeze({ bounds: Object.freeze({ minX: -13.6, maxX: 13.6, minZ: -12.2, maxZ: 8.7 }), outerBounds: Object.freeze({ minX: -22.6, maxX: 22.6, minZ: -25.4, maxZ: 9.6 }), groundTop: .25, places: Object.freeze(['home', 'cafe', 'workshop', 'greenhouse']), neighbours: true }),
 });
 
-export function districtRequest(search) {
-  const name = new URLSearchParams(search).get('district');
-  if (!name || !/^[a-z0-9-]{1,40}$/.test(name)) return null;
+// Inside WORLD (window.__SYNK_WORLD_TOWN__) the whole merged town is the default
+// (10-19, Yuho: merge and publish it). ?district=v20 opens the approved v20 town;
+// a missing or broken set falls back to v20 too (swapDistrict's fail()).
+export const WORLD_DEFAULT_DISTRICT = 'townwide-merged';
+export function districtRequest(search, { world = false } = {}) {
+  const asked = new URLSearchParams(search).get('district');
+  const name = asked ?? (world ? WORLD_DEFAULT_DISTRICT : null);
+  if (!name || name === 'v20' || !/^[a-z0-9-]{1,40}$/.test(name)) return null;
   const kind = name.split('-')[0];
   if (BAKED_SETS[kind]) return { name, set: true, ...BAKED_SETS[kind], manifest: `./assets/district/${name}.json` };
   const district = BAKED_DISTRICTS[kind];
@@ -170,7 +175,7 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
 }
 
 export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume, renderer, phone = false }) {
-  const request = districtRequest(location.search);
+  const request = districtRequest(location.search, { world: !!globalThis.__SYNK_WORLD_TOWN__ });
   if (!request) return null;
   const started = performance.now(), hidden = [];
   const hideBuilding = building => building.traverse(object => { if (object.isMesh && !object.isSprite) { object.visible = false; hidden.push(object); } });
@@ -245,7 +250,8 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
     .then(async ([{ GLTFLoader }, { KTX2Loader }, { MeshoptDecoder }, manifest]) => {
       const ktx2 = new KTX2Loader().setTranscoderPath('./rendering/basis/'); if (renderer) ktx2.detectSupport(renderer);
       const loader = new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
-      const base = new URL('./assets/district/', location.href);
+      // (No leading ./: the public build's reference check reads './…' strings as files.)
+      const base = new URL('assets/district/', location.href);
       const parts = request.set ? manifest.parts.map(part => ({ ...part, url: new URL((phone && part.phone) || part.url, base).href }))
         : [{ id: request.placeId, placeId: request.placeId, url: new URL(request.url, location.href).href }];
       // A set must bring every part it hid: the shared ground and each building.

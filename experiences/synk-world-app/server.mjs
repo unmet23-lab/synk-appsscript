@@ -29,7 +29,7 @@ const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-t
 const sessions=new Map();
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage']);
-const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary'};
+const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
 function sessionCookieName(request){const tab=request.headers.get('x-synk-rehearsal-tab');return tab?`synk_world_rehearsal_${tab.toLowerCase()}`:'synk_world_rehearsal';}
 function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}
 function requestToken(request){return request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]+)$/)?.[1]||cookieToken(request);}
@@ -103,7 +103,8 @@ const server=http.createServer(async(req,res)=>{
     else if(file==='felt-coral.webp'){base=home;pathname='/assets/'+file;}
     else if(['azure-sky-v3.jpg','azure-sky-v3-mobile.jpg','terrain-normal.jpg','cliff-normal.jpg'].includes(file)){base=home;pathname='/scene-assets/graphics-v2/'+file;}
     else {res.writeHead(404).end();return;}
-   }else if(!/^\/(?:(?:day-app\.mjs|day-style\.css|day-scene\.mjs|day-character\.mjs|day-residents\.mjs|day-environment\.mjs|day-materials\.mjs|day-rendering\.mjs|walk\.mjs|walk-controls\.mjs|town-layout\.mjs)$|rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise)\.js$|assets\/)/.test(pathname)){res.writeHead(404).end();return;}
+   // day-district.mjs, its loaders and the Basis transcoder: the baked town is WORLD's default since 10-19.
+   }else if(!/^\/(?:(?:day-app\.mjs|day-style\.css|day-scene\.mjs|day-character\.mjs|day-residents\.mjs|day-environment\.mjs|day-materials\.mjs|day-rendering\.mjs|day-district\.mjs|walk\.mjs|walk-controls\.mjs|town-layout\.mjs)$|rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|KTX2Loader|WorkerPool|ColorSpaces|BufferGeometryUtils)\.js$|rendering\/(?:meshopt_decoder|ktx-parse|zstddec)\.module\.js$|rendering\/basis\/basis_transcoder\.(?:js|wasm)$|assets\/)/.test(pathname)){res.writeHead(404).end();return;}
   }
   else if(['/','/mobile.html','/desktop.html'].includes(pathname)){
    const html=renderWorldDocument(fs.readFileSync(path.join(brandOpening,'home.html'),'utf8'),publicConfig);

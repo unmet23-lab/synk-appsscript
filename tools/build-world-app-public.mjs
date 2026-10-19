@@ -19,7 +19,7 @@ fs.mkdirSync(out,{recursive:true});const payload=path.join(out,'world');fs.mkdir
 const entries=[],sourceHashes=new Map(),sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const reuse=arg('--reuse')?path.resolve(arg('--reuse')):null;if(reuse&&!path.relative(root,reuse).startsWith('.tmp'+path.sep))throw Error('Reuse must be a workspace owned .tmp payload');
 const reusedFiles=new Map(reuse?JSON.parse(fs.readFileSync(path.join(reuse,'../manifest.json'),'utf8')).files.map(file=>[file.path,file]):[]);let hardlinked=0;
-const browserExtensions=new Set(['.mjs','.js','.cjs','.html','.css','.json','.svg','.png','.webp','.jpg','.jpeg','.gif','.woff','.woff2','.ttf','.mp3','.wav','.mp4','.glb','.gltf','.bin','.txt']);
+const browserExtensions=new Set(['.mjs','.js','.cjs','.html','.css','.json','.svg','.png','.webp','.jpg','.jpeg','.gif','.woff','.woff2','.ttf','.mp3','.wav','.mp4','.glb','.gltf','.bin','.txt','.wasm']);
 const forbiddenPart=part=>part.startsWith('.')||/^(?:qa|tests?|node_modules|coverage|captures|source-before|raw|scripts|art-source|audio-source)$/i.test(part);
 const forbiddenName=name=>/^(?:server|prepare-assets|asset-sources|README|package(?:-lock)?|AGENTS|CLAUDE|config|build|verify|generate|capture)(?:[.-]|$)/i.test(name)||/\.test\./i.test(name)||/voice-check\.html$|\.candidate\.json$/i.test(name);
 function write(relative,bytes,source=null){
@@ -95,9 +95,16 @@ copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
 for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
-// assets/district holds the local baked-district comparison GLBs (?district=), never published;
-// rendering/basis is the Basis transcoder only those GLBs' KTX2 textures need.
-copyTree(path.join(town,'rendering'),'town/rendering',(_source,relative)=>!relative.startsWith('town/rendering/basis/'));copyTree(path.join(town,'assets'),'town/assets',(_source,relative)=>!relative.startsWith('town/assets/district/'));
+// assets/district holds the baked town sets. Only the whole merged town, WORLD's
+// default since 10-19 (day-district.mjs WORLD_DEFAULT_DISTRICT), is published; the
+// other sets are local comparisons. Its GLBs and list are kept out of Git (storage
+// rule): copy them from the warehouse group town-합친판3-20261019 into an export
+// before building, and the build stops if any is missing. rendering/basis is the
+// Basis transcoder their KTX2 textures need.
+const publishedDistrict=/^town\/assets\/district\/townwide-merged(?:-[a-z]+)?(?:-phone)?\.(?:glb|json)$/;
+copyTree(path.join(town,'rendering'),'town/rendering');copyTree(path.join(town,'assets'),'town/assets',(_source,relative)=>!relative.startsWith('town/assets/district/')||publishedDistrict.test(relative));
+{const manifestPath=path.join(town,'assets/district/townwide-merged.json');if(!fs.existsSync(manifestPath))throw Error('Baked town set missing: experiences/synk-town/assets/district/townwide-merged.json (copy it from the warehouse)');
+ const set=JSON.parse(fs.readFileSync(manifestPath,'utf8'));for(const part of set.parts)for(const file of [part.url,part.phone].filter(Boolean))if(!entries.some(entry=>entry.path==='town/assets/district/'+file))throw Error('Baked town set file missing from the payload: '+file);}
 const daySource=path.join(town,'day.html'),dayBytes=fs.readFileSync(daySource);sourceHashes.set(daySource,sha(dayBytes));
 write('town/day.html',Buffer.from(rewrite(dayBytes.toString('utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_TOWN__=${JSON.stringify({mode:'account',rehearsal:false,accountScoped:true,basePath:config.basePath})};</script>`).replace('<a href="./preview.html">이전 찻집 생활 시제품 열기</a>',''))),daySource);
 for(const name of ['three.module.js','three.core.js','THREE-LICENSE.txt'])copyFile(path.join(home,'scene-assets',name),'town/day-assets/'+name);
