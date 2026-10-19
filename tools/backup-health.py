@@ -129,6 +129,10 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD):
         state = 'not_ready'; codes.append('SPACE_GUARD_SCHEDULE_NOT_REGISTERED'); notes.append('예약 등록 전(확인 대기)')
     elif not task.get('enabled'):
         state = 'attention'; codes.append('SCHEDULE_MISSING_OR_DISABLED'); notes.append('예약이 꺼져 있음')
+    elif not last_run and lib.instant(task.get('nextRunAt')) and (
+            lib.instant(task.get('nextRunAt')) - now <= dt.timedelta(hours=item['maxStaleHours'])):
+        # Just registered: until the first scheduled run, the old manual receipt is not a stalled guard.
+        state = 'not_ready'; codes.append('SPACE_GUARD_FIRST_RUN_PENDING'); notes.append('첫 예약 실행 대기')
     elif receipt is None:
         state = 'unknown'; codes.append('RECEIPT_UNREADABLE')
     elif not receipt:

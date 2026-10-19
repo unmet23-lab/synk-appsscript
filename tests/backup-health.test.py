@@ -249,6 +249,14 @@ class SpaceGuardTests(unittest.TestCase):
         # Registered but disabled means nothing guards the disk.
         self.assertEqual(self.guard(enabled=False)['codes'], ['SCHEDULE_MISSING_OR_DISABLED'])
 
+    def test_just_registered_schedule_waits_for_its_first_run(self):
+        self.receipt(age=dt.timedelta(hours=30))  # the old manual check
+        first = dict(lastRunAt=None, result=267011, nextRunAt=lib.stamp(self.now + dt.timedelta(minutes=3)))
+        row = self.guard(**first)
+        self.assertEqual((row['status'], row['codes']), ('not_ready', ['SPACE_GUARD_FIRST_RUN_PENDING']))
+        # A task that never ran and has no upcoming run is a stalled guard, not a pending one.
+        self.assertEqual(self.guard(**dict(first, nextRunAt=None))['codes'], ['SPACE_GUARD_STALE'])
+
     def test_ledger_nearing_the_onedrive_limit_warns_first(self):
         self.receipt()
         with (self.root / health.SPACE_GUARD['ledger']).open('wb') as ledger: ledger.truncate(health.SPACE_LEDGER_WARN_BYTES - 1)
