@@ -72,8 +72,71 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 .ws-me-name{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);text-wrap:balance}
 .ws-me-sub{margin-top:3px;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
 .ws-me .world-notice{margin-top:20px}
-.ws-me #world-classroom-entry:empty{display:none}
+.ws-me #world-classroom-entry:empty,.ws-me #world-classroom-lessons:empty{display:none}
 .ws-me>.world-actions{margin-top:26px}
+
+/* ── 우리 반 수업(내 계정, 반 연결 카드 위): 모노 라벨 카드 → 제목·새로고침 → 실시간 한 칸(한 단계 밝은 면) → 1px 선 수업 줄 → 도움 줄.
+ *    학생 앱 「우리 반 수업 · 실시간 / 복습」과 같은 상태·문구(classroom-lessons.mjs). 흰 알약은 「실시간 수업 보기」 하나, 나머지는 선 알약·조용한 줄.
+ *    반이 없거나 불러오는 중·실패에는 제목과 그 안내만 보인다(설명·자동 확인·공유 주의는 수업이 있을 때만). ── */
+.ws-class{display:grid;gap:6px;min-width:0;margin-top:20px;padding:18px 18px 14px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:left}
+.ws-class[hidden]{display:none}
+.ws-class :is(h3,h4,h5,p){margin:0}
+.ws-class::before{content:attr(data-label);justify-self:start;margin-bottom:2px;padding-right:38px;background:linear-gradient(var(--w-line-2),var(--w-line-2)) right 55%/28px 1px no-repeat;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
+.ws-class-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.ws-class-head h3{min-width:0;font-size:var(--t-title);line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.ws-class-head .quiet-button{flex-shrink:0;margin-right:-6px}
+.ws-class-lead{font-size:var(--t-body);line-height:1.6;color:var(--w-ink-2);white-space:pre-line;text-wrap:pretty;word-break:keep-all}
+.ws-class-auto,.ws-class-note{font-size:var(--t-label);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty;word-break:keep-all}
+.ws-class-note{margin-top:10px;padding-top:12px;border-top:1px solid var(--w-line)}
+.ws-class:not([data-state=ready]) :is(.ws-class-lead,.ws-class-auto,.ws-class-note){display:none}
+.ws-class-status,.ws-class-open,.ws-class-alert>p{display:flex;align-items:center;gap:9px;font-size:var(--t-help);line-height:1.6;font-weight:var(--wt-label);color:var(--w-ink-2);text-wrap:pretty}
+.ws-class-status{min-height:44px}
+.ws-class-open,.ws-class-alert>p{align-items:baseline;color:var(--w-alert-text)}
+.ws-class-open .ws-led,.ws-class-alert>p::before{flex-shrink:0;transform:translateY(-1px)}
+.ws-class-alert>p::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+.ws-class-alert{display:grid;gap:10px;padding:4px 0 2px}
+.ws-class :is(.ws-class-status,.ws-class-alert,.ws-class-open)[hidden]{display:none}
+.ws-class-alert .plain-button{justify-self:start;min-height:48px;padding:0 20px;font-size:14px}
+.ws-class-empty{display:grid;gap:4px;padding:6px 0 4px}
+.ws-class-empty strong{font-size:var(--t-body);line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink)}
+.ws-class-empty p{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty;word-break:keep-all}
+.ws-class-body{display:grid;gap:18px;min-width:0;margin-top:8px}
+.ws-class-body:empty{display:none}
+.ws-class-room{display:grid;gap:10px;min-width:0}
+.ws-class-room+.ws-class-room{padding-top:16px;border-top:1px solid var(--w-line)}
+.ws-class-name{font-size:var(--t-title-s);line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);overflow-wrap:anywhere;word-break:keep-all}
+.ws-class-meta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.ws-class-title{font-size:16px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);overflow-wrap:anywhere;word-break:keep-all}
+.ws-class-help{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty;word-break:keep-all}
+/* 지금 수업 중: 한 단계 밝은 면 하나(카드 안 카드 대신) + 흰 알약. 점은 실제 방송일 때만 숨 쉬듯 빛난다. */
+.ws-class-live{display:grid;gap:6px;min-width:0;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
+.ws-class-live .ws-class-meta{color:var(--w-alert-text)}
+.ws-class-live .ws-class-title{font-size:var(--t-title-s)}
+.ws-class-live .felt-button{width:100%;margin-top:8px}
+.ws-class-group{display:grid;min-width:0}
+.ws-class-group h5{padding:2px 0 8px;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.ws-class-lesson{display:grid;gap:4px;min-width:0;padding:12px 0 13px;border-top:1px solid var(--w-line)}
+.ws-class-lesson .plain-button,.ws-class-tip .plain-button{justify-self:start;max-width:100%;min-height:44px;margin-top:6px;padding:0 18px;font-size:14px}
+.ws-class-group>.quiet-button{justify-self:start}
+.ws-class-tip{display:grid;gap:4px;min-width:0;padding-top:12px;border-top:1px solid var(--w-line)}
+.ws-class-tip strong{font-size:var(--t-body);line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink)}
+.ws-class-tip p{font-size:var(--t-help);line-height:1.6;color:var(--w-ink-3);text-wrap:pretty;word-break:keep-all}
+.ws-class-out{justify-self:start;margin-left:-6px}
+.ws-class a:is(.felt-button,.plain-button,.quiet-button)::after{content:'';width:14px;height:14px;flex-shrink:0;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
+.ws-class .ws-led[data-tone=idle]{background:var(--w-led-idle);box-shadow:none}
+.ws-class .ws-led[data-tone=alert],.ws-class .ws-led[data-tone=live]{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+.ws-class .ws-led[data-tone=live]{animation:ws-class-live 1.8s var(--w-ease) infinite}
+@keyframes ws-class-live{0%,100%{box-shadow:0 0 6px rgba(249,104,89,.45)}50%{box-shadow:0 0 0 4px rgba(249,104,89,.16),0 0 14px rgba(249,104,89,.8)}}
+@media(prefers-reduced-motion:reduce){.ws-class .ws-led[data-tone=live]{animation:none}}
+:root[data-reduced=true] .ws-class .ws-led[data-tone=live]{animation:none}
+/* PC 오른쪽 680 패널: 수업 줄과 실시간 칸은 글 왼쪽 · 단추 오른쪽 */
+@container (min-width:560px){
+ .ws-class{padding:20px 22px 16px}
+ .ws-class-lesson,.ws-class-live{grid-template-columns:minmax(0,1fr) auto;column-gap:20px}
+ .ws-class-lesson>*,.ws-class-live>*{grid-column:1}
+ .ws-class-lesson>.plain-button{grid-column:2;grid-row:1/span 2;align-self:center;margin-top:0}
+ .ws-class-live>.felt-button{grid-column:2;grid-row:1/span 3;align-self:center;width:auto;margin-top:0}
+}
 
 /* ── 첫 문장 놀이: 진행 → 큰 문장 → A/B/C 줄 선택지(고르면 흰 바탕) ── */
 .world-game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}

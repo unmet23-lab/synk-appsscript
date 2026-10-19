@@ -1,0 +1,509 @@
+{
+  "ok": true,
+  "date": "2026-10-19T09:10:26.689Z",
+  "syntheticAccount": true,
+  "syntheticClassroom": true,
+  "liveProviderCalls": false,
+  "browser": "Edge headless (Playwright 1.64.1)",
+  "placement": "내 계정 시트 · 반 연결 카드 위(#world-classroom-lessons)",
+  "scenarios": [
+    "loading",
+    "live",
+    "before",
+    "attention",
+    "replay",
+    "no-sessions",
+    "open-error",
+    "empty",
+    "not-linked",
+    "error"
+  ],
+  "viewports": [
+    {
+      "tag": "390",
+      "size": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "tag": "1280",
+      "size": {
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "checks": {
+    "390-retry-after-error": true,
+    "1280-retry-after-error": true,
+    "visibilityReturnRefetch": true,
+    "closeDisposes": true,
+    "module": {
+      "interval": 30000,
+      "first": {
+        "phase": "ready",
+        "classes": 1
+      },
+      "sameNode": true,
+      "focusKept": true,
+      "overlapping": 1,
+      "failed": {
+        "phase": "error",
+        "classes": 0,
+        "links": 0,
+        "alert": true
+      },
+      "retried": {
+        "phase": "ready",
+        "classes": 1
+      },
+      "changed": {
+        "phase": "closed",
+        "classes": 1
+      },
+      "stoppedAfterChange": true,
+      "cleared": true,
+      "removed": true
+    }
+  },
+  "measures": {
+    "390-loading": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 149,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "390-live": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 1689,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 6,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-before": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 855,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-attention": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 1141,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 3,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-replay": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 898,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 5,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-no-sessions": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 313,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-open-error": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 475,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "390-empty": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 195,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "15.5px",
+        "16px",
+        "20px"
+      ]
+    },
+    "390-not-linked": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 195,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "15.5px",
+        "16px",
+        "20px"
+      ]
+    },
+    "390-error": {
+      "layout": "portrait",
+      "innerWidth": 390,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 350,
+      "sectionHeight": 214,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-loading": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 153,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-live": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 1337,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 6,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-before": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 725,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-attention": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 990,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 3,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-replay": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 674,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 5,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-no-sessions": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 296,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-open-error": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 404,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "13px",
+        "14px",
+        "15.5px",
+        "16px",
+        "17px",
+        "20px"
+      ]
+    },
+    "1280-empty": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 176,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "15.5px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-not-linked": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 176,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 1,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "15.5px",
+        "16px",
+        "20px"
+      ]
+    },
+    "1280-error": {
+      "layout": "landscape",
+      "innerWidth": 1280,
+      "docOverflow": 0,
+      "panelOverflow": 0,
+      "sectionWidth": 624,
+      "sectionHeight": 196,
+      "overflowing": [],
+      "small": [],
+      "shortTargets": [],
+      "targets": 2,
+      "fonts": [
+        "13.5px",
+        "14px",
+        "16px",
+        "20px"
+      ]
+    }
+  },
+  "shots": [
+    "390-loading.png",
+    "390-live.png",
+    "390-before.png",
+    "390-attention.png",
+    "390-replay.png",
+    "390-no-sessions.png",
+    "390-open-error.png",
+    "390-empty.png",
+    "390-not-linked.png",
+    "390-error.png",
+    "390-sheet.png",
+    "1280-loading.png",
+    "1280-live.png",
+    "1280-before.png",
+    "1280-attention.png",
+    "1280-replay.png",
+    "1280-no-sessions.png",
+    "1280-open-error.png",
+    "1280-empty.png",
+    "1280-not-linked.png",
+    "1280-error.png",
+    "1280-sheet.png"
+  ],
+  "classroomRequests": 26,
+  "requestShape": {
+    "scenario": "loading",
+    "method": "GET",
+    "search": "",
+    "contract": "c16",
+    "authorization": "Bearer synthetic-browser-token",
+    "apikey": "sb_publishable_browser_fixture",
+    "contentType": null
+  },
+  "errors": [],
+  "unexpected": [],
+  "external": []
+}

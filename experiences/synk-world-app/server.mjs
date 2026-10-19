@@ -12,7 +12,8 @@ const root=fileURLToPath(new URL('./',import.meta.url));
 const home=path.resolve(root,'../synk-world-home');
 const town=path.resolve(root,'../synk-town');
 const brandOpening=path.resolve(root,'../brand-opening');
-const talk=path.resolve(root,'../../../SYNK-talk');
+// 형제 저장소. Claude 앱 워크트리(.claude/worktrees/<이름>)처럼 깊은 사본에서는 SYNK_TALK_ROOT로 가리킨다(tools/sync-atlas.js와 같은 이름).
+const talk=process.env.SYNK_TALK_ROOT?path.resolve(process.env.SYNK_TALK_ROOT):path.resolve(root,'../../../SYNK-talk');
 const port=Number(process.env.SYNK_WORLD_PORT||4296);
 const {createWorldV1Service}=require(path.join(talk,'lib/world-v1-server.js'));
 const {createWorldV1Store}=require(path.join(talk,'lib/world-v1-store.js'));
@@ -88,7 +89,7 @@ const server=http.createServer(async(req,res)=>{
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
-  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/cafe-activity.mjs','/cafe-ui.mjs'].includes(pathname))base=root;
+  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;

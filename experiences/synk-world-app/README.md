@@ -2,6 +2,20 @@
 
 > **검수 이미지 보관(2026-10-17):** 이 폴더의 과거 `qa/` 캡처는 [Git 자산 보관](../../docs/_ops/github-storage/README.md)의 파일별 해시와 Release ZIP으로 보존한다. 코드·검수 JSON·문서는 유지하며, 로컬 이미지도 삭제하지 않는다. 새 체크아웃에서 예전 이미지 링크를 볼 때는 저장소 루트에서 `python tools/git-storage-restore.py --path "experiences/synk-world-app/qa/<필요한 파일>"`로 해당 원본을 복원한다.
 
+<a id="classroom-lessons-20261019"></a>
+
+## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(로컬, 공개·커밋 전)
+
+10-19 TOPIK 4급 온라인 반 재개 결정(결정 표 맨 위)에 따라, 반 학생이 WORLD에서 실시간·예정·복습 수업을 여는 칸을 붙였다.
+
+- **자리:** 내 계정 시트의 「내 반 연결」 카드 바로 위(`#world-classroom-lessons`). 반 연결이 같은 시트에 있어, 연결하면 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다. 홈(동네·3D 방)은 손님과 반 없는 계정이 대부분이라 수업을 매번 묻지 않게 두었다. 라이브 중 홈 알림은 실제 학생·방송이 생긴 뒤 따로 정한다.
+- **뜻:** 학생 앱 「우리 반 수업 · 실시간 / 복습」(SYNK-talk `src/수업영상화면.js`)과 같은 상태 이름·안내, 같은 묶는 차례(실시간 → 확인이 필요한 수업 → 예정 → 복습), 30초 확인, 돌아오면 다시 묻기, 실패하면 링크 비우기. 「지금 수업 중」은 서버가 150초 안에 동기화된 live로 줄 때만 보인다. 반이 없거나 불러오는 중·실패일 때는 제목과 그 안내만 보인다.
+- **통로:** `classroom-client.mjs`가 학생 앱과 같은 classroom 함수를 같은 머리(apikey · Bearer · `X-Contract-Ver: c16`)로 부른다. 게이트웨이 401만 한 번 갱신해 다시 묻는다. 함수가 낸 `AUTH_REQUIRED`(학생 명부에 없는 계정)는 빈 목록으로 보고, WORLD의 다른 요청처럼 로그아웃시키지 않는다. 토큰은 `world-account.mjs`의 `readClassrooms()` 안에만 있다(묶음은 `node tools/build-world-account.mjs`). 서버 함수·DB·반/학생 권한·비밀값은 바꾸지 않았다.
+- **화면:** `classroom-lessons.mjs`와 `app-shell.css`의 「우리 반 수업」. 흰 알약은 「실시간 수업 보기」 하나, 수업 줄은 1px 선이다. 링크는 새 탭으로 열고 유튜브 영상·재생목록과 Meet·Zoom 주소만 받는다. 개발 서버(`server.mjs`)와 공개 빌드(`tools/build-world-app-public.mjs`) 목록에 새 파일을 더했다.
+- **PC 앱(native):** 아직 보이지 않는다. 토큰이 본체에만 있고, 본체 허용 경로(`desktop/src/world-requests.cjs`)에 classroom이 없다. 경로와 계약판 머리를 더한 Platform 판이 필요하다(제안).
+- **확인:** `node --test experiences/synk-world-app/qa/classroom-lessons.test.mjs`(17개 — 학생 앱 원문·계약판·회의 주소·presentClass 대조 포함), `qa/classroom-lessons-browser.test.mjs`(계정 모드 Edge, 합성 계정·합성 수업 10상태 × 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추 0, 새로고침·실패 뒤 다시 불러오기·탭 복귀·시트 닫기·로그인 유지). `qa/account-browser.test.mjs`에는 반 연결 전 401과 연결 뒤 재조회를 더했다. 캡처는 `qa/classroom-lessons-20261019/`(그림은 git 밖), 측정은 같은 폴더 `result.json`.
+- **남은 일:** 초대·이용권을 설정한 뒤 실제 학생 계정(WORLD SYNK ID)으로 운영 classroom 조회, 2026-11 현장 송출 시험, PC 앱 경로, TOPIK II 4급 연습·쓰기 첨삭 콘텐츠, 비공개 영상 초대 자동화 여부.
+
 ## 2026-10-14 화면 전면 리디자인 · 공용 작업본 반영(공개 전)
 
 처음 화면부터 모든 2D 화면을 「월드 시그널」로 다시 짰다. 디자인 규칙·토큰(`../brand-opening/world-ui.css`)·화면별 구조·전후 비교·시험 결과는 [월드 시그널 가이드](../../docs/디자인/월드_시그널/README.md)에 있다. 홈의 아래 탭은 **우리 방·배우기·놀이·옷장**이고 「나」(`data-view="me"`)는 왼쪽 위 캡슐이다. 3D 방에서 다음 학습의 주 행동은 튜터 카드의 흰 알약, 생활 팩의 「지금 할 일」은 배우기 탭 맨 위 포스터다(숨은 `#life-next-button`은 상태 글을 위해 남아 있다). 바람길·말의 리듬은 WORLD의 `.game-frame` 안에서만 `world-skin.css`가 걸린다. 학습·채점·저장·계정 계약과 `data-*` 고리는 바꾸지 않았다.

@@ -14536,6 +14536,55 @@ function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningS
   return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
 }
 
+// experiences/synk-world-app/classroom-client.mjs
+var CLASSROOM_CONTRACT_VER = "c16";
+var classroomRecord = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var classroomText = (value) => typeof value === "string" ? value : null;
+var classroomFailure = (code, status) => Object.assign(new Error("\uC218\uC5C5 \uBAA9\uB85D\uC744 \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code, status });
+function classroomEndpoint(accountApiUrl) {
+  const url = new URL(accountApiUrl);
+  url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + "/functions/v1/classroom";
+  url.search = "";
+  url.hash = "";
+  return url.href;
+}
+function normalizeClassroomClasses(list) {
+  return list.filter((c) => classroomRecord(c) && typeof c.class_id === "string" && c.class_id).map((c) => ({
+    class_id: c.class_id,
+    display_name: classroomText(c.display_name) || "",
+    video_privacy: classroomText(c.video_privacy),
+    playlist_url: classroomText(c.playlist_url),
+    meeting_url: classroomText(c.meeting_url),
+    sessions: (Array.isArray(c.sessions) ? c.sessions : []).filter((s) => classroomRecord(s) && typeof s.session_key === "string" && typeof s.title === "string").map((s) => ({ session_key: s.session_key, title: s.title, starts_at: classroomText(s.starts_at), ends_at: classroomText(s.ends_at), status: classroomText(s.status) || "", watch_url: classroomText(s.watch_url) }))
+  }));
+}
+async function requestClassrooms({ url, publishableKey, token, renew = null, fetch: fetch2, guard = () => {
+} }) {
+  for (let attempt = 0; ; attempt++) {
+    guard();
+    const response = await fetch2(url, {
+      method: "GET",
+      credentials: "omit",
+      cache: "no-store",
+      redirect: "error",
+      headers: { apikey: publishableKey, Authorization: `Bearer ${token()}`, "X-Contract-Ver": CLASSROOM_CONTRACT_VER }
+    });
+    guard();
+    const body = await response.json().catch(() => null);
+    guard();
+    const code = classroomRecord(body) && body.ok === false && classroomRecord(body.error) && typeof body.error.code === "string" ? body.error.code : null;
+    if (response.status === 401 && code === "AUTH_REQUIRED") return { classes: [], emptyReason: "NO_LEARNER" };
+    if (response.status === 401 && !code && attempt === 0 && renew) {
+      const next = await renew();
+      guard();
+      if (next) continue;
+    }
+    if (!response.ok || !classroomRecord(body) || body.ok !== true) throw classroomFailure(code || (response.status === 401 ? "AUTH_EXPIRED" : "CLASSROOM_UNAVAILABLE"), response.status);
+    if (!Array.isArray(body.classes)) throw classroomFailure("CONTRACT_VIOLATION", response.status);
+    return { classes: normalizeClassroomClasses(body.classes), emptyReason: typeof body.empty_reason === "string" ? body.empty_reason : null };
+  }
+}
+
 // experiences/synk-world-app/operating-mode.mjs
 function publicWorldConfig(value, base) {
   if (!value || !["rehearsal", "account"].includes(value.mode)) throw new TypeError("WORLD connection mode is required");
@@ -14990,6 +15039,31 @@ function createWorldAccount({
       controllers.delete(controller);
     }
   }
+  async function readClassrooms() {
+    if (native) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uC218\uC5C5 \uBAA9\uB85D\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "CLASSROOM_UNSUPPORTED" });
+    const expected = epoch;
+    guard(expected);
+    if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED", status: 401 });
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12e3);
+    controllers.add(controller);
+    try {
+      if (session.expires_at <= now() + 3e4) {
+        await renew(expected);
+        guard(expected);
+      }
+      return await requestClassrooms({
+        url: classroomEndpoint(config.accountApiUrl),
+        publishableKey: config.supabasePublishableKey,
+        token: () => session.access_token,
+        renew: () => renew(expected),
+        fetch: (url, init) => fetcher(url, { ...init, signal: controller.signal }),
+        guard: () => guard(expected)
+      });
+    } finally {
+      clearTimeout(timer);
+      controllers.delete(controller);
+    }
+  }
   async function logout() {
     if (native) {
       signedOutGeneration = Math.max(signedOutGeneration, nativeGeneration);
@@ -15030,6 +15104,8 @@ function createWorldAccount({
     prepareGame,
     prepareLifeProgress,
     topicAnswers,
+    readClassrooms,
+    supportsClassroom: !native,
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
       guard(epoch);
