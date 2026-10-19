@@ -8,6 +8,7 @@ const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService}=require('./auth-service.cjs');
 const {suiteKey,createSuiteStore,createSuiteFollower}=require('./suite-session.cjs');
+const {sourceScope}=require('./catalog.cjs');
 const {bindCareIPC,sendCareAuth}=require('./care-account.cjs');
 const {bindPersonalIPC,sendPersonalAuth}=require('./personal-account.cjs');
 const {RESOURCES:PERSONAL_RESOURCES}=require('./personal-requests.cjs');
@@ -55,7 +56,8 @@ function createWindow(){
   if(accountProduct&&!auth){
     const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>personalProduct?sendPersonalAuth(window,current.id,state):(current.id==='care'?sendCareAuth:sendFortuneAuth)(window,state)});
-    if(!smoke&&authConfig){const key=suiteKey(authConfig,'development'),suite=createSuiteFollower({store:createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite','development',key),key}),auth});app.once('will-quit',()=>suite.dispose());void suite.start();}else void auth.initialize();
+    // 제품 미리보기는 소스 실행에서만 뜨므로(설치 앱은 띄우지 않는다) 소스 실행 Platform의 Suite 선택(development.source)을 따른다.
+    if(!smoke&&authConfig){const key=suiteKey(authConfig,'development'),suite=createSuiteFollower({store:createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope('development',app.isPackaged),key),key}),auth});app.once('will-quit',()=>suite.dispose());void suite.start();}else void auth.initialize();
   }
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.name,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   window.webContents.setWindowOpenHandler(()=>({action:'deny'}));
