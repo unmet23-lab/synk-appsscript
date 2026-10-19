@@ -4,16 +4,17 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { sharedAccountServer } from '../synk-account/server-shared.mjs';
 
-const PUBLIC = new Map(['index.html', 'planner.html', 'planner.css', 'planner-ui.mjs', 'planner-origin.mjs', 'planner.mjs', 'places-v2.mjs', 'walking-router.mjs', 'planner-storage.mjs', 'planner-feedback.mjs', 'planner-account.mjs', 'planner-account-session.mjs', 'app.mjs', 'style.css', 'model.mjs', 'catalog.mjs', 'storage.mjs', 'profile.mjs', 'extractor.mjs', 'conversation.mjs', 'real-places.mjs', 'real-guide.mjs', 'real-ui.mjs', 'real-conditions.mjs', 'real-course.mjs', 'real-course-data.mjs', 'real-course-ui.mjs'].map(file => ['/' + file, new URL(file, import.meta.url)]));
+const PUBLIC = new Map(['index.html', 'planner.html', 'planner.css', 'planner-ui.mjs', 'question-worker.mjs', 'planner-origin.mjs', 'planner.mjs', 'places-v2.mjs', 'walking-router.mjs', 'planner-storage.mjs', 'planner-feedback.mjs', 'planner-account.mjs', 'planner-account-session.mjs', 'app.mjs', 'style.css', 'model.mjs', 'catalog.mjs', 'storage.mjs', 'profile.mjs', 'extractor.mjs', 'conversation.mjs', 'real-places.mjs', 'real-guide.mjs', 'real-ui.mjs', 'real-conditions.mjs', 'real-course.mjs', 'real-course-data.mjs', 'real-course-ui.mjs'].map(file => ['/' + file, new URL(file, import.meta.url)]));
 PUBLIC.set('/planner-login-draft.mjs', new URL('./planner-login-draft.mjs', import.meta.url));
 for (const module of ['engine', 'personalization', 'domain', 'interpretation', 'ask', 'travel', 'trail-life', 'temper-outcomes']) PUBLIC.set(`/atlas/${module}.js`, new URL(`../../atlas/${module}.js`, import.meta.url));
 PUBLIC.set('/tools/lib/loom-motion.js', new URL('../../tools/lib/loom-motion.js', import.meta.url));
 const ASSETS = new Set(['DMMono-Regular.ttf', 'felt-black.webp', 'felt-button.webp', 'felt-choice.webp', 'felt-selected.webp', 'InterTight-Bold.ttf', 'logo-synk.webp', 'scrapbook.css', 'sticker-search.webp', 'sticker-time.webp', 'SUIT-Variable.woff2', 'thread.webp']);
 PUBLIC.set('/legacy.html', new URL('./legacy.html', import.meta.url));
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.svg': 'image/svg+xml' };
+// 확인 질문은 같은 출처의 모듈 워커(question-worker.mjs)가 계산한다. 다른 출처·blob 워커는 계속 막는다.
 const HEADERS = {
   'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 const REENTRY_HTML = '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>여행 계획 열기</title><main><h1>여행 계획 열기</h1><p>이 PC의 여행 화면으로 이동하려면 아래 링크를 눌러 주세요.</p><a href="/">여행 계획 열기</a></main></html>';

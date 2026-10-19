@@ -439,3 +439,135 @@ test('가져온 화면 복원이 실패하면 이전 여행과 저장본을 먼�
   assert.equal(attempts, 2);
   assert.ok(h.notices.includes('render failed'));
 });
+
+// 하루 만들기의 확인 질문: 가짜 워커로 planThenAsk·startQuestionWorker를 돌린다. 메인은 질문 없이 한 번만 계산하고,
+// 워커를 못 쓰면 예전처럼 다음 프레임 뒤 메인에서 계산한다.
+function questionHarness({ refuseWorker = false } = {}) {
+  const h = harness(originalMemory, ['planThenAsk', 'askHere', 'attachQuestion', 'startQuestionWorker']);
+  const workers = [], calls = [], renders = [], queue = [], warnings = [];
+  class FakeWorker {
+    constructor(url, options) { if (refuseWorker) throw new Error('blocked by policy'); Object.assign(this, { url, options, posted: [], listeners: {}, terminated: false }); workers.push(this); }
+    addEventListener(type, listener) { (this.listeners[type] ??= []).push(listener); }
+    postMessage(message) { if (this.refuse) throw new Error('DataCloneError'); this.posted.push(structuredClone(message)); }
+    terminate() { this.terminated = true; }
+    emit(type, event) { for (const listener of this.listeners[type] ?? []) listener(event); }
+  }
+  const routeLeg = () => null, options = { now, feedback: [{ key: 'tea', value: true }], routeLeg, intents: [{ id: 'tea', category: 'tea' }] };
+  const question = { id: 'refine-indoor', about: 'indoor', options: [] };
+  Object.assign(h.context, {
+    Worker: FakeWorker, questionWorkerUrl: 'question-worker-url', questionToken: 0, questionWorker: null, questionAsked: null,
+    network: { sourceTimestamp: 'map-1' }, input: { date: '2026-10-21' }, settings: () => options,
+    planTravel: (input, settings) => { calls.push(settings); return settings.ask === false ? { primary: { id: 'plan-a' }, alternatives: [] } : { primary: { id: 'plan-a' }, alternatives: [], question }; },
+    acceptResult: result => { h.context.outcome = result; }, renderEvidence: () => renders.push(h.context.outcome.question),
+    requestAnimationFrame: callback => queue.push(callback), setTimeout: callback => queue.push(callback),
+    console: { warn: message => warnings.push(String(message)) },
+  });
+  const flush = () => { while (queue.length) queue.shift()(); };
+  return { ...h, workers, calls, renders, queue, flush, options, question, warnings };
+}
+
+test('하루 만들기 확인 질문은 워커가 계산하고 같은 요청·같은 일정일 때만 붙인다', () => {
+  const q = questionHarness();
+  q.run('planThenAsk(input)');
+  assert.equal(q.workers.length, 1);
+  const [worker] = q.workers;
+  assert.equal(worker.url, 'question-worker-url');
+  assert.deepEqual(Object.entries(worker.options), [['type', 'module']]);
+  assert.deepEqual(q.calls.map(row => row.ask), [false], '메인은 질문 없이 일정만 계산한다');
+  assert.equal(q.queue.length, 0, '메인에서 질문 계산을 예약하지 않는다');
+  // 경로 함수는 넘기지 않고 지도를 썼는지와 그 판만 알린다(넘겼다면 structuredClone이 실패한다).
+  assert.deepEqual(worker.posted, [{ token: 1, input: { date: '2026-10-21' }, now, feedback: [{ key: 'tea', value: true }], intents: [{ id: 'tea', category: 'tea' }], routed: true, mapStamp: 'map-1' }]);
+  worker.emit('message', { data: { token: 2, primaryId: 'plan-a', question: { id: 'other-request' } } });
+  assert.deepEqual(q.renders, []);
+  worker.emit('message', { data: { token: 1, primaryId: 'plan-a', question: q.question } });
+  assert.deepEqual(q.renders, [q.question]);
+  assert.deepEqual(q.read('outcome.question'), q.question);
+  // 같은 요청의 답이 또 와도 다시 붙이지 않는다.
+  worker.emit('message', { data: { token: 1, primaryId: 'plan-a', question: { id: 'again' } } });
+  assert.equal(q.renders.length, 1);
+  assert.deepEqual(q.warnings, [], '워커가 제대로 돌면 콘솔에 아무것도 남기지 않는다');
+  // 질문 워커는 지도를 받은 뒤에 미리 띄운다(같은 지도 파일을 두 번 동시에 받지 않게).
+  assert.match(source, /mapLoaded\(\);\r?\n[^\n]*\r?\nstartQuestionWorker\(\);/);
+});
+
+test('지난 요청·다른 일정·바뀐 결과에 늦게 온 워커 질문은 붙이지 않는다', () => {
+  const q = questionHarness();
+  q.run('planThenAsk(input)'); q.run('planThenAsk(input)');
+  const [worker] = q.workers;
+  assert.equal(q.workers.length, 1, '워커는 한 번만 띄운다');
+  assert.deepEqual(worker.posted.map(row => row.token), [1, 2]);
+  worker.emit('message', { data: { token: 1, primaryId: 'plan-a', question: q.question } });
+  worker.emit('message', { data: { token: 2, primaryId: 'plan-b', question: q.question } });
+  assert.deepEqual(q.renders, []);
+  // 「유지」처럼 결과를 바꾸는 동작(invalidatePreferencePreview) 뒤에 온 질문도 버린다.
+  q.run('planThenAsk(input)');
+  q.context.outcome = { ...q.context.outcome, question: null };
+  worker.emit('message', { data: { token: 3, primaryId: 'plan-a', question: q.question } });
+  assert.deepEqual(q.renders, []);
+  assert.equal(q.queue.length, 0);
+});
+
+test('워커가 계산하지 못했다고 하면 그 요청만 예전처럼 다음 프레임 뒤 메인에서 계산한다', () => {
+  const q = questionHarness();
+  q.run('planThenAsk(input)');
+  const [worker] = q.workers;
+  worker.emit('message', { data: { token: 1, error: 'map unavailable' } });
+  assert.equal(q.queue.length, 1);
+  assert.equal(q.warnings.length, 1);
+  assert.match(q.warnings[0], /화면에서 계산해요: map unavailable/);
+  q.flush();
+  assert.equal(q.calls.length, 2);
+  assert.equal(q.calls[1], q.options, '메인 계산은 경로 함수까지 든 같은 조건을 쓴다');
+  assert.deepEqual(q.renders, [q.question]);
+  // 워커는 그대로 써서 다음 요청은 다시 워커로 간다.
+  q.run('planThenAsk(input)');
+  assert.deepEqual(worker.posted.map(row => row.token), [1, 2]);
+  assert.equal(q.queue.length, 0);
+});
+
+test('워커를 못 띄우거나 모듈을 못 읽거나 메시지를 못 보내면 메인에서 계산한다', () => {
+  // 모듈을 못 읽음(error): 기다리던 요청을 메인에서 계산하고, 그 뒤로는 워커를 다시 띄우지 않는다.
+  const q = questionHarness();
+  q.run('planThenAsk(input)');
+  const [worker] = q.workers;
+  let prevented = false;
+  worker.emit('error', { preventDefault: () => { prevented = true; } });
+  assert.equal(prevented, true);
+  assert.equal(worker.terminated, true);
+  assert.equal(q.context.questionWorker, false);
+  q.flush();
+  assert.deepEqual(q.renders, [q.question]);
+  q.run('planThenAsk(input)'); q.flush();
+  assert.equal(q.workers.length, 1);
+  assert.equal(q.renders.length, 2);
+  // 공개본에서 워커 파일이 빠져도 알 수 있게 콘솔에 한 번만 남긴다.
+  assert.equal(q.warnings.length, 1);
+  assert.match(q.warnings[0], /워커를 읽지 못해/);
+  // 띄우기부터 막힘(CSP·오래된 브라우저).
+  const blocked = questionHarness({ refuseWorker: true });
+  blocked.run('planThenAsk(input)');
+  assert.equal(blocked.context.questionWorker, false);
+  blocked.flush();
+  assert.deepEqual(blocked.renders, [blocked.question]);
+  assert.equal(blocked.warnings.length, 1);
+  assert.match(blocked.warnings[0], /워커를 띄우지 못해/);
+  // 메시지 보내기 실패.
+  const refused = questionHarness();
+  refused.run('startQuestionWorker()');
+  refused.workers[0].refuse = true;
+  refused.run('planThenAsk(input)');
+  assert.equal(refused.queue.length, 1);
+  refused.flush();
+  assert.deepEqual(refused.renders, [refused.question]);
+  assert.equal(refused.warnings.length, 1);
+  assert.match(refused.warnings[0], /워커에 보내지 못해/);
+});
+
+test('일정을 만들지 못하면 질문을 묻지 않는다', () => {
+  const q = questionHarness();
+  q.context.planTravel = (input, settings) => { q.calls.push(settings); return { primary: null, alternatives: [], blocked: [], unknowns: [] }; };
+  q.run('planThenAsk(input)');
+  assert.equal(q.workers.length, 0);
+  assert.equal(q.queue.length, 0);
+  assert.equal(q.calls.length, 1);
+});

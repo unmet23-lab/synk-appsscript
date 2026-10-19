@@ -44,6 +44,9 @@ const probe = () => {
     await shot('2-time', false);
     await page.locator('#make-day').click();
     await page.waitForSelector('#result:not([hidden]),#empty-result:not([hidden])', { timeout: 30000 }).catch(() => errors.push('결과 없음'));
+    // 확인 질문은 결과 뒤에 워커가 계산해 붙인다(10-19 밤). 질문 칸까지 재려고 붙을 때까지 기다린다.
+    await page.waitForFunction(() => document.querySelectorAll('#result-evidence [data-refine]').length > 0, null, { timeout: 8000 }).catch(() => {});
+    report.question = await page.locator('#result-evidence [data-refine]').count();
     await page.waitForTimeout(1500);
     report.title = await page.evaluate(() => document.querySelector('#result-title')?.textContent);
     report.stops = await page.evaluate(() => [...document.querySelectorAll('.story')].map(card => card.querySelector('.story-time')?.textContent + ' ' + card.querySelector('h3')?.textContent));

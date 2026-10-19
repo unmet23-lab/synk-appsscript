@@ -115,11 +115,13 @@ test('계획 화면의 상대 import와 로그인 연결은 브라우저에서 �
       failures.push(`${url.pathname}: ${response.headers.get('content-type')}`); continue;
     }
     const source = await response.text();
-    // Follow literal imports, including the account notebook loaded at startup.
-    // Computed URLs are not browser module dependencies in this controller.
+    // Follow literal imports, including the account notebook loaded at startup,
+    // and module workers started from new URL('./x.mjs', import.meta.url).
+    // Other computed URLs are not browser module dependencies in this controller.
     const imports = [
       ...source.matchAll(/(?:^|\n)\s*(?:import|export)\s+(?:[^'";]*?\sfrom\s*)?['"]([^'"\n]+)['"]/g),
       ...source.matchAll(/\bimport\s*\(\s*['"]([^'"\n]+)['"]\s*\)/g),
+      ...source.matchAll(/\bnew URL\(\s*['"](\.[^'"\n]+\.m?js)['"]\s*,\s*import\.meta\.url\s*\)/g),
     ];
     for (const [, specifier] of imports) {
       if (!specifier.startsWith('.')) continue;
@@ -130,7 +132,27 @@ test('계획 화면의 상대 import와 로그인 연결은 브라우저에서 �
   }
   assert.ok(seen.has(base + '/synk-account/src/account-notebook.mjs'), '계정 화면의 동적 import도 검사한다');
   assert.ok(seen.has(base + '/synk-account/src/personal-data.mjs'), '계정 자료 계약까지 검사한다');
+  assert.ok(seen.has(base + '/question-worker.mjs'), '확인 질문 워커와 그 의존 모듈도 검사한다');
   assert.deepEqual(failures, [], '여행 화면에서 실제 요청하는 모듈이 모두 JavaScript로 제공되어야 한다');
+});
+
+test('확인 질문 워커는 같은 출처 모듈 워커로만 허용되고 원본 바이트와 지도를 그대로 받는다', async t => {
+  const server = createServer({ port: 0 });
+  await server.start(); t.after(() => server.stop());
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const response = await fetch(base + '/question-worker.mjs');
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /^text\/javascript\b/);
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()), await readFile(new URL('../experiences/path-travel/question-worker.mjs', import.meta.url)));
+  // 워커 안의 import·fetch는 워커 응답의 정책을 따른다. 페이지와 워커 모두 같은 출처만 허용한다.
+  for (const route of ['/', '/question-worker.mjs']) {
+    const policy = (await fetch(base + route)).headers.get('content-security-policy').split(';').map(part => part.trim());
+    for (const directive of ["worker-src 'self'", "script-src 'self'"]) assert.ok(policy.includes(directive), `${route}: ${directive}`);
+    assert.ok(policy.some(part => part.startsWith("connect-src 'self'")), route);
+  }
+  const worker = await (await fetch(base + '/question-worker.mjs')).text();
+  assert.match(worker, /new URL\('\.\/assets\/jongno-walking\.json',import\.meta\.url\)/);
+  assert.equal((await fetch(base + '/assets/jongno-walking.json')).status, 200);
 });
 
 test('계정의 CommonJS 의존 계약은 HTTP ESM으로 실행되며 원본 검증 동작을 보존한다', async t => {

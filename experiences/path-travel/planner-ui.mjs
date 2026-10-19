@@ -724,18 +724,47 @@ function renderEvidence(){
  $('#result-evidence').innerHTML=`${q?renderQuestion(q):''}<details class="engine-evidence"${open?' open':''}><summary>추천에 반영한 조건과 자료 보기</summary><p>이번 날짜·출발점·인원·시간·예산, 직접 고른 취향과 확인한 평소 취향을 비교했어요. 취향이 확인되지 않은 장소 특성은 만들어내지 않아요.</p><p>장소 안내 확인: ${e(TRAVEL_META.checkedAt)} · 지도 자료: ${e(network?.sourceTimestamp?.slice(0,10)||'불러오지 못함')}. 이동은 예상 범위이며 현장 안내를 우선해 주세요.</p><p>추천·조건 검사: SYNK Atlas Core. 선택·방문 기록: Trail. 실제 노출과 방문 후 결과 구분: Temper. 지도 표현의 움직임: Loom.</p></details>`;
 }
 // 일정을 먼저 보이고, 확인 질문(만들기 시간의 대부분)은 같은 시각·같은 조건으로 다시 계산해 같은 일정일 때만 붙인다.
-// 결과가 한 번 그려진 다음 프레임 뒤에 계산해 화면이 질문 계산을 기다리지 않게 한다.
-let questionToken=0;
+// 계산은 질문 워커가 맡아 결과 직후의 누름이 질문 계산(PC 1초 안팎)을 기다리지 않는다.
+// 워커를 못 쓰면(띄우기·모듈·지도 읽기 실패) 결과가 한 번 그려진 다음 프레임 뒤 여기서 계산한다.
+// 그때는 콘솔에 까닭을 한 줄 남긴다 — 공개본에서 워커 파일이 빠져도 화면은 그대로라 달리 알 길이 없다.
+const questionWorkerUrl=new URL('./question-worker.mjs',import.meta.url);
+let questionToken=0,questionWorker=null,questionAsked=null;
 function planThenAsk(input){
  const options=settings(input),result=planTravel(input,{...options,ask:false}),token=++questionToken;
  acceptResult(result);
  if(!result.primary)return;
+ const asked={token,input,options,result},worker=startQuestionWorker();
+ // 지도 경로 함수는 넘길 수 없어 지도를 썼는지와 그 지도의 판만 알린다.
+ if(worker)try{worker.postMessage({token,input,now:options.now,feedback:options.feedback,intents:options.intents,routed:Boolean(options.routeLeg),mapStamp:network?.sourceTimestamp??null});questionAsked=asked;return;}
+ catch(error){console.warn('확인 질문을 워커에 보내지 못해 화면에서 계산해요.',error);}
+ askHere(asked);
+}
+function askHere({token,input,options,result}){
  requestAnimationFrame(()=>setTimeout(()=>{
   if(token!==questionToken||outcome!==result)return;
-  const full=planTravel(input,options);
-  if(token!==questionToken||outcome!==result||full.primary?.id!==result.primary.id||!full.question)return;
-  result.question=full.question;renderEvidence();
+  const full=planTravel(input,options);attachQuestion({token,result},full.primary?.id,full.question);
  },30));
+}
+function attachQuestion({token,result},primaryId,question){
+ if(token!==questionToken||outcome!==result||primaryId!==result.primary.id||!question)return;
+ result.question=question;renderEvidence();
+}
+// 질문 워커는 한 번만 띄워 둔다. 띄우지 못하거나 모듈을 못 읽으면 그 뒤로는 화면에서 계산한다.
+function startQuestionWorker(){
+ if(questionWorker!==null)return questionWorker;
+ try{
+  const worker=new Worker(questionWorkerUrl,{type:'module'});
+  const fail=()=>{questionWorker=false;worker.terminate();console.warn('확인 질문 워커를 읽지 못해 화면에서 계산해요.');const asked=questionAsked;questionAsked=null;if(asked)askHere(asked);};
+  worker.addEventListener('message',({data})=>{
+   const asked=questionAsked;if(data?.token!==asked?.token)return;questionAsked=null;
+   if(data.error){console.warn('확인 질문 워커가 계산하지 못해 화면에서 계산해요: '+data.error);askHere(asked);}
+   else attachQuestion(asked,data.primaryId,data.question);
+  });
+  worker.addEventListener('error',event=>{event.preventDefault();fail();});
+  worker.addEventListener('messageerror',fail);
+  questionWorker=worker;
+ }catch(error){questionWorker=false;console.warn('확인 질문 워커를 띄우지 못해 화면에서 계산해요.',error);}
+ return questionWorker;
 }
 function progressPlaceIds(){
  return [...(memory.progress?.completed??[]).map(row=>row.placeId),...(memory.progress?.skippedIds??[])];
@@ -1066,6 +1095,8 @@ $('#photo-credit-list').innerHTML=TRAVEL_PLACES.filter(p=>p.photo).map(p=>`<p cl
 try{const response=await fetch('./assets/jongno-walking.json');if(!response.ok)throw Error('map unavailable');network=await response.json();routeLeg=createWalkingRouter(network);$('#load-status').textContent='실제 장소 '+TRAVEL_PLACES.length+'곳 · 지도 기반 예상 이동으로 비교해요.';}
 catch(error){$('#load-status').textContent='지도를 불러오지 못했어요. 위치 기반 추정으로 비교하며 실제 경로는 따로 확인해 주세요.';}
 mapLoaded();
+// 질문 워커는 지도를 받은 뒤에 미리 띄운다. 같은 지도 파일을 두 번 동시에 받지 않고, 첫 하루 만들기의 질문이 워커 준비를 기다리지 않는다.
+startQuestionWorker();
 history.replaceState({pathView:memory.plan?'result':'intent'},'');
 // Startup must leave saved bytes untouched until the OAuth handoff is read.
 // Stored estimates remain a snapshot until an explicit planning action.
