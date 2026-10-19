@@ -44,6 +44,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 이 작업에서 새로 만든 빈 전용 작업본임을 확인한 뒤 `git read-tree --reset -u HEAD`로 HEAD와 희소 범위를 구체화했다. 공용 작업본이나 변경이 있는 폴더에는 이 복구를 쓰지 않는다.
 - 다시 확인: 공개 전 status가 비어 있고, `b45319c`의 변경 범위와 실제 공개 응답86개가 검토한 목록과 일치했다.
 
+### 일부 경로만 꺼낸 사본에서 `git stash`를 쓰면 고친 파일이 stash에 갇힌다 (2026-10-19)
+- 증상: `clone --no-checkout` 뒤 `git checkout <rev> -- site-v10 qa …`로 꺼낸 사본에서 기준 판 시험을 돌리려고 `git stash` → `git stash pop`을 했더니 「The stash entry is kept」로 끝나고, 고친 원고가 모두 원래 판으로 돌아가 있었다.
+- 원인: 꺼내지 않은 나머지 경로가 인덱스에 「지움」으로 잡혀 있어 stash가 그것까지 담았고, 되돌릴 때 충돌했다.
+- 고침: `git checkout 'stash@{0}' -- <고친 파일들>`로 되살린 뒤 `git stash drop`. 이런 사본에서는 stash를 쓰지 않고 기준 판을 따로 꺼낸다(`git archive <rev> <경로> | tar -x -C basesrc`).
+- 다시 확인: 고친 파일마다 이번 작업의 표시 문자열이 `grep`으로 나오고, 빌드 결과가 되살리기 전과 같은 해시다.
+
 ## 줄끝(CRLF·LF)
 
 ### 서버 복사 원본인 systemd 단위는 끝 빈 줄 때문에 `--check`에 걸린다 (2026-10-19)
