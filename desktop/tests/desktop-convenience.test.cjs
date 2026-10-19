@@ -25,19 +25,19 @@ test('restoring a maximized session never shows a hidden-start window until expl
   const screen={getAllDisplays:()=>[primary],getPrimaryDisplay:()=>primary},placement=createWindowPlacement({directory,screen}),window=new EventEmitter();let maximizations=0;window.isDestroyed=()=>false;window.maximize=()=>maximizations++;
   const dispose=placement.attach(window,{maximized:true});assert.equal(maximizations,0);window.emit('show');assert.equal(maximizations,1);window.emit('show');assert.equal(maximizations,1);dispose();
 });
-function fixture(t,{enabled=true,platform='win32'}={}){
+function fixture(t,{enabled=true,platform='win32',packaged=true}={}){
   const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-preferences-test-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
   const registrations=new Map(),busy=new Set(),startup=[],actions=[],changes=[],calls=[];let login=false;
   const app={setLoginItemSettings:value=>{startup.push(value);login=value.openAtLogin;},getLoginItemSettings:()=>({openAtLogin:login})};
   const globalShortcut={register:(key,fn)=>{if(busy.has(key)||registrations.has(key))return false;registrations.set(key,fn);return true;},unregister:key=>registrations.delete(key)};
   const window={isDestroyed:()=>false,isMinimized:()=>true,restore:()=>calls.push('restore'),show:()=>calls.push('show'),focus:()=>calls.push('focus'),webContents:{setZoomFactor:value=>calls.push(['zoom',value])}};
-  const args={directory,app,globalShortcut,getWindow:()=>window,onAction:action=>actions.push(action),onChange:value=>changes.push(value),enabled,platform,executable:'C:\\SYNK\\electron.exe',appRoot:'C:\\SYNK\\desktop',name:'im.synk.platform.preview'};
+  const args={directory,app,globalShortcut,getWindow:()=>window,onAction:action=>actions.push(action),onChange:value=>changes.push(value),enabled,platform,packaged,executable:'C:\\SYNK\\SYNKPlatformPreview.exe',name:'im.synk.platform.preview'};
   const preferences=createDesktopPreferences(args);preferences.initialize();t.after(()=>preferences.dispose());return {directory,preferences,registrations,busy,startup,actions,changes,calls,args};
 }
 test('startup is opt-in, no OS writes or shortcuts on first launch, changed settings persist',t=>{
   const f=fixture(t);assert.deepEqual(f.startup,[]);assert.equal(f.registrations.size,0);
   assert.equal(f.preferences.update({launchAtLogin:true,startHidden:true,closeToTray:false,zoomFactor:1.2}).ok,true);
-  assert.equal(f.startup.length,1);assert.deepEqual(f.startup[0].args,['C:\\SYNK\\desktop','--synk-dev','--client=platform','--synk-autostart']);assert.equal(f.startup[0].name,'im.synk.platform.preview');
+  assert.equal(f.startup.length,1);assert.equal(f.startup[0].path,'C:\\SYNK\\SYNKPlatformPreview.exe');assert.deepEqual(f.startup[0].args,['--synk-autostart']);assert.equal(f.startup[0].name,'im.synk.platform.preview');
   const reloaded=createDesktopPreferences(f.args);assert.equal(reloaded.snapshot().preferences.closeToTray,false);assert.equal(reloaded.snapshot().preferences.zoomFactor,1.2);assert.equal(f.changes.length,1);
 });
 test('hotkey collision preserves the old shortcut and never writes partial preferences',t=>{
@@ -60,6 +60,11 @@ test('invalid zoom, unmodified hotkey, arbitrary preference, and wrong types are
 });
 test('smoke mode never loads or mutates native preferences and does not register an OS shortcut',t=>{
   const f=fixture(t,{enabled:false});assert.equal(f.preferences.update({launchAtLogin:true}).code,'DESKTOP_UNAVAILABLE');assert.equal(f.startup.length,0);assert.equal(f.preferences.snapshot().capabilities.globalShortcut,false);
+});
+test('a source run offers no startup setting and never writes Windows startup, while the hotkey and other settings still save',t=>{
+  const f=fixture(t,{packaged:false});assert.deepEqual(f.preferences.snapshot().capabilities,{launchAtLogin:false,globalShortcut:true});
+  for(const launchAtLogin of [true,false])assert.equal(f.preferences.update({launchAtLogin}).code,'DESKTOP_UNAVAILABLE');
+  assert.equal(f.preferences.update({globalShortcut:'Ctrl+Alt+S',zoomFactor:1.2}).ok,true);assert.deepEqual([...f.registrations.keys()],['Ctrl+Alt+S']);assert.deepEqual(f.startup,[]);
 });
 test('dynamic tray entries use fixed catalog names and ordinary close responds immediately to its setting',()=>{
   const app=new EventEmitter(),window=new EventEmitter();window.webContents=new EventEmitter();window.isDestroyed=()=>false;window.isMinimized=()=>false;window.show=()=>{};window.focus=()=>{};let hides=0,hide=true,menu,actions=[];window.hide=()=>hides++;

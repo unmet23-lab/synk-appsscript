@@ -32,11 +32,11 @@ if(!process.versions.electron){
       window=new BrowserWindow({x:bounds.x,y:bounds.y,width:bounds.width,height:bounds.height,show:false,skipTaskbar:true,webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false}});
       await window.loadURL('data:text/html;charset=utf-8,'+encodeURIComponent('<!doctype html><html lang="ko"><meta charset="utf-8"><title>SYNK 합성 검증</title><body>암호화와 창 설정 확인</body></html>'));
       check('isolated-window-remains-hidden',!window.isVisible());placement.attach(window);
-      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,appRoot:root,name:'im.synk.preferences.synthetic'});preferences.initialize();
+      preferences=createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,name:'im.synk.preferences.synthetic'});preferences.initialize();
       check('defaults-do-not-enable-startup-or-hotkeys',!preferences.snapshot().preferences.launchAtLogin&&preferences.snapshot().preferences.globalShortcut==='');
       check('actual-electron-zoom-applies',preferences.update({zoomFactor:1.25}).ok&&window.webContents.getZoomFactor()===1.25);
       check('actual-electron-zoom-does-not-show-window',!window.isVisible());
-      check('preferences-survive-controller-restart',createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window,appRoot:root}).snapshot().preferences.zoomFactor===1.25);
+      check('preferences-survive-controller-restart',createDesktopPreferences({directory:profile,app,globalShortcut,getWindow:()=>window}).snapshot().preferences.zoomFactor===1.25);
       let state={signedIn:true,status:'signed-in',sessionGeneration:1,account:{synk_user_id:'synthetic-native-owner'}},clock=Date.now();
       const options={directory:path.join(profile,'DraftRecovery'),safeStorage,getAccount:()=>state,configFingerprint:'synthetic-only',now:()=>clock};
       const recovery=createDraftRecovery(options),recoveryRequests=createDraftRecoveryRequests({getAccount:()=>state,recovery}),value={kind:'note',appId:'world',title:'검증용 합성 초안',body:'합성 데이터만 DPAPI로 확인합니다.'};

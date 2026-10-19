@@ -80,10 +80,11 @@ function configureCareNotifications(patch){
     if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
     if(!validCareNotificationPatch(patch))return {ok:false,code:'INVALID_REQUEST'};
     if(!sameAccount())return {ok:false,code:'AUTH_CHANGED'};
-    let previous;
-    if(patch.enabled===true){const status=await careNotifications.status();if(!sameAccount())return {ok:false,code:'AUTH_CHANGED'};if(!status.available||!status.signedIn)return {ok:false,code:'AUTH_REQUIRED'};previous=desktopPreferences.snapshot().preferences;const result=desktopPreferences.update({closeToTray:true,...(!previous.launchAtLogin?{launchAtLogin:true,startHidden:true}:{})});if(!result.ok)return result;}
+    // A source run has no login item (desktop-preferences.cjs), so Care keeps only the tray there.
+    let previous,loginItem=false;
+    if(patch.enabled===true){const status=await careNotifications.status();if(!sameAccount())return {ok:false,code:'AUTH_CHANGED'};if(!status.available||!status.signedIn)return {ok:false,code:'AUTH_REQUIRED'};const settings=desktopPreferences.snapshot();previous=settings.preferences;loginItem=settings.capabilities.launchAtLogin===true;const result=desktopPreferences.update({closeToTray:true,...(loginItem&&!previous.launchAtLogin?{launchAtLogin:true,startHidden:true}:{})});if(!result.ok)return result;}
     const result=sameAccount()?await careNotifications.configure(patch):{ok:false,code:'AUTH_CHANGED'};
-    if(!result.ok&&previous)desktopPreferences.update({closeToTray:previous.closeToTray,launchAtLogin:previous.launchAtLogin,startHidden:previous.startHidden});
+    if(!result.ok&&previous)desktopPreferences.update({closeToTray:previous.closeToTray,...(loginItem?{launchAtLogin:previous.launchAtLogin}:{}),startHidden:previous.startHidden});
     return result;
   });careConfiguration=operation.catch(()=>{});return operation;
 }
@@ -222,7 +223,7 @@ function initializeMain(){
   suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
-    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,appRoot:app.getAppPath(),name:current.appId});
+    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,name:current.appId});
     desktopPreferences.initialize();
     windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
     draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
