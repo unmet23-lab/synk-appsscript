@@ -398,6 +398,43 @@ test('git 무시·QA·미디어 폴더의 작업 MD와 창고 복원 목록을 �
   assert.equal(fs.readFileSync(path.join(f.dest, 'SYNK/시스템/Videos/한강/media/콘티.md'), 'utf8'), '# 영상 원문');
 });
 
+test('공간 지킴이 장부·마지막 점검·Drive에 없는 목록은 담고 다른 상태 파일은 계속 뺀다(10-19)', t => {
+  const f = fixture(t), { execFileSync } = require('node:child_process');
+  execFileSync('git', ['init', '-q'], { cwd: f.root });
+  const vault = path.join(f.dir, 'SYNK_원본창고');
+  // 실제 장부와 같은 꼴이다: 원래 경로·크기·해시·Drive 계정과 ID만 있고 비밀값은 없다.
+  const ledger = JSON.stringify({ at: '2026-10-19T08:45:59Z', source: '서버백업', path: 'company/production/recovery.tar.gz.enc',
+    abs: 'C:\\Users\\me\\Documents\\SYNK_원본창고\\서버백업\\company\\production\\recovery.tar.gz.enc', bytes: 173218971,
+    md5: 'b'.repeat(32), sha256: 'c'.repeat(64), kind: 'staging', event: 'offloaded', driveAccount: 'archive@example.com',
+    driveFileId: '1SyntheticDriveFileId000000000ab' }) + '\n';
+  const kept = {
+    '상태/공간지킴이/내려놓은목록.jsonl': ledger,
+    '상태/공간지킴이/latest.json': '{"schemaVersion":1,"status":"ok","freeAfter":386395611136}\n',
+    '상태/공간지킴이/SYNK이전_원드라이브_Drive에없음.json': '{"files":1,"paths":[["Desktop/a.lnk",2301]]}\n',
+  };
+  const left = {
+    '상태/공간지킴이/점검.log': '{"check":"ok"}\n',
+    '상태/공간지킴이/예약-이전-20261019-120000.xml': '<Task/>\n',
+    '상태/공간지킴이/중간결과.json': '{}\n',
+    '상태/공간지킴이/하위/latest.json': '{}\n',
+    '상태/OneDrive/latest.json': '{"status":"healthy"}\n',
+    '상태/알림/event.json': '{}\n',
+  };
+  for (const [rel, body] of Object.entries({ ...kept, ...left })) {
+    fs.mkdirSync(path.dirname(path.join(vault, rel)), { recursive: true });
+    fs.writeFileSync(path.join(vault, rel), body);
+  }
+  const rows = 시스템목록(f.root), plan = oneDrivePlan(f.root, rows);
+  const included = new Set(plan.selected.filter(x => x.sourceScope === 'SYNK_원본창고').map(x => x.source));
+  for (const rel of Object.keys(kept)) assert.ok(included.has(rel), rel);
+  for (const rel of Object.keys(left)) assert.ok(!included.has(rel), rel);
+  // 되살리기의 근거라 바이트 그대로 복사한다.
+  const selected = plan.selected.filter(x => x.sourceScope === 'SYNK_원본창고' && x.source.startsWith('상태/'));
+  assert.equal(copy(f.root, f.dest, selected).written, Object.keys(kept).length);
+  for (const [rel, body] of Object.entries(kept))
+    assert.equal(fs.readFileSync(path.join(f.dest, 'SYNK/시스템/SYNK_원본창고', rel), 'utf8'), body);
+});
+
 // A help/typo request must never reach the synchronizer or either cloud copy.
 test('검토한 실행 소스 예외는 전체 SHA를 고정하고 변경·서명 비밀은 막는다', () => {
   const fs = require('node:fs');

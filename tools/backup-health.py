@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 
 TOOLS = Path(__file__).resolve().parent
 DEFAULT_ROOT = TOOLS.parent.parent / 'SYNK_원본창고'
@@ -16,10 +17,18 @@ BAD = {'failed', 'partial_failure', 'attention', 'blocked', 'unknown', 'missed',
 GOOD = {'healthy', 'success'}
 LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
-          'workspace': '20TB 업무 문서·첨부·조사 상태'}
+          'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유 300GB)'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
-                 'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료'}
+                 'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료',
+                 'not_ready': '준비 전'}
+# The space guard (../SYNK_원본창고/공간지킴이.py, 10-19) is not a backup store but a 30-minute task that keeps
+# 300GB free on C:. It is checked here, not in backup-health-config.json, which the installer rewrites whole.
+SPACE_GUARD = {'id': 'space', 'taskName': 'SYNK 공간 지킴이', 'receipt': '상태/공간지킴이/latest.json',
+               'ledger': '상태/공간지킴이/내려놓은목록.jsonl', 'maxStaleHours': 2, 'maxRunHours': 2}
+# The ledger is also copied to OneDrive (10MiB limit in 이어하기꾸러미.js). Once over it, the copied file turns into
+# previously-backed-source-now-protected and every OneDrive run fails, so warn while it can still be split.
+SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 
 
 def load_legacy(root):
@@ -103,10 +112,76 @@ def evaluate(item, receipt, now, lib, task=None, installed_at=None, repair=None)
             'scope': item.get('scope'), 'receiptPath': item['receipt']}
 
 
-def task_snapshot(config_path):
-    result = subprocess.run(['powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
-        '-File', str(TOOLS / 'backup-task-status.ps1'), '-ConfigPath', str(config_path)],
-        capture_output=True, timeout=45, creationflags=0x08000000 if os.name == 'nt' else 0)
+def space_guard(root, lib, task, now, item=SPACE_GUARD):
+    # Not registered yet means waiting for the owner's go-ahead (10-19 「예약은 아직 등록하지 마」), not a failure.
+    task = task or {'exists': False}
+    try:
+        receipt = lib.read_json(root / item['receipt'])
+        if receipt is None: receipt = {}
+        elif not isinstance(receipt, dict): raise ValueError('SPACE_RECEIPT_SHAPE')
+    except (OSError, ValueError):
+        receipt = None
+    guard = (receipt or {}).get('status')
+    checked = lib.instant((receipt or {}).get('checkedAt'))
+    last_run = lib.instant(task.get('lastRunAt'))
+    codes, notes = [], []
+    if not task.get('exists'):
+        state = 'not_ready'; codes.append('SPACE_GUARD_SCHEDULE_NOT_REGISTERED'); notes.append('예약 등록 전(확인 대기)')
+    elif not task.get('enabled'):
+        state = 'attention'; codes.append('SCHEDULE_MISSING_OR_DISABLED'); notes.append('예약이 꺼져 있음')
+    elif receipt is None:
+        state = 'unknown'; codes.append('RECEIPT_UNREADABLE')
+    elif not receipt:
+        state = 'unknown'; codes.append('RECEIPT_MISSING')
+    elif guard not in ('ok', 'low', 'attention'):
+        state = 'unknown'; codes.append('STATE_UNKNOWN')
+    else:
+        state = 'attention' if guard == 'attention' else 'healthy'
+        if guard == 'attention': codes.append('DISK_FREE_BELOW_FLOOR')
+        free, floor = receipt.get('freeAfter'), receipt.get('floor')
+        if guard != 'ok' and isinstance(free, (int, float)) and isinstance(floor, (int, float)):
+            notes.append(f'남은 공간 {free / 1e9:.0f}GB(지킬 선 {floor / 1e9:.0f}GB)')
+        # A scheduled run may hold the receipt for up to its 2-hour limit; wait for it before calling the guard stalled.
+        running = task.get('state') == 'Running' and last_run and now - last_run <= dt.timedelta(hours=item['maxRunHours'])
+        if not running and (not checked or now - checked > dt.timedelta(hours=item['maxStaleHours'])):
+            state = 'attention'; codes.append('SPACE_GUARD_STALE')
+            notes.append(f'{int((now - checked).total_seconds() // 3600)}시간째 점검 없음' if checked else '점검 시각 없음')
+        # The task ran after the last receipt and failed (the check raised): report it without waiting for staleness.
+        if (task.get('state') != 'Running' and task.get('result') not in (0, 267009, 267011, None)
+                and last_run and (not checked or last_run > checked)):
+            state = 'attention'; codes.append('SCHEDULE_LAST_RUN_FAILED'); notes.append('마지막 점검 실패')
+    ledger = root / item['ledger']
+    size = ledger.stat().st_size if ledger.is_file() else 0
+    if size >= SPACE_LEDGER_WARN_BYTES:
+        if state not in BAD: state = 'attention'
+        codes.append('SPACE_LEDGER_NEAR_ONEDRIVE_LIMIT')
+        notes.append(f'내려놓은 장부 {size / 1048576:.1f}MiB(OneDrive 10MiB 한도 전에 나눠야 함)')
+    good_check = guard in ('ok', 'low') and checked
+    return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
+            'checkedAt': lib.stamp(checked) if checked else None,
+            'lastSuccessAt': lib.stamp(checked) if good_check else None, 'repaired': False, 'repairedAt': None,
+            'codes': sorted(set(codes)), 'detail': ', '.join(notes) or None, 'task': task,
+            'freeBytes': (receipt or {}).get('freeAfter'), 'floorBytes': (receipt or {}).get('floor'),
+            'scope': 'C: 여유 300GB 지킴이의 마지막 점검과 예약. 내려놓은 원본의 Drive 대조는 지킴이 장부가 맡는다.',
+            'receiptPath': item['receipt']}
+
+
+def task_snapshot(config_path, extra=()):
+    query, temp = Path(config_path), None
+    if extra:
+        # Built-in checks are queried from a temporary copy; the installer owns the config file itself.
+        config = json.loads(query.read_text(encoding='utf-8-sig'))
+        config['additionalChecks'] = list(config.get('additionalChecks') or []) + [
+            {'id': x['id'], 'taskName': x['taskName']} for x in extra]
+        handle, temp = tempfile.mkstemp(prefix='backup-task-query-', suffix='.json')
+        with os.fdopen(handle, 'wb') as output: output.write(json.dumps(config, ensure_ascii=False).encode('utf-8'))
+        query = Path(temp)
+    try:
+        result = subprocess.run(['powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+            '-File', str(TOOLS / 'backup-task-status.ps1'), '-ConfigPath', str(query)],
+            capture_output=True, timeout=45, creationflags=0x08000000 if os.name == 'nt' else 0)
+    finally:
+        if temp: os.unlink(temp)
     if result.returncode: raise RuntimeError('SCHEDULE_QUERY_FAILED')
     values = json.loads(result.stdout.decode('utf-8-sig'))
     return {x['id']: x for x in values}
@@ -135,8 +210,14 @@ def gather(root, lib, config, tasks, now):
             component = {'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown',
                          'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None}
         components.append(component)
+    try:
+        components.append(space_guard(root, lib, tasks.get(SPACE_GUARD['id']), now))
+    except (OSError, ValueError, TypeError, KeyError):
+        components.append({'id': SPACE_GUARD['id'], 'label': LABELS[SPACE_GUARD['id']], 'status': 'unknown',
+                           'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
     bad = [x for x in components if x['status'] in BAD]
-    state = 'attention' if bad else ('pending' if any(x['status'] != 'healthy' for x in components) else 'healthy')
+    # A guard waiting for registration must not turn the backups into 'pending'; that would block recovery notices.
+    state = 'attention' if bad else ('pending' if any(x['status'] not in ('healthy', 'not_ready') for x in components) else 'healthy')
     return {'schemaVersion': 1, 'checkedAt': lib.stamp(now), 'status': state, 'components': components,
             'issues': [{'component': x['id'], 'code': c} for x in bad for c in (x['codes'] or ['BACKUP_FAILED'])],
             'scope': '예약·최근 실행·원격 검증 영수증. 실제 복호화·전체 복원 성공과 구분한다.'}
@@ -153,7 +234,7 @@ def choose_event(summary, previous, now, lib):
     changed = digest != previous.get('fingerprint')
     if not ((bad and (changed or repeat_due)) or recovery): return None, digest, bool(bad)
     title = 'SYNK 백업 확인 필요' if bad else 'SYNK 백업 정상 복구'
-    body = ' · '.join(x['label'] + ': ' + STATUS_LABELS.get(x['status'], '확인 필요') for x in bad)
+    body = ' · '.join(x['label'] + ': ' + (x.get('detail') or STATUS_LABELS.get(x['status'], '확인 필요')) for x in bad)
     body = body or '네 저장소의 예약과 최근 백업 검증이 정상으로 돌아왔습니다.'
     event_id = hashlib.sha256((digest + lib.stamp(now)).encode()).hexdigest()
     return {'schemaVersion': 1, 'id': event_id, 'at': lib.stamp(now), 'title': title, 'body': body,
@@ -226,7 +307,7 @@ def main():
             config_path = root / 'backup-health-config.json'
             config = lib.read_json(config_path)
             if not config: raise RuntimeError('BACKUP_HEALTH_CONFIG_MISSING')
-            tasks = task_snapshot(config_path)
+            tasks = task_snapshot(config_path, (SPACE_GUARD,))
             summary = gather(root, lib, config, tasks, now)
             if args.notify: summary['notification'] = update_notifications(root, summary, lib, now)
             lib.atomic_json(root / 'backup-health.json', summary)

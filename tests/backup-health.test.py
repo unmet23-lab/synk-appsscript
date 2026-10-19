@@ -190,4 +190,87 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(result.returncode,7)
 
 
+class SpaceGuardTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.root = Path(self.temp.name)
+        self.now = dt.datetime(2026, 10, 19, 12, tzinfo=dt.timezone.utc)
+        self.task = {'id': 'space', 'exists': True, 'enabled': True, 'state': 'Ready', 'result': 0,
+                     'lastRunAt': lib.stamp(self.now - dt.timedelta(minutes=20, seconds=3))}
+
+    def tearDown(self): self.temp.cleanup()
+
+    def receipt(self, status='ok', age=dt.timedelta(minutes=20), free=386 * 10**9):
+        lib.atomic_json(self.root / health.SPACE_GUARD['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - age),
+            'status': status, 'freeBefore': free, 'freeAfter': free, 'floor': 300 * 10**9})
+
+    def guard(self, **task):
+        return health.space_guard(self.root, lib, dict(self.task, **task), self.now)
+
+    def test_recent_check_is_healthy_even_below_cleanup_start(self):
+        self.receipt()
+        row = self.guard()
+        self.assertEqual((row['status'], row['codes']), ('healthy', []))
+        self.assertEqual(row['lastSuccessAt'], lib.stamp(self.now - dt.timedelta(minutes=20)))
+        self.receipt('low', free=312 * 10**9)
+        self.assertEqual(self.guard()['status'], 'healthy')
+
+    def test_stalled_check_is_a_problem_unless_a_run_is_still_inside_its_limit(self):
+        self.receipt(age=dt.timedelta(hours=2, minutes=1))
+        row = self.guard()
+        self.assertEqual((row['status'], row['codes'], row['detail']), ('attention', ['SPACE_GUARD_STALE'], '2시간째 점검 없음'))
+        self.assertEqual(self.guard(state='Running', lastRunAt=lib.stamp(self.now-dt.timedelta(minutes=50)))['status'], 'healthy')
+        self.assertEqual(self.guard(state='Running', lastRunAt=lib.stamp(self.now-dt.timedelta(hours=2, minutes=5)))['status'], 'attention')
+        # A failed run after the last receipt is reported before the 2-hour mark.
+        self.receipt(age=dt.timedelta(minutes=40))
+        row = self.guard(result=1, lastRunAt=lib.stamp(self.now-dt.timedelta(minutes=10)))
+        self.assertEqual((row['status'], row['codes']), ('attention', ['SCHEDULE_LAST_RUN_FAILED']))
+
+    def test_free_space_below_floor_is_reported_with_the_numbers(self):
+        self.receipt('attention', free=285 * 10**9)
+        row = self.guard()
+        self.assertEqual((row['status'], row['codes']), ('attention', ['DISK_FREE_BELOW_FLOOR']))
+        event, _, unresolved = health.choose_event({'status': 'attention', 'components': [row], 'issues': []}, {}, self.now, lib)
+        self.assertTrue(unresolved)
+        self.assertEqual(event['body'], '공간 지킴이(C: 여유 300GB): 남은 공간 285GB(지킬 선 300GB)')
+
+    def test_unregistered_schedule_waits_without_failing_or_blocking_recovery(self):
+        self.receipt(age=dt.timedelta(hours=30))  # only the one manual check
+        row = health.space_guard(self.root, lib, None, self.now)
+        self.assertEqual((row['status'], row['codes']), ('not_ready', ['SPACE_GUARD_SCHEDULE_NOT_REGISTERED']))
+        self.assertNotIn('not_ready', health.BAD)
+        lib.atomic_json(self.root / 'onedrive.json', {'status': 'healthy', 'lastSuccessAt': lib.stamp(self.now)})
+        config = {'components': [{'id': 'onedrive', 'receipt': 'onedrive.json', 'maxAgeHours': 2}]}
+        summary = health.gather(self.root, lib, config, {'onedrive': {'exists': True, 'enabled': True, 'result': 0}}, self.now)
+        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space'])
+        self.assertEqual((summary['status'], summary['issues']), ('healthy', []))
+        (self.root / health.SPACE_GUARD['receipt']).write_text('{broken', encoding='utf-8')
+        self.assertEqual(health.space_guard(self.root, lib, None, self.now)['status'], 'not_ready')
+        self.assertEqual(self.guard()['codes'], ['RECEIPT_UNREADABLE'])
+        # Registered but disabled means nothing guards the disk.
+        self.assertEqual(self.guard(enabled=False)['codes'], ['SCHEDULE_MISSING_OR_DISABLED'])
+
+    def test_ledger_nearing_the_onedrive_limit_warns_first(self):
+        self.receipt()
+        with (self.root / health.SPACE_GUARD['ledger']).open('wb') as ledger: ledger.truncate(health.SPACE_LEDGER_WARN_BYTES - 1)
+        self.assertEqual(self.guard()['status'], 'healthy')
+        with (self.root / health.SPACE_GUARD['ledger']).open('ab') as ledger: ledger.write(b'\n')
+        self.assertEqual(self.guard()['codes'], ['SPACE_LEDGER_NEAR_ONEDRIVE_LIMIT'])
+
+    def test_schedule_query_adds_the_guard_to_a_temporary_copy_only(self):
+        config = self.root / 'backup-health-config.json'
+        original = json.dumps({'components': [{'id': 'onedrive', 'taskName': 'SYNK OneDrive 문서 백업'}]}, ensure_ascii=False)
+        config.write_text(original, encoding='utf-8')
+        seen = {}
+        def run(args, **_):
+            seen['path'] = Path(args[args.index('-ConfigPath') + 1])
+            seen['query'] = json.loads(seen['path'].read_text(encoding='utf-8'))
+            return subprocess.CompletedProcess(args, 0, json.dumps([{'id': 'space', 'exists': False}]).encode(), b'')
+        with patch.object(health.subprocess, 'run', side_effect=run):
+            tasks = health.task_snapshot(config, (health.SPACE_GUARD,))
+        self.assertEqual(seen['query']['additionalChecks'], [{'id': 'space', 'taskName': 'SYNK 공간 지킴이'}])
+        self.assertEqual(tasks, {'space': {'id': 'space', 'exists': False}})
+        self.assertFalse(seen['path'].exists())
+        self.assertEqual(config.read_text(encoding='utf-8'), original)
+
+
 if __name__ == '__main__': unittest.main()

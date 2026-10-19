@@ -425,6 +425,8 @@ function 시스템목록(root = ROOT) {
       sources = fs.readdirSync(scope.root).filter(name => /\.(?:py|ps1|sh|js|cjs|mjs)$|^README\.md$/i.test(name));
       sources.push(...workTextFiles(scope.root, source => /\.md$/i.test(source) ||
         (scope.mode === 'vault' && /^(?:(?:원본|서버)_복원목록(?:-\d+)?\.json|백업_복원안전목록\.json|backup-health-config\.json|protected-source-backup-status\.json|문서_안전사본_자동\/index\.json|작업문서_미통합_자동\/files\/[a-f0-9]{64}\.[a-z0-9]+)$/i.test(source)) ||
+        // 공간 지킴이 장부는 Drive에만 남긴 원본을 되살리는 근거다(원래 경로·크기·sha256·Drive 계정과 ID, 10-19).
+        (scope.mode === 'vault' && /^상태\/공간지킴이\/(?:내려놓은목록\.jsonl|latest\.json|[^/]+_Drive에없음\.json)$/i.test(source)) ||
         (scope.mode === 'vault' && /^(?:상태\/.*\/(?:upload-dirs\.json|upload-done\.jsonl|같은파일\.json|목록\.json)|복원검증_[^/]+\/.*\.(?:json|jsonl|txt)|OneDrive_이관_\d{8}\/복원목록\.json|작업문서_미통합_(?:\d{8}|자동)\/(?:index|excluded-protected-manifest)\.json|작업문서_미통합_자동\/manifests\/[a-f0-9]+-\d+\.json|작업문서_미통합_자동\/sources\/[a-f0-9]{2}\.json|문서_안전사본_20261018\/(?:원본복원목록|변환manifest)\.json|backup-monitor-config\.json|(?:서버백업|talk-백업|헤르메스-백업|라디오-백업)\/(?:_받은목록\.jsonl|_목록사본\/[^/]+\.jsonl))$/i.test(source)) ||
         (scope.mode === 'restore-tools' && /^(?:복원목록(?:_최소)?\.json|(?:media-)?upload-(?:dirs\.json|done\.jsonl)|backup-manifest\.json)$/i.test(source))));
     } else if (scope.mode === 'markdown') {
