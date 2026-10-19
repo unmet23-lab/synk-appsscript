@@ -438,7 +438,8 @@ test('account management keeps healthy rows quiet and opens each row menu in pla
   board.render(el,{signedIn:true,native:true});
   await tick();
   // 아래 입구의 요금·결제일은 넣은 값이 있으면 단추로, 다음 결제와 함께 보인다.
-  assert.match(el.innerHTML,/class="ms-button ms-foot-button" data-subs="manage" data-to="ms-cost"><b>요금·결제일<\/b><span>한 달 약 ₩43,000 · 다음 결제 /);
+  // 3차: 요금을 모르는 줄(여기서는 등급 없는 「Max」 두 줄 — 요금표에 없음)이 있으면 합계에서 빠졌다고 붙인다.
+  assert.match(el.innerHTML,/class="ms-button ms-foot-button" data-subs="manage" data-to="ms-cost"><b>요금·결제일<\/b><span>한 달 약 ₩43,000\(요금 모르는 2개 빼고\) · 다음 결제 /);
   await click({subs:'manage',to:'ms-cost'});
   // 정상 계정은 점만, 문제 계정만 칩. 확인 때 읽은 계정은 시각을 줄마다 쓰지 않는다.
   assert.match(el.innerHTML,/<span class="ms-mname">fine@example.com<\/span><span class="ms-mplan">Max<\/span><span class="ms-ok-mark">/);
@@ -831,16 +832,26 @@ test('a Max account that stayed low for four weeks without a 5-hour block is off
   const D=864e5,fresh=Date.now();
   const big=row({id:'big',email:'big@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:11,resetsAt:fresh+3*D}}});
   const five=row({id:'five',email:'five@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:14,resetsAt:fresh+2*D}}});
-  const priced=fresh-new Date(2026,9,19).getTime()<=60*D;
   // 20x는 4주 모두 20% 이하, 5x는 16% 이하 — 덜 내는 액수가 큰 20x를 먼저 권한다.
-  let f=phase2([big,five],{big:{weeks4:four([12,15,9,11],{hPeak:18})},five:{weeks4:four([10,12,14,8])}},{goal:'save'}),{el,board,d}=await draw2(f);
-  assert.match(el.innerHTML,new RegExp(`<b>big<\\/b> 계정\\(Max 20x\\)은 4주 내내 주간 한도를 20%도 안 썼어요\\. Max 5x로 낮춰도 넉넉할 가능성이 커요${priced?' · 공식 요금으로 한 달 \\$100 덜 내요':''}\\.`));
+  // 금액·결제 주기는 요금표(3차, 한국 결제 값 — 기본값 $200·$100에 부가세 10%)에서, 확인한 지 60일 안에만.
+  let f=phase3([big,five],{big:{weeks4:four([12,15,9,11],{hPeak:18})},five:{weeks4:four([10,12,14,8])}},{settings:{goal:'save'}}),{el,board,d}=await draw2(f);
+  assert.match(el.innerHTML,/<b>big<\/b> 계정\(Max 20x\)은 4주 내내 주간 한도를 20%도 안 썼어요\. Max 5x로 낮춰도 넉넉할 가능성이 커요 · 공식 요금으로 한 달 \$110 덜 내요\./);
   await d.click({subs:'tip-open',key:'size:claude'});
-  // 공식 배수는 5시간 창 기준이라 그렇게 말하고, 주간은 공식 자료가 없다고 밝힌다. 결제 주기는 요금과 같이 확인한 지 60일 안에만.
-  assert.match(el.innerHTML,new RegExp(`<li>Max 5x는 5시간마다 쓸 수 있는 양이 Max 20x의 1\\/4이에요\\(공식 배수 5배 대 20배\\)\\. 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요\\.<\\/li><li>주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요\\. 그래서 4주 모두 20% 이하일 때만 알려 드려요\\.<\\/li>${priced?'<li>Max 요금제는 월 결제만 있어요\\.<\\/li>':''}<\\/ol>`));
-  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 4주 7일씩 12% · 15% · 9% · 11% · 읽은 5시간 창 최고 18%\(Max 5x로 치면 72%\)<br>기준: 4주 모두 20% 이하이고 읽을 때마다 5시간 창이 25% 미만이었을 때/);
+  // 공식 배수는 5시간 창 기준이라 그렇게 말하고, 주간은 공식 자료가 없다고 밝힌다.
+  assert.match(el.innerHTML,/<li>Max 5x는 5시간마다 쓸 수 있는 양이 Max 20x의 1\/4이에요\(공식 배수 5배 대 20배\)\. 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요\.<\/li><li>주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요\. 그래서 4주 모두 20% 이하일 때만 알려 드려요\.<\/li><li>Max 요금제는 월 결제만 있어요\.<\/li><\/ol>/);
+  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 4주 7일씩 12% · 15% · 9% · 11% · 읽은 5시간 창 최고 18%\(Max 5x로 치면 72%\)<br>기준: 4주 모두 20% 이하이고 읽을 때마다 5시간 창이 25% 미만이었을 때 · 요금 확인 \d+\/\d+\(한국 결제 · 부가세 10% 포함\)/);
   assert.match(el.innerHTML,/data-subs="help" data-link="claude-plans">공식 안내<\/button>/);
   board.dispose();
+  // 요금표를 확인한 지 60일이 지나면 금액도 「월 결제만」도 말하지 않는다(팁 자체는 남는다).
+  f=phase3([big],{big:{weeks4:four([12,15,9,11],{hPeak:18})}},{prices:priceBook(fresh-61*D)});({el,board,d}=await draw2(f));
+  assert.match(el.innerHTML,/Max 5x로 낮춰도 넉넉할 가능성이 커요\.<\/span>/);
+  await d.click({subs:'tip-open',key:'size:claude'});
+  assert.ok(!el.innerHTML.includes('월 결제만')&&!el.innerHTML.includes('요금 확인')&&!/\$\d/.test(el.innerHTML));board.dispose();
+  // 5x → Pro는 한 달 $88(= ($100 − $20) × 1.1) 덜 내고, Pro 연간 결제는 한 달 $18꼴(1년 치 $220).
+  f=phase3([five],{five:{weeks4:four([10,12,14,8])}});({el,board,d}=await draw2(f));
+  assert.match(el.innerHTML,/Pro로 낮춰도 넉넉할 가능성이 커요 · 공식 요금으로 한 달 \$88 덜 내요\./);
+  await d.click({subs:'tip-open',key:'size:claude'});
+  assert.match(el.innerHTML,/<li>Pro는 연간 결제로 내면 한 달 \$18꼴이에요\(1년 치 \$220 한 번에\)\.<\/li>/);board.dispose();
   // 한 주라도 기준을 넘거나, 읽은 5시간 창이 낮춘 요금제에 안 들어가거나(20x → 5x는 25% 이상), 5시간 기록이 4주를 못 덮었거나,
   // 놓친 틈이 있거나, 못 읽은 주가 있거나, 지금 다시 로그인해야 하거나, 「막힘 없이 쓰기」를 고르면 권하지 않는다.
   for (const [accounts,settings,state] of [[{big:{weeks4:four([12,25,9,11])}},{}],[{big:{weeks4:four([12,15,9,11],{hPeak:25})}},{}],[{big:{weeks4:four([12,15,9,11],{hCover:false})}},{}],
@@ -899,4 +910,240 @@ test('an unused subscription is pointed out only in the five days before its bil
   // 결제일을 넣어 둔 Claude 계정이면 요금제 맞추기도 그 결제일 순서로 선다(내일 결제면 고르기 전에도 보인다).
   f=phase2([a,{...big,billDay:new Date(fresh+D).getDate()},key],accounts,{},services);({el,board}=await draw2(f));
   assert.ok(el.innerHTML.includes('data-key="size:claude"'));assert.equal([...el.innerHTML.matchAll(/data-key="[^"]+" aria-expanded/g)].length,2);board.dispose();
+});
+
+/* ---------- 3차(10-19): 한 달 요약 · 연간 결제·할인 시기 · 요금표 ---------- */
+// 요금표는 본체(ai-prices.cjs)의 앱 기본 사본 모양. 확인한 날은 시험을 돌리는 날 기준으로 만든다(60일 문이 날짜에 따라 깨지지 않게).
+const dayText=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+function priceBook(checkedAt=Date.now(),deals=[]){
+  const {DEFAULT_PRICES}=require('../src/ai-prices.cjs'),checked=dayText(checkedAt);
+  const services=Object.fromEntries(Object.entries(DEFAULT_PRICES.services).map(([k,v])=>[k,{...v,checked}]));
+  return {services,deals};
+}
+const twelve=(values,extra={})=>({cover:true,samePlan:true,weeks:values.map(v=>({used:v,reads:3})),...extra});
+function phase3(rows,accounts,{settings={},prices=priceBook()}={}){
+  const f=phase2(rows,accounts,settings);f.snapshot.prices=prices;return f;
+}
+const manageCost=async f=>{const r=await draw2(f);await r.d.click({subs:'manage',to:'ms-cost'});return r;};
+const textOf=html=>html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+const credit4=v=>({cover:true,known:true,hCover:false,hPeak:null,weeks:v.map(x=>({used:x,peak:null,reads:9}))});
+
+test('the monthly summary prices the last four weeks, says where the room is and leaves GPT·Gemini out',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5;
+  const busy=row({id:'busy',email:'busy@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:40,resetsAt:fresh+3*D}}});
+  const calm=row({id:'calm',email:'calm@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:2,resetsAt:fresh+3*D}}});
+  const key=row({id:'tc',service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'FjrE',plan:'lite',price:21000,currency:'KRW',live:{readAt:fresh,credits:100000,planCredits:200000},credits:100000,creditsAt:fresh});
+  const gpt=row({id:'g',service:'gpt',label:'ChatGPT · Codex',email:'g@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:3,resetsAt:fresh+3*D}}});
+  const accounts={busy:{weeks4:four([62,70,81,75])},calm:{weeks4:four([2,0,4,1])},tc:{weeks4:credit4([30000,25000,41000,22000])},g:{weeks4:four([1,1,1,1])}};
+  let f=phase3([busy,calm,key,gpt],accounts),{el,board,d}=await manageCost(f);
+  // 쓴 몫: 20x 72% · 5x 1.75%(넉넉하게 — 7일마다 큰 쪽의 4주 평균) · Typecast 118,000 ÷ (200,000 × 28/30.44) = 64%.
+  // 금액: 한국 결제 공식 요금 $220·$110(기본값 $200·$100 + 부가세 10%)과 넣은 ₩21,000, 1달러 = 1,400원. 합계는 원 단위, 쓴 만큼은 천 원 단위.
+  const total=220*1400+110*1400+21000,worth=220*1400*0.72+110*1400*0.0175+21000*(118000/(200000*28/(365.25/12)));
+  const won=v=>`₩${(Math.round(v/1000)*1000).toLocaleString('ko-KR')}`;
+  assert.match(el.innerHTML,new RegExp(`<p class="ms-sum-big">쓴 만큼으로 치면 <b class="ms-num">약 ${won(worth)}<\\/b>어치예요<\\/p><p class="ms-sum-sub">구독료 약 ₩${total.toLocaleString('ko-KR')} 중 ${Math.round(worth/total*100)}% · 쓴 몫을 아는 계정 3개 기준<\\/p>`));
+  // 가장 여유가 많은 계정(30% 넘게 남음)만 말하고, 「낭비」·「남겼다」는 쓰지 않는다.
+  assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>calm<\/b> 계정\(Claude Max 5x\)이에요 · 쓴 만큼 2%/);
+  assert.doesNotMatch(textOf(el.innerHTML),/낭비|남겼|아깝/);
+  // GPT는 Codex 한도라 요약에 넣지 않는다(계정별 목록에도 없다). 휴대폰에서도 남는 출처 낱말은 따로 감싼다.
+  await d.click({subs:'sum-open'});
+  assert.deepEqual([...el.innerHTML.matchAll(/<div class="ms-sum-row [^"]+"><span class="ms-tag">([^<]+)<\/span><span class="ms-sum-name"><span class="ms-sum-who">([^<]+)/g)].map(m=>`${m[1]}:${m[2]}`),['Claude:calm','Typecast:FjrE','Claude:busy']);
+  assert.match(el.innerHTML,/<b class="ms-num">약 ₩3,000<\/b><small><span class="ms-sum-of">₩154,000 중 · <\/span>공식 요금<\/small>/);
+  assert.match(el.innerHTML,/<span class="ms-sum-of">₩21,000 중 · <\/span>넣은 요금<\/small>/);
+  await d.click({subs:'sum-why'});
+  assert.match(el.innerHTML,/GPT·Gemini는 Codex·Antigravity 한도만 읽혀 구독 전체를 말할 수 없어 뺐어요\./);
+  assert.match(el.innerHTML,/Claude 요금 확인 \d+\/\d+\(한국 결제 · 부가세 10% 포함\)/);
+  // 요금 합계·목록·입구 글이 같은 기준: 넣은 값이 먼저, 넣지 않은 자동 연결 계정은 공식 요금, GPT는 요금 모름.
+  assert.match(el.innerHTML,/₩21,000 \+ \$330 · 구독 3개 · 공식 요금 2개 · 요금 모름 1개/);
+  assert.match(el.innerHTML,/<span class="ms-bill-price ms-num">\$220<small>공식 요금<\/small><\/span>/);
+  assert.match(el.innerHTML,/넣은 요금을 먼저 쓰고, 넣지 않은 계정은 공식 요금으로 셈해요\./);
+  // ⋯ 메뉴도 공식 요금으로 셈한다고 말하고, 편집 칸은 공식 요금을 자리 표시로(달러) 보인다.
+  await d.click({subs:'menu',id:'calm'});
+  assert.match(el.innerHTML,/<p>공식 요금 월 \$110\(한국 결제 · 부가세 10% 포함\)로 셈해요 · 다르면 「요금·결제일」에서 고쳐 주세요<\/p>/);
+  await d.click({subs:'edit',id:'calm'});
+  assert.match(el.innerHTML,/name="price" type="number" min="0" step="any" value="" placeholder="110"><select name="currency" aria-label="통화"><option value="KRW">원<\/option><option value="USD" selected>달러<\/option>/);
+  // 요약 끄기: 그 자리에 한 줄, 기록은 지우지 않는다.
+  await d.click({subs:'summary-off'});
+  assert.deepEqual(f.saves.at(-1),{settings:{summaryOff:true}});assert.match(f.toasts.at(-1),/기록은 그대로 둬요/);
+  board.dispose();
+  f=phase3([busy,calm,key,gpt],accounts,{settings:{summaryOff:true}});({el,board,d}=await manageCost(f));
+  assert.match(el.innerHTML,/<p class="ms-sum-off">한 달 요약을 꺼 두었어요 · <button type="button" class="ms-link" data-subs="summary-on">다시 켜기<\/button><\/p>/);
+  assert.ok(!el.innerHTML.includes('class="ms-sum"'));
+  await d.click({subs:'summary-on'});assert.deepEqual(f.saves.at(-1),{settings:{summaryOff:false}});
+  board.dispose();
+  // 한눈에 아래 입구 글: 같은 기준의 한 달 합계(요금 모르는 줄 수와 함께)와 쓴 몫.
+  f=phase3([busy,calm,key,gpt],accounts);({el,board}=await draw2(f));
+  assert.match(el.innerHTML,new RegExp(`<b>요금·결제일<\\/b><span>한 달 약 ₩${total.toLocaleString('ko-KR')}\\(요금 모르는 1개 빼고\\) · 지난 4주 쓴 만큼 약 ${Math.round(worth/total*100)}%<\\/span>`));
+  board.dispose();
+});
+
+test('the monthly summary waits for four known weeks, says why it waits and drops money once the price table is 60 days old',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5;
+  const a=row({id:'a',email:'a@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:10,resetsAt:fresh+3*D}}});
+  // 기록이 막 시작됐으면 첫 기록 4주 뒤 날짜를 「쯤」으로, 기록이 아직 하나도 없으면 「첫 기록부터 4주 뒤」.
+  let f=phase3([a],{a:{since:fresh-3*D,weeks4:{...four([10,10,10,10]),cover:false}}}),{el,board,d}=await manageCost(f);
+  const at=new Date(fresh-3*D+28*D);
+  assert.match(el.innerHTML,new RegExp(`계정마다 기록이 4주 쌓이면 보여 드려요 · <span class="ms-num">${at.getMonth()+1}\\/${at.getDate()}<\\/span>쯤부터`));
+  board.dispose();
+  f=phase3([a],{});({el,board}=await manageCost(f));assert.match(el.innerHTML,/첫 기록부터 4주 뒤에 보여 드려요\./);board.dispose();
+  // 요금표에 없는 요금제라 한 달 크레딧을 모르면 기록 탓이 아니라 그렇게 말한다(구현 검수 P3-C).
+  const odd=row({id:'odd',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'odd@example.com',plan:'creator',live:{readAt:fresh,credits:300},credits:300,creditsAt:fresh});
+  f=phase3([odd],{odd:{since:fresh-60*D,weeks4:credit4([270,270,270,270])}});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,/<p class="ms-sum-sub">요금제의 한 달 크레딧을 알 수 없어 셈하지 못했어요\.<\/p>/);board.dispose();
+  // 놓친 틈·못 읽은 주가 있으면 셈하지 않는다(모르는 주를 「안 썼다」로 세지 않게).
+  for (const w4 of [four([10,10,10,10],{known:false}),{...four([10,10,10,10]),weeks:[10,0,10,10].map((v,i)=>({used:v,peak:i===1?null:v,reads:i===1?0:2}))}]){
+    f=phase3([a],{a:{since:fresh-60*D,weeks4:w4}});({el,board}=await manageCost(f));
+    assert.ok(!el.innerHTML.includes('class="ms-sum-big"'));assert.match(el.innerHTML,/4주 동안 매주 읽은 기록이 있어야 셈할 수 있어요/);board.dispose();
+  }
+  // 요금표를 확인한 지 60일이 지나고 넣은 요금도 없으면 금액 없이 %만 — 합계·목록에도 공식 요금이 빠진다.
+  // 한 달 크레딧은 요금제 사실이라 60일 문 밖: Higgsfield도 그대로 셈하고 「기록이 모자라다」고 말하지 않는다(Fable 3차 시안 P2-1).
+  const h=row({id:'h',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h@example.com',plan:'plus',live:{readAt:fresh,credits:300},credits:300,creditsAt:fresh});
+  f=phase3([a,h],{a:{since:fresh-60*D,weeks4:four([10,10,10,10])},h:{since:fresh-60*D,weeks4:credit4([270,270,270,270])}},{prices:priceBook(fresh-61*D)});({el,board,d}=await manageCost(f));
+  const hShare=Math.min(1,1080/(1200*28/(365.25/12)));
+  assert.match(el.innerHTML,new RegExp(`<p class="ms-sum-big">쓴 만큼으로 치면 평균 <b class="ms-num">${Math.round((0.1+hShare)/2*100)}%<\\/b>예요<\\/p><p class="ms-sum-sub">쓴 몫을 아는 계정 2개 기준 · 요금을 넣으면 금액으로도 셈해요<\\/p>`));
+  await d.click({subs:'sum-why'});
+  assert.ok(!el.innerHTML.includes('기록이 모자란'));assert.ok(!el.innerHTML.includes('공식 요금'));assert.ok(!/\$\d/.test(textOf(el.innerHTML)));
+  board.dispose();
+});
+
+test('a Claude Pro account used steadily for twelve weeks gets one yearly-billing tip, a Max account never does',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5;
+  const pro=row({id:'pro',email:'pro@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:50,resetsAt:fresh+3*D}}});
+  const max=row({id:'max',email:'max@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:90,resetsAt:fresh+3*D}}});
+  const steady=twelve([45,52,48,55,60,58,62,57,66,61,59,64]);
+  let f=phase3([pro,max],{pro:{weeks12:steady},max:{weeks12:twelve(Array(12).fill(95))}}),{el,board,d}=await manageCost(f);
+  // 한국 결제 값: 월 $22 × 12 − 1년 치 $220 = $44.
+  assert.match(el.innerHTML,/<b>pro<\/b> 계정\(Pro\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$44<\/b> 덜 내요\./);
+  assert.equal((el.innerHTML.match(/data-key="annual:claude"/g)||[]).length,1);
+  await d.click({subs:'tip-open',key:'annual:claude'});
+  assert.match(el.innerHTML,/<li>연간 결제는 1년 치를 한 번에 내요: \$220\(한 달 \$18꼴, 한국 결제 · 부가세 10% 포함\)\. 월 결제는 한 달 \$22예요\.<\/li><li>1년 동안 계속 쓸 계획일 때만 바꿔 보세요\. Max 요금제에는 연간 결제가 없어요\.<\/li>/);
+  assert.match(el.innerHTML,/지난 12주 4주씩 주간 한도 평균 50% · 59% · 63%<br>기준: 12주 내내 같은 요금제로 4주씩 평균 40% 넘게 썼을 때 · 요금 확인/);
+  // 「이미 연간이에요」는 그 계정을 연간으로 표시해 다시 말하지 않게 한다.
+  await d.click({subs:'cycle',id:'pro',cycle:'annual'});
+  assert.deepEqual(f.saves.at(-1),{row:{id:'pro',cycle:'annual'}});assert.match(f.toasts.at(-1),/연간 결제로 표시했어요/);
+  board.dispose();
+  // 연간으로 표시한 뒤: 팁은 사라지고, 한 달 요금은 1년 치 $220 ÷ 12 = $18꼴, 목록의 결제일 칸은 「연간 결제」.
+  f=phase3([{...pro,cycle:'annual'}],{pro:{weeks12:steady}});({el,board}=await manageCost(f));
+  assert.ok(!el.innerHTML.includes('data-key="annual:claude"'));
+  assert.match(el.innerHTML,/<span class="ms-bill-price ms-num">\$18<small>공식 요금<\/small><\/span><span class="ms-bill-day">연간 결제<\/span>/);
+  board.dispose();
+  // 4주 한 덩이라도 40% 이하, 못 읽은 주, 12주를 못 덮음, 12주 안에 요금제를 바꿈, 지금 못 읽힘이면 말하지 않는다.
+  const cases=[twelve([45,52,48,55,30,30,40,40,66,61,59,64]),{...steady,weeks:steady.weeks.map((w,i)=>(i===5?{...w,reads:0}:w))},{...steady,cover:false},{...steady,samePlan:false}];
+  for (const w12 of cases){f=phase3([pro],{pro:{weeks12:w12}});({el,board}=await manageCost(f));assert.ok(!el.innerHTML.includes('data-key="annual:claude"'));board.dispose();}
+  f=phase3([{...pro,state:'error'}],{pro:{weeks12:steady}});({el,board}=await manageCost(f));assert.ok(!el.innerHTML.includes('data-key="annual:claude"'));board.dispose();
+  // 한 주에 100%를 넘게 센 구간(창 둘이 겹친 주)은 100%로 자른다 — 다른 주가 낮으면 「꾸준히」가 아니다.
+  f=phase3([pro],{pro:{weeks12:twelve([150,10,10,10,60,58,62,57,66,61,59,64])}});({el,board}=await manageCost(f));assert.ok(!el.innerHTML.includes('data-key="annual:claude"'));board.dispose();
+  // 요금표가 60일 지남, 팁 끄기, 쉬는 중이면 말하지 않는다. 쉬는 팁이 있으면 칸 아래 「다시 보기」 한 줄.
+  for (const opts of [{prices:priceBook(fresh-61*D)},{settings:{tipsOff:true}},{settings:{tips:{'annual:claude':{stops:1,until:fresh+5*D}}}}]){
+    f=phase3([pro],{pro:{weeks12:steady}},opts);({el,board}=await manageCost(f));assert.ok(!el.innerHTML.includes('data-key="annual:claude"'));board.dispose();
+  }
+  f=phase3([pro],{pro:{weeks12:steady}},{settings:{tips:{'annual:claude':{stops:1,until:fresh+5*D},'spike:higgsfield':{stops:1,until:fresh+5*D}}}});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,/<p class="mu-rest">쉬고 있는 연간 결제 팁 1개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기<\/button><\/p>/);board.dispose();
+});
+
+test('a steady Higgsfield plan hears the yearly saving with its no-way-back catch, and a dated sale only when the table has one',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5;
+  const h=(id,plan)=>row({id,service:'higgsfield',label:'Higgsfield',kind:'credit',email:`${id}@example.com`,plan,live:{readAt:fresh,credits:500},credits:500,creditsAt:fresh});
+  const heavy=twelve([700,820,760,690,720,800,750,710,690,760,820,700]);
+  let f=phase3([h('ultra','ultra'),h('starter','starter')],{ultra:{weeks12:heavy},starter:{weeks12:twelve(Array(12).fill(200))}}),{el,board,d}=await manageCost(f);
+  // 단서는 머리 글에(펼치지 않아도 보이게). Starter는 연간이 월간과 같아 말하지 않는다. 세금 별도 값 그대로($129 × 12 − $1,188).
+  assert.match(el.innerHTML,/<b>ultra<\/b> 계정\(Ultra\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$360<\/b> 덜 내요\. 다만 중간에 월 결제로 못 돌아와요\./);
+  assert.ok(!el.innerHTML.includes('<b>starter</b>'));
+  await d.click({subs:'tip-open',key:'annual:higgsfield'});
+  assert.match(el.innerHTML,/<li>연간 결제는 한 달 \$99꼴이에요\(월 결제는 \$129, 세금 별도\)\.<\/li><li>연간 결제에서 월 결제로는 되돌릴 수 없어요\./);
+  assert.match(el.innerHTML,/지난 12주 4주씩 2,970 · 2,980 · 2,970크레딧 · 한 달 크레딧 3,000\(Ultra 가장 작은 등급 기준\)/);
+  assert.match(el.innerHTML,/data-subs="help" data-link="higgsfield-annual">공식 안내<\/button>/);
+  assert.ok(!el.innerHTML.includes('할인'));
+  board.dispose();
+  // 4주씩 한 달 크레딧의 50%(약 1,380)를 한 번이라도 못 넘으면 말하지 않는다.
+  f=phase3([h('ultra','ultra')],{ultra:{weeks12:twelve([700,820,760,690,300,300,300,300,690,760,820,700])}});({el,board}=await manageCost(f));
+  assert.ok(!el.innerHTML.includes('data-key="annual:higgsfield"'));board.dispose();
+  // 할인 시기: 요금표에 날짜·출처가 있는 할인이 45일 안에 시작하면 기다려 보라고, 진행 중이면 언제까지인지. 첫 결제에만 붙는다는 공식 문장도.
+  const deal=(from,until,checked=fresh)=>({service:'higgsfield',plans:['ultra'],cycle:'year',from:dayText(from),until:dayText(until),checked:dayText(checked),source:'higgsfield-pricing',off:30});
+  const soonAt=new Date(fresh+10*D);
+  f=phase3([h('ultra','ultra')],{ultra:{weeks12:heavy}},{prices:priceBook(fresh,[deal(fresh+10*D,fresh+14*D)])});({el,board,d}=await manageCost(f));
+  assert.match(el.innerHTML,new RegExp(`<b class="ms-num">${soonAt.getMonth()+1}\\/${soonAt.getDate()}<\\/b>부터 연간 결제 할인\\(30%\\)이 있어요 · 바꾸려면 그때까지 기다려 보세요\\.`));
+  await d.click({subs:'tip-open',key:'annual:higgsfield'});assert.match(el.innerHTML,/<li>할인가는 첫 결제에만 붙고, 다음 결제부터는 정가로 갱신돼요\.<\/li>/);
+  board.dispose();
+  const endAt=new Date(fresh+2*D);
+  f=phase3([h('ultra','ultra')],{ultra:{weeks12:heavy}},{prices:priceBook(fresh,[deal(fresh-D,fresh+2*D)])});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,new RegExp(`지금 연간 결제 할인 중이에요\\(30%\\) · ${endAt.getMonth()+1}\\/${endAt.getDate()}까지\\.`));board.dispose();
+  // 너무 먼 할인(45일 뒤), 확인한 지 60일 지난 할인, 다른 요금제 할인은 말하지 않는다.
+  for (const d2 of [deal(fresh+50*D,fresh+52*D),deal(fresh+5*D,fresh+7*D,fresh-61*D),{...deal(fresh+5*D,fresh+7*D),plans:['plus']}]){
+    f=phase3([h('ultra','ultra')],{ultra:{weeks12:heavy}},{prices:priceBook(fresh,[d2])});({el,board}=await manageCost(f));
+    assert.ok(!el.innerHTML.includes('할인'));board.dispose();
+  }
+  // 입구 글에 연간 결제 팁 개수가 붙는다.
+  f=phase3([h('ultra','ultra')],{ultra:{weeks12:heavy}});({el,board}=await draw2(f));
+  assert.match(el.innerHTML,/연간 결제 팁 1개/);board.dispose();
+});
+
+test('the billing cycle can be set in the row form, and a yearly row gets no monthly bill nudge',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5,bill=new Date(fresh+3*D).getDate();
+  const idle=row({id:'ci',email:'ci@example.com',plan:'pro',billDay:bill,price:29000,currency:'KRW',cycle:'annual',live:{readAt:fresh,weekly:{usedPercent:2,resetsAt:fresh+4*D}}});
+  let f=phase3([idle],{ci:{weeks4:four([2,0,4,1])}}),{el,board,d}=await draw2(f);
+  // 연간으로 표시한 줄은 「매월 n일」을 결제로 세지 않는다 — 안 쓰는 구독 팁·입구의 다음 결제·7일 일정 모두.
+  assert.ok(!el.innerHTML.includes('data-key="idle:claude"'));assert.ok(!el.innerHTML.includes('다음 결제'));
+  await d.click({subs:'manage'});await d.click({subs:'menu',id:'ci'});
+  assert.match(el.innerHTML,/<p>월 ₩29,000<\/p>/);
+  assert.match(el.innerHTML,/연간 결제로 표시했어요 · 연간 결제 팁과 결제 전 알림을 드리지 않아요\. <button type="button" class="ms-link" data-subs="cycle" data-id="ci" data-cycle="">월 결제로 바꾸기<\/button>/);
+  await d.click({subs:'cycle',id:'ci',cycle:''});assert.deepEqual(f.saves.at(-1),{row:{id:'ci',cycle:null}});
+  // 편집 칸: 결제 주기를 고를 수 있고(연간이면 결제일 칸을 숨기고 「1년 치 ÷ 12」 도움말), 저장하면 그 값이 같이 간다.
+  await d.click({subs:'edit',id:'ci'});
+  assert.match(el.innerHTML,/data-subs-form="edit" data-id="ci" data-kind="weekly" data-cycle="annual">/);
+  assert.match(el.innerHTML,/<label>결제 주기<select name="cycle" data-cycle-select><option value="">월 결제<\/option><option value="annual" selected>연간 결제<\/option><\/select><\/label>/);
+  assert.match(el.innerHTML,/<small class="ms-only-annual">연간 결제면 1년 치를 12로 나눈 값을 넣어 주세요<\/small><\/label>\s*<label class="ms-only-monthly">결제일\(매월\)/);
+  const values={price:'25000',currency:'KRW',bill:'',note:'',cycle:'annual'};
+  await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'edit',id:'ci'},querySelector:sel=>{const m=/name="([^"]+)"/.exec(sel);return m&&Object.hasOwn(values,m[1])?{value:values[m[1]]}:null;}})}});await tick();await tick();
+  assert.deepEqual(f.saves.at(-1),{row:{id:'ci',price:25000,currency:'KRW',billDay:null,note:'',cycle:'annual'}});
+  board.dispose();
+});
+
+test('free plans and long-unread rows are not priced from the table',async()=>{
+  prepare();
+  const fresh=Date.now(),D=864e5;
+  const free=row({id:'free',service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'Free',plan:'free',live:{readAt:fresh,credits:15000,planCredits:15000},credits:15000,creditsAt:fresh});
+  const gone=row({id:'gone',email:'gone@example.com',plan:'max_5x',state:'needs-login',live:{readAt:fresh-40*D,weekly:{usedPercent:5,resetsAt:fresh-30*D}}});
+  const lately=row({id:'lately',email:'lately@example.com',plan:'max_5x',state:'error',live:{readAt:fresh-5*D,weekly:{usedPercent:5,resetsAt:fresh+D}}});
+  const f=phase3([free,gone,lately],{}),{el,board}=await manageCost(f);
+  // 무료 요금제($0)는 구독으로 세지 않고, 30일 넘게 못 읽힌 줄은 끊었을 수 있어 「요금 모름」, 며칠 못 읽힌 줄은 그대로 공식 요금.
+  assert.match(el.innerHTML,/\$110 · 구독 1개 · 공식 요금 1개 · 요금 모름 1개/);
+  board.dispose();
+});
+
+test('the captured scene adds up: 1,727,600 a month, about 1,183,000 used, 68%, $44 and $360 a year',async()=>{
+  prepare();
+  // 캡처 장면(.tmp/annual-summary-20261019/preview/phase3-capture.mjs)을 고정 날짜로: 11/20 16:00, 요금표 10/19 확인, 할인 예시 11/27~12/1.
+  const NOW3=new Date(2026,10,20,16,0).getTime(),D=864e5,real=Date.now;Date.now=()=>NOW3;
+  try{
+    const c=(id,plan)=>row({id,email:`${id}@example.com`,plan,live:{readAt:NOW3,weekly:{usedPercent:20,resetsAt:NOW3+3*D}}});
+    const h=(id,plan)=>row({id,service:'higgsfield',label:'Higgsfield',kind:'credit',email:`${id}@example.com`,plan,live:{readAt:NOW3,credits:500},credits:500,creditsAt:NOW3});
+    const rows=[c('synk','max_20x'),c('founder','max_20x'),c('u23','max_5x'),c('u25','max_5x'),c('u27','max_5x'),c('y77','max_5x'),c('u29','pro'),h('h77','ultra'),h('h23','plus'),h('hf','ultra'),
+      row({id:'tc',service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'FjrE',plan:'lite',price:21000,currency:'KRW',live:{readAt:NOW3,credits:114647,planCredits:200000},credits:114647,creditsAt:NOW3})];
+    const W4={synk:[62,70,81,75],founder:[88,92,95,90],u23:[40,55,48,52],u25:[30,35,28,40],u27:[2,0,4,1],y77:[60,66,58,70],u29:[55,61,48,66]};
+    const C4={hf:[700,820,760,690],h77:[600,700,650,500],h23:[300,250,280,260],tc:[30000,25000,41000,22000]};
+    const accounts={};
+    for (const [id,v] of Object.entries(W4))accounts[id]={weeks4:four(v)};
+    for (const [id,v] of Object.entries(C4))accounts[id]={weeks4:credit4(v)};
+    accounts.u29.weeks12=twelve([45,52,48,55,60,58,62,57,66,61,59,64]);accounts.hf.weeks12=twelve([700,820,760,690,720,800,750,710,690,760,820,700]);
+    const prices=priceBook(new Date(2026,9,19).getTime(),[{service:'higgsfield',plans:['plus','ultra'],cycle:'year',from:'2026-11-27',until:'2026-12-01',checked:'2026-11-10',source:'higgsfield-pricing',off:30}]);
+    const f=phase3(rows,accounts,{prices}),{el,board}=await manageCost(f);
+    assert.match(el.innerHTML,/쓴 만큼으로 치면 <b class="ms-num">약 ₩1,183,000<\/b>어치예요<\/p><p class="ms-sum-sub">구독료 약 ₩1,727,600 중 68% · 쓴 몫을 아는 계정 11개 기준/);
+    assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>u27<\/b> 계정\(Claude Max 5x\)이에요 · 쓴 만큼 2%/);
+    assert.match(el.innerHTML,/<strong class="ms-num">약 ₩1,727,600<\/strong><small>₩21,000 \+ \$1,219 · 구독 11개 · 공식 요금 10개<\/small>/);
+    assert.match(el.innerHTML,/<b>u29<\/b> 계정\(Pro\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$44<\/b> 덜 내요\./);
+    assert.match(el.innerHTML,/<b>hf<\/b> 계정\(Ultra\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$360<\/b> 덜 내요\. 다만 중간에 월 결제로 못 돌아와요\. <b class="ms-num">11\/27<\/b>부터 연간 결제 할인\(30%\)이 있어요/);
+    board.dispose();
+  }finally{Date.now=real;}
+  // 같은 판을 10/20에 열면(첫 기록 10/19) 「11/16쯤부터」.
+  const NOW0=new Date(2026,9,20,10,0).getTime();Date.now=()=>NOW0;
+  try{
+    const a=row({id:'a',email:'a@example.com',plan:'max_5x',live:{readAt:NOW0,weekly:{usedPercent:5,resetsAt:NOW0+3*864e5}}});
+    const f=phase3([a],{a:{since:new Date(2026,9,19,9,0).getTime(),weeks4:{...four([5,5,5,5]),cover:false}}},{prices:priceBook(new Date(2026,9,19).getTime())}),{el,board}=await manageCost(f);
+    assert.match(el.innerHTML,/계정마다 기록이 4주 쌓이면 보여 드려요 · <span class="ms-num">11\/16<\/span>쯤부터/);board.dispose();
+  }finally{Date.now=real;}
 });

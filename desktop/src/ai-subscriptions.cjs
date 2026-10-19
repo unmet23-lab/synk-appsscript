@@ -12,6 +12,7 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {spawn:nodeSpawn}=require('node:child_process');
 const {usageSummary,sampleOf,parseHistory,KEEP:HISTORY_KEEP}=require('./ai-usage.cjs');
+const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices,readCapped}=require('./ai-prices.cjs');
 
 const SERVICES=Object.freeze({
   claude:Object.freeze({label:'Claude',kind:'weekly',bin:'claude',home:'CLAUDE_CONFIG_DIR',folders:true}),
@@ -56,11 +57,17 @@ const HELP_LINKS=Object.freeze({
   'codex-resets':'https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work',
   'claude-resets':'https://support.claude.com/en/articles/17007452-about-limit-resets',
   'claude-usage':'https://claude.ai/settings/usage',
+  // 요금표·연간 결제(3차, 10-19 확인): 요금표의 출처와 연간 결제 팁의 근거. 받은 요금표는 이 열쇠로만 출처를 가리킨다.
+  'higgsfield-pricing':'https://higgsfield.ai/pricing',
+  'higgsfield-annual':'https://higgsfield.ai/creator-hub/help-center/plans/can-i-switch-between-monthly-and-annual-billing',
+  'typecast-api-pricing':'https://typecast.ai/kr/pricing/api/',
 });
 // 자동 읽기(사용 기록용): 앱이 켜 있는 동안 마지막 전체 확인에서 6시간이 지났을 때 · 계정마다 주간 초기화 10분 전 · 결제일 아침 9시 뒤 처음.
 const AUTO_EVERY=6*3600*1000,PRE_RESET=10*60*1000,BILL_HOUR=9,DAY_MS=864e5;
 // 팁 반응: 「도움 됐어요」는 같은 팁을 7일 쉬고(빈도를 늘리지 않는다), 「이런 팁 그만」은 4주, 두 번째부터 12주.
-const TIP_KEY=/^(spike|pace|pass|size|idle):(claude|gpt|gemini|higgsfield|typecast)$/;
+const TIP_KEY=/^(spike|pace|pass|size|idle|annual):(claude|gpt|gemini|higgsfield|typecast)$/;
+// 3차(10-19): 요금표는 하루에 한 번까지만 synk.im에서 새로 받는다(계정판을 열 때·자동 읽기 때). 못 받으면 가진 것(앱 기본 사본·지난 갱신본)을 그대로 쓴다.
+const PRICE_EVERY=24*3600*1000,PRICE_TIMEOUT=15000;
 // 2차(10-19): 팁을 어느 쪽으로 드릴지(아끼기·막힘 없이 쓰기·아직 몰라요). 고르기 전은 비워 둔다.
 const GOALS=new Set(['save','smooth','unsure']);
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
@@ -173,11 +180,13 @@ function commandFor(file,args,{platform,env}){
 
 // secrets: {available(),encrypt(text)->Buffer,decrypt(Buffer)->text} — 데스크톱 본체가 safeStorage로 넘긴다. 없으면 키를 받지 않는다.
 // retryDelay: 「로그인 필요」로 읽힌 줄을 다시 읽기 전에 기다리는 시간(ms).
-function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
+// priceFetch: 요금표 갱신본을 받는 fetch(3차). 데스크톱 본체만 넘긴다 — 없으면 앱 기본 사본만 쓰고 밖으로 아무것도 묻지 않는다(시험이 인터넷에 닿지 않게).
+function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,priceFetch=null,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
   if(!root)throw new TypeError('root is required');
-  const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts'),historyFile=path.join(root,'history.jsonl');
+  const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts'),historyFile=path.join(root,'history.jsonl'),pricesFile=path.join(root,'prices.json');
   // checkQuiet: 자동 읽기처럼 회원이 누르지 않은 확인. 화면에는 「확인 중」·진행 수를 보이지 않고, 알림에 quiet를 달아 숫자를 굴리지 않게 한다.
-  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,checkProgress=null,seq=0,history=null,checkQuiet=false;
+  // prices: 지금 쓰는 요금표(앱 기본 사본 + 지난 갱신본), pricesTried: 마지막으로 갱신본을 물은 때(이 실행 안에서만), pricesBusy: 받는 중인 약속.
+  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,checkProgress=null,seq=0,history=null,checkQuiet=false,prices=null,pricesTried=-Infinity,pricesBusy=null;
   home=home||env.USERPROFILE||env.HOME||'';
 
   /* 저장 */
@@ -213,6 +222,37 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     history=loadHistory().filter(s=>s.t>=from&&ids.has(s.id));
     try{fs.mkdirSync(root,{recursive:true});const tmp=historyFile+'.'+process.pid+'.tmp';fs.writeFileSync(tmp,history.map(s=>JSON.stringify(s)+'\n').join(''));fs.renameSync(tmp,historyFile);}catch{}
   }
+  /* 요금표(3차) — 앱 기본 사본과 이 PC에 받아 둔 갱신본(prices.json) 가운데 서비스마다 더 최근에 확인한 쪽 */
+  function loadPrices(){
+    if(prices)return prices;
+    let stored=null;
+    try{stored=validatePrices(JSON.parse(fs.readFileSync(pricesFile,'utf8')),now());}catch{}
+    prices=mergePrices(validatePrices(DEFAULT_PRICES,now(),{trusted:true}),stored);
+    return prices;
+  }
+  // 고정 주소에서 요금표 갱신본을 받는다(하루 한 번까지, 로그인 정보·기록은 보내지 않는다). 받은 것은 검사한 뒤에만 이 PC에 두고, 바뀌었을 때만 화면에 알린다.
+  function refreshPrices({force=false}={}){
+    if(typeof priceFetch!=='function')return Promise.resolve(false);
+    if(pricesBusy)return pricesBusy;
+    if(!force&&now()-pricesTried<PRICE_EVERY)return Promise.resolve(false);
+    pricesTried=now();
+    pricesBusy=(async()=>{
+      try{
+        const res=await priceFetch(PRICES_URL,{headers:{Accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(PRICE_TIMEOUT)});
+        if(!res||res.status!==200)return false;
+        const text=await readCapped(res);if(text===null)return false;
+        const fresh=validatePrices(JSON.parse(text),now());if(!fresh)return false;
+        try{fs.mkdirSync(root,{recursive:true});const tmp=pricesFile+'.'+process.pid+'.tmp';fs.writeFileSync(tmp,JSON.stringify({schemaVersion:1,kind:'synk-ai-prices',...fresh,fetchedAt:now()}));fs.renameSync(tmp,pricesFile);}catch{}
+        const before=JSON.stringify(loadPrices());
+        prices=mergePrices(validatePrices(DEFAULT_PRICES,now(),{trusted:true}),fresh);
+        const changed=JSON.stringify(prices)!==before;
+        if(changed)emit();
+        return changed;
+      }catch{return false;}
+      finally{pricesBusy=null;}
+    })();
+    return pricesBusy;
+  }
   function remember(row){
     const sample=sampleOf(row,row.live?.readAt||now());if(!sample)return;
     const h=loadHistory();h.push(sample);
@@ -235,6 +275,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       usedUpAt:clampNumber(row.usedUpAt,0,9e15),note:cleanText(row.note,120),
       // Claude 주간 초기화권(회원이 넣음): Claude Code가 알려 주지 않아 claude.ai 설정 › 사용량을 보고 개수·만료 때를 넣는다.
       passCount:(n=>n===null?null:Math.round(n))(clampNumber(row.passCount,0,20)),passUntil:clampNumber(row.passUntil,0,9e15),
+      // 결제 주기(3차): 회원이 「이미 연간이에요」로 연간 결제라고 알려 준 줄만 'annual'. 모르면 비운다(월 결제로 단정하지 않는다).
+      cycle:row.cycle==='annual'?'annual':null,
       // API 키로 연결한 줄: 같은 키를 두 번 넣었는지 가리는 지문(화면에는 안 보냄)과 끝 네 글자.
       keyId:source==='auto'&&known?.apiKey&&/^[0-9a-f]{16}$/.test(row.keyId||'')?row.keyId:null,
       keyHint:source==='auto'&&known?.apiKey?cleanText(row.keyHint,8)||null:null,
@@ -247,7 +289,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const b=load();
     return {ok:true,seq:++seq,platform,tools:tools?Object.fromEntries(Object.entries(tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:k==='higgsfield'?!!v.npm:undefined,api:v.api?true:undefined}])):null,
       rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
-      usage:usageSummary({rows:b.rows,history:loadHistory(),now:now()}),
+      usage:usageSummary({rows:b.rows,history:loadHistory(),now:now()}),prices:loadPrices(),
       login:login?{id:login.id,service:login.service,stage:login.stage,url:login.url,needsCode:login.needsCode,message:login.message,console:!!login.console}:null,
       checking:!!checking&&!checkQuiet,progress:checking&&!checkQuiet&&checkProgress?{...checkProgress}:null,quiet:checkQuiet};
   }
@@ -469,14 +511,15 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const total=clampNumber(data?.credits?.plan_credits,0,1e12),used=clampNumber(data?.credits?.used_credits,0,1e12);
     if(total===null||used===null)return {ok:false,code:'KEY_CHECK_FAILED'};
     const plan=typeof data.plan==='string'?data.plan:typeof data.plan?.name==='string'?data.plan.name:null;
-    return {ok:true,plan:plan?cleanText(plan,40):null,credits:total-used};
+    // planCredits(3차): 이번 요금제의 한 달 크레딧 — 한 달 요약이 「4주 동안 쓴 크레딧 ÷ 한 달 크레딧」을 셀 때 요금표보다 먼저 쓴다.
+    return {ok:true,plan:plan?cleanText(plan,40):null,credits:total-used,planCredits:total};
   }
   async function readTypecast(row){
     if(!secretsReady())return {state:'error',message:'이 PC에서 저장한 API 키를 열 수 없어요. 키를 다시 넣어 주세요.'};
     const key=row.folder?readKey(row.folder):null;
     if(!key)return {state:'needs-login',message:'저장한 Typecast API 키를 찾지 못했어요. 키를 다시 넣어 주세요.'};
     const sub=await typecastSubscription(key);
-    if(sub.ok)return {state:'ok',plan:sub.plan,live:{readAt:now(),credits:sub.credits}};
+    if(sub.ok)return {state:'ok',plan:sub.plan,live:{readAt:now(),credits:sub.credits,planCredits:sub.planCredits}};
     if(sub.code==='INVALID_KEY')return {state:'needs-login',message:'Typecast API 키가 더 이상 맞지 않아요. 새 키로 다시 연결해 주세요.'};
     return {state:'error',message:sub.code==='NETWORK'?'Typecast에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 확인해 주세요.':'Typecast 크레딧을 읽지 못했어요. 잠시 뒤 다시 확인해 주세요.'};
   }
@@ -741,7 +784,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     catch{if(fresh)removeFolder(folder);return {ok:false,code:'SECURE_STORAGE_UNAVAILABLE'};}
     if(fresh){row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,keyId,keyHint:'…'+value.slice(-4)});b.rows.push(row);}
     else{row.folder=folder;row.keyId=keyId;row.keyHint='…'+value.slice(-4);}
-    applyRead(row,{state:'ok',plan:sub.plan,live:{readAt:now(),credits:sub.credits}});
+    applyRead(row,{state:'ok',plan:sub.plan,live:{readAt:now(),credits:sub.credits,planCredits:sub.planCredits}});
     persist();emit();
     return {ok:true,id:row.id,snapshot:publicSnapshot()};
   }
@@ -772,12 +815,14 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const b=load();
     if(!patch||typeof patch!=='object')return {ok:false,code:'INVALID_REQUEST'};
     if(patch.settings&&typeof patch.settings==='object'){
-      // 목표(아끼기·막힘 없이 쓰기·아직 몰라요)와 「팁 전부 끄기」. 모르는 값이면 아무것도 바꾸지 않고 거절한다.
-      const s=patch.settings,hasGoal=Object.hasOwn(s,'goal'),hasOff=Object.hasOwn(s,'tipsOff');
-      if((hasGoal&&s.goal!==null&&!GOALS.has(s.goal))||(hasOff&&typeof s.tipsOff!=='boolean'))return {ok:false,code:'INVALID_REQUEST'};
+      // 목표(아끼기·막힘 없이 쓰기·아직 몰라요)와 「팁 전부 끄기」, 3차 「한 달 요약 끄기」. 모르는 값이면 아무것도 바꾸지 않고 거절한다.
+      // 요약을 꺼도 사용 기록은 지우지 않는다(끄는 것과 기록 지우기를 나눈다 — 스크린타임 불만 원문).
+      const s=patch.settings,hasGoal=Object.hasOwn(s,'goal'),hasOff=Object.hasOwn(s,'tipsOff'),hasSummary=Object.hasOwn(s,'summaryOff');
+      if((hasGoal&&s.goal!==null&&!GOALS.has(s.goal))||(hasOff&&typeof s.tipsOff!=='boolean')||(hasSummary&&typeof s.summaryOff!=='boolean'))return {ok:false,code:'INVALID_REQUEST'};
       const rate=clampNumber(s.usdKrw,1,100000);if(rate)b.settings.usdKrw=Math.round(rate);
       if(hasGoal)b.settings={...b.settings,goal:s.goal};
       if(hasOff)b.settings={...b.settings,tipsOff:s.tipsOff};
+      if(hasSummary)b.settings={...b.settings,summaryOff:s.summaryOff};
     }
     if(patch.add&&typeof patch.add==='object'){
       if(b.rows.length>=200)return {ok:false,code:'TOO_MANY_ROWS'};
@@ -788,7 +833,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     }
     if(patch.row&&typeof patch.row==='object'){
       const row=b.rows.find(r=>r.id===patch.row.id);if(!row)return {ok:false,code:'UNKNOWN_ROW'};
-      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt',...(row.source==='manual'?['label','kind']:[]),...(row.service==='claude'?['passCount','passUntil']:[])];
+      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt','cycle',...(row.source==='manual'?['label','kind']:[]),...(row.service==='claude'?['passCount','passUntil']:[])];
       const next={...row};for(const key of editable)if(Object.hasOwn(patch.row,key))next[key]=patch.row[key];
       if(Object.hasOwn(patch.row,'credits'))next.creditsAt=now();
       Object.assign(row,normalizeRow({...next,id:row.id,service:row.service,source:row.source,folder:row.folder,live:row.live,email:row.email}));
@@ -831,6 +876,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     return pre.length?{ids:pre}:null;
   }
   async function autoTick(){
+    void refreshPrices();
     if(checking||(login&&!['done','error','cancelled'].includes(login.stage)))return null;
     let due=null;try{due=autoDue();}catch{return null;}
     return due?check({...due,quiet:true}):null;
@@ -839,7 +885,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   // 판 파일을 잠깐 못 읽으면(BOARD_BUSY) 화면에 「다시 시도」로 알린다. 다음 호출이 다시 읽는다.
   const guard=fn=>async(...args)=>{try{return await fn(...args);}catch(error){if(error?.code==='BOARD_BUSY')return {ok:false,code:'BOARD_BUSY'};throw error;}};
   return {
-    snapshot:guard(async({refreshTools=false}={})=>{await detectTools(refreshTools);return publicSnapshot();}),
+    // 계정판을 열 때 요금표 갱신본을 뒤에서 물어본다(하루 한 번까지). 화면은 기다리지 않고, 바뀌면 알림으로 다시 그린다.
+    snapshot:guard(async({refreshTools=false}={})=>{await detectTools(refreshTools);void refreshPrices();return publicSnapshot();}),
+    refreshPrices:guard(refreshPrices),
     check:guard(check),useExisting:guard(useExisting),startLogin,submitCode,cancelLogin,openLoginUrl,openInstaller,openHelp,save:guard(save),connectKey:guard(connectKey),
     autoTick:guard(autoTick),autoDue:guard(async at=>autoDue(at)),
     dispose(){if(login){if(!['done','error','cancelled'].includes(login.stage))stopProcess(login.child,login.pid||login.child?.pid);clearTimeout(login.timer);clearTimeout(login.poll);}},

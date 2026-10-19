@@ -208,3 +208,41 @@ test('weighs the four weeks by the plan of the time and ignores a read that lost
   u=usageSummary({rows:[auto('r-o','claude','max_20x')],history:[{t:NOW-6*WEEK,id:'r-o',s:'claude',p:'max_5x',w:10,wr:NOW-6*WEEK+DAY,c:null},...weeklyHistory('r-o','claude','max_20x',[10,10,10,10,10])],now:NOW});
   assert.equal(u.services.claude.mixed,false);
 });
+
+/* ---------- 3차(10-19): 지난 12주 — 연간 결제 팁의 「12주 내내 꾸준히」 ---------- */
+// 12주 동안 주마다 새 창을 열고 끝나기 한 시간 전에 그 주 값을 읽은 기록(맨 앞은 12주보다 하루 이른 첫 읽기).
+function twelveWeeks(id,service,plan,values){
+  const out=[{t:NOW-12*WEEK-DAY,id,s:service,p:plan,w:0,wr:NOW-12*WEEK+HOUR,c:null}];
+  values.forEach((v,k)=>{
+    const start=NOW-(12-k)*WEEK,reset=k===11?NOW+HOUR:start+WEEK;
+    out.push({t:start+2*HOUR,id,s:service,p:plan,w:0,wr:reset,c:null});
+    out.push({t:(k===11?NOW:reset)-HOUR,id,s:service,p:plan,w:v,wr:reset,c:null});
+  });
+  return out;
+}
+test('keeps twelve weeks of plain use per account for the yearly-billing tip',()=>{
+  const values=[45,52,48,55,60,58,62,57,66,61,59,64];
+  let u=usageSummary({rows:[auto('r-p','claude','pro')],history:twelveWeeks('r-p','claude','pro',values),now:NOW});
+  const w12=u.accounts['r-p'].weeks12;
+  assert.equal(w12.cover,true);assert.equal(w12.samePlan,true);assert.equal(w12.weeks.length,12);
+  assert.deepEqual(w12.weeks.map(w=>w.used),values);assert.ok(w12.weeks.every(w=>w.reads>=1));
+  // 첫 읽기가 12주 안이면 덮지 못한 것으로 본다(첫 읽기의 누적 %가 12주 안 소비로 들어오지 않게).
+  u=usageSummary({rows:[auto('r-p','claude','pro')],history:twelveWeeks('r-p','claude','pro',values).slice(3),now:NOW});
+  assert.equal(u.accounts['r-p'].weeks12.cover,false);
+  // 읽지 못한 주는 0으로 남고 읽은 횟수도 0 — 「많이 썼다」를 부풀리지 않는 쪽이다.
+  const gap=twelveWeeks('r-p','claude','pro',values).filter(s=>!(s.t>=NOW-8*WEEK&&s.t<NOW-7*WEEK));
+  u=usageSummary({rows:[auto('r-p','claude','pro')],history:gap,now:NOW});
+  assert.deepEqual([u.accounts['r-p'].weeks12.weeks[4].reads,u.accounts['r-p'].weeks12.weeks[4].used],[0,0]);
+  // 12주 안에 Max에서 Pro로 내린 계정은 옛 구간이 지금 무게로 부풀어 보이므로 같은 요금제가 아니라고 알린다(Fable 3차 시안 P3-3).
+  const moved=twelveWeeks('r-p','claude','pro',values).map(s=>(s.t<NOW-6*WEEK?{...s,p:'max_5x'}:s));
+  u=usageSummary({rows:[auto('r-p','claude','pro')],history:moved,now:NOW});
+  assert.equal(u.accounts['r-p'].weeks12.samePlan,false);assert.ok(u.accounts['r-p'].weeks12.weeks[0].used>100);
+  // 크레딧형은 잔액이 준 만큼, 지금 요금제 기준(Claude 무게는 1배인 Pro라 그대로).
+  const credit=[{t:NOW-12*WEEK-DAY,id:'r-h',s:'higgsfield',p:'ultra',w:null,wr:null,c:9000}];
+  for(let k=0,c=9000;k<12;k++){c-=700;credit.push({t:NOW-(11-k)*WEEK-HOUR,id:'r-h',s:'higgsfield',p:'ultra',w:null,wr:null,c});}
+  u=usageSummary({rows:[auto('r-h','higgsfield','ultra')],history:credit,now:NOW});
+  assert.equal(u.accounts['r-h'].weeks12.cover,true);assert.equal(u.accounts['r-h'].weeks12.samePlan,true);assert.deepEqual(u.accounts['r-h'].weeks12.weeks.map(w=>w.used),Array(12).fill(700));
+  // 크레딧형은 무게가 늘 1이라 요금제 이름으로 견준다 — Ultra에서 Plus로 내린 계정은 같은 요금제가 아니다(구현 검수 P3-A).
+  u=usageSummary({rows:[auto('r-h','higgsfield','plus')],history:credit.map(s=>(s.t>=NOW-4*WEEK?{...s,p:'plus'}:s)),now:NOW});
+  assert.equal(u.accounts['r-h'].weeks12.samePlan,false);
+});

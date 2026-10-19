@@ -103,7 +103,7 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
     // 크레딧 하루 속도: 지난 7일(기록이 짧으면 있는 날만큼).
     const days = Math.max(1, Math.min(7, (now - firstAt) / DAY));
     const cur = weightOf(row.service, row.plan || samples[samples.length - 1].p);
-    accounts[id] = { since: firstAt, used7: Math.round(used7 * 100) / 100, rate3: rate3 === null ? null : Math.round(rate3 * 100) / 100, perDay: Math.round((sum(now - WEEK, now, true) / days) * 100) / 100, refillAt: refills.length ? refills[refills.length - 1] : null, weeks4: lastFourWeeks(samples, events, coverFrom, buckets, cur) };
+    accounts[id] = { since: firstAt, used7: Math.round(used7 * 100) / 100, rate3: rate3 === null ? null : Math.round(rate3 * 100) / 100, perDay: Math.round((sum(now - WEEK, now, true) / days) * 100) / 100, refillAt: refills.length ? refills[refills.length - 1] : null, weeks4: lastFourWeeks(samples, events, coverFrom, buckets, cur), weeks12: lastTwelveWeeks(samples, events, firstAt, now, cur, row.plan || samples[samples.length - 1].p) };
     if (!perService.has(row.service)) perService.set(row.service, []);
     // weightAt: 그 구간 끝까지 마지막으로 읽은 요금제의 무게(그 전 읽기가 없으면 첫 읽기). 평균의 분모를 그때의 한도 크기로 센다.
     const weightAt = end => { let w = weightOf(samples[0].s, samples[0].p); for (const s of samples) { if (s.t >= end) break; w = weightOf(s.s, s.p); } return w; };
@@ -178,6 +178,22 @@ function lastFourWeeks(samples, events, coverFrom, buckets, cur) {
     hPeak: recentH.length ? round(Math.max(...recentH)) : null,
     weeks,
   };
+}
+
+// 계정 하나의 지난 12주(7일씩, 오래된 → 최근): 연간 결제 팁(10-19 3차, Fable 1차 아이디어 7)이 「12주 내내 꾸준히」를 본다.
+//  used는 그 7일에 쓴 양만 센다(지금 요금제 기준). 읽은 가장 높은 %는 앞 구간에서 이어진 창의 누적까지 담아 「많이 썼다」를 부풀리므로 쓰지 않고,
+//  놓친 틈은 적게 잡히는 쪽이라 그대로 둔다. cover: 첫 읽기가 12주 앞이었는지(첫 읽기의 누적 %가 12주 안 소비로 들어오지 않게). reads: 그 7일에 읽은 횟수.
+//  samePlan: 12주 동안 읽은 요금제가 모두 지금과 같은지 — Max에서 Pro로 내린 계정의 옛 구간이 지금 무게로 ×5·×20 부풀어
+//  「12주 내내 꾸준히」가 되지 않게 연간 결제 팁은 같은 요금제 12주만 본다(Fable 3차 시안 P3-3).
+//  한도형은 무게로 견주고(등급을 한 번 못 읽은 「max」를 봐준다), 크레딧형은 무게가 늘 1이라 요금제 이름으로 견준다(Ultra → Plus로 내린 계정 — 구현 검수 P3-A).
+function lastTwelveWeeks(samples, events, firstAt, now, cur, plan) {
+  const weekly = WEEKLY.has(samples[0].s), reads = samples.filter(s => (weekly ? s.w !== null : s.c !== null));
+  const weeks = Array.from({ length: 12 }, (_, i) => {
+    const from = now - (12 - i) * WEEK, end = now - (11 - i) * WEEK, inside = t => t >= from && (t < end || (i === 11 && t <= end));
+    return { used: Math.round((events.reduce((n, e) => (inside(e.t) ? n + (e.v * (e.wt || 1)) / cur : n), 0)) * 100) / 100, reads: reads.filter(s => inside(s.t)).length };
+  });
+  const samePlan = samples.filter(s => s.t >= now - 12 * WEEK).every(s => (weekly ? weightOf(s.s, s.p) === cur : planKey(s.p) === planKey(plan)));
+  return { cover: firstAt !== null && firstAt <= now - 12 * WEEK, samePlan, weeks };
 }
 
 module.exports = { usageSummary, sampleOf, parseHistory, accountEvents, weightOf, KEEP, WEEKLY, CREDIT };

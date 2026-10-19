@@ -209,7 +209,9 @@
 .member-subs .ms-foot-link:hover b{text-decoration-color:var(--ms-face)}
 .member-subs :is(.ms-foot-link,.ms-foot-button) b{font-weight:650}
 .member-subs :is(.ms-foot-link,.ms-foot-button) span{color:var(--ink-3,rgba(250,250,249,.52));font-weight:450}
-.member-subs .ms-foot-button{gap:10px;white-space:normal;text-align:left}
+.member-subs .ms-foot-button{flex-wrap:wrap;justify-content:flex-start;gap:4px 10px;white-space:normal;text-align:left}
+/* 3차: 입구 글이 길어져도 「요금·결제일」 낱말은 갈라지지 않고, 글이 라벨 아래로 내려간다(Fable 3차 시안 P2-3) */
+.member-subs .ms-foot-button b{white-space:nowrap}
 
 /* 계정 관리: 서비스 블록마다 머리(공식 프로그램·연결 단추)와 계정 줄, 줄의 ⋯은 그 자리에서 펼친다 */
 .member-subs .ms-mtitle{display:flex;flex-direction:column;gap:10px;margin-top:8px}
@@ -269,6 +271,9 @@
 .member-subs .ms-pair{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:6px}
 .member-subs .ms-form-actions{display:flex;gap:8px}
 .member-subs .ms-form:not([data-kind=weekly]) .ms-only-weekly,.member-subs .ms-form:not([data-kind=credit]) .ms-only-credit{display:none}
+/* 결제 주기(3차): 연간이면 「매월 n일」 결제일을 숨기고 요금 칸 아래 「1년 치 ÷ 12」 도움말을 보인다 */
+.member-subs .ms-form[data-cycle=annual] .ms-only-monthly,.member-subs .ms-form:not([data-cycle=annual]) .ms-only-annual{display:none}
+.member-subs .ms-form small.ms-only-annual{display:block;margin-top:4px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450}
 
 /* 연결 가이드: 서비스 블록 머리 아래 그 자리에서 펼친다 */
 .member-subs .ms-guide{padding:20px 22px 22px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
@@ -410,4 +415,52 @@
 .member-subs .ms-next-item.is-pass .ms-next-who b{color:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .ms-pass-form{grid-template-columns:repeat(3,minmax(0,1fr))}
 @container subs (max-width:700px){.member-subs .ms-pass-form{grid-template-columns:minmax(0,1fr)}}
+/* 3차(10-19): 요금·결제일 칸 머리의 한 달 요약과 연간 결제 팁. 돈 이야기라도 경고가 아니라 노랑·빨강 없이 — 전체 막대는 중립 잉크, 계정 막대는 서비스 색 */
+.member-subs .ms-sum{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:18px 22px;border:1px solid var(--line,rgba(255,255,255,.075));border-radius:var(--r-panel,22px);background:var(--surface-1,#121317)}
+.member-subs .ms-sum-top{display:flex;align-items:baseline;gap:10px}
+.member-subs .ms-sum-top b{color:var(--ink,#FAFAF9);font-size:.875rem;font-weight:650}
+.member-subs .ms-sum-top span{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+.member-subs .ms-sum-big{margin-top:2px;color:var(--ink,#FAFAF9);font-size:1.25rem;font-weight:600;letter-spacing:-.02em;line-height:1.4}
+.member-subs .ms-sum-big b{font-weight:680}
+.member-subs .ms-sum-sub{color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
+.member-subs .ms-sum.is-wait .ms-sum-sub{color:var(--ink-3,rgba(250,250,249,.52))}
+.member-subs .ms-sum-meter{display:block;height:6px;margin:6px 0 2px;overflow:hidden;border-radius:999px;background:var(--line-2,rgba(255,255,255,.14))}
+.member-subs .ms-sum-meter i{display:block;height:100%;border-radius:inherit;background:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-sum-room{color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
+.member-subs .ms-sum-room b{color:var(--ink,#FAFAF9);font-weight:650}
+.member-subs .ms-sum-actions{display:flex;flex-wrap:wrap;gap:0 18px}
+.member-subs .ms-sum-list{display:flex;flex-direction:column;margin-top:2px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
+.member-subs .ms-sum-row{display:grid;grid-template-columns:110px minmax(0,1fr) minmax(80px,180px) 44px 190px;align-items:center;gap:14px;min-height:50px;padding:6px 0}
+.member-subs .ms-sum-row+.ms-sum-row{border-top:1px solid var(--line,rgba(255,255,255,.075))}
+.member-subs .ms-sum-name{display:flex;align-items:baseline;gap:7px;min-width:0;font-size:.9375rem;font-weight:600;white-space:nowrap}
+.member-subs .ms-sum-who{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.member-subs .ms-sum-name small{flex:none;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+.member-subs .ms-sum-bar{display:block;height:6px;overflow:hidden;border-radius:999px;background:var(--line-2,rgba(255,255,255,.14))}
+.member-subs .ms-sum-bar i{display:block;height:100%;border-radius:inherit;background:var(--ms-svc)}
+.member-subs .ms-sum-pct{font-size:.875rem;font-weight:650;text-align:right}
+.member-subs .ms-sum-amt{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right}
+.member-subs .ms-sum-amt b{font-size:.875rem;font-weight:650}
+.member-subs .ms-sum-amt small{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450;white-space:nowrap}
+.member-subs .ms-sum-why{margin-top:2px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;line-height:1.65}
+.member-subs .ms-sum-off{margin:0 0 12px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+.member-subs .ms-sum-off .ms-link{min-height:0;font-size:.8125rem}
+.member-subs .ms-sum-tips{overflow:hidden;margin-bottom:12px;border:1px solid var(--line,rgba(255,255,255,.075));border-radius:var(--r-panel,22px);background:var(--surface-1,#121317)}
+.member-subs .ms-sum-tip{padding:14px 22px}
+.member-subs .ms-sum-tip+.ms-sum-tip{border-top:1px solid var(--line,rgba(255,255,255,.075))}
+.member-subs .ms-sum-tip .ms-tip{margin:0;padding:0;border:0}
+.member-subs #ms-cost>.mu-rest{margin:-4px 0 12px}
+.member-subs .ms-bill-price small{margin-left:6px;color:var(--ink-3,rgba(250,250,249,.52));font-family:var(--sans,SUIT,sans-serif);font-size:.8125rem;font-weight:450}
+@container subs (max-width:700px){
+  .member-subs .ms-sum{padding:16px 18px}
+  .member-subs .ms-sum-big{font-size:1.125rem}
+  .member-subs .ms-sum-row{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'tag name pct' 'bar bar amt';gap:6px 10px;padding:10px 0}
+  .member-subs .ms-sum-row>.ms-tag{grid-area:tag}
+  .member-subs .ms-sum-name{grid-area:name;flex-direction:column;align-items:flex-start;gap:0;line-height:1.35}
+  .member-subs .ms-sum-who{max-width:100%}
+  .member-subs .ms-sum-pct{grid-area:pct}
+  .member-subs .ms-sum-bar{grid-area:bar;align-self:center}
+  .member-subs .ms-sum-amt{grid-area:amt;flex-direction:row;align-items:baseline;gap:6px}
+  .member-subs .ms-sum-amt .ms-sum-of{display:none}
+  .member-subs .ms-sum-tip{padding:14px 16px 14px 18px}
+}
 @media (prefers-reduced-motion:reduce){.member-subs *{scroll-behavior:auto!important}.member-subs .ms-roll>i{display:none}.member-subs .ms-roll>.ms-roll-t{color:inherit}}

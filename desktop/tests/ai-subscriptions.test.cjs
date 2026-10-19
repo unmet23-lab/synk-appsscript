@@ -780,3 +780,115 @@ test('keeps the chosen tip goal and the tips-off switch, and refuses anything el
   assert.equal((await f.service.save({tip:{key:'size:claude',action:'stop'}})).settings.tips['size:claude'].stops,1);
   assert.equal((await f.service.save({tip:{key:'idle:typecast',action:'helpful'}})).settings.tips['idle:typecast'].helpful,1);
 });
+
+/* ---------- 3차(10-19): 요금표 · 결제 주기 · 한 달 요약 끄기 ---------- */
+const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices}=require('../src/ai-prices.cjs');
+const priceDoc=(services,deals=[])=>({schemaVersion:1,kind:'synk-ai-prices',services,deals});
+const claudeEntry=(checked,pro=22)=>({checked,source:'claude-plans',currency:'USD',tax:'included',plans:{pro:{month:pro,year:220},max5x:{month:110},max20x:{month:220}}});
+
+test('the price table keeps only checked, known values and the newer check wins per service',()=>{
+  const at=new Date(2026,9,19,12,0).getTime();
+  const base=validatePrices(DEFAULT_PRICES,at);
+  // 앱 기본 사본: Claude는 공식 기본값(세전)과 한국 부가세율 10%(화면이 한국 결제 값으로 보인다), Higgsfield(세금 별도, 연간에서 월간으로 못 돌아옴), Typecast API(연간 없음).
+  assert.deepEqual(base.services.claude.plans,{pro:{month:20,year:200},max5x:{month:100},max20x:{month:200}});
+  assert.equal(base.services.claude.tax,'excluded');assert.equal(base.services.claude.krVat,0.1);assert.equal(base.services.higgsfield.annualLock,true);assert.equal(base.services.higgsfield.tax,'excluded');
+  // 부가세율 모양이 틀리면 그 서비스를 받지 않는다.
+  for(const krVat of [0.5,-0.1,'0.1'])assert.equal(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),krVat}}),at),null);
+  // 앱 기본 사본은 PC 시계가 늦어도(확인한 날이 「앞날」로 보여도) 버리지 않는다. 받은 파일은 하루 여유까지만.
+  const early=new Date(2026,9,10).getTime();
+  assert.equal(validatePrices(DEFAULT_PRICES,early),null);assert.equal(validatePrices(DEFAULT_PRICES,early,{trusted:true}).services.claude.plans.pro.month,20);
+  assert.deepEqual(base.services.higgsfield.plans.ultra,{month:129,year:1188,credits:3000});
+  assert.equal(base.services.typecast.plans.lite.year,undefined);assert.deepEqual(base.deals,[]);
+  // 모양이 다르면 통째로 받지 않는다.
+  for(const bad of [null,[],{...priceDoc({claude:claudeEntry('2026-10-19')}),schemaVersion:2},{...priceDoc({claude:claudeEntry('2026-10-19')}),kind:'other'}])assert.equal(validatePrices(bad,at),null);
+  // 서비스 한 줄이 틀리면 그 서비스만 버린다: 앞날짜·2026년 전·없는 날짜·모르는 출처(받은 파일이 새 주소를 못 열게)·모르는 통화.
+  for(const entry of [claudeEntry('2026-10-25'),claudeEntry('2025-12-31'),claudeEntry('2026-02-30'),{...claudeEntry('2026-10-19'),source:'https://evil.example/'},{...claudeEntry('2026-10-19'),currency:'EUR'}])
+    assert.equal(validatePrices(priceDoc({claude:entry,typecast:DEFAULT_PRICES.services.typecast}),at).services.claude,undefined);
+  // 요금제 하나가 틀리면 그 요금제만 버리고, 모르는 서비스·요금제·칸은 버린다.
+  const odd=validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),plans:{pro:{month:-1},max5x:{month:110,year:'x'},max20x:{month:220,note:'<b>'},team:{month:30}}},openai:claudeEntry('2026-10-19')}),at);
+  assert.deepEqual(odd.services,{claude:{checked:'2026-10-19',source:'claude-plans',currency:'USD',tax:'included',plans:{max20x:{month:220}}}});
+  // 할인: 날짜·출처·주기가 맞는 것만(62일 넘는 할인, 끝이 시작보다 앞, 모르는 주기·출처·요금제, 범위 밖 %는 버린다).
+  const deal={service:'higgsfield',plans:['plus','ultra'],cycle:'year',from:'2026-11-27',until:'2026-12-01',checked:'2026-10-19',source:'higgsfield-pricing',off:30};
+  const deals=validatePrices(priceDoc({},[deal,{...deal,until:'2027-02-01'},{...deal,until:'2026-11-26'},{...deal,cycle:'month'},{...deal,source:'claude-plans'},{...deal,plans:['team']},{...deal,off:95},{...deal,service:'gpt'}]),at).deals;
+  assert.deepEqual(deals,[deal]);
+  // 합치기: 서비스마다 더 최근에 확인한 쪽, 같은 날이면 앞(기본 사본). 같은 할인은 하나만.
+  const same=mergePrices(base,validatePrices(priceDoc({claude:claudeEntry('2026-10-19',25),higgsfield:{...DEFAULT_PRICES.services.higgsfield,checked:'2026-10-18'}},[deal]),at));
+  assert.equal(same.services.claude.plans.pro.month,20);assert.equal(same.services.higgsfield.checked,'2026-10-19');
+  const later=mergePrices(base,validatePrices(priceDoc({claude:claudeEntry('2026-10-20',25)},[deal]),at+864e5));
+  assert.equal(later.services.claude.plans.pro.month,25);assert.equal(mergePrices(later,{services:{},deals:[deal]}).deals.length,1);
+  // 더 최근 판에 krVat이 빠졌으면 앞 판의 10%를 잇고, 0을 적었으면 0을 따른다(구현 검수 P3-B).
+  assert.equal(later.services.claude.krVat,0.1);
+  assert.equal(mergePrices(base,validatePrices(priceDoc({claude:{...claudeEntry('2026-10-20',25),krVat:0}}),at+864e5)).services.claude.krVat,0);
+});
+
+test('the price table comes from synk.im at most once a day, is checked before it is kept and asks for nothing else',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-prices-')),data=path.join(root,'data');
+  let clock=new Date(2026,9,20,9,0).getTime(),reply=null;const asked=[],changes=[];
+  const body=text=>({status:200,headers:{get:name=>(name==='content-length'?String(Buffer.byteLength(text)):null)},text:async()=>text});
+  const priceFetch=async(url,options)=>{asked.push({url,options});return reply();};
+  const make=()=>createAiSubscriptions({root:data,platform:'win32',env:{},home:path.join(root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>clock,priceFetch,onChange:s=>changes.push(s)});
+  let service=make();
+  // 처음 열면 앱 기본 사본을 바로 보이고, 뒤에서 고정 주소에 한 번 묻는다(로그인 정보·기록 없이 Accept 하나, 넘겨주기 없이).
+  reply=()=>body(JSON.stringify(priceDoc({claude:claudeEntry('2026-10-20',25)})));
+  let snap=await service.snapshot();assert.equal(snap.prices.services.claude.plans.pro.month,20);
+  await service.refreshPrices();
+  assert.equal(asked.length,1);assert.equal(asked[0].url,PRICES_URL);assert.equal(asked[0].url,'https://synk.im/desktop/ai-prices.json');
+  assert.deepEqual(Object.keys(asked[0].options.headers),['Accept']);assert.equal(asked[0].options.redirect,'error');
+  snap=await service.snapshot();assert.equal(snap.prices.services.claude.plans.pro.month,25);assert.equal(snap.prices.services.higgsfield.checked,'2026-10-19');
+  assert.ok(changes.some(s=>s.prices?.services?.claude?.plans?.pro?.month===25));
+  // 받은 것은 검사한 판만 이 PC에 두고, 다시 띄운 본체가 그 판을 쓴다.
+  const kept=JSON.parse(fs.readFileSync(path.join(data,'prices.json'),'utf8'));assert.equal(kept.services.claude.plans.pro.month,25);assert.equal(kept.fetchedAt,clock);
+  // 하루 안에는 다시 묻지 않는다.
+  await service.refreshPrices();await service.snapshot();assert.equal(asked.length,1);
+  // 하루 뒤: 404·깨진 글·32KB 넘는 응답·모양이 틀린 판·연결 실패는 받지 않고 가진 것을 그대로 쓴다.
+  const fails=[()=>({status:404,headers:{get:()=>null},text:async()=>''}),()=>body('{broken'),()=>({status:200,headers:{get:name=>(name==='content-length'?'40000':null)},text:async()=>'{}'}),()=>body(JSON.stringify({...priceDoc({claude:claudeEntry('2026-10-21',99)}),kind:'x'})),()=>{throw new TypeError('fetch failed');}];
+  for(const bad of fails){clock+=864e5+1;reply=bad;assert.equal(await service.refreshPrices(),false);}
+  assert.equal((await service.snapshot()).prices.services.claude.plans.pro.month,25);
+  // 길이를 밝히지 않은 큰 응답도 32KB에서 끊는다.
+  clock+=864e5+1;
+  reply=()=>{const big=Buffer.alloc(40000,32);let sent=false;return {status:200,headers:{get:()=>null},body:{getReader:()=>({read:async()=>(sent?{done:true}:(sent=true,{done:false,value:big})),cancel:async()=>{}})}};};
+  assert.equal(await service.refreshPrices(),false);
+  service=make();assert.equal((await service.snapshot()).prices.services.claude.plans.pro.month,25);
+  // 앱 기본 사본보다 오래 확인한 갱신본은 그 서비스를 덮지 않는다.
+  clock+=864e5+1;reply=()=>body(JSON.stringify(priceDoc({higgsfield:{...DEFAULT_PRICES.services.higgsfield,checked:'2026-10-01',plans:{ultra:{month:1,year:1,credits:1}}}})));
+  await service.refreshPrices();assert.equal((await service.snapshot()).prices.services.higgsfield.plans.ultra.month,129);
+  // 요금표를 받는 길이 없는 본체(시험·다른 PC 앱)는 밖으로 아무것도 묻지 않는다.
+  const quiet=createAiSubscriptions({root:path.join(root,'other'),platform:'win32',env:{},home:path.join(root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>clock});
+  assert.equal(await quiet.refreshPrices({force:true}),false);assert.equal((await quiet.snapshot()).prices.services.claude.plans.pro.month,20);
+});
+
+test('a row can be marked as billed yearly and back, and the monthly summary can be turned off without touching the record',async()=>{
+  const f=fakeSystem();
+  assert.equal((await f.service.useExisting('claude')).ok,true);
+  await f.service.check();
+  const file=path.join(f.root,'data','history.jsonl'),before=fs.readFileSync(file,'utf8');
+  let snap=await f.service.snapshot();const id=snap.rows.find(r=>r.service==='claude').id,get=()=>snap.rows.find(r=>r.id===id);
+  assert.equal(get().cycle,null);
+  snap=await f.service.save({row:{id,cycle:'annual'}});assert.equal(get().cycle,'annual');
+  // 연간만 표시로 남는다 — 다른 값은 「모름」으로 돌린다(월 결제로 단정하지 않는다).
+  snap=await f.service.save({row:{id,cycle:'monthly'}});assert.equal(get().cycle,null);
+  snap=await f.service.save({row:{id,cycle:'annual'}});snap=await f.service.save({row:{id,cycle:null}});assert.equal(get().cycle,null);
+  // 한 달 요약 끄기는 설정만 바꾸고 기록은 그대로다. 참거짓이 아니면 아무것도 바꾸지 않는다.
+  snap=await f.service.save({settings:{summaryOff:true}});assert.equal(snap.settings.summaryOff,true);
+  assert.equal(fs.readFileSync(file,'utf8'),before);
+  assert.equal((await f.service.save({settings:{summaryOff:'yes',usdKrw:2000}})).code,'INVALID_REQUEST');
+  snap=await f.service.snapshot();assert.equal(snap.settings.summaryOff,true);assert.equal(snap.settings.usdKrw,1400);
+  snap=await f.service.save({settings:{summaryOff:false}});assert.equal(snap.settings.summaryOff,false);
+  // 연간 결제 팁(annual:서비스)도 반응을 받는다.
+  assert.equal((await f.service.save({tip:{key:'annual:claude',action:'stop'}})).settings.tips['annual:claude'].stops,1);
+  // 요금표·연간 결제의 근거는 고정 공식 주소로만 연다.
+  assert.deepEqual(await f.service.openHelp('higgsfield-annual'),{ok:true});assert.equal(f.opened.at(-1),'https://higgsfield.ai/creator-hub/help-center/plans/can-i-switch-between-monthly-and-annual-billing');
+  assert.deepEqual(await f.service.openHelp('typecast-api-pricing'),{ok:true});assert.equal(f.opened.at(-1),'https://typecast.ai/kr/pricing/api/');
+  assert.deepEqual(await f.service.openHelp('higgsfield-pricing'),{ok:true});assert.equal(f.opened.at(-1),'https://higgsfield.ai/pricing');
+});
+
+test('Typecast keeps the monthly credits of its plan for the monthly summary',async()=>{
+  const tc=fakeTypecast(),f=fakeSystem({fetch:tc.fetch,secrets:tc.secrets});
+  const done=await f.service.connectKey('typecast',tc.good);
+  assert.equal(done.snapshot.rows.find(r=>r.service==='typecast').live.planCredits,200000);
+  const snap=await f.service.check();
+  const row=snap.rows.find(r=>r.service==='typecast');assert.equal(row.live.planCredits,200000);assert.equal(row.live.credits,126416);
+  // 기록 한 줄에는 여전히 숫자 칸만(한 달 크레딧은 판에만 둔다).
+  const lines=fs.readFileSync(path.join(f.root,'data','history.jsonl'),'utf8').trim().split('\n').map(line=>JSON.parse(line));
+  assert.ok(lines.every(line=>Object.keys(line).every(key=>['t','id','s','p','w','wr','c','h'].includes(key))));
+});
