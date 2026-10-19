@@ -679,7 +679,7 @@
     "faqHandoffGatePreserved": true,
     "otherFiveSourcesUnchanged": true,
     "sourceFilesEditedByThisTask": false,
-    "productionDeployed": false,
+    "productionDeployed": true,
     "dmRuntimeChanged": false,
     "archiveScope": "existing local recovery archive is preserved and excluded from Git per document-cleanup record",
     "evidence": ".tmp/teacher-knowledge-sync-20261019/before.json",
@@ -695,6 +695,223 @@
         "docs/마케팅/PULSE_AI모델_캐스팅_20260930/모델확장_로드맵_20261019_초안.md"
       ],
       "scope": "separate PULSE documentation update; no teacher knowledge inputs changed"
+    },
+    "productionDeployment": {
+      "checkedAt": "2026-10-19T04:31:37.128Z",
+      "status": "deployed_answer_verification_blocked",
+      "sourceCommit": "bd9dafafa92ac8844f32312b962d9308521f7ba3",
+      "deploymentLedgerCommit": "b56a4010ea848cb2b70eba3d31a1d9a920c76908",
+      "ci": {
+        "conclusion": "success",
+        "headSha": "bd9dafafa92ac8844f32312b962d9308521f7ba3",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39197951054",
+        "tests": {
+          "total": 4134,
+          "passed": 4117,
+          "failed": 0,
+          "skipped": 17,
+          "cancelled": 0,
+          "skipReasons": {
+            "appsSiblingAbsent": 15,
+            "shallowHistory": 1,
+            "untrackedFixtureAbsent": 1
+          },
+          "canonicalSourceComparison": "CI skipped because sibling repository is absent; local 57/57 test run actually executed and passed this comparison"
+        },
+        "correctionEval": {
+          "passed": 26,
+          "evaluated": 26,
+          "unmeasured": 76,
+          "totalCorpus": 102,
+          "liveProviderCalls": false
+        },
+        "logSha256": "d3c9b024ee51b3d9770c460dbcb9d236d7f9bfe8a04ce2a740373a4017340f64"
+      },
+      "runtime": {
+        "version": 72,
+        "status": "ACTIVE",
+        "updated_at": 1792384063497,
+        "verify_jwt": true
+      },
+      "exactSources": {
+        "total": 14,
+        "matched": 14,
+        "bodySha256": "bc5fa359ca7c981eb05d7c63a8b71bf334bb024bceada46a37c9ee662c92947c",
+        "files": [
+          {
+            "name": "CORS.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "4840c97ad11520fbb85124d4da4a55837e72c961d75926c411e7a8b89361a07f",
+            "candidateSha256": "4840c97ad11520fbb85124d4da4a55837e72c961d75926c411e7a8b89361a07f"
+          },
+          {
+            "name": "ai-budget.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "30a675e7b1a727861e1f15e2610e82d954d275c49625bbec68b423af1ff03e9d",
+            "candidateSha256": "30a675e7b1a727861e1f15e2610e82d954d275c49625bbec68b423af1ff03e9d"
+          },
+          {
+            "name": "ai-spend.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "ecb9dd94caa73abc51c89119340e7b0432a0af2224674a19b57477aedc133063",
+            "candidateSha256": "ecb9dd94caa73abc51c89119340e7b0432a0af2224674a19b57477aedc133063"
+          },
+          {
+            "name": "index.ts",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "c578c6c7eb6b1e02ac1f89f3d56ff94c950e80172b9b20a8721ea3893a88d84d",
+            "candidateSha256": "c578c6c7eb6b1e02ac1f89f3d56ff94c950e80172b9b20a8721ea3893a88d84d"
+          },
+          {
+            "name": "release-policy.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406",
+            "candidateSha256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406"
+          },
+          {
+            "name": "sha256.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b",
+            "candidateSha256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b"
+          },
+          {
+            "name": "강사지식.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "83c38d1dfa353456b12f7eb07f958caf7d4ba69d0bb8fa59d891bcf2c159a15b",
+            "candidateSha256": "83c38d1dfa353456b12f7eb07f958caf7d4ba69d0bb8fa59d891bcf2c159a15b"
+          },
+          {
+            "name": "강사지식고르기.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "b7ac1801100eb56cd1e0f66e55c5ff9762c25eb9726dc5fb37f987d60bea8b37",
+            "candidateSha256": "b7ac1801100eb56cd1e0f66e55c5ff9762c25eb9726dc5fb37f987d60bea8b37"
+          },
+          {
+            "name": "계약판.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4",
+            "candidateSha256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4"
+          },
+          {
+            "name": "교정엔진.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "655c6326d5ccbee8cdcafb794d6826bbce512dae6026a411cd5b987d9737adb9",
+            "candidateSha256": "655c6326d5ccbee8cdcafb794d6826bbce512dae6026a411cd5b987d9737adb9"
+          },
+          {
+            "name": "벤더사유.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "6a66e83fb365b8061b4d226d72d1dbb8540c1c1af45fb4a29683bed5b6cb3d49",
+            "candidateSha256": "6a66e83fb365b8061b4d226d72d1dbb8540c1c1af45fb4a29683bed5b6cb3d49"
+          },
+          {
+            "name": "옛글자.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "1cc94b4d0c81192a7bd60ea52c0a9c6f33432dce5982f09a44341ea33808160b",
+            "candidateSha256": "1cc94b4d0c81192a7bd60ea52c0a9c6f33432dce5982f09a44341ea33808160b"
+          },
+          {
+            "name": "캐시성적.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "dd6017ce29bd9510f01ffcb501a90125f655070caac7298d9542441e2484e1e8",
+            "candidateSha256": "dd6017ce29bd9510f01ffcb501a90125f655070caac7298d9542441e2484e1e8"
+          },
+          {
+            "name": "토큰.mjs",
+            "existsRemote": true,
+            "existsCandidate": true,
+            "matches": true,
+            "remoteSha256": "1a9fe62cceeb1db4664a8cb2de9c190ade36fbe30bc5bca18a9bca8b35ba6e2a",
+            "candidateSha256": "1a9fe62cceeb1db4664a8cb2de9c190ade36fbe30bc5bca18a9bca8b35ba6e2a"
+          }
+        ]
+      },
+      "overlap": {
+        "freshOriginAncestorCheck": true,
+        "remoteVersionUnchangedBeforeDeploy": 71,
+        "remoteBodyUnchangedBeforeDeploy": "69671f1bbb43e42f24b7c8e7933eeae72501f4a4a84a823090674e3d095d0f6c",
+        "changedSourceOnly": "강사지식.mjs",
+        "otherCompanionWorktreeEditsFound": false,
+        "otherFunctionsDeployed": 0,
+        "sharedPrimaryHeadOrIndexModifiedByThisTask": false
+      },
+      "liveAnswerCheck": {
+        "status": "blocked",
+        "checkedAt": "2026-10-19T04:28:09.782Z",
+        "providerCheck": {
+          "status": 200,
+          "data": {
+            "contract_ver": "",
+            "ok": false,
+            "모델": "claude-sonnet-5-5",
+            "생각": {
+              "type": "between_tools"
+            },
+            "노력": "high",
+            "받음": {
+              "상태": 400,
+              "입력토큰": null,
+              "사유": "invalid_request_error: Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."
+            },
+            "틀린값거절": 400
+          }
+        },
+        "reason": "Existing production Anthropic API key has insufficient credit balance. Free count_tokens preflight rejected before fixture creation or question dispatch.",
+        "questionsSent": 0,
+        "testAccountsCreated": 0,
+        "paidModelCalls": 0,
+        "additionalCostUsd": 0,
+        "actualAnswersVerified": false,
+        "replayVerified": false,
+        "costPlan": {
+          "maxCalls": 6,
+          "totalReserveMicroUsd": 328003
+        },
+        "nextAction": "Await user choice about extending the funded DM credit connection to companion and staff caps of 200000 microUSD/day and 500000 microUSD/month. Only after authorization, implement the scoped connection, validate and deploy it without changing the DM path, then run six questions and replay.",
+        "currentBudget": {
+          "SYNK_AI_STAFF_DAILY_MICRO_USD": {
+            "present": true,
+            "microUsd": 30000
+          },
+          "SYNK_AI_STAFF_MONTHLY_MICRO_USD": {
+            "present": true,
+            "microUsd": 300000
+          }
+        },
+        "additionalBlocker": "Existing staff daily cap is 30000 microUSD, below the smallest planned request reservation 53365 microUSD; monthly cap is 300000 microUSD.",
+        "availableCreditScope": "Funded dedicated DM credit connection exists, but current decision restricts it to DM auto-replies. No key value was copied or changed."
+      },
+      "settingsChanged": false,
+      "limitsRaised": false,
+      "studentDataTouched": false,
+      "evidenceDirectory": ".tmp/teacher-knowledge-sync-20261019/"
     }
   }
 }
