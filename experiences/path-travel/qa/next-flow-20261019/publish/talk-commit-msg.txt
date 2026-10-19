@@ -1,0 +1,17 @@
+release(personal): v48 묶음에 PATH 1곳 하루 저장 검사만 바꿔 끼운다 — synk-personal 배포판
+
+SYNK-appsscript d951cd544(PATH 다음 판)은 하루 일정 1곳을 허용한다(희망 방문 수 1~5곳, 하루 일정의 최소 장소 수
+min(2, 희망 수)). 운영 synk-personal(v48 묶음 bc9f719e…, 판 번호 51)은 옛 검사라 로그인 사용자의 1곳 하루 저장을 거절한다.
+
+운영 묶음은 소스 빌드가 아니라 패치를 쌓은 본문이라 다시 굽지 않았다. 깨끗한 사본으로 다시 빌드해 보니 PATH 칸의
+이름 충돌 번호가 운영과 달라(예: fail2) 칸째 옮기면 다른 칸과 부딪칠 수 있어서, 서버가 쓰는 검사 두 곳만 v48 이름
+그대로 같은 뜻으로 바꿨다(normalizePlannerInput의 희망 방문 수 범위, validatePlan의 최소 장소 수). 엔진(planTravel)은
+서버 묶음에 없다. 두 곳을 되돌리면 v48과 바이트가 같다.
+
+- 확인: 새 PATH 판으로 만든 1곳 하루 문서를 v48은 거절·후보는 받음, 3곳 하루는 둘 다 받음, 3곳 희망에 1곳만 든 문서는
+  둘 다 거절(personalWriteRequest('path-travel')).
+- 고정값: tools/synk-personal-build.js(묶음 8ea9d7ce…), tests/synk-personal-media.test.js,
+  tools/backend-runtime-manifest.json(묶음 지문과 pathOneStopPatch).
+- 시험: synk-personal-build --check 통과, 관련 9파일 179/179.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

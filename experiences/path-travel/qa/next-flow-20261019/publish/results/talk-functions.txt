@@ -1,0 +1,4 @@
+# talk synk-personal 함수 본문 · 2026-10-19 17:23:09 KST
+운영 판 53 ACTIVE 갱신 2026-10-19T07:31:28.470Z 본문 1731904B · v48 묶음 false · 후보 묶음 true
+리허설 판 29 ACTIVE 갱신 2026-10-19T07:29:47.952Z 본문 1731904B · v48 묶음 false · 후보 묶음 true
+exit 0

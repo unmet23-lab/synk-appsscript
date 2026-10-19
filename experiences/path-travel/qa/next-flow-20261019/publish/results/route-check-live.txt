@@ -1,0 +1,36 @@
+# 공개 화면 확인(route-check live) · 2026-10-19 17:23:14 KST
+{
+ "planner": {
+  "served": 0,
+  "first": {
+   "title": "오늘, 뭐 하고 싶어요?",
+   "intents": 6,
+   "feltLoaded": 6
+  },
+  "time": {
+   "range": "오늘 17:40–20:40",
+   "fit": "3곳쯤 들어가요전시는 오늘은 어렵고 내일 반나절이면 넉넉해요 · 나머지 2곳은 가까운 곳으로 골라요"
+  },
+  "result": {
+   "title": "차로 채운 3시간",
+   "stories": 3,
+   "question": 2,
+   "feltInCards": 6
+  },
+  "map": {
+   "open": true,
+   "svg": true
+  },
+  "failed": [],
+  "errors": [],
+  "csp": []
+ },
+ "legacy": {
+  "served": [],
+  "title": "서울 여행 취향 체험 · SYNK PATH",
+  "failed": [],
+  "errors": [],
+  "csp": []
+ }
+}
+exit 0

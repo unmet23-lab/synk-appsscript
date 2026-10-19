@@ -1,0 +1,30 @@
+# PATH 면접실 영상 14개 · 2026-10-19 17:22:22 KST · 첫 번째 받기
+strict-followup-experience-4k 200 HIT age:263 11078438B 2.556410s
+strict-followup-experience-720p 200 HIT age:265 3154743B 0.462084s
+strict-followup-plan-4k 200 HIT age:265 10548847B 1.270955s
+strict-followup-plan-720p 200 HIT age:265 3036932B 0.460794s
+strict-listen-experience-tail-4k 200 HIT age:265 2868604B 0.411763s
+strict-listen-experience-tail-720p 200 HIT age:265 555181B 0.193286s
+strict-listen-plan-tail-4k 200 HIT age:264 2853959B 0.506085s
+strict-listen-plan-tail-720p 200 HIT age:265 545391B 0.127499s
+strict-listen-question-tail-4k 200 HIT age:264 6057021B 0.993497s
+strict-listen-question-tail-720p 200 HIT age:265 1145975B 0.217319s
+strict-listening-4k 200 HIT age:265 10122866B 1.269793s
+strict-listening-720p 200 HIT age:266 2917190B 0.396840s
+strict-question-4k 200 HIT age:265 9901952B 1.717357s
+strict-question-720p 200 HIT age:266 2801131B 0.484817s
+# 2026-10-19 17:22:35 KST · 두 번째 받기(캐시 확인)
+strict-followup-experience-4k 200 HIT age:277 11078438B 1.875866s
+strict-followup-experience-720p 200 HIT age:278 3154743B 0.508363s
+strict-followup-plan-4k 200 HIT age:278 10548847B 1.483249s
+strict-followup-plan-720p 200 HIT age:279 3036932B 0.425721s
+strict-listen-experience-tail-4k 200 HIT age:279 2868604B 0.437894s
+strict-listen-experience-tail-720p 200 HIT age:278 555181B 0.204043s
+strict-listen-plan-tail-4k 200 HIT age:278 2853959B 0.419776s
+strict-listen-plan-tail-720p 200 HIT age:278 545391B 0.157987s
+strict-listen-question-tail-4k 200 HIT age:278 6057021B 0.936910s
+strict-listen-question-tail-720p 200 HIT age:278 1145975B 0.214567s
+strict-listening-4k 200 HIT age:278 10122866B 1.218973s
+strict-listening-720p 200 HIT age:279 2917190B 0.467034s
+strict-question-4k 200 HIT age:278 9901952B 1.254153s
+strict-question-720p 200 HIT age:279 2801131B 0.532331s

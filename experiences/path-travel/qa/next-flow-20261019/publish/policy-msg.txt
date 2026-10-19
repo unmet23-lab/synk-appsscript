@@ -1,0 +1,15 @@
+feat(travel): pick what to do, then how long, and let the planner fill that day
+
+PATH next version from synk-appsscript d951cd544 (origin master), applied on top of
+the live files only: the public-only lines (security policy meta, flattened module
+paths) stay as they were.
+
+- First screen asks what to do (six felt picks) and then how many hours; the result is
+  a route strip, a day bar, photo story cards and a map dialog.
+- The engine allows one-place days, fills the chosen hours, keeps closed venues out of
+  evening plans, and the check question is added after the day shows.
+- The legacy course pages import the conditions module with a new cache tag.
+- 18 new felt images under assets/felt/.
+- The account server (synk-personal v52) already accepts one-place days.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
