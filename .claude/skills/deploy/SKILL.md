@@ -29,8 +29,8 @@ description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요�
 
 3. **이력과 GitHub**
    - 버전 대상 파일에 `[vNEXT]`가 있으면 `node tools/bump-version.js --desc "한 줄 요약" --종류 <수리|보강|신설>`로 채번하고 `node tools/bump-version.js --check`로 대조한다.
-   - 자기 변경만 경로를 명시해 커밋하고 `git push origin HEAD:master`로 민다. 다른 작업의 stage나 파일을 쓸어 담지 않는다.
-   - `node tools/원격ci.js`로 대상 커밋의 원격 상태를 확인한다. 기존의 관련 없는 적색은 그대로 밝혀 구분하고, 이번 배포 대상의 관련 실패는 라이브 전에 막는다.
+   - 자기 변경만 `node tools/내커밋.js 커밋 <경로…> -m "…"`로 커밋하고 `node tools/내커밋.js 올리기 <커밋…>`로 내 커밋만 origin/master에 올린다. 둘 다 먼저 `--실행` 없이 돌려 올라갈 경로·줄을 보고, 그다음 `--실행`을 붙인다. `git push origin HEAD:master`는 로컬 master에 깔린 남의 미푸시 커밋까지 올리므로 쓰지 않는다. 다른 작업의 stage나 파일을 쓸어 담지 않는다.
+   - `node tools/원격ci.js <올린 머리>`로 대상 커밋의 원격 상태를 확인한다. 인자를 빼면 로컬 HEAD를 보므로, 올리기가 커밋을 다시 쌓았으면 출력의 새 커밋(원래 → 새)을 준다. 기존의 관련 없는 적색은 그대로 밝혀 구분하고, 이번 배포 대상의 관련 실패는 라이브 전에 막는다.
 
 4. **라이브 반영과 대조**
    - `clasp`는 PATH에서 먼저 찾고, Windows에서 없으면 공식 설치 위치를 확인한다.

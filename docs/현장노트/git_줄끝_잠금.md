@@ -1,12 +1,36 @@
 # 현장 노트 · git 줄끝·잠금·공용 작업본
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
-> 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가
+> 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
 ## 절차 · 공용 작업본에서 내 것만 커밋하기
+
+공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다. 커밋과 push는 [`tools/내커밋.js`](../../tools/내커밋.js)로 한다(10-19). 두 명령 모두 기본은 미리 보기이고 `--실행`을 붙여야 반영한다.
+
+- `node tools/내커밋.js 커밋 <경로…> -m "<메시지>"` — 아래 손 절차 1~6을 한 번에 한다. 바탕 고정 → 별도 인덱스 → 지정 경로만 → 줄끝을 바탕 판에 맞춤 → 저장 용량 검사 → `commit-tree` → `update-ref` CAS → 공용 인덱스의 그 경로만 reset 순서다. reset을 못 하면 가지를 되돌린다. index.lock은 기다렸다 다시 하고 주인 없는 잠금만 한 번 치운다. 줄끝을 맞추고 나니 바탕과 같으면 커밋하지 않는다(「커밋할 것 없음」).
+- 남도 고치는 문서(AGENTS.md·CLAUDE.md·DESIGN.md·트랙·결정·문서 지도·AI 운영원칙·현장 노트·만족사례 장부)는 통째로 올리지 않는다. 미리 보기가 바탕 대비 조각을 id와 함께 보여 주면 내 것만 `--조각 <경로>=<id>[,<id>…]`로 고른다. 조각 안 일부 줄은 `<id>:<줄>-<줄>`(미리 보기가 조각의 줄 번호를 모두 보인다), 바뀐 곳이 모두 내 것이면 `=전부`다. 남의 줄은 작업본에 그대로 남는다.
+- 폴더 경로는 그 아래 남의 미커밋 수정·새 파일까지 올리므로, `--폴더` 없이는 그 아래 바뀐 파일 목록만 보이고 멈춘다. 내 파일만 하나씩 주거나, 모두 내 것일 때만 `--폴더`를 붙인다. 하위 git 저장소(gitlink)가 섞이면 멈춘다.
+- 「공용 인덱스에 내 경로의 다른 스테이징이 있다」로 멈추면 아무것도 바뀌지 않았다. 남이 올린 것이면 그 세션과 맞추고, 내가 전에 `git add`한 판이면 `git reset -q -- <경로>`로 내린 뒤 다시 한다.
+- `node tools/내커밋.js 올리기 <커밋…>` — 아래 「로컬 master를 통째로 push하면 남의 미푸시 커밋이 같이 나간다」의 절차를 한다. `--합치기`는 올린 뒤 로컬 가지에 「트리는 로컬 그대로」 병합 커밋을 더한다. origin에 있는 남의 커밋이 바꾼 경로가 모두 로컬과 같고, 다시 쌓으며 줄끝을 맞춘 경로가 없을 때만 한다.
+- `--줄끝그대로`(커밋·올리기)는 줄끝을 일부러 바꾸는 커밋(재정규화)에만 쓴다. 없으면 바탕·원격 판 줄끝으로 되돌려, 줄끝만 바꾼 커밋은 「커밋할 것 없음」·「올릴 것 없음」이 된다.
+- git 2.31 이상(커밋)·2.43 이상(올리기, `merge-file --object-id`)이 필요하다. 모자라면 도구가 멈춘다(10-19 이 PC 2.55).
+- 시험: `node --test tests/내커밋.test.js`. 임시 저장소에서 남의 스테이징·미커밋·미푸시, CAS 경합, index.lock, 줄끝 섞인 파일, 용량 초과, 폴더·하위 저장소, 재현(명령줄 처음부터 끝까지)을 잰다. 도구를 일부러 망가뜨린 29가지(reset 빠뜨림·CAS 없음·공용 문서 막기 없음·새는 줄 검사 없음 등)를 모두 잡는다(10-19). `tools/참고카드_커밋.js`는 카드 폴더만 커밋하는 좁은 판이다.
+
+손 절차(도구를 못 쓸 때. 도구도 같은 일을 한다):
+
+1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
+2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
+3. 별도 인덱스에 올린다.
+   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
+   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
+4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
+5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
+6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
+
+도구 밖에서 커밋하면 `npm run check:storage`(별도 인덱스면 같은 `GIT_INDEX_FILE`과 `-- --base $BASE`)도 직접 돌린다.
 
 ### GitHub deploy key의 응답에는 공개키 주석이 없다 (2026-10-18)
 - 증상: 읽기 전용 CI 키를 등록한 뒤 공개키 원문 전체를 대조하자 검증에 실패했다. 첫 키를 회수하고 임시 개인키 파일을 삭제한 뒤 원인을 확인했다.
@@ -19,32 +43,6 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `--no-checkout`으로 만든 비어 있는 인덱스에 HEAD를 읽지 않은 상태였다. 파일을 실제로 지운 결과가 아니었다.
 - 고침: 이 작업에서 새로 만든 빈 전용 작업본임을 확인한 뒤 `git read-tree --reset -u HEAD`로 HEAD와 희소 범위를 구체화했다. 공용 작업본이나 변경이 있는 폴더에는 이 복구를 쓰지 않는다.
 - 다시 확인: 공개 전 status가 비어 있고, `b45319c`의 변경 범위와 실제 공개 응답86개가 검토한 목록과 일치했다.
-
-공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
-
-1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
-2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
-3. 별도 인덱스에 올린다.
-   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
-   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
-4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
-5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
-6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
-
-보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
-
-공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
-
-1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
-2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
-3. 별도 인덱스에 올린다.
-   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
-   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
-4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
-5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
-6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
-
-보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
 
 ## 줄끝(CRLF·LF)
 
@@ -113,14 +111,20 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다
 - 증상: `git add`·`git reset`·커밋 직후 공용 인덱스 맞추기가 「index.lock exists」로 막힌다. 잠금 파일은 0바이트인데 git 프로세스는 없다(10-02 하루에만 다섯 번, 10-06에는 7시간 남아 공용 인덱스가 커밋 전 판인 채로 있었다).
 - 원인: 10-10 감시·재현으로 찾았다. 공용 작업본에 GPT 대화가 붙어 있으면 Codex 데스크톱이 검토 요약용 `git diff <merge-base> --raw --numstat`를 돌린다. 이 diff는 끝에 인덱스를 새로 고치며 잠금을 잡고(`diff.autoRefreshIndex` 기본값), 파일이 바뀌면 Codex가 `taskkill /t /f`로 늦게 죽여 0바이트 잠금이 남는다. `GIT_OPTIONAL_LOCKS=0`·`--no-optional-locks`는 `git status`에만 듣고 diff의 새로 고침은 못 막는다. 근거는 `.tmp/index-lock-20261010/`.
-- 고침: 10-13 유호님 승인으로 공용 `.git/config`에 `diff.autoRefreshIndex=false`를 넣었다(재현에서 잠금 0/5). 그래도 생긴 잠금은 `node tools/git잠금.js`로 판별하고, 주인이 없을 때만 `--정리`로 지운다(0바이트 · 10초 넘음 · 잠금보다 먼저 시작한 git 프로세스 없음일 때만, 프로세스 목록을 못 읽으면 안 지움). 잠금보다 뒤에 시작한 git은 주인이 될 수 없다(잠금은 O_EXCL로 만든다). 되돌리기는 `git config --unset diff.autoRefreshIndex`.
+- 고침: 10-13 유호님 승인으로 공용 `.git/config`에 `diff.autoRefreshIndex=false`를 넣었다(재현에서 잠금 0/5). 그래도 생긴 잠금은 `node tools/git잠금.js`로 판별하고, 주인이 없을 때만 `--정리`로 지운다(0바이트 · 10초 넘음 · 잠금보다 먼저 시작한 git 프로세스 없음일 때만, 프로세스 목록을 못 읽으면 안 지움). 잠금보다 뒤에 시작한 git은 주인이 될 수 없다(잠금은 O_EXCL로 만든다). 되돌리기는 `git config --unset diff.autoRefreshIndex`. 주인 판정은 `git.exe` 프로세스만 센다 — 지금 이 PC에서 git을 부르는 Claude·Codex 앱은 git CLI를 쓰지만, libgit2 계열 클라이언트(GitKraken 등)를 들이면 이 판정을 다시 본다.
 - 다시 확인: `git config --show-origin --get diff.autoRefreshIndex`가 `.git/config`의 `false`이고, `node tools/git잠금.js`가 「잠금 없음」이다(10-17). 새 잠금이 또 생기면 다른 원인이니 `.tmp/index-lock-20261010/`의 감시 도구로 다시 본다.
 
 ### 잠금이 저절로 풀리기도 해서 손으로 다시 돌리면 헛걸음한다
 - 증상: 0바이트 잠금이 2분 안팎에 풀렸다가 사람 손으로 다시 돌리는 사이 새 잠금이 생긴다(10-03 두 번). 「잠금 없는 순간 기다리기」 고리가 남은 주인 없는 잠금 앞에서 10분 동안 헛돈다.
 - 원인: Claude·Codex 앱이 변경 보기용으로 git을 수시로 돌려 잠금이 짧게 자주 생긴다(15분 감시에 30번, 각 0.5~2초).
-- 고침: 한 스크립트 안에서 ① 지금 HEAD로 별도 인덱스 ② 0.2초 간격으로 잠금 없는 순간 기다리기(그사이 HEAD가 바뀌면 ①부터) ③ 곧바로 write-tree → commit-tree → update-ref ④ `git reset -q -- <내 경로>`를 성공할 때까지 다시 시도. 고리 안에서 잠금이 10초 넘게 그대로면 `node tools/git잠금.js --정리`를 한 번 부른다. 재시도 오류를 `2>/dev/null`로 버리지 말고 찍는다.
+- 고침: 한 스크립트 안에서 ① 지금 HEAD로 별도 인덱스 ② 0.2초 간격으로 잠금 없는 순간 기다리기(그사이 HEAD가 바뀌면 ①부터) ③ 곧바로 write-tree → commit-tree → update-ref ④ `git reset -q -- <내 경로>`를 성공할 때까지 다시 시도. 고리 안에서 잠금이 10초 넘게 그대로면 `node tools/git잠금.js --정리`를 한 번 부른다. 재시도 오류를 `2>/dev/null`로 버리지 말고 찍는다. 10-19부터 `tools/내커밋.js 커밋`이 이 고리를 그대로 한다(커밋 전 20초·reset 30초까지 기다림, ④가 끝내 안 되면 가지를 되돌림).
 - 다시 확인: 고리가 끝난 뒤 `git diff --cached --name-only`가 비어 있다. 아니면 크게 알린다.
+
+### 연결 워크트리에서 `tools/git잠금.js`가 있을 수 없는 잠금 경로를 본다
+- 증상: 10-19 `tools/내커밋.js`를 워크트리에서 시험하며 보니, `살피기()`가 `<워크트리>/.git/index.lock`을 봤다. 워크트리의 `.git`은 파일이라 그 경로에는 잠금이 생길 수 없어, 잠금이 있어도 늘 「잠금 없음」이 나올 판이었다(이것 때문에 난 사고는 확인하지 못했다).
+- 원인: 잠금 경로를 `<저장소>/.git/index.lock`으로 박아 두었다. 연결 워크트리의 인덱스는 `<공용 .git>/worktrees/<이름>/index`다.
+- 고침: `.git`이 폴더가 아니면 `git rev-parse --path-format=absolute --git-path index.lock`으로 묻는다(`tools/git잠금.js`의 `잠금경로`). 부르는 쪽이 경로를 알면 `살피기(저장소, { 잠금 })`로 넘긴다.
+- 다시 확인: 워크트리에서 `node tools/git잠금.js --json`의 `잠금`이 `.git/worktrees/<이름>/index.lock`이다(10-19 확인, 옛 판은 `<워크트리>/.git/index.lock`).
 
 ## 커밋과 공용 인덱스
 
@@ -129,7 +133,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 별도 인덱스 커밋은 공용 인덱스를 건드리지 않는다. 공용 인덱스는 옛 HEAD 판을 스테이징한 채로 남는다.
 - 고침: 위 절차 5를 커밋과 같은 스크립트 안에서 곧바로 한다. 잠금에 막히면 판별·정리 뒤 바로 다시 한다.
 - 다시 확인: `git diff --cached --name-only`에 내 경로가 없다.
-- 10-19 재발: 손으로 짠 커밋 스크립트가 `commit-tree`까지만 하고 `update-ref`는 따로 돌려서 5단계가 빠졌다. 계정판 코드·문서 16경로가 1시간 남짓(10:50~12:06) 「MM」·「D 」로 남았고, 새 파일 셋은 작업본에서 「??」로 보였다. 그사이 다른 세션 커밋 넷이 들어왔지만 이 경로를 되돌린 것은 없었다. reset 전에 `git ls-files -s`의 blob이 내 커밋 부모 판과 같은지(남이 올린 스테이징이 아닌지) 경로마다 대조하고 `git reset -q -- <경로들>`로 맞췄다. 커밋 스크립트는 `update-ref`와 reset까지 한 몸으로 짠다(보기 `tools/참고카드_커밋.js`).
+- 10-19 재발: 손으로 짠 커밋 스크립트가 `commit-tree`까지만 하고 `update-ref`는 따로 돌려서 5단계가 빠졌다. 계정판 코드·문서 16경로가 1시간 남짓(10:50~12:06) 「MM」·「D 」로 남았고, 새 파일 셋은 작업본에서 「??」로 보였다. 그사이 다른 세션 커밋 넷이 들어왔지만 이 경로를 되돌린 것은 없었다. reset 전에 `git ls-files -s`의 blob이 내 커밋 부모 판과 같은지(남이 올린 스테이징이 아닌지) 경로마다 대조하고 `git reset -q -- <경로들>`로 맞췄다. 그 뒤로 커밋은 손 스크립트 대신 `tools/내커밋.js 커밋`으로 한다. `update-ref`와 reset을 한 몸으로 하고, reset 전에 같은 대조(공용 인덱스가 바탕 판이나 내 판일 때만)를 한다.
 
 ### 미리 만든 「HEAD 판 + 내 줄」을 나중에 커밋하면 남의 줄이 옛 판으로 돌아간다
 - 증상: 트랙의 「HEAD+내 줄」 파일을 만들어 두고 25분 뒤 커밋했더니 그사이 들어온 다른 세션 커밋 셋의 줄 다섯이 사라졌다(10-03 `44b49d06d`).
@@ -190,13 +194,13 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### 로컬 master를 통째로 push하면 남의 미푸시 커밋이 같이 나간다
 - 증상: 내 커밋만 올리려 했는데 아래에 깔린 다른 세션 커밋이 함께 올라갔다(10-03).
 - 원인: `git push origin master`는 내 커밋의 조상인 남의 미푸시 커밋까지 올린다. 그 세션은 아직 유호님 확인을 기다리는 중일 수 있다.
-- 고침: push 전에 `git log origin/master..<내 커밋>`을 본다. 남의 것이 섞였으면 origin/master 위에 내 커밋의 바뀐 파일만 다시 쌓아 `git push origin <커밋>:refs/heads/master`로 올리고, 로컬 master는 그대로 둔다. 도구는 `.tmp/push-mine-20261013/`(README: `restack.py --commits=…` 미리 보기 → `--push` → `compare.py` → `merge_local.py --go`). 「푸시해」는 내 커밋만이고, 남의 커밋까지 올리는 것은 유호님이 그렇게 말할 때만이다.
-- 다시 확인: `git ls-remote origin master`가 올린 커밋이고, 원래 커밋과 올린 커밋의 바뀐 줄이 같다.
+- 고침: `node tools/내커밋.js 올리기 <내 커밋…>`(미리 보기 → `--실행`)로 올린다(10-19). origin/master를 fetch해, 내 커밋이 그 바로 위에 이어져 있으면 그 커밋을 그대로 올린다. 남의 것이 섞였으면 origin/master 위에 내 커밋의 바뀐 경로만 별도 인덱스로 다시 쌓는다(같은 메시지·작성자). 원격 판이 내 부모 판과 같으면 내 판, 다르면 `git merge-file`, 문서가 겹치면 원격에도 있는 다음 줄 앞에 내 줄을 붙인다. 코드·데이터 파일이 겹치거나 내가 고친 줄이 원격에 그대로 없으면 멈춘다. 다시 쌓는 판의 줄끝은 원격 판에 맞추고, origin 바로 위의 커밋이라도 줄끝만 원격 판과 다른 줄이 있으면 그대로 올리지 않고 맞춰 다시 쌓는다(줄끝을 일부러 바꾸는 커밋만 `--줄끝그대로`). 올리기 전에 경로마다 「올라갈 줄은 모두 내 커밋의 줄(남의 미푸시 줄이 새지 않음) · 내 커밋이 바꾸지 않은 경로는 그대로 · 내가 지우지 않은 원격 줄은 그대로 · 줄끝은 원격 판을 따름」과 저장 용량(`git-storage-check.cjs --base origin/master --head <올릴 머리>`)을 본다. 미리 보기의 새 커밋 번호는 실행 때 다시 만들어 달라지니, 원격 CI는 실행 출력의 번호로 본다. 그다음 빨리감기로만 push하고, origin이 그새 움직였으면 다시 fetch해 처음부터 한다. 로컬 master는 그대로 둔다. 옛 `.tmp/push-mine-20261013/` 도구(restack.py·restack_close.py·push_close.py·merge_local.py)는 10-19부터 쓰지 않는다. 「푸시해」는 내 커밋만이고, 남의 커밋까지 올리는 것은 유호님이 그렇게 말할 때만이다.
+- 다시 확인: `git ls-remote origin master`가 올리기 출력의 올린 머리이고, 출력에 「검사: 올라갈 줄은 모두 내 커밋의 줄 · 내 줄 빠짐 없음 · 줄끝은 원격 판을 따름」과 저장 용량 통과가 있다. 10-19 임시 저장소 재현(시험 「재현: …」을 `--test-reporter=tap`으로 돌리면 명령과 출력이 찍힌다): 남의 미푸시 커밋·스테이징·미커밋 수정·새 파일·트랙의 남의 줄이 있는 채로 내 파일과 트랙 내 줄만 커밋했고, 그새 origin에 올라온 GPT 커밋 위에 내 커밋 하나만 올렸다. 남의 것은 작업본·공용 인덱스·로컬 master에 그대로였다.
 
 ### 남의 미푸시 커밋이 같은 줄을 고쳤으면 `restack.py`가 그 파일에서 멈춘다
 - 증상: 트랙 한 줄의 내 문장만 바꾼 커밋을 다시 쌓는데 `restack.py`가 `docs/_ops/트랙.md`에서 「병합 FAIL」로 멈췄다. 아무것도 올라가지 않았다(10-17).
 - 원인: 다른 세션의 로컬 전용 커밋이 같은 줄의 다른 구절을 지워서, 내 커밋의 부모 판과 origin 판이 그 줄에서 다르다. 줄 단위 3방향으로는 두 수정을 가를 수 없다.
-- 고침: 그 파일만 origin 판 blob에 내 문장 교체를 적용한다. 옛 문장이 origin 판에 꼭 한 번 있고 바뀐 줄이 하나일 때만 쓴다. 다른 경로는 origin 판이 내 부모 판과 같을 때만 내 판을 넣고, 다르면 멈춘다. 로컬 병합의 트리는 로컬 그대로 둔다(로컬이 남의 수정과 내 문장을 다 품는다).
+- 고침: 그 파일만 origin 판 blob에 내 문장 교체를 적용한다. 옛 문장이 origin 판에 꼭 한 번 있고 바뀐 줄이 하나일 때만 쓴다. 다른 경로는 origin 판이 내 부모 판과 같을 때만 내 판을 넣고, 다르면 멈춘다. 로컬 병합의 트리는 로컬 그대로 둔다(로컬이 남의 수정과 내 문장을 다 품는다). `tools/내커밋.js 올리기`도 이 경우 「내가 고친 줄이 원격 판에 그대로 없다」로 멈춘다(문장 단위 옮기기는 넣지 않았다) — 그 파일만 이 고침대로 손으로 한다.
 - 다시 확인: 올린 커밋의 바뀐 파일이 로컬 커밋과 같고 트랙은 한 줄이며, 로컬 병합 전후 `git diff --stat`이 비어 있다.
 
 ### 「트리는 로컬 그대로」 병합이 origin에만 있는 남의 커밋을 떨어뜨린다
@@ -208,7 +212,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### push 직후 `merge_local.py`가 「origin has other commits」로 멈춘다
 - 증상: 내 커밋을 `restack.py --push`로 올린 직후 `merge_local.py`가 `AssertionError: ('origin has other commits', 4)`로 멈췄다(10-17). 그사이 다른 세션이 origin에 세 커밋을 올렸다.
 - 원인: 이 도구는 로컬 master에 없는 origin 커밋이 방금 내가 올린 것뿐일 때만 「트리는 로컬 그대로」로 합친다. 남의 push가 섞인 채 트리를 로컬로 두면, 로컬에 아직 없는 남의 줄이 병합에서 빠진다(10-17에는 결정 표·트랙의 줄이 그랬다).
-- 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
+- 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다. 10-19부터 `tools/내커밋.js 올리기 --실행 --합치기`가 이 확인을 한다(내가 방금 올린 커밋은 빼고 본다). 다르면 「건너뜀」과 다른 경로 몇 개를 내고 합치지 않는다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
 ### `restack.py --renumber`로 번호를 바꾸면 그 줄을 다시 고친 다음 커밋이 실패한다
@@ -220,7 +224,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### 결정 표에 행을 더한 커밋을 다시 쌓으면 `restack.py`가 「끼울 자리 못 찾음」으로 멈춘다
 - 증상: 10-18 결정 표에 세 행을 더한 커밋(`add77ba8c`)을 `restack.py --commits=add77ba8c --renumber=`로 다시 쌓았는데, 결정 표만 「끼울 자리 못 찾음: '| 2026-10-17 | 확정 | [보안 · talk 운영 반영 …'」(merge-file 충돌 2)로 빠졌다. 나머지 문서 셋은 merge-file·transplant로 됐다.
 - 원인: 내 행 앞뒤의 문맥 행이 다른 세션의 로컬 전용 커밋이 넣은 행이라 origin 판에는 없다. 결정 표는 맨 위에 행이 계속 끼어서 로컬 판과 origin 판의 행 순서도 다르다.
-- 고침: 결정 표만 origin 판에 내 행을 직접 끼운다. 닻은 「내 판에서 내 행 다음에 오는 행 중 origin 판에도 있는 첫 행」이고, 내 판에서 표 맨 위 행이면 구분줄 바로 다음이다(`결정.js --추가`와 같은 자리). `.tmp/push-mine-20261013/restack_결정행.js <restack 머리> <내 커밋> --out=<결과> [--push]`가 restack 머리에 결정 표만 채워 같은 메시지·작성자로 다시 만든다. 이 도구의 결과 파일에는 `renumber.files`가 있어 `merge_local.py --res=<결과>`가 그대로 읽는다. restack.py 결과는 번호를 안 바꾸면 `renumber`가 `{}`여서 merge_local.py 9행 `res['renumber']['files']`에서 KeyError가 난다(10-18 코드로 확인).
+- 고침: 결정 표만 origin 판에 내 행을 직접 끼운다. 닻은 「내 판에서 내 행 다음에 오는 행 중 origin 판에도 있는 첫 행」이고, 내 판에서 표 맨 위 행이면 구분줄 바로 다음이다(`결정.js --추가`와 같은 자리). 10-19부터 `tools/내커밋.js 올리기`가 `.md`·`.txt`·`.jsonl` 등 문서에서 같은 닻(내 줄 다음에 오는 줄 가운데 원격에도 있는 첫 줄 앞)으로 끼운다. `.tmp/push-mine-20261013/restack_결정행.js <restack 머리> <내 커밋> --out=<결과> [--push]`가 restack 머리에 결정 표만 채워 같은 메시지·작성자로 다시 만든다. 이 도구의 결과 파일에는 `renumber.files`가 있어 `merge_local.py --res=<결과>`가 그대로 읽는다. restack.py 결과는 번호를 안 바꾸면 `renumber`가 `{}`여서 merge_local.py 9행 `res['renumber']['files']`에서 KeyError가 난다(10-18 코드로 확인).
 - 다시 확인: 도구가 경로마다 「origin → 올린 커밋」의 더한·지운 줄이 「부모 → 내 커밋」과 개수까지 같은지 보고, 저장소 검사를 돌린다. 올린 뒤에는 `git ls-remote`가 올린 커밋인지 본다. 10-18: origin `a99182659..886739c24`(13파일 +1732/−4, 원래 커밋과 같음), 로컬 병합 `b8b32d744`(트리는 로컬 그대로).
 
 ### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
@@ -232,7 +236,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 ### `restack.py`가 통과해도 끼운 줄 차례가 로컬과 다를 수 있다
 - 증상: 10-18 저녁 내 커밋 21개를 다시 쌓을 때, 트랙 계정판 줄은 다섯 커밋 모두 「replace 묶음이 0곳」으로 멈췄다. 통과한 결정 표 두 행과 AI_CLI 한 절은 남이 그사이 origin에 먼저 올린 행·절보다 위에 끼워졌다. 로컬에서는 그 아래에 있었고, 줄 개수 검사는 통과했다.
 - 원인: 끼울 자리를 내 커밋 부모 판의 앞뒤 줄로만 찾는다. 남이 나중에 올린 행은 부모 판에 없어서 내 행이 그 위(표 맨 위)로 들어간다. 줄 개수 검사는 차례를 보지 않는다. 트랙 줄은 origin 판에 다른 커밋 문장이 먼저 들어가 있어 줄째로는 찾지 못한다.
-- 고침: `.tmp/push-mine-20261013/restack_close.py`를 쓴다. 끼울 묶음이 로컬 master 판에 한 번 있으면, 로컬에서 그 위로 올라가며 origin에도 있는 첫 줄을 찾아 그 뒤에 끼운다. 바꿀 줄이 origin 판에 없으면 머리(앞 40자)가 같은 줄 하나에 문장 단위로 옮기고 문장 개수로 검사한다. `verify_close.py`는 경로마다 올릴 판에만 있는 줄이 origin 바탕에 있던 줄인지, 바탕에 없던 내 줄이 로컬과 다른 자리에 있는지 본다. `push_close.py --commits=… [--tests=…]`가 쌓기 → 대조 → 저장소 검사 → 올릴 트리 그대로 시험 → 빨리감기 push를 한 번에 한다. origin이 그새 움직이면 git이 push를 거절하니 다시 돌린다.
+- 고침: `.tmp/push-mine-20261013/restack_close.py`를 쓴다. 끼울 묶음이 로컬 master 판에 한 번 있으면, 로컬에서 그 위로 올라가며 origin에도 있는 첫 줄을 찾아 그 뒤에 끼운다. 바꿀 줄이 origin 판에 없으면 머리(앞 40자)가 같은 줄 하나에 문장 단위로 옮기고 문장 개수로 검사한다. `verify_close.py`는 경로마다 올릴 판에만 있는 줄이 origin 바탕에 있던 줄인지, 바탕에 없던 내 줄이 로컬과 다른 자리에 있는지 본다. `push_close.py --commits=… [--tests=…]`가 쌓기 → 대조 → 저장소 검사 → 올릴 트리 그대로 시험 → 빨리감기 push를 한 번에 한다. origin이 그새 움직이면 git이 push를 거절하니 다시 돌린다. 10-19부터 쓰는 `tools/내커밋.js 올리기`는 같은 자리에 원격도 줄을 더했으면 원격 줄 다음에 내 줄을 둔다. 로컬 차례와 다를 수 있으니, 미리 보기가 「자리 맞춤」 경로마다 보여 주는 「<원격 줄>」 다음에 「<내 줄>」을 올리기 전에 본다. 올릴 트리로 시험을 돌리는 단계는 넣지 않았다.
 - 다시 확인: 10-18 origin `4aa8622f9..24791684c`(21커밋·102파일). 대조에서 남은 차이는 origin과 로컬에서 남의 결정 행 두 개의 차례가 다른 것뿐이었고, 올릴 트리를 풀어 돌린 구독·혜택 시험 52개가 통과했다.
 
 ## 워크트리·연결 폴더·공간 정리

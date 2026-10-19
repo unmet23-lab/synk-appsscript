@@ -49,15 +49,42 @@ function 먼저시작한git(잠금수정ms) {
   }
 }
 
-function 살피기(저장소 = path.resolve(__dirname, '..')) {
-  const 잠금 = path.join(저장소, '.git', 'index.lock');
+/** 그 저장소의 공용 인덱스 잠금 경로. 연결 워크트리는 `.git`이 파일이라 git에 묻는다. */
+function 잠금경로(저장소) {
+  const 기본 = path.join(저장소, '.git', 'index.lock');
+  try { if (fs.statSync(path.join(저장소, '.git')).isDirectory()) return 기본; } catch (_) { return 기본; }
+  const env = { ...process.env };
+  for (const k of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR']) delete env[k];
+  try {
+    return path.resolve(execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-path', 'index.lock'],
+      { cwd: 저장소, encoding: 'utf8', env, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim());
+  } catch (_) {
+    return 기본;
+  }
+}
+
+/** 옵션: 잠금(잠금 파일 경로), 먼저시작한git(잠금수정ms → 수 | null, 시험에서 바꿔 끼운다). */
+function 살피기(저장소 = path.resolve(__dirname, '..'), 옵션 = {}) {
+  const 잠금 = 옵션.잠금 || 잠금경로(저장소);
   let st = null;
   try { st = fs.statSync(잠금); } catch (_) {}
   const 입력 = st
     ? { 있음: true, 크기: st.size, 수정ms: st.mtimeMs, 지금ms: Date.now(), 먼저시작한git수: null }
     : { 있음: false };
-  if (st && st.size === 0 && (입력.지금ms - st.mtimeMs) / 1000 >= 기다림초) 입력.먼저시작한git수 = 먼저시작한git(st.mtimeMs);
+  if (st && st.size === 0 && (입력.지금ms - st.mtimeMs) / 1000 >= 기다림초) {
+    입력.먼저시작한git수 = (옵션.먼저시작한git || 먼저시작한git)(st.mtimeMs);
+  }
   return { 잠금, 입력, ...판정(입력) };
+}
+
+/** 살피기 결과가 주인 없는 잠금이고 그사이 바뀌지 않았을 때만 지운다. 지웠으면 true. */
+function 정리(r) {
+  if (!r || !r.지움) return false;
+  let 다시;
+  try { 다시 = fs.statSync(r.잠금); } catch (_) { return false; }
+  if (다시.size !== 0 || 다시.mtimeMs !== r.입력.수정ms) return false;
+  fs.unlinkSync(r.잠금);
+  return true;
 }
 
 function main() {
@@ -66,8 +93,7 @@ function main() {
   if (모르는.length) { console.error(`모르는 인자: ${모르는.join(' ')} (아는 것: --정리 --json)`); process.exit(1); }
   const r = 살피기();
   if (args.includes('--정리') && r.지움) {
-    const 다시 = fs.statSync(r.잠금);
-    if (다시.size === 0 && 다시.mtimeMs === r.입력.수정ms) { fs.unlinkSync(r.잠금); r.지웠음 = true; }
+    if (정리(r)) r.지웠음 = true;
     else r.이유 += ' — 그사이 바뀌어 지우지 않았다';
   }
   if (args.includes('--json')) { console.log(JSON.stringify(r, null, 2)); return; }
@@ -76,4 +102,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 판정, 살피기, 기다림초 };
+module.exports = { 판정, 살피기, 정리, 잠금경로, 기다림초 };
