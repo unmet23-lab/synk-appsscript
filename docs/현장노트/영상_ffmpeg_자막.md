@@ -47,6 +47,12 @@
 - 고침: 무음 채우기는 늘 길이를 못 박는다: `apad=whole_dur=15,atrim=0:15`. 바꾼 뒤 `capture_output` 모드로 세 번 모두 2.2~2.6초에 끝났다. 멈췄으면 그 ffmpeg만 끄고(부모 파이썬은 따라 끝난다) 남은 임시 PNG로 다시 돌린다.
 - 다시 확인: 출력 파일 크기가 몇 초마다 자라는지 본다. `ffprobe`가 「moov atom not found」면 덜 쓴 파일이다.
 
+### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다
+- 증상: 10-19 지유 광고 v3b(파이썬에서 rgb24를 파이프로 넣고 `-vf noise=…` 뒤 libx264)에 `-colorspace bt709 -color_primaries bt709 -color_trc bt709`를 붙였는데, `ffprobe`가 `color_space=bt709`만 보여 주고 `color_primaries`·`color_transfer`는 unknown이었다.
+- 원인: 필터를 지난 프레임에 그 값이 없으면 libx264가 프레임 쪽 값을 따라 VUI의 원색·감마 칸을 비운다(추정).
+- 고침: 인코딩에는 `-x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709`를 함께 준다. 이미 뽑은 파일은 다시 인코딩하지 않고 `ffmpeg -i in.mp4 -map 0 -c copy -bsf:v "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1" out.mp4`로 태그만 고친다(10-19 다섯 판, 몇 초).
+- 다시 확인: `ffprobe -v error -select_streams v:0 -show_entries stream=color_space,color_primaries,color_transfer -of csv=p=0 <파일>`이 `bt709,bt709,bt709`인지.
+
 ## 렌더(HyperFrames·GSAP)
 
 아래 HyperFrames 항목은 기존 영상 수정·재현의 기술 참고다. 새 영상의 도구는 [제작 도구 선택](../마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다.

@@ -1,5 +1,6 @@
 # 지유 스킨케어 광고 · 본편과 훅 판 편집(영상판). 컷 길이·엔드카드·소리는 이미지콘티_가편집.py와 같고, 정지 그림 자리에 영상을 넣는다.
-#   python 본편_편집.py [본편 훅B 훅C] [--비율 9:16,4:5,1:1] [--판 v1]
+#   python 본편_편집.py [본편 훅B 훅C] [--비율 9:16,4:5,1:1] [--판 v1] [--색감 필름아침]
+#   --색감: PULSE 공용 색감(../색감/색감.py LOOKS). 컷을 자른 뒤 입히고 병 접사는 색조만, 엔드카드 팩샷·글자는 그 위에 그대로(10-19)
 #   → Documents/synk-vendor/jiyu-skincare-20261018/편집/<판이름>_<비율>_<판>.mp4
 # 납품(브리프 6절): 본편 9:16·4:5·1:1, 훅 B·C는 9:16만. 비율 판은 같은 원본에서 자르고 병·글자는 비율마다 다시 놓는다.
 # 그림 고르는 순서(컷마다 있는 것 가운데 앞의 것):
@@ -21,7 +22,9 @@ from PIL import Image, ImageDraw, ImageFont
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "색감"))
 import 이미지콘티_가편집 as 가편집  # noqa: E402  엔드카드 겹(end_layer·with_end)과 경로를 같이 쓴다
+import 색감  # noqa: E402  PULSE 공용 색감(--색감 이름). 컷을 자른 뒤·엔드카드와 글자를 얹기 전에 입힌다
 
 V = 가편집.V
 K = 가편집.K
@@ -144,11 +147,18 @@ def crop_y(kind, name, ratio, h):
     return max(0, min(H - h, y))
 
 
-def frames(edit, ratio):
+def frames(edit, ratio, look=None):
     w, h = RATIOS[ratio]
     plan = EDITS[edit]["head"] + BODY
     pack = numbered(BLF, "컷7팩샷_")
-    layer = 가편집.end_layer(END_LAYOUTS[ratio], (w, h), pack[0] if pack else None)
+    pack_path = pack[0] if pack else None
+    if look and pack_path:  # 엔드카드 병도 컷 6 병과 같은 색조로(안 하면 2초 사이 병 색이 달랐다, 10-19 Fable P2). 글자는 그대로
+        rgba = Image.open(pack_path).convert("RGBA")
+        graded = 색감.grade(rgba.convert("RGB"), look, product=True).convert("RGBA")
+        graded.putalpha(rgba.getchannel("A"))
+        pack_path = os.path.join(tempfile.gettempdir(), f"_jiyu_pack_{look}.png")
+        graded.save(pack_path)
+    layer = 가편집.end_layer(END_LAYOUTS[ratio], (w, h), pack_path)
     spec = EDITS[edit]["text"]
     text = text_layer(spec, (w, h)) if spec and ratio == "9:16" else None
     for start, end, src in plan:
@@ -158,6 +168,8 @@ def frames(edit, ratio):
         for i, im in enumerate(source(kind, name, n)):
             t = start + i / FPS
             im = im.crop((0, y0, w, y0 + h))
+            if look:  # 병 접사는 색조만(라벨이 지워지지 않게), 엔드카드 팩샷·글자는 아래에서 그대로 얹는다
+                im = 색감.grade(im, look, product=(kind == "병"))
             if name == "컷7":
                 im = 가편집.with_end(im, layer, min(1.0, max(0.0, (t - END_LAYOUTS[ratio]["appear"]) / 0.15)))
             if text is not None and t < 2.0:
@@ -226,7 +238,7 @@ def mix_audio(edit, tmp):
     return out
 
 
-def render(edit, ratios, tag):
+def render(edit, ratios, tag, look=None):
     os.makedirs(OUT, exist_ok=True)
     tmp = tempfile.mkdtemp()
     audio = mix_audio(edit, tmp)
@@ -242,7 +254,7 @@ def render(edit, ratios, tag):
                                 "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-crf", "14", "-preset", "slow",
                                 "-pix_fmt", "yuv420p", video], stdin=subprocess.PIPE)
         count = 0
-        for im in frames(edit, ratio):
+        for im in frames(edit, ratio, look):
             enc.stdin.write(im.tobytes())
             count += 1
         enc.stdin.close()
@@ -251,7 +263,12 @@ def render(edit, ratios, tag):
         out = os.path.join(OUT, f"{edit}_{ratio.replace(':', 'x')}_{tag}.mp4")
         subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", video, "-i", audio,
                         "-vf", "noise=c0s=3:c0f=t", "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-crf", "18",
-                        "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-t", "15",
+                        "-preset", "slow", "-pix_fmt", "yuv420p",
+                        # 색 공간 태그(10-19 Fable P3): 없으면 플레이어마다 색을 다르게 읽을 수 있다.
+                        # -color_primaries·-color_trc만으로는 noise 필터 뒤 원색·감마가 unknown으로 남아 x264 VUI로 박는다
+                        "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
+                        "-x264-params", "colorprim=bt709:transfer=bt709:colormatrix=bt709",
+                        "-c:a", "aac", "-b:a", "192k", "-t", "15",
                         "-movflags", "+faststart", out], check=True, stdin=subprocess.DEVNULL)
         i, p = loudness(out)
         print(f"  프레임 {count}장 → {out} ({i} LUFS, 봉우리 {p} dBFS)", flush=True)
@@ -267,6 +284,7 @@ if __name__ == "__main__":
         ratios = args[args.index("--비율") + 1].split(",")
     if "--판" in args:
         tag = args[args.index("--판") + 1]
+    look = args[args.index("--색감") + 1] if "--색감" in args else None  # 색감.LOOKS 이름(없으면 v2처럼 그대로)
     edits = [a for a in args if a in EDITS] or ["본편"]
     for e in edits:
-        render(e, ratios, tag)
+        render(e, ratios, tag, look)
