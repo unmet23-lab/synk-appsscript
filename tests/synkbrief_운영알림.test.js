@@ -37,6 +37,63 @@ function queueSnapshot(issues = {}, keyConfigured = true) {
     healthy:keyConfigured && Object.values(issue_counts).every(count=>count===0),key_configured:keyConfigured,issue_counts};
 }
 
+const ESCALATED = '2026-10-19T05:03:00.000Z';
+function escalate(f, count = 1, last = ESCALATED) { Object.assign(f.payload.accounts[0], {escalations_24h: count, last_escalation_at: last}); }
+const directMails = f => f.emails.filter(mail => mail.subject === '[SYNK DM] 직접 답할 DM이 있어요');
+
+test('「직접 확인하고 답드릴게요」 답은 운영 상태 해시와 따로, 새로 생길 때만 건수·시각으로 알린다',()=>{
+  const f=fixture();assert.equal(f.run().state,'baseline');
+  escalate(f);f.payload.accounts[0].recipient_hash='PRIVATE_RECIPIENT';
+  assert.equal(f.run().state,'unchanged','운영 상태 해시와 정상 판정은 그대로다');
+  assert.equal(f.emails.length,1);assert.equal(f.emails[0].to,'owner@example.test');assert.equal(f.emails[0].subject,'[SYNK DM] 직접 답할 DM이 있어요');
+  assert.match(f.emails[0].body,/DM함\(메시지 요청함 포함\)/);
+  assert.match(f.emails[0].body,/@yuhobuilds \| 최근 24시간 1건 \| 마지막 2026-10-19 14:03 KST/);
+  assert.doesNotMatch(JSON.stringify(f.emails)+f.values.get('SYNKBRIEF_OPS_DIRECT_NOTICE'),/PRIVATE|test-only/);
+  f.payload.checked_at=new Date().toISOString();f.run();assert.equal(f.emails.length,1,'같은 escalation은 다시 알리지 않는다');
+  escalate(f,2,'2026-10-19T06:10:00.000Z');f.run();
+  assert.equal(f.emails.length,2);assert.match(f.emails[1].body,/최근 24시간 2건 \| 마지막 2026-10-19 15:10 KST/);
+  escalate(f,0,null);f.run();assert.equal(f.emails.length,2,'하루가 지나 0건이 되면 조용하다');
+  escalate(f,1,'2026-10-19T06:10:00.000Z');f.run();assert.equal(f.emails.length,2,'이미 알린 시각보다 새롭지 않으면 다시 보내지 않는다');
+});
+
+test('escalation 알림은 첫 점검·운영 장애와 함께 와도 각각 보내고, 이 필드가 없는 서버 판은 그대로 받는다',()=>{
+  const f=fixture();escalate(f);assert.equal(f.run().state,'baseline');assert.equal(directMails(f).length,1);
+  const g=fixture();g.run();breakAccount(g);escalate(g);assert.equal(g.run().state,'sent');
+  assert.equal(g.emails.length,2);assert.equal(directMails(g).length,1);assert.equal(g.emails.at(-1).subject,'[SYNK DM] 운영 이상');
+  assert.doesNotMatch(g.emails.at(-1).body,/24시간/);
+  const h=fixture();h.payload.accounts.push({username:'other',connected:true,health:'ok',escalations_24h:0,last_escalation_at:null});
+  assert.equal(h.run().state,'baseline');assert.equal(h.emails.length,0);assert.equal(h.values.has('SYNKBRIEF_OPS_DIRECT_NOTICE'),false);
+});
+
+test('escalation 알림은 quota·받는 곳이 없으면 기록을 남기지 않고, 메일 예외 뒤에는 다음 점검에서 다시 보낸다',()=>{
+  const f=fixture();f.run();escalate(f);f.quota=0;f.run();assert.equal(f.emails.length,0);assert.equal(f.values.has('SYNKBRIEF_OPS_DIRECT_NOTICE'),false);
+  f.quota=100;f.values.set('SYNKBRIEF_OPS_EMAIL','not-an-address');f.run();assert.equal(f.emails.length,0);assert.equal(f.values.has('SYNKBRIEF_OPS_DIRECT_NOTICE'),false);
+  f.values.delete('SYNKBRIEF_OPS_EMAIL');f.mailError=true;
+  assert.equal(f.run().state,'unchanged','메일 예외가 운영 점검을 막지 않는다');assert.equal(f.emails.length,1);
+  assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_DIRECT_NOTICE')).delivery,'retry');
+  f.mailError=false;f.run();assert.equal(f.emails.length,2);assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_DIRECT_NOTICE')).delivery,'sent');
+  f.run();assert.equal(f.emails.length,2);
+  const g=fixture();g.values.set('SYNKBRIEF_OPS_DIRECT_NOTICE','PRIVATE broken');escalate(g);g.run();assert.equal(directMails(g).length,1,'손상된 기록은 새 관측으로 덮는다');
+  const h=fixture();h.values.set('SYNKBRIEF_OPS_DIRECT_NOTICE',JSON.stringify({last:ESCALATED,at:ESCALATED,delivery:'pending'}));escalate(h);h.run();
+  assert.equal(directMails(h).length,1,'보내는 중에 끊긴 pending 기록은 다시 보낸다');
+});
+
+test('escalation 알림이 실패해도 같은 회차의 운영 이상 판정과 메일은 그대로 간다',()=>{
+  const f=fixture();f.run();breakAccount(f);escalate(f);
+  f.context.PropertiesService.getScriptProperties=()=>({getProperty:k=>f.values.get(k),setProperty:(k,v)=>{if(k==='SYNKBRIEF_OPS_DIRECT_NOTICE')throw Error('PRIVATE '+KEY);f.values.set(k,v);}});
+  assert.equal(f.run().state,'sent');assert.equal(f.emails.length,1);assert.equal(f.emails[0].subject,'[SYNK DM] 운영 이상');assert.equal(directMails(f).length,0);
+  assert.equal(f.released,true);
+});
+
+test('escalation 필드의 잘못된 형식은 고정 형식 오류로만 알린다',()=>{
+  const bad=[[ '1',ESCALATED],[-1,ESCALATED],[1.5,ESCALATED],[10001,ESCALATED],[1,null],[1,'PRIVATE'],[1,['2026-10-19T05:03:00Z']],[0,ESCALATED],[null,null]];
+  for(const [count,last] of bad){
+    const f=fixture();escalate(f,count,last);f.run();
+    assert.equal(f.emails.length,1);assert.match(f.emails[0].body,/ops-status \| invalid_response/);assert.equal(directMails(f).length,0);
+    assert.doesNotMatch(JSON.stringify(f.emails),/PRIVATE/);
+  }
+});
+
 function driveJob(health = 'ok', overrides = {}) {
   return {jobname:'synkbrief-drive-library',active:true,last_run_at:new Date().toISOString(),health,http_status:200,...overrides};
 }

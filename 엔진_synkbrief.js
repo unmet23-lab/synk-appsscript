@@ -326,6 +326,7 @@ function synkbrief정기점검() {
   if (!lock.tryLock(1000)) return { ok: true, state: 'busy' };
   try {
     const status = synkbrief_운영상태읽기_(p.getProperty('SYNKBRIEF_OPS_READ_KEY'));
+    try { synkbrief_직접답알림_(p, status); } catch (_) { /* 직접 답 알림의 실패가 운영 이상 판정을 막지 않는다. 다음 점검에서 다시 본다. */ }
     const signature = JSON.stringify([status.healthy, status.rows.map(r => [r.name, r.health, r.http])]);
     const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, signature).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
     let previous = null;
@@ -360,6 +361,44 @@ function synkbrief정기점검() {
       throw new Error('SYNK DM 운영 알림 전달 여부를 확인하지 못했습니다. 같은 상태는 자동 재발송하지 않습니다.');
     }
   } finally { lock.releaseLock(); }
+}
+
+// 자동 답이 「직접 확인하고 답드릴게요」라고 약속한 대화(escalation)를 계정 주인이 놓치지 않게 따로 메일로 알린다.
+// 서버는 계정별 최근 24시간 건수와 마지막 발송 시각만 준다. 받는 사람·DM 원문은 없다. 운영 이상/복구 해시와 섞지 않는다.
+function synkbrief_직접답알림_(p, status) {
+  const items = status.validated === true && Array.isArray(status.attention) ? status.attention : [];
+  const latest = items.reduce((max, item) => item.last > max ? item.last : max, '');
+  if (!latest) return 'none';
+  let previous = null;
+  try { previous = JSON.parse(p.getProperty('SYNKBRIEF_OPS_DIRECT_NOTICE') || 'null'); } catch (_) { /* 손상된 기록은 새 관측으로 덮는다. */ }
+  // 시각 문자열끼리 비교하므로 정해진 형식이 아닌 기록은 없는 것으로 본다(손상된 값이 알림을 영영 막지 않게).
+  // 보내는 중에 실행이 끊겨 pending으로 남은 기록도 알리지 못한 것으로 보고 다시 보낸다.
+  const notified = previous && previous.delivery !== 'pending'
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(previous.last) ? previous.last : '';
+  if (latest <= notified) return 'unchanged';
+  if (MailApp.getRemainingDailyQuota() < 1) return 'quota_exhausted';
+  const to = synkbrief_운영알림수신_(p);
+  if (!to) return 'recipient_missing';
+  const kst = iso => new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice(0, 16).replace('T', ' ') + ' KST';
+  const record = { last: latest, at: new Date().toISOString(), delivery: 'pending' };
+  p.setProperty('SYNKBRIEF_OPS_DIRECT_NOTICE', JSON.stringify(record));
+  try {
+    MailApp.sendEmail({
+      to: to,
+      subject: '[SYNK DM] 직접 답할 DM이 있어요',
+      body: '같은 문제를 다시 알려 주신 분께 자동 답이 「직접 확인하고 답드릴게요」라고 안내했어요.\n'
+        + '인스타그램 앱의 DM함(메시지 요청함 포함)에서 그 시각 무렵 이 문장이 나간 대화를 찾아 직접 답해 주세요.\n\n'
+        + items.map(item => item.name + ' | 최근 24시간 ' + item.count + '건 | 마지막 ' + kst(item.last)).join('\n'),
+      name: 'SYNK'
+    });
+    record.delivery = 'sent';
+    p.setProperty('SYNKBRIEF_OPS_DIRECT_NOTICE', JSON.stringify(record));
+    return 'sent';
+  } catch (_) {
+    // 예외가 났으면 보내지 못한 것이므로 표시를 되돌려 다음 점검에서 다시 보낸다. 같은 알림이 두 번 가도 해는 없다.
+    p.setProperty('SYNKBRIEF_OPS_DIRECT_NOTICE', JSON.stringify({ last: notified, at: record.at, delivery: 'retry' }));
+    return 'retry';
+  }
 }
 
 // 관리자 편집기의 관측 전용 함수. 원본 속성·키·예외를 로그/반환값에 복사하지 않는다.
@@ -532,6 +571,7 @@ function synkbrief_운영상태읽기_(key) {
     let healthy = body.healthy;
     const seen = Object.create(null);
     const accountIssueCodes = ['token-missing', 'campaign-expired', 'campaign-inactive'];
+    const attention = [];
     body.accounts.forEach(account => {
       if (!account || typeof account.username !== 'string' || !/^[a-zA-Z0-9._]{1,30}$/.test(account.username) || typeof account.connected !== 'boolean' || typeof account.health !== 'string' || !optionalTime(account.token_expires_at) || !optionalTime(account.last_failure_at) || !optionalHttp(account.http_status)) throw new Error('shape');
       if (account.dm_enabled !== undefined && typeof account.dm_enabled !== 'boolean') throw new Error('shape');
@@ -539,6 +579,12 @@ function synkbrief_운영상태읽기_(key) {
       if (!Array.isArray(accountIssues) || accountIssues.length > accountIssueCodes.length
         || accountIssues.some((code, index) => accountIssueCodes.indexOf(code) < 0 || accountIssues.indexOf(code) !== index)
         || (accountIssues.length > 0 && account.dm_enabled !== true)) throw new Error('shape');
+      // 「직접 확인하고 답드릴게요」 답의 건수·시각은 장애가 아니라 따로 알린다. 이 필드가 없던 서버 판도 받는다.
+      const escalations = account.escalations_24h === undefined ? 0 : account.escalations_24h;
+      if (!Number.isSafeInteger(escalations) || escalations < 0 || escalations > 10000
+        || (escalations > 0 ? typeof account.last_escalation_at !== 'string' || !Number.isFinite(Date.parse(account.last_escalation_at))
+          : account.last_escalation_at != null)) throw new Error('shape');
+      if (escalations > 0) attention.push({ name: '@' + account.username, count: escalations, last: new Date(Date.parse(account.last_escalation_at)).toISOString() });
       if (!account.connected && account.dm_enabled !== true) return;
       if (seen[account.username]) throw new Error('shape');
       seen[account.username] = true;
@@ -588,6 +634,6 @@ function synkbrief_운영상태읽기_(key) {
     // 정상 시각/HTTP 성공의 변화는 장애 알림을 만들지 않는다.
     const issues = healthy ? [] : rows.filter(r => r.health !== 'ok' && r.health !== 'healthy' && r.health !== 'pending');
     issues.sort((a, b) => a.name.localeCompare(b.name) || a.health.localeCompare(b.health));
-    return { validated: true, healthy: healthy, at: new Date(checked).toISOString(), rows: issues };
+    return { validated: true, healthy: healthy, at: new Date(checked).toISOString(), rows: issues, attention: attention };
   } catch (_) { return failed('invalid_response', 200); }
 }
