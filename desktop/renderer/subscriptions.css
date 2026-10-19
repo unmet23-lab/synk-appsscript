@@ -395,6 +395,14 @@
   .member-subs .ms-tip>.ms-link{margin-left:17px}
   .member-subs .ms-tip-body{margin-left:0;flex-basis:100%}
 }
+/* 2차(10-19): 목표 묻기 한 줄 카드와 칸 아래 팁 줄. 경고가 아니라 노랑·빨강 없이 */
+.member-subs .mu-goal{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:12px;padding:14px 18px;border:1px solid var(--line,rgba(255,255,255,.075));border-radius:var(--r-lg,20px);background:var(--surface-1,#121317)}
+.member-subs .mu-goal-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.member-subs .mu-goal-text b{color:var(--ink,#FAFAF9);font-size:.9375rem;font-weight:650}
+.member-subs .mu-goal-text span{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+.member-subs .mu-goal-options{display:flex;flex-wrap:wrap;gap:8px}
+.member-subs .mu-goal-line{margin:8px 0 0;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+.member-subs .mu-goal-line .ms-link{min-height:0;font-size:.8125rem}
 /* 초기화권(10-19): 줄 안의 한 덩이는 글자만 조금 진하게, 계정 관리 이름 옆은 작게. 팁 링크 둘은 오른쪽에 나란히 */
 .member-subs .ms-pass{color:var(--ink,#FAFAF9);font-weight:600}
 .member-subs .ms-pass-mark{margin-left:7px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}

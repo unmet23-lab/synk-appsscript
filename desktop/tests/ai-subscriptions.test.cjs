@@ -186,6 +186,9 @@ test('a missing or odd Claude config keeps the Max plan without a tier',async()=
   assert.equal(await plan(),'max');
   fs.writeFileSync(path.join(f.root,'home','.claude.json'),'{not json');assert.equal(await plan(),'max');
   fs.writeFileSync(path.join(f.root,'home','.claude.json'),JSON.stringify({oauthAccount:{organizationRateLimitTier:'default_claude_max_5x'}}));assert.equal(await plan(),'max_5x');
+  // 알던 등급은 한 번 못 읽었다고 지우지 않는다(사용 기록의 무게가 흔들리지 않게). 다른 요금제로 바뀌면 따른다.
+  fs.writeFileSync(path.join(f.root,'home','.claude.json'),'{not json');assert.equal(await plan(),'max_5x');
+  f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,email:f.state.claudeEmail,subscriptionType:'pro'});assert.equal(await plan(),'pro');
 });
 
 test('a second check while one runs shares it and also gets the finished board',async()=>{
@@ -627,9 +630,10 @@ test('keeps a numbers-only usage record on this PC and shows the 7-day bars',asy
   const lines=fs.readFileSync(file,'utf8').trim().split('\n').map(line=>JSON.parse(line));
   // 한 줄은 읽은 숫자뿐이다(이메일·토큰·폴더 없음).
   assert.ok(lines.length>=2);
-  assert.ok(lines.every(line=>Object.keys(line).every(key=>['t','id','s','p','w','wr','c'].includes(key))));
+  assert.ok(lines.every(line=>Object.keys(line).every(key=>['t','id','s','p','w','wr','c','h'].includes(key))));
   assert.ok(!fs.readFileSync(file,'utf8').includes('@'));
-  assert.ok(lines.some(line=>line.s==='claude'&&line.w===31)&&lines.some(line=>line.s==='higgsfield'&&line.c===0.22));
+  // h: 한도형의 5시간 %(2차, 요금제 맞추기가 5시간 막힘을 센다). 크레딧형 줄에는 없다.
+  assert.ok(lines.some(line=>line.s==='claude'&&line.w===31&&line.h===51)&&lines.some(line=>line.s==='higgsfield'&&line.c===0.22&&!('h' in line)));
   // 지금 창(10/15 10:59 시작)의 31%가 지난 7일 막대에 들어가고, 기록이 막 시작돼 「일부」·비교 없음이다.
   assert.deepEqual(after.usage.services.claude.bars[4],{v:31,partial:true});
   assert.equal(after.usage.services.claude.base,null);
@@ -761,4 +765,18 @@ test('Claude reset passes are typed in by the member and kept only on Claude row
   const preload=fs.readFileSync(path.join(__dirname,'..','src','preload.cjs'),'utf8');
   const allowed=JSON.parse(/SUBSCRIPTION_HELP=(\[[^\]]*\])/.exec(preload)[1].replace(/'/g,'"'));
   assert.deepEqual([...allowed].sort(),Object.keys(HELP_LINKS).sort());
+});
+
+test('keeps the chosen tip goal and the tips-off switch, and refuses anything else',async()=>{
+  const f=fakeSystem();
+  let snap=await f.service.save({settings:{goal:'save'}});assert.equal(snap.settings.goal,'save');
+  snap=await f.service.save({settings:{tipsOff:true}});assert.equal(snap.settings.tipsOff,true);assert.equal(snap.settings.goal,'save');
+  snap=await f.service.save({settings:{goal:null,tipsOff:false}});assert.equal(snap.settings.goal,null);assert.equal(snap.settings.tipsOff,false);
+  // 모르는 목표·참거짓이 아닌 스위치는 아무것도 바꾸지 않고 거절한다(같이 온 환율도 그대로).
+  assert.equal((await f.service.save({settings:{goal:'upsell',usdKrw:2000}})).code,'INVALID_REQUEST');
+  assert.equal((await f.service.save({settings:{tipsOff:'yes'}})).code,'INVALID_REQUEST');
+  snap=await f.service.snapshot();assert.equal(snap.settings.usdKrw,1400);
+  // 요금제 맞추기(size)·안 쓰는 구독(idle) 팁도 반응을 받는다.
+  assert.equal((await f.service.save({tip:{key:'size:claude',action:'stop'}})).settings.tips['size:claude'].stops,1);
+  assert.equal((await f.service.save({tip:{key:'idle:typecast',action:'helpful'}})).settings.tips['idle:typecast'].helpful,1);
 });

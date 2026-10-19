@@ -41,6 +41,18 @@ const PASS_TIPS = {
   gpt: { link: 'codex-resets', open: null, checked: '10/19', items: ['Codex 앱·CLI·웹의 설정 › 사용량에서 「1 reset available」(또는 「Full reset」)을 누르고 만료일을 확인한 뒤 써요.', '쓰면 5시간·주간 한도가 다시 차요. 대신 다음 주간 초기화는 다시 쓰기 시작한 날부터 일주일쯤 뒤로 바뀌고, 원래 날짜의 초기화는 따로 오지 않아요.', '새로 채울 한도가 없으면 쓰이지 않고 그대로 남아요. 만료되면 되살리거나 다시 받을 수 없어요.'] },
   claude: { link: 'claude-resets', open: 'claude-usage', checked: '10/19', items: ['그 계정으로 로그인한 claude.ai 웹이나 Claude 데스크톱의 설정 › 사용량에서 「Reset for free」를 눌러 써요. Claude Code와 휴대폰 앱에서는 못 써요.', '쓰면 그 한도가 바로 다시 차고, 주간 초기화는 원래 요일·시각에 그대로 와요. 쓴 뒤에는 되돌릴 수 없어요.', '요금제를 내리거나 해지하면 쓰지 않은 초기화권은 사라져요.'] },
 };
+// 2차(10-19, Fable 1차 아이디어 3·4): 요금제 맞추기는 공식 배수가 있는 Claude만 — 20x → 5x는 4주 모두 20% 이하, 5x → Pro는 16% 이하.
+// 공식 배수는 5시간 창 기준이라(claude.com/pricing 「per 5-hour session」) 4주 동안 읽은 5시간 % 최고도 낮춘 요금제에 들어가야 한다
+// (h5: 20x → 5x는 25% 미만, 5x → Pro는 20% 미만, Fable 2차 검수 P1-3). 안 쓰는 구독은 Claude(대화·Claude Code가 한 한도)와 크레딧형만 —
+// GPT·Gemini의 %는 Codex·Antigravity 한도라 구독 전체를 말하지 못한다(Fable 2차 P1-1). 4주 모두 5% 이하(크레딧은 4주 동안 0)이고 결제일이 5일 안일 때.
+// 요금·결제 주기는 공식 요금표(claude.com/pricing, 10/19 확인) — 확인한 지 60일이 지나면 말하지 않는다. 올려 쓰라는 권유는 하지 않는다(업셀 의심, 벤치마킹 불만 원문).
+const PRICES = { checked: new Date(2026, 9, 19).getTime(), claude: { pro: 20, max5x: 100, max20x: 200 } }, PRICE_FRESH = 60 * DAY_MS;
+const SIZE_DOWN = { max20x: { to: 'max5x', limit: 20, h5: 25, times: 4, part: '1/4', basis: '5배 대 20배' }, max5x: { to: 'pro', limit: 16, h5: 20, times: 5, part: '1/5', basis: '1배 대 5배' } };
+const IDLE_LIMIT = 5, IDLE_BILL_DAYS = 5;
+// 목표 묻기: 「아끼기」는 아끼는 팁(안 쓰는 구독·요금제 맞추기·크레딧 증가·곧 만료되는 초기화권)을 먼저,
+// 「막힘 없이 쓰기」는 막히기 전 팁(속도 경고·지금 쓸 초기화권)을 먼저 드리고 요금제를 낮추자는 팁은 뺀다. 고르기 전·「아직 몰라요」는 급한 순서.
+// [값, 단추 글, 고른 뒤 칸 아래 줄, 고른 뒤 알림] — 「아직 몰라요」는 급한 순서 그대로라 그렇게 말한다(Fable 2차 P2-2).
+const GOALS = [['save', '아끼기', '아끼기 쪽', '팁을 「아끼기」 쪽으로 드릴게요.'], ['smooth', '막힘 없이 쓰기', '막힘 없이 쓰기 쪽', '팁을 「막힘 없이 쓰기」 쪽으로 드릴게요.'], ['unsure', '아직 몰라요', '급한 순서', '알겠어요. 급한 순서대로 드릴게요.']];
 const MANUAL_NAMES = ['Suno', 'Hugging Face', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Google AI Pro', 'Typecast'];
 const MANUAL_KIND = { suno: 'credit', typecast: 'credit', elevenlabs: 'credit', kling: 'credit', higgsfield: 'credit', claude: 'weekly', gpt: 'weekly', chatgpt: 'weekly' };
 const CODE_TEXT = {
@@ -321,8 +333,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // view: 한눈에 보기(glance) · 계정 관리(manage). open: 펼친 서비스 줄. menu: ⋯을 연 계정 줄. help: 펼친 「막혔을 때」 질문.
   // relogin: 「다시 로그인」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
   // tipOpen: 펼친 팁. tipDone: 이 화면에서 반응한 팁(누른 뒤 한 줄을 보여 주고, 화면을 옮기면 사라진다). why: 「왜 이 숫자?」.
-  // passEditing: 초기화권을 넣는 칸을 연 Claude 줄.
-  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false };
+  // passEditing: 초기화권을 넣는 칸을 연 Claude 줄. goalOpen: 고른 목표를 바꾸려고 다시 연 목표 묻기.
+  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
@@ -353,7 +365,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   // 화면 바꾸기: 그 화면 맨 위(또는 to 구획)로 옮기고, 화면 제목에 초점을 둔다.
   function show(view, to = null) {
-    ui.view = view; ui.menu = null; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; ui.tipDone = {};
+    ui.view = view; ui.menu = null; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; ui.tipDone = {}; ui.goalOpen = false;
     paint();
     const target = (to && container?.querySelector(`#${CSS.escape(to)}`)) || container?.querySelector('.member-subs');
     target?.scrollIntoView?.({ block: 'start' });
@@ -379,6 +391,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 팁 반응은 이 PC 판에 남는다(도움 됐어요 7일 · 그만 4주, 두 번째부터 12주). 누른 뒤 한 줄은 화면을 옮길 때까지 보인다.
     if (name === 'tip') { if (!['helpful', 'stop'].includes(data.act)) return; ui.tipDone[data.key] = data.act; return void act('tip', () => api.save({ tip: { key: data.key, action: data.act } })); }
     if (name === 'tip-reset') { ui.tipDone = {}; return void act('tip', async () => { const r = await api.save({ tip: { action: 'reset' } }); if (r?.rows) toast('쉬고 있던 팁을 다시 보여 드려요.'); return r; }); }
+    // 목표 묻기·「팁 전부 끄기」(2차). 고른 값은 이 PC 판에 남고 칸 아래 줄에서 바꾸거나 다시 켠다.
+    if (name === 'goal') { const g = GOALS.find(([k]) => k === data.goal); if (!g) return; ui.goalOpen = false; return void act('goal', async () => { const r = await api.save({ settings: { goal: g[0] } }); if (r?.rows) toast(g[3]); return r; }); }
+    if (name === 'goal-change') { ui.goalOpen = !ui.goalOpen; return paint(); }
+    if (name === 'tips-off' || name === 'tips-on') { const off = name === 'tips-off'; return void act('tip', async () => { const r = await api.save({ settings: { tipsOff: off } }); if (r?.rows) toast(off ? '팁을 껐어요. 칸 아래에서 다시 켤 수 있어요.' : '팁을 다시 켰어요.'); return r; }); }
     if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; return paint(); }
     // Claude 초기화권: 넣는 칸 열기 · 쓴 뒤 한 장 줄이기(다 쓰면 만료 때도 비운다).
     if (name === 'pass-edit') { ui.menu = id; ui.passEditing = ui.passEditing === id ? null : id; ui.editing = null; return paint(); }
@@ -642,7 +658,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     }
     const ratio = u.base > 0 ? `평소의 <b class="ms-num">${(Math.floor((s7 / u.base) * 10) / 10).toFixed(1)}배</b>` : '평소보다 많이';
     return {
-      key: `spike:${g.service}`, link: tips.link, items: tips.items, at,
+      key: `spike:${g.service}`, link: tips.link, items: tips.items, at, kind: 'save',
       head: `${esc(g.label)}를 지난 7일 동안 ${ratio}(${credits(s7, true)}크레딧) 썼어요.${forecast}`,
       // 쓴 양은 읽은 잔액이 준 만큼이라(충전 팩이 만료돼 준 것도 들어간다) 기준 줄에 그렇게 적는다.
       why: [`지난 7일 ${credits(s7, true)} · ${baseLabel(u)} ${credits(u.base, true)}${left}`, `기준: 읽은 잔액이 준 만큼을 쓴 양으로 보고, ${baseLabel(u)}의 1.5배를 넘고 ${credits(min, true)}크레딧 이상일 때${basis}${tips.checked ? ` · 사실 확인 ${tips.checked}` : ''}`],
@@ -661,7 +677,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (blockedAt > release - PACE_MARGIN) return null;
     const many = g.accounts.length > 1;
     return {
-      key: `pace:${g.service}`, link: null, items: [], at: blockedAt,
+      key: `pace:${g.service}`, link: null, items: [], at: blockedAt, kind: 'smooth',
       head: many ? `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> ${esc(g.label)} 계정이 모두 막혀요. 가장 먼저 풀리는 건 ${whenText(release, now)}예요.` : `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> 주간 한도를 다 써요. 초기화는 ${whenText(release, now)}예요.`,
       why: [`바로 쓸 ${many ? `계정 ${live.length}개` : '계정'}의 주간 한도 ${100 - Math.round(left / weight)}% 사용 · 최근 3일 하루 평균 ${Math.round(rate / weight)}%p씩`, '기준: 이 속도로 다 막히는 때가 가장 이른 풀리는 때보다 앞설 때(최근 3일 기록)'],
     };
@@ -677,7 +693,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const a = blocked[0], total = holders.reduce((sum, h) => sum + h.pass.count, 0), release = plan.first?.unblock || null;
       const when = release ? ` ${many ? '가장 먼저 풀리는 건' : '초기화는'} <b class="ms-num">${whenText(release, now)}</b>예요.` : '';
       return {
-        ...base, at: now,
+        ...base, at: now, kind: 'smooth',
         head: `${many ? `${esc(g.label)} 계정이 모두 막혔어요.` : `${esc(g.label)} 한도를 다 썼어요.`}${when} ${many ? `<b>${esc(a.name)}</b> 계정의 ` : ''}초기화권을 쓰면 지금 풀려요.`,
         why: [`초기화권 ${total}장${a.pass.until ? ` · ${many ? `${esc(a.name)} 것은 ` : ''}${whenText(a.pass.until, now)}까지` : ''}${release ? ` · 가장 먼저 풀리기까지 ${rel(release - now)}` : ''}`, `기준: 모든 계정이 막혔고 가장 먼저 풀리는 때가 하루 넘게 남았을 때 · 사실 확인 ${info.checked}`],
       };
@@ -685,9 +701,63 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const soonest = holders.filter(a => a.pass.until && a.pass.until - now <= PASS_SOON).sort((x, y) => x.pass.until - y.pass.until)[0];
     if (!soonest) return null;
     return {
-      ...base, at: soonest.pass.until,
+      ...base, at: soonest.pass.until, kind: 'save',
       head: `${many ? `<b>${esc(soonest.name)}</b> 계정의 ` : `${esc(g.label)} `}초기화권이 <b class="ms-num">${whenText(soonest.pass.until, now)}</b>에 만료돼요.${expiryHint(g, soonest, now)}`,
       why: [`초기화권 ${soonest.pass.count}장 · 만료까지 ${rel(soonest.pass.until - now)}${soonest.pass.manual ? ' · 직접 넣은 값' : ''}`, `기준: 만료까지 3일 안 · 사실 확인 ${info.checked}`],
+    };
+  }
+  // 두 팁은 4주 소비를 다 알 때만 말한다: 지금 읽히는 자동 연결 계정이고, 4주를 처음부터 덮었고, 놓친 틈이 없고, 7일마다 읽은 적이 있을 때
+  // (못 읽은 주를 「안 썼다」로 세지 않게 — Fable 2차 검수 P1-2).
+  const fourKnown = (a, w4) => a.row.source === 'auto' && a.row.state === 'ok' && !!w4?.cover && !!w4.known && w4.weeks.every(w => w.reads > 0);
+  // 요금제 맞추기(Claude, 2차): 주간이 4주 모두 기준 이하이고 읽은 5시간 % 최고도 낮춘 요금제에 들어가는 Max 계정을 한 단계 아래로.
+  // 덜 내는 액수가 큰 계정부터. 7일마다 「쓴 양」과 「읽은 가장 높은 주간 %」 가운데 큰 값을 본다(값은 지금 요금제 기준).
+  function sizeTip(g, now) {
+    if (g.service !== 'claude') return null;
+    const stats = snapshot?.usage?.accounts || {}, fresh = now - PRICES.checked <= PRICE_FRESH;
+    const fits = g.accounts.map(a => {
+      const rule = SIZE_DOWN[planKey(a.row.plan)], w4 = stats[a.row.id]?.weeks4;
+      if (!rule || !fourKnown(a, w4) || !w4.hCover || w4.hPeak === null || w4.hPeak >= rule.h5) return null;
+      const highs = w4.weeks.map(w => Math.max(w.used, w.peak ?? 0));
+      return highs.some(v => v > rule.limit) ? null : { a, rule, highs, hPeak: w4.hPeak, saving: PRICES.claude[planKey(a.row.plan)] - PRICES.claude[rule.to] };
+    }).filter(Boolean).sort((x, y) => y.saving - x.saving);
+    const f = fits[0];
+    if (!f) return null;
+    // 낮출지는 다음 결제 전에 정해야 하니 결제일을 넣어 둔 계정이면 그날 기준으로 줄을 세운다.
+    // 모르면 열흘 뒤 — 몇 주씩 맞는 팁이라 기한이 있는 팁(결제 5일 안·만료 3일 안)을 먼저 보이고 그 뒤에 선다.
+    const dd = nextBill(f.a.row.billDay, now), at = dd === null ? now + 10 * DAY_MS : new Date(now).setHours(0, 0, 0, 0) + dd * DAY_MS;
+    const from = planName(f.a.row.plan), to = planName(f.rule.to), hp = Math.round(f.hPeak);
+    // 공식 배수는 5시간 창 기준이고 주간 배수는 공식 자료에 없다(Fable 2차 P2-1). 결제 주기도 금액과 같이 60일이 지나면 말하지 않는다(P3-1).
+    const items = [
+      `${to}는 5시간마다 쓸 수 있는 양이 ${from}의 ${f.rule.part}이에요(공식 배수 ${f.rule.basis}). 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요.`,
+      `주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요. 그래서 4주 모두 ${f.rule.limit}% 이하일 때만 알려 드려요.`,
+      fresh ? (f.rule.to === 'pro' ? 'Pro는 연간 결제로 내면 한 달 $17이에요.' : 'Max 요금제는 월 결제만 있어요.') : null,
+    ].filter(Boolean);
+    return {
+      key: 'size:claude', link: 'claude-plans', items, at, kind: 'save',
+      head: `<b>${esc(f.a.name)}</b> 계정(${esc(from)})은 4주 내내 주간 한도를 ${f.rule.limit}%도 안 썼어요. ${esc(to)}로 낮춰도 넉넉할 가능성이 커요${fresh ? ` · 공식 요금으로 한 달 $${f.saving} 덜 내요` : ''}.`,
+      why: [`지난 4주 7일씩 ${f.highs.map(v => `${Math.round(v)}%`).join(' · ')} · 읽은 5시간 창 최고 ${hp}%(${esc(to)}로 치면 ${hp * f.rule.times}%)`, `기준: 4주 모두 ${f.rule.limit}% 이하이고 읽을 때마다 5시간 창이 ${f.rule.h5}% 미만이었을 때${fresh ? ` · 요금 확인 ${md(PRICES.checked)}` : ''}`],
+    };
+  }
+  // 안 쓰는 구독(2차): Claude와 크레딧형만. 4주 모두 5% 이하(크레딧은 4주 동안 0)이고 넣어 둔 결제일이 5일 안일 때 「계속 쓸지 정해 보세요」.
+  // 결제일이 가까운 것부터. 결제일 당일은 이미 결제됐을 수 있어 「결제 전에」라고 하지 않는다(Fable 2차 P3-3).
+  function idleTip(g, now) {
+    const credit = g.kind === 'credit';
+    if (!credit && g.service !== 'claude') return null;
+    const stats = snapshot?.usage?.accounts || {};
+    const found = g.accounts.map(a => {
+      const w4 = stats[a.row.id]?.weeks4, dd = nextBill(a.row.billDay, now);
+      if (!fourKnown(a, w4) || dd === null || dd > IDLE_BILL_DAYS) return null;
+      const highs = w4.weeks.map(w => (credit ? w.used : Math.max(w.used, w.peak ?? 0)));
+      return (credit ? highs.some(v => v > 0) : highs.some(v => v > IDLE_LIMIT)) ? null : { a, dd, highs };
+    }).filter(Boolean).sort((x, y) => x.dd - y.dd);
+    const f = found[0];
+    if (!f) return null;
+    const billAt = new Date(now).setHours(0, 0, 0, 0) + f.dd * DAY_MS, when = f.dd === 1 ? '내일' : md(billAt);
+    const price = num(f.a.row.price) !== null ? `(${money(f.a.row.price, f.a.row.currency)})` : '', unit = g.service === 'typecast' ? '키는' : '계정은';
+    return {
+      key: `idle:${g.service}`, link: null, items: [], at: billAt, kind: 'save',
+      head: `<b>${esc(f.a.name)}</b> ${unit} 4주 동안 ${credit ? '크레딧을 쓰지 않았어요' : '주간 한도를 5%도 안 썼어요'}. ${f.dd === 0 ? `오늘이 결제일${esc(price)}이에요. 계속 쓸지 정해 보세요.` : `${when} 결제${esc(price)} 전에 계속 쓸지 정해 보세요.`}`,
+      why: [`지난 4주 7일씩 ${f.highs.map(v => (credit ? `${credits(v, true)}크레딧` : `${Math.round(v)}%`)).join(' · ')}`, `기준: 4주 모두 ${credit ? '쓴 크레딧이 없고' : '5% 이하이고'} 결제일이 5일 안일 때 · 결제일은 넣어 둔 값`],
     };
   }
   function tipHtml(t) {
@@ -712,7 +782,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       ? `<span class="mu-cmp"><span>${baseLabel(u)} ${usageValue(kind, u.base)}</span><b class="ms-num">${diff >= 0 ? '+' : '−'}${kind === 'pct' ? `${Math.abs(diff)}%p` : credits(Math.abs(diff), true)}</b></span>`
       : `<span class="mu-cmp is-empty"><span>기록 모으는 중</span><span>${md(u?.since || now)}부터</span></span>`;
     const why = u?.mixed && bars.some(Boolean) ? `<button type="button" class="ms-link mu-why" data-subs="why" aria-expanded="${ui.why}">왜 이 숫자?</button>` : '';
-    const whyNote = why && ui.why ? '<p class="mu-why-note">요금제가 다른 계정은 한도 크기만큼 무게를 줘서 합쳤어요. Max 20x는 Max 5x의 4배, Pro의 20배로 쳐요.</p>' : '';
+    const whyNote = why && ui.why ? '<p class="mu-why-note">요금제가 다른 계정은 한도 크기만큼 무게를 줘서 합쳤어요. Max 20x는 Max 5x의 4배, Pro의 20배로 쳐요. 요금제를 바꾼 계정은 바꾸기 전 구간을 그때 요금제로 쳐요.</p>' : '';
     const sr = `${g.label} 지난 7일 ${bars[4] ? `${usageValue(kind, bars[4].v)}${bars[4].partial ? '(일부)' : ''}` : '기록 없음'}${has ? `, ${baseLabel(u)} ${usageValue(kind, u.base)}` : ''}`;
     return `<div class="mu-row ${svcClass(g.service)}"><span class="ms-sr">${esc(sr)}</span><span class="mu-who"><span class="ms-tag">${esc(g.label)}</span><span class="mu-meta"><small>${g.service === 'typecast' ? '키' : '계정'} ${g.accounts.length}개 · ${USAGE_UNIT[g.service]}</small>${why}</span>${whyNote}</span>`
       + `<span class="mu-weeks" aria-hidden="true">${barHtml}<span class="mu-axis"><span>${buckets[0] ? `${md(buckets[0].start)}부터` : ''}</span><span>지난 7일</span></span></span>${cmp}${tip ? tipHtml(tip) : ''}</div>`;
@@ -724,15 +794,27 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const list = groups.filter(g => g.service && USAGE_UNIT[g.service]);
     if (!list.length) return '';
     const resting = key => (Number(snapshot.settings?.tips?.[key]?.until) || 0) > now && !ui.tipDone[key];
-    // 서비스마다 사용량 팁과 초기화권 팁 가운데 쉬지 않는 것 중 급한 하나(초기화권 팁은 기록이 없어도 뜬다).
-    const pick = g => { const u = snapshot.usage.services?.[g.service]; return [u ? (g.kind === 'credit' ? spikeTip(g, u, now) : paceTip(g, now)) : null, passTip(g, now)].filter(t => t && !resting(t.key)).sort((a, b) => a.at - b.at)[0] || null; };
-    const candidates = list.map(g => { const tip = pick(g); return tip ? { service: g.service, tip } : null; }).filter(Boolean)
-      .sort((a, b) => a.tip.at - b.tip.at).slice(0, MAX_TIPS);
+    const settings = snapshot.settings || {}, goal = GOALS.some(([k]) => k === settings.goal) ? settings.goal : null, off = settings.tipsOff === true;
+    // 목표에 맞는 갈래(kind)를 먼저, 그다음 일이 먼저 닥치는 순서.
+    const rank = t => ((goal === 'save' && t.kind === 'save') || (goal === 'smooth' && t.kind === 'smooth') ? 0 : 1);
+    const order = (a, b) => rank(a) - rank(b) || a.at - b.at;
+    // 서비스마다 사용량·초기화권·요금제 맞추기·안 쓰는 구독 팁 가운데 쉬지 않는 것 중 하나(초기화권 팁은 기록이 없어도 뜬다).
+    // 「막힘 없이 쓰기」를 고르면 요금제를 낮추자는 팁은 내지 않는다.
+    const pick = g => { const u = snapshot.usage.services?.[g.service]; return [u ? (g.kind === 'credit' ? spikeTip(g, u, now) : paceTip(g, now)) : null, passTip(g, now), goal === 'smooth' ? null : sizeTip(g, now), idleTip(g, now)].filter(t => t && !resting(t.key)).sort(order)[0] || null; };
+    const candidates = off ? [] : list.map(g => { const tip = pick(g); return tip ? { service: g.service, tip } : null; }).filter(Boolean)
+      .sort((a, b) => order(a.tip, b.tip)).slice(0, MAX_TIPS);
     const tips = new Map(candidates.map(c => [c.service, c.tip]));
-    // 「다시 보기」 줄은 방금 「그만」을 누른 팁도 센다(누른 뒤 한 줄이 칸 아래 「다시 보기」를 가리킨다).
-    const rest = Object.keys(snapshot.settings?.tips || {}).filter(key => (Number(snapshot.settings.tips[key]?.until) || 0) > now).length;
-    const restLine = rest ? `<p class="mu-rest">쉬고 있는 팁 ${rest}개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기</button></p>` : '';
-    return section(number, '지난 7일 사용량', '계정을 합친 양이에요. 앱이 꺼져 있던 시간은 빠져요.', `<div class="mu-list">${list.map(g => usageRow(g, now, tips.get(g.service))).join('')}</div>${restLine}`, 'ms-usage');
+    // 「다시 보기」 줄은 방금 「그만」을 누른 팁도 센다(누른 뒤 한 줄이 칸 아래 「다시 보기」를 가리킨다). 팁을 껐으면 「다시 켜기」 한 줄만.
+    const rest = Object.keys(settings.tips || {}).filter(key => (Number(settings.tips[key]?.until) || 0) > now).length;
+    const restLine = !off && rest ? `<p class="mu-rest">쉬고 있는 팁 ${rest}개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기</button></p>` : '';
+    // 목표 묻기(2차): 고르기 전에는 칸 아래 한 줄 카드, 고른 뒤에는 「팁: 아끼기 쪽 · 바꾸기 · 팁 끄기」.
+    const asking = !off && (!goal || ui.goalOpen);
+    const goalCard = asking ? `<div class="mu-goal"><div class="mu-goal-text"><b>팁을 어느 쪽으로 드릴까요?</b><span>고르신 쪽 팁을 먼저 드려요. 언제든 바꿀 수 있어요.</span></div><div class="mu-goal-options">${GOALS.map(([k, label]) => `<button type="button" class="ms-button ms-button-small${goal === k ? ' is-on' : ''}" data-subs="goal" data-goal="${k}" aria-pressed="${goal === k}">${label}</button>`).join('')}</div></div>` : '';
+    const goalName = GOALS.find(([k]) => k === goal)?.[2];
+    const goalLine = off
+      ? '<p class="mu-goal-line">팁을 꺼 두었어요 · <button type="button" class="ms-link" data-subs="tips-on">다시 켜기</button></p>'
+      : `<p class="mu-goal-line">${goalName && !asking ? `팁: ${esc(goalName)} · <button type="button" class="ms-link" data-subs="goal-change">바꾸기</button> · ` : ''}<button type="button" class="ms-link" data-subs="tips-off">팁 끄기</button></p>`;
+    return section(number, '지난 7일 사용량', '계정을 합친 양이에요. 앱이 꺼져 있던 시간은 빠져요.', `<div class="mu-list">${list.map(g => usageRow(g, now, tips.get(g.service))).join('')}</div>${goalCard}${restLine}${goalLine}`, 'ms-usage');
   }
   function footer(now, rows) {
     const cost = costSummary(rows, now, snapshot?.settings?.usdKrw);
@@ -970,7 +1052,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       paint();
     },
     // 혜택을 떠나면 다음에 열 때 펼친 줄 없이 한눈에 보기부터(로그인이 진행 중이면 계정 관리에 둔다).
-    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
+    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; ui.goalOpen = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
     dispose() { clearInterval(timer); timer = null; visible = false; },
     refresh: () => load(true),
   };

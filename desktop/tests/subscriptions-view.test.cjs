@@ -782,3 +782,121 @@ test('Claude reset passes are typed in from the account menu and counted down af
   assert.deepEqual(checks,[['cl'],['cl']]);
   board.dispose();
 });
+
+/* ---------- 2차(10-19): 목표 묻기 · 요금제 맞추기 · 안 쓰는 구독 · 팁 끄기 ---------- */
+// 지난 4주 통계(본체 ai-usage가 주는 모양) — weeks: 7일씩 쓴 양·읽은 가장 높은 주간 %·읽은 횟수, known: 놓친 틈 없음, hPeak: 읽은 5시간 % 최고.
+const four=(values,extra={})=>({cover:true,known:true,hCover:true,hPeak:10,weeks:values.map(v=>({used:v,peak:v,reads:2})),...extra});
+function phase2(rows,accounts,settings={},services={}){
+  const fresh=Date.now(),D=864e5,buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
+  const snapshot={ok:true,seq:1,tools:{},rows,settings:{usdKrw:1400,...settings},check:{at:fresh,total:rows.length,ok:rows.length},login:null,checking:false,usage:{since:fresh-40*D,buckets,services,accounts}};
+  const saves=[],toasts=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},help:async()=>({ok:true}),save:async patch=>{saves.push(patch);if(patch.settings)Object.assign(snapshot.settings,patch.settings);return {...snapshot,seq:snapshot.seq+saves.length};}}};
+  return {snapshot,saves,toasts,bridge};
+}
+const draw2=async f=>{const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');const el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge,toast:m=>f.toasts.push(m)});board.render(el,{signedIn:true,native:true});await tick();return {el,board,d:driver(el)};};
+
+test('the board asks which way tips should lean, keeps the answer and can turn every tip off',async()=>{
+  prepare();
+  const D=864e5,fresh=Date.now();
+  const g=row({id:'g',service:'gpt',label:'ChatGPT · Codex',email:'g@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:40,resetsAt:fresh+4*D}}});
+  const f=phase2([g],{}),{el,board,d}=await draw2(f);
+  // 고르기 전: 칸 아래 한 줄 카드(세 가지), 그 아래 「팁 끄기」.
+  assert.match(el.innerHTML,/<div class="mu-goal"><div class="mu-goal-text"><b>팁을 어느 쪽으로 드릴까요\?<\/b><span>고르신 쪽 팁을 먼저 드려요\. 언제든 바꿀 수 있어요\.<\/span><\/div>/);
+  assert.equal((el.innerHTML.match(/data-subs="goal" data-goal="(save|smooth|unsure)"/g)||[]).length,3);
+  await d.click({subs:'goal',goal:'save'});
+  assert.deepEqual(f.saves.at(-1),{settings:{goal:'save'}});assert.match(f.toasts.at(-1),/팁을 「아끼기」 쪽으로 드릴게요/);
+  // 고른 뒤: 카드는 접히고 「팁: 아끼기 쪽 · 바꾸기 · 팁 끄기」. 「바꾸기」는 카드를 다시 연다(고른 단추가 눌린 채).
+  assert.ok(!el.innerHTML.includes('<div class="mu-goal">'));
+  assert.match(el.innerHTML,/<p class="mu-goal-line">팁: 아끼기 쪽 · <button type="button" class="ms-link" data-subs="goal-change">바꾸기<\/button> · <button type="button" class="ms-link" data-subs="tips-off">팁 끄기<\/button><\/p>/);
+  await d.click({subs:'goal-change'});
+  assert.match(el.innerHTML,/class="ms-button ms-button-small is-on" data-subs="goal" data-goal="save" aria-pressed="true">아끼기<\/button>/);
+  // 모르는 목표는 저장하지 않는다.
+  const before=f.saves.length;await d.click({subs:'goal',goal:'upsell'});assert.equal(f.saves.length,before);
+  // 팁 끄기 → 칸 아래 「팁을 꺼 두었어요 · 다시 켜기」만, 다시 켜기 → 끈 값을 푼다.
+  await d.click({subs:'tips-off'});
+  assert.deepEqual(f.saves.at(-1),{settings:{tipsOff:true}});
+  assert.match(el.innerHTML,/<p class="mu-goal-line">팁을 꺼 두었어요 · <button type="button" class="ms-link" data-subs="tips-on">다시 켜기<\/button><\/p>/);
+  assert.ok(!el.innerHTML.includes('<div class="mu-goal">'));
+  await d.click({subs:'tips-on'});
+  assert.deepEqual(f.saves.at(-1),{settings:{tipsOff:false}});
+  // 「아직 몰라요」는 급한 순서 그대로라 그렇게 말한다(「아직 몰라요 쪽」이라고 하지 않는다).
+  await d.click({subs:'goal-change'});await d.click({subs:'goal',goal:'unsure'});
+  assert.deepEqual(f.saves.at(-1),{settings:{goal:'unsure'}});assert.equal(f.toasts.at(-1),'알겠어요. 급한 순서대로 드릴게요.');
+  assert.match(el.innerHTML,/<p class="mu-goal-line">팁: 급한 순서 · <button type="button" class="ms-link" data-subs="goal-change">바꾸기<\/button> · <button type="button" class="ms-link" data-subs="tips-off">팁 끄기<\/button><\/p>/);
+  board.dispose();
+});
+
+test('a Max account that stayed low for four weeks without a 5-hour block is offered one plan down',async()=>{
+  prepare();
+  const D=864e5,fresh=Date.now();
+  const big=row({id:'big',email:'big@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:11,resetsAt:fresh+3*D}}});
+  const five=row({id:'five',email:'five@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:14,resetsAt:fresh+2*D}}});
+  const priced=fresh-new Date(2026,9,19).getTime()<=60*D;
+  // 20x는 4주 모두 20% 이하, 5x는 16% 이하 — 덜 내는 액수가 큰 20x를 먼저 권한다.
+  let f=phase2([big,five],{big:{weeks4:four([12,15,9,11],{hPeak:18})},five:{weeks4:four([10,12,14,8])}},{goal:'save'}),{el,board,d}=await draw2(f);
+  assert.match(el.innerHTML,new RegExp(`<b>big<\\/b> 계정\\(Max 20x\\)은 4주 내내 주간 한도를 20%도 안 썼어요\\. Max 5x로 낮춰도 넉넉할 가능성이 커요${priced?' · 공식 요금으로 한 달 \\$100 덜 내요':''}\\.`));
+  await d.click({subs:'tip-open',key:'size:claude'});
+  // 공식 배수는 5시간 창 기준이라 그렇게 말하고, 주간은 공식 자료가 없다고 밝힌다. 결제 주기는 요금과 같이 확인한 지 60일 안에만.
+  assert.match(el.innerHTML,new RegExp(`<li>Max 5x는 5시간마다 쓸 수 있는 양이 Max 20x의 1\\/4이에요\\(공식 배수 5배 대 20배\\)\\. 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요\\.<\\/li><li>주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요\\. 그래서 4주 모두 20% 이하일 때만 알려 드려요\\.<\\/li>${priced?'<li>Max 요금제는 월 결제만 있어요\\.<\\/li>':''}<\\/ol>`));
+  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 4주 7일씩 12% · 15% · 9% · 11% · 읽은 5시간 창 최고 18%\(Max 5x로 치면 72%\)<br>기준: 4주 모두 20% 이하이고 읽을 때마다 5시간 창이 25% 미만이었을 때/);
+  assert.match(el.innerHTML,/data-subs="help" data-link="claude-plans">공식 안내<\/button>/);
+  board.dispose();
+  // 한 주라도 기준을 넘거나, 읽은 5시간 창이 낮춘 요금제에 안 들어가거나(20x → 5x는 25% 이상), 5시간 기록이 4주를 못 덮었거나,
+  // 놓친 틈이 있거나, 못 읽은 주가 있거나, 지금 다시 로그인해야 하거나, 「막힘 없이 쓰기」를 고르면 권하지 않는다.
+  for (const [accounts,settings,state] of [[{big:{weeks4:four([12,25,9,11])}},{}],[{big:{weeks4:four([12,15,9,11],{hPeak:25})}},{}],[{big:{weeks4:four([12,15,9,11],{hCover:false})}},{}],
+    [{big:{weeks4:four([12,15,9,11],{known:false})}},{}],[{big:{weeks4:{...four([12,15,9,11]),weeks:[12,0,0,0].map((v,i)=>({used:v,peak:i?null:v,reads:i?0:2}))}}},{}],
+    [{big:{weeks4:four([12,15,9,11])}},{},'needs-login'],[{big:{weeks4:four([12,15,9,11])}},{goal:'smooth'}]]){
+    f=phase2([{...big,state:state||'ok'}],accounts,settings);({el,board}=await draw2(f));
+    assert.ok(!el.innerHTML.includes('data-key="size:claude"'));board.dispose();
+  }
+  // 5x는 16% 이하이고 5시간 창이 20% 미만일 때만 Pro를 권한다.
+  f=phase2([five],{five:{weeks4:four([10,12,14,8])}});({el,board}=await draw2(f));
+  assert.match(el.innerHTML,/<b>five<\/b> 계정\(Max 5x\)은 4주 내내 주간 한도를 16%도 안 썼어요\. Pro로 낮춰도 넉넉할 가능성이 커요/);board.dispose();
+  for (const w4 of [four([10,17,14,8]),four([10,12,14,8],{hPeak:20})]){
+    f=phase2([five],{five:{weeks4:w4}});({el,board}=await draw2(f));
+    assert.ok(!el.innerHTML.includes('data-key="size:claude"'));board.dispose();
+  }
+});
+
+test('an unused subscription is pointed out only in the five days before its bill, and the goal decides which tips come first',async()=>{
+  prepare();
+  const D=864e5,H=3600e3,fresh=Date.now(),bill=new Date(fresh+3*D).getDate();
+  // Claude 계정의 주간 %는 대화와 Claude Code가 같이 쓰는 한도라 구독 전체를 말할 수 있다.
+  const idle=row({id:'ci',email:'ci@example.com',plan:'pro',billDay:bill,price:29000,currency:'KRW',live:{readAt:fresh,weekly:{usedPercent:2,resetsAt:fresh+4*D}}});
+  const key=row({id:'tc',service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'FjrE',plan:'lite',billDay:bill,live:{readAt:fresh,credits:114647},credits:114647,creditsAt:fresh});
+  const tcIdle={weeks4:{cover:true,known:true,hCover:false,hPeak:null,weeks:[0,0,0,0].map(v=>({used:v,peak:null,reads:4}))}};
+  let f=phase2([idle,key],{ci:{weeks4:four([2,0,4,1])},tc:tcIdle}),{el,board}=await draw2(f);
+  const when=new RegExp('(내일|\\d+\\/\\d+)');
+  assert.match(el.innerHTML,new RegExp(`<b>ci<\\/b> 계정은 4주 동안 주간 한도를 5%도 안 썼어요\\. ${when.source} 결제\\(₩29,000\\) 전에 계속 쓸지 정해 보세요\\.`));
+  assert.match(el.innerHTML,new RegExp(`<b>FjrE<\\/b> 키는 4주 동안 크레딧을 쓰지 않았어요\\. ${when.source} 결제 전에 계속 쓸지 정해 보세요\\.`));
+  board.dispose();
+  // 결제일 당일은 이미 결제됐을 수 있어 「결제 전에」라고 하지 않는다.
+  f=phase2([{...idle,billDay:new Date(fresh).getDate()}],{ci:{weeks4:four([2,0,4,1])}});({el,board}=await draw2(f));
+  assert.match(el.innerHTML,/<b>ci<\/b> 계정은 4주 동안 주간 한도를 5%도 안 썼어요\. 오늘이 결제일\(₩29,000\)이에요\. 계속 쓸지 정해 보세요\./);board.dispose();
+  // 결제일이 5일보다 멀거나, 한 주라도 5%를 넘었거나, 4주를 덮지 못했거나, 놓친 틈·못 읽은 주가 있거나, 다시 로그인해야 하면 말하지 않는다.
+  const far=new Date(fresh+12*D).getDate();
+  for (const [r,a] of [[{...idle,billDay:far},four([2,0,4,1])],[idle,four([2,0,6,1])],[idle,four([2,0,4,1],{cover:false})],[idle,four([2,0,4,1],{known:false})],
+    [idle,{...four([2,0,4,1]),weeks:[2,0,0,0].map((v,i)=>({used:v,peak:i?null:v,reads:i?0:2}))}],[{...idle,state:'needs-login'},four([2,0,4,1])]]){
+    f=phase2([r],{ci:{weeks4:a}});({el,board}=await draw2(f));
+    assert.ok(!el.innerHTML.includes('data-key="idle:claude"'));board.dispose();
+  }
+  // GPT·Gemini의 %는 Codex·Antigravity 한도라 구독 전체를 안 썼다고 말하지 않는다(대화는 여기 안 보인다).
+  for (const service of ['gpt','gemini']){
+    f=phase2([{...idle,id:'x',service,label:service,plan:'plus'}],{x:{weeks4:four([2,0,4,1])}});({el,board}=await draw2(f));
+    assert.ok(!el.innerHTML.includes(`data-key="idle:${service}"`));board.dispose();
+  }
+  // 목표가 순서를 정한다: 급한 속도 경고(GPT)와 안 쓰는 키(Typecast)·요금제 맞추기(Claude)가 함께 걸리면
+  // 「아끼기」는 아끼는 둘을, 고르기 전에는 일이 먼저 닥치는 둘(속도 경고 → 결제)을 보인다.
+  const a=row({id:'g-a',service:'gpt',label:'ChatGPT · Codex',email:'a@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:60,resetsAt:fresh+4*D}}});
+  const big=row({id:'big',email:'big@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:11,resetsAt:fresh+3*D}}});
+  const accounts={'g-a':{since:fresh-40*D,used7:40,rate3:30,perDay:6,refillAt:null},big:{weeks4:four([12,15,9,11])},tc:tcIdle};
+  // 속도 경고는 그 서비스의 7일 요약이 있어야 센다.
+  const services={gpt:{kind:'pct',accounts:1,since:fresh-40*D,bars:[null,null,null,null,{v:40,partial:false}],base:null,baseWeeks:0,mixed:false}};
+  f=phase2([a,big,key],accounts,{goal:'save'},services);({el,board}=await draw2(f));
+  assert.ok(el.innerHTML.includes('data-key="idle:typecast"')&&el.innerHTML.includes('data-key="size:claude"')&&!el.innerHTML.includes('data-key="pace:gpt"'));board.dispose();
+  f=phase2([a,big,key],accounts,{},services);({el,board}=await draw2(f));
+  assert.ok(el.innerHTML.includes('data-key="pace:gpt"')&&el.innerHTML.includes('data-key="idle:typecast"')&&!el.innerHTML.includes('data-key="size:claude"'));board.dispose();
+  // 결제일을 넣어 둔 Claude 계정이면 요금제 맞추기도 그 결제일 순서로 선다(내일 결제면 고르기 전에도 보인다).
+  f=phase2([a,{...big,billDay:new Date(fresh+D).getDate()},key],accounts,{},services);({el,board}=await draw2(f));
+  assert.ok(el.innerHTML.includes('data-key="size:claude"'));assert.equal([...el.innerHTML.matchAll(/data-key="[^"]+" aria-expanded/g)].length,2);board.dispose();
+});

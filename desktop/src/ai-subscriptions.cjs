@@ -60,7 +60,9 @@ const HELP_LINKS=Object.freeze({
 // 자동 읽기(사용 기록용): 앱이 켜 있는 동안 마지막 전체 확인에서 6시간이 지났을 때 · 계정마다 주간 초기화 10분 전 · 결제일 아침 9시 뒤 처음.
 const AUTO_EVERY=6*3600*1000,PRE_RESET=10*60*1000,BILL_HOUR=9,DAY_MS=864e5;
 // 팁 반응: 「도움 됐어요」는 같은 팁을 7일 쉬고(빈도를 늘리지 않는다), 「이런 팁 그만」은 4주, 두 번째부터 12주.
-const TIP_KEY=/^(spike|pace|pass):(claude|gpt|gemini|higgsfield|typecast)$/;
+const TIP_KEY=/^(spike|pace|pass|size|idle):(claude|gpt|gemini|higgsfield|typecast)$/;
+// 2차(10-19): 팁을 어느 쪽으로 드릴지(아끼기·막힘 없이 쓰기·아직 몰라요). 고르기 전은 비워 둔다.
+const GOALS=new Set(['save','smooth','unsure']);
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
 // 「로그인 필요」로 읽혔을 때 인터넷이 그 서비스까지 닿는지만 보는 고정 주소(로그인 정보는 보내지 않는다).
 const REACHABLE=Object.freeze({claude:'https://api.anthropic.com/',gpt:'https://auth.openai.com/',higgsfield:'https://higgsfield.ai/',gemini:'https://oauth2.googleapis.com/'});
@@ -508,7 +510,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(!result)return;
     row.state=result.state;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
     if(result.email)row.email=cleanText(result.email,254);
-    if(result.plan)row.plan=cleanText(result.plan,40);
+    // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
+    // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(Fable 2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
+    if(result.plan){const plan=cleanText(result.plan,40);if(!(row.service==='claude'&&/^max$/i.test(plan)&&/^max_\d{1,2}x$/i.test(String(row.plan||''))))row.plan=plan;}
     if(result.state!=='ok'||!result.live)return;
     row.live=result.live;
     const weekly=result.live.weekly;
@@ -767,7 +771,14 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   function save(patch){
     const b=load();
     if(!patch||typeof patch!=='object')return {ok:false,code:'INVALID_REQUEST'};
-    if(patch.settings&&typeof patch.settings==='object'){const rate=clampNumber(patch.settings.usdKrw,1,100000);if(rate)b.settings.usdKrw=Math.round(rate);}
+    if(patch.settings&&typeof patch.settings==='object'){
+      // 목표(아끼기·막힘 없이 쓰기·아직 몰라요)와 「팁 전부 끄기」. 모르는 값이면 아무것도 바꾸지 않고 거절한다.
+      const s=patch.settings,hasGoal=Object.hasOwn(s,'goal'),hasOff=Object.hasOwn(s,'tipsOff');
+      if((hasGoal&&s.goal!==null&&!GOALS.has(s.goal))||(hasOff&&typeof s.tipsOff!=='boolean'))return {ok:false,code:'INVALID_REQUEST'};
+      const rate=clampNumber(s.usdKrw,1,100000);if(rate)b.settings.usdKrw=Math.round(rate);
+      if(hasGoal)b.settings={...b.settings,goal:s.goal};
+      if(hasOff)b.settings={...b.settings,tipsOff:s.tipsOff};
+    }
     if(patch.add&&typeof patch.add==='object'){
       if(b.rows.length>=200)return {ok:false,code:'TOO_MANY_ROWS'};
       const label=cleanText(patch.add.label,40);if(!label)return {ok:false,code:'LABEL_REQUIRED'};
