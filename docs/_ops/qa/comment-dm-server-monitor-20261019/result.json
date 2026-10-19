@@ -1,0 +1,282 @@
+{
+  "schema": "comment-dm-server-monitor/1",
+  "recordedAt": "2026-10-19T02:54:05.749Z",
+  "status": "deployed_verified",
+  "completed": true,
+  "summary": "기존 서버 감시와 Apps Script 15분 예약 하나에 댓글 DM 누락·중복·자료 링크 대조를 통합했다. PC 감시는 중지했다. 합성 누락·중복 알림 2통의 Gmail 실수신, 같은 시험 재실행 발송 0건, 배포 후 시간 기반 실행 정상 완료를 확인했다.",
+  "scope": {
+    "account": "@yuhobuilds",
+    "activeRoutes": [
+      "D0003",
+      "D0008"
+    ],
+    "mode": "existing_cloud_schedule",
+    "pcRequired": false,
+    "readOnlyDeliveryAudit": true,
+    "newDatabaseTables": 0,
+    "newCronJobs": 0,
+    "customerDmSendsByThisMonitorChange": 0,
+    "newCommentsByThisMonitorChange": 0
+  },
+  "provenance": {
+    "localEvidence": "evidence 원문을 로컬에서 읽고 SHA-256 및 시험 수를 확인했다.",
+    "operatorReported": "배포·push·CI·예약 설정은 root의 직접 실행 관측이다. 메일·실행 결과는 전체 AX 원문과 Gmail 캡처로 별도 보존했다.",
+    "currentStateBoundary": "이 기록은 서버 감시 배포와 알림 경로 검증 결과다. 배포 뒤 새 실제 고객 댓글의 자료 수신 성공을 새로 관측했다는 뜻은 아니다."
+  },
+  "appsScript": {
+    "sourceCommit": "c24c4d6d36609741c8440140f5b34c922bd4fc26",
+    "sourceBranch": "codex/comment-dm-cloud-alerts-20261019",
+    "push": {
+      "master": true,
+      "sourceBranch": true,
+      "provenance": "operator_reported"
+    },
+    "remoteCi": {
+      "runId": "39190994260",
+      "status": "success",
+      "exactSourceCommit": "c24c4d6d36609741c8440140f5b34c922bd4fc26",
+      "provenance": "operator_reported",
+      "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39190994260"
+    },
+    "deployment": {
+      "version": 67,
+      "fingerprint": "b722aea4",
+      "sourceFilesMatched": 3,
+      "liveSourceBytesMatched": true,
+      "provenance": "operator_reported",
+      "sharedGitHeadConfirmed": false
+    },
+    "engineSource": {
+      "path": "엔진_synkbrief.js",
+      "deployedSourceSha256": "2808a1b0a0f038653227f91a04100d22fca1ebc53985c3a3589a33187ec1541e",
+      "gitBlobSha256": "151572d993ec89d2cf1ba7e687cd348bb4bfb04aaffb3cfb940393d6d5af0276",
+      "normalizedLfSha256": "151572d993ec89d2cf1ba7e687cd348bb4bfb04aaffb3cfb940393d6d5af0276",
+      "gitBlobAndDeploymentSourceEqualAfterLfNormalization": true,
+      "rawBytesEqual": false,
+      "difference": "CRLF/LF 줄바꿈만 다름",
+      "verification": "local_git_blob_and_reported_deployed_source_pin"
+    }
+  },
+  "backend": {
+    "sourceCommit": "4a7e5ee2de55bbd6109d855e1b786da1d608fbeb",
+    "sourceBranch": "codex/comment-dm-server-monitor-20261019",
+    "sourceBranchPushed": true,
+    "pushProvenance": "operator_reported",
+    "runtime": {
+      "version": 67,
+      "status": "ACTIVE",
+      "updated_at": 1792377552737
+    },
+    "verifiedAt": "2026-10-19T02:47:25.190Z",
+    "bodySha256": "fce95d86495aa4294471fb4f7ba8cccc62da50022b3b52b56e41ce9d11193f5a",
+    "libraryCount": 15,
+    "indexCount": 1,
+    "allSourcesMatched": true,
+    "metadataUnchangedDuringVerification": true,
+    "evidence": "runtime-1792378045219.json",
+    "settingsVersionNote": "코드 배포는 v66, 감시 설정 활성화로 v67이 되었으며 함수 본문 SHA-256은 동일하다.",
+    "deploymentLedgerCommit": "e2a9a3b9eb5f16db344064357ff989697489f3ad",
+    "masterMerged": false
+  },
+  "configuration": {
+    "appliedAt": "2026-10-19T02:45:05.878Z",
+    "enabled": true,
+    "since": "2026-10-19T02:08:00Z",
+    "excludedUsernames": [
+      "1101yuh"
+    ],
+    "settingsAllMatched": true,
+    "otherSettingsUnchanged": true,
+    "evidence": "config-1792377905878.json",
+    "valuesProvenance": "operator_reported_and_receipt_matches"
+  },
+  "scheduling": {
+    "provider": "Google Apps Script",
+    "existingScheduleReused": true,
+    "intervalMinutes": 15,
+    "currentOwnerTriggerCount": 1,
+    "lastObservedScheduledExecution": {
+      "startedAt": "2026-10-19T02:47:35+00:00",
+      "at": "2026-10-19T02:47:46.137Z",
+      "type": "time_based",
+      "durationSeconds": 11.016,
+      "status": "completed",
+      "healthy": true,
+      "relationToThisRelease": "after_deployment_and_configuration",
+      "evidence": [
+        "mail-test-first-execution-full-ax.txt",
+        "server-scheduled-state-full-ax.txt"
+      ]
+    },
+    "failureNotifications": {
+      "previous": "daily",
+      "current": "immediate",
+      "provenance": "operator_reported"
+    },
+    "codexHeartbeat": {
+      "instagramDm": "PAUSED",
+      "unrelatedPerformanceHeartbeat": "unchanged",
+      "provenance": "operator_reported"
+    }
+  },
+  "verification": {
+    "relevantApps": {
+      "tests": 74,
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "apps-tests.txt"
+    },
+    "relevantBackend": {
+      "tests": 90,
+      "passed": 90,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "backend-tests.txt"
+    },
+    "sharedWorkingCopyFullSuite": {
+      "tests": 1964,
+      "passed": 1936,
+      "failed": 14,
+      "skipped": 14,
+      "evidence": "test-ci.txt",
+      "status": "failed",
+      "failureClassification": "작업 담당자는 14개 실패를 이번 변경과 무관한 것으로 분류했다. 이 전체 실행을 통과로 표시하지 않는다.",
+      "failureClassificationProvenance": "operator_reported"
+    },
+    "exactCommittedSourceRemoteCi": {
+      "status": "success",
+      "runId": "39190994260",
+      "sourceCommit": "c24c4d6d36609741c8440140f5b34c922bd4fc26",
+      "provenance": "operator_reported"
+    },
+    "readOnlyAuditBeforeDeployment": {
+      "at": "2026-10-19T02:34:03.405Z",
+      "checkedAt": "2026-10-19T02:34:02.148Z",
+      "healthy": true,
+      "complete": true,
+      "issues": [],
+      "activeRoutes": [
+        3,
+        8
+      ],
+      "remoteWrites": 0,
+      "customerSends": 0,
+      "evidence": "audit-1792377243405.json"
+    }
+  },
+  "designLimits": {
+    "observationStart": "2026-10-19T02:08:00Z",
+    "currentApprovalOnly": true,
+    "maxLookbackHours": 24,
+    "missingDeliveryGraceMinutes": 15,
+    "boundedProviderReads": true,
+    "incompleteProviderObservation": "관측 실패로 알리고 정상·누락으로 확정하지 않는다.",
+    "excludedOwnTests": true,
+    "previousDeliveryAndStop": "기전달 정상 차단과 STOP·억제 상태를 누락·중복 발송과 구분한다.",
+    "guarantee": "관측 가능한 기간과 API 응답 범위의 감시이며 모든 과거 댓글·모든 전달의 전수 보장은 아니다.",
+    "missingAlertExpectedDelay": "15분 처리 유예 후 다음 15분 정기 점검에서 확인하므로 정상 예약 조건에서는 대체로 댓글 이후 15~30분이다. API 장애·예약 지연 시 더 늦을 수 있다.",
+    "observedNaturalCommentAfterDeployment": false
+  },
+  "acceptance": {
+    "actualFailureAlertEmail": "passed_with_synthetic_missing_and_duplicate_incidents",
+    "duplicateAlertSuppression": "passed",
+    "firstPostDeploymentScheduledExecution": "passed",
+    "actualMailTest": {
+      "first": {
+        "at": "2026-10-19T02:46:26+00:00",
+        "state": "sent",
+        "emailSent": 2,
+        "codes": [
+          "delivery_missing",
+          "duplicate_delivery"
+        ]
+      },
+      "repeat": {
+        "at": "2026-10-19T02:47:00+00:00",
+        "state": "already_sent",
+        "emailSent": 0
+      },
+      "inbox": {
+        "received": 2,
+        "receivedAtDisplay": "2026-10-19 11:46 KST",
+        "observedIn": "existing_ops_recipient_gmail",
+        "evidence": [
+          "mail-alerts-received-full-ax.txt",
+          "mail-alerts-received.png"
+        ]
+      }
+    },
+    "customerDmSends": 0,
+    "complete": true,
+    "next": "새 실제 고객 댓글은 서버에서 계속 관측한다. 누락·중복·잘못된 링크·관측 실패 시 기존 수신처로 알린다."
+  },
+  "evidence": {
+    "apps-tests.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/apps-tests.txt",
+      "sha256": "c34a6096a341a10a17948784b0f16d79e7008e26315e628a93e1d34f21813887"
+    },
+    "backend-tests.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/backend-tests.txt",
+      "sha256": "7eccfc08bf1c0b69a21fbd2fc3d0f06d6cb06e95e5a15f49c5e99da5b4ee156b"
+    },
+    "test-ci.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/test-ci.txt",
+      "sha256": "8eb656d3391349293162851713a1842115b4b2f19d414f34a49f06f829c52905"
+    },
+    "app-commit-state.json": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/app-commit-state.json",
+      "sha256": "2006dfe752b4f48a1ca9b4b2bdb1b5c474931d5764940e833913c56f282164fe"
+    },
+    "runtime-1792377718110.json": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/runtime-1792377718110.json",
+      "sha256": "c1d910cd249fe5ea771cef95827d6854c8a03fefc2cc784ccc0481530b44a670"
+    },
+    "config-1792377905878.json": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/config-1792377905878.json",
+      "sha256": "0a1c522b4bd7606395ce05473a79400b36d95d86152d2853644f3b08d143aff2"
+    },
+    "backend-deploy.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/backend-deploy.txt",
+      "sha256": "1a9ab666930fd05aa4ce92f53a2fb1a280e1057ee216f85820ba4426defe24a5"
+    },
+    "audit-1792377243405.json": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/audit-1792377243405.json",
+      "sha256": "ba06e04b56ae47a8c6651056021646ad7d3b7c7df350b776e77095a4b0fe62a5"
+    },
+    "runtime-1792378045219.json": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/runtime-1792378045219.json",
+      "sha256": "1260b6b7bbb437b1af4500e76135a7a53821d9345f4c176540329bb32c4f6aa2"
+    },
+    "server-scheduled-state-full-ax.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/server-scheduled-state-full-ax.txt",
+      "sha256": "2e11ff97d1bc3720c10496eb1340b5ffd6c73f4af81d7f37f87531fd3197c88d"
+    },
+    "mail-test-repeat-execution-full-ax.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/mail-test-repeat-execution-full-ax.txt",
+      "sha256": "340e5d23e4b263d2bcb1e3bd89e339979f30c1bc87e3c66b48dcbf0b51c27ba9"
+    },
+    "mail-test-first-execution-full-ax.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/mail-test-first-execution-full-ax.txt",
+      "sha256": "d32940d5065f2d1be8438215271ceba4d143f11ecbb032f95a1d5b2930f48aa4"
+    },
+    "mail-alerts-received-full-ax.txt": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/mail-alerts-received-full-ax.txt",
+      "sha256": "fd2b5ac43b51fde6bbb9b059a3d7c4afafac237536f7d75e8615cb53f84b1ca5"
+    },
+    "mail-alerts-received.png": {
+      "path": ".tmp/comment-dm-server-monitor-20261019/mail-alerts-received.png",
+      "sha256": "69e97898c9a200d073b252bfda70ac7c9524294321f87c9294059d7b4edd1351"
+    }
+  },
+  "optimization": {
+    "newAiCalls": 0,
+    "newSchedules": 0,
+    "reusedExistingOpsStatus": true,
+    "incidentHashDedupe": true,
+    "graphGetDeadlineMs": 25000,
+    "maxGraphCalls": 60,
+    "missingGraceMinutes": 15,
+    "customerMessageBodiesRead": false
+  }
+}
