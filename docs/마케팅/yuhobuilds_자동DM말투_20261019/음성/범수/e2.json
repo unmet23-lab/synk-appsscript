@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e2",
+ "text": "모르는 건 \"직접 확인해서 답드릴게요\" 하고, 저한테 알림이 오게 했어요.",
+ "show": "모르는 건 / \"직접 확인해서 / 답드릴게요\"",
+ "dur": 3.649,
+ "words": [
+  {
+   "text": "모르는",
+   "start": 0.02,
+   "end": 0.3
+  },
+  {
+   "text": "건",
+   "start": 0.342,
+   "end": 0.44
+  },
+  {
+   "text": "\"직접",
+   "start": 0.454,
+   "end": 0.734
+  },
+  {
+   "text": "확인해서",
+   "start": 0.776,
+   "end": 1.083
+  },
+  {
+   "text": "답드릴게요\"",
+   "start": 1.125,
+   "end": 1.685
+  },
+  {
+   "text": "하고,",
+   "start": 1.755,
+   "end": 1.923
+  },
+  {
+   "text": "저한테",
+   "start": 2.385,
+   "end": 2.679
+  },
+  {
+   "text": "알림이",
+   "start": 2.749,
+   "end": 2.986
+  },
+  {
+   "text": "오게",
+   "start": 3.056,
+   "end": 3.154
+  },
+  {
+   "text": "했어요.",
+   "start": 3.196,
+   "end": 3.649
+  }
+ ],
+ "source": {
+  "key": "6f3aae6e0d2a34bb748d02eddc466576",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

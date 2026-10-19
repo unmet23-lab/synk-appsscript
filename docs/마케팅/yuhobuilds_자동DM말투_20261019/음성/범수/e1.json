@@ -1,0 +1,88 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "그리고 정해진 답에 없는 질문은, 이제 클로드가 앞 대화를 읽고 이어서 답해요.",
+ "show": "정해진 답에 없는 질문은, / Claude가 앞 대화를 읽고 / 이어서",
+ "dur": 4.09,
+ "words": [
+  {
+   "text": "그리고",
+   "start": 0.02,
+   "end": 0.227
+  },
+  {
+   "text": "정해진",
+   "start": 0.268,
+   "end": 0.599
+  },
+  {
+   "text": "답에",
+   "start": 0.64,
+   "end": 0.806
+  },
+  {
+   "text": "없는",
+   "start": 0.875,
+   "end": 1.096
+  },
+  {
+   "text": "질문은,",
+   "start": 1.137,
+   "end": 1.496
+  },
+  {
+   "text": "이제",
+   "start": 2.02,
+   "end": 2.144
+  },
+  {
+   "text": "클로드가",
+   "start": 2.213,
+   "end": 2.585
+  },
+  {
+   "text": "앞",
+   "start": 2.654,
+   "end": 2.737
+  },
+  {
+   "text": "대화를",
+   "start": 2.778,
+   "end": 3.068
+  },
+  {
+   "text": "읽고",
+   "start": 3.11,
+   "end": 3.289
+  },
+  {
+   "text": "이어서",
+   "start": 3.372,
+   "end": 3.578
+  },
+  {
+   "text": "답해요.",
+   "start": 3.62,
+   "end": 4.09
+  }
+ ],
+ "source": {
+  "key": "d710da60040006161e2aa442b0287989",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

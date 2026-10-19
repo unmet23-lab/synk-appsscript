@@ -1,0 +1,38 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d3",
+ "text": "다 고쳤어요.",
+ "show": "다 고쳤어요",
+ "dur": 0.835,
+ "words": [
+  {
+   "text": "다",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "고쳤어요.",
+   "start": 0.162,
+   "end": 0.835
+  }
+ ],
+ "source": {
+  "key": "4e978ca09a2b4d13d541f932f091d6e9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

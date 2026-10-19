@@ -1,0 +1,130 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-19T09:23:08.936Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "괜찮냐고 물으면, 제 자동 디엠은 \"아니요\"부터 답하게 돼 있었어요.",
+   "show": "괜찮냐고 물으면, / 제 자동 DM은 \"아니요\"부터",
+   "dur": 3.506,
+   "syllablesPerSec": 7.42,
+   "src": "h1.wav",
+   "key": "9f02d3a9fd2e51523ae48119f24333d0",
+   "words": 9
+  },
+  {
+   "id": "sum",
+   "text": "지금은 이렇게 답해요.",
+   "show": "지금은 이렇게 답해요",
+   "dur": 1.203,
+   "syllablesPerSec": 7.48,
+   "src": "sum.wav",
+   "key": "889504e809dcea4406e394de498fc14f",
+   "words": 3
+  },
+  {
+   "id": "c1",
+   "text": "지난 영상 첫날, '세션' 댓글 열네 개에 디엠 열네 통. 댓글에서 답글까지 평균 십팔 초였어요.",
+   "show": "'세션' 댓글 14개, DM 14통 / 댓글 → 답글 평균 18초",
+   "dur": 5.528,
+   "syllablesPerSec": 6.33,
+   "src": "c1.wav",
+   "key": "784e0de5ad68e48c5f30bba4bdb69aa3",
+   "words": 15
+  },
+  {
+   "id": "t1",
+   "text": "그런데 받는 쪽에서 읽어 보니, 너무 기계 같았어요.",
+   "show": "받는 쪽에서 읽어 보니, / 너무 기계 같았어요",
+   "dur": 2.935,
+   "syllablesPerSec": 6.81,
+   "src": "t1.wav",
+   "key": "43c39934a0cd12ff149298456c778e3c",
+   "words": 8
+  },
+  {
+   "id": "d1",
+   "text": "받는 사람 화면으로 한 줄씩 다시 읽었더니, 일곱 군데가 걸렸어요.",
+   "show": "한 줄씩 다시 읽었더니, / 일곱 군데가 걸렸어요",
+   "dur": 3.355,
+   "syllablesPerSec": 7.75,
+   "src": "d1.wav",
+   "key": "09c8793817f12bb7e3256eb02a5fe65b",
+   "words": 10
+  },
+  {
+   "id": "d2",
+   "text": "고맙다고 하면 '그만 받으려면'이 붙고, 맥북은 되냐고 하면 '답드리기 어려워요', 에러 난다고 하면 답이 없었어요.",
+   "dur": 5.446,
+   "syllablesPerSec": 8.08,
+   "src": "d2.wav",
+   "key": "63820aeed7bf7456763b90ef5f18271b",
+   "words": 15
+  },
+  {
+   "id": "d3",
+   "text": "다 고쳤어요.",
+   "show": "다 고쳤어요",
+   "dur": 0.835,
+   "syllablesPerSec": 5.99,
+   "src": "d3.wav",
+   "key": "4e978ca09a2b4d13d541f932f091d6e9",
+   "words": 2
+  },
+  {
+   "id": "e1",
+   "text": "그리고 정해진 답에 없는 질문은, 이제 클로드가 앞 대화를 읽고 이어서 답해요.",
+   "show": "정해진 답에 없는 질문은, / Claude가 앞 대화를 읽고 / 이어서",
+   "dur": 4.09,
+   "syllablesPerSec": 7.58,
+   "src": "e1.wav",
+   "key": "d710da60040006161e2aa442b0287989",
+   "words": 12
+  },
+  {
+   "id": "e2",
+   "text": "모르는 건 \"직접 확인해서 답드릴게요\" 하고, 저한테 알림이 오게 했어요.",
+   "show": "모르는 건 / \"직접 확인해서 / 답드릴게요\"",
+   "dur": 3.649,
+   "syllablesPerSec": 7.67,
+   "src": "e2.wav",
+   "key": "6f3aae6e0d2a34bb748d02eddc466576",
+   "words": 10
+  },
+  {
+   "id": "f1",
+   "text": "에이아이 티는 기능이 아니라, 받는 사람이 읽는 한 줄에서 나더라고요.",
+   "show": "AI 티는 기능이 아니라, / 받는 사람이 읽는 / 한 줄에서",
+   "dur": 3.435,
+   "syllablesPerSec": 8.15,
+   "src": "f1.wav",
+   "key": "b3b802b6463ea7da681a831769a5f144",
+   "words": 10
+  },
+  {
+   "id": "cta",
+   "text": "받아 본 자동 디엠 중에 제일 기계 같았던 말, 댓글로 알려 주세요.",
+   "show": "제일 기계 같았던 말, / 댓글로 알려 주세요",
+   "dur": 3.473,
+   "syllablesPerSec": 7.2,
+   "src": "cta.wav",
+   "key": "c91fba0cd635826def14bec151ce5505",
+   "words": 12
+  }
+ ]
+}

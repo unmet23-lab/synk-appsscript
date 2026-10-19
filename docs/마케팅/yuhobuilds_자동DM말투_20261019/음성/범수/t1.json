@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t1",
+ "text": "그런데 받는 쪽에서 읽어 보니, 너무 기계 같았어요.",
+ "show": "받는 쪽에서 읽어 보니, / 너무 기계 같았어요",
+ "dur": 2.935,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.266
+  },
+  {
+   "text": "받는",
+   "start": 0.511,
+   "end": 0.787
+  },
+  {
+   "text": "쪽에서",
+   "start": 0.833,
+   "end": 1.079
+  },
+  {
+   "text": "읽어",
+   "start": 1.125,
+   "end": 1.278
+  },
+  {
+   "text": "보니,",
+   "start": 1.324,
+   "end": 1.493
+  },
+  {
+   "text": "너무",
+   "start": 1.876,
+   "end": 2.06
+  },
+  {
+   "text": "기계",
+   "start": 2.122,
+   "end": 2.275
+  },
+  {
+   "text": "같았어요.",
+   "start": 2.321,
+   "end": 2.935
+  }
+ ],
+ "source": {
+  "key": "43c39934a0cd12ff149298456c778e3c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

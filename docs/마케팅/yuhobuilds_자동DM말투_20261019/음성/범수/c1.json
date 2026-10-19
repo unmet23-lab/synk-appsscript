@@ -1,0 +1,103 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "지난 영상 첫날, '세션' 댓글 열네 개에 디엠 열네 통. 댓글에서 답글까지 평균 십팔 초였어요.",
+ "show": "'세션' 댓글 14개, DM 14통 / 댓글 → 답글 평균 18초",
+ "dur": 5.528,
+ "words": [
+  {
+   "text": "지난",
+   "start": 0.02,
+   "end": 0.239
+  },
+  {
+   "text": "영상",
+   "start": 0.283,
+   "end": 0.488
+  },
+  {
+   "text": "첫날,",
+   "start": 0.532,
+   "end": 0.855
+  },
+  {
+   "text": "'세션'",
+   "start": 1.162,
+   "end": 1.514
+  },
+  {
+   "text": "댓글",
+   "start": 1.558,
+   "end": 1.792
+  },
+  {
+   "text": "열네",
+   "start": 1.865,
+   "end": 2.129
+  },
+  {
+   "text": "개에",
+   "start": 2.202,
+   "end": 2.364
+  },
+  {
+   "text": "디엠",
+   "start": 2.481,
+   "end": 2.715
+  },
+  {
+   "text": "열네",
+   "start": 2.759,
+   "end": 2.964
+  },
+  {
+   "text": "통.",
+   "start": 3.023,
+   "end": 3.199
+  },
+  {
+   "text": "댓글에서",
+   "start": 3.536,
+   "end": 3.887
+  },
+  {
+   "text": "답글까지",
+   "start": 3.931,
+   "end": 4.371
+  },
+  {
+   "text": "평균",
+   "start": 4.429,
+   "end": 4.678
+  },
+  {
+   "text": "십팔",
+   "start": 4.722,
+   "end": 4.927
+  },
+  {
+   "text": "초였어요.",
+   "start": 4.971,
+   "end": 5.528
+  }
+ ],
+ "source": {
+  "key": "784e0de5ad68e48c5f30bba4bdb69aa3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

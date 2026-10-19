@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "에이아이 티는 기능이 아니라, 받는 사람이 읽는 한 줄에서 나더라고요.",
+ "show": "AI 티는 기능이 아니라, / 받는 사람이 읽는 / 한 줄에서",
+ "dur": 3.435,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.283
+  },
+  {
+   "text": "티는",
+   "start": 0.327,
+   "end": 0.517
+  },
+  {
+   "text": "기능이",
+   "start": 0.561,
+   "end": 0.81
+  },
+  {
+   "text": "아니라,",
+   "start": 0.868,
+   "end": 1.088
+  },
+  {
+   "text": "받는",
+   "start": 1.527,
+   "end": 1.79
+  },
+  {
+   "text": "사람이",
+   "start": 1.834,
+   "end": 2.068
+  },
+  {
+   "text": "읽는",
+   "start": 2.127,
+   "end": 2.332
+  },
+  {
+   "text": "한",
+   "start": 2.376,
+   "end": 2.449
+  },
+  {
+   "text": "줄에서",
+   "start": 2.493,
+   "end": 2.727
+  },
+  {
+   "text": "나더라고요.",
+   "start": 2.785,
+   "end": 3.435
+  }
+ ],
+ "source": {
+  "key": "b3b802b6463ea7da681a831769a5f144",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

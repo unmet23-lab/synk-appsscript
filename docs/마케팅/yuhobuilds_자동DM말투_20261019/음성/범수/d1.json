@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d1",
+ "text": "받는 사람 화면으로 한 줄씩 다시 읽었더니, 일곱 군데가 걸렸어요.",
+ "show": "한 줄씩 다시 읽었더니, / 일곱 군데가 걸렸어요",
+ "dur": 3.355,
+ "words": [
+  {
+   "text": "받는",
+   "start": 0.02,
+   "end": 0.248
+  },
+  {
+   "text": "사람",
+   "start": 0.286,
+   "end": 0.464
+  },
+  {
+   "text": "화면으로",
+   "start": 0.502,
+   "end": 0.819
+  },
+  {
+   "text": "한",
+   "start": 0.958,
+   "end": 1.047
+  },
+  {
+   "text": "줄씩",
+   "start": 1.085,
+   "end": 1.301
+  },
+  {
+   "text": "다시",
+   "start": 1.339,
+   "end": 1.542
+  },
+  {
+   "text": "읽었더니,",
+   "start": 1.58,
+   "end": 1.96
+  },
+  {
+   "text": "일곱",
+   "start": 2.214,
+   "end": 2.354
+  },
+  {
+   "text": "군데가",
+   "start": 2.392,
+   "end": 2.645
+  },
+  {
+   "text": "걸렸어요.",
+   "start": 2.696,
+   "end": 3.355
+  }
+ ],
+ "source": {
+  "key": "09c8793817f12bb7e3256eb02a5fe65b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

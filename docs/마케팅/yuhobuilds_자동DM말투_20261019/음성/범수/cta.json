@@ -1,0 +1,88 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "cta",
+ "text": "받아 본 자동 디엠 중에 제일 기계 같았던 말, 댓글로 알려 주세요.",
+ "show": "제일 기계 같았던 말, / 댓글로 알려 주세요",
+ "dur": 3.473,
+ "words": [
+  {
+   "text": "받아",
+   "start": 0.06,
+   "end": 0.23
+  },
+  {
+   "text": "본",
+   "start": 0.273,
+   "end": 0.373
+  },
+  {
+   "text": "자동",
+   "start": 0.415,
+   "end": 0.643
+  },
+  {
+   "text": "디엠",
+   "start": 0.686,
+   "end": 0.885
+  },
+  {
+   "text": "중에",
+   "start": 0.928,
+   "end": 1.113
+  },
+  {
+   "text": "제일",
+   "start": 1.283,
+   "end": 1.525
+  },
+  {
+   "text": "기계",
+   "start": 1.582,
+   "end": 1.739
+  },
+  {
+   "text": "같았던",
+   "start": 1.781,
+   "end": 2.123
+  },
+  {
+   "text": "말,",
+   "start": 2.166,
+   "end": 2.308
+  },
+  {
+   "text": "댓글로",
+   "start": 2.564,
+   "end": 2.849
+  },
+  {
+   "text": "알려",
+   "start": 2.891,
+   "end": 3.034
+  },
+  {
+   "text": "주세요.",
+   "start": 3.076,
+   "end": 3.473
+  }
+ ],
+ "source": {
+  "key": "c91fba0cd635826def14bec151ce5505",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

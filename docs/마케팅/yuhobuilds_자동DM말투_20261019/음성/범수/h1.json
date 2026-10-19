@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "괜찮냐고 물으면, 제 자동 디엠은 \"아니요\"부터 답하게 돼 있었어요.",
+ "show": "괜찮냐고 물으면, / 제 자동 DM은 \"아니요\"부터",
+ "dur": 3.506,
+ "words": [
+  {
+   "text": "괜찮냐고",
+   "start": 0.02,
+   "end": 0.499
+  },
+  {
+   "text": "물으면,",
+   "start": 0.543,
+   "end": 0.935
+  },
+  {
+   "text": "제",
+   "start": 1.139,
+   "end": 1.226
+  },
+  {
+   "text": "자동",
+   "start": 1.284,
+   "end": 1.545
+  },
+  {
+   "text": "디엠은",
+   "start": 1.618,
+   "end": 1.923
+  },
+  {
+   "text": "\"아니요\"부터",
+   "start": 1.952,
+   "end": 2.432
+  },
+  {
+   "text": "답하게",
+   "start": 2.504,
+   "end": 2.795
+  },
+  {
+   "text": "돼",
+   "start": 2.838,
+   "end": 2.911
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.954,
+   "end": 3.506
+  }
+ ],
+ "source": {
+  "key": "9f02d3a9fd2e51523ae48119f24333d0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

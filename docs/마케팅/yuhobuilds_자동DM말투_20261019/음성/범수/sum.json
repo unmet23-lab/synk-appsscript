@@ -1,0 +1,43 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "sum",
+ "text": "지금은 이렇게 답해요.",
+ "show": "지금은 이렇게 답해요",
+ "dur": 1.203,
+ "words": [
+  {
+   "text": "지금은",
+   "start": 0.02,
+   "end": 0.317
+  },
+  {
+   "text": "이렇게",
+   "start": 0.367,
+   "end": 0.582
+  },
+  {
+   "text": "답해요.",
+   "start": 0.631,
+   "end": 1.203
+  }
+ ],
+ "source": {
+  "key": "889504e809dcea4406e394de498fc14f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
