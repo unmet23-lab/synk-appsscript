@@ -11,7 +11,7 @@ import {createLifeProgressPort} from './life-progress-port.mjs';
 export {createLifeProgressPort} from './life-progress-port.mjs';
 export {GUEST_TRIAL_GAMES,createGuestTrials,createGuestTrialPlayHost} from './guest-trial.mjs';
 export {createDeviceRecordsOffer} from './device-records.mjs';
-import {classroomEndpoint,requestClassrooms} from './classroom-client.mjs';
+import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-client.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST']]);
@@ -25,7 +25,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
  let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
- let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null;
+ let nativeIdentity=null,nativeAccountId=null,nativeGeneration=-1,signedOutGeneration=-1,nativeEvents=0,nativeReady=null,unsubscribe=null,nativeClassroom=false;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
  const forgetSession=()=>{if(!native)storage.removeItem(key);};
@@ -55,6 +55,8 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    if(typeof bridge.getEnvironment!=='function'||typeof bridge.onAuthChanged!=='function'||typeof bridge.authSignIn!=='function'||typeof bridge.authSignOut!=='function')throw Object.assign(Error('WORLD 앱의 계정 연결을 확인해 주세요.'),{code:'INVALID_BRIDGE'});
    const environment=await bridge.getEnvironment();guard(expected);
    if(environment?.clientId!=='world')throw Object.assign(Error('WORLD 앱의 계정 연결을 확인해 주세요.'),{code:'INVALID_BRIDGE'});
+   // 「우리 반 수업」은 본체가 classroom 경로를 알릴 때만 연다. 그 경로가 없는 옛 PC 앱에서는 칸을 숨긴다.
+   nativeClassroom=Array.isArray(environment.worldRoutes)&&environment.worldRoutes.includes('classroom');
    unsubscribe=bridge.onAuthChanged(state=>{
     const before=nativeIdentity;nativeEvents++;
     if(nativeStatus(state)&&nativeIdentity!==before){const identity=nativeIdentity;queueMicrotask(()=>{if(!closed&&nativeIdentity===identity)onConnect();});}
@@ -190,10 +192,11 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   }finally{clearTimeout(timer);controllers.delete(controller);}
  }
  // 「우리 반 수업」: 학생 앱과 같은 classroom 함수다. 계정 응답이 아니라 accountId가 없고, 함수의 401(명부 없음)은 로그아웃이 아니다(classroom-client.mjs).
- // PC 앱(native)은 토큰이 본체에만 있고 본체 허용 경로(desktop/src/world-requests.cjs)에 classroom이 아직 없어 부르지 않는다.
+ // PC 앱(native)은 토큰을 가진 본체가 같은 규칙으로 묻는다(desktop/src/world-requests.cjs의 classroom 경로). 그 경로를 알리지 않는 옛 PC 앱에서는 부르지 않는다.
  async function readClassrooms(){
-  if(native)throw Object.assign(Error('PC 앱에서는 아직 수업 목록을 열 수 없어요.'),{code:'CLASSROOM_UNSUPPORTED'});
+  if(native&&!nativeClassroom)throw Object.assign(Error('PC 앱에서는 아직 수업 목록을 열 수 없어요.'),{code:'CLASSROOM_UNSUPPORTED'});
   const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
+  if(native){const data=await bridge.accountRequest('worldRequest',{route:'classroom'});guard(expected);return classroomReply(data);}
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000){await renew(expected);guard(expected);}
@@ -213,7 +216,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,readClassrooms,supportsClassroom:!native,identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,topicAnswers,readClassrooms,get supportsClassroom(){return !native||nativeClassroom;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

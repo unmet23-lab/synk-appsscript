@@ -95,11 +95,50 @@ test('WORLD 계정은 게이트웨이 401에 세션을 한 번 갱신해 다시 
  assert.equal(result.classes.length,1);assert.deepEqual(f.calls.map(c=>c.init.headers.Authorization),['Bearer token-a','Bearer token-b']);
  assert.equal(JSON.parse(f.tab.getItem('synk.oauth.session.world')).access_token,'token-b');assert.equal(f.invalidations(),0);
 });
-test('로그인 전에는 묻지 않고, PC 앱(본체가 토큰을 가진 native)에서는 본체 경로가 없어 부르지 않는다',async()=>{
+test('로그인 전에는 묻지 않는다',async()=>{
  const f=accountFixture({fetcher:async()=>listed(sample())});
  await assert.rejects(f.account.readClassrooms(),{code:'AUTH_REQUIRED'});assert.equal(f.calls.length,0);
- let bridgeCalls=0;const native=createWorldAccount({config,storage:storage(),getUrl:()=>'https://world.example.test/world/',bridge:{accountRequest:async()=>{bridgeCalls++;return {ok:true};},authStatus:async()=>({})}});
- assert.equal(native.supportsClassroom,false);await assert.rejects(native.readClassrooms(),{code:'CLASSROOM_UNSUPPORTED'});assert.equal(bridgeCalls,0);
+});
+
+// ── PC 앱(native): 토큰은 본체에만 있다. 본체가 환경(getEnvironment)에 classroom 경로를 알릴 때만 칸을 열고, 본체가 401 두 갈래를 웹 판과 같은 뜻으로 처리해 답만 넘긴다(desktop/src/auth-service.cjs). ──
+function nativeFixture({routes,classroom=async()=>{throw Error('수업을 묻지 않아야 한다');}}={}){
+ const calls=[];let invalidations=0;
+ const bridge={getEnvironment:async()=>({clientId:'world',...(routes===undefined?{}:{worldRoutes:routes})}),
+  authStatus:async()=>({configured:true,signedIn:true,status:'signed-in',sessionGeneration:1,account:{synk_user_id:A}}),
+  onAuthChanged:()=>()=>{},authSignIn:async()=>({ok:true}),authSignOut:async()=>({ok:true,serverRevoked:true}),
+  accountRequest:async(operation,params={})=>{calls.push({operation,params});
+   if(operation==='load')return {ok:true,account:{synk_user_id:A,status:'active'},sessions:[]};
+   if(operation==='worldRequest'&&params.route==='classroom')return classroom();
+   throw Error('본체에 뜻밖의 요청: '+operation);}};
+ const account=createWorldAccount({config,bridge,storage:storage(),getUrl:()=>'https://world.example.test/world/',onInvalidate:()=>{invalidations++;},
+  fetcher:()=>{throw Error('PC 앱은 토큰으로 직접 묻지 않는다');},navigate:()=>{throw Error('PC 앱은 브라우저 로그인을 쓰지 않는다');}});
+ return {account,lessonCalls:()=>calls.filter(c=>c.operation==='worldRequest'),invalidations:()=>invalidations};
+}
+test('옛 PC 앱(본체가 classroom 경로를 알리지 않음)에서는 지금처럼 칸을 숨기고 본체에 묻지 않는다',async()=>{
+ for(const routes of [undefined,['bootstrap','town/entry','enrollment/claim'],'classroom',{classroom:true}]){
+  const f=nativeFixture({routes});assert.equal(f.account.supportsClassroom,false);
+  assert.equal(await f.account.restore(),true);assert.equal(f.account.supportsClassroom,false,JSON.stringify(routes));
+  await assert.rejects(f.account.readClassrooms(),{code:'CLASSROOM_UNSUPPORTED'});assert.equal(f.lessonCalls().length,0);f.account.stop();
+ }
+});
+test('새 PC 앱은 본체의 classroom 경로로 묻고, 명부에 없는 계정의 빈 목록과 실패에도 로그인을 지킨다',async()=>{
+ let answer=async()=>({contract_ver:'c16',ok:true,classes:sample(),empty_reason:null});
+ const f=nativeFixture({routes:['bootstrap','town/entry','enrollment/claim','classroom'],classroom:()=>answer()});
+ assert.equal(f.account.supportsClassroom,false,'본체 환경을 읽기 전에는 열지 않는다');
+ assert.equal(await f.account.restore(),true);assert.equal(f.account.supportsClassroom,true);const settled=f.invalidations();
+ assert.deepEqual(await f.account.readClassrooms(),{classes:normalizeClassroomClasses(sample()),emptyReason:null});
+ assert.deepEqual(f.lessonCalls().map(c=>c.params),[{route:'classroom'}]);
+ answer=async()=>({ok:true,classes:[],empty_reason:'NO_LEARNER'});
+ assert.deepEqual(await f.account.readClassrooms(),{classes:[],emptyReason:'NO_LEARNER'});
+ for(const [reply,expected] of [[{ok:false,error:{code:'AUTH_EXPIRED',status:401}},{code:'AUTH_EXPIRED',status:401}],[{ok:false,error:{code:'CONTRACT_VER_UNSUPPORTED',status:426}},{code:'CONTRACT_VER_UNSUPPORTED',status:426}],
+  [{ok:false,code:'SUITE_UNAVAILABLE'},{code:'CLASSROOM_UNAVAILABLE'}],[null,{code:'CLASSROOM_UNAVAILABLE'}],[{ok:true,classes:{}},{code:'CONTRACT_VIOLATION'}]]){
+  answer=async()=>reply;await assert.rejects(f.account.readClassrooms(),expected,JSON.stringify(reply));
+ }
+ assert.equal(f.invalidations(),settled);assert.equal(f.account.identity().accountId,A);
+ // 본체 답을 기다리는 사이 로그아웃하면 그 답을 쓰지 않는다.
+ let release;answer=()=>new Promise(resolve=>{release=()=>resolve({ok:true,classes:sample(),empty_reason:null});});
+ const pending=f.account.readClassrooms();await new Promise(resolve=>setTimeout(resolve,0));await f.account.logout();release();
+ await assert.rejects(pending,{code:'ACCOUNT_CHANGED'});f.account.stop();
 });
 
 // ── 화면 규칙(DOM 없이 보는 부분). 실제 그리기·30초·탭 복귀는 classroom-lessons-browser.test.mjs가 본다. ──

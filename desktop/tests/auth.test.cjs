@@ -7,7 +7,7 @@ const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r)
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
 async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
-  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),userResponses=[],accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[],playResponses=[],worldResponses=[];
+  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),userResponses=[],accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[],playResponses=[],worldResponses=[],lessonResponses=[];
   const server=http.createServer(async(req,res)=>{
     const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
     const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,query:Object.fromEntries(u.searchParams),method:req.method,headers:req.headers,body});
@@ -31,13 +31,14 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
     if(u.pathname==='/functions/v1/synk-personal'){const queued=personalResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-personal',resource:product,accountId:accountPayload.account.synk_user_id,revision:0,updatedAt:null,state:null,nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname==='/functions/v1/synk-fortune'){const queued=fortuneResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,account:{synk_user_id:'stable-synthetic-id'},revision:0,state:{version:1,profile:null,preferences:{mode:'western',signId:null},entries:[]},nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname.startsWith('/functions/v1/synk-classroom/api/')){const queued=classroomResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,classes:[],nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
+    if(u.pathname==='/functions/v1/classroom'){const queued=lessonResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{contract_ver:'c16',ok:true,classes:[],empty_reason:'NO_ACTIVE_CLASS_ACCESS',server_time:'2027-03-09T10:31:00.000Z'});}
     reply(404,{ok:false});
   });
   const serverPort=await listen(server),origin='http://127.0.0.1:'+serverPort,raw={version:1,supabaseUrl:origin,accountApiUrl:origin,supabasePublishableKey:'sb_publishable_synthetic',clients:{[product]:{clientId:'synthetic-client-'+product,redirectUri:`http://127.0.0.1:${callbackPort}/synk/oauth/${product}/callback`}}};
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
   const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
-  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueUser:value=>userResponses.push(value),queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),queuePlay:value=>playResponses.push(value),queueWorld:value=>worldResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
+  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueUser:value=>userResponses.push(value),queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),queuePlay:value=>playResponses.push(value),queueWorld:value=>worldResponses.push(value),queueLessons:value=>lessonResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
 }
 
 test('platform account expectation reuses verified matching identity and blocks another account before API access',async t=>{
@@ -450,4 +451,40 @@ test('native WORLD transport keeps tokens in main, sends fixed PUT and fences re
   const before=f.requests.length,pending=f.service.accountRequest('worldRequest',{route:'bootstrap'});await waitFor(()=>f.requests.length>before);await f.service.signOut();release();assert.equal((await pending).ok,false);
   await f.login();f.queueWorld({data:{ok:true,accountId:'other-account',privateState:'must not leak'}});const wrong=await f.service.accountRequest('worldRequest',{route:'bootstrap'});assert.equal(wrong.ok,false);assert.equal(wrong.privateState,undefined);assert.equal(f.service.status().signedIn,false);
   assert.doesNotMatch(JSON.stringify(loaded),/synthetic-access|synthetic-refresh|must-not-reach-renderer/);
+});
+
+test('native WORLD reads 「우리 반 수업」: a roster 401 is an empty list, only a gateway 401 renews, and no classroom answer signs out',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();const lessons=()=>f.requests.filter(r=>r.path==='/functions/v1/classroom');
+  const classes=[{class_id:'c1',display_name:'합성 · TOPIK 4급 온라인 1기',sessions:[{session_key:'w3-tue',title:'3주차 화요일',status:'live',watch_url:'https://www.youtube.com/watch?v=AAAAAAAAAAA'}]}];
+  f.queueLessons({data:{contract_ver:'c16',ok:true,classes,empty_reason:null,nested:{access_token:'must-not-reach-renderer'}}});
+  const listed=await f.service.accountRequest('worldRequest',{route:'classroom'});
+  assert.equal(listed.ok,true);assert.deepEqual(listed.classes,classes);assert.deepEqual(listed.nested,{});assert.equal(listed.accountId,undefined);
+  const [call]=lessons();assert.equal(call.method,'GET');assert.deepEqual(call.query,{});assert.equal(call.body,'');assert.equal(call.headers['content-type'],undefined);
+  assert.equal(call.headers['x-contract-ver'],'c16');assert.equal(call.headers.authorization,'Bearer synthetic-access-1');assert.equal(call.headers.apikey,f.config.publishableKey);
+  // Not on a class roster: the function's own 401 AUTH_REQUIRED is an empty list, without renewal or sign-out.
+  f.queueLessons({status:401,data:{contract_ver:'c16',ok:false,error:{code:'AUTH_REQUIRED',message:'다시 로그인해 주세요',retryable:false}}});
+  assert.deepEqual(await f.service.accountRequest('worldRequest',{route:'classroom'}),{ok:true,classes:[],empty_reason:'NO_LEARNER'});
+  assert.equal(f.refreshCount,0);assert.equal(lessons().length,2);
+  // A gateway 401 (no envelope code) renews once and asks again with the new token.
+  f.queueLessons({status:401,data:{code:'UNAUTHORIZED_INVALID_JWT_FORMAT',message:'Invalid JWT'}});
+  assert.equal((await f.service.accountRequest('worldRequest',{route:'classroom'})).ok,true);assert.equal(f.refreshCount,1);
+  assert.deepEqual(lessons().slice(-2).map(r=>r.headers.authorization),['Bearer synthetic-access-1','Bearer synthetic-access-2']);
+  // If the gateway still refuses the renewed token, only this read fails.
+  f.queueLessons({status:401,data:{message:'Invalid JWT'}});f.queueLessons({status:401,data:{message:'Invalid JWT'}});
+  const expired=await f.service.accountRequest('worldRequest',{route:'classroom'});
+  assert.deepEqual([expired.ok,expired.error.code,expired.error.status,f.refreshCount],[false,'AUTH_EXPIRED',401,2]);
+  // Contract, server, gateway and other classroom answers also fail this read alone.
+  for(const [status,data,code,retryable] of [[426,{ok:false,error:{code:'CONTRACT_VER_UNSUPPORTED'}},'CONTRACT_VER_UNSUPPORTED',false],[500,{ok:false,error:{code:'SERVER_ERROR'}},'SERVER_ERROR',true],[502,null,'CLASSROOM_UNAVAILABLE',true],[401,{ok:false,error:{code:'SESSION_REVOKED'}},'SESSION_REVOKED',false],[200,{ok:false},'CLASSROOM_UNAVAILABLE',false]]){
+    f.queueLessons({status,data});const failed=await f.service.accountRequest('worldRequest',{route:'classroom'});
+    assert.deepEqual([failed.ok,failed.error.code,failed.error.status,failed.error.retryable],[false,code,status,retryable],code);
+  }
+  assert.equal(f.refreshCount,2);assert.equal(f.logoutCount,0);assert.equal(f.service.status().signedIn,true);assert.ok(await f.store().load());
+  assert.doesNotMatch(JSON.stringify(listed),/synthetic-access|synthetic-refresh|must-not-reach-renderer/);
+  // An answer that arrives after the account changed is not delivered.
+  let release;f.queueLessons({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,classes}});
+  const before=lessons().length,pending=f.service.accountRequest('worldRequest',{route:'classroom'});await waitFor(()=>lessons().length>before);await f.service.signOut();release();
+  const late=await pending;assert.equal(late.ok,false);assert.equal(late.classes,undefined);
+  // Other WORLD reads keep their boundary: the same envelope after renewal still ends the session.
+  await f.login();f.queueWorld({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});f.queueWorld({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('worldRequest',{route:'bootstrap'})).ok,false);assert.equal(f.service.status().signedIn,false);
 });

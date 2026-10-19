@@ -1,6 +1,9 @@
 'use strict';
 // Native WORLD pages name an existing operation; URLs, methods and credentials
 // remain in main. The server remains authoritative for ownership and grading.
+// 「우리 반 수업」 (classroom) is the student app's classroom function (SYNK-talk). It takes no
+// query or body and declares the student app's contract version (src/계약판.js; an older one gets 426).
+const CLASSROOM_CONTRACT_VER='c16';
 const ROUTES=Object.freeze({
   bootstrap:['GET','synk-world-v1/bootstrap'],
   'play/start':['POST','synk-world-v1/play/start'],
@@ -14,6 +17,7 @@ const ROUTES=Object.freeze({
   'town/sharing':['POST','synk-classroom/api/world/town/sharing'],
   'enrollment/preview':['POST','synk-classroom/api/enrollment/preview'],
   'enrollment/claim':['POST','synk-classroom/api/enrollment/claim'],
+  classroom:['GET','classroom'],
 });
 const record=value=>!!value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -51,8 +55,10 @@ function worldRequestSpec(params,product,clientKey){
   const [method,endpoint]=ROUTES[route];let path=endpoint;
   if(classId!==undefined){if(!uuid(classId)||!['town/state','town/command','town/presence','town/sharing'].includes(route))invalid();path+='?classId='+encodeURIComponent(classId);}
   if(route==='town/sharing'&&classId===undefined)invalid();
-  if(method==='GET'){if(body!==undefined)invalid();return {path};}
+  if(method==='GET'){if(body!==undefined)invalid();return route==='classroom'?{path,contractVer:CLASSROOM_CONTRACT_VER}:{path};}
   validateBody(route,body);const encoded=JSON.stringify(copyJson(body));if(Buffer.byteLength(encoded)>524288)invalid();
   return {path,method,body:JSON.parse(encoded)};
 }
-module.exports={worldRequestSpec};
+// Advertised to the WORLD page so it opens 「우리 반 수업」 only where this main can read it.
+const WORLD_ROUTE_NAMES=Object.freeze(Object.keys(ROUTES));
+module.exports={worldRequestSpec,WORLD_ROUTE_NAMES};

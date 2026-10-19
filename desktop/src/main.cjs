@@ -13,6 +13,7 @@ const {configuration}=require('./auth-config.cjs');
 const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService,publicError}=require('./auth-service.cjs');
+const {WORLD_ROUTE_NAMES}=require('./world-requests.cjs');
 const {suiteKey,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('./suite-session.cjs');
 const {createCompanyRequests}=require('./company-requests.cjs');
 const {createTeacherPreview}=require('./teacher-preview.cjs');
@@ -295,7 +296,7 @@ function createWindow(){
   window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});
   const handlers={
-    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available()}),
+    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available(),...(runtime.clientId==='world'?{worldRoutes:WORLD_ROUTE_NAMES}:{})}),
     'synk:desktop-preferences':()=>desktopSnapshot(),
     'synk:care-notifications-status':()=>isPlatform?careNotifications.status():{ok:false,code:'LAUNCHER_ONLY'},
     'synk:care-notifications-configure':configureCareNotifications,

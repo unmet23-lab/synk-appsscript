@@ -35,7 +35,17 @@ export async function requestClassrooms({url,publishableKey,token,renew=null,fet
   if(response.status===401&&code==='AUTH_REQUIRED')return {classes:[],emptyReason:'NO_LEARNER'};
   if(response.status===401&&!code&&attempt===0&&renew){const next=await renew();guard();if(next)continue;}
   if(!response.ok||!classroomRecord(body)||body.ok!==true)throw classroomFailure(code||(response.status===401?'AUTH_EXPIRED':'CLASSROOM_UNAVAILABLE'),response.status);
-  if(!Array.isArray(body.classes))throw classroomFailure('CONTRACT_VIOLATION',response.status);
-  return {classes:normalizeClassroomClasses(body.classes),emptyReason:typeof body.empty_reason==='string'?body.empty_reason:null};
+  return classroomList(body,response.status);
  }
+}
+
+// PC 앱(native)은 토큰이 본체에만 있어, 본체(desktop/src/auth-service.cjs)가 위와 같은 규칙으로 묻고 답만 넘긴다.
+// 명부에 없는 계정은 {ok:true,classes:[],empty_reason:'NO_LEARNER'}, 실패는 {ok:false,error:{code,status}}다. 어느 쪽도 로그아웃이 아니다.
+export function classroomReply(data){
+ if(!classroomRecord(data)||data.ok!==true){const error=classroomRecord(data?.error)?data.error:{};throw classroomFailure(typeof error.code==='string'&&error.code?error.code:'CLASSROOM_UNAVAILABLE',error.status);}
+ return classroomList(data);
+}
+function classroomList(body,status){
+ if(!Array.isArray(body.classes))throw classroomFailure('CONTRACT_VIOLATION',status);
+ return {classes:normalizeClassroomClasses(body.classes),emptyReason:typeof body.empty_reason==='string'?body.empty_reason:null};
 }

@@ -4,7 +4,7 @@
 
 <a id="classroom-lessons-20261019"></a>
 
-## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(로컬, 공개·커밋 전)
+## 2026-10-19 우리 반 수업 · TOPIK 4급 온라인 반 학생 입구(로컬, 공개 전)
 
 10-19 TOPIK 4급 온라인 반 재개 결정(결정 표 맨 위)에 따라, 반 학생이 WORLD에서 실시간·예정·복습 수업을 여는 칸을 붙였다.
 
@@ -12,9 +12,9 @@
 - **뜻:** 학생 앱 「우리 반 수업 · 실시간 / 복습」(SYNK-talk `src/수업영상화면.js`)과 같은 상태 이름·안내, 같은 묶는 차례(실시간 → 확인이 필요한 수업 → 예정 → 복습), 30초 확인, 돌아오면 다시 묻기, 실패하면 링크 비우기. 「지금 수업 중」은 서버가 150초 안에 동기화된 live로 줄 때만 보인다. 반이 없거나 불러오는 중·실패일 때는 제목과 그 안내만 보인다.
 - **통로:** `classroom-client.mjs`가 학생 앱과 같은 classroom 함수를 같은 머리(apikey · Bearer · `X-Contract-Ver: c16`)로 부른다. 게이트웨이 401만 한 번 갱신해 다시 묻는다. 함수가 낸 `AUTH_REQUIRED`(학생 명부에 없는 계정)는 빈 목록으로 보고, WORLD의 다른 요청처럼 로그아웃시키지 않는다. 토큰은 `world-account.mjs`의 `readClassrooms()` 안에만 있다(묶음은 `node tools/build-world-account.mjs`). 서버 함수·DB·반/학생 권한·비밀값은 바꾸지 않았다.
 - **화면:** `classroom-lessons.mjs`와 `app-shell.css`의 「우리 반 수업」. 흰 알약은 「실시간 수업 보기」 하나, 수업 줄은 1px 선이다. 링크는 새 탭으로 열고 유튜브 영상·재생목록과 Meet·Zoom 주소만 받는다. 개발 서버(`server.mjs`)와 공개 빌드(`tools/build-world-app-public.mjs`) 목록에 새 파일을 더했다.
-- **PC 앱(native):** 아직 보이지 않는다. 토큰이 본체에만 있고, 본체 허용 경로(`desktop/src/world-requests.cjs`)에 classroom이 없다. 경로와 계약판 머리를 더한 Platform 판이 필요하다(제안).
-- **확인:** `node --test experiences/synk-world-app/qa/classroom-lessons.test.mjs`(17개 — 학생 앱 원문·계약판·회의 주소·presentClass 대조 포함), `qa/classroom-lessons-browser.test.mjs`(계정 모드 Edge, 합성 계정·합성 수업 10상태 × 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추 0, 새로고침·실패 뒤 다시 불러오기·탭 복귀·시트 닫기·로그인 유지). `qa/account-browser.test.mjs`에는 반 연결 전 401과 연결 뒤 재조회를 더했다. 캡처는 `qa/classroom-lessons-20261019/`(그림은 git 밖), 측정은 같은 폴더 `result.json`.
-- **남은 일:** 초대·이용권을 설정한 뒤 실제 학생 계정(WORLD SYNK ID)으로 운영 classroom 조회, 2026-11 현장 송출 시험, PC 앱 경로, TOPIK II 4급 연습·쓰기 첨삭 콘텐츠, 비공개 영상 초대 자동화 여부.
+- **PC 앱(native):** 토큰은 본체에만 있어 본체가 대신 묻는다. `desktop/src/world-requests.cjs`의 `classroom` 경로(GET, 본문·쿼리·classId 없음)에 `X-Contract-Ver: c16`을 싣고, `desktop/src/auth-service.cjs`가 401 두 갈래를 웹과 같은 뜻으로 다룬다. 함수의 `AUTH_REQUIRED`는 빈 목록(`empty_reason:'NO_LEARNER'`)이고, 게이트웨이 401만 한 번 갱신하며, 그 밖의 수업 실패는 이 조회만 실패한다. 어느 경우도 로그아웃하지 않는다. 본체가 환경(`getEnvironment().worldRoutes`)에 `classroom`을 알릴 때만 `supportsClassroom`이 참이라, 그 경로가 없는 옛 PC 앱은 지금처럼 칸을 숨긴다. 반영은 다음 Platform 판부터다.
+- **확인:** `node --test experiences/synk-world-app/qa/classroom-lessons.test.mjs`(19개 — 학생 앱 원문·계약판·회의 주소·presentClass 대조, 옛·새 PC 앱 포함), `desktop/tests/world-requests·auth·public-apps.test.cjs`(본체 경로·머리·401 두 갈래·환경 알림), `qa/classroom-lessons-browser.test.mjs`(계정 모드 Edge, 합성 계정·합성 수업 10상태 × 390·1280에서 가로 넘침·13px 밑 한글·44px 밑 단추 0, 새로고침·실패 뒤 다시 불러오기·탭 복귀·시트 닫기·로그인 유지). `qa/account-browser.test.mjs`에는 반 연결 전 401과 연결 뒤 재조회를 더했다. 캡처는 `qa/classroom-lessons-20261019/`(그림은 git 밖), 측정은 같은 폴더 `result.json`.
+- **남은 일:** 초대·이용권을 설정한 뒤 실제 학생 계정(WORLD SYNK ID)으로 운영 classroom 조회, 2026-11 현장 송출 시험, PC 설치본에서 같은 학생 계정으로 확인(Platform 판 공개 뒤), TOPIK II 4급 연습·쓰기 첨삭 콘텐츠, 비공개 영상 초대 자동화 여부.
 
 ## 2026-10-14 화면 전면 리디자인 · 공용 작업본 반영(공개 전)
 

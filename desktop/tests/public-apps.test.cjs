@@ -125,3 +125,10 @@ test('main rejects release, other client, foreign window, subframe and foreign-d
   for(const event of [{...f.event,sender:{}},{...f.event,senderFrame:{url:PLATFORM_ENTRY}},{...f.event,senderFrame:null}])await assert.rejects(open(event,'care'),/UNTRUSTED_SENDER/);
   f.frame.url='https://synk.im/care/';await assert.rejects(open(f.event,'care'),/UNTRUSTED_SENDER/);assert.equal(f.calls.length,0);
 });
+
+test('only the WORLD client advertises its native request routes, so its page opens 「우리 반 수업」 where main can read it',async()=>{
+  const {WORLD_ROUTE_NAMES}=require('../src/world-requests.cjs');
+  const f=await mainFixture({clientId:'world'}),environment=await f.handlers.get('synk:environment')(f.event);
+  assert.equal(environment.clientId,'world');assert.deepEqual(environment.worldRoutes,WORLD_ROUTE_NAMES);assert.ok(environment.worldRoutes.includes('classroom'));assert.equal(f.accountCalls,0);
+  for(const clientId of ['platform','messenger']){const f=await mainFixture({clientId});assert.equal(Object.hasOwn(await f.handlers.get('synk:environment')(f.event),'worldRoutes'),false,clientId);}
+});

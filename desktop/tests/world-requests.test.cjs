@@ -1,6 +1,7 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {requestSpec}=require('../src/account-requests.cjs');
+const {WORLD_ROUTE_NAMES}=require('../src/world-requests.cjs');
 const uuid='11111111-1111-4111-8111-111111111111';
 const send=params=>requestSpec('worldRequest',params,'0.4.2','world','world');
 test('native WORLD names fixed methods and routes, including PUT CAS and classroom scope',()=>{
@@ -13,6 +14,17 @@ test('native WORLD names fixed methods and routes, including PUT CAS and classro
 test('native WORLD rejects alternate credentials, URL paths, methods, unexpected bodies and other clients',()=>{
   for(const params of [{route:'https://evil.invalid'},{route:'../synk-account'},{route:'bootstrap',method:'DELETE'},{route:'bootstrap',headers:{authorization:'secret'}},{route:'bootstrap',body:{}},{route:'bootstrap',classId:uuid},{route:'town/state',classId:'../other'},{route:'town/sharing',body:{enabled:true,revision:0}},{route:'town/sharing',classId:uuid,body:{enabled:true,expectedRevision:0}},{route:'play/start',body:{requestId:uuid,accountId:'other'}},{route:'play/complete',body:{runId:uuid,requestId:uuid,answers:[{questionId:'q1',optionId:'a1',correct:true}]}},{route:'avatar/outfit',body:{slots:{body:'',neck:''},expectedRevision:-1,requestId:uuid}},{route:'wardrobe/looks',body:{looks:[],expectedRevision:0,requestId:'not-uuid'}},{route:'enrollment/claim',body:{token:'s'.repeat(24),confirm:false}}])assert.throws(()=>send(params),{code:'INVALID_REQUEST'});
   for(const [product,key] of [['platform','platform'],['world','messenger'],['platform','world']])assert.throws(()=>requestSpec('worldRequest',{route:'bootstrap'},'0.4.2',product,key),{code:'INVALID_REQUEST'});
+});
+test('native WORLD reads 「우리 반 수업」 with the student contract version and no body, class or query',()=>{
+  assert.deepEqual(send({route:'classroom'}),{path:'classroom',contractVer:'c16'});
+  for(const params of [{route:'classroom',body:{}},{route:'classroom',body:null},{route:'classroom',classId:uuid},{route:'classroom',query:{after:0}},{route:'classroom',method:'POST'},{route:'classroom?x=1'},{route:'classroom/'},{route:'Classroom'}])assert.throws(()=>send(params),{code:'INVALID_REQUEST'});
+  assert.throws(()=>requestSpec('worldRequest',{route:'classroom'},'0.4.2','platform','platform'),{code:'INVALID_REQUEST'});
+  // The WORLD page compares its own value with the student app's src/계약판.js (qa/classroom-lessons.test.mjs).
+  const web=fs.readFileSync(path.join(__dirname,'../../experiences/synk-world-app/classroom-client.mjs'),'utf8').match(/export const CLASSROOM_CONTRACT_VER='(c\d+)';/);
+  assert.ok(web);assert.equal(send({route:'classroom'}).contractVer,web[1]);
+  // The WORLD page shows the section only when main advertises this route (old apps do not).
+  assert.ok(Object.isFrozen(WORLD_ROUTE_NAMES));
+  assert.deepEqual([...WORLD_ROUTE_NAMES],['bootstrap','play/start','play/complete','avatar/outfit','wardrobe/looks','town/entry','town/state','town/command','town/presence','town/sharing','enrollment/preview','enrollment/claim','classroom']);
 });
 test('native WORLD bounds nested JSON and rejects prototype pollution before transport',()=>{
   const body={id:uuid,type:'test',expectedRevision:0,payload:{}};

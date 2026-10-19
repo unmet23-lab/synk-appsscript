@@ -14580,9 +14580,19 @@ async function requestClassrooms({ url, publishableKey, token, renew = null, fet
       if (next) continue;
     }
     if (!response.ok || !classroomRecord(body) || body.ok !== true) throw classroomFailure(code || (response.status === 401 ? "AUTH_EXPIRED" : "CLASSROOM_UNAVAILABLE"), response.status);
-    if (!Array.isArray(body.classes)) throw classroomFailure("CONTRACT_VIOLATION", response.status);
-    return { classes: normalizeClassroomClasses(body.classes), emptyReason: typeof body.empty_reason === "string" ? body.empty_reason : null };
+    return classroomList(body, response.status);
   }
+}
+function classroomReply(data) {
+  if (!classroomRecord(data) || data.ok !== true) {
+    const error2 = classroomRecord(data?.error) ? data.error : {};
+    throw classroomFailure(typeof error2.code === "string" && error2.code ? error2.code : "CLASSROOM_UNAVAILABLE", error2.status);
+  }
+  return classroomList(data);
+}
+function classroomList(body, status) {
+  if (!Array.isArray(body.classes)) throw classroomFailure("CONTRACT_VIOLATION", status);
+  return { classes: normalizeClassroomClasses(body.classes), emptyReason: typeof body.empty_reason === "string" ? body.empty_reason : null };
 }
 
 // experiences/synk-world-app/operating-mode.mjs
@@ -14628,7 +14638,7 @@ function createWorldAccount({
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
   let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
-  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null;
+  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null, nativeClassroom = false;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
     if (closed || expected !== epoch) throw changed();
@@ -14693,6 +14703,7 @@ function createWorldAccount({
       const environment = await bridge.getEnvironment();
       guard(expected);
       if (environment?.clientId !== "world") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
+      nativeClassroom = Array.isArray(environment.worldRoutes) && environment.worldRoutes.includes("classroom");
       unsubscribe = bridge.onAuthChanged((state) => {
         const before = nativeIdentity;
         nativeEvents++;
@@ -15040,10 +15051,15 @@ function createWorldAccount({
     }
   }
   async function readClassrooms() {
-    if (native) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uC218\uC5C5 \uBAA9\uB85D\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "CLASSROOM_UNSUPPORTED" });
+    if (native && !nativeClassroom) throw Object.assign(Error("PC \uC571\uC5D0\uC11C\uB294 \uC544\uC9C1 \uC218\uC5C5 \uBAA9\uB85D\uC744 \uC5F4 \uC218 \uC5C6\uC5B4\uC694."), { code: "CLASSROOM_UNSUPPORTED" });
     const expected = epoch;
     guard(expected);
     if (!owner || !session) throw Object.assign(Error("SYNK ID\uB85C \uB85C\uADF8\uC778\uD574 \uC8FC\uC138\uC694."), { code: "AUTH_REQUIRED", status: 401 });
+    if (native) {
+      const data = await bridge.accountRequest("worldRequest", { route: "classroom" });
+      guard(expected);
+      return classroomReply(data);
+    }
     const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 12e3);
     controllers.add(controller);
     try {
@@ -15105,7 +15121,9 @@ function createWorldAccount({
     prepareLifeProgress,
     topicAnswers,
     readClassrooms,
-    supportsClassroom: !native,
+    get supportsClassroom() {
+      return !native || nativeClassroom;
+    },
     identity: () => ({ accountId: owner, generation: epoch }),
     assertActive() {
       guard(epoch);
