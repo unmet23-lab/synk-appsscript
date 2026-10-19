@@ -29,7 +29,9 @@ const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Pro
 const STICKERS = ['sticker-check.webp', 'sticker-envelope.webp', 'sticker-person.webp', 'sticker-search.webp', 'sticker-time.webp', 'sticker-book.webp', 'sticker-adapt.webp'];
 const SHARED_ASSETS = ['brand-shift.webp', 'thread-shift.webp', 'felt-paper.webp', 'favicon-32.png', ...STICKERS];
 const TOOLS = {
-  computer: { theme: 'scrapbook', out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
+  // synkbrief 기초 「AI 하려고 컴퓨터 사기 전에」(09-29 첫 도구). 10-18 스크랩북 → 시그널(유호님 「프론트가 엉망인데 업그레이드 제대로 한 버전으로」).
+  // 포스터 그림은 화면마다 내용을 설명하는 펠트 물건 14개(GPT 이미지 2.5로 흰 판 두 장에 구워 오림, 판·지시문 .tmp/computer-signal-20261018/).
+  computer: { out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'computer-art-intro.webp', 'computer-art-owned.webp', 'computer-art-uses.webp', 'computer-art-video.webp', 'computer-art-photo.webp', 'computer-art-code.webp', 'computer-art-localai.webp', 'computer-art-multitask.webp', 'computer-art-current.webp', 'computer-art-place.webp', 'computer-art-os.webp', 'computer-art-budget.webp', 'computer-art-result.webp', 'computer-art-desk.webp'] },
   // synkbrief 활용 「회의 메모를 회의록으로」(09-29). 10-18 스크랩북 → 시그널, 포스터 펠트 물건 12개(GPT 이미지 2.5, 청금석 판에 구워 오림). keep의 11쪽 PDF·연습 ZIP은 영상 속 자료라 바이트 그대로.
   meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'meeting-art-intro.webp', 'meeting-art-meet.webp', 'meeting-art-record.webp', 'meeting-art-audio.webp', 'meeting-art-length.webp', 'meeting-art-ai.webp', 'meeting-art-freq.webp', 'meeting-art-share.webp', 'meeting-art-channel.webp', 'meeting-art-sensitive.webp', 'meeting-art-result.webp', 'meeting-art-save.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
   // synkbrief 뉴스 「카타나 써 봤습니다」(10-13). 시그널로 그린 첫 도구(10-13). 포스터 그림은 화면마다 내용을 설명하는 펠트 물건(GPT 이미지 2.5로 한 판에 구워 오림 — 클래퍼보드·주인공 후보·필름·사진 묶음·휴대폰과 모니터·코인 탑·자물쇠·체크 메모), 실제 요청 카드는 카타나 결과 장면.
@@ -37,8 +39,12 @@ const TOOLS = {
   // synkbrief 뉴스 「GPTs·젬, 올해 둘 다 사라집니다」(10-17). 카타나와 같은 시그널 틀. 포스터 그림은 화면마다 내용을 설명하는 펠트 물건
   // (GPT 이미지 2.5로 한 판에 구워 오림 — 달력·보석과 말풍선 상자·열쇠·집과 회사와 학교·열린 상자·보석과 필름·체크 클립보드).
   skills: { out: 'brief/skills', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'skills-art-intro.webp', 'skills-art-where.webp', 'skills-art-who.webp', 'skills-art-account.webp', 'skills-art-gpthas.webp', 'skills-art-gemhas.webp', 'skills-art-result.webp', 'skills-shot-migrate.webp', 'skills-shot-confirm.webp', 'skills-shot-confirm-action.webp', 'skills-shot-at.webp', 'skills-shot-private.webp', 'skills-shot-gems.webp', 'gemini-guide-5-slash.webp'] },
+  // yuhobuilds 「노트북 이사, AI한테 통째로 맡겨 봤어요」(10-17)의 「내 PC 이사 목록」. 시그널 + 카타나 2판 요소. 그림은 화면마다 내용을 설명하는 펠트 물건
+  // (GPT 이미지 2.5로 청금석 바탕 판 세 장에 구워 오림 — 이삿짐 상자·이정표·하는 일 쟁반·꼬리표 단 옛 노트북·방법별 결과 넷·넘친 보관함·열쇠 고리).
+  move: { out: 'builds/move', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'move-art-intro.webp', 'move-art-how.webp', 'move-art-uses.webp', 'move-art-old.webp', 'move-art-ssd.webp', 'move-art-cloud.webp', 'move-art-direct.webp', 'move-art-scale.webp', 'move-art-onedrive.webp', 'move-art-keys.webp'] },
   // yuhobuilds 허브(synk.im/builds/)의 첫 도구. outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
   // 10-18 스크랩북(theme.css 검정·버터) → 시그널, 포스터 펠트 물건 7개(GPT 이미지 2.5, 청금석 판에 구워 오림). gpt-·gemini-guide = 넣어 두기 단계의 실제 앱 화면.
+  // builds-index.html = synk.im/builds/ 허브. 10-17부터 도구 목록(이사 목록·매뉴얼)이고, 글자는 manual의 줄인 SUIT에 함께 실린다(아래 subsetFont가 outside 원고도 읽는다).
   // hero-manual은 허브 첫 화면이 manual/assets/에서 읽으므로 그대로 싣는다.
   manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'hero-manual.webp', 'manual-art-intro.webp', 'manual-art-task.webp', 'manual-art-finish.webp', 'manual-art-checks.webp', 'manual-art-stops.webp', 'manual-art-ai.webp', 'manual-art-result.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
@@ -123,7 +129,8 @@ for (const name of names) {
   for (const f of tool.assets || fs.readdirSync(path.join(HERE, 'assets'))) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
   for (const f of tool.keep || []) fs.copyFileSync(path.join(src, 'keep', f), path.join(out, f));
   for (const [from, to] of Object.entries(tool.outside || {})) { const dest = path.join(HERE, 'dist', to); fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.copyFileSync(path.join(src, from), dest); }
-  const font = subsetFont([...tool.files.map(f => path.join(src, f)), path.join(HERE, 'core/wizard.js'), path.join(HERE, 'core/account.js')], path.join(out, 'assets/SUIT-subset.woff2'));
+  // 도구 폴더 밖에 둘 페이지(outside, 예: builds 허브)도 이 도구의 줄인 폰트를 쓰므로 그 글자를 함께 싣는다.
+  const font = subsetFont([...tool.files.map(f => path.join(src, f)), ...Object.keys(tool.outside || {}).map(f => path.join(src, f)), path.join(HERE, 'core/wizard.js'), path.join(HERE, 'core/account.js')], path.join(out, 'assets/SUIT-subset.woff2'));
   console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
   subsetLatin(path.join(out, 'assets'));
 
