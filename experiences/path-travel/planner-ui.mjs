@@ -853,7 +853,8 @@ function finishTrip(){
 function renderQuestion(q){
  return `<section class="change-preview refinement"><p class="kicker">하나만 더 알려주세요</p><h4>${e(q.label)}</h4><p>답하기 전에, 같은 조건에서 달라지는 여행안을 비교해 보세요.</p><div class="refinement-grid">${q.options.map(option=>{
   const p=option.preview;if(!p)return '';
-  const changed=p.changes,walk=changed.walkMaxDelta;
+  // 도보 차이는 지금 보이는 일정 기준으로 잰다. 다른 안을 받아들이면 질문은 원래 일정에서 계산한 그대로 따라온다.
+  const walk=memory.plan?p.walking.maxMinutes-memory.plan.walking.maxMinutes:p.changes.walkMaxDelta;
   return `<article class="refinement-option"><div class="refinement-photos">${p.stops.slice(0,3).map(s=>{const place=placeMap.get(s.placeId);return place?placeThumb(place):`<span class="tile tile-compact"><strong>${e(s.name)}</strong></span>`;}).join('')}</div><h5>${e(option.label)}</h5><p class="refinement-route">${p.stops.map(s=>e(s.name)).join(' → ')}</p><dl><dt>예상 도보</dt><dd>${p.walking.minMinutes}–${p.walking.maxMinutes}분 <small>(${walk===0?'현재와 같음':`${walk>0?'+':''}${walk}분`})</small></dd><dt>${p.costStatus==='unknown'?'확인된 부분합':'확인된 표시 비용'}</dt><dd>${money(p.knownAmount)}${p.costStatus==='unknown'?' + 미확인':''}</dd><dt>마칠 시각</dt><dd>${e(p.endTime)}</dd></dl><button class="chip" data-refine="${e(q.about)}" data-value="${option.value}">이쪽으로 비교하기</button>${p.stops.some(s=>placeMap.get(s.placeId)?.photo)?`<details><summary>사진 출처</summary>${p.stops.filter(s=>placeMap.get(s.placeId)?.photo).map(s=>`<p class="photo-credit">${credit(placeMap.get(s.placeId))}</p>`).join('')}</details>`:''}</article>`;
  }).join('')}</div><p class="micro">${e(q.caveat)}</p></section>`;
 }

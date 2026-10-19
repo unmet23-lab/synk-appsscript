@@ -732,3 +732,19 @@ test('일정이 없을 때 장소 넣기는 하루 만들기처럼 바로 받아
   assert.equal(worker.posted.length, 1);
   assert.ok(worker.posted[0].input.lockedIds.includes(addPlace.id));
 });
+
+test('질문 카드의 도보 차이는 지금 보이는 일정 기준이다 — 다른 안을 받아들인 뒤에도', () => {
+  const h = harness(originalMemory, ['renderQuestion']);
+  Object.assign(h.context, { placeThumb: () => '', money: String, credit: () => '' });
+  const preview = (maxMinutes, walkMaxDelta) => ({ planId: 'plan-' + maxMinutes, status: 'complete', stops: [], knownAmount: 0, costStatus: 'complete', walking: { minMinutes: 10, maxMinutes }, endTime: '18:00',
+    changes: { addedIds: [], removedIds: [], knownAmountDelta: 0, walkMaxDelta } });
+  // 도보 상단 35분인 일정에서 계산한 질문: 답에 따라 40분·52분이 된다.
+  h.context.question = { about: 'indoor', label: '실내 선호에 따라 어느 일정이 더 맞나요?', caveat: '', options: [
+    { value: true, label: '실내 쪽으로', preview: preview(40, 5) }, { value: false, label: '실내 피하는 쪽으로', preview: preview(52, 17) }] };
+  const deltas = () => [...h.run('renderQuestion(question)').matchAll(/<small>\(([^)]*)\)<\/small>/g)].map(match => match[1]);
+  h.context.memory.plan.walking.maxMinutes = 35;
+  assert.deepEqual(deltas(), ['+5분', '+17분'], '질문을 계산한 일정이 지금 일정이면 엔진이 잰 차이 그대로');
+  // 도보 상단 40분인 다른 안을 받아들이면 질문은 그대로 따라오고 차이는 그 일정 기준으로 다시 잰다.
+  h.context.memory.plan.walking.maxMinutes = 40;
+  assert.deepEqual(deltas(), ['현재와 같음', '+12분']);
+});

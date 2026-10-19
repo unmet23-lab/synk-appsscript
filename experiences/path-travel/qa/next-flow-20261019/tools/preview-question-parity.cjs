@@ -4,12 +4,13 @@
 //    미리보기 일정(ask:false)이 누를 때 일정과 같은지도 같이 본다.
 // ② 화면 흐름: 고치기 전 판(page.route로 planner-ui.mjs만 바꿔 끼움)과 지금 판에서 같은 순서로 미리보기를 받아들이고, 붙은 질문 칸(HTML)과 일정을 대조한다.
 // ③ 받아들인 뒤 워커를 못 쓰면(워커 파일 404) 화면이 직접 계산해 질문을 붙이고 콘솔에 경고를 한 줄 남기는지 본다.
-// 사용: node preview-question-parity.cjs <url> <출력폴더> --before <고치기 전 planner-ui.mjs> [--parts engine,screen,fallback]  — 결과는 <출력폴더>/preview-parity.json
+// ④ 다른 안을 받아들인 뒤 질문 카드의 도보 차이가 지금 보이는 일정 기준인지 본다(전 판은 원래 일정 기준이었다).
+// 사용: node preview-question-parity.cjs <url> <출력폴더> --before <고치기 전 planner-ui.mjs> [--parts engine,screen,fallback,alternative]  — 결과는 <출력폴더>/preview-parity.json
 const path = require('path');
 const fs = require('fs');
 const { chromium } = require(require.resolve('playwright', { paths: [path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
 const argv = process.argv.slice(2), [url, out] = argv, beforeAt = argv.indexOf('--before'), beforeSource = fs.readFileSync(argv[beforeAt + 1], 'utf8');
-const partsAt = argv.indexOf('--parts'), parts = new Set((partsAt < 0 ? 'engine,screen,fallback' : argv[partsAt + 1]).split(','));
+const partsAt = argv.indexOf('--parts'), parts = new Set((partsAt < 0 ? 'engine,screen,fallback,alternative' : argv[partsAt + 1]).split(','));
 fs.mkdirSync(out, { recursive: true });
 const now = '2026-10-19T03:00:00.000Z', origin = { id: 'anguk', name: '안국역', lat: 37.5765, lon: 126.9854 };
 // 화면(planner-ui.mjs)의 고른 것 표와 같다.
@@ -197,6 +198,26 @@ for (const base of bases.filter((_, i) => i % 3 === 2).slice(0, 4)) {
     } catch (error) { result = { error: String(error?.message ?? error) }; }
     report.fallback = { ...result, requests: session.requests, warnings: session.warnings, errors: session.errors };
     await session.ctx.close();
+  }
+  // ④ 다른 안을 받아들인 뒤 질문 카드의 도보 차이가 지금 일정 기준인지(10-19 밤 고침). 질문은 원래 일정에서 계산한 그대로 따라오고,
+  //    고치기 전 판은 그 원래 일정 기준 차이를 그대로 보였다. 지금 일정의 걷기 상단과 답마다의 걷기 상단으로 보여야 할 차이를 다시 잰다.
+  if (parts.has('alternative')) {
+    report.alternative = {};
+    const walkMax = text => Number(text?.match(/(\d+)–(\d+)분/)?.[2]);
+    for (const version of ['before', 'after']) {
+      const session = await open(version), { page } = session;
+      try {
+        await makeDay(page); await settle(page);
+        const day = await page.evaluate(() => [...document.querySelectorAll('#plan-overview .facts div')].find(row => row.querySelector('dt')?.textContent === '걷기')?.querySelector('dd')?.textContent);
+        const label = await page.locator('#alternatives [data-alternative]').first().evaluate(button => button.closest('.alternative').querySelector('h5').textContent);
+        await page.locator('#alternatives [data-alternative]').first().click(); await accept(page);
+        const shown = await page.evaluate(() => ({ walk: [...document.querySelectorAll('#plan-overview .facts div')].find(row => row.querySelector('dt')?.textContent === '걷기')?.querySelector('dd')?.textContent,
+          options: [...document.querySelectorAll('#result-evidence .refinement-option dd:first-of-type')].map(dd => ({ text: dd.firstChild?.textContent, delta: dd.querySelector('small')?.textContent })) }));
+        const current = walkMax(shown.walk), options = shown.options.map(row => { const gap = walkMax(row.text) - current, expected = '(' + (gap === 0 ? '현재와 같음' : `${gap > 0 ? '+' : ''}${gap}분`) + ')'; return { ...row, expected, ok: row.delta === expected }; });
+        report.alternative[version] = { alternative: label, dayWalkMax: walkMax(day), currentWalkMax: current, options, ok: options.length > 0 && options.every(row => row.ok), errors: session.errors, warnings: session.warnings };
+      } catch (error) { report.alternative[version] = { error: String(error?.message ?? error), errors: session.errors }; }
+      await session.ctx.close();
+    }
   }
   fs.writeFileSync(path.join(out, 'preview-parity.json'), JSON.stringify(report, null, 1));
   const { rows, ...engine } = report.engine ?? {};
