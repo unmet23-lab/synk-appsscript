@@ -15,6 +15,7 @@
     "check:worktree": "node tools/worktree-hygiene.js",
     "check:storage": "node tools/git-storage-check.cjs --cached",
     "sns:연결점검": "node tools/sns-발행.js --연결점검",
-    "sns:도움": "node tools/sns-발행.js --도움"
+    "sns:도움": "node tools/sns-발행.js --도움",
+    "check:preservation": "node tools/보존점검.cjs"
   }
 }
