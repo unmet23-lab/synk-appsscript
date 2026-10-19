@@ -118,7 +118,8 @@ function documentExampleText(source, data, text) {
   return lines.join('\n');
 }
 // 이름만으로 TypeScript와 MPEG-TS를 구분하지 않는다. 실제 바이트도 검사한다.
-function textPolicy(source, data) {
+// info를 주면 분류가 창고 색인(보존 사본의 원래 경로)에 기댔는지 info.dependsOnIndex로 알린다. 그런 결과는 읽기 기록에 남기지 않는다.
+function textPolicy(source, data, info) {
   if (금지인가(source)) return 'credential-path';
   if (excludedPath(source)) return 'generated-or-excluded-path';
   if (!문서인가(source)) return 'non-text-extension';
@@ -151,6 +152,7 @@ function textPolicy(source, data) {
       /^synthetic-(?:public|service|management-token)$/.test(value)) continue;
     // GitHub 감사에서 확인한 동일 경로·동일 값만 허용한다. 서명 검사는 위에서 먼저 끝난다.
     const literalHash = crypto.createHash('sha256').update(value).digest('hex');
+    if (info && /^작업문서_미통합_자동\//.test(source.replace(/\\/g, '/'))) info.dependsOnIndex = true;
     const reviewedPaths = [source.replace(/\\/g, '/'), ...originalReviewPaths(source, data)];
     if (reviewedSourceLiterals.some(row => reviewedPaths.includes(row.path) && row.sha256 === literalHash)) continue;
     const exactCandidates = reviewedExactSources.filter(row => row.literalSha256.includes(literalHash) &&
@@ -174,21 +176,26 @@ function cloudDestinationAllows(file, root, tag) {
   // Windows SDK winnt.h: IO_REPARSE_TAG_CLOUD, CLOUD_1 ... CLOUD_F only.
   return tag >= 0x9000001A && tag <= 0x9000F01A && (tag - 0x9000001A) % 0x1000 === 0;
 }
+// 경로가 이만큼 넘으면 경로마다 파일을 여는 대신 부모 폴더를 한 번씩 나열해 같은 속성·reparse 태그를 읽는다(10-19).
+// 다른 무거운 작업이 돌 때 6만여 경로를 하나씩 확인하는 데 5분 넘게 걸렸다. 적은 묶음은 준비 비용 때문에 예전 길이 빠르다.
+const FOLDER_LISTING_MIN_PATHS = 1000;
 function linkPaths(files, { cloudDestinationRoot = null } = {}) {
   const paths = [...new Set(files.flatMap(ancestors))];
   const cloudPaths = new Set();
   const cloudOnlineOnly = new Set();
-  const blocked = new Set(paths.filter(p => {
+  // Windows의 폴더 나열은 심볼릭 링크·junction을 포함한 모든 reparse를 같은 속성으로 보여 주므로 그때는 경로별 lstat를 따로 하지 않는다.
+  const listing = process.platform === 'win32' && paths.length > 0 && (!!cloudDestinationRoot || paths.length >= FOLDER_LISTING_MIN_PATHS);
+  const blocked = new Set(listing ? [] : paths.filter(p => {
     try { return fs.lstatSync(p).isSymbolicLink(); }
     catch (error) { if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return false; throw error; }
   }));
   // NTFS cloud placeholders can be reparse points without being Node symbolic links.
   if (process.platform === 'win32' && paths.length) {
-    if (cloudDestinationRoot) {
+    if (listing) {
       // 파일마다 fsutil 프로세스를 띄우면 2만 사본 갱신이 수십 분 걸린다.
       // FindFirstFile의 reparse tag를 한 프로세스에서 읽는다. 본문은 열지 않는다.
       const result = execFileSync('pwsh.exe', ['-NoProfile', '-NonInteractive', '-File', path.join(__dirname, 'onedrive-reparse-metadata.ps1')],
-        { input: JSON.stringify(paths), encoding: 'utf8', windowsHide: true, maxBuffer: 16 << 20 });
+        { input: JSON.stringify(paths), encoding: 'utf8', windowsHide: true, maxBuffer: 64 << 20 });
       for (const row of JSON.parse(result.replace(/^\uFEFF/, ''))) {
         if (!blocked.has(row.path) && cloudDestinationAllows(row.path, cloudDestinationRoot, row.tag)) {
           cloudPaths.add(row.path);
@@ -448,7 +455,8 @@ function 시스템목록(root = ROOT) {
   }
   return Object.assign(rows, { scopes });
 }
-function oneDrivePlan(root, rows) {
+// cache: 읽기 기록(onedrive-read-cache.cjs). stat가 지난번에 읽어 분류한 그대로인 파일은 다시 읽지 않고 그 분류를 쓴다.
+function oneDrivePlan(root, rows, { cache = null } = {}) {
   const selected = [], rejected = [];
   const candidates = rows.filter(row => !금지인가(row.source) && !excludedPath(row.source) && 문서인가(row.source));
   const linked = linkPaths(candidates.map(row => within(rowRoot(root, row), row.source)));
@@ -461,10 +469,18 @@ function oneDrivePlan(root, rows) {
       if (linked(file)) reason = 'link-or-reparse-point';
       else {
         try {
-          const stat = fs.lstatSync(file);
-          reason = !stat.isFile() ? 'not-regular-file' : stat.size > MAX_TEXT_BYTES ? 'over-10MiB' : null;
-          if (!reason) reason = textPolicy(row.source, fs.readFileSync(file));
-          if (!reason) selected.push({ ...row, bytes: stat.size });
+          const stat = fs.lstatSync(file, { bigint: true });
+          reason = !stat.isFile() ? 'not-regular-file' : stat.size > BigInt(MAX_TEXT_BYTES) ? 'over-10MiB' : null;
+          if (!reason) {
+            const known = cache && cache.lookup(file, stat, row.source);
+            if (known) reason = known.reason;
+            else {
+              const data = fs.readFileSync(file), info = {};
+              reason = textPolicy(row.source, data, info);
+              if (cache) cache.remember(file, stat, fs.lstatSync(file, { bigint: true }), hash(data), data.length, row.source, reason, info);
+            }
+          }
+          if (!reason) selected.push({ ...row, bytes: Number(stat.size) });
         } catch (error) {
           if (!['ENOENT', 'EACCES', 'EPERM'].includes(error.code)) throw error;
           reason = 'missing-or-unreadable';
@@ -507,64 +523,93 @@ function payload(root, row, data = fs.readFileSync(within(rowRoot(root, row), ro
     `> 보조: [GitHub 게시본](${original})은 현재 작업 파일과의 일치를 확인하지 않았으며, 아직 없거나 이전 내용일 수 있다. 다른 기기에서 로컬 원본에 접근하지 못하면 최신 여부는 미확인이다.\n\n`;
   return Buffer.from(banner + body, 'utf8');
 }
-function copy(root, destination, rows, { google = false, previousFiles = [], recordFiles = false, onProgress = () => {} } = {}) {
+// cache: 읽기 기록(onedrive-read-cache.cjs). 주면 stat가 지난번에 읽어 확인한 그대로인 시스템 원본은 다시 읽지 않고,
+//   직전 SHA 확인 영수증과 크기·수정 시각이 같은 로컬 사본도 온라인 전용 사본처럼 다시 읽지 않는다. 단 30분마다 1/48씩은
+//   그래도 사본을 다시 읽어 SHA를 대조한다(하루 한 바퀴). 원본이 실제로 바뀌었으면 예전처럼 읽고 분류하고 대조한다(10-19).
+// prePlanned: 부르는 쪽이 같은 줄로 방금 oneDrivePlan을 만들었다. 복사 안에서 목록 전체를 다시 읽어 만들지 않고,
+//   그 사이 분류가 바뀐 파일은 다시 만든 목록이 그랬듯 건너뛴 수(skipped)로 센다.
+function copy(root, destination, rows, { google = false, previousFiles = [], recordFiles = false, onProgress = () => {}, cache = null, prePlanned = false } = {}) {
   // 사용자 파일은 자동 삭제하지 않는다. 선택된 파일만 검증해서 갱신한다.
   for (const row of rows) { within(rowRoot(root, row), row.source); within(destination, row.brand + '/' + row.target); }
-  const plan = google ? { selected: rows.filter(row => !row.oneDriveOnly), rejected: [] } : oneDrivePlan(root, rows);
+  const plan = google ? { selected: rows.filter(row => !row.oneDriveOnly), rejected: [] } : prePlanned ? { selected: rows, rejected: [] } : oneDrivePlan(root, rows, { cache });
   const linkedSource = linkPaths(plan.selected.map(row => within(rowRoot(root, row), row.source)));
   const linkedTarget = linkPaths(plan.selected.map(row => within(destination, row.brand + '/' + row.target)),
     { cloudDestinationRoot: google ? null : destination });
   let written = 0, unchanged = 0;
   const previous = new Map(previousFiles.map(row => [path.resolve(row.target), row]));
-  const files = [], sourceDrift = [], disappeared = [];
+  const files = [], sourceDrift = [], disappeared = [], lateRejected = [], directories = new Set();
+  const lateReject = (row, reason) => { lateRejected.push({ source: row.source, sourceScope: row.sourceScope || 'SYNK-appsscript', reason }); };
   for (const row of plan.selected) {
     onProgress();
     const source = within(rowRoot(root, row), row.source);
     const target = within(destination, row.brand + '/' + row.target);
+    if (prePlanned && linkedSource(source)) { lateReject(row, 'link-or-reparse-point'); continue; }
     if (linkedSource(source) || linkedTarget(target)) throw new Error('링크·reparse 경로는 복사하지 않습니다');
-    let sourceBefore, original;
+    const useCache = cache && !google && row.kind === 'system';
+    let sourceBefore, original = null, known = null;
     try {
-      if (!fs.lstatSync(source).isFile()) throw new Error('일반 파일 필요');
-      if (!google && fs.statSync(source).size > MAX_TEXT_BYTES) throw new Error('복사 직전 파일 크기 초과');
-      sourceBefore = fs.statSync(source);
-      original = fs.readFileSync(source);
+      // 링크는 위에서 이미 막았으니 lstat 한 번으로 종류·크기·시각을 함께 본다(예전 lstat + stat 두 번).
+      sourceBefore = fs.lstatSync(source, { bigint: true });
+      if (!sourceBefore.isFile()) { if (prePlanned) { lateReject(row, 'not-regular-file'); continue; } throw new Error('일반 파일 필요'); }
+      if (!google && sourceBefore.size > BigInt(MAX_TEXT_BYTES)) { if (prePlanned) { lateReject(row, 'over-10MiB'); continue; } throw new Error('복사 직전 파일 크기 초과'); }
+      known = useCache ? cache.lookup(source, sourceBefore, row.source) : null;
+      if (!known) original = fs.readFileSync(source);
     } catch (error) {
       // 목록을 만든 뒤 지워진 원본은 더 이상 원본이 아니다. 목록 단계의 missing-or-unreadable과 같게 건너뛰고 수만 남긴다(10-19).
       if (error.code !== 'ENOENT') throw error;
       disappeared.push({ source, reason: 'source-disappeared-before-copy' });
       continue;
     }
-    if (!google && textPolicy(row.source, original)) throw new Error('복사 직전 안전 분류가 달라졌습니다');
-    const data = payload(root, row, original);
-    if (!google && data.length > MAX_TEXT_BYTES) throw new Error('공유 사본이 파일 크기 한도를 넘습니다');
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    const b = fs.existsSync(target) ? fs.statSync(target) : null;
+    // 시스템 원본의 공유 사본은 원문 바이트 그대로다(payload). 읽기 기록이 있으면 그 SHA가 곧 사본 SHA다.
+    let data = null, digest, bytes, info = {}, reason = null;
+    const load = () => {
+      original ||= fs.readFileSync(source);
+      reason = google ? null : textPolicy(row.source, original, info);
+      if (!reason) { data = payload(root, row, original); digest = hash(data); bytes = data.length; }
+    };
+    if (known) { reason = known.reason; digest = known.sha256; bytes = known.bytes; }
+    else load();
+    if (reason) { if (prePlanned) { lateReject(row, reason); continue; } throw new Error('복사 직전 안전 분류가 달라졌습니다'); }
+    if (!google && bytes > MAX_TEXT_BYTES) throw new Error('공유 사본이 파일 크기 한도를 넘습니다');
+    const directory = path.dirname(target);
+    if (!directories.has(directory)) { fs.mkdirSync(directory, { recursive: true }); directories.add(directory); }
+    let b = null;
+    try { b = fs.statSync(target); } catch { b = null; }
     // 온라인 전용 Cloud 파일은 비교하려고 내려받지 않는다. 로컬 상주 사본은 SHA로 대조한다.
-    const digest = hash(data), prior = previous.get(path.resolve(target));
-    // 직전 실제 SHA 검증 영수증과 목적 파일의 크기·수정 시각이 모두 같을 때만
-    // cloud placeholder를 읽거나 다시 쓰지 않는다. 원문 SHA는 매번 새로 계산한다.
-    const receiptUnchanged = b && linkedTarget.cloudOnlineOnly.has(target) && prior && prior.sha256 === digest &&
-      prior.expectedBytes === b.size && prior.targetModifiedMs === b.mtimeMs && prior.verifiedAt;
-    let verifiedAt = new Date().toISOString(), verification = 'sha256-readback';
+    const prior = previous.get(path.resolve(target)), onlineOnly = linkedTarget.cloudOnlineOnly.has(target);
+    // 직전 실제 SHA 검증 영수증과 목적 파일의 크기·수정 시각이 모두 같을 때만 사본을 읽거나 다시 쓰지 않는다.
+    // 원문 SHA는 매번 확인한다(stat가 지난번에 읽은 그대로면 그때 읽은 SHA). 로컬 사본은 읽기 기록을 쓰는 실행에서만, 1/48은 다시 읽는다.
+    const receiptUnchanged = b && prior && prior.sha256 === digest && prior.expectedBytes === b.size && prior.targetModifiedMs === b.mtimeMs &&
+      prior.verifiedAt && (onlineOnly || (cache && !google && !cache.inSlot(target)));
+    let verifiedAt = new Date().toISOString(), verification = 'sha256-readback', targetAfter = null;
     if (receiptUnchanged) {
-      unchanged++; verifiedAt = prior.verifiedAt; verification = 'prior-sha256-and-current-metadata';
-    } else if (b && !linkedTarget.cloudOnlineOnly.has(target) && data.length === b.size && digest === hash(fs.readFileSync(target))) {
+      unchanged++; verifiedAt = prior.verifiedAt; verification = 'prior-sha256-and-current-metadata'; targetAfter = b;
+    } else if (b && !onlineOnly && bytes === b.size && digest === hash(fs.readFileSync(target))) {
       unchanged++;
     } else {
+      if (!data) {
+        // 기록으로 넘긴 원본을 쓰려면 지금 읽는다. 그 사이 바뀌었으면 새 내용으로 다시 분류한다(아래 stat 비교가 변경을 실패로 잡는다).
+        load();
+        if (reason) { if (prePlanned) { lateReject(row, reason); continue; } throw new Error('복사 직전 안전 분류가 달라졌습니다'); }
+        if (!google && bytes > MAX_TEXT_BYTES) throw new Error('공유 사본이 파일 크기 한도를 넘습니다');
+      }
       fs.writeFileSync(target, data);
       if (digest !== hash(fs.readFileSync(target))) throw new Error('복사 검증 실패: ' + row.target);
       written++;
     }
-    const sourceAfter = fs.statSync(source), targetAfter = fs.statSync(target);
-    if (sourceAfter.size !== sourceBefore.size || sourceAfter.mtimeMs !== sourceBefore.mtimeMs)
-      sourceDrift.push({ source, reason: 'source-changed-during-copy' });
+    const sourceAfter = fs.statSync(source, { bigint: true });
+    targetAfter ||= fs.statSync(target);
+    const drifted = sourceAfter.size !== sourceBefore.size || sourceAfter.mtimeNs !== sourceBefore.mtimeNs;
+    if (drifted) sourceDrift.push({ source, reason: 'source-changed-during-copy' });
+    else if (useCache && original) cache.remember(source, sourceBefore, sourceAfter, hash(original), original.length, row.source, null, info);
     if (recordFiles) files.push({ source, sourceScope: row.sourceScope || 'SYNK-appsscript', target,
-      expectedBytes: data.length, sha256: digest, targetModifiedMs: targetAfter.mtimeMs, targetChangedMs: targetAfter.ctimeMs,
+      expectedBytes: bytes, sha256: digest, targetModifiedMs: targetAfter.mtimeMs, targetChangedMs: targetAfter.ctimeMs,
       verifiedAt, verification, sourceModifiedAt: sourceAfter.mtime.toISOString() });
   }
-  return { total: plan.selected.length, written, unchanged, skipped: plan.rejected.length,
+  const rejected = [...plan.rejected, ...lateRejected];
+  return { total: plan.selected.length, written, unchanged, skipped: rejected.length,
     bytes: plan.selected.reduce((n, x) => n + x.bytes, 0), ...(disappeared.length ? { disappeared: disappeared.length } : {}),
-    ...(recordFiles ? { files, sourceDrift, rejected: plan.rejected } : {}) };
+    ...(recordFiles ? { files, sourceDrift, rejected } : {}) };
 }
 function main() {
   const args = process.argv.slice(2);
@@ -610,4 +655,12 @@ function main() {
   if (errors) process.exitCode = 1;
 }
 if (require.main === module) main();
-module.exports = { 금지인가, 문서인가, within, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES };
+// 읽기 기록(onedrive-read-cache.cjs)은 분류(textPolicy)와 시스템 원본의 사본 바이트(payload)를 정하는 코드·규칙·검토 목록이
+// 그대로일 때만 쓴다. 파일 전체가 아니라 그 함수·규칙의 실제 불러온 판으로 지문을 만든다. 범위·목록 규칙처럼 분류와 무관한
+// 수정에 기록 전체를 버리지 않고, 파일을 다시 읽는 사이 바뀌는 틈도 없다(10-19).
+const policyFingerprint = () => crypto.createHash('sha256').update(JSON.stringify([
+  [textPolicy, 금지인가, 문서인가, excludedPath, descriptiveMarkdown, documentExampleText, originalReviewPaths, payload].map(String),
+  [...forbidden, sourceCode, credentialName, excluded, generatedDirectory].map(String), MAX_TEXT_BYTES,
+  reviewedDocumentExamples, reviewedSourceLiterals, reviewedExactSources])).digest('hex');
+const POLICY_FINGERPRINT = policyFingerprint();
+module.exports = { 금지인가, 문서인가, within, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
