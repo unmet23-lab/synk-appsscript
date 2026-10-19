@@ -11,12 +11,16 @@
 @font-face{font-family:"World Latin";src:url(assets/fonts/SYNKLatin-Regular.woff2) format("woff2");font-weight:100 549;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
 @font-face{font-family:"World Latin";src:url(assets/fonts/SYNKLatin-SemiBold.woff2) format("woff2");font-weight:550 649;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
 @font-face{font-family:"World Latin";src:url(assets/fonts/SYNKLatin-Bold.woff2) format("woff2");font-weight:650 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+2010-2024,U+2026-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2212}
+/* 몽골어(키릴)는 Inter Tight의 키릴 조각(10-19 화면 언어 1판, tools/build-world-cyrillic-font.py) — SUIT에는 키릴이 없다. */
+@font-face{font-family:"World Cyrillic";src:url(assets/fonts/SYNKCyrillic-Regular.woff2) format("woff2");font-weight:100 549;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:"World Cyrillic";src:url(assets/fonts/SYNKCyrillic-SemiBold.woff2) format("woff2");font-weight:550 649;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:"World Cyrillic";src:url(assets/fonts/SYNKCyrillic-Bold.woff2) format("woff2");font-weight:650 1000;font-display:swap;unicode-range:U+0400-052F,U+2116}
 /* 영문 모노 라벨(DM Mono)은 띄어쓰기를 뺀 범위만 — 한글은 모노로 쓰지 않는다. */
 @font-face{font-family:"World Mono";src:url(assets/fonts/DMMono.woff2) format("woff2");font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
 
 :root{
-  --w-sans:"World Latin",SUIT,system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --w-mono:"World Mono",SUIT,ui-monospace,monospace;
+  --w-sans:"World Latin","World Cyrillic",SUIT,system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --w-mono:"World Mono","World Cyrillic",SUIT,ui-monospace,monospace;
   --sans:var(--w-sans);
   --wt-display:680;--wt-title:650;--wt-strong:600;--wt-label:550;--wt-body:450;--wt-poster:900;
   --track-display:-.042em;--track-title:-.024em;--track-body:-.006em;--track-mono:.08em;

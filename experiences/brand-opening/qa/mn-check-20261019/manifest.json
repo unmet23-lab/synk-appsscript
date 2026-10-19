@@ -1,0 +1,4091 @@
+{
+ "createdAt": "2026-10-19T07:52:03.288Z",
+ "pairs": 802,
+ "batches": [
+  {
+   "file": "batch-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "lang.pick.title"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "lang.pick.lead"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "lang.pick.group"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "lang.pick.continue"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "lang.pick.none"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "lang.pick.note"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "lang.settings.note"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "lang.changed"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "lang.savedAccount"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "lang.savePending"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "opening.dialog"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "opening.company"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "opening.titleAlt"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "opening.subtitle"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "opening.skip"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "opening.start"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "opening.startProduct"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "opening.soundOn"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "opening.soundOff"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "home.place.town"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "home.place.room"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "home.skip"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "home.townScene"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "home.roomScene"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "home.roomTargets"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "home.loading"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "home.choosing"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "home.entryError"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "home.profileOpen"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "home.profileOpenWith"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "home.myAccount"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "home.account.checking"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "home.account.saving"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "home.account.offline"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "home.account.conflict"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "home.account.pending"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "home.account.connected"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "home.account.test"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "home.account.connect"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "home.settingsOpen"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "home.roomBack"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "home.roomBackLabel"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "home.heading.with"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "home.heading.friends"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "home.heading.progress"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "home.orientation.landscape"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "home.orientation.portrait"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "home.orientation.hint"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "home.orientation.auto"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "home.board"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "home.tutorSection"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "home.next.kicker"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "home.next.title"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "home.next.label"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "home.next.connecting"
+    }
+   ]
+  },
+  {
+   "file": "batch-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "home.next.dueToday"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "home.next.packsAgain"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "home.next.resume"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "home.next.cafeVisit"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "home.next.packs"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "home.next.continueLabel"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "home.next.nextLabel"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "home.caption"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "home.caption.default"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "home.caption.account"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "home.caption.device"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "home.study.find"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "home.study.check"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "home.study.checkLabel"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "home.study.mine"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "home.study.review"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "home.study.suggested"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "home.study.label"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "home.studyButton"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "home.short.cafe"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "home.short.cafeLabel"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "home.short.packs"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "home.short.packsLabel"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "home.short.review"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "home.short.reviewLabel"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "home.short.schedule"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "home.short.count"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "home.short.stories"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "home.short.storiesLabel"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "home.memory.recovery"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "nav.main"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "nav.home"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "nav.learn"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "nav.play"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "nav.wardrobe"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "panel.close"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "game.runner.title"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "game.runner.detail"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "game.hangul.title"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "game.hangul.detail"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "game.rhythm.title"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "game.rhythm.detail"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "play.note"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "play.more"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "play.first.title"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "play.first.detail"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "play.town.title"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "play.town.detail"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "play.songs.title"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "play.songs.detail"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "game.loading"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "game.openNew"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "game.slow"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "plan.game.runner"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "plan.game.rhythm"
+    }
+   ]
+  },
+  {
+   "file": "batch-03.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "plan.game.hangul"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "plan.resume"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "plan.review"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "plan.resumeReview"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "wardrobe.alt"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "wardrobe.lead"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "wardrobe.open"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "wardrobe.note"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "me.alt"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "me.guest"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "me.later"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "settings.title"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "settings.orientation"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "settings.orientation.auto"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "settings.orientation.portrait"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "settings.orientation.landscape"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "settings.orientation.chosenPortrait"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "settings.orientation.chosenLandscape"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "settings.orientation.spacious"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "settings.orientation.followDevice"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "settings.soundGroup"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "pref.sound.title"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "pref.sound.note"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "pref.storyVoice.title"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "pref.storyVoice.note"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "pref.haptic.title"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "pref.haptic.note"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "pref.celebrate.title"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "pref.celebrate.note"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "pref.reactions.title"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "pref.reactions.note"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "settings.reduceMotion"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "settings.reduceMotion.note"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "settings.deviceMotion"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "settings.replayOpening"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "settings.about"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "settings.tutorChange"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "settings.tutorChoose"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "settings.study"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "tutor.name.mongle"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "tutor.name.kkamong"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "tutor.name.marin"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "tutor.sound.on"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "tutor.sound.off"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "tutor.sound.turnOn"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "tutor.sound.turnOff"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "tutor.step.choose"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "tutor.step.start"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "tutor.status.unknown"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "tutor.status.saving"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "tutor.status.account"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "tutor.status.device"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "tutor.intro"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "tutor.viewing"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "tutor.view"
+    }
+   ]
+  },
+  {
+   "file": "batch-04.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "tutor.greet"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "tutor.speech.intro"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "tutor.speech.success"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "tutor.speech.retry"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "tutor.speech.hello"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "tutor.speech.touch"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "tutor.speech.first"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "tutor.more"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "tutor.likes"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "tutor.weak"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "tutor.samples"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "tutor.empty"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "tutor.confirm"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "tutor.confirmEmpty"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "tutor.anytime"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "tutor.welcome.title"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "tutor.welcome.body"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "tutor.how.learn.body"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "tutor.how.play.body"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "tutor.how.review.body"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "tutor.goTown"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "tutor.back"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "tutor.title.start"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "tutor.saveFailed"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "tutor.chosen"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "tutor.chosenUnsaved"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "tutor.card.marin.identity"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "tutor.card.marin.chip1"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "tutor.card.marin.chip2"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "tutor.card.marin.chip3"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "tutor.card.marin.charm"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "tutor.card.marin.about"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "tutor.card.marin.like1"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "tutor.card.marin.like2"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "tutor.card.marin.like3"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "tutor.card.marin.weak"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "tutor.card.marin.match"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.identity"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.chip1"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.chip2"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.chip3"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.charm"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.about"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.like1"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.like2"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.like3"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.weak"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.match"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.identity"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.chip1"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.chip2"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.chip3"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.charm"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.about"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.like1"
+    }
+   ]
+  },
+  {
+   "file": "batch-05.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.like2"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.like3"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.weak"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "tutor.card.mongle.match"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "homeTutor.invite"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "homeTutor.practice"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "homeTutor.practiceWith"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "homeTutor.checking"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "homeTutor.status"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "homeTutor.note.practised"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "homeTutor.note.difficult"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "homeTutor.note.review"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "homeTutor.note.resume"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "homeTutor.note.start"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "homeTutor.note.pending"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "homeTutor.day.closed"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "homeTutor.day.count"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "goal.title"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "goal.poster"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "goal.intro"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "goal.reason"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "goal.reason.none"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "goal.reason.travel"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "goal.reason.life"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "goal.reason.people"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "goal.reason.exam"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "goal.reason.study"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "goal.reason.work"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "goal.reason.career"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "goal.reason.culture"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "goal.reason.hobby"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "goal.reason.other"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "goal.support"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "goal.support.choose"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "goal.support.chooseNote"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "goal.support.step"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "goal.support.stepNote"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "goal.support.independent"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "goal.support.independentNote"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "goal.explanation"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "goal.explanation.brief"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "goal.explanation.standard"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "goal.explanation.detailed"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "goal.today.note"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "goal.minutes"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "goal.minutes.any"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "goal.minutes.n"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "goal.audio"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "goal.audio.available"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "goal.audio.off"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "goal.consent.account"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "goal.consent.device"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "goal.consent.note"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "goal.scope"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "goal.saveStart"
+    }
+   ]
+  },
+  {
+   "file": "batch-06.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "goal.save"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "goal.skip"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "goal.disable"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "goal.delete"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "goal.seen"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "goal.state.practice"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "goal.state.supported"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "goal.state.review"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "goal.state.checking"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "goal.state.recent-independent"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "goal.seen.empty"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "goal.seen.note"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "goal.needConsent"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "goal.saved"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "goal.retry"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "goal.reopen"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "life.pack.store"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "life.pack.directions"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "life.pack.transit"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "life.pack.plans"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "life.packTitle.greetings"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "life.packTitle.cafe"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "life.packTitle.store"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "life.packTitle.directions"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "life.packTitle.transit"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "life.packTitle.plans"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "life.packSub.greetings"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "life.packSub.cafe"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "life.packSub.store"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "life.packSub.directions"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "life.packSub.transit"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "life.packSub.plans"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "life.lessonGoal.greetings-expressions"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "life.lessonGoal.greetings-story"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "life.lessonGoal.greetings-apply"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "life.phase.expressions"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "life.phase.story"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "life.phase.apply"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "life.phase.visit"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "life.phase.compose"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "life.place.greetings"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "life.place.cafe"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "life.place.store"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "life.place.directions"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "life.place.transit"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "life.place.plans"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "life.ago.now"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "life.ago.minutes"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "life.ago.hours"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "life.ago.days"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "life.rest"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "life.tutorRetry"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "life.checkProgress"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "life.checkProgress.note"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "life.packCard"
+    }
+   ]
+  },
+  {
+   "file": "batch-07.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "life.packCard.done"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "life.allDone"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "life.currentPack"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "life.upNext"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "life.continue"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "life.backWord"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "life.backSub"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "life.reviewNow"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "life.allPacksWord"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "life.nextReviewOpens"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "life.pickPackAgain"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "life.reviewSchedule"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "life.reviewBack"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "life.reviewNext"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "life.stories"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "life.storiesCount"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "life.lessonsDone"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "life.packsAndLessons"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "life.more"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "life.state.done"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "life.state.doing"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "life.state.now"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "life.state.readAgain"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "life.state.reading"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "life.visitN"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "life.storiesSub"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "life.cafeVisits"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "life.visitsCount"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "life.visited"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "life.cafeAlt"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "life.cafeEnter"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "life.cafeNext"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "life.cafeBefore"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "life.toPacks"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "life.seeReviews"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "life.expressionsNow"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "life.expressionsLearned"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "life.readStory"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "life.toQuestions"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "life.next"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "life.signListen"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "life.firstScene"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "life.feedback.ok"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "life.feedback.assisted"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "life.feedback.retry"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "life.why"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "life.comesBack"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "life.help"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "life.chooseAnswer"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "life.pickAnswer"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "life.meanings"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "life.meaningsLabel"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "life.resultTitle"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "life.reviewScheduleShort"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "life.packStamp"
+    }
+   ]
+  },
+  {
+   "file": "batch-08.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "life.packProgress"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "life.packFinished"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "life.packFill"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "life.toTown"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "life.nextPractice"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "life.seePacks"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "life.reviewWordCount"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "life.reviewWordNext"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "life.reviewWordNone"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "life.reviewSubDue"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "life.reviewSubOpens"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "life.reviewSubNone"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "life.reviewStart"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "life.doNextLesson"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "life.reviewResultTitle"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "life.reviewDoneWord"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "life.reviewMet"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "life.reviewRemembered"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "life.reviewSoon"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "life.reviewHeader"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "life.reviewOrigin"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "life.saved"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "life.savingProgress"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "life.restart"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "account.title"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "account.lead"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "account.oneId"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "account.oneIdBody"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "account.login"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "account.guest"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "account.testLead"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "account.testTitle"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "account.testBody"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "account.testA"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "account.testB"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "account.testNote"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "account.loaded"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "account.connected"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "account.entryTitle"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "account.entryNotice"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "account.entryBody"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "account.reconnect"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "account.reconnected"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "account.toTitle"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "account.recoveryRejected"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "account.recoveryChoose"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "account.recoveryRejectedNotice"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "account.recoveryConflictNotice"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "account.recoveryNote"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "account.useDeviceAgain"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "account.useDevice"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "account.useRemote"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "account.checkLater"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "account.learningWith"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "account.learningTogether"
+    }
+   ]
+  },
+  {
+   "file": "batch-09.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.savedTo"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "account.whereId"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "account.whereTest"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "account.savePending"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "account.saveOk"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "account.revision"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "account.kindId"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "account.kindTest"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "account.learningRecords"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "account.learningSave"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "account.learningNote"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "account.learningElsewhere"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "account.classSettings"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "account.logout"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "account.logoutFailed"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "account.about1"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "account.about2"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "account.pendingTitle"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "account.pendingNotice"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "account.pendingBody"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "account.pendingRetry"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "account.pendingDiscard"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "account.gameLoading"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "account.gameStopped"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "account.gameStoppedNotice"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "account.gameStoppedBody"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "account.checkMine"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "account.gameCheck"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "account.gameCheckNotice"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "account.conflictTitle"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "account.conflictNotice"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "account.conflictBody"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "account.conflictRemote"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "account.conflictLocal"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "account.conflictLater"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "account.conflictNote"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "msg.network"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "msg.outfitConflict"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "msg.authEnded"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "msg.runExpired"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "msg.busy"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "msg.notYet"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "msg.hostPreparing"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "msg.hostOpenFailed"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "msg.tutorConnect"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "msg.lifeLoadFailed"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "msg.helpSaveCheck"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "msg.cafeCheck"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "msg.accountProgressDevice"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "msg.lifeCheckFailed"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "msg.progressNotSaved"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "msg.accountChangedChoose"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "msg.lifeAccountChanged"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "msg.localSaved"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "msg.localSaving"
+    }
+   ]
+  },
+  {
+   "file": "batch-10.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.tutorAccountFirst"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.recordsChanged"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.recordsCheckFirst"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.tutorSaveLater"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.tutorSavedAccount"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.tutorKeptDevice"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.tutorLoading"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "msg.chooseInSaveCheck"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "msg.tutorAfterConnect"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "msg.tutorSynced"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "msg.tutorSaving"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "msg.tutorNotSynced"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "msg.entryTutor"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "msg.entryAccount"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "msg.lifeEnded"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "msg.recoveryUnreadable"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "msg.originalUnreadable"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "msg.originalOwner"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "msg.lifeUnreadableKept"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "msg.lifeNotSynced"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "msg.lifeSynced"
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "msg.deviceKept"
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "msg.accountChanged"
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "msg.worldAccount"
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "msg.activeId"
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "msg.idSettings"
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "msg.loginStartFailed"
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "msg.loginToPlay"
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "msg.gameSaveCheck"
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "msg.loginToLearn"
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "msg.lifeSaveConnection"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "msg.loginPlease"
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "msg.otherAccount"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "msg.classroom"
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "msg.deviceUnreadable"
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "msg.existingUnreadable"
+    },
+    {
+     "line": 37,
+     "source": "world-strings",
+     "key": "msg.saveFailedKept"
+    },
+    {
+     "line": 38,
+     "source": "world-strings",
+     "key": "msg.accountSaving"
+    },
+    {
+     "line": 39,
+     "source": "world-strings",
+     "key": "msg.deviceSaved"
+    },
+    {
+     "line": 40,
+     "source": "world-strings",
+     "key": "msg.keptFirst"
+    },
+    {
+     "line": 41,
+     "source": "world-strings",
+     "key": "msg.progressLoading"
+    },
+    {
+     "line": 42,
+     "source": "world-strings",
+     "key": "msg.chooseProgressFirst"
+    },
+    {
+     "line": 43,
+     "source": "world-strings",
+     "key": "msg.checkExistingFirst"
+    },
+    {
+     "line": 44,
+     "source": "world-strings",
+     "key": "msg.notOverwritten"
+    },
+    {
+     "line": 45,
+     "source": "world-strings",
+     "key": "msg.tutorQuota"
+    },
+    {
+     "line": 46,
+     "source": "world-strings",
+     "key": "msg.questionsLeft"
+    },
+    {
+     "line": 47,
+     "source": "world-strings",
+     "key": "msg.learningAccountChanged"
+    },
+    {
+     "line": 48,
+     "source": "world-strings",
+     "key": "msg.noPracticeNow"
+    },
+    {
+     "line": 49,
+     "source": "world-strings",
+     "key": "msg.profileUnreadable"
+    },
+    {
+     "line": 50,
+     "source": "world-strings",
+     "key": "msg.profileConflict"
+    },
+    {
+     "line": 51,
+     "source": "world-strings",
+     "key": "msg.learningChanged"
+    },
+    {
+     "line": 52,
+     "source": "world-strings",
+     "key": "msg.resumeReason"
+    },
+    {
+     "line": 53,
+     "source": "world-strings",
+     "key": "msg.conditionsLabel"
+    },
+    {
+     "line": 54,
+     "source": "world-strings",
+     "key": "msg.conditionsReason"
+    },
+    {
+     "line": 55,
+     "source": "world-strings",
+     "key": "msg.startMyReview"
+    }
+   ]
+  },
+  {
+   "file": "batch-11.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.startMyPractice"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.startTodayReview"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.practiceThis"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.openTodayReview"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.continueLearning"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.startTodayLesson"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.browsePacks"
+    },
+    {
+     "line": 8,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello.prompt"
+    },
+    {
+     "line": 9,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello.context"
+    },
+    {
+     "line": 10,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello.explanation"
+    },
+    {
+     "line": 11,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello-transfer.prompt"
+    },
+    {
+     "line": 12,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello-transfer.context"
+    },
+    {
+     "line": 13,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello-transfer.explanation"
+    },
+    {
+     "line": 14,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks.prompt"
+    },
+    {
+     "line": 15,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks.context"
+    },
+    {
+     "line": 16,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks.explanation"
+    },
+    {
+     "line": 17,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks-transfer.prompt"
+    },
+    {
+     "line": 18,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks-transfer.context"
+    },
+    {
+     "line": 19,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks-transfer.explanation"
+    },
+    {
+     "line": 20,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name.prompt"
+    },
+    {
+     "line": 21,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name.context"
+    },
+    {
+     "line": 22,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name.explanation"
+    },
+    {
+     "line": 23,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name-transfer.context"
+    },
+    {
+     "line": 24,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name-transfer.explanation"
+    },
+    {
+     "line": 25,
+     "source": "life-content-lang",
+     "key": "greetings-story-name.prompt"
+    },
+    {
+     "line": 26,
+     "source": "life-content-lang",
+     "key": "greetings-story-name.explanation"
+    },
+    {
+     "line": 27,
+     "source": "life-content-lang",
+     "key": "greetings-story-name-transfer.prompt"
+    },
+    {
+     "line": 28,
+     "source": "life-content-lang",
+     "key": "greetings-story-name-transfer.context"
+    },
+    {
+     "line": 29,
+     "source": "life-content-lang",
+     "key": "greetings-story-name-transfer.explanation"
+    },
+    {
+     "line": 30,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks.prompt"
+    },
+    {
+     "line": 31,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks.explanation"
+    },
+    {
+     "line": 32,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks-transfer.prompt"
+    },
+    {
+     "line": 33,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks-transfer.context"
+    },
+    {
+     "line": 34,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks-transfer.explanation"
+    },
+    {
+     "line": 35,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello.prompt"
+    },
+    {
+     "line": 36,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello.explanation"
+    },
+    {
+     "line": 37,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello-transfer.prompt"
+    },
+    {
+     "line": 38,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello-transfer.context"
+    },
+    {
+     "line": 39,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello-transfer.explanation"
+    },
+    {
+     "line": 40,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction.prompt"
+    },
+    {
+     "line": 41,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction.context"
+    },
+    {
+     "line": 42,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction.explanation"
+    },
+    {
+     "line": 43,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction-transfer.context"
+    },
+    {
+     "line": 44,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction-transfer.explanation"
+    },
+    {
+     "line": 45,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.prompt"
+    },
+    {
+     "line": 46,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.context"
+    },
+    {
+     "line": 47,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.explanation"
+    },
+    {
+     "line": 48,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks-transfer.prompt"
+    },
+    {
+     "line": 49,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks-transfer.context"
+    },
+    {
+     "line": 50,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks-transfer.explanation"
+    },
+    {
+     "line": 51,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello.prompt"
+    },
+    {
+     "line": 52,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello.context"
+    },
+    {
+     "line": 53,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello.explanation"
+    },
+    {
+     "line": 54,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello-transfer.prompt"
+    },
+    {
+     "line": 55,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello-transfer.context"
+    }
+   ]
+  },
+  {
+   "file": "batch-12.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello-transfer.explanation"
+    },
+    {
+     "line": 2,
+     "source": "life-content-lang",
+     "key": "expression.greet-hello"
+    },
+    {
+     "line": 3,
+     "source": "life-content-lang",
+     "key": "expression.greet-thanks"
+    },
+    {
+     "line": 4,
+     "source": "life-content-lang",
+     "key": "expression.greet-name"
+    },
+    {
+     "line": 5,
+     "source": "life-content-lang",
+     "key": "meaning.안녕하세요."
+    },
+    {
+     "line": 6,
+     "source": "life-content-lang",
+     "key": "meaning.감사합니다."
+    },
+    {
+     "line": 7,
+     "source": "life-content-lang",
+     "key": "meaning.다녀왔어요."
+    },
+    {
+     "line": 8,
+     "source": "life-content-lang",
+     "key": "meaning.다녀왔습니다."
+    },
+    {
+     "line": 9,
+     "source": "life-content-lang",
+     "key": "meaning.저는 몽글이에요."
+    },
+    {
+     "line": 10,
+     "source": "life-content-lang",
+     "key": "meaning.저는 마린이에요."
+    },
+    {
+     "line": 11,
+     "source": "life-content-lang",
+     "key": "meaning.저는 수진이에요."
+    },
+    {
+     "line": 12,
+     "source": "life-content-lang",
+     "key": "meaning.저는 지훈이에요."
+    },
+    {
+     "line": 13,
+     "source": "life-content-lang",
+     "key": "meaning.처음 뵙겠습니다."
+    },
+    {
+     "line": 14,
+     "source": "life-content-lang",
+     "key": "meaning.저는 학교에 가요."
+    },
+    {
+     "line": 15,
+     "source": "life-content-lang",
+     "key": "meaning.몽글은 어디에 있어요?"
+    },
+    {
+     "line": 16,
+     "source": "life-content-lang",
+     "key": "meaning.마린은 어디에 있어요?"
+    },
+    {
+     "line": 17,
+     "source": "life-content-lang",
+     "key": "meaning.마린은 학교에 가요."
+    },
+    {
+     "line": 18,
+     "source": "life-content-lang",
+     "key": "meaning.까몽"
+    },
+    {
+     "line": 19,
+     "source": "life-content-lang",
+     "key": "meaning.몽글"
+    },
+    {
+     "line": 20,
+     "source": "life-content-lang",
+     "key": "meaning.마린"
+    },
+    {
+     "line": 21,
+     "source": "life-content-lang",
+     "key": "meaning.마린이 이름표를 찾아 줬어요."
+    },
+    {
+     "line": 22,
+     "source": "life-content-lang",
+     "key": "meaning.몽글이 먼저 집에 갔어요."
+    },
+    {
+     "line": 23,
+     "source": "life-content-lang",
+     "key": "meaning.까몽이 자기 이름을 잊었어요."
+    },
+    {
+     "line": 24,
+     "source": "life-content-lang",
+     "key": "meaning.마린이 자기 이름을 소개했어요."
+    },
+    {
+     "line": 25,
+     "source": "life-content-lang",
+     "key": "meaning.마린이 모임 시간을 물었어요."
+    },
+    {
+     "line": 26,
+     "source": "life-content-lang",
+     "key": "meaning.잘 먹겠습니다."
+    },
+    {
+     "line": 27,
+     "source": "life-content-lang",
+     "key": "meaning.학교에 있어요."
+    },
+    {
+     "line": 28,
+     "source": "life-content-lang",
+     "key": "meaning.저는 학생이에요."
+    },
+    {
+     "line": 29,
+     "source": "life-content-lang",
+     "key": "meaning.지훈은 집에 있어요."
+    },
+    {
+     "line": 30,
+     "source": "life-content-lang",
+     "key": "meaning.저는 식사했어요."
+    },
+    {
+     "line": 31,
+     "source": "hangul-stage",
+     "key": "docTitle"
+    },
+    {
+     "line": 32,
+     "source": "hangul-stage",
+     "key": "effects"
+    },
+    {
+     "line": 33,
+     "source": "hangul-stage",
+     "key": "heroGraduated"
+    },
+    {
+     "line": 34,
+     "source": "hangul-stage",
+     "key": "lede.default"
+    },
+    {
+     "line": 35,
+     "source": "hangul-stage",
+     "key": "lede.graduated"
+    },
+    {
+     "line": 36,
+     "source": "hangul-stage",
+     "key": "lede.now"
+    },
+    {
+     "line": 37,
+     "source": "hangul-stage",
+     "key": "start.doneToday"
+    },
+    {
+     "line": 38,
+     "source": "hangul-stage",
+     "key": "start.warmup"
+    },
+    {
+     "line": 39,
+     "source": "hangul-stage",
+     "key": "start.again"
+    },
+    {
+     "line": 40,
+     "source": "hangul-stage",
+     "key": "start.sub"
+    },
+    {
+     "line": 41,
+     "source": "hangul-stage",
+     "key": "start.subDone"
+    },
+    {
+     "line": 42,
+     "source": "hangul-stage",
+     "key": "toGames"
+    },
+    {
+     "line": 43,
+     "source": "hangul-stage",
+     "key": "gamesNote"
+    },
+    {
+     "line": 44,
+     "source": "hangul-stage",
+     "key": "section.songs"
+    },
+    {
+     "line": 45,
+     "source": "hangul-stage",
+     "key": "section.songsFine"
+    },
+    {
+     "line": 46,
+     "source": "hangul-stage",
+     "key": "section.road"
+    },
+    {
+     "line": 47,
+     "source": "hangul-stage",
+     "key": "section.box"
+    },
+    {
+     "line": 48,
+     "source": "hangul-stage",
+     "key": "section.boxFine"
+    },
+    {
+     "line": 49,
+     "source": "hangul-stage",
+     "key": "section.legend"
+    },
+    {
+     "line": 50,
+     "source": "hangul-stage",
+     "key": "section.signs"
+    },
+    {
+     "line": 51,
+     "source": "hangul-stage",
+     "key": "section.signsFine"
+    },
+    {
+     "line": 52,
+     "source": "hangul-stage",
+     "key": "section.plate"
+    },
+    {
+     "line": 53,
+     "source": "hangul-stage",
+     "key": "section.plateFine"
+    },
+    {
+     "line": 54,
+     "source": "hangul-stage",
+     "key": "section.amount"
+    },
+    {
+     "line": 55,
+     "source": "hangul-stage",
+     "key": "amount"
+    }
+   ]
+  },
+  {
+   "file": "batch-13.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "skip"
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "skipped"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "unskip"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "saveNote.failed"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "saveNote.none"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "voice.unsupported"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "voice.missing"
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "state.unmet"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "state.met"
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "state.learning"
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "state.mastered"
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "legend.met"
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "legend.learning"
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "legend.mastered"
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "final"
+    },
+    {
+     "line": 16,
+     "source": "hangul-stage",
+     "key": "road.done"
+    },
+    {
+     "line": 17,
+     "source": "hangul-stage",
+     "key": "road.now"
+    },
+    {
+     "line": 18,
+     "source": "hangul-stage",
+     "key": "road.started"
+    },
+    {
+     "line": 19,
+     "source": "hangul-stage",
+     "key": "road.next"
+    },
+    {
+     "line": 20,
+     "source": "hangul-stage",
+     "key": "road.later"
+    },
+    {
+     "line": 21,
+     "source": "hangul-stage",
+     "key": "road.graduated"
+    },
+    {
+     "line": 22,
+     "source": "hangul-stage",
+     "key": "road.current"
+    },
+    {
+     "line": 23,
+     "source": "hangul-stage",
+     "key": "road.allLearned"
+    },
+    {
+     "line": 24,
+     "source": "hangul-stage",
+     "key": "group.vowel"
+    },
+    {
+     "line": 25,
+     "source": "hangul-stage",
+     "key": "group.consonant"
+    },
+    {
+     "line": 26,
+     "source": "hangul-stage",
+     "key": "group.final"
+    },
+    {
+     "line": 27,
+     "source": "hangul-stage",
+     "key": "tag.final"
+    },
+    {
+     "line": 28,
+     "source": "hangul-stage",
+     "key": "song.listen"
+    },
+    {
+     "line": 29,
+     "source": "hangul-stage",
+     "key": "sign.read"
+    },
+    {
+     "line": 30,
+     "source": "hangul-stage",
+     "key": "sign.hazy"
+    },
+    {
+     "line": 31,
+     "source": "hangul-stage",
+     "key": "sign.tap"
+    },
+    {
+     "line": 32,
+     "source": "hangul-stage",
+     "key": "sign.notYet"
+    },
+    {
+     "line": 33,
+     "source": "hangul-stage",
+     "key": "unit.U1"
+    },
+    {
+     "line": 34,
+     "source": "hangul-stage",
+     "key": "unit.U2"
+    },
+    {
+     "line": 35,
+     "source": "hangul-stage",
+     "key": "unit.U3"
+    },
+    {
+     "line": 36,
+     "source": "hangul-stage",
+     "key": "unit.U4"
+    },
+    {
+     "line": 37,
+     "source": "hangul-stage",
+     "key": "unit.U5"
+    },
+    {
+     "line": 38,
+     "source": "hangul-stage",
+     "key": "unit.U6"
+    },
+    {
+     "line": 39,
+     "source": "hangul-stage",
+     "key": "unit.U7"
+    },
+    {
+     "line": 40,
+     "source": "hangul-stage",
+     "key": "unit.U8"
+    },
+    {
+     "line": 41,
+     "source": "hangul-stage",
+     "key": "unit.U9"
+    },
+    {
+     "line": 42,
+     "source": "hangul-stage",
+     "key": "unit.U10"
+    },
+    {
+     "line": 43,
+     "source": "hangul-stage",
+     "key": "reason.warmup"
+    },
+    {
+     "line": 44,
+     "source": "hangul-stage",
+     "key": "reason.pair.now"
+    },
+    {
+     "line": 45,
+     "source": "hangul-stage",
+     "key": "reason.pair.yesterday"
+    },
+    {
+     "line": 46,
+     "source": "hangul-stage",
+     "key": "reason.pair.before"
+    },
+    {
+     "line": 47,
+     "source": "hangul-stage",
+     "key": "reason.newFinals"
+    },
+    {
+     "line": 48,
+     "source": "hangul-stage",
+     "key": "reason.mixed"
+    },
+    {
+     "line": 49,
+     "source": "hangul-stage",
+     "key": "reason.new"
+    },
+    {
+     "line": 50,
+     "source": "hangul-stage",
+     "key": "reason.due"
+    },
+    {
+     "line": 51,
+     "source": "hangul-stage",
+     "key": "reason.practice"
+    },
+    {
+     "line": 52,
+     "source": "hangul-stage",
+     "key": "listenTo"
+    },
+    {
+     "line": 53,
+     "source": "hangul-stage",
+     "key": "listenSound"
+    },
+    {
+     "line": 54,
+     "source": "hangul-stage",
+     "key": "newLetter"
+    },
+    {
+     "line": 55,
+     "source": "hangul-stage",
+     "key": "newFinal"
+    }
+   ]
+  },
+  {
+   "file": "batch-14.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "trace"
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "traceRedo"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "traceArea"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "derive.stroke"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "derive.pair"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "derive.twin"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "derive.combine"
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "trio"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "trioTag"
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "sum"
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "note.c-ng"
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "note.f-ng"
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "note.f-g"
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "note.f-d"
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "note.f-b"
+    },
+    {
+     "line": 16,
+     "source": "hangul-stage",
+     "key": "note.f-s"
+    },
+    {
+     "line": 17,
+     "source": "hangul-stage",
+     "key": "note.f-j"
+    },
+    {
+     "line": 18,
+     "source": "hangul-stage",
+     "key": "note.c-k"
+    },
+    {
+     "line": 19,
+     "source": "hangul-stage",
+     "key": "note.c-t"
+    },
+    {
+     "line": 20,
+     "source": "hangul-stage",
+     "key": "note.c-p"
+    },
+    {
+     "line": 21,
+     "source": "hangul-stage",
+     "key": "note.c-ch"
+    },
+    {
+     "line": 22,
+     "source": "hangul-stage",
+     "key": "note.c-kk"
+    },
+    {
+     "line": 23,
+     "source": "hangul-stage",
+     "key": "note.c-tt"
+    },
+    {
+     "line": 24,
+     "source": "hangul-stage",
+     "key": "note.c-pp"
+    },
+    {
+     "line": 25,
+     "source": "hangul-stage",
+     "key": "note.c-ss"
+    },
+    {
+     "line": 26,
+     "source": "hangul-stage",
+     "key": "note.c-jj"
+    },
+    {
+     "line": 27,
+     "source": "hangul-stage",
+     "key": "note.v-wa"
+    },
+    {
+     "line": 28,
+     "source": "hangul-stage",
+     "key": "note.v-wo"
+    },
+    {
+     "line": 29,
+     "source": "hangul-stage",
+     "key": "note.v-wi"
+    },
+    {
+     "line": 30,
+     "source": "hangul-stage",
+     "key": "note.v-ui"
+    },
+    {
+     "line": 31,
+     "source": "hangul-stage",
+     "key": "note.v-oe"
+    },
+    {
+     "line": 32,
+     "source": "hangul-stage",
+     "key": "note.v-wae"
+    },
+    {
+     "line": 33,
+     "source": "hangul-stage",
+     "key": "note.v-we"
+    },
+    {
+     "line": 34,
+     "source": "hangul-stage",
+     "key": "note.v-ye"
+    },
+    {
+     "line": 35,
+     "source": "hangul-stage",
+     "key": "note.v-yae"
+    },
+    {
+     "line": 36,
+     "source": "hangul-stage",
+     "key": "note.sameSound"
+    },
+    {
+     "line": 37,
+     "source": "hangul-stage",
+     "key": "note.finalIntro"
+    },
+    {
+     "line": 38,
+     "source": "hangul-stage",
+     "key": "prompt.pair"
+    },
+    {
+     "line": 39,
+     "source": "hangul-stage",
+     "key": "prompt.teach"
+    },
+    {
+     "line": 40,
+     "source": "hangul-stage",
+     "key": "prompt.word"
+    },
+    {
+     "line": 41,
+     "source": "hangul-stage",
+     "key": "prompt.letter"
+    },
+    {
+     "line": 42,
+     "source": "hangul-stage",
+     "key": "prompt.see"
+    },
+    {
+     "line": 43,
+     "source": "hangul-stage",
+     "key": "prompt.build"
+    },
+    {
+     "line": 44,
+     "source": "hangul-stage",
+     "key": "prompt.match"
+    },
+    {
+     "line": 45,
+     "source": "hangul-stage",
+     "key": "speak"
+    },
+    {
+     "line": 46,
+     "source": "hangul-stage",
+     "key": "slow"
+    },
+    {
+     "line": 47,
+     "source": "hangul-stage",
+     "key": "noFinal"
+    },
+    {
+     "line": 48,
+     "source": "hangul-stage",
+     "key": "held"
+    },
+    {
+     "line": 49,
+     "source": "hangul-stage",
+     "key": "soundN"
+    },
+    {
+     "line": 50,
+     "source": "hangul-stage",
+     "key": "letterN"
+    },
+    {
+     "line": 51,
+     "source": "hangul-stage",
+     "key": "col.letters"
+    },
+    {
+     "line": 52,
+     "source": "hangul-stage",
+     "key": "check"
+    },
+    {
+     "line": 53,
+     "source": "hangul-stage",
+     "key": "quit"
+    },
+    {
+     "line": 54,
+     "source": "hangul-stage",
+     "key": "mongleGotIt"
+    },
+    {
+     "line": 55,
+     "source": "hangul-stage",
+     "key": "answerIs"
+    }
+   ]
+  },
+  {
+   "file": "batch-15.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "thisSound"
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "notButIs"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "allMatched"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "allFound"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "why.heard"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "why.sound"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "why.compare"
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "why.again"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "why.compareSound"
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "why.built"
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "why.compareBuilt"
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "why.matchedClean"
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "why.matchedFound"
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "finish.newLetters"
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "finish.questions"
+    },
+    {
+     "line": 16,
+     "source": "hangul-stage",
+     "key": "finish.reviewTitle"
+    },
+    {
+     "line": 17,
+     "source": "hangul-stage",
+     "key": "finish.reviewNote"
+    },
+    {
+     "line": 18,
+     "source": "hangul-stage",
+     "key": "finish.mastered"
+    },
+    {
+     "line": 19,
+     "source": "hangul-stage",
+     "key": "finish.canRead"
+    },
+    {
+     "line": 20,
+     "source": "hangul-stage",
+     "key": "finish.tomorrow"
+    },
+    {
+     "line": 21,
+     "source": "hangul-stage",
+     "key": "finish.allMet"
+    },
+    {
+     "line": 22,
+     "source": "hangul-stage",
+     "key": "finish.toStart"
+    },
+    {
+     "line": 23,
+     "source": "hangul-stage",
+     "key": "finish.song"
+    },
+    {
+     "line": 24,
+     "source": "hangul-stage",
+     "key": "grad.title"
+    },
+    {
+     "line": 25,
+     "source": "hangul-stage",
+     "key": "grad.line"
+    },
+    {
+     "line": 26,
+     "source": "hangul-stage",
+     "key": "grad.fine"
+    },
+    {
+     "line": 27,
+     "source": "hangul-stage",
+     "key": "grad.note"
+    },
+    {
+     "line": 28,
+     "source": "hangul-stage",
+     "key": "error.title"
+    },
+    {
+     "line": 29,
+     "source": "hangul-stage",
+     "key": "error.body"
+    },
+    {
+     "line": 30,
+     "source": "hangul-stage",
+     "key": "sheet.title"
+    },
+    {
+     "line": 31,
+     "source": "hangul-stage",
+     "key": "sheet.body"
+    },
+    {
+     "line": 32,
+     "source": "hangul-stage",
+     "key": "sheet.stay"
+    }
+   ]
+  }
+ ]
+}

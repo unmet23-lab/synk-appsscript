@@ -7,8 +7,8 @@ const root=fileURLToPath(new URL('../',import.meta.url)),require=createRequire(i
 const esbuild=require(require.resolve('esbuild',{paths:[path.join(root,'experiences/synk-account'),root]}));
 const target=path.join(root,'experiences/brand-opening/content/life-standalone.mjs');
 const cssSource=path.join(root,'experiences/synk-world-app/life-ui.css'),cssTarget=path.join(root,'experiences/brand-opening/content/life-ui.css');
-// 홈이 직접 부르는 소리·움직임 모듈은 묶지 않고 옆 파일(content/의 한 칸 위)을 같이 쓴다 — 두 벌이면 AudioContext·첫 누름 리스너·설정 알림이 따로 생긴다.
-const opening=path.join(root,'experiences/brand-opening'),shared={name:'world-shared',setup(build){build.onResolve({filter:/(?:^|\/)world-(?:sound|motion)\.mjs$/},args=>{const name=path.basename(args.path);return path.resolve(args.resolveDir,args.path)===path.join(opening,name)?{path:'../'+name,external:true}:undefined;});}};
+// 홈이 직접 부르는 소리·움직임·화면 언어 모듈은 묶지 않고 옆 파일(content/의 한 칸 위)을 같이 쓴다 — 두 벌이면 AudioContext·첫 누름 리스너·설정 알림·고른 언어가 따로 생긴다.
+const opening=path.join(root,'experiences/brand-opening'),shared={name:'world-shared',setup(build){build.onResolve({filter:/(?:^|\/)world-(?:sound|motion|lang)\.mjs$/},args=>{const name=path.basename(args.path);return path.resolve(args.resolveDir,args.path)===path.join(opening,name)?{path:'../'+name,external:true}:undefined;});}};
 const result=await esbuild.build({entryPoints:[path.join(root,'experiences/synk-world-app/life-standalone-entry.mjs')],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',legalComments:'none',plugins:[shared]});
 const bytes=result.outputFiles[0].contents,css=fs.readFileSync(cssSource);
 // 줄끝만 다른 건 같은 판으로 본다(core.autocrlf=true 작업본은 커밋된 LF 묶음을 CRLF로 꺼낸다).
