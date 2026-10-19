@@ -310,6 +310,8 @@ function packageFromFolder(folder, accountConfig) {
     account: raw.account || account.handle,
     format: raw.format || '',
     language: raw.language || 'ko',
+    // YouTube 「동영상 언어」(실제로 말하는 언어, 제작 방식 v2 §4-3). language는 제목·설명 언어다. 원고.json에 있을 때만 싣는다(10-19)
+    ...(raw.audioLanguage ? { audioLanguage: String(raw.audioLanguage) } : {}),
     title,
     text,
     alt: Array.isArray(raw.alt) ? raw.alt : [],
@@ -353,6 +355,8 @@ function validateItem(item) {
   if (!item.text) errors.push('본문 없음');
   if (item.platform === 'youtube' && !item.video) errors.push('video.mp4 없음');
   if (item.playlist && item.platform !== 'youtube') errors.push('재생목록은 YouTube만 지원');
+  if (item.audioLanguage && item.platform !== 'youtube') errors.push('동영상 언어는 YouTube만 지원');
+  if (item.audioLanguage && !/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(item.audioLanguage)) errors.push(`동영상 언어 코드가 아님: ${item.audioLanguage}`);
   if (['instagram', 'facebook', 'pinterest', 'kakao-channel', 'telegram'].includes(item.platform)
       && !item.video && item.images.length === 0) errors.push('게시할 이미지/영상 없음');
   if (item.platform === 'tiktok' && !item.video) errors.push('video.mp4 없음');
@@ -447,6 +451,7 @@ function publicationHash(item, account, credential = {}) {
     'subtitles', 'remoteMediaUrls', 'publish', 'dependencies']);
   // 재생목록은 있는 항목에만 넣는다 — 재생목록이 없는 기존 계획의 승인 해시가 바뀌지 않게
   if (item.playlist) itemPart.playlist = item.playlist;
+  if (item.audioLanguage) itemPart.audioLanguage = item.audioLanguage; // 동영상 언어도 같은 까닭으로 있는 항목에만
   if (item.dm) itemPart.dm = normalizeDm(item.dm);
   return sha256(stableJson({
     version: 2,
@@ -944,6 +949,7 @@ async function youtubeUpload(item, account, credential, options = {}) {
       description: item.text.slice(0, 5000),
       categoryId: account.categoryId || '22',
       defaultLanguage: item.language || undefined,
+      defaultAudioLanguage: item.audioLanguage || undefined,
     },
     status: {
       privacyStatus: visibility,

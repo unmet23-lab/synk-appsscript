@@ -350,7 +350,7 @@ export const LOCALES: Record<LocCode, Locale> = {
       comment: 'ලකුණු කමෙන්ට් කරන්න ↓',
       commentSize: 52,
       gotThis: 'ඊළඟ වටයේ හමුවෙමු!',
-      quiz: 'කොරියානු කියමන් #2',
+      quiz: 'කියමන් #2', // 10-19 「කොරියානු කියමන් #2」는 게임판 알약이 진행 별에 닿아 「코리아의」를 뺐다(글을 줄이고 글자 크기는 그대로, §4-3)
       next: 'ඊළඟ ▶',
       scoreNext: 'ලකුණු ▶',
       yourTurn: 'දැන් ඔයා',
