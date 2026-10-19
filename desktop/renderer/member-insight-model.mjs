@@ -160,7 +160,7 @@ function understandingOf({ accountSummary, activity, document, status, asOf }) {
       }
       const topic = row.id.startsWith('learning-topic:');
       const topicKind = row.topicKind == null ? null : topic && TOPIC_KINDS.has(row.topicKind) ? row.topicKind : invalid();
-      // A repeated pattern is asked about, never concluded (vellum-insight.js).
+      // A repeated pattern is asked about, never concluded (vellum-insight.cjs).
       const asked = topic ? 'learning-topic' : ['practice-mode', 'practice-response'].includes(row.id) ? row.id : null;
       const askedLabel = !claim || !asked ? null : topic ? row.title : choices.find(choice => choice.id === claim.reference)?.label;
       const question = askedLabel ? Understanding.memberInsightQuestion({ facet: asked, label: askedLabel, kind: topicKind }) : null;
@@ -270,7 +270,7 @@ export function buildMemberInsightReport(result, { activity = null, activityStat
   const understandingReport = understandingOf({ accountSummary: result,
     activity: ['ready', 'empty', 'disabled'].includes(activityReport.status) ? activity : null,
     document: understanding, status: understandingStatus, asOf: analysisAt });
-  // 「지금의 나」: Vellum says it (vellum-insight.js); the facts come from this summary and, once
+  // 「지금의 나」: Vellum says it (vellum-insight.cjs); the facts come from this summary and, once
   // loaded, the person's own answers. Their newest confirmed statement is said back if it can be.
   const ready = understandingReport.status === 'ready';
   const statement = ready ? understandingReport.statementHistory.find(row => row.active)?.meanings.filter(meaning => meaning.active) || [] : [];

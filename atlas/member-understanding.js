@@ -5,7 +5,9 @@
 const Interpretation = require('./interpretation');
 const Domain = require('./domain');
 const Contract = require('./member-understanding-contract');
-const Insight = require('./vellum-insight');
+// The insight screen's wording is used by 「내 성향」 alone, so it lives with that product
+// (docs/아틀라스_설계.md#common-capability-promotion), next to the member statement modules.
+const Insight = require('../experiences/synk-account/src/vellum-insight.cjs');
 const { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason, memberCorrectionLine } = Insight;
 const Periods = require('./trail-periods');
 const Statements = require('../experiences/synk-account/src/member-statement.cjs');
@@ -309,6 +311,6 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
 }
 module.exports = { ...Contract, previewMemberStatement: Statements.previewMemberStatement, confirmMemberStatement: Statements.confirmMemberStatement,
   validateMemberStatement: Statements.validateMemberStatement, summarizeMemberUnderstanding,
-  // The insight screen's sentences (vellum-insight.js), shared by the web and the desktop renderer.
+  // The insight screen's sentences (vellum-insight.cjs), shared by the web and the desktop renderer.
   memberInsightNow: Insight.memberInsightNow, memberInsightPracticeFact: Insight.memberInsightPracticeFact, memberInsightUsage: Insight.memberInsightUsage,
   memberInsightQuestion: Insight.memberInsightQuestion, insightKindWord: Insight.kindWord, insightDayLabel: Insight.dayLabel };

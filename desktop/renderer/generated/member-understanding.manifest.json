@@ -1,16 +1,15 @@
 {
   "version": 1,
   "entry": "atlas/member-understanding.js",
-  "sha256": "ec0e8ce1302e7a3cee5a4e2630dabc3159885ce86fa8aa5537107ab162039b88",
+  "sha256": "233530c15e624592685215851f3da1705641e5f5b63bec41f17b2fcce5ab9ad6",
   "sources": {
     "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
     "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
     "atlas/domain.js": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
     "atlas/interpretation.js": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
     "atlas/member-understanding-contract.js": "5abde8c31c430662b3995e5505beea986e85aa890d83efd58cfe0f994af0f5a3",
-    "atlas/member-understanding.js": "9bbfbfcecceff5f2112721c07e9d1ad34aa485fc0d41d622e69beba2cc05a306",
+    "atlas/member-understanding.js": "305f2456db3f26e31909d8b2bc6634358c69c3303006132368311c55c9fc9c75",
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
-    "atlas/vellum-insight.js": "0207b668a238e00bece9e8b2b352da1024ccaa397974e584033ddfff6a5b6b9a",
     "experiences/synk-account/src/member-statement-contract.cjs": "ade5c0378e1697ecc3d8f8c315a956dc43471febbe2c34d14c8e25faafa799af",
     "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
     "experiences/synk-account/src/member-statement-v2.cjs": "7e26a5dd658f02951ea7ff3fe302e8992f1d547f07e76fda30e693a3cb37c220",
@@ -20,6 +19,7 @@
     "experiences/synk-account/src/member-statement-v6.cjs": "e20eda01490cb2627c88b9212baae47058f9831d1e8c3cab09f72f751167e2b5",
     "experiences/synk-account/src/member-statement-v7.cjs": "9289ce1899c8fe0b847391a75c661628c898d862309344f60d8c71699b15aa5e",
     "experiences/synk-account/src/member-statement-v8.cjs": "1c796568b36cb57f77a3143857b0389541aff036979a95f7fe44d77577ee5b69",
-    "experiences/synk-account/src/member-statement.cjs": "36da5ac9b0677db827ff8799b34520db1e84d4b70db606949d578d0ba757c9a3"
+    "experiences/synk-account/src/member-statement.cjs": "36da5ac9b0677db827ff8799b34520db1e84d4b70db606949d578d0ba757c9a3",
+    "experiences/synk-account/src/vellum-insight.cjs": "0207b668a238e00bece9e8b2b352da1024ccaa397974e584033ddfff6a5b6b9a"
   }
 }

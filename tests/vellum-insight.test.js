@@ -1,9 +1,9 @@
 'use strict';
-// 「내 성향」 sentences (atlas/vellum-insight.js): the order of the 「지금의 나」 rules, words that
+// 「내 성향」 sentences (experiences/synk-account/src/vellum-insight.cjs): the order of the 「지금의 나」 rules, words that
 // only tell what happened, and Korean particles that follow the word they attach to.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const V = require('../atlas/vellum-insight');
+const V = require('../experiences/synk-account/src/vellum-insight.cjs');
 const at = '2026-10-19T03:00:00.000Z';
 const practice = fields => ({ answered: 0, independent: 0, lastAt: null, recent: null, previous: null, comparable: false, strong: null, topics: [], ...fields });
 const period = (answered, independent, assisted, activeDays) => ({ answered, independent, assisted, activeDays });

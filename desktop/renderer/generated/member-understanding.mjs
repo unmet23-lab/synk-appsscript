@@ -559,9 +559,9 @@ var require_member_understanding_contract = __commonJS({
   }
 });
 
-// atlas/vellum-insight.js
+// experiences/synk-account/src/vellum-insight.cjs
 var require_vellum_insight = __commonJS({
-  "atlas/vellum-insight.js"(exports, module) {
+  "experiences/synk-account/src/vellum-insight.cjs"(exports, module) {
     "use strict";
     var DAY = 864e5;
     var fail = (what) => {
@@ -12005,7 +12005,7 @@ var require_member_understanding = __commonJS({
       confirmMemberStatement: Statements.confirmMemberStatement,
       validateMemberStatement: Statements.validateMemberStatement,
       summarizeMemberUnderstanding,
-      // The insight screen's sentences (vellum-insight.js), shared by the web and the desktop renderer.
+      // The insight screen's sentences (vellum-insight.cjs), shared by the web and the desktop renderer.
       memberInsightNow: Insight.memberInsightNow,
       memberInsightPracticeFact: Insight.memberInsightPracticeFact,
       memberInsightUsage: Insight.memberInsightUsage,

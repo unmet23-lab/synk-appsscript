@@ -2,7 +2,7 @@
 // 「지금의 나」 side by side, what I chose and what I tried, the 30-day comparison, and the floor
 // (basis, my corrections, app-use consent). The account controllers own loading, consent and saves;
 // this module renders the report and keeps no data. Sentences come from Vellum through the report
-// (atlas/vellum-insight.js); only labels and fixed explanations live here.
+// (experiences/synk-account/src/vellum-insight.cjs); only labels and fixed explanations live here.
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const list = value => Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [];
 const number = value => (Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0).toLocaleString('ko-KR');
