@@ -97,7 +97,7 @@ export function readProgress(value) {
   return out;
 }
 export function validateVoiceManifest(manifest) {
-  if (manifest?.version !== 1 || manifest.provider !== 'typecast' || manifest.approved !== true) throw new Error('한국어 목소리를 아직 준비하고 있어요. 준비된 뒤 시작할 수 있어요.');
+  if (manifest?.version !== 1 || manifest.provider !== 'approved-voice-v1' || manifest.approved !== true) throw new Error('한국어 목소리를 아직 준비하고 있어요. 준비된 뒤 시작할 수 있어요.');
   for (const line of VOICE_LINES) {
     const clip = manifest.clips?.[line.id];
     if (!clip || clip.text !== line.text || typeof clip.file !== 'string' || !/^audio\/[a-z0-9-]+\.(mp3|wav)$/.test(clip.file)) throw new Error('필요한 한국어 소리가 빠져 있어요. 다시 준비해 주세요.');

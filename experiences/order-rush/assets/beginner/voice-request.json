@@ -1,5 +1,5 @@
 {
-  "provider": "typecast",
+  "provider": "approved-voice-v1",
   "lines": [
     {
       "id": "water",

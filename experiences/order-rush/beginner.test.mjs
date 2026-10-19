@@ -48,7 +48,7 @@ test('resume restores a partial tray and picture help, ignoring invalid or exces
   const r = readProgress(p); assert.deepEqual(r.checkpoint.tray, ['bread', 'apple', 'bread']); assert.equal(r.checkpoint.hint, true);
   assert.deepEqual(readProgress({ ...p, checkpoint: { ...p.checkpoint, tray: null } }).checkpoint.tray, []);
 });
-test('voices must be approved Typecast, complete and exact; no fallback engine is accepted', async () => {
+test('voices must be the approved voice bank, complete and exact; no fallback engine is accepted', async () => {
   const manifest = JSON.parse(await readFile(new URL('assets/beginner/voices.json', import.meta.url)));
   const approved = { ...manifest, approved: true };
   assert.equal(validateVoiceManifest(approved), true);

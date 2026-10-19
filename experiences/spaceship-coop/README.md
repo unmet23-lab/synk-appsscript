@@ -121,7 +121,7 @@ docker compose --env-file /etc/synk/spaceship.env --file deploy/compose.yaml con
 
 ## 소리와 학습 기록
 
-`assets/audio/manifest.json`의 `approved:true`, `provider:typecast`, 정확한 한국어 문구, 각 MP3의 SHA-256 무결성, 브라우저 디코드, 길이와 실제 음량을 모두 확인한 뒤 입장을 연다. 승인되지 않거나 빠지거나 손상되거나 무음이면 시작할 수 없다. OS TTS나 무음으로 대체하지 않는다. 음성 파일은 루트의 승인된 Typecast 서현 경로에서 준비했다. 효과음은 낮은 음량의 Web Audio 오실레이터이며 한국어 음성을 대신하지 않는다.
+`assets/audio/manifest.json`의 `approved:true`, `provider:approved-voice-v1`(공개 파일이라 만든 서비스 이름 대신 중립 값, 2026-10-19 — [입문 게임 원문 「음성 준비」](../beginner-games/README.md#음성-준비)), 정확한 한국어 문구, 각 MP3의 SHA-256 무결성, 브라우저 디코드, 길이와 실제 음량을 모두 확인한 뒤 입장을 연다. 승인되지 않거나 빠지거나 손상되거나 무음이면 시작할 수 없다. OS TTS나 무음으로 대체하지 않는다. 음성 파일은 루트의 승인된 Typecast 서현 경로에서 준비했다. 효과음은 낮은 음량의 Web Audio 오실레이터이며 한국어 음성을 대신하지 않는다.
 
 조종사의 답 조작은 받은 음성의 **정상 재생 완료 후** 열린다. 다른 소리로 중단되거나 재생에 실패하면 다시 듣기가 필요하다. 단계 학습도 한 소리를 끝까지 들은 경우에만 완료로 표시한다.
 

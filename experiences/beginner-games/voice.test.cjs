@@ -25,3 +25,10 @@ test('beginner speech comes from 26 exact requests with approved narrator and ma
  }
  assert.equal(G.GAMES['beginner-games'].newBank,true);
 });
+// 세 게임 목록은 synk.im에 그대로 공개된다: 승인 칸은 중립 값이고, 만든 서비스·모델·목소리 이름은 없다(2026-10-19). 만든 길은 README 「음성 준비」.
+test('the three game voice lists carry the neutral approval value and no production service or voice names',()=>{
+ for(const[game,manifest]of[['word-magic','audio/manifest.json'],['order-rush','assets/beginner/voices.json'],['spaceship-coop','assets/audio/manifest.json']]){
+  const text=fs.readFileSync(path.join(__dirname,'..',game,manifest),'utf8');
+  assert.equal(JSON.parse(text).provider,'approved-voice-v1',game);assert.doesNotMatch(text,G.TOOL_NAMES,game);
+ }
+});

@@ -6,7 +6,7 @@ export class VoiceBank {
     const response=await fetch(new URL('./assets/audio/manifest.json',import.meta.url),{cache:'no-store',signal:AbortSignal.timeout(15000)});
     if(!response.ok)throw new Error('한국어 음성을 불러오지 못했어요. / Voice files are unavailable.');
     const manifest=await response.json();
-    if(manifest.version!==1||manifest.provider!=='typecast'||manifest.approved!==true)throw new Error('한국어 음성을 준비하고 있어요. 준비가 끝나면 탐험을 시작할 수 있어요. / Korean voices are being prepared.');
+    if(manifest.version!==1||manifest.provider!=='approved-voice-v1'||manifest.approved!==true)throw new Error('한국어 음성을 준비하고 있어요. 준비가 끝나면 탐험을 시작할 수 있어요. / Korean voices are being prepared.');
     const entries=await Promise.all(Object.entries(WORDS).map(async([key,text])=>{
       const clip=manifest.clips?.[key];
       if(clip?.text!==text||!/^[-a-zA-Z0-9_]+\.(mp3|wav)$/.test(clip.src))throw new Error('음성 목록을 확인해 주세요. / Voice manifest mismatch.');

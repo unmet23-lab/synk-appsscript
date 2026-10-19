@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "provider": "typecast",
+  "provider": "approved-voice-v1",
   "approved": true,
   "clips": {
     "red": {

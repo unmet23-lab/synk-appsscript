@@ -77,6 +77,8 @@
 기존 Typecast 도구의 월 크레딧 확인·캐시·중단 정책을 재사용한다. 여기서 별도 결제나 합성을 실행하지 않는다.
 원본·제작 설정은 저장소 밖 캐시와 `qa/voice.source.json`, 게임용 파일에는 문구·경로·길이만 둔다.
 
+세 게임 목록(`word-magic/audio/manifest.json`·`order-rush/assets/beginner/voices.json`·`spaceship-coop/assets/audio/manifest.json`)은 synk.im에 그대로 공개되므로 승인 칸 `provider`에 만든 서비스 이름 대신 중립 값 `approved-voice-v1`을 둔다(2026-10-19, 옛 값은 서비스 이름 `typecast`). 만든 길: Typecast API로 해설(10-08 서현)을 `tools/미니게임_목소리.cjs`로 굽고, `node experiences/beginner-games/sync-banks.cjs`가 세 게임에 복사하며 이 값을 쓴다. 이 값을 승인 조건으로 보는 곳은 주문 폭주 입문 `beginner-core.mjs`(`validateVoiceManifest`)·우주선 `audio.mjs`·SYNK-website 출시 도구 `prepare-play-candidate.mjs`(`inspectVoices`)라, 바꿀 때는 목록과 함께 셋을 같이 바꾼다. `voice.test.cjs`가 세 목록의 값과 도구·목소리 이름이 없음을 본다.
+
 ## 로컬 실행
 
 `node experiences/learning-hub/server.mjs`의 학습 허브에서 입장한다. 현재 준비·검증 상태는 `qa/verification.json`에 남긴다.

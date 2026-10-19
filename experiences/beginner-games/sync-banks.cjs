@@ -16,6 +16,7 @@ for(const{game,file,bank,key,prefix}of plans){
   if(!fs.readFileSync(from).equals(fs.existsSync(to)?fs.readFileSync(to):Buffer.alloc(0))){fs.copyFileSync(from,to);copied++;}
   c.sha256=crypto.createHash('sha256').update(fs.readFileSync(to)).digest('hex');c.durationSeconds=source[id].durationSeconds;
  }
+ bank.provider='approved-voice-v1'; // 공개되는 목록이라 만든 서비스 이름 대신 중립 승인 값(2026-10-19, README 「음성 준비」)
  fs.writeFileSync(file,JSON.stringify(bank,null,2)+'\n');
 }
 console.log(`세 게임 ${plans.reduce((n,p)=>n+Object.keys(p.bank.clips).length,0)}개 중 ${copied}개 파일을 새로 복사했다.`);
