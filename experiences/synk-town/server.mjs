@@ -135,7 +135,7 @@ export function createServer({ previewEnabled = false, store = createStore({ fil
     // blob: worker, and GLTFLoader hands images to the loaders as blob: URLs
     // (10-18: with the old policy every baked set failed back to v20; QA had
     // opened pages with bypassCSP). Scripts still load from this origin only.
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' blob: data:; font-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' blob:; font-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
     const port = req.socket.localPort;
     const hosts = [`127.0.0.1:${port}`, `localhost:${port}`];
     if (!hosts.includes(req.headers.host)) return json(res, 403, { error: 'local-preview-only' });

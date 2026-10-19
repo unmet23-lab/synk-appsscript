@@ -24,7 +24,7 @@ if (require.main === module) (async () => {
   try {
     fs.mkdirSync(outDir, { recursive: true });
     const { base } = await L.fixture(); browser = await L.launch();
-    const { page, errors } = await L.openTown(browser, base, { width: 1280, height: 900, patches: PATCHES });
+    const { page, errors } = await L.openTown(browser, base, { width: 1280, height: 900, patches: PATCHES, bypassCSP: true }); // addScriptTag below is an inline script
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'export-town-browser.js'), 'utf8') });
     const result = await page.evaluate(core => globalThis.__exportCoreTown(core), withOuter ? { ...CORE, outer: OUTER } : CORE);
     const names = { home: 'v20_home', cafe: 'v20_cafe', workshop: 'v20_workshop', greenhouse: 'v20_greenhouse', ground: 'v20_town_ground', live: 'v20_live', faded: 'v20_faded', ...(withOuter ? { neighbours: 'v20_neighbours', ring: 'v20_ring_ground' } : {}) };

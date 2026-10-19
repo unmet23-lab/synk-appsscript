@@ -9,7 +9,7 @@ const outDir = path.resolve(process.argv[2] || path.join(__dirname, 'reference')
   try {
     fs.mkdirSync(outDir, { recursive: true });
     const { base } = await fixture(); browser = await launch();
-    const { page, errors } = await openTown(browser, base, { width: 1280, height: 900 });
+    const { page, errors } = await openTown(browser, base, { width: 1280, height: 900, bypassCSP: true }); // addScriptTag below is an inline script
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, 'export-browser.js'), 'utf8') });
     const result = await page.evaluate(box => globalThis.__exportTown(box), DISTRICT.bounds);
     fs.writeFileSync(path.join(outDir, 'v20_district_ref.glb'), Buffer.from(result.district, 'base64'));

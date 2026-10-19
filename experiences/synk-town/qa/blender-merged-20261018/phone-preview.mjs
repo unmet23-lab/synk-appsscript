@@ -73,7 +73,7 @@ const relay = http.createServer((req, res) => {
     req.setEncoding('utf8');
     req.on('data', chunk => { body += chunk; if (body.length > 32768) req.destroy(); });
     req.on('end', () => {
-      try { fs.appendFileSync(out, JSON.stringify({ at: new Date().toISOString(), from, ...JSON.parse(body) }) + '\n'); res.writeHead(204); }
+      try { fs.appendFileSync(out, JSON.stringify({ ...JSON.parse(body), at: new Date().toISOString(), from }) + '\n'); res.writeHead(204); }
       catch { res.writeHead(400); }
       res.end();
     });

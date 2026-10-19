@@ -143,6 +143,7 @@ function hideDistrictGround(THREE, landscape, b, groundTop, onlyGround = false) 
 // Converts one loaded GLB scene in place and records its cost.
 function adoptBaked(THREE, root, liveGlass, state, drop = []) {
   const textures = new Set(), removed = [];
+  let lost = 0;
   // The greenhouse's panes are thinner than window glass in v20 (opacity .16,
   // no depth write); GLBs mark them live_glass_thin.
   let thinGlass = null;
@@ -154,6 +155,9 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
     const source = object.material;
     if (/^live_glass/.test(source.name)) { object.material = glassFor(source.name); object.castShadow = false; object.receiveShadow = false; source.dispose(); }
     else {
+      // Every baked surface carries an atlas; GLTFLoader leaves the map empty when
+      // its texture failed (e.g. a blocked transcoder), which would draw it white.
+      if (!source.map) lost++;
       object.material = bakedMaterial(THREE, source); if (source.map) textures.add(source.map);
       if (/roof/.test(object.name)) object.material.userData.townSurface = 'roof';
       // Ground does not need to cast; structure keeps shading characters and
@@ -172,6 +176,7 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
     state.textures.push({ width: texture.image?.width, height: texture.image?.height, compressed: !!texture.isCompressedTexture, format: texture.format, bytes });
     state.textureBytes += bytes;
   }
+  if (lost) throw new Error(`${lost} baked meshes lost their texture`);
 }
 
 export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume, renderer, phone = false }) {
@@ -183,8 +188,12 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
   const noGround = { restore() {}, cutMeshes: 0, droppedPieces: 0, parkedInstances: 0 };
   const state = { name: request.name, url: request.set ? request.manifest : request.url, tier: phone ? 'phone' : 'pc', loaded: false, failed: null, parts: [], meshes: 0, triangles: 0, textures: [], textureBytes: 0,
     downloadBytes: 0, loadMs: null, hiddenV20Meshes: 0, cutGroundMeshes: 0, droppedGroundPieces: 0, parkedGroundInstances: 0, prepareMs: null, deferred: null };
-  let ground = noGround, outer = null, attached = [];
+  let ground = noGround, outer = null, attached = [], ktx2 = null;
   const layered = [];
+  // Loading must end: a dead KTX2 worker never settles parseAsync, and a pending
+  // load would leave the v20 buildings hidden with nothing in their place.
+  const within = (promise, ms, what) => { let timer; return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`${what} took over ${ms / 1000} s`)), ms); })]).finally(() => clearTimeout(timer)); };
+  const dropBaked = root => { root.parent?.remove(root); root.traverse(object => { if (!object.isMesh) return; object.geometry.dispose(); [object.material].flat().filter(m => m.isMeshLambertMaterial).forEach(m => { m.emissiveMap?.dispose(); m.dispose(); }); }); };
   // The outer ring (townwide sets) replaces v20 only once its parts arrive: the
   // ground ring is cut out then, and the v20 neighbour houses leave the render
   // layer instead of turning invisible, so Town's occlusion fading (which
@@ -199,7 +208,9 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
   const fail = error => {
     // A missing or broken file restores the approved v20 town untouched.
     state.failed = String(error?.message || error); giveOuterBack(); ground.restore();   // outer first: it cut what the core cut left
-    for (const root of attached) root.parent?.remove(root);
+    // Only the baked Lambert materials are ours; glass meshes share v20's live glass.
+    for (const root of attached.splice(0)) dropBaked(root);
+    ktx2?.dispose(); ktx2 = null;
     for (const object of hidden) object.visible = true; state.loaded = false;
     // Occlusion volumes were rebuilt around the baked meshes as they attached;
     // build them again around the v20 meshes that are back.
@@ -248,7 +259,7 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
   // The loaders are fetched only when a baked district is requested; v20 never downloads them.
   const ready = Promise.all([import('./rendering/GLTFLoader.js'), import('./rendering/KTX2Loader.js'), import('./rendering/meshopt_decoder.module.js'), request.set ? fetch(request.manifest).then(r => { if (!r.ok) throw new Error(`${request.manifest} responded with ${r.status}`); return r.json(); }) : null])
     .then(async ([{ GLTFLoader }, { KTX2Loader }, { MeshoptDecoder }, manifest]) => {
-      const ktx2 = new KTX2Loader().setTranscoderPath('./rendering/basis/'); if (renderer) ktx2.detectSupport(renderer);
+      ktx2 = new KTX2Loader().setTranscoderPath('./rendering/basis/'); if (renderer) ktx2.detectSupport(renderer);
       const loader = new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
       // (No leading ./: the public build's reference check reads './…' strings as files.)
       const base = new URL('assets/district/', location.href);
@@ -260,27 +271,23 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
       // Deferred parts (the outer ring) download after the core is in place, so
       // they do not count against the first entry; v20 stays there meanwhile.
       const now = parts.filter(part => !part.defer), later = parts.filter(part => part.defer);
-      for (const { part, gltf } of await Promise.all(now.map(part => load(part, firstTally)))) attach(part, gltf);
+      for (const { part, gltf } of await within(Promise.all(now.map(part => load(part, firstTally))), 120000, 'baked town')) attach(part, gltf);
       state.loaded = true; state.loadMs = Math.round(performance.now() - started);
-      if (!later.length) { ktx2.dispose(); return state; }
+      if (!later.length) { ktx2.dispose(); ktx2 = null; return state; }
       const deferred = state.deferred = { parts: later.map(part => part.id), loaded: false, failed: null, bytes: 0, loadMs: null };
       const t0 = performance.now(), mark = attached.length;
       const before = { parts: state.parts.length, meshes: state.meshes, triangles: state.triangles, textures: state.textures.length, textureBytes: state.textureBytes };
-      Promise.all(later.map(part => load(part, deferred)))
+      within(Promise.all(later.map(part => load(part, deferred))), 180000, 'outer ring')
         .then(list => { for (const { part, gltf } of list) attach(part, gltf); deferred.loaded = true; deferred.loadMs = Math.round(performance.now() - t0); })
         .catch(error => {
           // Undo whatever the outer ring attached: meshes (and their GPU data), counts, v20's ground and houses.
           deferred.failed = String(error?.message || error);
-          for (const root of attached.splice(mark)) {
-            root.parent?.remove(root);
-            // Only the baked Lambert materials are ours; glass meshes share v20's live glass.
-            root.traverse(object => { if (!object.isMesh) return; object.geometry.dispose(); [object.material].flat().filter(m => m.isMeshLambertMaterial).forEach(m => { m.emissiveMap?.dispose(); m.dispose(); }); });
-          }
+          for (const root of attached.splice(mark)) dropBaked(root);
           state.parts.length = before.parts; state.textures.length = before.textures;
           Object.assign(state, { meshes: before.meshes, triangles: before.triangles, textureBytes: before.textureBytes });
           giveOuterBack(); for (const house of houses) replaceVolume?.(house); record();
         })
-        .finally(() => ktx2.dispose());
+        .finally(() => { ktx2?.dispose(); ktx2 = null; });
       return state;
     }).catch(fail);
   return { ready, stats: () => ({ ...state, parts: state.parts.map(p => ({ ...p })), textures: state.textures.map(t => ({ ...t })), deferred: state.deferred && { ...state.deferred } }) };
