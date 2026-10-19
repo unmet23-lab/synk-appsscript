@@ -106,6 +106,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 워크트리 체크아웃이 `strata/*.json`을 CRLF로 꺼내 바이트 해시가 달라졌다. 옮기기 스크립트도 CRLF로 썼다. 생성기는 LF로 쓰고 바이트로 비교한다.
 - 고침: 워크트리에서 묶기 전에 메인의 Strata 원본을 바이트 그대로 복사한다. 메인에 옮긴 뒤에는 묶음을 복사하지 말고 메인에서 생성기를 다시 돌린다. 지도 판은 학습 기록에 들어가므로 묶음 diff에 `map_ver`가 보이면 멈춘다.
 - 다시 확인: 메인에서 `node tools/build-game-learning.js --check`가 모두 verified다.
+- 10-19 덧붙임(워크트리째 LF로 맞추기): 앱 워크트리(`.claude/worktrees/<이름>`)에서 Atlas 생성 묶음 열넷을 다시 만들 때는 메인 원본을 복사하는 대신 워크트리를 리눅스 CI처럼 LF로 맞췄다. `git config --worktree core.autocrlf false`(공용 설정에 안 들어감) 뒤 `git ls-files --eol`이 `w/crlf`·`w/mixed`인 추적 파일만 지우고 `git checkout-index -u -z --stdin`으로 다시 꺼낸다(1만 5천 개, 3분). `git checkout-index -f -a`는 인덱스 stat가 같은 파일을 다시 쓰지 않아 2초 만에 끝나고 CRLF가 그대로 남는다. 확인: 남은 `w/crlf`가 blob 자체가 CRLF인 것(`i/crlf`)뿐이고 `git status`가 비어 있으며, 바탕 판에서 `node tools/sync-atlas.js --all --check --local`이 통과한다.
 
 ### 워크트리 안에서 쓴 git config가 공용 설정에 들어간다
 - 증상: 워크트리를 LF로 받으려고 `git config core.autocrlf false`를 썼더니 메인 작업본의 CRLF 파일이 전부 바뀐 것처럼 보인다(10-03, 6분간 모든 세션에 영향).
