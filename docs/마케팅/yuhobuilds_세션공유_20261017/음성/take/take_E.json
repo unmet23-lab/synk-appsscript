@@ -1,0 +1,23 @@
+{
+ "source": "3.8-flash__Achird_h1e_3.wav",
+ "replaces": "h1",
+ "seconds": 57.546,
+ "shift_from_s1": 1.53,
+ "segs": {
+  "h1e": {
+   "start": 0.05,
+   "end": 4.67,
+   "tokens": [
+    0.05,
+    0.44,
+    1.006,
+    1.992,
+    2.26,
+    3.56,
+    3.78,
+    4.16
+   ]
+  }
+ },
+ "gap_before_s1": 0.124
+}

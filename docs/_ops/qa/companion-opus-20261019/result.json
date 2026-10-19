@@ -1,0 +1,130 @@
+{
+  "schema": "companion-opus-production-check/1",
+  "date": "2026-10-19",
+  "by": "Claude (Opus 5.5) · GPT 인계 「SYNK Talk 강사 도우미 — 운영 답변 검증」 이어받음",
+  "requests": [
+    "유호 10-19 「지금 이 계정으로 이것들 해결하는거 어떄 ? (synk.yuh@gmail.com 계정) 여기에 api 200달러 크레딧 있어.」",
+    "유호 10-19 「지금 이 무료 크레딧 200달러 (x20맥스플랜 결재하면 매달 지급되는) 으로 해결할수있는거로 해줘. opus 5.5 로 퀄리티 좋게말이야. 그리고 다 떨어지면 맥스 계정 다른 무료크레딧 200달러 많으니까 만약에 필요하면 보고해줘.」",
+    "유호 10-19 직원 한도: 「시험 동안만 올리기 (추천)」",
+    "유호 10-19 「진행해. 푸시·CI 확인, 운영 설정(전용 키·가격표), 강사 도우미 배포, 직원 한도 임시 상향까지 해 줘.」",
+    "유호 10-19 「그리고 크레딧 매달 지급되는거에서 해결 안되면 다른 x20 max 계정 많으니까 그거로 자동으로 교체하는 로직 저번에 만들었었는데 그걸로 교체해도 돼.」",
+    "유호 10-19 「충분히 더 써도 돼. 우리 크레딧 되게 많아.」(직원 한도 하루 $1·월 $10 제안에 대한 답)"
+  ],
+  "key": {
+    "account": "synk.yuh (Console 개인 조직, 연결된 계정 「세종」)",
+    "file": "~/SYNK_보안/클로드키_synk.yuh.txt (값은 어디에도 출력·저장하지 않음)",
+    "organization": "c7e4a3a9…4c71",
+    "differsFromDmOrg": "「공자」(DM 전용) c22447c4…fbfc 와 다름",
+    "creditCheck": "claude-haiku-5-5 16토큰 200",
+    "cardAndAutoReload": "유호님 확인 말씀은 아직 없음(새로 만든 개인 조직, 카드 등록 단계 건너뜀 안내)"
+  },
+  "code": {
+    "repo": "unmet23-lab/SYNK-talk master",
+    "commits": {
+      "afb58d1": "companion 을 Opus 5.5(adaptive · 노력 high · max_tokens 8192)와 전용 키 COMPANION_ANTHROPIC_API_KEY 로(공통 키 대체 읽기) · 가격표 claude-opus-5-5 줄 · 월간 모델 점검 표시",
+      "eeb04a2": "Fable 검수 반영 — 왕복 상한 120초(교정 60초와 따로) · 점검에 가격있음 · 실패 로그에 stop_reason",
+      "20849aa": "점검 틀린 값을 모델표의 점검틀린생각(Opus 5.5 = between_tools)으로 · v74 배포 장부 줄",
+      "99eea12": "키 돌림 — COMPANION_ANTHROPIC_API_KEY + COMPANION_ANTHROPIC_API_KEYS 를 적은 순서대로, 크레딧 바닥(402·400 credit balance)·거절(401·403)은 같은 질문을 다음 키로 넘기고 6시간 쉼, 429 는 쉼 없이 넘김(DM createKeyRotation · 249ea68 과 같은 규칙)",
+      "bbc459e": "Fable 둘째 검수 반영 — 마지막 응답이 402 여도 0원 정산(합성 400) · 키가 모두 쉬면 원장을 열지 않고 인계(벤더 0회·0단위)"
+    },
+    "tests": "관련 28파일 487개 중 486 통과·실패 0·건너뜀 1(작업본에 git 밖 함수 폴더 없음 — 이번 변경과 무관) · 키 돌림 시험 5개(새 둘은 고치기 전 본체에서 실패 확인)",
+    "ci": {
+      "eeb04a2": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39210601737 success",
+      "20849aa": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39212905748",
+      "99eea12": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39215371793",
+      "bbc459e": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/39216953292"
+    },
+    "review": "Fable 읽기 전용 검수 두 번 — 1차(afb58d1) P0·P1 없음, P2 둘·P3 넷 반영 / 2차(99eea12·20849aa) 「배포해도 된다」, P2 402 hold·P3 모두 쉼 1단위 반영, P3 점검이 첫 키만 쓰는 점은 첫 키가 실제로 바닥나는 날 확인"
+  },
+  "production": {
+    "project": "Synk Core (운영)",
+    "secrets": {
+      "COMPANION_ANTHROPIC_API_KEY": "06:34:02Z 새로 넣음 · 지문이 synk.yuh 키와 일치",
+      "SYNK_AI_PRICES": "06:34:02Z 옛 판(10-05) → claude-opus-5-5 줄을 더한 판(가격표 파일 압축 JSON 지문 일치)",
+      "SYNK_AI_STAFF_DAILY_MICRO_USD": "30000 → 06:53:37Z 1500000(시험) → 07:07:19Z 30000(원래) → 07:37:32Z 3000000(운영 · 하루 $3)",
+      "SYNK_AI_STAFF_MONTHLY_MICRO_USD": "300000 → 06:53:37Z 1500000(시험) → 07:07:19Z 300000(원래) → 07:37:32Z 30000000(운영 · 월 $30)",
+      "untouched": "ANTHROPIC_API_KEY(공통) · SYNKBRIEF_ANTHROPIC_API_KEYS(DM) · SYNK_AI_DAILY_LIMIT(없음 = 하루 20회) · SYNK_RELEASE_POLICY"
+    },
+    "deploy": {
+      "v74": "06:52:14Z head eeb04a2 · 배포 전 대조에서 다른 판은 교정엔진.mjs·index.ts 뿐 · DB 계약 c18 · 배포 뒤 배포대조 같다(바이트 13/13 · 본체 앵커 112/112)",
+      "v73": "06:34 설정값 변경으로 판 번호만 올라감(본문 v72 그대로)",
+      "v78": "07:54:42Z head bbc459e(키 돌림·점검 고침·402 0원) · CI 39216953292 success · 다른 판은 교정엔진.mjs·index.ts 뿐 · 배포 뒤 배포대조 같다(바이트 13/13 · 본체 앵커 128/128) · v75~v77 은 직원 한도 설정 변경으로 판 번호만 올라감"
+    },
+    "bodyProbeV74": {
+      "result": "ok:false — 받음 200(입력 6,665토큰) · 가격있음 true · 틀린값거절 200",
+      "cause": "Opus 5.5 count_tokens 는 thinking disabled·enabled 를 200 으로 받는다(생성 창구만 disabled 400). between_tools 는 「이 모델에서 지원하지 않음」 400",
+      "evidence": ".tmp/companion-opus-20261019/thinking-variants-*.json (count_tokens 무료 · messages disabled 400 무료)",
+      "fix": "talk 20849aa — 점검틀린생각 = between_tools"
+    },
+    "staffLimitDecision": "강사 1명당 하루 $3·월 $30(lib/ai-spend.js 직원 기본값) — 지금 쓸 수 있는 활성 계정은 원장 1·강사 1(시험 계정 제외)이라 한 달 최대 $60. 같은 직원 몫을 쓰는 teach 관찰 초안·correct 직원 경로는 공통 키(잔액 없음)를 써서 지금은 지출이 없다",
+    "bodyProbeV78": {
+      "result": "ok:true — 받음 200(입력 6,665토큰) · 틀린값거절 400(between_tools) · 가격있음 true · 모델 claude-opus-5-5 · 노력 high",
+      "at": "2026-10-19T07:55:04Z"
+    }
+  },
+  "localMeasurement": {
+    "what": "운영 원장 밖 로컬 직접 호출 · 고친 본체의 실제 몸통 6문항 × 노력 medium·high = 12회",
+    "latencySeconds": "2.3~9.7",
+    "outputTokensIncludingThinking": "91~991",
+    "costUsd": 0.46,
+    "choice": "노력 high 유지 — 느리지 않고 답이 조금 더 자세함, 정확도는 같음"
+  },
+  "liveRuns": [
+    {
+      "file": ".tmp/companion-opus-20261019/live-answers-1792393197075.json",
+      "startedAt": "2026-10-19T06:59:57Z",
+      "result": "1문항(숙제 서클) 정답 뒤 중단 — 재생 답이 원장 jsonb 를 거쳐 칸 순서만 달라(cited_refs·handoff) 스크립트의 문자열 비교가 실패. DB 저장값과 첫 응답은 내용이 같음(replay-read.cjs), 재생 때 기록 증가 0",
+      "actualMicroUsd": 36920,
+      "cleanup": "직원 비활성 · 세션 폐기 · 로그인 차단 · 옛 토큰 403"
+    },
+    {
+      "file": ".tmp/companion-opus-20261019/live-answers-1792393527732.json",
+      "startedAt": "2026-10-19T07:05:27Z",
+      "finishedAt": "2026-10-19T07:06:37Z",
+      "result": "6문항 모두 200 · QA 6행(model claude-opus-5-5 · prompt companion-v2) · 감사 6 · 횟수 원장 6 · 금액 원장 6 completed",
+      "latencySeconds": "4.2~17.9",
+      "replay": "같은 request_id·같은 본문 → 0.37초 · 내용 같음(칸 순서만 다름) · QA·감사·횟수·금액 원장 증가 0",
+      "reserveMicroUsdEach": "250055~254385",
+      "actualMicroUsd": 245896,
+      "cleanup": "직원 비활성 · 세션 폐기 · 로그인 차단 · 옛 토큰 403 · 원장 보존"
+    },
+    {
+      "file": ".tmp/companion-opus-20261019/live-answers-1792396621025.json",
+      "startedAt": "2026-10-19T07:57:01Z",
+      "finishedAt": "2026-10-19T07:57:12Z",
+      "version": "v78 · 운영 직원 한도(하루 $3·월 $30)에서",
+      "result": "커리큘럼 1문항 200 · 8.0초 · 정답(교재 대기 안 함·숙제 포인트 보류·스트릭 과거 설계) · QA 1행 model claude-opus-5-5 · 금액 원장 completed",
+      "reserveMicroUsd": 250055,
+      "actualMicroUsd": 35080,
+      "cleanup": "직원 비활성 · 세션 폐기 · 로그인 차단 · 옛 토큰 403 · 원장 보존"
+    }
+  ],
+  "answers": {
+    "criterion": "GPT 인계 — 옛 자동 지급·4인 고정·완료 보장을 현재 약속으로 답하면 실패, 환불은 handoff=true·reply 빈칸·비율 안내 없음",
+    "homework_circle": "정답 — 첫 20분 고정 아님(현행 90분 5·20·15·30·10·10) · 자동 인쇄 없음 · 숙제 포인트 보류 · 15점 자동 지급 없음",
+    "class_rules": "인계 — 폰 기준이 발췌에 없다고 넘김. 원문 「강사 수업 규칙」에는 「휴대폰 — 과업에 필요한 때만…」이 있다 → 발췌 고르기 빈틈(「폰」↔「휴대폰」). 틀린 약속 없음",
+    "weekly_plan": "부분 답 — 13번 주말 점검(도달 확인)·과업·조 편성 칸은 원문대로, 수업 목표·단계별 시간 칸은 발췌에 없다고 밝힘 → 「3. 열네 칸」 발췌 빈틈",
+    "small_group": "정답 — 4인 고정 아님 · 실제 출석 1~16명 조 구성 표가 원문과 같음 · 한 조 4명 이하 · ④그룹 발화 30분 안 · ⑤공유 10분 별도",
+    "curriculum": "정답 — 교재를 기다리지 않음(09-04) · 숙제 포인트 보류 · 스트릭 보상은 과거 설계",
+    "refund_handoff": "인계 · reply 빈칸 · 비율 안내 없음(Q14 봇 답변 보류)",
+    "verdict": "옛 약속을 현재 약속으로 답한 것 0건 · 지어낸 출처 0건"
+  },
+  "spendUsd": {
+    "keyChecks": 0.0001,
+    "localMeasurement": 0.46,
+    "liveRun1": 0.0369,
+    "liveRun2": 0.2459,
+    "total": 0.778,
+    "from": "synk.yuh Max 월 API 크레딧(c7e4a3a9…4c71)",
+    "liveRun3": 0.0351
+  },
+  "remaining": [
+    "발췌 고르기 빈틈 2건(「폰」↔「휴대폰」 · 주간 교안 「3. 열네 칸」) — talk lib/강사지식고르기.js",
+    "다른 Max 계정 키를 만들면 COMPANION_ANTHROPIC_API_KEYS 목록에 더한다(지금은 synk.yuh 하나라 그 크레딧이 떨어지면 인계로 접힌다)"
+  ],
+  "keyRotation": {
+    "keysNow": "synk.yuh 하나(c7e4a3a9…4c71) — 「공자」 키는 DM 전용이라 넣지 않음",
+    "addMore": "다른 Max 계정도 Console 개인 조직 키를 만들어 ~/SYNK_보안/클로드키_<계정>.txt 에 넣으면 COMPANION_ANTHROPIC_API_KEYS 에 더한다(배포 없음)",
+    "rest": "isolate 안 6시간 · 차가운 시작은 첫 키부터 다시(생성 없는 거절 한 번)"
+  }
+}

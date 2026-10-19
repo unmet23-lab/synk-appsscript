@@ -121,7 +121,7 @@ export async function stagePublicationDelivery(options = {}) {
   if (options.confirmed !== true) fail('완성본 확정이 필요합니다. 확인한 완성본에만 --confirmed를 사용해 주세요.');
   const deliveryId = options.deliveryId ?? randomUUID();
   if (typeof deliveryId !== 'string' || !UUID.test(deliveryId)) fail('전달 ID는 UUID여야 합니다.');
-  const id = deliveryId.toLowerCase();
+  let id = deliveryId.toLowerCase();
   const title = text(options.title, '제목', 100, true).trim();
   const channels = options.channels ?? ['youtube-shorts', 'instagram-reels'];
   if (!Array.isArray(channels) || channels.length < 1 || channels.length > 3 || channels.some((value) => !CHANNELS.includes(value)) || new Set(channels).size !== channels.length) fail('채널은 youtube-shorts, instagram-reels, youtube-video 중 중복 없이 선택해 주세요.');
@@ -161,6 +161,38 @@ export async function stagePublicationDelivery(options = {}) {
       await readSourceText(subtitle);
       subtitle.outputName = `subtitle${extension}`;
     }
+    let inspection;
+    if (options.inspection !== undefined) {
+      const reportSource = await source(options.inspection, 2 * 1024 * 1024, '영상 사전검사'); inputs.push(reportSource);
+      const report = JSON.parse(await readSourceText(reportSource));
+      if (!report || report.schema !== 'synk-media-preflight/v1' || report.complete !== true || !['ready', 'needs-review', 'blocked'].includes(report.status) || !Array.isArray(report.issues) || report.issues.some(item => !item || !['warning', 'error'].includes(item.severity))) fail('완료된 영상 사전검사 파일을 지정해 주세요.');
+      if (report.status === 'blocked' || report.issues.some(item => item.severity === 'error')) fail('사전검사의 오류를 고치고 다시 검사한 뒤 전달해 주세요.');
+      for (const [name, actual] of [['video', video], ['subtitle', subtitle]]) {
+        const expected = report.inputs?.[name];
+        if (!!expected !== !!actual || actual && (expected.sha256 !== actual.sha256 || expected.byteSize !== actual.byteSize)) fail(`검사한 ${name === 'video' ? '영상' : '자막'}과 전달할 파일이 다릅니다. 다시 검사해 주세요.`);
+      }
+      // Text comparisons are valid only while the exact supplied sources still exist.
+      for (const [name, label] of [['script', '대본'], ['transcript', '받아쓰기']]) {
+        if (!Object.hasOwn(report.inputs, name)) continue;
+        const expected = report.inputs[name];
+        if (!expected || typeof expected.path !== 'string' || !path.isAbsolute(expected.path)) fail(`검사한 ${label}의 경로가 없습니다. 다시 검사해 주세요.`);
+        let actual;
+        try { actual = await source(expected.path, 2 * 1024 * 1024, `검사 ${label}`); }
+        catch { fail(`검사한 ${label} 파일을 다시 읽을 수 없습니다. 원문을 확인하고 다시 검사해 주세요.`); }
+        inputs.push(actual);
+        if (actual.sha256 !== expected.sha256 || actual.byteSize !== expected.byteSize) fail(`검사한 ${label}이 변경되었습니다. 다시 검사해 주세요.`);
+      }
+      const reviewNote = text(options.reviewNote ?? '', '검토 근거', 2000).trim();
+      if ((report.issues.length || report.status === 'needs-review') && !reviewNote) fail('사전검사에 확인할 곳이 있습니다. 직접 확인한 뒤 --review-note에 근거를 남겨 주세요.');
+      inspection = { schema: report.schema, sha256: reportSource.sha256, inspectedAt: report.inspectedAt, issueCount: report.issues.length, reviewNote };
+      // A repeated finalization command for exactly this report and payload reuses one delivery.
+      // Version 8 marks an application-defined UUID, without claiming UUIDv5 name hashing.
+      if (options.deliveryId === undefined) {
+        const bytes = createHash('sha256').update(JSON.stringify({ inspection: reportSource.sha256, reviewNote, video: video.sha256, subtitle: subtitle?.sha256, title, body, link, language, channels, mode })).digest().subarray(0, 16);
+        bytes[6] = (bytes[6] & 0x0f) | 0x80; bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = bytes.toString('hex'); id = `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+      }
+    } else if (options.reviewNote !== undefined) fail('--review-note는 --inspection과 함께 사용해 주세요.');
     inbox = await directory(options.inbox);
     if (inputs.some((item) => isWithin(inbox, item.file))) fail('전달 폴더 내부 파일은 원본으로 사용할 수 없습니다.');
     const target = path.join(inbox, id);
@@ -178,9 +210,11 @@ export async function stagePublicationDelivery(options = {}) {
       title, body, link, language, channels: [...channels], mode,
       video: { fileName: `video${videoExtension}`, byteSize: video.byteSize, sha256: video.sha256 },
       ...(subtitle ? { subtitle: { fileName: subtitle.outputName, byteSize: subtitle.byteSize, sha256: subtitle.sha256 } } : {}),
+      ...(inspection ? { inspection } : {}),
     };
     if (existing) {
       await checkExisting(target, manifest);
+      for (const item of inputs) if (await hashSource(item) !== item.sha256) fail(`${item.label} 원본이 준비 중 변경되었습니다.`);
       return { deliveryId: id, path: target, manifestPath: path.join(target, 'ready.json'), manifest, reused: true, status: 'staged' };
     }
     staging = path.join(inbox, `.partial-${id}`);
@@ -212,6 +246,7 @@ export function parseDeliveryArgs(argv) {
     '--link': 'link', '--링크': 'link', '--language': 'language', '--언어': 'language',
     '--channels': 'channels', '--채널': 'channels', '--mode': 'mode', '--변환': 'mode',
     '--delivery-id': 'deliveryId', '--전달ID': 'deliveryId', '--finalized-at': 'finalizedAt', '--확정시각': 'finalizedAt',
+    '--inspection': 'inspection', '--사전검사': 'inspection', '--review-note': 'reviewNote', '--검토근거': 'reviewNote',
   };
   const options = {};
   for (let index = 0; index < argv.length; index++) {
@@ -239,9 +274,11 @@ node tools/완성본등록.mjs --inbox "연결한 전달 폴더" --video "완성
 선택: --body 또는 --body-file, --subtitle, --link, --language ko,
       --channels youtube-shorts,instagram-reels 또는 youtube-video,
       --mode adapt|original, --delivery-id UUID, --finalized-at ISO시각
+      --inspection 검사.json [--review-note "경고 구간을 직접 확인한 근거"]
 한글: --전달폴더 --영상 --제목 --본문파일 --자막 --채널 --완성확정
 
 원본은 보존합니다. 전달 완료 후 작업실의 자동 등록 결과를 확인해 주세요.
+사전검사를 연결하면 영상·자막과 검사에 사용한 대본·받아쓰기의 존재 및 SHA256을 대조하고 동일한 전달을 재사용합니다.
 이 명령은 작업실 반영이나 SNS 게시 성공을 의미하지 않습니다.`);
 }
 

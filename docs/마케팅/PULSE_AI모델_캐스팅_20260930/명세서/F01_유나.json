@@ -4,7 +4,7 @@
   "코드": "F01",
   "키": "F20b",
   "이름": "유나",
-  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 장면 사진·학습은 아직 없음.",
+  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 10-19 데이터셋·LoRA 칸을 더함(추가컷 칸은 아직).",
   "기준파일": {
     "대표사진": "raw/F20-hero-b-clean.png",
     "전신": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f01-fullbody-v1.webp"
@@ -24,6 +24,21 @@
       "어깨_얼굴폭_비": 2.16,
       "다리비율_골반관절에서바닥": 0.517,
       "몸통비율_어깨에서골반": 0.274
+    },
+    "검사_허용범위": {
+      "설명": "새로 만든 정면 전신 사진을 measure_body.py로 쟀을 때 이 범위 밖이면 눈으로 다시 확인한다. 자세·옷·카메라 높이에 따라 몇 % 흔들린다(하린·지유와 같은 폭, 10-19).",
+      "등신": [
+        6.5,
+        7.14
+      ],
+      "어깨_얼굴폭_비": [
+        2.01,
+        2.31
+      ],
+      "다리비율": [
+        0.495,
+        0.539
+      ]
     }
   },
   "색": {
@@ -66,6 +81,36 @@
       "내용": "로즈 코랄 립과 눈매를 길게 빼는 아이라인이 기본이에요."
     }
   ],
+  "데이터셋": {
+    "트리거": "pls_f01",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F01_yuna/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F01_yuna/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F01_yuna/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F01_yuna/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/validation/F01_yuna/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F01_yuna/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F01_yuna/job_config_v2.json",
+    "학습": "2026-10-19 02:51~06:31, 33장, 3,300스텝(평균 스텝당 약 4초 — GPU 전력 한도가 85~99W로 묶여 1.5~5.7초로 오르내림)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f01",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f01_yuna_v2/f01_yuna_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f01_yuna_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f01, a young Korean woman, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-19, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 유나로 보인다. 약한 칸: V01 밤 플래시 맨얼굴(아이라인이 빠지자 눈이 둥글고 크게 떠지고 윗입술이 얇아짐), V05 아래에서 한낮(찡그림이 exp-angry 학습컷째로 새어 성숙해 보임), V08 전신(얼굴이 작아 턱이 넓적하고 입술이 어두움)",
+      "검증표": "C:/SYNK-LoRA/validation/F01_yuna/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F01_yuna/verify_v2_jobs.json",
+      "주의": "옆얼굴·45° 지시가 정면~반측면으로 당겨진다(V03·V09) — 각도는 지시문에 세게 적고 결과 각도를 그림으로 확인한다. 아이라인 없는 맨얼굴에선 눈이 기준보다 크고 둥글게 떠지니 winged eyeliner를 지시문에 적고, squint는 relaxed brow로 바꾼다. 자세한 판정 C:/SYNK-LoRA/validation/F01_yuna/v2_validate/Fable_판정.md"
+    }
+  },
   "목소리": [
     {
       "번호": 1,

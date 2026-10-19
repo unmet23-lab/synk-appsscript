@@ -1,0 +1,37 @@
+{
+  "project": "yuhobuilds 「계정 바꿔도 Claude 세션이 안 사라지게」 내레이션",
+  "note": "2026-10-17 유호님 「둘 다 한번씩 들어볼수있을까 ?」 → 같은 대본(원고.md 「대사」 표의 읽기 글, A판)을 Achird(Gemini TTS, 대본 전체를 한 번에)와 범수(Typecast, 범수_굽기.mjs)로 읽혀 비교한다. 노트북 이사 편과 같은 방식: segments는 화면·자막 단위, 시각은 받아쓰기 정렬(한번에_맞추기.py)의 낱말 시각. 숫자는 원고.md 사실 대조 표. 훅 E(유튜브) h1e는 같은 목소리로 따로 읽혀 h1 자리에 바꿔 끼운다(--segs h1e).",
+  "take": {
+    "engine": "Gemini TTS (Vertex AI)",
+    "model": "gemini-3.8-flash-tts",
+    "voice": "Achird",
+    "file": "음성/take/take.wav",
+    "breaks": ["c1", "t1", "m1", "e1", "f1"],
+    "notes": [
+      "Voice: a Korean man in his early thirties with a warm, bright, likable voice, like a popular tech storyteller on short-form video who is telling friends about a mishap that turned out fine. Lively and expressive, smiling, but natural: never cartoonish, never shouting, never a hard-sell announcer.",
+      "Situation: every time he switched accounts in a desktop app, his work sessions seemed to vanish. His first clever workaround was quietly refused by the app over and over, and a couple of hours of records were lost before he recovered them. He finally fixed it properly, and now he finds the whole thing funny and wants to share his tool.",
+      "Flow: read the whole transcript as one continuous story, the way people really talk. Do not restart the intonation at every sentence. A clause ending with a comma carries straight on with only a tiny breath. Pauses between sentences stay short, about a third of a second.",
+      "Beats: the opening line is a mock-dramatic confession, not real panic. When he admits his workaround, he sounds a little sheepish and playful. The big number of refusals gets a comic, disbelieving emphasis. The relief right after is genuine. The fix is told with quiet confidence. The ending is warm and inviting."
+    ]
+  },
+  "segments": [
+    { "id": "h1", "text": "클로드 계정 바꿨더니, 세션이 다 사라졌어요." },
+    { "id": "s1", "text": "다섯 시간 한도가 차면 계정을 바꿔 쓰는데, 바꾸자마자 세션 목록이 비어 보이더라고요." },
+    { "id": "c1", "text": "대화가 지워진 건 아니었어요. 앱이 목록을 계정마다 따로 들고 있었던 거죠." },
+    { "id": "t1", "text": "그래서 꼼수를 썼죠. 계정 폴더가 전부 한 폴더를 가리키게, 링크를 걸었어요." },
+    { "id": "t2", "text": "목록은 보였는데, 앱이 링크를 알아채고 저장을 거부했어요." },
+    { "id": "t3", "text": "로그엔 같은 거절이 천팔십육 번. 링크 건 계정으로 일한 두 시간, 세션 스물한 개가 저장이 안 됐어요." },
+    { "id": "r1", "text": "다행히 대화 원문이 남아 있어서, 기록을 되살렸어요." },
+    { "id": "m1", "text": "결국 링크는 다 걷어내고, 계정마다 있는 폴더를 전부 진짜 폴더로 뒀어요." },
+    { "id": "m2", "text": "대신 한 곳이 바뀌면, 한두 초 안에 나머지 전부에 똑같이 옮겨요." },
+    { "id": "e1", "text": "이제 어느 계정으로 들어가도, 같은 목록이 떠요." },
+    { "id": "f1", "text": "방법만 글로 드리면 따라 하기 어렵잖아요. 그래서 제가 쓰는 도구를 공개했어요. 링크는 프로필에 있어요." }
+  ],
+  "variants": {
+    "h1e": { "replaces": "h1", "text": "클로드 앱한테 천팔십육 번 거절당했어요. 제 꼼수 때문에요." },
+    "sum": { "replaces": "h1", "text": "클로드 다섯 시간 한도 차서 계정을 바꿔도, 세션이 그대로 이어져요.", "note": "10-18 유호님 「요약한 내용을 처음에 보여줘야 좋을것같아 … 계정 교체해도 세션 공유되는게 주 장점인데 이게 잘 안보여」 → 본편은 결과 먼저로 연다" },
+    "h1b": { "replaces": "s1", "text": "처음엔 계정 바꾸자마자, 세션이 다 사라졌어요.", "note": "요약 뒤 처음으로 돌아가는 줄(5시간 한도 설명은 요약이 맡는다)" },
+    "sum2": { "replaces": "sum·h1b", "text": "지금은 다섯 시간 한도 차서 계정을 바꿔도, 세션이 그대로 이어져요.", "note": "10-18 유호님 「후킹능력이 좀 떨어져 … 조금 더 궁금하게 시작」 → 「사라짐 → 그대로 3초 오프닝」: h1(사라졌어요) 바로 뒤에 오는 되살린 말" },
+    "cta": { "replaces": "f1 끝 문장(링크는 프로필에 있어요.)", "text": "댓글에 세션 남기면 링크 보내 드려요. 팔로우하면 다음 도구도 보여 드릴게요.", "note": "10-18 유호님 「좋아. 끝을 댓글 「세션」 + 팔로우로 바꿔줘.」 f1은 「공개했어요.」 끝에서 잘라 f1a로 쓴다(remotion/준비.mjs)" }
+  }
+}

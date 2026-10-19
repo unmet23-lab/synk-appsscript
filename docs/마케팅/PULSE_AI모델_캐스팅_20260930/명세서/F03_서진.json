@@ -4,7 +4,7 @@
   "코드": "F03",
   "키": "F20sb",
   "이름": "서진",
-  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 장면 사진·학습은 아직 없음.",
+  "틀": "F02_하린.json에서 데이터셋·LoRA·추가컷 칸을 뺀 기본 명세서. 10-19 데이터셋·LoRA 칸을 더함(추가컷 칸은 아직).",
   "기준파일": {
     "대표사진": "raw/F20-smart-v3-2.png",
     "전신": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f03-fullbody-v1.webp"
@@ -24,6 +24,21 @@
       "어깨_얼굴폭_비": 2.27,
       "다리비율_골반관절에서바닥": 0.498,
       "몸통비율_어깨에서골반": 0.289
+    },
+    "검사_허용범위": {
+      "설명": "새로 만든 정면 전신 사진을 measure_body.py로 쟀을 때 이 범위 밖이면 눈으로 다시 확인한다. 자세·옷·카메라 높이에 따라 몇 % 흔들린다(하린·지유와 같은 폭, 10-19).",
+      "등신": [
+        6.86,
+        7.5
+      ],
+      "어깨_얼굴폭_비": [
+        2.12,
+        2.42
+      ],
+      "다리비율": [
+        0.476,
+        0.52
+      ]
     }
   },
   "색": {
@@ -66,6 +81,36 @@
       "내용": "누드 코랄 립에 작은 금색 링 귀걸이가 기본이에요."
     }
   ],
+  "데이터셋": {
+    "트리거": "pls_f03",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F03_seojin/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F03_seojin/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F03_seojin/v2",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F03_seojin/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 19장(생성 19번)",
+      "장면": "C:/SYNK-LoRA/validation/F03_seojin/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F03_seojin/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F03_seojin/job_config_v2.json",
+    "학습": "2026-10-19 07:04~11:15, 33장, 3,300스텝(08:48 PC 재시작으로 1,321스텝에서 멈춘 뒤 08:53 1,250 저장점과 optimizer에서 이어 감 · 평균 스텝당 약 4.4초)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f03",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f03_seojin_v2/f03_seojin_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f03_seojin_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f03, a young Korean woman, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-19, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 서진으로 보인다. 약한 칸: V07 파란 해 질 녘 무표정(차가운 평광에서 팔자주름·납작한 뺨으로 5살쯤 더 들어 보임), V08 전신(얼굴이 작아 턱이 넓적하고 입술이 어두움). 옆얼굴 −61°·45° −24~−27°로 각도를 잘 따르고 맨얼굴 플래시(V01)에서도 눈매가 유지됨",
+      "검증표": "C:/SYNK-LoRA/validation/F03_seojin/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F03_seojin/verify_v2_jobs.json",
+      "주의": "무표정+차가운 빛 클로즈업은 나이 들어 보이니 slight smile이나 따뜻한 빛을 적고, 클로즈업은 85mm 렌즈로 적는다(candid·selfie는 광각 꼴). 점이 컷마다 다른 자리에 생기고(기준은 왼뺨 하나) 링 귀걸이는 안 적어도 따라온다(옆얼굴에선 빠질 수 있음) — 연속 컷은 후보정으로 맞춘다. 얼굴은 늘 화면 왼쪽으로 도니 방향은 뒤집기나 시드로. 자세한 판정 C:/SYNK-LoRA/validation/F03_seojin/v2_validate/Fable_판정.md"
+    }
+  },
   "목소리": [
     {
       "번호": 1,

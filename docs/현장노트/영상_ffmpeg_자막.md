@@ -41,6 +41,18 @@
 - 고침: 1패스로 input_i를 잰 뒤 `volume=<-14 - input_i>dB,alimiter=limit=0.84:attack=1:release=60:level=false`(필요하면 limit 0.75)로 올린다. 음악이 깔린 믹스는 loudnorm 선형이 잘 된다. amix는 가장 긴 입력에서 끝나니 영상 길이만큼 `anullsrc`를 한 줄 더 섞어 길이를 채운다.
 - 다시 확인: 최종 파일을 `ebur128=peak=true`로 다시 재서 −14.5±0.3 LUFS · 최대 −1.2 dBFS 안인지 본다.
 
+### 끝없는 `apad`를 섞은 인코딩이 출력 2MB쯤 쓰고 CPU만 쓰며 멈춘다
+- 증상: 10-18 지유 이미지 콘티 가편집(`이미지콘티_가편집.py`, PNG 360장 + 내레이션 3개·음악을 `amix=…:duration=longest,apad,atrim=0:15` · `-t 15`로 인코딩)에서 ffmpeg가 3초 만에 mp4를 2~2.6MB 쓴 뒤 10분 넘게 파일이 자라지 않고 CPU 시간만 쌓였다. 오류도 끝도 없고, 남은 파일은 moov가 없어 열리지 않는다. 30분 전 같은 스크립트는 1분 반에 끝났고, 같은 명령을 셸에서 바로 돌리면 2~3초에 끝나 「표준 입력 탓」으로 잘못 짚었다(`-nostdin`·`stdin=DEVNULL`을 넣어도 또 멈췄다).
+- 원인: `apad`가 길이 없이 무음을 끝없이 만든다. 파이썬에서 `capture_output=True`로 같은 명령을 돌리면 60초 시간 초과(2.6MB), 출력을 물려주면 2초 — 때에 따라 멈추는 ffmpeg 9 스레드 일정과의 경쟁으로 보인다.
+- 고침: 무음 채우기는 늘 길이를 못 박는다: `apad=whole_dur=15,atrim=0:15`. 바꾼 뒤 `capture_output` 모드로 세 번 모두 2.2~2.6초에 끝났다. 멈췄으면 그 ffmpeg만 끄고(부모 파이썬은 따라 끝난다) 남은 임시 PNG로 다시 돌린다.
+- 다시 확인: 출력 파일 크기가 몇 초마다 자라는지 본다. `ffprobe`가 「moov atom not found」면 덜 쓴 파일이다.
+
+### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다
+- 증상: 10-19 지유 광고 v3b(파이썬에서 rgb24를 파이프로 넣고 `-vf noise=…` 뒤 libx264)에 `-colorspace bt709 -color_primaries bt709 -color_trc bt709`를 붙였는데, `ffprobe`가 `color_space=bt709`만 보여 주고 `color_primaries`·`color_transfer`는 unknown이었다.
+- 원인: 필터를 지난 프레임에 그 값이 없으면 libx264가 프레임 쪽 값을 따라 VUI의 원색·감마 칸을 비운다(추정).
+- 고침: 인코딩에는 `-x264-params colorprim=bt709:transfer=bt709:colormatrix=bt709`를 함께 준다. 이미 뽑은 파일은 다시 인코딩하지 않고 `ffmpeg -i in.mp4 -map 0 -c copy -bsf:v "h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1" out.mp4`로 태그만 고친다(10-19 다섯 판, 몇 초).
+- 다시 확인: `ffprobe -v error -select_streams v:0 -show_entries stream=color_space,color_primaries,color_transfer -of csv=p=0 <파일>`이 `bt709,bt709,bt709`인지.
+
 ## 렌더(HyperFrames·GSAP)
 
 아래 HyperFrames 항목은 기존 영상 수정·재현의 기술 참고다. 새 영상의 도구는 [제작 도구 선택](../마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다.
@@ -80,6 +92,12 @@
 - 원인: flex 상자 안에서는 글 조각과 요소가 각각 flex 항목이 되고, 항목 끝의 빈칸은 접힌다.
 - 고침: 값 칸은 보통 글줄(`white-space:nowrap`)로 두고, 작은 고리는 앱 CSS의 `vertical-align`으로 맞춘다.
 - 다시 확인: 정지컷에서 「62% 남음」 사이가 띄어져 있는지 본다.
+
+### 밝은 판이 어두운 창으로 바뀌는 몇 프레임에 회색 판이 비친다
+- 증상: 10-18 세션 공유 편 Remotion 본편에서 종이 판 → 어두운 로그 창 전환 3~6프레임과 폴더 카드가 사라지는 프레임에 회색 판·회색 카드가 찍혔다(Fable 검수 「반투명 회색 유령 카드」). 30프레임 간격 시트에서는 안 보이고 2~3프레임 간격 띠에서만 보였다.
+- 원인: 밝은 판을 opacity로 내리면 검정 무대가 비쳐 회색이 된다. 어두운 창을 clip으로 덮으면서 밝은 판도 같이 흐리면(`paper = 1 − dark`), 아직 안 덮인 부분이 회색이다. 밝은 판과 어두운 판을 서로 반대로 페이드해도 같다.
+- 고침: 밝은 판은 다 덮일 때까지 1로 두고 덮인 뒤에 내린다(`paper = dark < 1 ? 1 : 0`). 사라질 카드는 흐리지 말고 다른 판 밑으로 모으거나 위·아래에서 덮는다. 같은 색 판에서 판으로 넘길 때(확대한 칸 → 사이드바)는 새 판 종이를 처음부터 1로 두고 내용만 바꾼다. 보기 `docs/마케팅/yuhobuilds_세션공유_20261017/remotion/src/full/kit.tsx`의 `Shell`.
+- 다시 확인: 전환 구간을 `ffmpeg -i out/x.mp4 -vf "select='between(n\,A\,B)*not(mod(n-A\,3))',scale=270:-1,tile=10x1" -frames:v 1 strip.png`로 뽑아 회색 판이 없는지 본다.
 
 ## 목소리·받아쓰기
 
@@ -141,8 +159,45 @@
 
 ## 렌더 장비
 
+### 새 노트북(RTX 5090 24GB)은 블렌더 한 장이 ZeroGPU보다 빠르다
+- 증상: 10-08·10-14의 「로컬은 느리니 ZeroGPU로」 판단은 옛 노트북 기준이었다(10-08 450장 3시간 25분 렉).
+- 원인: 10-16 리전 프로 7(RTX 5090 Laptop 24GB, OptiX)로 옮겼다. 10-18 같은 장면·같은 설정으로 다시 잼(펠트 찻집 `.tmp/argon-blender-20261017/scene_v3.blend`, 물체 211·면 8.9만, Cycles). 1024² 샘플 72: 로컬 렌더 5.3~5.6초(블렌더 띄우기 포함 7초) 대 ZeroGPU 9.8초(올리고 받기 포함 왕복 35초). 1080×1920 샘플 512: 로컬 16~22초(18~25초) 대 ZeroGPU 19.3초(49초). 결과 그림은 같다(평균 화소 차이 0.52/255). ZeroGPU Space는 반쪽 RTX Pro 6000에서 CUDA로 그린다.
+- 고침: 블렌더 렌더는 로컬이 기본이다. ZeroGPU(`cpuai/blender-render-studio`)는 노트북을 다른 일에 비워 둬야 할 때, 로컬과 나눠 동시에 돌릴 때만 쓴다(하루 40분이면 무거운 컷 약 120장). 재는 도구 `.tmp/bench-5090-local/cafe/render_local.py`·`render_zerogpu.py`.
+- 다시 확인: 같은 .blend를 `render_local.py`와 `render_zerogpu.py`로 한 번씩 돌려 렌더 초를 견준다.
+
+### 남의 이미지·업스케일 Space는 GPU 몇 초에 왕복 몇 분이고, 공식 SeedVR2 Space는 깨져 있다
+- 증상: 10-18 같은 긴 캡션·시드 42·1024²로 잼. FLUX 3 Klein 공식 Space(`black-forest-labs/flux-3-image-klein`) 세 장이 할당량 22.9초(장당 GPU 6~8초)인데 왕복은 141~251초였다. Qwen-Image 2.1 Turbo(`hugging-apps/qwen-qwen-image-2-1-turbo`) 세 장은 11.2초(장당 3.7초)에 왕복 126~193초였다. SeedVR2 공식 Space(`ByteDance-Seed/SeedVR2-3B`)와 `Lennox9898/SeedVR2-3B`는 영상·그림 모두 `AppError RuntimeError`, 그림은 `Upsampler/seedvr2-3b`만 됐다(480×854 → 1072×1920, 왕복 61초). 실패한 호출도 할당량을 썼다(SeedVR2 넷에 21.6초).
+- 원인: 왕복의 대부분은 인기 Space 대기열과 우리 망(다른 세션 내려받기와 나눠 씀)이다. 공식 SeedVR2 Space는 2025-08판으로 flash-attn·apex 리눅스 바퀴를 실행 중에 깔아 쓰는데, ZeroGPU가 RTX Pro 6000 Blackwell(sm120)로 바뀐 뒤 맞지 않는 것으로 보인다(추정).
+- 고침: 남의 Space는 「GPU 몇 초 + 대기열」로 어림하고, 많이 돌릴 일은 복제하거나 로컬로. Qwen-Image Space의 `resolution`은 글자가 아니라 숫자(1024)다. 망이 붐빌 때는 `httpx_kwargs={"timeout": httpx.Timeout(600)}`을 준다. SeedVR2 영상은 지금 ZeroGPU 공개 Space로는 안 되니 로컬 ComfyUI 노드로 한다. 도구 `.tmp/bench-5090-local/image/zerogpu_image_bench.py`·`upscale/zerogpu_seedvr2_alt.py`.
+- 다시 확인: `HfApi().get_space_runtime("ByteDance-Seed/SeedVR2-3B")`가 RUNNING이어도 그림 한 장을 넣어 RuntimeError인지 본다.
+
+### FLUX 3 Klein·SeedVR2도 새 노트북 로컬이 기본이고, FLUX 공식 Space는 지시문을 늘 늘린다
+- 증상: 10-18 ZeroGPU FLUX 그림과 로컬 그림을 같은 지시문으로 견주려 했는데, Space가 돌려준 세 번째 값(모델이 본 캡션)이 우리 지시문이 아니라 230~260단어로 늘린 글이었다. `prompt_upsampling=False`를 줬는데도 그랬다.
+- 원인: 공식 Space(`black-forest-labs/flux-3-image-klein`) `app.py`가 10-17부터 지시문 확장기(PUP, temperature 0)를 늘 돌리고 `prompt_upsampling`은 무시한다. 확장은 GPU 밖이라 할당량은 안 쓴다. 같은 시드면 그림이 화소까지 같다(두 번 돌려 차이 0).
+- 고침: 로컬 비교는 Space가 돌려준 캡션 전문으로 한다(`.tmp/bench-5090-local/image/zerogpu_flux_caption.py` → `captions_flux.json`). 10-18 로컬 RTX 5090 수치: FLUX 3 Klein nvfp4 + qwen3vl int8(ComfyUI API, `local_flux_comfy.py`) 1024²·16단계 한 장 6.7~7.6초, 처음 적재 18초, VRAM 최대 11.9GB. 같은 캡션이면 구도·질감이 ZeroGPU판과 거의 같다(평균 화소 차이 10~13/255, nvfp4 탓). ZeroGPU는 같은 장이 왕복 66~83초. SeedVR2-3B fp16(노드 CLI, `upscale/run_local_seedvr2.sh`): 그림 480×854 → 1072 한 장 전체 37초(파이썬 띄우기·적재 포함, 계산 약 8초, 9.4GB). 영상 4초 97프레임 → 720p 131초, → 1080p(`--vae_encode_tiled --vae_decode_tiled`) 312초, 둘 다 batch 33에 VRAM 23GB 가까이 차고 VAE 디코딩이 시간의 절반을 넘는다. Upsampler Space 그림은 로컬보다 또렷하지만 주근깨·눈매를 더 지어낸다.
+- 다시 확인: ComfyUI를 남의 8188과 겹치지 않게 `--port 8190`으로 띄워 `local_flux_comfy.py captions_flux.json <폴더>`를 돌리고, 끝나면 그 프로세스를 끄고 GPU를 쓰는 세션에 알린다.
+
+### 노트북 GPU가 다른 작업에 오래 잡혀 있으면 기다리지 말고 ZeroGPU로 돌린다
+- 증상: 10-18 MiniMax H3 로컬 6컷(2시간)과 LoRA 학습(4시간, 15GB)이 GPU를 차례로 잡는 동안, 다른 세션들은 「GPU 비었어요」 메시지만 기다렸다. 노트북이 바쁘면 ZeroGPU로 넘기는 장치는 없다.
+- 원인: GPU 하나(24GB)를 여러 세션이 나눠 쓴다. 유호님 10-18: 넘기는 도구는 만들지 않고 규칙으로 한다(「가벼운게 낫겠다」).
+- 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `q121235/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다.
+- 다시 확인: 남은 할당량을 [결제 페이지 데이터](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다)로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
+
+### 큰 모델 내려받기가 0바이트에서 멈추거나 끊기면 조각이 지워진다
+- 증상: 10-18 다른 세션이 `hf download`·병렬 내려받기로 큰 모델을 받는 동안, 이쪽 `hf_hub_download`·`hf download`가 몇 분째 0바이트였다(xet). xet를 끄자 초당 6MB로 받았지만, 잠깐 주소를 못 찾자(`getaddrinfo failed`) 받던 5.5GB 조각이 사라졌다. 세 세션이 함께 받을 때 회선 전체가 초당 10MB 안팎이었다.
+- 원인: xet 내려받기가 같은 PC의 다른 xet·병렬 내려받기에 밀려 시작하지 못한 것으로 보인다(추정). 조각이 지워진 까닭은 모른다.
+- 고침: `HF_HUB_DISABLE_XET=1 hf download …`로 받고, 끊겨도 다시 시도하는 반복으로 감싼다(`C:/SYNK-LoRA/models/get_flux.sh`). 큰 내려받기 전에 `ListAgents`와 `Get-NetTCPConnection`으로 같은 시각에 받는 세션이 있는지 보고, 있으면 순서를 맞춘다.
+- 다시 확인: `find <local-dir>/.cache -name "*.incomplete" -printf "%s\n"`을 20초 간격으로 두 번 재서 늘어나는지 본다.
+
+### ComfyUI 노드 패키지를 남이 쓰는 ComfyUI 환경에 깔지 않고 따로 돌린다
+- 증상: SeedVR2 노드(`ComfyUI-SeedVR2_VideoUpscaler`)를 ComfyUI 가상환경에 깔면 huggingface_hub·diffusers·peft 등 20개가 바뀐다(10-18 미리 보기). 그 ComfyUI는 다른 세션이 띄워 쓰고 있었다. 노드의 `inference_cli.py`는 한국어 콘솔에서 `UnicodeEncodeError: 'cp949'`로 멈췄다.
+- 원인: 노드 requirements가 그 판들을 요구한다. 노드가 이모지를 찍는다.
+- 고침: 모자란 패키지만 `pip install --no-deps --target C:/SYNK-LoRA/tools/seedvr2-extra <패키지==판…>`으로 따로 깔고, `PYTHONPATH`로 그 폴더를 붙여 `PYTHONIOENCODING=utf-8 venv/Scripts/python.exe -X utf8 custom_nodes/ComfyUI-SeedVR2_VideoUpscaler/inference_cli.py`로 돌린다. ComfyUI 서버를 다시 켤 필요가 없다. 가중치는 `ComfyUI/models/SEEDVR2/`(numz/SeedVR2_comfyUI의 fp16·fp8).
+- 다시 확인: `--help`가 뜨는지, 뜰 때 「SageAttention ❌ | Flash Attention ❌」 줄(윈도우는 sdpa로 돈다)을 본다.
+- 10-19 지유 광고: 출력 폴더가 한글 경로(`synk-vendor/…/영상_H3/업/`)면 기록에는 저장했다고 나오는데 PNG가 0장이었다(노드가 `cv2.imwrite`로 쓰고 실패 값을 보지 않는다. [윈도우_셸](윈도우_셸.md)의 cv2 한글 경로와 같은 원인). 입력도 영문 이름으로 복사해 `C:\SYNK-LoRA\work\jiyu_up`에서 돌리고 결과를 옮긴다(광고 폴더 `영상_다듬기.py`). 그렇게 돌린 6구간은 48·72장이 모두 나왔다(구간당 4.6~6.9분). VRAM을 23GB 가까이 써 LoRA 학습과 같이 못 도니, 학습 사이 틈에 끼운다(`C:\SYNK-LoRA\validation\_v2공통\학습_사슬.py`).
+
 ### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
-- 증상: 블렌더 450장을 이 PC에서 3시간 25분 돌려 PC가 렉이 났다(10-08). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
+- 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
 - 원인: Jobs는 선불 잔액에서 분 단위로 빠진다(10-11 공식 요금표: CPU Upgrade $0.03/h, T4 $0.40, L4 $0.80, RTX PRO 6000 $2.75, 시작·받기 4~6분도 값에 든다). 잔액 충전은 결제라 유호님 몫이다. 거절돼도 `-v` 폴더는 먼저 버킷에 올라간다.
 - 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기는 [아래 항목](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
 - 다시 확인: Jobs는 L4 10장 시험으로 장당 시간을 먼저 잰다(장당 GPU 시간은 아직 어림값이다).
@@ -152,3 +207,27 @@
 - 원인: CLI는 `REMOTION_`으로 시작하는 환경 변수를 번들 안 `process.env`로 넘겨 주지만 Node API는 넘기지 않는다. `REMOTION_TEMPO=100`이 비어 Root가 100 BPM 판을 등록하지 않았다. 스크립트에서 `process.env`에 넣어도 같다.
 - 고침: `selectComposition`·`renderStill`·`renderMedia`에 `envVariables: { REMOTION_TEMPO: '100' }`를 직접 준다(`remotion/현지어_정지컷.mjs`·`현지어_렌더.mjs`). 한글 경로는 `fileURLToPath(import.meta.url)`로 바꿔야 `%EB…`로 남지 않는다.
 - 다시 확인: 같은 스크립트로 26개 채널 정지컷·영상이 모두 나왔고, 뉴질랜드판은 게시된 영어판과 끝 계정만 달랐다.
+
+### 남의 ZeroGPU Space를 복제하면 빌드가 spaces 판 충돌로 실패한다
+- 증상: 10-17 `Pepe104/MiniMax-H3-Turbo-Lora-UNCENSORED`·`multimodalart/qwen3vl-conditioner`를 비공개로 복제하자 둘 다 BUILD_ERROR, 「Cannot install spaces==0.51.1 and spaces==0.51.3」.
+- 원인: 빌더가 pip 줄에 자기 판 `spaces==0.51.3`을 덧붙이는데 원본 requirements.txt가 `spaces==0.51.1`로 묶여 있다. 원본은 예전에 빌드한 이미지로 돌아서 멀쩡하다.
+- 고침: 복제본 requirements.txt에서 `spaces==` 줄을 빼고 다시 올린다. 빌드·실행 기록은 `GET https://huggingface.co/api/spaces/<id>/logs/build`(실행은 `/logs/run`, 토큰 헤더, SSE).
+- 다시 확인: `HfApi().get_space_runtime(id).stage`가 RUNNING.
+
+### 둘로 나뉜 ZeroGPU Space를 둘 다 비공개로 두면 앞쪽이 뒤쪽을 못 부른다
+- 증상: MiniMax-H3 생성 Space는 조건 Space를 `gradio_client.Client(id, headers={"x-ip-token": …})`로 토큰 없이 부른다. 둘 다 비공개면 막힌다.
+- 원인: Space 안에는 토큰이 없다(Secrets에 HF_TOKEN을 넣어야 하고, 토큰 입력은 유호님 몫).
+- 고침: 생성 Space 복제본에 조건값 파일을 직접 받는 `generate_from_embeds` 입구를 더하고, 이 PC에서 조건 `/encode` → 생성 `/generate_from_embeds`를 차례로 부른다(`.tmp/h3-rehearsal-20261017/run_h3.py`). 로컬 로그인 토큰으로 부른 두 호출 모두 유호님 할당량에서 빠진다(조건 Space 기록 「the caller's own quota」).
+- 다시 확인: 조건 Space 실행 기록의 `[cond] /encode on …` 줄.
+
+### ZeroGPU 남은 할당량은 결제 페이지 데이터에 초 단위로 있다
+- 증상: 「남은 할당량은 API로 안 나온다」로 알고 있었다(10-14).
+- 원인: 크롬 로그인 `huggingface.co/settings/billing` 화면은 분 단위(0/40분)지만, 페이지 `data-props` 안 `"zeroGpu":{"current":<남은 초>,"base":2400,"resetsAt":…}`는 초 단위다. 차감은 예약 시간이 아니라 실제 GPU 초 × 크기 배수(xlarge 2배)다: 10-17 조건 7.5초 → 14.8초, 생성 109초 → 218.1초. 다 쓰면 선불 잔액에서 자동으로 빠진다(10분 $1). `resetsAt`은 첫 사용 24시간 뒤.
+- 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
+- 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
+### 사전검사 뒤 대본만 고치면 옛 대조 결과로 전달될 수 있다
+- 증상: 10-17 영상·자막은 그대로 두고 검사에 사용한 대본·받아쓰기를 고치거나 지워도 `완성본등록.mjs --inspection`이 통과했다. 대본만 제공해 대조 상대가 없어도 별도 안내가 없었다.
+- 원인: 전달 때 영상·자막 SHA256만 확인했고, 대본 대조는 상대 입력이 없으면 건너뛰었다.
+- 고침: 검사에 사용한 대본·받아쓰기의 원래 경로·존재·SHA256도 전달과 재사용 때 확인한다. 대조 상대 누락은 검토 안내, 제공된 빈 원문은 차단으로 남긴다. 영상만 기술 검사하는 사용은 유지한다.
+- 다시 확인: `node --test tests/영상사전검사.test.mjs tools/완성본등록.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.test.mjs` 34/34 통과. 수정·삭제된 원문 전달 차단, 원문 복원 후 같은 전달 재사용, CLI 경고 0·차단 2·실행 실패 1 확인. 실제 운영 인박스·게시에는 적용 실행하지 않았다.
+

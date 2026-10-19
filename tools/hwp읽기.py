@@ -8,6 +8,7 @@ HWP로 온 문서를 AI가 읽어야 할 때 이 도구로 글과 표를 꺼낸�
 - .hwp: OLE 복합 파일(olefile) → BodyText/Section* 스트림(raw deflate) → 레코드 → 문단 글(PARA_TEXT).
 - .hwpx: zip 안 Contents/section*.xml의 문단(hp:p)·표(hp:tbl)를 순서대로.
 - 표는 「[표 행×열]」 아래 행마다 `| 칸 | 칸 |`로 적는다(칸 안 여러 문단은 ` / `로 잇는다). --표없이면 칸 글을 문단처럼 차례로 적는다.
+  표 제목(캡션)은 칸이 아니라 `(표 제목) …` 한 줄로, 제목이 표 위·왼쪽이면 「[표 …]」 바로 아래, 아래·오른쪽이면 마지막 행 뒤에 적는다.
 - 배포용 문서(ViewText)는 머리 레코드의 열쇠로 AES-128을 풀어 읽는다(파이썬만으로, 추가 설치 없음).
   열쇠 꺼내기는 형식 문서대로 짰지만 10-17에는 시험할 배포용 파일이 없었다 — 풀기에 실패하면 zlib 오류로 멈춘다.
 - 암호를 건 문서는 읽지 않고 그렇다고 알린다.
@@ -185,23 +186,42 @@ def cell_groups(kids):
     return groups
 
 
+def group_text(paras, tables):
+    sub = Out(tables); render_paras(paras, sub, 0)
+    return ' / '.join(' '.join(l.split()) for l in sub.lines if l.strip())
+
+
 def render_ctrl(c, out, depth):
     cid = ctrl_id(c)
     if cid == 'tbl ':
-        t = next((k for k in c.kids if k.tag == TABLE), None)
+        ti = next((i for i, k in enumerate(c.kids) if k.tag == TABLE), None)
+        t = c.kids[ti] if ti is not None else None
         rows, cols = (struct.unpack_from('<HH', t.data, 4) if t is not None and len(t.data) >= 8 else (0, 0))
-        groups = cell_groups(c.kids)
+        # 표 제목(캡션)은 TABLE 레코드 앞의 LIST_HEADER에 든다. 칸은 TABLE 뒤의 LIST_HEADER부터다.
+        # 캡션 LIST_HEADER의 8바이트째 값 아래 두 비트가 자리다(0 왼쪽 · 1 오른쪽 · 2 위 · 3 아래).
+        head, body = (c.kids[:ti], c.kids[ti + 1:]) if ti is not None else ([], c.kids)
+        caps = []
+        for k in head:
+            if k.tag == LIST_HEADER:
+                side = struct.unpack_from('<I', k.data, 8)[0] & 3 if len(k.data) >= 12 else 2
+                caps.append({'first': side in (0, 2), 'paras': []})
+            elif k.tag == PARA_HEADER and caps:
+                caps[-1]['paras'].append(k)
+        groups = cell_groups(body)
         if not out.tables:
-            for g in groups: render_paras(g['paras'], out, depth + 1)
+            for g in [x for x in caps if x['first']] + groups + [x for x in caps if not x['first']]:
+                render_paras(g['paras'], out, depth + 1)
             return
         out.lines.append(('  ' * depth) + f'[표 {rows}×{cols}]')
+        cap_line = lambda g: ('  ' * depth) + '(표 제목) ' + group_text(g['paras'], out.tables)  # noqa: E731
+        out.lines.extend(cap_line(g) for g in caps if g['first'])
         grid = {}
         for g in groups:
-            sub = Out(out.tables); render_paras(g['paras'], sub, 0)
-            grid.setdefault(g['row'], []).append((g['col'] or 0, ' / '.join(' '.join(l.split()) for l in sub.lines if l.strip())))
+            grid.setdefault(g['row'], []).append((g['col'] or 0, group_text(g['paras'], out.tables)))
         for r in sorted(grid, key=lambda x: (x is None, x)):
             cells = [txt for _, txt in sorted(grid[r])]
             out.lines.append(('  ' * depth) + '| ' + ' | '.join(cells) + ' |')
+        out.lines.extend(cap_line(g) for g in caps if not g['first'])
         return
     # 머리말·꼬리말·각주·글상자 등: 안의 문단을 모두 차례로(한 칸 들여)
     def walk(nodes):
@@ -302,16 +322,27 @@ def read_hwpx(path, tables=True, info=False):
 
     def walk_tbl(tbl, depth):
         rows = [tr for tr in tbl if local(tr.tag) == 'tr']
+        # 표 제목(캡션): <hp:caption side="TOP|BOTTOM|LEFT|RIGHT"> 안의 subList. HWP 쪽과 같은 자리에 적는다.
+        caps = [(cap.get('side', 'TOP') in ('TOP', 'LEFT'), cell_text(cap)) for cap in tbl if local(cap.tag) == 'caption']
         if not tables:
+            for first, ls in caps:
+                if first:
+                    for l in ls: lines.append('  ' * (depth + 1) + l)
             for tr in rows:
                 for tc in tr:
                     if local(tc.tag) == 'tc':
                         for l in cell_text(tc): lines.append('  ' * (depth + 1) + l)
+            for first, ls in caps:
+                if not first:
+                    for l in ls: lines.append('  ' * (depth + 1) + l)
             return
         lines.append('  ' * depth + f"[표 {tbl.get('rowCnt', len(rows))}×{tbl.get('colCnt', '?')}]")
+        cap_line = lambda ls: '  ' * depth + '(표 제목) ' + ' / '.join(' '.join(l.split()) for l in ls)  # noqa: E731
+        lines.extend(cap_line(ls) for first, ls in caps if first)
         for tr in rows:
             cells = [' / '.join(' '.join(l.split()) for l in cell_text(tc)) for tc in tr if local(tc.tag) == 'tc']
             lines.append('  ' * depth + '| ' + ' | '.join(cells) + ' |')
+        lines.extend(cap_line(ls) for first, ls in caps if not first)
 
     for n in names:
         root = ET.fromstring(z.read(n))
