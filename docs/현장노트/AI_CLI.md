@@ -1,8 +1,8 @@
 # 현장 노트 · AI CLI·구독 통로
 
-> 판: Antigravity CLI `agy` 1.3.6(winget) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
-> 마지막 확인: 2026-10-17(아래 「다시 확인」을 새 노트북에서 돌림)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목
+> 판: Antigravity CLI `agy` 1.3.6(Windows winget)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
+> 마지막 확인: 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-03~10-17 Claude 메모에서 옮김(10-17 2차) · GPT(Codex) 10-17 Antigravity 인증 공유·구형 Gemini CLI 지원 종료, 10-18 Linux 독립 실행·timer 검증 추가 · GPT(Codex) 10-17 예약 시각 해석 확인 추가 · GPT(Codex) 10-18 Argon 예약·Docs·장애 알림 확인 · Claude Code(Claude Opus 5.5) 10-18 `claude -p` 크레딧 청구(Claude Code 2.1.302) · Claude Code 10-18 아르곤 실행 두 항목 · Claude Code(Claude Opus 5.5) 10-19 조사 예약 거절 실패 관찰·고침
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -277,6 +277,12 @@
 - 원인: 출발점 도메인 목록은 새 공식 발표·검색 리디렉션·연결 도움말의 모든 호스트를 포함하지 않는다. 도메인을 한 개씩 더하는 방식은 다음 회차의 새 출처에서 같은 실패가 생길 수 있다.
 - 고침: [공식 권한 문서](https://antigravity.google/docs/permissions?tab=cli)에서 `read_url(domain)`은 하위 도메인을 포함하고 `read_url(*)`는 모든 도메인의 **읽기**임을 확인했다. 승인된 공개 조사 범위에 읽기 규칙을 적용하고, 브라우저 조작 `execute_url`·명령 전체 허용은 추가하지 않았다. 명령·문서 쓰기는 지정 경로로 유지하며 인증 폴더·토큰·설정에 대한 에이전트의 `read_file`은 거절했다.
 - 다시 확인: 실제 실행의 `denied_actions`와 Docs 저장·재읽기를 함께 본다. 권한 설정 자체는 조사 성공의 증거가 아니다. 규칙 근거와 변경 기록은 `.tmp/argon-isolated-20261017/research-permissions-20261018.json`이다.
+
+### 조사 예약이 작업 파일 읽기·명령 실행 거절로 회차마다 들쭉날쭉 실패한다 (2026-10-19)
+- 증상: 서버 예약 전환(10-18 12:12) 뒤 회차 6개 가운데 4개가 `CLI_FAILED_OR_DENIED`로 끝났다. 실패한 넷은 yt-tt 10-18 20:00·10-19 08:00, meta-brand 10-18 23:00, full 10-19 05:00이고, 성공한 둘은 yt-tt 10-18 14:00·meta-brand 17:00이다. synkbrief 10-19 09:00도 성공이다(KST). 실패한 회차의 stderr는 `a tool required the "read_file"`(full·meta-brand·yt-tt)·`"command"`(yt-tt) `permission that headless mode cannot prompt for, so it was auto-denied`였고, stream 끝에는 `view_file`·`run_command` 단계 ERROR 뒤 빈 응답의 `SUCCESS`가 남았다. 결과 문서는 마지막 성공 회차 그대로라 「조사가 안 돌았다」처럼 보인다.
+- 원인: 위 절의 고침은 `read_url(*)`만 넓혔다. 모델이 회차마다 스스로 고르는 도구(작업 폴더 파일 보기·명령 실행)는 여전히 허용 목록 밖이라, 그 도구를 고른 회차만 실패한다. 타이머·PC·사용량 한도 문제는 아니다(타이머는 제시각에 돌았다).
+- 고침: 10-19 10:48 KST 유호님 승인(「제안한 구성대로 진행해」)으로 두 가지를 함께 넣었다. ① settings `permissions.allow`에 `read_file(/opt/synk-argon-77yuhbs)` 한 줄만 더했다(보조도구 폴더 원문 보기. 인증 폴더·토큰·설정 `read_file` 거절은 그대로). ② 네 지시문 끝에 「[도구 규칙 · 2026-10-19 추가]」를 붙였다(작업 본문은 `snapshot`이 만든 파일만 범위 읽기, 명령은 지정 helper의 snapshot·read·validate·write만, 임시 python·셸 명령 금지). 명령 허용 prefix는 넓히지 않았다. 같은 날 더한 월요일 스캔 역할 셋(scan-lab·scan-ai·scan-platform)도 helper 네 명령만 역할별 정확한 줄로 더했다(12줄). 서버 백업은 `config-backups/20261019T014821Z`(권한·지시문)·`20261019T021946Z-weekly`(역할 셋), 저장소 원문은 `tools/argon-schedules/`(README 「2026-10-19」).
+- 다시 확인: 읽기 전용 조회로 본다. `systemctl list-timers`, `run-status/ROLE.json`의 `status`·`error`, `logs/ROLE.stderr.log`의 거절 줄만 걸러 읽는다(로그 전문·인증 정보는 꺼내지 않는다). 읽은 기록은 Claude 세션 scratchpad의 `argon_status_result.json`·`argon_errors_result.json`(10-19 10:36 KST)이다. 고친 뒤 첫 회차 meta-brand 10-19 11:00(KST)은 `complete`·`gemini-4-argon-high`·거절 없음으로 19분 39초에 끝났다(`argon_deploy_result.json`). 새 역할 scan-lab 손 실행(11:21~11:46)도 `complete`·거절 0이었다. stream의 도구 `ERROR`는 거절과 따로 본다. Argon이 자기 `.gemini/antigravity-cli/brain/…/.system_generated/steps/N` 파일을 `view_file`로 다시 열다 낸 `invalid_args`·`ContentOffset … exceeds line range` 오류(scan-lab 4건, yt-tt 14:00 6건)는 회차를 멈추지 않았다. stderr의 `auto-denied` 줄 수는 파일 수정 시각과 함께 본다. 지난 실패 회차 줄이 남아 있을 수 있다. 이어 yt-tt 14:00 정규 회차도 `complete`·거절 0으로 14분 만에 끝났고 결과 문서가 갱신됐다(35,582자·완료 표식). scan-ai·scan-platform 손 실행(14:14~14:54)까지 고친 뒤 다섯 회차가 모두 성공했다. 그래도 모델이 회차마다 고르는 도구가 다 허용 안에 든다는 증거는 아니다. full 다음 날 05:00 회차도 `complete`인지와 결과 문서 갱신을 함께 본다.
 
 ### systemd append 로그가 root 소유라 실행 후 검사기가 읽지 못한다
 - 증상: 10-18 `StandardOutput=append:`로 처음 생긴 로그가 root 소유0600이라 별도 실행 사용자로 도는 `ExecStopPost`에서 Permission denied가 났다.
