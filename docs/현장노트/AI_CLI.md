@@ -76,6 +76,12 @@
 - 고침: 키 모양은 `sk-ant-` 뒤를 넓게 받는다(`tools/lib/클로드키.js`·가리기 정규식은 이미 그렇다). 생성 창에서는 「API 키로 계속하기」를 고르고, 만료는 「안 함」(서버용), 범위는 「기본 워크스페이스」를 고른다. 키는 화면 캡처 없이 복사해 `~/SYNK_보안/클로드키_<계정>.txt`에만 넣는다. 캡처 도구가 스크린샷 폴더에 자동으로 저장하기 때문이다.
 - 다시 확인: 그 키로 `claude-opus-5-5` 1토큰 요청이 200이고, 응답 머리 `anthropic-organization-id`가 크레딧을 받은 조직이다(10-19 「공자's Individual Org」 `c22447c4…`).
 
+### Opus 5.5의 토큰 세기(count_tokens)는 생각 끄기(`disabled`)를 거절하지 않는다 (2026-10-19 Claude)
+- 증상: talk 강사 도우미를 Opus 5.5로 올린 뒤(운영 v74) 무료 점검 `companion?점검=몸통`이 `ok:false`였다. 정상 몸통 200·가격표 있음인데, 일부러 넣은 틀린 값(`thinking.type: disabled`)도 200(`틀린값거절: 200`)이었다.
+- 원인: Opus 5.5에서 count_tokens는 모델별 생각 규칙 일부를 보지 않는다. 실측(강사 도우미 실제 몸통, synk.yuh 키): `adaptive` 200 · `disabled` 200 · `enabled`+`budget_tokens` 200 · `between_tools` 400(「not supported for this model」) · 없는 값 400. 생성 창구(`/v1/messages`)는 `disabled`를 400(「Use thinking.type.adaptive and output_config.effort」)으로 거절한다. 10-05 Sonnet 5.5 때는 count_tokens도 `disabled`를 400으로 거절해 이 점검이 통했다.
+- 고침: 점검의 틀린 값을 모델마다 표에 두고, 토큰 세기 창구가 그 모델에서 실제로 400을 내는 값으로 고른다(talk `lib/교정엔진.js` `도우미모델표`의 `점검틀린생각`, Opus 5.5는 `between_tools`, 커밋 `20849aa`). 모델을 옮길 때는 count_tokens에 후보 값을 먼저 보내 400이 나는지 본다(무료).
+- 다시 확인: 무료 시험 스크립트 `.tmp/companion-opus-20261019/thinking-variants.cjs`(결과 `thinking-variants-*.json`). 고친 판을 배포한 뒤 `?점검=몸통`이 `ok:true`·`틀린값거절: 400`이다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
