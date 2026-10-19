@@ -617,3 +617,92 @@ test('a Claude login that is really gone is told apart from a usage screen that 
   // 공식 프로그램의 표준입력은 바로 닫는다(열어 두면 Claude Code가 입력을 3초 기다린다).
   assert.ok(usageCalls().every(c=>c.child.stdinEnded));
 });
+
+/* ---------- 사용 기록 · 팁 반응 · 자동 읽기 ---------- */
+test('keeps a numbers-only usage record on this PC and shows the 7-day bars',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');await f.service.useExisting('higgsfield');
+  const after=await f.service.check();
+  const file=path.join(f.root,'data','history.jsonl');
+  const lines=fs.readFileSync(file,'utf8').trim().split('\n').map(line=>JSON.parse(line));
+  // 한 줄은 읽은 숫자뿐이다(이메일·토큰·폴더 없음).
+  assert.ok(lines.length>=2);
+  assert.ok(lines.every(line=>Object.keys(line).every(key=>['t','id','s','p','w','wr','c'].includes(key))));
+  assert.ok(!fs.readFileSync(file,'utf8').includes('@'));
+  assert.ok(lines.some(line=>line.s==='claude'&&line.w===31)&&lines.some(line=>line.s==='higgsfield'&&line.c===0.22));
+  // 지금 창(10/15 10:59 시작)의 31%가 지난 7일 막대에 들어가고, 기록이 막 시작돼 「일부」·비교 없음이다.
+  assert.deepEqual(after.usage.services.claude.bars[4],{v:31,partial:true});
+  assert.equal(after.usage.services.claude.base,null);
+  assert.equal(after.usage.services.higgsfield.bars[4].v,0);
+  // 다시 띄운 본체도 같은 기록을 읽는다.
+  const reread=createAiSubscriptions({root:path.join(f.root,'data'),platform:'win32',env:{},home:path.join(f.root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>NOW});
+  assert.equal((await reread.snapshot()).usage.services.claude.bars[4].v,31);
+});
+
+test('remembers tip answers without making tips come back more often',async()=>{
+  const f=fakeSystem(),DAY=864e5;
+  let snap=await f.service.save({tip:{key:'spike:higgsfield',action:'helpful'}});
+  assert.equal(snap.settings.tips['spike:higgsfield'].until,NOW+7*DAY);
+  snap=await f.service.save({tip:{key:'spike:higgsfield',action:'stop'}});
+  assert.equal(snap.settings.tips['spike:higgsfield'].until,NOW+28*DAY);assert.equal(snap.settings.tips['spike:higgsfield'].stops,1);
+  snap=await f.service.save({tip:{key:'spike:higgsfield',action:'stop'}});
+  assert.equal(snap.settings.tips['spike:higgsfield'].until,NOW+84*DAY);
+  assert.equal((await f.service.save({tip:{key:'__proto__',action:'stop'}})).code,'INVALID_REQUEST');
+  assert.equal((await f.service.save({tip:{key:'spike:higgsfield',action:'more'}})).code,'INVALID_REQUEST');
+});
+
+test('forgets the usage record of a removed account',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');await f.service.useExisting('higgsfield');
+  const higgs=(await f.service.check()).rows.find(row=>row.service==='higgsfield');
+  await f.service.save({remove:higgs.id});
+  const lines=fs.readFileSync(path.join(f.root,'data','history.jsonl'),'utf8').trim().split('\n').map(line=>JSON.parse(line));
+  assert.ok(lines.length>0&&lines.every(line=>line.id!==higgs.id));
+});
+
+test('reads by itself every 6 hours, 10 minutes before a weekly reset and on a billing morning',async()=>{
+  const HOUR=3600e3,start=new Date(2026,9,19,8,0).getTime(),reset=start+3*HOUR;
+  const make=({check,clock})=>{
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-auto-'));fs.mkdirSync(path.join(root,'data'));
+    fs.writeFileSync(path.join(root,'data','board.json'),JSON.stringify({version:1,settings:{usdKrw:1400},check:{at:check,total:2,ok:2},rows:[
+      {id:'r-a',service:'claude',source:'auto',label:'Claude',kind:'weekly',state:'ok',stateAt:check,live:{readAt:check,weekly:{usedPercent:14,resetsAt:reset}}},
+      {id:'r-t',service:'typecast',source:'auto',label:'Typecast',kind:'credit',state:'ok',stateAt:check,billDay:20,keyHint:'FjrE',live:{readAt:check,credits:5}}]}));
+    return createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{},home:path.join(root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>clock});
+  };
+  const s=make({check:start-HOUR,clock:start});
+  assert.equal(await s.autoDue(start),null);                       // 한 시간 전에 읽음
+  assert.equal(await s.autoTick(),null);
+  assert.deepEqual(await s.autoDue(reset-5*60e3),{ids:['r-a']});   // 초기화 10분 전 안, 그 뒤로 안 읽음
+  assert.equal(await s.autoDue(reset+60e3),null);                  // 초기화가 지나면 다음 때(6시간)를 기다린다
+  assert.deepEqual(await s.autoDue(start-HOUR+6*HOUR),{});          // 마지막 확인에서 6시간
+  // 결제일(20일) 아침: 그날 9시 전에 읽었으면 9시 뒤 첫 때에 전체를 읽는다. 9시 뒤에 읽었으면 다시 안 읽는다.
+  const bill=new Date(2026,9,20,9,30).getTime();
+  assert.deepEqual(await make({check:new Date(2026,9,20,8,0).getTime(),clock:bill}).autoDue(bill),{});
+  assert.equal(await make({check:new Date(2026,9,20,9,10).getTime(),clock:bill}).autoDue(bill),null);
+  // 계정을 하나도 연결하지 않았으면 읽지 않는다.
+  const empty=fakeSystem();assert.equal(await empty.service.autoDue(NOW),null);
+});
+
+test('an automatic read stays quiet on screen and gives way to a member\'s check',async()=>{
+  const f=fakeSystem();
+  await f.service.useExisting('claude');await f.service.useExisting('higgsfield');
+  const first=f.changes.length;
+  await f.service.check({quiet:true});
+  const during=f.changes.slice(first);
+  // 화면에는 「확인 중」·진행 수가 안 보이고, 마지막 알림까지 quiet가 달려 숫자를 굴리지 않는다.
+  assert.ok(during.length>0&&during.every(s=>s.checking===false&&s.progress===null&&s.quiet===true));
+  assert.equal((await f.service.snapshot()).quiet,false);
+  // 자동 읽기 중에 회원이 「지금 확인」을 누르면 그때부터 진행이 보인다.
+  f.state.usageDelay=30;const mark=f.changes.length;
+  const auto=f.service.check({quiet:true});await new Promise(r=>setTimeout(r,5));
+  const member=await f.service.check();await auto;
+  assert.ok(f.changes.slice(mark).some(s=>s.checking===true&&s.quiet===false));
+  assert.equal(member.checking,false);
+});
+
+test('rested tips come back with one press',async()=>{
+  const f=fakeSystem();
+  await f.service.save({tip:{key:'spike:higgsfield',action:'stop'}});await f.service.save({tip:{key:'pace:claude',action:'helpful'}});
+  const snap=await f.service.save({tip:{action:'reset'}});
+  assert.deepEqual(snap.settings.tips,{});
+});

@@ -114,6 +114,11 @@ let aiSubscriptions=null;
 const subscriptionSecrets={available:()=>{try{return ['win32','darwin'].includes(process.platform)&&safeStorage.isEncryptionAvailable()&&safeStorage.getSelectedStorageBackend?.()!=='basic_text';}catch{return false;}},encrypt:value=>safeStorage.encryptString(value),decrypt:data=>safeStorage.decryptString(data)};
 function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),secrets:subscriptionSecrets,openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot)});return aiSubscriptions;}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
+// 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
+// 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
+// 타이머는 node:timers에서 가져와 unref한다(앱은 창이 살아 있는 동안 돌고, main.cjs를 setInterval 없는 VM에서 돌리는 시험도 붙잡지 않는다).
+const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptions','board.json');
+require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});},2*60*1000).unref?.();
 function pulseResourceAllowed(value){
   try{const url=new URL(value);return url.origin===PULSE_ORIGIN&&!url.username&&!url.password&&(url.pathname.startsWith('/pulse/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}catch{return false;}
 }

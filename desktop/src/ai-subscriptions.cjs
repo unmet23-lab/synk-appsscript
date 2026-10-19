@@ -11,6 +11,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const {spawn:nodeSpawn}=require('node:child_process');
+const {usageSummary,sampleOf,parseHistory,KEEP:HISTORY_KEEP}=require('./ai-usage.cjs');
 
 const SERVICES=Object.freeze({
   claude:Object.freeze({label:'Claude',kind:'weekly',bin:'claude',home:'CLAUDE_CONFIG_DIR',folders:true}),
@@ -49,7 +50,13 @@ const HELP_LINKS=Object.freeze({
   'gemini-plans':'https://gemini.google/subscriptions/',
   'antigravity-install':'https://antigravity.google/docs/cli',
   'typecast-api':'https://studio.typecast.ai/developers/api',
+  // 아끼는 팁의 근거(공식 도움말, 10-19 확인). Typecast 팁은 위 API 안내로 잇는다.
+  'higgsfield-credits':'https://higgsfield.ai/creator-hub/help-center/credits/how-credits-work',
 });
+// 자동 읽기(사용 기록용): 앱이 켜 있는 동안 마지막 전체 확인에서 6시간이 지났을 때 · 계정마다 주간 초기화 10분 전 · 결제일 아침 9시 뒤 처음.
+const AUTO_EVERY=6*3600*1000,PRE_RESET=10*60*1000,BILL_HOUR=9,DAY_MS=864e5;
+// 팁 반응: 「도움 됐어요」는 같은 팁을 7일 쉬고(빈도를 늘리지 않는다), 「이런 팁 그만」은 4주, 두 번째부터 12주.
+const TIP_KEY=/^(spike|pace):(claude|gpt|gemini|higgsfield|typecast)$/;
 const LOGIN_DOMAINS=['claude.com','claude.ai','anthropic.com','openai.com','chatgpt.com','higgsfield.ai'];
 // 「로그인 필요」로 읽혔을 때 인터넷이 그 서비스까지 닿는지만 보는 고정 주소(로그인 정보는 보내지 않는다).
 const REACHABLE=Object.freeze({claude:'https://api.anthropic.com/',gpt:'https://auth.openai.com/',higgsfield:'https://higgsfield.ai/',gemini:'https://oauth2.googleapis.com/'});
@@ -151,8 +158,9 @@ function commandFor(file,args,{platform,env}){
 // retryDelay: 「로그인 필요」로 읽힌 줄을 다시 읽기 전에 기다리는 시간(ms).
 function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
   if(!root)throw new TypeError('root is required');
-  const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts');
-  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,checkProgress=null,seq=0;
+  const boardFile=path.join(root,'board.json'),accountsDir=path.join(root,'accounts'),historyFile=path.join(root,'history.jsonl');
+  // checkQuiet: 자동 읽기처럼 회원이 누르지 않은 확인. 화면에는 「확인 중」·진행 수를 보이지 않고, 알림에 quiet를 달아 숫자를 굴리지 않게 한다.
+  let board=null,tools=null,toolsAt=0,freshPath=null,login=null,checking=null,checkingIds=null,checkProgress=null,seq=0,history=null,checkQuiet=false;
   home=home||env.USERPROFILE||env.HOME||'';
 
   /* 저장 */
@@ -173,6 +181,26 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     fs.mkdirSync(root,{recursive:true});
     const tmp=boardFile+'.'+process.pid+'.tmp';
     fs.writeFileSync(tmp,JSON.stringify(board,null,1));fs.renameSync(tmp,boardFile);
+  }
+  // 사용 기록: 읽기마다 숫자 한 줄을 덧붙인다(이 PC에만, 180일). 못 읽거나 못 쓰면 기록만 건너뛰고 계정판은 그대로 돈다.
+  function loadHistory(){
+    if(history)return history;
+    let text='';
+    try{text=fs.readFileSync(historyFile,'utf8');}catch{}
+    history=parseHistory(text,now()-HISTORY_KEEP);
+    return history;
+  }
+  // 오래된 줄과 지운 계정의 줄을 뺀 판으로 다시 쓴다(임시 파일 → 바꿔 넣기).
+  function compactHistory(){
+    const ids=new Set(load().rows.map(row=>row.id)),from=now()-HISTORY_KEEP;
+    history=loadHistory().filter(s=>s.t>=from&&ids.has(s.id));
+    try{fs.mkdirSync(root,{recursive:true});const tmp=historyFile+'.'+process.pid+'.tmp';fs.writeFileSync(tmp,history.map(s=>JSON.stringify(s)+'\n').join(''));fs.renameSync(tmp,historyFile);}catch{}
+  }
+  function remember(row){
+    const sample=sampleOf(row,row.live?.readAt||now());if(!sample)return;
+    const h=loadHistory();h.push(sample);
+    try{fs.mkdirSync(root,{recursive:true});fs.appendFileSync(historyFile,JSON.stringify(sample)+'\n');}catch{}
+    if(h[0].t<now()-HISTORY_KEEP-DAY_MS)compactHistory();
   }
   function normalizeRow(row){
     if(!row||typeof row!=='object'||typeof row.id!=='string')return null;
@@ -200,8 +228,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const b=load();
     return {ok:true,seq:++seq,platform,tools:tools?Object.fromEntries(Object.entries(tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:k==='higgsfield'?!!v.npm:undefined,api:v.api?true:undefined}])):null,
       rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
+      usage:usageSummary({rows:b.rows,history:loadHistory(),now:now()}),
       login:login?{id:login.id,service:login.service,stage:login.stage,url:login.url,needsCode:login.needsCode,message:login.message,console:!!login.console}:null,
-      checking:!!checking,progress:checking&&checkProgress?{...checkProgress}:null};
+      checking:!!checking&&!checkQuiet,progress:checking&&!checkQuiet&&checkProgress?{...checkProgress}:null,quiet:checkQuiet};
   }
   const emit=()=>{try{onChange(publicSnapshot());}catch{}};
 
@@ -470,16 +499,20 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     else if(weekly&&weekly.usedPercent===0){row.resetDay=null;row.resetHour=null;row.resetMinute=null;}
     if(weekly&&Number.isFinite(weekly.usedPercent))row.usedUpAt=weekly.usedPercent>=100?now():null;
     if(result.live.credits!==undefined&&result.live.credits!==null){row.credits=result.live.credits;row.creditsAt=now();}
+    remember(row);
   }
   // 돌려주는 스냅숏은 `checking`을 비운 뒤에 만든다. 안에서 만들면 「확인 중」인 채로 마지막 알림보다 늦게 도착해 화면이 멈춘다.
   // 확인 중에 들어온 확인은 끝나기를 기다린 뒤, 그 확인이 읽지 않은 줄(도는 사이 새로 연결한 계정 등)만 이어서 읽는다.
-  async function check({ids}={}){
+  async function check({ids,quiet=false}={}){
     const wanted=()=>load().rows.filter(row=>row.source==='auto'&&(!Array.isArray(ids)||ids.includes(row.id))).map(row=>row.id);
     if(checking){
+      // 자동 읽기 중에 회원이 「지금 확인」을 누르면 그때부터 진행이 보이게 한다.
+      if(!quiet&&checkQuiet){checkQuiet=false;emit();}
       const covered=checkingIds;await checking.catch(()=>{});
       const missing=wanted().filter(id=>!covered.has(id));
-      return missing.length?check({ids:missing}):publicSnapshot();
+      return missing.length?check({ids:missing,quiet}):publicSnapshot();
     }
+    checkQuiet=!!quiet;
     const full=!Array.isArray(ids),b=load(),targets=b.rows.filter(row=>row.source==='auto'&&(full||ids.includes(row.id)));
     checkingIds=new Set(targets.map(row=>row.id));checkProgress={done:0,total:targets.length};
     checking=(async()=>{
@@ -494,7 +527,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       b.check={at:full||!b.check?.at?now():b.check.at,total:autos.length,ok:autos.filter(row=>row.state==='ok').length};
       persist();
     })();
-    try{await checking;}finally{checking=null;checkingIds=null;checkProgress=null;emit();}
+    // 마지막 알림까지 quiet를 단 뒤에 푼다(그래야 화면이 새 값을 굴리지 않고 그린다).
+    try{await checking;}finally{checking=null;checkingIds=null;checkProgress=null;emit();checkQuiet=false;}
     return publicSnapshot();
   }
 
@@ -734,9 +768,44 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(typeof patch.remove==='string'){
       const index=b.rows.findIndex(r=>r.id===patch.remove);if(index<0)return {ok:false,code:'UNKNOWN_ROW'};
       const [row]=b.rows.splice(index,1);if(row.folder&&!b.rows.some(r=>r.folder===row.folder))removeFolder(row.folder);
+      // 지운 계정의 사용 기록도 이 PC에서 지운다.
+      compactHistory();
+    }
+    if(patch.tip&&typeof patch.tip==='object'){
+      // 「다시 보기」: 쉬고 있는 팁을 모두 다시 보이게 한다(잘못 누른 「그만」을 되돌리는 길).
+      if(patch.tip.action==='reset')b.settings={...b.settings,tips:{}};
+      else{
+        const key=typeof patch.tip.key==='string'?patch.tip.key:'';
+        if(!TIP_KEY.test(key)||!['helpful','stop'].includes(patch.tip.action))return {ok:false,code:'INVALID_REQUEST'};
+        const tips=b.settings.tips&&typeof b.settings.tips==='object'&&!Array.isArray(b.settings.tips)?b.settings.tips:{};
+        const cur=tips[key]&&typeof tips[key]==='object'?tips[key]:{};
+        if(patch.tip.action==='helpful')tips[key]={...cur,helpful:(Number(cur.helpful)||0)+1,until:now()+7*DAY_MS};
+        else{const stops=(Number(cur.stops)||0)+1;tips[key]={...cur,stops,until:now()+(stops>1?84:28)*DAY_MS};}
+        b.settings={...b.settings,tips};
+      }
     }
     persist();emit();
     return publicSnapshot();
+  }
+
+  /* 자동 읽기 */
+  // 지금 읽을 때인지: 마지막 전체 확인에서 6시간 · 결제일 아침 9시 뒤 첫 확인 → 전체, 주간 초기화 10분 전에 그 뒤로 안 읽은 계정 → 그 계정만.
+  // 앱이 꺼져 있던 동안은 읽지 않는다(그 구간은 기록에서 「모르는 구간」으로 남는다).
+  function autoDue(at=now()){
+    const b=load(),autos=b.rows.filter(row=>row.source==='auto');
+    if(!autos.length)return null;
+    const last=b.check?.at||0;
+    if(at-last>=AUTO_EVERY)return {};
+    const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
+    const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
+    if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
+    const pre=autos.filter(row=>{const reset=row.live?.weekly?.resetsAt;return reset&&at>=reset-PRE_RESET&&at<reset&&(row.stateAt||0)<reset-PRE_RESET;}).map(row=>row.id);
+    return pre.length?{ids:pre}:null;
+  }
+  async function autoTick(){
+    if(checking||(login&&!['done','error','cancelled'].includes(login.stage)))return null;
+    let due=null;try{due=autoDue();}catch{return null;}
+    return due?check({...due,quiet:true}):null;
   }
 
   // 판 파일을 잠깐 못 읽으면(BOARD_BUSY) 화면에 「다시 시도」로 알린다. 다음 호출이 다시 읽는다.
@@ -744,6 +813,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   return {
     snapshot:guard(async({refreshTools=false}={})=>{await detectTools(refreshTools);return publicSnapshot();}),
     check:guard(check),useExisting:guard(useExisting),startLogin,submitCode,cancelLogin,openLoginUrl,openInstaller,openHelp,save:guard(save),connectKey:guard(connectKey),
+    autoTick:guard(autoTick),autoDue:guard(async at=>autoDue(at)),
     dispose(){if(login){if(!['done','error','cancelled'].includes(login.stage))stopProcess(login.child,login.pid||login.child?.pid);clearTimeout(login.timer);clearTimeout(login.poll);}},
   };
 }

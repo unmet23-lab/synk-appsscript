@@ -1,6 +1,7 @@
 // AI 구독 계정판(회원 혜택) 화면. 읽기·로그인·저장은 데스크톱 본체(src/ai-subscriptions.cjs)가 하고,
 // 이 파일은 받은 숫자를 두 화면으로 보여 준다(10-18 구조 개편: 한 겹에 한 질문).
-//  · 한눈에 보기: 손볼 계정(있을 때만) → 01 서비스마다 지금 쓸 계정 한 줄 → 02 다 쓴 계정이 다시 열리는 때 → 계정 관리·요금 입구
+//  · 한눈에 보기: 손볼 계정(있을 때만) → 01 서비스마다 지금 쓸 계정 한 줄 → 02 다 쓴 계정이 다시 열리는 때(있을 때만)
+//    → 지난 7일 사용량(10-19, 기록 막대·그 전 평균과 차이·아끼는 팁) → 계정 관리·요금 입구
 //  · 계정 관리: 서비스별 연결·설치 가이드, 계정 줄 메뉴(요금·결제일·다시 로그인·지우기), 요금 합계, 직접 넣는 구독, 막혔을 때
 const DAY = ['일', '월', '화', '수', '목', '금', '토'];
 const DAY_MS = 864e5;
@@ -19,6 +20,19 @@ const AUTO = {
 };
 // 한눈에 화면의 서비스 순서: 주간 한도(고리)가 먼저, 크레딧이 뒤.
 const ORDER = ['claude', 'gpt', 'gemini', 'higgsfield', 'typecast'];
+// 지난 7일 사용량(10-19, Fable 검수 반영): 줄 왼쪽 보조 글은 무엇에 대한 숫자인지 말한다.
+const USAGE_UNIT = { claude: '주간 한도 대비', gpt: 'Codex 한도 기준', gemini: 'Antigravity 기준', higgsfield: '쓴 크레딧', typecast: '쓴 크레딧' };
+// Claude 요금제 배수(공식 claude.com/pricing, 본체 ai-usage.cjs와 같은 값). GPT·Gemini는 공식 배수가 없어 같은 무게.
+const CLAUDE_WEIGHT = { pro: 1, max: 5, max5x: 5, max20x: 20 };
+// 아끼는 팁. 사실을 말하는 문장은 공식 원문으로 확인한 것만 쓰고 확인한 날을 붙인다(checked). 「공식 안내」는 그 근거 페이지.
+// Typecast는 계정판이 API 요금제를 읽고, 확인한 사실(미리 듣기 무료·이월 없음)은 웹 스튜디오 기준이라 사실 없는 팁만 둔다.
+const SAVE_TIPS = {
+  higgsfield: { link: 'higgsfield-credits', checked: '10/19', items: ['시안은 싼 모델·낮은 화질로 먼저 잡고, 마지막 한 번만 높은 화질로 뽑아 보세요.', '요금제에 Unlimited 모델이 들어 있는 동안에는 higgsfield.ai 웹에서 그 모델로 만들면 크레딧이 안 나가요(어떤 모델이 언제까지인지는 요금제 카드에서 봐요). CLI·MCP로 만들면 늘 나가요.', '연간 결제는 달마다 내는 것보다 싸지만 중간에 월 결제로 못 돌아와요. 열 달 넘게 쓸 계획일 때만 바꿔 보세요.'] },
+  typecast: { link: null, checked: null, items: ['고칠 문장만 골라 그 문장만 다시 만들어 보세요. 긴 글을 통째로 다시 만들면 그만큼 또 나가요.', '여러 곳에 쓰는 문장은 한 번 만든 소리를 저장해 두고 다시 써요.'] },
+};
+// 팁 발동: 크레딧은 지난 7일이 그 전 평균의 1.5배 그리고 서비스별 최소량 이상(Typecast는 1글자 1크레딧이라 크게),
+// 한도형은 바로 쓸 계정 전부가 가장 이른 풀리는 때보다 3시간 넘게 먼저 막힐 때. 화면에는 급한 것부터 둘까지.
+const SPIKE_RATIO = 1.5, SPIKE_MIN = { higgsfield: 300, typecast: 3000 }, PACE_MARGIN = 3 * 3600e3, MAX_TIPS = 2;
 const MANUAL_NAMES = ['Suno', 'Hugging Face', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Google AI Pro', 'Typecast'];
 const MANUAL_KIND = { suno: 'credit', typecast: 'credit', elevenlabs: 'credit', kling: 'credit', higgsfield: 'credit', claude: 'weekly', gpt: 'weekly', chatgpt: 'weekly' };
 const CODE_TEXT = {
@@ -169,7 +183,11 @@ export function serviceGroups(rows, now, checkAt = null) {
     const ready = g.kind === 'credit' ? usable.filter(a => a.state === 'ok') : usable;
     // 추천은 넉넉한 확인값 → 풀렸을 계정 → 거의 다 쓴 확인값 순(1% 남은 계정보다 다시 찼을 계정이 낫다).
     const plenty = usable.filter(a => a.state === 'ok');
-    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), ready, best: plenty[0] || projected[0] || usable[0] || by(['manual'])[0] || null };
+    // 「오늘은 이 계정부터」(10-19): 넉넉한 계정 가운데 주간 초기화가 24시간 안이고 주간·5시간 창이 20% 이상 남았으면
+    // 초기화로 사라지기 전에 그 계정을 먼저 권한다(먼저 초기화되는 것부터). 그 계정을 읽은 지 1시간이 넘은 값으로는 권하지 않는다.
+    const fresh = a => now - (a.row.live?.readAt || 0) <= STALE_MS;
+    const today = g.kind === 'weekly' ? plenty.filter(a => fresh(a) && a.g?.weekly?.resetsAt > now && a.g.weekly.resetsAt - now <= DAY_MS && a.g.weekly.left >= 20 && (!a.g.session || a.g.session.left >= 20)).sort((a, b) => a.g.weekly.resetsAt - b.g.weekly.resetsAt)[0] || null : null;
+    return { ...g, usable, projected, manual: by(['manual']), out, error: by(['error']), login: by(['login']), pending: by(['unknown']), ready, today, best: today || plenty[0] || projected[0] || usable[0] || by(['manual'])[0] || null };
   });
   const order = g => (g.service ? ORDER.indexOf(g.service) : ORDER.length);
   return groups.sort((a, b) => order(a) - order(b) || a.label.localeCompare(b.label, 'ko'));
@@ -274,11 +292,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
   // view: 한눈에 보기(glance) · 계정 관리(manage). open: 펼친 서비스 줄. menu: ⋯을 연 계정 줄. help: 펼친 「막혔을 때」 질문.
   // relogin: 「다시 로그인」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
-  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null };
+  // tipOpen: 펼친 팁. tipDone: 이 화면에서 반응한 팁(누른 뒤 한 줄을 보여 주고, 화면을 옮기면 사라진다). why: 「왜 이 숫자?」.
+  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
-  api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint(); } });
+  // 본체의 자동 읽기(quiet) 알림은 1분 다시 그리기처럼 숫자를 굴리지 않는다(저절로 움직이는 효과 없음).
+  api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint({ quiet: !!value.quiet }); } });
   const loginActive = () => !!snapshot?.login && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
   const checkBusy = () => !!(busy || snapshot?.checking);
 
@@ -304,7 +324,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   // 화면 바꾸기: 그 화면 맨 위(또는 to 구획)로 옮기고, 화면 제목에 초점을 둔다.
   function show(view, to = null) {
-    ui.view = view; ui.menu = null; ui.editing = null; ui.removeArmed = null;
+    ui.view = view; ui.menu = null; ui.editing = null; ui.removeArmed = null; ui.tipDone = {};
     paint();
     const target = (to && container?.querySelector(`#${CSS.escape(to)}`)) || container?.querySelector('.member-subs');
     target?.scrollIntoView?.({ block: 'start' });
@@ -325,6 +345,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'recheck-tools') return void act('tools', async () => { await load(true); toast('설치 상태를 다시 확인했어요.'); });
     if (name === 'toggle') { ui.open.has(id) ? ui.open.delete(id) : ui.open.add(id); return paint(); }
     if (name === 'more') { ui.more = !ui.more; return paint(); }
+    if (name === 'why') { ui.why = !ui.why; return paint(); }
+    if (name === 'tip-open') { if (ui.tipDone[data.key]) { delete ui.tipDone[data.key]; ui.tipOpen.delete(data.key); } else if (ui.tipOpen.has(data.key)) ui.tipOpen.delete(data.key); else ui.tipOpen.add(data.key); return paint(); }
+    // 팁 반응은 이 PC 판에 남는다(도움 됐어요 7일 · 그만 4주, 두 번째부터 12주). 누른 뒤 한 줄은 화면을 옮길 때까지 보인다.
+    if (name === 'tip') { if (!['helpful', 'stop'].includes(data.act)) return; ui.tipDone[data.key] = data.act; return void act('tip', () => api.save({ tip: { key: data.key, action: data.act } })); }
+    if (name === 'tip-reset') { ui.tipDone = {}; return void act('tip', async () => { const r = await api.save({ tip: { action: 'reset' } }); if (r?.rows) toast('쉬고 있던 팁을 다시 보여 드려요.'); return r; }); }
     if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.removeArmed = null; return paint(); }
     if (name === 'cost-edit') { ui.menu = id; ui.editing = id; ui.removeArmed = null; paint(); container?.querySelector(`[data-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); return; }
     if (name === 'help-item') { ui.help.has(id) ? ui.help.delete(id) : ui.help.add(id); return paint(); }
@@ -431,12 +456,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const order = [...g.usable, ...g.projected, ...g.manual, ...g.out, ...g.error, ...g.login, ...g.pending];
     const dots = order.map(a => `<i class="ms-dot" data-state="${a.projected ? 'projected' : a.state}"></i>`).join('');
     // 여러 계정인데 추천이 거의 다 쓴 계정뿐이면 라벨로도 말한다.
-    const pick = n > 1 ? (g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
+    const pick = n > 1 ? (g.today ? '오늘은 이 계정부터' : g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
     const plan = g.best && g.service ? planName(g.best.row.plan) : '';
+    // 초기화 때와 쓴 %(고리와 같은 숫자 하나 — 「남음」은 쓰지 않는다). 한 덩이 안은 줄이 갈리지 않게 붙인다.
+    const todayNote = g.today ? `<span class="ms-pick-note">${esc(soon(g.today.g.weekly.resetsAt, now)).replace(/ /g, '\u00a0')}\u00a0초기화 · 아직\u00a0${100 - g.today.g.weekly.left}%만\u00a0썼어요</span>` : '';
     return `<div class="ms-svc${open ? ' open' : ''} ${svcClass(g.service)}">
       <button type="button" class="ms-svc-row" data-subs="toggle" data-id="${esc(id)}" aria-expanded="${open}">
         <span class="ms-pool"><span class="ms-pool-top"><span class="ms-tag">${esc(g.label)}</span><span class="ms-count">${countText(g)}</span></span><span class="ms-dots" aria-hidden="true">${dots}</span></span>
-        <span class="ms-pick"><span class="ms-pick-label">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span></span>
+        <span class="ms-pick"><span class="ms-pick-label${g.today && n > 1 ? ' is-today' : ''}">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span>${todayNote}</span>
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
@@ -498,6 +525,110 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const more = all.length > Math.min(3, unblocks.length) ? `<button type="button" class="ms-more" data-subs="more" aria-expanded="${ui.more}">${ui.more ? '접기' : `앞으로 7일 일정 ${all.length}개 모두 보기`}</button>` : '';
     return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제를 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
   }
+  /* 지난 7일 사용량(10-19): 본체가 읽기 기록으로 센 구간 막대 + 그 전 평균과 비교 + 서비스 줄 아래 팁 한 줄 */
+  const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  // 문장 안의 때: 오늘·내일·이번 주 요일·날짜. half면 시각 대신 오전/오후(「수요일 오후쯤」).
+  function whenText(t, now, half = false) {
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    const day = Math.round((new Date(t).setHours(0, 0, 0, 0) - start) / DAY_MS);
+    const word = day === 0 ? '오늘' : day === 1 ? '내일' : day > 1 && day < 7 ? `${DAY[new Date(t).getDay()]}요일` : md(t);
+    return `${word} ${half ? (new Date(t).getHours() < 12 ? '오전' : '오후') : hm(t)}`;
+  }
+  const usageValue = (kind, v) => (kind === 'pct' ? `${v}%` : credits(v, true));
+  const baseLabel = u => (u.baseWeeks === 1 ? '그 전 7일' : `그 전 ${u.baseWeeks}주 평균`);
+  const weightOf = row => (row.service === 'claude' ? CLAUDE_WEIGHT[planKey(row.plan)] || 1 : 1);
+  // 다음 충전: 기록의 지난 충전에서 Higgsfield는 30일씩(연간 결제는 30일마다), Typecast는 한 달씩. 기록이 없으면 Typecast만 결제일.
+  function nextRefill(service, row, refillAt, now) {
+    if (refillAt) { const d = new Date(refillAt); while (d.getTime() <= now) { if (service === 'typecast') d.setMonth(d.getMonth() + 1); else d.setDate(d.getDate() + 30); } return d.getTime(); }
+    const dd = service === 'typecast' ? nextBill(row.billDay, now) : null;
+    return dd === null ? null : new Date(now).setHours(0, 0, 0, 0) + dd * DAY_MS;
+  }
+  // 크레딧: 지난 7일이 그 전 평균의 1.5배 그리고 300크레딧 이상. 예측은 잔액이 줄고 있는 계정 하나로(충전일이 계정마다 다르다).
+  function spikeTip(g, u, now) {
+    const s7 = u.bars?.[4]?.v, min = SPIKE_MIN[g.service] ?? 300;
+    if (u.base === null || s7 === null || s7 === undefined || s7 < min || s7 < SPIKE_RATIO * u.base) return null;
+    const stats = snapshot?.usage?.accounts || {}, tips = SAVE_TIPS[g.service] || { items: [] };
+    const acc = g.accounts.filter(a => a.credits > 0 && stats[a.row.id]?.perDay > 0).sort((a, b) => stats[b.row.id].used7 - stats[a.row.id].used7)[0];
+    let forecast = '', left = '', basis = '', at = now + 7 * DAY_MS;
+    if (acc) {
+      const st = stats[acc.row.id], emptyAt = now + (acc.credits / st.perDay) * DAY_MS, refill = nextRefill(g.service, acc.row, st.refillAt, now);
+      if (refill ? emptyAt < refill : emptyAt - now <= 14 * DAY_MS) {
+        // 충전일은 지난 충전에서 센 어림이라 「쯤」(월 결제는 같은 날짜, 연간 결제는 30일마다 — 공식).
+        forecast = ` 이 속도면 ${esc(acc.name)} 계정이 <b class="ms-num">${md(emptyAt)}쯤</b> 바닥나요${refill ? ` · 다음 충전 ${md(refill)}쯤` : ''}.`;
+        left = ` · ${esc(acc.name)} 남은 크레딧 ${credits(acc.credits, true)} · 하루 약 ${credits(st.perDay, true)}`;
+        basis = st.refillAt ? ` · 다음 충전은 지난 충전(${md(st.refillAt)}) 기준` : refill ? ' · 다음 충전은 넣어 둔 결제일 기준' : '';
+        at = emptyAt;
+      }
+    }
+    const ratio = u.base > 0 ? `평소의 <b class="ms-num">${(Math.floor((s7 / u.base) * 10) / 10).toFixed(1)}배</b>` : '평소보다 많이';
+    return {
+      key: `spike:${g.service}`, link: tips.link, items: tips.items, at,
+      head: `${esc(g.label)}를 지난 7일 동안 ${ratio}(${credits(s7, true)}크레딧) 썼어요.${forecast}`,
+      // 쓴 양은 읽은 잔액이 준 만큼이라(충전 팩이 만료돼 준 것도 들어간다) 기준 줄에 그렇게 적는다.
+      why: [`지난 7일 ${credits(s7, true)} · ${baseLabel(u)} ${credits(u.base, true)}${left}`, `기준: 읽은 잔액이 준 만큼을 쓴 양으로 보고, ${baseLabel(u)}의 1.5배를 넘고 ${credits(min, true)}크레딧 이상일 때${basis}${tips.checked ? ` · 사실 확인 ${tips.checked}` : ''}`],
+    };
+  }
+  // 한도형: 바로 쓸 계정 전부가 이 속도(최근 3일)면 가장 이른 풀리는 때보다 먼저 막힐 때만. 계정 하나가 막히는 건 01이 다음 계정을 권한다.
+  function paceTip(g, now) {
+    const stats = snapshot?.usage?.accounts || {}, live = g.usable.filter(a => a.g?.weekly);
+    // 풀렸을 계정은 남은 양을 몰라서, 기록이 3일 안 된 계정이 있으면 속도를 몰라서 말하지 않는다.
+    if (!live.length || g.projected.length || live.some(a => !Number.isFinite(stats[a.row.id]?.rate3))) return null;
+    let left = 0, rate = 0, weight = 0;
+    for (const a of live) { const w = weightOf(a.row); left += a.g.weekly.left * w; rate += stats[a.row.id].rate3 * w; weight += w; }
+    const releases = [...live.map(a => a.g.weekly.resetsAt), ...g.out.map(a => a.unblock)].filter(Boolean);
+    if (rate <= 0 || !releases.length) return null;
+    const blockedAt = now + (left / rate) * DAY_MS, release = Math.min(...releases);
+    if (blockedAt > release - PACE_MARGIN) return null;
+    const many = g.accounts.length > 1;
+    return {
+      key: `pace:${g.service}`, link: null, items: [], at: blockedAt,
+      head: many ? `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> ${esc(g.label)} 계정이 모두 막혀요. 가장 먼저 풀리는 건 ${whenText(release, now)}예요.` : `이 속도면 <b class="ms-num">${whenText(blockedAt, now, true)}쯤</b> 주간 한도를 다 써요. 초기화는 ${whenText(release, now)}예요.`,
+      why: [`바로 쓸 ${many ? `계정 ${live.length}개` : '계정'}의 주간 한도 ${100 - Math.round(left / weight)}% 사용 · 최근 3일 하루 평균 ${Math.round(rate / weight)}%p씩`, '기준: 이 속도로 다 막히는 때가 가장 이른 풀리는 때보다 앞설 때(최근 3일 기록)'],
+    };
+  }
+  function tipHtml(t) {
+    const open = ui.tipOpen.has(t.key), done = ui.tipDone[t.key], shown = open || !!done;
+    const more = t.link ? `<button type="button" class="ms-link ms-tip-more" data-subs="help" data-link="${t.link}">공식 안내</button>` : '';
+    const rest = Number(snapshot?.settings?.tips?.[t.key]?.stops) > 1 ? '12주' : '4주';
+    const actions = done
+      ? `<div class="ms-tip-actions"><p class="ms-tip-done">${done === 'helpful' ? '고마워요 · 이런 팁은 7일에 한 번만 보여 드려요' : `알겠어요 · 이 종류는 ${rest} 동안 쉬어요(칸 아래 「다시 보기」로 되돌릴 수 있어요)`}</p>${more}</div>`
+      : `<div class="ms-tip-actions"><button type="button" class="ms-button ms-button-small" data-subs="tip" data-key="${t.key}" data-act="helpful">도움 됐어요</button><button type="button" class="ms-button ms-button-small" data-subs="tip" data-key="${t.key}" data-act="stop">이런 팁 그만</button>${more}</div>`;
+    const body = shown ? `<div class="ms-tip-body">${t.items.length ? `<ol>${t.items.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}<p class="ms-tip-why"><b>왜 이 팁?</b> ${t.why.join('<br>')}</p>${actions}</div>` : '';
+    return `<div class="ms-tip${shown ? ' is-open' : ''}"><span class="ms-tip-head">${t.head}</span><button type="button" class="ms-link" data-subs="tip-open" data-key="${t.key}" aria-expanded="${shown}">${shown ? '접기' : '자세히'}</button>${body}</div>`;
+  }
+  function usageRow(g, now, tip) {
+    const usage = snapshot?.usage || {}, u = usage.services?.[g.service] || null, kind = g.kind === 'credit' ? 'credit' : 'pct', buckets = usage.buckets || [];
+    const bars = Array.from({ length: 5 }, (_, i) => u?.bars?.[i] || null);
+    const max = kind === 'pct' ? 100 : Math.max(1, ...bars.map(b => b?.v || 0));
+    const label = i => (i === 4 ? '지난 7일' : buckets[i] ? `~${md(buckets[i].end)}` : '');
+    const height = b => (b ? Math.min(100, Math.max(b.v > 0 ? 3 : 0, Math.round((b.v / max) * 100))) : 0);
+    const barHtml = bars.map((b, i) => `<span class="mu-week${i === 4 ? ' is-last' : ''}${b?.partial ? ' is-partial' : ''}"${b?.partial ? ' title="이 구간 중간부터 기록이 있어요"' : ''}><em>${b ? usageValue(kind, b.v) : '&nbsp;'}</em><span class="mu-bar${kind === 'credit' ? ' is-credit' : ''}${b ? '' : ' is-empty'}${b?.partial ? ' is-partial' : ''}"><i style="height:${height(b)}%" data-level="${kind === 'pct' && b && b.v >= 90 ? 'low' : 'ok'}"></i></span><small>${label(i)}</small></span>`).join('');
+    const has = !!u && u.base !== null && !!bars[4], diff = has ? bars[4].v - u.base : 0;
+    const cmp = has
+      ? `<span class="mu-cmp"><span>${baseLabel(u)} ${usageValue(kind, u.base)}</span><b class="ms-num">${diff >= 0 ? '+' : '−'}${kind === 'pct' ? `${Math.abs(diff)}%p` : credits(Math.abs(diff), true)}</b></span>`
+      : `<span class="mu-cmp is-empty"><span>기록 모으는 중</span><span>${md(u?.since || now)}부터</span></span>`;
+    const why = u?.mixed && bars.some(Boolean) ? `<button type="button" class="ms-link mu-why" data-subs="why" aria-expanded="${ui.why}">왜 이 숫자?</button>` : '';
+    const whyNote = why && ui.why ? '<p class="mu-why-note">요금제가 다른 계정은 한도 크기만큼 무게를 줘서 합쳤어요. Max 20x는 Max 5x의 4배, Pro의 20배로 쳐요.</p>' : '';
+    const sr = `${g.label} 지난 7일 ${bars[4] ? `${usageValue(kind, bars[4].v)}${bars[4].partial ? '(일부)' : ''}` : '기록 없음'}${has ? `, ${baseLabel(u)} ${usageValue(kind, u.base)}` : ''}`;
+    return `<div class="mu-row ${svcClass(g.service)}"><span class="ms-sr">${esc(sr)}</span><span class="mu-who"><span class="ms-tag">${esc(g.label)}</span><span class="mu-meta"><small>${g.service === 'typecast' ? '키' : '계정'} ${g.accounts.length}개 · ${USAGE_UNIT[g.service]}</small>${why}</span>${whyNote}</span>`
+      + `<span class="mu-weeks" aria-hidden="true">${barHtml}<span class="mu-axis"><span>${buckets[0] ? `${md(buckets[0].start)}부터` : ''}</span><span>지난 7일</span></span></span>${cmp}${tip ? tipHtml(tip) : ''}</div>`;
+  }
+  // 칸 번호는 앞 칸이 있는 만큼 센다(다음에 풀려요가 없으면 02). 팁은 서비스 줄마다 하나, 칸 전체에 급한 것(일이 먼저 닥치는 것)부터 둘까지.
+  // 쉬고 있는 팁이 있으면 칸 아래 「다시 보기」 한 줄(잘못 누른 「그만」을 되돌리는 길).
+  function usageSection(now, groups, number) {
+    if (!snapshot?.usage) return '';
+    const list = groups.filter(g => g.service && USAGE_UNIT[g.service]);
+    if (!list.length) return '';
+    const resting = key => (Number(snapshot.settings?.tips?.[key]?.until) || 0) > now && !ui.tipDone[key];
+    const candidates = list.map(g => { const u = snapshot.usage.services?.[g.service]; return u ? (g.kind === 'credit' ? spikeTip(g, u, now) : paceTip(g, now)) : null; })
+      .map((tip, i) => tip && !resting(tip.key) ? { service: list[i].service, tip } : null).filter(Boolean)
+      .sort((a, b) => a.tip.at - b.tip.at).slice(0, MAX_TIPS);
+    const tips = new Map(candidates.map(c => [c.service, c.tip]));
+    // 「다시 보기」 줄은 방금 「그만」을 누른 팁도 센다(누른 뒤 한 줄이 칸 아래 「다시 보기」를 가리킨다).
+    const rest = Object.keys(snapshot.settings?.tips || {}).filter(key => (Number(snapshot.settings.tips[key]?.until) || 0) > now).length;
+    const restLine = rest ? `<p class="mu-rest">쉬고 있는 팁 ${rest}개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기</button></p>` : '';
+    return section(number, '지난 7일 사용량', '계정을 합친 양이에요. 앱이 꺼져 있던 시간은 빠져요.', `<div class="mu-list">${list.map(g => usageRow(g, now, tips.get(g.service))).join('')}</div>${restLine}`, 'ms-usage');
+  }
   function footer(now, rows) {
     const cost = costSummary(rows, now, snapshot?.settings?.usdKrw);
     const next = rows.map(r => ({ r, d: nextBill(r.billDay, now) })).filter(x => x.d !== null).sort((a, b) => a.d - b.d)[0];
@@ -508,7 +639,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function glanceView(now, rows, groups) {
     const checkAt = snapshot?.check?.at || null, stale = freshness(checkAt, now) === 'stale';
-    return `${hero(now, groups)}${fixBand(groups, now)}${nowSection(now, groups, stale)}${nextSection(now, rows, checkAt)}${rows.length ? footer(now, rows) : ''}`;
+    const next = nextSection(now, rows, checkAt);
+    return `${hero(now, groups)}${fixBand(groups, now)}${nowSection(now, groups, stale)}${next}${usageSection(now, groups, next ? '03' : '02')}${rows.length ? footer(now, rows) : ''}`;
   }
 
   /* 계정 관리 */

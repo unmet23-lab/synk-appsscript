@@ -1,7 +1,7 @@
 'use strict';
 const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
-const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install','typecast-api'];
+const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install','typecast-api','higgsfield-credits'];
 const unknownSubscription=code=>Promise.resolve({ok:false,code});
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   teacher:Object.freeze({

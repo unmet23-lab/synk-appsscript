@@ -125,6 +125,9 @@ test('the glance board shows one row per service and rolls each number only when
     // 1분마다 다시 그릴 때는 값이 바뀌어 있어도 굴리지 않는다(저절로 움직이는 효과 없음).
     drawn.length=0;snapshot.rows[2]={...snapshot.rows[2],live:{...gpt.live,weekly:{usedPercent:70,resetsAt:fresh+145*3600e3}}};everyMinute();
     assert.match(el.innerHTML,/data-roll="r-gpt">70<small>%/);assert.deepEqual(drawn,[]);
+    // 본체의 자동 읽기(quiet) 알림으로 값이 바뀌어도 굴리지 않는다(저절로 움직이는 효과 없음).
+    drawn.length=0;snapshot={...snapshot,quiet:true,rows:snapshot.rows.map((r,i)=>i===2?{...r,live:{...gpt.live,weekly:{usedPercent:75,resetsAt:fresh+145*3600e3}}}:r)};listeners.forEach(cb=>cb(snapshot));
+    assert.match(el.innerHTML,/data-roll="r-gpt">75<small>%/);assert.deepEqual(drawn,[]);
     // 움직임 줄이기(기기·SYNK 설정)에서는 숫자도 고리도 그대로 보인다.
     board.setVisible(false);reduced=true;drawn.length=0;board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
     reduced=false;document.documentElement.dataset.motion='reduced';board.setVisible(false);board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
@@ -458,5 +461,171 @@ test('account management keeps healthy rows quiet and opens each row menu in pla
   await click({subs:'glance'});await click({subs:'toggle',id:'g-claude'});assert.match(el.innerHTML,/class="ms-svc open ms-s-claude"/);
   board.setVisible(false);board.render(el,{signedIn:true,native:true});
   assert.match(el.innerHTML,/지금 쓸 계정/);assert.doesNotMatch(el.innerHTML,/ms-svc open/);
+  board.dispose();
+});
+
+/* ---------- 오늘은 이 계정부터 · 지난 7일 사용량 · 아끼는 팁(10-19) ---------- */
+test('the account whose week resets within a day and still has room goes first today',async()=>{
+  const {serviceGroups}=await import('../renderer/subscriptions.mjs');
+  const H=3600e3;
+  const soon=row({id:'soon',email:'soon@example.com',plan:'max_5x',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:14,resetsAt:NOW+23*H}}});
+  const roomy=row({id:'roomy',email:'roomy@example.com',plan:'max_20x',live:{readAt:NOW,weekly:{usedPercent:5,resetsAt:NOW+5*24*H}}});
+  const g=serviceGroups([roomy,soon],NOW,NOW)[0];
+  assert.deepEqual([g.best.row.id,g.today.row.id],['soon','soon']);
+  // 초기화가 하루 넘게 남았거나, 주간을 80% 넘게 썼거나, 5시간 창이 80% 넘게 찼거나, 읽은 지 1시간이 넘으면 평소대로 가장 많이 남은 계정.
+  const later={...soon,live:{...soon.live,weekly:{usedPercent:14,resetsAt:NOW+25*H}}};
+  const used={...soon,live:{...soon.live,weekly:{usedPercent:81,resetsAt:NOW+23*H}}};
+  const busy={...soon,live:{...soon.live,session:{usedPercent:85,resetsAt:NOW+2*H}}};
+  for(const r of [later,used,busy]){const x=serviceGroups([roomy,r],NOW,NOW)[0];assert.deepEqual([x.today,x.best.row.id],[null,'roomy']);}
+  const old={...soon,live:{...soon.live,readAt:NOW-2*H}};
+  assert.equal(serviceGroups([roomy,old],NOW,NOW)[0].today,null);
+});
+
+function usageFixture({withOut=true,usage,tips={}}={}){
+  const D=864e5,H=3600e3,fresh=Date.now();
+  const soon=row({id:'soon',email:'soon@example.com',plan:'max_5x',live:{readAt:fresh,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:14,resetsAt:fresh+23*H}}});
+  const roomy=row({id:'roomy',email:'roomy@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:5,resetsAt:fresh+5*D}}});
+  const out=row({id:'out',email:'out@example.com',plan:'max_5x',live:{readAt:fresh,weekly:{usedPercent:100,resetsAt:fresh+2*H}}});
+  const founder=row({id:'founder',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'founder@example.com',plan:'ultra',live:{readAt:fresh,credits:1026.84},credits:1026.84,creditsAt:fresh});
+  const low=row({id:'h-low',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h1@example.com',plan:'ultra',live:{readAt:fresh,credits:0.22},credits:0.22,creditsAt:fresh});
+  const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
+  const full=values=>values.map(v=>({v,partial:false}));
+  const filled={since:fresh-40*D,buckets,services:{claude:{kind:'pct',accounts:3,bars:full([62,68,74,83,79]),base:72,baseWeeks:4,mixed:true},higgsfield:{kind:'credit',accounts:2,bars:full([620,540,710,650,1450]),base:630,baseWeeks:4,mixed:false}},accounts:{founder:{since:fresh-40*D,used7:1450,rate3:null,perDay:207.14,refillAt:fresh-21*D}}};
+  const snapshot={ok:true,seq:1,tools:{},rows:[soon,roomy,...(withOut?[out]:[]),founder,low],settings:{usdKrw:1400,tips},check:{at:fresh,total:5,ok:5},login:null,checking:false,usage:usage===undefined?filled:usage(buckets,fresh)};
+  const saves=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},save:async patch=>{saves.push(patch);return {...snapshot,seq:snapshot.seq+1};},help:async()=>({ok:true})}};
+  return {snapshot,saves,bridge};
+}
+
+test('the glance board puts today\'s account first and shows the last 7 days after the unblock list',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const f=usageFixture(),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge});
+  board.render(el,{signedIn:true,native:true});await tick();
+  const html=el.innerHTML;
+  // 01: 초기화가 하루 안인 계정을 먼저, 고리와 같은 쓴 % 하나로(「남음」 없음).
+  assert.match(html,/<span class="ms-pick-label is-today">오늘은 이 계정부터<\/span><span class="ms-pick-name"><span>soon<\/span><small>Max 5x<\/small><\/span><span class="ms-pick-note">[^<]*초기화 · 아직\u00a014%만\u00a0썼어요<\/span>/);
+  // 01 → 02 다음에 풀려요 → 03 지난 7일 사용량.
+  const order=['01</span>지금 쓸 계정','02</span>다음에 풀려요','03</span>지난 7일 사용량'].map(t=>html.indexOf(t));
+  assert.ok(order.every(i=>i>0)&&order[0]<order[1]&&order[1]<order[2]);
+  // 막대 다섯(마지막이 지난 7일)과 그 전 4주 평균·차이. 큰 숫자 열은 없다.
+  assert.match(html,/<em>79%<\/em><span class="mu-bar"><i style="height:79%" data-level="ok"><\/i><\/span><small>지난 7일<\/small>/);
+  assert.match(html,/<span class="mu-cmp"><span>그 전 4주 평균 72%<\/span><b class="ms-num">\+7%p<\/b><\/span>/);
+  assert.match(html,/<span class="mu-cmp"><span>그 전 4주 평균 630<\/span><b class="ms-num">\+820<\/b><\/span>/);
+  assert.ok(!html.slice(html.indexOf('id="ms-usage"')).includes('ms-big-num'));
+  // 요금제가 섞인 Claude에만 「왜 이 숫자?」.
+  assert.match(html,/계정 3개 · 주간 한도 대비<\/small><button type="button" class="ms-link mu-why" data-subs="why"/);
+  assert.ok(!html.slice(html.indexOf('mu-row ms-s-higgsfield')).includes('mu-why'));
+  // 크레딧 팁 한 줄(기본 접힘): 평소의 2.3배, 잔액이 줄고 있는 계정의 바닥 예측과 다음 충전.
+  assert.match(html,/Higgsfield를 지난 7일 동안 평소의 <b class="ms-num">2\.3배<\/b>\(1,450크레딧\) 썼어요\. 이 속도면 founder 계정이 <b class="ms-num">\d+\/\d+쯤<\/b> 바닥나요 · 다음 충전 \d+\/\d+쯤\./);
+  assert.match(html,/data-subs="tip-open" data-key="spike:higgsfield" aria-expanded="false">자세히<\/button><\/div>/);
+  assert.equal((html.match(/<div class="ms-tip[ "]/g)||[]).length,1);
+  board.dispose();
+});
+
+test('a tip opens in place, takes one answer and stays quiet once answered',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const f=usageFixture(),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  await d.click({subs:'tip-open',key:'spike:higgsfield'});
+  assert.match(el.innerHTML,/<ol><li>시안은 싼 모델·낮은 화질로 먼저 잡고, 마지막 한 번만 높은 화질로 뽑아 보세요\.<\/li>/);
+  assert.match(el.innerHTML,/CLI·MCP로 만들면 늘 나가요\.<\/li>/);
+  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 7일 1,450 · 그 전 4주 평균 630 · founder 남은 크레딧 1,027 · 하루 약 207<br>기준: 읽은 잔액이 준 만큼을 쓴 양으로 보고, 그 전 4주 평균의 1\.5배를 넘고 300크레딧 이상일 때 · 다음 충전은 지난 충전\(\d+\/\d+\) 기준 · 사실 확인 10\/19/);
+  assert.match(el.innerHTML,/data-subs="help" data-link="higgsfield-credits">공식 안내<\/button>/);
+  await d.click({subs:'tip',key:'spike:higgsfield',act:'helpful'});
+  assert.deepEqual(f.saves,[{tip:{key:'spike:higgsfield',action:'helpful'}}]);
+  assert.match(el.innerHTML,/<p class="ms-tip-done">고마워요 · 이런 팁은 7일에 한 번만 보여 드려요<\/p>/);
+  board.dispose();
+  // 반응한 팁은 쉬는 동안 뜨지 않는다.
+  const quiet=usageFixture({tips:{'spike:higgsfield':{helpful:1,until:Date.now()+864e5}}}),el2=fakeContainer(),b2=createSubscriptionsBoard({bridge:quiet.bridge});
+  b2.render(el2,{signedIn:true,native:true});await tick();
+  assert.equal((el2.innerHTML.match(/<div class="ms-tip[ "]/g)||[]).length,0);
+  b2.dispose();
+});
+
+test('a new board says it is collecting records and numbers the section by what is above it',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const f=usageFixture({withOut:false,usage:buckets=>({since:null,buckets,services:{},accounts:{}})}),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge});
+  board.render(el,{signedIn:true,native:true});await tick();
+  assert.ok(!el.innerHTML.includes('다음에 풀려요'));
+  assert.match(el.innerHTML,/<span class="ms-section-number">02<\/span>지난 7일 사용량/);
+  assert.equal((el.innerHTML.match(/<span class="mu-cmp is-empty"><span>기록 모으는 중<\/span><span>\d+\/\d+부터<\/span><\/span>/g)||[]).length,2);
+  assert.equal((el.innerHTML.match(/class="mu-bar[^"]*is-empty"/g)||[]).length,10);
+  assert.ok(!el.innerHTML.includes('왜 이 숫자'));
+  assert.equal((el.innerHTML.match(/<div class="ms-tip[ "]/g)||[]).length,0);
+  board.dispose();
+});
+
+test('a weekly service warns only when every usable account would run out before the first one comes back',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now();
+  const a=row({id:'g-a',service:'gpt',label:'ChatGPT · Codex',email:'a@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:60,resetsAt:fresh+4*D}}});
+  const b=row({id:'g-b',service:'gpt',label:'ChatGPT · Codex',email:'b@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+5*D}}});
+  const draw=async rate=>{
+    const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
+    const usage={since:fresh-10*D,buckets,services:{gpt:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false}},accounts:{'g-a':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null},'g-b':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null}}};
+    const snapshot={ok:true,seq:1,tools:{},rows:[a,b],settings:{usdKrw:1400},check:{at:fresh,total:2,ok:2},login:null,checking:false,usage};
+    const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
+    board.render(el,{signedIn:true,native:true});await tick();board.dispose();return el.innerHTML;
+  };
+  // 남은 40%+30%를 하루 20%p씩 두 계정이 쓰면 이틀이 안 돼 다 막히는데, 먼저 풀리는 건 나흘 뒤다.
+  assert.match(await draw(20),/이 속도면 <b class="ms-num">[^<]+(오전|오후)쯤<\/b> GPT 계정이 모두 막혀요\. 가장 먼저 풀리는 건 [^<]+예요\./);
+  // 하루 5%p씩이면 풀리기 전에 막히지 않아 말하지 않는다. 그 전 7일 하나로 비교하면 「그 전 7일」.
+  const calm=await draw(5);
+  assert.equal((calm.match(/<div class="ms-tip[ "]/g)||[]).length,0);
+  assert.match(calm,/<span class="mu-cmp"><span>그 전 7일 50%<\/span><b class="ms-num">\+15%p<\/b><\/span>/);
+});
+
+test('rested tips leave one line to bring them back',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const f=usageFixture({tips:{'spike:higgsfield':{stops:1,until:Date.now()+28*864e5}}}),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  assert.match(el.innerHTML,/<p class="mu-rest">쉬고 있는 팁 1개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기<\/button><\/p>/);
+  await d.click({subs:'tip-reset'});
+  assert.deepEqual(f.saves,[{tip:{action:'reset'}}]);
+  board.dispose();
+});
+
+test('the two most urgent tips show first and Typecast needs a bigger jump',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now(),buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
+  const full=values=>values.map(v=>({v,partial:false}));
+  const a=row({id:'g-a',service:'gpt',label:'ChatGPT · Codex',email:'a@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:60,resetsAt:fresh+4*D}}});
+  const b=row({id:'g-b',service:'gpt',label:'ChatGPT · Codex',email:'b@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+5*D}}});
+  const founder=row({id:'founder',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'founder@example.com',plan:'ultra',live:{readAt:fresh,credits:1026.84},credits:1026.84,creditsAt:fresh});
+  const key=row({id:'tc',service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'FjrE',plan:'lite',live:{readAt:fresh,credits:900000},credits:900000,creditsAt:fresh});
+  const draw=async typecast=>{
+    const usage={since:fresh-40*D,buckets,services:{gpt:{kind:'pct',accounts:2,since:fresh-40*D,bars:full([40,45,50,55,65]),base:50,baseWeeks:4,mixed:false},higgsfield:{kind:'credit',accounts:1,since:fresh-40*D,bars:full([620,540,710,650,1450]),base:630,baseWeeks:4,mixed:false},typecast:{kind:'credit',accounts:1,since:fresh-40*D,bars:full(typecast),base:Math.round(typecast.slice(0,4).reduce((x,y)=>x+y,0)/4),baseWeeks:4,mixed:false}},
+      accounts:{'g-a':{since:fresh-40*D,used7:40,rate3:20,perDay:6,refillAt:null},'g-b':{since:fresh-40*D,used7:40,rate3:20,perDay:6,refillAt:null},founder:{since:fresh-40*D,used7:1450,rate3:null,perDay:207.14,refillAt:fresh-21*D},tc:{since:fresh-40*D,used7:typecast[4],rate3:null,perDay:typecast[4]/7,refillAt:null}}};
+    const snapshot={ok:true,seq:1,tools:{},rows:[a,b,founder,key],settings:{usdKrw:1400},check:{at:fresh,total:4,ok:4},login:null,checking:false,usage};
+    const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
+    board.render(el,{signedIn:true,native:true});await tick();board.dispose();return el.innerHTML;
+  };
+  // Typecast 지난 7일 540·평소 350은 1.5배를 넘어도 3,000크레딧이 안 돼 말하지 않는다.
+  const small=await draw([300,350,400,350,540]);
+  assert.ok(!small.includes('data-key="spike:typecast"'));
+  // 셋이 다 걸리면 일이 먼저 닥치는 둘(GPT 이틀 안 · Higgsfield 닷새 안)만, 예측 없는 Typecast는 뒤로.
+  const three=await draw([2000,2000,2000,2000,9000]);
+  assert.equal((three.match(/<div class="ms-tip[ "]/g)||[]).length,2);
+  assert.ok(three.includes('data-key="pace:gpt"')&&three.includes('data-key="spike:higgsfield"')&&!three.includes('data-key="spike:typecast"'));
+});
+
+test('right after "stop" the line to bring tips back is already there',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const f=usageFixture(),el=fakeContainer(),d=driver(el);
+  // 본체처럼 반응을 판 설정에 남기고 새 스냅숏을 돌려준다.
+  f.bridge.subscriptions.save=async patch=>{f.saves.push(patch);f.snapshot.settings.tips={[patch.tip.key]:{stops:1,until:Date.now()+28*864e5}};return {...f.snapshot,seq:2};};
+  const board=createSubscriptionsBoard({bridge:f.bridge});
+  board.render(el,{signedIn:true,native:true});await tick();
+  await d.click({subs:'tip-open',key:'spike:higgsfield'});
+  await d.click({subs:'tip',key:'spike:higgsfield',act:'stop'});
+  assert.match(el.innerHTML,/<p class="ms-tip-done">알겠어요 · 이 종류는 4주 동안 쉬어요\(칸 아래 「다시 보기」로 되돌릴 수 있어요\)<\/p>/);
+  assert.match(el.innerHTML,/<p class="mu-rest">쉬고 있는 팁 1개 · <button type="button" class="ms-link" data-subs="tip-reset">다시 보기<\/button><\/p>/);
   board.dispose();
 });
