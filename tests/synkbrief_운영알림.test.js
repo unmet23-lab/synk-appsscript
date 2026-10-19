@@ -14,8 +14,8 @@ function snapshot() {
 function fixture() {
   const values = new Map(Object.entries({SYNKBRIEF_OPS_MONITOR_ENABLED: '1', SYNKBRIEF_OPS_READ_KEY: KEY, SYNKBRIEF_IG_TOKEN: 'old-meta-token-remains'}));
   const calls = [], emails = [], deleted = [];
-  const f = { values, calls, emails, deleted, payload: snapshot(), http: 200, quota: 100, triggers: [], lock: true };
-  const context = vm.createContext({ Date, console,
+  const f = { values, calls, emails, deleted, payload: snapshot(), http: 200, quota: 100, triggers: [], lock: true, logs: [] };
+  const context = vm.createContext({ Date, console: {log:value=>f.logs.push(value)},
     PropertiesService: { getScriptProperties: () => ({getProperty:k=>values.get(k),setProperty:(k,v)=>values.set(k,v)}) },
     Session: {getActiveUser:()=>({getEmail:()=> 'owner@example.test'}),getEffectiveUser:()=>({getEmail:()=> 'owner@example.test'})},
     LockService: {getScriptLock:()=>({tryLock:()=>f.lock,releaseLock:()=>{f.released=true;}})},
@@ -462,4 +462,150 @@ test('받을 주소가 없거나 형식이 틀리면 보내지 않고 알림·�
   assert.equal(f.context.synkbrief운영알림시험().state,'recipient_missing');assert.equal(f.values.has('SYNKBRIEF_OPS_MAIL_TEST'),false);
   assert.throws(()=>f.context.synkbrief운영알림설정(),/SYNKBRIEF_OPS_EMAIL/);assert.equal(f.deleted.length,0);assert.equal(f.triggers.length,1);assert.equal(f.values.has('SYNKBRIEF_OPS_MONITOR_ENABLED'),false);
   assert.equal(f.emails.length,0);
+});
+
+
+function deliveryIssue(code='delivery_missing', incident='a'.repeat(64), route='D0003') {
+  return {code,route,incident,at:new Date().toISOString()};
+}
+function deliverySnapshot(issues=[], complete=true) {
+  return {checked_at:new Date().toISOString(),healthy:complete&&issues.length===0,complete,issues};
+}
+const DELIVERY_TEST_KEYS=['SYNKBRIEF_OPS_COMMENT_DELIVERY_TEST_V1_MISSING','SYNKBRIEF_OPS_COMMENT_DELIVERY_TEST_V1_DUPLICATE'];
+
+test('댓글 전달 선택 필드가 없거나 정상이면 기존 지문과 15분 점검·직접 답 경로가 유지된다',()=>{
+  const f=fixture();f.run();const baseline=f.values.get('SYNKBRIEF_OPS_NOTICE');
+  f.payload.comment_delivery=deliverySnapshot();assert.equal(f.run().state,'unchanged');
+  delete f.payload.comment_delivery;assert.equal(f.run().state,'unchanged');assert.equal(f.values.get('SYNKBRIEF_OPS_NOTICE'),baseline);
+  breakAccount(f);f.run();const before=f.values.get('SYNKBRIEF_OPS_NOTICE');
+  const expected=crypto.createHash('sha256').update(JSON.stringify([false,[['@yuhobuilds','auth-needed',401]]])).digest('hex');
+  assert.equal(JSON.parse(before).hash,expected);
+  f.payload.comment_delivery=deliverySnapshot();assert.equal(f.run().state,'unchanged');assert.equal(f.values.get('SYNKBRIEF_OPS_NOTICE'),before);
+  escalate(f);f.run();assert.equal(directMails(f).length,1);assert.equal(f.emails.length,2);
+  assert.ok(f.calls.every(call=>call.options.method==='get'&&call.url.endsWith('?task=ops-status')));
+});
+
+test('댓글 전달 다섯 코드만 안전한 한국어 설명으로 알리고 원문·건수·사건 해시는 메일에 싣지 않는다',()=>{
+  const descriptions={comment_missing:/댓글 수신 기록/,delivery_missing:/자료 전달 기록/,duplicate_delivery:/중복 전달/,link_mismatch:/전달한 링크가 다릅니다/,observation_failed:/관측을 끝내지 못했습니다/};
+  for(const [code,description] of Object.entries(descriptions)){
+    const f=fixture();const issue=deliveryIssue(code);
+    Object.assign(issue,{count:941285,username:'PRIVATE_USER',recipient:'PRIVATE_RECIPIENT',url:'https://private.example/SECRET',text:'PRIVATE_COMMENT'});
+    f.payload.comment_delivery={...deliverySnapshot([issue],code!=='observation_failed'),raw:'SECRET',count:941285};
+    assert.equal(f.run().state,'sent');assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,1);
+    assert.match(f.emails[0].body,description);assert.match(f.emails[0].body,/synkbrief-comment-delivery\/D0003/);
+    assert.doesNotMatch(JSON.stringify(f.emails)+JSON.stringify([...f.values]),/PRIVATE|SECRET|941285|a{64}|private\.example/);
+  }
+});
+
+test('같은 종류의 새 댓글 사건은 알리고 시각·순서·추가 건수만 바뀌면 추가 발송하지 않는다',()=>{
+  const f=fixture();f.payload.comment_delivery=deliverySnapshot([deliveryIssue(),deliveryIssue('delivery_missing','b'.repeat(64))]);
+  f.run();const firstHash=JSON.parse(f.values.get('SYNKBRIEF_OPS_NOTICE')).hash;
+  f.payload.comment_delivery.issues.reverse();f.payload.comment_delivery.checked_at=new Date(Date.now()+100).toISOString();
+  f.payload.comment_delivery.issues.forEach(issue=>{issue.at=new Date(Date.now()+200).toISOString();issue.count=99;});
+  assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,1);assert.equal(JSON.parse(f.values.get('SYNKBRIEF_OPS_NOTICE')).hash,firstHash);
+  f.payload.comment_delivery.issues[0].incident='c'.repeat(64);assert.equal(f.run().state,'sent');assert.equal(f.emails.length,2);
+  f.payload.comment_delivery=deliverySnapshot();assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).subject,/복구/);
+  assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,3);
+});
+
+test('기존 장애 중 댓글 관측 실패가 새로 생기고 회복하면 각각 판정하며 직접 답 알림도 보존한다',()=>{
+  const f=fixture();breakAccount(f);f.run();
+  f.payload.comment_delivery=deliverySnapshot([deliveryIssue('observation_failed','f'.repeat(64),'monitor')],false);
+  escalate(f);assert.equal(f.run().state,'sent');assert.equal(f.emails.length,3);assert.equal(directMails(f).length,1);
+  assert.match(f.emails.at(-1).body,/관측을 끝내지 못했습니다/);assert.match(f.emails.at(-1).body,/@yuhobuilds \| auth-needed/);
+  assert.equal(f.run().state,'unchanged');f.payload.comment_delivery=deliverySnapshot();assert.equal(f.run().state,'sent');
+  assert.match(f.emails.at(-1).subject,/운영 이상/);assert.doesNotMatch(f.emails.at(-1).body,/관측을 끝내지/);
+});
+
+test('댓글 전달 계약의 손상·상태 모순·오래된 관측은 정상으로 숨기지 않고 고정 형식 오류만 알린다',()=>{
+  const variants=[value=>null,value=>[],value=>({...value,healthy:'false'}),value=>({...value,complete:0}),
+    value=>({...value,checked_at:new Date(Date.now()-700000).toISOString()}),value=>({...value,checked_at:'PRIVATE'}),
+    value=>({...value,checked_at:new Date(Date.now()+400000).toISOString()}),value=>({...value,healthy:true}),
+    value=>({...value,complete:false}),value=>({...value,issues:[]}),value=>({...value,issues:'PRIVATE'}),
+    value=>({...value,issues:Array.from({length:101},()=>deliveryIssue())}),
+    value=>({...value,issues:[{...value.issues[0],code:'PRIVATE'}]}),value=>({...value,issues:[{...value.issues[0],code:['delivery_missing']}]}),value=>({...value,issues:[{...value.issues[0],route:'@PRIVATE'}]}),
+    value=>({...value,issues:[{...value.issues[0],route:'D3'}]}),value=>({...value,issues:[{...value.issues[0],incident:'PRIVATE'}]}),
+    value=>({...value,issues:[{...value.issues[0],incident:'A'.repeat(64)}]}),value=>({...value,issues:[{...value.issues[0],at:'2026-02-30T00:00:00.000Z'}]}),
+    value=>({...value,issues:[{...value.issues[0],at:new Date(Date.now()+400000).toISOString()}]}),
+    value=>({...value,issues:[value.issues[0],value.issues[0]]})];
+  for(const change of variants){const f=fixture();f.payload.comment_delivery=change(deliverySnapshot([deliveryIssue()]));
+    assert.equal(f.run().healthy,false);assert.match(f.emails[0].body,/ops-status \| invalid_response/);
+    assert.doesNotMatch(JSON.stringify(f.emails)+JSON.stringify([...f.values]),/PRIVATE/);
+  }
+  const f=fixture();f.payload.comment_delivery=deliverySnapshot(Array.from({length:100},(_,i)=>deliveryIssue('comment_missing',crypto.createHash('sha256').update(String(i)).digest('hex'))));
+  assert.equal(f.run().state,'sent');assert.match(f.emails[0].body,/댓글 수신 기록/);assert.doesNotMatch(f.emails[0].body,/invalid_response/);
+});
+
+test('댓글 사건 메일의 결과 미확인은 같은 사건을 재발송하지 않고 새 사건은 구분한다',()=>{
+  const f=fixture();f.payload.comment_delivery=deliverySnapshot([deliveryIssue()]);f.mailError=true;
+  assert.throws(()=>f.run(),/전달 여부/);f.payload.comment_delivery.issues[0].at=new Date().toISOString();
+  assert.equal(f.run().state,'delivery_unknown');assert.equal(f.emails.length,1);
+  f.mailError=false;f.payload.comment_delivery.issues[0].incident='b'.repeat(64);
+  assert.equal(f.run().state,'sent');assert.equal(f.emails.length,2);
+});
+
+test('고정 누락·중복 합성 시험은 공통 서식으로 두 통만 보내고 두 번째 실행은 추가 0통이다',()=>{
+  const f=fixture();for(const key of ['SYNKBRIEF_OPS_MAIL_TEST','SYNKBRIEF_OPS_NOTICE','SYNKBRIEF_OPS_DIRECT_NOTICE','SYNKBRIEF_OPS_LAST_CHECK'])f.values.set(key,JSON.stringify({delivery:'sent',privateBaseline:key}));
+  const before=new Map(f.values);const first=f.context.synkbrief댓글전달알림시험();
+  assert.equal(first.state,'sent');assert.deepEqual(Array.from(first.receipts,r=>r.code),['delivery_missing','duplicate_delivery']);
+  const after=new Map(f.values);const second=f.context.synkbrief댓글전달알림시험();
+  assert.equal(second.state,'already_sent');assert.ok(second.receipts.every(r=>r.emailSent===false));assert.equal(f.emails.length,2);
+  assert.match(f.emails[0].body,/자료 전달 기록/);assert.match(f.emails[1].body,/중복 전달/);
+  for(const mail of f.emails){assert.equal(mail.subject,'[SYNK DM] 합성 시험 · 운영 이상');assert.match(mail.body,/실제 장애나 고객 DM 발송이 아닙니다/);assert.match(mail.body,/synkbrief-comment-delivery\/monitor/);assert.doesNotMatch(mail.body,/PRIVATE|[a-f0-9]{64}/);}
+  for(const [key,value] of before)assert.equal(f.values.get(key),value,key);
+  assert.deepEqual(f.values,after);assert.deepEqual(f.logs.map(line=>JSON.parse(line).state),['sent','already_sent']);assert.doesNotMatch(f.logs.join(''),/PRIVATE|[a-f0-9]{64}|@/);assert.equal(f.calls.length,0);assert.equal(f.deleted.length,0);assert.equal(f.triggers.length,0);
+  for(const key of DELIVERY_TEST_KEYS){const receipt=JSON.parse(f.values.get(key));assert.equal(receipt.delivery,'sent');assert.match(receipt.hash,/^[a-f0-9]{64}$/);assert.ok(Number.isFinite(Date.parse(receipt.at)));}
+});
+
+test('합성 시험의 pending·unknown·손상 영수증은 재발송 없이 멈추고 기존 시험 기록도 건드리지 않는다',()=>{
+  for(const raw of ['','broken','null',JSON.stringify({delivery:'pending'}),JSON.stringify({delivery:'unknown'}),JSON.stringify({delivery:'sent',hash:'wrong'})]){
+    const f=fixture();f.values.set(DELIVERY_TEST_KEYS[0],raw);const before=new Map(f.values);
+    assert.equal(f.context.synkbrief댓글전달알림시험().state,'delivery_unknown');assert.equal(f.emails.length,0);assert.deepEqual(f.values,before);
+    assert.equal(f.calls.length,0);assert.equal(f.released,true);
+  }
+  const f=fixture();f.mailError=true;assert.throws(()=>f.context.synkbrief댓글전달알림시험(),/전달 여부/);
+  assert.equal(JSON.parse(f.values.get(DELIVERY_TEST_KEYS[0])).delivery,'unknown');assert.equal(f.values.has(DELIVERY_TEST_KEYS[1]),false);
+  f.mailError=false;assert.equal(f.context.synkbrief댓글전달알림시험().state,'delivery_unknown');assert.equal(f.emails.length,1);
+});
+
+test('합성 시험은 관리자·고정 입력·잠금을 검사하고 할당량·수신자 부재는 영수증을 소비하지 않는다',()=>{
+  const f=fixture();f.context.Session.getActiveUser=()=>({getEmail:()=>''});assert.throws(()=>f.context.synkbrief댓글전달알림시험(),/관리자/);
+  f.context.Session.getActiveUser=()=>({getEmail:()=> 'owner@example.test'});assert.throws(()=>f.context.synkbrief댓글전달알림시험('PRIVATE'),/고정된 두/);
+  f.lock=false;assert.throws(()=>f.context.synkbrief댓글전달알림시험(),/실행 중/);f.lock=true;
+  f.quota=0;assert.equal(f.context.synkbrief댓글전달알림시험().state,'quota_exhausted');
+  f.quota=2;f.values.set('SYNKBRIEF_OPS_EMAIL','invalid');assert.equal(f.context.synkbrief댓글전달알림시험().state,'recipient_missing');
+  assert.equal(f.emails.length,0);assert.equal(f.calls.length,0);assert.ok(DELIVERY_TEST_KEYS.every(key=>!f.values.has(key)));
+});
+
+test('첫 합성 메일 뒤 할당량이 끝나면 다음 실행에서 미발송 두 번째 사례만 이어간다',()=>{
+  const f=fixture();f.context.MailApp.getRemainingDailyQuota=()=>1-f.emails.length;
+  assert.equal(f.context.synkbrief댓글전달알림시험().state,'quota_exhausted');assert.equal(f.emails.length,1);
+  assert.equal(JSON.parse(f.values.get(DELIVERY_TEST_KEYS[0])).delivery,'sent');assert.equal(f.values.has(DELIVERY_TEST_KEYS[1]),false);
+  f.context.MailApp.getRemainingDailyQuota=()=>100;assert.equal(f.context.synkbrief댓글전달알림시험().state,'sent');assert.equal(f.emails.length,2);
+  assert.equal(f.context.synkbrief댓글전달알림시험().state,'already_sent');assert.equal(f.emails.length,2);
+});
+
+
+test('합성 두 번째 메일의 예외나 발송 뒤 영수증 저장 실패도 첫 결과를 보존하며 자동 재발송하지 않는다',()=>{
+  const f=fixture();f.context.MailApp.sendEmail=email=>{f.emails.push(email);if(f.emails.length===2)throw Error('PRIVATE');};
+  assert.throws(()=>f.context.synkbrief댓글전달알림시험(),/전달 여부/);
+  assert.equal(JSON.parse(f.values.get(DELIVERY_TEST_KEYS[0])).delivery,'sent');assert.equal(JSON.parse(f.values.get(DELIVERY_TEST_KEYS[1])).delivery,'unknown');
+  assert.equal(f.context.synkbrief댓글전달알림시험().state,'delivery_unknown');assert.equal(f.emails.length,2);
+  const g=fixture();let sent=false;
+  g.context.MailApp.sendEmail=email=>{g.emails.push(email);sent=true;};
+  g.context.PropertiesService.getScriptProperties=()=>({getProperty:key=>g.values.get(key),setProperty:(key,value)=>{if(sent)throw Error('storage unavailable');g.values.set(key,value);}});
+  assert.throws(()=>g.context.synkbrief댓글전달알림시험());assert.equal(JSON.parse(g.values.get(DELIVERY_TEST_KEYS[0])).delivery,'pending');
+  assert.equal(g.context.synkbrief댓글전달알림시험().state,'delivery_unknown');assert.equal(g.emails.length,1);assert.equal(g.released,true);
+});
+
+
+test('댓글 전달 route는 서버 routeCode의 D+4~19자리와 monitor만 허용한다',()=>{
+  for(const route of ['D0003','D12345678901','D9223372036854775807','monitor']){
+    const f=fixture();f.payload.comment_delivery=deliverySnapshot([deliveryIssue('delivery_missing','a'.repeat(64),route)]);
+    assert.equal(f.run().state,'sent');assert.match(f.emails[0].body,new RegExp('synkbrief-comment-delivery/'+route));assert.doesNotMatch(f.emails[0].body,/invalid_response/);
+  }
+  for(const route of ['D123','D12345678901234567890','D0003 PRIVATE','monitor\nPRIVATE']){
+    const f=fixture();f.payload.comment_delivery=deliverySnapshot([deliveryIssue('delivery_missing','a'.repeat(64),route)]);
+    f.run();assert.match(f.emails[0].body,/invalid_response/);assert.doesNotMatch(f.emails[0].body,/PRIVATE/);
+  }
 });

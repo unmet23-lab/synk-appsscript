@@ -327,40 +327,94 @@ function synkbrief정기점검() {
   try {
     const status = synkbrief_운영상태읽기_(p.getProperty('SYNKBRIEF_OPS_READ_KEY'));
     try { synkbrief_직접답알림_(p, status); } catch (_) { /* 직접 답 알림의 실패가 운영 이상 판정을 막지 않는다. 다음 점검에서 다시 본다. */ }
-    const signature = JSON.stringify([status.healthy, status.rows.map(r => [r.name, r.health, r.http])]);
-    const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, signature).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
-    let previous = null;
-    try { previous = JSON.parse(p.getProperty('SYNKBRIEF_OPS_NOTICE') || 'null'); } catch (_) { /* 손상된 상태는 새 관측으로 복구한다. */ }
-    const record = { hash: hash, healthy: status.healthy, at: new Date().toISOString(), delivery: 'baseline' };
-    p.setProperty('SYNKBRIEF_OPS_LAST_CHECK', JSON.stringify({ healthy: status.healthy, at: record.at }));
-    if (previous && previous.hash === hash) return { ok: previous.delivery !== 'unknown' && previous.delivery !== 'pending', state: previous.delivery === 'unknown' || previous.delivery === 'pending' ? 'delivery_unknown' : 'unchanged', healthy: status.healthy };
-    if (!previous && status.healthy) {
-      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
-      return { ok: true, state: 'baseline', healthy: true };
-    }
-    // 일일 잔여 수신자 수나 받을 주소가 없으면 상태를 소비하지 않아 다음 회차에 다시 시도한다.
-    if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', healthy: status.healthy };
-    const to = synkbrief_운영알림수신_(p);
-    if (!to) return { ok: false, state: 'recipient_missing', healthy: status.healthy };
-    record.delivery = 'pending';
-    p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
-    try {
-      MailApp.sendEmail({
-        to: to,
-        subject: status.healthy ? '[SYNK DM] 운영 복구' : '[SYNK DM] 운영 이상',
-        body: '확인 시각: ' + status.at + '\n상태: ' + (status.healthy ? '정상' : '확인 필요') + '\n\n' + status.rows.map(r => r.name + ' | ' + r.health + ' | 시각 ' + r.at + ' | HTTP ' + (r.http || '-')).join('\n'),
-        name: 'SYNK'
-      });
-      record.delivery = 'sent';
-      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
-      return { ok: true, state: 'sent', healthy: status.healthy };
-    } catch (_) {
-      // 수신 여부가 불명확한 발송을 자동으로 반복하지 않는다. 원본 예외·본문은 저장하지 않는다.
-      record.delivery = 'unknown';
-      p.setProperty('SYNKBRIEF_OPS_NOTICE', JSON.stringify(record));
-      throw new Error('SYNK DM 운영 알림 전달 여부를 확인하지 못했습니다. 같은 상태는 자동 재발송하지 않습니다.');
-    }
+    p.setProperty('SYNKBRIEF_OPS_LAST_CHECK', JSON.stringify({ healthy: status.healthy, at: new Date().toISOString() }));
+    return synkbrief_운영알림전송_(p, status, 'SYNKBRIEF_OPS_NOTICE', false);
   } finally { lock.releaseLock(); }
+}
+
+// 호출자가 ScriptLock을 보유한다. 실점검과 고정 합성 시험은 서식·지문·전달 미확인 처리를 공유한다.
+function synkbrief_운영알림전송_(p, status, property, once) {
+  // 기존 행은 3값 지문을 그대로 유지한다. 댓글·전달 사건만 비식별 incident를 추가한다.
+  const signature = JSON.stringify([status.healthy, status.rows.map(r => r.incident
+    ? [r.name, r.health, r.http, r.incident] : [r.name, r.health, r.http])]);
+  const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, signature).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+  const raw = p.getProperty(property);
+  let previous = null;
+  try { previous = JSON.parse(raw || 'null'); } catch (_) { /* 합성 시험은 손상된 영수증도 아래에서 재발송을 막는다. */ }
+  if (once && raw != null) {
+    const sent = previous && previous.hash === hash && previous.delivery === 'sent';
+    return { ok: Boolean(sent), state: sent ? 'already_sent' : 'delivery_unknown', healthy: status.healthy };
+  }
+  const record = { hash: hash, healthy: status.healthy, at: new Date().toISOString(), delivery: 'baseline' };
+  if (previous && previous.hash === hash) return { ok: previous.delivery !== 'unknown' && previous.delivery !== 'pending', state: previous.delivery === 'unknown' || previous.delivery === 'pending' ? 'delivery_unknown' : 'unchanged', healthy: status.healthy };
+  if (!previous && status.healthy) {
+    p.setProperty(property, JSON.stringify(record));
+    return { ok: true, state: 'baseline', healthy: true };
+  }
+  // 일일 잔여 수신자 수나 받을 주소가 없으면 상태를 소비하지 않아 다음 회차에 다시 시도한다.
+  if (MailApp.getRemainingDailyQuota() < 1) return { ok: false, state: 'quota_exhausted', healthy: status.healthy };
+  const to = synkbrief_운영알림수신_(p);
+  if (!to) return { ok: false, state: 'recipient_missing', healthy: status.healthy };
+  record.delivery = 'pending';
+  p.setProperty(property, JSON.stringify(record));
+  try {
+    MailApp.sendEmail({
+      to: to,
+      subject: once ? '[SYNK DM] 합성 시험 · 운영 이상' : status.healthy ? '[SYNK DM] 운영 복구' : '[SYNK DM] 운영 이상',
+      body: (once ? '고정된 가상 사례의 알림 시험입니다. 실제 장애나 고객 DM 발송이 아닙니다.\n\n' : '')
+        + '확인 시각: ' + status.at + '\n상태: ' + (status.healthy ? '정상' : '확인 필요') + '\n\n'
+        + status.rows.map(r => r.name + ' | ' + (r.incident ? synkbrief_댓글전달설명_(r.health) : r.health)
+          + ' | 시각 ' + r.at + ' | HTTP ' + (r.http || '-')).join('\n'),
+      name: 'SYNK'
+    });
+    record.delivery = 'sent';
+    p.setProperty(property, JSON.stringify(record));
+    return { ok: true, state: 'sent', healthy: status.healthy };
+  } catch (_) {
+    // 수신 여부가 불명확한 발송을 자동으로 반복하지 않는다. 원본 예외·본문은 저장하지 않는다.
+    record.delivery = 'unknown';
+    p.setProperty(property, JSON.stringify(record));
+    throw new Error('SYNK DM 운영 알림 전달 여부를 확인하지 못했습니다. 같은 상태는 자동 재발송하지 않습니다.');
+  }
+}
+
+function synkbrief_댓글전달설명_(code) {
+  const descriptions = {
+    comment_missing: '댓글 수신 기록을 찾지 못했습니다. 게시물 댓글과 서버 수신 기록을 확인해 주세요.',
+    delivery_missing: '댓글에 대한 자료 전달 기록을 찾지 못했습니다. 발송 상태를 확인해 주세요.',
+    duplicate_delivery: '같은 댓글 대상에게 자료가 중복 전달된 기록이 있습니다. 추가 발송을 하지 말고 이력을 확인해 주세요.',
+    link_mismatch: '게시물에 승인된 자료 링크와 전달한 링크가 다릅니다. 연결된 자료를 확인해 주세요.',
+    observation_failed: '댓글·자료 전달 관측을 끝내지 못했습니다. 감시 실행 상태를 확인해 주세요.'
+  };
+  return Object.prototype.hasOwnProperty.call(descriptions, code) ? descriptions[code] : '';
+}
+
+// 선택 필드가 없는 이전 서버는 기존 판정을 유지한다. 원문·건수·수신자·URL은 투영하지 않는다.
+function synkbrief_댓글전달행_(value) {
+  const iso = value => {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(value)) throw new Error('shape');
+    const at = Date.parse(value);
+    if (!Number.isFinite(at) || new Date(at).toISOString().slice(0, 19) !== value.slice(0, 19)) throw new Error('shape');
+    return new Date(at).toISOString();
+  };
+  if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.healthy !== 'boolean'
+    || typeof value.complete !== 'boolean' || !Array.isArray(value.issues) || value.issues.length > 100
+    || value.healthy !== (value.complete && value.issues.length === 0)) throw new Error('shape');
+  const checked = Date.parse(iso(value.checked_at));
+  if (Date.now() - checked > 600000 || checked - Date.now() > 300000) throw new Error('shape');
+  // 미완료 관측은 서버가 사건 지문을 가진 observation_failed로 명시해야 한다.
+  if (!value.complete && !value.issues.some(issue => issue && issue.code === 'observation_failed')) throw new Error('shape');
+  const seen = Object.create(null);
+  return value.issues.map(issue => {
+    if (!issue || typeof issue.code !== 'string' || !synkbrief_댓글전달설명_(issue.code) || typeof issue.route !== 'string'
+      || !/^(?:D\d{4,19}|monitor)$/.test(issue.route) || typeof issue.incident !== 'string'
+      || !/^[a-f0-9]{64}$/.test(issue.incident)) throw new Error('shape');
+    const at = iso(issue.at);
+    const key = issue.route + '/' + issue.code + '/' + issue.incident;
+    if (seen[key] || Date.parse(at) - Date.now() > 300000) throw new Error('shape');
+    seen[key] = true;
+    return { name: 'synkbrief-comment-delivery/' + issue.route, health: issue.code, http: 200, at: at, incident: issue.incident };
+  });
 }
 
 // 자동 답이 「직접 확인하고 답드릴게요」라고 약속한 대화(escalation: 계속되는 문제, AI가 켜졌을 때 자료에 답이 없는 질문)를
@@ -538,6 +592,34 @@ function synkbrief운영알림시험() {
   } finally { lock.releaseLock(); }
 }
 
+// 승인된 누락·중복 합성 메일 두 통만 관리자 편집기에서 명시 실행한다.
+// 기존 연결 시험/운영/직접 답 영수증과 분리하며, pending·unknown·손상 기록은 재시도하지 않는다.
+function synkbrief댓글전달알림시험() {
+  synkbrief_관리자확인_();
+  if (arguments.length) throw new Error('고정된 두 합성 사례만 시험할 수 있습니다.');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new Error('운영 점검이 실행 중입니다. 잠시 뒤 다시 시험해 주세요.');
+  try {
+    const p = PropertiesService.getScriptProperties();
+    const at = new Date().toISOString();
+    const cases = [
+      { code: 'delivery_missing', property: 'SYNKBRIEF_OPS_COMMENT_DELIVERY_TEST_V1_MISSING' },
+      { code: 'duplicate_delivery', property: 'SYNKBRIEF_OPS_COMMENT_DELIVERY_TEST_V1_DUPLICATE' }
+    ];
+    const receipts = [];
+    const report = result => { console.log(JSON.stringify(result)); return result; };
+    for (const item of cases) {
+      const incident = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, item.property).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+      const rows = synkbrief_댓글전달행_({ checked_at: at, healthy: false, complete: true,
+        issues: [{ code: item.code, route: 'monitor', incident: incident, at: at }] });
+      const result = synkbrief_운영알림전송_(p, { healthy: false, at: at, rows: rows }, item.property, true);
+      receipts.push({ code: item.code, state: result.state, emailSent: result.state === 'sent' });
+      if (!result.ok) return report({ ok: false, state: result.state, receipts: receipts });
+    }
+    return report({ ok: true, state: receipts.some(item => item.emailSent) ? 'sent' : 'already_sent', receipts: receipts });
+  } finally { lock.releaseLock(); }
+}
+
 function synkbrief_운영상태읽기_(key) {
   const now = new Date().toISOString();
   const failed = (health, http) => ({ validated: false, healthy: false, at: now, rows: [{ name: 'ops-status', health: health, http: http || 0, at: now }] });
@@ -633,11 +715,16 @@ function synkbrief_운영상태읽기_(key) {
       healthy = false;
       rows.push({ name: 'synkbrief-queue', health: 'missing', http: 200, at: new Date(checked).toISOString() });
     }
+    if (Object.prototype.hasOwnProperty.call(body, 'comment_delivery')) {
+      const deliveryRows = synkbrief_댓글전달행_(body.comment_delivery);
+      if (!body.comment_delivery.healthy) healthy = false;
+      deliveryRows.forEach(row => rows.push(row));
+    }
     if (!rows.some(r => r.name.charAt(0) === '@')) { healthy = false; rows.push({ name: 'accounts', health: 'missing', http: 0, at: '-' }); }
     if (!body.healthy && rows.every(r => r.health === 'ok' || r.health === 'healthy' || r.health === 'pending')) rows.push({ name: 'ops-status', health: 'unhealthy', http: 200, at: new Date(checked).toISOString() });
     // 정상 시각/HTTP 성공의 변화는 장애 알림을 만들지 않는다.
     const issues = healthy ? [] : rows.filter(r => r.health !== 'ok' && r.health !== 'healthy' && r.health !== 'pending');
-    issues.sort((a, b) => a.name.localeCompare(b.name) || a.health.localeCompare(b.health));
+    issues.sort((a, b) => a.name.localeCompare(b.name) || a.health.localeCompare(b.health) || (a.incident || '').localeCompare(b.incident || ''));
     return { validated: true, healthy: healthy, at: new Date(checked).toISOString(), rows: issues, attention: attention };
   } catch (_) { return failed('invalid_response', 200); }
 }
