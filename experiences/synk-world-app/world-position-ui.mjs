@@ -64,7 +64,10 @@ export const POSITION_TEXT=Object.freeze({
  'position.diagnostic.back':'내 위치로 돌아가기',
  'position.hangul.title':'한글부터',
  'position.hangul.intro':'TOPIK I 항목 지도는 한글 만나기를 마치면 열려요. 지금은 한글을 어디까지 만났는지 보여 드려요.',
- 'position.hangul.progress':'한글 만나기 {done} / {total}',
+ 'position.hangul.letters':'만난 글자 {met} / {total}',
+ 'position.hangul.units':'다 익힌 단원 {unitsDone} / {units}',
+ 'position.hangul.notStarted':'아직 한글 만나기를 시작하지 않았어요. 첫 글자부터 함께 만나요.',
+ 'position.hangul.start':'한글 만나기 시작하기',
  'position.hangul.continue':'한글 만나기 이어 하기',
  'position.hangul.unknown':'한글 진도를 아직 읽지 못했어요.',
 });
@@ -120,11 +123,13 @@ export function renderPositionBoard({map,plan=null,catalog=null,diagnosed=false}
  return `<div class="wpos" data-position-board><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.title'))}</strong><p class="life-poster-sub wpos-summary">${escape(say('position.summary',map.counts))}</p></div><ul class="wpos-counts" aria-label="${escape(say('position.summary',map.counts))}">${counts}</ul><p class="wpos-intro">${escape(say('position.intro'))}</p>${map.evidenceComplete?'':`<p class="wpos-note" data-position-incomplete>${escape(say('position.incomplete'))}</p>`}${diagnosticBlock(map,plan,{done:diagnosed})}${groups}</div>`;
 }
 
-// 한글 만나기 졸업 전: 항목 지도 대신 한글 진도. progress: {done,total}(모르면 null)
-export function renderHangulBoard({progress=null}={}){
- const known=progress&&Number.isInteger(progress.done)&&Number.isInteger(progress.total)&&progress.total>0;
- const ratio=known?Math.max(0,Math.min(1,progress.done/progress.total)):0;
- return `<div class="wpos" data-position-board="hangul"><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.hangul.title'))}</strong><p class="life-poster-sub">${escape(say('position.hangul.intro'))}</p></div>${known?`<div class="wpos-hangul"><p>${escape(say('position.hangul.progress',progress))}</p><span class="wpos-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${progress.total}" aria-valuenow="${progress.done}"><i style="width:${(ratio*100).toFixed(1)}%"></i></span></div>`:`<p class="wpos-note">${escape(say('position.hangul.unknown'))}</p>`}<button class="felt-button" type="button" data-position-hangul>${escape(say('position.hangul.continue'))} <span aria-hidden="true">→</span></button></div>`;
+// 한글 만나기 졸업 전: 항목 지도 대신 한글 진도. stage: hangulStageProgress 결과(모르면 null)
+export function renderHangulBoard({stage=null}={}){
+ const known=!!stage&&Number.isInteger(stage.met)&&Number.isInteger(stage.total)&&stage.total>0;
+ const bar=(value,max,label)=>`<span class="wpos-bar" role="progressbar" aria-label="${escape(label)}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${value}"><i style="width:${(Math.max(0,Math.min(1,max?value/max:0))*100).toFixed(1)}%"></i></span>`;
+ const body=!known?`<p class="wpos-note">${escape(say('position.hangul.unknown'))}</p>`:!stage.started?`<p class="wpos-note">${escape(say('position.hangul.notStarted'))}</p>`
+  :`<div class="wpos-hangul"><p>${escape(say('position.hangul.letters',stage))}</p>${bar(stage.met,stage.total,say('position.hangul.letters',stage))}<p>${escape(say('position.hangul.units',stage))}</p>${bar(stage.unitsDone,stage.units,say('position.hangul.units',stage))}</div>`;
+ return `<div class="wpos" data-position-board="hangul"><div class="life-poster wpos-poster"><small class="life-poster-label">${escape(say('position.eyebrow'))}</small><strong class="life-poster-word">${escape(say('position.hangul.title'))}</strong><p class="life-poster-sub">${escape(say('position.hangul.intro'))}</p></div>${body}<button class="felt-button" type="button" data-position-hangul>${escape(say(known&&stage.started?'position.hangul.continue':'position.hangul.start'))} <span aria-hidden="true">→</span></button></div>`;
 }
 
 // 입장 검사처럼 안내문을 읽고 손님에게 적용하는 문항: 안내문 · 시각 · 손님의 표 · 짐 · 손님의 말을 글로 보인다.

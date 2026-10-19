@@ -62,10 +62,12 @@ test('진단 칸: 준비된 문항 수, 모자란 항목, 소리 끈 날을 알�
 });
 
 test('한글 0인 사람의 판은 항목 지도 대신 한글 진도를 보인다',()=>{
- const html=renderHangulBoard({progress:{done:3,total:14}});
- assert.match(html,/data-position-board="hangul"/);assert.match(html,/한글 만나기 3 \/ 14/);assert.match(html,/aria-valuenow="3"/);
- assert.doesNotMatch(html,/wpos-skill/);
+ const html=renderHangulBoard({stage:{started:true,met:12,total:49,mastered:5,unitsDone:1,units:7,graduated:false,skipped:false}});
+ assert.match(html,/data-position-board="hangul"/);assert.match(html,/만난 글자 12 \/ 49/);assert.match(html,/다 익힌 단원 1 \/ 7/);assert.match(html,/aria-valuenow="12"/);
+ assert.match(html,/한글 만나기 이어 하기/);assert.doesNotMatch(html,/wpos-skill/);
+ assert.match(renderHangulBoard({stage:{started:false,met:0,total:49,mastered:0,unitsDone:0,units:7}}),/아직 한글 만나기를 시작하지 않았어요[\s\S]*한글 만나기 시작하기/);
  assert.match(renderHangulBoard(),/한글 진도를 아직 읽지 못했어요/);
+ assert.equal(count(html,/class="felt-button"/g),1);
 });
 
 test('진단 문항 화면은 끝까지 듣기 전에 보기를 막고, 끝 화면은 푼 것만 정오로 보인다',()=>{

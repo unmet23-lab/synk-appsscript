@@ -160,6 +160,27 @@ export function createDiagnosticSession({coach,items}={}){
  });
 }
 
+// 한글 만나기를 마치기 전에는 항목 지도 대신 한글 진도를 보인다(10-19 지시 4). 그 게임이 저장한 진도 JSON
+// (hangul-stage/core.mjs의 꼴)에서 판에 보일 숫자만 꺼낸다. 글자 상태·졸업의 판단은 그 게임이 한다.
+// layer: Strata 한글 층(strata/hangul.json) — 49글자, 핵심 단원(U1~U7, core:false가 아닌 것)이 졸업 조건이다.
+export function hangulStageProgress(raw,layer){
+ if(!record(layer)||!Array.isArray(layer.letters)||!Array.isArray(layer.units))throw TypeError('WORLD position needs the Strata Hangul layer');
+ const progress=record(raw)&&raw.v===1?raw:null,letters=record(progress?.letters)?progress.letters:{};
+ const ids=layer.letters.map(row=>Array.isArray(row)?row[0]:row?.id).filter(token);
+ const state=id=>record(letters[id])&&typeof letters[id].state==='string'?letters[id].state:'unmet';
+ const best=id=>record(letters[id])&&typeof letters[id].best==='string'?letters[id].best:state(id);
+ const core=layer.units.filter(unit=>unit?.core!==false&&Array.isArray(unit.letters));
+ const met=ids.filter(id=>state(id)!=='unmet').length;
+ return {started:met>0,met,total:ids.length,mastered:ids.filter(id=>best(id)==='mastered').length,
+  units:core.length,unitsDone:core.filter(unit=>unit.letters.every(id=>best(id)==='mastered')).length,
+  graduated:!!(record(progress?.graduated)&&time(progress.graduated.at)),skipped:progress?.skipped===true};
+}
+// 한글 판을 보일지: 첫 실행에서 「아직 못 읽어요」를 고른 사람(생활 기록 hangul.answer === 'new')이고 아직
+// 졸업하지 않았을 때만. 답이 없거나 읽는다고 고른 사람·졸업한 사람·건너뛴 사람은 항목 지도를 본다.
+export function showsHangulBoard({reading=null,stage=null}={}){
+ return record(reading)&&reading.answer==='new'&&!(stage?.graduated)&&!(stage?.skipped);
+}
+
 // 예상 급수의 문턱. 「1급 근처 · 근거 30문항 · 갱신일」처럼 범위를 보이려면 TOPIK 형식 연습(처음 보는 문항 · 실제 구성 ·
 // 시간 제한)의 근거가 이 수만큼 쌓여야 한다. 게임 기록·정답률은 근거가 아니다(§1). 근거 수는 판이 있는 정책 설정이고
 // 실제 자료로 조정한다(§7-3). 점수에서 범위를 읽는 검수된 방법이 아직 없어, 문턱을 넘어도 급수는 만들지 않는다.
