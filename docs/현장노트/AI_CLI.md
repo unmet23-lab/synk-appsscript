@@ -82,6 +82,26 @@
 - 고침: 점검의 틀린 값을 모델마다 표에 두고, 토큰 세기 창구가 그 모델에서 실제로 400을 내는 값으로 고른다(talk `lib/교정엔진.js` `도우미모델표`의 `점검틀린생각`, Opus 5.5는 `between_tools`, 커밋 `20849aa`). 모델을 옮길 때는 count_tokens에 후보 값을 먼저 보내 400이 나는지 본다(무료).
 - 다시 확인: 무료 시험 스크립트 `.tmp/companion-opus-20261019/thinking-variants.cjs`(결과 `thinking-variants-*.json`). 고친 판을 배포한 뒤 `?점검=몸통`이 `ok:true`·`틀린값거절: 400`이다.
 
+## Claude Code 자동 모드
+
+### 번호나 오래된 말로 승인하면 공개 push가 막힌다 (2026-10-19 Claude)
+- 증상: 10-18 synk.im 공개 push(synk-policy main)가 「공개해도 돼」(9시간 전, 그사이 방법이 바뀜)와 「1,2,공개해도돼」 뒤에도 「Production Deploy」로 거절됐다. 두 번째 뒤에는 자동 모드를 끄고 진행했다(그 세션은 검사 없이 돌았다).
+- 원인: 판정 모델은 사용자 메시지·실행 명령·CLAUDE.md만 보고, Claude의 말과 도구 결과는 보지 않는다. 승인은 행동과 그 대상을 이름 대야 하고 한 번에 한 행동만 덮으며, 규칙으로 저장되지 않아 압축되면 사라질 수 있다(공식 문서 permission-modes 「Approvals you state in conversation」). 번호가 가리키는 Claude의 목록은 판정 모델에 보이지 않는다.
+- 고침: 승인을 물을 때 다음 단계 상자 단추 문장에 대상과 행동을 적는다(예: 「synk.im(synk-policy main)에 회의·매뉴얼 도구 공개해」). 단추를 누르면 그 문장이 유호님 메시지로 간다. 자주 하는 정해진 길은 `~/.claude/settings.json`의 `autoMode.allow`에 둔다 — 10-19부터 본 작업본에서 돌리는 `git diff --quiet origin/master -- tools/공개.js && node tools/공개.js 올리기 <항목> -m '<메시지>' --실행 --계획 <해시>`(같은 세션에 미리 보기가 실제로 돈 뒤), 유호님이 요청한 꿀팁 글 push, 같은 세션에서 유호님 말로 `--승인`한 항목의 SNS `--발행`(앞에 같은 꼴의 `git diff --quiet origin/master` 확인, 다른 세션의 승인 기록은 안 됨). 정해진 옵션 밖의 옵션·환경 변수·리다이렉션이 붙어도 미리 허락이 아니다.
+- 다시 확인: 10-18 아침 대상을 적은 단추 한 번으로 같은 push가 통과했다. `claude auto-mode config`의 allow에 위 네 줄이 있다.
+
+### 예약 작업 지시문에 적은 공개·배포는 승인으로 치지 않는다 (2026-10-19 Claude)
+- 증상(예방): 예약 작업이나 무인 `claude -p`의 지시문에 「synk.im에 공개까지」를 적어도 운영 반영 단계는 막힌다. `-p` 실행은 막힌 행동만 건너뛰고 끝까지 간다.
+- 원인: 기본 allow 「Scheduled-Task Fires」가 저장된 지시문을 오래전에 친 지시로 다루고 soft 차단의 동의로 치지 않는다. 지시문에 「승인됨」을 적는 것은 지어낸 동의다.
+- 고침: 무인으로 돌릴 운영 단계는 검사를 품은 정해진 도구 호출로 만들고 `autoMode.allow`에 그 호출 모양만 적는다. 그 밖의 운영 반영은 후보·미리 보기까지만 하고, 헤르메스(텔레그램 글이 그대로 사용자 메시지가 된다)나 다음 세션의 이름 댄 한마디로 잇는다. 무인 작업 보고에는 건너뛴 단계를 꼭 적는다.
+- 다시 확인: `claude auto-mode defaults --label 'Scheduled-Task Fires'`.
+
+### 설정 마법사 결과를 그대로 쓰면 자기 규칙과 부딪히고 기본 안전 문장이 빠진다 (2026-10-19 Claude)
+- 증상: 10-17 앱이 띄운 「Teach auto mode about your environment?」로 `/auto-mode-setup`(쓰임새 mixed, 이 프로젝트만)을 돌려 그대로 적용했더니, 환경 설명의 「clasp push/deploy는 routine」이 clasp 확인 규칙과 부딪혔다. 기본의 「세션 저장소 신뢰」「공개 여부 가정」「민감 파일 전체」 문장이 빠졌고, 공개 사이트 synk.im을 믿는 내부 도메인에 넣었다. `claude auto-mode critique`가 같은 점을 짚었다.
+- 원인: 마법사는 environment를 `$defaults` 없이 풀어 쓰면서 문장을 줄이고, 이 프로젝트 기록에서 본 명령을 「평소 일」로 적는다. 판정 모델은 cwd가 아니라 명령 글자를 보므로 `Bash(clasp push:*) in <경로>` 꼴 규칙은 PowerShell 배포(`& $claspBin push --force`)나 `clasp deploy -i`를 못 잡는다. `autoMode`는 프로젝트 설정에서는 읽지 않고 `~/.claude/settings.json`(과 관리 설정·`--settings`)에서만 읽는다.
+- 고침: 10-19 손으로 다시 썼다 — 21칸을 모두 풀어 쓰고 운영 대상(synk-policy main·Releases·Apps Script 라이브·talk `--적용`·회사 서버), 공개 저장소 셋, 키 위치, Drive 백업처를 사실대로 적었다. clasp 규칙은 호출 방식과 상관없이 효과로 쓰고, allow·soft_deny는 맨 앞에 `$defaults`를 둔다. 비공개 저장소에서 만든 사이트 파일을 공개 저장소(synk-policy)로 보내는 공개는 단단 규칙(Data Exfiltration — 미리 허락으로 못 푼다)에 걸릴 수 있어, 「Data retention / declassification」 칸에 synk.im용 사이트 파일 공개 해제를 적었다. 도구 검사를 믿는 미리 허락은 여러 세션이 같은 작업본을 쓰므로 `git diff --quiet origin/master -- <도구>`를 앞에 붙인 꼴로만 연다(`HEAD` 기준이면 다른 세션이 고쳐 커밋만 한 판을 못 거른다). 페이블 검수·근거·적용 스크립트는 `.tmp/automode-review-20261019/`, 바꾸기 전 판은 `~/.claude/settings.json.bak-202610191939-automode`.
+- 다시 확인: `claude auto-mode config` → environment 22·allow 20·soft_deny 77·hard_deny 1(10-19). `claude auto-mode critique`로 새 모순이 없는지 본다 — 규칙이 길면 비평 출력이 중간에 끊긴다(10-19 여러 번 끊김, `--model opus`가 조금 더 길게 낸다). 끊긴 곳까지 고치고 다시 돌린다. 비평은 돌릴 때마다 더 좁은 빈틈을 내므로, 되돌릴 수 없는 손상과 이어지는 지적까지만 고친다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
