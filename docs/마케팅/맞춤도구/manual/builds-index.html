@@ -3,27 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<!-- synk.im/builds/ 첫 화면. yuhobuilds 허브에 도구가 하나뿐이라 바로 「AI 직원 매뉴얼 만들기」로 넘긴다.
+<!-- synk.im/builds/ 첫 화면 = yuhobuilds 맞춤 프로그램 모음(허브).
      원본: SYNK-appsscript/docs/마케팅/맞춤도구/manual/builds-index.html → 빌드가 dist/builds/index.html로 복사한다.
-     다른 편 도구가 생기면 이 파일을 허브 목록으로 바꾼다. -->
-<title>AI 직원 매뉴얼 만들기 · yuhobuilds</title>
-<meta http-equiv="refresh" content="0; url=/builds/manual/">
-<link rel="canonical" href="https://synk.im/builds/manual/">
-<meta name="description" content="내 일에 맞는 AI 직원 매뉴얼, 질문 다섯 개면 만들어져요.">
+     2026-10-17: 두 번째 도구(내 PC 이사 목록, /builds/move/)가 생겨서, 매뉴얼로 바로 넘기던 페이지를 목록으로 바꿨다(새 편이 위).
+     옛 넘김 페이지가 받던 공유 링크(#r=…)는 그대로 매뉴얼로 보낸다.
+     글꼴: 이 파일의 글자는 manual 도구의 줄인 SUIT에 함께 실린다(build.mjs가 outside 원고도 글자 목록에 넣는다).
+     그림: 각 도구의 assets를 그대로 가리킨다. 양식은 싱ㅋ 시그널 토큰(core/signal.css)을 이 페이지에 필요한 만큼만 옮겼다. -->
+<title>yuhobuilds 맞춤 프로그램</title>
+<meta name="description" content="yuhobuilds 영상 끝에 나온 맞춤 프로그램 모음. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요. 로그인 없음.">
+<meta name="theme-color" content="#060709">
+<script>
+/* 옛 넘김 페이지로 만든 공유 링크(#r=…)는 매뉴얼 도구로 보낸다. */
+if (/^#r=/.test(location.hash)) location.replace('/builds/manual/' + location.search + location.hash);
+/* 화면 테마: SYNK 플랫폼(웹)에서 고른 밤·낮·기기 설정을 따른다(기본 밤). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
+<link rel="canonical" href="https://synk.im/builds/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="yuhobuilds">
-<meta property="og:title" content="내 일에 맞는 AI 직원 매뉴얼 · 질문 다섯 개면 만들어져요">
-<meta property="og:description" content="한 번 깔아 두면 다음부터는 한 줄로 맡기는 매뉴얼. ChatGPT·Claude·Gemini 지침 칸에 그대로 붙여 넣어요.">
-<meta property="og:url" content="https://synk.im/builds/manual/">
-<meta property="og:image" content="https://synk.im/builds/manual/og.png">
+<meta property="og:title" content="yuhobuilds 맞춤 프로그램 · 영상에서 본 그 프로그램, 내 경우에 맞게">
+<meta property="og:description" content="내 PC 이사 목록 · AI 직원 매뉴얼 만들기. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요.">
+<meta property="og:url" content="https://synk.im/builds/">
+<meta property="og:image" content="https://synk.im/builds/move/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="/builds/manual/assets/favicon-32.png">
-<script>location.replace('/builds/manual/' + location.search + location.hash);</script>
-<style>body{margin:0;background:#fff;color:#0a0a0a;font:17px/1.6 system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;word-break:keep-all}main{max-width:560px;margin:0 auto;padding:48px 16px}a{color:#0a0a0a;font-weight:700;text-underline-offset:3px}</style>
+<link rel="icon" type="image/png" href="/builds/move/assets/favicon-32.png">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(/builds/manual/assets/SUIT-subset.woff2) format('woff2')}
+@font-face{font-family:'SYNK Latin';font-weight:100 450;font-display:swap;src:url(/builds/manual/assets/InterTight-400.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
+@font-face{font-family:'SYNK Latin';font-weight:451 620;font-display:swap;src:url(/builds/manual/assets/InterTight-500.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
+@font-face{font-family:'SYNK Latin';font-weight:621 900;font-display:swap;src:url(/builds/manual/assets/InterTight-700.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
+@font-face{font-family:'SYNK Arrow';font-weight:100 900;font-display:swap;src:url(/builds/manual/assets/InterTight-400.woff2) format('woff2');unicode-range:U+2190-2193;size-adjust:130%}
+@font-face{font-family:'DM Mono';font-weight:500;font-display:swap;src:url(/builds/manual/assets/DMMono-500.woff2) format('woff2');unicode-range:U+0021-007E}
+:root{--sans:'SYNK Arrow','SYNK Latin','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;--mono:'DM Mono','SUIT Variable',ui-monospace,monospace;
+  --bg:#060709;--panel:#0C0D10;--surface-1:#121317;--surface-2:#191A1F;--line:rgba(255,255,255,.075);--line-2:rgba(255,255,255,.14);
+  --ink:#FAFAF9;--ink-2:rgba(250,250,249,.76);--ink-3:rgba(250,250,249,.58);--ink-4:rgba(250,250,249,.22);--on-ink:#08090C;
+  --glass:rgba(26,27,32,.58);--glass-edge:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075),0 12px 32px rgba(0,0,0,.36);
+  --studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1));
+  --cut-shadow:drop-shadow(0 22px 26px rgba(0,0,0,.3)) drop-shadow(0 4px 6px rgba(0,0,0,.18));color-scheme:dark}
+:root[data-theme=day]{--bg:#ECECEA;--panel:#FFFFFF;--surface-1:#F5F5F4;--surface-2:#EDEDEB;--line:rgba(8,9,12,.08);--line-2:rgba(8,9,12,.15);--ink:#08090C;--ink-2:rgba(8,9,12,.7);--ink-3:rgba(8,9,12,.56);--ink-4:rgba(8,9,12,.2);--on-ink:#FFFFFF;--glass:rgba(255,255,255,.74);--glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 12px 30px rgba(8,9,12,.12);color-scheme:light}
+@media (prefers-color-scheme:light){:root[data-theme=system]{--bg:#ECECEA;--panel:#FFFFFF;--surface-1:#F5F5F4;--surface-2:#EDEDEB;--line:rgba(8,9,12,.08);--line-2:rgba(8,9,12,.15);--ink:#08090C;--ink-2:rgba(8,9,12,.7);--ink-3:rgba(8,9,12,.56);--ink-4:rgba(8,9,12,.2);--on-ink:#FFFFFF;--glass:rgba(255,255,255,.74);--glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 12px 30px rgba(8,9,12,.12);color-scheme:light}}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:450 16px/1.62 var(--sans);word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid #C5D6F5;outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 40px}
+.bar{position:sticky;top:12px;z-index:5;display:flex;align-items:center;gap:14px;height:58px;margin:12px 0 14px;padding:0 9px;border-radius:999px;background:var(--glass);box-shadow:var(--glass-edge);-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7)}
+.bead{display:grid;place-items:center;height:40px;padding:0 14px;border-radius:999px;background:#FAFAF9}
+.bead img{height:24px;width:auto}
+.crumb{font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+main{padding:clamp(22px,4.2vw,52px);border-radius:28px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;margin:0;font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow::after{content:"";width:28px;height:1px;background:currentColor;opacity:.6}
+h1{margin:16px 0 14px;font-size:clamp(36px,4.4vw,60px);font-weight:680;line-height:1.1;letter-spacing:-.035em;text-wrap:balance}
+h1 span{color:var(--ink-3)}
+.lead{margin:0 0 32px;max-width:40em;font-size:17px;line-height:1.65;color:var(--ink-2)}
+.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.card{display:flex;flex-direction:column;height:100%;border-radius:22px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;text-decoration:none;color:var(--ink)}
+.face{position:relative;isolation:isolate;overflow:hidden;height:260px;background:var(--studio),var(--face);color:var(--on-face);container-type:inline-size}
+.face .label{position:absolute;z-index:3;left:20px;top:18px;font:500 11.5px/1 var(--mono);letter-spacing:.08em;opacity:.82}
+.face .chip{position:absolute;z-index:3;top:14px;right:14px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px 0 10px;border-radius:999px;background:rgba(8,9,12,.62);color:#fff;font-size:13px;font-weight:600}
+.face .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:#7DB45A;box-shadow:0 0 0 3px rgba(125,180,90,.25)}
+.face img{position:absolute;z-index:2;top:12%;right:7%;height:72%;width:auto;filter:var(--cut-shadow);transform:rotate(-3deg)}
+.face .word{position:absolute;z-index:1;left:18px;bottom:12px;font-size:min(8rem,calc(60cqw / var(--len))) ;font-weight:900;line-height:.84;letter-spacing:-.06em}
+.lapis{--face:#3D6BC9;--on-face:#fff}
+.ink{--face:#141519;--on-face:#FFE08A}
+.body{display:flex;flex-direction:column;gap:6px;padding:20px 22px 22px}
+.body h2{margin:0;font-size:24px;font-weight:650;line-height:1.25;letter-spacing:-.02em}
+.body p{margin:0;font-size:15.5px;line-height:1.6;color:var(--ink-2)}
+.body .meta{margin-top:8px;font-size:13px;font-weight:550;color:var(--ink-3)}
+.body .go{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;min-height:46px;margin-top:12px;padding:0 22px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:15.5px;font-weight:600}
+.card.old .go{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 22px;margin:18px 6px 0;font-size:13px;color:var(--ink-3)}
+.foot a{color:var(--ink-2)}
+@media(hover:hover){.card:hover{box-shadow:inset 0 0 0 1px var(--ink-4)}}
+@media(max-width:760px){.list{grid-template-columns:minmax(0,1fr)}.face{height:220px}}
+@media(max-width:560px){.wrap{padding:0 8px 28px}main{padding:22px 16px 26px;border-radius:22px}.bar{height:52px;top:8px;margin:8px 0 10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
-<main><p>yuhobuilds</p><p><a href="/builds/manual/">AI 직원 매뉴얼 만들기로 가기</a></p></main>
+<div class="wrap">
+  <header class="bar"><a class="bead" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈"><img src="/builds/move/assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></a><span class="crumb">yuhobuilds / tools</span></header>
+  <main>
+    <p class="eyebrow">YUHOBUILDS · TOOLS</p>
+    <h1>영상에서 본 그 프로그램,<br><span>내 경우에 맞게</span></h1>
+    <p class="lead">yuhobuilds 영상 끝에 나온 맞춤 프로그램이에요. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요. 로그인 없이 쓰고, 고른 답은 이 기기에만 저장돼요.</p>
+    <ul class="list">
+      <li><a class="card" href="/builds/move/"><div class="face lapis" style="--len:2" aria-hidden="true"><span class="label">NEW / 2026.10</span><span class="chip">질문 3개</span><img src="/builds/move/assets/move-art-intro.webp" alt=""><span class="word">이사</span></div><div class="body"><h2>내 PC 이사 목록</h2><p>「노트북 이사, AI한테 통째로 맡겨 봤어요」 편. 절대 두고 가면 안 되는 것부터 끝났는지 확인하는 법까지, 내 PC에 맞춰 만들어 드려요.</p><p class="meta">약 1분 · Windows → Windows · 로그인 없음</p><span class="go">이사 목록 만들기 →</span></div></a></li>
+      <li><a class="card old" href="/builds/manual/"><div class="face ink" style="--len:3" aria-hidden="true"><span class="label">2026.10</span><span class="chip">질문 5개</span><img src="/builds/manual/assets/hero-manual.webp" alt=""><span class="word">매뉴얼</span></div><div class="body"><h2>AI 직원 매뉴얼 만들기</h2><p>「AI한테 한 줄 시켰더니」 편. 한 번 넣어 두면 다음부터 한 줄로 맡기는 내 AI 직원 매뉴얼을 만들어 드려요.</p><p class="meta">약 1분 · 로그인 없음</p><span class="go">매뉴얼 만들기 →</span></div></a></li>
+    </ul>
+  </main>
+  <footer class="foot"><span>yuhobuilds · 유호 · AI와 회사 만들기</span><span><a href="https://www.instagram.com/yuhobuilds/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@yuhobuilds" target="_blank" rel="noopener">YouTube</a></span></footer>
+</div>
 </body>
 </html>

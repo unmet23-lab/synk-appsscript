@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>내 PC 이사 목록 · yuhobuilds</title>
+<meta name="description" content="어떻게 옮기는지, 이 컴퓨터로 무슨 일을 하는지, 옛 컴퓨터를 어떻게 할지 세 가지만 고르면 절대 두고 가면 안 되는 것부터 끝났는지 확인하는 법까지 내 PC에 맞춘 이사 목록을 만들어 드려요. Windows → Windows, 로그인 없음.">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
+<link rel="canonical" href="https://synk.im/builds/move/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="yuhobuilds">
+<meta property="og:title" content="새 컴퓨터로 이사, 내 PC에 맞는 목록으로 · 질문 3개">
+<meta property="og:description" content="절대 두고 가면 안 되는 것부터 끝났는지 확인하는 법까지. OneDrive가 멈췄는지 확인하는 법과 AI한테 붙여 넣을 요청문도 함께.">
+<meta property="og:url" content="https://synk.im/builds/move/">
+<meta property="og:image" content="https://synk.im/builds/move/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<style>
+/* 이 도구에만 있는 부품(싱ㅋ 시그널 토큰만 쓴다). 공통 양식은 app.css(core/signal.css). */
+.mtable{display:grid;gap:6px}
+.mrow{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.mrow:first-child{border-top:0;padding-top:0}
+.mrow b{font-weight:600;color:var(--ink)}
+.tip .vis-cap{margin:8px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}
+/* ② 두고 와도 되는 것: 체크 없이 같은 면 + 빼기 표시 */
+.checks.leave .item{display:grid;grid-template-columns:24px minmax(0,1fr);gap:14px;align-items:start;padding:14px 16px;border-radius:16px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
+.checks.leave .dash{display:block;width:14px;height:2px;margin:11px 0 0 4px;border-radius:2px;background:var(--ink-3)}
+.checks b .src{margin-left:8px}
+/* 사업 색 면 위 펠트 누끼(인화지 테두리 없이 그림자만) */
+.formbox.ex .ex-art .cut{width:150px;height:auto;border:0;border-radius:0;background:none;box-shadow:none;filter:var(--cut-shadow);transform:rotate(-3deg)}
+.formbox.ex.od .ex-art .cut{width:132px}
+.formbox.ex ol.steps{margin-top:10px}
+.formbox.ex ol.steps>li:first-child{border-top:0}
+.story-line{margin:10px 0 0;font-size:14px;color:var(--ink-2)}
+dl.facts{display:grid;gap:0;margin:6px 0 0}
+dl.facts>div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+dl.facts>div:first-child{border-top:0}
+dl.facts dt{font-size:13px;font-weight:550;color:var(--ink-3)}
+dl.facts dd{margin:0;font-size:15.5px;line-height:1.55;color:var(--ink)}
+.prompt-wrap{margin-top:26px}
+.prompt-wrap>.sub{margin:0 0 14px;max-width:64ch;font-size:15.5px;line-height:1.66;color:var(--ink-2)}
+.specs.glance .spec.key .s{font-size:14px}
+@media(max-width:760px){
+  /* 휴대폰에서도 결과 머리에 방법 그림을 작게 보인다(카타나는 숨김). 결과마다 그림이 다르다 */
+  .r-top .shot.cut{display:block;grid-column:1;grid-row:1;justify-self:end;align-self:start;width:118px;margin:-8px -6px -66px 0}
+  .r-top .rec{padding-right:124px}
+  .r-top .shot.cut.wide{width:150px;margin-bottom:-34px}
+  .r-top .shot.cut.wide~.rec,.r-top:has(.shot.wide) .rec{padding-right:156px}
+  .formbox.ex .ex-art .cut{width:120px}
+}
+@media(max-width:560px){
+  .mrow{grid-template-columns:64px minmax(0,1fr);}
+  .mrow span:last-child{grid-column:2}
+  dl.facts>div{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+@media print{.r-top .shot.cut{display:none!important}}
+</style>
+</head>
+<body>
+<div class="tool">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/builds/" aria-label="yuhobuilds 맞춤 프로그램 모음">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">yuhobuilds <i>/</i> move</span>
+    </a>
+    <div class="bar-tools">
+      <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot no-print">
+    <span>yuhobuilds · 유호 · AI와 회사 만들기</span>
+    <span><a href="https://www.instagram.com/yuhobuilds/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@yuhobuilds" target="_blank" rel="noopener">YouTube</a> · <button type="button" data-forget>저장된 기록 지우기</button><span data-account-slot hidden> · <button type="button" data-account>SYNK 설정 불러오기</button></span></span>
+  </footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<noscript><p style="max-width:680px;margin:40px auto;padding:0 20px;font-size:17px">이사 목록은 브라우저에서 만들어요. 자바스크립트를 켜 주세요.</p></noscript>
+<script src="atlas-engine.js"></script>
+<script src="content.js"></script>
+<script src="rules.js"></script>
+<script src="view.js"></script>
+<script src="account.js"></script>
+<script src="wizard.js"></script>
+<script>
+SynkWizard.start({
+  root: document.getElementById('app'),
+  tool: {
+    id: 'builds.move',
+    scope: { domain: 'SHIFT', workspace: 'yuhobuilds', subject: 'visitor' },
+    content: SynkMoveContent, rules: SynkMoveRules, view: SynkMoveView,
+    candidates: [
+      { id: 'quick', pace: 'short', minutes: 2 },
+      { id: 'guided', pace: 'standard', minutes: 4 },
+      { id: 'deep', pace: 'deep', minutes: 8 }
+    ]
+  }
+});
+</script>
+</body>
+</html>

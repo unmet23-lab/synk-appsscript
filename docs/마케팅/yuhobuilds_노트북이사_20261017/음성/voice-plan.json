@@ -1,0 +1,206 @@
+{
+  "project": "yuhobuilds 「노트북 이사, AI한테 통째로 맡겨 봤어요」 내레이션",
+  "note": "2026-10-17. 지난 편(yuhobuilds_한줄시켰더니_20261003)과 같은 방식: 대본 전체를 한 번에 읽힌 테이크 하나, segments는 화면·자막 단위, 시각은 받아쓰기 정렬(한번에_맞추기.py)의 낱말 시각. 대사는 노트북 교체 기록(.tmp/노트북교체_20261015/인계.md, 새 PC ~/SYNK이전_로그/받기_log.txt·받기_상태.json)에서만 가져온다 — 숫자마다 기획.md 사실 대조 표. 목소리는 유호님 10-17 「최대한 재밌고 전달에 장점이 있는거 니가 알아서 판단해서」 → 후보를 재고 Claude가 고른다. cap은 화면 자막 묶음이고 *…*가 강조 낱말이다(대사 글자와 같아야 한다). 훅 C(유튜브)의 첫 줄 h1c는 같은 목소리로 따로 읽혀 테이크_잇기.py로 h1 자리에 바꿔 끼운다.",
+  "take": {
+    "engine": "Typecast",
+    "model": "ssfm-v30",
+    "voice": "범수",
+    "file": "음성/take/take.wav",
+    "breaks": [
+      "s1",
+      "p1",
+      "d1",
+      "f1",
+      "k1",
+      "r1",
+      "t1",
+      "c1"
+    ],
+    "notes": [
+      "Voice: a Korean man in his early thirties with a warm, bright, likable voice, like a popular tech storyteller on short-form video who is telling friends about a funny mishap. Lively and expressive, smiling, but natural: never cartoonish, never shouting, never a hard-sell announcer.",
+      "Situation: he just moved everything from his old laptop to a new one by handing the whole job to his AI assistant. Two traps almost bit him along the way. Now that it worked out, he finds it funny and wants friends to avoid the same traps.",
+      "Flow: read the whole transcript as one continuous story, the way people really talk. Do not restart the intonation at every sentence. A clause ending with a comma carries straight on with only a tiny breath. Pauses between sentences stay short, about a third of a second.",
+      "Beats: the opening line lands with a mischievous, slightly proud twist on the number, as if confessing something surprising. Each time the story announces a trap, give it a short playful game-show tension, then carry on. When he quotes a single line of text that appeared on a screen, slow down a little and read it flat and clear, like reading text off a monitor. The advice right after that is sincere and simple. The ending is warm and inviting.",
+      "Pace: brisk, like a short-form video narrator, about six and a half Korean syllables per second, while every word, especially every number, stays crisp and clear.",
+      "Pronunciation: standard Seoul Korean. Read the Latin letters AI as 에이아이, SSD as 에스에스디, PDF as 피디에프. Read gigabyte amounts with Sino-Korean numbers followed by 기가. Pronounce every ㅅ and ㅆ crisply.",
+      "Read only the transcript below, once, from its first word to its last, exactly as written. Do not add, skip, repeat or change any words. Never read these notes."
+    ],
+    "voice_note": "10-17 유호님 「나레이션이 너무 별론데? 이 나레이션 뭐야 ?」(Gemini TTS Achird) → 「앞으로 이거 쓰지 마. 범수로 하자.」(결정 표 10-17). Typecast 범수(tc_5c3c52cb5827e00008dd7f3b) · ssfm-v30 · 보통 감정 · 1.12배로 대사마다 굽고 쉼 0.35초(breaks 앞 0.5초)로 이었다(음성/범수_굽기.mjs, 384크레딧). 들려 드린 판에 「좋아 이걸로 영상 다시 맞춰줘」. 아래 notes는 옛 Gemini 판의 연출 메모라 이제 쓰지 않는다."
+  },
+  "scenes_note": "장면 전환: 그 장면 첫 대사(at) 시작보다 lead초 앞. 앞 대사가 그때까지 안 끝나면 앞 대사 끝 − 0.06초로 늦춘다(넣기.cjs). 장면 구성은 기획.md 콘티. 10-17 Remotion 판: 위로 밀어 넘기기는 시퀀스 시작 + 0.4초에 착지하므로 lead를 0.42 이상으로 둔다(Fable 검수 — s3·s6·s10 자막이 착지 전에 떴다).",
+  "scenes": {
+    "s2": {
+      "at": "s1",
+      "lead": 0.42,
+      "kind": "덮개(patch, 버터 옅음) — 검은 훅 → 흰 종이"
+    },
+    "s3": {
+      "at": "p1",
+      "lead": 0.45,
+      "kind": "컷(cut+punch) — 함정 ①"
+    },
+    "s4": {
+      "at": "d1",
+      "lead": 0.45,
+      "kind": "종이(paper) — 결정 한 줄"
+    },
+    "s5": {
+      "at": "f1",
+      "lead": 0.42,
+      "kind": "덮개(patch) — 함정 ②"
+    },
+    "s6": {
+      "at": "k1",
+      "lead": 0.45,
+      "kind": "컷(cut+punch) — 지킴 목록"
+    },
+    "s7": {
+      "at": "r1",
+      "lead": 0.5,
+      "kind": "아치(arch) — 실제 받기 로그"
+    },
+    "s8": {
+      "at": "t1",
+      "lead": 0.45,
+      "kind": "종이(paper) — 깨달음"
+    },
+    "s9": {
+      "at": "c1",
+      "lead": 0.42,
+      "kind": "덮개(patch) — 같은 PDF → 다른 목록"
+    },
+    "s10": {
+      "at": "c3",
+      "lead": 0.45,
+      "kind": "아치(arch) — 끝: synk.im/builds/move"
+    }
+  },
+  "variants": {
+    "h1c": {
+      "replaces": "h1",
+      "text": "외장 SSD 없이 노트북 이사, AI한테 통째로 맡겨 봤어요.",
+      "cap": [
+        "외장 SSD 없이 노트북 이사,",
+        "AI한테 *통째로* 맡겨 봤어요."
+      ]
+    }
+  },
+  "segments": [
+    {
+      "id": "h1",
+      "text": "노트북 이사를 AI한테 맡겼더니, 107기가를 두고 왔어요.",
+      "cap": [
+        "노트북 이사를 AI한테 맡겼더니,",
+        "*107기가를* 두고 왔어요."
+      ]
+    },
+    {
+      "id": "s1",
+      "text": "옮길 건 160기가, 파일 96만 개. 외장 SSD도 없어서, 구글 드라이브로 옮기기로 했죠.",
+      "cap": [
+        "옮길 건 *160기가,* 파일 96만 개.",
+        "외장 SSD도 없어서,",
+        "*구글 드라이브로* 옮기기로 했죠."
+      ]
+    },
+    {
+      "id": "p1",
+      "text": "첫 번째 함정. 바탕화면은 원드라이브가 백업해 주는 줄 알았는데,",
+      "cap": [
+        "*첫 번째 함정.*",
+        "바탕화면은 원드라이브가",
+        "백업해 주는 줄 알았는데,"
+      ]
+    },
+    {
+      "id": "p2",
+      "text": "무료 5기가가 열흘 넘게 꽉 차서, 11기가가 이 노트북에만 있었어요.",
+      "cap": [
+        "무료 5기가가 *열흘 넘게* 꽉 차서,",
+        "*11기가가* 이 노트북에만 있었어요."
+      ]
+    },
+    {
+      "id": "d1",
+      "text": "그래서 정했죠. 앞으로 안 쓸 건, 두고 가자.",
+      "cap": [
+        "그래서 정했죠.",
+        "앞으로 안 쓸 건, *두고 가자.*"
+      ]
+    },
+    {
+      "id": "f1",
+      "text": "두 번째 함정. AI가 짠 첫 규칙을, 다른 AI가 검수했더니,",
+      "cap": [
+        "*두 번째 함정.*",
+        "AI가 짠 첫 규칙을,",
+        "다른 AI가 검수했더니,"
+      ]
+    },
+    {
+      "id": "f2",
+      "text": "이미 백업돼 있다고 보고, 암호화 키까지 빼고 있었어요.",
+      "cap": [
+        "이미 백업돼 있다고 보고,",
+        "*암호화 키까지* 빼고 있었어요."
+      ]
+    },
+    {
+      "id": "k1",
+      "text": "두 번째 규칙엔, 절대 빼지 않을 파일 2만 7천 개가 따로 붙었죠.",
+      "cap": [
+        "두 번째 규칙엔,",
+        "*절대 빼지 않을* 파일",
+        "2만 7천 개가 따로 붙었죠."
+      ]
+    },
+    {
+      "id": "r1",
+      "text": "하루 반 만에 조각 39개를 다 받고, 로그에 이 줄이 떴어요.",
+      "cap": [
+        "하루 반 만에 *조각 39개를* 다 받고,",
+        "로그에 이 줄이 떴어요."
+      ]
+    },
+    {
+      "id": "r2",
+      "text": "핵심이 옛 노트북의 마지막 상태와 같다.",
+      "cap": [
+        "*핵심이 옛 노트북의*",
+        "*마지막 상태와 같다.*"
+      ]
+    },
+    {
+      "id": "t1",
+      "text": "맡길 땐, 옮길 것보다 절대 두고 가면 안 될 것부터 정해 주세요.",
+      "cap": [
+        "맡길 땐, 옮길 것보다",
+        "*절대 두고 가면 안 될 것부터*",
+        "정해 주세요."
+      ]
+    },
+    {
+      "id": "c1",
+      "text": "이사 체크리스트, PDF는 누구한테나 똑같죠.",
+      "cap": [
+        "이사 체크리스트,",
+        "*PDF는 누구한테나 똑같죠.*"
+      ]
+    },
+    {
+      "id": "c2",
+      "text": "질문 세 개면, 내 컴퓨터에 맞는 목록이 나와요.",
+      "cap": [
+        "질문 세 개면,",
+        "*내 컴퓨터에 맞는* 목록이 나와요."
+      ]
+    },
+    {
+      "id": "c3",
+      "text": "프로필 링크에서 써 보세요.",
+      "cap": [
+        "*프로필 링크에서* 써 보세요."
+      ]
+    }
+  ]
+}
