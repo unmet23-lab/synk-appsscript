@@ -1,5 +1,7 @@
 # 싱크타운 합친 판 — 아르곤 모델링 + Claude 굽기 (2026-10-18)
 
+**10-19 master·공개:** 유호님 「고치고나서 마스터에 합치고 배포하고 종료해줘」로 동네 전체 판(`townwide-merged`)이 WORLD 안 Town의 기본이 됐다 — master `1292f670e`, synk.im `523d7fa`(`world/town/` 29개). `?district=v20`이면 이전 마을, 불러오기 실패·시간 초과(가운데 120초·바깥 고리 180초)면 저절로 v20. 공개 빌드는 이 판과 Basis 해독기만 싣고, Git 밖 GLB는 원본 창고 `town-합친판3-20261019`에서 export에 넣는다(도구 `experiences/synk-town/qa/blender-merged-20261018/publish-town.cjs`). 로컬 미리보기는 지금처럼 `?district=`가 있을 때만 구운 판.
+
 10-18 가운데 동네 비교([blender-town-20261018](../blender-town-20261018/README.md))에서 유호님이 「아르곤이랑 클로드판 둘 다 괜찮네」, 합친 방식 제안에 「웅 합친 방향으로 해보자. 좋아」라고 하셔서(부모 세션 경유), 형상은 아르곤이 남긴 스크립트로, 굽기·후처리는 Claude 판 길로 만든 판이다. 공개 배포 없음, master에 합치지 않음. 단계별 기록은 [진행.md](진행.md).
 
 - Town에서 보기(로컬 미리보기 서버 `node experiences/synk-town/server.mjs --preview`): `/day.html?play=walk&district=town-merged`(가운데 동네), `…=townwide-merged`(바깥 고리까지 — 이웃집 8채·큰길·뒷길·둘레길). GLB는 Git 밖(아래 「Git 밖 원본」).

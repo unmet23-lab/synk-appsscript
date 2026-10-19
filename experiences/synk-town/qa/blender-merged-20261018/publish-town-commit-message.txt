@@ -1,0 +1,10 @@
+world/town: the baked whole town is WORLD's default Town
+
+SYNK Town in WORLD now draws the baked whole town (light and shade baked
+into KTX2 textures, meshopt geometry; ?district=v20 opens the previous town,
+and a failed load falls back to it). Adds day-district.mjs, the GLTF/KTX2/
+meshopt loaders, the Basis transcoder and the townwide-merged set (PC and
+phone files); changes day-scene.mjs, day-environment.mjs and the loader
+provenance. Only world/town/ is touched.
+
+Source: SYNK-appsscript 1292f670e (master).
