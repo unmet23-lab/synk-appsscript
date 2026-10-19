@@ -474,7 +474,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   // What memory-sync.js exchanges for an account: the chosen presentation, content memories and
   // declined offers. Today's condition stays on the device.
   api.memoryPort = Object.freeze({ scope: memoryOwner?.scope || storageScope, accountKey: memoryOwner?.accountKey || accountKey,
-    state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe, flow: flowPort });
+    state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe, flow: flowPort,
+    pending: flowPort.pending, prepare: flowPort.prepare, acknowledge: flowPort.acknowledge, epoch: flowPort.epoch });
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
   return api;
 }

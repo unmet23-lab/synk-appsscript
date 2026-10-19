@@ -27,7 +27,8 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
   const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
   const listeners = new Set();
   const notify = change => { for (const listener of listeners) { try { listener(change); } catch { /* an observer cannot change the memory */ } } };
-  const read = name => { try { const raw = storage?.getItem(name); return raw == null || raw === '' ? null : JSON.parse(raw); } catch { return null; } };
+  const storageError = () => Object.assign(new Error('Atlas memory: local storage unavailable'), { code: 'STORAGE_ERROR' });
+  const read = (name, strict = false) => { try { const raw = storage?.getItem(name); return raw == null || raw === '' ? null : JSON.parse(raw); } catch { if (strict) throw storageError(); return null; } };
   const write = (name, value) => {
     try {
       if (!storage) return false;
@@ -36,18 +37,58 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
       return true;
     } catch { return false; }
   };
-  const memories = (current = epoch()) => {
-    const value = read(FLOW);
+  const saveRequired = (name, value) => { if (!write(name, value)) throw storageError(); };
+  const memories = (current = epoch(), strict = false) => {
+    const value = read(FLOW, strict);
+    if (strict && value != null && (value.v !== 1 || !object(value.contents) || !object(value.declined))) throw storageError();
     return value && value.v === 1 && (value.epoch ?? null) === current && object(value.contents) && object(value.declined)
       ? value : { v: 1, epoch: current, contents: {}, declined: {} };
   };
   // A write from a round that began before a reset is dropped, so a reset cannot be undone by an open tab.
-  const update = (since, change) => { const current = epoch(); if (since !== undefined && since !== current) return false; const all = memories(current); change(all); return write(FLOW, all); };
+  const update = (since, change, targetKind, key) => {
+    const current = epoch(); if (since !== undefined && since !== current) return false;
+    try { const all = memories(current, true); change(all); saveRequired(FLOW, all); return true; }
+    catch { notify({ kind: 'storage-error', code: 'STORAGE_ERROR', targetKind, key }); return false; }
+  };
   const instant = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+  let sequence = 0;
+  const copy = value => JSON.parse(JSON.stringify(value));
+  const pendingKey = (kind, id) => `${kind}|${id}`;
+  // The intent and its local value share one storage write. A network retry reuses the
+  // assigned timestamp; a newer click always has a different id, even with a frozen clock.
+  const intent = entry => ({ id: `${Date.now().toString(36)}-${++sequence}-${Math.random().toString(36).slice(2)}`, epoch: epoch(), entry: copy(entry), assignedAt: null });
+  const currentIntent = value => value && value.epoch === epoch() && typeof value.id === 'string' && object(value.entry);
+  const intents = () => {
+    const present = read(PRESENT, true), all = memories(epoch(), true);
+    if (all.pending != null && !object(all.pending)) throw storageError();
+    const rows = [present?.pending, ...Object.values(all.pending || {})].filter(value => value !== undefined);
+    if (rows.some(value => !object(value) || typeof value.id !== 'string' || !value.id || value.id.length > 120
+      || !object(value.entry) || !['presentation', 'flow', 'declined'].includes(value.entry.kind)
+      || typeof value.entry.key !== 'string' || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
+    return rows.filter(currentIntent).map(copy);
+  };
+  const mutateIntent = (id, change) => {
+    const present = read(PRESENT, true);
+    if (currentIntent(present?.pending) && present.pending.id === id) {
+      const result = change(present.pending, entry => { present.presentation = copy(entry.value); present.at = entry.at; delete present.pending; });
+      saveRequired(PRESENT, present); return result;
+    }
+    const all = memories(epoch(), true);
+    for (const [slot, pending] of Object.entries(object(all.pending) ? all.pending : {})) {
+      if (!currentIntent(pending) || pending.id !== id) continue;
+      const result = change(pending, entry => {
+        if (entry.kind === 'flow') all.contents[entry.key] = copy(entry.value);
+        else all.declined[entry.key] = entry.at;
+        delete all.pending[slot];
+      });
+      saveRequired(FLOW, all); return result;
+    }
+    return null;
+  };
   // A value with a readable time replaces one without.
   const later = (at, than) => !instant(than) || Date.parse(at) > Date.parse(than);
   // The stored choice with its time. `presentation: null` is a choice forgotten at that time.
-  const chosen = () => { const value = read(PRESENT); return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null; };
+  const chosen = (strict = false) => { const value = read(PRESENT, strict); return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null; };
   return Object.freeze({
     today() { const value = read(TODAY); return value && value.day === localDay(clock()) && Flow.CONDITIONS.includes(value.condition) ? value.condition : null; },
     setToday(condition) {
@@ -60,18 +101,35 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
     presentation() { const value = chosen(); return value?.presentation ? { ...value.presentation } : null; },
     setPresentation(presentation) {
       if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(', ')}`);
-      const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock() });
+      const at = clock(), value = presentation === null ? null : { ...presentation };
+      const done = write(PRESENT, { v: 1, presentation: value, at, pending: intent({ kind: 'presentation', key: 'chosen', value, at }) });
       if (done) notify({ kind: 'presentation', key: 'chosen' });
+      else notify({ kind: 'storage-error', code: 'STORAGE_ERROR', targetKind: 'presentation', key: 'chosen' });
       return done;
     },
     epoch,
     memories: () => memories(),
-    save(contentId, memory, since) { const done = update(since, all => { all.contents[contentId] = memory; }); if (done) notify({ kind: 'flow', key: contentId }); return done; },
-    decline(contentId, at, since) { const done = update(since, all => { all.declined[contentId] = at; }); if (done) notify({ kind: 'declined', key: contentId }); return done; },
+    save(contentId, memory, since) { const done = update(since, all => {
+      all.contents[contentId] = memory; all.pending ||= {}; all.pending[pendingKey('flow', contentId)] = intent({ kind: 'flow', key: contentId, value: memory, at: memory.at });
+    }, 'flow', contentId); if (done) notify({ kind: 'flow', key: contentId }); return done; },
+    decline(contentId, at, since) { const done = update(since, all => {
+      all.declined[contentId] = at; all.pending ||= {}; all.pending[pendingKey('declined', contentId)] = intent({ kind: 'declined', key: contentId, value: null, at });
+    }, 'declined', contentId); if (done) notify({ kind: 'declined', key: contentId }); return done; },
+    pending: intents,
+    prepare(id, assignedAt) {
+      if (!instant(assignedAt)) throw new TypeError('Atlas memory: invalid assigned time');
+      return mutateIntent(id, pending => {
+        if (!pending.assignedAt) pending.assignedAt = assignedAt;
+        const entry = { ...copy(pending.entry), at: pending.assignedAt };
+        if (entry.kind === 'flow') entry.value.at = entry.at;
+        return { id: pending.id, entry };
+      });
+    },
+    acknowledge(id, entry) { return mutateIntent(id, (_pending, accept) => { accept(entry); return true; }); },
     // Everything a synchroniser exchanges, each with its own time: the chosen presentation,
     // each content's memory (memory.at) and each declined offer.
     state() {
-      const all = memories(), present = chosen();
+      const all = memories(epoch(), true), present = chosen(true);
       return { presentation: present ? { value: present.presentation && { ...present.presentation }, at: present.at } : null,
         flow: JSON.parse(JSON.stringify(all.contents)), declined: { ...all.declined } };
     },
@@ -80,20 +138,23 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
     merge(remote) {
       if (!object(remote)) throw new TypeError('Atlas: invalid memory');
       let changed = false;
+      const pending = new Set(intents().map(item => pendingKey(item.entry.kind, item.entry.key)));
       const present = remote.presentation;
-      if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen()?.at)
-        && write(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at })) changed = true;
-      const all = memories();
+      if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at)
+        && !pending.has('presentation|chosen')) {
+        saveRequired(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at }); changed = true;
+      }
+      const all = memories(epoch(), true);
       let touched = false;
       for (const [id, memory] of Object.entries(object(remote.flow) ? remote.flow : {})) {
-        if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at)) continue;
+        if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey('flow', id))) continue;
         all.contents[id] = JSON.parse(JSON.stringify(memory)); touched = true;
       }
       for (const [id, at] of Object.entries(object(remote.declined) ? remote.declined : {})) {
-        if (!instant(at) || !later(at, all.declined[id])) continue;
+        if (!instant(at) || !later(at, all.declined[id]) || pending.has(pendingKey('declined', id))) continue;
         all.declined[id] = at; touched = true;
       }
-      if (touched && write(FLOW, all)) changed = true;
+      if (touched) { saveRequired(FLOW, all); changed = true; }
       if (changed) notify({ kind: 'import' });
       return changed;
     },

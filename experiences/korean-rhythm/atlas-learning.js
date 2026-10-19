@@ -8484,6 +8484,8 @@ var SynkLearning = (() => {
         "ACCOUNT_UNAVAILABLE"
       ]);
       var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
+      var canonical = (value) => JSON.stringify(value, (_key, part) => object(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
+      var sameEntry = (a, b) => canonical(a) === canonical(b);
       function entriesOf(state) {
         const out = [];
         if (object(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
@@ -8523,10 +8525,22 @@ var SynkLearning = (() => {
         if (!ID.test(accountKey || "") || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || typeof port.state !== "function" || typeof port.merge !== "function" || typeof port.subscribe !== "function" || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas memory sync: an authenticated account adapter and transport are required");
         if (!Number.isFinite(delayMs) || delayMs < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError("Atlas memory sync: invalid timing");
         const remote = /* @__PURE__ */ new Map(), refused = /* @__PURE__ */ new Map();
+        const durable = ["pending", "prepare", "acknowledge"].every((name) => typeof port[name] === "function");
+        let serverTime = null;
+        const failedLocalEdits = /* @__PURE__ */ new Set();
         let phase = "idle", code = null, stopped = false, timer = null, running = null, again = false, pulled = false, generation = 0;
         const controllers = /* @__PURE__ */ new Set();
+        const epoch = typeof port.epoch === "function" ? port.epoch() : void 0;
+        const checkEpoch = () => {
+          if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
+        };
         const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
-        const pending = () => entriesOf(port.state()).filter((entry) => instant(entry.at) && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+        const intents = () => durable ? port.pending() : [];
+        const legacyPending = () => {
+          const owned = new Set(intents().map((item) => keyOf(item.entry)));
+          return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+        };
+        const pending = () => [...intents().map((item) => item.entry), ...legacyPending()];
         const status = () => {
           let queued = 0;
           try {
@@ -8543,6 +8557,7 @@ var SynkLearning = (() => {
         };
         const active = (token) => !stopped && token === generation;
         const call = async (method, body, token) => {
+          checkEpoch();
           if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stopped");
           const controller = new AbortController();
           controllers.add(controller);
@@ -8559,9 +8574,12 @@ var SynkLearning = (() => {
               })
             ]);
             if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stale request");
+            checkEpoch();
             if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas memory sync: rejected");
             if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas memory sync: server revision changed");
             if (!Array.isArray(response.entries) || !response.entries.every(received)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid entries");
+            if (response.serverTime !== void 0 && !instant(response.serverTime)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid server clock");
+            if (response.serverTime !== void 0) serverTime = response.serverTime;
             return response;
           } finally {
             clearTimeout(deadline);
@@ -8573,17 +8591,35 @@ var SynkLearning = (() => {
           for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
         };
         async function cycle(token) {
-          if (!pulled) {
+          checkEpoch();
+          if (!pulled || intents().some((item) => !item.assignedAt)) {
             accept((await call("get", { revision }, token)).entries);
             pulled = true;
           }
           for (let round = 0; round < ROUNDS; round++) {
-            const all = pending();
+            const prepared = [];
+            for (const item of intents().slice(0, BATCH)) {
+              if (!sendable(item.entry)) throw failure("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
+              const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
+              const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))) || 0) + 1)).toISOString();
+              if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 864e5) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
+              const value = port.prepare(item.id, at);
+              if (value) prepared.push(value);
+            }
+            const all = legacyPending();
             for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
-            const batch = all.filter(sendable).slice(0, BATCH);
+            const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
             if (!batch.length) return;
             const response = await call("post", { revision, entries: batch }, token);
             if (!active(token)) return;
+            const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
+            if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+            for (const item of prepared) {
+              const accepted = returned.get(keyOf(item.entry));
+              if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
+              if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
+              port.acknowledge(item.id, accepted);
+            }
             accept(response.entries);
             for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
           }
@@ -8607,13 +8643,14 @@ var SynkLearning = (() => {
                 await cycle(token);
               } while (again && active(token));
               if (active(token)) {
-                phase = "synced";
+                phase = failedLocalEdits.size ? "offline" : "synced";
+                code = failedLocalEdits.size ? "STORAGE_ERROR" : null;
                 publish();
               }
             } catch (error) {
               if (active(token)) {
                 code = errorCode(error);
-                phase = FATAL.has(code) ? "blocked" : "offline";
+                phase = code === "MEMORY_CONFLICT" ? "conflict" : FATAL.has(code) ? "blocked" : "offline";
                 publish();
               }
             } finally {
@@ -8631,7 +8668,16 @@ var SynkLearning = (() => {
           }, delayMs);
         };
         const unsubscribe = port.subscribe((change) => {
-          if (!stopped && change?.kind !== "import") schedule();
+          if (stopped || change?.kind === "import") return;
+          if (change?.kind === "storage-error") {
+            failedLocalEdits.add(keyOf({ kind: change.targetKind, key: change.key }));
+            code = "STORAGE_ERROR";
+            phase = "offline";
+            publish();
+            return;
+          }
+          failedLocalEdits.delete(keyOf(change));
+          schedule();
         });
         return Object.freeze({
           // Reads the server first, then sends what is newer here.
@@ -9366,11 +9412,13 @@ var SynkLearning = (() => {
             }
           }
         };
-        const read = (name) => {
+        const storageError = () => Object.assign(new Error("Atlas memory: local storage unavailable"), { code: "STORAGE_ERROR" });
+        const read = (name, strict = false) => {
           try {
             const raw = storage?.getItem(name);
             return raw == null || raw === "" ? null : JSON.parse(raw);
           } catch {
+            if (strict) throw storageError();
             return null;
           }
         };
@@ -9386,21 +9434,67 @@ var SynkLearning = (() => {
             return false;
           }
         };
-        const memories = (current = epoch()) => {
-          const value = read(FLOW);
+        const saveRequired = (name, value) => {
+          if (!write(name, value)) throw storageError();
+        };
+        const memories = (current = epoch(), strict = false) => {
+          const value = read(FLOW, strict);
+          if (strict && value != null && (value.v !== 1 || !object(value.contents) || !object(value.declined))) throw storageError();
           return value && value.v === 1 && (value.epoch ?? null) === current && object(value.contents) && object(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
         };
-        const update = (since, change) => {
+        const update = (since, change, targetKind, key2) => {
           const current = epoch();
           if (since !== void 0 && since !== current) return false;
-          const all = memories(current);
-          change(all);
-          return write(FLOW, all);
+          try {
+            const all = memories(current, true);
+            change(all);
+            saveRequired(FLOW, all);
+            return true;
+          } catch {
+            notify({ kind: "storage-error", code: "STORAGE_ERROR", targetKind, key: key2 });
+            return false;
+          }
         };
         const instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+        let sequence = 0;
+        const copy = (value) => JSON.parse(JSON.stringify(value));
+        const pendingKey = (kind, id) => `${kind}|${id}`;
+        const intent = (entry) => ({ id: `${Date.now().toString(36)}-${++sequence}-${Math.random().toString(36).slice(2)}`, epoch: epoch(), entry: copy(entry), assignedAt: null });
+        const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object(value.entry);
+        const intents = () => {
+          const present = read(PRESENT, true), all = memories(epoch(), true);
+          if (all.pending != null && !object(all.pending)) throw storageError();
+          const rows = [present?.pending, ...Object.values(all.pending || {})].filter((value) => value !== void 0);
+          if (rows.some((value) => !object(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
+          return rows.filter(currentIntent).map(copy);
+        };
+        const mutateIntent = (id, change) => {
+          const present = read(PRESENT, true);
+          if (currentIntent(present?.pending) && present.pending.id === id) {
+            const result = change(present.pending, (entry) => {
+              present.presentation = copy(entry.value);
+              present.at = entry.at;
+              delete present.pending;
+            });
+            saveRequired(PRESENT, present);
+            return result;
+          }
+          const all = memories(epoch(), true);
+          for (const [slot, pending] of Object.entries(object(all.pending) ? all.pending : {})) {
+            if (!currentIntent(pending) || pending.id !== id) continue;
+            const result = change(pending, (entry) => {
+              if (entry.kind === "flow") all.contents[entry.key] = copy(entry.value);
+              else all.declined[entry.key] = entry.at;
+              delete all.pending[slot];
+            });
+            saveRequired(FLOW, all);
+            return result;
+          }
+          return null;
+        };
         const later = (at, than) => !instant(than) || Date.parse(at) > Date.parse(than);
-        const chosen = () => {
-          const value = read(PRESENT);
+        const chosen = (strict = false) => {
+          const value = read(PRESENT, strict);
           return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null;
         };
         return Object.freeze({
@@ -9421,8 +9515,10 @@ var SynkLearning = (() => {
           },
           setPresentation(presentation) {
             if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(", ")}`);
-            const done = write(PRESENT, { v: 1, presentation: presentation === null ? null : { ...presentation }, at: clock() });
+            const at = clock(), value = presentation === null ? null : { ...presentation };
+            const done = write(PRESENT, { v: 1, presentation: value, at, pending: intent({ kind: "presentation", key: "chosen", value, at }) });
             if (done) notify({ kind: "presentation", key: "chosen" });
+            else notify({ kind: "storage-error", code: "STORAGE_ERROR", targetKind: "presentation", key: "chosen" });
             return done;
           },
           epoch,
@@ -9430,21 +9526,41 @@ var SynkLearning = (() => {
           save(contentId, memory, since) {
             const done = update(since, (all) => {
               all.contents[contentId] = memory;
-            });
+              all.pending ||= {};
+              all.pending[pendingKey("flow", contentId)] = intent({ kind: "flow", key: contentId, value: memory, at: memory.at });
+            }, "flow", contentId);
             if (done) notify({ kind: "flow", key: contentId });
             return done;
           },
           decline(contentId, at, since) {
             const done = update(since, (all) => {
               all.declined[contentId] = at;
-            });
+              all.pending ||= {};
+              all.pending[pendingKey("declined", contentId)] = intent({ kind: "declined", key: contentId, value: null, at });
+            }, "declined", contentId);
             if (done) notify({ kind: "declined", key: contentId });
             return done;
+          },
+          pending: intents,
+          prepare(id, assignedAt) {
+            if (!instant(assignedAt)) throw new TypeError("Atlas memory: invalid assigned time");
+            return mutateIntent(id, (pending) => {
+              if (!pending.assignedAt) pending.assignedAt = assignedAt;
+              const entry = { ...copy(pending.entry), at: pending.assignedAt };
+              if (entry.kind === "flow") entry.value.at = entry.at;
+              return { id: pending.id, entry };
+            });
+          },
+          acknowledge(id, entry) {
+            return mutateIntent(id, (_pending, accept) => {
+              accept(entry);
+              return true;
+            });
           },
           // Everything a synchroniser exchanges, each with its own time: the chosen presentation,
           // each content's memory (memory.at) and each declined offer.
           state() {
-            const all = memories(), present = chosen();
+            const all = memories(epoch(), true), present = chosen(true);
             return {
               presentation: present ? { value: present.presentation && { ...present.presentation }, at: present.at } : null,
               flow: JSON.parse(JSON.stringify(all.contents)),
@@ -9456,21 +9572,28 @@ var SynkLearning = (() => {
           merge(remote) {
             if (!object(remote)) throw new TypeError("Atlas: invalid memory");
             let changed = false;
+            const pending = new Set(intents().map((item) => pendingKey(item.entry.kind, item.entry.key)));
             const present = remote.presentation;
-            if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen()?.at) && write(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at })) changed = true;
-            const all = memories();
+            if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
+              saveRequired(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at });
+              changed = true;
+            }
+            const all = memories(epoch(), true);
             let touched = false;
             for (const [id, memory] of Object.entries(object(remote.flow) ? remote.flow : {})) {
-              if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at)) continue;
+              if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
               all.contents[id] = JSON.parse(JSON.stringify(memory));
               touched = true;
             }
             for (const [id, at] of Object.entries(object(remote.declined) ? remote.declined : {})) {
-              if (!instant(at) || !later(at, all.declined[id])) continue;
+              if (!instant(at) || !later(at, all.declined[id]) || pending.has(pendingKey("declined", id))) continue;
               all.declined[id] = at;
               touched = true;
             }
-            if (touched && write(FLOW, all)) changed = true;
+            if (touched) {
+              saveRequired(FLOW, all);
+              changed = true;
+            }
             if (changed) notify({ kind: "import" });
             return changed;
           },
@@ -10219,7 +10342,11 @@ var SynkLearning = (() => {
           state: flowPort.state,
           merge: flowPort.merge,
           subscribe: flowPort.subscribe,
-          flow: flowPort
+          flow: flowPort,
+          pending: flowPort.pending,
+          prepare: flowPort.prepare,
+          acknowledge: flowPort.acknowledge,
+          epoch: flowPort.epoch
         });
         api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
         return api;

@@ -263,6 +263,18 @@ const memoryServer = (respond = null) => {
     } } };
 };
 const FLOW = { id: 'world.memory', items: { levels: [1, 2, 3] }, knobs: [{ id: 'patience', kind: 'pace', values: [60, 45, 30], start: 1 }, { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 }] };
+test('WORLD host forwards durable intent across its private adapter for a slow game clock', async () => {
+  const cloud = memoryServer(), records = server(1), ahead = new Date(Date.now() + 300000).toISOString();
+  cloud.rows.set('presentation|chosen', { kind: 'presentation', key: 'chosen', at: ahead, value: { motion: 'full' } });
+  const host = createWorldLearningHost({ accountKey: 'memory-slow-clock', revision: 1, guard() {}, storage: memory().storage,
+    transport: records.transport, memoryTransport: cloud.transport, engine: { ...engine, createLearningSync: manual } });
+  const game = host.createGame({ gameId: 'racing', clock: () => '2026-10-01T00:00:00.000Z' }, createGame, manual);
+  await host.ready(); game.setPresentation({ motion: 'reduced' });
+  assert.equal((await host.flush()).phase, 'synced');
+  assert.deepEqual(cloud.rows.get('presentation|chosen').value, { motion: 'reduced' });
+  assert.ok(Date.parse(cloud.rows.get('presentation|chosen').at) > Date.parse(ahead));
+  host.stop();
+});
 test('the help style and a content’s moment memory chosen in a WORLD game follow the account to another device', async () => {
   const cloud = memoryServer(), records = server(1);
   const open = () => createWorldLearningHost({ accountKey: 'memory-account', revision: 1, guard() {}, storage: memory().storage, transport: records.transport,

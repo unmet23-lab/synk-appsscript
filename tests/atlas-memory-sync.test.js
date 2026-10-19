@@ -102,7 +102,7 @@ test('changes are sent shortly after they happen; another device’s values are 
   assert.equal(timers.length, 1, 'changes before it leave together');
   await timers.shift()();
   await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual(cloud.calls, ['get', 'post:1']);
+  assert.deepEqual(cloud.calls, ['get', 'get', 'post:1'], 'a new intent reads the server before receiving its upload time');
   a.memoryPort.merge({ presentation: { value: { motion: 'reduced' }, at: '2027-01-01T00:00:00.000Z' } });
   assert.equal(timers.length, 0, 'an imported value is not a change of this device');
 });
@@ -163,8 +163,9 @@ test('an entry the server would refuse is not sent, and the rest still goes', as
   assert.equal(s.status().queued, 0, 'the refused entry waits until it changes');
 });
 
-test('merge takes only newer values, entry by entry, and ignores what is not a memory', () => {
+test('merge takes only newer confirmed values, preserves pending intent, and ignores what is not a memory', async () => {
   const a = account(clockFrom('2026-10-02T09:00:00.000Z'));
+  const cloud = server(), s = sync(a, cloud.transport);
   play(a, 4);
   const mine = a.memoryPort.state().flow['test.cafe.rush'];
   const older = { ...clone(mine), at: '2026-10-01T00:00:00.000Z', indices: { patience: 0 } };
@@ -173,7 +174,10 @@ test('merge takes only newer values, entry by entry, and ignores what is not a m
   assert.equal(a.memoryPort.merge({ flow: { other: { ...older, content: 'not-other' } }, presentation: { value: { age: 40 }, at: '2027-01-01T00:00:00.000Z' } }), false);
   assert.equal(a.presentation(), null);
   const later = { ...clone(mine), at: '2027-01-01T00:00:00.000Z' };
+  assert.equal(a.memoryPort.merge({ flow: { 'test.cafe.rush': later } }), false, 'a GET cannot replace an unsent local intent');
+  await s.start();
   assert.equal(a.memoryPort.merge({ flow: { 'test.cafe.rush': later } }), true);
   assert.equal(a.memoryPort.state().flow['test.cafe.rush'].at, later.at);
   assert.deepEqual(entriesOf(a.memoryPort.state()).map(e => e.kind), ['flow']);
+  s.stop();
 });

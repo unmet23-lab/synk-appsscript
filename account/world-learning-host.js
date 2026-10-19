@@ -58,6 +58,11 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
   // a game's port tells only its own listeners.
   const memoryAdapter = () => ({ memoryPort: Object.freeze({ scope: 'account', accountKey,
     state: () => primary.memoryPort.state(), merge: value => primary.memoryPort.merge(value),
+    ...(typeof primary.memoryPort.pending === 'function' ? {
+      pending: () => primary.memoryPort.pending(), prepare: (...args) => primary.memoryPort.prepare(...args),
+      acknowledge: (...args) => primary.memoryPort.acknowledge(...args),
+      epoch: () => primary.memoryPort.epoch(),
+    } : {}),
     subscribe(listener) {
       const stop = primary.memoryPort.subscribe(listener); memoryListeners.add(listener);
       return () => { stop(); memoryListeners.delete(listener); };
