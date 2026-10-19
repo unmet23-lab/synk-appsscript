@@ -95,6 +95,10 @@ const 제외 = [
     + '쓴다 — 발표물 `_src_` 와 같은 통로라 원고가 이름만 적는 것이 설계다.'],
   [/^docs\/마케팅\/yuhobuilds_1편_쇼츠수정_20260922\/(업로드_최종_20260926|이전버전\/[^/]+)\/_src_preview\.html$/,
     '위 통로로 만든 판의 원고를 판마다 보관한 사본이다(업로드 최종본 하나 · 이전 판 여섯). 다시 굽지 않는다.'],
+  [/^docs\/마케팅\/맞춤도구\/manual\/builds-index\.html$/, 'synk.im/builds/ 허브 원고다. `docs/마케팅/맞춤도구/build.mjs` 가 '
+    + 'manual 도구를 만들 때 이 파일을 도구 폴더 밖(`outside` → `dist/builds/index.html`)으로 내보내고, 서체는 manual 도구가 '
+    + '줄인 SUIT(`/builds/manual/assets/SUIT-subset.woff2`)를 사이트 절대 경로로 부른다 — build.mjs 가 이 원고 글자도 그 줄인 서체에 '
+    + '함께 싣는다(10-17 노트북 이사 편 `e82791890`). 줄인 서체는 빌드 산출물이라 저장소 안에서는 잴 수 없다.'],
 ];
 
 const 제외사유 = (rel) => (제외.find(([re]) => re.test(rel)) || [])[1] || null;
