@@ -213,6 +213,15 @@ function objectIds(git, revision) {
   return new Set(values);
 }
 
+// Objects already reachable from the base. A partial clone (CI checks out blob:none) would otherwise
+// lazily download every historical blob and hit the Git timeout; --missing=print lists them as ?<oid>.
+function knownIds(git, revision) {
+  const values = git(['rev-list', '--objects', '--no-object-names', '--missing=print', revision]).toString('utf8')
+    .split('\n').filter(Boolean).map(line => line.startsWith('?') ? line.slice(1) : line);
+  if (values.some(oid => !OID.test(oid))) throw new Error('Invalid rev-list object output');
+  return new Set(values);
+}
+
 function objectInfo(git, ids) {
   const unique = [...new Set(ids)];
   if (!unique.length) return new Map();
@@ -271,12 +280,12 @@ async function checkRepository(options, repo = process.cwd(), env = process.env)
   const changes = allChanges.filter(row => bindings.get(row.path) !== row.oid);
   let newIds;
   if (options.cached) {
-    const known = base ? objectIds(git, base) : new Set();
+    const known = base ? knownIds(git, base) : new Set();
     newIds = new Set(changes.map(row => row.oid).filter(oid => !known.has(oid)));
   } else {
     // Divergent histories can list the same blob in the range and the base.
     // Count only new objects; keep all changed paths for alias policy checks.
-    const known = objectIds(git, base);
+    const known = knownIds(git, base);
     newIds = new Set([...objectIds(git, `${base}..${head}`)].filter(oid => !known.has(oid)));
   }
   const info = objectInfo(git, [...newIds, ...changes.map(row => row.oid)]);

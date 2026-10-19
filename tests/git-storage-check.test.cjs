@@ -334,3 +334,33 @@ test('partial clones fail closed by default and can explicitly fetch missing int
     env: { ...f.env, GIT_NO_LAZY_FETCH: '1' }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
   }).status, 0);
 });
+
+test('partial clone range check does not download blobs that only the base history has', async t => {
+  const f = fixture(t, { maxBlobBytes: 4096, maxTotalBytes: 100000 });
+  const history = [];
+  for (let i = 0; i < 3; i++) {
+    f.write('notes/history.txt', `base history ${i}\n`);
+    f.git(['add', '--', 'notes/history.txt']);
+    f.git(['commit', '-q', '-m', `base history ${i}`]);
+    history.push(f.git(['rev-parse', 'HEAD:notes/history.txt']));
+  }
+  const base = f.git(['rev-parse', 'HEAD']);
+  f.write('new.txt', 'new source\n');
+  f.git(['add', '--', 'new.txt']);
+  f.git(['commit', '-q', '-m', 'new source']);
+  f.git(['config', 'uploadpack.allowFilter', 'true']);
+  f.git(['config', 'uploadpack.allowAnySHA1InWant', 'true']);
+  const clone = path.join(f.root, 'partial-consumer');
+  execFileSync('git', ['-c', 'protocol.file.allow=always', 'clone', '-q', '--no-local', '--no-checkout', '--filter=blob:none',
+    pathToFileURL(f.root).href, clone], { env: f.env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const present = oid => spawnSync('git', ['-C', clone, 'cat-file', '-e', oid], {
+    env: { ...f.env, GIT_NO_LAZY_FETCH: '1' }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
+  }).status === 0;
+  // CI checks out blob:none. Listing base-history blobs there downloaded them one by one until the Git timeout (10-19).
+  const older = history.slice(0, -1);
+  assert.ok(older.every(oid => !present(oid)));
+  const result = await checkRepository({ base, head: 'HEAD', allowLazyFetch: true }, clone, f.env);
+  assert.equal(result.ok, true);
+  assert.equal(result.newBlobs, 1);
+  assert.ok(older.every(oid => !present(oid)), 'blobs only in the base history must stay missing');
+});
