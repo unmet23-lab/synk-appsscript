@@ -1,0 +1,9 @@
+{
+ "guest": {"owner": "guest", "hostInParent": false, "screen": "game"},
+ "key": {"hosted": false, "key": "synk.hangul-stage.v1"},
+ "saved": {"skipped": true},
+ "lifeGuestKey": ["synk.life-korean.progress.v1:guest"],
+ "atlasDevice": ["synk.atlas.learning.v1.device"],
+ "migrationOnSignIn": "none in WORLD: play-common/account-host.mjs importLegacy() is an explicit command WORLD does not call, and the Hangul progress key is not a play record; Atlas device events stay in the device scope by design",
+ "errors": []
+}
