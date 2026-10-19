@@ -2,7 +2,7 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-19(`tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기 · Claude Code 10-19 공용 인덱스 reset 빠뜨림 재발 추가 · Claude Code 10-19 커밋·push 절차를 `tools/내커밋.js`로 옮김·워크트리 잠금 경로 추가 · GPT(Codex) 10-18 상태 출력 버퍼 한도 확인 · Claude Code 10-19 서버 복사 원본 단위의 EOF 빈 줄 추가 · Claude Code 10-19 통화 SDK 줄끝 항목 옮김(10-17 로컬 커밋 판)·워크트리가 같이 보는 origin/master 함정 · Claude Code 10-19 다시 쌓기를 파이프로 거른 함정 추가 · Claude Code 10-19 묵힌 커밋이 코드·생성 묶음에서 겹칠 때 다시 쌓기
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
@@ -315,6 +315,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 파이프의 종료 코드는 마지막 명령(`tail`)의 것이라 `&&`가 rebase 실패를 못 봤다. rebase가 멈춘 동안 HEAD는 그때까지 다시 쌓은 커밋을 가리킨다.
 - 고침: rebase·merge·push처럼 멈출 수 있는 git 명령은 파이프 없이 돌려 종료 코드를 받거나(`git rebase …; rc=$?`), 한 줄 앞에 `set -o pipefail`을 건다. push 전에 `git status`에 「rebase in progress」가 없는지 본다.
 - 다시 확인: Git Bash에서 `false | tail -1 && echo 돎`은 「돎」을 찍고, `set -o pipefail; false | tail -1 && echo 돎`은 안 찍는다.
+
+### 미뤄 둔 내 커밋이 origin과 코드·생성 묶음에서 겹치면 `올리기`가 멈춘다 (2026-10-19 Claude)
+- 증상: 두세 시간 묵힌 「우리 반 수업」 커밋 둘(a7113fe3e·36d43a625)을 `node tools/내커밋.js 올리기`로 미리 보기하자 「원격 판과 n곳이 겹친다 — 코드·데이터 파일은 손으로 합친다」(`app-shell.mjs`·`world-account.mjs`·`account-browser.test.mjs`·`world-account.bundle.mjs`)와 「내가 고친 줄이 원격 판에 그대로 없다」(현장노트 「쓴 AI」 머리줄)로 멈췄다. 아무것도 올라가지 않았다.
+- 원인: 그사이 origin에 들어온 다른 세션 커밋(703eab740 손님 한 판 체험)이 같은 import 줄·이웃 줄을 고쳤다. 도구는 코드 파일의 겹침을 풀지 않고, 생성 묶음은 줄 단위로 합쳐도 생성기 출력과 같다는 보장이 없다.
+- 고침: 이 세션 워크트리를 origin/master로 맞추고(`sync_with_base_branch`) 원래 커밋마다 `git cherry-pick -n` → 겹친 블록은 정해 둔 규칙으로 양쪽을 다 살리는 스크립트로 풀고(블록 수·모양이 다르면 멈춤) → 생성 묶음은 `node tools/build-world-account.mjs`로 새 바탕에서 다시 만든다 → 경로별 `git diff --numstat`과 바뀐 줄 집합이 원래 커밋과 같은지 대조 → `내커밋.js 커밋 … -F <원래 메시지 + 다시 쌓은 사정> --조각 <공용 문서>=전부 --실행` → 시험 → 새 커밋을 `올리기`. `cherry-pick -n`은 충돌이 나도 CHERRY_PICK_HEAD를 남기지 않고 MERGE_MSG·AUTO_MERGE만 남겨 `내커밋.js 커밋`이 멈추지 않는다(커밋 뒤 지운다).
+- 다시 확인: 10-19 `d85664c5d`·`afb587f9a`. numstat 15·14경로가 원래 커밋과 같고, 다시 만든 묶음의 더한 76줄·바뀐 28줄이 원래 커밋과 차례까지 같으며, `build-world-account.mjs --check`가 current다. 오래 묵힐 커밋은 처음부터 origin/master에서 뜬 워크트리에 두는 편이 낫다.
 
 ## 워크트리·연결 폴더·공간 정리
 
