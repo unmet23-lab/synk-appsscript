@@ -32,8 +32,8 @@ export function createFirstRun({steps={}}={}){
 }
 
 // 「한글을 읽을 수 있어요?」 한 장. read()는 저장된 답(없으면 null), save(answer)는 'new'|'reads'를 저장한다(계정이면 계정, 손님이면 기기).
-// 그림은 몽글 시범 두 칸이다(10-19, 이 화면에 맞게 GPT 이미지 2.5로 장면과 한 장으로 구워 나눔 — 원판·지시문은 저장소 밖
-// Documents/synk-vendor/world-first-hangul-20261019): ① 펠트 「안녕」 단추에서 나는 소리를 몽글이 눈 감고 듣고 ② 올라타 누르면 글자가 켜진다.
+// 그림은 몽글 시범 두 칸이다(10-19, 이 화면에 맞게 장면과 한 장으로 새로 구워 나눔 — 원판과 승인 기록은 HOME.md 첫 실행 줄):
+// ① 펠트 「안녕」 단추에서 나는 소리를 몽글이 눈 감고 듣고 ② 올라타 누르면 글자가 켜진다.
 // 소리는 한글 만나기의 실제 녹음 「안녕」, 시범은 소리가 실제로 나기 시작할 때 글자를 하나씩 켜고 ① → ② 칸을 차례로 또렷하게 하는 것.
 const DEMO_FRAMES=Object.freeze([['listen','assets/world-felt/hangul-demo-listen.webp'],['press','assets/world-felt/hangul-demo-press.webp']]);
 export function createHangulStep({home,asset,read,save}){
