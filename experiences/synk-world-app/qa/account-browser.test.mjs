@@ -131,6 +131,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.life().owner),A);
   await page.locator('[data-life-begin]').click();
   // 이야기 무대는 세 친구를 그 장소에서 함께 구운 사진 한 장(tutor-photos). 사진이 없는 팩만 예전처럼 세 컷.
+  // 누른 직후에는 사진이 아직 받는 중일 수 있다(10-19 구운 마을 파일을 넣은 판에서 3번 중 2번 여기서 멈췄다). 다 받거나 깨질 때까지 기다린 뒤 잰다.
+  await page.waitForFunction(()=>document.querySelector('.life-story-photo>img')?.complete===true);
   assert.ok(await page.locator('.life-story-photo>img').evaluate(image=>image.complete&&image.naturalWidth>0&&['몽글','까몽','마린'].every(name=>image.alt.includes(name))));
   for(let i=0;i<12&&!await page.locator('[data-life-choice]').count();i++)await page.locator('[data-life-scene-next]').click();
   await page.locator('[data-life-choice="'+lifeLesson.questions[0].answerId+'"]').click();await page.locator('.life-feedback').waitFor();
