@@ -451,7 +451,12 @@
           "lib/형제정본.js"
         ],
         "sharedCanonicalFilesModified": false,
-        "affectsDmIntegration": false
+        "affectsDmIntegration": false,
+        "canonicalComparisonResolution": {
+          "resolved": true,
+          "talkCommit": "bd9dafafa92ac8844f32312b962d9308521f7ba3",
+          "followup": "teacherKnowledgeFollowup"
+        }
       }
     },
     "live": {
@@ -622,5 +627,74 @@
       "scopeLimit": "15분 현재상태 감시이므로 그 사이에 발생하고 회복한 Drive 단발 오류의 메일 발송을 주장하지 않는다."
     },
     "naturalCommentBoundary": "다른 Claude 세션의 실제 후속 DM 시험과 직접 답변 후 human_paused, STOP 복원 기록을997b2ad로 포함했다. 이 통합 작업 자체의 신규 댓글/DM 발송은0이며 새 자연유입 댓글별 링크 종단 수신을 별도로 증명했다고 확대하지 않는다."
+  },
+  "teacherKnowledgeFollowup": {
+    "checkedAt": "2026-10-19T04:05:42.364Z",
+    "status": "verified",
+    "request": "resolve remaining canonical source mismatch and push",
+    "talkCommit": "bd9dafafa92ac8844f32312b962d9308521f7ba3",
+    "appsBase": "ee70c210b7681625b1d46f551a3fda44a949910e",
+    "sourceMismatchCount": 5,
+    "sourceFiles": [
+      {
+        "path": "docs/숙제서클_설계.md",
+        "previousSha256": "6389f16ce21d92985b806aaa00e503aed3dee3704cf1964035e87f69034848fc",
+        "currentSha256": "5f86c24acbc24849c4add90dfd6f189a2c1b15cc06fbec26bb3c6f54d82e2fc0"
+      },
+      {
+        "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+        "previousSha256": "8343a8a323bed3613da47d7bd5dd90e3b3dc9bca2cf8dadaac3c8cf6b6dd503e",
+        "currentSha256": "7109a078771fefad94eb22d34dc9838083bad3d64dea64022b44b446cf9a0ebf"
+      },
+      {
+        "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+        "previousSha256": "44561a320527f2510b0b5e7fd08edcf3f60d35971d67c7d0a12a76dcb76b8ee4",
+        "currentSha256": "bf3c920039690f2f5427178d91f1845f270bf8d79a9a44c6993c5a97d24b8c68"
+      },
+      {
+        "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+        "previousSha256": "728d1c40ffce0b0ff911f2cd9c19fccc4f382d22d5c87f8c678bac47b0116491",
+        "currentSha256": "ab54d5cb62126346e1644c10d17782c5a8472ad57ad9308d68712d84a4c05e9e"
+      },
+      {
+        "path": "docs/커리큘럼_정본_v1.md",
+        "previousSha256": "057c7d825e6745a8db8f4606032f21d03f8c15663798a16eba51da30d25a2376",
+        "currentSha256": "0bcfdc9eee624ca19489aa2b3ddab2c2a3369392c9553fb0efad3932a7dad3a2"
+      }
+    ],
+    "allTenSourceFingerprintsMatched": true,
+    "sourceCount": 10,
+    "generatedSha256": "75202d93ae1fe77dbc21fcf4a80052f9784903086a0a75734e21ddda207d7716",
+    "sourceProvenance": "unchanged completed October 17 document cleanup; pass2 homework circle and pass3 remaining four source hashes match",
+    "tests": {
+      "total": 57,
+      "passed": 57,
+      "failed": 0,
+      "skipped": 0,
+      "log": ".tmp/teacher-knowledge-sync-20261019/related-tests.log",
+      "sha256": "1abdb602de35ad80dcedc0e47d285929207a1d6e48d2d146fe7f7543ba153826"
+    },
+    "builderUnchanged": true,
+    "manifestUnchanged": true,
+    "faqHandoffGatePreserved": true,
+    "otherFiveSourcesUnchanged": true,
+    "sourceFilesEditedByThisTask": false,
+    "productionDeployed": false,
+    "dmRuntimeChanged": false,
+    "archiveScope": "existing local recovery archive is preserved and excluded from Git per document-cleanup record",
+    "evidence": ".tmp/teacher-knowledge-sync-20261019/before.json",
+    "sharedPrimaryHeadAndIndexModifiedByThisTask": false,
+    "concurrentSharedCheckoutUpdate": {
+      "at": "2026-10-19T04:07:41.636Z",
+      "head": "aa22f9d191d390ec2d797ac52ce833927aeb2705",
+      "indexSha": "fbe3db13213ef69eb247127975f956b809e1beffb3f5ba65b9d023cd57b43144",
+      "previousHead": "c10c51a49f93e25689fda9bc0758d78af20bcfa1",
+      "changedFiles": [
+        "docs/마케팅/PULSE_AI모델_캐스팅_20260930/fable/모델확장_로드맵_검수_20261019.md",
+        "docs/마케팅/PULSE_AI모델_캐스팅_20260930/모델확장_로드맵_20261019.md",
+        "docs/마케팅/PULSE_AI모델_캐스팅_20260930/모델확장_로드맵_20261019_초안.md"
+      ],
+      "scope": "separate PULSE documentation update; no teacher knowledge inputs changed"
+    }
   }
 }
