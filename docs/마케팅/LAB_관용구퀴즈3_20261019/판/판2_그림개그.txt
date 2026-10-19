@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz about FOOD idioms, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting). Do not copy its objects.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on papers, bowls, boxes, screens or tags.
+
+Top row = the funny WRONG literal readings:
+1. "EATS SEAWEED SOUP" — a cream felt soup bowl full of dark green wavy felt seaweed strands in light brown broth, a small silver-grey felt spoon lifting one long dripping seaweed strand high above the bowl; two short white felt steam curls rising.
+2. "EATS COLD PORRIDGE" — a pale blue felt bowl of thick white rice porridge that is frozen cold: a few small light-blue felt icicles hanging from the bowl rim, two tiny white felt snowflakes floating above it, a small wooden felt spoon stuck upright in the porridge.
+3. "DRINKS KIMCHI SOUP FIRST" — a clear-looking felt glass (pale grey outline) filled with bright red kimchi soup with small cabbage pieces, a striped coral-and-white felt drinking straw in it, next to a small white felt plate holding three plain white felt rice cakes that nobody has offered yet.
+
+Bottom row = the TRUE meanings:
+4. FAILS THE EXAM — a cream felt test paper covered in big red felt X marks (only X shapes, no letters or numbers), a small yellow felt pencil snapped in two beside it, and one light-blue felt teardrop.
+5. SUPER EASY — a cream felt test paper with one huge red felt circle mark on it and a small gold felt star sticker in the corner (no letters or numbers), next to a tiny relaxed felt pencil lying on its side with a little white felt "zzz" puff cloud (just a cloud, no letters).
+6. HOPES TOO EARLY — a mint felt gift box still tied shut with a yellow felt ribbon (clearly unopened), and right next to it a coral party hat, a party popper and colorful felt confetti (green triangles, pink dots, yellow squares) already burst out, as if the party started before the box was opened.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.

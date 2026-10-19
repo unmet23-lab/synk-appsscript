@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — "Mongle, food quiz-show host" expression sheet, needle-felted wool photography.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color #E8735F-ish, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Same size and same front-facing pose in every cell; only the face and one small felt prop change. Mongle wears a small pastel MINT-GREEN felt chef hat (a puffy cook's toque, clearly mint green, NOT white or cream, with a slightly darker mint band at the bottom) in every cell — the same hat each time. Nothing in the image is white except the background.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One Mongle per cell, centered, filling about 70% of the cell height, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadow, no reflections, no border lines, no text, no letters, no numbers, no symbols anywhere.
+
+Cells (left→right, top row first):
+1. CURIOUS — big glossy black bead eyes looking slightly upward, small pink felt cheeks, mouth closed. Prop: a tiny felt soup ladle (silver-grey) leaning against the right side of the hem.
+2. SHOCKED — eyes become large white felt circles with small black bead pupils, small round open black felt mouth, two light-blue felt sweat drops near the top right. Prop: a tiny cream felt bowl tipped over beside the left hem.
+3. DEADPAN — flat half-closed eyes made of short straight black felt lines, flat straight mouth line, one light-blue felt sweat drop at the right temple. Unimpressed, comedic. Prop: a pair of wooden felt chopsticks lying crossed beside the hem.
+4. FOCUSED — determined slanted black felt brows over bead eyes, small firm mouth. Prop: a small round red felt kitchen timer beside the lower left of the hem.
+5. CHEERING — yellow felt star-shaped eyes, wide open smiling black felt mouth, pink cheeks. Prop: tiny felt confetti pieces (green triangles, pink dots, yellow squares) floating around the top of the hat, not touching the body.
+6. LAUGHING HARD — eyes squeezed shut as upward arcs, big open laughing mouth, two light-blue felt tear drops flying off the outer eye corners, pink cheeks. Prop: a small felt quiz buzzer (red felt dome on a black felt base) beside the right hem.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish, consistent lighting across all six cells. Keep every prop and confetti piece separated from the body by a thin gap of white background where possible so each cell can be cut out cleanly.
