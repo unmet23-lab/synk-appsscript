@@ -1,0 +1,30 @@
+[
+  {
+    "role": "research-full",
+    "id": "10LfWPhwWO1Lzk8V_HddA0a5vVNJ0NVQXZgNyUplcwvk",
+    "mimeType": "application/vnd.google-apps.document",
+    "exportMime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "extension": "docx"
+  },
+  {
+    "role": "research-yt-tt",
+    "id": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+    "mimeType": "application/vnd.google-apps.document",
+    "exportMime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "extension": "docx"
+  },
+  {
+    "role": "research-meta-brand",
+    "id": "1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ",
+    "mimeType": "application/vnd.google-apps.document",
+    "exportMime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "extension": "docx"
+  },
+  {
+    "role": "synk-tips-register",
+    "id": "1bqSom9mNKb3pB_YW7D_PxiI32cVG5ZzKnns0wgxeNKM",
+    "mimeType": "application/vnd.google-apps.spreadsheet",
+    "exportMime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "extension": "xlsx"
+  }
+]

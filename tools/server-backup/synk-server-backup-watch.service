@@ -1,0 +1,16 @@
+[Unit]
+Description=SYNK server backup freshness and failure delivery
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/bin/python3 -I /opt/synk-server-backup/watch.py
+TimeoutStartSec=2min
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/synk-server-backup
+ProtectHome=true
+NoNewPrivileges=true
+

@@ -1,0 +1,20 @@
+{
+  "displayName": "SYNK server independent backup failure",
+  "enabled": true,
+  "combiner": "OR",
+  "userLabels": {"component": "server-backup", "managed_by": "synk"},
+  "documentation": {
+    "mimeType": "text/markdown",
+    "subject": "SYNK 서버 백업 실패 · ${log.extracted_label.role}",
+    "content": "노트북과 독립적으로 실행하는 암호화 추가 백업이 실패했거나 지연됐습니다.\n\n서버 역할: ${log.extracted_label.role}\n\n오류: ${log.extracted_label.error}\n\n서버의 /var/lib/synk-server-backup/latest.json 및 synk-server-backup.service 상태를 확인하세요. 원본 삭제나 자동 권한 확대는 하지 않습니다. SYNTHETIC_BACKUP_ALERT_TEST는 알림 연결 시험이며 운영 백업 실패가 아닙니다."
+  },
+  "conditions": [{
+    "displayName": "Server backup failure or stale backup",
+    "conditionMatchedLog": {
+      "filter": "resource.type=\"global\"\nresource.labels.project_id=\"synk-bake-unmet27\"\nlog_id(\"synk_server_backup\")\nseverity>=ERROR\njsonPayload.event=\"SYNK_SERVER_BACKUP_FAILED\"\njsonPayload.role=~\"^(company|research)$\"",
+      "labelExtractors": {"role": "EXTRACT(jsonPayload.role)", "error": "EXTRACT(jsonPayload.error)"}
+    }
+  }],
+  "notificationChannels": ["projects/synk-bake-unmet27/notificationChannels/14855206170551846292"],
+  "alertStrategy": {"notificationRateLimit": {"period": "300s"}, "autoClose": "1800s"}
+}

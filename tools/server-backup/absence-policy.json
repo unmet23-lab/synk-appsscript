@@ -1,0 +1,33 @@
+{
+  "displayName": "SYNK server independent backup heartbeat absent",
+  "enabled": true,
+  "combiner": "OR",
+  "userLabels": {"component": "server-backup", "managed_by": "synk"},
+  "documentation": {
+    "mimeType": "text/markdown",
+    "subject": "SYNK 서버 백업 감시 신호 끊김",
+    "content": "서버의 검증된 백업 정상 신호가 도착하지 않습니다. ${condition.display_name}\n\n정상 신호는 최근 26시간 이내의 원격 검증 성공과 백업 예약 활성화를 확인한 뒤 15분마다 전송합니다. 10분 집계 구간에서 데이터가 사라진 뒤 45분 동안 계속 부재하면 알립니다. 집계 및 처리 지연이 추가될 수 있습니다. 노트북 전원과 무관하게 Cloud Monitoring이 감시하며 global 리소스를 사용합니다.\n\n해당 서버와 synk-server-backup-watch.timer, synk-server-backup.timer 및 /var/lib/synk-server-backup/latest-success.json을 확인하세요. 원본 삭제나 자동 권한 확대는 하지 않습니다."
+  },
+  "conditions": [
+    {
+      "displayName": "Company backup healthy heartbeat absent for 45 minutes",
+      "conditionAbsent": {
+        "filter": "metric.type=\"logging.googleapis.com/log_entry_count\" AND resource.type=\"global\" AND resource.labels.project_id=\"synk-bake-unmet27\" AND metric.labels.log=\"synk_server_backup_company_healthy\" AND metric.labels.severity=\"INFO\"",
+        "duration": "2700s",
+        "aggregations": [{"alignmentPeriod": "600s", "perSeriesAligner": "ALIGN_SUM"}],
+        "trigger": {"count": 1}
+      }
+    },
+    {
+      "displayName": "Research backup healthy heartbeat absent for 45 minutes",
+      "conditionAbsent": {
+        "filter": "metric.type=\"logging.googleapis.com/log_entry_count\" AND resource.type=\"global\" AND resource.labels.project_id=\"synk-bake-unmet27\" AND metric.labels.log=\"synk_server_backup_research_healthy\" AND metric.labels.severity=\"INFO\"",
+        "duration": "2700s",
+        "aggregations": [{"alignmentPeriod": "600s", "perSeriesAligner": "ALIGN_SUM"}],
+        "trigger": {"count": 1}
+      }
+    }
+  ],
+  "notificationChannels": ["projects/synk-bake-unmet27/notificationChannels/14855206170551846292"],
+  "alertStrategy": {"autoClose": "604800s"}
+}

@@ -1,0 +1,12 @@
+[Unit]
+Description=SYNK server backup daily after existing company and research jobs
+
+[Timer]
+OnCalendar=*-*-* 07:10:00 Asia/Seoul
+RandomizedDelaySec=120
+Persistent=true
+Unit=synk-server-backup.service
+
+[Install]
+WantedBy=timers.target
+

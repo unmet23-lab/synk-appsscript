@@ -10,13 +10,11 @@
  * 무엇을 하나 — 층마다 사는 곳이 다르다:
  *   ① **커밋** → GitHub(`safety/*` 브랜치). master 를 안 건드리므로 남의 세션 작업과 무관하고,
  *      뒤처져 있어도(behind) 밀린다. 되찾기는 clone 한 벌이면 끝난다.
- *   ② **미커밋·미추적 파일** → OneDrive 스냅샷. git 이력 어디에도 없는 **유일한 무보호 상태**라
- *      (F025) 커밋을 기다리지 않고 파일째 복사한다. 남의 세션이 든 작업본도 **읽기만** 한다.
- *   ③ **저장소 밖 낱개 파일** → OneDrive 스냅샷. 시간표·투자자덱처럼 git 에 없는 것들.
+ *   ② **미커밋·미추적 문서·소스** → OneDrive 스냅샷. 남의 세션이 든 작업본도 **읽기만** 한다.
+ *   ③ **저장소 밖 낱개 문서·소스** → OneDrive 스냅샷. 미디어는 Google Drive 보관 대상이다.
  *
- * ⚠ .gitignore 된 파일은 담지 않는다 — `git status --porcelain` 이 애초에 안 보여준다.
- *   그 자리에 사는 게 자격증명이라(CLAUDE.md: 자격증명만 영원히 git 눈 밖) 백업에도 안 실린다.
- *   그건 유호님이 password manager 로 따로 지킨다 — 이 도구가 대신할 수 없는 층이다.
+ * .gitignore 된 파일은 담지 않는다. 이름·실제 바이트의 공통 안전 분류로
+ * 미디어·자격증명·빌드 산출물·10MiB 초과 파일·링크도 제외하고 사유를 표시한다.
  *
  * 쓰는 법: node tools/백업.js          (진단 + 실행)
  *          node tools/백업.js --진단   (재기만 — 아무것도 안 바꾼다)
@@ -26,9 +24,10 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { 찾기: 바탕화면찾기 } = require('./lib/바탕화면.js');
+const { textPolicy, linkPaths, MAX_TEXT_BYTES } = require('./이어하기꾸러미.js');
 
 const 스냅샷폴더명 = 'SYNK_안전백업';
-const 큰파일한계 = 100 * 1024 * 1024; // 100MB — 넘으면 건너뛰고 소리 낸다(조용한 누락 금지)
+const 큰파일한계 = MAX_TEXT_BYTES;
 
 function git(저장소, 인자, { 조용히 = false } = {}) {
   try {
@@ -86,18 +85,33 @@ function 상태줄경로(줄) {
 /** 한 건을 담는다. **던지지 않는다** — 백업은 하나가 막혀도 나머지를 담아야 한다.
  *  (실측 2026-08-10: `Documents\My Music` 은 정션이라 copyFile 이 EPERM 을 던졌고,
  *   그 한 건이 백업 **전체**를 죽였다. 실패는 삼키지 말고 목록으로 올린다.) */
-function 파일복사(원본, 목적) {
-  let st;
-  try { st = fs.lstatSync(원본); } catch (e) { return { 실패: e.code || String(e) }; }
-  if (st.isSymbolicLink() || !st.isFile()) return { 실패: '실물 파일이 아니다(링크·정션·폴더)' };
-  if (st.size > 큰파일한계) return { 건너뜀: true, 바이트: st.size };
+function 파일복사(원본, 목적, { 진단만 = false, 분류경로 = 원본, 목적클라우드 = null } = {}) {
   try {
+    // 금지 경로는 내용을 읽기 전에 거른다. 읽은 뒤 같은 분류로 실제 바이트도 확인한다.
+    const 경로사유 = textPolicy(분류경로, Buffer.alloc(0));
+    if (경로사유) return { 건너뜀: true, 사유: 경로사유 };
+    const 원본링크 = linkPaths([원본]);
+    const 목적링크 = linkPaths([목적], { cloudDestinationRoot: 목적클라우드 });
+    if (원본링크(원본) || 목적링크(목적)) return { 건너뜀: true, 사유: 'link-or-reparse-point' };
+    const st = fs.lstatSync(원본);
+    if (!st.isFile()) return { 건너뜀: true, 사유: 'not-regular-file' };
+    if (st.size > 큰파일한계) return { 건너뜀: true, 사유: 'over-10MiB', 바이트: st.size };
+    const data = fs.readFileSync(원본);
+    const 사유 = textPolicy(분류경로, data);
+    if (사유) return { 건너뜀: true, 사유, 바이트: data.length };
+    if (진단만) return { 바이트: data.length };
     fs.mkdirSync(path.dirname(목적), { recursive: true });
-    fs.copyFileSync(원본, 목적);
+    // 검증한 바이트를 쓴다. copyFile로 원본을 다시 열면 그 사이 바뀐 미디어를 담을 수 있다.
+    fs.writeFileSync(목적, data);
+    return { 바이트: data.length };
   } catch (e) {
     return { 실패: e.code || String(e) };
   }
-  return { 바이트: st.size };
+}
+
+function 건너뜀표시(이름, 결과) {
+  const 크기 = Number.isFinite(결과.바이트) ? ` (${(결과.바이트 / 1024 / 1024).toFixed(1)}MiB)` : '';
+  return `${이름} — ${결과.사유}${크기}`;
 }
 
 function 오늘() {
@@ -112,13 +126,14 @@ function 실행({ 진단만 = false } = {}) {
   const 클라우드 = 클라우드루트();
   const 스냅 = 클라우드 ? path.join(클라우드, 스냅샷폴더명, 오늘()) : null;
   const 보고 = { 스냅, 저장소: [], 낱개: { 담음: 0, 건너뜀: [] }, 경고: [] };
+  if (진단만) 보고.안내 = '원격 조회 없음: 미push 수는 로컬 origin/master 기록 기준이며 최신 원격과 다를 수 있다.';
 
   if (!클라우드) 보고.경고.push('OneDrive 루트를 못 찾았다 — 파일 스냅샷은 통째로 건너뛴다(커밋 백업만 돈다)');
 
   for (const r of 저장소들(부모)) {
     const 이름 = path.basename(r);
     const 칸 = { 이름, 미push: 0, 밀었나: null, 담음: 0, 건너뜀: [], 실패: [] };
-    git(r, ['fetch', 'origin'], { 조용히: true });
+    if (!진단만) git(r, ['fetch', 'origin'], { 조용히: true });
 
     const ahead = git(r, ['log', '--oneline', 'origin/master..master'], { 조용히: true });
     칸.미push = ahead ? ahead.split('\n').filter(Boolean).length : 0;
@@ -132,17 +147,20 @@ function 실행({ 진단만 = false } = {}) {
     }
 
     // ② 미커밋·미추적 파일 → 스냅샷 (남의 작업본도 **읽기만** 한다)
-    const 상태 = git(r, ['status', '--porcelain'], { 조용히: true }) || '';
+    const 상태인자 = 진단만 ? ['--no-optional-locks', 'status', '--porcelain'] : ['status', '--porcelain'];
+    const 상태 = git(r, 상태인자, { 조용히: true }) || '';
     const 경로들 = 상태.split('\n').map(상태줄경로).filter(Boolean);
-    if (스냅 && !진단만) {
+    if (스냅) {
       for (const 상대 of 경로들) {
-        const res = 파일복사(path.join(r, 상대), path.join(스냅, 이름, 상대));
+        const res = 파일복사(path.join(r, 상대), path.join(스냅, 이름, 상대), {
+          진단만, 분류경로: 상대, 목적클라우드: 클라우드,
+        });
         if (res.실패) 칸.실패.push(`${상대} — ${res.실패}`);
-        else if (res.건너뜀) 칸.건너뜀.push(`${상대} (${(res.바이트 / 1024 / 1024).toFixed(0)}MB)`);
+        else if (res.건너뜀) 칸.건너뜀.push(건너뜀표시(상대, res));
         else 칸.담음 += 1;
       }
     } else {
-      칸.담음 = 경로들.length; // 진단만: 몇 건이 무보호인지
+      칸.담음 = 0; // 목적지가 없으면 미커밋 수만 보고하며 복사한 것으로 세지 않는다.
     }
     칸.미커밋 = 경로들.length;
     보고.저장소.push(칸);
@@ -153,10 +171,11 @@ function 실행({ 진단만 = false } = {}) {
     보고.낱개.실패 = [];
     for (const e of fs.readdirSync(부모, { withFileTypes: true })) {
       if (!e.isFile()) continue; // 정션·심볼릭(My Music 등)은 실물이 아니다
-      if (진단만) { 보고.낱개.담음 += 1; continue; }
-      const res = 파일복사(path.join(부모, e.name), path.join(스냅, '_저장소밖', e.name));
+      const res = 파일복사(path.join(부모, e.name), path.join(스냅, '_저장소밖', e.name), {
+        진단만, 목적클라우드: 클라우드,
+      });
       if (res.실패) 보고.낱개.실패.push(`${e.name} — ${res.실패}`);
-      else if (res.건너뜀) 보고.낱개.건너뜀.push(`${e.name} (${(res.바이트 / 1024 / 1024).toFixed(0)}MB)`);
+      else if (res.건너뜀) 보고.낱개.건너뜀.push(건너뜀표시(e.name, res));
       else 보고.낱개.담음 += 1;
     }
   }
@@ -166,15 +185,16 @@ function 실행({ 진단만 = false } = {}) {
 function 찍기(보고, 진단만) {
   const 머리 = 진단만 ? '진단(아무것도 안 바꿨다)' : '백업 완료';
   console.log(`■ ${머리}`);
+  if (보고.안내) console.log(`  ${보고.안내}`);
   if (보고.스냅) console.log(`  스냅샷: ${보고.스냅}`);
   for (const c of 보고.저장소) {
     const 밀린것 = c.밀었나 ? ` → ${c.밀었나}` : c.미push ? ' (안 밀었다)' : '';
-    console.log(`  · ${c.이름}: 미push ${c.미push}${밀린것} · 미커밋 ${c.미커밋}건 → 스냅샷 ${c.담음}건`);
-    c.건너뜀.forEach((s) => console.log(`      ⚠ 너무 커서 건너뜀: ${s}`));
+    console.log(`  · ${c.이름}: 미push ${c.미push}${밀린것} · 미커밋 ${c.미커밋}건 → ${진단만 ? '복사 후보' : '스냅샷'} ${c.담음}건`);
+    c.건너뜀.forEach((s) => console.log(`      ⚠ 건너뜀: ${s}`));
     c.실패.forEach((s) => console.log(`      🔴 못 담았다: ${s}`));
   }
-  console.log(`  · 저장소 밖 낱개: ${보고.낱개.담음}건`);
-  보고.낱개.건너뜀.forEach((s) => console.log(`      ⚠ 너무 커서 건너뜀: ${s}`));
+  console.log(`  · 저장소 밖 낱개${진단만 ? ' 복사 후보' : ''}: ${보고.낱개.담음}건`);
+  보고.낱개.건너뜀.forEach((s) => console.log(`      ⚠ 건너뜀: ${s}`));
   (보고.낱개.실패 || []).forEach((s) => console.log(`      🔴 못 담았다: ${s}`));
   보고.경고.forEach((w) => console.log(`  🔴 ${w}`));
   if (!보고.경고.length) console.log('  ✅ 경고 없음');

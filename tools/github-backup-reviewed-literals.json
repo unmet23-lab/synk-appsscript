@@ -1,0 +1,621 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-19",
+  "entries": [
+    {
+      "path": "desktop/src/main.cjs",
+      "sha256": "68ff6d4cf41cc51c5c694b5471cbf059feb5ff769ca15b28ed4b7694a2d9d9d0",
+      "reason": "Synthetic local token-storage probe."
+    },
+    {
+      "path": "desktop/tests/ai-subscriptions.test.cjs",
+      "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-messenger.test.mjs",
+      "sha256": "d0f634fac9e27b06e095f1944b9caaa31cc418f291d247110f20c92fc0110d30",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-voice.test.mjs",
+      "sha256": "9ef0ca5b206972e301899cb8de7d55fde6beebf55abcfcb196d05a8e10a43e98",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/public/app.js",
+      "sha256": "595c3e976fe08b24517e583c35b9faef3e8bf103c3355fba7c23f972baee47e8",
+      "reason": "HTML autocomplete current-password label, not a credential."
+    },
+    {
+      "path": "tools/company-messenger/public/vendor/livekit-client/livekit-client.esm.js",
+      "sha256": "35e5a9632e18bc9adad684a3eafdd297139c82b5693b7fa2a8d0efcaf024cdcf",
+      "reason": "Runtime Bearer prefix concatenated with token variable."
+    },
+    {
+      "path": "tools/company-messenger/tests/voice-fixture.test.mjs",
+      "sha256": "b2870227a3bbb7422540685c3d3417083b150283c593c8a7fcfeeea756009fa7",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/voice-fixture.test.mjs",
+      "sha256": "800f92a5b191ca1d261d186181290f8d469765f3b791166371d637f40baea371",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/voice-live.test.mjs",
+      "sha256": "800f92a5b191ca1d261d186181290f8d469765f3b791166371d637f40baea371",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/voice.test.mjs",
+      "sha256": "671c5dda750fcf56190d715b8bf2b3c60625092aeef3de329d5fe0bfb6de0e45",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change.test.js",
+      "sha256": "d7edf5af6b41d1725d40892f976e6cd8ba97046d0e1ffb48365ce759630a4d41",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change.test.js",
+      "sha256": "63f5210e7b51845c32342e690381f4c241a826abc075d3debdad37de6b40851f",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change.test.js",
+      "sha256": "9764650d95ca7856c6450ddf4c371d4e51cac719a9307a41b2e81ef25313ee97",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change.test.js",
+      "sha256": "8810ad581e59f2bc3928b261707a71308f7e139eb04820366dc4d5c18d980225",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "8c2574892063f995fdf756bce07f46c1a5193e54cd52837ed91e32008ccf41ac",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "914dc79c38e5635e1b685d801eecd3c50abde00b09b3ddfc7a1fec05bf0a4b96",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "fe221d13cd7731ec705beebc7180568c841f4c81cd4f4964d38fe50ad860392e",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "4a8eec4925826f4b60526d7ac3c0a9b61ef54ac19233bafce2f4a13eb49395d2",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "eb087a81ad5b9b33e836750b8ca913107257aa6a4ad6c98b6b3806ad931c6f0d",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "0ed536798d9d94a716d20314e71345caac5c98666c775af983d61bfc9f5dc521",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/인증API.test.js",
+      "sha256": "3c7ed9061a2a89e9a136fc92bdfb748e20ea60f941d30b43347e356ac1c9127d",
+      "reason": "Reviewed isolated fixture literal; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-play.test.js",
+      "sha256": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
+      "reason": "Negative test submits a literal secret marker and asserts HTTP 400; not a provider credential."
+    },
+    {
+      "path": "tests/wardrobe-release-bundle.test.js",
+      "sha256": "8a4d12d3cc3bac5ce10cbc223465af2caf01d54051f81de34c805a22885ec934",
+      "reason": "Mock authentication/header fixture with an injected fetch function or expected HTTP 401; no real account token."
+    },
+    {
+      "path": "tests/wardrobe-server.test.js",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Mock authentication/header fixture with an injected fetch function or expected HTTP 401; no real account token."
+    },
+    {
+      "path": "tests/wardrobe-server.test.js",
+      "sha256": "49db3adbeef6ab55a3773a9889351f8b385bb1b23bdccf4e59bc4d7ff1cb294d",
+      "reason": "Mock authentication/header fixture with an injected fetch function or expected HTTP 401; no real account token."
+    },
+    {
+      "path": "desktop/tests/pulse-app.test.cjs",
+      "sha256": "e9fcb28c9357a338eecd1a0604b2f198a7707854ddd6f885d9a68dd9200c4aff",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "desktop/tests/pulse-requests.test.cjs",
+      "sha256": "61a7db363fb48e06321433c2bd7f7f32a6dfd5afc32c5034dc2923fd67fe0aec",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-release-readiness.test.mjs",
+      "sha256": "a10069da7358125cc3e37455d6365e482700a2ff62062f0c6a97e51d265598af",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/customer-computer.test.mjs",
+      "sha256": "04b481ae018b634ffcd860ef3f1de23bd529b559546dd2ae81ef3a7d4f18fe54",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/controller.test.mjs",
+      "sha256": "ba305811eee7ba45d9c299fb0b057428d9fe3dc3b1125bd4d2c19d2bafaa0a00",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/deployment-host.test.py",
+      "sha256": "75b5da28aed80ed021323d4f3870bd8ef96e1ccf327286e6f6d151ae90f1ed6c",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/durable-health.test.mjs",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/durable-health.test.mjs",
+      "sha256": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent-transport.test.mjs",
+      "sha256": "9784d97073529487d86f7d3e6eb61c16dda2eaa24ae99d30d7fff0b1e787e33c",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent.test.mjs",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/play-common/account-host.test.mjs",
+      "sha256": "2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/spaceship-coop/production.test.mjs",
+      "sha256": "7779c66b3badf2952acb4d0c53ad6315be88a7fe7bda47c2dce0d955c8375edb",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "347cd7537a0003c631df7d7ceaf10cc58df7091b9a21f6ba22dfa6cdf8388035",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "d404e3d1aae0f5737d5e24884e1c63e503c34fd931f4f0680357353aebca8669",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "3551e982a2428dad5894b0c7ddd821fdfe8598efc0a850b9ae90b397102409b9",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/client-recovery.test.mjs",
+      "sha256": "3c8fe6fff16a783edb5e22be50e3b9f998ea8b386e4e894608c2b61961698a9c",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/google-auth-boundaries.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/google-auth.test.mjs",
+      "sha256": "9947a88c76a058f5b22cc9abce96ac944572e38a7e472fa5a61bc9a529abfbd8",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/google-auth.test.mjs",
+      "sha256": "b0d5ee06f8e0fa033b0bbcb8d88c8a41029390614f9e158d6eb76eeec6b8b37a",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-account.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-account.test.mjs",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-account.test.mjs",
+      "sha256": "83f3e5c38ac465e7b270b88a598da2ed2ae8473e2e7877f34cab9c8a603e40ad",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-account.test.mjs",
+      "sha256": "347cd7537a0003c631df7d7ceaf10cc58df7091b9a21f6ba22dfa6cdf8388035",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-account.test.mjs",
+      "sha256": "d404e3d1aae0f5737d5e24884e1c63e503c34fd931f4f0680357353aebca8669",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-entry.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-entry.test.mjs",
+      "sha256": "e876deda8199a3becc5dbf464daa07511ab992c46fe88e485d5d0006dcd1026f",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-lifecycle.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-lifecycle.test.mjs",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/platform-lifecycle.test.mjs",
+      "sha256": "f3c26cd359e79995b94a399e699f33e94f4ae541ead3b20a774ad2bd67f7a082",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/portal-logout-order.test.mjs",
+      "sha256": "6794dc5ad40a09f2b260a62a02ed8bc8963b55bff307acab46815a4017bb1d7a",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/portal-social-conversion.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/product-logout-provider.test.mjs",
+      "sha256": "44c4677368a550903969851d93064386ca82016ef0364609db0b8f3a5377e826",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/product-logout-provider.test.mjs",
+      "sha256": "67cb74713afde002302173a6274bdfa72c2f8c0eec57f09d8f14fd28c80a2d8d",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/world-play-transport.test.mjs",
+      "sha256": "50704db001a65e452344462bd126c09a10366fcafdc2d6adf0c9eb289a377f6a",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/GitHub백업.test.cjs",
+      "sha256": "951760ac2e3dc10f5d01abb718d98c15f0f18c8ab1a4bfdf9613414bd3250500",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/classroom-auth.test.js",
+      "sha256": "1a3ffb6a90d519dcb2034911e8f96152fc4e4f51d61695a8a5a42f68541555be",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/path-travel-account.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/path-travel-login-draft.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-product-account-recovery.test.mjs",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-world-public-provision.test.cjs",
+      "sha256": "dfe7ed3dca6c04829b439d6eef708640eb84e7618700f5663f089926b1fb99fe",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "b9835138e65bd2028111ea00c9f7f3e3e5013c8d56898401ae1acf5f91366faa",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "2c11396d3a0f05e78c955aeeb8c2b582b0ab11388f4061f096cf9dbbfd53db23",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "0ed67e78396236f068c7f03b5dd972fb64d0bdacfe56bd1102c047bcade79887",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "9de267bf7cdef938a06659e2d41aec7dff0846d6dc2fccb29d3631cbc3f2093f",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "8cce1c43822d467d3323f50aadaa123c894732bce9015fa0ed6eeb157c9df038",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "96e0a595fa759583a5592a87ea3d09dc829c123948c996c4a350f105a8b993b7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/company-messenger/tests/dedicated-reader.test.mjs",
+      "sha256": "56d9491a8b189ef651466990ac6164bcf4a8cf6767eb55bf0489e5b8eb1df81e",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tools/synk-id/platform-public-provision.test.cjs",
+      "sha256": "dfe7ed3dca6c04829b439d6eef708640eb84e7618700f5663f089926b1fb99fe",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/portal-rate-limit.test.mjs",
+      "sha256": "d9d6ec8692760734069624a0bb9ff36a526e80942a5a4c45d170987bbc4f5e91",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/portal-rate-limit.test.mjs",
+      "sha256": "97be86002b373325fd1d981ab32ddc51820b1865cafceec60730af0c84f90b80",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "experiences/synk-account/tests/portal-rate-limit.test.mjs",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change-rehearsal.test.js",
+      "sha256": "5d01e72c93351fe2e723c2a30e1f0a9568184f27adfea4e588ecb5faa311efcb",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/auth-password-change-rehearsal.test.js",
+      "sha256": "c265f024985ecee721ea4bddcff420e6aac22db93e501850ec5eb4042023fb72",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/edge-source-verification.test.js",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/lib/auth-rehearsal-fixture.js",
+      "sha256": "1b6326c8d651ea2b3a4eeb2459595215ea76ae11c7e0ff9a9ba9e85d03e52f69",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/lib/auth-rehearsal-fixture.js",
+      "sha256": "acdb58641129122d1c79b9144342a28e60d744fe7d5082f866d5837b071380d5",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-personal-api-rehearsal.test.js",
+      "sha256": "8b2968eff72add4d457122922f2d9c6644efe415e3d51ce7928d67519e8613e0",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-personal-api-rehearsal.test.js",
+      "sha256": "2e32b49ac4970eeaf4d00badd298c6cdaa4687254e4fd17773f5d68934b5a6c0",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-personal-api-rehearsal.test.js",
+      "sha256": "6018a7f00c57c97ec596fa41dfbaed1425d47b7ebe0cae66f2a7fded98c18e70",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-personal-api-rehearsal.test.js",
+      "sha256": "8a9fa51d4795847785edc14a6fffcfdb6c570c7854e529b9fe657c4fe063dd75",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-personal-api-rehearsal.test.js",
+      "sha256": "ecfcac3765982e3a3a6d07c939480a21972a257211cb982e80cd2e7160bf78a4",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-manifest.test.js",
+      "sha256": "8a10c8792b0e85b7de11dc7d70c97b7f5dc8afa0f8b4980c138c903ccd30292e",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-manifest.test.js",
+      "sha256": "dfe7ed3dca6c04829b439d6eef708640eb84e7618700f5663f089926b1fb99fe",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-manifest.test.js",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-manifest.test.js",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-store.test.js",
+      "sha256": "dfe7ed3dca6c04829b439d6eef708640eb84e7618700f5663f089926b1fb99fe",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-store.test.js",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-sync.test.js",
+      "sha256": "d63bbe46f20a80a017135d15397840d59fabc419a9b7a5b86e675d800af357cf",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-sync.test.js",
+      "sha256": "198e2ab340d731cbef9ceefdad80035f741802e807845ddaec6a0a0a6cfa28b0",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-drive-sync.test.js",
+      "sha256": "35e5a9632e18bc9adad684a3eafdd297139c82b5693b7fa2a8d0efcaf024cdcf",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-publication.test.js",
+      "sha256": "0917b13a9091915d54b6336f45909539cce452b3661b21f386418a257883b30a",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-publication.test.js",
+      "sha256": "9c17ee62e2dcc81799308b61c9b4912b29a500e85acdc36483fc161d379f65cc",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-scale-drive.test.js",
+      "sha256": "ddffad2a10a2f6707d5d052a0290c502573a8e28f6cf61f7eacf45086061bf1e",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-scale-drive.test.js",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-scale-routing.test.js",
+      "sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synkbrief-scale-routing.test.js",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/wardrobe-lifecycle.test.js",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/wardrobe-lifecycle.test.js",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/app-learning-storage.test.js",
+      "sha256": "b2cee877c7c98888c220a5c6d5c356568708870d7bc5a2181de6d9b36ded6c84",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/app-learning-storage.test.js",
+      "sha256": "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/atlas-account-memory.test.js",
+      "sha256": "efa1f375d76194fa51a3556a97e641e61685f914d446979da50a551a4333ffd7",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-care.test.js",
+      "sha256": "bf6859fedf93e47e1000f559754de6ab64ca51ad011e9cd167cff6a1026c831b",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/synk-care.test.js",
+      "sha256": "419269cc6cf36ac840b7433efa6637fda78be047fc96185dd6bf060b8172b474",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/감사회귀_R1B18.test.js",
+      "sha256": "4a8eec4925826f4b60526d7ac3c0a9b61ef54ac19233bafce2f4a13eb49395d2",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/감사회귀_R1B18.test.js",
+      "sha256": "c8361f9b468e68c86da024270e0949ce139cb704b8d7cce586681b99f3a7ea56",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/감사회귀_R1B18.test.js",
+      "sha256": "d653b016db1da8f5b36f84a44465e5d6adffeb38ae46cc701e3462343727717b",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/감사회귀_R1B18.test.js",
+      "sha256": "16a36e86f6fed5d465ff332511a0ce1a863b55d364b25a7cdaa25db19abf9648",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/감사회귀_R1B18.test.js",
+      "sha256": "a791366f6f6201254edcac9ec72017b12d8a69513b5e1e29a29a4048ffb16e27",
+      "reason": "Reviewed isolated test fixture, injected HTTP/identity mock, or rejected-input sentinel; provider signatures remain blocked."
+    },
+    {
+      "path": "tests/보호소스보관.test.cjs",
+      "sha256": "7ad2f62f8a196437950f87f28d16e8f8da3d6b7fcd9736a0bc49b31e28930684",
+      "reason": "Synthetic source encryption fixture written only in an isolated temporary directory."
+    },
+    {
+      "path": "tools/lib/sns-publisher.js",
+      "sha256": "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1",
+      "reason": "HTML input-type ternary choosing between a password field and a text field; the matched value is the literal input type text."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-learning.test.mjs",
+      "sha256": "41b11db1c4b65884be197710da58732bb5209ac7bbcc460d2bc4992109f599a1",
+      "reason": "Synthetic YouTube channel key fixture stored in an isolated company server test."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-links.test.mjs",
+      "sha256": "718358a3810a84596bbbe8607f28055a3cdf07b30ef5d9606ee55a5051df8a57",
+      "reason": "Synthetic YouTube channel key fixture stored in an isolated company server test."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication-workflow.test.mjs",
+      "sha256": "718358a3810a84596bbbe8607f28055a3cdf07b30ef5d9606ee55a5051df8a57",
+      "reason": "Synthetic YouTube channel key fixture stored in an isolated company server test."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-publication.test.mjs",
+      "sha256": "718358a3810a84596bbbe8607f28055a3cdf07b30ef5d9606ee55a5051df8a57",
+      "reason": "Synthetic YouTube channel key fixture stored in an isolated company server test."
+    },
+    {
+      "path": "tests/hermes-synk-overview.test.cjs",
+      "sha256": "eacb9ab8f6db03232e40f809d83464809bdfd41203c70051cc4b42e380732afa",
+      "reason": "Synthetic private-* sentinel that the hermes overview test asserts is never shown in its output or caches."
+    }
+  ]
+}

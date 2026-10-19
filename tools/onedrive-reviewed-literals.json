@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-18",
+  "entries": [
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-disaster-backup.sh",
+      "fileSha256": "e98bc3a2e1ee13a7e490ab179aecc0f1883027f348ce786ed10c7801de848461",
+      "literalSha256": [
+        "967c71b5e73055be60faff8dae71867dd8ace32fca834fb926150fb2a071868f"
+      ],
+      "reason": "Runtime gcloud command substitution; no token literal."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-backup.sh",
+      "fileSha256": "72930f44abc18783e553c8b7bacdf34a1844ef951182f4cbfcf1a1a20b5c5d1e",
+      "literalSha256": [
+        "967c71b5e73055be60faff8dae71867dd8ace32fca834fb926150fb2a071868f"
+      ],
+      "reason": "Runtime gcloud command substitution; no token literal."
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/controller.mjs",
+      "fileSha256": "b0fde41f8a1eba8b7e0d1ec6258e66c976822e4d4f30dbe11ce94c60c8737daa",
+      "literalSha256": [
+        "35e5a9632e18bc9adad684a3eafdd297139c82b5693b7fa2a8d0efcaf024cdcf"
+      ],
+      "reason": "Bearer prefix concatenated with awaited runtime access token."
+    },
+    {
+      "path": "desktop/src/company-requests.cjs",
+      "fileSha256": "1550b3fb7b66544874a58a513ee5761182936796ac5b793e24c7d1f306e84ccb",
+      "literalSha256": [
+        "35e5a9632e18bc9adad684a3eafdd297139c82b5693b7fa2a8d0efcaf024cdcf"
+      ],
+      "reason": "Bearer prefix concatenated with awaited runtime access token."
+    },
+    {
+      "path": "experiences/synk-account/src/portal.mjs",
+      "fileSha256": "a2b39558e98bd3b163c4ce8c133f883885b80960d369f153bb0f2afdd8a69e78",
+      "literalSha256": [
+        "223df8668c851ca27409f183c5482625fd9f089d8326388588004970eeca4358",
+        "93841add0ab1763e05e5702f9b14c64adcbac4642f3388ac61f986fd22dd4968",
+        "b8b9f8f23992ebc2617febc03d92ecb1763fba7b77a5d053b69c416bad18a369"
+      ],
+      "reason": "Korean password validation labels and HTML autocomplete ternary."
+    },
+    {
+      "path": "experiences/synk-account/src/preview.mjs",
+      "fileSha256": "7cc1251332b3b3709a34093fe7d491490e815f83b08f19faa465a8ecc3635274",
+      "literalSha256": [
+        "4bc5ecb5634a760241548a8850cf15e3f6c88dcedb5e2712282a2a3500438997"
+      ],
+      "reason": "Explicit synthetic preview fixture, real entry points never import it."
+    },
+    {
+      "path": "tools/lib/sns-publisher.js",
+      "fileSha256": "fe7d0311777d5b15c34c25298d994dc005b44231e4eafdbe7d0050f35cd86f75",
+      "literalSha256": [
+        "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
+      ],
+      "reason": "HTML input type ternary password/text."
+    },
+    {
+      "path": "media-upload.py",
+      "fileSha256": "1755639a6161551010cecc14a51e64f03f8f4fb1847475f73cea0ab4e6f05599",
+      "literalSha256": [
+        "35e5a9632e18bc9adad684a3eafdd297139c82b5693b7fa2a8d0efcaf024cdcf"
+      ],
+      "reason": "Bearer prefix concatenated with runtime token() call."
+    },
+    {
+      "path": "tools/첫흐름미리보기.js",
+      "fileSha256": "058e713c8888dc63c17745da8dfcf1c1b85deb851984626418c65080b92aa810",
+      "literalSha256": [
+        "c8462315c9a7e5a4901034b3643d119cc92c239f5b6b2ed3fb9bb45878b3f86d",
+        "fb63872586eea8086d4136ee772120fbda3dc651ad073703631a8ec3b02ca2d7"
+      ],
+      "reason": "Synthetic local Expo preview auth response; no remote service."
+    },
+    {
+      "path": "docs/홍보물/계정별콘텐츠_20260909/_개선/생성.cjs",
+      "fileSha256": "2ebbb1794478b9a180b100cb5affa1577c65361a0df5176d46bd8f7e418cacf6",
+      "literalSha256": [
+        "a84ef8641f47f2f2ec0b35112862e503000e153235ffc7c6b8fa344d0447a5ab"
+      ],
+      "reason": "Human approval description, not an HTTP credential."
+    },
+    {
+      "path": "docs/홍보물/계정별콘텐츠_20260909/_개선/자산내보내기.cjs",
+      "fileSha256": "fbde2407981eaa5ee906d1cc1dc0b6d100492bdd711ffec4067e1f6bdb663774",
+      "literalSha256": [
+        "08e3ecef521a18874e981d9d723f9afd2a150b0c90199e5aa8158918b893584d"
+      ],
+      "reason": "Human approval description, not an HTTP credential."
+    },
+    {
+      "path": "tools/world-v1-local-db.js",
+      "fileSha256": "3e38f31a4db586f4c53a24b64dc47706ff947bdacaf1248c3992a4431cdb6a55",
+      "literalSha256": [
+        "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2"
+      ],
+      "reason": "Explicit synthetic local serializer; client never makes a network query."
+    }
+  ]
+}

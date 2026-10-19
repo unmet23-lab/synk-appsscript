@@ -1,0 +1,11 @@
+[Unit]
+Description=Check SYNK server backups and retry notification delivery every 15 minutes
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=15min
+AccuracySec=30s
+Unit=synk-server-backup-watch.service
+
+[Install]
+WantedBy=timers.target
