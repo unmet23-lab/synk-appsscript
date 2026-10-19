@@ -1,0 +1,1370 @@
+{
+ "createdAt": "2026-10-19T08:27:56.553Z",
+ "changed": 217,
+ "unchanged": 612,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "opening.company",
+     "previous": "SYNK бүтээв"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "home.account.conflict",
+     "previous": "Хадгалалтаа шалгах"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "home.next.title",
+     "previous": "Найзуудтайгаа анхны мэндчилгээ"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "home.next.connecting",
+     "previous": "Таны ахицыг холбож байна"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "home.next.dueToday",
+     "previous": "Өнөөдөр эргэж ирсэн хэллэг"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "home.next.resume",
+     "previous": "Орхисон газраасаа үргэлжлүүлэх"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "home.next.cafeVisit",
+     "previous": "Кафены 3-р айлчлал · дараагийн түүх"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "home.study.check",
+     "previous": "Хичээлийн цаг, дуугаа шалгана"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "home.study.label",
+     "previous": "Таны сургалт · Бүртгэл холбогдсон"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "home.memory.recovery",
+     "previous": "Сургалтын тэмдэглэлийн хадгалалтыг шалгах"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "town.hint",
+     "previous": null
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "town.hintClose",
+     "previous": null
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "town.place.home",
+     "previous": null
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "town.place.store",
+     "previous": null
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "town.place.clock",
+     "previous": null
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "town.place.bus",
+     "previous": null
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "town.place.street",
+     "previous": null
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "town.place.friends",
+     "previous": null
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "town.enter",
+     "previous": null
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "town.homeNote",
+     "previous": null
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "town.nowTurn",
+     "previous": null
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "town.lessons",
+     "previous": null
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "town.allDone",
+     "previous": null
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "town.nowTitle",
+     "previous": null
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "town.nowBadge",
+     "previous": null
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "town.time.day",
+     "previous": null
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "town.time.evening",
+     "previous": null
+    },
+    {
+     "line": 28,
+     "source": "world-strings",
+     "key": "town.time.night",
+     "previous": null
+    },
+    {
+     "line": 29,
+     "source": "world-strings",
+     "key": "tutorTag.role",
+     "previous": null
+    },
+    {
+     "line": 30,
+     "source": "world-strings",
+     "key": "tutorTag.help",
+     "previous": null
+    },
+    {
+     "line": 31,
+     "source": "world-strings",
+     "key": "game.hangul.detail",
+     "previous": "Дуу сонсоод үсгийг сонгоно"
+    },
+    {
+     "line": 32,
+     "source": "world-strings",
+     "key": "play.note",
+     "previous": "Солонгос үсэгт шинэ бол «Солонгос үсэгтэй танилцах»-аас эхлээрэй."
+    },
+    {
+     "line": 33,
+     "source": "world-strings",
+     "key": "play.first.detail",
+     "previous": "Гурван өгүүлбэрийг зөв хариулбал бэлэг авна"
+    },
+    {
+     "line": 34,
+     "source": "world-strings",
+     "key": "wardrobe.lead",
+     "previous": "Гурван найздаа хувцас өмсгөж, зураг болгон хадгалж болно."
+    },
+    {
+     "line": 35,
+     "source": "world-strings",
+     "key": "me.guest",
+     "previous": "Та одоо бүртгэлгүйгээр үзэж байна. Бүртгэлээ холбовол ахиц, хувцас, тоглоомын тэмдэглэл тань хадгалагдана."
+    },
+    {
+     "line": 36,
+     "source": "world-strings",
+     "key": "me.later",
+     "previous": "Дараа"
+    }
+   ]
+  },
+  {
+   "file": "recheck-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "settings.orientation.chosenPortrait",
+     "previous": "Босоо чиглэл сонгосон. Утсаа эргүүлбэл тэр чиглэлээр харагдана."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "settings.orientation.chosenLandscape",
+     "previous": "Хэвтээ чиглэл сонгосон. Утсаа эргүүлбэл тэр чиглэлээр харагдана."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "settings.orientation.spacious",
+     "previous": "Сонгосон хэлбэрээр харагдана."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "pref.sound.note",
+     "previous": "Товч, зөв хариулт, дуусгах үеийн богино дуу. Хүний дуунаас намуухан."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "pref.storyVoice.title",
+     "previous": "Түүхийн дуу"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "pref.celebrate.note",
+     "previous": "Дуусгахад гарах богино баяр. Унтраасан ч үр дүн адилхан харагдана."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "pref.reactions.note",
+     "previous": "Зөв, буруу хариултад найзууд нэг удаа байрлалаа сольдог. Унтраавал хөдлөхгүй."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "tutor.status.account",
+     "previous": "Сонгосон багш тань SYNK бүртгэлээр үргэлжилнэ."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "tutor.status.device",
+     "previous": "Сонголтыг энэ төхөөрөмж санана."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "tutor.intro",
+     "previous": "Тантай хамт солонгос хэл сурах AI багш нартай танилцаарай. Гурвуулаа өөр өөр зан чанартай, урам өгөх хэв маяг нь ч өөр."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "tutor.how.play.body",
+     "previous": "Сонсоод гүйх, үсэг сонгох, хэмнэл тааруулахаар дасгал хийнэ."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "tutor.card.marin.chip3",
+     "previous": "Нууц эелдэг"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "tutor.card.marin.about",
+     "previous": "Үргэлж нухацтай, царай нь хувирдаггүй. Бүхнийг тоолж, тэмдэглэдэг. Гэхдээ цэцэг, жижиг амьтны дэргэд алхаа алдчихдаг. Магтаал сонсохоор нүд нь түр гэрэлтдэг. Өөрөө бол үгүй гэдэг."
+    }
+   ]
+  },
+  {
+   "file": "recheck-03.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "tutor.card.kkamong.about",
+     "previous": "Дэлхийн хамгийн гоё луу. Өөрийнх нь хэлснээр шүү. Гал гаргаж чаддаггүй, зөвхөн хамраасаа уур савсуулдаг. Аянга дуугарахад Монгль найзынхаа ард нуугддаг. Гурвын дотроос хамгийн том нь шүү дээ. Гэсэн ч жинхэнэ аюул тулгарахад хамгийн түрүүнд урд гардаг."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "homeTutor.practice",
+     "previous": "Андуурсан хэллэгээ дасгалжуулах"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "homeTutor.practiceWith",
+     "previous": "Андуурсан хэллэгээ дасгалжуулах · «첫 인사 세 마디»"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "homeTutor.checking",
+     "previous": "Тэмдэглэлийг шалгаж байна"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "homeTutor.note.resume",
+     "previous": "Орхисон газраасаа үргэлжлүүлэх"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "homeTutor.day.closed",
+     "previous": "Өнөөдрийн тэмдэглэлийг дахин харах"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "homeTutor.day.count",
+     "previous": "Өнөөдөр сурсан 3 хэллэгээ эмхлэх"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "goal.support.choose",
+     "previous": "Сонгож байж сурах"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "goal.support.stepNote",
+     "previous": "Асуулт бүрт хэллэгийн тусламжийг эхнээс нь нээж өгнө."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "goal.support.independent",
+     "previous": "Эхлээд өөрөө бодох"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "goal.support.independentNote",
+     "previous": "Тусламж зөвхөн намайг дарахад нээгдэнэ."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "goal.minutes.n",
+     "previous": "3 мин"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "goal.scope",
+     "previous": "Таны түвшин, зан чанарыг үнэлэхгүй. Тохиргоог устгасан ч ахиц, давтлагын тэмдэглэл үлдэнэ."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "goal.disable",
+     "previous": "Санал болгоход бүү ашигла"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "goal.state.recent-independent",
+     "previous": "Саяхан шинэ асуултыг өөрөө бодсон"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "goal.seen.empty",
+     "previous": "Шинэ асуулт бодох тусам бага багаар ойлгоно. Тэмдэглэл байхгүй нь сул гэсэн үг биш."
+    }
+   ]
+  },
+  {
+   "file": "recheck-04.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "goal.seen.note",
+     "previous": "Өөрөө бодсон хариулт, тусламжтай хариулт, удирдлага болон дууны асуудлыг ялгаж дараагийн дасгалд тусгана."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "goal.needConsent",
+     "previous": "Хадгалахын тулд хадгалах товчийг асаана уу. Алгасаад ч үндсэн дасгал хийж болно."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "life.packTitle.cafe",
+     "previous": "Нэг аяга үүл кафе"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "life.packSub.greetings",
+     "previous": "Мэндэлж, нэрээ хэлэлцэнэ"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "life.rest",
+     "previous": "Та нэг цаг гаруй хичээллэлээ. Түр амарч болно. Хийж байсан газар тань хэвээр үлдэнэ."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "life.checkProgress",
+     "previous": "Ахицаа шалгана уу"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "life.checkProgress.note",
+     "previous": "Тэмдэглэлийг устгаагүй. Бүртгэлээсээ холболтын төлвийг шалгана уу."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "life.packCard",
+     "previous": "«첫 인사 세 마디» · Мэндэлж, нэрээ хэлэлцэнэ · 2 / 22 хичээл"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "life.packCard.done",
+     "previous": "«첫 인사 세 마디» · Мэндэлж, нэрээ хэлэлцэнэ · 2 / 22 хичээл дууссан"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "life.more",
+     "previous": "Цааш"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "life.visitN",
+     "previous": "3-р айлчлал"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "life.cafeVisits",
+     "previous": "Кафены айлчлал"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "life.visitsCount",
+     "previous": "3 айлчлал"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "life.cafeNext",
+     "previous": "Дараагийн айлчлалыг эхлэх"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "life.cafeBefore",
+     "previous": "Захиалахаасаа өмнө харахад сайн"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "life.signListen",
+     "previous": "가 сонсох"
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "life.feedback.assisted",
+     "previous": "Тусламжтайгаар зөв"
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "life.feedback.retry",
+     "previous": "Ингэж хэлнэ"
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "life.packStamp",
+     "previous": "Мэндчилгээ багцын тамга"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "life.packProgress",
+     "previous": "Мэндчилгээ багц 2 / 22"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "life.saved",
+     "previous": "Хийж байсан газрыг тань хадгаллаа."
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "life.savingProgress",
+     "previous": "Ахицыг хадгалж байна. Давтлагын хуваарь хэвээр үлдэнэ."
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "life.restart",
+     "previous": "Ахицаа шалгаад дахин эхлүүлнэ үү."
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "account.lead",
+     "previous": "SYNK ID-аар нэвтэрвэл хувцас, тоглоомын тэмдэглэл тань ямар ч дэлгэц дээр үргэлжилнэ"
+    }
+   ]
+  },
+  {
+   "file": "recheck-05.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.oneIdBody",
+     "previous": "Сургалтын төвтэй хуваалцах тэмдэглэл бүртгэлийн тань зөвшөөрлийн тохиргоог дагана. Таун дахь үйл ажиллагааг хуваалцахыг тусад нь сонгоно."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "account.login",
+     "previous": "SYNK ID-аар нэвтрэх"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "account.testLead",
+     "previous": "Туршилтын бүртгэлээр орвол хувцас тань бусад дэлгэц дээр үргэлжилнэ"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "account.testBody",
+     "previous": "Жинхэнэ Google, Apple нэвтрэлтээс тусдаа ажиллана. Доорх хоёр бүртгэлд зөвхөн туршилтын тэмдэглэл хадгалагдана."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "account.entryBody",
+     "previous": "Бүртгэл болон багшаа шалгаж чадсангүй. Холболтоо шалгаад дахин эхлүүлнэ үү."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "account.recoveryRejected",
+     "previous": "Тэмдэглэлийн хадгалалтыг шалгана уу"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "account.recoveryChoose",
+     "previous": "Үргэлжлүүлэх тэмдэглэлээ сонгоно уу"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "account.recoveryConflictNotice",
+     "previous": "Тэмдэглэл хоёр газар өөр байна"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "account.recoveryNote",
+     "previous": "Багшийн сонголт, сургалтын ахиц хамт хадгалагдана. Илгээгдээгүй тоглоомын тэмдэглэл ч сонгосон талаараа үргэлжилнэ. Өөрчлөхөөс өмнөх эх хувийг энэ төхөөрөмжид үлдээнэ."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "account.useDeviceAgain",
+     "previous": "Энэ төхөөрөмжийн тэмдэглэлээр дахин хадгалах"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "account.useDevice",
+     "previous": "Энэ төхөөрөмжийн тэмдэглэлээр үргэлжлүүлэх"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "account.useRemote",
+     "previous": "Бүртгэлд хадгалагдсан тэмдэглэлийг ашиглах"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "account.learningRecords",
+     "previous": "Сургалтын тэмдэглэл"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "account.learningSave",
+     "previous": "Сургалтын тэмдэглэлийг SYNK бүртгэлдээ хадгалах"
+    }
+   ]
+  },
+  {
+   "file": "recheck-06.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.learningNote",
+     "previous": "Асаасны дараах «Анхны өгүүлбэр»-ийн хариултыг л хадгална. Сургалтын төв болон Таун-тай хуваалцахыг «Миний хичээл» хэсэгт тусад нь тохируулна."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "account.learningElsewhere",
+     "previous": "Сургалтын холболтын тохиргоог «Миний хичээл»-ийн бүртгэлийн дэлгэцээс харж болно."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "account.about1",
+     "previous": "«Анхны өгүүлбэр»-ийг дуусгавал ороолт авна. Авсан хувцсаараа гоёж, хувцас, тоглоом, Таун-ы тэмдэглэл нэг SYNK ID-гаар үргэлжилнэ."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "account.about2",
+     "previous": "Сургалтын тэмдэглэл болон сургалтын төвд харуулах Таун-ы үйл ажиллагааг тус тусад нь зөвшөөрнө. Хариултын тэмдэглэл бол зөвхөн дасгалын нотолгоо бөгөөд TOPIK-ийн түвшин эсвэл сургалтын үр дүнгийн оноо биш."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "account.pendingTitle",
+     "previous": "Хараахан хадгалаагүй"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "account.gameLoading",
+     "previous": "Тоглоомын тэмдэглэлийг тань ачаалж байна."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "account.gameStoppedNotice",
+     "previous": "Тоглоомын тэмдэглэлийн холболт зогслоо"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "account.gameCheckNotice",
+     "previous": "Тоглоомын тэмдэглэлд холбогдож чадсангүй"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "account.conflictTitle",
+     "previous": "Үргэлжлүүлэх ахицаа сонгоно уу"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "account.conflictNotice",
+     "previous": "Тоглоомын тэмдэглэл өөр төхөөрөмж дээр өөрчлөгдсөн"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "account.conflictBody",
+     "previous": "Сонгосон ахицаараа үргэлжилнэ. Өөрчлөхөөс өмнөх эх хувийг энэ төхөөрөмжид үлдээнэ."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "account.conflictRemote",
+     "previous": "Бүртгэлд хадгалсан ахицыг ашиглах"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "account.conflictLocal",
+     "previous": "Энэ төхөөрөмжийн ахицыг ашиглах"
+    }
+   ]
+  },
+  {
+   "file": "recheck-07.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.conflictNote",
+     "previous": "Зоос, худалдан авалт бүртгэлийн баталгаажуулсан үр дүнг дагана."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.accountProgressDevice",
+     "previous": "Бүртгэлийн ахицтай холбогдож чадаагүй тул энэ төхөөрөмжийн тэмдэглэлээр үргэлжилнэ."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.lifeCheckFailed",
+     "previous": "Өдөр тутмын солонгос хэлний ахицыг шалгаж чадсангүй."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.progressNotSaved",
+     "previous": "Ахицыг хараахан хадгалж чадаагүй."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.localSaved",
+     "previous": "Ахиц энэ дотоод шалгалтын бүртгэлд хадгалагдлаа."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.localSaving",
+     "previous": "Ахицыг дотоод шалгалтын бүртгэлд хадгалж байна."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.recordsChanged",
+     "previous": "Таны тэмдэглэл өөр дэлгэц дээр ч өөрчлөгдсөн. Хадгалалтын шалгалтаас ашиглах тэмдэглэлээ сонгоно уу."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "msg.recordsCheckFirst",
+     "previous": "Тэмдэглэлээ шалгаад дахин сонгоно уу."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "msg.chooseInSaveCheck",
+     "previous": "Хадгалалтын шалгалтаас ашиглах тэмдэглэлээ сонгоно уу."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "msg.tutorSynced",
+     "previous": "Сонголтыг SYNK бүртгэл санана. Бусад төхөөрөмж дээр ч хамт байна."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "msg.tutorSaving",
+     "previous": "Сонголт, сургалтын тэмдэглэлийг бүртгэлд хадгалж байна."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "msg.entryTutor",
+     "previous": "Бүртгэлийн багшийн тэмдэглэлийг шалгасны дараа үргэлжлүүлж болно."
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "msg.recoveryUnreadable",
+     "previous": "Ахиц сэргээх сонголтыг уншиж чадсангүй. Эх хувийг хадгалсан."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "msg.originalUnreadable",
+     "previous": "Ахицын эх хувийг уншиж чадсангүй."
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "msg.originalOwner",
+     "previous": "Ахицын эх хувь аль бүртгэлийнх болохыг шалгаж чадсангүй."
+    }
+   ]
+  },
+  {
+   "file": "recheck-08.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.lifeUnreadableKept",
+     "previous": "Өдөр тутмын солонгос хэлний ахицыг уншиж чадсангүй. Өмнөх тэмдэглэл хадгалагдсан."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.lifeNotSynced",
+     "previous": "Өдөр тутмын солонгос хэлний ахиц SYNK бүртгэлд хараахан хадгалагдаагүй. Эх хувийг энэ төхөөрөмжид хадгалсан."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.lifeSynced",
+     "previous": "Өдөр тутмын солонгос хэлний ахиц SYNK бүртгэлд хадгалагдлаа."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.deviceKept",
+     "previous": "Энэ төхөөрөмжид хадгалагдсан ахиц байна. Ашиглах тэмдэглэлээ сонгоно уу."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.loginStartFailed",
+     "previous": "SYNK ID-аар нэвтрэлтийг эхлүүлж чадсангүй."
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.loginToPlay",
+     "previous": "SYNK ID-аар нэвтэрч тоглоомоо үргэлжлүүлнэ үү."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.loginToLearn",
+     "previous": "SYNK ID-аар нэвтэрч өдөр тутмын солонгос хэлээ үргэлжлүүлнэ үү."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "msg.loginPlease",
+     "previous": "SYNK ID-аар нэвтэрнэ үү."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "msg.deviceUnreadable",
+     "previous": "Энэ төхөөрөмжийн ахицыг шалгаж чадсангүй. Өмнөх тэмдэглэл хадгалагдсан."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "msg.existingUnreadable",
+     "previous": "Өмнөх ахицыг уншиж чадсангүй. Эх тэмдэглэл хадгалагдсан."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "msg.saveFailedKept",
+     "previous": "Ахицыг хадгалж чадсангүй. Дэлгэц дээрх явц хэвээр байна."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "msg.accountSaving",
+     "previous": "Өдөр тутмын солонгос хэлний ахицыг бүртгэлд хадгалж байна."
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "msg.keptFirst",
+     "previous": "Хадгалсан ахицаа эхлээд шалгана уу."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "msg.progressLoading",
+     "previous": "Ахицыг ачаалж байна."
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "msg.chooseProgressFirst",
+     "previous": "Ашиглах ахицаа эхлээд сонгоно уу."
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "msg.checkExistingFirst",
+     "previous": "Өмнөх ахицаа эхлээд шалгана уу."
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "msg.notOverwritten",
+     "previous": "Өмнөх ахицыг шалгаж чадсангүй. Эх хувийг дарж бичээгүй."
+    }
+   ]
+  },
+  {
+   "file": "recheck-09.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.tutorQuota",
+     "previous": "Багшийн сонголтыг хадгалах зай хүрэлцэхгүй байна. Сургалтын тэмдэглэл хадгалагдсан."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.noPracticeNow",
+     "previous": "Одоогийн нөхцөлд тохирох дасгал алга. Зорилго хэсгээс цаг, дуугаа сольж үзээрэй."
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.profileUnreadable",
+     "previous": "Хувийн тохиргоог шалгаж чадсангүй. Сургалтын тэмдэглэл хадгалагдсан."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "msg.reasonNone",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "msg.reasonReviewDue",
+     "previous": null
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "msg.reasonRetry",
+     "previous": null
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "msg.reasonRetryGoal",
+     "previous": null
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "msg.reasonAssisted",
+     "previous": null
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "msg.reasonAssistedGoal",
+     "previous": null
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "msg.reasonGoal",
+     "previous": null
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "msg.reasonHistory",
+     "previous": null
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "msg.reasonNew",
+     "previous": null
+    }
+   ]
+  },
+  {
+   "file": "recheck-10.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.resumeReason",
+     "previous": "Орхисон газраасаа яг үргэлжлүүлнэ. Өөр зүйл сонгосон ч одоогийн ахиц тань хадгалагдана."
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "msg.startMyPractice",
+     "previous": "Дасгалаа эхлэх"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "msg.practiceThis",
+     "previous": "Үүнийг хамт дасгалжуулах"
+    },
+    {
+     "line": 4,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello.prompt",
+     "previous": "Анх уулзаж буй багшдаа хэрхэн мэндлэх вэ?"
+    },
+    {
+     "line": 5,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-hello-transfer.explanation",
+     "previous": "Анх уулзсан ажилтанд эелдэгээр «안녕하세요» гэнэ."
+    },
+    {
+     "line": 6,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks.prompt",
+     "previous": "Танд тусламж үзүүллээ. Юу гэж хэлэх вэ?"
+    },
+    {
+     "line": 7,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks.context",
+     "previous": "Найз тань унагаасан номыг тань түүж өглөө."
+    },
+    {
+     "line": 8,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-thanks-transfer.explanation",
+     "previous": "Шүхрийг олж өгсөн тусламжид «감사합니다» гэж хэлнэ."
+    },
+    {
+     "line": 9,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name.prompt",
+     "previous": "Өөрийн нэрийг танилцуулсан өгүүлбэрийг сонгоно уу."
+    },
+    {
+     "line": 10,
+     "source": "life-content-lang",
+     "key": "greetings-expressions-name-transfer.prompt",
+     "previous": null
+    },
+    {
+     "line": 11,
+     "source": "life-content-lang",
+     "key": "greetings-story-thanks-transfer.explanation",
+     "previous": "Нэрийн шошгыг өгсөн тусламж авсан тул талархлаа илэрхийлсэн."
+    },
+    {
+     "line": 12,
+     "source": "life-content-lang",
+     "key": "greetings-story-hello-transfer.prompt",
+     "previous": "Шинэ дугуйланд анх уулзаж буй найзтайгаа эелдэгээр мэндэлнэ үү."
+    },
+    {
+     "line": 13,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.explanation",
+     "previous": "Байршлыг зааж өгсөн тусламжид «감사합니다» гэнэ."
+    },
+    {
+     "line": 14,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks-transfer.explanation",
+     "previous": "Цүнхийг олж өгсөн тусламжид талархах үг бол «감사합니다»."
+    },
+    {
+     "line": 15,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello.explanation",
+     "previous": "Яриа эхлэхээс өмнө «안녕하세요» гэж эелдэгээр мэндэлнэ."
+    },
+    {
+     "line": 16,
+     "source": "life-content-lang",
+     "key": "expression.greet-hello",
+     "previous": "Анх уулзсан ч бай, уулзсан хэнтэй ч эелдэгээр мэндэлдэг үг."
+    },
+    {
+     "line": 17,
+     "source": "life-content-lang",
+     "key": "expression.greet-thanks",
+     "previous": "Тусламж авахдаа эелдэгээр талархлаа илэрхийлнэ."
+    },
+    {
+     "line": 18,
+     "source": "life-content-lang",
+     "key": "meaning.다녀왔습니다.",
+     "previous": "Ирлээ. (гэртээ ирэхдээ эелдэгээр хэлдэг)"
+    },
+    {
+     "line": 19,
+     "source": "hangul-stage",
+     "key": "heroGraduated",
+     "previous": "Үсэг төгслөө"
+    },
+    {
+     "line": 20,
+     "source": "hangul-stage",
+     "key": "lede.default",
+     "previous": "Дуу сонсоод үсгийг сонгож, өөрөө бүтээнэ."
+    }
+   ]
+  },
+  {
+   "file": "recheck-11.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "gamesNote",
+     "previous": "Тоглох жагсаалтын «Салхин зам», «Үгийн хэмнэл»-ээр үргэлжлүүлэн дасгал хийгээрэй."
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "section.boxFine",
+     "previous": "Үсэг дээр дарвал дуу гарна"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "section.signs",
+     "previous": "Хотхоны хаяг"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "section.amount",
+     "previous": "Нэг удаад бодох асуулт"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "saveNote.failed",
+     "previous": "Энэ төхөөрөмжид ахицыг хадгалж чадсангүй. Зөвхөн энэ удаад үргэлжилнэ."
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "saveNote.none",
+     "previous": "Энэ дэлгэц дээр ахиц хадгалагдахгүй."
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "voice.missing",
+     "previous": "Энэ төхөөрөмж солонгос дуу гаргаж чадахгүй. Төхөөрөмжийн тохиргооноос солонгос дуу хоолой татаж авбал дуу гарна."
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "final",
+     "previous": "эцсийн ㄱ"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "tag.final",
+     "previous": "Эцсийн"
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "sign.read",
+     "previous": "가 хаяг, дарж сонсох"
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "sign.hazy",
+     "previous": "Хараахан бүдэг хаяг"
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "sign.notYet",
+     "previous": "Хараахан бүдэг"
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "listenTo",
+     "previous": "가 сонсох"
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "trio",
+     "previous": "Гурван дууг харьцуулах: 가 · 카 · 까"
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "trioTag",
+     "previous": "3 дуу"
+    },
+    {
+     "line": 16,
+     "source": "hangul-stage",
+     "key": "sum",
+     "previous": "아 дээр эцсийн ㄱ нэмбэл 간"
+    },
+    {
+     "line": 17,
+     "source": "hangul-stage",
+     "key": "note.f-ng",
+     "previous": "Эцсийн ㅇ дуутай (нг). Үеийн эхний дуугүй ㅇ-ээс ялгаатай."
+    },
+    {
+     "line": 18,
+     "source": "hangul-stage",
+     "key": "note.f-g",
+     "previous": "Эцсийн ㄱ дууг тасалж дуусгана. Гадагш гаргахгүй."
+    },
+    {
+     "line": 19,
+     "source": "hangul-stage",
+     "key": "note.f-d",
+     "previous": "Эцсийн ㄷ дууг тасалж дуусгана. Гадагш гаргахгүй."
+    },
+    {
+     "line": 20,
+     "source": "hangul-stage",
+     "key": "note.f-b",
+     "previous": "Эцсийн ㅂ-г уруулаа хамхиж дуусгана. Гадагш гаргахгүй."
+    },
+    {
+     "line": 21,
+     "source": "hangul-stage",
+     "key": "note.f-s",
+     "previous": "Эцсийн ㅅ-г эцсийн ㄷ-тэй ижил дуугаар уншина."
+    }
+   ]
+  },
+  {
+   "file": "recheck-12.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "note.f-j",
+     "previous": "Эцсийн ㅈ-г ч эцсийн ㄷ шиг уншина."
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "note.sameSound",
+     "previous": "ㅐ · ㅔ адилхан дуудагдана. Үг бүр аль үсгийг бичихээ тогтсон байдаг."
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "prompt.teach",
+     "previous": "Монгль андуураад байна. Сонссоноо сонгож тусалаарай"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "prompt.see",
+     "previous": "Үсгийг хараад зөв дууг сонгоорой"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "prompt.build",
+     "previous": "Сонссон дуугаа бүтээгээрэй"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "prompt.match",
+     "previous": "Дуу, үсгийг хослуулаарай"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "speak",
+     "previous": "Дуу сонсох"
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "soundN",
+     "previous": "3-р дуу"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "why.sound",
+     "previous": "Энэ бол «가» дуу."
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "why.compare",
+     "previous": "Таны сонгосон «거», дараа нь зөв дууг сонсгоно."
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "why.again",
+     "previous": "«가» дууг дахин нэг удаа сонсгоно."
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "why.compareSound",
+     "previous": "Таны сонгосон дуу, дараа нь зөв дууг сонсгоно."
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "why.compareBuilt",
+     "previous": "Таны бүтээсэн дуу, дараа нь зөв дууг сонсгоно."
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "finish.reviewNote",
+     "previous": "Энэ үсгийг андуурсан. Дарж дуугаа дахин сонсоорой."
+    },
+    {
+     "line": 15,
+     "source": "hangul-stage",
+     "key": "finish.song",
+     "previous": "Дуугаар давтах · «첫 인사 세 마디» 30 сек"
+    },
+    {
+     "line": 16,
+     "source": "hangul-stage",
+     "key": "grad.title",
+     "previous": "Солонгос үсгийн шат төгслөө!"
+    }
+   ]
+  }
+ ]
+}
