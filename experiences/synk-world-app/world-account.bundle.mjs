@@ -7067,49 +7067,6 @@ var require_engine = __commonJS({
       function append(events, event) {
         return admit(events, event) ? [...copy2(events), copy2(event)] : copy2(events);
       }
-      function validationNeeds(events) {
-        if (!Array.isArray(events)) throw new TypeError("Atlas: invalid events");
-        const ids = /* @__PURE__ */ new Set(), presentations = /* @__PURE__ */ new Set();
-        for (const event of events) {
-          validate(event);
-          ids.add(event.id);
-          if (isPractice(event)) {
-            ids.add(event.type === "practice.presented" ? event.decisionId : event.presentationId);
-            if (event.type === "practice.attempted") presentations.add(event.presentationId);
-          }
-          if (event.type === "experience.completed" || event.type === "outcome.observed") ids.add(event.decisionId);
-          if (event.type === "outcome.observed" && event.attemptId != null) ids.add(event.attemptId);
-          if (event.type === "feedback.given") ids.add(event.completionId);
-          if (event.type === "record.excluded") ids.add(event.targetId);
-        }
-        return { ids: [...ids], presentations: [...presentations] };
-      }
-      function validateIncrement({ events, scope, references = [], attempts = [] }) {
-        const key = scopeKey(scope), needs = validationNeeds(events);
-        const wanted = new Set(needs.ids), parents = /* @__PURE__ */ new Map(), stats = /* @__PURE__ */ new Map();
-        for (const event of references) {
-          validate(event);
-          if (!wanted.has(event.id) || parents.has(event.id)) throw new TypeError("Atlas: invalid reference lookup");
-          parents.set(event.id, event);
-        }
-        for (const event of attempts) {
-          validate(event);
-          if (event.type !== "practice.attempted" || !needs.presentations.includes(event.presentationId) || stats.has(event.presentationId) || scopeKey(event.scope) !== key) throw new TypeError("Atlas: invalid attempt lookup");
-          stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
-        }
-        if (typeof trail().link !== "function") throw new Error("Atlas: indexed Trail validation unavailable");
-        const fresh = /* @__PURE__ */ new Map(), lookup = {
-          byId: (id) => fresh.get(id) || parents.get(id),
-          attempts: (id) => stats.get(id) || { count: 0, latest: -Infinity }
-        };
-        for (const event of events) {
-          if (scopeKey(event.scope) !== key) throw new TypeError("Atlas: event outside session scope");
-          if (!admitWith(lookup, event)) continue;
-          fresh.set(event.id, event);
-          if (event.type === "practice.attempted") stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
-        }
-        return [...fresh.values()];
-      }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
         const rows2 = [];
@@ -7506,7 +7463,7 @@ var require_engine = __commonJS({
           lines: () => understand(log, scope, clock2()).lines
         };
       }
-      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
+      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, understand, decide, choice, createSession });
     });
   }
 });
@@ -8397,157 +8354,11 @@ var require_learning = __commonJS({
   }
 });
 
-// atlas/learning-pages.js
-var require_learning_pages = __commonJS({
-  "atlas/learning-pages.js"(exports, module) {
-    "use strict";
-    var PAGE_ITEMS = 128;
-    var THRESHOLD = 1024;
-    var failure = () => Object.assign(new Error("Atlas: unreadable paged history"), { code: "STORAGE_ERROR" });
-    function encodePage(rows2) {
-      const plain = JSON.stringify(rows2), strings = [], ids = /* @__PURE__ */ new Map();
-      const intern = (value) => {
-        if (!ids.has(value)) {
-          ids.set(value, strings.length);
-          strings.push(value);
-        }
-        return ids.get(value);
-      };
-      const pack = (value) => typeof value === "string" ? [2, intern(value)] : Array.isArray(value) ? [0, ...value.map(pack)] : value && typeof value === "object" ? [1, ...Object.entries(value).flatMap(([name, entry]) => [intern(name), pack(entry)])] : value;
-      const entries = JSON.parse(plain).map(pack), packed = JSON.stringify({ codec: 1, strings, entries });
-      return packed.length < plain.length ? packed : plain;
-    }
-    function decodePage(text2) {
-      const value = JSON.parse(text2);
-      if (Array.isArray(value)) return value;
-      if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
-      const string = (index) => {
-        if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure();
-        return value.strings[index];
-      };
-      function unpack(entry, depth = 0) {
-        if (depth > 64) throw failure();
-        if (entry === null || typeof entry === "boolean" || typeof entry === "number") return entry;
-        if (!Array.isArray(entry)) throw failure();
-        if (entry[0] === 2 && entry.length === 2) return string(entry[1]);
-        if (entry[0] === 0) return entry.slice(1).map((child) => unpack(child, depth + 1));
-        if (entry[0] === 1 && entry.length % 2 === 1) {
-          const out = {};
-          for (let at = 1; at < entry.length; at += 2) {
-            const name = string(entry[at]);
-            if (Object.hasOwn(out, name)) throw failure();
-            Object.defineProperty(out, name, { value: unpack(entry[at + 1], depth + 1), enumerable: true, configurable: true, writable: true });
-          }
-          return out;
-        }
-        throw failure();
-      }
-      return value.entries.map((entry) => unpack(entry));
-    }
-    function createPages(storage, key, arrays) {
-      const prefix = `${key}.page.`, cache = /* @__PURE__ */ new Map();
-      let root = null, decodedRaw = null;
-      const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
-      const manifest = (value) => value && value.paged === 1 && value.version === 1 && value.data && typeof value.data === "object" && !Array.isArray(value.data) && value.arrays && typeof value.arrays === "object" && !Array.isArray(value.arrays);
-      function decodeOnce(raw) {
-        const value = JSON.parse(raw);
-        if (value?.paged !== 1) {
-          root = null;
-          decodedRaw = raw;
-          return value;
-        }
-        if (!manifest(value) || Object.keys(value).some((k) => !["paged", "version", "data", "arrays"].includes(k)) || Object.keys(value.arrays).some((k) => !arrays.includes(k))) throw failure();
-        const data = { ...value.data }, seen = /* @__PURE__ */ new Set();
-        for (const [name, pages] of Object.entries(value.arrays)) {
-          if (Object.hasOwn(data, name) || !Array.isArray(pages)) throw failure();
-          data[name] = [];
-          for (const page of pages) {
-            if (!page || !validKey(page.key) || seen.has(page.key) || !Number.isInteger(page.count) || page.count < 1 || page.count > PAGE_ITEMS) throw failure();
-            seen.add(page.key);
-            const text2 = storage.getItem(page.key);
-            if (typeof text2 !== "string") throw failure();
-            const rows2 = decodePage(text2);
-            if (!Array.isArray(rows2) || rows2.length !== page.count) throw failure();
-            cache.set(page.key, text2);
-            data[name].push(...rows2);
-          }
-        }
-        root = value;
-        decodedRaw = raw;
-        return data;
-      }
-      function decode(raw) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            return decodeOnce(raw);
-          } catch (error2) {
-            const current = storage.getItem(key);
-            if (current === raw || current == null || attempt === 2) throw error2;
-            raw = current;
-          }
-        }
-      }
-      const remove = (names) => {
-        if (typeof storage.removeItem === "function") for (const name of names) {
-          try {
-            storage.removeItem(name);
-          } catch {
-          }
-        }
-      };
-      function write(data, expectedRaw) {
-        const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
-        let publishedRaw = null;
-        try {
-          for (const name of arrays) {
-            if (!Object.hasOwn(data, name)) continue;
-            if (!Array.isArray(data[name])) throw failure();
-            delete next.data[name];
-            next.arrays[name] = [];
-            for (let at = 0; at < data[name].length; at += PAGE_ITEMS) {
-              const rows2 = data[name].slice(at, at + PAGE_ITEMS), text2 = encodePage(rows2), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
-              if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text2) next.arrays[name].push(prior);
-              else {
-                const pageKey = `${prefix}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${at}-${name}`;
-                created.push(pageKey);
-                storage.setItem(pageKey, text2);
-                cache.set(pageKey, text2);
-                next.arrays[name].push({ key: pageKey, count: rows2.length });
-              }
-            }
-          }
-          if (storage.getItem(key) !== expectedRaw) throw Object.assign(failure(), { message: "Atlas: history changed during persistence" });
-          const raw = JSON.stringify(next);
-          publishedRaw = raw;
-          storage.setItem(key, raw);
-          const retained = new Set(Object.values(next.arrays).flat().map((page) => page.key));
-          const obsolete = Object.values(root?.arrays || {}).flat().map((page) => page.key).filter((name) => !retained.has(name));
-          root = next;
-          remove(obsolete);
-          for (const name of obsolete) cache.delete(name);
-          return raw;
-        } catch (error2) {
-          if (publishedRaw && storage.getItem(key) === publishedRaw) {
-            root = next;
-            return publishedRaw;
-          }
-          remove(created);
-          for (const name of created) cache.delete(name);
-          throw error2;
-        }
-      }
-      return { decode, write, active: () => !!root, decodedRaw: () => decodedRaw };
-    }
-    module.exports = { createPages, encodePage, decodePage, PAGE_ITEMS, THRESHOLD };
-  }
-});
-
 // atlas/learning-sync.js
 var require_learning_sync = __commonJS({
   "atlas/learning-sync.js"(exports, module) {
     "use strict";
     var SYNC_KEY = "synk.atlas.learning-sync.v1";
-    var { createPages, THRESHOLD } = require_learning_pages();
     var id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     var clone2 = (value) => JSON.parse(JSON.stringify(value));
     var canonical = (value) => JSON.stringify(value, function(_key, entry) {
@@ -8596,8 +8407,6 @@ var require_learning_sync = __commonJS({
       if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas sync: an authenticated account adapter, isolated durable store and transport are required");
       if (![batchSize, maxAttempts, maxPages, timeoutMs].every((n) => Number.isInteger(n) && n > 0) || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length || backoffMs.some((ms) => !Number.isFinite(ms) || ms < 0)) throw new TypeError("Atlas sync: invalid retry bounds");
       const key = `${SYNC_KEY}.${accountKey}`;
-      const pages = createPages(storage, key, ["acknowledged", "pending", "missing"]);
-      let lastStoredRaw = null;
       let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
       let phase = "idle", code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
       const controllers = /* @__PURE__ */ new Set();
@@ -8630,34 +8439,9 @@ var require_learning_sync = __commonJS({
         port.markComplete(false);
         publish();
       };
-      const readState = (raw) => {
-        const stored = pages.decode(raw), v1 = stored?.version === 1;
-        if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || !(stored.recoveryCursor === void 0 || Number.isSafeInteger(stored.recoveryCursor) && stored.recoveryCursor >= 0 && stored.recoveryCursor <= stored.cursor)) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
-        if (stored.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
-        return { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
-      };
       const save = () => {
         try {
-          const current = storage.getItem(key);
-          if (current !== lastStoredRaw) {
-            if (current == null) throw failure("STORAGE_ERROR", "Atlas sync: outbox was removed by another context");
-            const latest = readState(current), acknowledged = /* @__PURE__ */ new Set([...latest.acknowledged, ...state.acknowledged]);
-            state = {
-              ...state,
-              cursor: Math.max(latest.cursor, state.cursor),
-              complete: latest.cursor > state.cursor ? latest.complete : state.complete,
-              acknowledged: [...acknowledged],
-              pending: [.../* @__PURE__ */ new Set([...latest.pending, ...state.pending])].filter((eventId) => !acknowledged.has(eventId)),
-              missing: [.../* @__PURE__ */ new Set([...latest.missing, ...state.missing])],
-              recoveryCursor: Math.min(latest.recoveryCursor || 0, state.recoveryCursor || 0)
-            };
-            lastStoredRaw = pages.decodedRaw();
-          }
-          if (pages.active() || state.acknowledged.length + state.pending.length + state.missing.length > THRESHOLD) lastStoredRaw = pages.write(state, lastStoredRaw);
-          else {
-            lastStoredRaw = JSON.stringify(state);
-            storage.setItem(key, lastStoredRaw);
-          }
+          storage.setItem(key, JSON.stringify(state));
         } catch {
           throw failure("STORAGE_ERROR", "Atlas sync: the durable outbox could not be saved");
         }
@@ -8665,8 +8449,10 @@ var require_learning_sync = __commonJS({
       try {
         const raw = storage.getItem(key);
         if (raw != null) {
-          state = readState(raw);
-          lastStoredRaw = pages.decodedRaw();
+          const stored = JSON.parse(raw), v1 = stored?.version === 1;
+          if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || stored.pending.length + stored.acknowledged.length + (stored.missing?.length || 0) > 4e4) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
+          if (stored.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
+          state = { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
         }
         port.markComplete(whole());
       } catch (error2) {
@@ -8679,7 +8465,6 @@ var require_learning_sync = __commonJS({
         const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
         const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
         if (lost.length) {
-          if (lost.some((eventId) => !state.missing.includes(eventId))) state.recoveryCursor = 0;
           state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
           port.markComplete(false);
         }
@@ -8771,19 +8556,19 @@ var require_learning_sync = __commonJS({
           state.acknowledged = [...remote];
           state.pending = state.pending.filter((eventId) => !remote.has(eventId));
           state.cursor = response.cursor;
-          state.complete = !response.hasMore;
+          if (!response.hasMore) state.complete = true;
           save();
           port.markComplete(whole());
           publish();
           if (!response.hasMore) {
             if (typeof port.settle === "function") port.settle(state.acknowledged);
-            return true;
+            return;
           }
         }
-        return false;
+        throw failure("INVALID_RESPONSE", "Atlas sync: page limit exceeded");
       };
       const recover = async (token) => {
-        let after = state.recoveryCursor || 0;
+        let after = 0;
         for (let page = 0; page < maxPages && state.missing.length; page++) {
           const response = await request("get", { after, revision }, token);
           if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= after) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
@@ -8801,16 +8586,13 @@ var require_learning_sync = __commonJS({
             state.missing = state.missing.filter((eventId) => !back.has(eventId));
           }
           after = response.cursor;
-          state.recoveryCursor = Math.min(after, state.cursor);
           if (!response.hasMore || after >= state.cursor) {
             state.missing = [];
           }
-          if (!state.missing.length) state.recoveryCursor = 0;
           save();
           port.markComplete(whole());
           publish();
         }
-        return !state.missing.length;
       };
       const flushQueue = async (token) => {
         let emptyAcks = 0;
@@ -8845,22 +8627,14 @@ var require_learning_sync = __commonJS({
         }
         flushRequested = !pullOnly;
         const token = generation;
-        let continuation = false;
         phase = "syncing";
         code = null;
         message = null;
         publish();
         running = (async () => {
           try {
-            const pulled = await pullPages(token);
-            if (active(token) && !pulled) {
-              continuation = true;
-              return status();
-            }
-            if (active(token) && state.missing.length && !await recover(token)) {
-              continuation = true;
-              return status();
-            }
+            await pullPages(token);
+            if (active(token) && state.missing.length) await recover(token);
             if (active(token) && flushRequested) await flushQueue(token);
             if (active(token)) {
               phase = "synced";
@@ -8880,13 +8654,6 @@ var require_learning_sync = __commonJS({
             }
           } finally {
             running = null;
-            if (continuation && active(token) && auto && started && !timer) {
-              const pullOnly2 = !flushRequested;
-              timer = setTimeout(() => {
-                timer = null;
-                void run(pullOnly2);
-              }, 0);
-            }
           }
           return status();
         })();
@@ -10086,7 +9853,6 @@ var require_game_learning = __commonJS({
     var { createLearningSync, sameEvent } = require_learning_sync();
     var { createMemorySync } = require_memory_sync();
     var Ledger = require_learning_ledger();
-    var { createPages, THRESHOLD } = require_learning_pages();
     var { createFlowPort, createLive } = require_game_flow();
     var KEY = "synk.atlas.learning.v1";
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -10108,8 +9874,6 @@ var require_game_learning = __commonJS({
       if (memoryOwner != null && (storageScope !== "account" || memoryOwner.scope !== "account" || !identifier(memoryOwner.accountKey) || !memoryOwner.flow || ["today", "setToday", "presentation", "setPresentation", "epoch", "memories", "save", "decline", "state", "merge", "subscribe"].some((name) => typeof memoryOwner.flow[name] !== "function"))) throw new TypeError("Atlas: a verified personal memory owner is required");
       const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
       const key = `${KEY}.${learnerKey}`;
-      const pages = storageScope === "account" && storage ? createPages(storage, key, ["events", "settled", "dropped"]) : null;
-      let paged = false;
       let flowPort = null;
       let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
       const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
@@ -10148,11 +9912,10 @@ var require_game_learning = __commonJS({
       const log = () => session.snapshot ? session.snapshot() : session.events();
       const decode = (raw) => {
         if (raw == null) return null;
-        const value = pages ? pages.decode(raw) : JSON.parse(raw);
-        paged = pages?.active() || false;
-        if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || storageScope !== "account" && value.events.length > 2e4 || Object.keys(value).some((k) => !["version", "epoch", "events", "owner", "ledger", "settled", "dropped"].includes(k))) throw new Error("Atlas: unreadable history");
+        const value = JSON.parse(raw);
+        if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 2e4 || Object.keys(value).some((k) => !["version", "epoch", "events", "owner", "ledger", "settled", "dropped"].includes(k))) throw new Error("Atlas: unreadable history");
         if (value.ledger != null) Ledger.validate(value.ledger);
-        for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || storageScope !== "account" && ids.length > 2e4 || !ids.every(identifier))) throw new Error("Atlas: unreadable history");
+        for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || ids.length > 2e4 || !ids.every(identifier))) throw new Error("Atlas: unreadable history");
         if (storageScope === "account" ? value.owner !== accountKey : value.owner != null) throw new Error("Atlas: local history belongs to a different storage scope");
         newSession(value.events);
         return value;
@@ -10163,7 +9926,7 @@ var require_game_learning = __commonJS({
           const raw = storage.getItem(key);
           if (raw === lastStoredRaw) return UNCHANGED;
           const stored = decode(raw);
-          lastStoredRaw = pages?.decodedRaw() ?? raw;
+          lastStoredRaw = raw;
           return stored;
         } catch {
           readable = false;
@@ -10253,7 +10016,7 @@ var require_game_learning = __commonJS({
       };
       let ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
       function compact() {
-        if (!folding || paged) return;
+        if (!folding) return;
         const events = log(), now = Date.parse(monotonicClock());
         if (events.length <= folding.max) return;
         if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
@@ -10292,27 +10055,11 @@ var require_game_learning = __commonJS({
           return false;
         }
         try {
-          if (pages && log().length > THRESHOLD) paged = true;
           compact();
           const events = log();
-          if (!pages && events.length > 2e4) throw Object.assign(new Error("Atlas: local history limit"), { code: "HISTORY_CAPACITY" });
-          let raw;
-          if (paged) raw = pages.write(
-            {
-              version: 1,
-              epoch,
-              events,
-              owner: accountKey,
-              ...ledger ? { ledger } : {},
-              ...settled.size ? { settled: [...settled] } : {},
-              ...dropped.size ? { dropped: [...dropped] } : {}
-            },
-            typeof lastStoredRaw === "string" ? lastStoredRaw : null
-          );
-          else {
-            raw = snapshot(events);
-            storage.setItem(key, raw);
-          }
+          if (events.length > 2e4) throw Object.assign(new Error("Atlas: local history limit"), { code: "HISTORY_CAPACITY" });
+          const raw = snapshot(events);
+          storage.setItem(key, raw);
           lastStoredRaw = raw;
           writable = true;
           if (!quiet) notify(kind);
@@ -10466,7 +10213,7 @@ var require_game_learning = __commonJS({
                 if (Ledger.folded(ledger, event)) late.push(event);
               }
             }
-            if (combined.length === previousLength && !skipped.length && writable && (paged || snapshot(combined) === lastStoredRaw)) return { added: 0, skipped };
+            if (combined.length === previousLength && !skipped.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0, skipped };
             const imported = newSession(combined);
             session = imported;
             if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
