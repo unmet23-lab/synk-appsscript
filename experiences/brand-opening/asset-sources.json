@@ -439,7 +439,7 @@
     "playback": "Entire 10-second source timing loops. All three characters and rigid scenery are static; only a safe river strip and the boat remain live. No retime/reverse.",
     "finishing": "First decoded v9 web frame held outside an inward-feathered river mask. Local source-video composition, not new character animation.",
     "motionControls": "Automatic muted loop; OS/home reduced-motion settings use the existing v9 poster.",
-    "copyright": "© 2027 SYNK",
+    "copyright": "© 2026 SYNK",
     "visualEvidence": "qa/stable-scene-20261012/README.md",
     "playbackEvidence": "qa/stable-scene-20261012/browser-result.json",
     "scope": "local only; public/native deployment not performed",

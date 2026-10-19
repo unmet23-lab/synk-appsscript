@@ -78,7 +78,7 @@ async function setVisibility(page,hidden){await page.evaluate(value=>{
       check(`${name}: the current ten-second Omni ${revision} shot actually plays`,Math.abs(motion.duration-10)<.1&&new URL(motion.source).pathname.endsWith(`world-menu-${aspect}-omni11-${revision}-web.mp4`)&&motion.width>0&&motion.height>0);
       check(`${name}: background is muted and repeats the entire clip`,motion.muted&&motion.loop);
       check(`${name}: only a playing video replaces the poster`,await page.locator('.synk-opening').evaluate(dialog=>dialog.classList.contains('video-ready')&&dialog.dataset.videoState==='playing'));
-      check(`${name}: copyright reads 2027`,await page.locator('.opening-copyright').textContent().then(text=>text==='© 2027 SYNK'));
+      check(`${name}: copyright reads 2026`,await page.locator('.opening-copyright').textContent().then(text=>text==='© 2026 SYNK'));
       await screenshot(page,`${name}-title`);
       if(['mobile390','desktop'].includes(name)){
         await checkFrameMotion(page,name);
