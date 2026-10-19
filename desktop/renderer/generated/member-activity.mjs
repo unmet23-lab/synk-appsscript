@@ -96,6 +96,7 @@ var require_vellum = __commonJS({
       const goal = reasons.includes("goal.declared");
       if (reasons.includes("activity.retry")) return `처음에 놓친 부분을 다시 연습해 봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
       if (reasons.includes("activity.assisted")) return `도움과 함께 해낸 부분이에요. 한 번 더 살펴봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+      if (reasons.includes("practice.spent")) return `이 활동의 새 문항은 모두 만났어요. 다시 해도 좋지만 연습 기록은 새 문항으로만 바뀌어요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
       if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
       if (goal) return "직접 고른 목표와 이어지는 활동이에요. 짧게 시작해 봐요.";
       if (reasons.includes("history.incomplete")) return "기록을 모두 확인하기 전이라 기본 활동으로 시작해요.";
