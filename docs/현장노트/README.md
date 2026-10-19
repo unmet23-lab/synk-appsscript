@@ -18,6 +18,8 @@
 | [블렌더·3D](블렌더_3D.md) | Cycles 굽기(검은·빈 지도, 두 겹 천, 오목한 바닥, 노이즈 제거, 여러 물체의 굽기 여백 덮어쓰기, 텍셀보다 얇은 섬, 묻힌 면 청소), glTF 내보내기의 알파, ETC1S 회벽 얼룩, 웹에 얹을 때 바닥 discard |
 | [그림 굽기·오리기](그림_굽기_오리기.md) | GPT 그림 굽기 주간 한도·계정 돌려쓰기, 펠트 오리기의 흰 띠·바닥 그림자, sharp 위치 |
 | [Higgsfield](higgsfield.md) | 계정·잔액·제출 거절, 올리기, Nano Banana Pro, Seedance·Wan·Kling |
+| [Gemini 사진](gemini_사진.md) | Gemini 앱(Ultra)으로 사진 만들기 — 사고 수준, 참조 올리기, 원본 받기, 늦게 뜨는 페이지, 2.1·프로 차이 |
+| [LoRA 학습·검증](LoRA_학습.md) | AI-Toolkit·ComfyUI·측정 도구 — 설치, 큰 파일 받기, 잠자기, 학습 속도, 트리거 없는 얼굴 새기, 옆모습 측정 |
 | [영상·소리](영상_ffmpeg_자막.md) | ffmpeg xfade·자르기·음량, 자막, HyperFrames·GSAP 렌더, TTS·받아쓰기, 렌더 장비 |
 | [배포·공개](배포_공개.md) | talk 함수 배포·설정값·마이그레이션, 깨끗한 사본 빌드, synk.im(synk-policy)·배포 점검, LAB·WORLD 공개 묶음, GCS, 회사 VM SSH·릴리스, Platform Mac DMG, SNS 지도 대시보드 빌드 |
 | [브라우저·게시](브라우저_게시.md) | 크롬 확장(프로필 로그인, 네이티브 창, 파일 올리기 10MB, 팝업), Meta·인스타 웹, 유튜브 스튜디오·API 한도·예약 읽기, Suno, Google Flow, 특허로 |

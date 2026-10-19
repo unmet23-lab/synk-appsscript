@@ -1,0 +1,65 @@
+{
+  "버전": "v1",
+  "작성일": "2026-10-17",
+  "코드": "F02",
+  "키": "F20fa",
+  "이름": "하린",
+  "트리거": "pls_f02",
+  "기준파일": {
+    "대표사진": "raw/F20-fresh-v3-1.png",
+    "전신": "온라인마케팅지도/engagement/company/public/pulse-app/assets/casting/fullbody/f02-fullbody-v1.webp (= raw/F20fa-fullbody.png)"
+  },
+  "몸": {
+    "키_cm": 165,
+    "몸무게_kg": 50,
+    "체형": "슬림",
+    "사이즈": { "상의": "55 (S)", "하의": "25", "신발": "235" },
+    "측정_전신기준": {
+      "도구": "C:/SYNK-LoRA/tools/measure/measure_body.py (MediaPipe 1.1.1)",
+      "등신_머리카락포함": 6.91,
+      "어깨_얼굴폭_비": 2.04,
+      "다리비율_골반관절에서바닥": 0.497,
+      "몸통비율_어깨에서골반": 0.29
+    },
+    "검사_허용범위": {
+      "설명": "새로 만든 정면 전신 사진을 measure_body.py로 쟀을 때 이 범위 밖이면 눈으로 다시 확인한다. 자세·옷·카메라 높이에 따라 몇 % 흔들린다.",
+      "등신": [6.6, 7.2],
+      "어깨_얼굴폭_비": [1.9, 2.2],
+      "다리비율": [0.48, 0.52]
+    }
+  },
+  "색": {
+    "도구": "C:/SYNK-LoRA/tools/measure/colors.py",
+    "머리": "#5C3D1F",
+    "피부": "#EFBEA9",
+    "입술": "#E85F45",
+    "측정범위_대표사진외3장": { "머리": ["#5C3D1F", "#654327"], "피부": ["#EFB9A5", "#F0BDA8"], "입술": ["#E36044", "#EB684E"] }
+  },
+  "목소리": [
+    { "번호": 1, "엔진": "Gemini TTS", "음성": "Leda", "느낌": "맑고 발랄한" },
+    { "번호": 2, "엔진": "Gemini TTS", "음성": "Aoede", "느낌": "산뜻하고 가벼운" },
+    { "번호": 3, "엔진": "Gemini TTS", "음성": "Laomedeia", "느낌": "신나고 생기 있는" }
+  ],
+  "데이터셋": {
+    "v1": "C:/SYNK-LoRA/datasets/F02_harin/v1 (14장)",
+    "v2": "C:/SYNK-LoRA/datasets/F02_harin/v2 (33장 = v1 14 + 10-17 생성 19, 고른 판은 C:/SYNK-LoRA/validation/F02_harin/v2_check/선택.json)"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f02",
+      "학습": "2026-10-17 12:27~16:33, 33장, 3,300스텝, C:/SYNK-LoRA/validation/F02_harin/job_config_v2.json",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f02_harin_v2/f02_harin_v2.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f02_harin_v2/f02_harin_v2_000003000.safetensors",
+      "프롬프트_꼴": "pls_f02, a young Korean woman, <구도·표정·옷·배경·조명>",
+      "비교표": "C:/SYNK-LoRA/validation/F02_harin/v2_validate/",
+      "주의": "트리거 없는 'a young Korean woman'에도 하린이 샌다 — 한 화면에 다른 여자를 넣지 않는다"
+    }
+  },
+  "추가컷_생성": {
+    "날짜": "2026-10-17",
+    "도구": "Gemini Ultra 4 Argon + 사고 수준 최고(나노바나나 2.1). A3만 프로(Pro로 다시 실행)",
+    "프롬프트": "C:/SYNK-LoRA/validation/F02_harin/shots_v2.json",
+    "검사": "C:/SYNK-LoRA/tools/measure/inspect_shot.py",
+    "약한_컷": ["B5 역광", "B7 기울인 자세·다리 길어 보임", "B13 로우앵글 비율 범위 밖"]
+  }
+}
