@@ -16,7 +16,7 @@ function fixture(t,{registered=true,enabled=false,packaged=true,items,saved,exec
   return {directory,preferences,writes,registrations,app,args,setReadFailure:value=>{readFailure=value;},setIgnoreWrite:value=>{ignoreWrite=value;},get entries(){return entries;},get reads(){return reads;}};
 }
 const stored=f=>JSON.parse(fs.readFileSync(path.join(f.directory,'desktop-preferences.json'),'utf8'));
-// `electron desktop --synk-dev` has the installed Preview build's Run value name and profile.
+// Worst case: a source run under the installed Preview build's Run value name, as before catalog.cjs gave it a '.source' appId.
 const installed={name:'im.synk.platform.preview',path:'C:\\QA\\SYNKPlatformPreview.exe',args:['--synk-autostart'],scope:'user',enabled:true};
 const sourceRun=options=>({packaged:false,executable:'C:\\QA\\desktop\\node_modules\\electron\\dist\\electron.exe',items:[{...installed}],...options});
 

@@ -7,9 +7,9 @@ function validatePatch(patch){
   return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
 }
 function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},onShow=null,platform=process.platform,enabled=true,packaged=false,executable=process.execPath,name='SYNKPlatform'}){
-  // A source run (--synk-dev) has the installed Preview build's appId and profile,
-  // so its login item would replace or delete that app's Run value of the same
-  // name. Only a packaged build reads or writes Windows startup.
+  // Only a packaged build reads or writes Windows startup. A source run
+  // (--synk-dev) would start a checkout's electron.exe at login, and before its
+  // own '.source' appId (catalog.cjs) it overwrote the installed app's Run value.
   const file=path.join(directory,'desktop-preferences.json'),supported=enabled&&platform==='win32',startupSupported=supported&&packaged;
   const startup={path:executable,args:['--synk-autostart'],name};
   let values={...DEFAULTS},registered='',shortcutError=null;
