@@ -64,6 +64,12 @@
 - 고침: 크레딧으로 돌 때는 구독 로그인이 없는 전용 설정 폴더를 `CLAUDE_CONFIG_DIR`로 주고 키를 함께 넣는다. `tools/크레딧실행.js`가 이렇게 띄운다. 폴더는 `%LOCALAPPDATA%\synk-claude-credit`이고, 유호님 설정에서는 `autoMode`·`permissions`만 옮긴다. 도구는 그대로고 인증은 키뿐이다. 그 폴더에서는 훅·플러그인·자동 메모를 읽지 않고, 세션 기록도 그 폴더에 쌓인다.
 - 다시 확인: `--output-format stream-json --verbose` 시작 줄의 `apiKeySource`가 `ANTHROPIC_API_KEY`인지 본다. 실행기는 다른 값이면 경고를 남긴다. 일부러 틀린 키로 돌리면 「Invalid API key」로 바로 끝나서 청구 없이 확인된다(10-18: permissionMode auto · 도구 30개 · 비용 0). 크레딧이 없는 조직의 키면 「Credit balance is too low」가 나온다.
 
+### 새 Console에서 만든 키가 `sk-ant-api…` 모양이 아니다
+- 증상: 10-19 유호님이 새 Console(platform.claude.com)에서 DM 자동 답용 키를 만들었는데, `^sk-ant-api\d{2}-` 형식 검사에 걸려 1토큰 확인이 멈췄다.
+- 원인: 새 Console의 키 생성 창은 「연결된 계정」(그 사용자 명의로 실행)과 「범위」(조직 또는 워크스페이스)를 고르게 한다. 이렇게 만든 키는 `sk-ant-usr…`로 시작한다(106자). 생성 전에 「ID 페더레이션을 쓰면 API 키가 필요 없다」 창이 먼저 뜨는데, 그건 GCP·AWS·Azure·GitHub Actions용이라 Supabase 함수에는 맞지 않는다.
+- 고침: 키 모양은 `sk-ant-` 뒤를 넓게 받는다(`tools/lib/클로드키.js`·가리기 정규식은 이미 그렇다). 생성 창에서는 「API 키로 계속하기」를 고르고, 만료는 「안 함」(서버용), 범위는 「기본 워크스페이스」를 고른다. 키는 화면 캡처 없이 복사해 `~/SYNK_보안/클로드키_<계정>.txt`에만 넣는다. 캡처 도구가 스크린샷 폴더에 자동으로 저장하기 때문이다.
+- 다시 확인: 그 키로 `claude-opus-5-5` 1토큰 요청이 200이고, 응답 머리 `anthropic-organization-id`가 크레딧을 받은 조직이다(10-19 「공자's Individual Org」 `c22447c4…`).
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
