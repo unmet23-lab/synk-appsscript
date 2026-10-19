@@ -1,0 +1,31 @@
+{
+ "createdAt": "2026-10-19T09:35:34.818Z",
+ "changed": 3,
+ "unchanged": 849,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck6-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "life.toTown",
+     "previous": "Манай хотхон руу"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "life.result.againButton",
+     "previous": "Шинэ нөхцөлд дахин үзэх"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "account.toTown",
+     "previous": null
+    }
+   ]
+  }
+ ]
+}

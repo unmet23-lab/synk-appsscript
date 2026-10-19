@@ -1,0 +1,5805 @@
+[
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.title",
+  "mn": "Солонгос үсэг",
+  "batch": "recheck4-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.listen",
+  "mn": "«안녕» сонсох",
+  "batch": "recheck4-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.ask",
+  "mn": "Та солонгос үсэг уншиж чадах уу?",
+  "batch": "recheck4-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.no",
+  "mn": "Одоохондоо уншиж чадахгүй",
+  "batch": "recheck4-01.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.yes",
+  "mn": "Уншиж чадна",
+  "batch": "recheck4-01.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.saving",
+  "mn": "Таны сонголтыг хадгалж байна.",
+  "batch": "recheck4-01.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "firstRun.hangul.failed",
+  "mn": "Хадгалж чадсангүй. Дахин сонгоно уу.",
+  "batch": "recheck4-01.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.title",
+  "mn": "Хэлээ сонгоно уу",
+  "batch": "final-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.lead",
+  "mn": "Цэс, заавар энэ хэлээр харагдана. Таны сурах солонгос хэл солонгосоороо үлдэнэ.",
+  "batch": "final-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.group",
+  "mn": "Хэл",
+  "batch": "final-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.continue",
+  "mn": "Үргэлжлүүлэх",
+  "batch": "final-01.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.none",
+  "mn": "Хэл сонгоно уу",
+  "batch": "final-01.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.pick.note",
+  "mn": "Тохиргооноос хүссэн үедээ сольж болно.",
+  "batch": "final-01.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.settings.note",
+  "mn": "Цэс, зааврыг энэ хэлээр харуулна. Сурах солонгос хэл тань хэвээрээ.",
+  "batch": "final-01.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.changed",
+  "mn": "Хэлийг солилоо.",
+  "batch": "final-01.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.savedAccount",
+  "mn": "Хэлний сонголтыг SYNK бүртгэлдээ ч хадгаллаа.",
+  "batch": "final-01.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "lang.savePending",
+  "mn": "Хэлний сонголтыг энэ төхөөрөмжид хадгаллаа. Дахин холбогдоход бүртгэлд хадгална.",
+  "batch": "final-01.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.dialog",
+  "mn": "SYNK WORLD эхлэлийн дэлгэц",
+  "batch": "final-01.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.company",
+  "mn": "SYNK-ийн бүтээл",
+  "batch": "recheck-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.titleAlt",
+  "mn": "Том эсгий солонгос үсгүүдийн дунд тоглож буй Камон, Монгль, Марин",
+  "batch": "final-01.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.subtitle",
+  "mn": "Гурван найзтай хамт сурах солонгос хэл",
+  "batch": "final-01.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.start",
+  "mn": "Эхлэх",
+  "batch": "final-01.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.startProduct",
+  "mn": "SYNK WORLD эхлүүлэх",
+  "batch": "final-01.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.soundOn",
+  "mn": "Дууг асаах",
+  "batch": "final-01.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "opening.soundOff",
+  "mn": "Дууг унтраах",
+  "batch": "final-01.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "home.place.town",
+  "mn": "Манай хотхон",
+  "batch": "final-01.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "home.place.room",
+  "mn": "Манай өрөө",
+  "batch": "final-01.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "home.skip",
+  "mn": "Үндсэн хэсэг рүү шилжих",
+  "batch": "final-01.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "home.townScene",
+  "mn": "Гурван найзын амьдардаг манай хотхон",
+  "batch": "final-01.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "home.roomScene",
+  "mn": "Таны 3D өрөөнд хамт байгаа Камон, Монгль, Марин",
+  "batch": "final-01.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "home.roomTargets",
+  "mn": "Найзуудтайгаа өрөөгөө тойрон харах",
+  "batch": "final-01.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "home.loading",
+  "mn": "Ачаалж байна…",
+  "batch": "final-01.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "home.choosing",
+  "mn": "Хамт сурах найзаа сонгоно уу.",
+  "batch": "final-01.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "home.entryError",
+  "mn": "Холболтоо шалгана уу.",
+  "batch": "final-01.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "home.profileOpen",
+  "mn": "Миний бүртгэлийг нээх",
+  "batch": "final-01.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "home.profileOpenWith",
+  "mn": "Миний бүртгэлийг нээх · Бүртгэл холбогдсон",
+  "batch": "final-01.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "home.myAccount",
+  "mn": "Миний бүртгэл",
+  "batch": "final-01.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.checking",
+  "mn": "Бүртгэл шалгаж байна",
+  "batch": "final-01.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.saving",
+  "mn": "Хадгалж байна",
+  "batch": "final-01.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.offline",
+  "mn": "Холболт хүлээж байна",
+  "batch": "final-01.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.conflict",
+  "mn": "Хадгалалтыг шалгах хэрэгтэй",
+  "batch": "recheck-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.pending",
+  "mn": "Хадгалагдахыг хүлээж байна",
+  "batch": "recheck4-01.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.connected",
+  "mn": "Бүртгэл холбогдсон",
+  "batch": "final-02.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.test",
+  "mn": "Туршилтын бүртгэл холбогдсон",
+  "batch": "final-02.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "home.account.connect",
+  "mn": "Бүртгэл холбох",
+  "batch": "final-02.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "home.settingsOpen",
+  "mn": "Тохиргоо",
+  "batch": "final-02.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "home.roomBack",
+  "mn": "Хотхон руу",
+  "batch": "final-02.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "home.roomBackLabel",
+  "mn": "Манай хотхон руу буцах",
+  "batch": "final-02.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "home.heading.with",
+  "mn": "Монгль багштай хамт",
+  "batch": "final-02.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "home.heading.friends",
+  "mn": "Гурван найзтай хамт",
+  "batch": "final-02.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "home.heading.progress",
+  "mn": "Өдөр тутмын солонгос хэл 2 / 22",
+  "batch": "final-02.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "home.orientation.landscape",
+  "mn": "Утсаа хэвтээ байрлалд эргүүлнэ үү",
+  "batch": "recheck4-01.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "home.orientation.portrait",
+  "mn": "Утсаа босоо байрлалд эргүүлнэ үү",
+  "batch": "recheck4-01.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "home.orientation.hint",
+  "mn": "Сонгосон чиглэлээрээ үргэлжлүүлэн үзэж болно.",
+  "batch": "final-02.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "home.orientation.auto",
+  "mn": "Автомат горим",
+  "batch": "final-02.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "home.board",
+  "mn": "Өдөр тутмын солонгос хэл үргэлжлүүлэх, давтах",
+  "batch": "final-02.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "home.tutorSection",
+  "mn": "AI багш ба дараагийн дасгал",
+  "batch": "final-02.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.kicker",
+  "mn": "Өдөр тутмын солонгос хэл",
+  "batch": "final-02.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.title",
+  "mn": "Найзуудтайгаа анх мэндлэх",
+  "batch": "recheck-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.label",
+  "mn": "Өдөр тутмын солонгос хэлний дараагийн хичээл рүү",
+  "batch": "final-02.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.connecting",
+  "mn": "Таны явцыг бүртгэлтэй холбож байна",
+  "batch": "recheck-01.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.dueToday",
+  "mn": "Өнөөдөр давтах хэллэг",
+  "batch": "recheck-01.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.packsAgain",
+  "mn": "Багцуудыг дахин харах",
+  "batch": "final-02.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.resume",
+  "mn": "Зогссон хэсгээсээ үргэлжлүүлэх",
+  "batch": "recheck-01.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.cafeVisit",
+  "mn": "Кафед 3-р удаа · дараагийн түүх",
+  "batch": "recheck-01.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.packs",
+  "mn": "3 багц · дараагийн хичээл",
+  "batch": "final-02.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.continueLabel",
+  "mn": "Үргэлжлүүлэх · «첫 인사 세 마디»",
+  "batch": "final-02.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "home.next.nextLabel",
+  "mn": "Дараагийн хичээл · «첫 인사 세 마디»",
+  "batch": "final-02.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "home.caption",
+  "mn": "2 / 22 хичээл дууссан · энэ төхөөрөмжид хадгалагдсан",
+  "batch": "final-02.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "home.caption.default",
+  "mn": "6 багц · 22 богино хичээл",
+  "batch": "final-02.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "home.caption.account",
+  "mn": "бүртгэлд хадгалагдсан",
+  "batch": "final-02.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "home.caption.device",
+  "mn": "энэ төхөөрөмжид хадгалагдсан",
+  "batch": "final-02.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.find",
+  "mn": "Одоо хийж болох дасгал хайх",
+  "batch": "final-02.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.check",
+  "mn": "Хичээлийн цаг, дууны тохиргоог шалгана",
+  "batch": "recheck-01.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.checkLabel",
+  "mn": "Хичээлийн нөхцөл шалгах",
+  "batch": "final-02.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.mine",
+  "mn": "Миний дараагийн дасгал",
+  "batch": "final-02.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.review",
+  "mn": "Давтах хэллэг · миний давтлага",
+  "batch": "recheck4-01.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.suggested",
+  "mn": "Санал болгох дасгал",
+  "batch": "final-02.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "home.study.label",
+  "mn": "Танд тохирсон сургалт · Бүртгэл холбогдсон",
+  "batch": "recheck-01.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "home.studyButton",
+  "mn": "Зорилго · тусламжийн хэлбэр",
+  "batch": "final-02.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.cafe",
+  "mn": "Кафе",
+  "batch": "final-02.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.cafeLabel",
+  "mn": "Кафены багцыг нээх",
+  "batch": "final-02.txt",
+  "line": 34
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.packs",
+  "mn": "Багц",
+  "batch": "final-02.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.packsLabel",
+  "mn": "Өдөр тутмын солонгос хэлний бүх багцыг харах",
+  "batch": "final-02.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.review",
+  "mn": "Давтлага",
+  "batch": "final-02.txt",
+  "line": 37
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.reviewLabel",
+  "mn": "Давтлагын хуваариа харах",
+  "batch": "final-03.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.schedule",
+  "mn": "Хуваарь",
+  "batch": "final-03.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.count",
+  "mn": "3",
+  "batch": "final-03.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.stories",
+  "mn": "Түүх",
+  "batch": "final-03.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "home.short.storiesLabel",
+  "mn": "Камон, Монгль, Марин нарын түүхийг харах",
+  "batch": "final-03.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "town.hint",
+  "mn": "Газар дээр дарвал тэнд хэрэглэдэг солонгос хэлийг сурна.",
+  "batch": "recheck-01.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.home",
+  "mn": "Манай гэр",
+  "batch": "recheck-01.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.store",
+  "mn": "Дэлгүүр",
+  "batch": "recheck-01.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.clock",
+  "mn": "Цагны цамхаг",
+  "batch": "recheck-01.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.bus",
+  "mn": "Автобусны буудал",
+  "batch": "recheck-01.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.street",
+  "mn": "Гудамж",
+  "batch": "recheck-01.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "town.place.friends",
+  "mn": "Гурван найз",
+  "batch": "recheck-01.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "town.enter",
+  "mn": "Орох: Кафе · Манай гэр",
+  "batch": "recheck-01.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "town.homeNote",
+  "mn": "Гурван найзын өрөө",
+  "batch": "recheck-01.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "town.nowTurn",
+  "mn": "Одоо хийх ээлж",
+  "batch": "recheck-01.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "town.lessons",
+  "mn": "2 / 22 хичээл",
+  "batch": "recheck-01.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "town.allDone",
+  "mn": "Бүгд дууссан",
+  "batch": "recheck-01.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "town.nowTitle",
+  "mn": "Одоо хийх ээлж · «첫 인사 세 마디»",
+  "batch": "recheck-01.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "town.nowBadge",
+  "mn": "Одоо",
+  "batch": "recheck-01.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "town.time.day",
+  "mn": "Өдөр",
+  "batch": "recheck-01.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "town.time.evening",
+  "mn": "Орой",
+  "batch": "recheck-01.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "town.time.night",
+  "mn": "Шөнө",
+  "batch": "recheck-01.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "tutorTag.role",
+  "mn": "Таны AI багш",
+  "batch": "recheck-01.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "tutorTag.help",
+  "mn": "Хэллэгийн тусламж",
+  "batch": "recheck-01.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "nav.main",
+  "mn": "WORLD үндсэн цэс",
+  "batch": "final-03.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "nav.home",
+  "mn": "Хотхон",
+  "batch": "final-03.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "nav.learn",
+  "mn": "Сурах",
+  "batch": "final-03.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "nav.play",
+  "mn": "Тоглох",
+  "batch": "final-03.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "nav.wardrobe",
+  "mn": "Шүүгээ",
+  "batch": "final-03.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "panel.close",
+  "mn": "Хаах",
+  "batch": "final-03.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "game.runner.title",
+  "mn": "Салхин зам",
+  "batch": "final-03.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "game.runner.detail",
+  "mn": "Сонссон үгийн дагуу 90 секунд гүйнэ",
+  "batch": "final-03.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "game.hangul.title",
+  "mn": "Солонгос үсэгтэй танилцах",
+  "batch": "final-03.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "game.hangul.detail",
+  "mn": "Авиа сонсоод үсгийг сонгоно",
+  "batch": "recheck-01.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "game.rhythm.title",
+  "mn": "Үгийн хэмнэл",
+  "batch": "final-03.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "game.rhythm.detail",
+  "mn": "Дуу сонсож байгаад O эсвэл X гэж хариулна",
+  "batch": "final-03.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "play.note",
+  "mn": "Солонгос үсгийг анх удаа үзэж байгаа бол «Солонгос үсэгтэй танилцах»-аас эхлээрэй.",
+  "batch": "recheck-01.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "play.first.title",
+  "mn": "Анхны өгүүлбэр",
+  "batch": "final-03.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "play.first.detail",
+  "mn": "Гурван өгүүлбэрийг бүрэн дуусгавал эхний удаад бэлэг авна",
+  "batch": "recheck5-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "play.town.title",
+  "mn": "SYNK Таун",
+  "batch": "final-03.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "play.town.detail",
+  "mn": "Өөрийн хувцастайгаа талбайгаар алхана",
+  "batch": "final-03.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "play.songs.title",
+  "mn": "Дуу сонсох",
+  "batch": "final-03.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "play.songs.detail",
+  "mn": "Солонгос үсгийн дуу, клип",
+  "batch": "final-03.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "game.loading",
+  "mn": "Тоглоомыг бэлтгэж байна.",
+  "batch": "final-03.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "plan.game.runner",
+  "mn": "Салхин зам · богино заавар сонсох",
+  "batch": "final-03.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "plan.game.rhythm",
+  "mn": "Үгийн хэмнэл · сонсоод утгыг шалгах",
+  "batch": "final-03.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "plan.resume",
+  "mn": "«첫 인사 세 마디» · үргэлжлүүлэх",
+  "batch": "final-03.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "plan.review",
+  "mn": "«첫 인사 세 마디» · шинэ нөхцөл байдалд давтах",
+  "batch": "recheck4-01.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "plan.resumeReview",
+  "mn": "Эхэлсэн давтлагаа үргэлжлүүлэх",
+  "batch": "final-03.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "wardrobe.alt",
+  "mn": "Өлгүүрт өлгөөтэй эсгий ороолт",
+  "batch": "final-03.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "wardrobe.lead",
+  "mn": "Гурван найздаа хувцас өмсгөж үзээд зургийг нь авч болно.",
+  "batch": "recheck-01.txt",
+  "line": 34
+ },
+ {
+  "source": "world-strings",
+  "key": "wardrobe.open",
+  "mn": "Шүүгээ нээх",
+  "batch": "final-03.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "wardrobe.note",
+  "mn": "Бүртгэлээ холбовол хувцас, хослол тань хадгалагдана.",
+  "batch": "final-03.txt",
+  "line": 34
+ },
+ {
+  "source": "world-strings",
+  "key": "me.alt",
+  "mn": "Түлхүүр ба шошго",
+  "batch": "final-03.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "me.guest",
+  "mn": "Та одоо бүртгэлгүйгээр үзэж байна. Бүртгэлээ холбовол явц, хувцас, тоглоомын үр дүн тань хадгалагдана.",
+  "batch": "recheck-01.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "me.later",
+  "mn": "Дараа хийх",
+  "batch": "recheck-01.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.title",
+  "mn": "Тохиргоо",
+  "batch": "final-03.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation",
+  "mn": "Дэлгэцийн чиглэл",
+  "batch": "final-03.txt",
+  "line": 37
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.auto",
+  "mn": "Автомат",
+  "batch": "final-03.txt",
+  "line": 38
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.portrait",
+  "mn": "Босоо",
+  "batch": "final-03.txt",
+  "line": 39
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.landscape",
+  "mn": "Хэвтээ",
+  "batch": "final-03.txt",
+  "line": 40
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.chosenPortrait",
+  "mn": "Босоо чиглэлийг сонголоо. Утсаа эргүүлбэл тэр чиглэлээр харагдана.",
+  "batch": "recheck-02.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.chosenLandscape",
+  "mn": "Хэвтээ чиглэлийг сонголоо. Утсаа эргүүлбэл тэр чиглэлээр харагдана.",
+  "batch": "recheck-02.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.spacious",
+  "mn": "Сонгосон харьцаагаар харагдана.",
+  "batch": "recheck-02.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.orientation.followDevice",
+  "mn": "Автомат нь төхөөрөмжийн чиглэлийг дагана. Босоо эсвэл хэвтээг сонговол утсаа тэр чиглэлд эргүүлнэ үү.",
+  "batch": "final-03.txt",
+  "line": 41
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.soundGroup",
+  "mn": "Дуу ба эффект",
+  "batch": "final-04.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.sound.title",
+  "mn": "Дууны эффект",
+  "batch": "final-04.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.sound.note",
+  "mn": "Товч дарах, зөв хариулах, дуусгах үеийн богино дуу. Ярианы дуунаас намуухан сонсогдоно.",
+  "batch": "recheck2-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.storyVoice.title",
+  "mn": "Дүрүүдийн ярианы дуу",
+  "batch": "recheck2-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.storyVoice.note",
+  "mn": "Түүхийн бичвэр гарах үед найз бүр өөр богино дуу гаргаж, тайлбар нь товчлуур дарах дуутай гарна.",
+  "batch": "final-04.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.haptic.title",
+  "mn": "Чичиргээ",
+  "batch": "final-04.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.haptic.note",
+  "mn": "Хуудас эргүүлэх, зөв хариулах, дуусгах үед маш богино нэг удаа чичирнэ.",
+  "batch": "final-04.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.celebrate.title",
+  "mn": "Баярын эффект",
+  "batch": "final-04.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.celebrate.note",
+  "mn": "Дуусгах үед нэг хуудсаар гарах богино баярын дэлгэц. Унтраасан ч үр дүн адилхан харагдана.",
+  "batch": "recheck-02.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.reactions.title",
+  "mn": "Найзуудын хариу үйлдэл",
+  "batch": "final-04.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "pref.reactions.note",
+  "mn": "Зөв, буруу хариултад найзууд нэг удаа хөдөлж хариу үзүүлнэ. Унтраавал хөдлөхгүй.",
+  "batch": "recheck-02.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.reduceMotion",
+  "mn": "Хөдөлгөөнийг багасгах",
+  "batch": "final-04.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.reduceMotion.note",
+  "mn": "Найзуудын амьсгалах, мэндлэх хөдөлгөөнийг зогсоож, түүхийн бичвэрийг нэг дор харуулна.",
+  "batch": "final-04.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.deviceMotion",
+  "mn": "Төхөөрөмжийн хөдөлгөөн багасгах тохиргоог дагаж байна.",
+  "batch": "final-04.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.about",
+  "mn": "SYNK WORLD-ийн тухай",
+  "batch": "final-04.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.tutorChange",
+  "mn": "AI багш солих · одоо Монгль",
+  "batch": "final-04.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.tutorChoose",
+  "mn": "AI багш сонгох",
+  "batch": "final-04.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "settings.study",
+  "mn": "Зорилго · тусламжийн хэлбэр",
+  "batch": "final-04.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.name.mongle",
+  "mn": "Монгль",
+  "batch": "final-04.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.name.kkamong",
+  "mn": "Камон",
+  "batch": "final-04.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.name.marin",
+  "mn": "Марин",
+  "batch": "final-04.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.sound.on",
+  "mn": "Хариу дуу асаалттай",
+  "batch": "final-04.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.sound.off",
+  "mn": "Хариу дуу унтраалттай",
+  "batch": "final-04.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.sound.turnOn",
+  "mn": "Хариу дууг асаах",
+  "batch": "final-04.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.sound.turnOff",
+  "mn": "Хариу дууг унтраах",
+  "batch": "final-04.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.step.choose",
+  "mn": "1 / 2 · Багш сонгох",
+  "batch": "final-04.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.step.start",
+  "mn": "2 / 2 · Эхлэх",
+  "batch": "final-04.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.status.unknown",
+  "mn": "Багшийн сонголт хадгалагдсан эсэхийг шалгаж чадсангүй. Түр хүлээгээд дахин оролдоно уу.",
+  "batch": "final-04.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.status.saving",
+  "mn": "Багшийн сонголтыг хадгалж байна.",
+  "batch": "final-04.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.status.account",
+  "mn": "Сонгосон багш тань SYNK бүртгэлд хадгалагдана.",
+  "batch": "recheck-02.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.status.device",
+  "mn": "Сонголтыг энэ төхөөрөмжид хадгална.",
+  "batch": "recheck-02.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.intro",
+  "mn": "Солонгос хэл сурахад тань туслах AI багш нартай танилцаарай. Гурвуулаа өөр өөр зан чанартай, урам өгөх хэв маяг нь ч өөр.",
+  "batch": "recheck-02.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.viewing",
+  "mn": "Үзэж байна",
+  "batch": "final-04.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.view",
+  "mn": "Үзэх",
+  "batch": "final-04.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.greet",
+  "mn": "Монгль багштай мэндлэх",
+  "batch": "final-04.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.intro",
+  "mn": "Танилцуулга",
+  "batch": "final-04.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.success",
+  "mn": "Сайн хийхэд",
+  "batch": "final-04.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.retry",
+  "mn": "Хэцүү үед",
+  "batch": "final-04.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.hello",
+  "mn": "Мэндчилгээ",
+  "batch": "final-04.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.touch",
+  "mn": "Мэндлэхэд",
+  "batch": "final-04.txt",
+  "line": 34
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.speech.first",
+  "mn": "Анхны мэндчилгээ",
+  "batch": "final-04.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.more",
+  "mn": "Энэ багшийн тухай дэлгэрэнгүй",
+  "batch": "final-04.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.likes",
+  "mn": "Дуртай",
+  "batch": "final-04.txt",
+  "line": 37
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.weak",
+  "mn": "Төдийлөн сайн биш",
+  "batch": "final-04.txt",
+  "line": 38
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.samples",
+  "mn": "Ярианы хэв маягийг урьдчилан сонсох",
+  "batch": "final-05.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.empty",
+  "mn": "Дээрх багш дээр дарвал танилцуулга, ярианы хэв маягийг нь харж болно.",
+  "batch": "final-05.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.confirm",
+  "mn": "Монгль багштай сурах",
+  "batch": "final-05.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.confirmEmpty",
+  "mn": "Багшаа сонгоно уу",
+  "batch": "final-05.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.anytime",
+  "mn": "Тохиргооноос хүссэн үедээ дахин сонгож болно.",
+  "batch": "final-05.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.welcome.title",
+  "mn": "Монгль, хамтдаа сурцгаая!",
+  "batch": "final-05.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.welcome.body",
+  "mn": "Монгль бол хичээл, тоглоом болгонд таны хажууд туслах AI багш. Тоглоомын удирдлагыг ч эхлээд зааж өгнө.",
+  "batch": "final-05.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.how.learn.body",
+  "mn": "Өрөөн доторх номыг нээвэл өдөр тутмын солонгос хэлний богино хичээл гарч ирнэ.",
+  "batch": "final-05.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.how.play.body",
+  "mn": "Сонсоод гүйх, үсэг сонгох, хэмнэл тааруулах зэргээр дасгал хийнэ.",
+  "batch": "recheck-02.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.how.review.body",
+  "mn": "Андуурсан хэллэг хэдэн өдрийн дараа өөр нөхцөл байдалд дахин гарч ирнэ.",
+  "batch": "recheck4-01.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.goTown",
+  "mn": "Манай хотхон руу очих",
+  "batch": "final-05.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.back",
+  "mn": "Бусад багшийг харах",
+  "batch": "final-05.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.title.start",
+  "mn": "Монгль багштай эхлэх",
+  "batch": "final-05.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.saveFailed",
+  "mn": "Багшийн сонголтыг хадгалж чадсангүй. Дахин оролдоно уу.",
+  "batch": "final-05.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.chosen",
+  "mn": "Та Монгль багштай хамт сурна. Тохиргооноос сольж болно.",
+  "batch": "final-05.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.chosenUnsaved",
+  "mn": "Та Монгль багштай хамт сурна. Энэ хөтөч сонголтыг хадгалж чадсангүй.",
+  "batch": "final-05.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.identity",
+  "mn": "Царай хувирдаггүй зөөлөн сэтгэлтэн",
+  "batch": "final-05.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.chip1",
+  "mn": "Даалгавар",
+  "batch": "final-05.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.chip2",
+  "mn": "Нарийн",
+  "batch": "final-05.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.chip3",
+  "mn": "Дотроо эелдэг",
+  "batch": "recheck-02.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.charm",
+  "mn": "Дүрэм уншиж байгаа юм шиг ярьдаг ч цэг бүрийн дараа эелдэг сэтгэл нь мэдрэгддэг.",
+  "batch": "final-05.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.about",
+  "mn": "Үргэлж нухацтай, царай нь хувирдаггүй. Бүхнийг тоолж, тэмдэглэдэг. Гэхдээ цэцэг, жижиг амьтны дэргэд тайван байдлаа алддаг. Магтаал сонсохоор нүд нь түр гэрэлтдэг. Өөрөө бол үгүй гэдэг.",
+  "batch": "recheck-02.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.like1",
+  "mn": "Цэгцтэй зүйл",
+  "batch": "final-05.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.like2",
+  "mn": "Өглөө эрт",
+  "batch": "final-05.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.like3",
+  "mn": "Нууцаар: цэцэг, жижиг амьтад",
+  "batch": "final-05.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.weak",
+  "mn": "Хошигнол ойлгох",
+  "batch": "final-05.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.marin.match",
+  "mn": "Зорилгоо жижиг алхмуудад хувааж, тайван ахих дуртай бол тохирно.",
+  "batch": "final-06.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.identity",
+  "mn": "Онгироо ч хулчгар луу",
+  "batch": "final-06.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.chip1",
+  "mn": "Онгироо",
+  "batch": "final-06.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.chip2",
+  "mn": "Луу",
+  "batch": "final-06.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.chip3",
+  "mn": "Үнэнч",
+  "batch": "final-06.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.charm",
+  "mn": "Гайхуулж байгаад баригдах мөч нь хамгийн хөөрхөн.",
+  "batch": "final-06.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.about",
+  "mn": "Дэлхийн хамгийн гоё луу. Өөрийнх нь хэлснээр шүү. Гал гаргаж чаддаггүй, зөвхөн хамраасаа уур гаргадаг. Аянга дуугарахад Монгль найзынхаа ард нуугддаг. Гурвын дотроос хамгийн том нь шүү дээ. Гэсэн ч жинхэнэ аюул тулгарахад хамгийн түрүүнд урд гардаг.",
+  "batch": "recheck-03.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.like1",
+  "mn": "Халуун ногоотой рамён",
+  "batch": "final-06.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.like2",
+  "mn": "Өндөр газар",
+  "batch": "final-06.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.like3",
+  "mn": "Гялалзсан зүйл",
+  "batch": "final-06.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.weak",
+  "mn": "Савх барих",
+  "batch": "final-06.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.kkamong.match",
+  "mn": "Хөгжилтэй маргалдаж, сорилт даван туулах дуртай бол тохирно.",
+  "batch": "final-06.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.identity",
+  "mn": "Цайлган сониуч нэгэн",
+  "batch": "final-06.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.chip1",
+  "mn": "Сониуч",
+  "batch": "final-06.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.chip2",
+  "mn": "Хамтдаа",
+  "batch": "final-06.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.chip3",
+  "mn": "Цайлган",
+  "batch": "final-06.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.charm",
+  "mn": "Гурвын хамгийн жижиг нь ч үргэлж хамгийн түрүүнд гүйдэг.",
+  "batch": "final-06.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.about",
+  "mn": "Бүх юм сонин болохоор эхлээд хүрч үздэг. Сонирхолтой зүйл гарвал ганцаараа түрүүлж гүйдэг. Тэгээд заавал буцаж ирээд «Хамт явцгаая!» гэдэг. Юунаас ч айдаггүй. Ганцхан зүйлээс, ганцаараа байхаас л айдаг.",
+  "batch": "final-06.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.like1",
+  "mn": "Шинэ бүхэн",
+  "batch": "final-06.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.like2",
+  "mn": "Хамтдаа хийх",
+  "batch": "final-06.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.like3",
+  "mn": "Нарлаг газар",
+  "batch": "final-06.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.weak",
+  "mn": "Халуун ногоотой хоол идэх",
+  "batch": "final-06.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "tutor.card.mongle.match",
+  "mn": "Бүх зүйлийг хамтдаа хийж үзэх дуртай бол тохирно.",
+  "batch": "final-06.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.invite",
+  "mn": "Та AI багшаа хараахан сонгоогүй байна.",
+  "batch": "final-06.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.practice",
+  "mn": "Андуурсан хэллэгээ давтах",
+  "batch": "recheck-03.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.practiceWith",
+  "mn": "Андуурсан хэллэгээ давтах · «첫 인사 세 마디»",
+  "batch": "recheck-03.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.checking",
+  "mn": "Сургалтын мэдээллийг шалгаж байна",
+  "batch": "recheck-03.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.status",
+  "mn": "Холболтын төлөв харах",
+  "batch": "final-06.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.practised",
+  "mn": "Дөнгөж сая хамт дасгал хийлээ",
+  "batch": "final-06.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.difficult",
+  "mn": "Өмнөх хичээлээс дахин харах үг · «첫 인사 세 마디»",
+  "batch": "final-06.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.review",
+  "mn": "Давтах хэллэг байна",
+  "batch": "final-06.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.resume",
+  "mn": "Зогссон хэсгээсээ үргэлжлүүлэх",
+  "batch": "recheck-03.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.start",
+  "mn": "Дараагийн хичээл",
+  "batch": "final-06.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.note.pending",
+  "mn": "· хадгалагдахыг хүлээж байна",
+  "batch": "recheck4-01.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.reviewDue",
+  "mn": "3 хэллэгээ давтах",
+  "batch": "recheck4-01.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.day.closed",
+  "mn": "Өнөөдөр хийснээ дахин харах",
+  "batch": "recheck-03.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "homeTutor.day.count",
+  "mn": "Өнөөдөр сурсан 3 хэллэгээ цэгцлэх",
+  "batch": "recheck-03.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.title",
+  "mn": "Сургалтын зорилго",
+  "batch": "final-06.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.poster",
+  "mn": "Миний зорилго",
+  "batch": "final-06.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.intro",
+  "mn": "Тохируулбал дараагийн дасгалыг үүнд тааруулж сонгоно. Алгасаад ч сурч болно, хүссэн үедээ сольж болно.",
+  "batch": "final-07.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason",
+  "mn": "Сурах шалтгаан",
+  "batch": "final-07.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.none",
+  "mn": "Сонгоогүй",
+  "batch": "final-07.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.travel",
+  "mn": "Аялал",
+  "batch": "final-07.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.life",
+  "mn": "Солонгост амьдрах",
+  "batch": "final-07.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.people",
+  "mn": "Хүмүүстэй ярилцах",
+  "batch": "final-07.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.exam",
+  "mn": "TOPIK-ийн суурь",
+  "batch": "final-07.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.study",
+  "mn": "Сургууль",
+  "batch": "final-07.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.work",
+  "mn": "Ажил",
+  "batch": "final-07.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.career",
+  "mn": "Мэргэжлийн бэлтгэл",
+  "batch": "final-07.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.culture",
+  "mn": "Солонгос соёл",
+  "batch": "final-07.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.hobby",
+  "mn": "Хобби",
+  "batch": "final-07.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reason.other",
+  "mn": "Шийдээгүй байна",
+  "batch": "final-07.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support",
+  "mn": "Тусламжийн хэлбэр",
+  "batch": "final-07.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.choose",
+  "mn": "Сонгож үзэж сурах",
+  "batch": "recheck-03.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.chooseNote",
+  "mn": "Эхлээд сонгоно, буруу бол шалтгааныг нь харна.",
+  "batch": "final-07.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.step",
+  "mn": "Алхам алхмаар тусламж авах",
+  "batch": "final-07.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.stepNote",
+  "mn": "Асуулт бүрт хэллэгийн тусламжийг урьдчилан нээж өгнө.",
+  "batch": "recheck-03.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.independent",
+  "mn": "Эхлээд өөрөө хариулах",
+  "batch": "recheck-03.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.support.independentNote",
+  "mn": "Тусламжийг зөвхөн өөрөө дарж нээнэ.",
+  "batch": "recheck2-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.explanation",
+  "mn": "Тайлбарын урт",
+  "batch": "final-07.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.explanation.brief",
+  "mn": "Богино",
+  "batch": "final-07.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.explanation.standard",
+  "mn": "Дунд",
+  "batch": "final-07.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.explanation.detailed",
+  "mn": "Дэлгэрэнгүй",
+  "batch": "final-07.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.today.note",
+  "mn": "Хичээллэх хугацаа, дууны тохиргоо зөвхөн өнөөдөр үйлчилнэ.",
+  "batch": "recheck4-01.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.minutes",
+  "mn": "Хичээллэх хугацаа",
+  "batch": "final-07.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.minutes.any",
+  "mn": "Хамаагүй",
+  "batch": "final-07.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.minutes.n",
+  "mn": "3 минут",
+  "batch": "recheck-03.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.audio",
+  "mn": "Дуу",
+  "batch": "final-07.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.audio.available",
+  "mn": "Сонсож чадна",
+  "batch": "final-07.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.audio.off",
+  "mn": "Одоо сонсож чадахгүй",
+  "batch": "final-07.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.consent.account",
+  "mn": "Бүртгэлдээ хадгалах",
+  "batch": "final-07.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.consent.device",
+  "mn": "Энэ төхөөрөмжид хадгалах",
+  "batch": "final-07.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.consent.note",
+  "mn": "Зорилго, тусламжийн хэлбэрийг санаж дасгал санал болгоход ашиглана.",
+  "batch": "final-07.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.saveStart",
+  "mn": "Хадгалаад эхлэх",
+  "batch": "final-07.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.save",
+  "mn": "Хадгалах",
+  "batch": "final-07.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.skip",
+  "mn": "Алгасах",
+  "batch": "final-07.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.disable",
+  "mn": "Санал болгоход ашиглахгүй",
+  "batch": "recheck-03.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.delete",
+  "mn": "Зорилгыг устгах",
+  "batch": "final-07.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.seen",
+  "mn": "Дасгалаас ажигласан зүйл",
+  "batch": "final-07.txt",
+  "line": 34
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.state.practice",
+  "mn": "Дахин дасгал хийх хэсэг",
+  "batch": "final-07.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.state.supported",
+  "mn": "Тусламжтай дасгал хийсэн хэсэг",
+  "batch": "final-07.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.state.review",
+  "mn": "Дахин шалгах үе",
+  "batch": "final-07.txt",
+  "line": 37
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.state.checking",
+  "mn": "Шинэ асуултаар шалгаж байна",
+  "batch": "final-07.txt",
+  "line": 38
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.state.recent-independent",
+  "mn": "Саяхан шинэ асуултад өөрөө хариулсан",
+  "batch": "recheck-03.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.seen.note",
+  "mn": "Өөрөө өгсөн хариулт, тусламжтай өгсөн хариулт, удирдлага болон дууны асуудлыг ялгаж дараагийн дасгалд тусгана.",
+  "batch": "recheck-04.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.needConsent",
+  "mn": "Хадгалахын тулд хадгалах унтраалгыг асаана уу. Алгасаад ч үндсэн дасгал хийж болно.",
+  "batch": "recheck-04.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.saved",
+  "mn": "Дараагийн дасгалыг зорилгод тань тааруулж сольсон.",
+  "batch": "final-07.txt",
+  "line": 39
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.retry",
+  "mn": "Хадгалагдсан эсэхийг шалгаад дахин оролдоно уу.",
+  "batch": "recheck4-01.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "goal.reopen",
+  "mn": "Тохиргоог дахин нээнэ үү.",
+  "batch": "final-07.txt",
+  "line": 41
+ },
+ {
+  "source": "world-strings",
+  "key": "life.pack.directions",
+  "mn": "Зам асуух",
+  "batch": "final-07.txt",
+  "line": 42
+ },
+ {
+  "source": "world-strings",
+  "key": "life.pack.transit",
+  "mn": "Автобус",
+  "batch": "final-07.txt",
+  "line": 43
+ },
+ {
+  "source": "world-strings",
+  "key": "life.pack.plans",
+  "mn": "Уулзалт",
+  "batch": "final-07.txt",
+  "line": 44
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packTitle.greetings",
+  "mn": "Анх уулзсан өдөр",
+  "batch": "final-07.txt",
+  "line": 45
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packTitle.cafe",
+  "mn": "Нэг аяга үүл, кафе",
+  "batch": "recheck-04.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packTitle.store",
+  "mn": "Камоны дэлгүүр орох төлөвлөгөө",
+  "batch": "recheck4-01.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packTitle.directions",
+  "mn": "Урвуу барьсан газрын зураг",
+  "batch": "final-08.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packTitle.transit",
+  "mn": "Автобусаар цэцэгт зам хүртэл",
+  "batch": "final-08.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.greetings",
+  "mn": "Мэндэлж, нэрээ хэлж танилцана",
+  "batch": "recheck-04.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.cafe",
+  "mn": "Захиалаад, хаана уухаа шийднэ",
+  "batch": "final-08.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.store",
+  "mn": "Үнэ асууж, бараа худалдан авна",
+  "batch": "final-08.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.directions",
+  "mn": "Байршил асууж, замаа олно",
+  "batch": "final-08.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.transit",
+  "mn": "Очих газар, буух буудлаа шалгана",
+  "batch": "final-08.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packSub.plans",
+  "mn": "Цаг, газраа тогтоож, хоцорвол мэдэгдэнэ",
+  "batch": "final-08.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "life.lessonGoal.greetings-expressions",
+  "mn": "Уулзах, талархах, танилцуулахад тохирох хэллэгийг сонгоно.",
+  "batch": "final-08.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "life.lessonGoal.greetings-story",
+  "mn": "Түүх уншаад мэндчилгээ, танилцуулгын утгыг шалгана.",
+  "batch": "final-08.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "life.lessonGoal.greetings-apply",
+  "mn": "Шинэ хүнтэй уулзахад хэрэгтэй үгийг өөрөө сонгоно.",
+  "batch": "final-08.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "life.phase.expressions",
+  "mn": "Хэллэг сурах",
+  "batch": "final-08.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "life.phase.story",
+  "mn": "Түүх унших",
+  "batch": "final-08.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "life.phase.apply",
+  "mn": "Амьдралд хэрэглэж үзэх",
+  "batch": "final-08.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "life.phase.visit",
+  "mn": "Кафед очих",
+  "batch": "recheck4-01.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "life.phase.compose",
+  "mn": "Захиалгаа хийх",
+  "batch": "final-08.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.greetings",
+  "mn": "анхны уулзалт дээр",
+  "batch": "final-08.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.cafe",
+  "mn": "кафед",
+  "batch": "final-08.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.store",
+  "mn": "дэлгүүрт",
+  "batch": "final-08.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.directions",
+  "mn": "гудамжинд",
+  "batch": "final-08.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.transit",
+  "mn": "автобусанд",
+  "batch": "final-08.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "life.place.plans",
+  "mn": "уулзалт товлохдоо",
+  "batch": "final-08.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "life.ago.now",
+  "mn": "дөнгөж сая",
+  "batch": "final-08.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "life.ago.minutes",
+  "mn": "3 минутын өмнө",
+  "batch": "final-08.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "life.ago.hours",
+  "mn": "3 цагийн өмнө",
+  "batch": "final-08.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "life.ago.days",
+  "mn": "3 өдрийн өмнө",
+  "batch": "final-08.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "life.rest",
+  "mn": "Та нэг цаг гаруй хичээллэлээ. Түр амарч болно. Зогссон хэсэг тань хэвээр үлдэнэ.",
+  "batch": "recheck-04.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "life.tutorRetry",
+  "mn": "Багштайгаа дахин дасгал хийх",
+  "batch": "final-08.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "life.checkProgress",
+  "mn": "Явцаа шалгана уу",
+  "batch": "recheck-04.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "life.checkProgress.note",
+  "mn": "Мэдээллийг устгаагүй. Бүртгэлийнхээ холболтыг шалгана уу.",
+  "batch": "recheck2-01.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packCard",
+  "mn": "«첫 인사 세 마디» · Мэндэлж, нэрээ хэлж танилцана · 2 / 22 хичээл",
+  "batch": "recheck-04.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packCard.done",
+  "mn": "«첫 인사 세 마디» · Мэндэлж, нэрээ хэлж танилцана · 2 / 22 хичээл дууссан",
+  "batch": "recheck-04.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "life.allDone",
+  "mn": "Бүгд дууссан",
+  "batch": "final-08.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "life.currentPack",
+  "mn": "Одоогийн багц",
+  "batch": "final-08.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "life.upNext",
+  "mn": "Одоо хийх зүйл",
+  "batch": "final-08.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "life.continue",
+  "mn": "Үргэлжлүүлэх",
+  "batch": "final-08.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "life.backWord",
+  "mn": "Давтах хэллэг",
+  "batch": "final-08.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "life.backSub",
+  "mn": "Сурсан 3 хэллэг шинэ нөхцөл байдалд дахин гарч ирлээ.",
+  "batch": "recheck4-01.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewNow",
+  "mn": "Давтах",
+  "batch": "final-08.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "life.allPacksWord",
+  "mn": "Бүх багц дууссан",
+  "batch": "final-08.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "life.nextReviewOpens",
+  "mn": "Дараагийн давтлага нээгдэх хугацаа: 10-р сарын 21, 15:00.",
+  "batch": "final-08.txt",
+  "line": 37
+ },
+ {
+  "source": "world-strings",
+  "key": "life.pickPackAgain",
+  "mn": "Дахин хийх багцаа сонгоорой.",
+  "batch": "final-08.txt",
+  "line": 38
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewSchedule",
+  "mn": "Давтлагын хуваарь харах",
+  "batch": "final-08.txt",
+  "line": 39
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewBack",
+  "mn": "3 хэллэг дахин гарч ирлээ.",
+  "batch": "recheck4-01.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewNext",
+  "mn": "Дараагийн давтлага 10-р сарын 21, 15:00",
+  "batch": "final-09.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "life.stories",
+  "mn": "Гурван найзын түүх",
+  "batch": "final-09.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "life.storiesCount",
+  "mn": "Камон, Монгль, Марин нарын 3 түүх",
+  "batch": "final-09.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "life.lessonsDone",
+  "mn": "22 хичээлээс 2 нь дууссан",
+  "batch": "final-09.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packsAndLessons",
+  "mn": "6 багц · 22 хичээл",
+  "batch": "final-09.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "life.more",
+  "mn": "Цааш үзэх",
+  "batch": "recheck-04.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "life.state.done",
+  "mn": "Дууссан",
+  "batch": "final-09.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "life.state.doing",
+  "mn": "Хийж байна",
+  "batch": "final-09.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "life.state.readAgain",
+  "mn": "Дахин унших",
+  "batch": "final-09.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "life.state.reading",
+  "mn": "Уншиж байна",
+  "batch": "final-09.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "life.visitN",
+  "mn": "3-р удаа",
+  "batch": "recheck-04.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "life.visitsCount",
+  "mn": "3 удаа",
+  "batch": "recheck-04.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "life.visited",
+  "mn": "2 / 22 удаа очсон",
+  "batch": "final-09.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "life.cafeAlt",
+  "mn": "Нарлаг хорооллын кафе",
+  "batch": "final-09.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "life.cafeEnter",
+  "mn": "Кафе руу орох",
+  "batch": "final-09.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "life.cafeNext",
+  "mn": "Кафед дахин очих",
+  "batch": "recheck-04.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "life.cafeBefore",
+  "mn": "Захиалахаасаа өмнө үзэж болно",
+  "batch": "recheck-04.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "life.toPacks",
+  "mn": "Багцын жагсаалт руу",
+  "batch": "final-09.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "life.seeReviews",
+  "mn": "Давтлага харах",
+  "batch": "final-09.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "life.expressionsNow",
+  "mn": "Энэ хичээлийн хэллэг",
+  "batch": "final-09.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "life.expressionsLearned",
+  "mn": "Сурсан хэллэг",
+  "batch": "final-09.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "life.readStory",
+  "mn": "Түүхийг унших",
+  "batch": "final-09.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "life.toQuestions",
+  "mn": "Асуултад хариулах",
+  "batch": "final-09.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "life.next",
+  "mn": "Дараах",
+  "batch": "final-09.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "life.signListen",
+  "mn": "«가» авиаг сонсох",
+  "batch": "recheck-04.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "life.firstScene",
+  "mn": "Энэ бол эхний хэсэг.",
+  "batch": "final-09.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "life.feedback.ok",
+  "mn": "Зөв",
+  "batch": "final-09.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "life.feedback.assisted",
+  "mn": "Тусламжтайгаар зөв хариуллаа",
+  "batch": "recheck-04.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "life.feedback.retry",
+  "mn": "Ингэж хэлдэг",
+  "batch": "recheck-04.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "life.why",
+  "mn": "Шалтгаан",
+  "batch": "final-09.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "life.feedback.guided",
+  "mn": "Тусламжийг нээлттэй байлгаад зөв хариуллаа",
+  "batch": "recheck4-01.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "life.guidedNext",
+  "mn": "Дараагийн давтлагад эхлээд өөрөө сонгож үзээрэй.",
+  "batch": "recheck4-01.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "life.comesBack",
+  "mn": "Удахгүй шинэ нөхцөл байдалд дахин гарч ирнэ.",
+  "batch": "recheck4-01.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "life.help",
+  "mn": "Хэллэгийн тусламж харах",
+  "batch": "final-09.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "life.chooseAnswer",
+  "mn": "Хариулт сонгох",
+  "batch": "final-09.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "life.pickAnswer",
+  "mn": "Хариултаа сонгоно уу",
+  "batch": "final-09.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "life.meanings",
+  "mn": "Утгыг харах",
+  "batch": "final-09.txt",
+  "line": 28
+ },
+ {
+  "source": "world-strings",
+  "key": "life.meaningsLabel",
+  "mn": "Сонголтуудын утга",
+  "batch": "final-09.txt",
+  "line": 29
+ },
+ {
+  "source": "world-strings",
+  "key": "life.resultTitle",
+  "mn": "Хичээлийн үр дүн",
+  "batch": "final-09.txt",
+  "line": 30
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewScheduleShort",
+  "mn": "Давтлагын хуваарь",
+  "batch": "final-09.txt",
+  "line": 31
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packStamp",
+  "mn": "«Мэндчилгээ» багцын тамга",
+  "batch": "recheck-04.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packProgress",
+  "mn": "«Мэндчилгээ» багц 2 / 22",
+  "batch": "recheck-04.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packFinished",
+  "mn": "Нэг багцыг бүтэн дуусгалаа.",
+  "batch": "final-09.txt",
+  "line": 32
+ },
+ {
+  "source": "world-strings",
+  "key": "life.packFill",
+  "mn": "Хичээл дуусгах бүрт нэг нүд дүүрнэ.",
+  "batch": "final-09.txt",
+  "line": 33
+ },
+ {
+  "source": "world-strings",
+  "key": "life.toTown",
+  "mn": "Хотхон руу",
+  "batch": "recheck6-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "life.nextPractice",
+  "mn": "Дараагийн дасгал",
+  "batch": "final-09.txt",
+  "line": 35
+ },
+ {
+  "source": "world-strings",
+  "key": "life.seePacks",
+  "mn": "Багцуудыг харах",
+  "batch": "final-09.txt",
+  "line": 36
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.alone",
+  "mn": "Өөрөө зөв хариулсан: 3",
+  "batch": "recheck4-01.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.guided",
+  "mn": "Тусламж нээлттэй үед зөв хариулсан: 3",
+  "batch": "recheck4-01.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.guidedNote",
+  "mn": "Дараагийн давтлагад эхлээд өөрөө сонгоорой.",
+  "batch": "recheck4-02.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.again",
+  "mn": "Дахин харах: 3",
+  "batch": "recheck4-02.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.helpedOpen",
+  "mn": "Тусламж нээж байж зөв хариулсан",
+  "batch": "recheck4-02.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.otherChoice",
+  "mn": "Өөр хэллэг сонгосон",
+  "batch": "recheck4-02.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "life.result.againButton",
+  "mn": "Шинэ жишээгээр давтах",
+  "batch": "recheck6-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewWordCount",
+  "mn": "Давтах 3 хэллэг",
+  "batch": "recheck4-02.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewWordNext",
+  "mn": "Дараагийн давтлага",
+  "batch": "final-09.txt",
+  "line": 38
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewWordNone",
+  "mn": "Давтлага хараахан алга",
+  "batch": "final-09.txt",
+  "line": 39
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewSubDue",
+  "mn": "Ижил асуулт биш, шинэ нөхцөл байдалд дахин сонгоно.",
+  "batch": "recheck4-02.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewSubOpens",
+  "mn": "Нээгдэх хугацаа: 10-р сарын 21, 15:00.",
+  "batch": "final-09.txt",
+  "line": 41
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewSubNone",
+  "mn": "Нэг хичээл дуусгавал давтах хэллэгтэй болно.",
+  "batch": "final-09.txt",
+  "line": 42
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewStart",
+  "mn": "Давтлага эхлэх",
+  "batch": "final-09.txt",
+  "line": 43
+ },
+ {
+  "source": "world-strings",
+  "key": "life.doNextLesson",
+  "mn": "Дараагийн хичээлийг хийх",
+  "batch": "final-09.txt",
+  "line": 44
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewResultTitle",
+  "mn": "Давтлагын үр дүн",
+  "batch": "final-09.txt",
+  "line": 45
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewDoneWord",
+  "mn": "Давтлага дууслаа!",
+  "batch": "final-10.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewMet",
+  "mn": "3 хэллэгийг дахин давтлаа.",
+  "batch": "recheck4-02.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewRemembered",
+  "mn": "Сайн санажээ. Дараагийн удаа илүү удаан хугацааны дараа гарч ирнэ.",
+  "batch": "final-10.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewSoon",
+  "mn": "Удахгүй дахин гарч ирнэ.",
+  "batch": "final-10.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewHeader",
+  "mn": "Мэндчилгээ · шинэ нөхцөл байдалд давтах",
+  "batch": "recheck4-02.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "life.reviewOrigin",
+  "mn": "5 минутын өмнө · анхны уулзалт дээр сурсан хэллэг",
+  "batch": "final-10.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "life.saved",
+  "mn": "Зогссон хэсгийг тань хадгаллаа.",
+  "batch": "recheck-04.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "life.savingProgress",
+  "mn": "Явцыг хадгалж байна. Давтлагын хуваарь хэвээр үлдэнэ.",
+  "batch": "recheck-04.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "life.restart",
+  "mn": "Явцаа шалгаад дахин эхлүүлнэ үү.",
+  "batch": "recheck-04.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "account.title",
+  "mn": "Бүртгэл холбох",
+  "batch": "final-10.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "account.oneId",
+  "mn": "Бүгд нэг SYNK ID-д хадгалагдана",
+  "batch": "final-10.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "account.oneIdBody",
+  "mn": "Сургалтын төвтэй хуваалцах мэдээлэл таны бүртгэлийн зөвшөөрлийн тохиргоог дагана. Таун дахь үйл ажиллагааг хуваалцах эсэхийг тусад нь сонгоно.",
+  "batch": "recheck-05.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "account.login",
+  "mn": "SYNK ID-гаар нэвтрэх",
+  "batch": "recheck-05.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "account.guest",
+  "mn": "Эхлээд үзэх",
+  "batch": "final-10.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testLead",
+  "mn": "Туршилтын бүртгэлээр нэвтэрвэл хувцас тань бусад дэлгэц дээр ч хэвээр үлдэнэ",
+  "batch": "recheck-05.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testTitle",
+  "mn": "Энэ бол дотоод туршилтын бүртгэл",
+  "batch": "final-10.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testBody",
+  "mn": "Жинхэнэ Google, Apple нэвтрэлтээс тусдаа ажиллана. Доорх хоёр бүртгэлд зөвхөн туршилтын мэдээлэл хадгалагдана.",
+  "batch": "recheck-05.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testA",
+  "mn": "Туршилтын бүртгэлээр эхлэх",
+  "batch": "final-10.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testB",
+  "mn": "Нөгөө туршилтын бүртгэлээр эхлэх",
+  "batch": "final-10.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "account.testNote",
+  "mn": "Веб болон Unity апп нэг дотоод серверийн интерфейсийг ашиглана. Жинхэнэ бүртгэлийн холболтыг төхөөрөмжийн нэвтрэлт тохируулсны дараа шалгана.",
+  "batch": "recheck5-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "account.connected",
+  "mn": "SYNK бүртгэлээр холбогдлоо.",
+  "batch": "final-10.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "account.entryTitle",
+  "mn": "Холболтоо шалгана уу",
+  "batch": "final-10.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "account.entryNotice",
+  "mn": "Багшийн мэдээллийг ачаалж чадсангүй",
+  "batch": "final-10.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "account.entryBody",
+  "mn": "Бүртгэлтэй холбоотой багшийг шалгаж чадсангүй. Холболтоо шалгаад дахин эхлүүлнэ үү.",
+  "batch": "recheck-05.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "account.reconnect",
+  "mn": "Дахин холбох",
+  "batch": "final-10.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "account.reconnected",
+  "mn": "Дахин холбогдлоо.",
+  "batch": "final-10.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "account.toTitle",
+  "mn": "Эхлэлийн дэлгэц рүү очих",
+  "batch": "final-10.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "account.recoveryRejected",
+  "mn": "Мэдээллийн хадгалалтыг шалгана уу",
+  "batch": "recheck-05.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "account.recoveryChoose",
+  "mn": "Аль мэдээллээр үргэлжлүүлэхээ сонгоно уу",
+  "batch": "recheck-05.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "account.recoveryRejectedNotice",
+  "mn": "Бүртгэлд хадгалж чадсангүй",
+  "batch": "final-10.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "account.recoveryConflictNotice",
+  "mn": "Мэдээлэл хоёр газарт өөр өөр байна",
+  "batch": "recheck-05.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "account.recoveryNote",
+  "mn": "Багшийн сонголт, сургалтын явц хамт хадгалагдана. Илгээгдээгүй тоглоомын мэдээлэл ч таны сонгосон хувилбарт нэгдэнэ. Өөрчлөхөөс өмнөх эх хувийг энэ төхөөрөмжид үлдээнэ.",
+  "batch": "recheck-05.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "account.useDeviceAgain",
+  "mn": "Энэ төхөөрөмжийн мэдээллээр дахин хадгалах",
+  "batch": "recheck-05.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "account.useDevice",
+  "mn": "Энэ төхөөрөмжийн мэдээллээр үргэлжлүүлэх",
+  "batch": "recheck-05.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "account.useRemote",
+  "mn": "Бүртгэлд хадгалагдсан мэдээллийг ашиглах",
+  "batch": "recheck-05.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "account.checkLater",
+  "mn": "Дараа шалгах",
+  "batch": "final-10.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningWith",
+  "mn": "Та Монгль багштай хамт сурч байна",
+  "batch": "final-10.txt",
+  "line": 23
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningTogether",
+  "mn": "Хамтдаа сурч байна",
+  "batch": "final-10.txt",
+  "line": 24
+ },
+ {
+  "source": "world-strings",
+  "key": "account.savedTo",
+  "mn": "Хувцас, өмсгөл, анхны тоглоомын бэлэг хадгалагдах газар: таны SYNK ID",
+  "batch": "final-10.txt",
+  "line": 25
+ },
+ {
+  "source": "world-strings",
+  "key": "account.whereId",
+  "mn": "таны SYNK ID",
+  "batch": "final-10.txt",
+  "line": 26
+ },
+ {
+  "source": "world-strings",
+  "key": "account.whereTest",
+  "mn": "энэ туршилтын бүртгэл",
+  "batch": "final-10.txt",
+  "line": 27
+ },
+ {
+  "source": "world-strings",
+  "key": "account.savePending",
+  "mn": "Хадгалагдахыг хүлээж байна",
+  "batch": "recheck4-02.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "account.saveOk",
+  "mn": "Хадгалалт хэвийн",
+  "batch": "recheck4-02.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "account.revision",
+  "mn": "Хувцасны хувилбар 7 · SYNK бүртгэл",
+  "batch": "final-11.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "account.kindId",
+  "mn": "SYNK бүртгэл",
+  "batch": "final-11.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "account.kindTest",
+  "mn": "Дотоод туршилтын бүртгэл",
+  "batch": "final-11.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningRecords",
+  "mn": "Сургалтын мэдээллийн холболт",
+  "batch": "recheck-05.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningSave",
+  "mn": "Сургалтын мэдээллийг SYNK бүртгэлдээ хадгалах",
+  "batch": "recheck-05.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningNote",
+  "mn": "Асаасны дараах «Анхны өгүүлбэр»-ийн хариултыг л хадгална. Сургалтын төв болон Таунтай хуваалцахыг «Миний хичээл» хэсэгт тусад нь тохируулна.",
+  "batch": "recheck-06.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "account.learningElsewhere",
+  "mn": "Сургалтын холболтын тохиргоог «Миний хичээл» хэсгийн бүртгэлийн дэлгэцээс харж болно.",
+  "batch": "recheck-06.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "account.classSettings",
+  "mn": "Хичээл, хуваалцах тохиргоог нээх",
+  "batch": "final-11.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "account.logout",
+  "mn": "Гарах",
+  "batch": "final-11.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "account.logoutFailed",
+  "mn": "Энэ дэлгэцээс гарлаа. Серверийн холболтоо шалгана уу.",
+  "batch": "final-11.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "account.about1",
+  "mn": "«Анхны өгүүлбэр»-ийг дуусгавал ороолт авна. Авсан хувцсаараа гоёх боломжтой бөгөөд хувцас, тоглоом, Тауны мэдээлэл нэг SYNK ID-д хадгалагдана.",
+  "batch": "recheck-06.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "account.about2",
+  "mn": "Сургалтын мэдээлэл болон сургалтын төвд харуулах Тауны үйл ажиллагааг тус тусад нь зөвшөөрнө. Хариултын мэдээлэл бол зөвхөн дасгалын нотолгоо бөгөөд TOPIK-ийн түвшин эсвэл сургалтын үр дүнгийн оноо биш.",
+  "batch": "recheck-06.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "account.pendingTitle",
+  "mn": "Одоохондоо хадгалж чадсангүй",
+  "batch": "recheck2-01.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "account.pendingNotice",
+  "mn": "Сонгосон хувцас хадгалагдсангүй",
+  "batch": "final-11.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "account.pendingRetry",
+  "mn": "Ижил хүсэлтийг дахин илгээх",
+  "batch": "final-11.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "account.pendingDiscard",
+  "mn": "Сүүлийн хувцсыг ачаалах",
+  "batch": "final-11.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameLoading",
+  "mn": "Тоглоомын мэдээллийг тань ачаалж байна.",
+  "batch": "recheck-06.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameStopped",
+  "mn": "Тоглоомын холболт тасарлаа",
+  "batch": "final-11.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameStoppedNotice",
+  "mn": "Тоглоомын мэдээллийн холболт зогслоо",
+  "batch": "recheck-06.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameStoppedBody",
+  "mn": "Бүртгэлийнхээ холболтыг шалгаад дахин орно уу.",
+  "batch": "final-11.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "account.checkMine",
+  "mn": "Бүртгэлээ шалгах",
+  "batch": "final-11.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "account.toTown",
+  "mn": "Манай хотхон руу",
+  "batch": "recheck6-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameCheck",
+  "mn": "Тоглоомын холболтоо шалгана уу",
+  "batch": "final-11.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "account.gameCheckNotice",
+  "mn": "Тоглоомын мэдээлэлд холбогдож чадсангүй",
+  "batch": "recheck-06.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictTitle",
+  "mn": "Үргэлжлүүлэх явцаа сонгоно уу",
+  "batch": "recheck-06.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictNotice",
+  "mn": "Тоглоомын мэдээлэл өөр төхөөрөмж дээр өөрчлөгдсөн",
+  "batch": "recheck-06.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictBody",
+  "mn": "Сонгосон явцаараа үргэлжлүүлнэ. Өөрчлөхөөс өмнөх эх хувийг энэ төхөөрөмжид үлдээнэ.",
+  "batch": "recheck-06.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictRemote",
+  "mn": "Бүртгэлд хадгалсан явцыг ашиглах",
+  "batch": "recheck-06.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictLocal",
+  "mn": "Энэ төхөөрөмжийн явцыг ашиглах",
+  "batch": "recheck-06.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictLater",
+  "mn": "Дараа сонгох",
+  "batch": "final-11.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "account.conflictNote",
+  "mn": "Зоос болон худалдан авсан зүйлсийг бүртгэл дээр баталгаажсанаар тооцно.",
+  "batch": "recheck2-01.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.network",
+  "mn": "Холболт түр тасарлаа. Сонголт тань хэвээр байна.",
+  "batch": "final-11.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.outfitConflict",
+  "mn": "Таны хувцас өөр дэлгэц дээр өөрчлөгдсөн. Сүүлийн хувцсаа шалгаад дахин сонгоно уу.",
+  "batch": "final-11.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.authEnded",
+  "mn": "Бүртгэлийн холболт дууссан. Дахин холбоно уу.",
+  "batch": "final-11.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.runExpired",
+  "mn": "Тоглоомын хугацаа дууссан тул шинээр эхлэх хэрэгтэй.",
+  "batch": "final-11.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.busy",
+  "mn": "Өмнөх хүсэлтийг шалгаж байна.",
+  "batch": "final-11.txt",
+  "line": 20
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.notYet",
+  "mn": "Хараахан дуусаагүй байна. Түр хүлээгээд дахин оролдоно уу.",
+  "batch": "final-11.txt",
+  "line": 21
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.hostPreparing",
+  "mn": "Холболтыг бэлтгэж байна. Түр хүлээгээд дахин нээнэ үү.",
+  "batch": "final-11.txt",
+  "line": 22
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.hostOpenFailed",
+  "mn": "Энэ дэлгэцийг нээж чадсангүй. Түр хүлээгээд дахин оролдоно уу.",
+  "batch": "final-12.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorConnect",
+  "mn": "Багшийн холболтыг дахин шалгана уу.",
+  "batch": "final-12.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeLoadFailed",
+  "mn": "Хичээлүүдийг ачаалж чадсангүй. Түр хүлээгээд дахин нээнэ үү.",
+  "batch": "final-12.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.helpSaveCheck",
+  "mn": "Тусламжийн хэлбэр хадгалагдсан эсэхийг дахин шалгана уу.",
+  "batch": "final-12.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.cafeCheck",
+  "mn": "Кафены холболтыг шалгаад дахин нээнэ үү.",
+  "batch": "final-12.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.accountProgressDevice",
+  "mn": "Бүртгэлд холбогдож чадаагүй тул энэ төхөөрөмжид хадгалсан явцаар үргэлжлүүлнэ.",
+  "batch": "recheck2-01.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeCheckFailed",
+  "mn": "Өдөр тутмын солонгос хэлний явцыг шалгаж чадсангүй.",
+  "batch": "recheck-07.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.progressNotSaved",
+  "mn": "Явцыг одоохондоо хадгалж чадсангүй.",
+  "batch": "recheck2-01.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.firstRunFailed",
+  "mn": "Эхний дэлгэцийг нээж чадсангүй. Дахин оролдоно уу.",
+  "batch": "recheck4-02.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.hostPreparingChoose",
+  "mn": "Холболтыг бэлтгэж байна. Түр хүлээгээд дахин сонгоно уу.",
+  "batch": "recheck4-02.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.learningPreparingChoose",
+  "mn": "Сургалтын мэдээллийг бэлтгэж байна. Түр хүлээгээд дахин сонгоно уу.",
+  "batch": "recheck4-02.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.accountChangedChoose",
+  "mn": "Бүртгэлийн холболт өөрчлөгдсөн. Дахин сонгоно уу.",
+  "batch": "final-12.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeAccountChanged",
+  "mn": "Өдөр тутмын солонгос хэлний бүртгэлийн холболт өөрчлөгдсөн.",
+  "batch": "final-12.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.localSaved",
+  "mn": "Явц энэ дотоод туршилтын бүртгэлд хадгалагдлаа.",
+  "batch": "recheck-07.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.localSaving",
+  "mn": "Явцыг дотоод туршилтын бүртгэлд хадгалж байна.",
+  "batch": "recheck-07.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorAccountFirst",
+  "mn": "Бүртгэлээ холбоод дахин сонгоно уу. Одоогийн багш тань хэвээр байна.",
+  "batch": "final-12.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.recordsChanged",
+  "mn": "Таны мэдээлэл өөр дэлгэц дээр ч өөрчлөгдсөн. Хадгалалтыг шалгах хэсгээс ашиглах мэдээллээ сонгоно уу.",
+  "batch": "recheck-07.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.recordsCheckFirst",
+  "mn": "Мэдээллээ шалгаад дахин сонгоно уу.",
+  "batch": "recheck-07.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorSaveLater",
+  "mn": "Багшийн сонголтыг хадгалж чадсангүй. Түр хүлээгээд дахин оролдоно уу.",
+  "batch": "final-12.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorSavedAccount",
+  "mn": "Сонгосон багшийг SYNK бүртгэлд хадгаллаа.",
+  "batch": "final-12.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorKeptDevice",
+  "mn": "Сонголтыг энэ төхөөрөмжид хадгаллаа. Дахин холбогдоход бүртгэлд хадгална.",
+  "batch": "final-12.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorLoading",
+  "mn": "Бүртгэлийн багшийг ачаалж байна.",
+  "batch": "final-12.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.chooseInSaveCheck",
+  "mn": "Хадгалалтыг шалгах хэсгээс ашиглах мэдээллээ сонгоно уу.",
+  "batch": "recheck-07.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorAfterConnect",
+  "mn": "Бүртгэлийн холболтыг шалгасны дараа сонголтыг хадгална.",
+  "batch": "final-12.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorSynced",
+  "mn": "Сонголтыг тань SYNK бүртгэлд хадгална. Бусад төхөөрөмж дээр ч адилхан харагдана.",
+  "batch": "recheck-07.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorSaving",
+  "mn": "Сонголт, сургалтын мэдээллийг бүртгэлд хадгалж байна.",
+  "batch": "recheck-07.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorNotSynced",
+  "mn": "Сонголтыг бүртгэлд хараахан хадгалж чадаагүй. Холбогдоход дахин оролдоно.",
+  "batch": "final-12.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.entryTutor",
+  "mn": "Бүртгэлийн багшийн мэдээллийг шалгасны дараа үргэлжлүүлж болно.",
+  "batch": "recheck-07.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.entryAccount",
+  "mn": "Бүртгэлийн холболтыг шалгаж чадсангүй. Дахин холбоно уу.",
+  "batch": "final-12.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeEnded",
+  "mn": "Энэ бүртгэлийн өдөр тутмын солонгос хэлний холболт дууссан.",
+  "batch": "final-12.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.recoveryUnreadable",
+  "mn": "Явц сэргээх сонголтыг уншиж чадсангүй. Эх хувийг хадгалж үлдээлээ.",
+  "batch": "recheck-07.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.originalUnreadable",
+  "mn": "Явцын эх хувийг уншиж чадсангүй.",
+  "batch": "recheck-07.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.originalOwner",
+  "mn": "Явцын эх хувь аль бүртгэлийнх болохыг шалгаж чадсангүй.",
+  "batch": "recheck-07.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeUnreadableKept",
+  "mn": "Өдөр тутмын солонгос хэлний явцыг уншиж чадсангүй. Өмнөх мэдээлэл хадгалагдсан.",
+  "batch": "recheck-08.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeNotSynced",
+  "mn": "Өдөр тутмын солонгос хэлний явц SYNK бүртгэлд одоохондоо хадгалагдаагүй байна. Эх хувийг энэ төхөөрөмжид хадгалж үлдээлээ.",
+  "batch": "recheck2-01.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeSynced",
+  "mn": "Өдөр тутмын солонгос хэлний явц SYNK бүртгэлд хадгалагдлаа.",
+  "batch": "recheck-08.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.deviceKept",
+  "mn": "Энэ төхөөрөмжид хадгалагдсан явц байна. Ашиглах мэдээллээ сонгоно уу.",
+  "batch": "recheck-08.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.accountChanged",
+  "mn": "Бүртгэлийн холболт өөрчлөгдсөн.",
+  "batch": "final-12.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.worldAccount",
+  "mn": "WORLD аппын бүртгэлийн холболтыг шалгана уу.",
+  "batch": "final-13.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.activeId",
+  "mn": "SYNK ID тань идэвхтэй эсэхийг шалгана уу.",
+  "batch": "final-13.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.idSettings",
+  "mn": "Энэ WORLD-ийн SYNK ID холболтын тохиргоог шалгана уу.",
+  "batch": "final-13.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.loginStartFailed",
+  "mn": "SYNK ID-гаар нэвтрэлтийг эхлүүлж чадсангүй.",
+  "batch": "recheck-08.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.loginToPlay",
+  "mn": "SYNK ID-гаар нэвтэрч тоглоомоо үргэлжлүүлнэ үү.",
+  "batch": "recheck-08.txt",
+  "line": 6
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.gameSaveCheck",
+  "mn": "Бүртгэлийн тоглоомын хадгалалт, сургалтын тохиргоог дахин шалгана уу.",
+  "batch": "final-13.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.loginToLearn",
+  "mn": "SYNK ID-гаар нэвтэрч өдөр тутмын солонгос хэлээ үргэлжлүүлнэ үү.",
+  "batch": "recheck-08.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.lifeSaveConnection",
+  "mn": "Өдөр тутмын солонгос хэлний явц бүртгэлд хадгалагдаж байгаа эсэхийг шалгана уу.",
+  "batch": "recheck4-02.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.loginPlease",
+  "mn": "SYNK ID-гаар нэвтэрнэ үү.",
+  "batch": "recheck-08.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.otherAccount",
+  "mn": "Өөр бүртгэлийн хариуг ашиглаагүй.",
+  "batch": "recheck4-02.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.classroom",
+  "mn": "Ангийн холболтыг шалгаж чадсангүй.",
+  "batch": "final-13.txt",
+  "line": 7
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.deviceUnreadable",
+  "mn": "Энэ төхөөрөмжийн явцыг шалгаж чадсангүй. Өмнөх мэдээлэл хадгалагдсан.",
+  "batch": "recheck-08.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.existingUnreadable",
+  "mn": "Өмнөх явцыг уншиж чадсангүй. Эх мэдээлэл хадгалагдсан.",
+  "batch": "recheck-08.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.saveFailedKept",
+  "mn": "Явцыг хадгалж чадсангүй. Дэлгэц дээрх явц хэвээр байна.",
+  "batch": "recheck-08.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.accountSaving",
+  "mn": "Өдөр тутмын солонгос хэлний явцыг бүртгэлд хадгалж байна.",
+  "batch": "recheck-08.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.deviceSaved",
+  "mn": "Энэ төхөөрөмжид хадгалагдана.",
+  "batch": "final-13.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.keptFirst",
+  "mn": "Хадгалсан явцаа эхлээд шалгана уу.",
+  "batch": "recheck-08.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.progressLoading",
+  "mn": "Явцыг ачаалж байна.",
+  "batch": "recheck-08.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.chooseProgressFirst",
+  "mn": "Ашиглах явцаа эхлээд сонгоно уу.",
+  "batch": "recheck-08.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.checkExistingFirst",
+  "mn": "Өмнөх явцаа эхлээд шалгана уу.",
+  "batch": "recheck-08.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.notOverwritten",
+  "mn": "Өмнөх явцыг шалгаж чадсангүй. Эх хувийг дарж бичээгүй.",
+  "batch": "recheck-08.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.tutorQuota",
+  "mn": "Багшийн сонголтыг хадгалах зай хүрэлцэхгүй байна. Сургалтын мэдээлэл хадгалагдсан.",
+  "batch": "recheck-09.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.questionsLeft",
+  "mn": "Үлдсэн асуулт байна.",
+  "batch": "final-13.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.learningAccountChanged",
+  "mn": "Сургалтын бүртгэл өөрчлөгдсөн. Тохиргоог дахин нээнэ үү.",
+  "batch": "final-13.txt",
+  "line": 10
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.noPracticeNow",
+  "mn": "Одоогийн нөхцөлд тохирох дасгал алга. Зорилго хэсгээс цаг, дууны тохиргоогоо сольж үзээрэй.",
+  "batch": "recheck-09.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.profileUnreadable",
+  "mn": "Хувийн тохиргоог шалгаж чадсангүй. Сургалтын мэдээлэл хадгалагдсан.",
+  "batch": "recheck-09.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.profileConflict",
+  "mn": "Хувийн тохиргоо өөр газар өөрчлөгдсөн. Сүүлийн тохиргоогоо шалгаад дахин сонгоно уу.",
+  "batch": "final-13.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.learningChanged",
+  "mn": "Сургалтын холболт өөрчлөгдсөн.",
+  "batch": "final-13.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonSpent",
+  "mn": "Энэ дасгалын бүх шинэ асуултыг аль хэдийн хийсэн. Дахин хийж болох ч дасгалын мэдээлэл зөвхөн шинэ асуултаар шинэчлэгдэнэ.",
+  "batch": "recheck5-01.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonSpentGoal",
+  "mn": "Энэ дасгалын бүх шинэ асуултыг аль хэдийн хийсэн. Дахин хийж болох ч дасгалын мэдээлэл зөвхөн шинэ асуултаар шинэчлэгдэнэ. Энэ нь таны сонгосон зорилготой холбогдоно.",
+  "batch": "recheck5-01.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonNone",
+  "mn": "Одоогийн нөхцөлд тохирох үйл ажиллагаа алга. Цаг эсвэл дууны тохиргоогоо сольж болно.",
+  "batch": "recheck-09.txt",
+  "line": 4
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonReviewDue",
+  "mn": "Давтах цаг нь болсон зүйл байна. Товчхон дахин харцгаая.",
+  "batch": "recheck-09.txt",
+  "line": 5
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonRetry",
+  "mn": "Өмнө нь алдсан хэсгээ дахин давтъя.",
+  "batch": "recheck3-01.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonRetryGoal",
+  "mn": "Өмнө нь алдсан хэсгээ дахин давтъя. Энэ нь таны сонгосон зорилготой холбогдоно.",
+  "batch": "recheck3-01.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonAssisted",
+  "mn": "Энэ хэсгийг тусламжтайгаар хийсэн. Дахин нэг удаа харцгаая.",
+  "batch": "recheck-09.txt",
+  "line": 8
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonAssistedGoal",
+  "mn": "Энэ хэсгийг тусламжтайгаар хийсэн. Дахин нэг удаа харцгаая. Энэ нь таны сонгосон зорилготой холбогдоно.",
+  "batch": "recheck-09.txt",
+  "line": 9
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonGoal",
+  "mn": "Таны сонгосон зорилготой холбогдох үйл ажиллагаа. Богино дасгалаар эхэлцгээе.",
+  "batch": "recheck2-01.txt",
+  "line": 12
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonHistory",
+  "mn": "Бүх мэдээллийг хараахан шалгаагүй тул үндсэн үйл ажиллагаагаар эхэлнэ.",
+  "batch": "recheck-09.txt",
+  "line": 11
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.reasonNew",
+  "mn": "Дасгалын мэдээлэл одоохондоо цөөн байна. Богино дасгал хийхийн хэрээр танд тааруулж өгнө.",
+  "batch": "recheck2-01.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.resumeReason",
+  "mn": "Зогссон хэсгээсээ шууд үргэлжлүүлнэ. Өөр зүйл сонгосон ч одоогийн явц тань хадгалагдана.",
+  "batch": "recheck-10.txt",
+  "line": 1
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.conditionsLabel",
+  "mn": "Хичээлийн нөхцөл солих",
+  "batch": "final-13.txt",
+  "line": 13
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.conditionsReason",
+  "mn": "Одоогийн нөхцөлд тохирох үйл ажиллагаа алга. Цаг эсвэл тусламжийн хэлбэрээ сольж болно.",
+  "batch": "final-13.txt",
+  "line": 14
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.startMyReview",
+  "mn": "Давтлагаа эхлэх",
+  "batch": "final-13.txt",
+  "line": 15
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.startMyPractice",
+  "mn": "Танд тохирсон дасгалыг эхлэх",
+  "batch": "recheck-10.txt",
+  "line": 2
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.startTodayReview",
+  "mn": "Өнөөдрийн давтлагыг эхлэх",
+  "batch": "final-13.txt",
+  "line": 16
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.practiceThis",
+  "mn": "Энэ хэллэгийг хамт давтах",
+  "batch": "recheck-10.txt",
+  "line": 3
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.openTodayReview",
+  "mn": "Өнөөдрийн давтлагыг нээх",
+  "batch": "final-13.txt",
+  "line": 17
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.continueLearning",
+  "mn": "Эхэлсэн хичээлээ үргэлжлүүлэх",
+  "batch": "final-13.txt",
+  "line": 18
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.startTodayLesson",
+  "mn": "Өнөөдрийн хичээлийг эхлэх",
+  "batch": "final-13.txt",
+  "line": 19
+ },
+ {
+  "source": "world-strings",
+  "key": "msg.browsePacks",
+  "mn": "Багцуудыг үзэх",
+  "batch": "final-13.txt",
+  "line": 20
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello.prompt",
+  "mn": "Анх уулзаж буй багштайгаа хэрхэн мэндлэх вэ?",
+  "batch": "recheck-10.txt",
+  "line": 4
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello.context",
+  "mn": "Та анги руу орж, багштайгаа анх удаа уулзлаа.",
+  "batch": "final-13.txt",
+  "line": 21
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello.explanation",
+  "mn": "Шинээр уулзсан хүнтэй «안녕하세요» гэж мэндэлнэ.",
+  "batch": "final-13.txt",
+  "line": 22
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello-transfer.prompt",
+  "mn": "Сургуульд анх уулзаж буй ажилтантай мэндэлнэ үү.",
+  "batch": "final-14.txt",
+  "line": 1
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello-transfer.context",
+  "mn": "Та одоохондоо тусламж аваагүй, салах гэж байгаа ч биш.",
+  "batch": "final-14.txt",
+  "line": 2
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-hello-transfer.explanation",
+  "mn": "Анх уулзсан ажилтанд эелдгээр «안녕하세요» гэнэ.",
+  "batch": "recheck-10.txt",
+  "line": 5
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks.prompt",
+  "mn": "Та тусламж авлаа. Юу гэж хэлэх вэ?",
+  "batch": "recheck-10.txt",
+  "line": 6
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks.context",
+  "mn": "Найз тань таны унагаасан номыг түүж өглөө.",
+  "batch": "recheck-10.txt",
+  "line": 7
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks.explanation",
+  "mn": "Тусламж авсны дараа «감사합니다» гэж талархлаа илэрхийлнэ.",
+  "batch": "final-14.txt",
+  "line": 3
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks-transfer.prompt",
+  "mn": "Ажилтан таны гээсэн шүхрийг олж өглөө.",
+  "batch": "final-14.txt",
+  "line": 4
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks-transfer.context",
+  "mn": "Тусалсан ажилтандаа талархлаа илэрхийлэхийг хүсэж байна.",
+  "batch": "final-14.txt",
+  "line": 5
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-thanks-transfer.explanation",
+  "mn": "Шүхрийг олж өгч тусалсанд «감사합니다» гэж хэлнэ.",
+  "batch": "recheck-10.txt",
+  "line": 8
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-name.prompt",
+  "mn": "Өөрийн нэрээ танилцуулах үгийг сонгоно уу.",
+  "batch": "recheck-10.txt",
+  "line": 9
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-name.context",
+  "mn": "Таны нэр Монгль.",
+  "batch": "final-14.txt",
+  "line": 6
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-name.explanation",
+  "mn": "«저는 몽글이에요» гэдэг нь «Би Монгль» гэж өөрийгөө танилцуулж буй үг.",
+  "batch": "final-14.txt",
+  "line": 7
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-name-transfer.context",
+  "mn": "Таны нэр Марин.",
+  "batch": "final-14.txt",
+  "line": 8
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-expressions-name-transfer.explanation",
+  "mn": "«저는 마린이에요» нь өөрийн нэрээ хэлж танилцуулж буй үг.",
+  "batch": "final-14.txt",
+  "line": 9
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-name.prompt",
+  "mn": "Хамгийн түрүүнд «저는 몽글이에요» гэж танилцуулсан найз хэн бэ?",
+  "batch": "final-14.txt",
+  "line": 10
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-name.explanation",
+  "mn": "Монгль өөрийнхөө нэрийг хэлж мэндэлсэн.",
+  "batch": "final-14.txt",
+  "line": 11
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-name-transfer.prompt",
+  "mn": "«저는 까몽이에요.» гэж бичсэн нэрийн шошго хэнийх вэ?",
+  "batch": "final-14.txt",
+  "line": 12
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-name-transfer.context",
+  "mn": "Та шинэ уулзалтын нэрийн шошгуудыг уншиж байна.",
+  "batch": "final-14.txt",
+  "line": 13
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-name-transfer.explanation",
+  "mn": "«저는 까몽이에요» гэсэн өгүүлбэрт танилцуулж буй нэр нь Камон (까몽).",
+  "batch": "final-14.txt",
+  "line": 14
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-thanks.prompt",
+  "mn": "Камон яагаад «감사합니다» гэж хэлсэн бэ?",
+  "batch": "final-14.txt",
+  "line": 15
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-thanks.explanation",
+  "mn": "Нуруунд нь наалдсан нэрийн шошгыг Марин салгаж өгсөнд талархсан.",
+  "batch": "final-14.txt",
+  "line": 16
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-thanks-transfer.prompt",
+  "mn": "Монгль «감사합니다» гэж хэллээ. Юу болсон бол?",
+  "batch": "final-14.txt",
+  "line": 17
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-thanks-transfer.context",
+  "mn": "Марин унасан нэрийн шошгыг Монгль найздаа өгчээ.",
+  "batch": "final-14.txt",
+  "line": 18
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-thanks-transfer.explanation",
+  "mn": "Нэрийн шошгыг өгч тусалсанд талархлаа илэрхийлсэн.",
+  "batch": "recheck-10.txt",
+  "line": 11
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-hello.prompt",
+  "mn": "Уулзалт дээр анх тааралдсан хүндээ хамгийн түрүүнд хэлэх үгийг сонгоно уу.",
+  "batch": "final-14.txt",
+  "line": 19
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-hello.explanation",
+  "mn": "Уулзалт дээр анх тааралдсан хүнтэй «안녕하세요» гэж мэндэлнэ.",
+  "batch": "final-15.txt",
+  "line": 1
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-hello-transfer.prompt",
+  "mn": "Шинэ дугуйланд анх уулзаж буй найзтайгаа эелдгээр мэндэлнэ үү.",
+  "batch": "recheck-10.txt",
+  "line": 12
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-hello-transfer.context",
+  "mn": "Та одоо хоол идэх гэж байгаа ч биш, гадуур яваад ирсэн ч биш.",
+  "batch": "final-15.txt",
+  "line": 2
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-story-hello-transfer.explanation",
+  "mn": "Анх уулзах үеийн мэндчилгээ бол «안녕하세요».",
+  "batch": "final-15.txt",
+  "line": 3
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-introduction.prompt",
+  "mn": "Нэрийг тань асуухад хариулна уу.",
+  "batch": "final-15.txt",
+  "line": 4
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-introduction.context",
+  "mn": "“이름이 뭐예요?” Таны нэр Сүжин.",
+  "batch": "final-15.txt",
+  "line": 5
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-introduction.explanation",
+  "mn": "Нэрийг тань асуусан тул «저는 수진이에요» гэж танилцуулна.",
+  "batch": "final-15.txt",
+  "line": 6
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-introduction-transfer.context",
+  "mn": "“성함이 어떻게 되세요?” Таны нэр Жихүн.",
+  "batch": "final-15.txt",
+  "line": 7
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-introduction-transfer.explanation",
+  "mn": "«성함» гэдэг нь «нэр» гэдгийг хүндэтгэлтэй хэлсэн үг. Өөрийн нэрээ хэлж хариулна.",
+  "batch": "recheck4-03.txt",
+  "line": 2
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-thanks.prompt",
+  "mn": "Тохирох үгийг сонгоно уу.",
+  "batch": "recheck4-03.txt",
+  "line": 3
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-thanks.explanation",
+  "mn": "Байршлыг зааж өгч тусалсанд «감사합니다» гэнэ.",
+  "batch": "recheck-10.txt",
+  "line": 13
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-thanks-transfer.prompt",
+  "mn": "Одоо тохирох үгийг сонгоно уу.",
+  "batch": "recheck4-03.txt",
+  "line": 4
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-thanks-transfer.context",
+  "mn": "Кафены ажилтан таны мартаж орхисон цүнхийг олж өглөө. Тусламжид нь талархлаа илэрхийлэхийг хүсэж байна.",
+  "batch": "final-15.txt",
+  "line": 12
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-thanks-transfer.explanation",
+  "mn": "Цүнхийг олж өгч тусалсанд талархах үг бол «감사합니다».",
+  "batch": "recheck-10.txt",
+  "line": 14
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello.prompt",
+  "mn": "Ангийн хаалгыг нээгээд анх уулзаж буй багшдаа хэлэх үгээ сонгоно уу.",
+  "batch": "recheck4-03.txt",
+  "line": 5
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello.context",
+  "mn": "Яриа хараахан эхлээгүй байна.",
+  "batch": "final-15.txt",
+  "line": 14
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello.explanation",
+  "mn": "Яриа эхлэхээс өмнө «안녕하세요» гэж эелдгээр мэндэлнэ.",
+  "batch": "recheck-10.txt",
+  "line": 15
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello-transfer.prompt",
+  "mn": "Анх очсон дэлгүүрийн ажилтантай яриа эхлүүлнэ үү.",
+  "batch": "final-15.txt",
+  "line": 15
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello-transfer.context",
+  "mn": "Та одоохондоо бараа сонгоогүй, тусламж ч аваагүй байна.",
+  "batch": "final-15.txt",
+  "line": 16
+ },
+ {
+  "source": "life-content-lang",
+  "key": "greetings-apply-hello-transfer.explanation",
+  "mn": "Анх яриа эхлэхэд хэрэглэх эелдэг мэндчилгээ бол «안녕하세요».",
+  "batch": "final-15.txt",
+  "line": 17
+ },
+ {
+  "source": "life-content-lang",
+  "key": "expression.greet-hello",
+  "mn": "Хэнтэй уулзсан ч, бүр анх удаа ч гэсэн эелдгээр мэндлэх үг.",
+  "batch": "recheck2-01.txt",
+  "line": 14
+ },
+ {
+  "source": "life-content-lang",
+  "key": "expression.greet-thanks",
+  "mn": "Тусламж авахдаа эелдгээр талархлаа илэрхийлнэ.",
+  "batch": "recheck-10.txt",
+  "line": 17
+ },
+ {
+  "source": "life-content-lang",
+  "key": "expression.greet-name",
+  "mn": "Өөрийн нэрээ танилцуулна. Нэр нь гийгүүлэгчээр (받침) төгссөн бол «이에요»-г хэрэглэнэ.",
+  "batch": "recheck4-03.txt",
+  "line": 6
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.안녕하세요.",
+  "mn": "Сайн байна уу? (эелдэг мэндчилгээ)",
+  "batch": "final-16.txt",
+  "line": 2
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.감사합니다.",
+  "mn": "Баярлалаа.",
+  "batch": "final-16.txt",
+  "line": 3
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.다녀왔어요.",
+  "mn": "Ирлээ. (гэртээ ирэхдээ хэлдэг)",
+  "batch": "final-16.txt",
+  "line": 4
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.다녀왔습니다.",
+  "mn": "Ирлээ. (гэртээ ирэхдээ эелдгээр хэлдэг)",
+  "batch": "recheck-10.txt",
+  "line": 18
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 몽글이에요.",
+  "mn": "Би Монгль.",
+  "batch": "final-16.txt",
+  "line": 5
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 마린이에요.",
+  "mn": "Би Марин.",
+  "batch": "final-16.txt",
+  "line": 6
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 수진이에요.",
+  "mn": "Би Сүжин.",
+  "batch": "final-16.txt",
+  "line": 7
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 지훈이에요.",
+  "mn": "Би Жихүн.",
+  "batch": "final-16.txt",
+  "line": 8
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.처음 뵙겠습니다.",
+  "mn": "Танилцсандаа таатай байна. (анх уулзахдаа хэлдэг, маш эелдэг)",
+  "batch": "final-16.txt",
+  "line": 9
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 학교에 가요.",
+  "mn": "Би сургууль руу явна.",
+  "batch": "final-16.txt",
+  "line": 10
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.몽글은 어디에 있어요?",
+  "mn": "Монгль хаана байна?",
+  "batch": "final-16.txt",
+  "line": 11
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린은 어디에 있어요?",
+  "mn": "Марин хаана байна?",
+  "batch": "final-16.txt",
+  "line": 12
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린은 학교에 가요.",
+  "mn": "Марин сургууль руу явна.",
+  "batch": "final-16.txt",
+  "line": 13
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.까몽",
+  "mn": "Камон (нэр)",
+  "batch": "final-16.txt",
+  "line": 14
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.몽글",
+  "mn": "Монгль (нэр)",
+  "batch": "final-16.txt",
+  "line": 15
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린",
+  "mn": "Марин (нэр)",
+  "batch": "final-16.txt",
+  "line": 16
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린이 이름표를 찾아 줬어요.",
+  "mn": "Марин нэрийн шошгыг олж өгсөн.",
+  "batch": "final-16.txt",
+  "line": 17
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.몽글이 먼저 집에 갔어요.",
+  "mn": "Монгль түрүүлээд гэртээ харьсан.",
+  "batch": "final-16.txt",
+  "line": 18
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.까몽이 자기 이름을 잊었어요.",
+  "mn": "Камон өөрийнхөө нэрийг мартсан.",
+  "batch": "final-16.txt",
+  "line": 19
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린이 자기 이름을 소개했어요.",
+  "mn": "Марин өөрийгөө танилцуулсан.",
+  "batch": "final-16.txt",
+  "line": 20
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.마린이 모임 시간을 물었어요.",
+  "mn": "Марин уулзалтын цагийг асуусан.",
+  "batch": "final-16.txt",
+  "line": 21
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.잘 먹겠습니다.",
+  "mn": "Хоол идэхийн өмнө хэлдэг талархлын үг.",
+  "batch": "final-16.txt",
+  "line": 22
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.학교에 있어요.",
+  "mn": "(Би) сургууль дээр байна.",
+  "batch": "final-16.txt",
+  "line": 23
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 학생이에요.",
+  "mn": "Би сурагч.",
+  "batch": "final-16.txt",
+  "line": 24
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.지훈은 집에 있어요.",
+  "mn": "Жихүн гэртээ байна.",
+  "batch": "final-16.txt",
+  "line": 25
+ },
+ {
+  "source": "life-content-lang",
+  "key": "meaning.저는 식사했어요.",
+  "mn": "Би хоолоо идсэн.",
+  "batch": "final-16.txt",
+  "line": 26
+ },
+ {
+  "source": "hangul-stage",
+  "key": "docTitle",
+  "mn": "Солонгос үсэг · SYNK WORLD",
+  "batch": "final-16.txt",
+  "line": 27
+ },
+ {
+  "source": "hangul-stage",
+  "key": "effects",
+  "mn": "Дууны эффектийг асаах, унтраах",
+  "batch": "final-16.txt",
+  "line": 28
+ },
+ {
+  "source": "hangul-stage",
+  "key": "lede.default",
+  "mn": "Авиа сонсоод үсгийг сонгож, өөрөө бүтээнэ.",
+  "batch": "recheck-10.txt",
+  "line": 20
+ },
+ {
+  "source": "hangul-stage",
+  "key": "lede.graduated",
+  "mn": "Андуурдаг үсгүүдээ богино хугацаанд давтана.",
+  "batch": "recheck4-03.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "lede.now",
+  "mn": "Одоо танилцах үсэг: Үндсэн эгшиг. Сонсож, сонгож, өөрөө бүтээнэ.",
+  "batch": "final-16.txt",
+  "line": 30
+ },
+ {
+  "source": "hangul-stage",
+  "key": "start.doneToday",
+  "mn": "Өнөөдрийнх дууслаа",
+  "batch": "final-16.txt",
+  "line": 31
+ },
+ {
+  "source": "hangul-stage",
+  "key": "start.warmup",
+  "mn": "Бэлтгэл дасгал эхлүүлэх",
+  "batch": "recheck4-03.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "start.again",
+  "mn": "Дахин нэг удаа",
+  "batch": "final-16.txt",
+  "line": 33
+ },
+ {
+  "source": "hangul-stage",
+  "key": "start.sub",
+  "mn": "3 асуулт · 3 минут орчим",
+  "batch": "final-16.txt",
+  "line": 34
+ },
+ {
+  "source": "hangul-stage",
+  "key": "start.subDone",
+  "mn": "Өнөөдрийн бүх хичээлээ хийлээ",
+  "batch": "final-16.txt",
+  "line": 35
+ },
+ {
+  "source": "hangul-stage",
+  "key": "toGames",
+  "mn": "Мини тоглоом руу очих",
+  "batch": "final-17.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "gamesNote",
+  "mn": "Тоглоомын жагсаалтын «Салхин зам», «Үгийн хэмнэл»-ээр үргэлжлүүлэн дасгал хийгээрэй.",
+  "batch": "recheck-11.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.songs",
+  "mn": "Дуу",
+  "batch": "final-17.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.songsFine",
+  "mn": "Дууны хэмнэлээр үсгүүд асна",
+  "batch": "final-17.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.road",
+  "mn": "Үсгийн зам",
+  "batch": "final-17.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.box",
+  "mn": "Үсгийн хайрцаг",
+  "batch": "final-17.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.boxFine",
+  "mn": "Үсэг дээр дарвал авиа нь сонсогдоно",
+  "batch": "recheck-11.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.legend",
+  "mn": "Үсгийн төлөв",
+  "batch": "final-17.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.signs",
+  "mn": "Хотхоны самбар",
+  "batch": "recheck-11.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.signsFine",
+  "mn": "Бүх үсгийг нь сурвал уншигдана",
+  "batch": "final-17.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.plateFine",
+  "mn": "Сурсан үсгээр тань дүүрнэ",
+  "batch": "final-17.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "section.amount",
+  "mn": "Нэг удаад хариулах асуулт",
+  "batch": "recheck-11.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "amount",
+  "mn": "3 асуулт",
+  "batch": "final-17.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "skip",
+  "mn": "Би солонгос үсэг уншиж чадна",
+  "batch": "final-17.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "skipped",
+  "mn": "Та солонгос үсгийн шатыг алгаслаа.",
+  "batch": "final-17.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unskip",
+  "mn": "Дахин сурах",
+  "batch": "final-17.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "saveNote.failed",
+  "mn": "Энэ төхөөрөмжид явцыг хадгалж чадсангүй. Зөвхөн энэ удаад үргэлжилнэ.",
+  "batch": "recheck-11.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "saveNote.none",
+  "mn": "Энэ дэлгэц дээр явц хадгалагдахгүй.",
+  "batch": "recheck-11.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "voice.unsupported",
+  "mn": "Энэ хөтөч дуу гаргаж чадахгүй. Өөр хөтчөөр нээнэ үү.",
+  "batch": "final-17.txt",
+  "line": 14
+ },
+ {
+  "source": "hangul-stage",
+  "key": "voice.missing",
+  "mn": "Энэ төхөөрөмж солонгос хэлээр дуу гаргаж чадахгүй. Төхөөрөмжийн тохиргооноос солонгос хэлний дуу хоолой татаж авбал дуу гарна.",
+  "batch": "recheck-11.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "state.unmet",
+  "mn": "хараахан танилцаагүй",
+  "batch": "final-17.txt",
+  "line": 15
+ },
+ {
+  "source": "hangul-stage",
+  "key": "state.met",
+  "mn": "танилцсан",
+  "batch": "final-17.txt",
+  "line": 16
+ },
+ {
+  "source": "hangul-stage",
+  "key": "state.learning",
+  "mn": "сурч байна",
+  "batch": "final-17.txt",
+  "line": 17
+ },
+ {
+  "source": "hangul-stage",
+  "key": "state.mastered",
+  "mn": "сурсан",
+  "batch": "final-17.txt",
+  "line": 18
+ },
+ {
+  "source": "hangul-stage",
+  "key": "legend.met",
+  "mn": "Танилцсан",
+  "batch": "final-17.txt",
+  "line": 19
+ },
+ {
+  "source": "hangul-stage",
+  "key": "legend.learning",
+  "mn": "Сурч байна",
+  "batch": "final-17.txt",
+  "line": 20
+ },
+ {
+  "source": "hangul-stage",
+  "key": "legend.mastered",
+  "mn": "Сурсан",
+  "batch": "final-17.txt",
+  "line": 21
+ },
+ {
+  "source": "hangul-stage",
+  "key": "final",
+  "mn": "эцсийн гийгүүлэгч ㄱ",
+  "batch": "recheck-11.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.done",
+  "mn": "сурсан",
+  "batch": "final-17.txt",
+  "line": 22
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.now",
+  "mn": "одоо",
+  "batch": "final-17.txt",
+  "line": 23
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.started",
+  "mn": "сурч байна",
+  "batch": "final-17.txt",
+  "line": 24
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.next",
+  "mn": "дараа нь",
+  "batch": "final-17.txt",
+  "line": 25
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.later",
+  "mn": "удахгүй",
+  "batch": "final-17.txt",
+  "line": 26
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.graduated",
+  "mn": "Төгссөн",
+  "batch": "final-17.txt",
+  "line": 27
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.current",
+  "mn": "Одоо: Үндсэн эгшиг",
+  "batch": "final-17.txt",
+  "line": 28
+ },
+ {
+  "source": "hangul-stage",
+  "key": "road.allLearned",
+  "mn": "Та бүх солонгос үсгийг сурлаа",
+  "batch": "final-17.txt",
+  "line": 29
+ },
+ {
+  "source": "hangul-stage",
+  "key": "group.vowel",
+  "mn": "Эгшиг",
+  "batch": "final-17.txt",
+  "line": 30
+ },
+ {
+  "source": "hangul-stage",
+  "key": "group.consonant",
+  "mn": "Гийгүүлэгч",
+  "batch": "final-17.txt",
+  "line": 31
+ },
+ {
+  "source": "hangul-stage",
+  "key": "group.final",
+  "mn": "Эцсийн гийгүүлэгч",
+  "batch": "final-17.txt",
+  "line": 32
+ },
+ {
+  "source": "hangul-stage",
+  "key": "tag.final",
+  "mn": "Төгсгөл",
+  "batch": "recheck-11.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "song.listen",
+  "mn": "«첫 인사 세 마디» дууг сонсох",
+  "batch": "final-17.txt",
+  "line": 33
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sign.read",
+  "mn": "«가» самбар, дарж сонсох",
+  "batch": "recheck-11.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sign.hazy",
+  "mn": "Одоохондоо бүдэг самбар",
+  "batch": "recheck-11.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sign.tap",
+  "mn": "Дарж сонсох",
+  "batch": "final-17.txt",
+  "line": 34
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sign.notYet",
+  "mn": "Одоохондоо бүдэг",
+  "batch": "recheck-11.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U1",
+  "mn": "Үндсэн эгшиг",
+  "batch": "final-17.txt",
+  "line": 35
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U2",
+  "mn": "Гийгүүлэгч 1",
+  "batch": "final-17.txt",
+  "line": 36
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U3",
+  "mn": "Гийгүүлэгч 2",
+  "batch": "final-17.txt",
+  "line": 37
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U4",
+  "mn": "Нэмэлт эгшиг",
+  "batch": "final-17.txt",
+  "line": 38
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U5",
+  "mn": "Амьсгалт гийгүүлэгч",
+  "batch": "final-17.txt",
+  "line": 39
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U6",
+  "mn": "Эцсийн гийгүүлэгч 1",
+  "batch": "final-17.txt",
+  "line": 40
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U7",
+  "mn": "Эцсийн гийгүүлэгч 2",
+  "batch": "final-17.txt",
+  "line": 41
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U8",
+  "mn": "Чанга гийгүүлэгч",
+  "batch": "final-17.txt",
+  "line": 42
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U9",
+  "mn": "Хос эгшиг",
+  "batch": "final-17.txt",
+  "line": 43
+ },
+ {
+  "source": "hangul-stage",
+  "key": "unit.U10",
+  "mn": "Анхны өгүүлбэр",
+  "batch": "final-17.txt",
+  "line": 44
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.warmup",
+  "mn": "Бэлтгэл дасгалын цаг. Андуурдаг үсгүүдээ товч харна.",
+  "batch": "recheck4-03.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.pair.now",
+  "mn": "Эдгээр үсгийг дөнгөж сая андуурлаа. Өнөөдөр дахин давтъя.",
+  "batch": "final-17.txt",
+  "line": 46
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.pair.yesterday",
+  "mn": "Эдгээр үсгийг өчигдөр андуурсан. Өнөөдөр дахин давтъя.",
+  "batch": "final-17.txt",
+  "line": 47
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.pair.before",
+  "mn": "Эдгээр үсгийг өмнөх удаа андуурсан. Өнөөдөр дахин давтъя.",
+  "batch": "final-17.txt",
+  "line": 48
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.newFinals",
+  "mn": "Өнөөдөр 3 шинэ эцсийн гийгүүлэгчтэй танилцана.",
+  "batch": "final-18.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.mixed",
+  "mn": "Давтах үсэг ба шинэ үсэг.",
+  "batch": "final-18.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.new",
+  "mn": "Өнөөдөр 3 шинэ үсэгтэй танилцана.",
+  "batch": "final-18.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.due",
+  "mn": "Дахин харах цаг нь болсон үсэг.",
+  "batch": "final-18.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "reason.practice",
+  "mn": "Мэддэг үсгээрээ дасгал хийнэ.",
+  "batch": "final-18.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "listenTo",
+  "mn": "«가» сонсох",
+  "batch": "recheck-11.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "newLetter",
+  "mn": "Шинэ үсэг ㄱ",
+  "batch": "final-18.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "newFinal",
+  "mn": "Шинэ эцсийн гийгүүлэгч ㄱ",
+  "batch": "final-18.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "trace",
+  "mn": "Даган бичээрэй",
+  "batch": "final-18.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "traceRedo",
+  "mn": "Арилгаад дахин бичих",
+  "batch": "final-18.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "traceArea",
+  "mn": "ㄱ-г даган бичих талбай",
+  "batch": "final-18.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "derive.stroke",
+  "mn": "ㄱ дээр нэг зураас нэмбэл ㅋ",
+  "batch": "final-18.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "derive.pair",
+  "mn": "ㄱ, ㅋ хоёр хос",
+  "batch": "final-18.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "derive.twin",
+  "mn": "ㄱ-г хоёр бичвэл ㅋ",
+  "batch": "final-18.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "derive.combine",
+  "mn": "ㄱ, ㅋ-г нийлүүлбэл ㅘ",
+  "batch": "final-18.txt",
+  "line": 14
+ },
+ {
+  "source": "hangul-stage",
+  "key": "trio",
+  "mn": "Гурван авиаг харьцуулах: 가 · 카 · 까",
+  "batch": "recheck-11.txt",
+  "line": 14
+ },
+ {
+  "source": "hangul-stage",
+  "key": "trioTag",
+  "mn": "3 авиа",
+  "batch": "recheck-11.txt",
+  "line": 15
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sum",
+  "mn": "아 дээр эцсийн гийгүүлэгч ㄱ нэмбэл 간",
+  "batch": "recheck-11.txt",
+  "line": 16
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-ng",
+  "mn": "Үеийн эхэнд ㅇ авиагүй тул 아 нь ㅏ-тай адилхан дуудагдана.",
+  "batch": "recheck4-03.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-ng",
+  "mn": "Эцсийн гийгүүлэгч ㅇ авиатай (нг). Үеийн эхний авиагүй ㅇ-ээс ялгаатай.",
+  "batch": "recheck4-03.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-g",
+  "mn": "Эцсийн гийгүүлэгч ㄱ авиаг тасалж дуусгана. Гадагш гаргахгүй.",
+  "batch": "recheck4-03.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-d",
+  "mn": "Эцсийн гийгүүлэгч ㄷ авиаг тасалж дуусгана. Гадагш гаргахгүй.",
+  "batch": "recheck4-03.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-b",
+  "mn": "Эцсийн гийгүүлэгч ㅂ-г уруулаа хамхиж дуусгана. Гадагш гаргахгүй.",
+  "batch": "recheck-11.txt",
+  "line": 20
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-s",
+  "mn": "Эцсийн гийгүүлэгч ㅅ-г эцсийн гийгүүлэгч ㄷ-тэй ижил авиагаар уншина.",
+  "batch": "recheck4-03.txt",
+  "line": 14
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.f-j",
+  "mn": "Эцсийн гийгүүлэгч ㅈ-г ч эцсийн гийгүүлэгч ㄷ шиг уншина.",
+  "batch": "recheck-12.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-k",
+  "mn": "ㄱ дээр нэг зураас нэмбэл ㅋ болно. Амьсгалаа хүчтэй гаргана.",
+  "batch": "final-18.txt",
+  "line": 16
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-t",
+  "mn": "ㄷ дээр нэг зураас нэмбэл ㅌ болно. Амьсгалаа хүчтэй гаргана.",
+  "batch": "final-18.txt",
+  "line": 17
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-p",
+  "mn": "ㅍ-г ㅂ-ээс илүү хүчтэй амьсгалаар дуудна.",
+  "batch": "final-18.txt",
+  "line": 18
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-ch",
+  "mn": "ㅈ дээр нэг зураас нэмбэл ㅊ болно. Амьсгалаа хүчтэй гаргана.",
+  "batch": "final-18.txt",
+  "line": 19
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-kk",
+  "mn": "ㄱ-г хоёр бичвэл ㄲ болно. Хоолойгоо чангалж, амьсгал гаргахгүй.",
+  "batch": "final-18.txt",
+  "line": 20
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-tt",
+  "mn": "ㄷ-г хоёр бичвэл ㄸ болно. Хоолойгоо чангалж, амьсгал гаргахгүй.",
+  "batch": "final-18.txt",
+  "line": 21
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-pp",
+  "mn": "ㅂ-г хоёр бичвэл ㅃ болно. Хоолойгоо чангалж, амьсгал гаргахгүй.",
+  "batch": "final-18.txt",
+  "line": 22
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-ss",
+  "mn": "ㅅ-г хоёр бичвэл ㅆ болно. ㅅ-ээс илүү хүчтэй, чанга дуудна.",
+  "batch": "final-18.txt",
+  "line": 23
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.c-jj",
+  "mn": "ㅈ-г хоёр бичвэл ㅉ болно. Хоолойгоо чангалж, амьсгал гаргахгүй.",
+  "batch": "final-18.txt",
+  "line": 24
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-wa",
+  "mn": "오, 아-г хурдан холбож хэлбэл 와 болно.",
+  "batch": "final-19.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-wo",
+  "mn": "우, 어-г хурдан холбож хэлбэл 워 болно.",
+  "batch": "final-19.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-wi",
+  "mn": "우, 이-г хурдан холбож хэлбэл 위 болно.",
+  "batch": "final-19.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-ui",
+  "mn": "으, 이-г хурдан холбож хэлбэл 의 болно.",
+  "batch": "final-19.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-oe",
+  "mn": "ㅗ, ㅣ-г нийлүүлсэн боловч «우에»-г хурдан хэлсэн мэт дуудагдана.",
+  "batch": "final-19.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-wae",
+  "mn": "오, 애-г хурдан холбож хэлбэл 왜 болно.",
+  "batch": "final-19.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-we",
+  "mn": "우, 에-г хурдан холбож хэлбэл 웨 болно.",
+  "batch": "final-19.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-ye",
+  "mn": "ㅔ дээр нэг зураас нэмбэл ㅖ болно. ㅓ нь ㅕ болдогтой адил.",
+  "batch": "final-19.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.v-yae",
+  "mn": "ㅐ дээр нэг зураас нэмбэл ㅒ болно. ㅏ нь ㅑ болдогтой адил.",
+  "batch": "final-19.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.sameSound",
+  "mn": "ㅐ · ㅔ адилхан дуудагдана. Үг бүрд аль үсгийг бичих нь тогтсон байдаг.",
+  "batch": "recheck-12.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "note.finalIntro",
+  "mn": "Эцсийн гийгүүлэгч (받침) нь үеийн доор бичигддэг төгсгөлийн авиа.",
+  "batch": "recheck4-04.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.pair",
+  "mn": "Андуурдаг хоёр авиа. Сонссоноо сонгоорой",
+  "batch": "recheck4-04.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.teach",
+  "mn": "Монгль андуураад байна. Сонссоноо сонгож туслаарай",
+  "batch": "recheck-12.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.word",
+  "mn": "Сонсоод зөв үгийг сонгоорой",
+  "batch": "final-19.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.letter",
+  "mn": "Сонсоод зөв үсгийг сонгоорой",
+  "batch": "final-19.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.see",
+  "mn": "Үсгийг хараад зөв авиаг сонгоорой",
+  "batch": "recheck-12.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.build",
+  "mn": "Сонссон авиагаа бүтээгээрэй",
+  "batch": "recheck-12.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "prompt.match",
+  "mn": "Авиа, үсгийг хослуулаарай",
+  "batch": "recheck-12.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "speak",
+  "mn": "Авиа сонсох",
+  "batch": "recheck-12.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "slow",
+  "mn": "Удаанаар сонсох",
+  "batch": "recheck4-04.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "noFinal",
+  "mn": "가, эцсийн гийгүүлэгчгүй",
+  "batch": "final-19.txt",
+  "line": 15
+ },
+ {
+  "source": "hangul-stage",
+  "key": "held",
+  "mn": "Монгль найзын барьж буй үсэг: ㅓ",
+  "batch": "final-19.txt",
+  "line": 16
+ },
+ {
+  "source": "hangul-stage",
+  "key": "soundN",
+  "mn": "3-р авиа",
+  "batch": "recheck-12.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "letterN",
+  "mn": "가 үсэг",
+  "batch": "final-19.txt",
+  "line": 17
+ },
+ {
+  "source": "hangul-stage",
+  "key": "col.sounds",
+  "mn": "Авиа",
+  "batch": "recheck4-04.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "col.letters",
+  "mn": "Үсэг",
+  "batch": "final-19.txt",
+  "line": 18
+ },
+ {
+  "source": "hangul-stage",
+  "key": "check",
+  "mn": "Шалгах",
+  "batch": "final-19.txt",
+  "line": 19
+ },
+ {
+  "source": "hangul-stage",
+  "key": "quit",
+  "mn": "Зогсоох",
+  "batch": "final-19.txt",
+  "line": 20
+ },
+ {
+  "source": "hangul-stage",
+  "key": "mongleGotIt",
+  "mn": "Монгль ойлголоо",
+  "batch": "final-19.txt",
+  "line": 21
+ },
+ {
+  "source": "hangul-stage",
+  "key": "answerIs",
+  "mn": "Зөв хариулт: 가",
+  "batch": "final-19.txt",
+  "line": 22
+ },
+ {
+  "source": "hangul-stage",
+  "key": "thisSound",
+  "mn": "가 ингэж дуудагдана",
+  "batch": "final-19.txt",
+  "line": 23
+ },
+ {
+  "source": "hangul-stage",
+  "key": "notButIs",
+  "mn": "고 биш, 가",
+  "batch": "final-19.txt",
+  "line": 24
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.heard",
+  "mn": "«가» гэж сонсогдсон.",
+  "batch": "final-19.txt",
+  "line": 27
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.sound",
+  "mn": "Энэ бол «가» авиа.",
+  "batch": "recheck-12.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.compare",
+  "mn": "Таны сонгосон «거», дараа нь зөв авиаг сонсгоно.",
+  "batch": "recheck-12.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.again",
+  "mn": "«가» авиаг дахин нэг удаа сонсгоно.",
+  "batch": "recheck-12.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.compareSound",
+  "mn": "Таны сонгосон авиа, дараа нь зөв авиаг сонсгоно.",
+  "batch": "recheck-12.txt",
+  "line": 12
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.built",
+  "mn": "Та «가»-г бүтээлээ.",
+  "batch": "final-19.txt",
+  "line": 28
+ },
+ {
+  "source": "hangul-stage",
+  "key": "why.compareBuilt",
+  "mn": "Таны бүтээсэн авиа, дараа нь зөв авиаг сонсгоно.",
+  "batch": "recheck-12.txt",
+  "line": 13
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.newLetters",
+  "mn": "3 шинэ үсэг сурлаа!",
+  "batch": "recheck4-04.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.questions",
+  "mn": "3 асуултад хариуллаа!",
+  "batch": "recheck4-04.txt",
+  "line": 6
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.reviewTitle",
+  "mn": "Дахин харах үсэг",
+  "batch": "final-19.txt",
+  "line": 33
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.reviewNote",
+  "mn": "Андуурсан үсгүүд. Дарж авиаг нь дахин сонсоорой.",
+  "batch": "recheck-12.txt",
+  "line": 14
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.mastered",
+  "mn": "Шинээр сурсан үсэг",
+  "batch": "final-19.txt",
+  "line": 34
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.canRead",
+  "mn": "Одоо уншиж чадна",
+  "batch": "final-20.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.tomorrow",
+  "mn": "Дараа танилцах үсэг",
+  "batch": "final-20.txt",
+  "line": 2
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.allMet",
+  "mn": "Та бүх солонгос үсэгтэй танилцлаа.",
+  "batch": "final-20.txt",
+  "line": 3
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.toStart",
+  "mn": "Эхлэл рүү буцах",
+  "batch": "final-20.txt",
+  "line": 4
+ },
+ {
+  "source": "hangul-stage",
+  "key": "finish.song",
+  "mn": "Дуу сонсож давтах · «첫 인사 세 마디» 30 секунд",
+  "batch": "recheck2-01.txt",
+  "line": 15
+ },
+ {
+  "source": "hangul-stage",
+  "key": "grad.life",
+  "mn": "Өдөр тутмын солонгос хэлний эхний хичээл",
+  "batch": "recheck4-04.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "grad.title",
+  "mn": "Солонгос үсгийн шатыг давлаа!",
+  "batch": "recheck2-02.txt",
+  "line": 1
+ },
+ {
+  "source": "hangul-stage",
+  "key": "grad.line",
+  "mn": "Одоо эцсийн гийгүүлэгчтэй үгийг ч уншиж чадна.",
+  "batch": "final-20.txt",
+  "line": 5
+ },
+ {
+  "source": "hangul-stage",
+  "key": "grad.fine",
+  "mn": "Андуурдаг үсгүүд хааяа богино бэлтгэл дасгалаар дахин гарч ирнэ. Үсгийн хайрцаг хэвээр үлдэнэ.",
+  "batch": "recheck4-04.txt",
+  "line": 8
+ },
+ {
+  "source": "hangul-stage",
+  "key": "grad.note",
+  "mn": "«Салхин зам», «Үгийн хэмнэл»-ээр үргэлжлүүлэн дасгал хийгээрэй.",
+  "batch": "final-20.txt",
+  "line": 7
+ },
+ {
+  "source": "hangul-stage",
+  "key": "error.body",
+  "mn": "Шаардлагатай файлыг ачаалж чадсангүй. Хуудсаа дахин ачаална уу.",
+  "batch": "final-20.txt",
+  "line": 9
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sheet.title",
+  "mn": "Та солонгос үсэг уншиж чадах уу?",
+  "batch": "final-20.txt",
+  "line": 10
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sheet.body",
+  "mn": "Уншиж чадвал энэ шатыг алгасаж болно. Хүссэн үедээ эргэн ирж сурч болно.",
+  "batch": "final-20.txt",
+  "line": 11
+ },
+ {
+  "source": "hangul-stage",
+  "key": "sheet.stay",
+  "mn": "Үргэлжлүүлэн сурах",
+  "batch": "final-20.txt",
+  "line": 12
+ }
+]

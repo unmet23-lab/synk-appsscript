@@ -1,20 +1,83 @@
 {
- "createdAt": "2026-10-19T09:20:26.435Z",
+ "createdAt": "2026-10-19T11:31:14.739Z",
  "tool": "node tools/몽골어대조.js --파일 <묶음> --구독 (문법 gemini-4-argon high · 직역 역번역 gemini-3.8-flash high · 맞춤법 spellcheck.mn)",
- "batches": "experiences/brand-opening/qa/mn-check-20261019/ (batch-NN 첫 검문 · recheck*-NN 고친 줄 재검문 · final-NN 첫 검문 뒤 한 번도 다시 재지 않은 줄의 마지막 재검문)",
- "meaning": "뜻 층(원문 ↔ 직역 역번역)은 Claude가 줄마다 대조했다(10-19). 몽골어 원어민 사람 검수는 아직이다.",
+ "batches": "experiences/brand-opening/qa/mn-check-20261019/ (batch-NN 첫 검문 · recheck*-NN 고친 줄 재검문 · final-NN 첫 검문 뒤 한 번도 다시 재지 않은 줄의 마지막 재검문 · recheck7~9 Fable 교정과 origin 새 문장을 넣은 뒤의 재검문 · recheck10~13 origin 703eab740 로그인 흐름 새 줄(account.trial* · records.*) · fable-20261019.json Fable 지적과 처리)",
+ "meaning": "세 겹 확인(결정 표 10-19 「현지어판 확인」): ① 직역 역번역을 Claude Opus가 원문과 줄마다 견줬다 ② Fable이 915줄을 교정했다(지적 26건 → 반영 17 · 고쳐 반영 8 · 그대로 둠 1, fable-20261019.json) ③ 제미나이 아르곤이 문법을 채점했다(tools/몽골어대조.js --구독, 맞춤법 층 spellcheck.mn 포함). 원어민 검수는 같은 결정에 따라 계획에 없다.",
  "names": "까몽·몽글·마린 → Камон · Монгль · Марин(09-20 카드와 같은 표기), 싱크타운 → SYNK Таун, 수진·지훈 → Сүжин · Жихүн. 맞춤법 층은 이 이름들, 라틴 글자에 붙인 격 어미(WORLD-ийн · ID-д), 한글 낱자에 붙인 어미(ㄱ-г 같은 것), 들어온 말(рамён · апп · Вэб · Мини)을 늘 의심으로 낸다. 상태(status)에서는 이것들을 뺐고 spelling 칸에는 그대로 남겼다. 「Монгль」은 문법 층이 「Монгол의 오타처럼 보인다」고 여러 번 짚었다 — 이름 표기는 유호님 결정 몫이다.",
  "summary": {
-  "lines": 868,
-  "unchecked": 20,
-  "grammarOk": 398,
-  "grammarAwkwardBatch": 450,
+  "lines": 917,
+  "unchecked": 0,
+  "grammarOk": 528,
+  "grammarAwkwardBatch": 389,
   "grammarBrokenBatch": 0,
-  "namedProblem": 8,
+  "namedProblem": 3,
   "spellingUnmeasured": 0,
-  "clean": 398
+  "clean": 528
  },
  "lines": [
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.title",
+   "mnHash": "abd3db0bde",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.listen",
+   "mnHash": "795136db7d",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.ask",
+   "mnHash": "ece229fb34",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.no",
+   "mnHash": "3b5d3db72c",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.yes",
+   "mnHash": "e95e2a8dc9",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.saving",
+   "mnHash": "01007ea847",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "firstRun.hangul.failed",
+   "mnHash": "e5d1381fb9",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
   {
    "source": "world-strings",
    "key": "lang.pick.title",
@@ -157,8 +220,8 @@
   {
    "source": "world-strings",
    "key": "opening.skip",
-   "mnHash": "3f10f62421",
-   "batch": "final-01.txt",
+   "mnHash": "9de3c893f3",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -351,7 +414,10 @@
    "source": "world-strings",
    "key": "home.account.pending",
    "mnHash": "464a51b960",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -393,10 +459,10 @@
    "source": "world-strings",
    "key": "home.roomBack",
    "mnHash": "998e582bcc",
-   "batch": "final-02.txt",
-   "grammar": "어색",
+   "batch": "recheck6-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -441,13 +507,19 @@
    "source": "world-strings",
    "key": "home.orientation.landscape",
    "mnHash": "7a55d4bd9e",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
    "key": "home.orientation.portrait",
    "mnHash": "dfd28793c4",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -660,7 +732,10 @@
    "source": "world-strings",
    "key": "home.study.review",
    "mnHash": "107fc9caaf",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -786,8 +861,8 @@
   {
    "source": "world-strings",
    "key": "home.memory.recovery",
-   "mnHash": "74020ca34b",
-   "batch": "recheck-01.txt",
+   "mnHash": "34c6f754ea",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -804,8 +879,8 @@
   {
    "source": "world-strings",
    "key": "town.hintClose",
-   "mnHash": "97d631a9de",
-   "batch": "recheck-01.txt",
+   "mnHash": "db76c6c01b",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1110,8 +1185,8 @@
   {
    "source": "world-strings",
    "key": "play.more",
-   "mnHash": "f0d3bfa7e9",
-   "batch": "final-03.txt",
+   "mnHash": "3a583fb506",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1120,7 +1195,7 @@
    "source": "world-strings",
    "key": "play.first.title",
    "mnHash": "80e7d54cec",
-   "batch": "final-03.txt",
+   "batch": "final-17.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1128,8 +1203,8 @@
   {
    "source": "world-strings",
    "key": "play.first.detail",
-   "mnHash": "27d1a8b0c7",
-   "batch": "recheck-01.txt",
+   "mnHash": "655350af5c",
+   "batch": "recheck5-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1184,8 +1259,8 @@
   {
    "source": "world-strings",
    "key": "game.openNew",
-   "mnHash": "a759d2b324",
-   "batch": "final-03.txt",
+   "mnHash": "9f326c2f26",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1193,8 +1268,8 @@
   {
    "source": "world-strings",
    "key": "game.slow",
-   "mnHash": "85fb750e0d",
-   "batch": "final-03.txt",
+   "mnHash": "c035c66fc4",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1220,8 +1295,8 @@
   {
    "source": "world-strings",
    "key": "plan.game.hangul",
-   "mnHash": "5d8765238a",
-   "batch": "final-03.txt",
+   "mnHash": "edc2d92601",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1239,7 +1314,10 @@
    "source": "world-strings",
    "key": "plan.review",
    "mnHash": "d3fb8c8131",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -1532,8 +1610,8 @@
   {
    "source": "world-strings",
    "key": "settings.replayOpening",
-   "mnHash": "d0c1417260",
-   "batch": "final-04.txt",
+   "mnHash": "44009ac212",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -1938,7 +2016,10 @@
    "source": "world-strings",
    "key": "tutor.how.review.body",
    "mnHash": "edee7b2792",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -2414,7 +2495,19 @@
    "source": "world-strings",
    "key": "homeTutor.note.pending",
    "mnHash": "fb87c8a011",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "homeTutor.reviewDue",
+   "mnHash": "57297a0a3c",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -2674,7 +2767,10 @@
    "source": "world-strings",
    "key": "goal.today.note",
    "mnHash": "fff947be35",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -2708,10 +2804,10 @@
    "source": "world-strings",
    "key": "goal.audio",
    "mnHash": "cf5ca0182d",
-   "batch": "final-07.txt",
-   "grammar": "어색",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -2760,12 +2856,21 @@
   },
   {
    "source": "world-strings",
-   "key": "goal.scope",
-   "mnHash": "15311dea9f",
-   "batch": "recheck-03.txt",
-   "grammar": "어색",
+   "key": "goal.scope.account",
+   "mnHash": "506c6e4d24",
+   "batch": "recheck7-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "goal.scope.device",
+   "mnHash": "ac7fe1e585",
+   "batch": "recheck7-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -2878,11 +2983,11 @@
   {
    "source": "world-strings",
    "key": "goal.seen.empty",
-   "mnHash": "48e862326f",
-   "batch": "recheck-03.txt",
-   "grammar": "어색",
+   "mnHash": "fd84138687",
+   "batch": "recheck7-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -2915,7 +3020,10 @@
    "source": "world-strings",
    "key": "goal.retry",
    "mnHash": "939c6b522d",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3002,7 +3110,12 @@
    "source": "world-strings",
    "key": "life.packTitle.store",
    "mnHash": "01c78fbbb9",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [
+    "Камоны"
+   ],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3025,11 +3138,11 @@
   {
    "source": "world-strings",
    "key": "life.packTitle.plans",
-   "mnHash": "d6ca741b9e",
-   "batch": "final-08.txt",
-   "grammar": "어색",
+   "mnHash": "282afaf065",
+   "batch": "recheck7-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -3143,10 +3256,10 @@
    "source": "world-strings",
    "key": "life.phase.visit",
    "mnHash": "a1b14b0cf7",
-   "batch": "recheck-04.txt",
-   "grammar": "정상",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3359,7 +3472,10 @@
    "source": "world-strings",
    "key": "life.backSub",
    "mnHash": "f96d8b0cf8",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3419,7 +3535,10 @@
    "source": "world-strings",
    "key": "life.reviewBack",
    "mnHash": "d644bc0382",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3501,7 +3620,7 @@
    "source": "world-strings",
    "key": "life.more",
    "mnHash": "3a583fb506",
-   "batch": "recheck-04.txt",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -3563,8 +3682,8 @@
   {
    "source": "world-strings",
    "key": "life.storiesSub",
-   "mnHash": "586a1bac9c",
-   "batch": "final-09.txt",
+   "mnHash": "9a85abefad",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -3573,10 +3692,10 @@
    "source": "world-strings",
    "key": "life.cafeVisits",
    "mnHash": "a1b14b0cf7",
-   "batch": "recheck-04.txt",
-   "grammar": "정상",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3760,9 +3879,30 @@
   },
   {
    "source": "world-strings",
+   "key": "life.feedback.guided",
+   "mnHash": "fa6739a42b",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.guidedNext",
+   "mnHash": "50d98d7157",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
    "key": "life.comesBack",
    "mnHash": "262d7543d7",
-   "status": "미검문"
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
   },
   {
    "source": "world-strings",
@@ -3868,8 +4008,8 @@
   {
    "source": "world-strings",
    "key": "life.toTown",
-   "mnHash": "7865d127a6",
-   "batch": "final-09.txt",
+   "mnHash": "998e582bcc",
+   "batch": "recheck6-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -3912,9 +4052,75 @@
   },
   {
    "source": "world-strings",
+   "key": "life.result.alone",
+   "mnHash": "ce2a4f6948",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.guided",
+   "mnHash": "ffac9c66a5",
+   "batch": "recheck4-01.txt",
+   "grammar": "어색",
+   "spelling": [],
+   "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.guidedNote",
+   "mnHash": "53c6b387e6",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.again",
+   "mnHash": "f3892f4bfa",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.helpedOpen",
+   "mnHash": "df24fa9580",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.otherChoice",
+   "mnHash": "cd6fcfbc98",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.result.againButton",
+   "mnHash": "35969470dd",
+   "batch": "recheck6-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
    "key": "life.reviewWordCount",
    "mnHash": "2867aa70a6",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -3938,7 +4144,10 @@
    "source": "world-strings",
    "key": "life.reviewSubDue",
    "mnHash": "89abe85f2e",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -3998,7 +4207,10 @@
    "source": "world-strings",
    "key": "life.reviewMet",
    "mnHash": "c21531202a",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -4022,7 +4234,10 @@
    "source": "world-strings",
    "key": "life.reviewHeader",
    "mnHash": "6e626bfbfd",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -4081,8 +4296,8 @@
   {
    "source": "world-strings",
    "key": "account.lead",
-   "mnHash": "cc7cbcf532",
-   "batch": "recheck-04.txt",
+   "mnHash": "55f97f871f",
+   "batch": "recheck7-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -4107,6 +4322,33 @@
    "spelling": [
     "Таун"
    ],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "account.trialLead",
+   "mnHash": "b95940cbfc",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "account.trialTitle",
+   "mnHash": "af80788600",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "account.trialBody",
+   "mnHash": "e6b445198e",
+   "batch": "recheck16-01.txt",
+   "grammar": "정상",
+   "spelling": [],
    "status": "두 겹 깨끗"
   },
   {
@@ -4175,17 +4417,22 @@
   {
    "source": "world-strings",
    "key": "account.testNote",
-   "mnHash": "72e27bb685",
-   "status": "미검문"
+   "mnHash": "61236d6d1d",
+   "batch": "recheck5-01.txt",
+   "grammar": "정상",
+   "spelling": [
+    "апп"
+   ],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "account.loaded",
-   "mnHash": "d72aa41130",
-   "batch": "final-10.txt",
-   "grammar": "어색",
+   "mnHash": "a3bca138ae",
+   "batch": "recheck7-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -4391,13 +4638,19 @@
    "source": "world-strings",
    "key": "account.savePending",
    "mnHash": "464a51b960",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
    "key": "account.saveOk",
    "mnHash": "c4eb6da8c5",
-   "status": "미검문"
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -4546,8 +4799,8 @@
   {
    "source": "world-strings",
    "key": "account.pendingBody",
-   "mnHash": "b2629792cc",
-   "batch": "final-11.txt",
+   "mnHash": "416446d8c4",
+   "batch": "recheck8-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -4619,7 +4872,7 @@
    "source": "world-strings",
    "key": "account.toTown",
    "mnHash": "7865d127a6",
-   "batch": "final-09.txt",
+   "batch": "recheck6-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -4704,6 +4957,204 @@
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.title",
+   "mnHash": "f425644d9a",
+   "batch": "recheck13-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.lead",
+   "mnHash": "d434f05067",
+   "batch": "recheck13-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.move",
+   "mnHash": "d5dd472050",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.keep",
+   "mnHash": "b0d2f8dc4e",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.snapshot",
+   "mnHash": "b0d3a97fc2",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.snapshotBody",
+   "mnHash": "ef4be6f95a",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.moving",
+   "mnHash": "a2882123f6",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.failed",
+   "mnHash": "7c4a17ab22",
+   "batch": "recheck17-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.moved",
+   "mnHash": "61ab64f5a6",
+   "batch": "recheck13-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.partly",
+   "mnHash": "30b019e35f",
+   "batch": "recheck13-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.kept",
+   "mnHash": "d8fd36df6f",
+   "batch": "recheck16-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.hangulRow",
+   "mnHash": "13819ea52f",
+   "batch": "final-03.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.answerRow",
+   "mnHash": "f41f1478a7",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.answerNew",
+   "mnHash": "8c9c98b400",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.answerReads",
+   "mnHash": "1fafc85772",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.graduated",
+   "mnHash": "fa50253aed",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.met",
+   "mnHash": "3c7a554d70",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.metMastered",
+   "mnHash": "f879ab0651",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.skipped",
+   "mnHash": "cf242a513d",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.started",
+   "mnHash": "a3b28fbd85",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.keptHangul",
+   "mnHash": "1a81345eff",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "records.keptAnswer",
+   "mnHash": "475c4bc9b4",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -4839,6 +5290,33 @@
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.firstRunFailed",
+   "mnHash": "ae3c7a14c5",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.hostPreparingChoose",
+   "mnHash": "4b46c188f9",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.learningPreparingChoose",
+   "mnHash": "a428c8b61f",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5162,12 +5640,11 @@
   {
    "source": "world-strings",
    "key": "msg.lifeSaveConnection",
-   "mnHash": "8f2544191d",
-   "batch": "final-13.txt",
-   "grammar": "어색",
-   "named": true,
+   "mnHash": "649d95f3bf",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색 · 문제 문장으로 지목"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5181,12 +5658,11 @@
   {
    "source": "world-strings",
    "key": "msg.otherAccount",
-   "mnHash": "753f5ecf06",
-   "batch": "final-13.txt",
-   "grammar": "어색",
-   "named": true,
+   "mnHash": "3fa9a512fe",
+   "batch": "recheck4-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색 · 문제 문장으로 지목"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5358,6 +5834,24 @@
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.reasonSpent",
+   "mnHash": "826696b9de",
+   "batch": "recheck5-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "world-strings",
+   "key": "msg.reasonSpentGoal",
+   "mnHash": "14e4d4d0ea",
+   "batch": "recheck5-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
   },
   {
    "source": "world-strings",
@@ -5907,18 +6401,17 @@
   {
    "source": "life-content-lang",
    "key": "greetings-apply-introduction-transfer.explanation",
-   "mnHash": "b89f6741dc",
-   "batch": "final-15.txt",
+   "mnHash": "93bc1667b0",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
-   "named": true,
    "spelling": [],
-   "status": "묶음 판정 어색 · 문제 문장으로 지목"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "life-content-lang",
    "key": "greetings-apply-thanks.prompt",
-   "mnHash": "98c277cb7f",
-   "batch": "final-15.txt",
+   "mnHash": "e22f6189c3",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -5926,11 +6419,11 @@
   {
    "source": "life-content-lang",
    "key": "greetings-apply-thanks.context",
-   "mnHash": "f92afaeec0",
-   "batch": "final-15.txt",
-   "grammar": "어색",
+   "mnHash": "f23ea96bf2",
+   "batch": "recheck8-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "life-content-lang",
@@ -5944,8 +6437,8 @@
   {
    "source": "life-content-lang",
    "key": "greetings-apply-thanks-transfer.prompt",
-   "mnHash": "1fb7bb7c19",
-   "batch": "final-15.txt",
+   "mnHash": "80e14fc72d",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -5971,12 +6464,11 @@
   {
    "source": "life-content-lang",
    "key": "greetings-apply-hello.prompt",
-   "mnHash": "d7ef059a50",
-   "batch": "final-15.txt",
+   "mnHash": "ddacef640a",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
-   "named": true,
    "spelling": [],
-   "status": "묶음 판정 어색 · 문제 문장으로 지목"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "life-content-lang",
@@ -6044,8 +6536,8 @@
   {
    "source": "life-content-lang",
    "key": "expression.greet-name",
-   "mnHash": "efde74ff0b",
-   "batch": "final-16.txt",
+   "mnHash": "ec5e6df6d9",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -6346,11 +6838,11 @@
   {
    "source": "hangul-stage",
    "key": "heroGraduated",
-   "mnHash": "23add50c57",
-   "batch": "recheck-10.txt",
-   "grammar": "어색",
+   "mnHash": "621d362ac2",
+   "batch": "recheck8-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6364,8 +6856,8 @@
   {
    "source": "hangul-stage",
    "key": "lede.graduated",
-   "mnHash": "0370bd5eff",
-   "batch": "final-16.txt",
+   "mnHash": "7b0a88822a",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -6391,12 +6883,11 @@
   {
    "source": "hangul-stage",
    "key": "start.warmup",
-   "mnHash": "e517b1cb27",
-   "batch": "final-16.txt",
+   "mnHash": "03a8bdba77",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
-   "named": true,
    "spelling": [],
-   "status": "묶음 판정 어색 · 문제 문장으로 지목"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
@@ -6447,13 +6938,12 @@
    "source": "hangul-stage",
    "key": "toGames",
    "mnHash": "eb4c921f85",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [
     "Мини"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6468,40 +6958,37 @@
    "source": "hangul-stage",
    "key": "section.songs",
    "mnHash": "cf5ca0182d",
-   "batch": "final-07.txt",
-   "grammar": "어색",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "section.songsFine",
    "mnHash": "cc092e1e76",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "section.road",
    "mnHash": "75fa7e3439",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "section.box",
    "mnHash": "2d046b7134",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6516,11 +7003,10 @@
    "source": "hangul-stage",
    "key": "section.legend",
    "mnHash": "f0df6cf6ef",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6535,31 +7021,28 @@
    "source": "hangul-stage",
    "key": "section.signsFine",
    "mnHash": "ea535521d8",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "section.plate",
-   "mnHash": "d10796eb48",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "mnHash": "89980bc58f",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "section.plateFine",
    "mnHash": "1bc3dd6c07",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6574,41 +7057,37 @@
    "source": "hangul-stage",
    "key": "amount",
    "mnHash": "763504b8c1",
-   "batch": "batch-12.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "skip",
    "mnHash": "a714daffd1",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "skipped",
    "mnHash": "7d91cc7a65",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unskip",
    "mnHash": "aa7b9c2b92",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6632,11 +7111,10 @@
    "source": "hangul-stage",
    "key": "voice.unsupported",
    "mnHash": "78115713ce",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6651,71 +7129,64 @@
    "source": "hangul-stage",
    "key": "state.unmet",
    "mnHash": "4d84eb3922",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "state.met",
    "mnHash": "f2ad8caaee",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "state.learning",
    "mnHash": "ebc3b13300",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "state.mastered",
    "mnHash": "2f00a33490",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "legend.met",
    "mnHash": "aa3bdd37f7",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "legend.learning",
    "mnHash": "622475cd87",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "legend.mastered",
    "mnHash": "7969419198",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6730,111 +7201,100 @@
    "source": "hangul-stage",
    "key": "road.done",
    "mnHash": "2f00a33490",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.now",
    "mnHash": "e0f447f375",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.started",
    "mnHash": "ebc3b13300",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.next",
    "mnHash": "0dd1ab34d7",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.later",
    "mnHash": "1dfdfbc64c",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.graduated",
    "mnHash": "fa50253aed",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "recheck15-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.current",
    "mnHash": "298581eff4",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "road.allLearned",
    "mnHash": "9721df1ddf",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "group.vowel",
    "mnHash": "b8766212ca",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "group.consonant",
    "mnHash": "aaeac76427",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "group.final",
    "mnHash": "973781c413",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6849,11 +7309,10 @@
    "source": "hangul-stage",
    "key": "song.listen",
    "mnHash": "c9479897ea",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6877,11 +7336,10 @@
    "source": "hangul-stage",
    "key": "sign.tap",
    "mnHash": "5dc3458d68",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -6896,97 +7354,88 @@
    "source": "hangul-stage",
    "key": "unit.U1",
    "mnHash": "47b57416e3",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U2",
    "mnHash": "57f01ff998",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U3",
    "mnHash": "e048d2f552",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U4",
    "mnHash": "afa50dd45b",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U5",
    "mnHash": "cde13571d1",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U6",
    "mnHash": "d987188d93",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U7",
    "mnHash": "537dfeb2cb",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U8",
    "mnHash": "d22e243278",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U9",
    "mnHash": "70fe90f6cd",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "unit.U10",
    "mnHash": "80e7d54cec",
-   "batch": "final-03.txt",
+   "batch": "final-17.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -6994,10 +7443,9 @@
   {
    "source": "hangul-stage",
    "key": "reason.warmup",
-   "mnHash": "a7b9da6b76",
-   "batch": "batch-13.txt",
+   "mnHash": "b9447c8991",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7005,81 +7453,73 @@
    "source": "hangul-stage",
    "key": "reason.pair.now",
    "mnHash": "8e7d937097",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.pair.yesterday",
    "mnHash": "0bc233fb43",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.pair.before",
    "mnHash": "399681d5e1",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-17.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.newFinals",
    "mnHash": "f8d1f9472d",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.mixed",
    "mnHash": "f9e160c511",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.new",
    "mnHash": "fd957eb2e5",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.due",
    "mnHash": "658d782d4c",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "reason.practice",
    "mnHash": "db2f29da48",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -7103,97 +7543,88 @@
    "source": "hangul-stage",
    "key": "newLetter",
    "mnHash": "7afd78a542",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "newFinal",
    "mnHash": "e29baacf48",
-   "batch": "batch-13.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "trace",
    "mnHash": "265ac29dfc",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "traceRedo",
    "mnHash": "0999ef4db5",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "traceArea",
    "mnHash": "96efcbe7af",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㄱ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "derive.stroke",
    "mnHash": "18ecf28bd3",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "derive.pair",
    "mnHash": "ee21a13d8c",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "derive.twin",
    "mnHash": "5f2b0a5299",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㄱ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "derive.combine",
    "mnHash": "97d24e95dc",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㅋ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -7225,10 +7656,9 @@
   {
    "source": "hangul-stage",
    "key": "note.c-ng",
-   "mnHash": "c28dd775a1",
-   "batch": "batch-14.txt",
+   "mnHash": "2074fc3f2f",
+   "batch": "recheck4-03.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "ㅏ-тай"
    ],
@@ -7237,32 +7667,32 @@
   {
    "source": "hangul-stage",
    "key": "note.f-ng",
-   "mnHash": "e25aa6f7cb",
-   "batch": "recheck-11.txt",
-   "grammar": "정상",
+   "mnHash": "08d8f3b206",
+   "batch": "recheck4-03.txt",
+   "grammar": "어색",
    "spelling": [
     "нг",
     "ㅇ-ээс"
    ],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
    "key": "note.f-g",
-   "mnHash": "5e5103d5a4",
-   "batch": "recheck-11.txt",
-   "grammar": "정상",
+   "mnHash": "684b8f99f1",
+   "batch": "recheck4-03.txt",
+   "grammar": "어색",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
    "key": "note.f-d",
-   "mnHash": "a083327900",
-   "batch": "recheck-11.txt",
-   "grammar": "정상",
+   "mnHash": "16b57d1bf1",
+   "batch": "recheck4-03.txt",
+   "grammar": "어색",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
@@ -7278,14 +7708,14 @@
   {
    "source": "hangul-stage",
    "key": "note.f-s",
-   "mnHash": "a7f96bfaaf",
-   "batch": "recheck-11.txt",
-   "grammar": "정상",
+   "mnHash": "7c2036133f",
+   "batch": "recheck4-03.txt",
+   "grammar": "어색",
    "spelling": [
     "ㅅ-г",
     "ㄷ-тэй"
    ],
-   "status": "두 겹 깨끗"
+   "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
@@ -7302,113 +7732,103 @@
    "source": "hangul-stage",
    "key": "note.c-k",
    "mnHash": "a42bd99083",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-t",
    "mnHash": "a2f2acb16d",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-p",
    "mnHash": "344b6a9bcc",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㅍ-г",
     "ㅂ-ээс"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-ch",
    "mnHash": "868c7d3ebf",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-kk",
    "mnHash": "a2bffdc11a",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㄱ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-tt",
    "mnHash": "fa003cf369",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㄷ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-pp",
    "mnHash": "1c135387eb",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㅂ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-ss",
    "mnHash": "a2379e6db4",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㅅ-г",
     "ㅅ-ээс"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.c-jj",
    "mnHash": "317206719f",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "batch": "final-18.txt",
+   "grammar": "정상",
    "spelling": [
     "ㅈ-г"
    ],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "note.v-wa",
    "mnHash": "4ed081c20c",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "아-г"
    ],
@@ -7418,9 +7838,8 @@
    "source": "hangul-stage",
    "key": "note.v-wo",
    "mnHash": "ea126c7972",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "어-г"
    ],
@@ -7430,9 +7849,8 @@
    "source": "hangul-stage",
    "key": "note.v-wi",
    "mnHash": "31bb3b4fa3",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "이-г"
    ],
@@ -7442,9 +7860,8 @@
    "source": "hangul-stage",
    "key": "note.v-ui",
    "mnHash": "4bf7a18775",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "이-г"
    ],
@@ -7454,9 +7871,8 @@
    "source": "hangul-stage",
    "key": "note.v-oe",
    "mnHash": "3e5b36ad60",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "ㅣ-г"
    ],
@@ -7466,9 +7882,8 @@
    "source": "hangul-stage",
    "key": "note.v-wae",
    "mnHash": "b4ba2b7be1",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "애-г"
    ],
@@ -7478,9 +7893,8 @@
    "source": "hangul-stage",
    "key": "note.v-we",
    "mnHash": "a855ee7305",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "에-г"
    ],
@@ -7490,9 +7904,8 @@
    "source": "hangul-stage",
    "key": "note.v-ye",
    "mnHash": "34fa022fdb",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7500,9 +7913,8 @@
    "source": "hangul-stage",
    "key": "note.v-yae",
    "mnHash": "8f746dab92",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7518,22 +7930,20 @@
   {
    "source": "hangul-stage",
    "key": "note.finalIntro",
-   "mnHash": "d29ce32faa",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "mnHash": "99e0eb4b36",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "prompt.pair",
-   "mnHash": "c078b10dcd",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "mnHash": "6bc280ea09",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
@@ -7550,9 +7960,8 @@
    "source": "hangul-stage",
    "key": "prompt.word",
    "mnHash": "8af542421c",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7560,9 +7969,8 @@
    "source": "hangul-stage",
    "key": "prompt.letter",
    "mnHash": "e1f892c9ad",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7605,20 +8013,18 @@
   {
    "source": "hangul-stage",
    "key": "slow",
-   "mnHash": "cbb28b8dc2",
-   "batch": "batch-14.txt",
-   "grammar": "어색",
-   "spellingFrom": "spelling-pass",
+   "mnHash": "c5ddb1e2de",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "noFinal",
    "mnHash": "05063e5950",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7626,9 +8032,8 @@
    "source": "hangul-stage",
    "key": "held",
    "mnHash": "221c8c8ca1",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "Монгль"
    ],
@@ -7647,28 +8052,26 @@
    "source": "hangul-stage",
    "key": "letterN",
    "mnHash": "1786cf5355",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
   {
    "source": "hangul-stage",
    "key": "col.sounds",
-   "mnHash": "cf5ca0182d",
-   "batch": "final-07.txt",
-   "grammar": "어색",
+   "mnHash": "a6c0bcd371",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "col.letters",
    "mnHash": "7d0642a159",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7685,9 +8088,8 @@
    "source": "hangul-stage",
    "key": "check",
    "mnHash": "701231aa45",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7695,9 +8097,8 @@
    "source": "hangul-stage",
    "key": "quit",
    "mnHash": "d2e3d9e750",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7714,9 +8115,8 @@
    "source": "hangul-stage",
    "key": "mongleGotIt",
    "mnHash": "cd47c30497",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [
     "Монгль"
    ],
@@ -7726,9 +8126,8 @@
    "source": "hangul-stage",
    "key": "answerIs",
    "mnHash": "f327286180",
-   "batch": "batch-14.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
-   "spellingFrom": "spelling-pass",
    "spelling": [],
    "status": "묶음 판정 어색"
   },
@@ -7736,7 +8135,7 @@
    "source": "hangul-stage",
    "key": "thisSound",
    "mnHash": "46b53f2520",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7745,7 +8144,7 @@
    "source": "hangul-stage",
    "key": "notButIs",
    "mnHash": "6e138ff472",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7753,26 +8152,26 @@
   {
    "source": "hangul-stage",
    "key": "allMatched",
-   "mnHash": "18dab6ff36",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "32721c07ed",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "allFound",
-   "mnHash": "259ffc581e",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "237bd84828",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "why.heard",
    "mnHash": "bfae2e80a9",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7817,7 +8216,7 @@
    "source": "hangul-stage",
    "key": "why.built",
    "mnHash": "de4dd6fce2",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7834,44 +8233,44 @@
   {
    "source": "hangul-stage",
    "key": "why.matchedClean",
-   "mnHash": "d30e628ae3",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "723830734c",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "why.matchedFound",
-   "mnHash": "aef96fd805",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "81a310c3aa",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "finish.newLetters",
-   "mnHash": "cbedd34a75",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "89c85c214e",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "finish.questions",
-   "mnHash": "320c24ee5e",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "14f8d7f6e2",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "finish.reviewTitle",
    "mnHash": "d539ab8105",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7889,7 +8288,7 @@
    "source": "hangul-stage",
    "key": "finish.mastered",
    "mnHash": "a9db50d12f",
-   "batch": "batch-15.txt",
+   "batch": "final-19.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7898,7 +8297,7 @@
    "source": "hangul-stage",
    "key": "finish.canRead",
    "mnHash": "3af4e6beba",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7907,7 +8306,7 @@
    "source": "hangul-stage",
    "key": "finish.tomorrow",
    "mnHash": "056e6457e6",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7916,7 +8315,7 @@
    "source": "hangul-stage",
    "key": "finish.allMet",
    "mnHash": "22f9263324",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7925,7 +8324,7 @@
    "source": "hangul-stage",
    "key": "finish.toTown",
    "mnHash": "7865d127a6",
-   "batch": "final-09.txt",
+   "batch": "recheck6-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "두 겹 깨끗"
@@ -7934,7 +8333,7 @@
    "source": "hangul-stage",
    "key": "finish.toStart",
    "mnHash": "cce43258a2",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7959,6 +8358,15 @@
   },
   {
    "source": "hangul-stage",
+   "key": "grad.life",
+   "mnHash": "326fb9df7d",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "두 겹 깨끗"
+  },
+  {
+   "source": "hangul-stage",
    "key": "grad.title",
    "mnHash": "a9d24df6ea",
    "batch": "recheck2-02.txt",
@@ -7970,7 +8378,7 @@
    "source": "hangul-stage",
    "key": "grad.line",
    "mnHash": "c76a9d63c8",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7978,17 +8386,17 @@
   {
    "source": "hangul-stage",
    "key": "grad.fine",
-   "mnHash": "4decec154c",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "33fd7e501e",
+   "batch": "recheck4-04.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "grad.note",
    "mnHash": "f89fbbd500",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -7996,17 +8404,17 @@
   {
    "source": "hangul-stage",
    "key": "error.title",
-   "mnHash": "fe019df9c3",
-   "batch": "batch-15.txt",
-   "grammar": "어색",
+   "mnHash": "72a6a6d7e2",
+   "batch": "recheck9-01.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗"
   },
   {
    "source": "hangul-stage",
    "key": "error.body",
    "mnHash": "211ea0324b",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -8015,7 +8423,7 @@
    "source": "hangul-stage",
    "key": "sheet.title",
    "mnHash": "ece229fb34",
-   "batch": "batch-15.txt",
+   "batch": "recheck4-01.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -8024,7 +8432,7 @@
    "source": "hangul-stage",
    "key": "sheet.body",
    "mnHash": "96a195e4cf",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"
@@ -8042,7 +8450,7 @@
    "source": "hangul-stage",
    "key": "sheet.stay",
    "mnHash": "5afba5af35",
-   "batch": "batch-15.txt",
+   "batch": "final-20.txt",
    "grammar": "어색",
    "spelling": [],
    "status": "묶음 판정 어색"

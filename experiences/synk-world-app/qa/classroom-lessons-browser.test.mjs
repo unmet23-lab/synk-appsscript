@@ -96,6 +96,9 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
   hold=deferred();
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);
+  // 10-19 화면 언어 1판부터 첫 실행은 언어 고르기(first-run.mjs language)부터다. 이 시험은 한국어 화면 글을 읽으므로 account-browser.test.mjs처럼 한국어를 고른다.
+  await page.waitForFunction(()=>document.querySelector('[data-lang-picker]')||document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
+  if(await page.locator('[data-lang-picker]').count()){await page.locator('[data-lang-choice="ko"]').click();await page.locator('[data-lang-confirm]').click();await page.waitForFunction(()=>!document.querySelector('[data-lang-picker]'));}
   // 10-19 master(b9eb193e0)부터 「한글을 읽을 수 있어요?」(first-run.mjs)가 튜터 고르기보다 먼저 나온다. account-browser.test.mjs처럼 「읽을 수 있어요」로 넘긴다.
   await page.waitForFunction(()=>document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
   if(await page.locator('dialog[open] [data-first-hangul="reads"]').count()){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}

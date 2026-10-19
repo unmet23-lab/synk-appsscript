@@ -3,6 +3,8 @@ import {lifeTutorExercise} from './life-tutor-lines.mjs';
 import {homeTutorRecommendation,homeTutorPracticeRecommendation,homeTutorLine} from './home-tutor-lines.mjs';
 import {homeTutorDays} from './home-tutor-days.mjs';
 import {createHomeTutorRecap} from './home-tutor-recap.mjs';
+// 화면 언어(10-19 1판): 카드의 단추·상태 글만 화면 언어로. 튜터 말풍선(대사)은 2판까지 한국어 그대로다.
+import {t,tMessage,currentLang} from './world-lang.mjs';
 
 export function createHomeTutor({container,getTutor,learn,choose,profile,reduced=()=>false}){
  let data=null,companion=null,identity='',recommendation={kind:'loading'},practiceRecommendation=null,completed='',active=true,practiceRecord=null,recap=null,days=homeTutorDays(null),dayButton=null,practiceButton=null,reviewButton=null;
@@ -29,8 +31,9 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   recommendation=homeTutorRecommendation({owner:selected.owner,summary:data?.summary,snapshot:data?.snapshot,lessons:data?.lessons,practised});
   practiceRecommendation=homeTutorPracticeRecommendation({owner:selected.owner,summary:data?.summary,snapshot:data?.snapshot,lessons:data?.lessons,practised});
   if(!selected.tutor){
-   if(!container.querySelector('.home-tutor-choose')){
-    container.innerHTML='<p class="home-tutor-invitation">아직 AI 튜터를 고르지 않았어요.</p><button type="button" class="home-tutor-choose">AI 튜터 고르기 <span aria-hidden="true">→</span></button>';
+   if(!container.querySelector('.home-tutor-choose')||container.dataset.lang!==currentLang()){
+    container.dataset.lang=currentLang();
+    container.innerHTML=`<p class="home-tutor-invitation">${t('homeTutor.invite')}</p><button type="button" class="home-tutor-choose">${t('settings.tutorChoose')} <span aria-hidden="true">→</span></button>`;
     container.querySelector('button').addEventListener('click',choose);
    }
    return;
@@ -61,7 +64,7 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
    companion.element.classList.remove('life-tutor');
    companion.element.querySelector('.life-tutor-help').classList.replace('life-tutor-help','home-tutor-action');
    companion.element.querySelector('.game-tutor-message').append(note);
-   practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='home-tutor-practice';practiceButton.textContent='헷갈린 표현 연습하기';practiceButton.addEventListener('click',()=>openPractice(practiceRecommendation));container.append(practiceButton);
+   practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='home-tutor-practice';practiceButton.textContent=t('homeTutor.practice');practiceButton.addEventListener('click',()=>openPractice(practiceRecommendation));container.append(practiceButton);
    // 하던 레슨을 이어 갈 때도 돌아온 복습은 같이 보인다(이어 하기가 복습을 가리지 않게).
    reviewButton=document.createElement('button');reviewButton.type='button';reviewButton.className='home-tutor-practice home-tutor-review';reviewButton.addEventListener('click',()=>{completed='';learn('review');});container.append(reviewButton);
    dayButton=document.createElement('button');dayButton.type='button';dayButton.className='home-tutor-day';dayButton.addEventListener('click',openRecap);container.append(dayButton);
@@ -69,15 +72,15 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   }
   companion.update({scope:'home',practiceCompleted:!!completed||days.today.closed});
   const button=companion.element.querySelector('.game-tutor-help');
-  button.textContent=recommendation.label||(recommendation.kind==='loading'?'기록 확인 중':'연결 상태 보기');button.disabled=recommendation.kind==='loading';
+  button.textContent=tMessage(recommendation.label)||t(recommendation.kind==='loading'?'homeTutor.checking':'homeTutor.status');button.disabled=recommendation.kind==='loading';
   container.dataset.recommendation=recommendation.kind;
   practiceButton.hidden=!practiceRecommendation||recommendation.command==='practice';
-  practiceButton.setAttribute('aria-label',practiceRecommendation?`헷갈린 표현 연습하기 · ${practiceRecommendation.title}`:'헷갈린 표현 연습하기');
+  practiceButton.textContent=t('homeTutor.practice');practiceButton.setAttribute('aria-label',practiceRecommendation?t('homeTutor.practiceWith',{title:practiceRecommendation.title}):t('homeTutor.practice'));
   const due=recommendation.kind==='resume'&&data?.summary?.owner===selected.owner?data.summary.dueCount||0:0;
-  reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=`돌아온 표현 ${due}개 복습하기`;
+  reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=t('homeTutor.reviewDue',{n:due});
   const pending=data?.summary.status?.phase==='unsaved';
-  note.textContent=(completed?'방금 함께 연습했어요':recommendation.reason|| (recommendation.kind==='difficult'?`지난 학습에서 다시 볼 말 · ${recommendation.lessonTitle}`:recommendation.kind==='review'?'다시 볼 표현이 있어요':recommendation.kind==='resume'?'하던 곳에서 이어서':recommendation.kind==='start'?'다음 레슨':''))+(pending?' · 저장 대기 중':'');
-  dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?'오늘 기록 다시 보기':`오늘 배운 표현 ${days.today.count}개 정리하기`;
+  note.textContent=(completed?t('homeTutor.note.practised'):tMessage(recommendation.reason)|| (recommendation.kind==='difficult'?t('homeTutor.note.difficult',{title:recommendation.lessonTitle}):recommendation.kind==='review'?t('homeTutor.note.review'):recommendation.kind==='resume'?t('homeTutor.note.resume'):recommendation.kind==='start'?t('homeTutor.note.start'):''))+(pending?t('homeTutor.note.pending'):'');
+  dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?t('homeTutor.day.closed'):t('homeTutor.day.count',{n:days.today.count});
   recap?.update(days,data.summary.status);
  }
  return {

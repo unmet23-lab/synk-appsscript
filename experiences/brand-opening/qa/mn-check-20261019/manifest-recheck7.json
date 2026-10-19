@@ -1,0 +1,162 @@
+{
+ "createdAt": "2026-10-19T10:36:37.733Z",
+ "changed": 24,
+ "unchanged": 829,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck7-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "opening.skip",
+     "previous": "Эхлэлийг алгасах"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "home.memory.recovery",
+     "previous": "Сургалтын явцын хадгалалтыг шалгах"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "town.hintClose",
+     "previous": "Тайлбарыг хаах"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "play.more",
+     "previous": "Бусдыг үзэх"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "game.openNew",
+     "previous": "Шинэ дэлгэцээр нээх"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "game.slow",
+     "previous": "Холболт бага зэрэг удааширч байна. Шинэ дэлгэцээр ч нээж болно."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "plan.game.hangul",
+     "previous": "Солонгос үсэгтэй танилцах · дуу ба үсэг"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "settings.replayOpening",
+     "previous": "Эхлэлийг дахин үзэх"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "goal.scope.account",
+     "previous": null
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "goal.scope.device",
+     "previous": null
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "goal.seen.empty",
+     "previous": "Шинэ асуултад хариулах тусам бага багаар ойлгоно. Мэдээлэл байхгүй байгаа нь таныг сул гэж үзэх шалтгаан биш."
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "life.packTitle.plans",
+     "previous": "Маргаашийн уулзалт"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "life.storiesSub",
+     "previous": "Түүхийг уншаад, доторх хэллэгийг сонгоно."
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "account.lead",
+     "previous": "SYNK ID-гаар нэвтэрвэл хувцас, тоглоомын үр дүн тань ямар ч дэлгэц дээр хэвээр үлдэнэ"
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "account.loaded",
+     "previous": "Таны гэр, хувцсыг ачааллаа."
+    }
+   ]
+  },
+  {
+   "file": "recheck7-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.pendingBody",
+     "previous": "Илгээх үед холболт тасарсан эсвэл өөр дэлгэц дээр хувцас өөрчлөгдсөн байна. Нүүрэнд хамгийн сүүлд баталгаажсан хувцас харагдана."
+    },
+    {
+     "line": 2,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.context",
+     "previous": "Анх ирсэн сургуульд тань ажилтан ангийн байршлыг зааж өглөө. Та талархлаа илэрхийлэхийг хүсэж байна."
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "heroGraduated",
+     "previous": "Солонгос үсгийн курсээ төгслөө"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "section.plate",
+     "previous": "Миний нэрийн самбар"
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "allMatched",
+     "previous": "Бүгдийг тааруулсан"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "allFound",
+     "previous": "Бүгдийг олсон"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "why.matchedClean",
+     "previous": "3 хосыг эхний оролдлогоор тааруулсан."
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "why.matchedFound",
+     "previous": "3 хосыг бүгдийг нь олсон."
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "error.title",
+     "previous": "Солонгос үсгийн хэсгийг нээж чадсангүй"
+    }
+   ]
+  }
+ ]
+}

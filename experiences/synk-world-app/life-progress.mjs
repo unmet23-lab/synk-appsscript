@@ -11,7 +11,7 @@ const safeId=value=>typeof value==='string'&&/^[a-z0-9][a-z0-9_-]{0,119}$/i.test
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const time=value=>Number.isSafeInteger(value)&&value>=0;
 const empty=owner=>({version:LIFE_PROGRESS_VERSION,owner,revision:0,activeLessonId:null,activeReview:null,lessons:{},reviews:{}});
-const TUTORS=new Set(['marin','kkamong','mongle']),OUTCOMES=new Set(['independent','assisted','retry']);
+const TUTORS=new Set(['marin','kkamong','mongle']),OUTCOMES=new Set(['independent','assisted','retry']),DISPLAY_LANGS=new Set(['en','mn','ko']);
 // 첫 실행의 「한글을 읽을 수 있어요?」 답(10-19). 능력 판정이 아니라 고른 출발점이고, 한글 만나기를 마치거나 건너뛰면 바뀐다.
 const HANGUL_ANSWERS=new Set(['new','reads']),HANGUL_VIA=new Set(['question','graduation','skip','unskip']);
 const dailyId=value=>safeId(value)&&!['constructor','prototype'].includes(value);
@@ -272,6 +272,15 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state);next.hangul={version:1,answer,at:now(),via};commit(next,{preserveDaily:true});
   return {hangul:clone(next.hangul),duplicate:false,status:status()};
  }
+ // 화면 언어(10-19 1판): 튜터 선택처럼 이 기록의 선택 칸(display)에 둔다. 모르는 언어·모양은 없는 것으로 읽고 기록 전체를 거절하지 않는다
+ // (2판에서 언어가 늘어도 옛 판이 진도를 못 읽게 되지 않게). 옛 판은 이 칸을 몰라도 그대로 보존한다.
+ function displayLanguage(){check();if(readError)throw readError;const value=state.display;return object(value)&&value.version===1&&DISPLAY_LANGS.has(value.language)?value.language:null;}
+ function setDisplayLanguage(language){
+  checkDailyWrite();if(!DISPLAY_LANGS.has(language))throw TypeError('Invalid display language');
+  if(displayLanguage()===language)return {language,duplicate:true,status:status()};
+  const next=clone(state);next.display={version:1,language};commit(next,{preserveDaily:true});
+  return {language,duplicate:false,status:status()};
+ }
  function learningProfile(){check();if(readError)throw readError;return readWorldLearningProfile(state.learningProfile,{owner,at:now()});}
  function learningProfileValues(){check();if(readError)throw readError;return worldLearningProfileValues(state.learningProfile,{owner,at:now()});}
  function updateLearningProfile(options={}){
@@ -308,7 +317,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
+ const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

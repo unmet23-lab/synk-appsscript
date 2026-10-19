@@ -1,0 +1,73 @@
+{
+ "createdAt": "2026-10-19T11:26:20.402Z",
+ "changed": 10,
+ "unchanged": 0,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck15-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "records.answerRow",
+     "previous": "Анх сонгосон хариулт"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "records.answerNew",
+     "previous": "Солонгос үсэг одоохондоо уншиж чадахгүй"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "records.answerReads",
+     "previous": "Солонгос үсэг уншиж чадна"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.graduated",
+     "previous": "Төгссөн"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "records.met",
+     "previous": "Танилцсан үсэг: 3"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "records.metMastered",
+     "previous": "Танилцсан үсэг: 3 · сурсан: 2"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "records.skipped",
+     "previous": "Алгасахыг сонгосон"
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "records.started",
+     "previous": "Дасгалаа эхэлсэн"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "records.keptHangul",
+     "previous": "Бүртгэлд тань «Солонгос үсэгтэй танилцах»-ын явц аль хэдийн байгаа тул түүнээс үргэлжлүүлнэ."
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "records.keptAnswer",
+     "previous": "Анх сонгосон хариулт бүртгэлд тань аль хэдийн байгаа тул түүнийг ашиглана."
+    }
+   ]
+  }
+ ]
+}

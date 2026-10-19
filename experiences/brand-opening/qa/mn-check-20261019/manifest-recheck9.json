@@ -1,0 +1,49 @@
+{
+ "createdAt": "2026-10-19T10:44:27.728Z",
+ "changed": 6,
+ "unchanged": 0,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck9-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "section.plate",
+     "previous": "Миний нэрийн пайз"
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "allMatched",
+     "previous": "Бүгдийг нь таарууллаа"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "allFound",
+     "previous": "Бүгдийг нь оллоо"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "why.matchedClean",
+     "previous": "3 хосыг эхний оролдлогоор таарууллаа."
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "why.matchedFound",
+     "previous": "3 хосыг бүгдийг нь оллоо."
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "error.title",
+     "previous": "Солонгос үсгийн шатыг нээж чадсангүй"
+    }
+   ]
+  }
+ ]
+}

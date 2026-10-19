@@ -3,6 +3,7 @@ import {lifeTutorKind,lifeTutorLine,lifeTutorDifficulties,lifeTutorExercise} fro
 import {getPref} from './world-sound.mjs';
 import {tutorPhoto,preloadTutorPhotos} from './tutor-photos.mjs';
 import {motionOn,talk,squish} from './world-motion.mjs';
+import {t,currentLang} from './world-lang.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL('assets/tutors/'+path,import.meta.url).href;
 export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],practised=[],getExercise,onHint=()=>{},onPause=()=>{},onPreparePractice=()=>{},onPracticeSuccess=null,onPracticeComplete=()=>{},onHelp=null,lineForState=lifeTutorLine,reduced=()=>false}){
@@ -14,8 +15,10 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  try{sound=localStorage.getItem('synk.world.tutor.sound')==='true';}catch{}
  const portrait=(face='기본')=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${photo()}" alt="${tutor.name}" width="288" height="288"><img class="game-tutor-face" src="${photo(face)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor life-tutor';element.dataset.tutor=tutor.id;
- element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
- element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b class="w-name" data-who="${tutor.id}">${tutor.name}</b><span class="life-tutor-role">함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
+ // 화면 언어(10-19 1판): 이름표·역할·도움 단추만 고른 언어로. 튜터 대사(game-tutor-line)와 표현 도움 시트는 2판까지 한국어다.
+ const tutorName=currentLang()==='ko'?tutor.name:t(`tutor.name.${tutor.id}`);
+ element.setAttribute('aria-label',`${tutorName} · ${t('tutorTag.role')}`);
+ element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b class="w-name" data-who="${tutor.id}">${tutorName}</b><span class="life-tutor-role">${t('tutorTag.role')}</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">${t('tutorTag.help')}</button>`;
  container.prepend(element);
  const helpButton=element.querySelector('.life-tutor-help'),face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),body=element.querySelector('.game-tutor-portrait');
  // 10-17 움직임: 사진은 아주 천천히 숨 쉬고(scale), 누르면 말랑하게 눌렸다 돌아오며 놀란 얼굴을 한 번 짓는다.

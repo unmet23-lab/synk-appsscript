@@ -14457,28 +14457,48 @@ var DEVICE_RECORDS_TEXT = Object.freeze({
   failed: "\uC62E\uAE30\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC5F0\uACB0\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694.",
   moved: "\uD55C\uAE00 \uAE30\uB85D\uC744 \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
   partly: "\uC62E\uAE38 \uC218 \uC788\uB294 \uD55C\uAE00 \uAE30\uB85D\uB9CC \uB0B4 \uACC4\uC815\uC73C\uB85C \uC62E\uACBC\uC5B4\uC694.",
-  kept: "\uACC4\uC815\uC740 \uCC98\uC74C\uBD80\uD130 \uC2DC\uC791\uD574\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB0A8\uC544 \uC788\uC5B4\uC694."
+  kept: "\uACC4\uC815\uC740 \uCC98\uC74C\uBD80\uD130 \uC2DC\uC791\uD574\uC694. \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB0A8\uC544 \uC788\uC5B4\uC694.",
+  hangulRow: "\uD55C\uAE00 \uB9CC\uB098\uAE30",
+  answerRow: "\uCC98\uC74C \uACE0\uB978 \uB2F5",
+  answerNew: "\uD55C\uAE00\uC744 \uC544\uC9C1 \uBABB \uC77D\uC5B4\uC694",
+  answerReads: "\uD55C\uAE00\uC744 \uC77D\uC744 \uC218 \uC788\uC5B4\uC694",
+  graduated: "\uC878\uC5C5\uD588\uC5B4\uC694",
+  met: (n) => `\uAE00\uC790 ${n}\uAC1C\uB97C \uB9CC\uB0AC\uC5B4\uC694`,
+  metMastered: (n, m) => `\uAE00\uC790 ${n}\uAC1C\uB97C \uB9CC\uB0AC\uACE0 ${m}\uAC1C\uB97C \uC775\uD614\uC5B4\uC694`,
+  skipped: "\uAC74\uB108\uB6F0\uAE30\uB97C \uACE8\uB790\uC5B4\uC694",
+  started: "\uC5F0\uC2B5\uC744 \uC2DC\uC791\uD588\uC5B4\uC694",
+  keptHangul: "\uD55C\uAE00 \uB9CC\uB098\uAE30\uB294 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC9C4\uB3C4\uAC00 \uC788\uC5B4 \uACC4\uC815 \uC9C4\uB3C4\uB85C \uC774\uC5B4 \uAC00\uC694.",
+  keptAnswer: "\uCC98\uC74C \uACE0\uB978 \uB2F5\uC740 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC788\uC5B4 \uACC4\uC815 \uAC83\uC744 \uC368\uC694."
 });
-function hangulLine(summary) {
-  if (summary.graduated) return "\uC878\uC5C5\uD588\uC5B4\uC694";
-  const met = summary.met ? `\uAE00\uC790 ${summary.met}\uAC1C\uB97C \uB9CC\uB0AC${summary.mastered ? `\uACE0 ${summary.mastered}\uAC1C\uB97C \uC775\uD614` : ""}\uC5B4\uC694` : "";
-  return [met, summary.skipped ? "\uAC74\uB108\uB6F0\uAE30\uB97C \uACE8\uB790\uC5B4\uC694" : ""].filter(Boolean).join(" \xB7 ") || "\uC5F0\uC2B5\uC744 \uC2DC\uC791\uD588\uC5B4\uC694";
+function recordsText(text2) {
+  let extra = null;
+  try {
+    extra = typeof text2 === "function" ? text2() : text2;
+  } catch {
+    extra = null;
+  }
+  return extra && typeof extra === "object" ? { ...DEVICE_RECORDS_TEXT, ...extra } : DEVICE_RECORDS_TEXT;
 }
-function describeDeviceRecords(plan) {
+function hangulLine(summary, T = DEVICE_RECORDS_TEXT) {
+  if (summary.graduated) return T.graduated;
+  const met = summary.met ? summary.mastered ? T.metMastered(summary.met, summary.mastered) : T.met(summary.met) : "";
+  return [met, summary.skipped ? T.skipped : ""].filter(Boolean).join(" \xB7 ") || T.started;
+}
+function describeDeviceRecords(plan, T = DEVICE_RECORDS_TEXT) {
   const rows2 = [];
-  if (plan?.hangul) rows2.push({ label: "\uD55C\uAE00 \uB9CC\uB098\uAE30", value: hangulLine(plan.hangul.summary) });
-  if (plan?.answer) rows2.push({ label: "\uCC98\uC74C \uACE0\uB978 \uB2F5", value: plan.answer.answer === "new" ? "\uD55C\uAE00\uC744 \uC544\uC9C1 \uBABB \uC77D\uC5B4\uC694" : "\uD55C\uAE00\uC744 \uC77D\uC744 \uC218 \uC788\uC5B4\uC694" });
+  if (plan?.hangul) rows2.push({ label: T.hangulRow, value: hangulLine(plan.hangul.summary, T) });
+  if (plan?.answer) rows2.push({ label: T.answerRow, value: plan.answer.answer === "new" ? T.answerNew : T.answerReads });
   const notes = [];
-  if (plan?.kept.hangul) notes.push("\uD55C\uAE00 \uB9CC\uB098\uAE30\uB294 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC9C4\uB3C4\uAC00 \uC788\uC5B4 \uACC4\uC815 \uC9C4\uB3C4\uB85C \uC774\uC5B4 \uAC00\uC694.");
-  if (plan?.kept.answer) notes.push("\uCC98\uC74C \uACE0\uB978 \uB2F5\uC740 \uACC4\uC815\uC5D0 \uC774\uBBF8 \uC788\uC5B4 \uACC4\uC815 \uAC83\uC744 \uC368\uC694.");
+  if (plan?.kept.hangul) notes.push(T.keptHangul);
+  if (plan?.kept.answer) notes.push(T.keptAnswer);
   return { rows: rows2, notes };
 }
 function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningStatus = () => null, accountAnswer = () => null, setAccountAnswer, present, close, toast = () => {
-}, head = "", now = Date.now, defer = (fn) => setTimeout(fn, 0) }) {
+}, head = "", now = Date.now, defer = (fn) => setTimeout(fn, 0), text: text2 = null }) {
   const asked = /* @__PURE__ */ new Set();
   let current = null;
   function markup(plan) {
-    const T = DEVICE_RECORDS_TEXT, { rows: rows2, notes } = describeDeviceRecords(plan);
+    const T = recordsText(text2), { rows: rows2, notes } = describeDeviceRecords(plan, T);
     return `<div class="ws-signin"><div class="ws-signin-head"><p class="ws-lead">${recordEscape(T.lead)}</p>${head}</div><div class="world-notice" data-tone="ok" data-label="DEVICE"><strong>${rows2.map((row) => `${recordEscape(row.label)} \xB7 ${recordEscape(row.value)}`).join("<br>")}</strong><span>${recordEscape(T.snapshotBody)}</span></div>` + notes.map((note) => `<p class="dialog-note">${recordEscape(note)}</p>`).join("") + `<div class="world-actions"><button class="felt-button" data-world="device-records" data-choice="move">${recordEscape(T.move)}</button><button class="plain-button" data-world="device-records" data-choice="keep">${recordEscape(T.keep)}</button></div><p class="dialog-note" data-device-records-status role="status" aria-live="polite"></p></div>`;
   }
   function finish(job, value) {
@@ -14499,7 +14519,7 @@ function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningS
     return new Promise((resolve) => {
       const job = { owner, plan, resolve, busy: false };
       current = job;
-      present({ title: DEVICE_RECORDS_TEXT.title, html: markup(plan), onClose: () => finish(job, "dismissed") });
+      present({ title: recordsText(text2).title, html: markup(plan), onClose: () => finish(job, "dismissed") });
     });
   }
   function done(job, value, message) {
@@ -14519,19 +14539,19 @@ function createDeviceRecordsOffer({ storage = globalThis.localStorage, learningS
     job.busy = true;
     if (choice === "keep") {
       saveDeviceRecordsDecision(storage, job.owner, "kept", now());
-      return done(job, "kept", DEVICE_RECORDS_TEXT.kept);
+      return done(job, "kept", recordsText(text2).kept);
     }
-    status(DEVICE_RECORDS_TEXT.moving, true);
+    status(recordsText(text2).moving, true);
     const result = await applyDeviceRecords(job.plan, { storage, accountAnswer, setAccountAnswer });
     if (current !== job) return null;
     const moved = [result.hangul, result.answer].includes("moved");
     if (result.errors.length && !moved) {
       job.busy = false;
-      status(DEVICE_RECORDS_TEXT.failed, false);
+      status(recordsText(text2).failed, false);
       return null;
     }
     saveDeviceRecordsDecision(storage, job.owner, "moved", now());
-    return done(job, "moved", result.errors.length || result.hangul === "exists" || result.answer === "exists" || !moved ? DEVICE_RECORDS_TEXT.partly : DEVICE_RECORDS_TEXT.moved);
+    return done(job, "moved", result.errors.length || result.hangul === "exists" || result.answer === "exists" || !moved ? recordsText(text2).partly : recordsText(text2).moved);
   }
   return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
 }

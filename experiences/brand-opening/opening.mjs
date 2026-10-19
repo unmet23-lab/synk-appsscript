@@ -1,4 +1,6 @@
 import {motionOn,spring,ink,dust,bindPress} from './world-motion.mjs';
+// 화면 언어(10-19 1판): 고른 언어가 있으면 부제·시작 단추·소리 단추를 그 언어로. 고르기 전에는 한국어 원문이다.
+import {t} from './world-lang.mjs';
 const SEEN='synk.brand-opening.v1.seen';
 const asset=name=>new URL(`./assets/${name}`,import.meta.url).href;
 
@@ -10,8 +12,8 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   const query=new URLSearchParams(location.search);
   if(!replay&&(query.get('opening')==='off'||(previouslySeen&&query.get('opening')!=='replay'))){removeCover();return {done:Promise.resolve('return'),destroy:()=>{},stage:()=> 'closed'};}
   const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const dialog=document.createElement('dialog');dialog.className='synk-opening';dialog.dataset.stage='company';dialog.dataset.reduced=String(reduced);dialog.setAttribute('aria-label',`${product} 시작 화면`);dialog.tabIndex=-1;
-  dialog.innerHTML=`<section class="opening-company" aria-label="제작사 SYNK"><div class="opening-light" aria-hidden="true"></div><div class="opening-company-lockup"><img class="opening-wordmark" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><p class="opening-credit">CREATED BY SYNK</p></div></section><section class="opening-title" aria-labelledby="opening-world-title" hidden><picture><source media="(orientation:portrait)" srcset="${asset('world-title-letters-port-v1.webp')}"><img class="opening-title-scene" src="${asset('world-title-letters-land-v1.webp')}" alt="커다란 펠트 한글 조각 사이에서 노는 까몽·몽글·마린"></picture><video class="opening-title-video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="opening-title-shade" aria-hidden="true"></div><div class="opening-title-copy"><img class="opening-title-logo" src="${asset('home/logo.webp')}" alt="synk" width="744" height="360"><h1 class="opening-world" id="opening-world-title">WORLD</h1><p class="opening-title-subtitle">세 친구와 배우는 한국어</p></div></section><button class="opening-enter" type="button" aria-label="오프닝 건너뛰기"><span class="opening-hint" hidden>화면을 터치해 주세요</span></button><div class="opening-controls"><button class="opening-sound" type="button" aria-pressed="false" aria-label="소리 켜기" title="소리 켜기"><img class="opening-sound-icon" src="${asset('sound-off.webp')}" alt="" aria-hidden="true"></button></div><p class="opening-copyright">© 2026 SYNK</p>`;
+  const dialog=document.createElement('dialog');dialog.className='synk-opening';dialog.dataset.stage='company';dialog.dataset.reduced=String(reduced);dialog.setAttribute('aria-label',t('opening.dialog',{product}));dialog.tabIndex=-1;
+  dialog.innerHTML=`<section class="opening-company" aria-label="${t('opening.company')}"><div class="opening-light" aria-hidden="true"></div><div class="opening-company-lockup"><img class="opening-wordmark" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><p class="opening-credit">CREATED BY SYNK</p></div></section><section class="opening-title" aria-labelledby="opening-world-title" hidden><picture><source media="(orientation:portrait)" srcset="${asset('world-title-letters-port-v1.webp')}"><img class="opening-title-scene" src="${asset('world-title-letters-land-v1.webp')}" alt="${t('opening.titleAlt')}"></picture><video class="opening-title-video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="opening-title-shade" aria-hidden="true"></div><div class="opening-title-copy"><img class="opening-title-logo" src="${asset('home/logo.webp')}" alt="synk" width="744" height="360"><h1 class="opening-world" id="opening-world-title">WORLD</h1><p class="opening-title-subtitle">${t('opening.subtitle')}</p></div></section><button class="opening-enter" type="button" aria-label="${t('opening.skip')}"><span class="opening-hint" hidden>${t('opening.start')}</span></button><div class="opening-controls"><button class="opening-sound" type="button" aria-pressed="false" aria-label="${t('opening.soundOn')}" title="${t('opening.soundOn')}"><img class="opening-sound-icon" src="${asset('sound-off.webp')}" alt="" aria-hidden="true"></button></div><p class="opening-copyright">© 2026 SYNK</p>`;
   // Product names are text, never interpolated markup or a false engine badge.
   if(product!=='SYNK WORLD')dialog.querySelector('.opening-world').textContent=product;
   const audio=new Audio(asset('opening-candidate.wav'));audio.preload='none';
@@ -25,9 +27,9 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   const previousFocus=document.activeElement;
   const previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   const soundButton=dialog.querySelector('.opening-sound'),enter=dialog.querySelector('.opening-enter'),hint=dialog.querySelector('.opening-hint');
-  hint.textContent='시작하기';
+  hint.textContent=t('opening.start');
   const stopAudio=()=>{audio.pause();try{audio.currentTime=0;}catch{}};
-  const updateSound=()=>{soundButton.querySelector('img').src=asset(soundOn?'sound-on.webp':'sound-off.webp');soundButton.setAttribute('aria-pressed',String(soundOn));soundButton.setAttribute('aria-label',soundOn?'소리 끄기':'소리 켜기');soundButton.title=soundOn?'소리 끄기':'소리 켜기';};
+  const updateSound=()=>{soundButton.querySelector('img').src=asset(soundOn?'sound-on.webp':'sound-off.webp');soundButton.setAttribute('aria-pressed',String(soundOn));soundButton.setAttribute('aria-label',t(soundOn?'opening.soundOff':'opening.soundOn'));soundButton.title=t(soundOn?'opening.soundOff':'opening.soundOn');};
   const playSound=()=>{if(!soundOn||document.hidden||settled)return;stopAudio();audio.play().catch(()=>{soundOn=false;updateSound();});};
   function finish(reason='start'){
     const sceneTime=Number.isFinite(video.currentTime)&&video.currentTime>0?video.currentTime:resumeTime;
@@ -40,7 +42,7 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   function title(){
     if(settled||stage!=='company')return;
     if(companyOnly){finish('company-end');return;}
-    stage='title';dialog.dataset.stage='title';dialog.querySelector('.opening-title').hidden=false;dialog.querySelector('.opening-company').setAttribute('aria-hidden','true');enter.setAttribute('aria-label',`${product} 시작하기`);hint.hidden=false;
+    stage='title';dialog.dataset.stage='title';dialog.querySelector('.opening-title').hidden=false;dialog.querySelector('.opening-company').setAttribute('aria-hidden','true');enter.setAttribute('aria-label',t('opening.startProduct',{product}));hint.hidden=false;
     hideTimer=setTimeout(()=>{if(!settled)dialog.querySelector('.opening-company').hidden=true;},470);
     playVideo();titleMotion();
   }

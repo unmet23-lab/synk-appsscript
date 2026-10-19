@@ -1,13 +1,14 @@
 import {motionOn} from './world-motion.mjs';
+import {t,tMessage} from './world-lang.mjs';
 // WORLD 첫 실행 단계. 10-19 결정(「WORLD 화면 언어 · 도움 언어 방식」, 공개판 설계 §6): 언어 고르기 → 「한글을 읽을 수 있어요?」 → 튜터 고르기.
-// 단계마다 needed()가 참일 때만 열고, 고르면 다음 단계로 간다. 언어 고르기는 다음 작업에서 FIRST_RUN_ORDER의 자리로 들어온다
-// (그 전에는 등록된 단계가 없어 건너뛴다). 마지막 단계(튜터 고르기)가 처음 부른 곳의 이어 할 일(then)을 넘겨받는다.
+// 단계마다 needed()가 참일 때만 열고, 고르면 다음 단계로 간다. language 자리는 lang-picker.mjs의 createLangStep()이다(home.mjs,
+// 고른 화면 언어가 없을 때만). 등록되지 않은 단계는 건너뛴다. 마지막 단계(튜터 고르기)가 처음 부른 곳의 이어 할 일(then)을 넘겨받는다.
 export const FIRST_RUN_ORDER=Object.freeze(['language','hangul','tutor']);
-// 첫 실행 화면의 글은 여기 한곳에 둔다(언어 고르기가 생기면 문자열 표로 옮긴다). 화면은 그림·소리·글자 시범에 기대고 글은 짧게.
-export const FIRST_RUN_TEXT=Object.freeze({
- hangul:Object.freeze({title:'한글',eyebrow:'HANGUL',word:'안녕',listen:'「안녕」 소리 듣기',ask:'한글을 읽을 수 있어요?',no:'아직 못 읽어요',yes:'읽을 수 있어요',
-  saving:'고른 것을 저장하고 있어요.',failed:'저장하지 못했어요. 다시 골라 주세요.'}),
-});
+// 첫 실행 화면의 글은 화면 언어 표(world-strings.mjs의 firstRun.*)에 있다(10-19 화면 언어 1판). 언어 고르기 바로 다음 판이라
+// 글은 열 때마다 고른 언어로 다시 읽는다. 「안녕」은 배우는 낱말이라 늘 한국어다. 화면은 그림·소리·글자 시범에 기대고 글은 짧게.
+export const FIRST_RUN_WORD='안녕';
+const hangulText=()=>({title:t('firstRun.hangul.title'),eyebrow:'HANGUL',word:FIRST_RUN_WORD,listen:t('firstRun.hangul.listen',{word:FIRST_RUN_WORD}),ask:t('firstRun.hangul.ask'),
+ no:t('firstRun.hangul.no'),yes:t('firstRun.hangul.yes'),saving:t('firstRun.hangul.saving'),failed:t('firstRun.hangul.failed')});
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 export function createFirstRun({steps={}}={}){
@@ -37,16 +38,17 @@ export function createFirstRun({steps={}}={}){
 // 소리는 한글 만나기의 실제 녹음 「안녕」, 시범은 소리가 실제로 나기 시작할 때 글자를 하나씩 켜고 ① → ② 칸을 차례로 또렷하게 하는 것.
 const DEMO_FRAMES=Object.freeze([['listen','assets/world-felt/hangul-demo-listen.webp'],['press','assets/world-felt/hangul-demo-press.webp']]);
 export function createHangulStep({home,asset,read,save}){
- const T=FIRST_RUN_TEXT.hangul,glyphs=[...T.word];
+ let T=hangulText();const glyphs=[...FIRST_RUN_WORD];
  const icon=kind=>kind==='new'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.2 9.1a2.9 2.9 0 1 1 4 2.7c-.8.4-1.2 1-1.2 1.9v.6"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg>'
   :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.6l4.2 4.1 8.8-9.4"/></svg>';
  const frame=([id,path])=>`<span class="first-hangul-frame" data-frame="${id}"><img src="${asset(path)}" alt="" width="520" height="590" decoding="async"></span>`;
  const next='<i class="first-hangul-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12.5 6.5 18 12l-5.5 5.5"/></svg></i>';
  // 사진 속 펠트 단추를 눌러도 같은 시범이 난다(글을 못 읽는 사람은 사진부터 누른다). 읽어 주는 기기에는 아래 「안녕」 단추 하나만 보인다.
- const markup=()=>`<div class="first-hangul"><div class="first-hangul-card"><div class="first-hangul-demo" data-first-hangul-listen aria-hidden="true">${frame(DEMO_FRAMES[0])}${next}${frame(DEMO_FRAMES[1])}</div><button type="button" class="first-hangul-word" data-first-hangul-listen aria-label="${escape(T.listen)}">${glyphs.map(g=>`<span class="first-hangul-glyph">${escape(g)}</span>`).join('')}<i class="first-hangul-speaker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></i></button></div><p class="first-hangul-ask" id="first-hangul-ask">${escape(T.ask)}</p><div class="first-hangul-choices" role="group" aria-labelledby="first-hangul-ask"><button type="button" data-first-hangul="new">${icon('new')}<span>${escape(T.no)}</span></button><button type="button" data-first-hangul="reads">${icon('reads')}<span>${escape(T.yes)}</span></button></div><p class="first-hangul-status" role="status" aria-live="polite"></p></div>`;
+ const markup=()=>`<div class="first-hangul"><div class="first-hangul-card"><div class="first-hangul-demo" data-first-hangul-listen aria-hidden="true">${frame(DEMO_FRAMES[0])}${next}${frame(DEMO_FRAMES[1])}</div><button type="button" class="first-hangul-word" data-first-hangul-listen aria-label="${escape(T.listen)}">${glyphs.map(g=>`<span class="first-hangul-glyph" lang="ko">${escape(g)}</span>`).join('')}<i class="first-hangul-speaker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3l4-3.5v12l-4-3.5h-3z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></i></button></div><p class="first-hangul-ask" id="first-hangul-ask">${escape(T.ask)}</p><div class="first-hangul-choices" role="group" aria-labelledby="first-hangul-ask"><button type="button" data-first-hangul="new">${icon('new')}<span>${escape(T.no)}</span></button><button type="button" data-first-hangul="reads">${icon('reads')}<span>${escape(T.yes)}</span></button></div><p class="first-hangul-status" role="status" aria-live="polite"></p></div>`;
  let clips=null;
  const voice=()=>clips||(clips=fetch(asset('../hangul-stage/assets/voice/voices.json')).then(r=>r.ok?r.json():null).then(v=>v?.approved&&v.clips?.[T.word]?asset('../hangul-stage/assets/voice/'+v.clips[T.word]):null).catch(()=>null));
  function open(){
+  T=hangulText();
   return new Promise(resolve=>{
    let settled=false,busy=false,audio=null,run=null;const timers=new Set();
    const stop=()=>{run=null;timers.forEach(clearTimeout);timers.clear();audio?.pause();audio=null;document.querySelectorAll('.first-hangul-glyph.is-lit').forEach(el=>el.classList.remove('is-lit'));document.querySelector('.first-hangul-demo')?.removeAttribute('data-step');};
@@ -85,7 +87,7 @@ export function createHangulStep({home,asset,read,save}){
     if(busy)return;busy=true;const root=document.querySelector('.first-hangul'),status=root?.querySelector('.first-hangul-status');
     root?.querySelectorAll('button').forEach(b=>b.disabled=true);if(status)status.textContent=T.saving;
     try{await save(answer);finish(true);}
-    catch(error){busy=false;if(settled)return;root?.querySelectorAll('button').forEach(b=>b.disabled=false);if(status)status.textContent=error?.message||T.failed;}
+    catch(error){busy=false;if(settled)return;root?.querySelectorAll('button').forEach(b=>b.disabled=false);if(status)status.textContent=error?.message?tMessage(error.message):T.failed;}
    }
    function click(event){
     const button=event.target.closest('[data-first-hangul],[data-first-hangul-listen]');if(!button||!document.querySelector('#panel-content')?.contains(button))return;

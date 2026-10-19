@@ -1,0 +1,31 @@
+{
+ "createdAt": "2026-10-19T10:40:48.928Z",
+ "changed": 3,
+ "unchanged": 850,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck8-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.pendingBody",
+     "previous": "Илгээх үед холболт тасарсан эсвэл өөр дэлгэц дээр хувцас өөрчлөгдсөн байна. Нүүр дэлгэцэнд хамгийн сүүлд баталгаажсан хувцас харагдана."
+    },
+    {
+     "line": 2,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.context",
+     "previous": "Анх ирсэн сургуульд ажилтан танд ангийн байршлыг зааж өглөө. Та талархлаа илэрхийлэхийг хүсэж байна."
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "heroGraduated",
+     "previous": "Солонгос үсгийн төгсөлт"
+    }
+   ]
+  }
+ ]
+}

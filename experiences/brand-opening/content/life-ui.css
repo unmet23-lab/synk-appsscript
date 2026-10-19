@@ -327,6 +327,17 @@ mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outl
 .life-feedback:not([data-result=ok]) .life-explanation>summary{display:none}
 .life-feedback:not([data-result=ok]) .life-explanation>p{padding:6px 0 8px 18px}
 .life-feedback-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:6px 0 8px 18px;border-top:1px solid var(--w-line)}
+/* 「뜻 보기」(10-19 화면 언어 1판): 답한 뒤 보기 아래에 접어 둔 줄. 누르면 보기마다 한국어 + 화면 언어 뜻 한 줄. */
+.life-meanings{border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.life-meanings>summary{display:flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;font-size:14.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;list-style:none}
+.life-meanings>summary::-webkit-details-marker{display:none}
+.life-meanings>summary::after{content:'';margin-left:auto;width:16px;height:16px;flex-shrink:0;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.life-meanings[open]>summary::after{transform:rotate(180deg)}
+.life-meanings>summary:hover{color:var(--w-ink)}
+.life-meanings>ul{display:grid;gap:0;margin:0;padding:0 18px 8px;list-style:none}
+.life-meanings li{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--w-line)}
+.life-meanings li>span{font-size:17px;font-weight:var(--wt-strong);color:var(--w-ink)}
+.life-meanings li>small{font-size:14px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
 .life-feedback-foot>small{flex:1 1 160px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
 #world-panel .life-feedback-foot>.life-tutor-retry,#world-panel .cafe-conversation .life-tutor-retry{justify-self:start;display:inline-flex;align-items:center;min-height:44px;margin:0;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) 14px/1.3 var(--w-sans);color:var(--w-ink);text-align:left}
 #world-panel .life-feedback-foot>.life-tutor-retry:hover,#world-panel .cafe-conversation .life-tutor-retry:hover{background:var(--w-s3)}

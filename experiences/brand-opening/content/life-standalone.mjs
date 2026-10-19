@@ -6516,10 +6516,10 @@ var require_engine2 = __commonJS({
         let a = h >>> 0;
         return () => {
           a = a + 1831565813 >>> 0;
-          let t = a;
-          t = Math.imul(t ^ t >>> 15, t | 1);
-          t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          let t3 = a;
+          t3 = Math.imul(t3 ^ t3 >>> 15, t3 | 1);
+          t3 ^= t3 + Math.imul(t3 ^ t3 >>> 7, t3 | 61);
+          return ((t3 ^ t3 >>> 14) >>> 0) / 4294967296;
         };
       };
       function validate2(event) {
@@ -6584,9 +6584,9 @@ var require_engine2 = __commonJS({
           return false;
         }
         if (isPractice(event)) {
-          const t = trail();
-          if (typeof t.link === "function") t.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
-          else t.checkLink(lookup.events, event);
+          const t3 = trail();
+          if (typeof t3.link === "function") t3.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
+          else t3.checkLink(lookup.events, event);
         }
         if (event.type === "feedback.given") {
           const completion = find(event.completionId, "experience.completed");
@@ -6903,18 +6903,18 @@ var require_engine2 = __commonJS({
             } else {
               if (option.id === lever.default) score += 0.5;
               if (lever.learn) {
-                const t = tallies.get(option.id), a = (option.id === lever.default ? 2 : 1) + t.s, b = 1 + t.f;
-                score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t.s + t.f);
+                const t3 = tallies.get(option.id), a = (option.id === lever.default ? 2 : 1) + t3.s, b = 1 + t3.f;
+                score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
             return { option, score, notes, proof, basis, order: content ? turn(index) : index };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
-          const best = ranked[0], answered = [...tallies.values()].filter((t) => t.proof.length);
+          const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
             const away = best.option.id !== lever.default && tallies.get(lever.default)?.f >= 1;
             best.basis = "learned";
             best.notes.push("learned", tallies.get(best.option.id).helped ? "learned.works" : away ? "learned.switch" : "learned.keep");
-            for (const t of answered) best.proof.push(...t.proof);
+            for (const t3 of answered) best.proof.push(...t3.proof);
           }
           bundle[lever.id] = { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] };
           evidence.push(...best.proof);
@@ -6970,8 +6970,8 @@ var require_engine2 = __commonJS({
             return;
           }
           const entry = copy3(event);
-          const t = getTrail();
-          if (typeof t?.vouch === "function") t.vouch(entry);
+          const t3 = getTrail();
+          if (typeof t3?.vouch === "function") t3.vouch(entry);
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
@@ -8767,15 +8767,15 @@ var require_temper_flow = __commonJS({
         let a = h >>> 0;
         return () => {
           a = a + 1831565813 >>> 0;
-          let t = a;
-          t = Math.imul(t ^ t >>> 15, t | 1);
-          t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          let t3 = a;
+          t3 = Math.imul(t3 ^ t3 >>> 15, t3 | 1);
+          t3 ^= t3 + Math.imul(t3 ^ t3 >>> 7, t3 | 61);
+          return ((t3 ^ t3 >>> 14) >>> 0) / 4294967296;
         };
       };
       const normal = (rng) => Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
       const phi = (x) => {
-        const t = 1 / (1 + 0.3275911 * Math.abs(x) / Math.SQRT2), y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-(x * x) / 2);
+        const t3 = 1 / (1 + 0.3275911 * Math.abs(x) / Math.SQRT2), y = 1 - ((((1.061405429 * t3 - 1.453152027) * t3 + 1.421413741) * t3 - 0.284496736) * t3 + 0.254829592) * t3 * Math.exp(-(x * x) / 2);
         return x >= 0 ? (1 + y) / 2 : (1 - y) / 2;
       };
       const sigmoid = (x) => 1 / (1 + Math.exp(-x));
@@ -10405,28 +10405,28 @@ var require_ask = __commonJS({
       };
       const finite = (value) => typeof value === "number" && Number.isFinite(value);
       const owns = (value, key) => Object.hasOwn(value, key);
-      function probabilities(q) {
-        const supplied = q.options.filter((option) => owns(option, "p")).length;
-        if (!supplied) return q.options.map(() => 1 / q.options.length);
-        if (supplied !== q.options.length || q.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q.id}`);
-        const total = q.options.reduce((sum, option) => sum + option.p, 0);
-        if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q.id}`);
-        return q.options.map((option) => option.p / total);
+      function probabilities(q2) {
+        const supplied = q2.options.filter((option) => owns(option, "p")).length;
+        if (!supplied) return q2.options.map(() => 1 / q2.options.length);
+        if (supplied !== q2.options.length || q2.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q2.id}`);
+        const total = q2.options.reduce((sum, option) => sum + option.p, 0);
+        if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q2.id}`);
+        return q2.options.map((option) => option.p / total);
       }
       function validate2(questions) {
         if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
         const ids = /* @__PURE__ */ new Set();
-        for (const q of questions) {
-          if (!q || !id(q.id) || ids.has(q.id) || !KINDS.includes(q.kind ?? "setting") || !id(q.about ?? q.id) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q && q.id}`);
-          ids.add(q.id);
+        for (const q2 of questions) {
+          if (!q2 || !id(q2.id) || ids.has(q2.id) || !KINDS.includes(q2.kind ?? "setting") || !id(q2.about ?? q2.id) || !Array.isArray(q2.options) || q2.options.length < 2 || q2.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q2 && q2.id}`);
+          ids.add(q2.id);
           const options = /* @__PURE__ */ new Set();
-          for (const option of q.options) {
-            if (!option || !id(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q.id}`);
+          for (const option of q2.options) {
+            if (!option || !id(option.id) || options.has(option.id)) throw new TypeError(`Ask: invalid option in ${q2.id}`);
             options.add(option.id);
           }
-          probabilities(q);
-          if (owns(q, "cost") && (!finite(q.cost) || q.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q.id}`);
-          if (owns(q, "responseProbability") && (!finite(q.responseProbability) || q.responseProbability < 0 || q.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q.id}`);
+          probabilities(q2);
+          if (owns(q2, "cost") && (!finite(q2.cost) || q2.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q2.id}`);
+          if (owns(q2, "responseProbability") && (!finite(q2.responseProbability) || q2.responseProbability < 0 || q2.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q2.id}`);
         }
         return questions;
       }
@@ -10448,42 +10448,42 @@ var require_ask = __commonJS({
         if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
         if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
         const valued = typeof evaluate === "function";
-        if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
+        if (!valued && questions.some((q2) => owns(q2, "cost") || owns(q2, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
         const current = decide({ ...answers });
         const result = [];
-        for (const q of questions) {
-          const about = q.about ?? q.id;
+        for (const q2 of questions) {
+          const about = q2.about ?? q2.id;
           if (Object.hasOwn(answers, about)) continue;
-          if (denied.includes(q.id)) {
-            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
+          if (denied.includes(q2.id)) {
+            result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time3(now) - time3(asked[q.id]) < quietDays * DAY2) {
-            result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
+          if (Object.hasOwn(asked, q2.id) && now !== null && time3(now) - time3(asked[q2.id]) < quietDays * DAY2) {
+            result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
-          const chances = probabilities(q);
+          const chances = probabilities(q2);
           const outcomes = /* @__PURE__ */ Object.create(null);
           let impact = 0, expectedGain = 0;
-          q.options.forEach((option, index) => {
+          q2.options.forEach((option, index) => {
             const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
             const decided = decide({ ...scenario });
             outcomes[option.id] = decided;
             impact += chances[index] * difference(current, decided);
             if (valued && chances[index] > 0) {
-              const context = { answers: scenario, question: q, option };
+              const context = { answers: scenario, question: q2, option };
               const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
               if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
               expectedGain += chances[index] * gain;
             }
           });
           const distinct = new Set(Object.values(outcomes).map(canonical)).size;
-          const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
+          const cost = q2.cost ?? 0, responseProbability = q2.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
           if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
           const skippable = impact === 0 || valued && value <= 0;
           result.push({
-            id: q.id,
-            kind: q.kind ?? "setting",
+            id: q2.id,
+            kind: q2.kind ?? "setting",
             about,
             impact: Math.round(impact * 1e3) / 1e3,
             distinct,
@@ -10506,7 +10506,7 @@ var require_ask = __commonJS({
         return {
           version: VERSION,
           status: "ask",
-          question: input.questions.find((q) => q.id === best.id),
+          question: input.questions.find((q2) => q2.id === best.id),
           impact: best.impact,
           reason: best.reason,
           ranked,
@@ -10516,15 +10516,15 @@ var require_ask = __commonJS({
       function fromAtlas({ engine, events = [], scope, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
         if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
         validate2(questions);
-        const byAbout = new Map(questions.map((q) => [q.about ?? q.id, q]));
+        const byAbout = new Map(questions.map((q2) => [q2.about ?? q2.id, q2]));
         const decide = (answers) => {
           const extra = [];
           for (const [about, value] of Object.entries(answers)) {
-            const q = byAbout.get(about);
-            if (!q) continue;
-            const base = { schema: 1, id: `ask-virtual-${q.id}`, scope, at, recordedAt: at };
-            if (q.kind === "confirm") extra.push({ ...base, type: "estimate.responded", line: q.line, value });
-            else extra.push({ ...base, type: "context.set", field: q.field ?? about, value, until: null });
+            const q2 = byAbout.get(about);
+            if (!q2) continue;
+            const base = { schema: 1, id: `ask-virtual-${q2.id}`, scope, at, recordedAt: at };
+            if (q2.kind === "confirm") extra.push({ ...base, type: "estimate.responded", line: q2.line, value });
+            else extra.push({ ...base, type: "context.set", field: q2.field ?? about, value, until: null });
           }
           const plan = engine.decide({ events: [...events, ...extra], scope, at, experienceId, candidates, levers });
           if (plan.status !== "ready") return { content: "unavailable", shape: null };
@@ -11185,14 +11185,14 @@ function resumeCafe(state, lessonId = state.id || CAFE_LESSON_ID) {
   if (isCafeCheckpoint(state.stage?.cafe, lessonId)) return clone(state.stage.cafe);
   const result = { version: lessonId === CAFE_COMPOSE_ID ? 2 : 1, step: 0, phase: "welcome", choiceId: null, seat: "window", ...lessonId === CAFE_COMPOSE_ID ? { order: { drink: null, temperature: null, count: null } } : {} };
   const questions = lessonById(lessonId).questions;
-  const firstWrong = questions.findIndex((q) => state.answers[q.id] && !state.answers[q.id].correct);
-  const lastAnswered = questions.reduce((last, q, index2) => state.answers[q.id] ? index2 : last, -1);
+  const firstWrong = questions.findIndex((q2) => state.answers[q2.id] && !state.answers[q2.id].correct);
+  const lastAnswered = questions.reduce((last, q2, index2) => state.answers[q2.id] ? index2 : last, -1);
   const index = firstWrong < 0 ? lastAnswered : firstWrong;
   if (index >= 0) {
-    const q = questions[index], answer = state.answers[q.id];
+    const q2 = questions[index], answer = state.answers[q2.id];
     result.step = index;
-    result.choiceId = q.choices.some((c) => c.id === answer.choiceId) ? answer.choiceId : q.answerId;
-    result.phase = result.choiceId === q.answerId ? "response" : "repair";
+    result.choiceId = q2.choices.some((c) => c.id === answer.choiceId) ? answer.choiceId : q2.answerId;
+    result.phase = result.choiceId === q2.answerId ? "response" : "repair";
   }
   return result;
 }
@@ -11727,10 +11727,10 @@ var require_engine = __commonJS2({
         let a = h >>> 0;
         return () => {
           a = a + 1831565813 >>> 0;
-          let t = a;
-          t = Math.imul(t ^ t >>> 15, t | 1);
-          t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          let t3 = a;
+          t3 = Math.imul(t3 ^ t3 >>> 15, t3 | 1);
+          t3 ^= t3 + Math.imul(t3 ^ t3 >>> 7, t3 | 61);
+          return ((t3 ^ t3 >>> 14) >>> 0) / 4294967296;
         };
       };
       function validate2(event) {
@@ -11795,9 +11795,9 @@ var require_engine = __commonJS2({
           return false;
         }
         if (isPractice(event)) {
-          const t = trail();
-          if (typeof t.link === "function") t.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
-          else t.checkLink(lookup.events, event);
+          const t3 = trail();
+          if (typeof t3.link === "function") t3.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
+          else t3.checkLink(lookup.events, event);
         }
         if (event.type === "feedback.given") {
           const completion = find(event.completionId, "experience.completed");
@@ -12114,18 +12114,18 @@ var require_engine = __commonJS2({
             } else {
               if (option.id === lever.default) score += 0.5;
               if (lever.learn) {
-                const t = tallies.get(option.id), a = (option.id === lever.default ? 2 : 1) + t.s, b = 1 + t.f;
-                score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t.s + t.f);
+                const t3 = tallies.get(option.id), a = (option.id === lever.default ? 2 : 1) + t3.s, b = 1 + t3.f;
+                score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
             return { option, score, notes, proof, basis, order: content ? turn(index) : index };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
-          const best = ranked[0], answered = [...tallies.values()].filter((t) => t.proof.length);
+          const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
             const away = best.option.id !== lever.default && tallies.get(lever.default)?.f >= 1;
             best.basis = "learned";
             best.notes.push("learned", tallies.get(best.option.id).helped ? "learned.works" : away ? "learned.switch" : "learned.keep");
-            for (const t of answered) best.proof.push(...t.proof);
+            for (const t3 of answered) best.proof.push(...t3.proof);
           }
           bundle[lever.id] = { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] };
           evidence.push(...best.proof);
@@ -12181,8 +12181,8 @@ var require_engine = __commonJS2({
             return;
           }
           const entry = copy3(event);
-          const t = getTrail();
-          if (typeof t?.vouch === "function") t.vouch(entry);
+          const t3 = getTrail();
+          if (typeof t3?.vouch === "function") t3.vouch(entry);
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
@@ -13165,6 +13165,7 @@ var time = (value) => Number.isSafeInteger(value) && value >= 0;
 var empty = (owner) => ({ version: LIFE_PROGRESS_VERSION, owner, revision: 0, activeLessonId: null, activeReview: null, lessons: {}, reviews: {} });
 var TUTORS = /* @__PURE__ */ new Set(["marin", "kkamong", "mongle"]);
 var OUTCOMES = /* @__PURE__ */ new Set(["independent", "assisted", "retry"]);
+var DISPLAY_LANGS = /* @__PURE__ */ new Set(["en", "mn", "ko"]);
 var HANGUL_ANSWERS = /* @__PURE__ */ new Set(["new", "reads"]);
 var HANGUL_VIA = /* @__PURE__ */ new Set(["question", "graduation", "skip", "unskip"]);
 var dailyId = (value) => safeId(value) && !["constructor", "prototype"].includes(value);
@@ -13344,7 +13345,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   }
   function register(lesson2) {
     if (!object2(lesson2) || !safeId(lesson2.id) || !safeId(lesson2.packId) || !Array.isArray(lesson2.questions) || !lesson2.questions.length) throw TypeError("Life lesson required");
-    if (lesson2.questions.some((q) => !safeId(q.id) || !safeId(q.skillId) || !safeId(q.review?.id))) throw TypeError("Stable question and review ids required");
+    if (lesson2.questions.some((q2) => !safeId(q2.id) || !safeId(q2.skillId) || !safeId(q2.review?.id))) throw TypeError("Stable question and review ids required");
     lessons.set(lesson2.id, lesson2);
     for (const question2 of lesson2.questions) questions.set(question2.id, { ...question2, lessonId: lesson2.id, packId: lesson2.packId });
     return lesson2;
@@ -13355,7 +13356,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   }
   function lessonState(id) {
     check3();
-    const saved = state.lessons[id], lesson2 = lessons.get(id), ids = lesson2?.questions.map((q) => q.id) || saved?.questionIds || [];
+    const saved = state.lessons[id], lesson2 = lessons.get(id), ids = lesson2?.questions.map((q2) => q2.id) || saved?.questionIds || [];
     const cursor = ids.findIndex((qid) => !saved?.answers[qid]);
     const position = cursor < 0 ? ids.length : cursor, stage = clone2(saved?.stage || { phase: "intro", sceneIndex: 0, questionIndex: 0, helped: false });
     if (!stage.cafe && stage.phase === "questions" && stage.questionIndex !== position) {
@@ -13371,7 +13372,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const previous = state.lessons[lesson2.id];
     if (!previous || replay) {
       const next = clone2(state);
-      next.lessons[lesson2.id] = { attemptId: uuid(), startedAt: now(), completedAt: previous?.completedAt ?? null, stage: { phase: "intro", sceneIndex: 0, questionIndex: 0 }, questionIds: lesson2.questions.map((q) => q.id), answers: {} };
+      next.lessons[lesson2.id] = { attemptId: uuid(), startedAt: now(), completedAt: previous?.completedAt ?? null, stage: { phase: "intro", sceneIndex: 0, questionIndex: 0 }, questionIds: lesson2.questions.map((q2) => q2.id), answers: {} };
       next.activeLessonId = lesson2.id;
       commit(next);
     } else if (state.activeLessonId !== lesson2.id) {
@@ -13396,14 +13397,14 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   function recordAnswer({ lessonId, questionId, question: question2, correct, helped = false, helpSource, choiceId = null, stage, order: order2, input } = {}) {
     check3();
     if (question2) questionId = question2.id;
-    const run = state.lessons[lessonId], q = questions.get(questionId) || question2;
-    if (!run || !q || !safeId(q.skillId) || !safeId(q.review?.id) || !run.questionIds.includes(questionId) || q.lessonId && q.lessonId !== lessonId || typeof correct !== "boolean" || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource) || choiceId !== null && !safeId(choiceId)) throw TypeError("Invalid life answer");
+    const run = state.lessons[lessonId], q2 = questions.get(questionId) || question2;
+    if (!run || !q2 || !safeId(q2.skillId) || !safeId(q2.review?.id) || !run.questionIds.includes(questionId) || q2.lessonId && q2.lessonId !== lessonId || typeof correct !== "boolean" || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource) || choiceId !== null && !safeId(choiceId)) throw TypeError("Invalid life answer");
     if (order2 !== void 0 && (lessonId !== CAFE_COMPOSE_ID || questionId !== "cafe-compose-order" || !isCafeOrder(order2, { complete: true })) || input !== void 0 && (!isCafeLesson(lessonId) || !isCafeListen(input) || input.mode === "listen" && !input.heard && !input.textShown)) throw TypeError("Invalid cafe response");
     if (run.answers[questionId]) return { ...lessonState(lessonId), duplicate: true };
     const staged = run.stage?.phase === "questions" && run.stage?.questionIndex === run.questionIds.indexOf(questionId) && run.stage?.helped === true;
     helped = helped || input?.mode === "listen" && input.textShown || staged;
     const source = !helped ? null : helpSource === "setting" || helpSource == null && staged && run.stage.helpSource === "setting" ? "setting" : "user";
-    const at = now(), next = clone2(state), id = q.review.id, old = next.reviews[id];
+    const at = now(), next = clone2(state), id = q2.review.id, old = next.reviews[id];
     next.lessons[lessonId].answers[questionId] = { correct, helped, choiceId, at, ...source === "setting" ? { helpSource: "setting" } : {}, ...order2 !== void 0 ? { order: clone2(order2) } : {}, ...input !== void 0 ? { input: clone2(input) } : {} };
     if (stage !== void 0) next.lessons[lessonId].stage = stageValue(lessonId, next.lessons[lessonId], stage);
     const difficult = !correct || helped && source !== "setting";
@@ -13412,8 +13413,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       id,
       questionId,
       lessonId,
-      packId: q.packId || lessons.get(lessonId)?.packId,
-      skillId: q.skillId,
+      packId: q2.packId || lessons.get(lessonId)?.packId,
+      skillId: q2.skillId,
       dueAt,
       lastAt: at,
       streak: difficult ? 0 : old?.streak ?? 0,
@@ -13488,12 +13489,12 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   }
   function recordGuidedPractice({ questionId, tutorId } = {}) {
     checkDailyWrite();
-    const q = questions.get(questionId), review = q && state.reviews[q.review.id];
-    if (!q || !dailyId(questionId) || !dailyId(q.lessonId) || !TUTORS.has(tutorId) || !(state.lessons[q.lessonId]?.questionIds.includes(questionId) || review?.questionId === questionId && review.lessonId === q.lessonId)) throw TypeError("Invalid guided life practice");
+    const q2 = questions.get(questionId), review = q2 && state.reviews[q2.review.id];
+    if (!q2 || !dailyId(questionId) || !dailyId(q2.lessonId) || !TUTORS.has(tutorId) || !(state.lessons[q2.lessonId]?.questionIds.includes(questionId) || review?.questionId === questionId && review.lessonId === q2.lessonId)) throw TypeError("Invalid guided life practice");
     const at = now(), dayKey = lifeDayKey(at), existing = state.daily?.days[dayKey]?.items[questionId];
     if (existing?.guidedAt !== void 0 && existing.guidedAt >= Math.max(existing.observedAt ?? 0, review?.lastAt ?? 0)) return { dayKey, item: clone2(existing), duplicate: true, status: status() };
     const next = clone2(state), daily = next.daily ??= { version: 1, days: {} }, day = daily.days[dayKey] ??= { items: {} };
-    const item = { ...day.items[questionId], lessonId: q.lessonId, guidedAt: dailyEventTime(day, day.items[questionId], at), tutorId };
+    const item = { ...day.items[questionId], lessonId: q2.lessonId, guidedAt: dailyEventTime(day, day.items[questionId], at), tutorId };
     day.items[questionId] = item;
     trimDaily(daily);
     commit(next);
@@ -13537,6 +13538,21 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     next.hangul = { version: 1, answer, at: now(), via };
     commit(next, { preserveDaily: true });
     return { hangul: clone2(next.hangul), duplicate: false, status: status() };
+  }
+  function displayLanguage() {
+    check3();
+    if (readError) throw readError;
+    const value = state.display;
+    return object2(value) && value.version === 1 && DISPLAY_LANGS.has(value.language) ? value.language : null;
+  }
+  function setDisplayLanguage(language) {
+    checkDailyWrite();
+    if (!DISPLAY_LANGS.has(language)) throw TypeError("Invalid display language");
+    if (displayLanguage() === language) return { language, duplicate: true, status: status() };
+    const next = clone2(state);
+    next.display = { version: 1, language };
+    commit(next, { preserveDaily: true });
+    return { language, duplicate: false, status: status() };
   }
   function learningProfile() {
     check3();
@@ -13631,6 +13647,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     selectTutor,
     hangulReading,
     setHangulReading,
+    displayLanguage,
+    setDisplayLanguage,
     learningProfile,
     learningProfileValues,
     updateLearningProfile,
@@ -13686,7 +13704,7 @@ function cafeMarkup(state, { photo, print = () => "", helped = false, firstAnswe
   const ticket = `<div class="cafe-ticket"><small>\uC8FC\uBB38\uD45C</small><strong>${esc(receipt.label)}</strong><span>${esc(receipt.place)}</span></div>`;
   if (state.phase === "welcome") return `<div class="cafe-welcome cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}">${sceneMarkup(state, receipt, photo, visit.caption)}<div class="cafe-welcome-copy"><p class="life-section-label">VISIT ${two(visit.number)}</p><h3>${esc(visit.title)}</h3><p>${esc(visit.description)}</p>${lessonId !== CAFE_LESSON_ID ? `<div class="cafe-opening-lines">${lessonById(lessonId).scenes.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}${speechAvailable ? `<fieldset class="cafe-input-modes"><legend>\uC8FC\uBB38 \uBC29\uBC95</legend><button class="plain-button" data-life-cafe-mode="listen" aria-pressed="${state.listen?.mode === "listen"}">\uB4E3\uACE0 \uC8FC\uBB38\uD558\uAE30</button><button class="plain-button" data-life-cafe-mode="read" aria-pressed="${state.listen?.mode !== "listen"}">\uC77D\uACE0 \uC8FC\uBB38\uD558\uAE30</button></fieldset>` : ""}<p class="cafe-soft-note">\uCC9C\uCC9C\uD788 \uD574\uB3C4 \uB3FC\uC694. \uC9C1\uC6D0\uC774 \uC8FC\uBB38\uC744 \uD55C \uBC88 \uB354 \uD655\uC778\uD574 \uC918\uC694.</p></div></div>${actions("\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30", "data-life-cafe-next")}`;
   if (state.phase === "break") return `<div class="cafe-break cafe-focus" tabindex="-1">${sceneMarkup(state, receipt, photo, `${CAFE_SEATS[state.seat]}\uC5D0 \uC8FC\uC2A4 \uB450 \uC794\uC744 \uB193\uC558\uC5B4\uC694.`, "table")}<div class="cafe-break-copy"><p class="life-section-label">BREAK</p><h3>\uB124 \uCEF5 \uD558\uB098, \uB0B4 \uCEF5 \uD558\uB098.</h3><p><b>\uBABD\uAE00</b> \u201C\uC6B0\uC640! \uAC19\uC774 \uB9C8\uC2DC\uB2C8\uAE4C \uB354 \uC2DC\uC6D0\uD574!\u201D</p><p><b>\uAE4C\uBABD</b> \u201C\uC774 \uBAB8 \uC790\uB9AC\uB3C4 \uC788\uC9C0. \u2026\uC5EC\uAE30 \uC7A0\uAE50 \uC549\uC744\uAC8C.\u201D</p><p><b>\uB9C8\uB9B0</b> \u201C\uD559\uAD50 \uAC08 \uC2DC\uAC04 \uD655\uC778. \uB530\uB73B\uD55C \uCC28, \uD55C \uC794 \uD544\uC694.\u201D</p>${ticket}</div></div>${actions("\uB9C8\uB9B0\uC758 \uCC28 \uD3EC\uC7A5\uD558\uAE30", "data-life-cafe-next")}`;
-  const q = cafeQuestion(state.step, lessonId), selection = state.choiceId ? step.options[state.choiceId] : null;
+  const q2 = cafeQuestion(state.step, lessonId), selection = state.choiceId ? step.options[state.choiceId] : null;
   const ready = state.phase === "response", repair = state.phase === "repair";
   const composed = step.compose && state.choiceId;
   const dialogue = composed ? state.phase === "response" ? "\uB124, \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uBB38\uBC1B\uC558\uC5B4\uC694. \uC218\uB7C9\uB3C4 \uB2E4\uC2DC \uD655\uC778\uD560\uAC8C\uC694." : `\uB9D0\uC500\uD558\uC2E0 \uC8FC\uBB38\uC740 ${cafeOrderText(state.order)} \uCE5C\uAD6C\uC640 \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC774 \uB9DE\uC744\uAE4C\uC694?` : selection ? selection.response : step.staff, friend = selection ? selection.friend : step.friend;
@@ -13695,17 +13713,17 @@ function cafeMarkup(state, { photo, print = () => "", helped = false, firstAnswe
   const speechControls = speechAvailable || listening ? `<div class="cafe-speech-controls"><button class="plain-button" data-life-cafe-speech data-phase="${speechAvailable ? esc(speechPhase) : "unavailable"}">${cafeSpeechLabel({ available: speechAvailable, phase: speechPhase, heard: state.listen?.heard })}</button><button class="plain-button cafe-slow" data-life-cafe-slow ${speechAvailable ? "" : "disabled"}>\uB290\uB9AC\uAC8C</button></div><p class="cafe-speech-status" role="status">${speechPhase === "error" ? "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694." : needsHearing ? "\uB05D\uAE4C\uC9C0 \uB4E4\uC740 \uB4A4 \uB2F5\uC744 \uACE8\uB77C\uC694." : ""}</p>` : "";
   const trayMessage = ready ? state.step === 2 ? "\uC794\uC774 \uC900\uBE44\uB410\uC5B4\uC694. \uBC1B\uC544 \uAC00\uC694." : "\uC8FC\uBB38\uD45C\uB97C \uD655\uC778\uD588\uC5B4\uC694." : repair ? "\uC8FC\uBB38\uC744 \uD655\uC778\uD558\uB294 \uC911\uC774\uC5D0\uC694. \uC544\uC9C1 \uBC1B\uC9C0 \uC54A\uC558\uC5B4\uC694." : "\uB9D0\uC744 \uACE0\uB974\uBA74 \uC8FC\uBB38\uD45C\uAC00 \uBC14\uB00C\uC5B4\uC694.";
   const menu = lessonId === CAFE_LESSON_ID ? state.step === 0 : step.menu;
-  const optionHtml = step.compose ? cafeComposer(state, ready) : q.choices.map((c) => {
+  const optionHtml = step.compose ? cafeComposer(state, ready) : q2.choices.map((c) => {
     const o = step.options[c.id], kind = lessonId === CAFE_LESSON_ID ? state.step === 2 ? o.drink : "cold" : o.previewDrink || o.drink;
     return `<button class="cafe-option ${state.choiceId === c.id ? "is-chosen" : ""}" data-life-cafe-choice="${c.id}" ${ready || needsHearing ? "disabled" : ""} aria-label="${esc(c.text)}">${cafeDrink(state.step === 0 && lessonId === CAFE_LESSON_ID ? o.drink : kind, menu ? Math.max(o.count, 1) : 1)}<span>${esc(c.text)}</span>${menu ? `<small>${o.previewDrink ? "\uD488\uC808" : `${o.count}\uC794`}</small>` : ""}</button>`;
   }).join("");
   const primary = step.compose && !ready ? actions(isCafeOrder(state.order, { complete: true }) ? "\uC774 \uC8FC\uBB38\uC73C\uB85C \uB9D0\uD558\uAE30" : "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-submit ${needsHearing || !isCafeOrder(state.order, { complete: true }) ? "disabled" : ""}`) : actions(ready ? step.next : repair ? "\uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694" : "\uD560 \uB9D0\uC744 \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-next ${ready ? "" : "disabled"}`);
   const seats = ready && state.step === visit.seatStep ? `<fieldset class="cafe-seats"><legend>\uC549\uC744 \uC790\uB9AC</legend>${Object.entries(CAFE_SEATS).map(([id, label]) => `<button class="plain-button" data-life-cafe-seat="${id}" aria-pressed="${state.seat === id}">${label}</button>`).join("")}</fieldset>` : "";
-  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}">${progress(state.step + (ready ? 1 : 0), 3)}<span>${visit.number}\uBC88\uC9F8 \uBC29\uBB38 \xB7 ${step.name}</span><span><b class="life-count">${state.step + 1} / 3</b></span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${sceneMarkup(state, receipt, photo, `\uC8FC\uBB38\uD45C \xB7 ${receipt.label} \xB7 ${receipt.place}`)}<p class="cafe-tray-note">${esc(trayMessage)}</p></div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>\uD560 \uC77C</small><h3>${esc(step.goal || q.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0</small>${hiddenQuestion ? `<div class="cafe-staff-hidden"><span>\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E4\uC5B4 \uBCF4\uC138\uC694.</span><button class="quiet-button" data-life-cafe-transcript>\uAE00\uC790\uB85C \uBCF4\uAE30</button></div>` : ""}<p tabindex="-1" ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E3\uACE0 \uB2E4\uC2DC \uACE8\uB77C\uC694.</p>' : ""}<p class="cafe-reply-label">${step.compose ? "\uCE74\uC6B4\uD130\uC5D0\uC11C \uACE8\uB77C\uC694" : "\uB0B4\uAC00 \uD560 \uB9D0"}</p><div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="${step.compose ? "\uC8FC\uBB38 \uACE0\uB974\uAE30" : "\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0"}">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uD78C\uD2B8 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${repair || helped || firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? retryButton(q) : ""}</section></div>${primary}`;
+  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}">${progress(state.step + (ready ? 1 : 0), 3)}<span>${visit.number}\uBC88\uC9F8 \uBC29\uBB38 \xB7 ${step.name}</span><span><b class="life-count">${state.step + 1} / 3</b></span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${sceneMarkup(state, receipt, photo, `\uC8FC\uBB38\uD45C \xB7 ${receipt.label} \xB7 ${receipt.place}`)}<p class="cafe-tray-note">${esc(trayMessage)}</p></div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>\uD560 \uC77C</small><h3>${esc(step.goal || q2.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q2.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0</small>${hiddenQuestion ? `<div class="cafe-staff-hidden"><span>\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E4\uC5B4 \uBCF4\uC138\uC694.</span><button class="quiet-button" data-life-cafe-transcript>\uAE00\uC790\uB85C \uBCF4\uAE30</button></div>` : ""}<p tabindex="-1" ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E3\uACE0 \uB2E4\uC2DC \uACE8\uB77C\uC694.</p>' : ""}<p class="cafe-reply-label">${step.compose ? "\uCE74\uC6B4\uD130\uC5D0\uC11C \uACE8\uB77C\uC694" : "\uB0B4\uAC00 \uD560 \uB9D0"}</p><div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="${step.compose ? "\uC8FC\uBB38 \uACE0\uB974\uAE30" : "\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0"}">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uD78C\uD2B8 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${repair || helped || firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? retryButton(q2) : ""}</section></div>${primary}`;
 }
 function cafeComposer(state, ready) {
   const order2 = state.order, drink = order2.drink || "juice", temperature = order2.temperature;
-  const cup = (d, t) => d === "tea" ? t === "cold" ? "coldtea" : "tea" : t === "warm" ? "warm" : "cold";
+  const cup = (d, t3) => d === "tea" ? t3 === "cold" ? "coldtea" : "tea" : t3 === "warm" ? "warm" : "cold";
   const fields = [
     ["drink", "\uC74C\uB8CC", [["juice", "\uC8FC\uC2A4", cup("juice", temperature)], ["tea", "\uCC28", cup("tea", temperature)]]],
     ["temperature", "\uC628\uB3C4", [["warm", "\uB530\uB73B\uD558\uAC8C", cup(drink, "warm")], ["cold", "\uCC28\uAC11\uAC8C", cup(drink, "cold")]]],
@@ -13818,8 +13836,8 @@ function createCafeSpeech({ asset, onChange = () => {
 }
 function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = CAFE_LESSON_ID, state, adaptive = false, answers = {} }) {
   const visit = cafeVisitById(lessonId), ending = visit.ending, receipt = state ? cafeReceipt(state, lessonId) : null, lesson2 = lessonById(lessonId);
-  const fixes = visit.steps.map((step, i) => ({ step, q: cafeQuestion(i, lessonId) })).filter(({ q }) => {
-    const a = q && answers[q.id];
+  const fixes = visit.steps.map((step, i) => ({ step, q: cafeQuestion(i, lessonId) })).filter(({ q: q2 }) => {
+    const a = q2 && answers[q2.id];
     return a && (!a.correct || a.helped);
   });
   const again = fixes[0], againText = again ? lesson2?.expressions.find((e) => e.id === again.q.expressionId)?.korean || again.q.choices.find((c) => c.id === again.q.answerId)?.text || "" : "";
@@ -14110,6 +14128,155 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
 
 // experiences/synk-world-app/life-ui.mjs
 import { motionOn, ink, typeLabel, roll, drop, bindTilt, stitch, wash, shake, spring, stamp, confetti, slam, develop } from "../world-motion.mjs";
+import { t, tMessage, currentLang, formatDate, hasString } from "../world-lang.mjs";
+
+// experiences/synk-world-app/life-content-lang.mjs
+var q = (ko, en, mn) => ({ ko, en, mn });
+var LIFE_QUESTION_TEXT = Object.freeze({
+  "greetings-expressions-hello": q(
+    { prompt: "\uCC98\uC74C \uB9CC\uB09C \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uC5B4\uB5A4 \uC778\uC0AC\uB97C \uD560\uAE4C\uC694?", context: "\uAD50\uC2E4\uC5D0 \uB4E4\uC5B4\uAC00 \uC120\uC0DD\uB2D8\uC744 \uCC98\uC74C \uB9CC\uB0AC\uC5B4\uC694.", explanation: "\uC0C8\uB85C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uC778\uC0AC\uD574\uC694." },
+    { prompt: "How do you greet a teacher you\u2019re meeting for the first time?", context: "You walk into the classroom and meet the teacher for the first time.", explanation: "To someone you\u2019ve just met, say \u2018\uC548\uB155\uD558\uC138\uC694\u2019." },
+    { prompt: "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u0431\u0430\u0433\u0448\u0442\u0430\u0439\u0433\u0430\u0430 \u0445\u044D\u0440\u0445\u044D\u043D \u043C\u044D\u043D\u0434\u043B\u044D\u0445 \u0432\u044D?", context: "\u0422\u0430 \u0430\u043D\u0433\u0438 \u0440\u0443\u0443 \u043E\u0440\u0436, \u0431\u0430\u0433\u0448\u0442\u0430\u0439\u0433\u0430\u0430 \u0430\u043D\u0445 \u0443\u0434\u0430\u0430 \u0443\u0443\u043B\u0437\u043B\u0430\u0430.", explanation: "\u0428\u0438\u043D\u044D\u044D\u0440 \u0443\u0443\u043B\u0437\u0441\u0430\u043D \u0445\u04AF\u043D\u0442\u044D\u0439 \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u0433\u044D\u0436 \u043C\u044D\u043D\u0434\u044D\u043B\u043D\u044D." }
+  ),
+  "greetings-expressions-hello-transfer": q(
+    { prompt: "\uD559\uAD50\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC9C1\uC6D0\uC5D0\uAC8C \uC778\uC0AC\uD574\uC694.", context: "\uC544\uC9C1 \uB3C4\uC6C0\uC744 \uBC1B\uAC70\uB098 \uD5E4\uC5B4\uC9C0\uB294 \uC0C1\uD669\uC740 \uC544\uB2C8\uC5D0\uC694.", explanation: "\uCC98\uC74C \uB9CC\uB09C \uC9C1\uC6D0\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uD574\uC694." },
+    { prompt: "Greet a school staff member you\u2019re meeting for the first time.", context: "You haven\u2019t received any help yet, and you\u2019re not saying goodbye.", explanation: "Say \u2018\uC548\uB155\uD558\uC138\uC694\u2019 politely to a staff member you\u2019ve just met." },
+    { prompt: "\u0421\u0443\u0440\u0433\u0443\u0443\u043B\u044C\u0434 \u0430\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0442\u0430\u0439 \u043C\u044D\u043D\u0434\u044D\u043B\u043D\u044D \u04AF\u04AF.", context: "\u0422\u0430 \u043E\u0434\u043E\u043E\u0445\u043E\u043D\u0434\u043E\u043E \u0442\u0443\u0441\u043B\u0430\u043C\u0436 \u0430\u0432\u0430\u0430\u0433\u04AF\u0439, \u0441\u0430\u043B\u0430\u0445 \u0433\u044D\u0436 \u0431\u0430\u0439\u0433\u0430\u0430 \u0447 \u0431\u0438\u0448.", explanation: "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0441\u0430\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0434 \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u0433\u044D\u043D\u044D." }
+  ),
+  "greetings-expressions-thanks": q(
+    { prompt: "\uB3C4\uC6C0\uC744 \uBC1B\uC558\uC5B4\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", context: "\uCE5C\uAD6C\uAC00 \uB5A8\uC5B4\uC9C4 \uCC45\uC744 \uC8FC\uC6CC \uC92C\uC5B4\uC694.", explanation: "\uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB4A4\uC5D0\uB294 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB85C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD574\uC694." },
+    { prompt: "Someone helped you. What do you say?", context: "A friend picked up the book you dropped.", explanation: "After getting help, say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019 to show your thanks." },
+    { prompt: "\u0422\u0430 \u0442\u0443\u0441\u043B\u0430\u043C\u0436 \u0430\u0432\u043B\u0430\u0430. \u042E\u0443 \u0433\u044D\u0436 \u0445\u044D\u043B\u044D\u0445 \u0432\u044D?", context: "\u041D\u0430\u0439\u0437 \u0442\u0430\u043D\u044C \u0442\u0430\u043D\u044B \u0443\u043D\u0430\u0433\u0430\u0430\u0441\u0430\u043D \u043D\u043E\u043C\u044B\u0433 \u0442\u04AF\u04AF\u0436 \u04E9\u0433\u043B\u04E9\u04E9.", explanation: "\u0422\u0443\u0441\u043B\u0430\u043C\u0436 \u0430\u0432\u0441\u043D\u044B \u0434\u0430\u0440\u0430\u0430 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u043D\u044D." }
+  ),
+  "greetings-expressions-thanks-transfer": q(
+    { prompt: "\uC9C1\uC6D0\uC774 \uC783\uC5B4\uBC84\uB9B0 \uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC92C\uC5B4\uC694.", context: "\uB3C4\uC6C0\uC744 \uC900 \uC9C1\uC6D0\uC5D0\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", explanation: "\uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC900 \uB3C4\uC6C0\uC5D0 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uB9D0\uD574\uC694." },
+    { prompt: "A staff member found the umbrella you lost.", context: "You want to thank the staff member who helped you.", explanation: "For the help finding your umbrella, say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019." },
+    { prompt: "\u0410\u0436\u0438\u043B\u0442\u0430\u043D \u0442\u0430\u043D\u044B \u0433\u044D\u044D\u0441\u044D\u043D \u0448\u04AF\u0445\u0440\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u043B\u04E9\u04E9.", context: "\u0422\u0443\u0441\u0430\u043B\u0441\u0430\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0434\u0430\u0430 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445\u0438\u0439\u0433 \u0445\u04AF\u0441\u044D\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u0428\u04AF\u0445\u0440\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u0447 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D\u0434 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043D\u044D." }
+  ),
+  "greetings-expressions-name": q(
+    { prompt: "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uB0B4 \uC774\uB984\uC740 \uBABD\uAE00\uC774\uC5D0\uC694.", explanation: "\u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019\uB294 \uB0B4\uAC00 \uBABD\uAE00\uC774\uB77C\uB294 \uC18C\uAC1C\uC608\uC694." },
+    { prompt: "Choose the sentence that introduces your own name.", context: "Your name is Mongle.", explanation: "\u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019 introduces you as Mongle." },
+    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u041C\u043E\u043D\u0433\u043B\u044C.", explanation: "\xAB\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\xBB \u0433\u044D\u0434\u044D\u0433 \u043D\u044C \xAB\u0411\u0438 \u041C\u043E\u043D\u0433\u043B\u044C\xBB \u0433\u044D\u0436 \u04E9\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0436 \u0431\u0443\u0439 \u04AF\u0433." }
+  ),
+  "greetings-expressions-name-transfer": q(
+    { prompt: "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uB0B4 \uC774\uB984\uC740 \uB9C8\uB9B0\uC774\uC5D0\uC694.", explanation: "\u2018\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694\u2019\uB294 \uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD558\uB294 \uC18C\uAC1C\uC608\uC694." },
+    { prompt: "Choose the sentence that introduces your own name.", context: "Your name is Marin.", explanation: "\u2018\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694\u2019 is how you say your own name." },
+    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u041C\u0430\u0440\u0438\u043D.", explanation: "\xAB\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694\xBB \u043D\u044C \u04E9\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0436 \u0431\u0443\u0439 \u04AF\u0433." }
+  ),
+  "greetings-story-name": q(
+    { prompt: "\uCC98\uC74C\uC5D0 \u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019\uB77C\uACE0 \uC18C\uAC1C\uD55C \uCE5C\uAD6C\uB294 \uB204\uAD6C\uC608\uC694?", context: "", explanation: "\uBABD\uAE00\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD558\uBA70 \uC778\uC0AC\uD588\uC5B4\uC694." },
+    { prompt: "Who first introduced themself with \u2018\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\u2019?", context: "", explanation: "Mongle said hello while giving their own name." },
+    { prompt: "\u0425\u0430\u043C\u0433\u0438\u0439\u043D \u0442\u04AF\u0440\u04AF\u04AF\u043D\u0434 \xAB\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694\xBB \u0433\u044D\u0436 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0441\u0430\u043D \u043D\u0430\u0439\u0437 \u0445\u044D\u043D \u0431\u044D?", context: "", explanation: "\u041C\u043E\u043D\u0433\u043B\u044C \u04E9\u04E9\u0440\u0438\u0439\u043D\u0445\u04E9\u04E9 \u043D\u044D\u0440\u0438\u0439\u0433 \u0445\u044D\u043B\u0436 \u043C\u044D\u043D\u0434\u044D\u043B\u0441\u044D\u043D." }
+  ),
+  "greetings-story-name-transfer": q(
+    { prompt: "\u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694.\u2019\uB77C\uACE0 \uC4F4 \uC774\uB984\uD45C\uC758 \uC8FC\uC778\uC740 \uB204\uAD6C\uC608\uC694?", context: "\uC0C8 \uBAA8\uC784\uC758 \uC774\uB984\uD45C\uB97C \uC77D\uACE0 \uC788\uC5B4\uC694.", explanation: "\u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694\u2019\uC5D0\uC11C \uC18C\uAC1C\uD55C \uC774\uB984\uC740 \uAE4C\uBABD\uC774\uC5D0\uC694." },
+    { prompt: "Whose name tag says \u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694.\u2019?", context: "You\u2019re reading the name tags at a new meeting.", explanation: "In \u2018\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694\u2019, the name being introduced is Kkamong (\uAE4C\uBABD)." },
+    { prompt: "\xAB\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694.\xBB \u0433\u044D\u0436 \u0431\u0438\u0447\u0441\u044D\u043D \u043D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u043E \u0445\u044D\u043D\u0438\u0439\u0445 \u0432\u044D?", context: "\u0422\u0430 \u0448\u0438\u043D\u044D \u0443\u0443\u043B\u0437\u0430\u043B\u0442\u044B\u043D \u043D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u0443\u0443\u0434\u044B\u0433 \u0443\u043D\u0448\u0438\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\xAB\uC800\uB294 \uAE4C\uBABD\uC774\uC5D0\uC694\xBB \u0433\u044D\u0441\u044D\u043D \u04E9\u0433\u04AF\u04AF\u043B\u0431\u044D\u0440\u0442 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0436 \u0431\u0443\u0439 \u043D\u044D\u0440 \u043D\u044C \u041A\u0430\u043C\u043E\u043D (\uAE4C\uBABD)." }
+  ),
+  "greetings-story-thanks": q(
+    { prompt: "\uAE4C\uBABD\uC774 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD55C \uC774\uC720\uB294 \uBB34\uC5C7\uC774\uC5D0\uC694?", context: "", explanation: "\uB9C8\uB9B0\uC774 \uB4A4\uC5D0 \uBD99\uC740 \uC774\uB984\uD45C\uB97C \uB5BC\uC5B4 \uC900 \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD588\uC5B4\uC694." },
+    { prompt: "Why did Kkamong say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019?", context: "", explanation: "It was to thank Marin for peeling off the name tag stuck on Kkamong\u2019s back." },
+    { prompt: "\u041A\u0430\u043C\u043E\u043D \u044F\u0430\u0433\u0430\u0430\u0434 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u0441\u044D\u043D \u0431\u044D?", context: "", explanation: "\u041D\u0443\u0440\u0443\u0443\u043D\u0434 \u043D\u044C \u043D\u0430\u0430\u043B\u0434\u0441\u0430\u043D \u043D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u044B\u0433 \u041C\u0430\u0440\u0438\u043D \u0441\u0430\u043B\u0433\u0430\u0436 \u04E9\u0433\u0441\u04E9\u043D\u0434 \u0442\u0430\u043B\u0430\u0440\u0445\u0441\u0430\u043D." }
+  ),
+  "greetings-story-thanks-transfer": q(
+    { prompt: "\uBABD\uAE00\uC774 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5B4\uB5A4 \uC77C\uC774 \uC788\uC5C8\uC744\uAE4C\uC694?", context: "\uB9C8\uB9B0\uC774 \uBABD\uAE00\uC5D0\uAC8C \uB5A8\uC5B4\uC9C4 \uC774\uB984\uD45C\uB97C \uAC74\uB124\uC92C\uC5B4\uC694.", explanation: "\uC774\uB984\uD45C\uB97C \uAC74\uB124\uC900 \uB3C4\uC6C0\uC744 \uBC1B\uC544\uC11C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD588\uC5B4\uC694." },
+    { prompt: "Mongle said \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019. What do you think happened?", context: "Marin handed Mongle a name tag that had fallen.", explanation: "Mongle got help when Marin handed over the name tag, so Mongle said thank you." },
+    { prompt: "\u041C\u043E\u043D\u0433\u043B\u044C \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043B\u044D\u044D. \u042E\u0443 \u0431\u043E\u043B\u0441\u043E\u043D \u0431\u043E\u043B?", context: "\u041C\u0430\u0440\u0438\u043D \u0443\u043D\u0430\u0441\u0430\u043D \u043D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u044B\u0433 \u041C\u043E\u043D\u0433\u043B\u044C \u043D\u0430\u0439\u0437\u0434\u0430\u0430 \u04E9\u0433\u0447\u044D\u044D.", explanation: "\u041D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u044B\u0433 \u04E9\u0433\u0447 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D\u0434 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u0441\u044D\u043D." }
+  ),
+  "greetings-story-hello": q(
+    { prompt: "\uBAA8\uC784\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C \uBA3C\uC800 \uD560 \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "", explanation: "\uBAA8\uC784\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB77C\uACE0 \uC778\uC0AC\uD574\uC694." },
+    { prompt: "Choose what to say first to someone you meet for the first time at a gathering.", context: "", explanation: "Greet someone you meet for the first time at a gathering with \u2018\uC548\uB155\uD558\uC138\uC694\u2019." },
+    { prompt: "\u0423\u0443\u043B\u0437\u0430\u043B\u0442 \u0434\u044D\u044D\u0440 \u0430\u043D\u0445 \u0442\u0430\u0430\u0440\u0430\u043B\u0434\u0441\u0430\u043D \u0445\u04AF\u043D\u0434\u044D\u044D \u0445\u0430\u043C\u0433\u0438\u0439\u043D \u0442\u04AF\u0440\u04AF\u04AF\u043D\u0434 \u0445\u044D\u043B\u044D\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "", explanation: "\u0423\u0443\u043B\u0437\u0430\u043B\u0442 \u0434\u044D\u044D\u0440 \u0430\u043D\u0445 \u0442\u0430\u0430\u0440\u0430\u043B\u0434\u0441\u0430\u043D \u0445\u04AF\u043D\u0442\u044D\u0439 \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u0433\u044D\u0436 \u043C\u044D\u043D\u0434\u044D\u043B\u043D\u044D." }
+  ),
+  "greetings-story-hello-transfer": q(
+    { prompt: "\uC0C8 \uB3D9\uC544\uB9AC\uC5D0\uC11C \uCC98\uC74C \uB9CC\uB09C \uCE5C\uAD6C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694.", context: "\uC9C0\uAE08\uC740 \uC2DD\uC0AC\uD558\uAC70\uB098 \uC678\uCD9C\uD588\uB2E4 \uB3CC\uC544\uC628 \uC0C1\uD669\uC774 \uC544\uB2C8\uC5D0\uC694.", explanation: "\uCC98\uC74C \uB9CC\uB09C \uC790\uB9AC\uC758 \uC778\uC0AC\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uC608\uC694." },
+    { prompt: "Politely greet a friend you\u2019re meeting for the first time at a new club.", context: "You\u2019re not about to eat, and you haven\u2019t just come back home.", explanation: "The greeting for a first meeting is \u2018\uC548\uB155\uD558\uC138\uC694\u2019." },
+    { prompt: "\u0428\u0438\u043D\u044D \u0434\u0443\u0433\u0443\u0439\u043B\u0430\u043D\u0434 \u0430\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u043D\u0430\u0439\u0437\u0442\u0430\u0439\u0433\u0430\u0430 \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u043C\u044D\u043D\u0434\u044D\u043B\u043D\u044D \u04AF\u04AF.", context: "\u0422\u0430 \u043E\u0434\u043E\u043E \u0445\u043E\u043E\u043B \u0438\u0434\u044D\u0445 \u0433\u044D\u0436 \u0431\u0430\u0439\u0433\u0430\u0430 \u0447 \u0431\u0438\u0448, \u0433\u0430\u0434\u0443\u0443\u0440 \u044F\u0432\u0430\u0430\u0434 \u0438\u0440\u0441\u044D\u043D \u0447 \u0431\u0438\u0448.", explanation: "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0445 \u04AF\u0435\u0438\u0439\u043D \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D \u0431\u043E\u043B \xAB\uC548\uB155\uD558\uC138\uC694\xBB." }
+  ),
+  "greetings-apply-introduction": q(
+    { prompt: "\uC774\uB984\uC744 \uBB3B\uB294 \uB9D0\uC5D0 \uB2F5\uD574\uC694.", context: "\u201C\uC774\uB984\uC774 \uBB50\uC608\uC694?\u201D \uB0B4 \uC774\uB984\uC740 \uC218\uC9C4\uC774\uC5D0\uC694.", explanation: "\uC774\uB984\uC744 \uBB3C\uC5C8\uC73C\uBBC0\uB85C \u2018\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\u2019\uB77C\uACE0 \uC18C\uAC1C\uD574\uC694." },
+    { prompt: "Answer when someone asks your name.", context: "\u201C\uC774\uB984\uC774 \uBB50\uC608\uC694?\u201D Your name is Sujin.", explanation: "They asked your name, so you say \u2018\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\u2019." },
+    { prompt: "\u041D\u044D\u0440\u0438\u0439\u0433 \u0442\u0430\u043D\u044C \u0430\u0441\u0443\u0443\u0445\u0430\u0434 \u0445\u0430\u0440\u0438\u0443\u043B\u043D\u0430 \u0443\u0443.", context: "\u201C\uC774\uB984\uC774 \uBB50\uC608\uC694?\u201D \u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u0421\u04AF\u0436\u0438\u043D.", explanation: "\u041D\u044D\u0440\u0438\u0439\u0433 \u0442\u0430\u043D\u044C \u0430\u0441\u0443\u0443\u0441\u0430\u043D \u0442\u0443\u043B \xAB\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\xBB \u0433\u044D\u0436 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u043D\u0430." }
+  ),
+  "greetings-apply-introduction-transfer": q(
+    { prompt: "\uC774\uB984\uC744 \uBB3B\uB294 \uB9D0\uC5D0 \uB2F5\uD574\uC694.", context: "\u201C\uC131\uD568\uC774 \uC5B4\uB5BB\uAC8C \uB418\uC138\uC694?\u201D \uB0B4 \uC774\uB984\uC740 \uC9C0\uD6C8\uC774\uC5D0\uC694.", explanation: "\u2018\uC131\uD568\u2019\uC740 \uC774\uB984\uC744 \uB192\uC5EC \uB9D0\uD55C \uD45C\uD604\uC774\uC5D0\uC694. \uC790\uAE30 \uC774\uB984\uC744 \uB2F5\uD574\uC694." },
+    { prompt: "Answer when someone asks your name.", context: "\u201C\uC131\uD568\uC774 \uC5B4\uB5BB\uAC8C \uB418\uC138\uC694?\u201D Your name is Jihun.", explanation: "\u2018\uC131\uD568\u2019 is a polite word for \u201Cname\u201D. Answer with your own name." },
+    { prompt: "\u041D\u044D\u0440\u0438\u0439\u0433 \u0442\u0430\u043D\u044C \u0430\u0441\u0443\u0443\u0445\u0430\u0434 \u0445\u0430\u0440\u0438\u0443\u043B\u043D\u0430 \u0443\u0443.", context: "\u201C\uC131\uD568\uC774 \uC5B4\uB5BB\uAC8C \uB418\uC138\uC694?\u201D \u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u0416\u0438\u0445\u04AF\u043D.", explanation: "\xAB\uC131\uD568\xBB \u0433\u044D\u0434\u044D\u0433 \u043D\u044C \xAB\u043D\u044D\u0440\xBB \u0433\u044D\u0434\u0433\u0438\u0439\u0433 \u0445\u04AF\u043D\u0434\u044D\u0442\u0433\u044D\u043B\u0442\u044D\u0439 \u0445\u044D\u043B\u0441\u044D\u043D \u04AF\u0433. \u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u0445\u0430\u0440\u0438\u0443\u043B\u043D\u0430." }
+  ),
+  "greetings-apply-thanks": q(
+    { prompt: "\uD544\uC694\uD55C \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uCC98\uC74C \uC628 \uD559\uAD50\uC5D0\uC11C \uC9C1\uC6D0\uC774 \uAD50\uC2E4 \uC704\uCE58\uB97C \uC54C\uB824 \uC92C\uC5B4\uC694. \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", explanation: "\uC704\uCE58\uB97C \uC54C\uB824 \uC900 \uB3C4\uC6C0\uC5D0 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uD574\uC694." },
+    { prompt: "Choose what you need to say.", context: "At a school you\u2019re visiting for the first time, a staff member showed you where the classroom is. You want to say thanks.", explanation: "For the help finding the classroom, say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019." },
+    { prompt: "\u0422\u043E\u0445\u0438\u0440\u043E\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0410\u043D\u0445 \u0443\u0434\u0430\u0430 \u043E\u0447\u0441\u043E\u043D \u0441\u0443\u0440\u0433\u0443\u0443\u043B\u0438\u0439\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D \u0442\u0430\u043D\u0434 \u0430\u043D\u0433\u0438\u0439\u043D \u0431\u0430\u0439\u0440\u0448\u043B\u044B\u0433 \u0437\u0430\u0430\u0436 \u04E9\u0433\u043B\u04E9\u04E9. \u0422\u0430 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445\u0438\u0439\u0433 \u0445\u04AF\u0441\u044D\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u0411\u0430\u0439\u0440\u0448\u043B\u044B\u0433 \u0437\u0430\u0430\u0436 \u04E9\u0433\u0447 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D\u0434 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u043D\u044D." }
+  ),
+  "greetings-apply-thanks-transfer": q(
+    { prompt: "\uC9C0\uAE08 \uD544\uC694\uD55C \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uCE74\uD398 \uC9C1\uC6D0\uC774 \uB450\uACE0 \uC628 \uAC00\uBC29\uC744 \uCC3E\uC544 \uC92C\uC5B4\uC694. \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694.", explanation: "\uAC00\uBC29\uC744 \uCC3E\uC544 \uC900 \uB3C4\uC6C0\uC5D0 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB294 \uB9D0\uC740 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uC608\uC694." },
+    { prompt: "Choose what you need to say now.", context: "A caf\xE9 worker found the bag you left behind. You want to thank them for the help.", explanation: "To thank someone for finding your bag, say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019." },
+    { prompt: "\u041E\u0434\u043E\u043E \u0442\u043E\u0445\u0438\u0440\u043E\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u041A\u0430\u0444\u0435\u043D\u044B \u0430\u0436\u0438\u043B\u0442\u0430\u043D \u0442\u0430\u043D\u044B \u043C\u0430\u0440\u0442\u0430\u0436 \u043E\u0440\u0445\u0438\u0441\u043E\u043D \u0446\u04AF\u043D\u0445\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u043B\u04E9\u04E9. \u0422\u0443\u0441\u043B\u0430\u043C\u0436\u0438\u0434 \u043D\u044C \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445\u0438\u0439\u0433 \u0445\u04AF\u0441\u044D\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u0426\u04AF\u043D\u0445\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u0447 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D\u0434 \u0442\u0430\u043B\u0430\u0440\u0445\u0430\u0445 \u04AF\u0433 \u0431\u043E\u043B \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB." }
+  ),
+  "greetings-apply-hello": q(
+    { prompt: "\uAD50\uC2E4 \uBB38\uC744 \uC5F4\uACE0 \uCC98\uC74C \uB9CC\uB09C \uC120\uC0DD\uB2D8\uC5D0\uAC8C \uB9D0\uD574\uC694.", context: "\uC544\uC9C1 \uB300\uD654\uB97C \uC2DC\uC791\uD558\uAE30 \uC804\uC774\uC5D0\uC694.", explanation: "\uB300\uD654\uB97C \uC2DC\uC791\uD558\uAE30 \uC804\uC5D0 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB85C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694." },
+    { prompt: "You open the classroom door. Speak to the teacher you\u2019re meeting for the first time.", context: "The conversation hasn\u2019t started yet.", explanation: "Before you start talking, greet politely with \u2018\uC548\uB155\uD558\uC138\uC694\u2019." },
+    { prompt: "\u0410\u043D\u0433\u0438\u0439\u043D \u0445\u0430\u0430\u043B\u0433\u044B\u0433 \u043D\u044D\u044D\u0433\u044D\u044D\u0434 \u0430\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u0431\u0430\u0433\u0448\u0434\u0430\u0430 \u0445\u044D\u043B\u044D\u0445 \u04AF\u0433\u044D\u044D \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u042F\u0440\u0438\u0430 \u0445\u0430\u0440\u0430\u0430\u0445\u0430\u043D \u044D\u0445\u043B\u044D\u044D\u0433\u04AF\u0439 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u042F\u0440\u0438\u0430 \u044D\u0445\u043B\u044D\u0445\u044D\u044D\u0441 \u04E9\u043C\u043D\u04E9 \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u0433\u044D\u0436 \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u043C\u044D\u043D\u0434\u044D\u043B\u043D\u044D." }
+  ),
+  "greetings-apply-hello-transfer": q(
+    { prompt: "\uCC98\uC74C \uBC29\uBB38\uD55C \uAC00\uAC8C\uC758 \uC9C1\uC6D0\uC5D0\uAC8C \uB9D0\uC744 \uC2DC\uC791\uD574\uC694.", context: "\uC544\uC9C1 \uC0C1\uD488\uC744 \uACE0\uB974\uAC70\uB098 \uB3C4\uC6C0\uC744 \uBC1B\uAE30 \uC804\uC774\uC5D0\uC694.", explanation: "\uCC98\uC74C \uB300\uD654\uB97C \uC2DC\uC791\uD560 \uB54C \uC815\uC911\uD55C \uC778\uC0AC\uB294 \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uC608\uC694." },
+    { prompt: "Start talking to a worker at a shop you\u2019re visiting for the first time.", context: "You haven\u2019t picked anything or gotten help yet.", explanation: "When you first start a conversation, the polite greeting is \u2018\uC548\uB155\uD558\uC138\uC694\u2019." },
+    { prompt: "\u0410\u043D\u0445 \u043E\u0447\u0441\u043E\u043D \u0434\u044D\u043B\u0433\u04AF\u04AF\u0440\u0438\u0439\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0442\u0430\u0439 \u044F\u0440\u0438\u0430 \u044D\u0445\u043B\u04AF\u04AF\u043B\u043D\u044D \u04AF\u04AF.", context: "\u0422\u0430 \u043E\u0434\u043E\u043E\u0445\u043E\u043D\u0434\u043E\u043E \u0431\u0430\u0440\u0430\u0430 \u0441\u043E\u043D\u0433\u043E\u043E\u0433\u04AF\u0439, \u0442\u0443\u0441\u043B\u0430\u043C\u0436 \u0447 \u0430\u0432\u0430\u0430\u0433\u04AF\u0439 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u0410\u043D\u0445 \u044F\u0440\u0438\u0430 \u044D\u0445\u043B\u044D\u0445\u044D\u0434 \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u0445 \u044D\u0435\u043B\u0434\u044D\u0433 \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D \u0431\u043E\u043B \xAB\uC548\uB155\uD558\uC138\uC694\xBB." }
+  )
+});
+var LIFE_EXPRESSION_TEXT = Object.freeze({
+  "greet-hello": q("\uCC98\uC74C \uB9CC\uB098\uAC70\uB098 \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694.", "A polite greeting for anyone you meet, even for the first time.", "\u0425\u044D\u043D\u0442\u044D\u0439 \u0443\u0443\u043B\u0437\u0441\u0430\u043D \u0447, \u0431\u04AF\u0440 \u0430\u043D\u0445 \u0443\u0434\u0430\u0430 \u0447 \u0433\u044D\u0441\u044D\u043D \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u043C\u044D\u043D\u0434\u043B\u044D\u0445 \u04AF\u0433."),
+  "greet-thanks": q("\uB3C4\uC6C0\uC744 \uBC1B\uC558\uC744 \uB54C \uC815\uC911\uD558\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD574\uC694.", "Politely says thank you when someone helps you.", "\u0422\u0443\u0441\u043B\u0430\u043C\u0436 \u0430\u0432\u0430\u0445\u0434\u0430\u0430 \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u043D\u044D."),
+  "greet-name": q("\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD574\uC694. \uC774\uB984 \uB05D\uC5D0 \uBC1B\uCE68\uC774 \uC788\uC73C\uBA74 \u2018\uC774\uC5D0\uC694\u2019\uB97C \uC368\uC694.", "Introduces your own name. If the name ends in a final consonant (\uBC1B\uCE68), use \u2018\uC774\uC5D0\uC694\u2019.", "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u043D\u0430. \u041D\u044D\u0440 \u043D\u044C \u0433\u0438\u0439\u0433\u04AF\u04AF\u043B\u044D\u0433\u0447\u044D\u044D\u0440 (\uBC1B\uCE68) \u0442\u04E9\u0433\u0441\u0441\u04E9\u043D \u0431\u043E\u043B \xAB\uC774\uC5D0\uC694\xBB-\u0433 \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u043D\u044D.")
+});
+var LIFE_CHOICE_MEANINGS = Object.freeze({
+  "\uC548\uB155\uD558\uC138\uC694.": { en: "Hello. (a polite greeting)", mn: "\u0421\u0430\u0439\u043D \u0431\u0430\u0439\u043D\u0430 \u0443\u0443? (\u044D\u0435\u043B\u0434\u044D\u0433 \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D)" },
+  "\uAC10\uC0AC\uD569\uB2C8\uB2E4.": { en: "Thank you.", mn: "\u0411\u0430\u044F\u0440\u043B\u0430\u043B\u0430\u0430." },
+  "\uB2E4\uB140\uC654\uC5B4\uC694.": { en: "I\u2019m back. (said when you get home)", mn: "\u0418\u0440\u043B\u044D\u044D. (\u0433\u044D\u0440\u0442\u044D\u044D \u0438\u0440\u044D\u0445\u0434\u044D\u044D \u0445\u044D\u043B\u0434\u044D\u0433)" },
+  "\uB2E4\uB140\uC654\uC2B5\uB2C8\uB2E4.": { en: "I\u2019m back. (said politely when you get home)", mn: "\u0418\u0440\u043B\u044D\u044D. (\u0433\u044D\u0440\u0442\u044D\u044D \u0438\u0440\u044D\u0445\u0434\u044D\u044D \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u0445\u044D\u043B\u0434\u044D\u0433)" },
+  "\uC800\uB294 \uBABD\uAE00\uC774\uC5D0\uC694.": { en: "I\u2019m Mongle.", mn: "\u0411\u0438 \u041C\u043E\u043D\u0433\u043B\u044C." },
+  "\uC800\uB294 \uB9C8\uB9B0\uC774\uC5D0\uC694.": { en: "I\u2019m Marin.", mn: "\u0411\u0438 \u041C\u0430\u0440\u0438\u043D." },
+  "\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694.": { en: "I\u2019m Sujin.", mn: "\u0411\u0438 \u0421\u04AF\u0436\u0438\u043D." },
+  "\uC800\uB294 \uC9C0\uD6C8\uC774\uC5D0\uC694.": { en: "I\u2019m Jihun.", mn: "\u0411\u0438 \u0416\u0438\u0445\u04AF\u043D." },
+  "\uCC98\uC74C \uBD59\uACA0\uC2B5\uB2C8\uB2E4.": { en: "Nice to meet you. (very polite, at a first meeting)", mn: "\u0422\u0430\u043D\u0438\u043B\u0446\u0441\u0430\u043D\u0434\u0430\u0430 \u0442\u0430\u0430\u0442\u0430\u0439 \u0431\u0430\u0439\u043D\u0430. (\u0430\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0445\u0434\u0430\u0430 \u0445\u044D\u043B\u0434\u044D\u0433, \u043C\u0430\u0448 \u044D\u0435\u043B\u0434\u044D\u0433)" },
+  "\uC800\uB294 \uD559\uAD50\uC5D0 \uAC00\uC694.": { en: "I go to school.", mn: "\u0411\u0438 \u0441\u0443\u0440\u0433\u0443\u0443\u043B\u044C \u0440\u0443\u0443 \u044F\u0432\u043D\u0430." },
+  "\uBABD\uAE00\uC740 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?": { en: "Where is Mongle?", mn: "\u041C\u043E\u043D\u0433\u043B\u044C \u0445\u0430\u0430\u043D\u0430 \u0431\u0430\u0439\u043D\u0430?" },
+  "\uB9C8\uB9B0\uC740 \uC5B4\uB514\uC5D0 \uC788\uC5B4\uC694?": { en: "Where is Marin?", mn: "\u041C\u0430\u0440\u0438\u043D \u0445\u0430\u0430\u043D\u0430 \u0431\u0430\u0439\u043D\u0430?" },
+  "\uB9C8\uB9B0\uC740 \uD559\uAD50\uC5D0 \uAC00\uC694.": { en: "Marin goes to school.", mn: "\u041C\u0430\u0440\u0438\u043D \u0441\u0443\u0440\u0433\u0443\u0443\u043B\u044C \u0440\u0443\u0443 \u044F\u0432\u043D\u0430." },
+  "\uAE4C\uBABD": { en: "Kkamong (a name)", mn: "\u041A\u0430\u043C\u043E\u043D (\u043D\u044D\u0440)" },
+  "\uBABD\uAE00": { en: "Mongle (a name)", mn: "\u041C\u043E\u043D\u0433\u043B\u044C (\u043D\u044D\u0440)" },
+  "\uB9C8\uB9B0": { en: "Marin (a name)", mn: "\u041C\u0430\u0440\u0438\u043D (\u043D\u044D\u0440)" },
+  "\uB9C8\uB9B0\uC774 \uC774\uB984\uD45C\uB97C \uCC3E\uC544 \uC92C\uC5B4\uC694.": { en: "Marin found the name tag and gave it back.", mn: "\u041C\u0430\u0440\u0438\u043D \u043D\u044D\u0440\u0438\u0439\u043D \u0448\u043E\u0448\u0433\u044B\u0433 \u043E\u043B\u0436 \u04E9\u0433\u0441\u04E9\u043D." },
+  "\uBABD\uAE00\uC774 \uBA3C\uC800 \uC9D1\uC5D0 \uAC14\uC5B4\uC694.": { en: "Mongle went home first.", mn: "\u041C\u043E\u043D\u0433\u043B\u044C \u0442\u04AF\u0440\u04AF\u04AF\u043B\u044D\u044D\u0434 \u0433\u044D\u0440\u0442\u044D\u044D \u0445\u0430\u0440\u044C\u0441\u0430\u043D." },
+  "\uAE4C\uBABD\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uC78A\uC5C8\uC5B4\uC694.": { en: "Kkamong forgot their own name.", mn: "\u041A\u0430\u043C\u043E\u043D \u04E9\u04E9\u0440\u0438\u0439\u043D\u0445\u04E9\u04E9 \u043D\u044D\u0440\u0438\u0439\u0433 \u043C\u0430\u0440\u0442\u0441\u0430\u043D." },
+  "\uB9C8\uB9B0\uC774 \uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD588\uC5B4\uC694.": { en: "Marin introduced themself.", mn: "\u041C\u0430\u0440\u0438\u043D \u04E9\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0441\u0430\u043D." },
+  "\uB9C8\uB9B0\uC774 \uBAA8\uC784 \uC2DC\uAC04\uC744 \uBB3C\uC5C8\uC5B4\uC694.": { en: "Marin asked what time the meeting is.", mn: "\u041C\u0430\u0440\u0438\u043D \u0443\u0443\u043B\u0437\u0430\u043B\u0442\u044B\u043D \u0446\u0430\u0433\u0438\u0439\u0433 \u0430\u0441\u0443\u0443\u0441\u0430\u043D." },
+  "\uC798 \uBA39\uACA0\uC2B5\uB2C8\uB2E4.": { en: "Thank you for the food. (said before eating)", mn: "\u0425\u043E\u043E\u043B \u0438\u0434\u044D\u0445\u0438\u0439\u043D \u04E9\u043C\u043D\u04E9 \u0445\u044D\u043B\u0434\u044D\u0433 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u044B\u043D \u04AF\u0433." },
+  "\uD559\uAD50\uC5D0 \uC788\uC5B4\uC694.": { en: "(I\u2019m) at school.", mn: "(\u0411\u0438) \u0441\u0443\u0440\u0433\u0443\u0443\u043B\u044C \u0434\u044D\u044D\u0440 \u0431\u0430\u0439\u043D\u0430." },
+  "\uC800\uB294 \uD559\uC0DD\uC774\uC5D0\uC694.": { en: "I\u2019m a student.", mn: "\u0411\u0438 \u0441\u0443\u0440\u0430\u0433\u0447." },
+  "\uC9C0\uD6C8\uC740 \uC9D1\uC5D0 \uC788\uC5B4\uC694.": { en: "Jihun is at home.", mn: "\u0416\u0438\u0445\u04AF\u043D \u0433\u044D\u0440\u0442\u044D\u044D \u0431\u0430\u0439\u043D\u0430." },
+  "\uC800\uB294 \uC2DD\uC0AC\uD588\uC5B4\uC694.": { en: "I\u2019ve eaten.", mn: "\u0411\u0438 \u0445\u043E\u043E\u043B\u043E\u043E \u0438\u0434\u0441\u044D\u043D." }
+});
+function lifeQuestionText(question2, field, lang) {
+  const original = question2?.[field] ?? "";
+  if (lang === "ko" || !question2) return original;
+  const entry = LIFE_QUESTION_TEXT[question2.id];
+  if (!entry || entry.ko[field] !== original) return original;
+  return entry[lang]?.[field] ?? original;
+}
+function lifeExpressionText(expression2, lang) {
+  const original = expression2?.meaning ?? "";
+  if (lang === "ko" || !expression2) return original;
+  const entry = LIFE_EXPRESSION_TEXT[expression2.id];
+  return entry && entry.ko === original ? entry[lang] ?? original : original;
+}
+function lifeChoiceMeanings(question2, lang) {
+  if (lang === "ko" || !question2 || !LIFE_QUESTION_TEXT[question2.id]) return null;
+  const rows2 = question2.choices.map((choice) => ({ id: choice.id, text: choice.text, meaning: LIFE_CHOICE_MEANINGS[choice.text]?.[lang] || null }));
+  return rows2.every((row) => row.meaning) ? rows2 : null;
+}
+
+// experiences/synk-world-app/life-ui.mjs
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
   style.rel = "stylesheet";
@@ -14119,25 +14286,29 @@ if (!document.querySelector("[data-life-style]")) {
 }
 var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
-var phaseNames = { expressions: "\uD45C\uD604 \uC775\uD788\uAE30", story: "\uC774\uC57C\uAE30 \uC77D\uAE30", apply: "\uC0DD\uD65C\uC5D0\uC11C \uC368 \uBCF4\uAE30", visit: "\uCE74\uD398 \uBC29\uBB38", compose: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30" };
+var phaseName = (type) => t(`life.phase.${type}`);
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
-var dayLabel = (at) => Number.isFinite(at) ? new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(at)) : "";
+var dayLabel = (at) => formatDate(at, { month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" });
 var ago = (at) => {
   if (!Number.isFinite(at)) return "";
   const minutes = Math.floor(Math.max(0, Date.now() - at) / 6e4);
-  if (minutes < 1) return "\uBC29\uAE08 \uC804";
-  if (minutes < 60) return `${minutes}\uBD84 \uC804`;
+  if (minutes < 1) return t("life.ago.now");
+  if (minutes < 60) return t("life.ago.minutes", { n: minutes });
   const hours = Math.floor(minutes / 60);
-  return hours < 24 ? `${hours}\uC2DC\uAC04 \uC804` : `${Math.floor(hours / 24)}\uC77C \uC804`;
+  return hours < 24 ? t("life.ago.hours", { n: hours }) : t("life.ago.days", { n: Math.floor(hours / 24) });
 };
-var placeAt = { greetings: "\uCCAB \uBAA8\uC784\uC5D0\uC11C", cafe: "\uCE74\uD398\uC5D0\uC11C", store: "\uD3B8\uC758\uC810\uC5D0\uC11C", directions: "\uAE38\uC5D0\uC11C", transit: "\uBC84\uC2A4\uC5D0\uC11C", plans: "\uC57D\uC18D\uC744 \uC815\uD558\uBA70" };
+var placeAt = (packId) => hasString(`life.place.${packId}`) ? t(`life.place.${packId}`) : "";
+var packTitle = (pack) => currentLang() === "ko" || !hasString(`life.packTitle.${pack?.id}`) ? pack?.title ?? "" : t(`life.packTitle.${pack.id}`);
+var packSub = (pack) => currentLang() === "ko" || !hasString(`life.packSub.${pack?.id}`) ? pack?.subtitle ?? "" : t(`life.packSub.${pack.id}`);
+var lessonGoal = (lesson2) => currentLang() === "ko" || !hasString(`life.lessonGoal.${lesson2.id}`) ? lesson2.goal : t(`life.lessonGoal.${lesson2.id}`);
+var qText = (question2, field) => lifeQuestionText(question2, field, currentLang());
 var packWords = { greetings: ["\uC778\uC0AC", "GREETINGS"], cafe: ["\uCE74\uD398", "CAFE"], store: ["\uD3B8\uC758\uC810", "STORE"], directions: ["\uAE38 \uCC3E\uAE30", "DIRECTIONS"], transit: ["\uBC84\uC2A4", "TRANSIT"], plans: ["\uC57D\uC18D", "PLANS"] };
 var packShapes = ["wide", "tall", "low", "wide-left", "tall", "low"];
 var pad = (value) => String(value).padStart(2, "0");
 var percent = (done, total) => total ? Math.round(Math.max(0, Math.min(1, done / total)) * 100) : 0;
 var progressLine = (done, total) => `<span class="life-progress" aria-hidden="true"><i style="width:${percent(done, total)}%"></i></span>`;
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
-var expressionOf = (lesson2, q) => lesson2?.expressions.find((e) => e.id === q?.expressionId) || { korean: q?.choices?.find((c) => c.id === q.answerId)?.text || "", meaning: "" };
+var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2?.expressionId) || { korean: q2?.choices?.find((c) => c.id === q2.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
 }, onNext = null, presentation = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
@@ -14166,7 +14337,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   document.addEventListener("visibilitychange", sitting);
   function restLine(key) {
     if (restKey === null && Date.now() - sittingSince >= 36e5) restKey = key;
-    return restKey === key ? '<p class="life-rest" role="status">\uD55C \uC2DC\uAC04 \uB118\uAC8C \uD588\uC5B4\uC694. \uC7A0\uAE50 \uC26C\uC5B4\uB3C4 \uB3FC\uC694. \uD558\uB358 \uC790\uB9AC\uB294 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.</p>' : "";
+    return restKey === key ? `<p class="life-rest" role="status">${t("life.rest")}</p>` : "";
   }
   const speech = createCafeSpeech({ asset, onChange() {
     if (ended || !shown || context?.phase !== "cafe") return;
@@ -14234,18 +14405,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function statusLine() {
     const s = getProgress().status();
-    return `<p class="life-save-status" data-save-phase="${escape2(s.phase)}" role="status">${escape2(s.message)}</p>`;
+    return `<p class="life-save-status" data-save-phase="${escape2(s.phase)}" role="status">${escape2(tMessage(s.message))}</p>`;
   }
   function tutorState() {
     const l = lessonById(context?.lessonId), cafe = context?.phase === "cafe";
-    const original = context?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
-    const q = context?.phase === "review" ? context.reviewQuestion : original;
+    const original = context?.phase === "review" ? l?.questions.find((q3) => q3.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
+    const q2 = context?.phase === "review" ? context.reviewQuestion : original;
     const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase);
     const requiresHearing = cafe && current && cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown;
     return {
       scope: place,
       phase: cafe ? cafeRun.phase : context?.phase,
-      question: current ? q : null,
+      question: current ? q2 : null,
       questionId: original?.id,
       answered: cafe ? !!cafeRun.choiceId : !!lastFeedback,
       feedback: current && !cafe ? lastFeedback : null,
@@ -14288,7 +14459,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     else if (context.phase === "questions") persistStage();
     else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
   }
-  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
+  const retryButton = (q2) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q2.id)}">${t("life.tutorRetry")}</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     story.stop();
@@ -14336,8 +14507,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     decorate(type, keepScroll);
   }
   const baseOf = (el) => {
-    const t = getComputedStyle(el).transform;
-    return t && t !== "none" ? t : "";
+    const t3 = getComputedStyle(el).transform;
+    return t3 && t3 !== "none" ? t3 : "";
   };
   function decorate(type, again) {
     const answered = justChose;
@@ -14420,7 +14591,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function ensureReadable() {
     const s = getProgress().status();
     if (s.phase !== "unreadable") return true;
-    paint("\uC9C4\uB3C4\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694", `<p class="panel-description">${escape2(s.message)}</p><p class="dialog-note">\uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694. \uB0B4 \uACC4\uC815\uC5D0\uC11C \uC5F0\uACB0 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p>`);
+    paint(t("life.checkProgress"), `<p class="panel-description">${escape2(tMessage(s.message))}</p><p class="dialog-note">${t("life.checkProgress.note")}</p>`);
     return false;
   }
   const stateOf = (id) => {
@@ -14431,22 +14602,22 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function packCard(pack2, index, current = null) {
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
     const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
-    const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? '<span class="life-pack-done"><i class="w-led ok"></i>\uB2E4 \uB9C8\uCCE4\uC5B4\uC694</span>' : meter(done, total);
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(`${pack2.title} \xB7 ${pack2.subtitle} \xB7 ${done} / ${total} \uB808\uC2A8${state === "done" ? " \uC644\uB8CC" : ""}`)}">${now ? '<span class="life-pack-now"><i class="w-led ok"></i>\uC9C0\uAE08 \uD558\uB294 \uD329</span>' : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word">${escape2(word)}</strong><span class="life-pack-title">${escape2(pack2.title)}</span></span><span class="life-pack-foot">${foot}</span></button>`;
+    const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   function nowPoster(s) {
     const lesson2 = s.nextLesson;
     if (lesson2 && (s.resume || !s.dueCount)) {
       const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[lesson2.type]}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${started ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></section>` };
+      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
     }
-    if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(s.dueCount)}</small><strong class="life-poster-word">\uB3CC\uC544\uC628 \uD45C\uD604</strong><span class="life-poster-sub">\uBC30\uC6B4 \uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uB3CC\uC544\uC654\uC5B4\uC694.</span><button class="felt-button" data-life-review>\uBCF5\uC2B5\uD558\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
+    if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(s.dueCount)}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: s.dueCount })}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` };
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">\uD329\uC744 \uBAA8\uB450 \uB9C8\uCCE4\uC5B4\uC694</strong><span class="life-poster-sub">${future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape2(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB2E4\uC2DC \uD558\uACE0 \uC2F6\uC740 \uD329\uC744 \uACE8\uB77C\uC694."}</span><button class="felt-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t("life.allPacksWord")}</strong><span class="life-poster-sub">${future ? t("life.nextReviewOpens", { date: escape2(future) }) : t("life.pickPackAgain")}</span><button class="felt-button" data-life-review>${t("life.reviewSchedule")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function reviewRow(s) {
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>\uBCF5\uC2B5</strong><small>${s.dueCount ? `\uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uB3CC\uC544\uC654\uC5B4\uC694.` : `\uB2E4\uC74C \uBCF5\uC2B5 ${escape2(future)}`}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${s.dueCount}\uAC1C</span>` : ""}</button>`;
+    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>${t("life.review")}</strong><small>${s.dueCount ? t("life.reviewBack", { n: s.dueCount }) : t("life.reviewNext", { date: escape2(future) })}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${t("life.count", { n: s.dueCount })}</span>` : ""}</button>`;
   }
   function packs() {
     if (!ensureReadable()) return;
@@ -14454,19 +14625,19 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context = null;
     const s = summary(), now = nowPoster(s), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt);
     const episodes = PACKS.filter((p) => p.lessons.some((l) => l.type === "story")).length;
-    const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><small>\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC774 \uB098\uC624\uB294 \uC774\uC57C\uAE30 ${episodes}\uD3B8</small></span></button>`];
+    const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>${t("life.stories")}</strong><small>${t("life.storiesCount", { n: episodes })}</small></span></button>`];
     if (now.kind === "lesson" && hasReviews) rows2.push(reviewRow(s));
-    paint("\uBC30\uC6B0\uAE30", `<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="\uC0DD\uD65C \uD329"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? `\uB808\uC2A8 ${s.total}\uAC1C \uC911 ${s.completed}\uAC1C \uB9C8\uCCE4\uC5B4\uC694` : `\uD329 ${PACKS.length}\uAC1C \xB7 \uB808\uC2A8 ${LESSONS.length}\uAC1C`}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="\uB354 \uBCF4\uAE30"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`);
+    paint(t("life.learn"), `<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="${t("life.packsSection")}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? t("life.lessonsDone", { done: s.completed, total: s.total }) : t("life.packsAndLessons", { packs: PACKS.length, lessons: LESSONS.length })}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="${t("life.more")}"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`);
   }
-  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseNames[l.type], labels = ["\uC644\uB8CC", "\uD558\uB294 \uC911", ""] } = {}) {
-    const state = stateOf(l.id), now = l.id === nowId, text = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? "\uC9C0\uAE08" : labels[2];
-    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong>${escape2(l.title)}</strong><span>${escape2(l.goal)}</span></span>${text ? `<em>${escape2(text)}</em>` : ""}</button>`;
+  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseName(l.type), labels = [t("life.state.done"), t("life.state.doing"), ""] } = {}) {
+    const state = stateOf(l.id), now = l.id === nowId, text = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? t("life.state.now") : labels[2];
+    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong lang="ko">${escape2(l.title)}</strong><span>${escape2(lessonGoal(l))}</span></span>${text ? `<em>${escape2(text)}</em>` : ""}</button>`;
   }
   const nowIn = (lessons) => (lessons.find((l) => stateOf(l.id) === "started") || lessons.find((l) => stateOf(l.id) !== "completed"))?.id || null;
   function cafeVisitCards(nowId = null) {
     return CAFE_VISITS.map((visit) => {
-      const state = stateOf(visit.id), now = visit.id === nowId, text = state === "completed" ? "\uC644\uB8CC" : state === "started" ? "\uD558\uB294 \uC911" : now ? "\uC9C0\uAE08" : "";
-      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${visit.number}\uBC88\uC9F8 \uBC29\uBB38</small><strong>${escape2(visit.title)}</strong><span>${escape2(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
+      const state = stateOf(visit.id), now = visit.id === nowId, text = state === "completed" ? t("life.state.done") : state === "started" ? t("life.state.doing") : now ? t("life.state.now") : "";
+      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${t("life.visitN", { n: visit.number })}</small><strong>${escape2(visit.title)}</strong><span>${escape2(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
     }).join("");
   }
   function stories() {
@@ -14474,7 +14645,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     place = "life";
     context = null;
     const episodes = PACKS.map((p) => ({ pack: p, episode: p.lessons.find((l) => l.type === "story") })).filter((e) => e.episode);
-    paint("\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30", `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><span class="life-poster-sub">\uC774\uC57C\uAE30\uB97C \uC77D\uACE0, \uC774\uC57C\uAE30 \uC18D \uD45C\uD604\uC744 \uACE8\uB77C\uC694.</span></section></div><section class="life-list" aria-label="\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: pack2.title, labels: ["\uB2E4\uC2DC \uC77D\uAE30", "\uC77D\uB294 \uC911", ""] })).join("")}</div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
+    paint(t("life.stories"), `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">${t("life.stories")}</strong><span class="life-poster-sub">${t("life.storiesSub")}</span></section></div><section class="life-list" aria-label="${t("life.stories")}"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: packTitle(pack2), labels: [t("life.state.readAgain"), t("life.state.reading"), ""] })).join("")}</div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">${t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
   }
   function pack(id) {
     if (!ensureReadable()) return;
@@ -14484,10 +14655,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
-    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uBC29\uBB38 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? `${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694` : `\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88`}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">\uC8FC\uBB38 \uC804\uC5D0 \uBA3C\uC800 \uBD10\uB3C4 \uC88B\uC544\uC694</small></div><p class="life-pack-description">${escape2(value.subtitle)}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(value.title)} \xB7 ${escape2(value.subtitle)}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
+    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
-    paint(value.title, `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>\uD329 \uBAA9\uB85D\uC73C\uB85C</button>${hasReviews ? '<button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uBCF4\uAE30</button>' : ""}</div>`);
+    paint(packTitle(value), `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t("life.toPacks")}</button>${hasReviews ? `<button class="quiet-button" data-life-review>${t("life.seeReviews")}</button>` : ""}</div>`);
   }
   function next() {
     if (!ensureReadable()) return;
@@ -14535,7 +14706,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function renderCafe() {
     context.phase = "cafe";
     context.questionIndex = cafeRun.step;
-    const q = cafeQuestion(cafeRun.step, context.lessonId), first = q ? getProgress().lessonState(context.lessonId).answers[q.id] : null;
+    const q2 = cafeQuestion(cafeRun.step, context.lessonId), first = q2 ? getProgress().lessonState(context.lessonId).answers[q2.id] : null;
     if (!first && !helped && preferences().support === "step" && ["choose", "repair", "response"].includes(cafeRun.phase)) {
       helped = true;
       helpBy = "setting";
@@ -14552,8 +14723,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function cafeChoose(choiceId) {
     ensureHeard();
     speech.stop();
-    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id), correct = choiceId === q.answerId;
-    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct, helped, helpSource: helpBy || void 0, stage: cafeStage(next2), input: cafeRun.listen });
+    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q2 = cafeQuestion(cafeRun.step, id), correct = choiceId === q2.answerId;
+    if (!p.lessonState(id).answers[q2.id]) p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0, stage: cafeStage(next2), input: cafeRun.listen });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
@@ -14561,13 +14732,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function cafeSubmit() {
     ensureHeard();
-    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
+    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q2 = cafeQuestion(0, id);
     speech.stop();
-    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId: next2.choiceId, correct: next2.choiceId === q.answerId, helped, helpSource: helpBy || void 0, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
+    if (!p.lessonState(id).answers[q2.id]) p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId: next2.choiceId, correct: next2.choiceId === q2.answerId, helped, helpSource: helpBy || void 0, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
-    judge(next2.choiceId === q.answerId);
+    judge(next2.choiceId === q2.answerId);
   }
   async function cafeSpeech({ slow = false } = {}) {
     if (!speech.available() && !await speech.prepare()) throw Error("\uC9C1\uC6D0 \uB9D0 \uC18C\uB9AC\uB97C \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB204\uB974\uAC70\uB098 \u300C\uAE00\uC790\uB85C \uBCF4\uAE30\u300D\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.");
@@ -14620,10 +14791,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context.phase;
     const done = phase === "story" ? context.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
     const count = phase === "questions" ? `${Math.min(context.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context.sceneIndex + 1, scenes)} / ${scenes}` : "";
-    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
+    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(packTitle(pack2))} \xB7 ${phaseName(l.type)}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
   }
-  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC774\uBC88\uC5D0 \uBC30\uC6B8 \uD45C\uD604" : "\uBC30\uC6B4 \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape2(e.korean)}</strong><p>${escape2(e.meaning)}</p></div></article>`).join("")}</section>`;
-  const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong>${escape2(e.korean)}</strong>${e.note ? `<small>${escape2(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
+  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${t(label === "EXPRESSIONS" ? "life.expressionsNow" : "life.expressionsLearned")}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong lang="ko">${escape2(e.korean)}</strong><p>${escape2(lifeExpressionText(e, currentLang()))}</p></div></article>`).join("")}</section>`;
+  const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="${t("life.expressionsLearned")}"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong lang="ko">${escape2(e.korean)}</strong>${e.note ? `<small>${escape2(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
   const doneWord = (title) => {
     const words = String(title).split(" "), tail = words.pop();
     return `${escape2(words.join(" "))}${words.length ? " " : ""}<span class="life-nowrap">${escape2(tail)}, \uB05D!</span>`;
@@ -14634,7 +14805,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!l) return;
     const header = lessonHeader(l);
     if (context.phase === "intro") {
-      paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape2(l.goal)}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-lesson" });
+      paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape2(lessonGoal(l))}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${t(l.type === "story" ? "life.readStory" : "life.start")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-lesson" });
       return;
     }
     if (context.phase === "story") {
@@ -14652,52 +14823,54 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       }
       const photo2 = hasStoryPhoto(l.packId), signs = photo2 ? storySigns(l.packId) : [];
       const previousSrc = content.querySelector(".life-session-meta")?.dataset.lifeLessonId === l.id ? content.querySelector(".life-story-photo>img")?.src || null : null;
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape2(s.text)} \uC18C\uB9AC \uB4E3\uAE30" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${storyLineMarkup(scene2.text, l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t("life.signListen", { text: escape2(s.text) })}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${storyLineMarkup(scene2.text, l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last ? "life.toQuestions" : "life.next")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
       story.enter({ who: speaker, previousSrc, first: context.sceneIndex === 0, signs });
       return;
     }
     renderQuestion();
   }
   function renderQuestion() {
-    const l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
-    if (!q) return finish();
-    const previous = getProgress().lessonState(l.id).answers[q.id];
-    if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q, helped: previous.helped, helpBy: previous.helped ? previous.helpSource === "setting" ? "setting" : "user" : null };
+    const l = lessonById(context.lessonId), q2 = l.questions[context.questionIndex];
+    if (!q2) return finish();
+    const previous = getProgress().lessonState(l.id).answers[q2.id];
+    if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q2, helped: previous.helped, helpBy: previous.helped ? previous.helpSource === "setting" ? "setting" : "user" : null };
     if (!lastFeedback && !helped && preferences().support === "step") {
       helped = true;
       helpBy = "setting";
       persistStage();
     }
-    paint(l.title, `${lessonHeader(l)}${questionMarkup(q, lastFeedback, { lesson: l, packId: l.packId, rest: restLine(`question:${l.id}`) })}`, { type: "life-question", focus: ".life-question-title" });
+    paint(l.title, `${lessonHeader(l)}${questionMarkup(q2, lastFeedback, { lesson: l, packId: l.packId, rest: restLine(`question:${l.id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
-  function questionMarkup(q, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
-    const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape2(c.text)}</span></button>`).join("");
+  function questionMarkup(q2, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
+    const choiceButtons = q2.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q2.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span lang="ko">${escape2(c.text)}</span></button>`).join("");
+    const meanings = feedback ? lifeChoiceMeanings(q2, currentLang()) : null;
+    const meaningBox = meanings ? `<details class="life-meanings"><summary>${t("life.meanings")}</summary><ul aria-label="${t("life.meaningsLabel")}">${meanings.map((row) => `<li data-choice="${row.id}"><span lang="ko">${escape2(row.text)}</span><small>${escape2(row.meaning)}</small></li>`).join("")}</ul></details>` : "";
     const result = !feedback ? "" : !feedback.correct ? "retry" : !feedback.helped ? "ok" : feedback.helpBy === "setting" ? "guided" : "assisted";
-    const answer = q.choices.find((c) => c.id === q.answerId)?.text || "";
-    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "guided" ? "\uB3C4\uC6C0\uC744 \uD3BC\uCCD0 \uB450\uACE0 \uB9DE\uD614\uC5B4\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape2(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape2(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>${result === "guided" ? "\uB2E4\uC74C \uBCF5\uC2B5\uC5D0\uC11C\uB294 \uBA3C\uC800 \uD63C\uC790 \uACE8\uB77C \uBD10\uC694." : "\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694."}</small>${retryButton(q)}</div>` : ""}</div>` : "";
-    const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape2(q.context || lesson2?.title || "")}</p></div>` : "";
-    return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape2(origin)}</small>` : ""}<h3>${escape2(q.prompt)}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape2(q.explanation)}</p>${rest}</section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div></section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
+    const answer = q2.choices.find((c) => c.id === q2.answerId)?.text || "";
+    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${t(result === "ok" ? "life.feedback.ok" : result === "guided" ? "life.feedback.guided" : result === "assisted" ? "life.feedback.assisted" : "life.feedback.retry")}</strong>${result === "retry" ? `<p class="life-feedback-answer" lang="ko">${escape2(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>${t("life.why")}</summary><p>${escape2(qText(q2, "explanation"))}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>${t(result === "guided" ? "life.guidedNext" : "life.comesBack")}</small>${retryButton(q2)}</div>` : ""}</div>` : "";
+    const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape2(qText(q2, "context") || lesson2?.title || "")}</p></div>` : "";
+    return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape2(origin)}</small>` : ""}<h3>${escape2(qText(q2, "prompt"))}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>${t("life.help")}</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape2(qText(q2, "explanation"))}</p>${rest}</section><section class="life-answer-area" aria-label="${t("life.chooseAnswer")}"><div class="life-choices">${choiceButtons}</div>${meaningBox}</section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${t(feedback ? "life.next" : "life.pickAnswer")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`;
   }
   function choose(choiceId) {
     if (lastFeedback) return;
-    const p = getProgress(), l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
-    const correct = choiceId === q.answerId;
-    p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped, helpSource: helpBy || void 0 });
-    lastFeedback = { question: q, choiceId, correct, helped, helpBy };
+    const p = getProgress(), l = lessonById(context.lessonId), q2 = l.questions[context.questionIndex];
+    const correct = choiceId === q2.answerId;
+    p.recordAnswer({ lessonId: l.id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0 });
+    lastFeedback = { question: q2, choiceId, correct, helped, helpBy };
     justChose = true;
     renderQuestion();
     judge(correct);
   }
-  const nextLink = (nextLesson) => `<button class="quiet-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${onNext ? "\uB2E4\uC74C \uC5F0\uC2B5" : nextLesson ? "\uB2E4\uC74C \uB808\uC2A8" : "\uD329 \uBAA9\uB85D \uBCF4\uAE30"}</button>`;
+  const nextLink = (nextLesson) => `<button class="quiet-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${t(onNext ? "life.nextPractice" : nextLesson ? "life.nextLesson" : "life.seePacks")}</button>`;
   function resultGroups(l, answers) {
-    const rows2 = l.questions.flatMap((q) => {
-      const a = answers[q.id];
-      return a ? [{ q, a, expression: expressionOf(l, q) }] : [];
+    const rows2 = l.questions.flatMap((q2) => {
+      const a = answers[q2.id];
+      return a ? [{ q: q2, a, expression: expressionOf(l, q2) }] : [];
     });
     return { alone: rows2.filter((r) => r.a.correct && !r.a.helped), guided: rows2.filter((r) => r.a.correct && r.a.helped && r.a.helpSource === "setting"), again: rows2.filter((r) => !r.a.correct || r.a.helped && r.a.helpSource !== "setting") };
   }
-  const resultList = (rows2, { group, label, count, note = () => "" }) => `<section class="${group === "again" ? "life-result-again" : "life-result-learned"}" data-group="${group}" aria-label="${escape2(count)}"><p class="life-section-label">${label}</p><p class="life-result-count">${escape2(count)}</p><ul>${rows2.map((r) => `<li><strong>${escape2(r.expression.korean)}</strong>${note(r) ? `<small>${escape2(note(r))}</small>` : ""}</li>`).join("")}</ul></section>`;
+  const resultList = (rows2, { group, label, count, note = () => "" }) => `<section class="${group === "again" ? "life-result-again" : "life-result-learned"}" data-group="${group}" aria-label="${escape2(count)}"><p class="life-section-label">${label}</p><p class="life-result-count">${escape2(count)}</p><ul>${rows2.map((r) => `<li><strong lang="ko">${escape2(r.expression.korean)}</strong>${note(r) ? `<small>${escape2(note(r))}</small>` : ""}</li>`).join("")}</ul></section>`;
   function finish() {
     const p = getProgress(), l = lessonById(context.lessonId);
     p.finishLesson(l.id);
@@ -14706,21 +14879,22 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const pack2 = packById(l.packId), packState = s.packs.find((x) => x.id === pack2.id), complete = packState.completed === packState.total, [word] = packWords[pack2.id] || [pack2.title];
     const { alone, guided, again } = resultGroups(l, done.answers);
     const lists = [
-      alone.length ? resultList(alone, { group: "alone", label: "ON YOUR OWN", count: `\uD63C\uC790 \uB9DE\uD798 ${alone.length}\uAC1C` }) : "",
-      guided.length ? resultList(guided, { group: "guided", label: "WITH HELP", count: `\uB3C4\uC6C0\uC744 \uD3BC\uCCD0 \uB450\uACE0 \uB9DE\uD798 ${guided.length}\uAC1C`, note: () => "\uB2E4\uC74C \uBCF5\uC2B5\uC5D0\uC11C \uBA3C\uC800 \uD63C\uC790 \uACE8\uB77C \uBD10\uC694." }) : "",
-      again.length ? resultList(again, { group: "again", label: "AGAIN", count: `\uB2E4\uC2DC \uBCFC \uAC83 ${again.length}\uAC1C`, note: (r) => r.a.correct ? "\uB3C4\uC6C0\uC744 \uC5F4\uACE0 \uB9DE\uD614\uC5B4\uC694" : "\uB2E4\uB978 \uD45C\uD604\uC744 \uACE8\uB790\uC5B4\uC694" }) : ""
+      alone.length ? resultList(alone, { group: "alone", label: "ON YOUR OWN", count: t("life.result.alone", { n: alone.length }) }) : "",
+      guided.length ? resultList(guided, { group: "guided", label: "WITH HELP", count: t("life.result.guided", { n: guided.length }), note: () => t("life.result.guidedNote") }) : "",
+      again.length ? resultList(again, { group: "again", label: "AGAIN", count: t("life.result.again", { n: again.length }), note: (r) => t(r.a.correct ? "life.result.helpedOpen" : "life.result.otherChoice") }) : ""
     ].join("");
-    const quiet = again.length ? `<button class="quiet-button" data-life-review-lesson="${escape2(l.id)}" data-life-review-ids="${escape2(again.map((r) => r.q.review.id).join(","))}">\uC0C8 \uC7A5\uBA74\uC73C\uB85C \uB2E4\uC2DC \uBCF4\uAE30</button>` : nextLink(s.nextLesson);
-    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${lists}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape2(word)} \uD329 \uB3C4\uC7A5` : `${escape2(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${quiet}</div>`, { type: "life-complete" });
+    const quiet = again.length ? `<button class="quiet-button" data-life-review-lesson="${escape2(l.id)}" data-life-review-ids="${escape2(again.map((r) => r.q.review.id).join(","))}">${t("life.result.againButton")}</button>` : nextLink(s.nextLesson);
+    const packName = currentLang() === "ko" ? word : t(`life.pack.${pack2.id}`);
+    paint(t("life.resultTitle"), `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word" lang="ko">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(l.type)}</span></section>${lists}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? t("life.packStamp", { pack: escape2(packName) }) : t("life.packProgress", { pack: escape2(packName), done: packState.completed, total: packState.total })}</strong><small>${t(complete ? "life.packFinished" : "life.packFill")}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>${t("life.toTown")} <span aria-hidden="true">\u2192</span></button>${quiet}</div>`, { type: "life-complete" });
     celebrate();
     const ticket = generation;
     p.flush().catch(() => {
-      if (shown && ticket === generation) home.toast("\uC9C4\uB3C4\uB97C \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uBCF5\uC2B5 \uC77C\uC815\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.");
+      if (shown && ticket === generation) home.toast(t("life.savingProgress"));
     });
   }
   function reviewOrigin(record2, snapshot = getProgress().exportSnapshot()) {
     const at = snapshot.lessons[record2.lessonId]?.answers?.[record2.questionId]?.at ?? record2.lastAt;
-    return [ago(at), placeAt[record2.packId]].filter(Boolean).join(" \xB7 ");
+    return [ago(at), placeAt(record2.packId)].filter(Boolean).join(" \xB7 ");
   }
   function review() {
     if (!ensureReadable()) return;
@@ -14732,10 +14906,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     reviewRun = null;
     const s = summary(), future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot();
     const items = s.dueReviews.map((r) => {
-      const l = lessonById(r.lessonId), q = l?.questions.find((x) => x.id === r.questionId);
-      return { korean: expressionOf(l, q).korean, origin: reviewOrigin(r, snapshot) };
+      const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId);
+      return { korean: expressionOf(l, q2).korean, origin: reviewOrigin(r, snapshot) };
     }).filter((i) => i.korean);
-    paint("\uBCF5\uC2B5", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `\uB3CC\uC544\uC628 \uD45C\uD604 ${s.dueCount}\uAC1C` : future ? "\uB2E4\uC74C \uBCF5\uC2B5" : "\uC544\uC9C1 \uBCF5\uC2B5\uC774 \uC5C6\uC5B4\uC694"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C\uC694." : future ? `${escape2(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB808\uC2A8\uC744 \uD558\uB098 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uD560 \uD45C\uD604\uC774 \uC0DD\uACA8\uC694."}</p></section>${items.length ? `<section class="life-review-list" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong>${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uBCF5\uC2B5 \uC2DC\uC791\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C</button>'}</div>`, { type: "life-review" });
+    paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review" });
   }
   function reviewStart(lessonId = null, requestedIds = null, { soon = false } = {}) {
     const p = getProgress(), ids = Array.isArray(requestedIds) && requestedIds.length ? requestedIds : null;
@@ -14755,31 +14929,31 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (index < 0) {
       summary();
       const snapshot = getProgress().exportSnapshot(), items = run.ids.map((id2) => {
-        const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q2 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2];
-        return { korean: expressionOf(l2, q2).korean, note: a && a.correct && !a.helped ? "\uC798 \uAE30\uC5B5\uD588\uC5B4\uC694. \uB2E4\uC74C\uC5D0\uB294 \uB354 \uC624\uB798 \uC788\uB2E4\uAC00 \uB098\uC640\uC694." : "\uC870\uAE08 \uB4A4 \uB2E4\uC2DC \uB098\uC640\uC694." };
+        const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q3 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2];
+        return { korean: expressionOf(l2, q3).korean, note: t(a && a.correct && !a.helped ? "life.reviewRemembered" : "life.reviewSoon") };
       }).filter((i) => i.korean);
-      paint("\uBCF5\uC2B5 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("review")}<small class="life-poster-label">RESULT \xB7 REVIEW</small><strong class="life-poster-word">\uBCF5\uC2B5, \uB05D!</strong><h3 class="life-poster-sub">\uD45C\uD604 ${run.ids.length}\uAC1C\uB97C \uB2E4\uC2DC \uB9CC\uB0AC\uC5B4\uC694.</h3></section>${learnedList(items, "BACK AGAIN")}</div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8</button></div>`, { type: "life-review-complete" });
+      paint(t("life.reviewResultTitle"), `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("review")}<small class="life-poster-label">RESULT \xB7 REVIEW</small><strong class="life-poster-word">${t("life.reviewDoneWord")}</strong><h3 class="life-poster-sub">${t("life.reviewMet", { n: run.ids.length })}</h3></section>${learnedList(items, "BACK AGAIN")}</div><div class="life-actions"><button class="felt-button" data-life-home>${t("life.toTown")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.nextLesson")}</button></div>`, { type: "life-review-complete" });
       celebrate();
       return;
     }
-    const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q2) => q2.id === record2.questionId), q = original.review;
+    const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
     if (!lastFeedback) {
       helped = run.pendingHelp?.[id] === true;
       helpBy = helped ? "user" : null;
     }
-    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
-    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape2(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { packId: record2.packId, origin: `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604`, rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
+    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record2.packId))) })}</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record2.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record2) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
     if (lastFeedback) return;
-    const q = context.reviewQuestion, p = getProgress(), correct = id === q.answerId;
+    const q2 = context.reviewQuestion, p = getProgress(), correct = id === q2.answerId;
     p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct, helped });
     helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
     helpBy = helped ? "user" : null;
-    lastFeedback = { question: q, choiceId: id, correct, helped, helpBy };
-    const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context.reviewId}`) });
-    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${escape2(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    lastFeedback = { question: q2, choiceId: id, correct, helped, helpBy };
+    const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record2?.packId, origin: record2 ? t("life.reviewOrigin", { origin: reviewOrigin(record2) }) : "", rest: restLine(`review:${context.reviewId}`) });
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record2 ? packTitle(packById(record2.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
     judge(correct);
   }
@@ -14788,7 +14962,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const l = lessonById(context.lessonId), target = context.sceneIndex + delta;
     if (target < 0) {
       play("tap");
-      home.toast("\uCCAB \uC7A5\uBA74\uC774\uC5D0\uC694.");
+      home.toast(t("life.firstScene"));
       return;
     }
     play("page");
@@ -14803,7 +14977,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     else if (context && ["intro", "story", "questions"].includes(context.phase)) persistStage();
     home.closePanel();
     updateHome();
-    home.toast("\uD558\uB358 \uC790\uB9AC\uB97C \uC800\uC7A5\uD588\uC5B4\uC694.");
+    home.toast(t("life.saved"));
   }
   const handlers = {
     packs,
@@ -14915,7 +15089,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     try {
       entry[1](button);
     } catch (error2) {
-      home.toast(error2.message || "\uC9C4\uB3C4\uB97C \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC2DC\uC791\uD574 \uC8FC\uC138\uC694.");
+      home.toast(error2.message || t("life.restart"));
     }
   }
   document.addEventListener("click", click);
@@ -15258,7 +15432,7 @@ function lessonCandidate(lesson2, index, settings) {
 }
 function verifiedReviews(progress2) {
   return Object.values(record(progress2?.reviews) ? progress2.reviews : {}).flatMap((review) => {
-    const lesson2 = knownLessons.get(review?.lessonId), question2 = lesson2?.questions.find((q) => q.id === review.questionId && q.review.id === review.id);
+    const lesson2 = knownLessons.get(review?.lessonId), question2 = lesson2?.questions.find((q2) => q2.id === review.questionId && q2.review.id === review.id);
     if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time2(review.dueAt) || !time2(review.lastAt)) return [];
     return [{ ...review, lesson: lesson2, question: question2 }];
   });
@@ -15457,10 +15631,13 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
 }
 
 // experiences/synk-world-app/world-learning-ui.mjs
+import { t as t2, tMessage as tMessage2 } from "../world-lang.mjs";
 var escape3 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-var reasons = { travel: "\uC5EC\uD589", life: "\uD55C\uAD6D \uC0DD\uD65C", people: "\uC0AC\uB78C\uB4E4\uACFC \uB300\uD654", exam: "TOPIK \uAE30\uCD08", study: "\uD559\uAD50 \uACF5\uBD80", work: "\uC9C1\uC7A5", career: "\uC9C4\uB85C \uC900\uBE44", culture: "\uD55C\uAD6D \uBB38\uD654", hobby: "\uCDE8\uBBF8", other: "\uC544\uC9C1 \uCC3E\uB294 \uC911" };
-var supportNames = { choose: ["\uACE8\uB77C \uBCF4\uBA70 \uC775\uD788\uAE30", "\uBA3C\uC800 \uACE8\uB77C \uBCF4\uACE0, \uD2C0\uB9AC\uBA74 \uC774\uC720\uB97C \uBD10\uC694."], step: ["\uD55C \uB2E8\uACC4\uC529 \uB3C4\uC6C0\uBC1B\uAE30", "\uBB38\uC81C\uB9C8\uB2E4 \uD45C\uD604 \uB3C4\uC6C0\uC744 \uBA3C\uC800 \uD3BC\uCCD0 \uB46C\uC694."], independent: ["\uBA3C\uC800 \uD63C\uC790 \uD480\uAE30", "\uB3C4\uC6C0\uC740 \uB0B4\uAC00 \uB204\uB97C \uB54C\uB9CC \uC5F4\uB824\uC694."] };
-var stateNames = { practice: "\uB2E4\uC2DC \uC5F0\uC2B5\uD560 \uBD80\uBD84", supported: "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uC5F0\uC2B5\uD55C \uBD80\uBD84", review: "\uB2E4\uC2DC \uD655\uC778\uD560 \uB54C", checking: "\uC0C8 \uBB38\uC81C\uB85C \uD655\uC778\uD558\uB294 \uC911", "recent-independent": "\uCD5C\uADFC \uC0C8 \uBB38\uC81C\uB97C \uD63C\uC790 \uD480\uC5C8\uC5B4\uC694" };
+var REASON_IDS = ["travel", "life", "people", "exam", "study", "work", "career", "culture", "hobby", "other"];
+var reasons = () => Object.fromEntries(REASON_IDS.map((id) => [id, t2(`goal.reason.${id}`)]));
+var supportNames = () => ({ choose: [t2("goal.support.choose"), t2("goal.support.chooseNote")], step: [t2("goal.support.step"), t2("goal.support.stepNote")], independent: [t2("goal.support.independent"), t2("goal.support.independentNote")] });
+var STATES = /* @__PURE__ */ new Set(["practice", "supported", "review", "checking", "recent-independent"]);
+var stateName = (status) => STATES.has(status) ? t2(`goal.state.${status}`) : "";
 var radios = (name, options, value) => (Array.isArray(options) ? options : Object.entries(options)).map(([id, label]) => `<label class="study-pill"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span>${label}</span></label>`).join("");
 var rows = (name, options, value) => Object.entries(options).map(([id, [label, note]]) => `<label class="study-option"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span><strong>${label}</strong><small>${note}</small></span></label>`).join("");
 function createWorldEducation({ home, getProgress, engine, createPlan, launchGame, startLesson, startReview, prepare = async () => {
@@ -15599,23 +15776,23 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
       summary = readCoach()?.summary() || empty2;
     } catch {
     }
-    const observed = summary.evidenceComplete ? summary.skills.filter((s) => stateNames[s.status]).slice(0, 4) : [];
+    const observed = summary.evidenceComplete ? summary.skills.filter((s) => STATES.has(s.status)).slice(0, 4) : [];
     const reason = values.primaryReason || values.reasons?.[0] || "";
-    home.showPanel("\uD559\uC2B5 \uBAA9\uD45C", `<form id="world-study-form" class="study-form">
-   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">\uD559\uC2B5 \uBAA9\uD45C</strong><p class="study-intro life-poster-sub">\uC815\uD574 \uB450\uBA74 \uB2E4\uC74C \uC5F0\uC2B5\uC744 \uC5EC\uAE30\uC5D0 \uB9DE\uCDB0 \uACE8\uB77C\uC694. \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uBC30\uC6B8 \uC218 \uC788\uACE0, \uC5B8\uC81C\uB4E0 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694.</p></div>
-   <fieldset class="study-group"><legend>\uBC30\uC6B0\uB294 \uC774\uC720</legend><div class="study-pills study-wrap">${radios("reason", [["", "\uC548 \uC815\uD568"], ...Object.entries(reasons)], reason)}</div></fieldset>
-   <fieldset class="study-group"><legend>\uB3C4\uC6C0 \uBC29\uC2DD</legend><div class="study-options">${rows("support", supportNames, values.support || "choose")}</div></fieldset>
-   <fieldset class="study-group"><legend>\uC124\uBA85 \uAE38\uC774</legend><div class="study-pills study-segment">${radios("explanation", { brief: "\uC9E7\uAC8C", standard: "\uBCF4\uD1B5", detailed: "\uC790\uC138\uD788" }, values.explanation || "brief")}</div></fieldset>
-   <div class="study-today"><p class="life-section-label">TODAY</p><p>\uC2DC\uAC04\uACFC \uC18C\uB9AC\uB294 \uC624\uB298\uB9CC \uC801\uC6A9\uB3FC\uC694.</p>
-    <fieldset class="study-group"><legend>\uACF5\uBD80\uD560 \uC2DC\uAC04</legend><div class="study-pills study-segment">${radios("minutes", [["", "\uC0C1\uAD00\uC5C6\uC74C"], ["3", "3\uBD84"], ["5", "5\uBD84"], ["10", "10\uBD84"]], values.minutes ? String(values.minutes) : "")}</div></fieldset>
-    <fieldset class="study-group"><legend>\uC18C\uB9AC</legend><div class="study-pills study-segment">${radios("audio", { available: "\uB4E4\uC744 \uC218 \uC788\uC5B4\uC694", off: "\uC9C0\uAE08\uC740 \uBABB \uB4E4\uC5B4\uC694" }, values.audio === "off" ? "off" : "available")}</div></fieldset>
+    home.showPanel(t2("goal.title"), `<form id="world-study-form" class="study-form">
+   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">${t2("goal.poster")}</strong><p class="study-intro life-poster-sub">${t2("goal.intro")}</p></div>
+   <fieldset class="study-group"><legend>${t2("goal.reason")}</legend><div class="study-pills study-wrap">${radios("reason", [["", t2("goal.reason.none")], ...Object.entries(reasons())], reason)}</div></fieldset>
+   <fieldset class="study-group"><legend>${t2("goal.support")}</legend><div class="study-options">${rows("support", supportNames(), values.support || "choose")}</div></fieldset>
+   <fieldset class="study-group"><legend>${t2("goal.explanation")}</legend><div class="study-pills study-segment">${radios("explanation", { brief: t2("goal.explanation.brief"), standard: t2("goal.explanation.standard"), detailed: t2("goal.explanation.detailed") }, values.explanation || "brief")}</div></fieldset>
+   <div class="study-today"><p class="life-section-label">TODAY</p><p>${t2("goal.today.note")}</p>
+    <fieldset class="study-group"><legend>${t2("goal.minutes")}</legend><div class="study-pills study-segment">${radios("minutes", [["", t2("goal.minutes.any")], ...["3", "5", "10"].map((n) => [n, t2("goal.minutes.n", { n })])], values.minutes ? String(values.minutes) : "")}</div></fieldset>
+    <fieldset class="study-group"><legend>${t2("goal.audio")}</legend><div class="study-pills study-segment">${radios("audio", { available: t2("goal.audio.available"), off: t2("goal.audio.off") }, values.audio === "off" ? "off" : "available")}</div></fieldset>
    </div>
-   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD558\uAE30</strong><small>\uBAA9\uD45C\uC640 \uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uAE30\uC5B5\uD574 \uCD94\uCC9C\uC5D0 \uC368\uC694.</small></span></label>
-   <p class="study-scope">\uAE09\uC218\uB098 \uC131\uACA9\uC744 \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uBAA9\uD45C\uB97C \uC9C0\uC6B0\uAC70\uB098 \uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAC8C \uD558\uBA74 ${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD55C \uB3C4\uC6C0 \uBC29\uC2DD\uACFC \uC124\uBA85 \uAE38\uC774\uB3C4 \uD568\uAED8 \uC9C0\uC6CC\uC838\uC694. \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
-   <p class="study-save-status" role="status">${escape3(progress2.status().message)}</p>
-   <div class="life-actions"><button class="felt-button" type="submit">${continueAfter ? "\uC800\uC7A5\uD558\uACE0 \uC2DC\uC791\uD558\uAE30" : "\uC800\uC7A5\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status === "new" ? "\uAC74\uB108\uB6F0\uAE30" : "\uB2EB\uAE30"}</button></div>
-   ${profile.status === "active" ? '<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">\uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAE30</button><button type="button" class="quiet-button" data-study-clear="delete">\uBAA9\uD45C \uC9C0\uC6B0\uAE30</button></div>' : ""}
-   <section class="study-understanding"><h3>\uC5F0\uC2B5\uC5D0\uC11C \uBCF8 \uAC83</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape3(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join("")}</ul>` : "<p>\uC0C8 \uBB38\uC81C\uB97C \uD480\uBA74\uC11C \uC870\uAE08\uC529 \uC54C\uC544\uAC00\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uACE0 \uC57D\uD558\uB2E4\uACE0 \uBCF4\uC9C0 \uC54A\uC544\uC694.</p>"}<p>\uD63C\uC790 \uD47C \uB2F5, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB2F5, \uC870\uC791\xB7\uC18C\uB9AC \uBB38\uC81C\uB97C \uB098\uB220\uC11C \uB2E4\uC74C \uC5F0\uC2B5\uC5D0 \uBC18\uC601\uD574\uC694.</p></section>
+   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${t2(progress2.status().scoped ? "goal.consent.account" : "goal.consent.device")}</strong><small>${t2("goal.consent.note")}</small></span></label>
+   <p class="study-scope">${t2(progress2.status().scoped ? "goal.scope.account" : "goal.scope.device")}</p>
+   <p class="study-save-status" role="status">${escape3(tMessage2(progress2.status().message))}</p>
+   <div class="life-actions"><button class="felt-button" type="submit">${t2(continueAfter ? "goal.saveStart" : "goal.save")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${t2(profile.status === "new" ? "goal.skip" : "goal.close")}</button></div>
+   ${profile.status === "active" ? `<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">${t2("goal.disable")}</button><button type="button" class="quiet-button" data-study-clear="delete">${t2("goal.delete")}</button></div>` : ""}
+   <section class="study-understanding"><h3>${t2("goal.seen")}</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape3(s.label)}</strong><span>${stateName(s.status)}</span></li>`).join("")}</ul>` : `<p>${t2("goal.seen.empty")}</p>`}<p>${t2("goal.seen.note")}</p></section>
   </form>`, { type: "world-study", eyebrow: "GOALS", nav: "me" });
     const form = target.document.querySelector("#world-study-form");
     if (!form) return;
@@ -15648,9 +15825,9 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
         refresh();
         home.closePanel();
         if (continueAfter) await next();
-        else home.toast("\uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uB2E4\uC74C \uC5F0\uC2B5\uC744 \uBC14\uAFE8\uC5B4\uC694.");
+        else home.toast(t2("goal.saved"));
       } catch (error2) {
-        if (form.isConnected) status.textContent = error2.message || "\uC800\uC7A5\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.";
+        if (form.isConnected) status.textContent = tMessage2(error2.message) || t2("goal.retry");
       } finally {
         busy = false;
         if (form.isConnected) form.querySelectorAll("button").forEach((b) => b.disabled = false);
@@ -15659,7 +15836,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!form.elements.consent.checked) {
-        status.textContent = "\uC800\uC7A5\uD558\uB824\uBA74 \u300C\uC800\uC7A5\uD558\uAE30\u300D \uC2A4\uC704\uCE58\uB97C \uCF1C \uC8FC\uC138\uC694. \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uAE30\uBCF8 \uC5F0\uC2B5\uC740 \uD560 \uC218 \uC788\uC5B4\uC694.";
+        status.textContent = t2("goal.needConsent");
         return;
       }
       const reason2 = form.elements.reason.value, minutes = Number(form.elements.minutes.value);

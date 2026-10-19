@@ -1,0 +1,430 @@
+{
+ "createdAt": "2026-10-19T09:27:41.031Z",
+ "changed": 67,
+ "unchanged": 784,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck4-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "firstRun.hangul.title",
+     "previous": null
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "firstRun.hangul.listen",
+     "previous": null
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "firstRun.hangul.ask",
+     "previous": null
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "firstRun.hangul.no",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "firstRun.hangul.yes",
+     "previous": null
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "firstRun.hangul.saving",
+     "previous": null
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "firstRun.hangul.failed",
+     "previous": null
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "home.account.pending",
+     "previous": "Хадгалахыг хүлээж байна"
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "home.orientation.landscape",
+     "previous": "Утсаа хэвтээ эргүүлнэ үү"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "home.orientation.portrait",
+     "previous": "Утсаа босоо эргүүлнэ үү"
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "home.study.review",
+     "previous": "Эргэж ирсэн хэллэг · миний давтлага"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "play.first.detail",
+     "previous": "Гурван өгүүлбэрийг зөв таавал бэлэг авна"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "plan.review",
+     "previous": "«첫 인사 세 마디» · шинэ нөхцөлд давтах"
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "tutor.how.review.body",
+     "previous": "Андуурсан хэллэг хэдэн өдрийн дараа өөр нөхцөлд дахин гарч ирнэ."
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "homeTutor.note.pending",
+     "previous": "· хадгалахыг хүлээж байна"
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "homeTutor.reviewDue",
+     "previous": null
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "goal.today.note",
+     "previous": "Цаг, дуу зөвхөн өнөөдөрт хамаарна."
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "goal.retry",
+     "previous": "Хадгалалтыг шалгаад дахин оролдоно уу."
+    },
+    {
+     "line": 19,
+     "source": "world-strings",
+     "key": "life.packTitle.store",
+     "previous": "Камоны дэлгүүрийн төлөвлөгөө"
+    },
+    {
+     "line": 20,
+     "source": "world-strings",
+     "key": "life.phase.visit",
+     "previous": "Кафед зочлох"
+    },
+    {
+     "line": 21,
+     "source": "world-strings",
+     "key": "life.backSub",
+     "previous": "Сурсан 3 хэллэг шинэ нөхцөлд эргэж ирлээ."
+    },
+    {
+     "line": 22,
+     "source": "world-strings",
+     "key": "life.reviewBack",
+     "previous": "3 хэллэг эргэж ирлээ."
+    },
+    {
+     "line": 23,
+     "source": "world-strings",
+     "key": "life.feedback.guided",
+     "previous": null
+    },
+    {
+     "line": 24,
+     "source": "world-strings",
+     "key": "life.guidedNext",
+     "previous": null
+    },
+    {
+     "line": 25,
+     "source": "world-strings",
+     "key": "life.comesBack",
+     "previous": "Удахгүй шинэ нөхцөлд дахин гарч ирнэ."
+    },
+    {
+     "line": 26,
+     "source": "world-strings",
+     "key": "life.result.alone",
+     "previous": null
+    },
+    {
+     "line": 27,
+     "source": "world-strings",
+     "key": "life.result.guided",
+     "previous": null
+    }
+   ]
+  },
+  {
+   "file": "recheck4-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "life.result.guidedNote",
+     "previous": null
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "life.result.again",
+     "previous": null
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "life.result.helpedOpen",
+     "previous": null
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "life.result.otherChoice",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "life.result.againButton",
+     "previous": null
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "life.reviewWordCount",
+     "previous": "Эргэж ирсэн 3 хэллэг"
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "life.reviewSubDue",
+     "previous": "Ижил асуулт биш, шинэ нөхцөлд дахин сонгоно."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "life.reviewMet",
+     "previous": "3 хэллэгтэй дахин уулзлаа."
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "life.reviewHeader",
+     "previous": "Мэндчилгээ · шинэ нөхцөлд давтах"
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "account.testNote",
+     "previous": "Вэб болон Unity апп нэг дотоод серверийн гэрээг ашиглана. Жинхэнэ бүртгэлийн холболтыг төхөөрөмжийн нэвтрэлтийг тохируулсны дараа шалгана."
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "account.savePending",
+     "previous": "Хадгалахыг хүлээж байна"
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "account.saveOk",
+     "previous": "Хадгалалт холбогдсон"
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "msg.firstRunFailed",
+     "previous": null
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "msg.hostPreparingChoose",
+     "previous": null
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "msg.learningPreparingChoose",
+     "previous": null
+    },
+    {
+     "line": 16,
+     "source": "world-strings",
+     "key": "msg.lifeSaveConnection",
+     "previous": "Бүртгэлийн өдөр тутмын солонгос хэлний хадгалалтын холболтыг шалгана уу."
+    },
+    {
+     "line": 17,
+     "source": "world-strings",
+     "key": "msg.otherAccount",
+     "previous": "Өөр бүртгэлийн хариуг хэрэглээгүй."
+    },
+    {
+     "line": 18,
+     "source": "world-strings",
+     "key": "msg.reasonSpent",
+     "previous": null
+    }
+   ]
+  },
+  {
+   "file": "recheck4-03.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "msg.reasonSpentGoal",
+     "previous": null
+    },
+    {
+     "line": 2,
+     "source": "life-content-lang",
+     "key": "greetings-apply-introduction-transfer.explanation",
+     "previous": "«성함» гэдэг нь «нэр» гэдгийг хүндэтгэлтэй хэлсэн үг. Өөрийн нэрээ хариулна."
+    },
+    {
+     "line": 3,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks.prompt",
+     "previous": "Хэрэгтэй үгийг сонгоно уу."
+    },
+    {
+     "line": 4,
+     "source": "life-content-lang",
+     "key": "greetings-apply-thanks-transfer.prompt",
+     "previous": "Одоо хэрэгтэй үгийг сонгоно уу."
+    },
+    {
+     "line": 5,
+     "source": "life-content-lang",
+     "key": "greetings-apply-hello.prompt",
+     "previous": "Ангийн хаалгыг нээгээд анх уулзаж буй багшдаа хандаж хэлнэ үү."
+    },
+    {
+     "line": 6,
+     "source": "life-content-lang",
+     "key": "expression.greet-name",
+     "previous": "Өөрийн нэрийг танилцуулна. Нэр нь гийгүүлэгчээр (받침) төгссөн бол «이에요»-г хэрэглэнэ."
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "lede.graduated",
+     "previous": "Андуурахад амархан үсгүүдийг богино хугацаанд давтана."
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "start.warmup",
+     "previous": "Халаалт эхлэх"
+    },
+    {
+     "line": 9,
+     "source": "hangul-stage",
+     "key": "reason.warmup",
+     "previous": "Халаалтын цаг. Андуурахад амархан үсгүүдийг товч харна."
+    },
+    {
+     "line": 10,
+     "source": "hangul-stage",
+     "key": "note.c-ng",
+     "previous": "Үеийн эхэнд ㅇ дуугүй тул 아 нь ㅏ-тай адилхан дуудагдана."
+    },
+    {
+     "line": 11,
+     "source": "hangul-stage",
+     "key": "note.f-ng",
+     "previous": "Эцсийн гийгүүлэгч ㅇ дуутай (нг). Үеийн эхний дуугүй ㅇ-ээс ялгаатай."
+    },
+    {
+     "line": 12,
+     "source": "hangul-stage",
+     "key": "note.f-g",
+     "previous": "Эцсийн гийгүүлэгч ㄱ дууг тасалж дуусгана. Гадагш гаргахгүй."
+    },
+    {
+     "line": 13,
+     "source": "hangul-stage",
+     "key": "note.f-d",
+     "previous": "Эцсийн гийгүүлэгч ㄷ дууг тасалж дуусгана. Гадагш гаргахгүй."
+    },
+    {
+     "line": 14,
+     "source": "hangul-stage",
+     "key": "note.f-s",
+     "previous": "Эцсийн гийгүүлэгч ㅅ-г эцсийн гийгүүлэгч ㄷ-тэй ижил дуугаар уншина."
+    }
+   ]
+  },
+  {
+   "file": "recheck4-04.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "hangul-stage",
+     "key": "note.finalIntro",
+     "previous": "Эцсийн гийгүүлэгч (받침) нь үеийн доор бичигддэг төгсгөлийн дуу."
+    },
+    {
+     "line": 2,
+     "source": "hangul-stage",
+     "key": "prompt.pair",
+     "previous": "Андуурахад амархан хоёр дуу. Сонссоноо сонгоорой"
+    },
+    {
+     "line": 3,
+     "source": "hangul-stage",
+     "key": "slow",
+     "previous": "Удаан сонсох"
+    },
+    {
+     "line": 4,
+     "source": "hangul-stage",
+     "key": "col.sounds",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "hangul-stage",
+     "key": "finish.newLetters",
+     "previous": "3 шинэ үсэг, дууслаа!"
+    },
+    {
+     "line": 6,
+     "source": "hangul-stage",
+     "key": "finish.questions",
+     "previous": "3 асуулт, дууслаа!"
+    },
+    {
+     "line": 7,
+     "source": "hangul-stage",
+     "key": "grad.life",
+     "previous": null
+    },
+    {
+     "line": 8,
+     "source": "hangul-stage",
+     "key": "grad.fine",
+     "previous": "Андуурахад амархан үсгүүд хааяа богино халаалтаар дахин гарч ирнэ. Үсгийн хайрцаг хэвээр үлдэнэ."
+    }
+   ]
+  }
+ ]
+}

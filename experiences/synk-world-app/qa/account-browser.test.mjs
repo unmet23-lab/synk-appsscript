@@ -87,7 +87,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot.accountId),A);assert.equal(await page.evaluate(()=>window.__synkHome.isMaru),true);
   // First visit asks for an AI tutor (10-12 gate). Choose one so the home becomes interactive.
-  // 10-19: 「한글을 읽을 수 있어요?」 comes first (first-run.mjs); this account answers that it reads Hangul.
+  // 10-19: the first run asks for the screen language, then 「한글을 읽을 수 있어요?」 (first-run.mjs). This test reads Korean screen text,
+  // so it keeps Korean, and this account answers that it reads Hangul.
+  await passLanguageStep();
   await passHangulStep();
   await page.waitForFunction(()=>document.querySelector('.tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');
   if(await page.locator('.tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>document.querySelector('.world-shell')?.dataset.entry==='ready');}
@@ -146,6 +148,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The 3D room hides the old next-lesson pill (10-12). Its path now is the 배우기 tab's 「지금 할 일」 poster,
   // which opens the same summary.nextLesson (10-14 redesign).
   // Each owner (account or guest) chooses a tutor once; pass that gate when it appears.
+  async function passLanguageStep(){await page.waitForFunction(()=>document.querySelector('[data-lang-picker]')||document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('.tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('[data-lang-picker]').count()){await page.locator('[data-lang-choice="ko"]').click();await page.locator('[data-lang-confirm]').click();await page.waitForFunction(()=>!document.querySelector('[data-lang-picker]'));}}
   async function passHangulStep(){await page.waitForFunction(()=>document.querySelector('dialog[open] [data-first-hangul]')||document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] [data-first-hangul="reads"]').count()){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] [data-first-hangul]'));}}
   async function passTutorGate(){await passHangulStep();await page.waitForFunction(()=>document.querySelector('dialog[open] .tutor-option')||document.querySelector('.world-shell')?.dataset.entry==='ready');if(await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').count()){await page.locator('.tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await page.waitForFunction(()=>!document.querySelector('dialog[open] .tutor-option'));}}
   async function learnFromHome(){await passTutorGate();await page.locator('.world-nav [data-view="packs"]').click();const next=page.locator('.life-now [data-life-lesson]');await next.waitFor();await next.click();}

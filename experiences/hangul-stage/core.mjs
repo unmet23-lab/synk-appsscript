@@ -464,12 +464,13 @@ function reasonLine({ p, pack, fresh, weak, due, now }) {
   if (weak) {
     const day = localDay(weak.lastAt), today = localDay(new Date(now).toISOString()), yesterday = localDay(new Date(now - DAY).toISOString());
     const when = day === today ? '방금' : day === yesterday ? '어제' : '지난번에';
-    return { kind: 'pair', text: `${when} 헷갈린 글자예요. 오늘 다시 해요.`, ...chips([...weak]) };
+    // when(now·yesterday·before)·count·finalOnly는 화면 언어(lang.mjs)가 같은 뜻의 글을 고르는 데 쓴다(10-19 1판). text는 한국어 원문 그대로다.
+    return { kind: 'pair', when: day === today ? 'now' : day === yesterday ? 'yesterday' : 'before', text: `${when} 헷갈린 글자예요. 오늘 다시 해요.`, ...chips([...weak]) };
   }
   const finals = fresh.filter(id => pack.byId.get(id).role === 'final');
-  if (finals.length && finals.length === fresh.length) return { kind: 'new', text: `오늘은 새 받침 ${['', '하나를', '둘을', '셋을'][finals.length]} 만나요.`, ...chips(fresh) };
+  if (finals.length && finals.length === fresh.length) return { kind: 'new', finalOnly: true, count: finals.length, text: `오늘은 새 받침 ${['', '하나를', '둘을', '셋을'][finals.length]} 만나요.`, ...chips(fresh) };
   if (fresh.length && due.length) return { kind: 'mixed', text: '다시 볼 글자와 새 글자예요.', ...chips([...due.slice(0, 2), ...fresh]) };
-  if (fresh.length) return { kind: 'new', text: `오늘은 새 글자 ${['', '하나를', '둘을', '셋을'][fresh.length]} 만나요.`, ...chips(fresh) };
+  if (fresh.length) return { kind: 'new', count: fresh.length, text: `오늘은 새 글자 ${['', '하나를', '둘을', '셋을'][fresh.length]} 만나요.`, ...chips(fresh) };
   if (due.length) return { kind: 'due', text: '다시 만날 때가 된 글자예요.', ...chips(due.slice(0, 4)) };
   return { kind: 'practice', text: '아는 글자로 연습해요.', letters: [], finals: [] };
 }

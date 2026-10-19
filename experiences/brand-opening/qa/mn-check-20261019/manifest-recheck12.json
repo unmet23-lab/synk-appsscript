@@ -1,0 +1,25 @@
+{
+ "createdAt": "2026-10-19T11:10:38.901Z",
+ "changed": 2,
+ "unchanged": 874,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck12-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.trialLead",
+     "previous": "««첫 인사 세 마디»» тоглоомын туршилтын тоглолтыг дуусгалаа. SYNK ID-гаар нэвтэрвэл тоглоомын мэдээлэл, зоос тань хадгалагдана"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "records.lead",
+     "previous": "Энэ төхөөрөмж дээрх солонгос үсгийн явцаа бүртгэлдээ үргэлжлүүлэх үү?"
+    }
+   ]
+  }
+ ]
+}

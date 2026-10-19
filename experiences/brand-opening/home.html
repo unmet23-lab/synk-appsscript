@@ -13,13 +13,13 @@
   <script type="module" src="home.mjs"></script>
 </head>
 <body>
-<a class="skip-link" href="#home-main">본문으로 이동</a>
+<a class="skip-link" href="#home-main" data-i18n="home.skip">본문으로 이동</a>
 <div class="world-shell" data-entry="restoring" data-place="town">
   <main id="home-main" tabindex="-1">
-    <section class="town-scene" aria-label="세 친구가 사는 우리 동네"></section>
-    <section class="maru-scene" aria-label="나의 방에서 함께하는 3D 까몽, 몽글, 마린">
+    <section class="town-scene" aria-label="세 친구가 사는 우리 동네" data-i18n-label="home.townScene"></section>
+    <section class="maru-scene" aria-label="나의 방에서 함께하는 3D 까몽, 몽글, 마린" data-i18n-label="home.roomScene">
       <div class="living-canvas"></div>
-      <div class="living-targets" aria-label="친구들과 방 둘러보기"></div>
+      <div class="living-targets" aria-label="친구들과 방 둘러보기" data-i18n-label="home.roomTargets"></div>
       <div class="living-status" role="status" hidden></div>
       <p class="living-bubble" role="status" hidden></p>
     </section>
@@ -27,45 +27,45 @@
     <header class="world-topbar">
       <button class="profile-control" data-view="me" aria-label="내 계정 열기">
         <span class="profile-portrait"><img src="assets/tutor-photos/profile/default.webp" alt=""></span>
-        <span class="profile-copy"><small id="home-account-status">계정 확인 중</small><strong>내 계정</strong></span>
+        <span class="profile-copy"><small id="home-account-status">계정 확인 중</small><strong data-i18n="home.myAccount">내 계정</strong></span>
       </button>
-      <button class="icon-button" id="settings-open" aria-label="화면 설정">
+      <button class="icon-button" id="settings-open" aria-label="화면 설정" data-i18n-label="home.settingsOpen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
       </button>
     </header>
-    <button class="room-back" type="button" data-room-back aria-label="우리 동네로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>동네로</button>
+    <button class="room-back" type="button" data-room-back aria-label="우리 동네로 돌아가기" data-i18n-label="home.roomBackLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg><span data-i18n="home.roomBack">동네로</span></button>
     <div class="place-heading">
       <p class="place-kicker">OUR TOWN</p>
       <h1>우리 동네</h1>
       <p>세 친구와 함께</p>
     </div>
     <div class="orientation-notice" role="status" hidden>
-      <span><strong id="orientation-message"></strong><small>선택한 방향으로 이어서 볼 수 있어요.</small></span>
-      <button data-orientation-auto>자동으로<br>보기</button>
+      <span><strong id="orientation-message"></strong><small data-i18n="home.orientation.hint">선택한 방향으로 이어서 볼 수 있어요.</small></span>
+      <button data-orientation-auto data-i18n-html="home.orientation.auto">자동으로<br>보기</button>
     </div>
-    <div class="lobby-action life-home-board" aria-label="생활 한국어 이어 하기와 복습">
-      <section id="home-tutor" aria-label="AI 튜터와 다음 연습"></section>
+    <div class="lobby-action life-home-board" aria-label="생활 한국어 이어 하기와 복습" data-i18n-label="home.board">
+      <section id="home-tutor" aria-label="AI 튜터와 다음 연습" data-i18n-label="home.tutorSection"></section>
       <button class="adventure-button life-next-button" id="life-next-button" data-view="learn" data-life-next aria-label="생활 한국어 다음 학습 이어 하기"><span class="life-next-copy"><small id="life-next-kicker">생활 한국어</small><strong id="life-next-title">친구들과 첫 인사</strong></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
       <p id="life-progress-caption">6개 생활 팩 · 22개 짧은 학습</p>
-      <div class="study-home-note"><p id="study-reason" aria-live="polite"></p><button class="quiet-button" data-view="study">학습 목표 · 도움 방식</button></div>
+      <div class="study-home-note"><p id="study-reason" aria-live="polite"></p><button class="quiet-button" data-view="study" data-i18n="home.studyButton">학습 목표 · 도움 방식</button></div>
       <div class="life-home-shortcuts">
-        <button data-view="cafe" aria-label="카페 팩 열기"><span>카페</span></button>
-        <button data-view="packs" data-life-library aria-label="생활 한국어 팩 모아 보기"><span>생활 팩</span></button>
-        <button data-view="review" data-life-review aria-label="나의 복습 일정 보기"><span>복습</span><small id="life-review-count">일정</small></button>
-        <button data-view="stories" data-life-stories aria-label="까몽 몽글 마린 이야기 모아 보기"><span>이야기</span></button>
+        <button data-view="cafe" aria-label="카페 팩 열기" data-i18n-label="home.short.cafeLabel"><span data-i18n="home.short.cafe">카페</span></button>
+        <button data-view="packs" data-life-library aria-label="생활 한국어 팩 모아 보기" data-i18n-label="home.short.packsLabel"><span data-i18n="home.short.packs">생활 팩</span></button>
+        <button data-view="review" data-life-review aria-label="나의 복습 일정 보기" data-i18n-label="home.short.reviewLabel"><span data-i18n="home.short.review">복습</span><small id="life-review-count">일정</small></button>
+        <button data-view="stories" data-life-stories aria-label="까몽 몽글 마린 이야기 모아 보기" data-i18n-label="home.short.storiesLabel"><span data-i18n="home.short.stories">이야기</span></button>
       </div>
     </div>
   </main>
-  <nav class="world-nav" aria-label="WORLD 주 메뉴">
-    <button data-view="home" aria-current="page"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/></svg></span><span>우리 동네</span></button>
-    <button data-view="packs" data-life-library><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10.2 5 7.6 4.6 4 5v13c3.6-.4 6.2 0 8 1.5 1.8-1.5 4.4-1.9 8-1.5V5c-3.6-.4-6.2 0-8 1.5z"/><path d="M12 6.5v13"/></svg></span><span>배우기</span></button>
-    <button data-view="play"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.2 7.5h9.6a4.3 4.3 0 0 1 4.2 5.1l-.6 3.4a2.6 2.6 0 0 1-4.6 1.1l-1.3-1.8H9.5l-1.3 1.8a2.6 2.6 0 0 1-4.6-1.1L3 12.6a4.3 4.3 0 0 1 4.2-5.1z"/><path d="M8 10.6v3M6.5 12.1h3"/><circle cx="15.6" cy="11.2" r=".6" fill="currentColor"/><circle cx="17" cy="13.1" r=".6" fill="currentColor"/></svg></span><span>놀이</span></button>
-    <button data-view="wardrobe"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7.6V7a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.6 3.6 13.4a1.6 1.6 0 0 0 .9 2.9h15a1.6 1.6 0 0 0 .9-2.9z"/></svg></span><span>옷장</span></button>
+  <nav class="world-nav" aria-label="WORLD 주 메뉴" data-i18n-label="nav.main">
+    <button data-view="home" aria-current="page"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/></svg></span><span data-i18n="nav.home">우리 동네</span></button>
+    <button data-view="packs" data-life-library><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10.2 5 7.6 4.6 4 5v13c3.6-.4 6.2 0 8 1.5 1.8-1.5 4.4-1.9 8-1.5V5c-3.6-.4-6.2 0-8 1.5z"/><path d="M12 6.5v13"/></svg></span><span data-i18n="nav.learn">배우기</span></button>
+    <button data-view="play"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.2 7.5h9.6a4.3 4.3 0 0 1 4.2 5.1l-.6 3.4a2.6 2.6 0 0 1-4.6 1.1l-1.3-1.8H9.5l-1.3 1.8a2.6 2.6 0 0 1-4.6-1.1L3 12.6a4.3 4.3 0 0 1 4.2-5.1z"/><path d="M8 10.6v3M6.5 12.1h3"/><circle cx="15.6" cy="11.2" r=".6" fill="currentColor"/><circle cx="17" cy="13.1" r=".6" fill="currentColor"/></svg></span><span data-i18n="nav.play">놀이</span></button>
+    <button data-view="wardrobe"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7.6V7a2.2 2.2 0 1 1 2.2-2.2"/><path d="M12 7.6 3.6 13.4a1.6 1.6 0 0 0 .9 2.9h15a1.6 1.6 0 0 0 .9-2.9z"/></svg></span><span data-i18n="nav.wardrobe">옷장</span></button>
   </nav>
 </div>
 <dialog class="world-panel" id="world-panel" aria-labelledby="panel-title">
   <div class="sheet-handle" aria-hidden="true"></div>
-  <header class="panel-header dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="close-button dialog-close" id="panel-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></svg></button></header>
+  <header class="panel-header dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="close-button dialog-close" id="panel-close" aria-label="닫기" data-i18n-label="panel.close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></svg></button></header>
   <div id="panel-content"></div>
 </dialog>
 <div id="home-toast" class="home-toast" role="status" aria-live="polite" hidden></div>

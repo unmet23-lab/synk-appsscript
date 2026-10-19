@@ -2,9 +2,15 @@ import {TUTORS} from './tutor-profiles.mjs';
 import {readTutorChoice,saveTutorChoice,choiceKey,TUTOR_IDS} from './tutor-choice.mjs';
 import {tutorPhoto,profilePhoto,preloadTutorPhotos} from './tutor-photos.mjs';
 import {motionOn,spring,ink,talk,squish,slidePill,bindPress} from './world-motion.mjs';
+import {t as tr,tMessage,currentLang} from './world-lang.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const openings={marin:'배정 대기. …준비됐다.',kkamong:'…이 몸을 고르겠지? 당연히.',mongle:'어? 너구나! 같이 할래?'};
-const summaries={marin:'목표를 작게 나눠 차근차근 가고 싶다면 잘 맞아요.',kkamong:'티격태격하며 도전하는 게 좋다면 잘 맞아요.',mongle:'뭐든 같이 해 보고 싶다면 잘 맞아요.'};
+// 화면 언어(10-19 1판): 고르기 화면의 글과 성격 카드는 화면 언어로, 말풍선(튜터 대사)은 2판까지 한국어 그대로다.
+// 한국어는 정본 카드(tutor-profiles.mjs)를 그대로 읽고, 영어·몽골어는 표(tutor.card.<id>.*·tutor.name.<id>)에서 읽는다.
+const CARD_KEYS={정체:'identity',매력:'charm',소개:'about',못해요:'weak'};
+const cardText=(tutor,field)=>currentLang()==='ko'?tutor.card[field]:tr(`tutor.card.${tutor.id}.${CARD_KEYS[field]}`);
+const cardList=(tutor,field,prefix)=>currentLang()==='ko'?tutor.card[field]:tutor.card[field].map((_,index)=>tr(`tutor.card.${tutor.id}.${prefix}${index+1}`));
+const nameOf=tutor=>currentLang()==='ko'?tutor.name:tr(`tutor.name.${tutor.id}`);
 // 처음 만날 때 먼저 보여 주는 튜터(확정은 「○○과 함께하기」를 눌러야 된다). 위 탭으로 한 명씩 넘겨 본다.
 const FIRST_PREVIEW='mongle';
 const timing={marin:{hold:1600},kkamong:{hold:2100},mongle:{hold:1300}};
@@ -20,24 +26,24 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  function stopSound(){audio?.pause();audio=null;}
  const selected=()=>TUTORS.find(t=>t.id===draft);
  const picture=(t,emotion='기본')=>tutorPhoto(t.id,'onb',emotion);
- function image(t,large=false){return `<span class="tutor-portrait ${large?'large':''}" data-character="${t.id}"><img class="tutor-body" src="${large?picture(t):profilePhoto(t.id)}" alt="${t.name}" width="512" height="512">${large?`<img class="tutor-face" src="${picture(t)}" alt="" aria-hidden="true" width="512" height="512">`:''}</span>`;}
- function soundButton(){return `<button class="tutor-sound" data-tutor-action="sound" aria-pressed="${sound}" aria-label="반응 소리 ${sound?'끄기':'켜기'}">반응 소리 ${sound?'켜짐':'꺼짐'}</button>`;}
- function header(){return `<div class="tutor-step-line"><span>${step==='choose'?'1 / 2 · 튜터 고르기':'2 / 2 · 시작하기'}</span>${soundButton()}</div>`;}
- function choiceStatus(){try{return getChoiceStatus(owner)||{};}catch{return {blocked:true,message:'튜터 선택의 저장 상태를 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'};}}
+ function image(t,large=false){return `<span class="tutor-portrait ${large?'large':''}" data-character="${t.id}"><img class="tutor-body" src="${large?picture(t):profilePhoto(t.id)}" alt="${nameOf(t)}" width="512" height="512">${large?`<img class="tutor-face" src="${picture(t)}" alt="" aria-hidden="true" width="512" height="512">`:''}</span>`;}
+ function soundButton(){return `<button class="tutor-sound" data-tutor-action="sound" aria-pressed="${sound}" aria-label="${tr(sound?'tutor.sound.turnOff':'tutor.sound.turnOn')}">${tr(sound?'tutor.sound.on':'tutor.sound.off')}</button>`;}
+ function header(){return `<div class="tutor-step-line"><span>${tr(step==='choose'?'tutor.step.choose':'tutor.step.start')}</span>${soundButton()}</div>`;}
+ function choiceStatus(){try{return getChoiceStatus(owner)||{};}catch{return {blocked:true,message:tr('tutor.status.unknown')};}}
  function refreshStatus(){
   if(!active)return;
   const status=choiceStatus(),blocked=committing||status.blocked===true||['loading','saving'].includes(status.phase);
   for(const button of content()?.querySelectorAll('[data-tutor-id],[data-tutor-action="confirm"],[data-tutor-action="finish"],[data-tutor-action="back"]')||[])button.disabled=blocked||button.dataset.tutorAction==='confirm'&&!selected();
   const button=content()?.querySelector('[data-tutor-action="finish"]');if(button)button.setAttribute('aria-busy',String(committing));
   const note=content()?.querySelector('.tutor-footer>p');
-  if(note){note.setAttribute('role','status');note.setAttribute('aria-live','polite');note.textContent=commitError||(committing?'튜터 선택을 저장하고 있어요.':status.message||(status.mode==='account'?'선택한 튜터는 SYNK 계정으로 이어져요.':'선택은 이 기기에 기억해요.'));}
+  if(note){note.setAttribute('role','status');note.setAttribute('aria-live','polite');note.textContent=tMessage(commitError)||(committing?tr('tutor.status.saving'):tMessage(status.message)||tr(status.mode==='account'?'tutor.status.account':'tutor.status.device'));}
  }
  function render(){
   cancelMotion();const t=selected();
-  const html=step==='choose'?`${header()}<p class="tutor-intro">앞으로 한국어를 같이 배울 <strong>AI 튜터</strong>예요. 셋은 성격도, 응원하는 말투도 달라요.</p><div class="tutor-options" role="group" aria-label="AI 튜터 고르기">${TUTORS.map(t=>`<button class="tutor-option" data-tutor-id="${t.id}" aria-pressed="${t.id===draft}">${image(t)}<strong>${t.name}</strong><small>${escape(t.card.칩[0])}</small><span class="tutor-selected" aria-hidden="true">${t.id===draft?'보는 중':'보기'}</span></button>`).join('')}</div><div class="tutor-detail" ${t?`data-tutor="${t.id}"`:''}>${t?`<div class="tutor-stage"><button class="tutor-touch" data-tutor-action="touch" aria-label="${t.name}에게 인사하기">${image(t,true)}</button><div class="tutor-speech" data-character="${t.id}"><small class="tutor-speech-head"><b class="w-name" data-who="${t.id}">${t.name}</b><span id="tutor-speech-label">자기소개</span></small><p id="tutor-speech" aria-live="polite"></p></div></div><div class="tutor-about"><h3>${t.name}<span>${escape(t.card.정체)}</span></h3><div class="tutor-traits">${t.card.칩.map(label=>`<span>${escape(label)}</span>`).join('')}</div><p>${escape(t.card.매력)}</p><p class="tutor-match">${summaries[t.id]}</p><details class="tutor-more"><summary>성격 자세히 보기</summary><p>${escape(t.card.소개)}</p><p><b>좋아해요</b> ${t.card.좋아해요.map(escape).join(' · ')}</p><p><b>조금 서툴러요</b> ${escape(t.card.못해요)}</p></details></div><div class="tutor-samples" aria-label="말투 미리 듣기"><button data-tutor-reaction="intro" aria-pressed="true">자기소개</button><button data-tutor-reaction="success" aria-pressed="false">잘했을 때</button><button data-tutor-reaction="retry" aria-pressed="false">어려울 때</button></div>`:`<div class="tutor-empty"><p>위에서 튜터를 누르면 자기소개와 말투를 볼 수 있어요.</p></div>`}</div><div class="tutor-footer"><button class="tutor-primary" data-tutor-action="confirm" ${t?'':'disabled'}>${t?`${t.name}과 함께하기`:'튜터를 골라 주세요'}<span aria-hidden="true">→</span></button><p>언제든 설정에서 다시 고를 수 있어요.</p></div>`:
-  `${header()}<div class="tutor-welcome" data-tutor="${t.id}"><div class="tutor-stage"><button class="tutor-touch" data-tutor-action="touch" aria-label="${t.name}에게 인사하기">${image(t,true)}</button><div class="tutor-speech" data-character="${t.id}"><small class="tutor-speech-head"><b class="w-name" data-who="${t.id}">${t.name}</b><span id="tutor-speech-label">첫 인사</span></small><p id="tutor-speech" aria-live="polite"></p></div></div><p class="tutor-welcome-copy"><strong>${t.name}, 앞으로 잘 부탁해.</strong><span>${t.name}은 레슨과 놀이마다 옆에서 도와주는 AI 튜터예요. 놀이 조작법도 먼저 알려 줘요.</span></p><ol class="tutor-how"><li><span>01</span><div><strong>배우기</strong><p>방의 책을 펴면 짧은 생활 한국어 레슨이 나와요.</p></div></li><li><span>02</span><div><strong>놀이</strong><p>듣고 달리기, 글자 고르기, 박자 맞히기로 연습해요.</p></div></li><li><span>03</span><div><strong>복습</strong><p>헷갈린 표현은 며칠 뒤 다른 상황으로 다시 나와요.</p></div></li></ol></div><div class="tutor-footer"><button class="tutor-primary" data-tutor-action="finish">${continuation?'시작하기':'우리 동네로 가기'}<span aria-hidden="true">→</span></button><button class="tutor-back" data-tutor-action="back">다른 튜터 보기</button><p>선택은 이 기기에 기억해요.</p></div>`;
+  const html=step==='choose'?`${header()}<p class="tutor-intro">${tr('tutor.intro')}</p><div class="tutor-options" role="group" aria-label="${tr('tutor.title.choose')}">${TUTORS.map(t=>`<button class="tutor-option" data-tutor-id="${t.id}" aria-pressed="${t.id===draft}">${image(t)}<strong>${nameOf(t)}</strong><small>${escape(cardList(t,'칩','chip')[0])}</small><span class="tutor-selected" aria-hidden="true">${tr(t.id===draft?'tutor.viewing':'tutor.view')}</span></button>`).join('')}</div><div class="tutor-detail" ${t?`data-tutor="${t.id}"`:''}>${t?`<div class="tutor-stage"><button class="tutor-touch" data-tutor-action="touch" aria-label="${tr('tutor.greet',{name:nameOf(t)})}">${image(t,true)}</button><div class="tutor-speech" data-character="${t.id}"><small class="tutor-speech-head"><b class="w-name" data-who="${t.id}">${nameOf(t)}</b><span id="tutor-speech-label">${tr('tutor.speech.intro')}</span></small><p id="tutor-speech" aria-live="polite"></p></div></div><div class="tutor-about"><h3>${nameOf(t)}<span>${escape(cardText(t,'정체'))}</span></h3><div class="tutor-traits">${cardList(t,'칩','chip').map(label=>`<span>${escape(label)}</span>`).join('')}</div><p>${escape(cardText(t,'매력'))}</p><p class="tutor-match">${tr(`tutor.card.${t.id}.match`)}</p><details class="tutor-more"><summary>${tr('tutor.more')}</summary><p>${escape(cardText(t,'소개'))}</p><p><b>${tr('tutor.likes')}</b> ${cardList(t,'좋아해요','like').map(escape).join(' · ')}</p><p><b>${tr('tutor.weak')}</b> ${escape(cardText(t,'못해요'))}</p></details></div><div class="tutor-samples" aria-label="${tr('tutor.samples')}"><button data-tutor-reaction="intro" aria-pressed="true">${tr('tutor.speech.intro')}</button><button data-tutor-reaction="success" aria-pressed="false">${tr('tutor.speech.success')}</button><button data-tutor-reaction="retry" aria-pressed="false">${tr('tutor.speech.retry')}</button></div>`:`<div class="tutor-empty"><p>${tr('tutor.empty')}</p></div>`}</div><div class="tutor-footer"><button class="tutor-primary" data-tutor-action="confirm" ${t?'':'disabled'}>${t?tr('tutor.confirm',{name:nameOf(t)}):tr('tutor.confirmEmpty')}<span aria-hidden="true">→</span></button><p>${tr('tutor.anytime')}</p></div>`:
+  `${header()}<div class="tutor-welcome" data-tutor="${t.id}"><div class="tutor-stage"><button class="tutor-touch" data-tutor-action="touch" aria-label="${tr('tutor.greet',{name:nameOf(t)})}">${image(t,true)}</button><div class="tutor-speech" data-character="${t.id}"><small class="tutor-speech-head"><b class="w-name" data-who="${t.id}">${nameOf(t)}</b><span id="tutor-speech-label">${tr('tutor.speech.first')}</span></small><p id="tutor-speech" aria-live="polite"></p></div></div><p class="tutor-welcome-copy"><strong>${tr('tutor.welcome.title',{name:nameOf(t)})}</strong><span>${tr('tutor.welcome.body',{name:nameOf(t)})}</span></p><ol class="tutor-how"><li><span>01</span><div><strong>${tr('tutor.how.learn.title')}</strong><p>${tr('tutor.how.learn.body')}</p></div></li><li><span>02</span><div><strong>${tr('tutor.how.play.title')}</strong><p>${tr('tutor.how.play.body')}</p></div></li><li><span>03</span><div><strong>${tr('tutor.how.review.title')}</strong><p>${tr('tutor.how.review.body')}</p></div></li></ol></div><div class="tutor-footer"><button class="tutor-primary" data-tutor-action="finish">${tr(continuation?'tutor.start':'tutor.goTown')}<span aria-hidden="true">→</span></button><button class="tutor-back" data-tutor-action="back">${tr('tutor.back')}</button><p>${tr('tutor.status.device')}</p></div>`;
   const after=continuation;rendering=true;
-  try{home.showPanel(step==='choose'?'AI 튜터 고르기':`${t.name}과 시작하기`,html,{type:'tutor',eyebrow:'MY AI TUTOR'});}finally{rendering=false;continuation=after;}
+  try{home.showPanel(step==='choose'?tr('tutor.title.choose'):tr('tutor.title.start',{name:nameOf(t)}),html,{type:'tutor',eyebrow:'MY AI TUTOR'});}finally{rendering=false;continuation=after;}
   document.querySelector('#world-panel').dataset.reduced=String(home.state.reduced);
   home.attachPanelResource({dispose(){cancelMotion();active=false;if(!rendering){generation++;committing=false;commitError='';continuation=null;}}});
   active=true;
@@ -72,13 +78,13 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
   const pool=selected()?.sounds[situation];if(!pool?.length)return;
   const options=pool.filter(file=>file!==lastVoice),file=(options.length?options:pool)[Math.floor(Math.random()*(options.length||pool.length))];
   stopSound();const soundClip=new Audio(asset(`assets/tutors/${file}`));audio=soundClip;lastVoice=file;lastSound=Date.now();soundClip.volume=.35;soundClip.playbackRate=1+(Math.random()-.5)*.06;
-  soundClip.play().catch(()=>{if(audio===soundClip){sound=false;stopSound();const button=content()?.querySelector('.tutor-sound');if(button){button.textContent='반응 소리 꺼짐';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','반응 소리 켜기');}}});
+  soundClip.play().catch(()=>{if(audio===soundClip){sound=false;stopSound();const button=content()?.querySelector('.tutor-sound');if(button){button.textContent=tr('tutor.sound.off');button.setAttribute('aria-pressed','false');button.setAttribute('aria-label',tr('tutor.sound.turnOn'));}}});
  }
  function react(kind,withSound=true){
   cancelMotion();const t=selected();if(!t)return;
   content().querySelectorAll('[data-tutor-reaction]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tutorReaction===kind)));
   const text=kind==='intro'?t.card.자기소개:kind==='success'?t.card.잘했을때:kind==='retry'?t.card.틀렸을때:openings[t.id];
-  const label=kind==='intro'?'자기소개':kind==='success'?'잘했을 때':kind==='retry'?'어려울 때':'인사';
+  const label=tr(kind==='intro'?'tutor.speech.intro':kind==='success'?'tutor.speech.success':kind==='retry'?'tutor.speech.retry':'tutor.speech.hello');
   const motion=content().querySelector('.tutor-portrait.large');motion?.setAttribute('data-reaction',kind);
   setFace(kind==='success'?'기쁨':kind==='retry'?t.id==='marin'?'집중':'민망':t.reactions.normal.뒤);
   speak(text,label);
@@ -88,7 +94,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  function touch(){
   const now=Date.now();tapCount=now-lastTap<1200?tapCount+1:1;lastTap=now;
   cancelMotion();const t=selected();if(!t)return;
-  const reaction=t.reactions[tapCount>=3?'repeat':'normal'];setFace(reaction.첫);playSound('기본');speak(openings[t.id],'인사하면');squish(content()?.querySelector('.tutor-portrait.large'));
+  const reaction=t.reactions[tapCount>=3?'repeat':'normal'];setFace(reaction.첫);playSound('기본');speak(openings[t.id],tr('tutor.speech.touch'));squish(content()?.querySelector('.tutor-portrait.large'));
   later(()=>setFace(reaction.뒤),240);
   later(()=>{setFace('기본');startIdle();},timing[t.id].hold);
  }
@@ -109,14 +115,14 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
    const remoteResult=commitChoice?await commitChoice(t.id,expectedOwner):null;
    if(expected!==generation||owner!==expectedOwner||!active)return;
    const result=remoteResult??{saved:saveTutorChoice(storage,expectedOwner,t.id),mode:'device'};
-   if(remoteResult!=null&&result?.saved!==true)throw Error(result?.message||'튜터 선택을 저장하지 못했어요. 다시 시도해 주세요.');
+   if(remoteResult!=null&&result?.saved!==true)throw Error(result?.message||tr('tutor.saveFailed'));
    const saved=result?.saved===true;if(remoteResult!=null)saveTutorChoice(storage,expectedOwner,t.id);
    continuation=null;choice=t.id;committing=false;onChoice(t,{saved,owner:expectedOwner,source:'user',mode:result?.mode||'device'});
-   home.closePanel();home.toast(result?.message||(saved?`${t.name}과 함께해요. 설정에서 바꿀 수 있어요.`:`${t.name}과 함께해요. 이 브라우저에는 선택을 저장하지 못했어요.`));
+   home.closePanel();home.toast(result?.message||tr(saved?'tutor.chosen':'tutor.chosenUnsaved',{name:nameOf(t)}));
    after?.();
   }catch(error){
    if(expected!==generation||owner!==expectedOwner||!active)return;
-   commitError=error?.message||'튜터 선택을 저장하지 못했어요. 다시 시도해 주세요.';
+   commitError=error?.message||tr('tutor.saveFailed');
   }finally{if(expected===generation){committing=false;refreshStatus();}}
  }
  function click(event){
@@ -125,7 +131,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
   if(button.dataset.tutorId){const after=continuation;const old=content()?.querySelector('.tutor-option[aria-pressed=true]');swapFrom=old&&button.dataset.tutorId!==draft?old.getBoundingClientRect():null;draft=button.dataset.tutorId;tapCount=0;render();continuation=after;playSound('기본');content().querySelector(`[data-tutor-id="${draft}"]`)?.focus({preventScroll:true});return;}
   if(button.dataset.tutorReaction){react(button.dataset.tutorReaction);return;}
   const action=button.dataset.tutorAction;
-  if(action==='sound'){sound=!sound;try{storage?.setItem('synk.world.tutor.sound',String(sound));}catch{}button.textContent=`반응 소리 ${sound?'켜짐':'꺼짐'}`;button.setAttribute('aria-pressed',String(sound));button.setAttribute('aria-label',`반응 소리 ${sound?'끄기':'켜기'}`);if(sound)playSound('기본');else stopSound();}
+  if(action==='sound'){sound=!sound;try{storage?.setItem('synk.world.tutor.sound',String(sound));}catch{}button.textContent=tr(sound?'tutor.sound.on':'tutor.sound.off');button.setAttribute('aria-pressed',String(sound));button.setAttribute('aria-label',tr(sound?'tutor.sound.turnOff':'tutor.sound.turnOn'));if(sound)playSound('기본');else stopSound();}
   else if(action==='touch')touch();
   else if(action==='confirm'&&selected()){const after=continuation;step='welcome';render();continuation=after;}
   else if(action==='back'){const after=continuation;step='choose';render();continuation=after;}

@@ -10,6 +10,9 @@ import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
 import {play,bindTaps,getPref,setPref,hapticAvailable,PREF_LABELS} from './world-sound.mjs';
 import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
+// 화면 언어(10-19 1판): 기능 글·안내는 고른 언어, 학습 내용은 한국어. 표는 world-strings.mjs, 첫 실행의 언어 고르기는 lang-picker.mjs.
+import {t,tMessage,onLang,translateTree,currentLang,setLang} from './world-lang.mjs';
+import {createLangStep,langSettingsMarkup} from './lang-picker.mjs';
 // 문 열림은 이름 없이 꺼내 쓴다: 공개 직후 캐시에 doors가 없는 옛 world-motion.mjs가 남아 있어도 홈은 뜨고 장소만 바로 바뀐다.
 import * as worldMotion from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
@@ -19,16 +22,17 @@ for(const [key,file] of Object.entries({'paper-button':'button-white-ui.webp','c
 for(const [key,file] of Object.entries({'drinks':'cafe-drinks-v2.png','room':'cafe-room-v1.webp'}))document.documentElement.style.setProperty('--cafe-'+key,`url("${asset('assets/home/'+file)}")`);
 const panel=$('#world-panel'),content=$('#panel-content'),scene=$('.maru-scene');
 const landscape=matchMedia('(orientation:landscape)'),spacious=matchMedia('(min-width:600px) and (min-height:600px) and (pointer:fine)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
+// 이름·설명은 화면 언어로 그때그때 읽는다(game.<id>.title·detail).
 const games={
- runner:{title:'바람길',detail:'들은 말대로 90초 동안 달려요',label:'LISTEN & RUN',path:'../korean-runner/',image:'world-felt/runner.webp',area:'짧은 지시의 방향·동작·부정·순서 듣기 연습'},
- hangul:{title:'한글 만나기',detail:'소리를 듣고 글자를 골라요',label:'HANGUL',path:'../hangul-stage/',image:'world-felt/hangul.webp',area:'한글 자모와 음절의 소리·글자 연결 연습'},
- rhythm:{title:'말의 리듬',detail:'노래를 듣다가 O·X로 답해요',label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'}
+ runner:{get title(){return t('game.runner.title');},get detail(){return t('game.runner.detail');},label:'LISTEN & RUN',path:'../korean-runner/',image:'world-felt/runner.webp',area:'짧은 지시의 방향·동작·부정·순서 듣기 연습'},
+ hangul:{get title(){return t('game.hangul.title');},get detail(){return t('game.hangul.detail');},label:'HANGUL',path:'../hangul-stage/',image:'world-felt/hangul.webp',area:'한글 자모와 음절의 소리·글자 연결 연습'},
+ rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'}
 };
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
 let learningUI=null,learningLoader=null,education=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
 let orientationTask=Promise.resolve();
-let tutorUI,homeTutor,firstRun;
+let tutorUI,homeTutor,firstRun,lastAccount=null;
 // 홈의 자리: 'town'(우리 동네, 첫 장면) 또는 'room'(우리 집 안 3D 방). 3D 방은 들어갔을 때만 그린다.
 // trip: 지금 도는 문 열림 전환(go). 한 번에 하나만 돈다.
 let place='town',trip=null;
@@ -44,8 +48,8 @@ function syncLayout(){
  document.documentElement.dataset.orientationPreference=displayPreference;
  const mismatch=!spacious.matches&&displayPreference!=='auto'&&displayPreference!==actual;
  $('.orientation-notice').hidden=!mismatch;
- $('#orientation-message').textContent=displayPreference==='landscape'?'휴대폰을 가로로 돌려 주세요':'휴대폰을 세로로 돌려 주세요';
- const status=$('#orientation-status');if(status)status.textContent=mismatch?`${displayPreference==='landscape'?'가로':'세로'}로 골랐어요. 휴대폰을 돌리면 그 방향으로 보여요.`:spacious.matches?'고른 화면 비율로 보여요.':'자동은 기기 방향을 따라요. 세로·가로를 고르면 휴대폰을 그 방향으로 돌려 주세요.';
+ $('#orientation-message').textContent=t(displayPreference==='landscape'?'home.orientation.landscape':'home.orientation.portrait');
+ const status=$('#orientation-status');if(status)status.textContent=t(mismatch?(displayPreference==='landscape'?'settings.orientation.chosenLandscape':'settings.orientation.chosenPortrait'):spacious.matches?'settings.orientation.spacious':'settings.orientation.followDevice');
  syncScene();
 }
 function chooseOrientation(value){
@@ -80,8 +84,8 @@ function setPlace(next,{focus=false,title=true}={}){
 // 넓은 화면의 장소 제목과 그 색(home-town.css data-title), 창 제목.
 function setTitle(where){
  $('.world-shell').dataset.title=where;
- $('.place-kicker').textContent=where==='room'?'OUR ROOM':'OUR TOWN';$('.place-heading h1').textContent=where==='room'?'우리 방':'우리 동네';
- document.title=`${where==='room'?'우리 방':'우리 동네'} · SYNK WORLD`;
+ $('.place-kicker').textContent=where==='room'?'OUR ROOM':'OUR TOWN';$('.place-heading h1').textContent=t(where==='room'?'home.place.room':'home.place.town');
+ document.title=`${t(where==='room'?'home.place.room':'home.place.town')} · SYNK WORLD`;
 }
 // 문 열림 전환(10-17 팁 장부 7행): 동네 사진을 가운데에서 가른 두 짝이 열리며(3D 첫 그림은 최대 1.2초만 기다림) 방이 되고, 맞물리며 동네가 된다.
 // 들어갈 때는 닫힌 문 뒤에서 바로 방으로 바꾸되, 문이 화면에 오른 뒤에야 3D를 그리기 시작한다(hold) — 3D가 화면 일을 오래 붙잡아도 문은 제때 열린다.
@@ -120,7 +124,7 @@ function setSceneTime(){}
 function setEntryState({phase='restoring',message=''}={}){
  entryPhase=phase;$('.world-shell').dataset.entry=phase;
  const ready=phase==='ready';$('.home-entry-status').hidden=ready;
- $('.home-entry-status p').textContent=message||(phase==='choosing'?'함께할 친구를 골라 주세요.':phase==='error'?'연결을 다시 확인해 주세요.':'불러오고 있어요.');
+ $('.home-entry-status p').textContent=tMessage(message)||t(phase==='choosing'?'home.choosing':phase==='error'?'home.entryError':'home.loading');
  $('.world-topbar').inert=!ready;$('.world-nav').inert=!ready;$('.lobby-action').inert=!ready;
  if(ready&&!panel.open&&(!document.activeElement||document.activeElement===document.body))focusHomeAction();
  living.setTutor(tutorUI?.choice()?.id||null);syncScene();
@@ -178,21 +182,23 @@ function openPanel(title,html,{type='',eyebrow='SYNK WORLD',nav='home'}={}){
 function callHost(command,...args){
  if(!host)return false;
  const callback=host[command];
- if(typeof callback!=='function'){toast('아직 연결을 준비하고 있어요. 잠시 뒤 다시 열어 주세요.');return true;}
- Promise.resolve().then(()=>callback(...args)).catch(()=>toast('화면을 열지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+ if(typeof callback!=='function'){toast(t('msg.hostPreparing'));return true;}
+ Promise.resolve().then(()=>callback(...args)).catch(()=>toast(t('msg.hostOpenFailed')));
  return true;
 }
 function openGame(id){
  if(games[id])void openTutor({then:()=>launchGame(id)});
 }
+// 첫 실행 순서(10-19 확정): 화면 언어 고르기 → (한글을 읽을 수 있는지 묻기) → 튜터 고르기. 언어는 튜터를 아직 고르지 않은
+// 첫 실행에서만 묻고, 이미 고른 언어(이 기기 또는 계정에서 되살린 값)가 있으면 건너뛴다. 설정에서 언제든 바꾼다.
 async function openTutor({then=null,force=false}={}){
  try{
   if(host?.prepareTutor&&await host.prepareTutor()===false)return;
-  // 처음 온 사람(튜터를 아직 안 고름)은 첫 실행 단계를 차례로 지난다: (언어 고르기 자리) → 한글 질문 → 튜터 고르기.
-  if(!force&&!tutorUI.choice()){void firstRun.run({then}).catch(error=>toast(error?.message||'첫 화면을 열지 못했어요. 다시 시도해 주세요.'));return;}
+  // 처음 온 사람(튜터를 아직 안 고름)은 첫 실행 단계를 차례로 지난다: 언어 고르기 → 한글 질문 → 튜터 고르기.
+  if(!force&&!tutorUI.choice()){void firstRun.run({then}).catch(error=>toast(error?.message||t('msg.firstRunFailed')));return;}
   tutorUI.open({then,force});
  }
- catch(error){toast(error.message||'튜터 연결을 다시 확인해 주세요.');}
+ catch(error){toast(error.message||t('msg.tutorConnect'));}
 }
 // 「한글을 읽을 수 있어요?」의 답은 생활 진도 기록(계정이면 계정, 손님이면 이 기기)에 둔다. 한글 만나기의 졸업·건너뛰기도 여기로 온다.
 async function hangulReading(){
@@ -214,10 +220,10 @@ function launchGame(id){
  const game=games[id];if(!game)return;
  if(callHost('launchGame',id))return;
  const path=asset(game.path);
- openPanel(game.title,`<div class="frame-loader" role="status"><p>놀이를 준비하고 있어요.</p><a href="${path}">새 화면으로 열기</a></div><iframe class="game-frame" title="${game.title}" src="${path}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,{type:'game',nav:'play'});
+ openPanel(game.title,`<div class="frame-loader" role="status"><p>${t('game.loading')}</p><a href="${path}">${t('game.openNew')}</a></div><iframe class="game-frame" title="${game.title}" src="${path}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,{type:'game',nav:'play'});
  const frame=content.querySelector('iframe');frame.addEventListener('load',()=>{if(!frame.isConnected)return;clearTimeout(frameTimer);content.querySelector('.frame-loader')?.remove();},{once:true});
  const companion=home.mountGameTutor(id,{frame});if(companion)home.attachPanelResource(companion);
- frameTimer=setTimeout(()=>{const label=content.querySelector('.frame-loader p');if(label)label.textContent='연결이 조금 늦어지고 있어요. 새 화면으로도 열 수 있어요.';},8000);
+ frameTimer=setTimeout(()=>{const label=content.querySelector('.frame-loader p');if(label)label.textContent=t('game.slow');},8000);
 }
 async function callLearning(command){
  if(command==='initialize')return callLearningReady(command);
@@ -230,7 +236,7 @@ async function callLearningReady(command){
  try{const ui=await loadLearning();ui[command==='learn'?'next':command]?.();}catch{}
 }
 function loadLearning(){
- if(!learningLoader)learningLoader=import('./content/life-standalone.mjs').then(({setupLife})=>{learningUI=setupLife(home,path=>asset('assets/'+path));return learningUI;}).catch(error=>{learningLoader=null;toast('생활 콘텐츠를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.');throw error;});
+ if(!learningLoader)learningLoader=import('./content/life-standalone.mjs').then(({setupLife})=>{learningUI=setupLife(home,path=>asset('assets/'+path));return learningUI;}).catch(error=>{learningLoader=null;toast(t('msg.lifeLoadFailed'));throw error;});
  return learningLoader;
 }
 function updateLearning(summary,details){
@@ -240,49 +246,69 @@ function updateLearning(summary,details){
  const next=summary.nextLesson,button=$('#life-next-button'),label=$('#life-next-title'),kicker=$('#life-next-kicker'),caption=$('#life-progress-caption'),review=$('#life-review-count');
  if(!button)return;
  button.disabled=summary.status?.phase==='loading';
- label.textContent=summary.status?.phase==='loading'?'내 진도를 연결하고 있어요':next?next.title:summary.dueCount?'오늘 돌아온 표현':'생활 팩 다시 보기';
- kicker.textContent=summary.resume?'하던 자리에서 이어서':summary.cafe?.nextNumber?`${summary.cafe.nextNumber}번째 카페 방문 · 다음 이야기`:next?`생활 팩 ${summary.packs?.length||6}개 · 다음 레슨`:'생활 한국어';
- caption.textContent=`${summary.completed||0} / ${summary.total||22} 학습 완료 · ${summary.status?.scoped?'계정별 진도':'이 기기의 진도'}`;
+ label.textContent=summary.status?.phase==='loading'?t('home.next.connecting'):next?next.title:summary.dueCount?t('home.next.dueToday'):t('home.next.packsAgain');
+ kicker.textContent=summary.resume?t('home.next.resume'):summary.cafe?.nextNumber?t('home.next.cafeVisit',{n:summary.cafe.nextNumber}):next?t('home.next.packs',{n:summary.packs?.length||6}):t('home.next.kicker');
+ caption.textContent=t('home.caption',{done:summary.completed||0,total:summary.total||22,scope:t(summary.status?.scoped?'home.caption.account':'home.caption.device')});
  renderHeading();
- review.textContent=summary.dueCount?`${summary.dueCount}개`:'일정';
- button.setAttribute('aria-label',`${summary.resume?'이어서 하기':'다음 학습'} · ${label.textContent}`);
+ review.textContent=summary.dueCount?t('home.short.count',{n:summary.dueCount}):t('home.short.schedule');
+ button.setAttribute('aria-label',t(summary.resume?'home.next.continueLabel':'home.next.nextLabel',{title:label.textContent}));
 }
 // PC 가로 틀의 방 제목 아래 한 줄: 누구와 · 어디까지.
 function renderHeading(tutor=tutorUI?.choice()){
  const line=$('.place-heading>p:last-child'),summary=learningData.summary;if(!line)return;
- line.textContent=[tutor?`${tutor.name}과 함께`:'세 친구와 함께',summary?`생활 한국어 ${summary.completed||0} / ${summary.total||22}`:''].filter(Boolean).join(' · ');
+ line.textContent=[tutor?t('home.heading.with',{name:t(`tutor.name.${tutor.id}`)}):t('home.heading.friends'),summary?t('home.heading.progress',{done:summary.completed||0,total:summary.total||22}):''].filter(Boolean).join(' · ');
+}
+// 맞춤 학습 후보의 이름: 레슨 제목은 학습 내용이라 한국어 그대로 두고, 붙는 말(이어 하기·새 상황 복습·놀이 이름)만 화면 언어로.
+function planLabel(next){
+ const label=next?.label||next?.title||'';
+ if(!next||currentLang()==='ko')return label;
+ if(next.route==='game'&&next.gameId)return t(`plan.game.${next.gameId}`);
+ if(next.id==='world.resume.review')return t('plan.resumeReview');
+ const strip=suffix=>label.endsWith(suffix)?label.slice(0,-suffix.length):null;
+ const resumed=strip(' · 이어 하기'),reviewed=strip(' · 새 상황 복습');
+ if(resumed!==null)return t('plan.resume',{title:resumed});
+ if(reviewed!==null)return t('plan.review',{title:reviewed});
+ return label;
 }
 function updateStudy(plan){
  const next=plan?.selected,reason=$('#study-reason');
  $('#life-next-button').dataset.view=plan&&!next?'study':'learn';
- if(reason)reason.textContent=plan?.reason||'';
+ if(reason)reason.textContent=tMessage(plan?.reason||'');
  if(learningData.summary)homeTutor?.update({...learningData.summary,education:plan},learningData.details);
  if(!next){
-  if(plan){$('#life-next-title').textContent='지금 가능한 연습 찾기';$('#life-next-kicker').textContent='학습 시간과 소리를 확인해요';$('#life-next-button').setAttribute('aria-label','학습 조건 확인');}
+  if(plan){$('#life-next-title').textContent=t('home.study.find');$('#life-next-kicker').textContent=t('home.study.check');$('#life-next-button').setAttribute('aria-label',t('home.study.checkLabel'));}
   return;
  }
- $('#life-next-title').textContent=next.label||next.title||'나의 다음 연습';
- $('#life-next-kicker').textContent=plan.resume?'하던 자리에서 이어서':next.route==='review'?'돌아온 표현 · 나의 복습':'추천 연습';
- $('#life-next-button').setAttribute('aria-label',`맞춤 학습 · ${next.label||next.title}`);
+ $('#life-next-title').textContent=planLabel(next)||t('home.study.mine');
+ $('#life-next-kicker').textContent=t(plan.resume?'home.next.resume':next.route==='review'?'home.study.review':'home.study.suggested');
+ $('#life-next-button').setAttribute('aria-label',t('home.study.label',{label:planLabel(next)}));
 }
 function showPlay(){
- const more=host?`<section class="play-more" aria-label="더 둘러보기"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>첫 문장 놀이</strong><small>문장 세 개를 끝까지 하면 처음 한 번 선물을 받아요</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>싱크타운</strong><small>내 차림 그대로 광장을 걸어요</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>노래 듣기</strong><small>한글 노래와 뮤직비디오</small></span></button></section>`:'';
- openPanel('놀이',`<div class="play-list">${Object.entries(games).map(([id,g],i)=>`<button data-game="${id}"><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span><span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`).join('')}</div><p class="panel-note">한글이 처음이면 ‘한글 만나기’부터 시작해요.</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ const more=host?`<section class="play-more" aria-label="${t('play.more')}"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>${t('play.first.title')}</strong><small>${t('play.first.detail')}</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>${t('play.town.title')}</strong><small>${t('play.town.detail')}</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>${t('play.songs.title')}</strong><small>${t('play.songs.detail')}</small></span></button></section>`:'';
+ openPanel(t('play.title'),`<div class="play-list">${Object.entries(games).map(([id,g],i)=>`<button data-game="${id}"><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span><span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
 }
-function showWardrobe(){if(callHost('wardrobe'))return;openPanel('옷장',`<span class="panel-print w-print"><img src="${asset('assets/world-felt/wardrobe.webp')}" alt="옷걸이에 걸린 펠트 목도리"></span><p class="panel-description">세 친구에게 옷을 입혀 보고 사진으로 남길 수 있어요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">옷장 열기 <span aria-hidden="true">↗</span></a></div><p class="panel-note">계정을 연결하면 가진 옷과 차림이 저장돼요.</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
-function showMe(){if(callHost('profile'))return;openPanel('내 계정',`<span class="panel-print w-print"><img src="${asset('assets/world-felt/account.webp')}" alt="열쇠와 꼬리표"></span><p class="panel-description">지금은 계정 없이 둘러보는 중이에요. 계정을 연결하면 진도·차림·놀이 기록이 저장돼요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?opening=off')}">계정 연결하기 <span aria-hidden="true">↗</span></a><button class="quiet-button" data-close>나중에 하기</button></div>`,{eyebrow:'ACCOUNT',nav:'me'});}
+function showWardrobe(){if(callHost('wardrobe'))return;openPanel(t('wardrobe.title'),`<span class="panel-print w-print"><img src="${asset('assets/world-felt/wardrobe.webp')}" alt="${t('wardrobe.alt')}"></span><p class="panel-description">${t('wardrobe.lead')}</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">${t('wardrobe.open')} <span aria-hidden="true">↗</span></a></div><p class="panel-note">${t('wardrobe.note')}</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
+function showMe(){if(callHost('profile'))return;openPanel(t('home.myAccount'),`<span class="panel-print w-print"><img src="${asset('assets/world-felt/account.webp')}" alt="${t('me.alt')}"></span><p class="panel-description">${t('me.guest')}</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?opening=off')}">${t('home.account.connect')} <span aria-hidden="true">↗</span></a><button class="quiet-button" data-close>${t('me.later')}</button></div>`,{eyebrow:'ACCOUNT',nav:'me'});}
 function prefRows(){
  // 진동은 지원하는 기기에서만 보인다(PC 브라우저에는 없다). 아이폰은 vibrate가 없어도 스위치 진동(iOS 18)으로 울린다.
- return Object.entries(PREF_LABELS).filter(([name])=>name!=='haptic'||hapticAvailable()).map(([name,{title,note}])=>`<label class="settings-row"><span><strong>${title}</strong><small>${note}</small></span><input type="checkbox" data-pref="${name}" ${getPref(name)?'checked':''}></label>`).join('');
+ return Object.keys(PREF_LABELS).filter(name=>name!=='haptic'||hapticAvailable()).map(name=>`<label class="settings-row"><span><strong>${t(`pref.${name}.title`)}</strong><small>${t(`pref.${name}.note`)}</small></span><input type="checkbox" data-pref="${name}" ${getPref(name)?'checked':''}></label>`).join('');
 }
-function showSettings(){openPanel('설정',`<fieldset class="orientation-settings"><legend>화면 방향</legend><div class="orientation-options">${[['auto','자동'],['portrait','세로'],['landscape','가로']].map(([value,label])=>`<label><input type="radio" name="orientation" value="${value}" ${displayPreference===value?'checked':''}><span>${label}</span></label>`).join('')}</div><p id="orientation-status" class="orientation-help" role="status"></p></fieldset><section class="settings-group" aria-label="소리와 연출"><p class="eyebrow">SOUND · MOTION</p>${prefRows()}<label class="settings-row"><span><strong>움직임 줄이기</strong><small>친구들의 숨쉬기와 인사 동작을 멈추고, 이야기 글을 한 번에 보여 줘요.</small></span><input id="reduce-motion" type="checkbox" ${manualReduced||reduced.matches?'checked':''} ${reduced.matches?'disabled':''}></label></section>${reduced.matches?'<p class="panel-note">기기의 움직임 줄이기 설정을 따르고 있어요.</p>':''}<div class="panel-actions">${host?'<button class="felt-button" data-replay-opening>오프닝 다시 보기 <span aria-hidden="true">↗</span></button>':`<a class="felt-button" href="${asset('index.html')}">오프닝 다시 보기 <span aria-hidden="true">↗</span></a>`}${host?'<button class="quiet-button" data-home-host="about">SYNK WORLD 소개</button>':''}</div>`,{eyebrow:'SETTINGS',type:'settings'});syncLayout();}
+function showSettings(){openPanel(t('settings.title'),`${langSettingsMarkup()}<fieldset class="orientation-settings"><legend>${t('settings.orientation')}</legend><div class="orientation-options">${['auto','portrait','landscape'].map(value=>`<label><input type="radio" name="orientation" value="${value}" ${displayPreference===value?'checked':''}><span>${t(`settings.orientation.${value}`)}</span></label>`).join('')}</div><p id="orientation-status" class="orientation-help" role="status"></p></fieldset><section class="settings-group" aria-label="${t('settings.soundGroup')}"><p class="eyebrow">SOUND · MOTION</p>${prefRows()}<label class="settings-row"><span><strong>${t('settings.reduceMotion')}</strong><small>${t('settings.reduceMotion.note')}</small></span><input id="reduce-motion" type="checkbox" ${manualReduced||reduced.matches?'checked':''} ${reduced.matches?'disabled':''}></label></section>${reduced.matches?`<p class="panel-note">${t('settings.deviceMotion')}</p>`:''}<div class="panel-actions">${host?`<button class="felt-button" data-replay-opening>${t('settings.replayOpening')} <span aria-hidden="true">↗</span></button>`:`<a class="felt-button" href="${asset('index.html')}">${t('settings.replayOpening')} <span aria-hidden="true">↗</span></a>`}${host?`<button class="quiet-button" data-home-host="about">${t('settings.about')}</button>`:''}</div>`,{eyebrow:'SETTINGS',type:'settings'});syncLayout();}
 function showTutorSettings(){
  showSettings();
  const button=document.createElement('button');button.className='felt-button';
- button.textContent=tutorUI.choice()?`AI 튜터 바꾸기 · 지금 ${tutorUI.choice().name}`:'AI 튜터 고르기';
+ button.textContent=tutorUI.choice()?t('settings.tutorChange',{name:t(`tutor.name.${tutorUI.choice().id}`)}):t('settings.tutorChoose');
  button.dataset.tutorOpen='';button.addEventListener('click',()=>home.chooseTutor());
  content.querySelector('.panel-actions').prepend(button);
- if(education){const study=document.createElement('button');study.className='plain-button';study.textContent='학습 목표·도움 방식';study.addEventListener('click',()=>education.open());content.querySelector('.panel-actions').prepend(study);}
+ if(education){const study=document.createElement('button');study.className='plain-button';study.textContent=t('settings.study');study.addEventListener('click',()=>education.open());content.querySelector('.panel-actions').prepend(study);}
+}
+// 설정의 「화면 언어」: 바로 바꾸고(이 기기), 계정이면 계정 기록에도 둔다. 바뀐 언어로 설정 시트를 다시 그린다.
+async function chooseLanguage(lang){
+ if(!setLang(lang))return;
+ let message=t('lang.changed');
+ try{const result=await host?.selectLanguage?.(lang);if(result?.mode==='account')message=t(result.saved?'lang.savedAccount':'lang.savePending');}
+ catch(error){console.warn('Language save failed',error);}
+ toast(message);
 }
 document.addEventListener('click',event=>{
  if(event.defaultPrevented)return;
@@ -294,7 +320,7 @@ document.addEventListener('click',event=>{
  if(button.hasAttribute('data-close')){closePanel();return;}
  const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{const closing=panel.open;if(closing)closePanel();if(place==='room')void go('town',{user:true,sound:closing?'':'close'});window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
 });
-content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
+content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='world-lang'){void chooseLanguage(event.target.value);return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));
 $('.room-back').addEventListener('click',()=>{void go('town',{user:true,focus:true,sound:'close'});});
 $('#panel-close').addEventListener('click',closePanel);panel.addEventListener('cancel',event=>{event.preventDefault();closePanel();});panel.addEventListener('click',event=>{if(event.target===panel){const r=panel.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closePanel();}});
@@ -310,7 +336,8 @@ function toast(message){
  // A dialog's top layer covers ordinary fixed elements, so keep its status
  // message inside the open dialog without replacing any panel content.
  (panel.open&&!panel.classList.contains('is-closing')?panel:document.body).append(notice);
- notice.textContent=String(message||'');notice.hidden=false;
+ // 다른 모듈이 한국어로 만든 알림 문장은 표(msg.*)에 있으면 화면 언어로 바꿔 보인다.
+ notice.textContent=tMessage(String(message||''));notice.hidden=false;
  toastTimer=setTimeout(()=>{notice.hidden=true;},3800);
 }
 function updateAccount({snapshot=null,status='welcome',pending=false,busy=false,operating=false}={}){
@@ -318,11 +345,24 @@ function updateAccount({snapshot=null,status='welcome',pending=false,busy=false,
  if(accountOwner!==nextOwner){accountOwner=nextOwner;if(learningData.summary?.owner!==nextOwner)learningData={};if(panelKind==='memory')closePanel();void memory.update({owner:accountOwner,...learningData});}
  tutorUI.setOwner(snapshot?.accountId||'guest');
  homeTutor?.refresh();
- const label=busy?(snapshot?'저장 중':'계정 확인 중'):status==='loading'?'계정 확인 중':status==='offline'?'연결 대기 중':status==='conflict'?'저장 확인 필요':pending?'저장 대기 중':snapshot?(operating?'계정 연결됨':'시험 계정 연결됨'):'계정 연결하기';
+ lastAccount={snapshot,status,pending,busy,operating};
+ const label=t(busy?(snapshot?'home.account.saving':'home.account.checking'):status==='loading'?'home.account.checking':status==='offline'?'home.account.offline':status==='conflict'?'home.account.conflict':pending?'home.account.pending':snapshot?(operating?'home.account.connected':'home.account.test'):'home.account.connect');
  $('#home-account-status').textContent=label;
  $('.profile-control').dataset.state=status;
- $('.profile-control').setAttribute('aria-label',`내 계정 열기 · ${label}`);
+ $('.profile-control').setAttribute('aria-label',t('home.profileOpenWith',{label}));
 }
+// 화면 언어가 바뀌면 고정 글(data-i18n)과 JS가 그린 홈의 글을 다시 채운다. 열려 있던 설정은 새 언어로 다시 그린다.
+function applyLanguage(){
+ translateTree(document);
+ setTitle(place);renderHeading();syncLayout();
+ if(lastAccount)updateAccount(lastAccount);else{$('#home-account-status').textContent=t('home.account.checking');}
+ if(entryPhase!=='ready')setEntryState({phase:entryPhase});
+ homeTutor?.refresh();
+ if(learningData.summary)updateLearning(learningData.summary,learningData.details);
+ queueMicrotask(()=>education?.refresh());
+ if(panel.open&&panelKind==='settings')showTutorSettings();
+}
+onLang(applyLanguage);
 export const home={
  isMaru:true,
  state:{get reduced(){return manualReduced||reduced.matches;},get slots(){return {...equipment.slots};},get dyes(){return {...equipment.dyes};}},
@@ -356,8 +396,10 @@ tutorUI=createTutorOnboarding({home,asset,commitChoice:(id,owner)=>host?.selectT
  living.setTutor(tutor?.id||null);
  homeTutor?.refresh();
 }});
-// 첫 실행 단계(first-run.mjs): 언어 고르기는 다음 작업에서 들어온다. 한글 질문은 답이 없을 때만, 튜터 고르기는 고른 튜터가 없을 때만 연다.
+// 첫 실행 단계(first-run.mjs): 언어 고르기는 고른 화면 언어가 없을 때만(계정이면 고른 언어를 계정 기록에도 둔다),
+// 한글 질문은 답이 없을 때만, 튜터 고르기는 고른 튜터가 없을 때만 연다.
 firstRun=createFirstRun({steps:{
+ language:createLangStep({home,onChoose:lang=>host?.selectLanguage?.(lang)}),
  hangul:createHangulStep({home,asset,read:hangulReading,save:answer=>setHangulReading(answer,'question')}),
  tutor:{needed:()=>!tutorUI.choice(),open:then=>tutorUI.open({then})}
 }});
@@ -372,6 +414,13 @@ bindTaps(document);
 // 10-17 단추 젤리: 알약·선택지·아래 탭을 누르면 쏙 들어갔다가 놓으면 통 튀어나온다(튜터 고르기·동네 이름표는 각자 묶는다).
 bindPress(document,':is(.felt-button,.quiet-button,.world-nav button,.life-choice,.game-tutor-help,.life-tutor-help,.home-tutor-action,.home-tutor-choose,.home-tutor-practice,.play-list>button,.life-row,.close-button):not(#world-panel.tutor-panel *)');
 export default home;
+// 고정 글과, 진도를 받기 전까지 보이는 자리 글을 지금 화면 언어로(한국어면 원문 그대로).
+translateTree(document);
+if(!learningData.summary){
+ $('#life-next-kicker').textContent=t('home.next.kicker');$('#life-next-title').textContent=t('home.next.title');$('#life-progress-caption').textContent=t('home.caption.default');
+ $('#life-review-count').textContent=t('home.short.schedule');$('#life-next-button').setAttribute('aria-label',t('home.next.label'));
+}
+if(!lastAccount)$('#home-account-status').textContent=t('home.account.checking');
 syncLayout();
 setEntryState({phase:'restoring'});
 if(!window.__SYNK_WORLD_CONNECTED__)void callLearning('initialize').then(()=>{

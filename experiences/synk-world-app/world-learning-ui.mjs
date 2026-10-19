@@ -1,7 +1,11 @@
+import {t,tMessage} from '../brand-opening/world-lang.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const reasons={travel:'여행',life:'한국 생활',people:'사람들과 대화',exam:'TOPIK 기초',study:'학교 공부',work:'직장',career:'진로 준비',culture:'한국 문화',hobby:'취미',other:'아직 찾는 중'};
-const supportNames={choose:['골라 보며 익히기','먼저 골라 보고, 틀리면 이유를 봐요.'],step:['한 단계씩 도움받기','문제마다 표현 도움을 먼저 펼쳐 둬요.'],independent:['먼저 혼자 풀기','도움은 내가 누를 때만 열려요.']};
-const stateNames={practice:'다시 연습할 부분',supported:'도움을 받아 연습한 부분',review:'다시 확인할 때',checking:'새 문제로 확인하는 중','recent-independent':'최근 새 문제를 혼자 풀었어요'};
+// 화면 언어(10-19 1판): 이름·값과 순서는 그대로 두고 보이는 글만 표(goal.*)에서 읽는다.
+const REASON_IDS=['travel','life','people','exam','study','work','career','culture','hobby','other'];
+const reasons=()=>Object.fromEntries(REASON_IDS.map(id=>[id,t(`goal.reason.${id}`)]));
+const supportNames=()=>({choose:[t('goal.support.choose'),t('goal.support.chooseNote')],step:[t('goal.support.step'),t('goal.support.stepNote')],independent:[t('goal.support.independent'),t('goal.support.independentNote')]});
+const STATES=new Set(['practice','supported','review','checking','recent-independent']);
+const stateName=status=>STATES.has(status)?t(`goal.state.${status}`):'';
 // 고르기: 알약 묶음(고른 것은 흰 바탕). 이름·값 순서는 시험이 읽으므로 바꾸지 않는다.
 const radios=(name,options,value)=>(Array.isArray(options)?options:Object.entries(options)).map(([id,label])=>`<label class="study-pill"><input type="radio" name="${name}" value="${id}" ${value===id?'checked':''}><span>${label}</span></label>`).join('');
 // 도움 방식: 목록 줄(제목 + 설명 한 줄 + 체크).
@@ -82,30 +86,30 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  function open({continueAfter=false}={}){
   check();const progress=getProgress(),saved=progress.learningProfile(),profile=saved.profile,values=settingsFor(progress.learningProfileValues());let revision=profile.revision;
   let summary=empty;try{summary=readCoach()?.summary()||empty;}catch{}
-  const observed=summary.evidenceComplete?summary.skills.filter(s=>stateNames[s.status]).slice(0,4):[];
+  const observed=summary.evidenceComplete?summary.skills.filter(s=>STATES.has(s.status)).slice(0,4):[];
   const reason=values.primaryReason||values.reasons?.[0]||'';
   // 폼 느낌을 걷어낸 목록: 알약 묶음(이유·설명·시간·소리) · 목록 줄(도움 방식) · 스위치(기억하기). 사진은 생활 화면이 심어 둔 나침반(--life-print-goals).
-  home.showPanel('학습 목표',`<form id="world-study-form" class="study-form">
-   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">학습 목표</strong><p class="study-intro life-poster-sub">정해 두면 다음 연습을 여기에 맞춰 골라요. 건너뛰어도 배울 수 있고, 언제든 바꿀 수 있어요.</p></div>
-   <fieldset class="study-group"><legend>배우는 이유</legend><div class="study-pills study-wrap">${radios('reason',[['','안 정함'],...Object.entries(reasons)],reason)}</div></fieldset>
-   <fieldset class="study-group"><legend>도움 방식</legend><div class="study-options">${rows('support',supportNames,values.support||'choose')}</div></fieldset>
-   <fieldset class="study-group"><legend>설명 길이</legend><div class="study-pills study-segment">${radios('explanation',{brief:'짧게',standard:'보통',detailed:'자세히'},values.explanation||'brief')}</div></fieldset>
-   <div class="study-today"><p class="life-section-label">TODAY</p><p>시간과 소리는 오늘만 적용돼요.</p>
-    <fieldset class="study-group"><legend>공부할 시간</legend><div class="study-pills study-segment">${radios('minutes',[['','상관없음'],['3','3분'],['5','5분'],['10','10분']],values.minutes?String(values.minutes):'')}</div></fieldset>
-    <fieldset class="study-group"><legend>소리</legend><div class="study-pills study-segment">${radios('audio',{available:'들을 수 있어요',off:'지금은 못 들어요'},values.audio==='off'?'off':'available')}</div></fieldset>
+  home.showPanel(t('goal.title'),`<form id="world-study-form" class="study-form">
+   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">${t('goal.poster')}</strong><p class="study-intro life-poster-sub">${t('goal.intro')}</p></div>
+   <fieldset class="study-group"><legend>${t('goal.reason')}</legend><div class="study-pills study-wrap">${radios('reason',[['',t('goal.reason.none')],...Object.entries(reasons())],reason)}</div></fieldset>
+   <fieldset class="study-group"><legend>${t('goal.support')}</legend><div class="study-options">${rows('support',supportNames(),values.support||'choose')}</div></fieldset>
+   <fieldset class="study-group"><legend>${t('goal.explanation')}</legend><div class="study-pills study-segment">${radios('explanation',{brief:t('goal.explanation.brief'),standard:t('goal.explanation.standard'),detailed:t('goal.explanation.detailed')},values.explanation||'brief')}</div></fieldset>
+   <div class="study-today"><p class="life-section-label">TODAY</p><p>${t('goal.today.note')}</p>
+    <fieldset class="study-group"><legend>${t('goal.minutes')}</legend><div class="study-pills study-segment">${radios('minutes',[['',t('goal.minutes.any')],...['3','5','10'].map(n=>[n,t('goal.minutes.n',{n})])],values.minutes?String(values.minutes):'')}</div></fieldset>
+    <fieldset class="study-group"><legend>${t('goal.audio')}</legend><div class="study-pills study-segment">${radios('audio',{available:t('goal.audio.available'),off:t('goal.audio.off')},values.audio==='off'?'off':'available')}</div></fieldset>
    </div>
-   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent?'checked':''}><span><strong>${progress.status().scoped?'내 계정':'이 기기'}에 저장하기</strong><small>목표와 도움 방식을 기억해 추천에 써요.</small></span></label>
-   <p class="study-scope">급수나 성격을 판정하지 않아요. 목표를 지우거나 추천에 쓰지 않게 하면 ${progress.status().scoped?'내 계정':'이 기기'}에 저장한 도움 방식과 설명 길이도 함께 지워져요. 진도와 복습 기록은 남아요.</p>
-   <p class="study-save-status" role="status">${escape(progress.status().message)}</p>
-   <div class="life-actions"><button class="felt-button" type="submit">${continueAfter?'저장하고 시작하기':'저장하기'} <span aria-hidden="true">→</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status==='new'?'건너뛰기':'닫기'}</button></div>
-   ${profile.status==='active'?'<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">추천에 쓰지 않기</button><button type="button" class="quiet-button" data-study-clear="delete">목표 지우기</button></div>':''}
-   <section class="study-understanding"><h3>연습에서 본 것</h3>${observed.length?`<ul>${observed.map(s=>`<li><strong>${escape(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join('')}</ul>`:'<p>새 문제를 풀면서 조금씩 알아가요. 기록이 없다고 약하다고 보지 않아요.</p>'}<p>혼자 푼 답, 도움을 받은 답, 조작·소리 문제를 나눠서 다음 연습에 반영해요.</p></section>
+   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent?'checked':''}><span><strong>${t(progress.status().scoped?'goal.consent.account':'goal.consent.device')}</strong><small>${t('goal.consent.note')}</small></span></label>
+   <p class="study-scope">${t(progress.status().scoped?'goal.scope.account':'goal.scope.device')}</p>
+   <p class="study-save-status" role="status">${escape(tMessage(progress.status().message))}</p>
+   <div class="life-actions"><button class="felt-button" type="submit">${t(continueAfter?'goal.saveStart':'goal.save')} <span aria-hidden="true">→</span></button><button class="quiet-button" type="button" data-study-skip>${t(profile.status==='new'?'goal.skip':'goal.close')}</button></div>
+   ${profile.status==='active'?`<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">${t('goal.disable')}</button><button type="button" class="quiet-button" data-study-clear="delete">${t('goal.delete')}</button></div>`:''}
+   <section class="study-understanding"><h3>${t('goal.seen')}</h3>${observed.length?`<ul>${observed.map(s=>`<li><strong>${escape(s.label)}</strong><span>${stateName(s.status)}</span></li>`).join('')}</ul>`:`<p>${t('goal.seen.empty')}</p>`}<p>${t('goal.seen.note')}</p></section>
   </form>`,{type:'world-study',eyebrow:'GOALS',nav:'me'});
   const form=target.document.querySelector('#world-study-form');if(!form)return;
   const status=form.querySelector('.study-save-status');let busy=false;
   const valid=()=>{check();if(progress!==getProgress()||!form.isConnected)throw Error('설정을 다시 열어 주세요.');};
-  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(continueAfter)await next();else home.toast('목표에 맞춰 다음 연습을 바꿨어요.');}catch(error){if(form.isConnected)status.textContent=error.message||'저장을 확인한 뒤 다시 시도해 주세요.';}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
-  form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent='저장하려면 「저장하기」 스위치를 켜 주세요. 건너뛰어도 기본 연습은 할 수 있어요.';return;}
+  const run=async operation=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식 저장을 다시 확인해 주세요.');}refresh();home.closePanel();if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+  form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent=t('goal.needConsent');return;}
    const reason=form.elements.reason.value,minutes=Number(form.elements.minutes.value);
    void run(()=>progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}}));
   });

@@ -36,8 +36,9 @@ export const TOWN_SCENES={
 };
 // 기기 시계를 따라 동네가 낮·저녁·밤으로 바뀐다(같은 세트를 같은 자리에서 다시 구운 사진 세 벌). 다녀오면 바뀌어 있을 뿐, 화면에서 움직이지 않는다.
 export function townTime(date=new Date()){const m=date.getHours()*60+date.getMinutes();return m>=360&&m<1020?'day':m>=1020&&m<1170?'evening':'night';}
-const TIME_NAMES={day:'낮',evening:'저녁',night:'밤'};
 import {motionOn,popIn,glow,bindPress} from './world-motion.mjs';
+// 화면 언어(10-19 1판): 장소 이름표는 동네 간판(학습 내용)이라 한국어 그대로, 처음 안내·「지금」 표시·화면 읽기 글은 고른 언어로.
+import {t,onLang} from './world-lang.mjs';
 const HINT_KEY='synk.world.town.hint.v1';
 const icon=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const DOOR=icon('<path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/>');
@@ -77,10 +78,12 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
  // 처음 온 사람에게만 한 번: 장소를 누르면 배운다는 것. 닫거나 장소를 한 번 누르면 다시 나오지 않는다.
  let seen=false;try{seen=localStorage.getItem(HINT_KEY)==='1';}catch{}
  const hint=document.createElement('div');hint.className='town-hint';hint.hidden=seen;
- hint.innerHTML='<i aria-hidden="true"></i><p>장소를 누르면 그곳에서 쓰는 한국어를 배워요.</p><button type="button" aria-label="안내 닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>';
+ hint.innerHTML=`<i aria-hidden="true"></i><p>${t('town.hint')}</p><button type="button" aria-label="${t('town.hintClose')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>`;
  function closeHint(){if(hint.hidden)return;hint.hidden=true;try{localStorage.setItem(HINT_KEY,'1');}catch{}}
  hint.querySelector('button').addEventListener('click',closeHint);
  container.append(hint);
+ // 화면 언어가 바뀌면 안내·화면 읽기 글을 다시 채운다(이름표 글자는 간판이라 그대로).
+ onLang(()=>{hint.querySelector('p').textContent=t('town.hint');hint.querySelector('button').setAttribute('aria-label',t('town.hintClose'));if(time)container.setAttribute('aria-label',`${t('home.townScene')} · ${t(`town.time.${time}`)}`);render();});
  function paint(){
   const src=asset(`assets/${TOWN_SCENES[layout].images[time]}`);
   if(img.getAttribute('src')!==src){edges=null;img.src=src;}
@@ -145,21 +148,22 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
   const nowPack=loading?null:progress?.nextLesson?.packId||null;
   for(const place of TOWN_PLACES){
    const button=buttons.get(place.id),count=button.querySelector('.town-pin-count');
-   if(!place.pack){button.dataset.state='door';count.textContent='';button.setAttribute('aria-label',`${place.name} 들어가기 · ${place.note}`);continue;}
+   button.dataset.nowLabel=t('town.nowBadge');
+   if(!place.pack){button.dataset.state='door';count.textContent='';button.setAttribute('aria-label',t('town.enter',{place:t(`town.place.${place.id}`),note:t('town.homeNote')}));continue;}
    const p=packs.get(place.pack),done=p&&p.total>0&&p.completed>=p.total;
    const state=loading?'idle':nowPack===place.pack?'now':done?'done':p?.completed?'doing':'new';
    button.dataset.state=state;
    count.textContent=loading||!p||done?'':`${p.completed}/${p.total}`;
    if(done)count.innerHTML=CHECK;
    const next=state==='now'?progress?.nextLesson?.label||progress?.nextLesson?.title||'':'';
-   button.setAttribute('aria-label',[place.name,state==='now'?'지금 할 차례':'',next,p?`${p.completed} / ${p.total} 레슨`:'',done?'모두 마침':''].filter(Boolean).join(' · '));
-   if(next)button.title=`지금 할 차례 · ${next}`;else button.removeAttribute('title');
+   button.setAttribute('aria-label',[t(`town.place.${place.id}`),state==='now'?t('town.nowTurn'):'',next,p?t('town.lessons',{done:p.completed,total:p.total}):'',done?t('town.allDone'):''].filter(Boolean).join(' · '));
+   if(next)button.title=t('town.nowTitle',{next});else button.removeAttribute('title');
   }
  }
  function setTime(next=forced||townTime()){
   if(next===time)return;time=next;
   container.dataset.time=time;document.documentElement.dataset.townTime=time;
-  container.setAttribute('aria-label',`세 친구가 사는 우리 동네 · ${TIME_NAMES[time]}`);
+  container.setAttribute('aria-label',`${t('home.townScene')} · ${t(`town.time.${time}`)}`);
   paint();
  }
  const visible=()=>{if(!document.hidden)setTime();};

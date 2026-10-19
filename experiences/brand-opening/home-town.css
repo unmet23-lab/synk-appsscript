@@ -32,7 +32,7 @@
 .town-pin[data-state=now]:hover,.town-pin[data-state=now].is-hover{background:#FF7A6B}
 .town-pin[data-state=now] .town-pin-dot{background:var(--w-on-face);box-shadow:none}
 .town-pin[data-state=now] .town-pin-count{color:rgba(30,14,10,.66)}
-.town-pin[data-state=now]::after{content:'지금';margin-left:2px;padding:4px 7px;border-radius:999px;background:rgba(30,14,10,.12);font-size:13px;font-weight:var(--wt-strong)}
+.town-pin[data-state=now]::after{content:attr(data-now-label);margin-left:2px;padding:4px 7px;border-radius:999px;background:rgba(30,14,10,.12);font-size:13px;font-weight:var(--wt-strong)}
 /* 휴대폰 세로: 이름표에는 이름과 상태 점만(숫자는 배우기 탭에). */
 .town-frame[data-layout=portrait] .town-pin{min-height:32px;padding:0 11px 0 9px;font-size:13px;gap:6px}
 .town-frame[data-layout=portrait] .town-pin-count{display:none}

@@ -7,8 +7,8 @@ import {LANGS,LANG_NAMES,t,setLang,suggestedLang,currentLang,hasChosenLang} from
 const GLOBE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3z"/></svg>';
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
 
-export function openLangPicker({home,then=null,onChoose=null}={}){
- let choice=suggestedLang(),active=true,busy=false;
+export function openLangPicker({home,then=null,onChoose=null,onClose=null}={}){
+ let choice=suggestedLang(),active=true,busy=false,settled=false;
  const content=()=>document.querySelector('#panel-content');
  const shown=()=>choice||currentLang();
  const options=()=>LANGS.map(code=>`<button type="button" class="lang-option" role="radio" lang="${code}" data-lang-choice="${code}" aria-checked="${code===choice}"><strong>${LANG_NAMES[code]}</strong><span class="lang-check">${CHECK}</span></button>`).join('');
@@ -29,7 +29,7 @@ export function openLangPicker({home,then=null,onChoose=null}={}){
   const lang=choice;
   setLang(lang);
   try{await onChoose?.(lang);}catch(error){console.warn('Language save failed',error);}
-  busy=false;active=false;then?.();
+  busy=false;active=false;settled=true;then?.();
  }
  function click(event){
   if(!active)return;const root=content()?.querySelector('[data-lang-picker]');if(!root?.contains(event.target))return;
@@ -46,15 +46,15 @@ export function openLangPicker({home,then=null,onChoose=null}={}){
  }
  home.showPanel(t('lang.pick.title',undefined,shown()),html(),{type:'lang',eyebrow:'LANGUAGE'});
  document.addEventListener('click',click);document.addEventListener('keydown',key);
- home.attachPanelResource({dispose(){active=false;document.removeEventListener('click',click);document.removeEventListener('keydown',key);}});
+ home.attachPanelResource({dispose(){active=false;document.removeEventListener('click',click);document.removeEventListener('keydown',key);if(!settled){settled=true;onClose?.();}}});
  content()?.querySelector(choice?`[data-lang-choice="${choice}"]`:'[data-lang-choice]')?.focus({preventScroll:true});
  return true;
 }
 
-// 첫 실행에서만 묻는다: 이미 고른 언어가 있으면(이 기기 또는 계정에서 되살린 값) 바로 다음 칸으로 간다.
-export function ensureLang({home,then=null,onChoose=null,force=false}={}){
- if(hasChosenLang()&&!force){then?.();return false;}
- return openLangPicker({home,then,onChoose});
+// 첫 실행 단계(first-run.mjs)의 language 칸: 이미 고른 언어가 있으면(이 기기 또는 계정에서 되살린 값) 열지 않는다.
+// 「계속하기」를 누르면 true, 고르기 전에 판을 닫으면 false(첫 실행 흐름이 멈춘다).
+export function createLangStep({home,onChoose=null}={}){
+ return Object.freeze({id:'language',needed:async()=>!hasChosenLang(),open:()=>new Promise(resolve=>{openLangPicker({home,onChoose,then:()=>resolve(true),onClose:()=>resolve(false)});})});
 }
 
 // 설정 시트의 「화면 언어」 묶음(화면 방향과 같은 알약 셋). 바꾸면 onChange(언어)를 부른다.

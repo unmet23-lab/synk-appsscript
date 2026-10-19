@@ -1,0 +1,37 @@
+{
+ "createdAt": "2026-10-19T11:12:39.196Z",
+ "changed": 4,
+ "unchanged": 872,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck13-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "records.title",
+     "previous": "Солонгос үсгийн явцаа үргэлжлүүлэх"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "records.lead",
+     "previous": "Энэ төхөөрөмж дээрх солонгос үсгийн явцаа бүртгэл рүүгээ шилжүүлж үргэлжлүүлэх үү?"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "records.moved",
+     "previous": "Солонгос үсгийн явцыг бүртгэл рүү тань шилжүүллээ."
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.partly",
+     "previous": "Шилжүүлж болох солонгос үсгийн явцыг л бүртгэл рүү тань шилжүүллээ."
+    }
+   ]
+  }
+ ]
+}

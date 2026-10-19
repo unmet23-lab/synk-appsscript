@@ -1,0 +1,43 @@
+{
+ "createdAt": "2026-10-19T11:07:58.862Z",
+ "changed": 5,
+ "unchanged": 871,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck11-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.trialLead",
+     "previous": "««첫 인사 세 마디»» тоглоомын туршилтын тоглолтыг дуусгалаа. SYNK ID-гаар нэвтэрвэл тоглоомын мэдээлэл, зоос тань үргэлжилнэ"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "records.lead",
+     "previous": "Энэ төхөөрөмж дээр хийсэн солонгос үсгийн дасгалаа бүртгэлдээ үргэлжлүүлэх үү?"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "records.metMastered",
+     "previous": "Танилцсан үсэг: 3 · сурсан: m"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.keptHangul",
+     "previous": "Бүртгэлд тань солонгос үсгийн явц аль хэдийн байгаа тул бүртгэлийн явцаар үргэлжилнэ."
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "records.keptAnswer",
+     "previous": "Анх сонгосон хариулт бүртгэлд тань аль хэдийн байгаа тул бүртгэлийнхийг ашиглана."
+    }
+   ]
+  }
+ ]
+}

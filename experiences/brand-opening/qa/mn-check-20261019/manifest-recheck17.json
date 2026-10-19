@@ -1,0 +1,61 @@
+{
+ "createdAt": "2026-10-19T11:30:19.389Z",
+ "changed": 8,
+ "unchanged": 0,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck17-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.trialLead",
+     "previous": "«Салхин зам» туршилтын тоглолт дууслаа. SYNK ID-гаар нэвтэрвэл тоглоомын мэдээлэл, зоос тань хадгалагдана"
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "account.trialTitle",
+     "previous": "Туршилтын тоглолтыг хадгалаагүй"
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "records.move",
+     "previous": "Бүртгэлдээ үргэлжлүүлэх"
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.keep",
+     "previous": "Эхнээс нь эхлэх"
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "records.snapshot",
+     "previous": "Зөвхөн одоогийн явц шилжинэ"
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "records.snapshotBody",
+     "previous": "Өмнөх дасгал бүрийг биш, зөвхөн одоогийн байдлыг бүртгэлд хадгална. Энэ төхөөрөмж дээрх зочны мэдээллийг устгахгүй."
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "records.moving",
+     "previous": "Бүртгэл рүү шилжүүлж байна."
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "records.failed",
+     "previous": "Шилжүүлж чадсангүй. Холболтоо шалгаад дахин сонгоно уу."
+    }
+   ]
+  }
+ ]
+}

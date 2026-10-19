@@ -1,0 +1,162 @@
+{
+ "createdAt": "2026-10-19T11:00:28.061Z",
+ "changed": 24,
+ "unchanged": 852,
+ "budget": 950,
+ "batches": [
+  {
+   "file": "recheck10-01.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "account.trialLead",
+     "previous": null
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "account.trialTitle",
+     "previous": null
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "account.trialBody",
+     "previous": null
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.title",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "records.lead",
+     "previous": null
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "records.move",
+     "previous": null
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "records.keep",
+     "previous": null
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "records.snapshot",
+     "previous": null
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "records.snapshotBody",
+     "previous": null
+    },
+    {
+     "line": 10,
+     "source": "world-strings",
+     "key": "records.moving",
+     "previous": null
+    },
+    {
+     "line": 11,
+     "source": "world-strings",
+     "key": "records.failed",
+     "previous": null
+    },
+    {
+     "line": 12,
+     "source": "world-strings",
+     "key": "records.moved",
+     "previous": null
+    },
+    {
+     "line": 13,
+     "source": "world-strings",
+     "key": "records.partly",
+     "previous": null
+    },
+    {
+     "line": 14,
+     "source": "world-strings",
+     "key": "records.kept",
+     "previous": null
+    },
+    {
+     "line": 15,
+     "source": "world-strings",
+     "key": "records.answerRow",
+     "previous": null
+    }
+   ]
+  },
+  {
+   "file": "recheck10-02.txt",
+   "lines": [
+    {
+     "line": 1,
+     "source": "world-strings",
+     "key": "records.answerNew",
+     "previous": null
+    },
+    {
+     "line": 2,
+     "source": "world-strings",
+     "key": "records.answerReads",
+     "previous": null
+    },
+    {
+     "line": 3,
+     "source": "world-strings",
+     "key": "records.graduated",
+     "previous": null
+    },
+    {
+     "line": 4,
+     "source": "world-strings",
+     "key": "records.met",
+     "previous": null
+    },
+    {
+     "line": 5,
+     "source": "world-strings",
+     "key": "records.metMastered",
+     "previous": null
+    },
+    {
+     "line": 6,
+     "source": "world-strings",
+     "key": "records.skipped",
+     "previous": null
+    },
+    {
+     "line": 7,
+     "source": "world-strings",
+     "key": "records.started",
+     "previous": null
+    },
+    {
+     "line": 8,
+     "source": "world-strings",
+     "key": "records.keptHangul",
+     "previous": null
+    },
+    {
+     "line": 9,
+     "source": "world-strings",
+     "key": "records.keptAnswer",
+     "previous": null
+    }
+   ]
+  }
+ ]
+}
