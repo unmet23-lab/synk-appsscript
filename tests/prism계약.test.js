@@ -374,13 +374,30 @@ test('읽기 권한 오류와 탐색 뒤 삭제를 조용히 건너뛰지 않는
 
 test('저장소 밖으로 이어진 링크는 파일 내용을 읽기 전에 거절한다', (t) => {
   const f = 픽스처(t);
-  const 원래실경로 = fs.realpathSync;
-  const 바깥 = path.resolve(f.루트, '..', '합성바깥.js');
-  t.mock.method(fs, 'realpathSync', function (파일, ...인자) {
-    if (파일 === path.join(f.루트, '엔진_운영배치.js')) return 바깥;
-    return 원래실경로.call(this, 파일, ...인자);
+  const 부모 = fs.realpathSync(os.tmpdir());
+  const 바깥 = fs.mkdtempSync(path.join(부모, 'synk-prism-outside-'));
+  t.after(() => {
+    assert.equal(path.dirname(fs.realpathSync(바깥)), 부모);
+    assert.ok(path.basename(바깥).startsWith('synk-prism-outside-'));
+    fs.rmSync(바깥, { recursive: true });
   });
-  확인불가(검사({ 루트: f.루트 }), /범위 파일을 확인할 수 없다 — 엔진_운영배치\.js/);
+  fs.writeFileSync(path.join(바깥, 'probe.js'), 'prism_outside_fixture();');
+  const 링크 = path.join(f.루트, '바깥링크');
+  fs.symlinkSync(바깥, 링크, process.platform === 'win32' ? 'junction' : 'dir');
+  const 원래읽기 = fs.readFileSync;
+  let 바깥읽기 = 0;
+  t.mock.method(fs, 'readFileSync', function (파일, ...인자) {
+    const 상대 = path.relative(바깥, String(파일));
+    if (상대 !== '..' && !상대.startsWith(`..${path.sep}`) && !path.isAbsolute(상대)) {
+      바깥읽기++;
+      throw new Error('Outside fixture content must not be read');
+    }
+    return 원래읽기.call(this, 파일, ...인자);
+  });
+  try {
+    확인불가(검사({ 루트: f.루트, 범위: ['바깥링크/*.js'] }), /범위 디렉터리를 확인할 수 없다 — 바깥링크/);
+    assert.equal(바깥읽기, 0);
+  } finally { fs.unlinkSync(링크); }
 });
 
 test('알 수 없는 CLI 인자와 빠진 glob은 확인 불가다', (t) => {

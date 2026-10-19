@@ -10,7 +10,7 @@
 
 `registry.cjs`가 서비스, 실행 환경, API 제품, 정확한 개발 콜백의 공통 목록이다. 플랫폼·WORLD·메신저·교사·운세·플레저는 각자의 OAuth client와 저장소를 사용하면서 기존 중앙 SYNK ID에 연결한다. 기존 WORLD 앱과 맞춤 도구의 등록 ID도 같은 목록에서 관리한다. 등록 ID나 비밀번호를 서비스 사이에 복사하지 않는다.
 
-PATH·대화 리허설·가족 앨범의 native·브라우저 어댑터는 로컬 구현과 합성 시험을 마쳤다. 교사의 브라우저 직접 로그인은 `pending-adapter`다. 목록에 이름이 있다는 것은 실제 앱 어댑터·원격 데이터 API·OAuth 등록이 모두 운영 중이라는 뜻이 아니다. 공통 생성기는 인증 방식이나 데이터 API를 새로 만들지 않는다.
+PATH의 native·브라우저 어댑터는 로컬 구현과 합성 시험을 마쳤다. 교사의 브라우저 직접 로그인은 `pending-adapter`다. 목록에 이름이 있다는 것은 실제 앱 어댑터·원격 데이터 API·OAuth 등록이 모두 운영 중이라는 뜻이 아니다. 공통 생성기는 인증 방식이나 데이터 API를 새로 만들지 않는다.
 
 소개팅은 `dating-browser` 전용 public client로 기존 `platform` 제품 계약을 쓴다. 개발 콜백은 `http://127.0.0.1:4300/atlas-lab/dating.html`이며 native 등록을 추가하거나 기존 native 포트를 옮기지 않는다. 계정 모드 서버도 해당 포트와 전용 공개 설정으로 실행해야 한다. 이 목록 추가 자체는 공급자 등록·포털 동의 목록 게시·실제 로그인 확인을 뜻하지 않는다.
 
@@ -53,7 +53,7 @@ node --test tools/synk-id/public-config.test.cjs
 기본 실행은 dry-run이다. `--write`도 원격 변경 없이 다음 고정된 로컬 파일만 쓴다.
 
 - `desktop/auth-config.json`: 현재 등록된 native 9종 중 확인된 항목만.
-- `experiences/synk-account/config.json`: 브라우저 플랫폼·WORLD·메신저·플레저·PATH·대화 리허설·가족 앨범 및 등록된 전체 동의 콜백 목록.
+- `experiences/synk-account/config.json`: 브라우저 플랫폼·WORLD·메신저·플레저·PATH 및 등록된 전체 동의 콜백 목록.
 - `experiences/daily-fortune/account.config.json`: 운세 전용 browser client를 기존 운세 어댑터의 `clients.platform` 필드로 제공.
 - `experiences/atlas-lab/account.config.json`: 입력에서 실제 `dating-browser` 등록이 확인된 경우에만 생성한다. 소개팅 전용 client를 `clients.platform`으로 제공하고 공통 브라우저 `clients`에는 `dating` 키를 넣지 않는다. 전체 등록의 `authorizationClients`에는 소개팅도 포함한다. 등록이 없는 입력은 이 파일을 생성·교체·삭제하지 않는다.
 

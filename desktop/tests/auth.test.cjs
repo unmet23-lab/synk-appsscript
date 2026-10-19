@@ -107,7 +107,7 @@ test('platform temporary verification hides identity but restores the same app s
   f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});assert.equal(f.service.status().signedIn,true);assert.equal((await f.service.accountRequest('load')).ok,true);assert.equal(f.codeCount,codeCount);
 });
 test('personal apps reuse real PKCE, main-held tokens and fixed per-client data resources',async t=>{
-  for(const product of ['path','rehearsal','family-album']){
+  for(const product of ['path']){
     const f=await fixture(t,{product});await f.login();assert.equal(f.config.product,'platform');assert.equal(f.config.clientKey,product);
     const loaded=await f.service.accountRequest('personalLoad');assert.equal(loaded.ok,true);assert.deepEqual(loaded.nested,{});
     assert.equal((await f.service.accountRequest('personalSave',{expected_revision:0,state:{version:1}})).ok,true);
@@ -130,18 +130,9 @@ test('personal transport rotates once, preserves CAS and rejects wrong resource 
   }
 });
 
-test('native personal API preserves only a missing original UUID for targeted retry',async t=>{
-  const f=await fixture(t,{product:'family-album'});await f.login();const assetId='22222222-2222-4222-8222-222222222222';
-  for(const [code,id,expected] of [['ASSET_NOT_FOUND',assetId,assetId],['ASSET_NOT_CONFIRMED',assetId,assetId],['ASSET_NOT_FOUND','private/not-an-id',undefined],['MEDIA_QUOTA_EXCEEDED',assetId,undefined]]){
-    f.queuePersonal({status:404,data:{ok:false,error:{code,assetId:id,details:'private provider details'}}});
-    const result=await f.service.accountRequest('personalSave',{expected_revision:0,state:{version:1}});
-    assert.equal(result.error.code,code);assert.equal(result.error.assetId,expected);assert.equal(result.error.details,undefined);
-  }
-});
-
 test('logout fences a delayed personal document before it reaches the renderer',async t=>{
-  const f=await fixture(t,{product:'rehearsal'});await f.login();let release;
-  f.queuePersonal({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,scope:'synk-personal',resource:'rehearsal',accountId:'stable-synthetic-id',revision:0,state:{private:'previous account'}}});
+  const f=await fixture(t,{product:'path'});await f.login();let release;
+  f.queuePersonal({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,scope:'synk-personal',resource:'path',accountId:'stable-synthetic-id',revision:0,state:{private:'previous account'}}});
   const pending=f.service.accountRequest('personalLoad');await waitFor(()=>f.requests.some(call=>call.path==='/functions/v1/synk-personal'));await f.service.signOut();release();
   const response=await pending;assert.equal(response.ok,false);assert.equal(response.state,undefined);
 });

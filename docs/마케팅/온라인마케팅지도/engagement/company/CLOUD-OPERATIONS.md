@@ -1,5 +1,20 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="first-load-state-production-20261019"></a>
+## 첫 로드 state 이벤트 방어 운영 인수 · 2026-10-19
+
+부모 `6ab425e5addeda880226839083839400eea32cccdb60ca7708fa70bc77d3896f` 위 후보 `30c93e84148c05d58c00ea77e0ce5c3660b54bc0c89f8c15c3ef76e36a9891d4`는 원문 1,073개·이미지 목록 647개다. 실행 파일 9개의 초기 이벤트 진입 10곳과 회귀 1파일만 바꾸고, 부모의 나머지 1,063개 원문·통화 및 성과 기능을 보존했다. 삭제는 0이다.
+
+원문 `3d0f0cc44e22e96acd499fbc3dd6e4755cfde82a`를 master와 `codex/workspace-first-load-state-20261019`에 atomic push했다. [근거1](../../../../../.tmp/first-load-state-fix-20261019/source-push-receipt.json)
+
+Windows 동결 후보 117파일 1,680/1,680, 실패·취소·건너뜀 0·후보 원문 불변을 확인했다. [근거1](../../../../../.tmp/first-load-state-fix-20261019/qa/result.json)
+
+- **Linux·이미지:** [passed] 실제 Linux 앱 1,680/1,680·호환성 2/2, 원문 1,073개·이미지 목록 647개를 확인했다. 이미지 sha256:fc891030a3da1b16f684f57a1e874536cfeaea5e1197980ea819777bb4820c55. [근거1](../../../../../.tmp/first-load-state-release-20261019/deployment/reviewed-candidate-receipt.json)
+- **운영·공개 응답·자료 보존:** [passed] 30c93e84… 운영 교체 뒤 primary·standby·controller 검증과 양 노드 canonical 원문 1,073개가 통과했고, 공개 응답 12/12와 HTML에 붙인 자산 digest 목록(107개)이 일치했다. 시작 전 논리 데이터 보존은 확인됐지만 시작 후 synk_identity_sessions는 2→2행인 채 전체 해시가 달라 기존 각 행의 동일성은 증명되지 않았다. 스키마와 토큰 테이블은 일치했다. 운영 교체 직후에는 HA가 꺼져 있었으며, 이후 새 백업·격리 복원·최종 활성화 결과는 아래 HA 항목에서 확인한다. [근거1](../../../../../.tmp/first-load-state-release-20261019/deployment/runtime-live-postcheck-1792343420879.json) [근거2](../../../../../.tmp/first-load-state-release-20261019/deployment/public-messenger-verification-1792343426479.json) [근거3](../../../../../.tmp/first-load-state-release-20261019/deployment/package-live-v1.json) [근거4](../../../../../.tmp/first-load-state-release-20261019/deployment/rootqa/source-stage-1792342262269.json)
+- **실제 Chrome·성과 자료:** [passed] 실제 Chrome 새 탭 1회 초기 로드와 게시→주간 요약→자동화 상태→게시 복귀·새로고침에서 오류 0, 변경 자산 9개 SHA 일치를 확인했다. 성과 8개·체크포인트 16개 전체 객체가 배포 전과 같고 주소 확인이 켜져 있으며 사용 채널 3개 연결을 유지했다. 이 Chrome의 인증 로그인 연속성은 확인했으나 모든 기존 세션 행이 동일하다는 뜻은 아니다. 초기 이벤트 경합은 운영 브라우저에 강제 주입하지 않았고 별도 결정적 소스 회귀로 확인했다. [근거1](../../../../../.tmp/first-load-state-fix-20261019/live-ui-verification.json) [근거2](../../../../../.tmp/first-load-state-fix-20261019/performance-comparison.json)
+- **새 백업·격리 복원·최종 HA:** [passed] 2026-10-19 03:26 KST 최종 확인에서 새 릴리스의 자동 복구 armed:true, A 단일 writer·epoch 7·복제 정상·공개 HTTPS 200, 같은 controller PID와 Invocation의 25.842초 관찰·재시작 0을 확인했다. 새 백업 generation 1792344379781723의 업로드·MD5 검증, Linux 재무장 155건(120+35), network none 격리 복원이 통과했다. 격리 복원에서 원문 1,073개·보호 9테이블 35행·토큰 3→3과 원래 키를 보존했고 새 계정 기준도 연결했다. 배포 이력 10건을 잇는 현재 릴리스 호환성 승인이다. 현재 릴리스 장애 전환과 복원 환경의 실제 사용자 로그인은 새로 시험하지 않았다. [근거1](../../../../../.tmp/first-load-state-release-20261019/rearm/dr/backup-status-1792344359981.json) [근거2](../../../../../.tmp/first-load-state-release-20261019/rearm/linux-qa-result-v1.json) [근거3](../../../../../.tmp/first-load-state-release-20261019/rearm/dr/restore-v1.json) [근거4](../../../../../.tmp/first-load-state-release-20261019/rearm/account-baseline-final-v1.json) [근거5](../../../../../.tmp/first-load-state-release-20261019/rearm/dr/binding-v1.json) [근거6](../../../../../.tmp/first-load-state-release-20261019/rearm/contract-final-v3.json) [근거7](../../../../../.tmp/first-load-state-release-20261019/rearm/arm-postcheck-final-v3.json)
+- **기존 증거·확인 경계:** 이전 state 오류 10건과 부모 3000·c0e·6ab 비교·정의 후 0건·자연 복구 기록은 당시 증거로 보존한다. 이번 실제 화면 결과와 별개다. 기존 실제 장애 전환 이력은 이번 릴리스의 강제 장애 전환 시험으로 보고하지 않는다.
+
 <a id="server-log-retention-20261016"></a>
 ## 공통 서버 반복 로그·보관 정책 — 2026-10-16
 

@@ -1,0 +1,15 @@
+export function mountCareNotifications({bridge,container}){
+  if(!bridge?.careNotifications)return;
+  const section=document.createElement('div');section.className='settings-group';section.hidden=true;
+  section.innerHTML='<div class="setting-row"><div><h2>플레저 PC 알림</h2><p>Chrome을 완전히 닫아도 SYNK가 트레이에서 챙길 일을 알려드려요. 켜면 Windows 로그인 때 SYNK를 자동 시작합니다. PC와 SYNK를 완전히 종료한 동안에는 받을 수 없어요.</p><p>계정에 저장된 일정과 날짜를 정한 후속 챙김만 확인하며, 이름이나 개인 내용은 알림에 표시하지 않아요. 브라우저 기기 알림을 함께 켜 두면 같은 PC에서 중복될 수 있어요.</p><p data-care-status class="fine-print" role="status"></p></div><label class="setting-check"><input data-care-enabled type="checkbox">이 PC에서 받기</label></div><div class="setting-row"><div><h2>플레저 알림 시간</h2><p>한국 시간으로 하루 한 번 알려드려요. 켜거나 절전에서 돌아온 시점이 90분 넘게 늦으면 지난 알림은 보내지 않아요.</p></div><form data-care-time class="setting-inline"><input data-care-hour type="time" aria-label="플레저 PC 알림 시간"><button class="ghost-button" type="submit">시간 저장</button><button class="text-link" data-care-test type="button">시험 알림</button></form></div>';
+  container.prepend(section);
+  const input=section.querySelector('[data-care-enabled]'),time=section.querySelector('[data-care-hour]'),message=section.querySelector('[data-care-status]'),test=section.querySelector('[data-care-test]');
+  let snapshot,busy=false,revision=0;
+  function render(value){snapshot=value;section.hidden=value?.available!==true;input.checked=value?.enabled===true;input.disabled=busy||!value?.signedIn;time.disabled=busy||!value?.enabled;test.disabled=busy||!value?.enabled;section.querySelector('button[type="submit"]').disabled=busy||!value?.enabled;if(document.activeElement!==time)time.value=`${String(value?.hour??9).padStart(2,'0')}:${String(value?.minute??0).padStart(2,'0')}`;message.textContent=value?.ok===false?'알림 연결을 확인하지 못했어요. 로그인과 인터넷 연결을 확인해 주세요.':!value?.signedIn?'SYNK ID로 로그인하면 이 PC의 알림을 설정할 수 있어요.':value.enabled?`PC 알림 켜짐 · ${String(value.hour).padStart(2,'0')}:${String(value.minute).padStart(2,'0')} 한국 시간`:'이 PC의 플레저 알림이 꺼져 있어요.';}
+  async function load(){const expected=++revision;try{const value=await bridge.careNotifications.status();if(expected===revision)render(value);}catch{if(expected===revision)render({ok:false});}}
+  async function run(operation){if(busy)return;busy=true;render(snapshot);let feedback='';try{const result=await operation();await load();if(result?.ok!==true)feedback=result?.code==='TEST_RATE_LIMITED'?'시험 알림은 1분 뒤 다시 보낼 수 있어요.':'설정을 적용하지 못했어요. 로그인과 계정 저장 상태를 확인해 주세요.';else if(result.test)feedback='Windows에 시험 알림을 보냈어요. 알림 센터에서 확인해 주세요.';}catch{await load();feedback='알림 연결을 확인하지 못했어요. 다시 시도해 주세요.';}finally{busy=false;if(snapshot)render(snapshot);if(feedback)message.textContent=feedback;}}
+  input.onchange=()=>{const enabled=input.checked;void run(()=>bridge.careNotifications.configure({enabled}));};
+  section.querySelector('form').onsubmit=event=>{event.preventDefault();const [hour,minute]=time.value.split(':').map(Number);void run(()=>bridge.careNotifications.configure({hour,minute}));};
+  test.onclick=()=>void run(()=>bridge.careNotifications.test());
+  bridge.careNotifications.onChanged(()=>void load());bridge.onAuthChanged?.(()=>void load());void load();
+}

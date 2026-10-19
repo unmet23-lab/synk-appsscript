@@ -10,7 +10,7 @@ const { createAuthService } = require('../src/auth-service.cjs');
 const { createTokenStore } = require('../src/auth-store.cjs');
 
 const origin = 'https://platform-contract.invalid';
-const clients = ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'rehearsal', 'family-album', 'path'];
+const clients = ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'path'];
 const raw = {
   version: 1, supabaseUrl: origin, accountApiUrl: origin, supabasePublishableKey: 'sb_publishable_synthetic',
   clients: Object.fromEntries(clients.map((id, index) => [id, {

@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, '..'), report = { at: new Date().toISOStrin
   await fs.writeFile(config, JSON.stringify({ version: 1, supabaseUrl: 'https://synthetic.invalid', supabasePublishableKey: 'sb_publishable_synthetic', clients: {} }));
   const servers = [];
   try {
-    for (const [id, folder, port] of [['path', 'path-vr', 4292], ['rehearsal', 'conversation-rehearsal', 4297], ['family-album', 'family-album', 4298]]) {
+    for (const [id, folder, port] of [['path', 'path-vr', 4292]]) {
       const { createServer } = await import('../../experiences/' + folder + '/server.mjs');
       const server = createServer({ port, accountConfig: { version: 1 } });
       await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); }); servers.push(server);

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-09",
+  "newGeneration": false,
+  "assets": [
+    {
+      "file": "park.webp",
+      "source": "experiences/entry-check/assets/scenes/concert.webp",
+      "change": "Unmodified approved source copy",
+      "sha256": "0aaa7e66b68d40b7d8139a0411e8fb541fbc36667fa8579d8737d7046e01a6cd"
+    },
+    {
+      "file": "rolled-mat.webp",
+      "source": "experiences/entry-check/assets/items/picnic-mat.webp",
+      "change": "Unmodified approved source copy",
+      "sha256": "413462e8e08ca042e30f3ae83f4d5d4f081de65f185bb785d770d422508c0fec"
+    }
+  ]
+}

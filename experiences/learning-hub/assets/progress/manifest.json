@@ -1,0 +1,138 @@
+{
+  "note": "Existing SYNK felt assets. No new image generation or paid calls.",
+  "files": [
+    {
+      "file": "cream.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream-long.webp",
+      "transform": "byte copy",
+      "sourceSha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "file": "coral.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-coral-long.webp",
+      "transform": "byte copy",
+      "sourceSha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "file": "blush.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-blush-long.webp",
+      "transform": "byte copy",
+      "sourceSha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899"
+    },
+    {
+      "file": "tile.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-cream.webp",
+      "transform": "byte copy",
+      "sourceSha256": "f4603fad81dac1607711a5352cd9573482ed563e30f1f13beb9ed08e121f7663",
+      "sha256": "f4603fad81dac1607711a5352cd9573482ed563e30f1f13beb9ed08e121f7663"
+    },
+    {
+      "file": "tile-selected.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/slab-blush.webp",
+      "transform": "byte copy",
+      "sourceSha256": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f",
+      "sha256": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f"
+    },
+    {
+      "file": "badge.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-cream.webp",
+      "transform": "byte copy",
+      "sourceSha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be"
+    },
+    {
+      "file": "check.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/badge-check.webp",
+      "transform": "byte copy",
+      "sourceSha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645"
+    },
+    {
+      "file": "swatch-blue.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/swatch-lapis.webp",
+      "transform": "byte copy",
+      "sourceSha256": "45488070d8bc3d03b00a95436bdc3bde53f3b53e68c6c8b2fce199f960d0909c",
+      "sha256": "45488070d8bc3d03b00a95436bdc3bde53f3b53e68c6c8b2fce199f960d0909c"
+    },
+    {
+      "file": "swatch-coral.webp",
+      "source": "docs/디자인/펠트부품/assets/ui/swatch-coral.webp",
+      "transform": "byte copy",
+      "sourceSha256": "9c52b438b9f56bf826b9b1979ae3fcd40aab1c6ed69ef240bc80df40008910ba",
+      "sha256": "9c52b438b9f56bf826b9b1979ae3fcd40aab1c6ed69ef240bc80df40008910ba"
+    },
+    {
+      "file": "swatch-gold.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/swatch-butter.webp",
+      "transform": "byte copy",
+      "sourceSha256": "b2226cedb2aeba5386ecfca63d28bda12654d264cbdc5044b900a6db718154b1",
+      "sha256": "b2226cedb2aeba5386ecfca63d28bda12654d264cbdc5044b900a6db718154b1"
+    },
+    {
+      "file": "swatch-dark.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/swatch-black.webp",
+      "transform": "byte copy",
+      "sourceSha256": "0091fa7b177ff2a7c57884bb10669728438453b69c09a494a2b64817b8412b1c",
+      "sha256": "0091fa7b177ff2a7c57884bb10669728438453b69c09a494a2b64817b8412b1c"
+    },
+    {
+      "file": "medal.webp",
+      "source": "docs/Loom_자산/구움/공방_1등메달.avif",
+      "transform": "resize within 480px and webp encoding",
+      "sourceSha256": "e4e2a1fd450546f74e0dc99e23e3c8176f9c860bc8d509fc403e8e3901fe4522",
+      "sha256": "5a3d6101008ab149b066d0fc0083dccbb57c3f472edd44ed9f48acc906fd7e93"
+    },
+    {
+      "file": "headphones.webp",
+      "source": "docs/Loom_자산/구움/공방_꾸밈_헤드폰라피스.avif",
+      "transform": "resize within 480px and webp encoding",
+      "sourceSha256": "864562bc878f143fd9c12de15138839fd7574ae49b673abc3cbecb7d164fbed9",
+      "sha256": "d96a0e9c006306b9184b074331770d13354d9c4a1c730e4a724599c6ae855afc"
+    },
+    {
+      "file": "notebook.webp",
+      "source": "docs/Loom_자산/구움/공방_공책과연필.avif",
+      "transform": "resize within 480px and webp encoding",
+      "sourceSha256": "4d5b4df9ec676c4d0bec63269d70e4f3a78bc8708dd75abfac725a285fa079d4",
+      "sha256": "b1f8c23e7df03ce71eea8177dc3c94a6943195e0afa97735ea8706553ec125d3"
+    },
+    {
+      "file": "lantern.webp",
+      "source": "experiences/korean-runner/assets/shop/icons/lantern-paper.webp",
+      "transform": "byte copy",
+      "sourceSha256": "835821d7b98e2f8f25943a29e3d750107567f2e32fdd05dacf0930432cc7acde",
+      "sha256": "835821d7b98e2f8f25943a29e3d750107567f2e32fdd05dacf0930432cc7acde"
+    },
+    {
+      "file": "coffee.webp",
+      "source": "docs/디자인/펠트부품/assets/재료/coffee.webp",
+      "transform": "byte copy",
+      "sourceSha256": "28d184ceb1e8580922f239b932c493e71ba676e3a54c4bc328d93a9639a72025",
+      "sha256": "28d184ceb1e8580922f239b932c493e71ba676e3a54c4bc328d93a9639a72025"
+    },
+    {
+      "file": "stamp.webp",
+      "source": "experiences/entry-check/assets/felt/stamp-pass-sticker.webp",
+      "transform": "byte copy",
+      "sourceSha256": "d50d79f201be02bab8f8ea3a62a5bcc09926e136d0079e626d4afd85ac1f7982",
+      "sha256": "d50d79f201be02bab8f8ea3a62a5bcc09926e136d0079e626d4afd85ac1f7982"
+    },
+    {
+      "file": "sparkle.webp",
+      "source": "experiences/blank-slice/assets/felt/sparkle.webp",
+      "transform": "byte copy",
+      "sourceSha256": "95ae2294e457250e5465ebee3637d043c488e185fb7eedc8f3093469f77fc611",
+      "sha256": "95ae2294e457250e5465ebee3637d043c488e185fb7eedc8f3093469f77fc611"
+    },
+    {
+      "file": "coin.webp",
+      "source": "experiences/korean-runner/assets/shop/icons/finish-stars.webp",
+      "transform": "byte copy",
+      "sourceSha256": "b0a3734b74972ef760820fb7af932d6f3f5b2ab9db4b91379acf02c4af9797c3",
+      "sha256": "b0a3734b74972ef760820fb7af932d6f3f5b2ab9db4b91379acf02c4af9797c3"
+    }
+  ]
+}

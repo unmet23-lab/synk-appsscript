@@ -53,7 +53,7 @@ test('care is visible only with its own active menu grant and does not add compa
 });
 
 test('member benefit app menu rights are exact, independent and expire normally',()=>{
-  for(const id of ['fortune','rehearsal','family-album']){
+  for(const id of ['fortune']){
     const grant={product:'platform',key:'library.'+id,valid_until:'2026-10-02T00:00:01Z'};
     assert.deepEqual(projectLibrary(payload([],[grant]),now).appIds,[id]);
     assert.deepEqual(projectLibrary(payload([],[grant]),now+1000).appIds,[]);

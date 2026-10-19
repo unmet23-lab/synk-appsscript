@@ -1,0 +1,161 @@
+{
+  "schema": "synk-argon-production-verification/v1",
+  "date": "2026-10-18",
+  "timezone": "Asia/Seoul",
+  "firstProduction": {
+    "schema": "synk-argon-first-production-verification/v1",
+    "checkedAt": "2026-10-18T05:35:49.359515+00:00",
+    "role": "yt-tt",
+    "expectedScheduleAt": "2026-10-18T14:00:00+09:00",
+    "expectedAccount": "77yuhbs@gmail.com",
+    "expectedModel": "gemini-4-argon-high",
+    "expectedDocumentId": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+    "status": "verified",
+    "reason": "FIRST_SCHEDULED_ARGON_RUN_AND_NEW_DOCS_CONTENT_VERIFIED",
+    "acceptance": {
+      "scheduledRunObserved": true,
+      "argonExecutionVerified": true,
+      "docsReadbackVerified": true,
+      "newDocsSaveVerified": true
+    },
+    "actions": {
+      "startedUnits": 0,
+      "serverFilesModified": 0,
+      "docsWrites": 0,
+      "externalNotifications": 0
+    },
+    "timer": {
+      "TimersCalendar": "{ OnCalendar=*-*-* 08,14,20:00:00 Asia/Seoul ; next_elapse=Sun 2026-10-18 11:00:00 UTC }",
+      "NextElapseUSecRealtime": "Sun 2026-10-18 11:00:00 UTC",
+      "LastTriggerUSec": "Sun 2026-10-18 05:00:00 UTC",
+      "Result": "success",
+      "ActiveState": "active",
+      "SubState": "waiting",
+      "UnitFileState": "enabled"
+    },
+    "service": {
+      "Result": "success",
+      "ExecMainStartTimestamp": "Sun 2026-10-18 05:00:04 UTC",
+      "ExecMainExitTimestamp": "Sun 2026-10-18 05:12:49 UTC",
+      "ExecMainStatus": "0",
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "UnitFileState": "static"
+    },
+    "account": {
+      "source": "isolated-oauth-id-token-email-claim",
+      "exists": true,
+      "email": "77yuhbs@gmail.com",
+      "expectedAccountMatch": true,
+      "cryptographicVerification": false
+    },
+    "checkerSha256": "da6918094ac06731774272dcaeba603921435e155d495a90cc076cd174ab0cef",
+    "runState": {
+      "role": "yt-tt",
+      "status": "complete",
+      "startedAt": "2026-10-18T05:00:01.293580+00:00",
+      "completedAt": "2026-10-18T05:12:51.429211+00:00",
+      "offset": 0,
+      "stderrOffset": 0,
+      "model": "gemini-4-argon-high",
+      "conversationId": "bde3fd47-cfd0-4683-9435-4f5ba1999c7b",
+      "documentId": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+      "sha256": "f66bc846c4beed0bde201c983f5e5f228a6355cfdaa23edaf7e4c06f3d48f23d",
+      "baselineSha256": "7f4155ea351cf8f4531bd916d1044c6d9199a13d6f13e2bc9917a3a7c8275de4"
+    },
+    "log": {
+      "bytesAfterOffset": 104619,
+      "events": 370,
+      "initCount": 1,
+      "resultCount": 1
+    },
+    "cli": {
+      "model": "gemini-4-argon-high",
+      "conversationId": "bde3fd47-cfd0-4683-9435-4f5ba1999c7b",
+      "resultStatus": "SUCCESS",
+      "deniedActionsPresent": false
+    },
+    "deliveryMarker": "complete",
+    "docs": {
+      "documentId": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+      "sha256": "f66bc846c4beed0bde201c983f5e5f228a6355cfdaa23edaf7e4c06f3d48f23d",
+      "baselineSha256": "7f4155ea351cf8f4531bd916d1044c6d9199a13d6f13e2bc9917a3a7c8275de4",
+      "changedFromBaseline": true,
+      "revisionMatchesChecker": true,
+      "utf8Bytes": 65939
+    }
+  },
+  "archivedReceipt": {
+    "file": "/var/lib/synk-argon-77yuhbs/run-status/history/yt-tt-ab4c83abece447ee890d2aef5c7b4021.json",
+    "mode": "0o600",
+    "receipt": {
+      "role": "yt-tt",
+      "status": "complete",
+      "invocationId": "ab4c83abece447ee890d2aef5c7b4021",
+      "startedAt": "2026-10-18T05:00:01.293580+00:00",
+      "completedAt": "2026-10-18T05:12:51.429211+00:00",
+      "offset": 0,
+      "stderrOffset": 0,
+      "model": "gemini-4-argon-high",
+      "conversationId": "bde3fd47-cfd0-4683-9435-4f5ba1999c7b",
+      "documentId": "1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI",
+      "sha256": "f66bc846c4beed0bde201c983f5e5f228a6355cfdaa23edaf7e4c06f3d48f23d",
+      "baselineSha256": "7f4155ea351cf8f4531bd916d1044c6d9199a13d6f13e2bc9917a3a7c8275de4"
+    }
+  },
+  "enabledTimers": [
+    {
+      "role": "full",
+      "NextElapseUSecRealtime": "Sun 2026-10-18 20:00:00 UTC",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    {
+      "role": "yt-tt",
+      "NextElapseUSecRealtime": "Sun 2026-10-18 11:00:00 UTC",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    {
+      "role": "meta-brand",
+      "NextElapseUSecRealtime": "Sun 2026-10-18 08:00:00 UTC",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    },
+    {
+      "role": "synkbrief",
+      "NextElapseUSecRealtime": "Mon 2026-10-19 00:00:00 UTC",
+      "ActiveState": "active",
+      "UnitFileState": "enabled"
+    }
+  ],
+  "alert": {
+    "received": true,
+    "receivedAt": "2026-10-18 12:38 Asia/Seoul",
+    "recipient": "unmet27@gmail.com",
+    "policyId": "8330051917313971027",
+    "incidentId": "0.odyhzmwcnmzg",
+    "testId": "SYNK_ARGON_ALERT_TEST_20261018",
+    "error": "SYNTHETIC_ALERT_TEST",
+    "verificationMethod": "Chrome Codex extension Gmail rendered UI"
+  },
+  "offlineTests": {
+    "source": "receipts-installed.json",
+    "testedAt": "2026-10-18T03:35:05.833386+00:00",
+    "runCheck": {
+      "passed": 14,
+      "exitCode": 0
+    },
+    "alerts": {
+      "passed": 9,
+      "exitCode": 0
+    },
+    "sha256": {
+      "/opt/synk-argon-77yuhbs/run-check.py": "da6918094ac06731774272dcaeba603921435e155d495a90cc076cd174ab0cef",
+      "/opt/synk-argon-77yuhbs/run-check-test.py": "729c71372ce6028dc82372b7d895d1ec7a66c76d1950ae2fe7caf2adaf5b7a1d",
+      "/opt/synk-argon-77yuhbs/alert-event.py": "a63ae6b0eefd078be63440cada4b710a48a92da884370b7356cbf81202330820",
+      "/opt/synk-argon-77yuhbs/alert-event-test.py": "f029c12fa245664e146a56881507cb794f7ae538905b1f7b7512a6d030b1db20"
+    }
+  },
+  "followupHeartbeatDeleted": true
+}

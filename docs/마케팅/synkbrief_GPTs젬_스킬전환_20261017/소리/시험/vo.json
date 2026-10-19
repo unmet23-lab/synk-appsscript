@@ -1,0 +1,28 @@
+{
+ "voice": {
+  "name": "범수",
+  "id": "tc_5c3c52cb5827e00008dd7f3b"
+ },
+ "settings": {
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017
+ },
+ "read": "지피티즈",
+ "lines": [
+  {
+   "id": "t1",
+   "text": "지피티즈랑 젬, 만들어 두셨죠? 올해 둘 다 사라집니다.",
+   "dur": 3.152,
+   "syllablesPerSec": 6.66
+  },
+  {
+   "id": "t2",
+   "text": "지피티에스랑 젬, 만들어 두셨죠? 올해 둘 다 사라집니다.",
+   "dur": 3.169,
+   "syllablesPerSec": 6.94
+  }
+ ]
+}

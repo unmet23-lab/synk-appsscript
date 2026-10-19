@@ -48,9 +48,9 @@ for (const file of ['SYNKSans-ui.woff2', 'SYNKSans-rest.woff2', 'SYNKArrow.woff2
 // 플랫폼 카드(235px)·상세(453px)에는 800px 사본이면 고해상도 화면에서도 같아 보인다(168KB→99KB).
 output('assets/path-vr-felt.webp', fs.readFileSync(path.join(sourceRoot, 'experiences/path-vr/assets/path-vr-felt-800.webp')));
 output('member-insight.css', fs.readFileSync(path.join(sourceRoot, 'desktop/renderer/member-insight.css')));
-for (const file of ['studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
-// 회원 혜택 그림 세 장은 웹에서 보이는 크기에 맞춘 판이다(이름·형식 그대로, 데스크톱 앱은 원본을 쓴다).
-for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', file)));
+for (const file of ['wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
+// 회원 혜택 포스터 물건은 웹에서 가장 크게 보이는 크기에 맞춘 판이다(이름은 데스크톱 앱과 같고, 데스크톱 앱은 원본을 쓴다).
+for (const id of ['gift', 'insight', 'subscriptions', 'care', 'fortune']) output(`assets/member/benefit-${id}.webp`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', `benefit-${id}.webp`)));
 for (const file of ['laptop-felt.webp', 'sticker-search.webp', 'sticker-person.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/마케팅/맞춤도구/assets', file)));
 output('assets/synk-logo.svg', fs.readFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg')));
 // 다운로드 화면 「플랫폼」 포스터의 흰 펠트 synk(홈페이지 다운로드 창·설치 창과 같은 그림).

@@ -10668,7 +10668,7 @@ var require_game_browser = __commonJS({
 });
 
 // experiences/synk-account/src/core.mjs
-var PRODUCTS = Object.freeze({ platform: "SYNK \uD50C\uB7AB\uD3FC", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK \uD50C\uB808\uC800", path: "SYNK PATH", "path-travel": "SYNK PATH \uC5EC\uD589", rehearsal: "\uC911\uC694\uD55C \uB300\uD654 \uB9AC\uD5C8\uC124", "family-album": "\uAC00\uC871 \uC774\uC57C\uAE30 \uC568\uBC94" });
+var PRODUCTS = Object.freeze({ platform: "SYNK \uD50C\uB7AB\uD3FC", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK \uD50C\uB808\uC800", path: "SYNK PATH", "path-travel": "SYNK PATH \uC5EC\uD589" });
 var nativeSchemes = /* @__PURE__ */ new Set(["synktalk:", "im.synk.platform:", "im.synk.world:", "im.synk.messenger:", "im.synk.care:"]);
 function callbackUrl(value) {
   const url = new URL(value);
@@ -10918,7 +10918,7 @@ function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
     }
   };
 }
-var PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/", rehearsal: "https://synk.im/rehearsal/" });
+var PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product=world&play=learning-hub", care: "https://synk.im/care/", fortune: "https://synk.im/fortune/" });
 
 // experiences/synk-world-app/world-account.mjs
 var import_account_client = __toESM(require_account_client(), 1);

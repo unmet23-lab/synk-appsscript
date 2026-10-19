@@ -22,6 +22,16 @@ function fixture(t){
   return {directory,store,service,admin,member,other,post,job,time};
 }
 
+test('observed seven-day posts use permitted public API inventory and stay separate from Workspace jobs',t=>{
+ const f=fixture(t),c=f.store.get('channels','a');f.store.put('channels','a',{...c,lastCollectedAt:f.time});
+ const row={channelId:'a',source:'api:facebook',publishedAt:'2026-10-14T10:00:00Z',expiresAt:null,unavailableAt:null};
+ for(const [id,extra]of [['visible',{}],['hidden',{unavailableAt:f.time}],['expired',{expiresAt:'2026-10-14T00:00:00Z'}],['future',{publishedAt:'2026-10-16T00:00:00Z'}],['old',{publishedAt:'2026-10-01T00:00:00Z'}],['other',{channelId:'b'}],['manual',{source:'manual'}]])f.store.put('posts',id,{...row,...extra,id});
+ const p=f.post('test');f.job('test-job',p,{status:'published',publishedAt:f.time});
+ let page=f.service.workspace(f.member,{pageSize:50,section:'overview'});assert.equal(page.observed.published7d,1);assert.equal(page.summary.jobs.published7d,1);assert.equal(page.observed.channelsTotal,1);assert.equal(page.observed.channelsObserved,1);
+ f.store.put('posts','second',{...row,id:'second'});page=f.service.workspace(f.member,{pageSize:50,section:'overview'});assert.equal(page.observed.published7d,2,'API inventory is not hidden by the Workspace metadata cache');
+ f.store.put('channels','a',c);assert.equal(f.service.workspace(f.member,{pageSize:50,section:'overview'}).observed.published7d,null,'not observed is not zero');
+});
+
 test('keyset pages keep tied dates complete without duplicate IDs and independently bound bodies',t=>{
   const f=fixture(t);for(let i=0;i<137;i++){const p=f.post('p'+String(i).padStart(3,'0'));f.job('j'+String(i).padStart(3,'0'),p);}
   const seenPosts=[],seenJobs=[];let postCursor,jobCursor,rounds=0;

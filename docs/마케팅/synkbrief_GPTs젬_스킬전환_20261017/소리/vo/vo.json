@@ -1,0 +1,88 @@
+{
+ "voice": {
+  "name": "범수",
+  "id": "tc_5c3c52cb5827e00008dd7f3b"
+ },
+ "settings": {
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017
+ },
+ "read": "지피티에스",
+ "lines": [
+  {
+   "id": "a01",
+   "text": "지피티에스랑 젬, 만들어 두셨죠? 올해 둘 다 사라집니다.",
+   "dur": 3.084,
+   "syllablesPerSec": 7.13
+  },
+  {
+   "id": "c01",
+   "text": "알아서 옮겨 주겠지 싶죠? 지피티에스는 아닙니다.",
+   "dur": 2.594,
+   "syllablesPerSec": 7.71
+  },
+  {
+   "id": "a02",
+   "text": "그럼 만들어 둔 건, 알아서 옮겨질까요?",
+   "dur": 2.174,
+   "syllablesPerSec": 6.9
+  },
+  {
+   "id": "c02",
+   "text": "그럼, 제미나이 젬은요?",
+   "dur": 1.323,
+   "syllablesPerSec": 6.8
+  },
+  {
+   "id": "v03",
+   "text": "젬은, 네. 십일월 십칠일부터, 알아서 옮겨지기 시작해요.",
+   "dur": 3.415,
+   "syllablesPerSec": 6.44
+  },
+  {
+   "id": "v04",
+   "text": "지피티에스는 아니에요. 십이월 십일일 전에, 직접 옮겨야 해요.",
+   "dur": 3.733,
+   "syllablesPerSec": 6.7
+  },
+  {
+   "id": "v05",
+   "text": "안 옮기면, 그날부터 못 열어요.",
+   "dur": 1.997,
+   "syllablesPerSec": 6.01
+  },
+  {
+   "id": "v06",
+   "text": "남이 만든 지피티는, 만든 사람이 옮겨서 다시 알려 줘야 해요.",
+   "dur": 3.237,
+   "syllablesPerSec": 7.41
+  },
+  {
+   "id": "v07",
+   "text": "대화 기록은 남아요. 하지만 게시 안 한 수정, 외부 연결, 공유 설정은 안 따라와요.",
+   "dur": 4.659,
+   "syllablesPerSec": 6.65
+  },
+  {
+   "id": "v08",
+   "text": "옮기기 전, 자주 쓰던 질문 세 개를 적어 두고, 옮긴 뒤 비교하세요.",
+   "dur": 3.803,
+   "syllablesPerSec": 6.57
+  },
+  {
+   "id": "v09",
+   "text": "내 날짜와 할 일은, 프로필 링크에서 일 분이면 나와요.",
+   "dur": 3.298,
+   "syllablesPerSec": 6.37
+  },
+  {
+   "id": "v10",
+   "text": "몇 개나 만들어 두셨어요?",
+   "dur": 1.22,
+   "syllablesPerSec": 8.19
+  }
+ ]
+}

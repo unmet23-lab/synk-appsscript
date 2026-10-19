@@ -2,11 +2,36 @@
 
 > 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
 > 마지막 확인: 2026-10-17
-> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김
+> 쓴 AI: Claude Code(Claude Opus 5.5) — 10-02~10-17 Claude 메모에서 옮김 · 클라우드 세션(리눅스) 10-17 더함 · Claude Code(Claude Opus 5.5) 10-18 결정 표 행 다시 쌓기
 
 SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더·같은 git 인덱스를 함께 쓴다. 여기서 git을 쓸 때 남의 작업을 되돌리거나 내 커밋이 사라진 함정이다. 틀은 [README](README.md)를 따른다.
 
 ## 절차 · 공용 작업본에서 내 것만 커밋하기
+
+### GitHub deploy key의 응답에는 공개키 주석이 없다 (2026-10-18)
+- 증상: 읽기 전용 CI 키를 등록한 뒤 공개키 원문 전체를 대조하자 검증에 실패했다. 첫 키를 회수하고 임시 개인키 파일을 삭제한 뒤 원인을 확인했다.
+- 원인: `ssh-keygen`의 `.pub`에는 끝 주석이 있지만 GitHub API의 `key`는 알고리즘과 키 재료만 반환한다. 주석 차이는 키 불일치가 아니다.
+- 고침: 알고리즘·키 재료 두 필드를 대조하고 키 ID·제목·`read_only=true`를 별도로 확인한다. 개인키는 암호화된 Actions secret에 표준입력으로 등록하며 로그나 저장소에 넣지 않는다.
+- 다시 확인: Talk 전용 키 등록에서 키 재료·제목·읽기 권한 대조가 통과했다. API 응답의 주석 부재와 임시 개인키 파일 삭제도 확인했다. 실제 CI 결과는 [백엔드 검증 기록](../_ops/qa/backend-upgrade-20261018/result.json)의 `integration.ciSkipAudit`를 본다.
+
+### `worktree --no-checkout` 뒤 희소 경로만 설정하면 인덱스가 비어 있다 (2026-10-18)
+- 증상: 새 공개 작업본에 sparse-checkout 경로를 설정했지만 `status`가 기존 파일 전체의 스테이징 삭제를 표시했다.
+- 원인: `--no-checkout`으로 만든 비어 있는 인덱스에 HEAD를 읽지 않은 상태였다. 파일을 실제로 지운 결과가 아니었다.
+- 고침: 이 작업에서 새로 만든 빈 전용 작업본임을 확인한 뒤 `git read-tree --reset -u HEAD`로 HEAD와 희소 범위를 구체화했다. 공용 작업본이나 변경이 있는 폴더에는 이 복구를 쓰지 않는다.
+- 다시 확인: 공개 전 status가 비어 있고, `b45319c`의 변경 범위와 실제 공개 응답86개가 검토한 목록과 일치했다.
+
+공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
+
+1. `BASE=$(git rev-parse HEAD)`를 먼저 잡는다. 내용은 반드시 이 BASE에서 만든다.
+2. `export GIT_INDEX_FILE=<임시>/x.index; git read-tree $BASE`로 별도 인덱스를 만든다.
+3. 별도 인덱스에 올린다.
+   - 내 파일: 추적 여부부터 본다(`git cat-file -e $BASE:<경로>`). 그다음 `git add -- <경로>`.
+   - 남도 고치는 문서(AGENTS.md·결정·트랙·문서 지도 등): `git cat-file blob $BASE:<경로>`를 버퍼 그대로(줄 끝을 자르지 않고) 받아 내 줄만 더한 파일을 만든다. `git hash-object -w --no-filters <파일>`로 blob을 만들고(내용이 이미 LF라 바이트 그대로. `--no-filters`와 `--path=`는 같이 쓸 수 없다 — git 2.55가 「Can't use --path with --no-filters」로 거절, 10-17) `git update-index --cacheinfo 100644,<blob>,<경로>`로 올린다.
+4. `git write-tree` → `git commit-tree <트리> -p $BASE -F <메시지 파일>` → `git update-ref -m <설명> refs/heads/master <새 커밋> $BASE`. 그사이 HEAD가 움직였으면 update-ref가 실패하고 아무것도 바뀌지 않는다 — 1부터 다시 한다.
+5. 곧바로 `unset GIT_INDEX_FILE; git reset -q -- <내 경로들>`로 공용 인덱스의 그 경로만 새 HEAD에 맞춘다. 막히면 미루지 않는다(아래 「커밋 뒤 공용 인덱스」).
+6. 확인: `git diff --cached --name-only`에 내 경로가 없고, `git diff --stat $BASE <새 커밋>`의 줄 수가 내가 바꾼 양과 같다.
+
+보기 구현: [`tools/참고카드_커밋.js`](../../tools/참고카드_커밋.js)(잠금 확인 → 별도 인덱스 → `commit-tree` → CAS → 경로만 reset, 실패하면 가지를 되돌림).
 
 공용 인덱스(`git add` → `git commit`)로 커밋하지 않는다. 다른 세션이 올려 둔 스테이징이 내 커밋에 섞이고, 반대로 내 스테이징이 남의 커밋에 섞인다.
 
@@ -70,6 +95,18 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 연결 워크트리에서 범위 없이 쓴 값은 메인과 같이 쓰는 `.git/config`에 들어간다.
 - 고침: 워크트리는 `git -c core.autocrlf=false worktree add …`로 만들고, 계속 필요한 값은 `git -C <워크트리> config --worktree <키> <값>`으로 쓴다.
 - 다시 확인: 메인에서 `git config --show-origin --get-all core.autocrlf`가 시스템 gitconfig의 `true` 하나뿐이다.
+
+### 3방향 착지 스크립트가 그림을 글자로 다루면 줄끝을 바꿔 깨뜨린다
+- 증상: 10-18 계정판 착지 미리 계산에서 새 jpg 두 장이 「줄 0→783 · CR 0→1470」으로 나왔다. 그대로 썼다면 그림 두 장이 깨졌다.
+- 원인: 경로마다 `git show`를 utf8 글자로 읽고 「새 파일은 CRLF」 규칙으로 `\n`을 `\r\n`으로 바꾸는 착지 스크립트(공용 작업본 3방향 착지)가 바이너리를 가리지 않았다.
+- 고침: 그림·글꼴·소리(`.jpg·png·webp·gif·woff2·ttf·mp3·mp4·wav`)는 `git show`의 바이트를 그대로 쓰고, 작업본에 다른 판이 있으면 충돌로 멈춘다. 쓰기 전에 합친 결과를 폴더로 꺼내 작업본과 diff해 내 줄만 더해졌는지 본다.
+- 다시 확인: 착지 뒤 `cmp <(git show master:<그림>) <그림>`이 같다(10-18 두 장 통과).
+
+### `tools/결정.js --추가`가 CRLF 결정 표에 LF 줄을 넣는다
+- 증상: 결정을 넣은 뒤 git이 「LF will be replaced by CRLF」를 경고했고, 결정 표에서 LF만인 줄이 1개였다(10-18).
+- 원인: 도구가 새 표 줄을 `\n`으로 끼운다. 작업본(`core.autocrlf true`)은 CRLF라 그 한 줄만 줄끝이 섞인다.
+- 고침: 넣은 뒤 파일 전체를 CRLF로 맞춘다(`t.replace(/\r\n/g,'\n').replace(/\n/g,'\r\n')`를 임시 파일 → rename). 도구 자체를 고치는 건 따로 할 일이다.
+- 다시 확인: `(t.match(/(^|[^\r])\n/g)||[]).length`가 0이다.
 
 ## index.lock
 
@@ -173,6 +210,30 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 억지로 합치지 않는다. `HEAD..origin/master`의 커밋마다 바꾼 경로가 로컬 트리와 같은지 보고, 하나라도 다르면 로컬 병합은 하지 않고 그대로 둔다(그 커밋을 올린 세션이 자기 병합 때 합치거나, 위 항목의 3방향 절차로 따로 맞춘다). 내 내용은 로컬의 원래 커밋에 이미 있으니 잃는 것은 없다.
 - 다시 확인: `for c in $(git rev-list HEAD..origin/master); do git diff-tree --no-commit-id --name-only -r $c; done`로 나온 경로마다 `git rev-parse origin/master:<경로>`와 `git rev-parse HEAD:<경로>`가 같은지 본다.
 
+### `restack.py --renumber`로 번호를 바꾸면 그 줄을 다시 고친 다음 커밋이 실패한다
+- 증상: 10-18 회원 혜택 커밋 8개를 `--renumber=`(로컬 번호 셋)으로 다시 쌓는데, 앞 커밋이 QA README에 적은 로컬 번호를 새 번호로 바꾼 뒤 같은 줄을 고친 다음 커밋이 「replace 묶음이 0곳」으로 실패했다. 트랙은 다섯 커밋 모두 실패했다.
+- 원인: 지금 판(앞에서 쌓은 것)은 새 번호인데 다음 커밋의 부모·자기 판은 옛 번호라 그 줄이 서로 다르다. 트랙은 그 위에 다른 세션의 미푸시 문장이 줄마다 섞여 origin 판과 로컬 판의 줄이 아예 다르다.
+- 고침: 3방향 전에 부모·자기 판에도 같은 번호 바꾸기를 먼저 한다(`merge3` 첫 줄에서 두 blob에 `renum` 적용). 이미 origin에 다른 번호로 올라간 로컬 커밋 번호(10-18 `47a1d1f60`으로 올라간 바탕 커밋)도 같이 바꾼다(`--map=옛:새`). 트랙은 `--skip=docs/_ops/트랙.md`로 커밋별 이식에서 빼고, 마지막에 origin 판의 그 줄에 내 문장만 정확히 한 번 바꾸는 커밋을 얹는다(바뀐 줄 수가 맞는지 확인). 로컬 병합은 origin 판으로 덮지 않고 「로컬 트리 + 번호 문자열 바꾸기」로 만든다. 공용 `.tmp/push-mine-20261013/restack.py`에는 아직 이 셋이 없다(10-18은 세션 사본으로 했다).
+- 다시 확인: 올린 머리에서 `git grep <옛 번호>`가 0, 올린 트리를 풀어 관련 시험 통과, 로컬 병합 전후 차이가 번호 줄뿐이다(10-18: origin `b79545629..b5ffa068f`, 로컬 병합 `659ea4d03` 7파일 8줄).
+
+### 결정 표에 행을 더한 커밋을 다시 쌓으면 `restack.py`가 「끼울 자리 못 찾음」으로 멈춘다
+- 증상: 10-18 결정 표에 세 행을 더한 커밋(`add77ba8c`)을 `restack.py --commits=add77ba8c --renumber=`로 다시 쌓았는데, 결정 표만 「끼울 자리 못 찾음: '| 2026-10-17 | 확정 | [보안 · talk 운영 반영 …'」(merge-file 충돌 2)로 빠졌다. 나머지 문서 셋은 merge-file·transplant로 됐다.
+- 원인: 내 행 앞뒤의 문맥 행이 다른 세션의 로컬 전용 커밋이 넣은 행이라 origin 판에는 없다. 결정 표는 맨 위에 행이 계속 끼어서 로컬 판과 origin 판의 행 순서도 다르다.
+- 고침: 결정 표만 origin 판에 내 행을 직접 끼운다. 닻은 「내 판에서 내 행 다음에 오는 행 중 origin 판에도 있는 첫 행」이고, 내 판에서 표 맨 위 행이면 구분줄 바로 다음이다(`결정.js --추가`와 같은 자리). `.tmp/push-mine-20261013/restack_결정행.js <restack 머리> <내 커밋> --out=<결과> [--push]`가 restack 머리에 결정 표만 채워 같은 메시지·작성자로 다시 만든다. 이 도구의 결과 파일에는 `renumber.files`가 있어 `merge_local.py --res=<결과>`가 그대로 읽는다. restack.py 결과는 번호를 안 바꾸면 `renumber`가 `{}`여서 merge_local.py 9행 `res['renumber']['files']`에서 KeyError가 난다(10-18 코드로 확인).
+- 다시 확인: 도구가 경로마다 「origin → 올린 커밋」의 더한·지운 줄이 「부모 → 내 커밋」과 개수까지 같은지 보고, 저장소 검사를 돌린다. 올린 뒤에는 `git ls-remote`가 올린 커밋인지 본다. 10-18: origin `a99182659..886739c24`(13파일 +1732/−4, 원래 커밋과 같음), 로컬 병합 `b8b32d744`(트리는 로컬 그대로).
+
+### 로컬 master에 남의 미푸시 커밋이 있어 origin과 갈라졌다
+- 증상: 10-18 「로컬 master도 origin이랑 맞춰줘」 때 로컬만 69커밋(다른 세션 미푸시·이미 restack으로 올린 커밋의 옛 번호 포함), origin만 43커밋이었다. 빨리감기가 안 되고, master를 origin으로 옮기면 남의 미푸시 커밋이 가지에서 빠진다.
+- 원인: 세션마다 내 커밋만 origin에 다시 쌓아 올리고(restack) 로컬 병합은 「origin has other commits」로 건너뛰어, 같은 내용이 양쪽에 다른 번호로 쌓였다.
+- 고침: `.tmp/master-align-20261018/align_merge.py`(계획만 → `--go`). `git merge-tree --write-tree`로 병합 트리를 만들고 충돌은 경로별 규칙(한쪽이 다른 쪽을 품으면 그쪽, 표·장부는 합집합, 「쓴 AI」 머리말은 잇기)으로 푼다. 바뀐 경로마다 작업본이 옛 HEAD 그대로면 새 판(작업본 줄끝 유지), 남의 미커밋 수정이면 3방향, 3방향이 부딪히면 줄 단위(한쪽만 고친 줄은 그쪽, origin에만 있는 새 묶음은 작업본에 같은 글이 없을 때만, 둘 다 다르게 쓴 줄은 작업본 판을 두고 기록) → 바이트 백업 → 병합 커밋(부모 로컬·origin) → master CAS → 그 경로만 공용 인덱스. 결과 `c3222446d`(71경로, 작업본 = 병합본 62, 3방향 9).
+- 다시 확인: `git merge-base --is-ancestor origin/master master`, 3방향 파일마다 「백업의 작업본 고유 줄이 새 작업본에 다 있는지」(머리말을 이은 줄은 글이 들어 있는지). 둘 다 다르게 쓴 줄(10-18: 트랙 「자동화 3종 후속」)은 HEAD에 origin 판이 있으니 그 줄 주인 세션이 커밋 전에 합쳐야 한다.
+
+### `restack.py`가 통과해도 끼운 줄 차례가 로컬과 다를 수 있다
+- 증상: 10-18 저녁 내 커밋 21개를 다시 쌓을 때, 트랙 계정판 줄은 다섯 커밋 모두 「replace 묶음이 0곳」으로 멈췄다. 통과한 결정 표 두 행과 AI_CLI 한 절은 남이 그사이 origin에 먼저 올린 행·절보다 위에 끼워졌다. 로컬에서는 그 아래에 있었고, 줄 개수 검사는 통과했다.
+- 원인: 끼울 자리를 내 커밋 부모 판의 앞뒤 줄로만 찾는다. 남이 나중에 올린 행은 부모 판에 없어서 내 행이 그 위(표 맨 위)로 들어간다. 줄 개수 검사는 차례를 보지 않는다. 트랙 줄은 origin 판에 다른 커밋 문장이 먼저 들어가 있어 줄째로는 찾지 못한다.
+- 고침: `.tmp/push-mine-20261013/restack_close.py`를 쓴다. 끼울 묶음이 로컬 master 판에 한 번 있으면, 로컬에서 그 위로 올라가며 origin에도 있는 첫 줄을 찾아 그 뒤에 끼운다. 바꿀 줄이 origin 판에 없으면 머리(앞 40자)가 같은 줄 하나에 문장 단위로 옮기고 문장 개수로 검사한다. `verify_close.py`는 경로마다 올릴 판에만 있는 줄이 origin 바탕에 있던 줄인지, 바탕에 없던 내 줄이 로컬과 다른 자리에 있는지 본다. `push_close.py --commits=… [--tests=…]`가 쌓기 → 대조 → 저장소 검사 → 올릴 트리 그대로 시험 → 빨리감기 push를 한 번에 한다. origin이 그새 움직이면 git이 push를 거절하니 다시 돌린다.
+- 다시 확인: 10-18 origin `4aa8622f9..24791684c`(21커밋·102파일). 대조에서 남은 차이는 origin과 로컬에서 남의 결정 행 두 개의 차례가 다른 것뿐이었고, 올릴 트리를 풀어 돌린 구독·혜택 시험 52개가 통과했다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
@@ -206,3 +267,21 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 경로를 주지 않으면 모든 경로의 바뀐 blob을 읽는다(`-S`는 내용 비교, 이름 바뀜 탐지도 내용을 읽는다). 받지 않은 큰 blob에서 멈춘다. 둘 중 어느 쪽이 먼저 막혔는지는 가르지 않았다.
 - 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
 - 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.
+
+### 생성 지도의 원천 해시가 CRLF 작업본과 리눅스에서 다르다
+- 증상: SNS 지도 시험(`verify-map`·`engagement/server`)이 리눅스 클론에서 원천 5개가 「바뀜」이라고 했다. 실제로 내용이 바뀐 것은 3개였다(10-17 클라우드).
+- 원인: 지도 생성기가 Windows CRLF 작업본의 바이트로 해시를 쟀다. 같은 내용이 리눅스 체크아웃에서는 LF라 해시가 다르다.
+- 고침: 원천 해시는 CRLF를 LF로 맞춘 바이트로 잰다(`build-map.mjs`의 `sourceHash`). 다른 생성 스냅샷도 같은 방식으로 잰다.
+- 다시 확인: 리눅스 클론에서 `node --test docs/마케팅/온라인마케팅지도/verify-map.test.mjs`가 해시 시험을 통과한다.
+
+### 다른 가지에서 들여온 생성 사본이 사본 대조 시험에서 어긋난다
+- 증상: 병합 안 된 codex 가지의 `experiences/word-magic/kit/` 사본을 그대로 가져오자 `play-common/kit` 시험이 「사본이 원본과 같다」에서 실패했다(10-17).
+- 원인: 그 가지의 사본은 CRLF로 커밋돼 있어 생성기 출력(LF)과 바이트가 달랐다. 사본은 생성기 결과라 가지마다 낡을 수도 있다.
+- 고침: 생성 사본(`collection.js`·`kit/` 등)은 가져오지 말고 정본 생성기(`node experiences/play-common/build-kit.mjs`, `build-collection.mjs`)로 다시 만든다.
+- 다시 확인: `git ls-files --eol experiences/word-magic/kit | grep -c 'i/crlf'`가 0이다.
+
+### PC에만 있는 파일을 읽는 시험이 클라우드 클론에서 실패한다
+- 증상: 클라우드 클론에서 `미니게임_목소리`(voice-request.json), `learning-hub/server`(입문 게임 파일), `path-travel-server`(계획 화면 파일)가 404·ENOENT로 실패했다(10-17).
+- 원인: 10-14 「pending changes」 일괄 커밋들이 바뀐 파일이 import하는 새 파일만 넣어, 시험이 부르는 파일 일부가 PC 작업본에만 남았다.
+- 고침: `git log --all --oneline -- <경로>`로 origin의 다른 가지에 있는지 먼저 찾는다(입문 게임 277개는 `origin/codex/beginner-games-finish-20261010`에 있었다). 어디에도 없으면 PC에서 커밋한다(path-travel 계획 화면 8개·장소 사진 13장).
+- 다시 확인: PC 작업본에서 `git status --short experiences/path-travel`이 비어 있다.

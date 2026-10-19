@@ -145,15 +145,15 @@
 
 /* ── 계기판 ── */
 :root .synk-workspace .sw-workspace .sw-meter{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 34px;border-block:1px solid var(--sw-line-2)}
-:root .synk-workspace .sw-workspace .sw-meter>button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;padding:16px 18px 18px;border:0;border-left:1px solid var(--sw-line);background:none;text-align:left;cursor:pointer;transition:background .16s var(--sw-ease)}
-:root .synk-workspace .sw-workspace .sw-meter>button:first-child{border-left:0;padding-left:2px}
-:root .synk-workspace .sw-workspace .sw-meter>button:hover{background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-meter>:is(button,a){position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;padding:16px 18px 18px;border:0;border-left:1px solid var(--sw-line);background:none;text-align:left;cursor:pointer;transition:background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-meter>:is(button,a):first-child{border-left:0;padding-left:2px}
+:root .synk-workspace .sw-workspace .sw-meter>:is(button,a):hover{background:var(--sw-paper-2)}
 :root .synk-workspace .sw-workspace .sw-meter span{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:var(--w-label);color:var(--sw-ink-3);white-space:nowrap}
 :root .synk-workspace .sw-workspace .sw-meter [data-tone=alert] span::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-coral);box-shadow:0 0 0 3px rgba(249,104,89,.18)}
 :root .synk-workspace .sw-workspace .sw-meter [data-tone=wait] span::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-butter);box-shadow:0 0 0 3px rgba(245,196,69,.2)}
 :root .synk-workspace .sw-workspace .sw-meter strong{font-size:34px;line-height:1;font-weight:var(--w-title);letter-spacing:-.03em;color:var(--sw-ink)}
-:root .synk-workspace .sw-workspace .sw-meter>button::after{content:'';position:absolute;right:14px;top:16px;width:14px;height:14px;background:var(--sw-arrow) center/14px no-repeat;opacity:0;transition:opacity .16s var(--sw-ease)}
-:root .synk-workspace .sw-workspace .sw-meter>button:hover::after{opacity:.6}
+:root .synk-workspace .sw-workspace .sw-meter>:is(button,a)::after{content:'';position:absolute;right:14px;top:16px;width:14px;height:14px;background:var(--sw-arrow) center/14px no-repeat;opacity:0;transition:opacity .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-meter>:is(button,a):hover::after{opacity:.6}
 
 /* ── 운영 현황 ── */
 :root .synk-workspace .sw-workspace .sw-overview{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 36px;align-items:start}
@@ -543,8 +543,8 @@
   :root .synk-workspace .sw-workspace .sw-poster-word{font-size:84px}
   :root .synk-workspace .sw-workspace .sw-poster-art{width:150px;height:130px;bottom:12px}
   :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(3,minmax(0,1fr))}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(4){border-left:0;padding-left:2px}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n+4){border-top:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(4){border-left:0;padding-left:2px}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(n+4){border-top:1px solid var(--sw-line)}
   :root .synk-workspace .sw-workspace .sw-calendar-day{min-height:104px;padding:6px 4px}
   :root .synk-workspace .sw-workspace .sw-calendar-meta i{display:none}
 }
@@ -560,11 +560,11 @@
   :root .synk-workspace .sw-workspace .sw-poster-word{left:12px;font-size:64px}
   :root .synk-workspace .sw-workspace .sw-poster-art,:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster] .sw-poster-art{right:10px;bottom:10px;width:112px;height:100px}
   :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(2,minmax(0,1fr))}
-  :root .synk-workspace .sw-workspace .sw-meter>button{padding:14px 12px 14px 14px}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(4){border-left:1px solid var(--sw-line);padding-left:14px}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(odd){border-left:0;padding-left:2px}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n+3){border-top:1px solid var(--sw-line)}
-  :root .synk-workspace .sw-workspace .sw-meter>button:last-child:nth-child(odd){grid-column:1/-1}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a){padding:14px 12px 14px 14px}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(4){border-left:1px solid var(--sw-line);padding-left:14px}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(odd){border-left:0;padding-left:2px}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(n+3){border-top:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):last-child:nth-child(odd){grid-column:1/-1}
   :root .synk-workspace .sw-workspace .sw-meter strong{font-size:28px}
   :root .synk-workspace .sw-workspace .sw-fields{grid-template-columns:minmax(0,1fr)}
   :root .synk-workspace .sw-workspace .sw-job{padding:14px}
@@ -612,7 +612,7 @@
   :root .synk-workspace .sw-workspace .sw-error{flex-direction:column;align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){:root .synk-workspace .sw-workspace *{transition:none!important;scroll-behavior:auto!important}}
-@media(forced-colors:active){:root .synk-workspace .sw-workspace :is(.sw-job,.sw-badge,.sw-nav button,.sw-calendar-day,.sw-calendar-event,.sw-meter>button,.sw-account-chip>span,.sw-poster){border:1px solid CanvasText}:root .synk-workspace .sw-workspace .btn.primary{background:ButtonFace!important;color:ButtonText}}
+@media(forced-colors:active){:root .synk-workspace .sw-workspace :is(.sw-job,.sw-badge,.sw-nav button,.sw-calendar-day,.sw-calendar-event,.sw-meter>:is(button,a),.sw-account-chip>span,.sw-poster){border:1px solid CanvasText}:root .synk-workspace .sw-workspace .btn.primary{background:ButtonFace!important;color:ButtonText}}
 
 /* ── 2차 다듬기 ── */
 :root .synk-workspace .sw-workspace .sw-account-card>header{grid-template-columns:auto minmax(0,1fr)}
@@ -808,12 +808,12 @@
   :root .synk-workspace .sw-workspace .sw-poster-word{font-size:58px}
   :root .synk-workspace .sw-workspace .sw-poster-art,:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster] .sw-poster-art{width:100px;height:88px}
   :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:26px}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(5){display:none}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n){grid-column:auto;padding:12px 4px 12px 10px;border-top:0;border-left:1px solid var(--sw-line)}
-  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n):first-child{padding-left:0;border-left:0}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(5){display:none}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(n){grid-column:auto;padding:12px 4px 12px 10px;border-top:0;border-left:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a):nth-child(n):first-child{padding-left:0;border-left:0}
   :root .synk-workspace .sw-workspace .sw-meter span{gap:5px;font-size:13px;line-height:1.25;white-space:normal;word-break:keep-all}
   :root .synk-workspace .sw-workspace .sw-meter strong{font-size:24px}
-  :root .synk-workspace .sw-workspace .sw-meter>button::after{content:none}
+  :root .synk-workspace .sw-workspace .sw-meter>:is(button,a)::after{content:none}
   :root .synk-workspace .sw-workspace div.sw-account-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
   :root .synk-workspace .sw-workspace .sw-account-chip>span{min-height:48px;padding:7px 10px 7px 8px;gap:8px;border-radius:14px}
   :root .synk-workspace .sw-workspace .sw-account-chip small{display:none}
@@ -949,3 +949,5 @@
 :root .synk-workspace .sw-workspace .sw-health-details summary::-webkit-details-marker{display:none}
 :root .synk-workspace .sw-workspace .sw-health-details summary::before{content:'';flex:none;width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
 :root .synk-workspace .sw-workspace .sw-health-details details[open]>summary::before{transform:none}
+
+:root .synk-workspace .sw-workspace .sw-meter>a{text-decoration:none;color:inherit}

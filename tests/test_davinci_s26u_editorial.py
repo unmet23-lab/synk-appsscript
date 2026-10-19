@@ -100,17 +100,28 @@ class EditorialTests(unittest.TestCase):
         self.assertTrue(report["failures"])
 
     def test_reference_copy_is_versioned_and_protects_modified_copy(self):
-        source = workflow.editorial_guide_source()
         with tempfile.TemporaryDirectory(prefix="synk-editorial-test-") as temp:
-            first = workflow.preserve_editorial_guide(Path(temp), source)
-            second = workflow.preserve_editorial_guide(Path(temp), source)
+            # The guide is optional since the 09-18 docs reset; the copy rules are checked with a test guide.
+            source = Path(temp) / workflow.EDITORIAL_GUIDE
+            source.write_text("# test cut-rhythm guide\n", encoding="utf-8")
+            work = Path(temp) / "work"
+            first = workflow.preserve_editorial_guide(work, source)
+            second = workflow.preserve_editorial_guide(work, source)
             self.assertEqual(first, second)
             destination = Path(first["path"])
             self.assertEqual(destination.read_bytes(), source.read_bytes())
             destination.write_text("user edit", encoding="utf-8")
             with self.assertRaises(workflow.SetupError):
-                workflow.preserve_editorial_guide(Path(temp), source)
+                workflow.preserve_editorial_guide(work, source)
             self.assertEqual(destination.read_text(encoding="utf-8"), "user edit")
+
+    def test_missing_guide_still_prepares_the_timeline(self):
+        guide = workflow.editorial_guide_source()
+        self.assertTrue(guide is None or guide.is_file())
+        working, report = workflow.prepare_editorial_timeline(Project(), Timeline(), None)
+        self.assertTrue(report["ready"])
+        self.assertIsNone(report["guide"])
+        self.assertNotIn("기준:", working.markers[1])
 
 
 if __name__ == "__main__":

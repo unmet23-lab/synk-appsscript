@@ -64,8 +64,10 @@ test('Gemini 안내는 스킬 기준: 회사·학교 계정 줄과 출처를 두
   const show = rec => V.result({ rec, answers: rec.answers, layout: 'guided', plan: null, checks: {}, feedbackGiven: null, content: C });
   const gemini = run({ freq: 'weekly', ai: { app: 'gemini', plan: 'free' } });
   const out = show(gemini);
-  assert.match(out.html, /회사·학교 계정이라 ‘스킬’이 안 보이면/);
-  assert.match(out.html, /11월 17일부터 스킬로/);
+  // 화면 글은 「·」 덩어리를 태그로 묶으니(시그널 keepDots, 10-18) 태그를 벗긴 글로 본다
+  const plain = out.html.replace(/<[^>]+>/g, '');
+  assert.match(plain, /회사·학교 계정이라 ‘스킬’이 안 보이면/);
+  assert.match(plain, /11월 17일부터 스킬로/);
   assert.match(out.texts.all, /※ 회사·학교 계정이라 ‘스킬’이 안 보이면/);
   for (const s of ['gg-skills', 'gg-skills-blog']) assert.ok(gemini.sourcesUsed.includes(s), `출처 ${s}`);
   assert.match(V.visual('names'), /<span>스킬<\/span>/);

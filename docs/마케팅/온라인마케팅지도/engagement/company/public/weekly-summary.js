@@ -91,5 +91,5 @@ document.addEventListener('click',async event=>{
   if(target.dataset.wksAction==='next')await wksLoad(wksShift(week,7));
 });
 document.addEventListener('change',event=>{if(event.target.matches?.('[data-wks-week]')&&state.user)void wksLoad(event.target.value);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)wksStopTimer();else if(wksVisible())weeklySummaryEnsure();});
+document.addEventListener('visibilitychange',()=>{if(typeof state==='undefined')return;if(document.hidden)wksStopTimer();else if(wksVisible())weeklySummaryEnsure();});
 document.addEventListener('toggle',event=>{if(!event.target.matches?.('.wks-more'))return;const id=event.target.closest?.('[data-wks-section]')?.dataset.wksSection;if(wksSectionIds.includes(id))weeklySummaryState.expanded[id]=event.target.open;},true);

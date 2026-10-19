@@ -11,7 +11,8 @@ const BASE='2026-10-11T00:00:00.000Z';
 
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-publication-workflow-api-'));let clock=BASE,calls=0;
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,clock:()=>clock,collector:async()=>{calls++;throw Error('external collection forbidden');}});
+  const postPerformanceFetch=async input=>{const url=new URL(input);assert.equal(url.origin,'https://www.googleapis.com');return Response.json({items:[{id:url.searchParams.get('id'),snippet:{channelId:'UCabcdefghijklmnopqrstuv',publishedAt:BASE,title:'합성 게시'},contentDetails:{duration:'PT30S'}}]});};
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,clock:()=>clock,postPerformanceFetch,collector:async()=>{calls++;throw Error('external collection forbidden');}});
   const address=await app.start(),base=`http://127.0.0.1:${address.port}`;
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(directory.includes('synk-publication-workflow-api-'));await rm(directory,{recursive:true,force:true});});
   const users=Object.fromEntries(['owner','other','viewer'].map(name=>[name,app.store.createUser({name,email:name+'@example.test',role:name==='viewer'?'viewer':'member'})]));
@@ -20,7 +21,8 @@ async function fixture(t){
     const response=await fetch(base+path,{method:input===undefined?'GET':'POST',headers:{...(user?{Cookie:'synk_company_session='+sessions[user]}:{}),...(input===undefined?{}:{Origin:app.origin,'Content-Type':'application/json','X-CSRF-Token':'workflow-test'})},...(input===undefined?{}:{body:JSON.stringify(input)})});
     return {status:response.status,data:await response.json(),headers:response.headers};
   }
-  for(const platform of ['youtube','instagram'])app.store.put('channels',platform,{id:platform,platform,displayName:platform,ownerIds:[users.owner.id],active:true});
+  for(const platform of ['youtube','instagram'])app.store.put('channels',platform,{id:platform,platform,externalId:platform==='youtube'?'UCabcdefghijklmnopqrstuv':'123456',displayName:platform,ownerIds:[users.owner.id],active:true});
+  app.store.setSecret('channel:youtube',{apiKey:'synthetic-lookup-key'});
   async function deliver(channels=['youtube-shorts','instagram-reels']){
     const configured=await request('/api/publication-inbox/settings',{active:true});assert.equal(configured.status,200);
     const video=join(directory,'final.mp4');await promisify(execFile)('ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=320x180:r=15','-t','0.4','-c:v','libx264','-pix_fmt','yuv420p','-y',video],{windowsHide:true,timeout:30000});
@@ -63,7 +65,7 @@ test('YouTube formats remain separate and invalid cross-platform or private pack
   assert.equal((await f.request('/api/post-performance',input)).status,400);
   assert.equal((await f.request('/api/post-performance',{...input,publicationFormat:'instagram-reels'})).status,400);
   assert.equal((await f.request('/api/post-performance',{...input,channelId:'instagram',url:'https://www.instagram.com/reel/ABC_123/'})).status,400);
-  assert.equal((await f.request('/api/post-performance',input,'other')).status,404);
+  assert.equal((await f.request('/api/post-performance',input,'other')).status,403);
   const added=await f.request('/api/post-performance',{...input,publicationFormat:'youtube-shorts'});assert.equal(added.status,201);
   const items=(await f.request('/api/publication-workflow')).data.items;assert.equal(items.length,1);assert.match(JSON.stringify(items),/youtube-video/);
   assert.equal((await f.request('/api/post-performance',{...input,publicationFormat:'youtube-video'})).status,409);

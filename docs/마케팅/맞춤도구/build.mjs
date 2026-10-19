@@ -30,13 +30,17 @@ const STICKERS = ['sticker-check.webp', 'sticker-envelope.webp', 'sticker-person
 const SHARED_ASSETS = ['brand-shift.webp', 'thread-shift.webp', 'felt-paper.webp', 'favicon-32.png', ...STICKERS];
 const TOOLS = {
   computer: { theme: 'scrapbook', out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
-  meeting: { theme: 'scrapbook', out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
+  // synkbrief 활용 「회의 메모를 회의록으로」(09-29). 10-18 스크랩북 → 시그널, 포스터 펠트 물건 12개(GPT 이미지 2.5, 청금석 판에 구워 오림). keep의 11쪽 PDF·연습 ZIP은 영상 속 자료라 바이트 그대로.
+  meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'meeting-art-intro.webp', 'meeting-art-meet.webp', 'meeting-art-record.webp', 'meeting-art-audio.webp', 'meeting-art-length.webp', 'meeting-art-ai.webp', 'meeting-art-freq.webp', 'meeting-art-share.webp', 'meeting-art-channel.webp', 'meeting-art-sensitive.webp', 'meeting-art-result.webp', 'meeting-art-save.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
   // synkbrief 뉴스 「카타나 써 봤습니다」(10-13). 시그널로 그린 첫 도구(10-13). 포스터 그림은 화면마다 내용을 설명하는 펠트 물건(GPT 이미지 2.5로 한 판에 구워 오림 — 클래퍼보드·주인공 후보·필름·사진 묶음·휴대폰과 모니터·코인 탑·자물쇠·체크 메모), 실제 요청 카드는 카타나 결과 장면.
   katana: { out: 'brief/katana', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'katana-art-intro.webp', 'katana-art-hero.webp', 'katana-art-style.webp', 'katana-art-input.webp', 'katana-art-where.webp', 'katana-art-quality.webp', 'katana-art-keep.webp', 'katana-art-result.webp', 'katana-ex-ad.webp', 'katana-ex-aura.webp'] },
-  // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
-  // 10-06 저녁: synk.im 홈페이지 디자인 언어(theme.css 머리말). hero-manual = 펠트 매뉴얼 오브젝트(docs/디자인/펠트부품/assets/builds),
-  // field-grain = synk.im 브랜드 면의 결, fb-badge-check = 고른 표시의 버터 펠트 배지.
-  manual: { theme: 'scrapbook', out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
+  // synkbrief 뉴스 「GPTs·젬, 올해 둘 다 사라집니다」(10-17). 카타나와 같은 시그널 틀. 포스터 그림은 화면마다 내용을 설명하는 펠트 물건
+  // (GPT 이미지 2.5로 한 판에 구워 오림 — 달력·보석과 말풍선 상자·열쇠·집과 회사와 학교·열린 상자·보석과 필름·체크 클립보드).
+  skills: { out: 'brief/skills', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'skills-art-intro.webp', 'skills-art-where.webp', 'skills-art-who.webp', 'skills-art-account.webp', 'skills-art-gpthas.webp', 'skills-art-gemhas.webp', 'skills-art-result.webp', 'skills-shot-migrate.webp', 'skills-shot-confirm.webp', 'skills-shot-confirm-action.webp', 'skills-shot-at.webp', 'skills-shot-private.webp', 'skills-shot-gems.webp', 'gemini-guide-5-slash.webp'] },
+  // yuhobuilds 허브(synk.im/builds/)의 첫 도구. outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
+  // 10-18 스크랩북(theme.css 검정·버터) → 시그널, 포스터 펠트 물건 7개(GPT 이미지 2.5, 청금석 판에 구워 오림). gpt-·gemini-guide = 넣어 두기 단계의 실제 앱 화면.
+  // hero-manual은 허브 첫 화면이 manual/assets/에서 읽으므로 그대로 싣는다.
+  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'hero-manual.webp', 'manual-art-intro.webp', 'manual-art-task.webp', 'manual-art-finish.webp', 'manual-art-checks.webp', 'manual-art-stops.webp', 'manual-art-ai.webp', 'manual-art-result.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');

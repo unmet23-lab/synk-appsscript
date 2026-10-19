@@ -141,7 +141,7 @@
       const words = chosen && chosen.presentation && account ? account.describe(chosen.presentation) : [];
       const accountNote = words.length ? `<p class="hint account-note">SYNK 계정에서 고른 설정을 따라요 · ${esc(words.join(' · '))} <button type="button" class="linkbtn" data-action="account">끊기</button></p>`
         : account && account.available() ? `<p class="hint account-note"><button type="button" class="linkbtn" data-action="account">SYNK 계정의 내 설정 불러오기</button> · 로그인해 고른 설정(도움 방식·설명 길이·글씨 크기)만 읽어 와요</p>` : '';
-      el.innerHTML = `<section class="intro fade-in"><div><p class="eyebrow">${esc(i.eyebrow)}</p><h1 id="q" tabindex="-1">${i.title}</h1><p class="lead">${esc(i.lead)}</p><ul class="meta">${i.meta.map(m => `<li>${keepDots(m)}</li>`).join('')}</ul><span class="start"><button type="button" class="btn primary" data-action="begin">${esc(i.start)} ${ICON.right}</button></span>${resume}${links}<p class="privacy">${esc(i.privacy)}</p>${accountNote}</div><div class="art" aria-hidden="true">${V.hero ? V.hero() : ''}</div></section>`;
+      el.innerHTML = `<section class="intro fade-in"><div><p class="eyebrow">${esc(i.eyebrow)}</p><h1 id="q" tabindex="-1">${i.title}</h1><p class="lead">${esc(i.lead)}</p><span class="start"><button type="button" class="btn primary" data-action="begin">${esc(i.start)} ${ICON.right}</button></span><ul class="meta">${i.meta.map(m => `<li>${keepDots(m)}</li>`).join('')}</ul>${resume}${links}<p class="privacy">${esc(i.privacy)}</p>${accountNote}</div><div class="art" aria-hidden="true">${V.hero ? V.hero() : ''}</div></section>`;
     }
     function forget() {
       mem.clear(); store.del(KEY);
@@ -172,7 +172,7 @@
       const ready = answered(s);
       const pickedTip = lastTip && lastTip.step === s.id ? lastTip.text : '';
       const aside = V.aside ? V.aside(state.answers, R, s) : '';
-      el.innerHTML = `<div class="stage fade-in"><div class="main"><div class="progress"><div class="meter" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${idx + 1}" aria-label="질문 진행"><i style="width:${Math.round(((idx + 1) / total) * 100)}%"></i></div><span>${idx + 1} / ${total}</span></div>${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ''}<h2 class="q" id="q" tabindex="-1">${esc(s.title)}</h2>${s.sub ? `<p class="q-sub">${keepDots(s.sub)}</p>` : ''}${opts}<div class="picked"${pickedTip ? '' : ' hidden'} aria-live="polite">${ICON.bulb}<p>${keepDots(pickedTip)}</p></div><div class="nav"><button type="button" class="btn ghost" data-action="back">${ICON.left} 이전</button><span class="grow"></span><button type="button" class="btn primary" data-action="next"${ready ? '' : ' disabled'}>${idx === total - 1 ? '결과 보기' : '다음'} ${ICON.right}</button></div>${multi ? '<p class="hint">여러 개를 고를 수 있어요.</p>' : ''}</div><aside class="aside">${tipHtml(s)}${aside ? `<div style="margin-top:18px">${aside}</div>` : ''}</aside></div>`;
+      el.innerHTML = `<div class="stage fade-in"><div class="main"><div class="progress"><div class="meter" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${idx + 1}" aria-label="질문 진행"><i style="width:${Math.round(((idx + 1) / total) * 100)}%"></i></div><span>${idx + 1} / ${total}</span></div>${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ''}<h2 class="q" id="q" tabindex="-1">${esc(s.title)}</h2>${s.sub ? `<p class="q-sub">${keepDots(s.sub)}</p>` : ''}${multi ? '<p class="hint multi-hint">여러 개를 고를 수 있어요.</p>' : ''}${opts}<div class="picked"${pickedTip ? '' : ' hidden'} aria-live="polite">${ICON.bulb}<p>${keepDots(pickedTip)}</p></div><div class="nav"><button type="button" class="btn ghost" data-action="back">${ICON.left} 이전</button><span class="grow"></span><button type="button" class="btn primary" data-action="next"${ready ? '' : ' disabled'}>${idx === total - 1 ? '결과 보기' : '다음'} ${ICON.right}</button></div></div><aside class="aside">${tipHtml(s)}${aside ? `<div style="margin-top:18px">${aside}</div>` : ''}</aside></div>`;
     }
 
     // 질문을 끝내고 결과에 도착했거나 공유 링크로 처음 열었을 때만 한 회차로 기록한다. 새로고침은 기억만 읽는다.
@@ -188,7 +188,10 @@
       }
       // 이 도구에서 분량 반응을 준 적이 없으면 SYNK 계정에서 고른 설명 길이를 따른다.
       const fromAccount = !(plan && plan.outcomeBasis && plan.outcomeBasis !== 'unobserved') && chosen && chosen.presentation && ACCOUNT_LAYOUT[chosen.presentation.explanation];
-      if (!layout) layout = fromAccount || (plan && plan.selected && plan.selected.id) || tool.defaultLayout || 'guided';
+      // 근거가 없는 첫 방문(unobserved)에 엔진이 고른 「보통 분량」보다 도구가 정한 처음 값을 따른다(skills 10-17: 처음엔 간단히).
+      // 「너무 많아요」·「더 자세히」 반응이 쌓이면(self_report·performance) 엔진의 선택이 이긴다.
+      const planned = plan && plan.selected && !(tool.defaultLayout && plan.outcomeBasis === 'unobserved') ? plan.selected.id : null;
+      if (!layout) layout = fromAccount || planned || tool.defaultLayout || 'guided';
       const out = V.result({ rec, answers: state.answers, layout, plan, tipsOn, checks: state.checks, feedbackGiven, content: C, rules: R });
       el.innerHTML = `<div class="stage single fade-in">${out.html}</div>`;
       el._texts = out.texts || {};
@@ -251,6 +254,10 @@
       const focusKey = s.type === 'group' ? `[data-field="${btn.closest('[data-field]').dataset.field}"] [data-opt="${id}"]` : `[data-opt="${id}"]`;
       render(false);
       const again = el.querySelector(focusKey); if (again) again.focus({ preventScroll: true });
+      // 고른 직후 이유 글이 휴대폰 아래 붙은 「이전·다음」에 걸쳐 가리면 보이는 데까지만 살짝 올린다(10-18 검수).
+      // 이유 글이 화면 밖 멀리 있으면(선택지가 긴 여러 개 고르기) 움직이지 않는다 — 고를 때마다 화면이 뛰면 고르던 자리를 잃는다.
+      const pk = tip && el.querySelector('.picked'), nav = el.querySelector('.main>.nav');
+      if (pk && nav) { const r = pk.getBoundingClientRect(), top = nav.getBoundingClientRect().top; if (r.top < innerHeight && r.bottom > top) window.scrollBy({ top: r.bottom - top + 12, behavior: reduced() ? 'auto' : 'smooth' }); }
       if (tip) say(tip);
     }
 

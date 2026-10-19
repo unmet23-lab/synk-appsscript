@@ -1,5 +1,5 @@
 'use strict';
-const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard}=require('electron');
+const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
@@ -23,6 +23,8 @@ const {createDownloadHandler}=require('./downloads.cjs');
 const {installDraftExitGuard}=require('./draft-exit.cjs');
 const {createPlatformTray}=require('./platform-tray.cjs');
 const {createDesktopPreferences}=require('./desktop-preferences.cjs');
+const {createCareNotifications,validPatch:validCareNotificationPatch}=require('./care-notifications.cjs');
+const {shouldNotify:careReminderDue}=require('./care-notification-model.cjs');
 const {createWindowPlacement}=require('./window-placement.cjs');
 const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
@@ -61,15 +63,30 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
+let careConfiguration=Promise.resolve();
+function configureCareNotifications(patch){
+  const expected=accountStatus();
+  const sameAccount=()=>{const current=accountStatus();return expected?.signedIn===true&&current?.signedIn===true&&expected.account?.synk_user_id===current.account?.synk_user_id&&expected.sessionGeneration===current.sessionGeneration;};
+  const operation=careConfiguration.then(async()=>{
+    if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
+    if(!validCareNotificationPatch(patch))return {ok:false,code:'INVALID_REQUEST'};
+    if(!sameAccount())return {ok:false,code:'AUTH_CHANGED'};
+    let previous;
+    if(patch.enabled===true){const status=await careNotifications.status();if(!sameAccount())return {ok:false,code:'AUTH_CHANGED'};if(!status.available||!status.signedIn)return {ok:false,code:'AUTH_REQUIRED'};previous=desktopPreferences.snapshot().preferences;const result=desktopPreferences.update({closeToTray:true,...(!previous.launchAtLogin?{launchAtLogin:true,startHidden:true}:{})});if(!result.ok)return result;}
+    const result=sameAccount()?await careNotifications.configure(patch):{ok:false,code:'AUTH_CHANGED'};
+    if(!result.ok&&previous)desktopPreferences.update({closeToTray:previous.closeToTray,launchAtLogin:previous.launchAtLogin,startHidden:previous.startHidden});
+    return result;
+  });careConfiguration=operation.catch(()=>{});return operation;
+}
 async function openAccountSignUp(){
   if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
   const state=accountStatus();
@@ -143,7 +160,7 @@ app.on('will-quit',event=>{
       else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
     });return;
   }
-  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
 });
 if(!app.requestSingleInstanceLock())app.quit();
 else {
@@ -220,6 +237,10 @@ function createWindow(){
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!pulseRequests)pulseRequests=createPulseRequests({clientId:runtime.clientId,getAccount:accountStatus,createSession:createPulseSession,createReviewWindow:openPulseReview});
+  if(runtime.clientId==='platform'&&!careNotifications){
+    careNotifications=createCareNotifications({directory:path.join(app.getPath('userData'),'CareNotifications'),safeStorage,getAccount:accountStatus,loadCare:()=>auth.accountRequest('careLoad',{}),shouldNotify:careReminderDue,Notification,icon:path.join(app.getAppPath(),'assets','platform.ico'),openCare:()=>shell.openExternal('https://synk.im/care/#synk-platform-account='+encodeURIComponent(accountStatus().account.synk_user_id)),enabled:!smoke,configFingerprint:authConfig?.fingerprint||'unconfigured',onChange:value=>sendDesktop('synk:care-notifications-changed',value)});
+    careNotifications.start();
+  }
   if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads')});
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
@@ -270,6 +291,9 @@ function createWindow(){
   const handlers={
     'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available()}),
     'synk:desktop-preferences':()=>desktopSnapshot(),
+    'synk:care-notifications-status':()=>isPlatform?careNotifications.status():{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:care-notifications-configure':configureCareNotifications,
+    'synk:care-notifications-test':()=>isPlatform&&!smoke?careNotifications.test():{ok:false,code:'LAUNCHER_ONLY'},
     'synk:update-status':()=>platformUpdate?.snapshot()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
     'synk:check-for-update':()=>platformUpdate?.checkForUpdate()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
     'synk:download-update':()=>platformUpdate?.downloadUpdate()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
@@ -293,7 +317,7 @@ function createWindow(){
     'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
     'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
-    'synk:subscriptions-check':()=>subscriptionCall(s=>s.check()),
+    'synk:subscriptions-check':ids=>subscriptionCall(s=>s.check(Array.isArray(ids)?{ids:ids.filter(id=>typeof id==='string')}:{})),
     'synk:subscriptions-use-existing':service=>subscriptionCall(s=>s.useExisting(service)),
     'synk:subscriptions-login':(service,options)=>subscriptionCall(s=>s.startLogin(service,{email:options?.email,console:options?.console===true})),
     'synk:subscriptions-code':(id,code)=>subscriptionCall(s=>s.submitCode(id,code)),
@@ -302,7 +326,7 @@ function createWindow(){
     'synk:subscriptions-install':service=>subscriptionCall(s=>s.openInstaller(service)),
     'synk:subscriptions-help':key=>subscriptionCall(s=>s.openHelp(key)),
     'synk:subscriptions-save':patch=>subscriptionCall(s=>s.save(patch)),
-    'synk:subscriptions-key':(service,key)=>subscriptionCall(s=>s.connectKey(service,key)),
+    'synk:subscriptions-key':(service,key,options)=>subscriptionCall(s=>s.connectKey(service,key,{replace:typeof options?.replace==='string'?options.replace:null})),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

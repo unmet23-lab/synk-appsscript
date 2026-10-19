@@ -4,30 +4,55 @@ const assert=require('node:assert/strict');
 
 const NOW=new Date(2026,9,17,10,0).getTime();
 const row=(extra)=>({id:'r-'+Math.random().toString(36).slice(2,8),service:'claude',source:'auto',label:'Claude',kind:'weekly',state:'ok',email:'member@example.com',price:null,currency:'KRW',billDay:null,credits:null,creditsAt:null,lowAt:null,resetDay:null,resetHour:null,resetMinute:null,usedUpAt:null,note:'',live:null,...extra});
+const tick=()=>new Promise(r=>setImmediate(r));
 
-test('only problems reach the top layer, ordered by urgency',async()=>{
-  const {attention}=await import('../renderer/subscriptions.mjs');
+test('each account lands in one state and each service recommends its roomiest confirmed account',async()=>{
+  const {accountState,serviceGroups,planName}=await import('../renderer/subscriptions.mjs');
+  // Claude Max는 등급까지(본체가 max_5x·max_20x로 준다), 같은 %면 20x를 먼저 추천한다.
+  assert.deepEqual([planName('max_20x'),planName('max_5x'),planName('max'),planName('prolite')],['Max 20x','Max 5x','Max','Pro Lite']);
+  const five=row({id:'five',email:'five@example.com',plan:'max_5x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}}),twenty=row({id:'twenty',email:'twenty@example.com',plan:'max_20x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}});
+  assert.equal(serviceGroups([five,twenty],NOW)[0].best.row.id,'twenty');
   const rows=[
-    row({label:'GPT',service:'gpt',email:'synk@example.com',resetDay:5,resetHour:17,resetMinute:4,usedUpAt:NOW-3600e3}),
-    row({live:{readAt:NOW,weekly:{usedPercent:93,resetsAt:NOW+2*864e5},session:{usedPercent:20,resetsAt:NOW+3600e3}}}),
-    row({service:'higgsfield',label:'Higgsfield',kind:'credit',live:{readAt:NOW,credits:0.22},credits:0.22,creditsAt:NOW}),
-    row({service:'suno',source:'manual',label:'Suno',kind:'credit',email:null,price:30,currency:'USD',billDay:new Date(NOW).getDate()+2,credits:2350,creditsAt:NOW}),
-    row({state:'needs-login',email:'old@example.com'}),
-    row({email:'calm@example.com',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+864e5}}}),
+    row({id:'out',email:'out@example.com',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+36*60e3},weekly:{usedPercent:51,resetsAt:NOW+115*3600e3}}}),
+    row({id:'low',email:'low@example.com',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:99,resetsAt:NOW+51*3600e3}}}),
+    row({id:'roomy',email:'roomy@example.com',plan:'max',live:{readAt:NOW,weekly:{usedPercent:78,resetsAt:NOW+44*3600e3}}}),
+    row({id:'login',email:'old@example.com',state:'needs-login',live:{readAt:NOW,weekly:{usedPercent:0,resetsAt:null}}}),
+    row({id:'err',email:'err@example.com',state:'error',stateMessage:'읽지 못했어요.',live:{readAt:NOW-3600e3,weekly:{usedPercent:10,resetsAt:NOW+864e5}}}),
+    row({id:'new',email:'new@example.com',live:null}),
+    row({id:'gpt-a',service:'gpt',label:'ChatGPT · Codex',email:'a@example.com',plan:'prolite',live:{readAt:NOW,weekly:{usedPercent:0,resetsAt:null}}}),
+    row({id:'gpt-b',service:'gpt',label:'ChatGPT · Codex',email:'b@example.com',plan:'pro',live:{readAt:NOW,weekly:{usedPercent:0,resetsAt:null}}}),
+    row({id:'h-low',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h1@example.com',live:{readAt:NOW,credits:0.22},credits:0.22,creditsAt:NOW}),
+    row({id:'h-ok',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h2@example.com',live:{readAt:NOW,credits:1026.84},credits:1026.84,creditsAt:NOW}),
+    row({id:'suno',service:'suno',source:'manual',label:'Suno',kind:'plan',email:null,price:30,currency:'USD',billDay:3}),
   ];
-  const items=attention(rows,NOW);
-  assert.deepEqual(items.map(i=>i.text.split(' · ')[0]),['다시 로그인 필요','소진','거의 소진','크레딧 부족','결제 D-2']);
-  assert.ok(!items.some(i=>i.text.includes('calm')));
-  // 5시간 한도를 다 쓴 계정은 「5시간 소진」과 풀리는 때로 올라온다.
-  const session=attention([row({email:'busy@example.com',live:{readAt:NOW,weekly:{usedPercent:51,resetsAt:NOW+4*864e5},session:{usedPercent:100,resetsAt:NOW+36*60e3}}})],NOW);
-  assert.deepEqual([session[0].text,session[0].level],['5시간 소진 · busy Claude · 36분 뒤 풀림',0]);
-  // 주간이 거의 다 찼어도 5시간을 다 썼으면 「지금 못 씀」이 먼저다.
-  const both=attention([row({email:'both@example.com',live:{readAt:NOW,weekly:{usedPercent:95,resetsAt:NOW+864e5},session:{usedPercent:100,resetsAt:NOW+3600e3}}})],NOW);
-  assert.equal(both[0].text,'5시간 소진 · both Claude · 1시간 뒤 풀림');
+  assert.deepEqual(rows.slice(0,6).map(r=>accountState(r,NOW).state),['out','low','ok','login','error','unknown']);
+  assert.equal(accountState(rows[0],NOW).unblock,NOW+36*60e3);
+  const groups=serviceGroups(rows,NOW);
+  // 월 구독만 넣은 Suno는 한도가 없어 한눈에 줄에 없다(요금·결제일에만 보인다).
+  assert.deepEqual(groups.map(g=>g.key),['claude','gpt','higgsfield']);
+  const claude=groups[0];
+  assert.deepEqual([claude.best.row.id,claude.usable.map(a=>a.row.id),claude.out.map(a=>a.row.id),claude.login.length,claude.error.length,claude.pending.length],['roomy',['roomy','low'],['out'],1,1,1]);
+  // 남은 %가 같으면 큰 요금제(Pro > Pro Lite)를 먼저 추천한다.
+  assert.equal(groups[1].best.row.id,'gpt-b');
+  // 크레딧은 부족한 계정을 「넉넉」에서 빼고, 가장 많이 남은 계정을 추천한다.
+  assert.deepEqual([groups[2].best.row.id,groups[2].ready.map(a=>a.row.id)],['h-ok',['h-ok']]);
+  // 이번 확인보다 12시간 넘게 오래된 값만 남은 계정은 「못 읽음」이다.
+  assert.equal(accountState(row({live:{readAt:NOW-13*3600e3,weekly:{usedPercent:5,resetsAt:NOW+864e5}}}),NOW,NOW).state,'error');
+  // 읽은 뒤 5시간 창이 풀린 계정은 「풀렸을 거예요」(추정)로 따로 두고, 확인한 값이 있으면 그쪽을 추천한다.
+  const passed=row({id:'passed',email:'p@example.com',live:{readAt:NOW-3*3600e3,session:{usedPercent:100,resetsAt:NOW-3600e3},weekly:{usedPercent:20,resetsAt:NOW+3*864e5}}});
+  const p=accountState(passed,NOW);
+  assert.deepEqual([p.state,p.projected,p.focus,p.left],['ok',NOW-3600e3,'weekly',80]);
+  const mixed=serviceGroups([passed,rows[2]],NOW)[0];
+  assert.deepEqual([mixed.best.row.id,mixed.projected.map(a=>a.row.id),mixed.ready.map(a=>a.row.id)],['roomy',['passed'],['roomy']]);
+  assert.equal(serviceGroups([passed],NOW)[0].best.row.id,'passed');
+  // 1%만 남은 확인값보다 창이 풀려 다시 찼을 계정을 먼저 추천하고, 거의 다 쓴 계정뿐이면 그 계정을 추천한다.
+  const almost=row({id:'almost',email:'almost@example.com',live:{readAt:NOW,weekly:{usedPercent:99,resetsAt:NOW+864e5}}});
+  assert.equal(serviceGroups([almost,passed],NOW)[0].best.row.id,'passed');
+  assert.equal(serviceGroups([almost,rows[0]],NOW)[0].best.row.id,'almost');
 });
 
-test('the limit rings follow whichever window has less left, and past windows count as full again',async()=>{
-  const {limitGauge,roomiest,gaugeLevel,leftPercent}=await import('../renderer/subscriptions.mjs');
+test('the limit follows whichever window has less left, and past windows count as full again',async()=>{
+  const {limitGauge,gaugeLevel,leftPercent,usedShown}=await import('../renderer/subscriptions.mjs');
   // 실제 계정판 세 상태(10-17): 5시간 소진 · 주간 99% · 여유.
   const out=row({id:'out',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+36*60e3},weekly:{usedPercent:51,resetsAt:NOW+115*3600e3}}});
   const low=row({id:'low',live:{readAt:NOW,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:99,resetsAt:NOW+51*3600e3}}});
@@ -36,59 +61,70 @@ test('the limit rings follow whichever window has less left, and past windows co
   assert.deepEqual([a.focus,a.left,a.resetsAt,gaugeLevel(a.session),gaugeLevel(a.weekly)],['session',0,NOW+36*60e3,'out','ok']);
   assert.deepEqual([b.focus,b.left,gaugeLevel(b.weekly),b.session.left],['weekly',1,'low',100]);
   assert.deepEqual([c.focus,c.left,c.session.left,c.session.resetsAt],['weekly',22,100,null]);
-  assert.equal(roomiest([out,low,roomy],NOW).id,'roomy');
-  // 다시 로그인이 필요한 계정은 숫자가 커도 뒤로 간다.
-  assert.equal(roomiest([{...roomy,state:'needs-login'},low],NOW).id,'low');
-  // 주간 창만 있는 계정(Codex)은 고리 하나, 크레딧·월 구독은 고리가 없다.
+  // 주간 창만 있는 계정(Codex)은 창 하나, 크레딧·월 구독은 한도 창이 없다.
   const gpt=limitGauge(row({service:'gpt',live:{readAt:NOW,weekly:{usedPercent:49,resetsAt:NOW+145*3600e3}}}),NOW);
   assert.deepEqual([gpt.session,gpt.focus,gpt.left],[null,'weekly',51]);
   assert.equal(limitGauge(row({kind:'credit',live:{credits:3}}),NOW),null);
-  // 직접 넣은 주간 구독은 「소진 표시」만 고리로 보인다.
+  // 직접 넣은 주간 구독은 「다 씀 표시」만 한도로 보인다.
   const manual=row({source:'manual',email:null,resetDay:5,resetHour:17,resetMinute:0,usedUpAt:NOW-3600e3});
   assert.deepEqual([limitGauge(manual,NOW).left,limitGauge({...manual,usedUpAt:null},NOW)],[0,null]);
   assert.deepEqual([leftPercent(99.6),leftPercent(0.5),leftPercent(48.7)],[0,99,51]);
+  // 화면의 쓴 %는 남은 %와 늘 합이 100이다(꽉 차면 다 씀과 같은 기준).
+  assert.deepEqual([usedShown(99.6),usedShown(0.5),usedShown(48.7),usedShown(0)],[100,1,49,0]);
 });
 
-test('the board draws one ring per service and rolls the number only when it first shows or changes',async()=>{
-  const prior={document:globalThis.document,matchMedia:globalThis.matchMedia,CSS:globalThis.CSS};
-  const drawn=[],rolledText=[];let reduced=false;
+test('the glance board shows one row per service and rolls each number only when it first shows or new values arrive',async()=>{
+  const prior={document:globalThis.document,matchMedia:globalThis.matchMedia,CSS:globalThis.CSS,setInterval:globalThis.setInterval};
+  const drawn=[];let reduced=false,everyMinute=null;
   globalThis.document={activeElement:null,hidden:false,documentElement:{dataset:{}},createDocumentFragment:()=>({append(){}}),createElement:()=>({style:{setProperty(){}},setAttribute(){},append(){}})};
   globalThis.matchMedia=()=>({matches:reduced});globalThis.CSS={escape:value=>String(value)};
+  globalThis.setInterval=fn=>{everyMinute=fn;return {unref(){}};};
   try{
     const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
     const fresh=Date.now();
-    const claude=[row({email:'out@example.com',live:{readAt:fresh,session:{usedPercent:100,resetsAt:fresh+36*60e3+30e3},weekly:{usedPercent:51,resetsAt:fresh+115*3600e3}}}),row({email:'roomy@example.com',live:{readAt:fresh,weekly:{usedPercent:78,resetsAt:fresh+44*3600e3+60e3}}})];
+    const claude=[row({email:'out@example.com',live:{readAt:fresh,session:{usedPercent:100,resetsAt:fresh+36*60e3+30e3},weekly:{usedPercent:51,resetsAt:fresh+115*3600e3}}}),row({email:'roomy@example.com',plan:'max',live:{readAt:fresh,weekly:{usedPercent:78,resetsAt:fresh+44*3600e3+60e3}}})];
     const gpt=row({service:'gpt',label:'ChatGPT · Codex',email:'gpt@example.com',live:{readAt:fresh,session:{usedPercent:0,resetsAt:null},weekly:{usedPercent:49,resetsAt:fresh+145*3600e3}}});
+    const gemini=row({service:'gemini',label:'Gemini',email:null,live:{readAt:fresh,weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null}}});
     const credit=row({service:'higgsfield',label:'Higgsfield',kind:'credit',live:{readAt:fresh,credits:1373},credits:1373,creditsAt:fresh});
-    let snapshot={ok:true,tools:{},rows:[...claude,gpt,credit],settings:{usdKrw:1400},check:{at:fresh,total:4,ok:4},login:null,checking:false};
+    let snapshot={ok:true,tools:{},rows:[...claude,gpt,gemini,credit],settings:{usdKrw:1400},check:{at:fresh,total:5,ok:5},login:null,checking:false};
     const listeners=[];
     const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
-    // 그려진 HTML에서 고리 숫자 칸을 찾아 가짜 요소로 돌려준다.
+    // 그려진 HTML에서 굴리는 숫자 칸을 찾아 가짜 요소로 돌려준다.
     const el={dataset:{},innerHTML:'',handlers:new Map(),addEventListener(name,cb){this.handlers.set(name,cb);},querySelector:()=>null,contains:()=>false,
-      querySelectorAll(){return [...this.innerHTML.matchAll(/data-roll="([^"]+)">(\d+)<small>/g)].map(([,key,value])=>({dataset:{roll:key},textContent:value+'%',childNodes:[],closest:()=>({classList:{add:name=>drawn.push(key+':'+name)}})}));}};
+      querySelectorAll(){return [...this.innerHTML.matchAll(/data-roll="([^"]+)">([\d,.]+)/g)].map(([,key,value])=>({dataset:{roll:key},textContent:value,childNodes:[],closest:()=>({classList:{add:name=>drawn.push(key+':'+name)}})}));}};
     const board=createSubscriptionsBoard({bridge});
     board.render(el,{signedIn:true,native:true});
-    await new Promise(r=>setImmediate(r));
-    // 주간 한도가 있는 서비스마다 고리 하나(가장 여유 있는 계정), 크레딧 서비스는 없다. 옛 막대는 없다.
-    assert.equal((el.innerHTML.match(/class="ms-meter /g)||[]).length,2);
-    assert.match(el.innerHTML,/<strong>roomy<\/strong><\/span><span class="ms-meter-note">계정 2개 중 가장 여유<\/span>/);
-    assert.match(el.innerHTML,/data-roll="m-claude">22<small>%<\/small><\/b><span>주간 남음<\/span>/);
-    assert.match(el.innerHTML,/data-roll="m-gpt">51<small>%/);assert.match(el.innerHTML,/주간 초기화까지 <b>1일 20시간<\/b>/);
-    assert.ok(!el.innerHTML.includes('ms-bar'));
-    // 다 남은 고리(아직 안 쓴 5시간)는 이음매 없는 닫힌 원이다(대시 없음).
-    assert.match(el.innerHTML,/<circle class="ms-arc" data-ring="session" data-level="ok" cx="60" cy="60" r="43" stroke-width="8" data-full\/>/);
-    // 서비스 줄은 「주간 한도」 구획이라 작은 고리와 글 모두 주간 기준이다.
-    assert.match(el.innerHTML,/<b>roomy<\/b> <span class="ms-gauge ms-gauge-mini" data-level="ok">.*?<\/span>주간 <b class="ms-num">22%<\/b> 남음/);
-    assert.deepEqual(drawn.sort(),['m-claude:is-drawing','m-gpt:is-drawing']);
-    // 1분마다 다시 그려도 값이 같으면 가만히 있다.
+    await tick();
+    // 서비스마다 한 줄: 추천 계정 이름, 개수 글, 덜 남은 창의 고리 하나.
+    assert.equal((el.innerHTML.match(/class="ms-svc /g)||[]).length,4);
+    assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name"><span>roomy<\/span><small>Max<\/small>/);
+    assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 다 씀<\/span>/);
+    // 숫자·고리는 쓴 만큼(다른 AI처럼 꽉 차면 그 창은 다 씀).
+    assert.match(el.innerHTML,/data-roll="r-claude">78<small>%<\/small><\/b><span>주간 사용<\/span>/);
+    assert.match(el.innerHTML,/data-roll="r-gpt">49<small>%/);
+    assert.match(el.innerHTML,/data-roll="c-higgsfield">1,373<\/b><span>크레딧<\/span>/);
+    assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 계정<\/span><span class="ms-pick-name"><span>이 PC 로그인<\/span>/);
+    // 78% 쓴 고리는 12시에서 78%까지 차고, 아직 안 쓴 Gemini는 채운 호가 없는 빈 원이다.
+    assert.match(el.innerHTML,/<circle class="ms-arc" data-level="ok" cx="30" cy="30" r="25" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="22" transform="rotate\(-90 30 30\)"\/>/);
+    assert.match(el.innerHTML,/<circle class="ms-track" data-level="ok" cx="30" cy="30" r="25" stroke-width="7"\/><\/svg><span class="ms-big"><b class="ms-big-num" data-roll="r-gemini">0<small>%/);
+    // 02는 다 쓴 계정이 풀리는 때와 그 계정의 주간 사용량.
+    assert.match(el.innerHTML,/<span class="ms-next-rel">36분 뒤<\/span><span class="ms-next-who"><b>out<\/b> Claude · 5시간 한도 · 주간\s51%\s사용/);
+    assert.deepEqual(drawn.sort(),['c-higgsfield:is-drawing','r-claude:is-drawing','r-gemini:is-drawing','r-gpt:is-drawing']);
+    // 새 스냅숏이 와도 값이 같으면 가만히 있다.
     drawn.length=0;listeners.forEach(cb=>cb(snapshot));assert.deepEqual(drawn,[]);
-    // 펼친 계정 고리는 처음 보일 때 한 번, 소진 계정은 0%로 코랄이다.
+    // 펼친 줄은 계정 전체: 오른쪽 값에 창 이름, 보조 글은 나머지 창과 주간 초기화 때. 숫자는 굴리지 않는다.
     await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
-    assert.equal(drawn.length,2);assert.match(el.innerHTML,/class="ms-gauge" data-level="out">/);
-    assert.match(el.innerHTML,/5시간 <b class="ms-alert-text">소진<\/b> <span class="ms-soft">·\u00a036분\u00a0뒤\u00a0풀림/);
-    // 값이 바뀌면 그 고리만 다시 굴린다.
-    drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},credit]};listeners.forEach(cb=>cb(snapshot));
-    assert.deepEqual(drawn,['m-gpt:is-drawing']);
+    assert.deepEqual(drawn,[]);
+    assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<small>Max<\/small><\/span><span class="ms-acc-sub">[^<]*주간 초기화<\/span>/);
+    assert.match(el.innerHTML,/<span class="ms-bar" data-state="ok" aria-hidden="true"><i style="width:78%"><\/i><\/span><span class="ms-acc-val"><b class="ms-num">78%<\/b><small>주간 사용<\/small><\/span>/);
+    // 「주간 51% 사용」 한 덩이는 줄바꿈 없는 빈칸으로 붙어 좁은 창에서도 갈라지지 않는다.
+    assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 주간\u00a051%\u00a0사용 · [^<]+ 주간 초기화<\/span>/);
+    // 새로 읽은 값이 바뀌면 그 숫자만 다시 굴린다.
+    drawn.length=0;snapshot={...snapshot,rows:[claude[0],claude[1],{...gpt,live:{...gpt.live,weekly:{usedPercent:60,resetsAt:fresh+145*3600e3}}},gemini,credit]};listeners.forEach(cb=>cb(snapshot));
+    assert.deepEqual(drawn,['r-gpt:is-drawing']);
+    // 1분마다 다시 그릴 때는 값이 바뀌어 있어도 굴리지 않는다(저절로 움직이는 효과 없음).
+    drawn.length=0;snapshot.rows[2]={...snapshot.rows[2],live:{...gpt.live,weekly:{usedPercent:70,resetsAt:fresh+145*3600e3}}};everyMinute();
+    assert.match(el.innerHTML,/data-roll="r-gpt">70<small>%/);assert.deepEqual(drawn,[]);
     // 움직임 줄이기(기기·SYNK 설정)에서는 숫자도 고리도 그대로 보인다.
     board.setVisible(false);reduced=true;drawn.length=0;board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
     reduced=false;document.documentElement.dataset.motion='reduced';board.setVisible(false);board.render(el,{signedIn:true,native:true});assert.deepEqual(drawn,[]);
@@ -113,12 +149,18 @@ test('monthly cost adds won and dollars separately and estimates the total',asyn
   assert.equal(money(1234.5,'USD'),'$1,234.5');assert.equal(money(29000,'KRW'),'₩29,000');
 });
 
-test('the 7-day agenda groups resets and payments by day',async()=>{
-  const {agenda}=await import('../renderer/subscriptions.mjs');
+test('this week lists unblocks, weekly resets of usable accounts and payments in time order',async()=>{
+  const {upcoming}=await import('../renderer/subscriptions.mjs');
   const today=new Date(NOW).getDate();
-  const days=agenda([row({resetDay:1,resetHour:12,resetMinute:0}),row({source:'manual',kind:'plan',label:'Gemini',price:29000,billDay:today+2})],NOW);
-  assert.deepEqual(days.map(d=>d.index),[2]);
-  assert.deepEqual(days[0].items.map(i=>i.time),['결제','12:00']);
+  const items=upcoming([
+    row({id:'out',live:{readAt:NOW,session:{usedPercent:100,resetsAt:NOW+2*3600e3},weekly:{usedPercent:40,resetsAt:NOW+3*864e5}}}),
+    row({id:'ok',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+864e5}}}),
+    row({id:'far',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+9*864e5}}}),
+    row({id:'bill',source:'manual',kind:'plan',label:'Gemini',price:29000,billDay:today+2}),
+  ],NOW);
+  assert.deepEqual(items.map(i=>[i.row.id,i.type]),[['out','unblock'],['ok','reset'],['bill','bill']]);
+  // 5시간 창이 막힌 계정은 풀리면 남는 주간 한도를 함께 알려 준다.
+  assert.equal(items[0].after,60);
 });
 
 test('platform navigation keeps the board route instead of dropping it',async()=>{
@@ -132,54 +174,70 @@ function fakeContainer(){
   const handlers=new Map();
   return {dataset:{},innerHTML:'',handlers,addEventListener:(name,cb)=>handlers.set(name,cb),querySelector:()=>null,contains:()=>false};
 }
-test('the board asks members to sign in, then guides first-time users before showing tables',async()=>{
-  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
-  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+const prepare=()=>{globalThis.document=globalThis.document||{activeElement:null,hidden:false};globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};};
+const driver=el=>({
+  click:async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await tick();},
+  submit:async (name,dataset={})=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:name,...dataset},querySelector:()=>null})}});await tick();await tick();},
+});
+
+test('the board asks members to sign in, then starts first-time members from one empty card',async()=>{
+  prepare();
   const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
   let snapshot={ok:true,tools:{claude:{installed:false},gpt:{installed:true,version:'codex-cli 0.163.0'},higgsfield:{installed:false,npm:false}},rows:[],settings:{usdKrw:1400},check:null,login:null,checking:false};
   const calls=[];const listeners=[];
   const bridge={subscriptions:{snapshot:async()=>{calls.push('snapshot');return snapshot;},check:async()=>{calls.push('check');return snapshot;},onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async s=>{calls.push('install:'+s);return {ok:true};},useExisting:async()=>({ok:false,code:'NOT_LOGGED_IN'}),login:async()=>({ok:true,id:'l-1'}),save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true})}};
   const toasts=[];const board=createSubscriptionsBoard({bridge,toast:m=>toasts.push(m)});
-  const el=fakeContainer();
+  const el=fakeContainer(),{click}=driver(el);
   board.render(el,{signedIn:false,native:true});
   assert.match(el.innerHTML,/로그인하고 시작해요/);assert.match(el.innerHTML,/data-insight-action="account"/);assert.equal(calls.length,0);
   board.render(el,{signedIn:true,native:true});
-  await new Promise(r=>setImmediate(r));
+  await tick();
   assert.deepEqual(calls,['snapshot']);
-  assert.match(el.innerHTML,/Claude 연결 가이드/);assert.match(el.innerHTML,/설치 창 열기/);assert.match(el.innerHTML,/irm https:\/\/claude\.ai\/install\.ps1 \| iex/);
-  await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'install',service:'claude'}})}});
-  await new Promise(r=>setImmediate(r));
+  // 계정이 없으면 한눈에 보기는 빈 카드 하나와 계정 관리 입구만 보인다.
+  assert.match(el.innerHTML,/아직 연결한 계정이 없어요/);assert.match(el.innerHTML,/연결한 계정 0개/);assert.ok(!el.innerHTML.includes('ms-foot'));assert.ok(!el.innerHTML.includes('다음에 풀려요'));
+  // 계정이 없어도 포스터의 「계정 관리」는 남고(다른 혜택 포스터와 같은 틀), 「지금 확인」은 읽을 계정이 생긴 뒤에만 보인다.
+  assert.match(el.innerHTML,/class="ms-hero-actions"><button type="button" class="ms-button" data-subs="manage">계정 관리<\/button>/);assert.ok(!el.innerHTML.includes('data-subs="check"'));
+  await click({subs:'manage'});
+  // 계정 관리는 첫 서비스(Claude) 가이드를 펼쳐 두고, 설치 안 된 서비스는 머리에 알린다.
+  assert.match(el.innerHTML,/계정 관리<\/h1>/);assert.match(el.innerHTML,/Claude 연결 가이드/);assert.match(el.innerHTML,/설치 창 열기/);assert.match(el.innerHTML,/irm https:\/\/claude\.ai\/install\.ps1 \| iex/);
+  assert.match(el.innerHTML,/<span class="ms-tag">Claude<\/span><span class="ms-mtool">Claude Code<\/span><span class="ms-chip ms-chip-warn">설치 안 됨<\/span>/);
+  assert.match(el.innerHTML,/<span class="ms-mtool">Codex · <span class="ms-num">0\.163\.0<\/span><\/span>/);
+  await click({subs:'install',service:'claude'});
   assert.ok(calls.includes('install:claude'));assert.match(toasts.at(-1),/설치 창을 열었어요/);
-  // 계정이 생기면 세 층 화면으로 바뀐다.
-  snapshot={...snapshot,rows:[row({live:{readAt:NOW,weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
+  // 계정이 생긴 뒤 한눈에 보기로 돌아가면 쓴 한도가 보인다.
+  snapshot={...snapshot,rows:[row({live:{readAt:Date.now(),weekly:{usedPercent:96,resetsAt:Date.now()+864e5}}})],check:{at:Date.now(),total:1,ok:1}};
   listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/지금 볼 것/);assert.match(el.innerHTML,/거의 소진 · 주간 4% 남음/);assert.match(el.innerHTML,/앞으로 7일/);assert.match(el.innerHTML,/마지막 확인/);
+  await click({subs:'glance'});
+  assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">96<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
   assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
   board.dispose();
 });
 
-test('the Gemini guide walks through the console sign-in and the row shows both quota groups',async()=>{
-  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
-  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
-  const {createSubscriptionsBoard,attention}=await import('../renderer/subscriptions.mjs');
+test('the Gemini row shows both quota groups and its guide walks through the console sign-in',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
   const gemini=row({service:'gemini',label:'Gemini',email:null,live:{readAt:Date.now(),weekly:{usedPercent:36,resetsAt:Date.now()+3*864e5},session:{usedPercent:10,resetsAt:Date.now()+3600e3},models:[{name:'Claude·GPT 모델',usedPercent:0,resetsAt:Date.now()+3*864e5}]}});
   let snapshot={ok:true,tools:{claude:{installed:true},gpt:{installed:true},higgsfield:{installed:true,npm:true},gemini:{installed:true,version:'1.4.0'}},rows:[gemini],settings:{usdKrw:1400},check:{at:Date.now(),total:1,ok:1},login:null,checking:false};
   const listeners=[],logins=[];
   const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async()=>({ok:true}),useExisting:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};},save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true})}};
   const board=createSubscriptionsBoard({bridge});
-  const el=fakeContainer();
+  const el=fakeContainer(),{click}=driver(el);
   board.render(el,{signedIn:true,native:true});
-  await new Promise(r=>setImmediate(r));
-  assert.match(el.innerHTML,/ms-s-gemini/);assert.match(el.innerHTML,/Antigravity CLI/);
-  const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
+  await tick();
+  assert.match(el.innerHTML,/ms-s-gemini/);assert.match(el.innerHTML,/<span class="ms-tag">Gemini<\/span>/);
+  assert.match(el.innerHTML,/data-roll="r-gemini">36<small>%<\/small><\/b><span>주간 사용/);
   await click({subs:'toggle',id:'g-gemini'});
-  assert.match(el.innerHTML,/Claude·GPT 모델 주간 <b class="ms-num">100%<\/b> 남음/);assert.match(el.innerHTML,/<strong>Gemini<\/strong>/);
-  // 하나도 안 쓴 한도는 밀리는 초기화 시각 대신 「아직 안 씀」으로 보인다.
+  // 모델 이름이 이미 「모델」로 끝나면 두 번 붙이지 않는다.
+  assert.match(el.innerHTML,/Claude·GPT 모델\s0%\s사용 · 5시간\s10%\s사용 · [^<]*주간 초기화/);
+  // 하나도 안 쓴 한도는 0%로 보이고, 밀리는 초기화 시각을 만들지 않는다.
   snapshot={...snapshot,rows:[{...gemini,live:{readAt:Date.now(),weekly:{usedPercent:0,resetsAt:null},session:{usedPercent:0,resetsAt:null},models:[]}}]};listeners.forEach(cb=>cb(snapshot));
-  assert.match(el.innerHTML,/아직 안 씀/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤.풀림/);
+  assert.match(el.innerHTML,/data-roll="r-gemini">0<small>%/);assert.doesNotMatch(el.innerHTML,/1분.안.뒤/);assert.doesNotMatch(el.innerHTML,/초기화 시각 없음/);
   snapshot={...snapshot,rows:[gemini]};listeners.forEach(cb=>cb(snapshot));
+  // 계정 하나만 되는 Gemini는 머리 단추가 경고처럼 읽히지 않게 「계정 바꾸기」다.
+  await click({subs:'manage'});
+  assert.match(el.innerHTML,/data-subs="guide" data-service="gemini" aria-expanded="false">계정 바꾸기</);
   await click({subs:'guide',service:'gemini'});
   assert.match(el.innerHTML,/Gemini 연결 가이드/);assert.match(el.innerHTML,/Gemini 로그인/);assert.ok(!el.innerHTML.includes('>새 계정 연결</button>'));
   await click({subs:'login',service:'gemini'});
@@ -187,14 +245,11 @@ test('the Gemini guide walks through the console sign-in and the row shows both 
   snapshot={...snapshot,login:{id:'l-1',service:'gemini',stage:'console',console:true,message:'',needsCode:false,url:null}};
   listeners.forEach(cb=>cb(snapshot));
   assert.match(el.innerHTML,/1\. Google OAuth/);assert.match(el.innerHTML,/오른쪽 클릭/);
-  // 이메일이 없는 계정은 이름을 두 번 쓰지 않는다.
-  assert.ok(attention([{...gemini,state:'needs-login'}],Date.now()).some(i=>i.text==='다시 로그인 필요 · Gemini'));
   board.dispose();
 });
 
 test('Typecast connects with a pasted API key and Higgsfield can add more accounts through a private window',async()=>{
-  globalThis.document=globalThis.document||{activeElement:null,hidden:false};
-  globalThis.CSS=globalThis.CSS||{escape:value=>String(value)};
+  prepare();
   // Node에는 읽기 전용 navigator가 있어 clipboard만 가짜로 붙인다.
   const copied=[];
   Object.defineProperty(globalThis.navigator,'clipboard',{value:{writeText:async text=>{copied.push(text);}},configurable:true});
@@ -206,13 +261,14 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},install:async()=>({ok:true}),useExisting:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};},save:async()=>snapshot,help:async()=>({ok:true}),submitCode:async()=>({ok:true}),cancel:async()=>({ok:true}),openLoginUrl:async()=>({ok:true}),
     connectKey:async(service,key)=>{keys.push([service,key]);if(key!=='tc-good-key-1234567890')return {ok:false,code:'INVALID_KEY'};snapshot={...snapshot,rows:[higgs,typecast]};return {ok:true,id:typecast.id,snapshot};}}};
   const board=createSubscriptionsBoard({bridge,toast:m=>toasts.push(m)});
-  const el=fakeContainer();
+  const el=fakeContainer(),{click,submit}=driver(el);
   board.render(el,{signedIn:true,native:true});
-  await new Promise(r=>setImmediate(r));
-  const click=async data=>{await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:data})}});await new Promise(r=>setImmediate(r));};
-  const submit=async (name,dataset={})=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:name,...dataset},querySelector:()=>null})}});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));};
-  // Typecast 카드는 설치가 필요 없고, 가이드는 키 페이지 → 붙여 넣기 순서다.
-  assert.match(el.innerHTML,/ms-s-typecast/);assert.match(el.innerHTML,/설치 필요 없음/);
+  await tick();
+  // 아직 연결하지 않은 서비스는 목록 아래 한 줄로만 알린다.
+  assert.match(el.innerHTML,/Claude · GPT · Gemini · Typecast도 연결할 수 있어요/);
+  // Typecast 블록은 설치가 필요 없고, 가이드는 키 페이지 → 붙여 넣기 순서다.
+  await click({subs:'manage'});
+  assert.match(el.innerHTML,/ms-s-typecast/);assert.match(el.innerHTML,/Typecast API 키<small class="ms-mtool-note"> · 설치 필요 없음<\/small>/);
   await click({subs:'guide',service:'typecast'});
   assert.match(el.innerHTML,/Typecast 연결 가이드/);assert.match(el.innerHTML,/data-link="typecast-api"/);assert.match(el.innerHTML,/type="password"/);assert.ok(!el.innerHTML.includes('설치 창 열기'));
   el.handlers.get('input')({target:{id:'ms-key',value:'tc-wrong-key-000000'}});
@@ -222,9 +278,12 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   await submit('key',{service:'typecast'});
   assert.deepEqual(keys.at(-1),['typecast','tc-good-key-1234567890']);assert.match(toasts.at(-1),/키를 연결했어요/);
   assert.ok(!el.innerHTML.includes('tc-good-key'));
+  // 한눈에 줄은 키 끝 네 글자와 100 넘는 크레딧을 소수 없이, 펼친 줄은 요금제와 함께.
+  await click({subs:'glance'});
+  assert.match(el.innerHTML,/<span class="ms-pick-label">연결한 키<\/span><span class="ms-pick-name"><span>…7890<\/span><small>Lite<\/small>/);assert.match(el.innerHTML,/data-roll="c-typecast">126,416<\/b>/);
   await click({subs:'toggle',id:'g-typecast'});
-  assert.match(el.innerHTML,/Typecast · 키 …7890/);assert.match(el.innerHTML,/126,416/);
-  // Higgsfield는 이제 여러 계정: 기존 로그인 쓰기와 새 계정 연결이 함께 있다.
+  assert.match(el.innerHTML,/<span class="ms-acc-name">…7890<small>Lite<\/small><\/span><span class="ms-acc-sub"><\/span>/);
+  // Higgsfield는 계정 여러 개: 기존 로그인 쓰기와 새 계정 연결이 함께 있다.
   await click({subs:'guide',service:'higgsfield'});
   assert.match(el.innerHTML,/>새 계정 연결<\/button>/);assert.match(el.innerHTML,/계정 여러 개/);
   await click({subs:'login',service:'higgsfield'});
@@ -234,5 +293,170 @@ test('Typecast connects with a pasted API key and Higgsfield can add more accoun
   assert.match(el.innerHTML,/data-subs="copy-url"/);assert.match(el.innerHTML,/시크릿 창/);
   await click({subs:'copy-url'});
   assert.deepEqual(copied,['https://clerk.higgsfield.ai/oauth/authorize?state=abc']);assert.match(toasts.at(-1),/시크릿 창/);
+  board.dispose();
+});
+
+test('a late reply from the check button does not put a finished board back to checking',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const base={ok:true,tools:{claude:{installed:true}},rows:[row({live:{readAt:Date.now(),weekly:{usedPercent:20,resetsAt:Date.now()+864e5}}})],settings:{usdKrw:1400},login:null};
+  const idle={...base,seq:1,check:{at:Date.now()-30*60e3,total:1,ok:1},checking:false};
+  const running={...base,seq:3,check:idle.check,checking:true,progress:{done:0,total:1}},stale={...running,seq:6},done={...base,seq:7,check:{at:Date.now(),total:1,ok:1},checking:false};
+  const listeners=[];
+  // 알림(3·7)이 먼저 오고, 그보다 먼저 만든 응답(6)이 늦게 도착하는 순서를 흉내 낸다.
+  const bridge={subscriptions:{snapshot:async()=>idle,check:async()=>{for(const s of [running,done])listeners.forEach(cb=>cb(s));return stale;},onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
+  const el=fakeContainer();
+  const board=createSubscriptionsBoard({bridge});
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  assert.match(el.innerHTML,/data-subs="check" >지금 확인</);
+  el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'check'}})}});
+  for(let i=0;i<3;i++)await tick();
+  assert.ok(!el.innerHTML.includes('확인 중…'));assert.ok(!el.innerHTML.includes('읽는 중이에요'));
+  assert.match(el.innerHTML,/data-subs="check" >지금 확인</);
+  board.dispose();
+});
+
+test('re-connecting a Typecast row from the fix band replaces that row key',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const typecast=row({service:'typecast',label:'Typecast',kind:'credit',email:null,keyHint:'…7890',state:'needs-login',stateMessage:'Typecast API 키가 더 이상 맞지 않아요. 새 키로 다시 연결해 주세요.',live:{readAt:Date.now(),credits:900},credits:900,creditsAt:Date.now()});
+  const snapshot={ok:true,tools:{typecast:{installed:true,api:true}},rows:[typecast],settings:{usdKrw:1400},check:{at:Date.now(),total:1,ok:0},login:null,checking:false};
+  const calls=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},connectKey:async(service,key,options)=>{calls.push([service,key,options]);return {ok:true,id:typecast.id,snapshot};}}};
+  const board=createSubscriptionsBoard({bridge}),el=fakeContainer(),{click,submit}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  assert.match(el.innerHTML,/다시 로그인 필요 · <b>…7890<\/b>\(Typecast\)<\/span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="[^"]+">키 다시 넣기</);
+  await click({subs:'relogin',id:typecast.id});
+  assert.match(el.innerHTML,/Typecast 연결 가이드/);
+  el.handlers.get('input')({target:{id:'ms-key',value:'tc-new-key-0987654321'}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(calls.at(-1),['typecast','tc-new-key-0987654321',{replace:typecast.id}]);
+  // 가이드에서 새로 넣는 키는 어느 줄도 바꾸지 않는다.
+  await click({subs:'guide',service:'typecast'});
+  el.handlers.get('input')({target:{id:'ms-key',value:'tc-other-key-1111111111'}});
+  await submit('key',{service:'typecast'});
+  assert.deepEqual(calls.at(-1),['typecast','tc-other-key-1111111111',{}]);
+  board.dispose();
+});
+
+test('old values say when they were read and step back in tone, and a running check shows its progress',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const at=Date.now()-3*3600e3-60e3;
+  const claude=row({live:{readAt:at,weekly:{usedPercent:20,resetsAt:Date.now()+3*864e5}}});
+  let snapshot={ok:true,seq:1,tools:{claude:{installed:true}},rows:[claude],settings:{usdKrw:1400},check:{at,total:1,ok:1},login:null,checking:false};
+  const listeners=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
+  const board=createSubscriptionsBoard({bridge}),el=fakeContainer();
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  assert.match(el.innerHTML,/에 읽은 값이에요\(3시간 1분 전\) · 지금과 다를 수 있어요/);
+  assert.match(el.innerHTML,/class="member-subs is-stale"/);
+  assert.match(el.innerHTML,/class="ms-stale-note">.*에 읽은 값 · <button type="button" class="ms-link" data-subs="check" >지금 확인/);
+  assert.match(el.innerHTML,/<span>주간 사용 · [\d/: ]+<\/span>/);
+  // 20분~1시간은 몇 분 전인지만 붙이고 톤은 그대로, 못 읽은 계정이 있으면 그 수만 붙인다.
+  const aging=Date.now()-40*60e3;
+  snapshot={...snapshot,seq:2,rows:[{...claude,live:{...claude.live,readAt:aging}}],check:{at:aging,total:2,ok:1}};listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/마지막 확인 \d\d:\d\d\(40분 전\)/);assert.match(el.innerHTML,/1개 못 읽음/);assert.doesNotMatch(el.innerHTML,/is-stale/);
+  snapshot={...snapshot,seq:3,checking:true,progress:{done:3,total:16}};listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/공식 프로그램으로 읽는 중이에요… <b class="ms-num">3\/16<\/b>/);assert.match(el.innerHTML,/확인 중…/);
+  board.dispose();
+});
+
+test('the fix band gives each account its own action and rereads just that account',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now();
+  const bad=[row({id:'a',email:'a@example.com',state:'needs-login'}),row({id:'b',email:'b@example.com',state:'error',stateMessage:'Claude Code가 응답하지 않았어요.',live:{readAt:now-3600e3,weekly:{usedPercent:10,resetsAt:now+864e5}}}),row({id:'c',email:'c@example.com',state:'error'}),row({id:'d',email:'d@example.com',state:'needs-login'})];
+  const ok=row({id:'ok',email:'ok@example.com',live:{readAt:now,weekly:{usedPercent:10,resetsAt:now+864e5}}});
+  let snapshot={ok:true,tools:{claude:{installed:true}},rows:[...bad,ok],settings:{usdKrw:1400},check:{at:now,total:5,ok:1},login:null,checking:false};
+  const checks=[],listeners=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async ids=>{checks.push(ids);return snapshot;},onChanged:cb=>{listeners.push(cb);return ()=>{};}}};
+  const board=createSubscriptionsBoard({bridge}),el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  // 넷이면 둘만 보이고 나머지는 계정 관리로.
+  assert.equal((el.innerHTML.match(/class="ms-fix-row"/g)||[]).length,3);
+  assert.match(el.innerHTML,/손볼 계정이 2개 더 있어요<\/span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기/);
+  assert.match(el.innerHTML,/5개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">2개 못 읽음 · 2개 다시 로그인<\/span>/);
+  snapshot={...snapshot,rows:[bad[1],ok]};listeners.forEach(cb=>cb(snapshot));
+  assert.match(el.innerHTML,/읽지 못함 · <b>b<\/b>\(Claude\) · [\d/: ]+ 값<\/span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="b" >다시 읽기/);
+  await click({subs:'reread',id:'b'});
+  assert.deepEqual(checks,[['b']]);
+  // 펼친 줄도 같은 행동: 못 읽은 이유와 다시 읽기.
+  await click({subs:'toggle',id:'g-claude'});
+  assert.match(el.innerHTML,/<h3>손볼 것<\/h3>.*Claude Code가 응답하지 않았어요\./);
+  board.dispose();
+});
+
+test('when only nearly used accounts are left the pick says so',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now(),rows=[row({email:'almost@example.com',live:{readAt:now,weekly:{usedPercent:99,resetsAt:now+864e5}}}),row({email:'out@example.com',live:{readAt:now,session:{usedPercent:100,resetsAt:now+3600e3+30e3},weekly:{usedPercent:10,resetsAt:now+3*864e5}}}),row({email:'weekly@example.com',live:{readAt:now,weekly:{usedPercent:100,resetsAt:now+20*3600e3+30e3}}})];
+  const snapshot={ok:true,tools:{},rows,settings:{usdKrw:1400},check:{at:now,total:3,ok:3},login:null,checking:false};
+  const board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}}),el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  assert.match(el.innerHTML,/<span class="ms-pick-label">남은 건 이것뿐<\/span><span class="ms-pick-name"><span>almost<\/span>/);
+  assert.match(el.innerHTML,/3개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 거의 다 씀 · 2개 다 씀<\/span>/);
+  // 99% 쓴 고리는 거의 꽉 찬 노란 고리다(각진 끝이라 틈이 남는다).
+  assert.match(el.innerHTML,/data-roll="r-claude">99<small>%<\/small><\/b><span>주간 사용<\/span>/);
+  assert.match(el.innerHTML,/<circle class="ms-arc" data-level="low" cx="30" cy="30" r="25" stroke-width="7" stroke-linecap="butt" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="1" transform="rotate\(-90 30 30\)"\/>/);
+  // 둥근 끝이 틈을 메워 닫혀 보이는 94%부터 각진 끝이다(93%는 둥근 끝).
+  for (const [used,cap] of [[93,'round'],[94,'butt']]) {
+    const one={ok:true,tools:{},rows:[row({email:'edge@example.com',live:{readAt:now,weekly:{usedPercent:used,resetsAt:now+864e5}}})],settings:{usdKrw:1400},check:{at:now,total:1,ok:1},login:null,checking:false};
+    const b=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>one,onChanged:()=>()=>{}}}}),e=fakeContainer();
+    b.render(e,{signedIn:true,native:true});
+    await tick();
+    assert.match(e.innerHTML,new RegExp(`stroke-linecap="${cap}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="${100-used}"`));
+    b.dispose();
+  }
+  // 막힌 계정은 모두 주간 초기화 때를 보인다: 5시간이 막혔으면 따로, 주간이 막혔으면 풀리는 때가 곧 주간 초기화다.
+  await click({subs:'toggle',id:'g-claude'});
+  assert.match(el.innerHTML,/5시간 한도 · <b>[^<]+<\/b>에 풀려요\(1시간 뒤\) · 주간\s10%\s사용 · [^<]+ 주간 초기화<\/span>/);
+  assert.match(el.innerHTML,/주간 한도 · <b>[^<]+<\/b> 주간 초기화에 풀려요\(20시간 뒤\)/);
+  board.dispose();
+});
+
+test('account management keeps healthy rows quiet and opens each row menu in place',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now(),today=new Date(now).getDate();
+  const healthy=row({id:'fine',email:'fine@example.com',plan:'max',live:{readAt:now,weekly:{usedPercent:10,resetsAt:now+864e5}}});
+  const expired=row({id:'gone',email:'gone@example.com',state:'needs-login',stateMessage:'로그인이 풀렸어요.'});
+  const paid=row({id:'paid',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h@example.com',price:29000,billDay:((today+1)%28)+1,live:{readAt:now,credits:500},credits:500,creditsAt:now});
+  const suno=row({id:'suno',service:'suno',source:'manual',label:'Suno',kind:'plan',email:null,price:10,currency:'USD',billDay:3});
+  let snapshot={ok:true,tools:{claude:{installed:true,version:'2.1.302 (Claude Code)'},higgsfield:{installed:true,npm:true}},rows:[healthy,expired,paid,suno],settings:{usdKrw:1400},check:{at:now,total:3,ok:2},login:null,checking:false};
+  const saves=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:()=>()=>{},save:async patch=>{saves.push(patch);return snapshot;}}};
+  const board=createSubscriptionsBoard({bridge}),el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  // 아래 입구의 요금·결제일은 넣은 값이 있으면 단추로, 다음 결제와 함께 보인다.
+  assert.match(el.innerHTML,/class="ms-button ms-foot-button" data-subs="manage" data-to="ms-cost"><b>요금·결제일<\/b><span>한 달 약 ₩43,000 · 다음 결제 /);
+  await click({subs:'manage',to:'ms-cost'});
+  // 정상 계정은 점만, 문제 계정만 칩. 확인 때 읽은 계정은 시각을 줄마다 쓰지 않는다.
+  assert.match(el.innerHTML,/<span class="ms-mname">fine@example.com<\/span><span class="ms-mplan">Max<\/span><span class="ms-ok-mark">/);
+  assert.match(el.innerHTML,/<span class="ms-mname">gone@example.com<\/span><span class="ms-mplan"><\/span><span class="ms-chip ms-chip-alert">다시 로그인<\/span>/);
+  assert.ok(!el.innerHTML.includes('에 읽음'));assert.match(el.innerHTML,/<span class="ms-mtool">Claude Code · <span class="ms-num">2\.1\.302<\/span><\/span>/);
+  assert.match(el.innerHTML,/id="ms-cost"/);assert.match(el.innerHTML,/한 달 구독료/);assert.match(el.innerHTML,/<span class="ms-tag">Suno<\/span><span class="ms-bill-name">월 구독만<\/span>/);
+  await click({subs:'menu',id:'gone'});
+  assert.match(el.innerHTML,/<p class="ms-warn-text">로그인이 풀렸어요\.<\/p>/);
+  assert.match(el.innerHTML,/class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="gone">다시 로그인</);
+  await click({subs:'edit',id:'gone'});
+  assert.match(el.innerHTML,/data-subs-form="edit" data-id="gone"/);
+  await click({subs:'remove',id:'gone'});
+  assert.match(el.innerHTML,/한 번 더 누르면 지워요/);assert.equal(saves.length,0);
+  await click({subs:'remove',id:'gone'});
+  assert.deepEqual(saves,[{remove:'gone'}]);
+  // 막혔을 때는 질문을 누르면 그 자리에서 답이 펼쳐진다.
+  await click({subs:'help-item',id:'8'});
+  assert.match(el.innerHTML,/aria-expanded="true"><span>연결을 끊고 싶어요<\/span>.*<p class="ms-help-a">계정 줄의 ⋯을 누르고/);
+  // 혜택을 떠났다 돌아오면 펼친 줄 없이 한눈에 보기부터.
+  await click({subs:'glance'});await click({subs:'toggle',id:'g-claude'});assert.match(el.innerHTML,/class="ms-svc open ms-s-claude"/);
+  board.setVisible(false);board.render(el,{signedIn:true,native:true});
+  assert.match(el.innerHTML,/지금 쓸 계정/);assert.doesNotMatch(el.innerHTML,/ms-svc open/);
   board.dispose();
 });

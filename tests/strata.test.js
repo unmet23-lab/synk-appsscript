@@ -9,7 +9,9 @@ const { loadSources, buildMap, serialize, main } = require('../tools/strata-buil
 const saved = require('../strata/maps/ko.json');
 const copy = value => JSON.parse(JSON.stringify(value));
 const root = path.resolve(__dirname, '..');
-const talkRoot = path.resolve(root, '..', 'SYNK-talk');
+const explicitTalkRoot = process.env.SYNK_TALK_ROOT;
+if (explicitTalkRoot !== undefined) assert.ok(path.isAbsolute(explicitTalkRoot), 'SYNK_TALK_ROOT must be absolute');
+const talkRoot = explicitTalkRoot === undefined ? path.resolve(root, '..', 'SYNK-talk') : explicitTalkRoot;
 const localSourcesPresent = ['contents/토픽퀴즈문항.js', 'lib/태그기술표.js'].every(file => fs.existsSync(path.join(talkRoot, file)));
 
 function smallInput() {
@@ -40,8 +42,8 @@ test('assembled map preserves 30 skills, 91 grammar points and the exact 8/15 ta
   for (const field of ['learner_id', 'student_id', 'options_shown', 'correct_option_id', '문항들', '정답']) assert.equal(serialized.includes(`"${field}"`), false);
 });
 
-test('live canonical sources reproduce the saved map byte for byte, without changing sources', { skip: !localSourcesPresent }, () => {
-  const first = loadSources(), second = loadSources();
+test('live canonical sources reproduce the saved map byte for byte, without changing sources', { skip: !localSourcesPresent && explicitTalkRoot === undefined && process.env.SYNK_REQUIRE_TALK_SOURCE !== '1' }, () => {
+  const first = loadSources({ talkRoot }), second = loadSources({ talkRoot });
   const output = serialize(buildMap(first));
   assert.equal(output, serialize(buildMap(second)));
   assert.equal(output, fs.readFileSync(path.join(root, 'strata/maps/ko.json'), 'utf8').replace(/\r\n/g, '\n'));

@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
+// 줄끝(CRLF/LF)은 체크아웃마다 달라지므로 원자료는 LF로 맞춘 바이트로 잰다(Windows 작업본과 리눅스·CI가 같은 값을 낸다).
+const sourceHash = bytes => crypto.createHash('sha256').update(bytes.toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
 
 // Read-only contract tests: never import the generator, which writes output files.
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -26,7 +28,8 @@ const channels = rows('channels');
 const planned = channels.filter(row => row.accountStatus === 'planned');
 const sorted = values => [...values].sort();
 const mongoliaIds = ['lab-youtube', 'lab-instagram', 'lab-tiktok', 'lab-facebook', 'lab-telegram'];
-const countryCodes = ['VN', 'CN', 'JP', 'UZ', 'MN', 'TW', 'MM', 'TH', 'ID', 'RU', 'IN', 'KZ', 'NP', 'KG', 'KH', 'US', 'PH', 'LK', 'AU', 'PY', 'NZ', 'MY', 'CA'];
+// 2026-10-02 브라질·멕시코 추가(유호님 10-17 「지도에 맥시코 브라질 넣어」).
+const countryCodes = ['VN', 'CN', 'JP', 'UZ', 'MN', 'TW', 'MM', 'TH', 'ID', 'RU', 'IN', 'KZ', 'NP', 'KG', 'KH', 'US', 'PH', 'LK', 'AU', 'PY', 'NZ', 'MY', 'CA', 'MX', 'BR'];
 const contentIds = ['L1', 'L2', 'L3', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'C1', 'C2'];
 const identityIds = ['founder', 'synk-yuh', 'unmet27', 'unmet23', '77yuhbs', 'unmet25'];
 
@@ -57,11 +60,11 @@ test('all five Mongolia LAB accounts survive, with two priorities and three reta
   assert.equal(rows('countries').find(row => row.code === 'MN').existingCount, 5);
 });
 
-test('23 distinct countries and their 46 priority slots belong only to LAB', () => {
+test('25 distinct countries and their 50 priority slots belong only to LAB', () => {
   assert.deepEqual(sorted(production.countries.map(row => row.code)), sorted(countryCodes));
   assert.deepEqual(sorted(rows('countries').map(row => row.code)), sorted(countryCodes));
-  assert.equal(production.planCounts.countries, 23);
-  assert.equal(production.planCounts.plannedCountryPlatformSlots, 46);
+  assert.equal(production.planCounts.countries, 25);
+  assert.equal(production.planCounts.plannedCountryPlatformSlots, 50);
   for (const country of production.countries) {
     assert.equal(country.brand, 'LAB', country.code);
     assert.equal(country.channelSlots.length, 2, country.code);
@@ -74,16 +77,16 @@ test('23 distinct countries and their 46 priority slots belong only to LAB', () 
   }
 });
 
-test('44 expansion slots reconcile to 24 confirmed accounts and 20 unconfirmed places', () => {
+test('48 expansion slots reconcile to 26 confirmed accounts and 22 unconfirmed places', () => {
   const slots = production.countries.flatMap(country => country.channelSlots.map(slot => ({country, slot})));
   const newSlots = slots.filter(({slot}) => slot.accountId === null);
-  assert.equal(newSlots.length, 44);
-  assert.equal(proposal.channels.length, 44);
-  assert.equal(planned.length, 20);
-  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 24);
-  assert.equal(production.planCounts.newChannelSlotsPlanned, 44);
-  assert.equal(production.planCounts.newCountryCandidates, 22);
-  assert.equal(new Set(planned.map(row => row.countryCode)).size, 19);
+  assert.equal(newSlots.length, 48);
+  assert.equal(proposal.channels.length, 48);
+  assert.equal(planned.length, 22);
+  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 26);
+  assert.equal(production.planCounts.newChannelSlotsPlanned, 48);
+  assert.equal(production.planCounts.newCountryCandidates, 24);
+  assert.equal(new Set(planned.map(row => row.countryCode)).size, 21);
   for (const {country, slot} of newSlots) {
     assert.notEqual(country.code, 'MN');
     assert.equal(slot.status, 'planned-not-created-or-verified');
@@ -120,12 +123,12 @@ test('the two reused Mongolia priority slots point to existing accounts, not new
   }
 });
 
-test('70 channel rows mean 26 prior entries plus 44 expansion slots', () => {
-  assert.equal(channels.length, 70);
+test('74 channel rows mean 26 prior entries plus 48 expansion slots', () => {
+  assert.equal(channels.length, 74);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
-  assert.equal(channels.filter(row => row.brand === 'LAB').length, 49);
-  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 24);
-  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 20);
+  assert.equal(channels.filter(row => row.brand === 'LAB').length, 53);
+  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 26);
+  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 22);
   assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 1);
   assert.equal(channels.filter(row => ['planned-unconfirmed', 'creation-deferred'].includes(row.accountStatus)).length, 2);
   assert.equal(channels.filter(row => row.accountStatus === 'web-destination').length, 0);
@@ -187,7 +190,7 @@ test('14 older concepts remain intact and two newer video review copies are trac
 test('six login identities retain unresolved security and proposal boundaries', () => {
   assert.deepEqual(sorted(plan.identities.map(row => row.id)), sorted(identityIds));
   assert.deepEqual(rows('identities').map(({currentUse,loginType,...rest})=>rest),plan.identities.map(({currentUse,loginType,...rest})=>rest));
-  assert.match(rows('identities').find(row=>row.id==='unmet23').currentUse,/YouTube 14곳/);
+  assert.match(rows('identities').find(row=>row.id==='unmet23').currentUse,/YouTube 16곳/);
   assert.match(rows('identities').find(row=>row.id==='synk-yuh').loginType,/주소 확인 기록/);
   for (const identity of plan.identities) assert.equal(identity.security, '미확인', identity.id);
   for (const id of ['founder', 'synk-yuh', 'unmet27']) assert.match(plan.identities.find(row => row.id === id).assignment, /제안.*미적용/, id);
@@ -207,7 +210,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [23, '채널'], 'lab-secured': [24, '곳'], 'lab-pending': [20, '곳'], 'lab-world': [23, '개국']};
+  const expected = {existing: [23, '채널'], 'lab-secured': [26, '곳'], 'lab-pending': [22, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -221,7 +224,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
   assert.equal(social.counts.created,8);
   assert.equal(social.counts.notCreated,20);
   const expansion=channels.filter(row=>row.accountStatus==='confirmed-expansion');
-  assert.equal(expansion.filter(row=>row.platform==='YouTube').length,16);
+  assert.equal(expansion.filter(row=>row.platform==='YouTube').length,18);
   assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,8);
   for(const record of [...youtube.channels,...jpVnYoutube.channels].filter(row=>row.id!=='lab-youtube')) {
     const row=channels.find(item=>item.id===record.id);
@@ -231,6 +234,17 @@ test('confirmed account details follow the latest ledgers without promoting an i
   const rednote=channels.find(row=>row.id==='lab-cn-xiaohongshu');
   assert.match(rednote.profileStatus,/미반영/);
   assert.match(rednote.verificationScope,/비로그인 공개 확인 아님/);
+  // Brazil/Mexico follow their 10-02 creation record: only Brazil's YouTube profile is publicly verified.
+  const brMx = JSON.parse(fs.readFileSync(path.join(repo,'docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json'),'utf8'));
+  for (const record of brMx.channels) {
+    const row = channels.find(item => item.id === record.id);
+    assert.ok(row, record.id);
+    assert.equal(row.accountStatus, record.creationVerified ? 'confirmed-expansion' : 'planned', record.id);
+    assert.equal(row.publicUrl, record.creationVerified ? record.publicUrl : null, record.id);
+  }
+  assert.equal(channels.find(row=>row.id==='lab-br-youtube').youtubeProfileVerified,true);
+  assert.equal(channels.find(row=>row.id==='lab-mx-youtube').youtubeProfileVerified,false);
+  assert.match(channels.find(row=>row.id==='lab-mx-youtube').profileStatus,/미확인/);
   const vk=channels.find(row=>row.id==='lab-ru-vk');
   assert.equal(vk.accountStatus,'planned');
   assert.match(vk.setupStatus,/LAB 채널 미확인/);
@@ -269,10 +283,10 @@ test('the snapshot does not claim that live account verification occurred', () =
 
 test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.generatedAt,dashboard.generatedAt);
-  assert.equal(verification.counts.expansionConfirmed,24);
-  assert.equal(verification.counts.expansionUnconfirmed,20);
+  assert.equal(verification.counts.expansionConfirmed,26);
+  assert.equal(verification.counts.expansionUnconfirmed,22);
   for(const item of verification.files) {
-    const actual=crypto.createHash('sha256').update(fs.readFileSync(path.join(dir,item.file))).digest('hex');
+    const actual=sourceHash(fs.readFileSync(path.join(dir,item.file)));
     assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);
   }
 });

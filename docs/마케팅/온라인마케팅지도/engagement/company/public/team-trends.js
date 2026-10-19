@@ -1,7 +1,7 @@
 'use strict';
 
 const TEAM_TREND_METRICS=[['views','조회수','회'],['likes','좋아요','개'],['shares','공유','회'],['comments','댓글','개'],['saves','저장','회'],['reach','도달','명'],['followers','팔로워·구독자','명']];
-const teamTrends={key:'',identity:'',result:null,error:'',loading:false,request:0,selectedId:'',compareId:'all',metric:'likes',range:'month',start:'',end:'',mode:'total',date:''};
+const teamTrends={key:'',identity:'',result:null,error:'',loading:false,stale:false,refreshFailed:false,request:0,selectedId:'',compareId:'all',metric:'likes',range:'month',start:'',end:'',mode:'total',date:''};
 const ttEscape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const ttKnown=value=>typeof value==='number'&&Number.isFinite(value);
 const ttNumber=value=>ttKnown(value)?new Intl.NumberFormat('ko-KR',{maximumFractionDigits:1}).format(value):'—';
@@ -11,22 +11,25 @@ const ttActive=()=>state.user&&state.tab==='overview'&&state.scope==='team'&&sta
 const ttIdentity=()=>[state.user?.id,state.user?.role,state.user?.teamId||'',typeof isDemoMode==='function'&&isDemoMode()?state.data?.demo?.personaId||'demo':'live'].join('|');
 function ttDates(){const end=teamTrends.range==='custom'?teamTrends.end||reportToday():reportToday();return{end,start:teamTrends.range==='custom'?teamTrends.start||shiftDate(end,-29):shiftDate(end,teamTrends.range==='week'?-6:teamTrends.range==='quarter'?-89:-29)};}
 function ttKey(){const dates=ttDates();return [ttIdentity(),teamTrends.metric,teamTrends.range,dates.start,dates.end].join('|');}
-function resetTeamTrends(){teamTrends.request++;Object.assign(teamTrends,{key:'',result:null,error:'',loading:false});}
-async function loadTeamTrends(force=false){
+// Collection polling resets with keep: the chart on screen stays, marked stale, until its quiet refresh replaces it.
+function resetTeamTrends(keep=false){teamTrends.request++;if(keep&&teamTrends.result&&ttActive()){Object.assign(teamTrends,{loading:false,stale:true});return;}Object.assign(teamTrends,{key:'',result:null,error:'',loading:false,stale:false,refreshFailed:false});}
+async function loadTeamTrends(force=false,{quiet=false}={}){
   if(!ttActive())return;
   const identity=ttIdentity();
   if(teamTrends.identity!==identity){resetTeamTrends();Object.assign(teamTrends,{identity,selectedId:state.teamId||'',compareId:'all',date:''});}
-  const key=ttKey();if(!force&&teamTrends.key===key&&(teamTrends.result||teamTrends.loading))return;
-  const request=++teamTrends.request;Object.assign(teamTrends,{key,result:null,error:'',loading:true});render();
+  const key=ttKey();if(!force&&!teamTrends.stale&&teamTrends.key===key&&(teamTrends.result||teamTrends.loading))return;
+  const keep=quiet&&teamTrends.key===key&&!!teamTrends.result,paint=keep&&typeof renderBackground==='function'?renderBackground:render;
+  const request=++teamTrends.request;Object.assign(teamTrends,keep?{loading:true,stale:false}:{key,result:null,error:'',loading:true,stale:false,refreshFailed:false});if(!keep)render();
   try{
     const result=await api('/api/team-trends?'+new URLSearchParams({...ttDates(),metric:teamTrends.metric,range:teamTrends.range}));
-    if(request!==teamTrends.request||key!==ttKey()||!ttActive())return;
-    teamTrends.result=result;
+    // Leaving mid-refresh keeps the chart stale, so coming back still fetches the newer numbers.
+    if(request!==teamTrends.request||key!==ttKey()||!ttActive()){if(keep&&request===teamTrends.request)teamTrends.stale=true;return;}
+    teamTrends.result=result;teamTrends.refreshFailed=false;
     if(!result.teams.some(team=>team.id===teamTrends.selectedId))teamTrends.selectedId=result.ownTeamId||result.teams[0]?.id||'';
     if(!['all','none'].includes(teamTrends.compareId)&&!result.teams.some(team=>team.id===teamTrends.compareId))teamTrends.compareId='all';
-    teamTrends.date=result.end;
-  }catch(error){if(request===teamTrends.request&&key===ttKey()&&ttActive())teamTrends.error=error.message||'팀 추이를 불러오지 못했어요.';}
-  finally{if(request===teamTrends.request){teamTrends.loading=false;if(ttActive())render();}}
+    if(!keep||!ttSelected()?.series.some(row=>row.date===teamTrends.date))teamTrends.date=result.end;
+  }catch(error){if(request===teamTrends.request){if(keep)Object.assign(teamTrends,{stale:true,refreshFailed:true});else if(key===ttKey()&&ttActive())teamTrends.error=error.message||'팀 추이를 불러오지 못했어요.';}}
+  finally{if(request===teamTrends.request){teamTrends.loading=false;if(ttActive())paint();}}
 }
 function ttSelected(){return teamTrends.result?.teams.find(team=>team.id===teamTrends.selectedId)||null;}
 function ttVisible(){const teams=teamTrends.result?.teams||[],selected=ttSelected();return selected?[selected,...teams.filter(team=>team.id!==selected.id&&(teamTrends.compareId==='all'||team.id===teamTrends.compareId))]:[];}
@@ -86,14 +89,15 @@ function teamTrendsSection(){
   const visible=ttVisible(),legend=`<div class="tt-legend">${visible.map((team,index)=>`<span><i class="${ttColor(index)}" aria-hidden="true"></i>${ttEscape(team.name)}${team.isOwn?' · 내 팀':''}${index===0?' · 선택':''}</span>`).join('')}</div>`;
   const dates=selected.series.map(row=>row.date),index=Math.max(0,dates.indexOf(teamTrends.date));
   const slider=`<label class="tt-date-control">날짜별 수치<input type="range" min="0" max="${Math.max(0,dates.length-1)}" value="${index}" data-team-trend-date aria-label="팀 추이 날짜 선택" aria-valuetext="${ttEscape(teamTrends.date)}"${dates.length<2?' disabled':''}><small>← → 키로 날짜를 바꿀 수 있어요.</small></label><div class="tt-date-values" data-team-trend-date-values aria-live="polite">${ttDateMarkup()}</div>`;
-  const table=`<details class="tt-records"><summary>일별 수치 펼치기</summary><div class="tt-table-scroll" role="region" aria-label="팀별 일별 수치" tabindex="0"><table><caption>${ttEscape(label)} ${teamTrends.mode==='change'?'하루 증감':'누적'} · ${unit}</caption><thead><tr><th>날짜</th>${visible.map(team=>`<th>${ttEscape(team.name)}</th>`).join('')}</tr></thead><tbody>${dates.map((date,i)=>`<tr><th scope="row">${date}</th>${visible.map(team=>`<td>${teamTrends.mode==='change'?ttSigned(ttValue(team.series[i])):ttNumber(ttValue(team.series[i]))}<small>${ttStatus(team.series[i])}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
-  return`<section class="team-trends" aria-label="팀별 지표 추이">${head}${choose}${toolbar}${stats}<p class="tt-period">${result.start} — ${result.end}${result.limitedHistory?' · 최근 366일까지':''}${!result.ownTeamId?' · 현재 소속 팀 미배정':''}</p>${modes}${legend}${ttChart()}${slider}<p class="tt-method">같은 0 기준과 눈금으로 비교해요. 점선은 이전 기록 유지, 빈 점은 일부 기록이며 미수집 구간은 잇지 않아요. 팀 집계만 공유하며 채널 세부자료의 권한은 유지돼요.${key==='reach'||key==='followers'?' 도달·팔로워는 게시물·계정별 합계로 사람 수의 중복을 제거하지 않아요.':''}</p>${table}</section>`;
+  const table=`<details class="tt-records"><summary>일별 수치 펼치기</summary><div class="tt-table-scroll" id="team-trend-records" role="region" aria-label="팀별 일별 수치" tabindex="0"><table><caption>${ttEscape(label)} ${teamTrends.mode==='change'?'하루 증감':'누적'} · ${unit}</caption><thead><tr><th>날짜</th>${visible.map(team=>`<th>${ttEscape(team.name)}</th>`).join('')}</tr></thead><tbody>${dates.map((date,i)=>`<tr><th scope="row">${date}</th>${visible.map(team=>`<td>${teamTrends.mode==='change'?ttSigned(ttValue(team.series[i])):ttNumber(ttValue(team.series[i]))}<small>${ttStatus(team.series[i])}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+  return`<section class="team-trends" aria-label="팀별 지표 추이">${head}${choose}${toolbar}${stats}<p class="tt-period">${result.start} — ${result.end}${result.limitedHistory?' · 최근 366일까지':''}${!result.ownTeamId?' · 현재 소속 팀 미배정':''}${teamTrends.refreshFailed?' · <span role="status">최신 기록을 불러오지 못해 이전 숫자를 보여 주고 있어요</span> <button type="button" class="btn small" data-team-trend-action="retry">다시 불러오기</button>':''}</p>${modes}${legend}${ttChart()}${slider}<p class="tt-method">같은 0 기준과 눈금으로 비교해요. 점선은 이전 기록 유지, 빈 점은 일부 기록이며 미수집 구간은 잇지 않아요. 팀 집계만 공유하며 채널 세부자료의 권한은 유지돼요.${key==='reach'||key==='followers'?' 도달·팔로워는 게시물·계정별 합계로 사람 수의 중복을 제거하지 않아요.':''}</p>${table}</section>`;
 }
 function ttPaintDate(index){
   const selected=ttSelected(),dates=selected?.series.map(row=>row.date)||[];if(!dates[index])return;
   teamTrends.date=dates[index];
   const box=document.querySelector('[data-team-trend-date-values]');if(box)box.innerHTML=ttDateMarkup();
-  const input=document.querySelector('[data-team-trend-date]');if(input){input.value=String(index);input.setAttribute('aria-valuetext',dates[index]);}
+  // The chosen date lives in teamTrends, so the slider never counts as unsaved input that holds background repaints.
+  const input=document.querySelector('[data-team-trend-date]');if(input){input.value=String(index);input.defaultValue=String(index);input.setAttribute('aria-valuetext',dates[index]);}
   for(const svg of document.querySelectorAll('.tt-svg')){const mobile=svg.classList.contains('is-mobile'),width=mobile?360:820,left=mobile?48:62,x=left+(dates.length<2?.5:index/(dates.length-1))*(width-left-16),cursor=svg.querySelector('[data-team-trend-cursor]');cursor?.setAttribute('x1',String(x));cursor?.setAttribute('x2',String(x));}
 }
 document.addEventListener('click',async event=>{

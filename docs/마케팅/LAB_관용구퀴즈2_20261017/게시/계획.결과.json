@@ -1,0 +1,19 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "7592b25a842b1f8d7e94e4eada3ff7f5c7debea15edaa495912fd0a36464286e",
+      "publicationHash": "a84d3b687ec27e97d11291f48b5a358cffab43449444ba32cb19bc49d0023067",
+      "startedAt": "2026-10-18T05:41:43.106Z",
+      "state": "public",
+      "id": "F4iJDO6mjaY",
+      "url": "https://www.youtube.com/watch?v=F4iJDO6mjaY",
+      "thumbnail": true,
+      "captions": [],
+      "finishedAt": "2026-10-18T05:41:56.254Z",
+      "publicAt": "2026-10-18T05:42:15.696Z",
+      "publicNote": "유호님 「오늘 올라가는거 없으면 지금 올려주고」 10-18 — 오늘 공개·예약 없음 확인 뒤 지금 공개"
+    }
+  }
+}

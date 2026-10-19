@@ -1,0 +1,683 @@
+{
+  "schema": "synk-backend-upgrade-20261018/v1",
+  "updatedAt": "2026-10-18T08:28:47.377Z",
+  "scope": [
+    "classroom-and-personal-locks",
+    "incremental-learning-and-complete-client-history",
+    "messenger-unread-reads",
+    "company-analytics-reads"
+  ],
+  "edge": [
+    {
+      "target": "production",
+      "slug": "synk-classroom",
+      "version": 4,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "a943e31c642ff5476e2c672d77840a8b880dcc590cdfcd1acba8243319e43a4e"
+    },
+    {
+      "target": "production",
+      "slug": "synk-personal",
+      "version": 44,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 2,
+      "archiveSha256": "64bc1c788b7f666e66ce12723a4f68dc89d4caeedefcec076cb0990e4e8208e6"
+    },
+    {
+      "target": "production",
+      "slug": "synk-learning",
+      "version": 54,
+      "verifyJwt": true,
+      "exact": true,
+      "sourceModules": 14,
+      "archiveSha256": "0a9b834bb7dd3115513c5ab8b2f9aafab3d5a3dcc047481c8d702af60f865fdc"
+    }
+  ],
+  "lockRehearsal": {
+    "rehearsalPassed": 12,
+    "productionPassed": 12,
+    "evidence": [
+      {
+        "path": ".tmp/backend-upgrade-release-20261018/rehearsal-lock-probe-1792302371198.log",
+        "sha256": "7231b9575893ab3ce452b7b92ddcf7cc13095528f35bc3b9b454a020c2756b9b"
+      },
+      {
+        "path": ".tmp/backend-upgrade-release-20261018/production-lock-probe-1792302614651.log",
+        "sha256": "cbf6f85f13bd41e9eafcf9fb284844cd065c9a6e579d0f647de58a9884bddd64"
+      }
+    ],
+    "checks": [
+      "peer-account-read-does-not-wait-on-eight-second-lock",
+      "same-account-and-roster-revoke-serialize",
+      "storage-upload-confirm-read-hash-and-ownership",
+      "concurrent-CAS-one-success-one-conflict",
+      "relogin-restores-winning-document"
+    ]
+  },
+  "learning": {
+    "serverTestsPassed": 80,
+    "canonicalClientTestsPassed": 42,
+    "rehearsalPassed": 9,
+    "productionPassed": 9,
+    "seededEvents": 20000,
+    "finalSyntheticEventsBeforeCleanup": 20004,
+    "checks": [
+      "save-beyond-former-cap",
+      "identical-retry-idempotent",
+      "same-attempt-one-winner",
+      "orphan-rejected",
+      "bounded-restore-page",
+      "foreign-account-denied"
+    ],
+    "evidence": [
+      {
+        "path": ".tmp/backend-upgrade-release-20261018/rehearsal-learning-probe-1792303040810.json",
+        "sha256": "ad15b064c1cd062d56055e19d93ffc537195f6d4dea35182f7b24d48d79fec9f"
+      },
+      {
+        "path": ".tmp/backend-upgrade-release-20261018/production-learning-probe-1792303140904.json",
+        "sha256": "59313ebe0d13ed6da120304cf67e749bfabf19ec2bd059c5b2f45a18de0d9187"
+      }
+    ],
+    "cleanup": {
+      "complete": true,
+      "purgeGuardRegressionPassed": 20,
+      "note": "The first probe cleanup omitted immutable learning events. Exact synthetic-owner purge was added under the existing database purge guard; recovery removed the three fixtures and a fresh read-only audit confirmed only original records remain.",
+      "recovery": [
+        {
+          "path": ".tmp/backend-upgrade-release-20261018/production-lock-probe-1792303282233.log",
+          "sha256": "d872a1e79b6b3ea9fac8671b5c68e292a35033ab378ae175ff141181b826ab2d"
+        },
+        {
+          "path": ".tmp/backend-upgrade-release-20261018/rehearsal-lock-probe-1792303279315.log",
+          "sha256": "a8f204063cf51fe1710a38935ba98aeadbe27f0322cc572d8e6957ae0b18b9d4"
+        },
+        {
+          "path": ".tmp/backend-upgrade-release-20261018/rehearsal-lock-probe-1792303284703.log",
+          "sha256": "a8ad68d75c4c15cc653fbfb3f5d499526e596461bc578b5253dc69e931d5a782"
+        }
+      ],
+      "productionAudit": {
+        "at": "2026-10-18T06:04:40.446Z",
+        "target": "production",
+        "readOnly": true,
+        "accounts": 1,
+        "events": 292,
+        "results": [
+          {
+            "ordinal": 1,
+            "expectedCount": 292,
+            "ok": true,
+            "until": 292,
+            "count": 292,
+            "pages": 2,
+            "maxReferences": 2,
+            "maxAttempts": 0
+          }
+        ],
+        "ok": true
+      },
+      "rehearsalAudit": {
+        "at": "2026-10-18T06:04:38.942Z",
+        "target": "rehearsal",
+        "readOnly": true,
+        "accounts": 0,
+        "events": 0,
+        "results": [],
+        "ok": true
+      }
+    }
+  },
+  "publicClient": {
+    "commit": "524fbb7d8799143a011e673716667a7e4493bc5a",
+    "files": 18,
+    "testsPassed": 40,
+    "browser": {
+      "browser": "Chrome 155",
+      "events": 20007,
+      "initialPages": 101,
+      "reloadGets": 1,
+      "posts": 0,
+      "storedCharacters": 3465056,
+      "exactEvents": true,
+      "exactEngineState": true,
+      "durable": true,
+      "evidence": {
+        "path": ".tmp/backend-learning-client-release-20261018/candidate-browser-1792303172739.json",
+        "sha256": "e1f9f55d73ab57989d699d961d4e23478bfed6b0faceaa7d4cebf71f9ea04296"
+      }
+    },
+    "publicVerified": true,
+    "verification": {
+      "path": ".tmp/backend-learning-client-release-20261018/public-verification-1792303654685.json",
+      "sha256": "e4c946c544a7e9d7c658f9fbf315db2ca25a076d9c22e122400583b750a3ece3"
+    },
+    "automatedPublicCheck": {
+      "runId": 39102780200,
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/39102780200",
+      "head": "524fbb7d8799143a011e673716667a7e4493bc5a",
+      "status": "completed",
+      "conclusion": "success",
+      "completedAt": "2026-10-18T06:13:38Z",
+      "scope": [
+        "deployment",
+        "pages",
+        "LAB games",
+        "question box"
+      ]
+    }
+  },
+  "company": {
+    "status": "production-verified-rearmed",
+    "manifest": "c516b0e11d30001ccb02325c021ba8e782c86b1a4509f1877a83a95d08bc9e53",
+    "localTestsPassed": 225,
+    "linuxProductTestsPassed": 225,
+    "linuxCompatTestsPassed": 2,
+    "syntheticMeasurements": {
+      "unreadSummarySql": {
+        "before": 15024,
+        "afterRead": 24,
+        "afterUnread": 27,
+        "messages": 1000
+      },
+      "analytics": {
+        "postsPerCollection": 2000,
+        "collectionReadsBefore": 18,
+        "collectionReadsAfter": 3,
+        "rowsBefore": 36000,
+        "rowsAfter": 6000,
+        "readPathWriteTransactionsBefore": 2,
+        "readPathWriteTransactionsAfter": 0
+      }
+    },
+    "production": true,
+    "supersededCandidates": [
+      {
+        "manifest": "a7ffba3c19db6d59e75ad1a6abdc3333b610022e7d96faf9d21cd1473472cf57",
+        "reason": "User-authorized deployment ordering: compression release RUN3 goes first; read optimizations will be rebased onto it.",
+        "disarmOrReleaseDispatched": false
+      },
+      {
+        "manifest": "ca2a82bafc906da8c570ce3caf8369955c752a1a8a8a675faebb1c62910cc5dc",
+        "reason": "Superseded before remote work by the user-authorized digest cache integration.",
+        "disarmOrReleaseDispatched": false
+      },
+      {
+        "manifest": "80c20024c594e87265b219bab11c1b9fa8a9e3890855d312623759f3d18565e8",
+        "reason": "Superseded before remote work to include the missing static-response test source; actual tests were 219, not 225.",
+        "disarmOrReleaseDispatched": false
+      }
+    ],
+    "nextParentManifest": "6b6471d02385c32e20dda7bda578b4082fa427f17a04d94150740e6b79331e47",
+    "preparationFixes": {
+      "nodeTests": 5,
+      "pythonTests": 12,
+      "operatorTests": 26,
+      "originalRearmSourceClosureUnchanged": false,
+      "currentRearmSourceClosureVerified": true
+    },
+    "parentManifest": "6b6471d02385c32e20dda7bda578b4082fa427f17a04d94150740e6b79331e47",
+    "sourceFiles": 1030,
+    "imageFiles": 594,
+    "preservedParentFiles": 1022,
+    "sourceCommit": "705ef25907aa44bc9a531489a8034b2e87c36119",
+    "sourceBranch": "codex/backend-company-read-v4-20261018",
+    "canonicalDigestCommit": "7251bd6542ecb01459cb17d92b87b7b96022c0f3",
+    "localQa": {
+      "path": ".tmp/company-backend-read-release-v4-20261018/qa/result.json",
+      "sha256": "81d20b796151c36a6f23b03929e95cf437abd2ec71f8690a4c8883941b83743e"
+    },
+    "cacheValidation": {
+      "productionTimingMeasured": false,
+      "syntheticChromeReloadMs": [
+        1143,
+        1154,
+        1118
+      ],
+      "syntheticNetwork": "HTTPS HTTP/2, 2 Mbps, 100 ms latency",
+      "revalidationRequests": 0,
+      "javaScriptErrors": 0,
+      "manualReconnects": 0,
+      "exactTransformedHtmlDocuments": 2,
+      "versionedPublicAssets": 107,
+      "evidence": ".tmp/company-messenger-startup-perf-20261018/digest-experiment/run-1792307218711/report.json",
+      "note": "Synthetic local production-code browser measurements; not an actual user production speed claim."
+    },
+    "deploymentId": "01e714956bb97015c40b0b467298966a",
+    "imageId": "sha256:06bde74cfa17f52533155a4643d9db4ec24d32a99805e2f89e0de78033e7929a",
+    "rearm": {
+      "armed": true,
+      "requestId": "888683b7-14c9-4069-9505-925d74d09aa1",
+      "ownerId": "6695198820229895670",
+      "epoch": 7,
+      "currentReleaseOutageTested": false,
+      "noNativeRearmClaim": true
+    },
+    "operationalEvidence": {
+      "userReportedRefresh": {
+        "evidence": {
+          "path": ".tmp/company-messenger-startup-perf-20261018/digest-experiment/production-user-refresh-confirmation-v4.json",
+          "sha256": "3a2d531582e6d897073ddee734e7b3da574d78c1b7ebbaefdfa4b2945dbcc6cb"
+        },
+        "at": "2026-10-18T07:57:33.467Z",
+        "qualitativeSpeedImprovementConfirmed": true,
+        "measuredElapsedMs": null,
+        "agentBrowserObservation": false,
+        "manualReconnectClicksObserved": null
+      },
+      "publicCacheVerification": {
+        "evidence": {
+          "path": ".tmp/company-messenger-startup-perf-20261018/digest-experiment/production-cache-1792309804127.json",
+          "sha256": "ce329f7a2347d5df3c039f935c29a1fded78e0de18100b556c54e826d78b51b6"
+        },
+        "passed": 123,
+        "versionedAssets": 107,
+        "authenticatedRequests": 0,
+        "mutationRequests": 0,
+        "tlsValidation": "certificate and hostname verification enabled",
+        "realWorkspaceLoginVerified": false
+      },
+      "isolatedCandidateBrowser": {
+        "evidence": {
+          "path": ".tmp/company-messenger-startup-perf-20261018/digest-experiment/v4-run-1792309588584/summary.json",
+          "sha256": "371628c75968b010fcf44902a231b5ff2b844778255ab5287859dbf4f6cd7c0f"
+        },
+        "report": {
+          "path": ".tmp/company-messenger-startup-perf-20261018/digest-experiment/v4-run-1792309588584/report.json",
+          "sha256": "4370b80f2ee22569c80e1843c3f4ec7efea0a2f5fca34d10ebadf27923ee9c7d"
+        },
+        "sourceFiles": 1030,
+        "reloadMs": [
+          1136,
+          1179,
+          1134
+        ],
+        "remoteCalls": 0,
+        "syntheticAccounts": true,
+        "productionTimingMeasured": false,
+        "jsErrors": 0,
+        "manualReconnectClicks": 0,
+        "cleanup": {
+          "serverStopped": true,
+          "browserClosed": true,
+          "syntheticDirectoryRemoved": true
+        }
+      },
+      "rearmLinux": {
+        "evidence": {
+          "path": ".tmp/company-backend-read-release-v4-20261018/rearm/linux-qa-result-v1.json",
+          "sha256": "1fae82957b194dfd5762dbf29aaad49ddf59141685fd48d5426cdeedff855249"
+        },
+        "sourceClosureFiles": 379,
+        "sourceManifestSha256": "eb391e1b7ff18715d8938dddd1c0684477e9ab4689de6f5735c937258bd5d274",
+        "nodeTests": 120,
+        "pythonTests": 35,
+        "historicalDeploymentTests": 126,
+        "note": "Separate rearm source validation; not added to the 225 product and 2 compatibility counts."
+      },
+      "predeploymentBackup": {
+        "evidence": {
+          "path": ".tmp/company-backend-read-release-v4-20261018/deployment/backup-status-1792308967309.json",
+          "sha256": "ddc599b5467ab015012757a409cb0ace1d64ca962999fff4ab5e8bcf720b534c"
+        },
+        "invocationId": "f4aa9cc49bf4416b9069c9623cfb97d4",
+        "generation": "1792308941513489",
+        "archiveBytes": 421246690
+      },
+      "priorRestoreDerivativeCleanup": {
+        "evidence": {
+          "path": ".tmp/company-backend-read-release-v4-20261018/cleanup-run3-dr-run-1792309104815.json",
+          "sha256": "e96acfb6d2457e0fcc0da1a8426a710c3e6969b149e97c59487f01e2afe3ff46"
+        },
+        "removedPaths": [
+          "/opt/synk/ha-qa/infra-dr-6f29c9cd26c5f4b705f84cedc0604646-1792306627310693/restored",
+          "/opt/synk/ha-qa/infra-dr-6f29c9cd26c5f4b705f84cedc0604646-1792306627310693/readonly-snapshot",
+          "/opt/synk/ha-qa/infra-dr-6f29c9cd26c5f4b705f84cedc0604646-1792306627310693/disposable-company",
+          "/opt/synk/ha-qa/infra-dr-6f29c9cd26c5f4b705f84cedc0604646-1792306627310693/archived-disposable-company",
+          "/opt/synk/ha-qa/infra-dr-6f29c9cd26c5f4b705f84cedc0604646-1792306627310693/recovery.tar.gz"
+        ],
+        "recoveredBytes": 1504112640,
+        "canonicalBackupsPreserved": true
+      }
+    },
+    "completedAt": "2026-10-18T08:27:23.210Z",
+    "evidence": {
+      "candidateReceipt": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/deployment/reviewed-candidate-receipt.json",
+        "sha256": "283fb4b83cdd7822494b598df14af1d60e1a97144ea389f52e32f4e0e1bf977d"
+      },
+      "package": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/deployment/package-live-v1.json",
+        "sha256": "830f2875e1b46aa989584d0fa410b26357d0766eefaa6248174cc7008dc832d9"
+      },
+      "restore": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/rearm/dr/restore-v1.json",
+        "sha256": "30d6d7f566451169d219ae4ad44f8aa6734f87bbf7b88624fb6a0fa43fc7c77f"
+      },
+      "armContract": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/rearm/contract-final-v1.json",
+        "sha256": "bd1ed2a10c6765f20e80f6e9cd6de30124fcc21adc003191b7423e66468d36df"
+      },
+      "armPostcheck": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/rearm/arm-postcheck-final-v1.json",
+        "sha256": "3db77bc24767dd7e6220f779c77237424721b9f84dfdfccfeb066d4e53e09a85"
+      },
+      "runtime": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/deployment/runtime-live-postcheck-1792309772321.json",
+        "sha256": "f7c4b3d8a49bdeb3eb19d1653599f4ce66eb7f0b92edf7b3f3a7f5f613258c1e"
+      },
+      "public": {
+        "path": ".tmp/company-backend-read-release-v4-20261018/deployment/public-messenger-verification-1792309773760.json",
+        "sha256": "b0a365936af3a83c73a9a30c9e646f98d8422a5d2f9183970ab004f656d21213"
+      }
+    },
+    "sourceEvidence": {
+      "path": ".tmp/backend-upgrade-release-20261018/company-v4-source-commit.json",
+      "sha256": "98afe8cc5819faf9514c31bb03354936b427e431a8424d00667b61abdb30bb02"
+    }
+  },
+  "limitations": {
+    "physicalSecondDeviceVerified": false,
+    "storageSigningDelayInjected": false,
+    "paidAIInvoked": false,
+    "unlimitedBrowserStorage": false,
+    "mobileBinaryBuilt": false,
+    "allRepositoryTestsRun": false
+  },
+  "integration": {
+    "ciRepairPreparation": {
+      "status": "local-prepared-remote-not-enabled",
+      "worktree": "C:/Users/q1212/.codex/worktrees/backend-ci-learning/SYNK-appsscript",
+      "base": "836dd64d973d6a5c27127806a48f4a19afe3415f",
+      "workflow": "syntax-check.yml: hosted opt-in, contents read, explicit TAP, runner temporary log",
+      "workflowValidation": "actionlint 1.7.12 passed; independent review found no confirmed issue",
+      "atlasRepair": "Generate profile core before life; refresh 19 tracked derivatives; repair obsolete test fixtures; canonical 51 files unchanged",
+      "localTests": {
+        "platform": "win32",
+        "tests": 63,
+        "pass": 63,
+        "fail": 0,
+        "skipped": 0
+      },
+      "atlasLocalCheck": "passed, including one synchronization from stale profile core",
+      "fullSuiteExecuted": false,
+      "githubRunExecuted": false,
+      "githubSettingsChanged": false,
+      "blocker": "Additional spending stop could not be verified: CLI billing permission unavailable and browser tool reports local browser use disabled in Work settings. User cannot check billing directly.",
+      "resolvedBy": "integration.ciRepair"
+    },
+    "sourceRepositoryCI": {
+      "company": {
+        "runId": 39107411565,
+        "head": "705ef25907aa44bc9a531489a8034b2e87c36119",
+        "status": "completed",
+        "conclusion": "skipped",
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39107411565"
+      },
+      "learning": {
+        "runId": 39102352689,
+        "head": "836dd64d973d6a5c27127806a48f4a19afe3415f",
+        "conclusion": "skipped",
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39102352689"
+      },
+      "talkReleaseRunsFound": 0,
+      "selfHostedRunnersFound": 0,
+      "synkSelfHostedVariablePresent": false,
+      "talkTrigger": "master push; release branch has no pull request or run",
+      "note": "The existing private-repository cost policy disables hosted CI; app jobs require SYNK_SELFHOSTED=on and no runner is installed. Talk manual dispatch can submit an Android preview when EXPO_TOKEN is present, so it was not used as a test-only action. Skipped or absent runs are not passing evidence; local and isolated Linux tests and public-client CI are recorded separately."
+    },
+    "mainTalkTargetedTestsPassed": 72,
+    "mainTalkWorkingSourcesIntegrated": true,
+    "sharedMainCommitAttempted": false,
+    "releaseCommit": "5fc86ac",
+    "releaseBranch": "codex/backend-upgrade-release-20261018",
+    "note": "The release branch is the committed deployment source; main Talk includes other pre-existing uncommitted work and was not staged wholesale.",
+    "ciRepair": {
+      "status": "github-hosted-ci-verified",
+      "recoveredFrom": "010c7f86b4621c7be439a5c495234b68bc7de11d",
+      "branch": "codex/backend-ci-resume-20261018",
+      "hostedVariable": "SYNK_HOSTED_CI=on",
+      "billingVerifiedDateKST": "2026-10-18",
+      "billing": {
+        "actionsBudgetUSD": 0,
+        "stopUsage": true,
+        "paymentMethodPresent": false,
+        "billingSettingsChanged": false
+      },
+      "local": {
+        "atlasTests": 19,
+        "desktopRelatedTests": 34,
+        "frozenReceiptWithoutDesktopDependencies": 2,
+        "gitStorageTests": 18,
+        "restoreTests": 20,
+        "restoreSkipped": 1,
+        "actionlint": "1.7.12 passed",
+        "atlasCopyCheck": "passed",
+        "canonicalAtlasAndStrataChanged": false
+      },
+      "firstGitHubRun": {
+        "id": 39124316955,
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39124316955",
+        "head": "29b19eef232fde57cf221b95a0ad59bd0ffe7572",
+        "conclusion": "failure",
+        "tests": 1772,
+        "pass": 1761,
+        "fail": 1,
+        "skipped": 10,
+        "failure": "desktop/tools/package.cjs eagerly required electron-builder during receipt validation. Dependency now loads only in actual build main."
+      },
+      "scope": "Existing syntax-check workflow: root tests/*.test.js, Git storage Node/Python guards, Atlas generated copies, syntax, JSON and prism. Not all repository test suites.",
+      "productionDeploymentPerformed": false,
+      "verificationRun": {
+        "id": 39124678017,
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39124678017",
+        "head": "8b429a0482eef0d1781568ec9b318b805f7d3925",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T11:50:33Z",
+        "tests": 1772,
+        "pass": 1762,
+        "fail": 0,
+        "skipped": 10,
+        "storageNodeTests": 18,
+        "storagePythonTests": 20
+      },
+      "skipReasons": [
+        "Windows-only path and credential-adapter cases",
+        "live map check requires local canonical sources",
+        "retired verification registries absent",
+        "sibling repository absent",
+        "untracked historical design verification receipt absent"
+      ],
+      "defaultBranch": "master"
+    },
+    "ciSkipAudit": {
+      "status": "all-ten-covered-in-github-ci",
+      "releaseValidation": "github-linux-and-windows-passed-with-private-source",
+      "originalRun": 39125006065,
+      "cases": [
+        {
+          "id": "windows-case-duplicate",
+          "count": 1,
+          "original": "Windows의 같은 파일을 대소문자만 바꿔 중복 등록하면 거절한다",
+          "resolution": "Required windows-specific CI job; actual Windows native path canonicalization fixed.",
+          "status": "github-windows-verified"
+        },
+        {
+          "id": "windows-case-consumer",
+          "count": 1,
+          "original": "Windows의 다른 대소문자 경로에서도 등록한 갈래로 참조를 판정한다",
+          "resolution": "Required windows-specific CI job.",
+          "status": "github-windows-verified"
+        },
+        {
+          "id": "windows-case-extension",
+          "count": 1,
+          "original": "Windows의 기본 범위를 대문자 확장자로 더해도 파일과 참조를 중복 집계하지 않는다",
+          "resolution": "Required windows-specific CI job.",
+          "status": "github-windows-verified"
+        },
+        {
+          "id": "windows-credential-mock",
+          "count": 1,
+          "original": "Windows 자격 어댑터의 저장·회수·삭제를 메모리 mock으로 격리한다",
+          "resolution": "Required Windows job; mock parses the -File marker instead of a stale positional index. No real vault or network.",
+          "status": "github-windows-verified"
+        },
+        {
+          "id": "strata-canonical-rebuild",
+          "count": 1,
+          "original": "live canonical sources reproduce the saved map byte for byte, without changing sources",
+          "resolution": "Read-only private Talk checkout reproduced the saved map in GitHub CI; missing configured inputs fail.",
+          "status": "github-linux-verified"
+        },
+        {
+          "id": "review-declared-count",
+          "count": 1,
+          "original": "실저장소 — 묶음마다 낸 조각 수 = 선언값",
+          "resolution": "Actual Markdown parser with active bundles, or a nonempty owned fixture including unrelated tables and empty rows.",
+          "status": "github-linux-verified"
+        },
+        {
+          "id": "review-nonempty-source",
+          "count": 1,
+          "original": "실저장소 — 조각의 한국어 원문이 비어 있지 않다",
+          "resolution": "Actual Markdown fixture validates text, pipes and placeholders; no vacuous empty registry loop.",
+          "status": "github-linux-verified"
+        },
+        {
+          "id": "review-section-codes",
+          "count": 1,
+          "original": "실저장소 — 섹션 열은 언어 중립 코드다",
+          "resolution": "Actual multi-section Markdown fixture validates language-neutral section codes.",
+          "status": "github-linux-verified"
+        },
+        {
+          "id": "talk-contract-equality",
+          "count": 1,
+          "original": "계약 파일이 형제(SYNK-talk)와 같은 바이트다",
+          "resolution": "Read-only private Talk checkout matched the canonical contract files in GitHub CI; missing configured inputs fail.",
+          "status": "github-linux-verified"
+        },
+        {
+          "id": "current-card-layout",
+          "count": 1,
+          "original": "26개 실물의 경계와 서체 검사를 통과한다",
+          "resolution": "Read-only fresh Chrome measurement of all 26 current cards; same measurement function as renderer. Historical report and artwork not overwritten.",
+          "status": "github-linux-verified"
+        }
+      ],
+      "local": {
+        "windows": 4,
+        "thinWindows": 4,
+        "reviewAndLayout": 23,
+        "crossRepository": 13,
+        "skipped": 0,
+        "missingUpstreamNegativeControls": 2,
+        "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8"
+      },
+      "githubEvidence": {
+        "verifiedRun": 39128398307,
+        "verifiedCommit": "9b69d610d1b5b55e666ca7762a2e35587b4c2fc9",
+        "linux": {
+          "tests": 1773,
+          "pass": 1769,
+          "fail": 0,
+          "skipped": 4
+        },
+        "windows": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0,
+          "skipped": 0
+        },
+        "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8",
+        "crossRepositoryCasesExecuted": 2,
+        "crossRepositoryCasesSkipped": 0,
+        "talkCheckout": "success",
+        "logSha256": "d1e0067ce8749f343066aaf9fe67e0723a2dcc7f8a88e1d43afa92c520796adf"
+      },
+      "linuxSkipAccounting": {
+        "windowsCoveredInSeparateJob": 4,
+        "privateUpstreamNotConnected": 0
+      },
+      "access": {
+        "upstream": "unmet23-lab/SYNK-talk",
+        "recipient": "unmet23-lab/synk-appsscript",
+        "authentication": "single-repository SSH deploy key",
+        "requiredPermission": "Repository Git contents: read",
+        "readOnly": true,
+        "deployKeyId": 166841461,
+        "title": "synk-appsscript CI read-only 2026-10-18",
+        "secretName": "SYNK_TALK_READ_SSH_KEY",
+        "activationVariable": "SYNK_TALK_CI=on",
+        "requestedFiles": [
+          "package.json",
+          "contents/토픽퀴즈문항.js",
+          "lib/태그기술표.js",
+          "계약/"
+        ],
+        "configuredMissingInputsFailClosed": true,
+        "userApproved": true,
+        "dedicatedCredentialCreated": true,
+        "personalCredentialsCopied": false,
+        "permissionsChanged": true,
+        "expiresAt": null,
+        "localPlaintextRemoved": true,
+        "createdAt": "2026-10-18T12:40:37Z",
+        "secretUpdatedAt": "2026-10-18T12:40:38Z"
+      },
+      "productionDeploymentPerformed": false,
+      "paidAIInvoked": false,
+      "previousGitHubEvidence": {
+        "verifiedRun": 39127210030,
+        "verifiedCommit": "f342bb756da82082fce3c88ecda3f0bc748f8911",
+        "linuxTests": 1773,
+        "linuxPass": 1767,
+        "linuxFail": 0,
+        "linuxSkipped": 6,
+        "verifiedWindowsPass": 4,
+        "verifiedWindowsFail": 0,
+        "verifiedWindowsSkipped": 0,
+        "linuxCaseCoverageRun": 39126443458,
+        "windowsCaseCoverageRun": 39126720015,
+        "windowsJob": 117673287745,
+        "windowsPass": 4,
+        "windowsFail": 0,
+        "windowsSkipped": 0,
+        "tempLegacyAndNativePathsDiffer": true
+      },
+      "defaultBranchVerification": {
+        "runId": 39128398307,
+        "commit": "9b69d610d1b5b55e666ca7762a2e35587b4c2fc9",
+        "branch": "master",
+        "status": "success",
+        "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/39128398307",
+        "linux": {
+          "tests": 1773,
+          "pass": 1769,
+          "fail": 0,
+          "skipped": 4
+        },
+        "windows": {
+          "tests": 4,
+          "pass": 4,
+          "fail": 0,
+          "skipped": 0
+        },
+        "upstreamCommit": "7e42674dfbae0df57a677ddec3101b0df1b180d8"
+      },
+      "privateSourceLocalVerification": {
+        "isolatedTests": 13,
+        "isolatedPass": 13,
+        "sharedTests": 13,
+        "sharedPass": 13,
+        "fail": 0,
+        "skipped": 0,
+        "requiredSource": true
+      }
+    }
+  }
+}

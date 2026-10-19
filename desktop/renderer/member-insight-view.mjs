@@ -250,12 +250,17 @@ function pending(state) {
   return `<div class="mi-state" role="alert"><span class="mi-state-label">다시 확인</span><h2>기록을 불러오지 못했어요.</h2><p>${escape(text(state.message, '잠시 후 다시 확인해 주세요. 연결된 기록을 가져와야 내 성향을 보여드릴 수 있어요.'))}</p>${action('refresh', '다시 불러오기', true)}</div>`;
 }
 
-export function renderMemberInsight(state = {}, { native = false } = {}) {
+export function renderMemberInsight(state = {}, { native = false, poster = null } = {}) {
   state = state && typeof state === 'object' ? state : {};
   const report = state.status === 'ready' && state.report && typeof state.report === 'object' ? state.report : null;
   const status = report ? 'ready' : ['loading', 'signed-out', 'unconfigured', 'error'].includes(state.status) ? state.status : 'error';
   const back = native ? `<button type="button" class="mi-back" data-view="benefits">${arrow}회원 혜택 모두 보기</button>` : `<a class="mi-back" href="#benefits">${arrow}회원 혜택 모두 보기</a>`;
-  const intro = `<header class="mi-hero"><span class="mi-eyebrow">SYNK FOR YOU / ATLAS</span><div class="mi-hero-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 <br>해본 것에서 발견하는 나.</p></div><p class="mi-hero-note">관심사·선호와 학습 기록, 두 가지 시선으로 살펴봐요.</p></header>`;
+  // 포스터(물건·번호 라벨·상태 스티커)를 넘기면 다른 혜택 소개 머리와 같은 틀 — PC 앱(launcher)과 웹 플랫폼(member-benefits.mjs) 모두 넘긴다. 없으면 그림 없는 원래 머리.
+  const art = poster && typeof poster.art === 'string' ? poster.art : '';
+  const top = art
+    ? `<img class="mi-object" src="${escape(art)}" alt=""><div class="mi-hero-top"><span class="mi-eyebrow">${escape(text(poster.label, 'SYNK FOR YOU / ATLAS'))}</span>${poster.badge ? `<span class="mi-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi-led" aria-hidden="true"></span>${escape(poster.badge)}</span>` : ''}</div>`
+    : '<span class="mi-eyebrow">SYNK FOR YOU / ATLAS</span>';
+  const intro = `<header class="mi-hero${art ? ' has-art' : ''}">${top}<div class="mi-hero-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 <br>해본 것에서 발견하는 나.</p></div><p class="mi-hero-note">관심사·선호와 학습 기록, 두 가지 시선으로 살펴봐요.</p></header>`;
   let body;
   if (!report) body = pending({ ...state, status });
   else {

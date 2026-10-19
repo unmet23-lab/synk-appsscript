@@ -283,11 +283,11 @@
     id: 'builds.manual', version: 1, checked: CHECKED,
     series: 'yuhobuilds', title: 'AI 직원 매뉴얼 만들기',
     intro: {
-      eyebrow: 'yuhobuilds — AI 직원 매뉴얼',
-      title: '<span class="title-lead">질문 다섯 개로 만드는</span><br><span class="hl">내 AI 직원 매뉴얼</span>',
+      eyebrow: 'YUHOBUILDS · MANUAL',
+      title: '질문 다섯 개로 만드는<br><span class="hl">내 AI 직원 매뉴얼</span>',
       lead: '맡길 일과 기준을 고르면, ChatGPT·Claude·Gemini에 붙여 넣기만 하면 되는 내 AI 직원 매뉴얼을 만들어 드려요. 한 번 넣어 두면 다음부터는 한 줄로 맡길 수 있어요.',
-      // 좁은 화면에서 「Ge/mini」처럼 단어 가운데가 끊기지 않게 가운뎃점 뒤에 폭 없는 띄움(U+200B)을 둔다
-      meta: ['질문 5개', '약 1분', 'ChatGPT·​Claude·​Gemini', '로그인 없음'],
+      // 첫 화면 계기판 칸은 좁아서(네 칸) AI 이름 셋은 소개 글에만 둔다(10-18)
+      meta: ['질문 5개', '약 1분', '세 AI 모두', '로그인 없음'],
       privacy: '고른 답만 이 기기에 저장돼요. 결과에서 적는 가게 정보와 오늘 맡길 일은 저장하지도, 보내지도 않아요.',
       start: '내 매뉴얼 만들기',
     },

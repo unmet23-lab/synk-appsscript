@@ -7,6 +7,7 @@
  * 10-06 밤 처음 쓰는 사람 검토(GPT 세 명): 셋 다 「ChatGPT 프로젝트 설정」에서 포기, 결과가 길고 복사 단추가 많아 헷갈림
  *   → 유호님 「사용자입장에서 최대한 쉽게 … 친절해야해」. 할 일을 맨 위에 순서대로, 읽을거리는 아래로.
  * 질문 4(사람 차례)는 처음 열 때 다섯 개를 모두 골라 둔다(bindAny). 고른 적이 있으면 건드리지 않는다.
+ * 10-18 옛 펠트 스크랩북(검은 브랜드 면·버터 펠트 배지)을 걷고 컴퓨터·회의 도구와 같은 시그널 틀로 옮겼다. 포스터마다 그 질문을 설명하는 펠트 물건.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(root);
@@ -17,26 +18,42 @@
   // 출처 꼬리표: 공식 · 보도 · SYNK 판단 · 실제 사례(SYNK가 겪은 일)
   const KIND_TEXT = { official: '공식', community: '보도', synk: 'SYNK 판단' };
   let SOURCES = {};
+  let SHOW_SYNK = false;
 
   const sources = () => (Object.keys(SOURCES).length ? SOURCES : ((root.SynkManualContent || {}).SOURCES || {}));
   function badge(src) {
     const all = sources();
     const s = all[src] || all.synk || { kind: 'synk', label: '' };
     const isCase = src === 'case';
+    // 「SYNK 판단」 알약은 자세히에서만(출처 상자가 이미 설명한다). 실제 사례·공식·보도는 그대로.
+    if (s.kind === 'synk' && !isCase && !SHOW_SYNK) return '';
     return `<span class="src ${esc(s.kind)}${isCase ? ' case' : ''}" title="${esc(s.label)}">${isCase ? '실제 사례' : KIND_TEXT[s.kind] || ''}</span>`;
   }
   const kindText = (id, s) => (id === 'case' ? '실제 사례' : KIND_TEXT[s.kind] || '');
 
-  // 첫 화면: 펠트 매뉴얼 한 권(버터 표지·검은 책등·체크 배지). synk.im 브랜드 면의 펠트 오브젝트처럼 하나만 세운다.
+  // 화면마다 내용을 설명하는 펠트 그림(같은 그림을 되풀이하지 않는다).
+  const ART = {
+    intro: ['manual-art-intro.webp', 301, 410],   // 서류 가방을 붙인 크림 매뉴얼: AI 직원 매뉴얼
+    task: ['manual-art-task.webp', 270, 353],     // 체크 칸 셋 할 일 목록: 맡길 일
+    finish: ['manual-art-finish.webp', 357, 360], // 화살이 꽂힌 과녁: 완성 기준
+    checks: ['manual-art-checks.webp', 345, 347], // 체크 메모 위 돋보기: 끝내기 전 검수
+    stops: ['manual-art-stops.webp', 278, 437],   // 멈춤 표지판: 사람 차례
+    ai: ['manual-art-ai.webp', 440, 314],         // 말풍선 뜬 노트북과 휴대폰: 쓰는 AI
+    result: ['manual-art-result.webp', 333, 440], // 체크 꼬리표 단 매뉴얼: 내 매뉴얼
+  };
+  const art = (key, cls) => { const a = ART[key]; return a ? `<img class="${cls}" src="assets/${a[0]}" width="${a[1]}" height="${a[2]}" alt="">` : ''; };
+  const WORD = { task: '맡길 일', finish: '완성', checks: '검수', stops: '사람 차례', ai: '쓰는 AI' };
+
+  // 첫 화면 포스터(시그널): SHIFT 청금석 면 + 펠트 매뉴얼 + 아주 큰 「매뉴얼」. 오른쪽 위 상태 칩.
   function hero() {
-    return '<figure class="hero-obj"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure>';
+    return `<div class="poster tall" data-word="매뉴얼" style="--len:3"><span class="label">01 / YUHOBUILDS TOOL</span><span class="led-chip">무료 요금제로 돼요</span>${art('intro', 'cut')}</div>`;
   }
   function marked(title, marks) {
     const t = esc(title);
-    for (const m of marks) { const e = esc(m); const i = t.indexOf(e); if (m && i >= 0) return `${t.slice(0, i)}<span class="hl">${e}</span>${t.slice(i + e.length)}`; }
+    for (const m of marks) { const e = esc(m); const i = t.indexOf(e); if (m && i >= 0) return `${t.slice(0, i)}<span class="hl nw">${e}</span>${t.slice(i + e.length)}`; }
     return t;
   }
-  // 구획 머리: 모노 번호와 가는 선, 그 아래 제목(synk.im 구획 머리와 같은 짜임). 스티커는 붙이지 않는다.
+  // 구역 머리: 「01 · 제목」 모노 번호 + 제목 + 1px 선(시그널). 스티커는 붙이지 않는다.
   const head = (no, title, id) => `<h2${id ? ` id="${esc(id)}" tabindex="-1"` : ''}><span class="no">${String(no).padStart(2, '0')}</span>${esc(title)}</h2>`;
 
   // ── 질문 팁의 그림 ──
@@ -56,7 +73,7 @@
     return '<div class="stopflow" role="img" aria-label="AI는 만들기, 검수, 준비, 보고를 하고, 결제·가입·게시·삭제·내 글 수정 앞에서 멈춰 사람에게 묻는다"><div class="col"><b>AI가 하는 일</b><span>만들기</span><span>검수</span><span>준비</span><span>보고</span></div><div class="pause">멈춤</div><div class="col human"><b>사람 차례</b><span>결제</span><span>가입</span><span>게시</span><span>삭제</span><span>내 글 수정</span></div></div>';
   }
   function names() {
-    return '<div class="pool" role="img" aria-label="바로 써 볼 때는 어느 AI든 새 채팅에 붙여 넣고, 계속 쓸 때는 ChatGPT와 Claude는 프로젝트의 지침, Gemini는 스킬의 요청 사항에 넣는다"><div class="p"><b>바로 써 보기</b><div class="row"><span>새 채팅</span><span class="alt">붙여 넣기</span></div></div><div class="p"><b>ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b>Gemini</b><div class="row"><span>스킬</span><span class="alt">요청 사항</span></div></div></div>';
+    return '<div class="pool mem tri" role="img" aria-label="바로 써 볼 때는 어느 AI든 새 채팅에 붙여 넣고, 계속 쓸 때는 ChatGPT와 Claude는 프로젝트의 지침, Gemini는 스킬의 요청 사항에 넣는다"><div class="p"><b class="kr">바로 써 보기</b><div class="row"><span>새 채팅</span><span class="alt">붙여 넣기</span></div></div><div class="p"><b class="kr">ChatGPT·Claude</b><div class="row"><span>프로젝트</span><span class="alt">지침</span></div></div><div class="p"><b class="kr">Gemini</b><div class="row"><span>스킬</span><span class="alt">요청 사항</span></div></div></div>';
   }
   function visual(key, answers) {
     if (key === 'oneline') return oneline();
@@ -66,7 +83,17 @@
     if (key === 'names') return names();
     return '';
   }
-  function aside() { return ''; }
+  // 질문 옆 포스터: 지금 질문의 낱말을 큰 한글로 + 그 질문을 설명하는 펠트 그림. 휴대폰에서는 질문 위의 띠가 된다(signal.css).
+  function aside(answers, rules, step) {
+    const C = root.SynkManualContent;
+    if (!C || !step) return '';
+    const list = C.steps.filter(x => !x.when || x.when(answers || {}));
+    const i = list.findIndex(x => x.id === step.id);
+    const word = WORD[step.id] || step.short || step.eyebrow || '';
+    const pad = n => String(n).padStart(2, '0');
+    const width = [...word].reduce((n, ch) => n + (/[가-힣]/.test(ch) ? 1 : /\s/.test(ch) ? 0.3 : /[A-Z]/.test(ch) ? 0.62 : 0.55), 0);
+    return `<div class="poster step-poster" data-word="${esc(word)}" style="--len:${Math.max(2, Math.round(width * 100) / 100)}" aria-hidden="true"><span class="label">QUESTION ${pad(i + 1)} / ${pad(list.length)}</span>${art(step.id, 'cut')}</div>`;
+  }
 
   // 질문 4(사람 차례)를 처음 열면 다섯 개를 모두 골라 둔다. 화면과 답을 함께 맞추고, 왜 골라 뒀는지 한 줄 보여 준다.
   function bindAny(el, ctx) {
@@ -183,6 +210,7 @@
     const { rec, layout, plan, checks, feedbackGiven, content } = ctx;
     SOURCES = content.SOURCES;
     const deep = layout === 'deep', quick = layout === 'quick';
+    SHOW_SYNK = deep;
     const because = plan && plan.selected && plan.selected.id === layout
       ? (plan.reasons.includes('feedback.too_much') ? '지난번에 ‘너무 많아요’라고 하셔서 간단히 보여 드려요. 이 기기에 저장된 답을 기준으로 했어요.' : plan.reasons.includes('feedback.want_more') ? '지난번에 ‘더 자세히’를 고르셔서 자세히 보여 드려요. 이 기기에 저장된 답을 기준으로 했어요.' : '')
       : '';
@@ -225,7 +253,7 @@
     const dockCopy = PATH_NOW === 'keep' ? ['copy:manual', '매뉴얼 복사'] : ['copy:trial', '붙일 글 복사'];
     const dock = `<div class="dock no-print" role="group" aria-label="바로 쓰기"><button type="button" class="btn primary" data-proxy="${dockCopy[0]}" data-dock-copy>${dockCopy[1]}</button>${multi ? '<button type="button" class="btn soft" data-scroll="use-h">쓰는 법 보기</button>' : openLink(rec.saves[0])}</div>`;
 
-    const html = `<article class="result"><header class="r-top${rec.warns.length ? '' : ' cheer'}"><p class="rec"><span class="stamp">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot" aria-hidden="true"><img src="assets/hero-manual.webp" width="766" height="1148" alt=""></figure></header>${warns}${use}${cmds}${doneLine}${layoutRow}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div>${dock}</article>`;
+    const html = `<article class="result r-tool"><header class="r-top"><p class="rec"><span class="sticker">${esc(content.checked.replace(/-/g, '.'))} 기준</span><span>${esc(content.series)} · 내 AI 직원 매뉴얼</span></p><h1 id="q" tabindex="-1">${marked(rec.headline.title, [rec.headline.mark])}</h1><p>${esc(rec.headline.sub)}</p><ul class="facts" aria-label="매뉴얼 요약">${rec.facts.map(x => `<li>${esc(x)}</li>`).join('')}</ul><figure class="shot cut" aria-hidden="true">${art('result', '')}</figure></header>${warns}${use}${cmds}${doneLine}${layoutRow}${checklist}${tipsHtml}${skip}${saveRow}${fb}${edit}${sourcesBox}<div class="nav no-print"><button type="button" class="btn ghost" data-action="restart">처음부터 다시</button></div>${dock}</article>`;
     const texts = { manual: rec.manual, trial: rec.trial, all: summaryText(rec, content) };
     rec.commands.forEach((c, i) => { texts[`cmd${i}`] = c; });
     return { html, texts };
@@ -316,5 +344,5 @@
     box.addEventListener('input', () => apply('me'));
   }
 
-  return Object.freeze({ hero, visual, aside, bindAny, bindResult, result, summaryText });
+  return Object.freeze({ hero, visual, aside, bindAny, bindResult, result, summaryText, ART });
 });

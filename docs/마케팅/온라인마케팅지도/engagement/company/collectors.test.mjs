@@ -142,6 +142,66 @@ test('missing YouTube Analytics scope retains base metrics with visible partial 
   assert.ok(!JSON.stringify(result).includes('SECRET_TOKEN'));
 });
 
+test('YouTube readonly owner scope fetches Analytics shares with the report period', async () => {
+  const calls = [];
+  const fetchImpl = async (raw, options) => {
+    const url = new URL(raw); calls.push(url);
+    assert.equal(options.headers.Authorization, 'Bearer fixture-token');
+    if (url.origin === 'https://youtubeanalytics.googleapis.com') {
+      assert.ok(calls.some(call => call.searchParams.get('mine') === 'true'));
+      assert.equal(url.searchParams.get('ids'), `channel==${CHANNEL_ID}`);
+      assert.equal(url.searchParams.get('metrics'), 'shares');
+      assert.equal(url.searchParams.get('filters'), `video==${VIDEO_A}`);
+      return ok({ columnHeaders: [{ name: 'shares' }], rows: [[7]] });
+    }
+    if (url.pathname.endsWith('/channels')) return ok({ items: url.searchParams.has('mine') ? [{ id: CHANNEL_ID }] : [youTubeChannel()] });
+    if (url.pathname.endsWith('/playlistItems')) return ok({ items: [{ contentDetails: { videoId: VIDEO_A } }] });
+    return ok({ items: [video(VIDEO_A)] });
+  };
+  const result = await collectChannel('https://youtube.com/@synk', { accessToken: 'fixture-token', accountId: CHANNEL_ID, scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload' }, { fetchImpl });
+  assert.equal(calls.filter(url => url.origin === 'https://youtubeanalytics.googleapis.com').length, 1);
+  assert.equal(result.coverage.ownerAuthorized, true);
+  assert.equal(result.posts[0].metrics.shares, 7);
+  assert.deepEqual(result.coverage.metricPeriods.shares, { source: 'youtube-analytics-api-v2', startDate: '2005-01-01', requestedEndDate: calls.at(-1).searchParams.get('endDate'), lagged: true });
+  assert.ok(!result.coverage.unavailableMetrics.includes('shares'));
+});
+
+test('YouTube public readers still skip owner Analytics despite an accepted token scope', async () => {
+  const calls = [];
+  const fetchImpl = async raw => {
+    const url = new URL(raw); calls.push(url);
+    assert.equal(url.origin, 'https://www.googleapis.com');
+    assert.equal(url.searchParams.has('mine'), false);
+    if (url.pathname.endsWith('/channels')) return ok({ items: [youTubeChannel()] });
+    if (url.pathname.endsWith('/playlistItems')) return ok({ items: [{ contentDetails: { videoId: VIDEO_A } }] });
+    return ok({ items: [{ ...video(VIDEO_A), status: { privacyStatus: 'public' } }] });
+  };
+  const result = await collectChannel('https://youtube.com/@synk', { accessToken: 'fixture-token', scope: 'https://www.googleapis.com/auth/youtube.readonly', publicOnly: true }, { fetchImpl });
+  assert.equal(calls.length, 3);
+  assert.equal(result.posts.length, 1);
+  assert.equal(result.coverage.ownerAuthorized, false);
+  assert.equal(result.posts[0].metrics.shares, null);
+  assert.deepEqual(result.coverage.metricPeriods, {});
+  assert.ok(result.coverage.unavailableMetrics.includes('shares'));
+});
+
+test('YouTube upload-only owner scope does not claim Analytics report access', async () => {
+  const calls = [];
+  const fetchImpl = async raw => {
+    const url = new URL(raw); calls.push(url);
+    assert.equal(url.origin, 'https://www.googleapis.com');
+    if (url.pathname.endsWith('/channels')) return ok({ items: url.searchParams.has('mine') ? [{ id: CHANNEL_ID }] : [youTubeChannel()] });
+    if (url.pathname.endsWith('/playlistItems')) return ok({ items: [{ contentDetails: { videoId: VIDEO_A } }] });
+    return ok({ items: [video(VIDEO_A)] });
+  };
+  const result = await collectChannel('https://youtube.com/@synk', { accessToken: 'fixture-token', scope: 'https://www.googleapis.com/auth/youtube.upload' }, { fetchImpl });
+  assert.equal(calls.length, 4);
+  assert.equal(result.coverage.ownerAuthorized, true);
+  assert.equal(result.posts[0].metrics.shares, null);
+  assert.deepEqual(result.coverage.metricPeriods, {});
+  assert.ok(result.coverage.unavailableMetrics.includes('shares'));
+});
+
 test('a single YouTube video uses the basic filtered Analytics report without top-video dimensions', async () => {
   const result = await collectChannel('https://youtube.com/@synk', { accessToken: 'fixture' }, { fetchImpl: async raw => {
     const url = new URL(raw);
@@ -270,10 +330,11 @@ test('Facebook user login selects owned page across pages and keeps page tokens 
     const url = new URL(raw); tokens.push(options.headers.Authorization);
     if (url.pathname.endsWith('/me/accounts')) return ok(url.searchParams.has('after') ? { data: [{ id: '123', username: 'SYNK', link: 'https://facebook.com/profile.php?id=123', access_token: 'FIXTURE_PAGE_TOKEN' }] } : { data: [{ id: '456', username: 'else', access_token: 'OTHER_PAGE_TOKEN' }], paging: { next: 'https://graph.facebook.com/ignored', cursors: { after: 'next' } } });
     if (url.pathname.endsWith('/me')) return ok({ id: '123', username: 'synk', name: 'SYNK', followers_count: 20, fan_count: 12, link: 'https://facebook.com/profile.php?id=123' });
+    if(url.pathname.endsWith('/videos'))return ok({data:[]});
     assert.ok(url.searchParams.get('fields').includes('reactions.type(LIKE)'));
     return ok({ data: [{ id: '123_999', message: 'First', created_time: '2026-09-20T00:00:00Z', reactions: { summary: { total_count: 0 } }, comments: { summary: { total_count: 2 } }, shares: { count: 0 } }] });
   } });
-  assert.deepEqual(tokens, ['Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN']);
+  assert.deepEqual(tokens, ['Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_USER_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN', 'Bearer FIXTURE_PAGE_TOKEN','Bearer FIXTURE_PAGE_TOKEN']);
   assert.deepEqual(result.posts[0].metrics, { views: null, likes: 0, comments: 2, shares: 0, saves: null, reach: null });
   assert.equal(result.channel.followers, 20);
   assert.ok(!JSON.stringify(result).includes('TOKEN'));

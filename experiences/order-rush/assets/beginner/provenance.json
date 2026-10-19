@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-08",
+  "images": {
+    "water.webp": "experiences/hangul-stage/assets/words/mul.webp",
+    "bread.webp": "experiences/hangul-stage/assets/mnemonic/c-pp.webp",
+    "apple.webp": "experiences/hangul-stage/assets/mnemonic/v-wa.webp"
+  },
+  "note": "Approved existing felt images copied without modification. Customer figures, Mongle, UI parts and cafe background reuse the existing order-rush assets. Voice generation metadata lives in voices.json; no OS TTS fallback."
+}

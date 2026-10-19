@@ -8,7 +8,6 @@ import Personalization from '../../atlas/personalization.js';
 import { createMeetingAdapter } from '../atlas-lab/meeting.mjs';
 import { createJourneyHost } from '../atlas-lab/journey-host.mjs';
 import { datingPublicTarget, datingRequestPath, resolveDatingPublicTarget } from '../atlas-lab/dating-public.mjs';
-import { createRoomHandler } from '../spaceship-coop/server.mjs';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'talk-rally', 'synk-account', 'atlas-lab', 'blank-slice','teacher-world','synk-town','hangul-stage','word-magic','spaceship-coop']);
 // The Atlas lab's consultation demo reads the published computer recommendation tool, read-only.
@@ -28,7 +27,7 @@ const classroomPublic={
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
   'wardrobe.css', 'dist/wardrobe-three.js',
   ...['mongle-basic.webp', 'marin-basic.webp', 'kkamong-base.webp', 'kkamong-scarf.webp', 'kkamong-headphones.webp', 'kkamong-apron.webp', 'kkamong-summer-deel.webp', 'kkamong-winter-deel.webp', 'felt-paper.webp', 'felt-night.webp', 'felt-lapis.webp', 'cushion-cream.webp', 'cushion-blush.webp'].map(name => `assets/wardrobe/${name}`),
-  'benefits.css', 'assets/member/care-note.webp', 'assets/member/fortune-star.avif', 'assets/member/teacher-cover.png', 'assets/member/studio-camera.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
+  'benefits.css', 'member-insight.css', ...['gift', 'insight', 'subscriptions', 'care', 'fortune'].map(id => `assets/member/benefit-${id}.webp`), 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
   'platform.webmanifest', 'world.webmanifest', 'world-classroom.css', 'assets/app-platform.png', 'assets/app-world.png',
   'dist/app.js', 'dist/client.js', 'dist/teacher.js', 'dist/preview.js', 'dist/platform.js',
   'assets/SUIT-Variable.woff2', 'assets/InterTight-700.woff2', 'assets/scrapbook.css', 'assets/sticker-book.webp',
@@ -59,9 +58,23 @@ export function targetFor(url, { datingOnly = false } = {}) {
   if(publicFiles&&!publicFiles.has(name)&&!(name.startsWith('assets/')&&/\.(?:png|webp|svg|woff2|ttf|jpg)$/.test(name)))return null;
   return target;
 }
+// The cooperative room API is imported only when the hub serves it: the dating-only
+// package ships without spaceship-coop, and a static import made that package fail to start.
+function lazyRoomHandler(options) {
+  let handler = null, closed = false;
+  const ready = import('../spaceship-coop/server.mjs').then(({ createRoomHandler }) => {
+    handler = createRoomHandler(options);
+    if (closed) handler.close();
+    return handler;
+  });
+  const handle = async (req, res) => (await ready)(req, res);
+  handle.close = () => { closed = true; handler?.close(); };
+  return handle;
+}
+
 export function createServer({ datingService, datingConfig, datingOnly = false, requestGuard } = {}) {
   const journey = datingOnly ? null : createJourneyHost({ adapter: createMeetingAdapter({ Domain, Ask, Personalization }) });
-  const spaceship = datingOnly ? null : createRoomHandler({ prefix: '/api/spaceship', serveStatic: false });
+  const spaceship = datingOnly ? null : lazyRoomHandler({ prefix: '/api/spaceship', serveStatic: false });
   const server = http.createServer(async (req, res) => {
     try {
       if (requestGuard && (await requestGuard(req, res) === false || res.writableEnded)) {

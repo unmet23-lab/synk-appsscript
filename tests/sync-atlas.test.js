@@ -48,7 +48,7 @@ test('Talk receives exactly what it imports and what that loads, with a manifest
   // account-summary.js and Strata's example layer (the sentences the summary carries) go with the server
   // bundles (Talk's synk-server-build.js), memory-sync.js with game-learning.js.
   const copied = ['account-summary.js', 'education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-ledger.js', 'learning-sync.js', 'learning.js',
-    'memory-sync.js', 'preferences.js', 'temper-flow.js', 'temper.js', 'trail.js', 'vellum-flow.js', 'vellum.js'];
+    'memory-sync.js', 'preferences.js', 'temper-flow.js', 'temper.js', 'trail-member-observations.js', 'trail-periods.js', 'trail.js', 'vellum-flow.js', 'vellum.js'];
   for (const name of copied) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)), name);
   const strata = ['index.js', 'maps/ko.json', 'maps/topik-i.json', 'topik-i-examples.js', 'topik-i.situation-examples.json'];
   for (const name of strata) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));
@@ -115,13 +115,17 @@ test('the server bundle is rebuilt by Talk\'s own generator in the same run and 
   fs.unlinkSync(path.join(website, 'package.json'));
   // A stand-in for Talk's tools/synk-server-build.js with the same build()/write() shape.
   write('tools/synk-server-build.js', "const fs=require('node:fs'),path=require('node:path');const root=path.resolve(__dirname,'..');\n"
-    + "function build(){return '// bundle\\n'+fs.readFileSync(path.join(root,'lib/atlas/trail.js'),'utf8').length+':'+fs.readFileSync(path.join(root,'lib/atlas/engine.js'),'utf8').length;}\n"
+    + "function build(){return '// bundle\\nmodule.exports = '+JSON.stringify({trail:fs.readFileSync(path.join(root,'lib/atlas/trail.js'),'utf8').length,engine:fs.readFileSync(path.join(root,'lib/atlas/engine.js'),'utf8').length})+';\\n';}\n"
     + "function write(){const f=path.join(root,'supabase/functions/_shared/synk-atlas.js');fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,build());}\nmodule.exports={build,write};\n");
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /rebuilt .*synk-atlas\.js/);
   const bundle = path.join(talk, 'supabase/functions/_shared/synk-atlas.js');
   assert.match(fs.readFileSync(bundle, 'utf8'), /^\/\/ bundle/);
+  assert.deepEqual(require(bundle), {
+    trail: fs.readFileSync(path.join(talk, 'lib/atlas/trail.js'), 'utf8').length,
+    engine: fs.readFileSync(path.join(talk, 'lib/atlas/engine.js'), 'utf8').length,
+  }, 'the rebuilt bundle is an executable module carrying the copied sources');
   assert.match(result.stdout, /engine \(none\) -> atlas-/, 'a changed engine version is called out with the deploy order');
   assert.match(result.stdout, /deploy synk-account, synk-learning and events before releasing an app/);
   assert.equal(run('--consumer', 'talk', '--check').status, 0);

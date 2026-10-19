@@ -8,8 +8,9 @@ export const APPS={
   pulse:{name:'SYNK PULSE',short:'PULSE',icon:'messenger.png',category:'CAST · CREATE · REVIEW',description:'모델 선택부터 시안 검토와 승인까지.',cover:'laptop.webp',alt:'고객과 작품 협업을 나타내는 승인 펠트 노트북',caption:'CLIENT STUDIO · PROJECT & REVIEW',stage:'preview',previewLabel:'모델·제작 진행',audience:'광고 제작 고객·창작자·파트너',keywords:'펄스 pulse partners 파트너 창작자 외부 고객 작품 프로젝트 발주 피드백 영상 브랜드 콘텐츠 포트폴리오 모델 캐스팅 광고 제작 진행 수정 의견 승인',summary:'모델과 작업을 고르고, 연결한 프로젝트의 진행 단계·수정 의견·시안 승인을 함께 확인합니다.',boundary:'초대 링크로 연결한 프로젝트의 의견과 승인은 담당자와 공유됩니다. 제작 요청 초안은 현재 기기에 저장하며 기존 상담 채널로 전달합니다.',features:[['모델·포트폴리오','공개 모델과 작업을 살펴보고 제작 요청에 담습니다.'],['제작 진행·수정 의견','초대한 프로젝트의 단계와 시안을 확인하고 버전·장면별 의견을 남깁니다.'],['시안 최종 승인','확인한 최신 시안의 승인 버전과 일시를 기록하고 최종 파일을 확인합니다.']]},
 };
 for(const benefit of MEMBER_BENEFITS){
-  // AI 구독 계정판은 회원 혜택 화면 안에서만 열리며 앱 목록·실행 권한과 연결하지 않는다.
-  if(benefit.id==='subscriptions')continue;
+  // 화면 안에 들어가는 혜택(내 성향 확인하기·AI 구독 계정판)은 회원 혜택 화면 안에서만 열리며 앱 목록·실행 권한과 연결하지 않는다.
+  // 10-14 insight가 이 조건 없이 아래 마지막 분기로 떨어져 「가족 앨범」 이름의 앱으로 목록에 들어갔었다.
+  if(benefit.embedded)continue;
   if(benefit.id==='care'){
     APPS.care={name:'SYNK 플레저',short:'플레저',icon:benefit.asset,category:'REMEMBER · CARE · CONNECT',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'RELATIONSHIP CARE · LOCAL MVP',stage:'preview',previewLabel:'플레저 · 로컬 MVP',audience:'생일·경조사와 연락을 챙기고 싶은 사람',keywords:'플레저 챙김 관계 생일 경조사 기념일 결혼 부고 연락 말투 녹음 대화',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
     continue;
@@ -18,8 +19,7 @@ for(const benefit of MEMBER_BENEFITS){
     APPS.fortune={name:'SYNK 무료 운세',short:'무료 운세',icon:benefit.asset,category:'TODAY · LUCK · SMILE',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'SYNK FOR YOU · LOCAL MVP',stage:'preview',previewLabel:'무료 운세 · 로컬 MVP',audience:'오늘을 가볍게 시작하고 싶은 사람',keywords:'운세 무료 오늘 이번주 별자리 zodiac horoscope 한국 사주 saju 만세력 생년월일 출생시각 일간 오행 행운 색 숫자 일상 계정 저장 보관함 메모 실천 기록 내보내기',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
     continue;
   }
-  const rehearsal=benefit.id==='rehearsal';
-  APPS[benefit.id]={name:'SYNK '+benefit.name,short:rehearsal?'대화 리허설':'가족 앨범',icon:benefit.asset,category:rehearsal?'PREPARE · PRACTICE · REFLECT':'PHOTO · STORY · VOICE',description:benefit.headline,cover:benefit.asset,alt:benefit.alt,caption:'SYNK FOR YOU · LOCAL MVP',stage:'preview',previewLabel:benefit.name+' · 로컬 MVP',audience:rehearsal?'중요한 대화를 미리 연습하고 싶은 사람':'사진과 실제 목소리로 가족의 이야기를 남기고 싶은 사람',keywords:rehearsal?'리허설 대화 부탁 거절 면접 업무 연습 회고 재시도':'가족 앨범 사진 이야기 녹음 목소리 기억 추억',summary:benefit.description,boundary:benefit.availability,features:benefit.steps.map(step=>[step.title,step.body])};
+
 }
 // Division colours: docs/디자인_토큰.json, SNS키트/README.md and approved palette.
 // Studio and SHIFT are workroom features in Messenger, not separate apps.
@@ -31,18 +31,16 @@ export const BRAND_PRESENTATION={
   pulse:{brand:'PULSE · 작품',accent:'#99295D',ink:'#99295D',icon:'pulse-cover.png',cover:'pulse-cover.png',alt:'작품을 담은 베리색 펠트 레코드와 사용 범위 서류'},
   care:{brand:'SYNK · 일상',accent:'#3D6BC9',ink:'#24448C'},
   fortune:{brand:'SYNK · 회원 혜택',accent:'#F5C445',ink:'#7E5A10'},
-  rehearsal:{brand:'SYNK · 회원 혜택',accent:'#F96859',ink:'#AE322A'},
-  'family-album':{brand:'SYNK · 회원 혜택',accent:'#F5C445',ink:'#7E5A10'},
 };
 // 2026-10-06 platform redesign: each app is shown as a big Hangul word (the homepage 싱ㅋ idea)
 // and a one-syllable tile. Display only; ids, names and entitlements are unchanged.
-const DISPLAY_WORDS={world:['월드','월'],messenger:['워크\n스페이스','워'],teacher:['내 수업','수'],path:['패스','패'],pulse:['펄스','펄'],care:['플레저','플'],fortune:['운세','운'],rehearsal:['리허설','리'],'family-album':['가족\n앨범','가']};
+const DISPLAY_WORDS={world:['월드','월'],messenger:['워크\n스페이스','워'],teacher:['내 수업','수'],path:['패스','패'],pulse:['펄스','펄'],care:['플레저','플'],fortune:['운세','운']};
 for(const [id,presentation] of Object.entries(BRAND_PRESENTATION)){const short=String(APPS[id].short||APPS[id].name),[word,mark]=DISPLAY_WORDS[id]||[short,short.slice(0,1)];Object.assign(APPS[id],presentation,{word,mark});}
 export const APP_IDS=Object.keys(APPS);
 export function clientRows(snapshot=[],{native=true}={}){return APP_IDS.map(id=>{const app=APPS[id];if(app.stage==='planned')return {id,status:'planned',canLaunch:false,reason:'PRODUCT_PLANNED'};if(app.stage==='preview')return {id,status:'preview',canLaunch:false,reason:'LOCAL_PREVIEW'};return snapshot.find(row=>row?.id===id)||{id,status:'unavailable',reason:native?'CHECKING':'BROWSER_PREVIEW'};});}
 export function matchesLibrary(id,{search='',filter='all',favorites=[],client,teacherAvailable=false}={}){const app=APPS[id];if(!app)return false;const text=[app.name,app.keywords,app.audience,app.summary,...(id==='messenger'&&teacherAvailable?[APPS.teacher.name,APPS.teacher.keywords,APPS.teacher.summary]:[])].join(' ').toLowerCase();if(search.trim()&&!text.includes(search.trim().toLowerCase()))return false;if(filter==='installed'&&!client?.canLaunch)return false;if(filter==='favorites'&&!favorites.includes(id))return false;if(filter==='planned'&&app.stage!=='planned')return false;if(filter==='development'&&app.stage==='planned')return false;return true;}
 export function bytes(value){if(!Number.isFinite(value)||value<0)return '—';if(value<1024)return `${value} B`;if(value<1024**2)return `${(value/1024).toFixed(1)} KB`;return `${(value/1024**2).toFixed(1)} MB`;}
-export function statusLabel(client){if(!client)return '확인 중';if(APPS[client.id]?.stage==='planned'||client.status==='planned')return '확장 준비 중';if(client.publicWebAvailable===true&&['care','fortune','rehearsal','path'].includes(client.id))return '웹에서 이용 가능';if(APPS[client.id]?.stage==='preview'||client.status==='preview')return APPS[client.id]?.previewLabel||'교사·기관용 로컬 MVP';if(client.reason==='CHECKING')return '확인 중';if(client.reason==='BROWSER_PREVIEW')return 'PC 앱에서 확인';if(client.canLaunch)return client.updateAvailable?'업데이트 가능':'설치됨';if(client.status==='not-installed')return '설치되지 않음';if(client.reason==='INVALID_INSTALLATION')return '앱 확인 필요';return '배포 준비 중';}
+export function statusLabel(client){if(!client)return '확인 중';if(APPS[client.id]?.stage==='planned'||client.status==='planned')return '확장 준비 중';if(client.publicWebAvailable===true&&['care','fortune','path'].includes(client.id))return '웹에서 이용 가능';if(APPS[client.id]?.stage==='preview'||client.status==='preview')return APPS[client.id]?.previewLabel||'교사·기관용 로컬 MVP';if(client.reason==='CHECKING')return '확인 중';if(client.reason==='BROWSER_PREVIEW')return 'PC 앱에서 확인';if(client.canLaunch)return client.updateAvailable?'업데이트 가능':'설치됨';if(client.status==='not-installed')return '설치되지 않음';if(client.reason==='INVALID_INSTALLATION')return '앱 확인 필요';return '배포 준비 중';}
 export function primaryAction(client,{native=true,busy=false,teacherPreviewAvailable=false,productPreviewsAvailable=[],publicAppsAvailable=[]}={}){
   if(client?.id&&!APP_IDS.includes(client.id))return {label:'이용할 수 없음',action:'none',disabled:true};
   if(client?.id==='pulse')return {label:'PULSE 열기',action:'pulse-app',disabled:busy};
@@ -50,9 +48,9 @@ export function primaryAction(client,{native=true,busy=false,teacherPreviewAvail
   if(APPS[client?.id]?.stage==='planned'||client?.status==='planned')return {label:'준비 중',action:'none',disabled:true};
   if(client?.id==='teacher')return native&&teacherPreviewAvailable?{label:'내 수업 열기',action:'teacher-preview',disabled:false}:{label:native?'수업 연결 준비 중':'내 수업 · 로컬 MVP',action:'none',disabled:true};
   if(client?.id==='path'&&native&&Array.isArray(publicAppsAvailable)&&publicAppsAvailable.includes('path'))return {label:'실사 면접실 열기',action:'public-web',disabled:false};
-  if(['path','care','fortune','rehearsal','family-album'].includes(client?.id)){
+  if(['path','care','fortune'].includes(client?.id)){
     if(native&&Array.isArray(productPreviewsAvailable)&&productPreviewsAvailable.includes(client.id))return {label:APPS[client.id].short+' MVP 열기',action:'product-preview',disabled:false};
-    if(native&&['care','fortune','rehearsal'].includes(client.id)&&Array.isArray(publicAppsAvailable)&&publicAppsAvailable.includes(client.id))return {label:'웹으로 열기',action:'public-web',disabled:false};
+    if(native&&['care','fortune'].includes(client.id)&&Array.isArray(publicAppsAvailable)&&publicAppsAvailable.includes(client.id))return {label:'웹으로 열기',action:'public-web',disabled:false};
     return {label:native?'로컬 MVP 준비 중':'PC 앱 · 로컬 MVP',action:'none',disabled:true};
   }
   if(!native)return {label:'PC 앱에서 설치',action:'none',disabled:true};

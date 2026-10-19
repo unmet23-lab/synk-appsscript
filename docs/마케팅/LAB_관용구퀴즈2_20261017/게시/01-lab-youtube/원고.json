@@ -1,0 +1,15 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "배꼽이 빠지다 ≠ belly button falls out! Guess 3 Korean idioms in 3 seconds 😂 #learnkorean",
+ "caption": "Can you guess these 3 Korean idioms in 3 seconds? 😂\n\n배꼽이 빠지다 — not “your belly button falls out”: laughing so hard\n귀가 얇다 — not “thin ears”: believes anything you hear\n입이 무겁다 — not “a heavy mouth”: keeps secrets\n\nSay it: 배꼽 빠지겠어요 · 귀가 얇아요 · 입이 무거워요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\nSYNK LAB · Korean idiom quiz #2 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+ "alt": [
+  "Felt mascot Mongle hosts a Korean idiom quiz. A felt belly with a popping belly button, paper-thin felt ears and felt lips biting a dumbbell show the literal readings of 배꼽이 빠지다, 귀가 얇다 and 입이 무겁다; a laughing felt face, a tablet with a pile of shopping bags, and zipped lips with a locked box show the real meanings."
+ ],
+ "_비고": "video.mp4 = v5b(100 BPM, 36.0초, −14.2 LUFS, remotion/out/kids-quiz-v5b_final.mp4, 결정 표 10-18 「b로 가자」). 표지 cover.png = 1.3초(배꼽 그림 + belly button falls out??). 어린이 전용(made for kids) 아님 — 첫 편과 같이 점수 댓글이 필요하다. 합성 표시는 첫 편과 같이 필수 아님(펠트 장면·특정인이 아닌 AI 내레이터). 발행은 유호님 승인 뒤 node tools/sns-발행.js --승인 → --발행(비공개) → 확인 → --공개.",
+ "version": "v5b"
+}

@@ -20,7 +20,7 @@ async function fixture(t){
     const response=await fetch(base+url,{method,headers:{...(name?{Cookie:'synk_company_session='+sessions[name]}:{}),...(method==='POST'?{Origin:app.origin,'Content-Type':'application/json','X-CSRF-Token':csrf}:{}),...headers},...(input===undefined?{}:{body:JSON.stringify(input)})});return {status:response.status,data:await response.json(),headers:response.headers};
   }
   async function slowRead(input,whileReading){
-    const body=JSON.stringify(input),arrived=new Promise(resolve=>app.server.once('request',()=>queueMicrotask(resolve)));
+    const body=JSON.stringify(input),arrived=new Promise(resolve=>app.server.once('request',()=>setImmediate(resolve)));
     let req;const result=new Promise((resolve,reject)=>{req=request(base+path+'/read',{method:'POST',headers:{Cookie:'synk_company_session='+sessions.owner,Origin:app.origin,'Content-Type':'application/json','X-CSRF-Token':csrf,'Content-Length':Buffer.byteLength(body)}},response=>{let text='';response.setEncoding('utf8');response.on('data',chunk=>text+=chunk);response.on('end',()=>resolve({status:response.statusCode,data:JSON.parse(text)}));});req.on('error',reject);});
     req.write(body.slice(0,5));await arrived;whileReading();req.end(body.slice(5));return result;
   }

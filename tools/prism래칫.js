@@ -54,12 +54,9 @@ function 안쪽인가(뿌리, 대상) {
 }
 
 function 실제경로(뿌리, 상대) {
-  const 실제 = fs.realpathSync(path.resolve(뿌리, 상대));
+  const 실제 = fs.realpathSync.native(path.resolve(뿌리, 상대));
   if (!안쪽인가(뿌리, 실제)) throw new Error('저장소 밖으로 이어진 경로');
-  // Windows의 realpathSync는 입력 대소문자를 남길 수 있다. native가 실제 표기를 돌려준다.
-  const 정본 = fs.realpathSync.native(실제);
-  if (!안쪽인가(뿌리, 정본)) throw new Error('저장소 밖으로 이어진 경로');
-  return 정본;
+  return 실제;
 }
 
 function 파일열쇠(뿌리, 경로, 없는경로허용 = false) {
@@ -234,7 +231,7 @@ function 범위찾기(뿌리, 범위, 제외) {
 function 검사({ 루트 = 저장소, 명부, 범위, 추가범위 = [] } = {}) {
   try {
     let 뿌리;
-    try { 뿌리 = fs.realpathSync(루트); }
+    try { 뿌리 = fs.realpathSync.native(루트); }
     catch (_) { throw new Error('검사 루트를 읽을 수 없다'); }
     const 외부명부 = 명부 === undefined && Boolean(process.env.SYNK_PRISM_명부);
     const 명부경로 = 외부명부

@@ -1,0 +1,17 @@
+# Activation is controlled by production-ready.
+# Asia/Seoul is explicit; host timezone must not determine the schedule.
+[Unit]
+Description=SYNK full daily research schedule
+ConditionPathExists=/etc/synk-argon-77yuhbs/production-ready
+
+[Timer]
+OnCalendar=*-*-* 05:00:00 Asia/Seoul
+Unit=synk-argon-ultra-full.service
+AccuracySec=1s
+RandomizedDelaySec=0
+Persistent=false
+
+[Install]
+WantedBy=timers.target
+
+

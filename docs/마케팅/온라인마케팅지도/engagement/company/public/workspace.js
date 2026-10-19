@@ -1,7 +1,7 @@
 'use strict';
 
 // A persistent same-origin module keeps conversations and drafts alive across tabs.
-const workspaceModule={userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null};
+const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 const workspacePrimaryTabs=[['workroom','내 작업실','bookmark'],['teaching','내 수업','users'],['social','SNS·마케팅','calendar'],['messenger','메신저','chat']];
 // One application frame for every workspace; only its contextual menu changes.
@@ -149,22 +149,110 @@ function syncWorkspaceLocation(){
   if(hash.has('view'))url.hash='';
   if(url.href!==location.href)history.replaceState(null,'',url.pathname+url.search+url.hash);
 }
+// Background repaints (collection polling, late data) keep the reader's place; clicks and navigation still start at the top.
+// They wait while the reader is mid-action — composing Korean text, holding a pointer down, or with typed-in input the screen has not
+// taken back yet — because swapping the DOM then drops the text, commits it with a change event or swallows the click.
+const workspaceRepaint={background:false,key:'',composing:null,pressed:false,retry:null,root:null,edited:new WeakSet()};
+function workspaceViewKey(){const section=workspaceSection(),tools=state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined';return JSON.stringify([state.tab,section,tools?makerTools.view:'',['overview','analysis','history'].includes(state.tab)&&section==='team'?state.teamId||'':'',state.tab==='content'&&section==='plan'&&typeof cp!=='undefined'?cp.draftId||'':'',tools&&makerTools.view==='publication'&&typeof pf!=='undefined'?pf.view:'',state.tab==='workroom'&&section==='clients'&&typeof clientDesk!=='undefined'?clientDesk.id||'':'',state.tab==='social'&&typeof socialWorkspaceState!=='undefined'?socialWorkspaceState.editId||'':'']);}
+function renderBackground(){workspaceRepaint.background=true;try{render();}finally{workspaceRepaint.background=false;}}
+function workspaceTextField(element){return element?.tagName==='TEXTAREA'||element?.tagName==='INPUT'&&['text','search','url','tel','password'].includes(element.type);}
+function workspaceFieldSelector(element){return element.tagName.toLowerCase()+[...element.attributes].filter(({name})=>name==='id'||name==='name'||name.startsWith('data-')).map(({name,value})=>`[${name}="${CSS.escape(value)}"]`).join('');}
+function workspaceFieldChanged(field){
+  if(field.tagName==='SELECT'){const options=[...field.options];if(field.multiple)return options.some(option=>option.selected!==option.defaultSelected);const chosen=options.findIndex(option=>option.defaultSelected);return field.selectedIndex!==(chosen<0?(field.size>1?-1:0):chosen);}
+  if(['checkbox','radio'].includes(field.type))return field.checked!==field.defaultChecked;
+  return !['hidden','button','submit','reset','image'].includes(field.type)&&field.value!==field.defaultValue;
+}
+function workspaceRepaintBlocked(root){
+  const composing=workspaceRepaint.composing,active=document.activeElement;
+  return !!(composing?.isConnected&&root.contains(composing))||workspaceRepaint.pressed||!!(active?.isContentEditable&&root.contains(active)&&workspaceRepaint.edited.has(active))||[...root.querySelectorAll('input,textarea,select')].some(field=>workspaceRepaint.edited.has(field)&&workspaceFieldChanged(field));
+}
+// Same-named sections match by position only while their count is unchanged; a grown or shrunk list is left as rendered.
+function workspaceDetails(root){const seen=new Map(),rows=[...root.querySelectorAll('details')].map(node=>{const name=workspaceFieldSelector(node)+'.'+node.className,index=seen.get(name)||0;seen.set(name,index+1);return [name,index,node];});return rows.map(([name,index,node])=>[`${name}#${index}/${seen.get(name)}`,node]);}
+function workspaceRepaintLater(root){workspaceRepaint.root=root;if(workspaceRepaint.retry)return;workspaceRepaint.retry=setTimeout(()=>{workspaceRepaint.retry=null;if(workspaceRepaintBlocked(workspaceRepaint.root))workspaceRepaintLater(workspaceRepaint.root);else renderBackground();},2000);}
+function workspaceRepaintCapture(root,entering){
+  if(!workspaceRepaint.background||entering||workspaceViewKey()!==workspaceRepaint.key)return null;
+  if(workspaceRepaintBlocked(root)){workspaceRepaintLater(root);return {deferred:true};}
+  const main=document.getElementById('main'),active=document.activeElement,focused=active&&active!==main&&root.contains(active)?active:null,text=workspaceTextField(focused);
+  const saved={main:main?main.scrollTop:null,scrolls:[...root.querySelectorAll('[id]')].filter(node=>node!==main&&(node.scrollTop>0||node.scrollLeft>0)).map(node=>[node.id,node.scrollTop,node.scrollLeft]),details:workspaceDetails(root).map(([name,node])=>[name,node.open])};
+  if(focused){const selector=workspaceFieldSelector(focused);saved.focus={selector,index:[...root.querySelectorAll(selector)].indexOf(focused),start:text?focused.selectionStart:null,end:text?focused.selectionEnd:null,direction:text?focused.selectionDirection:null};}
+  return saved;
+}
+function workspaceRepaintRestore(root,saved){
+  if(!saved||saved.deferred)return;
+  // Opened sections first: a collapsed table would shorten the page before the scroll position comes back.
+  const open=new Map(saved.details);for(const [name,node] of workspaceDetails(root))if(open.has(name))node.open=open.get(name);
+  const main=document.getElementById('main');if(main&&saved.main!==null)main.scrollTop=saved.main;
+  for(const [id,top,left] of saved.scrolls){const node=document.getElementById(id);if(node&&node!==main&&root.contains(node)){node.scrollTop=top;node.scrollLeft=left;}}
+  const focus=saved.focus,active=document.activeElement;if(!focus||focus.index<0||(active&&active!==main&&root.contains(active)))return;
+  const target=[...root.querySelectorAll(focus.selector)][focus.index];if(!target||target.closest('[inert],[hidden]'))return;
+  target.focus({preventScroll:true});
+  if(Number.isInteger(focus.start)&&workspaceTextField(target))try{target.setSelectionRange(focus.start,focus.end,focus.direction||'none');}catch{}
+}
+function workspaceRepaintDone(){workspaceRepaint.key=workspaceViewKey();if(workspaceRepaint.retry){clearTimeout(workspaceRepaint.retry);workspaceRepaint.retry=null;}}
+document.addEventListener('compositionstart',event=>{workspaceRepaint.composing=event.target;},true);
+document.addEventListener('compositionend',()=>{workspaceRepaint.composing=null;},true);
+for(const type of ['input','change'])document.addEventListener(type,event=>{if(event.target?.matches?.('input,textarea,select,[contenteditable]'))workspaceRepaint.edited.add(event.target);},true);
+document.addEventListener('pointerdown',()=>{workspaceRepaint.pressed=true;},true);
+for(const type of ['pointerup','pointercancel','dragend'])document.addEventListener(type,()=>{workspaceRepaint.pressed=false;},true);
+window.addEventListener('blur',()=>{workspaceRepaint.pressed=false;});
 function marketingNavigation(){
   const active=state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab;
   return `<nav class="workspace-sections" aria-label="마케팅 메뉴">${workspaceMarketingTabs.map(([id,label])=>`<button type="button" data-action="marketing-section" data-tab="${id}" ${typeof isDemoMode==='function'&&isDemoMode()&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요" ':''}class="${active===id?'active':''}" aria-current="${active===id?'page':'false'}">${label}</button>`).join('')}</nav>`;
 }
 function workspaceHomeActions(){return '';}
-function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p>팀의 대화를 열고 있어요.</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button></div></section>`;}
+function workspaceLoadingText(){return workspaceModule.loadDelayed?'메신저 연결이 늦어지고 있어요.':workspaceModule.loadRetries?'메신저 연결을 다시 시도하고 있어요.':'팀의 대화를 열고 있어요.';}
+function messengerWorkspacePage(){return `<section id="messenger-module-slot" class="messenger-module-slot" aria-label="메신저" aria-busy="${!workspaceModule.ready}"><div class="messenger-module-loading"${workspaceModule.ready?' hidden aria-hidden="true"':''}><span class="loading-line"></span><p role="status">${workspaceLoadingText()}</p><button class="btn small" type="button" data-action="messenger-retry">다시 연결</button><a class="btn small" data-messenger-standalone href="/messenger/" target="_blank" rel="noopener"${workspaceModule.loadDelayed?'':' hidden'}>메신저만 열기</a></div></section>`;}
+function stopWorkspaceModuleLoading(){clearTimeout(workspaceModule.loadTimer);workspaceModule.loadTimer=null;workspaceModule.loadGeneration++;}
+function canRecoverWorkspaceModule(frame=workspaceModule.frame){return Boolean(state.user&&frame&&workspaceModule.frame===frame&&!workspaceModule.ready&&!workspaceModule.voice?.call&&!document.hidden&&globalThis.navigator?.onLine!==false);}
+function workspaceModuleDocumentLoading(frame){
+  try{const doc=frame?.contentDocument;return Boolean(doc&&['loading','interactive'].includes(doc.readyState)&&doc.location?.origin===location.origin&&doc.location?.pathname==='/messenger/');}catch{return false;}
+}
+function startWorkspaceModuleLoading({immediate=false}={}){
+  stopWorkspaceModuleLoading();workspaceModule.loadDelayed=workspaceModule.loadRetries>=2;
+  const frame=workspaceModule.frame;
+  if(!canRecoverWorkspaceModule(frame))return;
+  if(workspaceModule.loadStartedAt===null)workspaceModule.loadStartedAt=Date.now();
+  const graceRemaining=workspaceModuleDocumentLoading(frame)?Math.max(0,60000-(Date.now()-workspaceModule.loadStartedAt)-1000):Infinity;
+  const generation=workspaceModule.loadGeneration,current=()=>generation===workspaceModule.loadGeneration&&canRecoverWorkspaceModule(frame);
+  workspaceModule.loadTimer=setTimeout(()=>{
+    if(generation!==workspaceModule.loadGeneration)return;
+    workspaceModule.loadTimer=null;
+    if(!current())return;
+    // Recover a lost one-shot ready message before navigating an initial frame.
+    sendWorkspaceMessage({type:'workspace:ready-check'});
+    workspaceModule.loadTimer=setTimeout(()=>{
+      if(generation!==workspaceModule.loadGeneration)return;
+      workspaceModule.loadTimer=null;
+      if(!current())return;
+      // A parsed document may still be downloading its module or styles.
+      // Preserve that progress for one bounded minute instead of restarting it.
+      if(workspaceModuleDocumentLoading(frame)&&Date.now()-workspaceModule.loadStartedAt<60000){startWorkspaceModuleLoading();workspaceModule.loadDelayed=true;syncWorkspaceLoading();return;}
+      workspaceModule.loadRetries++;workspaceModule.loadStartedAt=Date.now();frame.src='/messenger/';startWorkspaceModuleLoading();
+      syncWorkspaceLoading();
+    },1000);
+  // Two quick attempts, then one navigation per 30 seconds while visible.
+  // Long outages must recover too, without reloading a ready or active frame.
+  },immediate?0:Math.min(workspaceModule.loadRetries<2?12000:29000,graceRemaining));
+}
+function resumeWorkspaceModuleLoading(){if(typeof state==='undefined')return;if(canRecoverWorkspaceModule()){startWorkspaceModuleLoading({immediate:true});syncWorkspaceLoading();}}
 function syncWorkspaceLoading(){
+  // The persistent frame sits above this slot; keep a stalled document from
+  // covering the loading feedback and reconnect button before its ready signal.
+  if(workspaceModule.host)workspaceModule.host.style.visibility=workspaceModule.ready?'':'hidden';
   const slot=document.getElementById('messenger-module-slot');if(!slot)return;
   slot.setAttribute('aria-busy',String(!workspaceModule.ready));
   const loading=slot.querySelector('.messenger-module-loading');
-  if(loading){loading.hidden=workspaceModule.ready;loading.setAttribute('aria-hidden',String(workspaceModule.ready));loading.inert=workspaceModule.ready;}
+  if(loading){
+    loading.hidden=workspaceModule.ready;loading.setAttribute('aria-hidden',String(workspaceModule.ready));loading.inert=workspaceModule.ready;
+    const status=loading.querySelector('[role="status"]');if(status)status.textContent=workspaceLoadingText();
+    const standalone=loading.querySelector('[data-messenger-standalone]');if(standalone)standalone.hidden=!workspaceModule.loadDelayed;
+  }
 }
 function workspaceShareButton(){return !isViewer()&&workspaceViewNames[state.tab]?'<button type="button" class="btn small workspace-share" data-action="share-workspace" aria-label="현재 화면을 대화 초안으로 공유">'+icon('chat')+'<span>대화로 공유</span></button>':'';}
 function resetWorkspaceModule(){
-  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();
-  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null});
+  // Removing the frame ends its document: the messenger stops capture and the SDK on pagehide.
+  clearInterval(workspaceModule.timer);clearTimeout(workspaceModule.unreadTimer);stopWorkspaceModuleLoading();clearInterval(workspaceModule.voiceTimer);workspaceModule.observer?.disconnect();workspaceModule.host?.remove();document.getElementById('workspace-call')?.remove();
+  Object.assign(workspaceModule,{userId:null,host:null,frame:null,ready:false,loadTimer:null,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,voice:null,voiceTimer:null,voiceProbe:workspaceModule.voiceProbe+1});
 }
 function mountWorkspaceModule(){
   if(!state.user)return resetWorkspaceModule();
@@ -181,16 +269,18 @@ function mountWorkspaceModule(){
       if(workspaceModule.ready)sendWorkspaceMessage(workspaceModule.open);
     }
   }
-  if(shown&&!workspaceModule.host){
+  // With calls enabled the frame is loaded in the background so invitations ring and a call survives every menu.
+  if((shown||workspaceModule.preload)&&!workspaceModule.host){
     const host=document.createElement('section');host.id='workspace-messenger';host.className='workspace-messenger';host.setAttribute('aria-label','팀 메신저');
-    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
+    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.allow='microphone; display-capture; autoplay; fullscreen';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
     host.append(frame);document.body.append(host);workspaceModule.host=host;workspaceModule.frame=frame;
-    frame.addEventListener('load',()=>{syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});});
+    startWorkspaceModuleLoading();
+    frame.addEventListener('load',()=>{if(workspaceModule.frame!==frame)return;syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:ready-check'});sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});});
   }
   workspaceModule.slot=document.getElementById('messenger-module-slot');workspaceModule.observer?.disconnect();
   if(workspaceModule.slot){workspaceModule.observer=new ResizeObserver(syncWorkspaceModuleGeometry);workspaceModule.observer.observe(workspaceModule.slot);}
   if(workspaceModule.host){workspaceModule.host.hidden=!shown;workspaceModule.host.inert=!shown||workspaceSidebarBlocksContent()||Boolean(document.getElementById('overlay')?.children.length);workspaceModule.host.setAttribute('aria-hidden',String(!shown));sendWorkspaceMessage({type:'workspace:visible',visible:shown&&!workspaceSidebarBlocksContent()});}
-  syncWorkspaceLoading();syncWorkspaceModuleGeometry();renderWorkspaceUnread();requestAnimationFrame(syncWorkspaceModuleGeometry);
+  syncWorkspaceLoading();syncWorkspaceModuleGeometry();renderWorkspaceUnread();renderWorkspaceCall();requestAnimationFrame(syncWorkspaceModuleGeometry);
 }
 function syncWorkspaceModuleGeometry(){
   const {host,slot}=workspaceModule;if(!host||!slot||state.tab!=='messenger')return;
@@ -199,7 +289,7 @@ function syncWorkspaceModuleGeometry(){
   Object.assign(host.style,{left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${Math.max(160,rect.height)}px`});
 }
 function sendWorkspaceMessage(message){if(workspaceModule.frame?.contentWindow)workspaceModule.frame.contentWindow.postMessage(message,location.origin);}
-function retryWorkspaceModule(){if(workspaceModule.frame){workspaceModule.ready=false;syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
+function retryWorkspaceModule(){if(workspaceModule.voice?.call)return;if(workspaceModule.frame){workspaceModule.ready=false;workspaceModule.loadRetries=0;workspaceModule.loadStartedAt=Date.now();startWorkspaceModuleLoading();syncWorkspaceLoading();workspaceModule.frame.src='/messenger/';}else mountWorkspaceModule();}
 function openWorkspaceDestination(value){
   const action=typeof safeMarinAction==='function'?safeMarinAction(value):null;if(!action||action.type!=='messenger'||!state.user)return false;
   workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),...(action.channelId?{channelId:action.channelId}:{}),...(action.userId?{userId:action.userId}:{}),...(action.messageId?{messageId:action.messageId}:{}),...(action.fileId?{fileId:action.fileId}:{}),...(action.panel?{panel:action.panel}:{})};
@@ -214,8 +304,44 @@ function renderWorkspaceUnread(){
   document.querySelectorAll('.messenger-unread').forEach(badge=>{badge.hidden=!value;badge.textContent=value>99?'99+':String(value);badge.setAttribute('aria-label',`안 읽은 메시지 ${value}개`);});
 }
 function startWorkspaceSummary(){
-  clearInterval(workspaceModule.timer);void refreshWorkspaceSummary();
+  clearInterval(workspaceModule.timer);void refreshWorkspaceSummary();void probeWorkspaceVoice();
   workspaceModule.timer=setInterval(()=>{if(state.user&&!document.hidden)void refreshWorkspaceSummary();},20000);
+}
+// Calls are off by default. Only a workspace with calls enabled preloads the messenger frame.
+async function probeWorkspaceVoice(){
+  const userId=state.user?.id,probe=++workspaceModule.voiceProbe;if(!userId||workspaceModule.preload)return;
+  try{
+    const response=await fetch('/messenger/api/voice',{credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)return;
+    const capabilities=await response.json();if(probe!==workspaceModule.voiceProbe||state.user?.id!==userId||capabilities?.enabled!==true)return;
+    workspaceModule.preload=true;mountWorkspaceModule();
+  }catch{/* The messenger tab still opens the frame on demand. */}
+}
+const workspaceCallGlyphs={mic:'<path d="M9 6a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3"/>',micOff:'<path d="M15 10V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.6 2.5M5 11a7 7 0 0 0 11.4 5.4M12 18v3M3 3l18 18"/>',leave:'<path d="M4.5 13.5c4.6-4.4 10.4-4.4 15 0l-2.1 2.4-3-1.3v-2.2a10 10 0 0 0-4.8 0v2.2l-3 1.3z"/>',open:'<path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',screen:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M9.5 7.5l5 5M14.5 7.5l-5 5"/>',phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'};
+function workspaceCallGlyph(name){return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${workspaceCallGlyphs[name]}</svg>`;}
+function workspaceCallClock(ms){const total=Math.max(0,Math.floor(ms/1000)),h=Math.floor(total/3600),m=Math.floor(total%3600/60),sec=total%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`;}
+// Mini controls outside the messenger: the call itself stays in the persistent frame.
+function renderWorkspaceCall(){
+  const voice=workspaceModule.voice,call=voice?.call&&!voice.call.ended?voice.call:null,incoming=voice?.incoming&&Date.parse(voice.incoming.expiresAt)>Date.now()?voice.incoming:null;
+  const show=Boolean(state.user&&workspaceModule.host&&state.tab!=='messenger'&&(call||incoming));
+  let dock=document.getElementById('workspace-call');
+  if(!show){if(dock)dock.hidden=true;clearInterval(workspaceModule.voiceTimer);workspaceModule.voiceTimer=null;return;}
+  if(!dock){dock=document.createElement('section');dock.id='workspace-call';dock.className='workspace-call';dock.setAttribute('aria-label','통화 미니 조작');document.body.append(dock);dock.addEventListener('click',workspaceCallAction);}
+  const tone=!call?'':call.phase==='connected'?'live':['reconnecting','pausing','recoverable'].includes(call.phase)?'warn':'pending';
+  const left=incoming?Math.max(0,Math.ceil((Date.parse(incoming.expiresAt)-Date.now())/1000)):0;
+  const ring=incoming?`<div class="workspace-call-ring" role="alertdialog" aria-label="통화 초대"><span class="workspace-call-ring-icon">${workspaceCallGlyph('phone')}</span><div class="workspace-call-text"><strong>${escape(incoming.fromName)}님이 통화에 불렀어요</strong><span>${escape(incoming.channelName)} · <span data-workspace-call-left>${left}</span>초 남음</span></div><div class="workspace-call-actions"><button type="button" class="workspace-call-button" data-workspace-call="reject" data-invitation="${escape(incoming.id)}">거절</button><button type="button" class="workspace-call-button primary" data-workspace-call="accept" data-invitation="${escape(incoming.id)}" ${incoming.busy?'disabled title="지금 통화에서 먼저 나와 주세요"':''}>수락</button></div></div>`:'';
+  const pill=call?`<div class="workspace-call-pill" data-tone="${tone}"><span class="workspace-call-chip">${escape(call.phase==='connected'?'통화 중':call.label||'통화')}</span><div class="workspace-call-text"><strong>${escape(call.channelName||'대화방')}</strong><span>${call.startedAt?`<time data-workspace-call-clock>${workspaceCallClock(Date.now()-call.startedAt)}</time> · `:''}${call.remoteSharing?`${escape(call.remoteSharing)}님 화면 공유 중`:call.audioBlocked?'소리가 막혀 있어요':`${Number(call.people)||1}명`}</span></div><div class="workspace-call-actions">${call.phase==='recoverable'?'':call.canSpeak?`<button type="button" class="workspace-call-icon${call.muted?' muted':''}" data-workspace-call="mute" aria-pressed="${call.muted}" aria-label="${call.muted?'마이크 켜기':'마이크 끄기'}" title="${call.muted?'마이크 켜기':'마이크 끄기'}">${workspaceCallGlyph(call.muted?'micOff':'mic')}</button>`:''}${call.sharing?`<button type="button" class="workspace-call-icon active" data-workspace-call="stop-share" aria-label="화면 공유 중지" title="화면 공유 중지">${workspaceCallGlyph('screen')}</button>`:''}<button type="button" class="workspace-call-icon" data-workspace-call="open" aria-label="통화 화면 열기" title="통화 화면 열기">${workspaceCallGlyph('open')}</button><button type="button" class="workspace-call-icon danger" data-workspace-call="leave" aria-label="통화에서 나가기" title="나가기">${workspaceCallGlyph('leave')}</button></div></div>`:'';
+  const html=ring+pill;
+  if(dock.dataset.html!==html.replace(/<span data-workspace-call-left>\d+<\/span>|<time data-workspace-call-clock>[^<]*<\/time>/g,'')){const focused=dock.contains(document.activeElement)?document.activeElement.dataset.workspaceCall:null;dock.innerHTML=html;dock.dataset.html=html.replace(/<span data-workspace-call-left>\d+<\/span>|<time data-workspace-call-clock>[^<]*<\/time>/g,'');if(focused)dock.querySelector(`[data-workspace-call="${focused}"]`)?.focus({preventScroll:true});}
+  else{const counter=dock.querySelector('[data-workspace-call-left]');if(counter)counter.textContent=String(left);const time=dock.querySelector('[data-workspace-call-clock]');if(time&&call?.startedAt)time.textContent=workspaceCallClock(Date.now()-call.startedAt);}
+  dock.hidden=false;
+  if(!workspaceModule.voiceTimer)workspaceModule.voiceTimer=setInterval(renderWorkspaceCall,1000);
+}
+function workspaceCallAction(event){
+  const button=event.target.closest('[data-workspace-call]');if(!button||!state.user)return;
+  const action=button.dataset.workspaceCall,invitationId=button.dataset.invitation;
+  if(['open','accept'].includes(action)){selectWorkspaceView('messenger');state.error='';render();}
+  if(action==='accept'||action==='reject')button.disabled=true;
+  sendWorkspaceMessage({type:'workspace:voice',action,...(invitationId?{invitationId}:{})});
 }
 function workspaceLinkDestination(value){
   if(typeof value!=='string'||value.length>1800)return null;
@@ -271,7 +397,8 @@ window.addEventListener('message',event=>{
     return;
   }
   if(type==='messenger:navigate'){void navigateWorkspaceLink(event.data.url).catch(error=>notify(error.message));return;}
-  if(type==='messenger:ready'){workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
+  if(type==='messenger:voice'){const hadCall=Boolean(workspaceModule.voice?.call);workspaceModule.voice=event.data.voice&&typeof event.data.voice==='object'?event.data.voice:null;if(workspaceModule.voice?.call)stopWorkspaceModuleLoading();else if(hadCall)resumeWorkspaceModuleLoading();renderWorkspaceCall();return;}
+  if(type==='messenger:ready'){stopWorkspaceModuleLoading();workspaceModule.loadDelayed=false;workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
   if(type==='messenger:open-received'){if(event.data.requestId===workspaceModule.open?.requestId)workspaceModule.open=null;return;}
   if(type==='messenger:share-received'){if(event.data.requestId===workspaceModule.share?.requestId)workspaceModule.share=null;return;}
   if(type==='messenger:unread'){clearTimeout(workspaceModule.unreadTimer);workspaceModule.unreadTimer=setTimeout(()=>void refreshWorkspaceSummary(),400);return;}
@@ -293,7 +420,11 @@ globalThis.navigator?.serviceWorker?.addEventListener('message',event=>{
   })().catch(()=>{});
 });
 window.addEventListener('scroll',syncWorkspaceModuleGeometry,{passive:true});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user)void refreshWorkspaceSummary();});
+document.addEventListener('visibilitychange',()=>{if(typeof state==='undefined')return;if(document.hidden)stopWorkspaceModuleLoading();else{resumeWorkspaceModuleLoading();if(state.user)void refreshWorkspaceSummary();}});
+window.addEventListener('online',resumeWorkspaceModuleLoading);
+window.addEventListener('offline',stopWorkspaceModuleLoading);
+window.addEventListener('pagehide',stopWorkspaceModuleLoading);
+window.addEventListener('pageshow',event=>{if(event.persisted)resumeWorkspaceModuleLoading();});
 
 const workspaceOverlayObserver=new MutationObserver(()=>{if(workspaceModule.host)workspaceModule.host.inert=state.tab!=='messenger'||workspaceSidebarBlocksContent()||Boolean(document.getElementById('overlay')?.children.length);});
 if(document.getElementById('overlay'))workspaceOverlayObserver.observe(document.getElementById('overlay'),{childList:true});

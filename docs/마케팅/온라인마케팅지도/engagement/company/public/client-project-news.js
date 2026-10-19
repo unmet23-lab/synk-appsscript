@@ -72,7 +72,7 @@ function cnewsSource(id,newsId){
   if(element&&!target.versionId){clientProjectReveal(element);element.scrollIntoView({block:'center',behavior:'auto'});element.focus?.({preventScroll:true});return true;}
   return openClientWorkflowLink(href);
 }
-function clientProjectNewsResume(){const id=clientDesk.id;if(document.visibilityState==='hidden'||!cnewsVisible(id)||clientDesk.loading)return;const row=cnewsRecord(id);if(row.loading||row.reading)return;row.stale=true;void cnewsLoad(id);}
+function clientProjectNewsResume(){if(typeof state==='undefined')return;const id=clientDesk.id;if(document.visibilityState==='hidden'||!cnewsVisible(id)||clientDesk.loading)return;const row=cnewsRecord(id);if(row.loading||row.reading)return;row.stale=true;void cnewsLoad(id);}
 document.addEventListener('visibilitychange',clientProjectNewsResume);
 window.addEventListener?.('focus',clientProjectNewsResume);
 document.addEventListener('click',event=>{const button=event.target.closest?.('[data-project-news]');if(!button||button.disabled)return;cnewsIdentity();const id=button.dataset.projectId;if(!cnewsVisible(id))return;const row=cnewsRecord(id),action=button.dataset.projectNews;if(row.loading||row.reading||clientDesk.loading)return;if(action==='refresh')void cnewsLoad(id);else if(action==='read')void cnewsRead(id,button.dataset.newsId);else if(action==='source')cnewsSource(id,button.dataset.newsId);else if(action==='more'){row.expanded=!row.expanded;cnewsPaint(id);}});

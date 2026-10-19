@@ -175,9 +175,13 @@ def prepare_media(source: Path, work_base: Path, input_color_space: str, *, make
         _assert_unchanged(original)
         report["source_backup"] = {**_public_file(backup), "sha256_verified": True,
                                    "off_device_backup_verified": False}
-        guide, guide_source = _preserve_guide(editorial_guide_source().resolve(), work_root)
-        report["editorial_guide"] = _public_file(guide)
-        verified = [original, backup, guide, guide_source]
+        guide_path = editorial_guide_source()  # 스크립트 옆에 설치한 컷 편집 기준이 있을 때만 복사한다.
+        verified = [original, backup]
+        report["editorial_guide"] = None
+        if guide_path:
+            guide, guide_source = _preserve_guide(guide_path.resolve(), work_root)
+            report["editorial_guide"] = _public_file(guide)
+            verified += [guide, guide_source]
         edit = {**_public_file(backup), "verified_media": evidence}
         if transcode:
             output = _inside(work_root / "ingest" / f"{source.stem}_DNxHR_HQX.mov", work_root)

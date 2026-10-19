@@ -104,12 +104,18 @@ export async function verifyMetaConnection({channel,credentials={},provider={},p
       // This proves read capability, not a granted-scope list or a sent reply.
       // https://github.com/fbsamples/messenger-platform-samples/blob/main/postman/instagram-platform-api.postman_collection.json
       const media=await get(identity.id+'/media',{fields:'id',limit:1});
+      if(purpose==='statistics'){
+        if(!Array.isArray(media.data)||media.data.some(row=>!graphId(row?.id)))throw fail('META_MEDIA_INVALID','게시물 목록의 조회 결과를 확인하지 못했어요.',409);
+        if(media.data.length){const owned=await get(media.data[0].id,{fields:'id,owner'});if(owned.id!==media.data[0].id||owned.owner?.id!==identity.appScopedId)throw fail('META_MEDIA_OWNER_MISMATCH','게시물의 주인이 연결 계정과 달라요.',409);}
+        capabilityVerification={method:'owned-media-read',testedAt:new Date(clock()).toISOString(),accountId:identity.id,appScopedId:identity.appScopedId,tokenSha256:digest(accessToken),mediaRead:true,commentsRead:false,replyPermissionInferred:false,replySendVerified:false};
+      }else{
       if(!Array.isArray(media.data)||!graphId(media.data[0]?.id))throw fail('META_COMMENT_PROOF_REQUIRED','계정은 확인했지만 댓글 권한을 확인할 게시물이 없어요. 댓글 권한 OAuth 연결로 연결해 주세요.',409);
       const mediaId=media.data[0].id,owned=await get(mediaId,{fields:'id,owner'});
       if(owned.id!==mediaId||owned.owner?.id!==identity.appScopedId)throw fail('META_MEDIA_OWNER_MISMATCH','댓글 권한을 확인할 게시물의 주인이 실제 연결 계정과 달라요.',409);
       const comments=await get(mediaId+'/comments',{fields:'id',limit:1});
       if(!Array.isArray(comments.data)||comments.data.some(row=>!graphId(row?.id)))throw fail('META_COMMENTS_INVALID','이 계정의 댓글 읽기 권한을 확인하지 못했어요.',409);
       capabilityVerification={method:'owned-media-comments-read',testedAt:new Date(clock()).toISOString(),accountId:identity.id,appScopedId:identity.appScopedId,tokenSha256:digest(accessToken),commentsRead:true,replyPermissionInferred:true,replySendVerified:false};
+      }
     }
     if(trustedExpiry&&credentials.expiresAt!=null){expiresAt=at(credentials.expiresAt);if(!expiresAt)throw fail('META_EXPIRY_INVALID','서버에서 받은 토큰 만료 정보를 확인해 주세요.',409);expiryStatus='provider';}
   }else{
@@ -149,7 +155,7 @@ export function createMetaConnectionService({store,clock=()=>new Date().toISOStr
     const check=()=>{context.authorize?.();const actor=store.get('users',user?.id),channel=store.get('channels',channelId);if(!actor?.active||actor.role!=='admin')throw fail('META_ADMIN_REQUIRED','계정 직접 연결은 관리자만 할 수 있어요.',403);if(!channel||channel.active===false||channel.hidden||!canWriteChannel(actor,channel))throw fail('META_CHANNEL_FORBIDDEN','연결할 채널의 현재 권한을 확인해 주세요.',403);return channel;};
     const channel=check(),version=channel.connectionVersion||0,provider=getProviderConfig(channel.platform),providerPin=JSON.stringify(provider);
     const current=()=>{const live=check();if((live.connectionVersion||0)!==version||live.platform!==channel.platform||live.externalId!==channel.externalId||live.handle!==channel.handle||JSON.stringify(getProviderConfig(channel.platform))!==providerPin)throw fail('META_CONNECTION_CHANGED','확인하는 동안 계정이나 앱 연결이 바뀌었어요. 다시 연결해 주세요.',409);return live;};
-    const result=await verifyMetaConnection({channel,credentials:input,provider,clock,fetchImpl,signal:context.signal,authorize:current});
+    const result=await verifyMetaConnection({channel,credentials:input,provider,purpose:input.purpose==='statistics'?'statistics':'comments',clock,fetchImpl,signal:context.signal,authorize:current});
     store.transaction(()=>{const live=current();if(store.all('channels').some(row=>row.id!==channel.id&&row.platform===channel.platform&&row.externalId===result.identity.id))throw fail('META_DUPLICATE_ACCOUNT','이 계정은 이미 회사의 다른 채널에 연결돼 있어요.',409);
       store.setSecret('channel:'+channel.id,{...result.credentials,connectedBy:user.id,connectedAt:result.credentials.verifiedAt});
       store.put('channels',channel.id,{...live,externalId:result.identity.id,status:'ready',lastError:null,collectionDisabled:false,failureKind:null,failureCode:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,lastFailureAt:null,lastAttemptAt:null,recentStatus:'ready',recentFailureKind:null,recentFailureCode:null,recentRetryCount:0,recentNextRetryAt:null,recentRequiresReconnect:false,recentLastFailureAt:null,recentLastAttemptAt:null,recentLastError:null,connectionVersion:version+1});

@@ -73,6 +73,8 @@ snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestB
 
 아래 명령은 담당 저장소 루트에서 실행하는 형태다. `<새 작업 폴더>`·`<공개 저장소 checkout>`은 실제 새 경로로 바꾼다. 기존 동결 폴더·빌드 출력·조립한 manifest는 덮어쓰지 않는다. 같은 소스로 다시 빌드해도 설치파일의 바이트까지 같다고 가정하지 않으며, 이미 공개한 파일은 재빌드본으로 바꾸지 않는다.
 
+회원 혜택을 포함하는 다음 릴리스는 [10-18 원천·동결 포함 조건](../docs/SYNK_플랫폼_계정과_연결_설계.md#member-benefits-next-release-20261018)을 먼저 확인한다. 웹 공개 문구·포스터와 PC 혜택 세 커밋을 새 동결 원천 및 실제 ASAR에서 대조한다.
+
 1. **정의와 동결.** 검토한 `release-definition.json`에 `schemaVersion: 1`, `product: platform`, `channel: preview`, 새 `version`, `releaseId`, `buildId`, 고정 `manifestUrl`, 세 대상의 기준 설치파일 URL·크기·해시를 적는다. Windows 기준 설치파일에는 내장 `backendSHA256`도 필요하다. 승인한 자식 앱 구버전 실행을 보존할 때만 검증된 `additionalLegacyPins`를 넣는다. 이번 원본은 [0.4.4 정의](../.tmp/platform-unified-20261014/release-definition.json)다. `freeze-platform-release.cjs`가 `src`·`renderer`·`assets`를 복사하고 파일 목록·해시·공통 `sourceHash`를 기록한다.
 
 0.4.11처럼 하위 앱의 공통 변경도 반영할 때는 `refreshBundledClients: {version: <같은 새 버전>}`을 넣는다. `build-child-release.cjs`는 승인된 기존 WORLD·워크스페이스 ASAR에서 시작해 위치 확인 코드·Mac 아이콘·버전 메타데이터만 이식한다. 다른 원문과 Windows ICO는 바이트 대조하고, Windows 하위 설치기에도 같은 Signal 엔진을 컴파일한다. 새 설치파일·실행 파일·ASAR pin을 부모에 넣되 이미 설치된 구버전의 승인 pin도 유지한다.

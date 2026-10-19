@@ -1,0 +1,41 @@
+{
+  "_설명": "플랫폼 회원 혜택 포스터 물건(2026-10-17). 물건마다 놓일 사업 색 바탕에서 한 장씩 굽고 tools/펠트_바탕색오리기.py로 오린다. {{BG}}·{{BGNAME}}은 바탕색, {{OBJECT}}는 물건 설명.",
+  "공통": "Studio product photograph of ONE handmade needle-felted wool object: {{OBJECT}}\n\nMaterial: dense wool felt with visible soft fibers and slightly fuzzy edges, rounded stitched seams, real handmade felt-toy quality, the same felt craft, fiber texture and soft lighting as the attached reference photos. The references are ONLY for material and lighting — do not copy their objects.\n\nComposition: a single object, centered, seen from a slight three-quarter front view and slightly above, filling about 72% of the frame height, with an even empty margin on every side. Nothing touches or is cut off by the frame edge. Square 1:1 image.\n\nBackground: one seamless, perfectly flat matte {{BGNAME}} color, exactly {{BG}}, edge to edge. No gradient, no vignette, no paper or cloth texture, no table, no floor line, no horizon, no other props.\n\nLighting: one large soft key light from the upper left and gentle fill. The only shadow is a soft, short contact shadow directly under the object.\n\nEdges: every outer edge of the object is a saturated or dark felt color as described — never white or cream on the outer silhouette, and none of the background color ({{BG}}) anywhere on the object. No holes or gaps through the object, no thin legs.\n\nAbsolutely no text, letters, numbers, logos or symbols anywhere.",
+  "물건": [
+    {
+      "이름": "benefit-gift",
+      "쓰임": "회원 혜택 첫머리(청금석, 큰 글자 「혜택」)",
+      "BG": "#3D6BC9",
+      "BGNAME": "lapis blue",
+      "OBJECT": "a plump gift box. The box and its lid are warm coral-orange felt (#F2794E) with slightly rounded corners; a wide butter-yellow felt ribbon (#F5C445) crosses the lid and ties into a big soft bow on top; a small charcoal felt gift tag hangs from the bow on a short charcoal cord. The lid sits slightly crooked for a friendly, handmade look."
+    },
+    {
+      "이름": "benefit-insight",
+      "쓰임": "나의 성향(코랄, 큰 글자 「나의 성향」)",
+      "BG": "#F96859",
+      "BGNAME": "coral",
+      "OBJECT": "a closed hardcover journal standing upright and slightly turned, with a deep navy felt cover (#23305E) and a charcoal felt spine; three felt bookmark tabs in butter yellow, leaf green and lapis blue stick out of the top edge. A charcoal felt magnifying glass with a thick butter-yellow felt rim and a pale sky-blue felt lens leans against the front of the journal, its handle resting on the ground."
+    },
+    {
+      "이름": "benefit-subscriptions",
+      "쓰임": "AI 구독 계정판(초록, 큰 글자 「구독」)",
+      "BG": "#7DB45A",
+      "BGNAME": "leaf green",
+      "OBJECT": "a chunky dashboard gauge meter shaped like a half circle. A thick charcoal felt body and rim (#2A2A2E); inside the rim a cream felt dial face with three thick arc segments from left to right in butter yellow, coral and lapis blue; a charcoal felt needle with a round butter-yellow pivot cap points at the butter-yellow segment. The gauge sits on a solid low charcoal felt base."
+    },
+    {
+      "이름": "benefit-care",
+      "쓰임": "플레저(청금석, 큰 글자 「플레저」)",
+      "BG": "#3D6BC9",
+      "BGNAME": "lapis blue",
+      "OBJECT": "a closed letter envelope standing slightly tilted, made of butter-yellow felt (#F5C445) with a charcoal felt stitch line along the edges of the flap, sealed in the middle of the flap with a plump coral felt heart (#F2794E)."
+    },
+    {
+      "이름": "benefit-fortune",
+      "쓰임": "무료 운세(분홍, 큰 글자 「운세」)",
+      "BG": "#E05C97",
+      "BGNAME": "pink",
+      "OBJECT": "a fortune-teller's crystal ball: a perfectly round deep lapis-blue felt ball (#2E4FA8) with small butter-yellow felt stars and one small butter-yellow crescent moon felted onto its surface, resting in a chunky butter-yellow felt cup stand on a round charcoal felt base."
+    }
+  ]
+}

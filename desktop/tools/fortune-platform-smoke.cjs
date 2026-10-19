@@ -88,7 +88,7 @@ if (!process.versions.electron) {
     const fits = info => !info.pageOverflow && !info.mainOverflow && info.imagesLoaded;
     const account = (generation, appIds) => ({ configured: true, status: 'signed-in', signedIn: true, sessionGeneration: generation,
       account: { synk_user_id: 'synthetic-fortune-member' }, library: { status: 'ready', appIds } });
-    const overviewIds = 'care,fortune,rehearsal,family-album';
+    const overviewIds = 'care,fortune';
     try {
       Menu.setApplicationMenu(null);
       const native = createWindow('native', path.join(__dirname, 'renderer-account-fixture.cjs'));

@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { canReadChannel, canWriteChannel } from './organization.mjs';
+import { lookupPerformancePost } from './post-performance-lookup.mjs';
 
 const KIND = 'postPerformanceEntries', LOCKS = 'postPerformanceLocks';
-const HOUR = 3600000, WINDOW = 6 * HOUR, LEASE = 3 * 60000, MAX_ATTEMPTS = 3;
+const HOUR = 3600000, WINDOW = 6 * HOUR, LEASE = 3 * 60000;
 export const POST_PERFORMANCE_METRICS = Object.freeze([
   { id: 'views', label: '조회', unit: 'count' }, { id: 'likes', label: '좋아요', unit: 'count' },
   { id: 'comments', label: '댓글', unit: 'count' }, { id: 'shares', label: '공유', unit: 'count' },
@@ -69,7 +70,7 @@ function valuesAndReasons(values, platform, { manual = false, unavailable = [] }
   return { metrics, unavailableReasons };
 }
 
-export function createPostPerformanceService({ store, clock = () => new Date().toISOString(), collector = collectChannel,
+export function createPostPerformanceService({ store, clock = () => new Date().toISOString(), collector = collectChannel, fetchImpl = globalThis.fetch,
   getCredentials = channel => ({ ...store.secret(`provider:${channel.platform}`), ...store.secret(`channel:${channel.id}`) }),
   isConnected = channel => !channel.collectionDisabled && !!(store.secret(`channel:${channel.id}`)?.accessToken || channel.platform === 'youtube' && (store.secret(`channel:${channel.id}`)?.apiKey || store.secret('provider:youtube')?.apiKey)),
 } = {}) {
@@ -86,6 +87,64 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     user = currentUser(user); const channel = store.get('channels', id);
     if (!channel || channel.active === false || !(write ? canWriteChannel : canReadChannel)(user, channel)) throw fail('담당 채널을 찾을 수 없습니다.', 404);
     return channel;
+  }
+  function lookupChannel(user, id) {
+    user = currentUser(user); const channel = store.get('channels', id);
+    if (!channel || channel.active === false || !canWriteChannel(user, channel)) throw fail('이 채널의 게시물을 확인하거나 등록할 권한이 없어요.', 403);
+    return channel;
+  }
+  const channelBinding = channel => JSON.stringify([channel.id, channel.platform, channel.externalId, channel.handle, channel.connectionVersion || 0, !!channel.collectionDisabled]);
+  async function lookupWork(user, input = {}, { authorize, signal } = {}) {
+    authorize?.();
+    const channel = lookupChannel(user, input.channelId), binding = channelBinding(channel), normalized = normalizePerformancePostUrl(input.url);
+    if (normalized.platform !== channel.platform) throw fail('게시물과 선택한 채널의 플랫폼이 달라요.');
+    const check = () => {
+      authorize?.();
+      if (stopped || signal?.aborted) throw fail('게시물 확인이 취소됐어요. 다시 확인해 주세요.', 503);
+      const live = lookupChannel(user, channel.id);
+      if (channelBinding(live) !== binding) throw fail('확인 중 채널 연결이 바뀌었어요. 다시 확인해 주세요.', 409);
+    };
+    check();
+    let details = { ownerMatch: null, publishedAt: null, suggestedFormat: null, title: null, reason: '채널의 조회 연결이 없어요. 연결 관리에서 연결을 확인해 주세요.' };
+    if (!['youtube', 'instagram'].includes(channel.platform)) details.reason = '이 플랫폼은 게시 정보를 자동으로 확인하지 못해요. 실제 게시 시각을 직접 입력해 주세요.';
+    else if (isConnected(channel)) {
+      try {
+        const credentials = await getCredentials(channel); check();
+        details = await lookupPerformancePost({ channel, normalized, originalUrl: input.url, credentials, normalizeUrl: normalizePerformancePostUrl, fetchImpl, signal, check });
+      } catch {
+        // Provider URLs/messages can contain credentials. Only a fixed message
+        // crosses the API boundary; local authorization failures still throw.
+        check(); details.reason = '플랫폼에서 게시 정보를 확인하지 못했어요. 채널 연결과 공개 상태를 확인한 뒤 다시 시도해 주세요.';
+      }
+    }
+    check();
+    const publishedAt = details.publishedAt;
+    const checkpoints = Object.fromEntries([24, 72].map(hours => {
+      const dueAt = publishedAt ? atPlus(publishedAt, hours * HOUR) : null, closesAt = dueAt ? atPlus(dueAt, WINDOW) : null;
+      return [hours, { dueAt, closesAt, missed: !!closesAt && stamp() > closesAt }];
+    }));
+    const entryId = createHash('sha256').update(`${channel.id}\0${normalized.identity}`).digest('hex');
+    return { platform: normalized.platform, externalId: normalized.externalId, url: normalized.canonicalUrl, ...details, existingEntryId: store.get(KIND, entryId)?.id || null, checkpoints };
+  }
+  function lookup(user, input, options) { return tracked(options => lookupWork(user, input, options), options); }
+  function registerVerified(user, input = {}, options) {
+    // Clone before awaiting provider I/O; HTTP/body objects are not authority.
+    const candidate = structuredClone(input);
+    return tracked(async options => {
+      const channel = lookupChannel(user, candidate.channelId), binding = channelBinding(channel);
+      const verified = await lookupWork(user, candidate, options);
+      if (stopped || options.signal?.aborted) throw fail('게시물 확인이 취소됐어요. 다시 확인해 주세요.', 503);
+      options.authorize?.(); const live = lookupChannel(user, candidate.channelId);
+      if (channelBinding(live) !== binding) throw fail('확인 중 채널 연결이 바뀌었어요. 다시 확인해 주세요.', 409);
+      const mustVerify = ['youtube', 'instagram'].includes(live.platform);
+      if (mustVerify && verified.ownerMatch !== true) throw fail(verified.reason || '선택한 채널에서 올린 게시물인지 확인하지 못했어요.', 400);
+      if (mustVerify && !verified.publishedAt) throw fail('플랫폼의 게시 시각을 확인하지 못했어요. 잠시 후 다시 확인해 주세요.');
+      const submitted = candidate.publishedAt ? iso(candidate.publishedAt, '게시 시각') : null;
+      const adjusted = !!(mustVerify && submitted && Math.abs(Date.parse(submitted) - Date.parse(verified.publishedAt)) > 5 * 60000);
+      options.authorize?.(); lookupChannel(user, candidate.channelId);
+      const result = registerStored(user, { ...candidate, url: verified.url, ...(mustVerify ? { publishedAt: verified.publishedAt } : {}) }, mustVerify);
+      return { ...result, ...(adjusted && result.entry.publishedAt === verified.publishedAt ? { publishedAtAdjusted: true } : {}) };
+    }, options);
   }
   function accessEntry(user, id, write = false) {
     const row = store.get(KIND, id); if (!row) throw fail('게시물 기록을 찾을 수 없습니다.', 404);
@@ -119,7 +178,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const readable = new Set(channels.map(channel => channel.id));
     return { entries: all.filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => view(user, row, all)),
       channels: channels.map(channel => ({ id: channel.id, platform: channel.platform, displayName: channel.displayName || channel.handle || channel.id, canEdit: canWriteChannel(user, channel), connected: isConnected(channel) })),
-      canWrite: channels.some(channel => canWriteChannel(user, channel)), metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
+      canWrite: channels.some(channel => canWriteChannel(user, channel)), lookupAvailable: true, metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
   }
   // Readers that need only the observations (SNS insights, copy comparisons) skip comparison(), which compares every post with
   // its whole channel history (posts² work per call).
@@ -137,11 +196,12 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const channel = channelFor(user, row.channelId);
     return { id: row.id, url: row.url, canEdit: canWriteChannel(user, channel) };
   }
-  function register(user, input = {}) {
+  function register(user, input = {}) { return registerStored(user, input); }
+  function registerStored(user, input = {}, verified = false) {
     const channel = channelFor(user, input.channelId, true), url = normalizePerformancePostUrl(input.url), at = stamp(), publishedAt = iso(input.publishedAt, '게시 시각');
     const publicationFormat=input.publicationFormat||null;
     if(publicationFormat&&!['youtube-shorts','youtube-video','instagram-reels'].includes(publicationFormat))throw fail('게시한 영상 형식을 확인해 주세요.');
-    if(publicationFormat&&(!input.publicationPackageId||!publicationFormat.startsWith(channel.platform==='youtube'?'youtube-':channel.platform==='instagram'?'instagram-':'unsupported-')))throw fail('게시 묶음과 계정에 맞는 영상 형식을 선택해 주세요.');
+    if(publicationFormat&&(!input.publicationPackageId&&!verified||!publicationFormat.startsWith(channel.platform==='youtube'?'youtube-':channel.platform==='instagram'?'instagram-':'unsupported-')))throw fail('게시 묶음과 계정에 맞는 영상 형식을 선택해 주세요.');
     if (url.platform !== channel.platform) throw fail('게시물과 담당 채널의 플랫폼이 다릅니다.');
     if (url.handle && channel.handle && url.handle.toLowerCase() !== channel.handle.toLowerCase()) throw fail('게시물 주소와 담당 채널의 계정이 다릅니다.');
     if (Date.parse(publishedAt) > Date.parse(at)) throw fail('실제로 공개한 게시물만 등록할 수 있습니다. 게시 시각을 확인해 주세요.');
@@ -152,14 +212,14 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
         if(publicationFormat&&previous.publicationFormat&&previous.publicationFormat!==publicationFormat)throw fail('이미 다른 영상 형식으로 연결한 게시 주소입니다.',409);
         if(input.publicationPackageId&&previous.publicationPackageId&&previous.publicationPackageId!==input.publicationPackageId)throw fail('이미 다른 게시 묶음에 연결한 주소입니다.',409);
         if(publicationFormat&&!previous.publicationFormat&&(!previous.publicationPackageId||previous.publicationPackageId===input.publicationPackageId)){
-          const linked={...previous,publicationPackageId:input.publicationPackageId,publicationFormat,updatedAt:at};
+          const linked={...previous,publicationPackageId:input.publicationPackageId||previous.publicationPackageId||null,publicationFormat,...(verified&&!input.publicationPackageId&&!previous.publicationPackageId?{origin:'external'}:{}),updatedAt:at};
           store.put(KIND,id,linked);return {row:linked,existing:true,linked:true};
         }
         return {row:previous,existing:true};
       }
       if (store.all(KIND).filter(row => row.channelId === channel.id).length >= 2000) throw fail('이 채널의 성과 기록 한도에 도달했습니다.', 409);
       const row = { id, channelId: channel.id, platform: channel.platform, url: url.canonicalUrl, postIdentity: url.identity, title: cleanText(input.title), publicationPackageId: cleanText(input.publicationPackageId, 100) || null,
-        publicationFormat, publishedAt, active: true, createdAt: at, updatedAt: at, createdBy: user.id, checkpoints: [24, 72].map(hours => {
+        publicationFormat, ...(verified&&!input.publicationPackageId?{origin:'external'}:{}), publishedAt, active: true, createdAt: at, updatedAt: at, createdBy: user.id, checkpoints: [24, 72].map(hours => {
           const dueAt = atPlus(publishedAt, hours * HOUR), closesAt = atPlus(dueAt, WINDOW), missed = at > closesAt;
           return { hours, dueAt, closesAt, status: missed ? 'missed' : 'pending', timing: missed ? 'missed' : null, observedAt: null, recordedAt: null, delayMinutes: null, recordingDelayMinutes: null,
             metrics: emptyMetrics(), unavailableReasons: Object.fromEntries(metricIds.map(key => [key, '아직 확인한 값이 없습니다. 실제 0과 구분합니다.'])), source: null, attempts: 0, nextAttemptAt: null, message: missed ? '등록 전에 관측 시간이 지나 과거 수치를 자동 복원할 수 없습니다.' : null };
@@ -243,7 +303,6 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             if (at > checkpoint.closesAt) { summary.missed++; return { ...checkpoint, status: 'missed', timing: 'missed', nextAttemptAt: null, message: '관측 시간이 지나 해당 시점의 수치를 자동 복원할 수 없습니다.' }; }
             const unavailable = !ownsAutomation(row, channel) ? '등록 담당자의 현재 권한을 확인해야 합니다. 현재 담당자가 직접 수치를 기록할 수 있습니다.' : availability(channel);
             if (unavailable) { summary.manualRequired++; return { ...checkpoint, status: 'manual-required', nextAttemptAt: atPlus(at, HOUR), message: unavailable }; }
-            if (checkpoint.attempts >= MAX_ATTEMPTS) { summary.manualRequired++; return { ...checkpoint, status: 'manual-required', nextAttemptAt: checkpoint.closesAt, message: '자동 조회 재시도 한도에 도달했습니다. 직접 확인한 수치를 입력해 주세요.' }; }
             selected.push({ id: row.id, hours: checkpoint.hours });
             return { ...checkpoint, status: 'collecting', attempts: checkpoint.attempts + 1, attemptedAt: at, leaseToken: token, leaseUntil: atPlus(at, LEASE), nextAttemptAt: null };
           });
@@ -286,10 +345,10 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
               next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: result.coverage?.unavailableMetrics || [], platform: row.platform });
               next.providerPublishedAt = post.publishedAt; summary.recorded++;
             } else {
-              const retryable = !mismatch && (!error || error.retryable), retry = retryable && checkpoint.attempts < MAX_ATTEMPTS;
-              const delay = checkpoint.attempts === 1 ? 5 * 60000 : 15 * 60000;
-              next = { ...checkpoint, status: retry ? 'retry' : 'manual-required', nextAttemptAt: retry ? atPlus(at, delay) : checkpoint.closesAt, lastErrorCode: mismatch ? 'PUBLISHED_AT_MISMATCH' : error?.code || (post ? 'METRICS_UNAVAILABLE' : 'POST_NOT_IN_RESPONSE'),
-                message: mismatch ? '플랫폼 게시 시각과 등록한 시각이 달라 자동 기록하지 않았습니다. 실제 시각을 확인해 주세요.' : retry ? '이 게시물의 수치를 확인하지 못했습니다. 제한된 횟수 안에서 다시 확인합니다.' : '이 게시물의 자동 확인을 마치지 못했습니다. 공식 화면에서 확인한 수치를 직접 입력해 주세요.' };
+              const retryable = !mismatch && (!error || error.retryable), retry = retryable && at < checkpoint.closesAt;
+              const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
+              next = { ...checkpoint, status: retry ? 'retry' : 'manual-required', nextAttemptAt: retry ? new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt))).toISOString() : at < checkpoint.closesAt ? checkpoint.closesAt : atPlus(checkpoint.closesAt, 1), lastErrorCode: mismatch ? 'PUBLISHED_AT_MISMATCH' : error?.code || (post ? 'METRICS_UNAVAILABLE' : 'POST_NOT_IN_RESPONSE'),
+                message: mismatch ? '플랫폼 게시 시각과 등록한 시각이 달라 자동 기록하지 않았습니다. 실제 시각을 확인해 주세요.' : retry ? '이 게시물의 수치를 확인하지 못했습니다. 관측 시간이 끝날 때까지 간격을 두고 다시 확인합니다.' : '이 게시물의 자동 확인을 마치지 못했습니다. 공식 화면에서 확인한 수치를 직접 입력해 주세요.' };
               if (retry) summary.retried++; else summary.manualRequired++;
             }
           }
@@ -302,15 +361,16 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     }
     return summary;
   }
-  function collectDue(options = {}) {
+  function tracked(work, options = {}) {
     if (stopped) return Promise.reject(fail('서버가 종료 중입니다.', 503));
     const controller = new AbortController(); controllers.add(controller);
     const signal = options.signal ? AbortSignal.any([options.signal, controller.signal]) : controller.signal;
-    const job = collectDueWork({ ...options, signal }); activeJobs.add(job);
+    const job = work({ ...options, signal }); activeJobs.add(job);
     job.then(() => { activeJobs.delete(job); controllers.delete(controller); }, () => { activeJobs.delete(job); controllers.delete(controller); });
     return job;
   }
+  function collectDue(options = {}) { return tracked(collectDueWork, options); }
   const waitForIdle = async () => { await Promise.allSettled([...activeJobs]); };
   const stop = async () => { stopped = true; for (const controller of controllers) controller.abort(); await waitForIdle(); };
-  return { register, list, observations, linkSource, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
+  return { register, registerVerified, lookup, list, observations, linkSource, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
 }

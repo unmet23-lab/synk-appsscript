@@ -127,6 +127,8 @@ export function createCompanyApp(options={}) {
   const workroomScheduleSetting=process.env.SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED;
   if(workroomScheduleSetting!==undefined&&!['0','1'].includes(workroomScheduleSetting))throw new Error('SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED는 0 또는 1이어야 합니다.');
   const workroomScheduleEnabled=workroomScheduleSetting===undefined?backgroundJobsEnabled:workroomScheduleSetting==='1';
+  const channelCollectionEnabled=options.channelCollectionEnabled??(backgroundJobsEnabled||workroomScheduleEnabled);
+  if(typeof channelCollectionEnabled!=='boolean')throw httpError('채널 통계 자동 수집 설정을 확인해 주세요.');
   const publicationPerformanceSchedule=options.publicationPerformanceSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   if(typeof publicationPerformanceSchedule!=='boolean')throw httpError('게시 후 성과 자동 수집 설정을 확인해 주세요.');
   if(options.workNotificationsEnabled!==undefined&&typeof options.workNotificationsEnabled!=='boolean')throw new Error('workNotificationsEnabled는 boolean이어야 합니다.');
@@ -160,7 +162,7 @@ export function createCompanyApp(options={}) {
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
-  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
+  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,voice:options.messengerVoice,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
@@ -281,7 +283,7 @@ export function createCompanyApp(options={}) {
     publicationInboxTick=Promise.resolve().then(()=>publicationInbox.scan()).then(result=>{finishRuntime(inboxRuntime,true);return result;},()=>{finishRuntime(inboxRuntime,false);});
     return publicationInboxTick;
   }
-  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list','observations']);
+  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:collectionCredentialsFor,isConnected:hasConnection,fetchImpl:options.postPerformanceFetch}),['list','observations']);
   socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
   const authorizeSocialPublish=input=>{socialProvider.assertUnique?.(input.channel);return socialPublishing.assertExecution({...input,continuation:input.continuation===true||input.phase==='media-fetch'});};
   const socialPublishMedia=createSocialPublishMedia({store,clock,origin,resolveMedia:socialMarketing.resolveMedia,authorizePublish:authorizeSocialPublish,...options.socialPublishMediaOptions});
@@ -425,7 +427,8 @@ export function createCompanyApp(options={}) {
   function permissions(user){return {manageOrganization:user.role==='admin',manageTeam:['admin','manager'].includes(user.role),readOnly:user.role==='viewer'};}
   function connection(c) {return store.secret('channel:'+c.id);}
   function providerConfig(platform) {return {...store.secret('provider:'+platform),redirectUri:origin+`/api/oauth/${platform}/callback`};}
-  function hasConnection(c) {return !c.collectionDisabled&&(!!connection(c)?.accessToken||(c.platform==='youtube'&&!!(connection(c)?.apiKey||providerConfig(c.platform).apiKey)));}
+  function publicYouTubeReader(c){if(c.platform!=='youtube'||c.collectionDisabled||c.active===false)return null;const reader=store.secret('collection:youtube-public');return reader?.accessToken&&reader.refreshToken&&reader.clientId&&reader.clientSecret&&Array.isArray(reader.channelIds)&&reader.channelIds.includes(c.id)&&store.get('users',reader.connectedBy)?.active?reader:null;}
+  function hasConnection(c) {return !c.collectionDisabled&&(!!connection(c)?.accessToken||(c.platform==='youtube'&&!!(connection(c)?.apiKey||providerConfig(c.platform).apiKey||publicYouTubeReader(c))));}
   function disconnectChannel(c){store.transaction(()=>{const handoff=pending(c);if(handoff)store.put('handoffs',handoff.id,{...handoff,status:'cancelled',cancelledAt:clock(),reasonClosed:'connection-disconnected'});store.deleteSecret('channel:'+c.id);const ids=new Set(store.all('posts').filter(p=>p.channelId===c.id).map(p=>p.id));for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if(row.source?.startsWith('api:')&&(row.channelId===c.id||ids.has(row.postId)))store.remove(kind,row.id);store.put('channels',c.id,{...c,pendingHandoffId:null,status:'not-connected',lastCollectedAt:null,recentStatus:'not-connected',recentLastCollectedAt:null,collectionDisabled:true,connectionVersion:(c.connectionVersion||0)+1});});}
   function namedUsers(ids){return ids.map(id=>({id,name:store.get('users',id)?.name||'이전 담당자'}));}
   function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 미지정',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c)};}
@@ -489,7 +492,9 @@ export function createCompanyApp(options={}) {
   }
   function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   function purgeExpired(at=clock()){store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if((row.expiresAt&&Date.parse(row.expiresAt)<=Date.parse(at))||(kind==='hypeObservations'&&(!Number.isFinite(Date.parse(row.checkedAt))||Date.parse(row.checkedAt)<=Date.parse(at)-HYPE_RETENTION_MS)))store.remove(kind,row.id);const postIds=new Set(store.all('posts').map(p=>p.id));for(const row of store.all('hypeObservations'))if(!postIds.has(row.postId))store.remove('hypeObservations',row.id);});}
-  function records(channels,{readOnly=false}={}){if(!readOnly)purgeExpired();const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  // Reads enforce retention immediately; scheduledTick owns physical expiry cleanup.
+  function records(channels){const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&!p.unavailableAt&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
+  function selectRecords(source,channels){const ids=new Set(channels.map(c=>c.id)),posts=source.posts.filter(p=>ids.has(p.channelId)),postIds=new Set(posts.map(p=>p.id));return{version:source.version,posts,snapshots:source.snapshots.filter(s=>postIds.has(s.postId)),channelSnapshots:source.channelSnapshots.filter(s=>ids.has(s.channelId))};}
   function assistantPerformance(user,{scope,asOf}){
     const {catalog,data}=reportSource(user,new URLSearchParams({scope}),asOf,{readOnly:true});
     const team=typeof user.teamId==='string'&&user.teamId?store.get('teams',user.teamId):null;
@@ -507,7 +512,7 @@ export function createCompanyApp(options={}) {
     for(const channel of channels)groups.get(channel.teamId).channels.push(channel);
     // Read each record collection once. Expired records are omitted without a write on this GET.
     const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);
-    const posts=store.all('posts').filter(post=>channelTeams.has(post.channelId)&&post.publishedDate<=end&&retained(post));
+    const posts=store.all('posts').filter(post=>channelTeams.has(post.channelId)&&!post.unavailableAt&&post.publishedDate<=end&&retained(post));
     const postIds=new Set(posts.map(post=>post.id));
     for(const post of posts)groups.get(channelTeams.get(post.channelId)).posts.push(post);
     const postIndex=metricIndex(store.all('snapshots').filter(row=>postIds.has(row.postId)&&retained(row)),'postId');
@@ -523,14 +528,15 @@ export function createCompanyApp(options={}) {
         postCount:group.posts.length,newPosts:group.posts.filter(post=>post.publishedDate>=start).length,metrics};
     })};
   }
-  function reportSource(user,query,end,{readOnly=false}={}){
+  function reportSource(user,query,end,{overview=false}={}){
     const all=scopedChannels(user,query);const ownerId=['admin','manager'].includes(user.role)?query.get('ownerId'):null;
     const candidates=all.filter(c=>(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel')));
-    const events=store.all('ownershipEvents'),raw=records(candidates,{readOnly});
+    // The overview and selected report share one read and one expiry cutoff.
+    const events=store.all('ownershipEvents'),overviewData=overview?records(all):null,raw=overviewData?selectRecords(overviewData,candidates):records(candidates);
     const selected=ownerId?recordsForOwner(raw,candidates,events,ownerId,end):{records:raw,channels:candidates};
     const channels=selected.channels;
     const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl,country:''}))};
-    return {all,ownerId,events,channels,catalog,data:selected.records};
+    return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
     const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
@@ -540,14 +546,14 @@ export function createCompanyApp(options={}) {
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
     dateRange(start,end);if(end>today())throw httpError('오늘 이후 날짜는 조회할 수 없습니다.');
-    const {all,ownerId,events,catalog,data}=reportSource(user,query,end),result=analyze(data,catalog,{start,end});
+    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end});
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
     const groups=result.groups('channel');
     const users=visibleMembers(store,user);
     const memberGroups=users.map(u=>{const mine=recordsForOwner(data,catalog.channels,events,u.id,end);const item=analyze(mine.records,{channels:mine.channels},{start,end});return {id:u.id,name:u.name,active:u.active,teamId:u.teamId,channelCount:mine.channels.length,metrics:item.metrics};});
     const overviewCatalog={channels:all.map(c=>({...c,ready:true,brand:c.displayName,publicUrl:c.canonicalUrl}))};
-    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(records(all),overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
+    return {...result,groups,memberGroups,memberGroupsBasis:'수집 당시 담당자 기록입니다. 이전 담당을 확인할 수 없는 기록과 담당 변경 경계의 비교 불가 수치는 크루별 증가량에 넣지 않습니다. 공동 담당은 중복될 수 있습니다.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
   }
   function saveCollection(channel,result,runId,withinTransaction=false,mode='full'){
     const live=store.get('channels',channel.id);
@@ -559,7 +565,7 @@ export function createCompanyApp(options={}) {
     const validPosts=result.posts.filter(p=>{try{return !!p.externalId&&!!p.publishedAt&&!Number.isNaN(Date.parse(p.publishedAt))&&new URL(p.url).protocol==='https:';}catch{return false;}});
     if(validPosts.length!==result.posts.length){
       const omitted=result.posts.length-validPosts.length;
-      result={...result,posts:validPosts,coverage:{...result.coverage,status:'partial',omittedPosts:(result.coverage?.omittedPosts||0)+omitted},warnings:[...(result.warnings||[]),`주소 또는 게시일이 제공되지 않은 콘텐츠 ${omitted}개는 집계에서 제외했습니다.`]};
+      result={...result,posts:validPosts,coverage:{...result.coverage,status:'partial',inventoryComplete:false,omittedPosts:(result.coverage?.omittedPosts||0)+omitted},warnings:[...(result.warnings||[]),`주소 또는 게시일이 제공되지 않은 콘텐츠 ${omitted}개는 집계에서 제외했습니다.`]};
     }
     // Renew retention only for data confirmed in this collection. Expired grants do not extend old data.
     const expiresAt=channel.platform==='youtube'?new Date(Date.parse(stamp)+30*86400000).toISOString():null;
@@ -570,14 +576,14 @@ export function createCompanyApp(options={}) {
       if(result.coverage?.collectionError)Object.assign(recentState,recentFields(planFailure(result.coverage.collectionError,recentPolicyChannel(live),stamp)),{recentStatus:'error',recentLastError:'일부 지표의 조회 권한 또는 호출 한도를 확인하고 재시도 일정을 따릅니다.'});
       store.put('channels',channel.id,{...live,externalId,displayName:result.channel.displayName||live.displayName,...(mode==='full'?successState:{}),...recentState});
       const ownership=ownerAt(store.all('ownershipEvents'),live,stamp);
-      const channelSnapshot={id:`${channel.id}:${date}`,channelId:channel.id,date,followers:count(result.channel.followers),views:count(result.channel.views),checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
+      const channelSnapshot={id:`${channel.id}:${date}`,channelId:channel.id,date,followers:count(result.channel.followers),views:count(result.channel.views),postCount:count(result.channel.metrics?.posts),collectedPostCount:result.posts.length,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
       if(mode==='full')store.put('channelSnapshots',channelSnapshot.id,channelSnapshot);
       for(const p of result.posts){
         if(!p.externalId||!p.publishedAt||Number.isNaN(Date.parse(p.publishedAt)))continue;
         const id=`${channel.id}:${p.externalId}`,previous=store.get('posts',id);
         const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(p.publishedAt));
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
-        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,source:`api:${channel.platform}`,expiresAt});
+        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
         for(const key of metricKeys)snapshot[key]=count(p.metrics?.[key]);
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);
@@ -588,11 +594,40 @@ export function createCompanyApp(options={}) {
         if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized){for(const old of store.all('snapshots').filter(s=>s.postId===id&&s.source==='api:youtube'))store.put('snapshots',old.id,{...old,expiresAt});}
       }
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized)for(const old of store.all('channelSnapshots').filter(s=>s.channelId===channel.id&&s.source==='api:youtube'))store.put('channelSnapshots',old.id,{...old,expiresAt});
+      if(mode==='full'&&result.coverage?.inventoryComplete===true){const seen=new Set(result.posts.map(p=>`${channel.id}:${p.externalId}`));for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!seen.has(old.id)&&!old.unavailableAt)store.put('posts',old.id,{...old,unavailableAt:stamp});}
       const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`${result.posts.length}개 콘텐츠 확인`,postCount:result.posts.length,coverage:result.coverage});
     };
     return withinTransaction?write():store.transaction(write);
   }
   const credentialRefreshes=new Map(),credentialRefreshState='oauthRefreshStates';
+  // A separate, explicitly bound reader can fetch public YouTube statistics.
+  // It is never passed to publishing, comments or owner-only Analytics calls.
+  async function collectionCredentialsFor(c){
+    const own=connection(c)||{},provider=providerConfig(c.platform);
+    if(c.platform!=='youtube'||own.accessToken||own.apiKey||provider.apiKey||!publicYouTubeReader(c))return credentialsFor(c);
+    const key='collection:youtube-public',reader=publicYouTubeReader(c),binding=hash(JSON.stringify(reader));
+    const check=()=>{const live=store.get('channels',c.id);if(!live||!publicYouTubeReader(live)||(live.connectionVersion||0)!==(c.connectionVersion||0)||hash(JSON.stringify(publicYouTubeReader(live)))!==binding)throw Object.assign(httpError('공개 통계 조회 연결이 변경됐어요. 다시 확인해 주세요.',409),{code:'CONNECTION_CHANGED'});};
+    check();
+    const saved=store.get(credentialRefreshState,key);
+    if(saved?.binding===binding&&Date.parse(saved.nextRetryAt)>Date.parse(clock()))throw Object.assign(httpError('공개 통계 인증 갱신을 기다리고 있어요.',503),{code:saved.code,retryable:saved.retryable,nextRetryAt:saved.nextRetryAt});
+    let pending=credentialRefreshes.get(key);
+    if(!pending||pending.binding!==binding){
+      const task=Promise.resolve().then(async()=>{
+        if(hash(JSON.stringify(store.secret(key)))!==binding)throw Object.assign(httpError('공개 통계 연결이 변경됐어요.',409),{code:'CONNECTION_CHANGED'});
+        let renewed;
+        try{renewed={...reader,...await refreshCredentials('youtube',reader,reader,{fetchImpl:options.oauthFetch,clock})};}
+        catch(error){if(hash(JSON.stringify(store.secret(key)))===binding)store.put(credentialRefreshState,key,{id:key,binding,code:error.code||'token_exchange_failed',retryable:error.retryable===true,nextRetryAt:new Date(Date.parse(clock())+(error.retryable===true?15:60)*60000).toISOString()});throw error;}
+        if(stopRequested||hash(JSON.stringify(store.secret(key)))!==binding)throw Object.assign(httpError('공개 통계 연결이 변경됐어요.',409),{code:'CONNECTION_CHANGED'});
+        if(JSON.stringify(renewed)!==JSON.stringify(reader))store.setSecret(key,renewed);
+        if(store.get(credentialRefreshState,key))store.remove(credentialRefreshState,key);
+        return renewed;
+      }).finally(()=>{if(credentialRefreshes.get(key)?.task===task)credentialRefreshes.delete(key);});
+      pending={binding,task};credentialRefreshes.set(key,pending);
+    }
+    const current=await pending.task,live=store.get('channels',c.id);
+    if(!live||!publicYouTubeReader(live)||(live.connectionVersion||0)!==(c.connectionVersion||0)||hash(JSON.stringify(publicYouTubeReader(live)))!==hash(JSON.stringify(current)))throw Object.assign(httpError('채널 또는 공개 통계 연결이 변경됐어요.',409),{code:'CONNECTION_CHANGED'});
+    return {accessToken:current.accessToken,publicOnly:true};
+  }
   async function credentialsFor(c){
     const provider=providerConfig(c.platform),credentials=connection(c)||{};
     if(!credentials.accessToken)return {...provider,...credentials};
@@ -633,15 +668,15 @@ export function createCompanyApp(options={}) {
     queue=queue.then(async()=>{try{
       const live=store.get('channels',c.id);if(!live?.active)throw httpError('수집 전에 채널이 보관됐습니다.');if(!hasConnection(live))throw httpError('수집 전에 채널 연결이 해제됐습니다.');if((live.connectionVersion||0)!==(c.connectionVersion||0))throw httpError('수집 전에 담당자 또는 연결이 변경됐습니다.');
       store.put('runs',id,{...store.get('runs',id),status:'running'});
-      const at=clock(),result=await collector(live,await credentialsFor(live),mode==='recent'?{recentSince:new Date(Date.parse(at)-HYPE_RECENT_MS).toISOString(),now:at}:undefined);saveCollection(live,result,id,false,mode);
+      const at=clock(),result=await collector(live,await collectionCredentialsFor(live),mode==='recent'?{recentSince:new Date(Date.parse(at)-HYPE_RECENT_MS).toISOString(),now:at}:undefined);saveCollection(live,result,id,false,mode);
     }catch(error){const live=store.get('channels',c.id);const failure=planFailure(error,mode==='recent'?recentPolicyChannel(live||c):(live||c),clock());if(live&&!live.collectionDisabled&&(live.connectionVersion||0)===(c.connectionVersion||0))store.put('channels',c.id,{...live,...(mode==='recent'?{...recentFields(failure),recentStatus:'error',recentLastError:safeError(error.message)}:{...failure,status:'error',lastError:safeError(error.message)})});store.put('runs',id,{...store.get('runs',id),...failure,status:'error',finishedAt:clock(),message:safeError(error.message)});
     }finally{inflight.delete(c.id);const latest=store.get('channels',c.id);if(mode==='recent'&&latest?.recentStatus==='collecting'&&(latest.connectionVersion||0)!==(c.connectionVersion||0))store.put('channels',c.id,{...latest,recentStatus:hasConnection(latest)?'ready':'not-connected',recentLastAttemptAt:null});}});
     return{id,channelId:c.id,status:'queued'};
   }
   async function scheduledTick(at=clock()){
-    if(stopRequested||!backgroundJobsEnabled)return;
-    purgeExpired(at);const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
-    if(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch)dailyTrends.tick(at).catch(()=>{});
+    if(stopRequested||!channelCollectionEnabled)return;
+    if(backgroundJobsEnabled)purgeExpired(at);const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
+    if(backgroundJobsEnabled&&(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch))dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
     for(const c of store.all('channels')){
       const policy={at,enabled:settings.enabled,hourKst:settings.hourKst,connected:hasConnection(c)};
@@ -655,7 +690,7 @@ export function createCompanyApp(options={}) {
   function hypeFeed(user,query){
     const at=clock();purgeExpired(at);
     const channels=scopedChannels(user,query).filter(c=>c.active!==false),ids=new Set(channels.map(c=>c.id));
-    const posts=store.all('posts').filter(p=>ids.has(p.channelId)),postIds=new Set(posts.map(p=>p.id));
+    const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&!p.unavailableAt),postIds=new Set(posts.map(p=>p.id));
     const observations=store.all('hypeObservations').filter(o=>ids.has(o.channelId)&&postIds.has(o.postId));
     const settings=store.get('settings','company'),safe=channels.map(c=>({...c,connected:hasConnection(c)}));
     const connected=safe.filter(c=>c.connected),busy=connected.filter(c=>inflight.has(c.id));
@@ -1100,15 +1135,22 @@ export function createCompanyApp(options={}) {
       }
       if(path==='/api/post-performance'){
         if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 등록해 주세요.');
+        const originalHash=auth.hash,authorize=()=>{
+          const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+          return latest.user;
+        };
+        const channel=store.get('channels',input.channelId);
+        if(!channel||channel.active===false||!canWriteChannel(authorize(),channel))throw httpError('이 채널에 게시 성과를 등록할 권한이 없어요.',403);
         if(input.publicationPackageId){
-          const pack=publicationPackages.get(user,input.publicationPackageId).package,channel=channelFor(user,input.channelId,'write');
+          const pack=publicationPackages.get(user,input.publicationPackageId).package;
           const formats=(pack.channels||[]).filter(format=>format.startsWith(channel.platform==='youtube'?'youtube-':channel.platform==='instagram'?'instagram-':'unsupported-'));
           if(!formats.length)throw httpError('선택한 게시 묶음에는 이 계정의 플랫폼용 영상이 없습니다.');
           if(input.publicationFormat&&!formats.includes(input.publicationFormat))throw httpError('게시 묶음과 계정에 맞는 영상 형식을 선택해 주세요.');
           if(!input.publicationFormat&&formats.length>1)throw httpError('같은 플랫폼의 영상 형식이 여러 개입니다. 실제 게시한 영상 형식을 선택해 주세요.');
           input.publicationFormat=input.publicationFormat||formats[0];
-        }else if(input.publicationFormat)throw httpError('영상 형식을 연결할 게시 묶음을 먼저 선택해 주세요.');
-        const result=postPerformance.register(user,input);audit(user,'post-performance-registered',result.entry.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.existing?200:201,result);
+        }
+        const authorizeRegistration=()=>{const actor=authorize();if(input.publicationPackageId){const pack=publicationPackages.get(actor,input.publicationPackageId).package;if(!(pack.channels||[]).includes(input.publicationFormat))throw httpError('게시 묶음의 영상 형식이 바뀌었어요. 다시 선택해 주세요.',409);}return actor;};
+        const result=await postPerformance.registerVerified(user,input,{authorize:authorizeRegistration,signal:publicationAbort.signal});authorize();audit(user,'post-performance-registered',result.entry.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.existing?200:201,result);
       }
       const publicationCheckpoint=path.match(/^\/api\/post-performance\/([^/]+)\/checkpoints\/(24|72)$/);
       if(publicationCheckpoint){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 기록해 주세요.');return send(res,200,postPerformance.manualCheckpoint(user,publicationCheckpoint[1],Number(publicationCheckpoint[2]),input));}
@@ -1446,6 +1488,12 @@ export function createCompanyApp(options={}) {
         if(demoRequest||!publicationInboxLocal)throw httpError('완성본 자동 가져오기는 로컬 작업실에서 사용할 수 있습니다.',403);
         return send(res,200,publicationInbox.readDraft(user,publicationInboxDraft[1]));
       }
+      if(path==='/api/post-performance/lookup'){
+        if(demoRequest)throw httpError('게시 주소 확인은 실제 작업실에서 이용해 주세요.');
+        if([...url.searchParams.keys()].some(key=>!['channelId','url'].includes(key))||['channelId','url'].some(key=>url.searchParams.getAll(key).length!==1))throw httpError('확인할 계정과 게시 주소를 하나씩 선택해 주세요.');
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+        const result=await postPerformance.lookup(user,{channelId:url.searchParams.get('channelId'),url:url.searchParams.get('url')},{authorize,signal:publicationAbort.signal});authorize();return send(res,200,result);
+      }
       if(path==='/api/post-performance'){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 확인해 주세요.');return send(res,200,postPerformance.list(user));}
       if(path==='/api/publication-packages'){if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationPackages.list(user));}
       const publicationReviewDetail=path.match(/^\/api\/publication-packages\/([^/]+)\/review$/);
@@ -1662,7 +1710,7 @@ export function createCompanyApp(options={}) {
         synkIdentity.startChecks();
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
-        if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
+        if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
         if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>creativeResearchSync.tick(clock())).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.

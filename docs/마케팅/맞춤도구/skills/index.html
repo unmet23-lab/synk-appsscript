@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>내 GPTs·젬 옮기기 점검 · synkbrief</title>
+<meta name="description" content="ChatGPT GPTs는 12월 11일에 끝나고, 제미나이 젬은 11월 17일부터 스킬로 옮겨져요. 어디에 만들었는지, 직접 만들었는지 고르면 내 날짜와 할 일 순서, 안 따라오는 것을 알려 드려요.">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="synkbrief">
+<meta property="og:title" content="내 GPTs·젬, 언제까지 뭘 하지? · 1분">
+<meta property="og:description" content="GPTs는 직접 옮기고, 젬은 기다리면 돼요. 내 날짜와 할 일 순서.">
+<meta property="og:url" content="https://synk.im/brief/skills/">
+<meta property="og:image" content="https://synk.im/brief/skills/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="tool">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/shift/" aria-label="SYNK SHIFT 홈 · synkbrief 뉴스">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">synkbrief <i>/</i> skills</span>
+    </a>
+    <div class="bar-tools">
+      <button type="button" class="switch" role="switch" aria-checked="true" data-tips><span class="track" aria-hidden="true"></span><span>팁 보기</span></button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot no-print">
+    <span>synkbrief · 처음부터, 하나씩</span>
+    <span><a href="https://www.instagram.com/synkbrief/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@synkbrief" target="_blank" rel="noopener">YouTube</a> · <button type="button" data-forget>저장된 기록 지우기</button><span data-account-slot hidden> · <button type="button" data-account>SYNK 설정 불러오기</button></span></span>
+  </footer>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<noscript><p style="max-width:680px;margin:40px auto;padding:0 20px;font-size:17px">점검은 브라우저에서 해요. 자바스크립트를 켜 주세요.</p></noscript>
+<script src="atlas-engine.js"></script>
+<script src="content.js"></script>
+<script src="rules.js"></script>
+<script src="view.js"></script>
+<script src="account.js"></script>
+<script src="wizard.js"></script>
+<script>
+SynkWizard.start({
+  root: document.getElementById('app'),
+  tool: {
+    id: 'brief.skills',
+    scope: { domain: 'SHIFT', workspace: 'synkbrief', subject: 'visitor' },
+    content: SynkSkillsContent, rules: SynkSkillsRules, view: SynkSkillsView,
+    // 처음 쓰는 사람에겐 날짜와 할 일만(약 3화면). 「기본」「자세히」는 결과 안에서 고른다(10-17 검수).
+    defaultLayout: 'quick',
+    candidates: [
+      { id: 'quick', pace: 'short', minutes: 1 },
+      { id: 'guided', pace: 'standard', minutes: 3 },
+      { id: 'deep', pace: 'deep', minutes: 6 }
+    ]
+  }
+});
+</script>
+</body>
+</html>

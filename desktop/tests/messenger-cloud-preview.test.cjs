@@ -21,7 +21,7 @@ test('cloud entry needs the exact Messenger development opt-in; other targets st
 test('CLI opt-in is explicit, rejects missing or wrong client/mode and arbitrary values',()=>{
   const parsed=parseOptions(['--client=messenger','--mode=development','--platform=win32','--arch=x64','--messenger-cloud-preview=true']);
   assert.equal(parsed.messengerCloudPreview,true);assert.equal(previewEntry('messenger',parsed),entry);
-  for(const args of [['--messenger-cloud-preview=true'],['--client=world','--messenger-cloud-preview=true'],['--client=platform','--messenger-cloud-preview=true'],['--client=messenger','--mode=release','--messenger-cloud-preview=true'],['--client=messenger','--messenger-cloud-preview=https://evil.invalid/'],['--client=messenger','--messenger-cloud-preview=false']])assert.throws(()=>parseOptions(args),/Use --client=messenger/);
+  for(const args of [['--messenger-cloud-preview=true'],['--client=world','--messenger-cloud-preview=true'],['--client=platform','--messenger-cloud-preview=true'],['--client=messenger','--mode=release','--messenger-cloud-preview=true'],['--client=messenger','--messenger-cloud-preview=https://evil.invalid/'],['--client=messenger','--messenger-cloud-preview=false']].map(args=>[...args,'--platform=win32']))assert.throws(()=>parseOptions(args),/Use --client=messenger/); // explicit target: the default is the host OS, and Linux is not a build target
   for(const id of ['world','platform'])assert.throws(()=>previewEntry(id,{mode:'development',messengerCloudPreview:true}),/restricted/);
   assert.throws(()=>previewEntry('messenger',{mode:'release',messengerCloudPreview:true}),/restricted/);
   for(const id of ['world','platform','messenger'])assert.equal(previewEntry(id,{mode:'development'}),DEV_URLS[id]);

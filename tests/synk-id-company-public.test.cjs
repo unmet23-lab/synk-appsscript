@@ -80,8 +80,14 @@ test('apply preserves existing callbacks, Care, mappings and portal; customer co
   const { config, portal } = f.calls.artifacts[0]; assert.deepEqual(f.currentPortal, beforePortal); assert.deepEqual(portal.clients, beforePortal.clients);
   for (const old of beforePortal.authorizationClients.filter(row => row.clientId !== f.staff.client_id)) assert.deepEqual(portal.authorizationClients.find(row => row.clientId === old.clientId), old);
   const runtime = await import(pathToFileURL(path.resolve('docs/마케팅/온라인마케팅지도/engagement/company/customer-identity.mjs')));
-  const identity = runtime.createCustomerIdentity({ origin: config.origin, config: runtime.customerIdentityConfig(config.env), fetch: () => { throw Error('no network'); } });
-  assert.equal(identity.status().enabled, true); assert.notEqual(config.env.SYNK_ID_CUSTOMER_CLIENT_ID, config.env.SYNK_ID_MESSENGER_CLIENT_ID); identity.close();
+  // The runtime requires its encrypted persistent store (since bfaf6d078); use a throwaway one.
+  const { Store } = await import(pathToFileURL(path.resolve('docs/마케팅/온라인마케팅지도/engagement/company/store.mjs')));
+  const storeDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'synk-id-company-store-')), store = new Store(storeDirectory);
+  try {
+    const identity = runtime.createCustomerIdentity({ store, origin: config.origin, config: runtime.customerIdentityConfig(config.env), fetch: () => { throw Error('no network'); } });
+    assert.equal(identity.status().enabled, true); assert.notEqual(config.env.SYNK_ID_CUSTOMER_CLIENT_ID, config.env.SYNK_ID_MESSENGER_CLIENT_ID);
+    await identity.close(); identity.dispose();
+  } finally { store.close(); await fs.rm(storeDirectory, { recursive: true, force: true }); }
 });
 test('re-running is idempotent and existing Care provisioner consumes the preserved shared journal', async () => {
   const f = fixture(); await provisionCompanyPublic(f.args({ apply: true })); await provisionCompanyPublic(f.args({ apply: true }));

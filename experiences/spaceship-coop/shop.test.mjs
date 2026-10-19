@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {newRoom,newPlayer,project} from './core.mjs';
+import {outfitFromWallet,rewardRound} from './shop.mjs';
+test('reused room codes never reuse a completion reward identity',()=>{const a=newRoom('ABC234',1234),b=newRoom('ABC234',1234);assert.match(a.expeditionId,/^[a-f0-9]{32}$/);assert.notEqual(a.expeditionId,b.expeditionId);a.players[1]=newPlayer(1);assert.equal(project(a,0).expeditionId,project(a,1).expeditionId);});
+test('only a complete eighteen-repair expedition receives finish-only reward data',()=>{const room=newRoom('ABC234');room.players[1]=newPlayer(1);assert.equal(rewardRound(project(room,0)),null);room.phase='launch';assert.equal(rewardRound(project(room,0)),null);room.phase='complete';const round=rewardRound(project(room,0));assert.equal(round.correct,0);assert.equal(round.total,18);assert.equal(round.roundId,`spaceship-coop:${room.expeditionId}`);assert.deepEqual(round,rewardRound(project(room,1)));assert.equal(rewardRound({...project(room,0),expeditionId:'ABC234'}),null);});
+test('cosmetic values accept only known scene and badge assets',()=>{assert.deepEqual(outfitFromWallet(null),{sky:'default',badge:'sparkle'});assert.deepEqual(outfitFromWallet({equipped:{'ship-sky':'sunset','ship-badge':'ring'}}),{sky:'sunset',badge:'ring'});assert.deepEqual(outfitFromWallet({equipped:{'ship-sky':'bad','ship-badge':'../../file'}}),{sky:'default',badge:'sparkle'});});

@@ -2,10 +2,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs'),vm=require('node:vm'),{EventEmitter}=require('node:events');
 const {PRODUCT_PREVIEWS,product,productPreviewAvailable,previewAccountAllowed,createProductPreviews,productDocument,productResource,productPolicy,assertProductSender,productBrowserDestination,productDownload,createProductBrowser}=require('../src/product-preview.cjs');
 const {CLIENTS,identity}=require('../src/catalog.cjs');
-const allowed={status:'signed-in',signedIn:true,account:{synk_user_id:'synthetic-staff'},library:{status:'ready',appIds:['path','care','fortune','rehearsal','family-album']}};
+const allowed={status:'signed-in',signedIn:true,account:{synk_user_id:'synthetic-staff'},library:{status:'ready',appIds:['path','care','fortune']}};
 function fixture(overrides={}){const calls=[],options={packaged:false,mode:'development',clientId:'platform',executable:'C:\\fixed\\electron.exe',appRoot:path.resolve(__dirname,'..'),accountStatus:()=>allowed,spawn:(exe,args,opts)=>{calls.push({exe,args,opts});const child=new EventEmitter();child.unref=()=>{};queueMicrotask(()=>child.emit('spawn'));return child;},...overrides};return {calls,options,service:createProductPreviews(options)};}
 test('Product previews retain separate profiles from installed clients',()=>{
-  assert.deepEqual(Object.keys(PRODUCT_PREVIEWS),['path','care','fortune','rehearsal','family-album']);
+  assert.deepEqual(Object.keys(PRODUCT_PREVIEWS),['path','care','fortune']);
   assert.equal(PRODUCT_PREVIEWS.path.entry,'http://127.0.0.1:4292/');assert.equal(product('shift'),null);
   const scopes=Object.values(PRODUCT_PREVIEWS).map(p=>p.sessionScope);
   scopes.push(...Object.keys(CLIENTS).flatMap(id=>['development','release'].map(mode=>identity(id,mode).sessionScope)));
@@ -13,11 +13,11 @@ test('Product previews retain separate profiles from installed clients',()=>{
   assert.equal(product('__proto__'),null);assert.equal(product('teacher'),null);
 });
 test('only development platform starts fixed preview processes without shell or caller URL',async()=>{
-  const {service,calls,options}=fixture();assert.deepEqual(service.available(),['path','care','fortune','rehearsal','family-album']);
-  for(const id of ['path','care','fortune','rehearsal','family-album'])assert.deepEqual(await service.open(id),{ok:true,preview:true,separateClient:true,clientId:id});
-  for(const [index,id]of ['path','care','fortune','rehearsal','family-album'].entries()){assert.equal(calls[index].exe,options.executable);assert.deepEqual(calls[index].args,[path.join(options.appRoot,'src','product-main.cjs'),'--synk-product-preview='+id]);assert.equal(calls[index].opts.shell,false);assert.equal(calls[index].opts.detached,true);}
+  const {service,calls,options}=fixture();assert.deepEqual(service.available(),['path','care','fortune']);
+  for(const id of ['path','care','fortune'])assert.deepEqual(await service.open(id),{ok:true,preview:true,separateClient:true,clientId:id});
+  for(const [index,id]of ['path','care','fortune'].entries()){assert.equal(calls[index].exe,options.executable);assert.deepEqual(calls[index].args,[path.join(options.appRoot,'src','product-main.cjs'),'--synk-product-preview='+id]);assert.equal(calls[index].opts.shell,false);assert.equal(calls[index].opts.detached,true);}
   for(const id of ['shift','studio','world','teacher','path --inspect','../main.cjs','https://evil.invalid/',{id:'path'},null])assert.equal((await service.open(id)).code,'UNKNOWN_PREVIEW');
-  assert.equal(calls.length,5);
+  assert.equal(calls.length,3);
   for(const change of [{packaged:true},{packaged:null},{mode:'release'},{clientId:'world'},{clientId:'messenger'},{clientId:'path'}]){const denied=fixture(change);assert.deepEqual(denied.service.available(),[]);assert.equal((await denied.service.open('path')).code,'PREVIEW_DEVELOPMENT_ONLY');assert.equal(denied.calls.length,0);}
   assert.equal(productPreviewAvailable({packaged:false,mode:'development',clientId:'platform'}),true);
 });
@@ -44,7 +44,7 @@ test('repeated PATH clicks share a launch and errors allow retry',async()=>{
   const sync=fixture({spawn:()=>{throw Error('synthetic');}});assert.equal((await sync.service.open('path')).code,'PREVIEW_LAUNCH_FAILED');assert.equal((await sync.service.open('path')).code,'PREVIEW_LAUNCH_FAILED');
 });
 test('navigation and network stay inside the owning fixed product origin',()=>{
-  for(const id of ['path','care','fortune','rehearsal','family-album']){
+  for(const id of ['path','care','fortune']){
     const entry=PRODUCT_PREVIEWS[id].entry;
     for(const url of [entry,entry+'index.html',entry+'#work'])assert.equal(productDocument(id,url),true);
     for(const url of [entry+'?product=world',entry+'api/state',entry+'nested/index.html','http://127.0.0.1:4280/','http://127.0.0.1:4191/','http://127.0.0.1:4290/','http://127.0.0.1:4292.evil.invalid/','https://127.0.0.1:4292/','file:///local.txt','javascript:alert(1)'])assert.equal(productDocument(id,url),false,url);
@@ -56,7 +56,7 @@ test('navigation and network stay inside the owning fixed product origin',()=>{
   assert.match(productPolicy(),/connect-src 'self'/);assert.match(productPolicy(),/frame-src 'none'/);assert.doesNotMatch(productPolicy(),/script-src[^;]*unsafe-inline/);
 });
 test('product IPC refuses sibling windows, child frames and cross-product documents',()=>{
-  for(const id of ['path','care','fortune','rehearsal','family-album']){
+  for(const id of ['path','care','fortune']){
     const frame={url:PRODUCT_PREVIEWS[id].entry},webContents={mainFrame:frame},window={webContents,isDestroyed:()=>false},event={sender:webContents,senderFrame:frame};
     assert.doesNotThrow(()=>assertProductSender(event,window,id));
     for(const bad of [{...event,sender:{}},{...event,senderFrame:{url:frame.url}},{...event,senderFrame:null}])assert.throws(()=>assertProductSender(bad,window,id),/UNTRUSTED_SENDER/);
@@ -66,9 +66,9 @@ test('product IPC refuses sibling windows, child frames and cross-product docume
 });
 function preload(file){let bridge,name;const calls=[];vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../src',file),'utf8'),{require:module=>{assert.equal(module,'electron');return {contextBridge:{exposeInMainWorld:(n,v)=>{name=n;bridge=v;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}};}});return {bridge,name,calls};}
 test('platform preload only forwards fixed products and rejects retired SHIFT',async()=>{
-  const p=preload('preload.cjs');assert.equal(p.name,'synkDesktop');await p.bridge.openProductPreview('path');await p.bridge.openProductPreview('care');await p.bridge.openProductPreview('fortune');await p.bridge.openProductPreview('rehearsal');await p.bridge.openProductPreview('family-album');
+  const p=preload('preload.cjs');assert.equal(p.name,'synkDesktop');await p.bridge.openProductPreview('path');await p.bridge.openProductPreview('care');await p.bridge.openProductPreview('fortune');
   for(const id of ['shift','studio','../main.cjs','teacher','https://evil.invalid/',{id:'path'}])assert.equal((await p.bridge.openProductPreview(id)).code,'UNKNOWN_PREVIEW');
-  assert.deepEqual(p.calls,[['synk:product-preview','path'],['synk:product-preview','care'],['synk:product-preview','fortune'],['synk:product-preview','rehearsal'],['synk:product-preview','family-album']]);
+  assert.deepEqual(p.calls,[['synk:product-preview','path'],['synk:product-preview','care'],['synk:product-preview','fortune']]);
 });
 test('product preload has only metadata and the argument-free browser action',async()=>{
   const p=preload('product-preload.cjs');assert.equal(p.name,'synkProduct');assert.deepEqual(Object.keys(p.bridge).sort(),['authStatus','getEnvironment','openInBrowser']);assert.equal(Object.isFrozen(p.bridge),true);
@@ -88,7 +88,7 @@ test('product previews no longer accept downloads from retired SHIFT or PATH',()
 });
 const {createProductDownloadHandler,productDownloadNotice}=require('../src/product-preview.cjs');
 test('each account product accepts only its own exact bounded JSON recovery file',()=>{
-  for(const id of ['care','family-album','rehearsal','path']){
+  for(const id of ['care','path']){
     const entry=PRODUCT_PREVIEWS[id].entry,base={id,url:'blob:'+entry+'synthetic',sourceUrl:entry,mime:'application/json',filename:`synk-${id}-local-recovery.json`,size:64*1024*1024};
     assert.equal(productDownload(base).extension,'json');
     for(const patch of [{size:base.size+1},{mime:'text/html'},{filename:'../'+base.filename},{filename:'synk-other-local-recovery.json'},{sourceUrl:PRODUCT_PREVIEWS.fortune.entry}])assert.equal(productDownload({...base,...patch}),false);

@@ -207,16 +207,16 @@ test('account favorites group teaching into Messenger while teacher-only still o
 test('merged account choices show one PULSE shortcut and preserve previous Partners notes on open and edit',async t=>{
   const legacy={...memo('legacy'),appId:'partners',title:'파트너 작업 이어가기'},record={...state(['partners','pulse']),recent:[{id:'partners',at:20,mode:'web'},{id:'pulse',at:10,mode:'client'}],notes:[legacy]},f=await fixture(t,{records:new Map([['A',{revision:4,state:record}]])});await f.connect();
   assert.equal(f.writes().length,0);assert.deepEqual(f.records.get('A').state,record);
-  assert.equal(f.content.querySelectorAll('[data-cloud="favorite"]').length,8);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="partners"]'),null);
+  assert.equal(f.content.querySelectorAll('[data-cloud="favorite"]').length,6);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="partners"]'),null);
   assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="pulse"]').getAttribute('aria-pressed'),'true');
-  assert.equal(f.content.querySelectorAll('[name=appId] option').length,8);assert.equal(f.content.querySelector('option[value="partners"]'),null);
+  assert.equal(f.content.querySelectorAll('[name=appId] option').length,6);assert.equal(f.content.querySelector('option[value="partners"]'),null);
   assert.match(f.content.querySelector('[data-note-id="legacy"]').textContent,/PULSE · 이전 Partners 기록/);
   assert.deepEqual(f.view.projection().favorites,['pulse']);assert.deepEqual(f.view.projection().recent,[{id:'pulse',at:20,mode:'web'}]);assert.deepEqual(f.view.projection().notes,[legacy]);
   f.root.querySelector('[data-resume]').onclick();clickCloud(f,'open','partners');assert.deepEqual(f.opened,['pulse','pulse']);assert.equal(f.writes().length,0);
-  clickCloud(f,'edit-note','legacy');assert.equal(f.content.querySelector('[name=appId]').value,'partners');assert.equal(f.content.querySelectorAll('[name=appId] option').length,9);
+  clickCloud(f,'edit-note','legacy');assert.equal(f.content.querySelector('[name=appId]').value,'partners');assert.equal(f.content.querySelectorAll('[name=appId] option').length,7);
   f.input('작품 검토 이어가기');f.submit();await until(()=>!f.view.hasPending()&&f.records.get('A').state.notes[0].title==='작품 검토 이어가기');
   assert.deepEqual(f.records.get('A').state.notes,[{...legacy,title:'작품 검토 이어가기'}]);assert.deepEqual(f.records.get('A').state.favorites,record.favorites);assert.deepEqual(f.records.get('A').state.recent,record.recent);
-  assert.equal(f.content.querySelectorAll('[name=appId] option').length,8);assert.equal(f.content.querySelector('option[value="partners"]'),null);
+  assert.equal(f.content.querySelectorAll('[name=appId] option').length,6);assert.equal(f.content.querySelector('option[value="partners"]'),null);
 });
 
 test('the displayed PULSE favorite explicitly clears both previous catalog selections without deleting legacy notes',async t=>{
@@ -240,8 +240,8 @@ test('editing preserves the original note identity and restores a parked new dra
   const row=memo('keep',true),f=await fixture(t,{records:new Map([['A',{revision:1,state:{...state(),notes:[row]}}]])});await f.connect();
   f.input('먼저 작성하던 새 메모');const input=f.content.querySelector('[name=title]');clickCloud(f,'edit-note','keep');
   assert.equal(input.value,row.title);assert.equal(f.content.querySelector('[data-note-submit]').textContent,'수정 저장');assert.equal(f.view.hasUnsavedDraft(),true);
-  f.input('고친 제목');f.content.querySelector('[name=appId]').value='rehearsal';f.submit();await until(()=>f.records.get('A').state.notes[0].title==='고친 제목'&&!f.view.hasPending());
-  assert.deepEqual(f.records.get('A').state.notes,[{...row,title:'고친 제목',appId:'rehearsal'}]);assert.equal(f.content.querySelector('[name=title]'),input);assert.equal(input.value,'먼저 작성하던 새 메모');
+  f.input('고친 제목');f.content.querySelector('[name=appId]').value='fortune';f.submit();await until(()=>f.records.get('A').state.notes[0].title==='고친 제목'&&!f.view.hasPending());
+  assert.deepEqual(f.records.get('A').state.notes,[{...row,title:'고친 제목',appId:'fortune'}]);assert.equal(f.content.querySelector('[name=title]'),input);assert.equal(input.value,'먼저 작성하던 새 메모');
   clickCloud(f,'edit-note','keep');f.input('취소할 수정');clickCloud(f,'cancel-edit');assert.equal(input.value,'먼저 작성하던 새 메모');assert.equal(f.writes().length,1);assert.equal(f.view.hasUnsavedDraft(),true);
 });
 
@@ -400,10 +400,10 @@ test('ready preserves editing and the outbox after a verified library save goes 
   const f=await fixture(t,{records:new Map([['A',{revision:5,state:state(['care'])}]])});await f.view.connect();await settle();assert.equal(await f.view.ready(),true);
   f.input('오프라인에도 남겨 둘 입력');const input=f.content.querySelector('[name=title]');f.setFail(true);
   await f.view.dispatch({type:'favorite',id:'world'});await until(()=>f.writes().length===1);await settle();assert.equal(f.view.hasPending(),true);
-  assert.equal(await f.view.ready(),true);await f.view.dispatch({type:'favorite',id:'rehearsal'});await until(()=>f.writes().length===2);await settle();
-  assert.equal(await f.view.ready(),true);assert.equal(f.view.hasPending(),true);assert.deepEqual(f.view.projection().favorites,['care','world','rehearsal']);
+  assert.equal(await f.view.ready(),true);await f.view.dispatch({type:'favorite',id:'fortune'});await until(()=>f.writes().length===2);await settle();
+  assert.equal(await f.view.ready(),true);assert.equal(f.view.hasPending(),true);assert.deepEqual(f.view.projection().favorites,['care','world','fortune']);
   assert.equal(f.content.querySelector('[name=title]'),input);assert.equal(input.value,'오프라인에도 남겨 둘 입력');assert.deepEqual(f.records.get('A'),{revision:5,state:state(['care'])});
-  assert.ok(f.storage.data.size>0);assert.ok([...f.storage.data.values()].some(raw=>raw.includes('rehearsal')));
+  assert.ok(f.storage.data.size>0);assert.ok([...f.storage.data.values()].some(raw=>raw.includes('fortune')));
 });
 
 test('ready remains pending for the new owner when an earlier account read finishes late', async t => {
@@ -432,16 +432,16 @@ test('suspension and disposal release ready waiters with false even while the ac
 });
 
 test('the compact library chooses an unfinished note and keeps editing controls collapsed until opened', async t => {
-  const record=state();record.notes=[{id:'done',appId:'world',title:'이미 끝낸 메모',done:true,createdAt:2},{id:'next',appId:'rehearsal',title:'다음 대화 이어쓰기',done:false,createdAt:1}];
+  const record=state();record.notes=[{id:'done',appId:'world',title:'이미 끝낸 메모',done:true,createdAt:2},{id:'next',appId:'fortune',title:'다음 대화 이어쓰기',done:false,createdAt:1}];
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();
   const panel=f.root.querySelector('[data-library-panel]'),toggle=f.root.querySelector('[data-panel-toggle]');
   assert.equal(panel.hidden,true);assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(f.root.querySelector('[data-library-title]').textContent,'다음 대화 이어쓰기');
-  f.root.querySelector('[data-resume]').onclick();assert.deepEqual(f.opened,['rehearsal']);
+  f.root.querySelector('[data-resume]').onclick();assert.deepEqual(f.opened,['fortune']);
   toggle.onclick();assert.equal(panel.hidden,false);assert.equal(toggle.getAttribute('aria-expanded'),'true');f.input('접어 두어도 남길 초안');toggle.onclick();
   assert.equal(panel.hidden,true);assert.equal(f.view.hasUnsavedDraft(),true);assert.equal(f.root.querySelector('[data-resume]').textContent,'계속 작성');
   assert.equal(f.root.querySelector('[data-library-status]').textContent,'메모는 아직 계정에 저장하지 않았어요');
   const field=f.content.querySelector('[name=title]');let focused=false;field.focus=()=>{focused=true;};f.root.querySelector('[data-resume]').onclick();
-  assert.equal(panel.hidden,false);assert.equal(focused,true);assert.equal(field.value,'접어 두어도 남길 초안');assert.deepEqual(f.opened,['rehearsal']);assert.equal(f.writes().length,0);
+  assert.equal(panel.hidden,false);assert.equal(focused,true);assert.equal(field.value,'접어 두어도 남길 초안');assert.deepEqual(f.opened,['fortune']);assert.equal(f.writes().length,0);
   f.input('');assert.equal(f.root.querySelector('[data-library-status]').textContent,'계정에 저장했어요');
 });
 
@@ -471,11 +471,11 @@ test('background save transitions retain the live editor and unsubmitted text', 
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:state()}]])});await f.connect();
   const field=f.content.querySelector('[name=title]'),select=f.content.querySelector('[name=appId]'),form=f.content.querySelector('[data-note-form]');
   const gate=f.hold('platformSave');t.after(()=>gate.resolve());
-  await f.view.dispatch({type:'favorite',id:'world'});f.input('저장 응답 중에도 이어 쓰는 한글');select.value='rehearsal';
+  await f.view.dispatch({type:'favorite',id:'world'});f.input('저장 응답 중에도 이어 쓰는 한글');select.value='fortune';
   await until(()=>f.writes().length===1);await settle();
   assert.equal(f.content.querySelector('[name=title]'),field);assert.equal(f.content.querySelector('[name=appId]'),select);assert.equal(f.content.querySelector('[data-note-form]'),form);
   gate.resolve();await until(()=>!f.view.hasPending());await settle();
-  assert.equal(f.content.querySelector('[name=title]'),field);assert.equal(field.value,'저장 응답 중에도 이어 쓰는 한글');assert.equal(select.value,'rehearsal');
+  assert.equal(f.content.querySelector('[name=title]'),field);assert.equal(field.value,'저장 응답 중에도 이어 쓰는 한글');assert.equal(select.value,'fortune');
   assert.equal(f.content.querySelector('[data-cloud="favorite"]').getAttribute('aria-pressed'),'true');assert.equal(f.records.get('A').state.notes.length,0);
   assert.equal(f.view.hasUnsavedDraft(),true);
 });
@@ -496,11 +496,11 @@ test('web account navigation has an accurate label while native keeps its real l
 });
 
 test('explicit device import replaces only after confirmation and crosses the real notebook adapter and CAS writer', async t => {
-  const f = await fixture(t,{ records:new Map([['A',{revision:2,state:state(['care'])}]]), device:{ favorites:['rehearsal'], recent:[{id:'rehearsal',at:12,mode:'client'}] } });
+  const f = await fixture(t,{ records:new Map([['A',{revision:2,state:state(['care'])}]]), device:{ favorites:['fortune'], recent:[{id:'fortune',at:12,mode:'client'}] } });
   await f.connect(); assert.deepEqual(f.view.projection().favorites,['care']); assert.equal(f.writes().length,0);
   await f.click('import'); await until(() => f.writes().length === 1 && !f.view.hasPending());
   assert.equal(f.confirms.length,1); assert.equal(f.writes()[0].params.expected_revision,2);
-  assert.deepEqual(f.records.get('A').state.favorites,['rehearsal']); assert.equal(f.records.get('A').state.recent[0].at,12);
+  assert.deepEqual(f.records.get('A').state.favorites,['fortune']); assert.equal(f.records.get('A').state.recent[0].at,12);
 });
 
 test('refresh re-enables the rendered controls after hydration and retains the new remote document', async t => {
@@ -515,9 +515,9 @@ test('refresh re-enables the rendered controls after hydration and retains the n
 
 test('rapid favorites and recent-setting changes keep their latest combined document without a false failure notice', async t => {
   const f = await fixture(t,{ records:new Map([['A',{revision:1,state:state()}]]) }); await f.connect();
-  const changes = [f.view.dispatch({type:'favorite',id:'world'}), f.view.dispatch({type:'favorite',id:'rehearsal'}), f.view.dispatch({type:'launch',id:'world',mode:'client'}), f.view.dispatch({type:'remember',value:false})];
+  const changes = [f.view.dispatch({type:'favorite',id:'world'}), f.view.dispatch({type:'favorite',id:'fortune'}), f.view.dispatch({type:'launch',id:'world',mode:'client'}), f.view.dispatch({type:'remember',value:false})];
   await Promise.allSettled(changes); await until(() => f.writes().length > 0 && !f.view.hasPending());
-  assert.deepEqual(f.records.get('A').state.favorites,['world','rehearsal']); assert.deepEqual(f.records.get('A').state.recent,[]); assert.equal(f.records.get('A').state.rememberRecent,false);
+  assert.deepEqual(f.records.get('A').state.favorites,['world','fortune']); assert.deepEqual(f.records.get('A').state.recent,[]); assert.equal(f.records.get('A').state.rememberRecent,false);
   assert.doesNotMatch(f.content.textContent,/변경을 보관하지 못/);
 });
 
@@ -659,4 +659,12 @@ test('native panel verified signed-out login retains the original explicit OAuth
  const f=await fixture(t,{initial:{configured:true,status:'signed-out',signedIn:false,sessionGeneration:1}});await f.connect();let loads=0,oauth=0;
  const original=f.host.accountRequest;f.host.accountRequest=async(op,params)=>{if(op==='load'){loads++;return {ok:true};}return original(op,params);};f.host.authSignIn=async()=>{oauth++;return {ok:true};};
  await f.click('signin');assert.equal(oauth,1);assert.equal(loads,0);
+});
+
+test('retired shortcuts disappear while their existing note text remains editable and removable',async t=>{
+ const old=state(['care','rehearsal','family-album']);old.notes=[{...memo('old'),appId:'family-album',title:'보관한 나의 메모'}];old.recent=[{id:'rehearsal',at:1,mode:'web'}];
+ const f=await fixture(t,{records:new Map([['A',{revision:1,state:old}]])});await f.connect();
+ assert.deepEqual(f.view.projection().favorites,['care']);assert.deepEqual(f.view.projection().recent,[]);assert.equal(f.view.projection().notes[0].title,'보관한 나의 메모');
+ assert.equal(f.content.querySelector('[data-cloud="open"][data-id="family-album"]'),null);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="rehearsal"]'),null);
+ clickCloud(f,'remove-note','old');await until(()=>!f.view.hasPending());assert.equal(f.records.get('A').state.notes.length,0);
 });

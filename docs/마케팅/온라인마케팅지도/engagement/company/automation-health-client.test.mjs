@@ -10,6 +10,10 @@ const numbers={package:1,performance:2,inbox:3,today:4,learning:5,review:6,clien
 const ids=Object.keys(numbers);
 const report=()=>({refreshedAt:'2026-10-12T01:00:00.000Z',cards:ids.map((id,index)=>({id,number:numbers[id],title:'자동화 '+numbers[id],mode:(numbers[id]>=11&&numbers[id]<=16)||id==='rights'?'on-demand':'scheduled',status:'idle',statusLabel:'할 일 없음',text:'현재 처리할 대상이 없습니다.',href:'/?tab=workroom&section=tools&tool=publication',checkedAt:'2026-10-12T01:00:00.000Z',lastAttemptAt:null,lastSuccessAt:null,lastSuccessLabel:'최근 정상 점검',lastResultAt:null,nextRunAt:null,nextDueAt:null,counts:{targets:0,issues:0,manual:0,paused:0}})),issues:[],manual:[],counts:{issues:0,manual:0,running:0,paused:0,partial:0},note:'현재 열람할 수 있는 작업만 확인합니다.'});
 const item=(id='issue',automationId='links')=>({id,automationId,kind:'publication_link',status:'failed',statusLabel:'접속 오류',title:'자료 링크',text:'오류 응답을 확인했습니다.',href:'/?tab=workroom&section=tools&tool=publication&publicationAction=link&packageId=owned-package',occurredAt:'2026-10-12T00:00:00Z',dueAt:null});
+// The issue automation-health.mjs adds when the post-performance collector has not finished after a due observation.
+const stale=(extra={})=>({id:'performance:collector-stale:current',automationId:'performance',kind:'collector-stale',status:'delayed',statusLabel:'확인 지연',title:'게시 성과 자동 수집 확인 지연',text:'게시물 2편의 관측 시각 뒤에 수집기가 정상 점검을 마친 기록이 없어요. 서버의 자동 수집 상태를 확인해 주세요.',href:'/?tab=workroom&section=tools&tool=publication',occurredAt:'2026-10-12T00:30:00.000Z',dueAt:'2026-10-12T00:30:00.000Z',code:'post-performance-collector-stale',since:'2026-10-12T00:30:00.000Z',affectedEntries:['post-1','post-2'],...extra});
+const kst=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
+const staleRow=html=>html.match(/<li class="ah-stale"[\s\S]*?<\/li>/)?.[0]||'';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function projectGroup({waitingOnly=false}={}){
   const projectId='owned-project',items=[{id:'project-request',projectId,group:waitingOnly?'waiting':'reply',title:'장면별 수정 확인',statusLabel:'수정 의견 확인',href:'/?tab=workroom&section=clients&project=owned-project&version=owned-version&message=owned-message&seconds=62.5'},{id:'project-waiting',projectId,group:'waiting',title:'고객 답변 대기',statusLabel:'고객 확인 대기',href:'/?tab=workroom&section=clients&project=owned-project&schedule=1'}];
@@ -176,4 +180,32 @@ test('project expansions survive refresh and clear on identity changes without a
 
 test('project source text is escaped and optional private text is not required by the client contract',async()=>{
   const data=report();data.projectGroups=[projectGroup()];const group=data.projectGroups[0];group.projectTitle='<script>private</script>';group.reason='<img src=x>';group.items[0].title='<svg onload=bad()>';group.items[0].href='javascript:bad()';const f=fixture(async()=>data);await f.run('ahLoad()');const html=f.run('automationHealthPanel()');assert.equal(f.run('automationHealthState.error'),'');assert.doesNotMatch(html,/<script>|<img|<svg|href="javascript/);assert.match(html,/&lt;script&gt;private/);assert.match(html,/&lt;img src=x/);
+});
+
+test('a stopped post-performance collector is listed first in Korean with its start time, affected posts and the performance link',async()=>{
+  const data=report();data.issues=[item('first'),item('second'),{...item('late','performance'),status:'delayed',statusLabel:'확인 지연',dueAt:'2026-10-12T00:30:00Z'},stale({affectedEntries:['post-1','post-2','post-1',' ']})];data.counts.issues=4;
+  const f=fixture(async()=>data);await f.run('ahLoad()');assert.equal(f.run('automationHealthState.error'),'');
+  const html=f.run('automationHealthPanel()'),row=staleRow(html),order=[...html.matchAll(/data-ah-item="([^"]+)"/g)].map(match=>match[1]);
+  assert.deepEqual(order,['performance:performance:collector-stale:current','links:first','links:second','performance:late']);assert.ok(html.indexOf('collector-stale')<html.indexOf('나머지 1건 보기'));assert.match(html,/지금 조치할 문제<\/span><strong>4<small>건/);
+  assert.match(row,/수집 멈춤/);assert.ok(row.includes(`게시 성과 자동 수집이 ${kst('2026-10-12T00:30:00Z')}부터 멈춰 있어요 · 영향 게시물 2개`));assert.match(row,/data-ah-source="\/\?tab=workroom&amp;section=tools&amp;tool=publication" data-ah-view="performance"/);assert.match(row,/게시 후 성과 열기/);
+  assert.doesNotMatch(row,/예정|원문 바로가기|확인 지연|post-1/);
+});
+
+test('missing, invalid or empty stopped-collector fields keep the warning without inventing a time or count',async()=>{
+  const cases=[[value=>{delete value.since;},'time'],[value=>{value.since=null;},'time'],[value=>{value.since='not-a-time';},'time'],[value=>{value.since='';},'time'],[value=>{delete value.affectedEntries;},'count'],[value=>{value.affectedEntries=[];},'count'],[value=>{value.affectedEntries='post-1';},'count'],[value=>{value.affectedEntries=[null,'',' ',5,{}];},'count'],[value=>{for(const key of ['since','affectedEntries','title','text','href','dueAt','occurredAt','statusLabel'])delete value[key];},'both']];
+  for(const [change,missing] of cases){
+    const value=stale();change(value);const data=report();data.issues=[value];const f=fixture(async()=>data);await f.run('ahLoad()');assert.equal(f.run('automationHealthState.error'),'',change.toString());
+    const row=staleRow(f.run('automationHealthPanel()'));assert.match(row,/수집 멈춤/,change.toString());assert.match(row,/data-ah-view="performance"/);assert.doesNotMatch(row,/undefined|null|NaN|시각 미확인|0개/,change.toString());
+    if(missing==='count')assert.ok(row.includes(kst('2026-10-12T00:30:00Z')+'부터 멈춰 있어요'),change.toString());else assert.match(row,/게시 성과 자동 수집이 멈춰 있어요/,change.toString());
+    if(missing==='time')assert.match(row,/영향 게시물 2개/,change.toString());else assert.doesNotMatch(row,/영향 게시물/,change.toString());
+  }
+});
+
+test('the stopped-collector link opens 2. 게시 후 성과 while other source links leave the publication tab as it was',async()=>{
+  const f=fixture(),calls=[];f.context.pf={view:'prepare'};f.context.pfIdentity=()=>{calls.push('identity');f.context.pf.view='prepare';};
+  const click=dataset=>f.event('click',{target:{closest:selector=>selector==='[data-ah-source]'?{dataset}:null},preventDefault(){},button:0});
+  await click({ahSource:'/?tab=workroom&section=tools&tool=publication',ahView:'performance'});assert.equal(f.run('makerTools.view'),'publication');assert.equal(f.context.pf.view,'performance');assert.deepEqual(calls,['identity']);assert.deepEqual(f.links.at(-1),['workspace','workroom','tools']);
+  f.context.pf.view='prepare';await click({ahSource:'/?tab=workroom&section=tools&tool=publication'});assert.equal(f.context.pf.view,'prepare');
+  await click({ahSource:'/?tab=workroom&section=tools&tool=weekly',ahView:'performance'});assert.equal(f.run('makerTools.view'),'weekly');assert.equal(f.context.pf.view,'prepare');assert.deepEqual(calls,['identity']);
+  delete f.context.pf;assert.equal(await f.run('ahOpenSource("/?tab=workroom&section=tools&tool=publication","performance")'),true);assert.equal(f.run('makerTools.view'),'publication');
 });

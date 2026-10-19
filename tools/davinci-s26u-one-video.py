@@ -18,6 +18,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import ntpath
 import os
 from pathlib import Path
 import shutil
@@ -170,7 +171,8 @@ def setting_matches(key: str, actual: Any, expected: Any) -> bool:
     if actual is None:
         return False
     if key.endswith("Location"):
-        return os.path.normcase(os.path.normpath(str(actual))) == os.path.normcase(os.path.normpath(str(expected)))
+        # Resolve reports Windows paths; compare them the Windows way on any host (os.path here only on Windows).
+        return ntpath.normcase(ntpath.normpath(str(actual))) == ntpath.normcase(ntpath.normpath(str(expected)))
     try:
         return abs(float(actual) - float(expected)) < 0.00001
     except (TypeError, ValueError):
@@ -245,7 +247,9 @@ def _save_master_render_preset(project: Any, work_root: Path, width: int, height
             "format": mov_format, "codec": codec_name, "render_mode": project.GetCurrentRenderMode()}
 
 
-def editorial_guide_source() -> Path:
+def editorial_guide_source() -> Path | None:
+    # 컷 편집 기준은 스크립트 옆에 함께 설치했을 때만 작업 폴더에 복사한다. docs 사본은 09-18 문서 초기화(11157567c)로
+    # 지워졌고, 그 뒤로 미디어 준비 전체가 이 파일 때문에 멈췄다. 기준이 없으면 복사만 건너뛰고 보고서에 없음으로 남긴다.
     script = Path(__file__).resolve()
     candidates = (
         script.with_name(EDITORIAL_GUIDE),
@@ -254,7 +258,7 @@ def editorial_guide_source() -> Path:
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    raise SetupError(f"컷 편집 기준 파일이 없습니다. 스크립트와 {EDITORIAL_GUIDE}를 함께 설치하세요.")
+    return None
 
 
 def preserve_editorial_guide(work_root: Path, source: Path) -> dict[str, str]:
@@ -271,7 +275,7 @@ def preserve_editorial_guide(work_root: Path, source: Path) -> dict[str, str]:
     return {"path": str(destination), "sha256": digest}
 
 
-def prepare_editorial_timeline(project: Any, source: Any, guide: dict[str, str]) -> tuple[Any, dict[str, Any]]:
+def prepare_editorial_timeline(project: Any, source: Any, guide: dict[str, str] | None) -> tuple[Any, dict[str, Any]]:
     """Only duplicate and label. Story, trim points and clip content stay untouched."""
     result: dict[str, Any] = {
         "source_timeline": source.GetName(),
@@ -320,7 +324,7 @@ def prepare_editorial_timeline(project: Any, source: Any, guide: dict[str, str])
     if marker_frame is not None:
         marker_ok = timeline.AddMarker(
             marker_frame, "Yellow", "편집 기준 · 자동 컷 아님",
-            f"말의 의미 → 동작/시선 → 소리 연결 → 리듬 대비. 기준: {guide['path']}",
+            "말의 의미 → 동작/시선 → 소리 연결 → 리듬 대비." + (f" 기준: {guide['path']}" if guide else ""),
             1, "synk-editorial-guide-20260910",
         )
         if not marker_ok:
@@ -401,7 +405,7 @@ def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None, *,
         backup = verified_source_copy(source, work_root)
         report["source_backup"] = {"path": str(backup), "sha256_verified": True,
                                    "note": "Local verified copy; not an independent off-device backup."}
-        guide = preserve_editorial_guide(work_root, guide_source)
+        guide = preserve_editorial_guide(work_root, guide_source) if guide_source else None
         edit_source = backup
         if transcode_used:
             edit_source = work_root / "ingest" / f"{source.stem}_DNxHR_HQX.mov"

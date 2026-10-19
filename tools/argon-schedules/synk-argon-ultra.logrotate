@@ -1,0 +1,21 @@
+# Rotate only between runs so byte offsets continue to identify the same file.
+/var/lib/synk-argon-77yuhbs/logs/*.stream.jsonl /var/lib/synk-argon-77yuhbs/logs/*.stderr.log {
+    daily
+    maxsize 10M
+    rotate 7
+    missingok
+    notifempty
+    compress
+    delaycompress
+    su synk-argon-ultra synk-argon-ultra
+    create 0600 synk-argon-ultra synk-argon-ultra
+    sharedscripts
+    prerotate
+        for role in full yt-tt meta-brand synkbrief validation; do
+            state=$(/usr/bin/systemctl show --property=ActiveState --value "synk-argon-ultra-$role.service")
+            case "$state" in active|activating|deactivating) exit 1 ;; esac
+        done
+        exit 0
+    endscript
+}
+

@@ -90,7 +90,7 @@ test('a revoked refresh credential clears the session; a transient provider outa
   for (const revoked of [true,false]) {
     const storage = memory(); stored(storage, { access_token: 'old', refresh_token: 'refresh', expires_at: 0 });
     const client = createDatingAccount({ storage, location: location(), fetcher: async url => String(url).endsWith('/config') ? json({ ok: true, accountConfig: cfg, mode: 'account' }) : json({ error: revoked ? 'invalid_grant' : 'temporarily_unavailable' }, revoked ? 400 : 503) });
-    await client.start(); await assert.rejects(client.request('/state'));
+    await client.start(); await assert.rejects(client.request('/state'), revoked ? { code: 'AUTH_REQUIRED' } : undefined);
     assert.equal(client.snapshot().signedIn, !revoked); assert.equal(!!storage.getItem('synk.oauth.session.dating'), !revoked); client.dispose();
   }
 });

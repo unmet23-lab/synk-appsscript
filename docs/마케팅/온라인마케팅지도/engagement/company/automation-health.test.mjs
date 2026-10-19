@@ -43,6 +43,38 @@ test('future checkpoints wait, slight delay has grace, actual missing observatio
   post.checkpoints[0].dueAt=BEFORE;result=f.get();assert.equal(result.issues.filter(row=>row.automationId==='performance')[0].status,'delayed');assert.equal(card(result,'performance').status,'delayed');
 });
 
+test('collector stale warning uses completed runs after each due time and deduplicates affected entries',()=>{
+  const f=fixture(),first=f.post(),second=f.post({checkpoints:[{hours:24,status:'pending',dueAt:'2026-10-12T02:45:00Z',closesAt:'2026-10-12T08:45:00Z'}]});
+  first.checkpoints.push({hours:72,status:'retry',dueAt:'2026-10-12T02:30:00Z',closesAt:'2026-10-12T08:30:00Z',nextAttemptAt:FUTURE});
+  f.state.runtime.performance.lastSuccessAt='2026-10-12T01:00:00Z';
+  const warning=()=>f.get().issues.find(row=>row.code==='post-performance-collector-stale');
+  let issue=warning();assert.equal(issue.id,'performance:collector-stale:current');assert.equal(issue.since,BEFORE);assert.deepEqual(issue.affectedEntries,[first.id,second.id]);assert.equal(issue.status,'delayed');
+  assert.equal(f.state.runtime.performance.lastAttemptAt,NOW,'a recent attempt does not prove a completed run');
+  f.state.runtime.performance.lastSuccessAt='2026-10-12T02:15:00Z';assert.equal(warning().since,'2026-10-12T02:30:00.000Z');
+  f.state.runtime.performance.lastSuccessAt='2026-10-12T02:40:00Z';assert.deepEqual(warning().affectedEntries,[second.id]);
+  f.state.runtime.performance.lastSuccessAt=NOW;assert.equal(warning(),undefined);assert.ok(f.get().observedIssueIds.includes(issue.id));
+});
+
+test('collector stale warning covers absent or invalid success times only after a checkpoint is due',()=>{
+  const f=fixture(),post=f.post({checkpoints:[{hours:24,status:'pending',dueAt:NOW,closesAt:FUTURE}]});f.state.runtime.performance.lastSuccessAt=null;
+  const warning=()=>f.get().issues.find(row=>row.code==='post-performance-collector-stale');
+  assert.equal(warning(),undefined);f.state.at='2026-10-12T03:00:01.000Z';assert.equal(warning().since,NOW);
+  f.state.runtime.performance.lastSuccessAt=NOW;assert.equal(warning(),undefined,'a run completing at the due time is current');
+  for(const at of ['not-a-time',FUTURE]){f.state.runtime.performance.lastSuccessAt=at;assert.ok(warning());}
+  post.checkpoints[0].status='missed';post.checkpoints[0].closesAt=NOW;assert.ok(warning(),'a missed window remains visible until the collector runs again');
+  post.checkpoints[0]={...post.checkpoints[0],status:'recorded',metrics:{views:0},recordedAt:NOW};assert.equal(warning(),undefined);assert.ok(f.get().observedIssueIds.includes('performance:collector-stale:current'));
+});
+
+test('collector stale warning preserves current ownership and excludes paused, disconnected and manual work',()=>{
+  const f=fixture(),post=f.post();f.state.runtime.performance.lastSuccessAt=null;
+  const warning=(user='owner')=>f.get(user).issues.find(row=>row.code==='post-performance-collector-stale');
+  assert.ok(warning());for(const user of ['peer','admin','viewer'])assert.equal(warning(user),undefined);
+  for(const [target,key,value]of [[f.state.runtime.performance,'enabled',false],[f.data.channels[0],'collectionDisabled',true],[f.state.performance.channels[0],'connected',false],[post,'hidden',true],[post,'active',false],[post,'canEdit',false],[f.data.channels[0],'ownerIds',['peer']],[post,'createdBy','missing'],[post.checkpoints[0],'status','manual-required']]){
+    const previous=target[key];target[key]=value;const result=f.get();assert.equal(result.issues.some(row=>row.code==='post-performance-collector-stale'),false,key);if(key!=='status')assert.equal(result.observedIssueIds.includes('performance:collector-stale:current'),false,key);target[key]=previous;
+  }
+  post.platform='threads';f.data.channels[0].platform='threads';assert.equal(warning(),undefined);
+});
+
 test('real zero is recorded and does not become missing; null remains unmeasured',()=>{
   const f=fixture(),post=f.post();post.checkpoints[0]={...post.checkpoints[0],status:'recorded',metrics:{views:0},recordedAt:BEFORE};let result=f.get();assert.equal(result.issues.length,0);assert.equal(card(result,'performance').lastResultAt,BEFORE);
   post.checkpoints[0].metrics={views:null};assert.equal(f.get().issues.filter(row=>row.automationId==='performance').length,1);

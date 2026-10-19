@@ -283,7 +283,8 @@
     const roomyNote = roomy > value
       ? (upgradable ? `여유가 되면 ${roomy}GB. 데스크톱은 나중에 램을 더 꽂을 수 있으니 지금은 ${value}GB로 시작해도 돼요.` : `여유가 되면 ${roomy}GB. ${os === 'mac' ? '맥은' : '노트북은'} 나중에 늘릴 수 없어서, 오래 쓸 거라면 처음에 고르세요.`)
       : `${value}GB면 충분해요. 이 용도엔 램을 더 늘려도 차이가 적으니, 남는 돈은 ${form.pick === 'desktop' ? '모니터·저장공간' : '무게·화면·보증'}에 쓰세요.`;
-    return { value, roomy, officialMin, workable, used, upgradable, roomyNote, reasons };
+    const proNote = os === 'mac' && form.pick === 'desktop' && roomy > value && roomy > 32 && value <= 32 ? ` ${roomy}GB는 맥 미니 M5 Pro부터 고를 수 있어요.` : '';
+    return { value, roomy, officialMin, workable, used, upgradable, roomyNote: roomyNote + proNote, reasons };
   }
 
   function computeStorage(a, w, os, form) {
@@ -351,7 +352,7 @@
     const llm = w.find(x => x.id === 'llm');
     if (llm && llm.size === 'huge') reasons.push(r('그래픽 메모리 48GB는 일반 그래픽카드로는 어려워요. 맥 스튜디오(최대 128GB)나 웹 AI 구독이 현실적이에요.', 'apple-mac-desktop'));
     else if (llm && llm.size === 'large') reasons.push(r('24GB 이상은 RTX 5090급뿐이라 그래픽카드만 수백만 원이에요. 맥 미니(M5 Pro) 48GB나 웹 AI 구독이 가성비일 수 있어요.', 'apple-mac-desktop'));
-    const roomyText = vramRoomy > buy ? `여유가 되면 ${vramRoomy}GB(${GPU_EXAMPLE[vramRoomy] || ''})` : '';
+    const roomyText = vramRoomy > buy ? `여유가 되면 ${GPU_EXAMPLE[vramRoomy] || `${vramRoomy}GB`}` : '';
     return { kind: 'dedicated', vram: buy, need, vramRoomy, short: `그래픽 ${buy}GB`, text: `외장 그래픽카드 · 그래픽 메모리 ${buy}GB 이상`, example: GPU_EXAMPLE[buy] || '', roomyText, ai, reasons };
   }
 
@@ -408,7 +409,7 @@
     let verdict = 'unknown';
     if (gb != null) {
       verdict = gb >= ram.value ? 'enough' : gb >= ram.workable ? 'workable' : gb >= ram.officialMin ? 'tight' : 'short';
-      reasons.push(r({ enough: `지금 램 ${gb}GB는 가성비 추천 ${ram.value}GB를 채워요.`, workable: `지금 램 ${gb}GB로 시작할 수 있어요. 가성비 추천 ${ram.value}GB보다는 작아서, 무거운 작업을 할 땐 다른 창을 닫아 주세요.`, tight: `지금 램 ${gb}GB로 돌아가긴 하지만 자주 느려질 거예요. 가성비 추천은 ${ram.value}GB예요.`, short: `지금 램 ${gb}GB는 고른 작업의 공식 최소(${ram.officialMin}GB)보다 작아요.` }[verdict]));
+      reasons.push(r({ enough: `지금 램 ${gb}GB는 가성비 추천 ${ram.value}GB를 채워요.`, workable: `지금 램 ${gb}GB로 시작할 수 있어요. 가성비 추천 ${ram.value}GB보다는 작아서, 무거운 작업을 할 땐 다른 창을 닫아 주세요.`, tight: `지금 램 ${gb}GB로 돌아가긴 하지만 자주 느려질 거예요. 가성비 추천은 ${ram.value}GB예요.`, short: `지금 램 ${gb}GB는 고른 작업에 필요한 최소(${ram.officialMin}GB)보다 작아요.` }[verdict]));
       for (const x of w) {
         const ok = x.weight === 'light' ? 8 : (x.value || 16);
         can.push({ label: x.id === 'web' ? USE_LABEL.web : x.label, level: gb >= ok ? 'ok' : gb >= (x.min || 8) ? 'maybe' : 'no' });

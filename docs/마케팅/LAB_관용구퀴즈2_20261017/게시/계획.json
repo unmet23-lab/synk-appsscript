@@ -1,0 +1,90 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-18T05:38:18.833Z",
+  "sourceRoot": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "배꼽이 빠지다 ≠ belly button falls out! Guess 3 Korean idioms in 3 seconds 😂 #learnkorean",
+      "text": "Can you guess these 3 Korean idioms in 3 seconds? 😂\n\n배꼽이 빠지다 — not “your belly button falls out”: laughing so hard\n귀가 얇다 — not “thin ears”: believes anything you hear\n입이 무겁다 — not “a heavy mouth”: keeps secrets\n\nSay it: 배꼽 빠지겠어요 · 귀가 얇아요 · 입이 무거워요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\nSYNK LAB · Korean idiom quiz #2 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+      "alt": [
+        "Felt mascot Mongle hosts a Korean idiom quiz. A felt belly with a popping belly button, paper-thin felt ears and felt lips biting a dumbbell show the literal readings of 배꼽이 빠지다, 귀가 얇다 and 입이 무겁다; a laughing felt face, a tablet with a pile of shopping bags, and zipped lips with a locked box show the real meanings."
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/cover.png",
+      "document": null,
+      "subtitles": [],
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/원고.json",
+          "bytes": 1673,
+          "sha256": "11d52b24c7ef1b6eb5693ddafa3f43c7cbc3a351a1ad2152209e37952a1587c1",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/제목.txt",
+          "bytes": 101,
+          "sha256": "4eaa815ef3c94dc518ce2f9815ef26fcefd4fd4534f8617019cbf31c0efdcce7",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 499,
+          "sha256": "27fba200e0690fc0a9822878c1264a2f1e02dd634c79453eddb3ca3dec3b3d69",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/video.mp4",
+          "bytes": 17281960,
+          "sha256": "378e791d603dc41ed4688693353eaa1c15f899b639ef5580d0bf110b0bf0be22",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "thumbnail",
+          "path": "docs/마케팅/LAB_관용구퀴즈2_20261017/게시/01-lab-youtube/cover.png",
+          "bytes": 999758,
+          "sha256": "a710cac7c6e700d565e57e6efc6421ef0f8d4c8b115da27d7f6a8f5871c9537e",
+          "mime": "image/png"
+        }
+      ],
+      "contentHash": "7592b25a842b1f8d7e94e4eada3ff7f5c7debea15edaa495912fd0a36464286e",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "7592b25a842b1f8d7e94e4eada3ff7f5c7debea15edaa495912fd0a36464286e",
+        "publicationHash": "a84d3b687ec27e97d11291f48b5a358cffab43449444ba32cb19bc49d0023067",
+        "approvedAt": "2026-10-18T05:41:32.508Z",
+        "note": "유호님 「오늘 올라가는거 없으면 지금 올려주고」 10-18 14:41 — 채널에 오늘 공개·예약 없음 확인(최근 공개 10-16 08:00). 게시본 v5b(「b로 가자」)"
+      },
+      "errors": []
+    }
+  ]
+}
