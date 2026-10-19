@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+EDIT TARGET — Image 1, the exact felt diorama photograph. Make a version that is identical in every way except ONE small change: same composition, framing, camera, scale, lighting, colors, image size, every character's position, pose, silhouette and fur, every prop and the whole background. This is a surgical expression edit for a blink animation, not a new picture — everything outside Kkamong's two eyes must stay exactly as it is.
+
+THE ONLY CHANGE — the two eyes of Kkamong, the dark-brown fuzzy mascot with small cat-like ears. His eyes close for one peaceful natural blink: each round green bead eye is replaced by a short, gently curved closed-eye line of light-green wool stitching, exactly like the closed eyes in Image 2. Each line sits at the same center and height as the old eye and is no wider than the old eye. The brown fur around the eyes stays exactly as it was. No eyebrows, no lashes, no mouth, no blush, no tears.
+
+Do NOT change Marin (the navy helmet with yellow lens-eyes) or Mongle (the coral ghost with embroidered happy eyes) in any way. No text, letters or logos.

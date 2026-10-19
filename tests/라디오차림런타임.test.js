@@ -19,7 +19,7 @@ function 목록(상태 = '통과') {
 }
 async function 화면(options = {}) {
   let now = 0, timerId = 0;
-  const nodes = new Map(), timers = new Map(), images = [], loads = [], decoded = [], warnings = [], edgeReads = [];
+  const nodes = new Map(), timers = new Map(), images = [], loads = [], decoded = [], warnings = [];
   const preference = { matches: !!options.reduce };
   function element() {
     const classes = new Set();
@@ -61,13 +61,6 @@ async function 화면(options = {}) {
   const ctx = vm.createContext({
     document, Image, URLSearchParams, AbortController, innerHeight: 1080,
     라디오표정리듬: require('../bots/오버레이/라디오표정리듬.js'),
-    // 이 VM은 비동기 읽기 계약만 모의한다. RGBA 보정은 라디오가장자리.test.js가 검증한다.
-    라디오가장자리: { 읽기: (url, baseUrl, enabled) => new Promise((resolve, reject) => {
-      edgeReads.push({ url, baseUrl, enabled });
-      const im = new Image();
-      im.onload = () => resolve(im); im.onerror = () => reject(new Error('모의 경계 그림 읽기 실패'));
-      im.src = url;
-    }) },
     location: { search: options.search || '?밤=0' }, performance: { now: () => now },
     console: { warn: s => warnings.push(s), error: s => warnings.push(s) },
     matchMedia: () => preference, requestAnimationFrame() {}, setInterval() {},
@@ -85,29 +78,29 @@ async function 화면(options = {}) {
   async function choose(value) {
     const p = ctx.window.마스코트차림(value); await flush(); tick(150); tick(150); return p;
   }
-  return { ctx, images, loads, decoded, warnings, edgeReads, evalJS, snap, tick, choose, preference, timers };
+  return { ctx, images, loads, decoded, warnings, evalJS, snap, tick, choose, preference, timers };
 }
 const 한복 = { DJ: '까몽', 의상: '한복', 악세: '헤드폰' };
 const 후드 = { DJ: '까몽', 의상: '후드', 악세: '안경' };
 
-test('기본 방송은 승인된 공통 털 까몽을 사용하고 URL DJ는 결이 덮지 않는다', async () => {
+test('기본 방송은 마스코트 층을 비워 두고(세 친구는 무대 장면 안) URL DJ는 결이 덮지 않는다', async () => {
+  // 10-19: 세 친구는 결마다 무대 그림 안에 장면째 구웠다. 이 층은 누끼를 하나도 펼치지 않고 반응도 무대 층에 맡긴다.
   const h = await 화면();
-  assert.equal(h.snap().DJ, '까몽');
-  assert.match(h.snap().표시파일, /라디오차림\/까몽\/_후보\/여름델\+전설의팻말\/65f92a753bb5416b\/여름델\+전설의팻말_본체.webp$/);
-  assert.equal(new Set(h.edgeReads.map(call => call.url)).size, 8);
-  assert.equal(new Set(h.edgeReads.map(call => call.baseUrl)).size, 1);
-  assert.ok(h.edgeReads.every(call => call.enabled && call.baseUrl.endsWith('여름델+전설의팻말_본체.webp')));
+  assert.equal(h.snap().DJ, null); assert.equal(h.snap().표시파일, null);
+  assert.equal(h.snap().차림.상태, '장면'); assert.equal(h.loads.length, 0);
+  h.ctx.window.마스코트반응({ 종류: '결', 결: '전자네온물가' }); h.ctx.window.마스코트반응('정답'); h.tick(2500);
+  assert.equal(h.snap().DJ, null); assert.equal(h.snap().결, '전자네온물가'); assert.equal(h.loads.length, 0);
   const m = await 화면({ search: '?DJ=마린&결=전자네온물가&밤=0' });
   assert.equal(m.snap().DJ, '마린');
   m.ctx.window.마스코트반응({ 종류: '결', 결: '추석보름달마당' }); m.tick(2500);
   assert.equal(m.snap().DJ, '마린'); assert.equal(m.snap().결, '추석보름달마당');
 });
 
-test('경계 원본 비교 URL은 같은 까몽 8컷을 보정 비활성으로 읽는다', async () => {
-  const h = await 화면({ search: '?밤=0&경계원본=1' });
-  assert.equal(h.snap().DJ, '까몽');
-  assert.equal(new Set(h.edgeReads.map(call => call.url)).size, 8);
-  assert.ok(h.edgeReads.every(call => call.enabled === false));
+test('지운 까몽 누끼를 URL로 골라도 다른 인형으로 몰래 바꾸지 않고 층을 비운다', async () => {
+  const h = await 화면({ search: '?DJ=까몽&밤=0' });
+  assert.equal(h.snap().DJ, null); assert.equal(h.snap().표시파일, null);
+  assert.ok(h.warnings.some(w => /까몽 누끼는 없다/.test(w)), '빈 층이 된 까닭을 남긴다');
+  assert.equal(h.loads.filter(s => /라디오차림\/까몽\/_후보|Loom_자산\/라디오DJ/.test(s)).length, 0);
 });
 test('선택 8컷을 모두 decode한 뒤 화면 밖에서 원자 교체하고 기존 파일은 그대로 둔다', async () => {
   const h = await 화면();
@@ -127,7 +120,7 @@ test('선택 8컷을 모두 decode한 뒤 화면 밖에서 원자 교체하고 �
 test('검수후보는 방송에서 거절하며 검수 URL에서만 선택 가능하다', async () => {
   const h = await 화면({ catalogue: 목록('검수후보') });
   await assert.rejects(h.ctx.window.마스코트차림(한복), { code: '검수미완료' });
-  assert.equal(h.snap().차림.상태, '기존승인'); assert.equal(h.snap().보류이미지수, 0);
+  assert.equal(h.snap().차림.상태, '장면'); assert.equal(h.snap().보류이미지수, 0);
   const qa = await 화면({ catalogue: 목록('검수후보'), search: '?검수=1&밤=0', reduce: true });
   await qa.choose(한복); assert.equal(qa.snap().차림.상태, '검수후보');
 });
@@ -136,7 +129,7 @@ test('1+1 초과·다른 캐릭터 항목·미준비 조합을 다른 옷으로 
   for (const value of [{ ...한복, 악세: ['헤드폰', '안경'] }, { ...한복, 의상: '한복+후드' }, { ...한복, 악세2: '안경' },
     { ...한복, DJ: '몽글' }, { ...한복, DJ: '마린' }, { ...한복, 악세: '안경' }]) {
     await assert.rejects(h.ctx.window.마스코트차림(value));
-    assert.equal(h.snap().차림.상태, '기존승인'); assert.equal(h.snap().선택중, false);
+    assert.equal(h.snap().차림.상태, '장면'); assert.equal(h.snap().선택중, false);
   }
   assert.equal(h.loads.filter(선택시험파일).length, 0);
 });

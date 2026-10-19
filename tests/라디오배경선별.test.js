@@ -8,7 +8,11 @@ const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8').replace(/\r\n/g, '\n');
-const scenes = ['추석보름달마당', '전자네온물가', '거울수면과문', '반딧불노을들판'];
+// 10-19: 무대 층(무대.html·미리보기)은 결 셋을 세 친구와 장면째 구운 그림으로 바꿨다(반딧불노을들판은 10-05 거절로 뺌).
+// 송출 도구(겹쳐송출.js — 서버가 돌리는 판)와 옛 정지 원본·영상 굽기 도구(아래 keys)는 09-09 선별 네 장 그대로다.
+// 송출 쪽 결 이름을 줄이면 서버 조율.json 과 어긋날 때 송출이 시작 전에 멈추므로(보존 목록 검사), 반영할 때 같이 고친다.
+const scenes = ['추석보름달마당', '전자네온물가', '거울수면과문'];
+const 송출결 = [...scenes, '반딧불노을들판'];
 const keys = ['chuseok', 'neon_water', 'dream_water', 'dream_field'];
 function constant(file, name, context = {}) {
   const m = read(file).match(new RegExp('const ' + name + ' = (\\{[\\s\\S]*?\\n\\});'));
@@ -17,19 +21,17 @@ function constant(file, name, context = {}) {
 }
 const stage = 'bots/오버레이/무대.html';
 
-test('실물 네 장의 경로가 정확하고 삭제한 실내 드림 키를 재사용하지 않는다', () => {
+test('세 친구 장면 세 장의 경로가 정확하고 삭제·거절한 키를 재사용하지 않는다', () => {
   const paths = constant(stage, '무대파일표');
   assert.deepEqual(Object.keys(paths), scenes);
-  assert.equal(paths.거울수면과문, '../../docs/라디오/무대/dream_water.png');
-  assert.equal(paths.반딧불노을들판, '../../docs/라디오/무대/dream_field.png');
-  assert.equal(paths.전자네온물가, '../../docs/Loom_자산/무대/전자네온물가.webp');
+  for (const scene of scenes) assert.equal(paths[scene], `../../docs/Loom_자산/라디오장면/${scene}/장면.webp`, scene);
   for (const source of Object.values(paths)) assert.ok(fs.existsSync(path.resolve(root, 'bots/오버레이', source)), source);
-  for (const removed of ['드림물결', '드림들판', '드림하늘', '전자밤도시', '시티팝노을휴양지', '차분달빛호수', '집안밤공부']) {
+  for (const removed of ['반딧불노을들판', '드림물결', '드림들판', '드림하늘', '전자밤도시', '시티팝노을휴양지', '차분달빛호수', '집안밤공부']) {
     assert.equal(Object.hasOwn(paths, removed), false, removed);
   }
 });
 
-test('미리보기는 동일한 네 장을 표시하고 기본 장면은 추석이다', () => {
+test('미리보기는 동일한 세 장을 표시하고 기본 장면은 한옥 마당(추석보름달마당 열쇠)이다', () => {
   const preview = read('bots/오버레이/방송미리보기.html');
   const table = preview.match(/const 결표 = \[([\s\S]*?)\n\];/)[1];
   assert.deepEqual([...table.matchAll(/\['([^']+)'/g)].map(m => m[1]), scenes);
@@ -37,12 +39,10 @@ test('미리보기는 동일한 네 장을 표시하고 기본 장면은 추석�
   assert.match(read(stage), /무대세우기\(인자\.get\('결'\) \|\| '추석보름달마당', true\)/);
 });
 
-test('삭제 장면의 광원 좌표를 야외 원본에 재사용하지 않는다', () => {
+test('옛 그림을 잰 광원 좌표를 새로 구운 장면에 재사용하지 않는다', () => {
+  // 10-19: 네온 물가의 등·창·네온, 추석 마당의 달·창 좌표는 옛 그림을 잰 값이라 걷었다. 새 장면을 재면 그때 넣는다.
   const lights = constant(stage, '무대빛');
-  assert.deepEqual(Object.keys(lights).sort(), ['전자네온물가', '추석보름달마당']);
-  assert.equal(lights.전자네온물가.물선, 44);
-  assert.equal(lights.추석보름달마당.달[0][0], 67.8);
-  assert.equal(lights.추석보름달마당.창.length, 8);
+  assert.deepEqual(Object.keys(lights), []);
 });
 
 test('정지 원본·배경 합성·영상 재굽기 정의는 보존한 실물 네 장만 허용한다', () => {
@@ -96,7 +96,7 @@ test('편성 기본 목록과 선택 검수 버튼에 삭제 장면이 남지 �
   assert.match(sender, /값\('--장면차례', '추석보름달마당,전자네온물가,거울수면과문,반딧불노을들판'\)/);
   assert.match(sender, /if \(삭제장면\.length\) throw new Error/);
   const names = constant('bots/오버레이/겹쳐송출.js', '결이름');
-  assert.deepEqual([...new Set(Object.values(names))].sort(), scenes.slice().sort());
+  assert.deepEqual([...new Set(Object.values(names))].sort(), 송출결.slice().sort());
   for (const file of ['tools/라디오차림검수보기.cjs', 'tools/라디오차림브라우저검수.cjs']) {
     assert.match(read(file), /결:'전자네온물가'/);
     assert.doesNotMatch(read(file), /결:'전자밤도시'/);
