@@ -868,7 +868,8 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
   }
   const 마지막 = 커밋들[커밋들.length - 1];
   const 이어짐 = git.글(['rev-list', '--reverse', `${바탕}..${마지막}`]).split('\n').filter(Boolean);
-  if (!다시쌓기 && 이어짐.length === 커밋들.length && 이어짐.every((c, i) => c === 커밋들[i])) {
+  // 첫 커밋의 부모가 바탕이어야 빨리감기다(내 커밋 뒤로 바탕만 움직였으면 rev-list는 내 커밋만 내지만 그대로는 못 올린다)
+  if (!다시쌓기 && 항목들[0].부모 === 바탕 && 이어짐.length === 커밋들.length && 이어짐.every((c, i) => c === 커밋들[i])) {
     return { 머리: 마지막, 그대로: true, 대응: 커밋들.map((c) => ({ 원래: c, 새: c })), 경로: [], 문제: [], 내변화 };
   }
   const 지금 = 트리항목들(git, 바탕, [...내변화.keys()]);

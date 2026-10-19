@@ -537,6 +537,22 @@ test('올리기: 내 커밋이 origin 바로 위에 이어져 있으면 그 커�
   assert.equal(또.결과, '올릴 것 없음');
 });
 
+test('올리기: 내 커밋 뒤로 origin만 움직였으면 그대로 올리지 않고 새 origin 위에 다시 쌓는다', async (t) => {
+  const 저장 = 새저장소(t, { 원격: true, 파일: { 'a.txt': 'a\n' } });
+  저장.쓰기('내.txt', '내 줄\n');
+  저장.git('add', '내.txt');
+  저장.git('commit', '-q', '-m', '내 커밋');
+  const 내것 = 저장.머리();
+  const O1 = 저장.원격에올림({ '원격.txt': '원격\n' });
+  const r = await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [내것], 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r.문제 || r.이유));
+  assert.equal(r.그대로, false);
+  assert.equal(r.다시한수, undefined, 'push가 거절되어 다시 하지 않고 한 번에 올라간다');
+  assert.equal(execFileSync('git', ['--git-dir', 저장.원격, 'rev-parse', 'master~1'], { encoding: 'utf8' }).trim(), O1);
+  assert.equal(저장.원격파일('내.txt'), '내 줄\n');
+  assert.equal(저장.원격파일('원격.txt'), '원격\n');
+});
+
 test('올리기: 저장 용량 검사에 걸리는 커밋은 올리지 않는다', async (t) => {
   const 저장 = 새저장소(t, { 원격: true, 정책고침: { maxBlobBytes: 64 }, 파일: { 'a.txt': 'a\n' } });
   저장.쓰기('큰.bin', Buffer.alloc(65, 1));
