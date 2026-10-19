@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const BUDGET = Object.freeze({ atlasFiles: 35, atlasLines: 6500, capabilityDocLines: 150 });
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 6700, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

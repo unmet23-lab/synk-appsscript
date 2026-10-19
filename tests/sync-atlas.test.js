@@ -46,8 +46,8 @@ test('Talk receives exactly what it imports and what that loads, with a manifest
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);
   // account-summary.js and Strata's example layer (the sentences the summary carries) go with the server
-  // bundles (Talk's synk-server-build.js), memory-sync.js with game-learning.js.
-  const copied = ['account-summary.js', 'education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-ledger.js', 'learning-sync.js', 'learning.js',
+  // bundles (Talk's synk-server-build.js), memory-sync.js with game-learning.js, learning-pages.js with learning-sync.js.
+  const copied = ['account-summary.js', 'education.js', 'engine.js', 'experiences.js', 'flow.js', 'game-flow.js', 'game-learning.js', 'learning-ledger.js', 'learning-pages.js', 'learning-sync.js', 'learning.js',
     'memory-sync.js', 'preferences.js', 'temper-flow.js', 'temper.js', 'trail-member-observations.js', 'trail-periods.js', 'trail.js', 'vellum-flow.js', 'vellum.js'];
   for (const name of copied) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)), name);
   const strata = ['index.js', 'maps/ko.json', 'maps/topik-i.json', 'topik-i-examples.js', 'topik-i.situation-examples.json'];

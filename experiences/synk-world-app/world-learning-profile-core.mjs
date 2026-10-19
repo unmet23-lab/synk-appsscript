@@ -588,6 +588,49 @@ var require_engine = __commonJS({
       function append(events, event) {
         return admit(events, event) ? [...copy(events), copy(event)] : copy(events);
       }
+      function validationNeeds(events) {
+        if (!Array.isArray(events)) throw new TypeError("Atlas: invalid events");
+        const ids = /* @__PURE__ */ new Set(), presentations = /* @__PURE__ */ new Set();
+        for (const event of events) {
+          validate(event);
+          ids.add(event.id);
+          if (isPractice(event)) {
+            ids.add(event.type === "practice.presented" ? event.decisionId : event.presentationId);
+            if (event.type === "practice.attempted") presentations.add(event.presentationId);
+          }
+          if (event.type === "experience.completed" || event.type === "outcome.observed") ids.add(event.decisionId);
+          if (event.type === "outcome.observed" && event.attemptId != null) ids.add(event.attemptId);
+          if (event.type === "feedback.given") ids.add(event.completionId);
+          if (event.type === "record.excluded") ids.add(event.targetId);
+        }
+        return { ids: [...ids], presentations: [...presentations] };
+      }
+      function validateIncrement({ events, scope, references = [], attempts = [] }) {
+        const key = scopeKey(scope), needs = validationNeeds(events);
+        const wanted = new Set(needs.ids), parents = /* @__PURE__ */ new Map(), stats = /* @__PURE__ */ new Map();
+        for (const event of references) {
+          validate(event);
+          if (!wanted.has(event.id) || parents.has(event.id)) throw new TypeError("Atlas: invalid reference lookup");
+          parents.set(event.id, event);
+        }
+        for (const event of attempts) {
+          validate(event);
+          if (event.type !== "practice.attempted" || !needs.presentations.includes(event.presentationId) || stats.has(event.presentationId) || scopeKey(event.scope) !== key) throw new TypeError("Atlas: invalid attempt lookup");
+          stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
+        }
+        if (typeof trail().link !== "function") throw new Error("Atlas: indexed Trail validation unavailable");
+        const fresh = /* @__PURE__ */ new Map(), lookup = {
+          byId: (id) => fresh.get(id) || parents.get(id),
+          attempts: (id) => stats.get(id) || { count: 0, latest: -Infinity }
+        };
+        for (const event of events) {
+          if (scopeKey(event.scope) !== key) throw new TypeError("Atlas: event outside session scope");
+          if (!admitWith(lookup, event)) continue;
+          fresh.set(event.id, event);
+          if (event.type === "practice.attempted") stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
+        }
+        return [...fresh.values()];
+      }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
         const rows = [];
@@ -984,7 +1027,7 @@ var require_engine = __commonJS({
           lines: () => understand(log, scope, clock()).lines
         };
       }
-      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, understand, decide, choice, createSession });
+      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
     });
   }
 });

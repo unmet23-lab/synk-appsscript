@@ -99,20 +99,41 @@ test('a conflicting event written by another instance invalidates the sync statu
   blocked(c.sync); assert.equal(storage.getItem(eventKey), tampered, 'Do not silently overwrite a conflicting record');
 });
 
-test('the 20,000-event limit cannot leave synced status while newer local observations fail to persist', async t => {
-  const storage = disk();
+function capacityEvents() {
   const session = Atlas.createSession({ scope: { domain: 'LAB', workspace: 'learning', subject: 'device' }, clock: () => '2026-10-02T00:00:00.000Z' });
   session.set('goal', 'study'); const prototype = session.events()[0];
-  const events = Array.from({ length: 20000 }, (_, i) => ({ ...prototype, id: `synthetic-capacity-${i}` }));
-  const original = JSON.stringify({ version: 1, epoch: 'synthetic-capacity', owner: accountKey, events });
-  storage.setItem(eventKey, original);
+  return Array.from({ length: 20000 }, (_, i) => ({ ...prototype, id: `synthetic-capacity-${i}` }));
+}
+
+// An account log past the former 20,000-event limit moves to durable pages (learning-pages.js).
+test('an account history past 20,000 events stays durable in pages, and a failed page publication cannot leave synced status', async t => {
+  const storage = disk(), events = capacityEvents();
+  storage.setItem(eventKey, JSON.stringify({ version: 1, epoch: 'synthetic-capacity', owner: accountKey, events }));
   storage.setItem(`${SYNC_KEY}.${accountKey}`, JSON.stringify({ version: 1, accountKey, revision: 1, cursor: 0, complete: true,
     acknowledged: events.map(event => event.id), pending: [] }));
   const c = client(storage); t.after(() => c.sync.stop());
   await c.sync.start(); assert.equal(c.sync.status().phase, 'synced');
-  const beforeOverflow = storage.getItem(eventKey);
-  present(c.adapter); blocked(c.sync, 'HISTORY_CAPACITY');
+  present(c.adapter);
+  assert.equal(c.sync.status().phase, 'synced'); assert.equal(c.sync.status().durable, true);
+  const published = storage.getItem(eventKey);
+  assert.equal(JSON.parse(published).paged, 1);
+  const durable = createGame({ gameId: 'synthetic-reading', map, storage, storageScope: 'account', accountKey, historyComplete: false }).syncPort.events();
+  assert.deepEqual(durable.slice(0, events.length), events, 'Every earlier record is durable');
+  assert.ok(durable.slice(events.length).some(event => event.type === 'practice.presented'), 'The new observation is durable too');
+  assert.equal(storage.getItem(eventKey), published, 'Reading the pages writes nothing');
+  const pageKeys = () => [...storage.values.keys()].filter(key => key.startsWith(`${eventKey}.page.`)).sort(), pagesBefore = pageKeys();
+  storage.fail(); present(c.adapter); blocked(c.sync);
   assert.equal(c.adapter.summary().storage.available, false);
-  assert.ok(storage.getItem(eventKey) === beforeOverflow, 'Reaching capacity preserves all previous durable records');
+  assert.equal(storage.getItem(eventKey), published, 'A failed publication preserves the previous durable root');
+  assert.deepEqual(pageKeys(), pagesBefore, 'Pages written for the failed publication are reclaimed');
   assert.equal(c.remote.posts, 0);
+});
+
+test('a guest device history still stops at 20,000 events without overwriting earlier records', () => {
+  const storage = disk(), original = JSON.stringify({ version: 1, epoch: 'synthetic-capacity', events: capacityEvents() });
+  storage.setItem(eventKey, original);
+  const game = createGame({ gameId: 'synthetic-reading', map, storage });
+  present(game);
+  assert.equal(game.summary().storage.available, false);
+  assert.equal(storage.getItem(eventKey), original, 'Reaching capacity preserves all previous durable records');
 });
