@@ -10,6 +10,7 @@
 # 쓰기: <ComfyUI venv python> -X utf8 영상_H3.py --준비          ← 입력 그림만 만들고 한 장 표로 본다
 #       <ComfyUI venv python> -X utf8 영상_H3.py 4 1 7 5 C 3     ← 적은 순서대로 하나씩 넣고 끝날 때마다 받는다
 #       H3_SEED=7 … 영상_H3.py 4                                  ← 안 되면 시드만 바꿔 한 번 더(브리프 1절)
+#       H3_LAST=1 … 영상_H3.py 7b                                 ← 컷 7 다시(사람 작게 · 왼쪽, 10-19)
 import json
 import os
 import shutil
@@ -38,20 +39,37 @@ TAG = "_끝고정" if LAST else ""
 LOG = os.path.join(OUT, "기록.txt")
 
 # 컷: 시작 그림(키프레임_A) — 컷 3은 (시작, 끝)
+# 7b(10-19 컷 7 다시): v3c 엔드카드 병·글자가 9:16 글자 자리(y 269~1248 · x 65~920) 밖이라 사람을 작게 · 왼쪽에 둔 판.
+#   승인한 1:1 원본(컷7_v6b)을 0.58배로 9:16 캔버스 왼쪽에 놓고 위아래만 Gemini로 채운 뒤 가운데 띠는 원본 화소를 되붙였다
+#   (synk-vendor/…/키프레임_A/컷7_v7_만들기/). 영상은 컷 7과 같이 H3_LAST=1로 뽑는다.
 INPUTS = {
     "1": "컷1_v3.jpg",
     "3": ("컷3_시작_창.jpg", "컷3_끝_창.jpg"),
     "4": "컷4_v4_틀.jpg",
     "5": "컷5_v3b_틀.jpg",
     "7": "컷7_v6b_틀.jpg",
+    "7b": "컷7_v7_틀.jpg",
     "C": "훅C_틀.jpg",
 }
-NAMES = {"1": "컷1", "3": "컷3", "4": "컷4", "5": "컷5", "7": "컷7", "C": "훅C"}
+NAMES = {"1": "컷1", "3": "컷3", "4": "컷4", "5": "컷5", "7": "컷7", "7b": "컷7b", "C": "훅C"}
+# 세트 2(10-19 유호님 「배경이 너무 휑하다 … 제대로 좋은 화장실처럼」 → A안 「호텔 욕실」로 전체 다시): 키프레임_세트2의 틀 그림.
+#   컷 이름 뒤에 s2(1s2 · 3s2 · 4s2 · 5s2 · 7s2 · Cs2), 결과는 <컷>_세트2_s<시드>.mp4. 지시문은 GLOBAL2 + 같은 SHOTS(7s2만 따로).
+K2 = os.path.join(V, "키프레임_세트2")
+for _c in ("1", "4", "5", "7", "C"):
+    INPUTS[_c + "s2"] = os.path.join(K2, f"{NAMES[_c]}_틀.jpg")
+    NAMES[_c + "s2"] = NAMES[_c] + "_세트2"
+INPUTS["3s2"] = (os.path.join(K2, "컷3_시작_창.jpg"), os.path.join(K2, "컷3_끝_창.jpg"))
+NAMES["3s2"] = "컷3_세트2"
 
 GLOBAL = ("GLOBAL STYLE: Live-action footage from a Korean skincare commercial, vertical 9:16, about 7:30 in the morning at the "
           "sink of a bright white bathroom: a window with a thin white sheer curtain at camera left, the edge of a white marble "
           "vanity and one small green potted plant. Real-time speed throughout, no slow motion, no time dilation. No fade in or "
           "out; the first and last frames are full-exposure frames.")
+GLOBAL2 = ("GLOBAL STYLE: Live-action footage from a premium Korean skincare commercial, vertical 9:16, about 7:30 in the morning "
+           "in a high-end hotel-style bathroom: warm greige limewash plaster walls, a honed white marble vanity with an integrated "
+           "basin and a brushed-brass faucet, a brass towel bar with a cream linen towel, a small olive branch in a stoneware "
+           "vase, and a window with a thin white sheer curtain at camera left. Real-time speed throughout, no slow motion, no "
+           "time dilation. No fade in or out; the first and last frames are full-exposure frames.")
 REF_FACE = ("REFERENCES: the start image is the first frame of this single shot; keep its framing, light, wardrobe and her face "
             "exactly. Keep her exactly this person throughout.")
 REF_PAD = ("REFERENCES: the start image is the first frame of this single shot and the guide image is the frame two seconds in; "
@@ -108,6 +126,12 @@ SHOTS = {
           "lit like the first shot. The right third of the frame is a plain, softly shaded wall that stays empty. She looks into "
           "the lens from the first frame with a faint closed-mouth smile; within the first second the smile deepens slightly "
           "into soft half-moon eyes, lips stay closed, and it holds until the end. She may blink once. Nothing else moves."),
+    "7b": ("Single shot, waist-up medium shot, 50mm, locked-off camera. She stands behind the white marble vanity in the left "
+           "half of the frame, her face turned about 15 degrees toward the window at camera left, lit like the first shot. The "
+           "right half of the frame is a plain, softly shaded wall that stays empty; the ceiling, window and vanity stay exactly "
+           "as in the start image. She looks into the lens from the first frame with a faint closed-mouth smile; within the "
+           "first second the smile deepens slightly into soft half-moon eyes, lips stay closed, and it holds until the end. She "
+           "may blink once. Nothing else moves."),
     "C": ("Single shot, shoulder-up, 65mm. A soft white towel is already pressed against her right cheek (camera left), held "
           "by her hand; window light from camera left. Her hand and the towel stay perfectly still; only her eyelids and gaze "
           "move: during the first two seconds she slowly raises her eyes from below to just beside the lens, then holds. Lips "
@@ -115,13 +139,39 @@ SHOTS = {
 }
 
 
+# 4s2 다시 뽑기(10-19): 첫 판(시드 42)은 0.75~2.0초에 없던 올리브 가지가 화면 오른쪽에 자라나듯 생겼다
+SHOTS["4s2"] = SHOTS["4"] + (" Nothing new appears in the frame: no plants, branches or objects enter or grow; the background "
+                             "stays exactly as in the start image.")
+# 손에 든 병(10-20 유호님 「맑음 병 CG가 너무 촌스러운데 트렌디하게」 → 「손에 든 병」 · 「병도 새로」): 컷 7을 지유가 새 병
+# (투명 유리)을 볼 옆에 든 장면으로. 시작 그림 키프레임_세트2/컷7손_틀.jpg, 영상은 컷 7처럼 H3_LAST=1(끝 프레임도 시작 그림)
+INPUTS["7hs2"] = os.path.join(K2, "컷7손_틀.jpg")
+NAMES["7hs2"] = "컷7손_세트2"
+CONS_HAND = ("CONSISTENCY: the same woman, headband, hair and T-shirt as the start image. She is alone. The only product is the "
+             "clear glass toner bottle in her hand; it keeps exactly its shape, cap, print and place. No other bottles, no text, no "
+             "logos, no subtitles.")
+SHOTS["7hs2"] = ("Single shot, shoulder-up, 65mm, locked-off camera. She holds the clear glass toner bottle upright beside her "
+                 "cheek with its printed front facing the lens; her hand and the bottle stay perfectly still in exactly the same "
+                 "place for the whole shot. She looks into the lens from the first frame with a soft closed-mouth smile; within the "
+                 "first second the smile deepens slightly into soft half-moon eyes, lips stay closed, and it holds until the end. "
+                 "She may blink once. Nothing new appears and nothing else moves.")
+SHOTS["7s2"] = ("Single shot, waist-up medium shot, 35mm, locked-off camera. She stands behind the white marble vanity in the left "
+                 "half of the frame, her face turned about 15 degrees toward the window at camera left, lit like the first shot. "
+                 "The right half of the frame is a plain, softly lit plaster wall that stays empty; the ceiling, window, towel bar, "
+                 "vanity, basin and faucet stay exactly as in the start image. She looks into the lens from the first frame with a "
+                 "faint closed-mouth smile; within the first second the smile deepens slightly into soft half-moon eyes, lips stay "
+                 "closed, and it holds until the end. She may blink once. Nothing else moves.")
+
+
 def prompt(cut):
-    if cut == "3":
-        parts = [GLOBAL, REF_PAD, TEX_PAD, LIGHT_PAD, CAM_PAD, SHOTS[cut], CONS_PAD]
+    base = cut[:-2] if cut.endswith("s2") else cut
+    glob_ = GLOBAL2 if cut.endswith("s2") else GLOBAL
+    shot = SHOTS[cut] if cut in SHOTS else SHOTS[base]  # get(cut, SHOTS[base])는 base가 없는 컷(7hs2)에서 먼저 터진다
+    if base == "3":
+        parts = [glob_, REF_PAD, TEX_PAD, LIGHT_PAD, CAM_PAD, shot, CONS_PAD]
     else:
-        act = ACT_SMILE if cut == "7" else ACT_ONE
-        cam = CAM_LOCK if cut == "7" else CAM_FACE
-        parts = [GLOBAL, REF_FACE, TEX_FACE, LIGHT_FACE, CHAR_FACE, act, cam, SHOTS[cut], CONS_FACE]
+        act = ACT_SMILE if base in ("7", "7b", "7h") else ACT_ONE
+        cam = CAM_LOCK if base in ("7", "7b", "7h") else CAM_FACE
+        parts = [glob_, REF_FACE, TEX_FACE, LIGHT_FACE, CHAR_FACE, act, cam, shot, CONS_HAND if base == "7h" else CONS_FACE]
     return "\n".join(parts)
 
 

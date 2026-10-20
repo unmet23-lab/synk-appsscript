@@ -9,6 +9,8 @@ from PIL import Image
 
 sys.stdout.reconfigure(encoding="utf-8")
 K = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "jiyu-skincare-20261018", "키프레임_A")
+if len(sys.argv) > 2:  # 저장 폴더(10-19 세트 2: 키프레임_세트2)
+    K = sys.argv[2]
 src = sys.argv[1]
 im = Image.open(src).convert("RGB")
 w, h = im.size

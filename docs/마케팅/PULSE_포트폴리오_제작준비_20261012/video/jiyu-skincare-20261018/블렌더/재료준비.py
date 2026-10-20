@@ -15,14 +15,16 @@ V = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "jiyu-sk
 OUT = os.path.join(V, "블렌더")
 
 
-def backplate():
+def backplate(set2=False):
     # 10-18 Fable 재검수: 병 컷이 회색 스튜디오처럼 보여 사람 컷과 다른 장소로 읽혔다 → 컷 3 최종판(v4b)의 위쪽 배경
     # (왼쪽 커튼 창·흰 벽·오른쪽 화분, 대리석 뒤 끝 위까지)을 판으로 쓰고, 블렌더에서 화면 폭에 창과 화분이 함께 들어오게 놓는다
-    src = Image.open(os.path.join(V, "키프레임_A", "컷3_시작_v4b.jpg")).convert("RGB")
+    # 세트 2(10-19 새 욕실): 세트 2 컷 3 원본(1536×2752) 위쪽 → 배경판_세트2.jpg(같은 1536×1211)
+    src_path = os.path.join(V, "키프레임_세트2", "컷3_원본.jpg") if set2 else os.path.join(V, "키프레임_A", "컷3_시작_v4b.jpg")
+    src = Image.open(src_path).convert("RGB")
     w, h = src.size
     bp = src.crop((0, 0, w, round(h * 0.44)))
     bp = bp.filter(ImageFilter.GaussianBlur(4))
-    p = os.path.join(OUT, "배경판.jpg")
+    p = os.path.join(OUT, "배경판_세트2.jpg" if set2 else "배경판.jpg")
     bp.save(p, quality=92)
     return p, bp.size
 
@@ -68,5 +70,8 @@ def gobo():
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    if "--세트2" in sys.argv:  # 세트 2 배경판만(잎 그림은 그대로 씀)
+        print(backplate(set2=True))
+        sys.exit(0)
     print(backplate())
     print(gobo())

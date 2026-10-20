@@ -61,7 +61,9 @@ def end_layer(L=None, size=(W, H), pack_path=None):
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     # 벽 그림자: 창이 왼쪽이라 오른쪽으로 병 폭 40%만큼 밀려 퍼진다. 10-18 Fable 재검수: 5단계(216→211)는 떠 있는 스티커로 읽혔다 → 15~20단계
     shadow = Image.new("RGBA", pack.size, (40, 38, 36, 0))
-    shadow.putalpha(pack.getchannel("A").point(lambda v: int(v * 0.14)))  # 0.42는 73단계로 너무 짙었다
+    # 0.42는 73단계로 너무 짙었다. 세트 2 회벽은 흰 벽보다 어두워 같은 0.14가 −12단계에 그쳤다(10-20 Fable) → 자리(L)마다 「shadow」로
+    sa = L.get("shadow", 0.14)
+    shadow.putalpha(pack.getchannel("A").point(lambda v: int(v * sa)))
     pad = 70
     sh = Image.new("RGBA", (pack.width + 2 * pad, pack.height + 2 * pad), (0, 0, 0, 0))
     sh.alpha_composite(shadow, (pad, pad))

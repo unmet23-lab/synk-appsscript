@@ -23,14 +23,43 @@ except Exception:
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 ap = argparse.ArgumentParser()
-ap.add_argument("--cut", choices=["2", "6", "7", "alt"], required=True)
+# ref: 병을 화면 높이 90%로 담은 정면(살짝 위에서) 투명 바탕 한 장 — 사진 생성(손에 든 엔드카드)에 넘길 제품 참고 그림(10-20)
+ap.add_argument("--cut", choices=["2", "6", "7", "alt", "ref"], required=True)
 ap.add_argument("--quality", choices=["preview", "mid", "final"], default="preview")
 ap.add_argument("--frames", default="")
 ap.add_argument("--brand", default="")
 ap.add_argument("--out", required=True)
 ap.add_argument("--device", choices=["CPU", "GPU"], default="CPU")
 ap.add_argument("--save", default="")
+# --set 2(10-19 새 욕실 「호텔 욕실」): 배경판은 세트 2 컷 3 원본 위쪽(배경판_세트2.jpg), 대리석은 무광 허니드(Fable 세트 시안 검수)
+ap.add_argument("--set", choices=["1", "2"], default="1")
+# 세트 2 밝기 · 대리석 결(10-20 Fable 1차 P2): 병 컷이 평균 L* 90(컷 6은 80)으로 사람 컷(L* 51~64, 벽 49~63)보다 훨씬 밝아
+# 흰 화면이 끼어드는 느낌, 대리석은 결이 안 보여 「흰 탁자」로 읽혔다 → 배경판 빛 · 노출을 낮추고 결을 촘촘 · 짙게.
+# 값은 미리보기로 맞춘 기본값이고, 다시 맞출 때만 아래 인자로 바꿔 본다
+ap.add_argument("--s2_plate", type=float, default=None, help="세트 2 배경판 빛 세기(기본 S2_PLATE)")
+ap.add_argument("--s2_expo", type=float, default=None, help="세트 2 노출 더하기(기본 S2_EXPO)")
+ap.add_argument("--s2_vein", type=float, default=None, help="세트 2 대리석 결 배율(기본 S2_VEIN, 세트 1은 3)")
+ap.add_argument("--s2_fill", type=float, default=None, help="세트 2 반사빛(오른쪽 앞 채움) 세기 W(기본 S2_FILL, 세트 1은 60)")
+ap.add_argument("--s2_world", type=float, default=None, help="세트 2 주변광 세기(기본 S2_WORLD, 세트 1은 0.35)")
+# --bottle 2(10-20 유호님 「병 CG가 너무 촌스러운데 트렌디하게」 → 「병도 새로」): 브랜드 이름이 「맑음」인데 뿌연 서리 병이었다 →
+# 투명한 두꺼운 유리(바닥 9mm) + 옅은 물빛 토너 + 무광 알루미늄 뚜껑 + 유리에 바로 찍은 왼쪽 맞춤 작은 글자(라벨.py --병2)
+ap.add_argument("--bottle", choices=["1", "2"], default="1")
+# 병 2 뚜껑(10-20 v5 Fable P2): 「alu」(Metallic 1 · 거칠기 0.3, v5 컷 2 · 6)는 어두운 주변을 흐리게 비춰 속 심이 비치는 젖빛
+# 유리처럼 보였고, 손 장면(키프레임) 뚜껑은 불투명 무광 은회색이라 다른 병으로 읽혔다 → 「satin」(밝은 무광 마감)이 기본.
+# --cap_metal · --cap_rough · --cap_base는 맞춰 볼 때만
+ap.add_argument("--cap2", choices=["alu", "satin"], default="satin")
+ap.add_argument("--cap_metal", type=float, default=None)
+ap.add_argument("--cap_rough", type=float, default=None)
+ap.add_argument("--cap_base", type=float, default=None)
+# --border x0,y0,x1,y1: 1080×1920 화소 좌표의 그 칸만 렌더(나머지는 비움) — 뚜껑처럼 일부만 바꿔 기존 프레임에 얹을 때
+ap.add_argument("--border", default="")
 A = ap.parse_args(argv)
+B2 = A.bottle == "2"
+S2_PLATE = A.s2_plate if A.s2_plate is not None else 2.0
+S2_EXPO = A.s2_expo if A.s2_expo is not None else -0.4
+S2_VEIN = A.s2_vein if A.s2_vein is not None else 7.0
+S2_FILL = A.s2_fill if A.s2_fill is not None else 60.0
+S2_WORLD = A.s2_world if A.s2_world is not None else 0.35
 BRAND = A.brand or ("soom" if A.cut == "alt" else "malgeum")
 MAT_DIR = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "jiyu-skincare-20261018", "블렌더")
 MM = 0.001
@@ -123,9 +152,63 @@ def cap_profile():
     return p
 
 
+# 병 2(mm): 바깥 지름 44, 몸통 z 2~100, 어깨 = 타원 1/4(가운데 r12 · z100, 가로 10 · 세로 7) → 목 r11(z 107~113),
+# 안쪽은 벽 2.2mm · 바닥 9mm(두꺼운 유리 바닥이 비쳐 보이게), 토너는 z 97까지, 뚜껑 r13 · z 108.5~136
+SH2_C, SH2_RX, SH2_RZ = (12.0, 100.0), 10.0, 7.0
+
+
+def bottle2_profile():
+    """닫힌 옆 단면(바깥 → 안쪽)을 돌려 두꺼운 유리 한 덩어리로 짓는다(서리 병처럼 두께 수정자를 쓰면 바닥도 2mm가 된다)."""
+    p = [(0.0, 0.0), (20.0, 0.0)]
+    p += arc(20.0, 2.0, 2.0, 2.0, -math.pi / 2, 0, 8)                    # 바닥 바깥 모서리 → (22, 2)
+    p += [(22.0, 100.0)]
+    p += arc(SH2_C[0], SH2_C[1], SH2_RX, SH2_RZ, 0, math.pi / 2, 16)      # 어깨 → (12, 107)
+    p += [(11.0, 107.4), (11.0, 113.0), (9.3, 113.0), (9.3, 104.0)]      # 목 바깥 · 입구 · 목 안쪽
+    p += arc(9.3, 98.0, 10.5, 6.0, math.pi / 2, 0, 12)                    # 안쪽 어깨 → (19.8, 98)
+    p += [(19.8, 11.0)]
+    p += arc(17.8, 11.0, 2.0, 2.0, 0, -math.pi / 2, 8)                    # 안쪽 바닥 모서리 → (17.8, 9)
+    p += [(0.0, 9.0)]
+    return p
+
+
+def liquid2_profile(top=None):
+    """토너: 안쪽 벽에서 0.05mm 띄우고, top(mm)까지 안쪽 어깨 곡선을 따라 채운다(기본 LIQ2_TOP)."""
+    top = LIQ2_TOP if top is None else top
+    p = [(0.0, 9.05), (17.75, 9.05)]
+    p += arc(17.75, 11.0, 1.95, 1.95, -math.pi / 2, 0, 6)
+    p += [(19.75, 98.0)]
+    if top > 98.0:  # 안쪽 어깨(가운데 r9.3 · z98, 가로 10.5 · 세로 6)를 따라
+        for i in range(1, 9):
+            z = 98.0 + (top - 98.0) * i / 8
+            t = math.asin(min(1.0, (z - 98.0) / 6.0))
+            p.append((9.3 + 10.5 * math.cos(t) - 0.05, z))
+    p += [(0.0, top)]
+    return p
+
+
+# 97mm(어깨 아래)까지만 채우니 액체 윗면 · 목이 원기둥 렌즈에 비쳐 병 속에 큰 삼각 무늬가 생겼다(10-20 시험) → 어깨 안까지
+LIQ2_TOP = float(os.environ.get("JIYU_LIQ2_TOP", "101.5"))
+
+
+def cap2_profile():
+    p = [(0.0, 108.5), (13.0, 108.5), (13.0, 134.6)]
+    p += arc(11.6, 134.6, 1.4, 1.4, 0, math.pi / 2, 6)
+    p += [(0.0, 136.0)]
+    return p
+
+
 def surface_at(a, z):
     # 몸통·어깨 바깥면의 점과 바깥 법선(높이 z mm, 각도 a)
-    if z <= 98.0:
+    if B2:
+        if z <= SH2_C[1]:
+            r, nr, nz = 22.0, 1.0, 0.0
+        else:
+            t = math.asin(min(1.0, (z - SH2_C[1]) / SH2_RZ))
+            r = SH2_C[0] + SH2_RX * math.cos(t)
+            nr, nz = math.cos(t) / SH2_RX, math.sin(t) / SH2_RZ
+            k = math.hypot(nr, nz)
+            nr, nz = nr / k, nz / k
+    elif z <= 98.0:
         r, nr, nz = 22.5, 1.0, 0.0
     else:
         t = math.asin(min(1.0, (z - SH_C[1]) / SH_RZ))
@@ -139,6 +222,45 @@ def surface_at(a, z):
 
 
 # ── 재질 ──────────────────────────────────────────────────────────────────────
+def clear_glass_mat():
+    """병 2: 맑은 유리(거칠기 0.01). 두꺼운 바닥 · 어깨에서 빛이 꺾여 보이는 것이 이 병의 멋."""
+    m, n, l = new_mat("맑은유리")
+    b = principled(n)
+    setin(b, "Base Color", (1.0, 1.0, 1.0, 1))
+    setin(b, "Roughness", 0.01)
+    setin(b, "IOR", 1.5)
+    setin(b, "Transmission Weight", 1.0)
+    return m
+
+
+def alu_cap_mat():
+    """병 2 뚜껑: 무광 알루미늄(세로로 아주 옅은 결)."""
+    m, n, l = new_mat("알루미늄뚜껑")
+    b = principled(n)
+    # satin: 금속 1 · 거칠기 0.5 · 바탕 0.62(10-20 중간 품질 시험 — 금속 0 · 바탕 0.74와 금속 0.6~1 · 바탕 0.8은 접사에서 흰
+    # 플라스틱처럼 하얬고, 금속 0.85 · 바탕 0.55는 컷 6 아래쪽이 어두운 띠로 남았다. 손 장면의 은회색 · 위아래 결에 가장 가깝다)
+    metal, rough, base = (1.0, 0.30, 0.80) if A.cap2 == "alu" else (1.0, 0.50, 0.62)
+    metal = A.cap_metal if A.cap_metal is not None else metal
+    rough = A.cap_rough if A.cap_rough is not None else rough
+    base = A.cap_base if A.cap_base is not None else base
+    setin(b, "Base Color", (base, base, base - 0.01, 1))
+    setin(b, "Metallic", metal)
+    setin(b, "Roughness", rough)
+    tc = n.new("ShaderNodeTexCoord")
+    mp = n.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (900.0, 900.0, 6.0)  # 세로로 길게 늘인 노이즈 = 세로 헤어라인
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Detail"].default_value = 2.0
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.06
+    bump.inputs["Distance"].default_value = 0.0002
+    l.new(tc.outputs["Object"], mp.inputs["Vector"])
+    l.new(mp.outputs["Vector"], nz.inputs["Vector"])
+    l.new(nz.outputs["Fac"], bump.inputs["Height"])
+    l.new(bump.outputs["Normal"], b.inputs["Normal"])
+    return m
+
+
 def glass_mat():
     m, n, l = new_mat("서리유리")
     b = principled(n)
@@ -241,22 +363,66 @@ def label_mat(path):
     ink = n.new("ShaderNodeBsdfPrincipled")
     setin(ink, "Base Color", (0.075, 0.08, 0.085, 1))
     setin(ink, "Roughness", 0.5)
+    if B2:  # 맑은 유리 위 짙은 잉크가 창빛에 번들거려 밝은 회색으로 읽혔다(10-20 시험) → 무광
+        setin(ink, "Base Color", (0.035, 0.037, 0.04, 1))
+        setin(ink, "Roughness", 0.85)
+        setin(ink, "Specular IOR Level", 0.12)
     tr = n.new("ShaderNodeBsdfTransparent")
     mix = n.new("ShaderNodeMixShader")
-    l.new(tex.outputs["Alpha"], mix.inputs["Fac"])
+    l.new(tex.outputs["Alpha"], mix.inputs["Fac"])  # 10-20 알파 × 3을 시험해도 글자 농도가 그대로(획 알파는 이미 1, 연한 건 빛 탓)
     l.new(tr.outputs[0], mix.inputs[1])
     l.new(ink.outputs[0], mix.inputs[2])
     l.new(mix.outputs[0], out.inputs["Surface"])
     return m
 
 
+def marble_s2(m, n, l, b, tc, mp):
+    """세트 2 대리석(10-20 Fable 1차 P2 「결 없는 흰 탁자」): 사람 컷의 카라라처럼 굽이치는 회색 굵은 결 + 가는 잔결.
+    노이즈 값이 0.5인 등고선을 결로 쓴다(가운데 짙고 둘레로 옅게 번짐). 바탕은 조금 따뜻한 흰색."""
+    # 한 축으로 늘이면 결이 넓고 흐려졌다(10-20 시험) → 고르게 두고 잔결을 촘촘 · 짙게
+    mp.inputs["Scale"].default_value = (S2_VEIN, S2_VEIN, S2_VEIN)
+    l.new(tc.outputs["Object"], mp.inputs["Vector"])
+    layers = []
+    # (노이즈 배율, 일그러짐, 결 반폭(노이즈 값), 결 가운데 밝기, 번짐 밝기, 4D W(층마다 다른 무늬))
+    for scale, dist, band, dark, halo, w in ((1.0, 0.35, 0.012, 0.42, 0.74, 0.0), (3.6, 0.5, 0.005, 0.55, 0.82, 7.3)):
+        nz = n.new("ShaderNodeTexNoise")
+        nz.noise_dimensions = "4D"
+        nz.inputs["W"].default_value = w
+        nz.inputs["Scale"].default_value = scale
+        nz.inputs["Detail"].default_value = 10.0
+        nz.inputs["Roughness"].default_value = 0.6
+        nz.inputs["Distortion"].default_value = dist
+        l.new(mp.outputs["Vector"], nz.inputs["Vector"])
+        rp = n.new("ShaderNodeValToRGB")
+        e = rp.color_ramp.elements
+        e[0].position, e[0].color = 0.0, (1, 1, 1, 1)
+        e[1].position, e[1].color = 1.0, (1, 1, 1, 1)
+        for pos, c in ((0.5 - 4 * band, 1.0), (0.5 - band, halo), (0.5, dark), (0.5 + band, halo), (0.5 + 4 * band, 1.0)):
+            x = e.new(pos)
+            x.color = (c, c, c, 1)
+        l.new(nz.outputs["Fac"], rp.inputs["Fac"])
+        layers.append(rp)
+    mul = n.new("ShaderNodeVectorMath")
+    mul.operation = "MULTIPLY"
+    l.new(layers[0].outputs["Color"], mul.inputs[0])
+    l.new(layers[1].outputs["Color"], mul.inputs[1])
+    tint = n.new("ShaderNodeVectorMath")
+    tint.operation = "MULTIPLY"
+    tint.inputs[1].default_value = (0.86, 0.85, 0.83)
+    l.new(mul.outputs["Vector"], tint.inputs[0])
+    l.new(tint.outputs["Vector"], b.inputs["Base Color"])
+    return m
+
+
 def marble_mat():
     m, n, l = new_mat("대리석")
     b = principled(n)
-    setin(b, "Roughness", 0.13)
-    setin(b, "Coat Weight", 0.25)
+    setin(b, "Roughness", 0.38 if A.set == "2" else 0.13)  # 세트 2: 무광 허니드
+    setin(b, "Coat Weight", 0.05 if A.set == "2" else 0.25)
     tc = n.new("ShaderNodeTexCoord")
     mp = n.new("ShaderNodeMapping")
+    if A.set == "2":
+        return marble_s2(m, n, l, b, tc, mp)
     mp.inputs["Scale"].default_value = (3.0, 3.0, 3.0)
     wave = n.new("ShaderNodeTexWave")
     wave.wave_type = "BANDS"
@@ -364,7 +530,42 @@ def gobo_mat(path):
 
 
 # ── 병 짓기 ────────────────────────────────────────────────────────────────────
+def build_bottle2():
+    body = revolve("병", bottle2_profile(), segs=192)
+    body.data.materials.append(clear_glass_mat())
+    liq = revolve("토너", liquid2_profile(), segs=192)
+    # 옅은 물빛: 투과 색은 들어가고 나갈 때 두 번 곱해진다(0.90 → 약 0.81)
+    liq.data.materials.append(water_mat("토너액", 0.0, 1.335, (0.86, 0.95, 0.95, 1)))
+    cap = revolve("뚜껑", cap2_profile(), segs=192)
+    cap.data.materials.append(alu_cap_mat())
+    # 인쇄 소매: 유리 바깥 0.12mm, 높이 10~98mm(라벨.py PX2 축척과 같음), u는 앞면이 0.5
+    segs, z0, z1, r = 256, 10.0, 98.0, 22.12
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UV")
+    cols = []
+    for i in range(segs + 1):
+        u = i / segs
+        a = FRONT + (u - 0.5) * 2 * math.pi
+        cols.append((bm.verts.new((r * MM * math.cos(a), r * MM * math.sin(a), z0 * MM)),
+                     bm.verts.new((r * MM * math.cos(a), r * MM * math.sin(a), z1 * MM)), u))
+    for i in range(segs):
+        (a0, a1, u0), (b0, b1, u1) = cols[i], cols[i + 1]
+        f = bm.faces.new((a0, b0, b1, a1))
+        for lp, (uu, vv) in zip(f.loops, ((u0, 0), (u1, 0), (u1, 1), (u0, 1))):
+            lp[uv].uv = (uu, vv)
+    me = bpy.data.meshes.new("라벨")
+    bm.to_mesh(me)
+    bm.free()
+    for p in me.polygons:
+        p.use_smooth = True
+    lab = link(bpy.data.objects.new("라벨", me))
+    lab.data.materials.append(label_mat(os.path.join(MAT_DIR, f"라벨_{BRAND}_v2.png")))
+    return body
+
+
 def build_bottle():
+    if B2:
+        return build_bottle2()
     body = revolve("병", bottle_profile())
     sol = body.modifiers.new("두께", "SOLIDIFY")
     sol.thickness = 2.0 * MM
@@ -427,7 +628,7 @@ def build_drops():
     small = []
     for k in range(34):
         a = FRONT + math.radians(rnd.uniform(-70, 70))
-        z = rnd.uniform(64, 111)
+        z = rnd.uniform(40, 104) if B2 else rnd.uniform(64, 111)
         if abs(math.degrees(a - DROP_ANG)) < 9:
             continue
         s = rnd.uniform(0.25, 0.75)
@@ -437,8 +638,9 @@ def build_drops():
         small.append(ob)
     # 주인공 물방울 길: 어깨 z108 → 몸통 z62, 살짝 구불(±0.6mm). 10-18 Fable 재검수: 1mm 물방울은 안 보이고,
     # 머리 없는 가는 직선 자국은 흠집으로 읽혔다 → 물방울 3~4mm, 자국은 서리 유리가 젖어 투명해진 2mm 띠
-    zs = [108 - 46 * i / 300 for i in range(301)]
-    angs = [DROP_ANG + 0.025 * math.sin((108 - z) / 6.0) for z in zs]
+    z_top = 104 if B2 else 108  # 병 2는 어깨가 z 100~107
+    zs = [z_top - 46 * i / 300 for i in range(301)]
+    angs = [DROP_ANG + 0.025 * math.sin((z_top - z) / 6.0) for z in zs]
     pts = [surface_at(a, z) for a, z in zip(angs, zs)]
     length = [0.0]
     for i in range(1, len(pts)):
@@ -515,7 +717,9 @@ def build_room(with_counter=True, with_back=True, sway=False, plate=(0.0, 0.5)):
         bp.rotation_euler = (math.radians(90), 0, 0)
         bp.location = (px, 1.0, -0.10 + ph / 2)
         # 0.95·1.7은 AgX가 밝은 쪽을 눌러 회색 벽으로 보였다 → 3.2(사람 컷 키프레임처럼 밝고 하얀 욕실)
-        bp.data.materials.append(emission_image_mat("배경판", os.path.join(MAT_DIR, "배경판.jpg"), 3.2, sway))
+        plate_file = "배경판_세트2.jpg" if A.set == "2" else "배경판.jpg"
+        bp.data.materials.append(emission_image_mat("배경판", os.path.join(MAT_DIR, plate_file),
+                                                    S2_PLATE if A.set == "2" else 3.2, sway))
         bp.visible_shadow = False
         objs["back"] = bp
     # 창: 화면 왼쪽(-X), 조금 뒤에서 들어오는 커튼 너머 부드러운 빛
@@ -532,7 +736,7 @@ def build_room(with_counter=True, with_back=True, sway=False, plate=(0.0, 0.5)):
     fill = bpy.data.lights.new("반사빛", "AREA")
     fill.shape = "RECTANGLE"
     fill.size, fill.size_y = 1.2, 1.0
-    fill.energy = 60
+    fill.energy = S2_FILL if A.set == "2" else 60
     fob = link(bpy.data.objects.new("반사빛", fill))
     fob.location = (0.9, -0.8, 0.4)
     look_at(fob, Vector((0, 0, 0.07)))
@@ -543,7 +747,25 @@ def build_room(with_counter=True, with_back=True, sway=False, plate=(0.0, 0.5)):
         pass
     bg = w.node_tree.nodes.get("Background") or w.node_tree.nodes.new("ShaderNodeBackground")
     bg.inputs["Color"].default_value = (0.86, 0.83, 0.79, 1)
-    bg.inputs["Strength"].default_value = 0.35
+    bg.inputs["Strength"].default_value = S2_WORLD if A.set == "2" else 0.35
+    if B2:
+        # 맑은 유리 병은 렌즈처럼 카메라 쪽 어두운 주변(0.35)을 뒤집어 비춰 병 속에 회색 얼룩이 컸다(10-20 시험) →
+        # 반사 · 굴절로 볼 때만 주변을 배경판만큼 밝게(사진가가 유리병 둘레에 흰 반사판을 세우는 것과 같은 일). 바닥 · 벽 빛은 그대로
+        wn, wl = w.node_tree.nodes, w.node_tree.links
+        out = [x for x in wn if x.type == "OUTPUT_WORLD"][0]
+        lp = wn.new("ShaderNodeLightPath")
+        mx = wn.new("ShaderNodeMath")
+        mx.operation = "MAXIMUM"
+        bright = wn.new("ShaderNodeBackground")
+        bright.inputs["Color"].default_value = (0.86, 0.83, 0.79, 1)
+        bright.inputs["Strength"].default_value = 1.8
+        mix = wn.new("ShaderNodeMixShader")
+        wl.new(lp.outputs["Is Glossy Ray"], mx.inputs[0])
+        wl.new(lp.outputs["Is Transmission Ray"], mx.inputs[1])
+        wl.new(mx.outputs[0], mix.inputs["Fac"])
+        wl.new(bg.outputs[0], mix.inputs[1])
+        wl.new(bright.outputs[0], mix.inputs[2])
+        wl.new(mix.outputs[0], out.inputs["Surface"])
     S.world = w
     return objs
 
@@ -625,8 +847,15 @@ def setup_render(transparent=False):
     S.render.film_transparent = transparent
     S.view_settings.view_transform = "AgX"
     S.view_settings.exposure = -0.7 if A.cut == "6" else 0.0  # 컷 6은 햇빛을 더해 밝아진 만큼 낮춘다
+    if A.set == "2" and not transparent:  # 엔드카드 팩샷(투명 바탕)은 세트 1 그대로
+        S.view_settings.exposure += S2_EXPO
     S.render.image_settings.file_format = "PNG"
     S.render.image_settings.color_mode = "RGBA" if transparent else "RGB"
+    if A.border:  # 1080×1920 화소 칸 → 블렌더 테두리(왼쪽 아래가 0), 잘라 내지 않아 출력은 그대로 전체 크기
+        x0, y0, x1, y1 = (float(v) for v in A.border.split(","))
+        S.render.use_border, S.render.use_crop_to_border = True, False
+        S.render.border_min_x, S.render.border_max_x = x0 / 1080, x1 / 1080
+        S.render.border_min_y, S.render.border_max_y = 1 - y1 / 1920, 1 - y0 / 1920
     if A.device == "GPU":
         prefs = bpy.context.preferences.addons["cycles"].preferences
         prefs.compute_device_type = "OPTIX"
@@ -675,6 +904,10 @@ def main():
                 kp.interpolation = "BEZIER"
                 kp.easing = "EASE_IN_OUT"
         setup_render()
+    elif A.cut == "ref":  # 제품 참고 그림: 85mm로 병 높이(136mm)가 화면 세로의 90%쯤
+        build_room(with_counter=False, with_back=False)
+        camera(85, Vector((0, -0.37, 0.092)), Vector((0, 0, 0.068)))
+        setup_render(transparent=True)
     else:  # 7 팩샷
         build_room(with_counter=False, with_back=False)
         camera(65, Vector((0, -0.42, 0.078)), Vector((0, 0, 0.070)))
@@ -691,7 +924,7 @@ def main():
                 frames.append(int(part))
     else:
         frames = list(range(S.frame_start, S.frame_end + 1))
-    tag = {"2": "컷2", "6": "컷6", "7": "컷7팩샷", "alt": f"컷2_{BRAND}"}[A.cut]
+    tag = {"2": "컷2", "6": "컷6", "7": "컷7팩샷", "alt": f"컷2_{BRAND}", "ref": f"병참고_{BRAND}"}[A.cut]
     for f in frames:
         S.frame_set(f)
         S.render.filepath = os.path.join(A.out, f"{tag}_{f:04d}.png")
