@@ -4,7 +4,7 @@
 // 실제 캡처(인스타·틱톡·샤오훙수·Business Suite)는 조율 세션이 찍은 원본을 가려서 쓴다(화면/만들기.py). 사건은 배경음 박 격자 위.
 import { Audio } from '@remotion/media';
 import React from 'react';
-import { AbsoluteFill, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { BUTTER, DIM, INK, STAGE } from '../film/parts';
 import { KO, MONO } from '../lib/fonts';
 import { clamp, IN, IN_OUT, OUT, prog, stagger } from '../lib/motion';
@@ -20,6 +20,7 @@ const B_TERM: Box = { x: 64, y: 600, w: 952, h: 600, r: 26 };
 const B_CAP: Box = { x: 64, y: 600, w: 952, h: 640, r: 26 };
 const B_SAY: Box = { x: 64, y: 600, w: 952, h: 640, r: 34 };
 const B_DOC: Box = { x: 64, y: 600, w: 952, h: 640, r: 30 };
+const B_CARDS: Box = { x: 64, y: 580, w: 952, h: 770, r: 30 };
 
 const GRID_TOP = 300;
 const CHECK_A = 30; // 「물었더니」 무렵부터
@@ -65,7 +66,8 @@ const Heads: React.FC = () => {
       {f >= wd('s1', 8) - 4 && f < S.s08 + 8 ? <Headline lines={[[h('세션', 's1', 8), h('셋을', 's1', 9)], [h('한', 's1', 10, true), h('번에', 's1', 11, wd('s1', 10))]]} out={S.s08 - 4} style={big} /> : null}
       {f >= VO.s2 - 4 && f < wd('s2', 4) + 4 ? <Headline lines={[[h('올리기만은', 's2', 0)], [h('한', 's2', 1, true), h('곳에서', 's2', 2, wd('s2', 1))]]} out={wd('s2', 4) - 6} style={big} /> : null}
       {f >= wd('s2', 4) - 4 && f < S.s09 + 8 ? <Headline lines={[[h('계정을', 's2', 4), h('바꿔', 's2', 5), h('가며', 's2', 6)], [h('같이', 's2', 8), h('하면', 's2', 9), h('엉키거든요', 's2', 10)]]} out={S.s09 - 4} style={big} /> : null}
-      {f >= VO.e1b - 4 && f < S.s10 ? <Headline lines={[[h('내일부터', 'e1b', 0)], [h('매일', 'e1b', 1, true), h('한', 'e1b', 2), h('편씩', 'e1b', 3)]]} out={S.s10 - 6} style={big} /> : null}
+      {f >= VO.e1 - 4 && f < wd('e1', 4) + 4 ? <Headline lines={[[h('오늘', 'e1', 0), h('만든', 'e1', 1)], [h('세', 'e1', 2, true), h('편', 'e1', 3, wd('e1', 2))]]} out={wd('e1', 4) - 6} style={big} /> : null}
+      {f >= wd('e1', 4) - 4 && f < S.s10 ? <Headline lines={[[h('내일부터', 'e1', 4)], [h('매일', 'e1', 5, true), h('한', 'e1', 6), h('편씩', 'e1', 7)]]} out={S.s10 - 6} style={big} /> : null}
     </>
   );
 };
@@ -273,6 +275,7 @@ const ActTwo: React.FC = () => {
   let box = lerpBox(B_SAY, B_DOC, prog(f, S.s07, 12, OUT));
   const fold = wd('s1', 10); // 「한 번에」: 문서가 세션 목록으로 접힌다
   box = lerpBox(box, B_LIST, prog(f, fold - 2, 12, OUT));
+  box = lerpBox(box, B_CARDS, prog(f, S.s09, 12, OUT));
   return (
     <Shell box={box} paper={1}>
       {/* 06: 대화창 — 앞의 답(흐림) + 유호님 두 문장(18:11) */}
@@ -295,17 +298,53 @@ const ActTwo: React.FC = () => {
           <DocCard f={f} at={S.s07 + 2} picks={[wd('s1', 3) - 2, wd('s1', 3) + 3]} todayAt={wd('s1', 6)} />
         </Swap>
       ) : null}
-      {/* 07 끝~09: 세션 목록 */}
-      {f >= fold ? (
-        <Swap inP={prog(f, fold + 2, 8, OUT)}>
+      {/* 07 끝~08: 세션 목록 */}
+      {f >= fold && f < S.s09 + 10 ? (
+        <Swap inP={prog(f, fold + 2, 8, OUT)} outP={prog(f, S.s09, 8, IN)}>
           <ListTail f={f} fold={fold} />
+        </Swap>
+      ) : null}
+      {/* 09: 오늘 만든 세 편(실제 0초 화면) + 7칸 달력 */}
+      {f >= S.s09 + 2 ? (
+        <Swap inP={prog(f, S.s09 + 4, 8, OUT)}>
+          <ThreeCards f={f} />
         </Swap>
       ) : null}
     </Shell>
   );
 };
 
-/** 07 끝 ~ 09: 세 세션 → 「올리기」 꼬리표가 맨 위 줄로(한 곳에서) → 계정 칩이 바뀜 → 7칸 달력. */
+/** 09 「오늘 만든 세 편」: 세 편의 실제 0초 화면(LAB 영어판·synkbrief 인스타판·이 영상)이 「오늘」부터 차례로, 「내일부터」에 7칸 달력, 「매일」에 다음 날 칸. */
+const THREE = [
+  { src: 'thumb/lab.png', label: 'LAB · 관용구 퀴즈 #4' },
+  { src: 'thumb/brief.png', label: 'synkbrief · 음식 사진' },
+  { src: 'thumb/yuho.png', label: 'yuhobuilds · 이 영상' },
+] as const;
+const CARD_W = 270;
+const CARD_H = 480;
+const ThreeCards: React.FC<{ f: number }> = ({ f }) => {
+  const at = VO.e1 - 4; // 「오늘」 무렵(판이 비어 보이지 않게). 셋째 카드 테두리는 「세 편」 뒤
+  const left0 = (952 - (3 * CARD_W + 2 * 26)) / 2;
+  const me = prog(f, at + 14, 8, OUT);
+  return (
+    <>
+      {THREE.map((c, i) => {
+        const a = prog(f, at + i * 4, 9, OUT);
+        return (
+          <div key={i} style={{ position: 'absolute', left: left0 + i * (CARD_W + 26), top: 30, width: CARD_W, opacity: a, transform: `translateY(${(1 - a) * 26}px) scale(${0.94 + 0.06 * a})`, transformOrigin: '50% 100%' }}>
+            <div style={{ width: CARD_W, height: CARD_H, borderRadius: 18, overflow: 'hidden', background: '#0A0A0A', boxShadow: i === 2 && me > 0 ? `0 0 0 ${5 * me}px ${BUTTER}` : '0 10px 30px rgba(0,0,0,0.18)' }}>
+              <Img src={staticFile(c.src)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
+            <div style={{ marginTop: 14, textAlign: 'center', fontFamily: KO, fontWeight: 650, fontSize: 24, color: UI_INK, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{c.label}</div>
+          </div>
+        );
+      })}
+      <DayStrip f={f} at={wd('e1', 4) - 2} everyAt={wd('e1', 5)} top={592} />
+    </>
+  );
+};
+
+/** 07 끝 ~ 08: 세 세션 → 「올리기」 꼬리표가 맨 위 줄로(한 곳에서) → 계정 칩이 바뀜. */
 const ListTail: React.FC<{ f: number; fold: number }> = ({ f, fold }) => {
   const tagAt = wd('s2', 0); // 「올리기만은」: 세 줄 오른쪽에 꼬리표
   const moveAt = wd('s2', 1) - 2; // 「한 곳에서」: 한꺼번에 맨 위 줄로
@@ -313,7 +352,6 @@ const ListTail: React.FC<{ f: number; fold: number }> = ({ f, fold }) => {
   const swaps = [wd('s2', 4), wd('s2', 5) + 2, wd('s2', 6) + 4];
   const chip = f < swaps[1] + 3 ? 0 : f < swaps[2] + 3 ? 1 : 2;
   const chipBlur = Math.max(chipSwap(f, swaps[1]), chipSwap(f, swaps[2]));
-  const strip = prog(f, S.s09, 8, OUT);
   return (
     <>
       <SessionList
@@ -336,9 +374,7 @@ const ListTail: React.FC<{ f: number; fold: number }> = ({ f, fold }) => {
             );
           })
         : null}
-      {/* 09: 다른 세션 줄을 덮고 7칸 달력 */}
-      {strip > 0 ? <div style={{ position: 'absolute', left: 0, right: 0, top: 500, bottom: 0, background: '#F6F5F1', opacity: strip }} /> : null}
-      {strip > 0 ? <DayStrip f={f} at={S.s09} everyAt={wd('e1b', 1)} top={520} /> : null}
+
     </>
   );
 };
@@ -353,6 +389,7 @@ const Label: React.FC = () => {
   else if (f >= S.s04 && f < S.s05) text = '실제 화면 · 17:48 인스타 웹';
   else if (f >= S.s05 && f < wd('b3', 5) - 2) text = '실제 화면 · 17:50 틱톡 스튜디오';
   else if (f >= wd('b3', 5) - 2 && f < S.s06) text = '실제 화면 · 17:51 샤오훙수 · 주소줄은 재현';
+  else if (f >= S.s09 + 4) text = '오늘 만든 세 편의 실제 0초 화면';
   return <div style={{ position: 'absolute', left: 72, top: 1376, fontFamily: MONO, fontSize: 26, color: DIM, opacity: o }}>{text}</div>;
 };
 
@@ -393,7 +430,9 @@ const hits = (): Hit[] => [
   { at: wd('s2', 5) + 2, src: 'sfx/tick2.wav', v: 0.26 },
   { at: wd('s2', 6) + 4, src: 'sfx/tick2.wav', v: 0.26 },
   { at: S.s09, src: 'sfx/swish.wav', v: 0.18 },
-  ...[0, 1, 2, 3, 4, 5].map((i) => ({ at: wd('e1b', 1) + i * 3, src: 'sfx/tick.wav', v: 0.14 })),
+  ...[0, 1, 2].map((i) => ({ at: VO.e1 - 4 + i * 4, src: 'sfx/tok.wav', v: 0.3 })),
+  { at: VO.e1 + 10, src: 'sfx/snap.wav', v: 0.3 },
+  ...[0, 1, 2, 3, 4, 5].map((i) => ({ at: wd('e1', 5) + i * 3, src: 'sfx/tick.wav', v: 0.14 })),
   { at: S.s10, src: 'sfx/swish.wav', v: 0.45 },
   { at: END_FOLLOW, src: 'sfx/tok.wav', v: 0.55 },
 ];

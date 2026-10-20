@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "오늘 만든 세 편이에요. 내일부터 매일 한 편씩.",
+ "show": "오늘 만든 세 편 → 내일부터 / 매일 한 편씩",
+ "dur": 2.446,
+ "words": [
+  {
+   "text": "오늘",
+   "start": 0.02,
+   "end": 0.189
+  },
+  {
+   "text": "만든",
+   "start": 0.231,
+   "end": 0.484
+  },
+  {
+   "text": "세",
+   "start": 0.526,
+   "end": 0.597
+  },
+  {
+   "text": "편이에요.",
+   "start": 0.653,
+   "end": 1.032
+  },
+  {
+   "text": "내일부터",
+   "start": 1.328,
+   "end": 1.707
+  },
+  {
+   "text": "매일",
+   "start": 1.778,
+   "end": 1.932
+  },
+  {
+   "text": "한",
+   "start": 1.974,
+   "end": 2.017
+  },
+  {
+   "text": "편씩.",
+   "start": 2.059,
+   "end": 2.446
+  }
+ ],
+ "source": {
+  "key": "4a9e6262fb0ea27e0b1f75e2d429cd63",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
