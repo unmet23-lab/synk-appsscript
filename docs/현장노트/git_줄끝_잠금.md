@@ -356,6 +356,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 다시 돌리기 전에 정말 안 올라갔는지부터 본다 — `git fetch` 뒤 `git log origin/master --format=%s -20`에 내 커밋 제목이 없을 때만 같은 명령을 한 번 더 `--실행`한다(출력은 파일로). 올라간 뒤 또 돌리면 같은 줄이 두 번 들어갈 수 있다(위 「남이 내 커밋을 먼저 올렸는데…」).
 - 다시 확인: 두 번째 실행이 `[올림] origin/master ← 86e639023`이고, origin 내력에 두 제목이 한 번씩만 있다(10-20).
 
+### 공용 문서 항목 바로 아래에 하위 줄을 더하면 `올리기` 자리 맞춤이 그 줄을 이웃 항목 밑에 붙일 수 있다 (2026-10-20 Claude)
+- 증상: origin보다 454커밋 앞으로 갈라진 앱 워크트리(로컬 master에서 뜸)에서 트랙 「Workspace 작동·GPT 흔적 점검」 항목 줄 바로 아래에 하위 줄(`  - **…**`) 하나를 `--조각`으로 커밋하고 미리 보기 없이 `올리기 --실행`했다. 출력이 「자리 맞춤: 「- **PULSE 웹 앱 …」 다음에 「  - **메신저 글 …」」였고, origin 판(`40820971b`)에서 그 줄이 바로 위 이웃 항목(PULSE 웹 앱) 밑에 들어갔다. 줄 셈 검사는 통과했다.
+- 원인: 바탕 판과 origin 판에서 그 항목의 앞뒤 이웃 항목이 달라 줄 단위 3방향이 겹침으로 갔다. 자리 맞춤이 내 줄 뒤의 「원격에도 있는 줄」을 어디에나 있는 빈 줄로 잡아, 원격의 다른 빈 줄(이웃 항목과 이 항목 사이) 앞에 붙인 것으로 보인다 — 추정이고 `tools/내커밋.js` 코드로는 확인하지 않았다.
+- 고침: origin 판 위에서 그 줄만 옮긴 커밋을 손 절차로 만들어 올렸다(`309d5e7d1`). `git cat-file blob origin/master:<경로>`를 바이트 그대로 읽어 줄을 옮긴 파일 → `git hash-object -w --no-filters` → 별도 인덱스(`GIT_INDEX_FILE`)에 `read-tree origin/master` + `update-index --cacheinfo 100644,<blob>,<경로>` → `write-tree` → `commit-tree <트리> -p origin/master` → `node tools/git-storage-check.cjs --base origin/master --head <커밋>` → `git push origin <커밋>:refs/heads/master`(그새 origin이 움직여 거절되면 새 origin에서 다시 만든다). 이 항목도 같은 손 절차로 「워크트리·연결 폴더·공간 정리」 머리 바로 앞에 넣었다. 공용 문서는 `올리기`를 미리 보기로 먼저 돌리고, 「자리 맞춤」 줄이 나오면 붙을 자리를 확인한 뒤 `--실행`한다. 하위 줄보다 항목 줄 끝에 한 문장을 덧붙이는 쪽이 덜 흔들린다.
+- 다시 확인: `git show origin/master:docs/_ops/트랙.md | grep -n "Workspace 작동·GPT 흔적 점검\|메신저 글 다시 쓰기·오늘 할 일"`이 이웃한 두 줄(항목 줄 바로 다음이 하위 줄)로 나온다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
