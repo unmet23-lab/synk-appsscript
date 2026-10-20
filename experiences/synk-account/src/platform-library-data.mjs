@@ -8,6 +8,7 @@ export const platformAppId = id => id==='partners'?'pulse':id;
 export const platformDisplayAppId = (id,appIds=ACTIVE_PLATFORM_APP_IDS) => platformAppId(id)==='teacher'&&appIds.includes('teacher')&&appIds.includes('messenger')?'messenger':platformAppId(id);
 export const platformDisplayAppIds = (appIds=ACTIVE_PLATFORM_APP_IDS) => [...new Set(appIds.filter(id=>ACTIVE_PLATFORM_APP_IDS.includes(id)).map(id=>platformDisplayAppId(id,appIds)))];
 export const PLATFORM_NOTE_LIMIT = 60;
+export const PLATFORM_LIBRARY_LIMITS = Object.freeze({ maxBytes: 64 * 1024 });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 const invalid = () => { throw Object.assign(new TypeError('플랫폼 기록 형식을 확인해 주세요.'), { code:'INVALID_PERSONAL_STATE' }); };
 const noteLimit = () => { throw Object.assign(new Error('메모는 최대 '+PLATFORM_NOTE_LIMIT+'개까지 보관할 수 있어요. 필요 없는 메모를 삭제한 뒤 다시 시도해 주세요.'), { code:'NOTE_LIMIT' }); };

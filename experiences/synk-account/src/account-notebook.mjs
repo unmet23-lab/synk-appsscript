@@ -1,22 +1,22 @@
 import { createProductAccount } from './product-account.mjs';
 import { createDocumentSync, documentSyncErrorMessage } from './document-sync.mjs';
-import { validatePersonalState } from './personal-data.mjs';
 
 const operations = Object.freeze({ load: 'personalLoad', save: 'personalSave', delete: 'personalDelete' });
 const copy = value => structuredClone(value);
 const labels = { loading: '계정 기록 불러오는 중', saving: '계정에 저장하고 있어요', synced: '계정에 저장했어요', idle: '계정 저장 대기 중', conflict: '다른 기기의 변경을 확인해 주세요', 'local-conflict': '이 기기의 미저장 기록을 골라 주세요', offline: '연결을 기다리고 있어요', error: '계정 기록 확인 필요', 'storage-error': '기기 임시 저장 확인 필요' };
 
 /** Shared account controls; product editors and their guest records stay owned
- * by each app. Save acknowledgements do not call applyState or reset forms. */
-export function createAccountNotebook({ resource, mount, content, description, getState, applyState, emptyDocument,
+ * by each app. Save acknowledgements do not call applyState or reset forms.
+ * validateState is the product's synk-personal check for its one resource, so a
+ * screen does not bundle every other product's validator. */
+export function createAccountNotebook({ resource, validateState, mount, content, description, getState, applyState, emptyDocument,
   toDocument = value => value, fromDocument = value => value, onMode = () => {}, beforeNavigate = () => true,
   prepareRetry = () => false, onDocumentSaved = () => {}, onDocumentRemoved = () => {}, onStatusChange = () => {}, pendingDescription = '', deleteLabel = '', signOutLabel = '로그아웃',
   deleteConfirmation = '이 계정의 앨범 전체와 보관한 사진·음성 원본을 삭제할까요? 다른 기기에서도 다시 불러올 수 없어요. 보관할 앨범은 먼저 파일로 내보내 주세요.',
   bridge = globalThis.synkPersonalAccount, accountFactory = createProductAccount, syncFactory = createDocumentSync, preferRemoteOnOpen = false,
   storage = { getItem: key => globalThis.localStorage.getItem(key), setItem: (key, value) => globalThis.localStorage.setItem(key, value), removeItem: key => globalThis.localStorage.removeItem(key), key: index => globalThis.localStorage.key(index), get length() { return globalThis.localStorage.length; } },
 } = {}) {
-  if (!mount || !getState || !applyState || !emptyDocument) throw new TypeError('계정 기록 화면 계약이 필요해요.');
-  const validateState = value => validatePersonalState(resource, value);
+  if (!mount || !getState || !applyState || !emptyDocument || typeof validateState !== 'function') throw new TypeError('계정 기록 화면 계약이 필요해요.');
   let account, sync, owner = null, ownerAccountId = null, generation = 0, stateVersion = 0, conversionVersion = 0, deletionVersion = 0, guest = null, authPaused = false, reading = null;
   let auth = { status: 'unconfigured', configured: false }, saved = { status: 'closed', pending: false };
   let closed = false, switching = false, hydrating = false, converting = false, deleting = false, unsent = null, problem = '', suspended = false, hydrationFailure = null, incomingDocument = null;

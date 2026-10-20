@@ -1,5 +1,6 @@
 import { createAccountNotebook } from './account-notebook.mjs';
 import { emptyPlatformLibrary, validatePlatformLibrary, updatePlatformLibrary, projectPlatformLibrary, platformAppId, platformDisplayAppIds, PLATFORM_APP_IDS, ACTIVE_PLATFORM_APP_IDS, PLATFORM_NOTE_LIMIT } from './platform-library-data.mjs';
+import { validatePlatformLibraryState } from './platform-library-state.mjs';
 import { platformLibraryAccount } from './platform-library-account.mjs';
 import { createLibraryRecovery } from './platform-library-recovery.mjs';
 
@@ -298,6 +299,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
       initialExpansionPending = true;
       notebook = createAccountNotebook({
         resource: "platform-library",
+        validateState: validatePlatformLibraryState,
         preferRemoteOnOpen: true,
         mount,
         content,

@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {emptyPlatformLibrary,validatePlatformLibrary,updatePlatformLibrary,projectPlatformLibrary,PLATFORM_APP_IDS,ACTIVE_PLATFORM_APP_IDS} from '../src/platform-library-data.mjs';
+import {fileURLToPath} from 'node:url';
+import {emptyPlatformLibrary,validatePlatformLibrary,updatePlatformLibrary,projectPlatformLibrary,PLATFORM_APP_IDS,ACTIVE_PLATFORM_APP_IDS,PLATFORM_LIBRARY_LIMITS} from '../src/platform-library-data.mjs';
+import {validatePlatformLibraryState} from '../src/platform-library-state.mjs';
 import {platformLibraryAccount} from '../src/platform-library-account.mjs';
-import {validatePersonalState} from '../src/personal-data.mjs';
+import {validatePersonalState,PERSONAL_LIMITS} from '../src/personal-data.mjs';
 import {createDocumentSync} from '../src/document-sync.mjs';
 const require=createRequire(import.meta.url),{requestSpec}=require('../../../desktop/src/account-requests.cjs');
 const make=()=>({...emptyPlatformLibrary(),consent:true});
@@ -166,4 +168,32 @@ test('retired app references remain readable without becoming active shortcuts o
   const old={...emptyPlatformLibrary(),consent:true,favorites:['world','rehearsal','family-album'],recent:[{id:'family-album',at:1,mode:'web'}],notes:[{id:'old-note',appId:'family-album',title:'보관한 메모',done:false,createdAt:1}]};
   const projected=projectPlatformLibrary(old);assert.deepEqual(projected.favorites,['world']);assert.deepEqual(projected.recent,[]);assert.equal(projected.notes[0].title,'보관한 메모');assert.deepEqual(validatePlatformLibrary(old),old);
   for(const id of ['rehearsal','family-album'])for(const type of ['favorite','launch','note'])assert.throws(()=>updatePlatformLibrary(old,{type,id,title:'새 메모',mode:'web'},2));
+});
+
+test('the screen check for the library is the account server check, JSON boundary included',()=>{
+  const ok={...make(),favorites:['world'],recent:[{id:'world',at:1,mode:'client'}],notes:[{id:'n-1',appId:'world',title:'메모',done:false,createdAt:1}]};
+  class Copy{constructor(){Object.assign(this,structuredClone(ok));}}
+  const getter=structuredClone(ok);Object.defineProperty(getter,'notes',{enumerable:true,get:()=>[]});
+  const hidden=structuredClone(ok);Object.defineProperty(hidden,'notes',{enumerable:false,value:[]});
+  const cases=[ok,emptyPlatformLibrary(),{...ok,version:2},{...ok,theme:'dark'},{...ok,consent:false},{...ok,favorites:['insight']},{...ok,rememberRecent:false},
+    {...ok,notes:[{...ok.notes[0],title:'\uD800'}]},{...ok,recent:[{id:'world',at:Number.NaN,mode:'web'}]},{...ok,favorites:Object.assign(['world'],{extra:1})},new Copy(),getter,hidden,{...ok,[Symbol('x')]:1},
+    {...ok,notes:Array.from({length:60},(_,i)=>({id:'n-'+i,appId:'world',title:'가'.repeat(240),done:false,createdAt:1+i}))},{...ok,pad:'x'.repeat(PLATFORM_LIBRARY_LIMITS.maxBytes)},null,[],'text',undefined];
+  const outcome=fn=>{try{return {ok:true,value:fn()};}catch(error){return {ok:false,code:error.code,message:error.message};}};
+  assert.equal(PLATFORM_LIBRARY_LIMITS.maxBytes,PERSONAL_LIMITS['platform-library']);
+  for(const [i,value] of cases.entries())assert.deepEqual(outcome(()=>validatePlatformLibraryState(value)),outcome(()=>validatePersonalState('platform-library',value)),'case '+i);
+  assert.deepEqual(new Set(cases.map(value=>outcome(()=>validatePlatformLibraryState(value)).code)),new Set([undefined,'INVALID_PERSONAL_STATE','PERSONAL_DATA_INVALID','PERSONAL_DATA_TOO_LARGE']));
+});
+
+test('the library screen bundles its own record check only: PC continuity and web portal',()=>{
+  const esbuild=require('esbuild'),dir=fileURLToPath(new URL('..',import.meta.url));
+  const inputs=entry=>Object.keys(esbuild.buildSync({absWorkingDir:dir,entryPoints:[entry],bundle:true,write:false,platform:'browser',format:'esm',target:'es2022',charset:'utf8',metafile:true}).metafile.inputs).map(file=>file.replace(/\\/g,'/'));
+  // Other resources' validators (member statements, PATH trips and VR) belong to their own screens and the account server.
+  const foreign=/src\/personal-data\.mjs$|src\/member-(?:statement|understanding-data|activity-data)|\/path-travel\/|\/path-vr\//;
+  const library=inputs('src/platform-library-view.mjs');
+  assert.deepEqual(library.filter(file=>foreign.test(file)),[]);
+  for(const file of ['src/personal-state.mjs','src/platform-library-state.mjs','src/platform-library-data.mjs','src/account-notebook.mjs'])assert.ok(library.includes(file),file);
+  // The portal's member screens keep their generated copies (desktop/renderer/generated); the source copies stay out.
+  const portal=inputs('src/platform.mjs');
+  assert.deepEqual(portal.filter(file=>foreign.test(file)),[]);
+  assert.ok(portal.some(file=>file.endsWith('desktop/renderer/generated/member-understanding-data.mjs')));
 });

@@ -7,7 +7,7 @@ for(const [name,create] of [['path',pathServer]])test(`${name} serves the exact 
   // PATH adds blob: for its own blob URLs (GLTF textures, the speech worker) since 1e1db9a37; no other origin may appear.
   const root=await fetch(base);assert.match(root.headers.get('content-security-policy'),/connect-src 'self' https:\/\/auth\.example\.test https:\/\/api\.example\.test blob:;/);
   const pub=await(await fetch(base+'/api/account-config')).json();assert.equal(pub.clients.path.clientId,'fixture-path');assert.equal(pub.configured,undefined);
-  for(const file of ['core','product-account','document-sync','personal-data','account-notebook']){const r=await fetch(base+`/synk-account/src/${file}.mjs`);assert.equal(r.status,200,file);assert.match(r.headers.get('content-type'),/javascript/);}
+  for(const file of ['core','product-account','document-sync','personal-state','personal-data','account-notebook']){const r=await fetch(base+`/synk-account/src/${file}.mjs`);assert.equal(r.status,200,file);assert.match(r.headers.get('content-type'),/javascript/);}
   for(const file of ['/synk-account/src/account-notebook.css','/synk-account/assets/slab-cream-long.webp','/path-vr/model.mjs'])assert.equal((await fetch(base+file)).status,200,file);
   for(const file of ['/synk-account/config.json','/synk-account/src/private.mjs','/synk-account/server-shared.mjs','/synk-account/src/personal-media.mjs','/conversation-rehearsal/domain.mjs','/family-album/model.mjs'])assert.equal((await fetch(base+file)).status,404,file);
 });

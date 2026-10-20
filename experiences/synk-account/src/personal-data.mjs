@@ -1,16 +1,16 @@
 import { validateState as validatePath } from '../../path-vr/model.mjs';
-import { validatePlatformLibrary } from './platform-library-data.mjs';
+import { validatePlatformLibrary, PLATFORM_LIBRARY_LIMITS } from './platform-library-data.mjs';
 import { validateMemberActivity, MEMBER_ACTIVITY_LIMITS } from './member-activity-data.mjs';
 import { validateMemberUnderstanding, MEMBER_UNDERSTANDING_LIMITS } from './member-understanding-data.mjs';
 import { validateTravelAccountDocument, TRAVEL_ACCOUNT_CONTRACT } from '../../path-travel/planner-account.mjs';
+import { fail, invalid, jsonCopy, checkPersonalState } from './personal-state.mjs';
 
 // Product state stays product-owned. This contract never grants roles, creates
 // accounts, or treats a device's storage preference as account authorization.
-export const PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, 'path-travel': TRAVEL_ACCOUNT_CONTRACT.maxBytes, 'platform-library':64 * 1024, 'member-insight': MEMBER_ACTIVITY_LIMITS.maxBytes, 'member-understanding': MEMBER_UNDERSTANDING_LIMITS.maxBytes });
+// Every resource, for the account server; a screen passes only its own check.
+export const PERSONAL_LIMITS = Object.freeze({ path: 64 * 1024, 'path-travel': TRAVEL_ACCOUNT_CONTRACT.maxBytes, 'platform-library': PLATFORM_LIBRARY_LIMITS.maxBytes, 'member-insight': MEMBER_ACTIVITY_LIMITS.maxBytes, 'member-understanding': MEMBER_UNDERSTANDING_LIMITS.maxBytes });
 export const PERSONAL_RESOURCES = Object.freeze(Object.keys(PERSONAL_LIMITS));
 const encoder = new TextEncoder();
-const fail = (code, message) => { throw Object.assign(new TypeError(message), { code }); };
-const invalid = () => fail('PERSONAL_DATA_INVALID', '저장할 개인 기록의 형식을 확인해 주세요.');
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fields = (value, names) => record(value) && Object.keys(value).every(key => names.includes(key));
 const revision = value => Number.isSafeInteger(value) && value >= 0;
@@ -19,36 +19,6 @@ const identity = value => typeof value === 'string' && value.length > 0 && value
 function resourceLimit(resource) {
   if (!Object.hasOwn(PERSONAL_LIMITS, resource)) invalid();
   return PERSONAL_LIMITS[resource];
-}
-
-// Reject JS values that JSON would silently omit or transform before applying
-// the canonical product validators. HTTP callers pass ordinary parsed JSON.
-function jsonCopy(value, maxBytes) {
-  const ancestors = new Set();
-  let nodes = 0;
-  function visit(item, depth) {
-    if (++nodes > 200000 || depth > 32) invalid();
-    if (typeof item === 'string') { if (/\u0000|[\uD800-\uDFFF]/u.test(item)) invalid(); return; }
-    if (item === null || typeof item === 'boolean') return;
-    if (typeof item === 'number') { if (!Number.isFinite(item)) invalid(); return; }
-    if (typeof item !== 'object' || ancestors.has(item)) invalid();
-    const prototype = Object.getPrototypeOf(item);
-    if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) invalid();
-    ancestors.add(item);
-    for (const key of Reflect.ownKeys(item)) {
-      if (Array.isArray(item) && key === 'length') continue;
-      const descriptor = Object.getOwnPropertyDescriptor(item, key);
-      if (typeof key !== 'string' || /\u0000|[\uD800-\uDFFF]/u.test(key) || !descriptor.enumerable || !Object.hasOwn(descriptor, 'value')) invalid();
-      if (Array.isArray(item) && !/^(0|[1-9]\d*)$/.test(key)) invalid();
-      visit(descriptor.value, depth + 1);
-    }
-    if (Array.isArray(item) && Object.keys(item).length !== item.length) invalid();
-    ancestors.delete(item);
-  }
-  visit(value, 0);
-  const serialized = JSON.stringify(value);
-  if (encoder.encode(serialized).length > maxBytes) fail('PERSONAL_DATA_TOO_LARGE', '저장할 개인 기록이 허용 크기를 넘었어요.');
-  return JSON.parse(serialized);
 }
 
 function pathDocument(value) {
@@ -60,9 +30,7 @@ function pathDocument(value) {
 }
 
 export function validatePersonalState(resource, value, options) {
-  const limit = resourceLimit(resource), copy = jsonCopy(value, limit);
-  try { return resource === 'member-understanding' ? validateMemberUnderstanding(copy, options) : resource === 'member-insight' ? validateMemberActivity(copy, options) : resource === 'path-travel' ? validateTravelAccountDocument(copy) : resource === 'platform-library' ? validatePlatformLibrary(copy) : pathDocument(copy); }
-  catch (error) { if (error.code) throw error; invalid(); }
+  return checkPersonalState(value, resourceLimit(resource), copy => resource === 'member-understanding' ? validateMemberUnderstanding(copy, options) : resource === 'member-insight' ? validateMemberActivity(copy, options) : resource === 'path-travel' ? validateTravelAccountDocument(copy) : resource === 'platform-library' ? validatePlatformLibrary(copy) : pathDocument(copy));
 }
 
 export function parsePersonalState(resource, source) {

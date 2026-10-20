@@ -4,7 +4,7 @@ import { readConfig } from './src/core.mjs';
 import { isOAuthReturnNavigation } from './oauth-return.mjs';
 
 const files = new Map([
-  ...['core.mjs', 'product-account.mjs', 'platform-entry.mjs', 'document-sync.mjs', 'personal-data.mjs', 'platform-library-data.mjs', 'member-activity-data.mjs', 'member-understanding-data.mjs', 'account-notebook.mjs', 'account-notebook.css'].map(name => [`/synk-account/src/${name}`, new URL(`./src/${name}`, import.meta.url)]),
+  ...['core.mjs', 'product-account.mjs', 'platform-entry.mjs', 'document-sync.mjs', 'personal-state.mjs', 'personal-data.mjs', 'platform-library-data.mjs', 'member-activity-data.mjs', 'member-understanding-data.mjs', 'account-notebook.mjs', 'account-notebook.css'].map(name => [`/synk-account/src/${name}`, new URL(`./src/${name}`, import.meta.url)]),
   ['/path-vr/model.mjs', new URL('../path-vr/model.mjs', import.meta.url)],
   ...['planner-account.mjs', 'planner-storage.mjs', 'planner-feedback.mjs', 'planner.mjs', 'places-v2.mjs', 'real-guide.mjs', 'real-places.mjs', 'real-conditions.mjs'].map(name => [`/path-travel/${name}`, new URL(`../path-travel/${name}`, import.meta.url)]),
   ...['domain', 'travel', 'ask', 'trail-life', 'temper-outcomes'].map(name => [`/atlas/${name}.js`, new URL(`../../atlas/${name}.js`, import.meta.url)]),
