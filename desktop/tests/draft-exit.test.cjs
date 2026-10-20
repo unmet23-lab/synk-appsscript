@@ -20,6 +20,14 @@ test('destroyed windows do not display a late draft prompt',()=>{
   assert.equal(shown,false);
 });
 
+test('another window passes its own wording with the same keep-first choices',()=>{
+  const contents=new EventEmitter(),shown=[];
+  installDraftExitGuard({contents,window:{isDestroyed:()=>false},dialog:{showMessageBoxSync(_window,value){shown.push(value);return 0;}},text:{title:'합성 제목',message:'합성 안내',detail:'합성 설명'}});
+  contents.emit('will-prevent-unload',{preventDefault(){throw Error('Should not continue');}});
+  assert.equal(shown[0].title,'합성 제목');assert.equal(shown[0].message,'합성 안내');assert.equal(shown[0].detail,'합성 설명');
+  assert.deepEqual(shown[0].buttons,['돌아가서 저장','저장 없이 나가기']);assert.equal(shown[0].defaultId,0);assert.equal(shown[0].cancelId,0);
+});
+
 test('exit wording preserves saved records and describes only the last opted-in recovery copy',()=>{
   const contents=new EventEmitter(),shown=[];let available=false;
   installDraftExitGuard({contents,window:{isDestroyed:()=>false},dialog:{showMessageBoxSync(_window,value){shown.push(value);return 0;}},getRecoveryAvailable:()=>available});

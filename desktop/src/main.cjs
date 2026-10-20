@@ -249,7 +249,11 @@ function createWindow(){
     careNotifications=createCareNotifications({directory:path.join(app.getPath('userData'),'CareNotifications'),safeStorage,getAccount:accountStatus,loadCare:()=>auth.accountRequest('careLoad',{}),shouldNotify:careReminderDue,Notification,icon:path.join(app.getAppPath(),'assets','platform.ico'),openCare:()=>shell.openExternal('https://synk.im/care/#synk-platform-account='+encodeURIComponent(accountStatus().account.synk_user_id)),enabled:!smoke,configFingerprint:authConfig?.fingerprint||'unconfigured',onChange:value=>sendDesktop('synk:care-notifications-changed',value)});
     careNotifications.start();
   }
-  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads')});
+  // Keeping an unsaved PULSE draft while quitting cancels the quit and a pending
+  // update install, as the platform window's own will-prevent-unload handler
+  // below does. The PULSE window is not attached to the tray, so its quit state
+  // is reset here; leaving the page without quitting changes nothing.
+  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
     const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),teacherKey),key:teacherKey}):null;

@@ -4,15 +4,16 @@ const {createPulseApp,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResour
 const guest={signedIn:false,status:'signed-out'},member=id=>({signedIn:true,status:'signed-in',account:{synk_user_id:id},accessToken:'SYNTHETIC-PRIVATE-TOKEN'});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=>Promise.resolve(),sessions=new Map()}={}){
-  const windows=[],external=[],partitions=[];let current=state;
+  const windows=[],external=[],partitions=[],dialogs=[],answers=[];let current=state,kept=0;
   class Window extends EventEmitter{
     constructor(options){super();this.options=options;this.destroyed=false;this.shown=0;this.focused=0;this.webContents=new EventEmitter();Object.assign(this.webContents,{getURL:()=>this.url,setWindowOpenHandler:handler=>{this.popup=handler;},downloadURL:url=>{this.download=url;}});windows.push(this);}
     loadURL(url){this.url=url;return load(this);}
     isDestroyed(){return this.destroyed;}isMinimized(){return !!this.minimized;}restore(){this.minimized=false;this.restored=true;}show(){this.shown++;}focus(){this.focused++;}destroy(){this.destroyed=true;this.emit('closed');}
   }
   const session={fromPartition(partition){partitions.push(partition);if(!sessions.has(partition)){const value=new EventEmitter();Object.assign(value,{partition,cleared:0,cacheCleared:0,setPermissionRequestHandler(fn){this.permission=fn;},setPermissionCheckHandler(fn){this.permissionCheck=fn;},webRequest:{onBeforeRequest(_filter,handler){value.request=handler;}},async clearStorageData(){this.cleared++;},async clearCache(){this.cacheCleared++;}});sessions.set(partition,value);}return sessions.get(partition);}};
-  const service=createPulseApp({clientId,getAccount:()=>current,BrowserWindow:Window,session,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',loadTimeoutMs:250});
-  return {service,windows,external,partitions,sessions,setAccount(value){current=value;service.syncContext(value);},get latestSession(){return sessions.get(partitions.at(-1));}};
+  const dialog={showMessageBoxSync(window,options){dialogs.push({window,options});return answers.length?answers.shift():0;}};
+  const service=createPulseApp({clientId,getAccount:()=>current,BrowserWindow:Window,session,dialog,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',onUnloadKept:()=>{kept++;},loadTimeoutMs:250});
+  return {service,windows,external,partitions,sessions,dialogs,answers,get kept(){return kept;},setAccount(value){current=value;service.syncContext(value);},get latestSession(){return sessions.get(partitions.at(-1));}};
 }
 test('only fixed PULSE shell, its demo entry, customer API and public assets load inside the remote window',()=>{
   assert.equal(DEMO,ENTRY+'?demo=coffee');
@@ -100,6 +101,54 @@ test('downloads accept only customer media routes, safe MIME and bounded size',a
   const item=new EventEmitter();Object.assign(item,{getURL:()=>ORIGIN+'/pulse/api/studio/media/'+id,getMimeType:()=> 'image/png',getTotalBytes:()=>1024,getReceivedBytes:()=>1024,getFilename:()=> 'preview.png',setSaveDialogOptions:value=>{options=value;},cancel(){this.cancelled=true;}});
   s.emit('will-download',event,item,w.webContents);assert.equal(prevented,0);assert.match(options.defaultPath,/preview\.png$/);
   s.emit('will-download',event,item,{});assert.equal(prevented,1);item.getTotalBytes=()=>101*1024*1024;item.emit('updated');assert.equal(item.cancelled,true);
+  // MP3·WAV project attachments (「첨부 받기」) are the server's other accepted types.
+  for(const [mime,ok] of [['audio/mpeg',true],['audio/wav',true],['audio/x-wav',false],['audio/ogg',false],['text/html',false]]){const before=prevented;item.getMimeType=()=>mime;item.getTotalBytes=()=>1024;s.emit('will-download',event,item,w.webContents);assert.equal(prevented===before,ok,mime);}
+});
+test('the demo download accepts only its two prepared sample MP4s, bounded like customer media',async()=>{
+  for(const file of ['preview-v1.mp4','preview-v2.mp4'])assert.equal(pulseAppMediaAllowed(ENTRY+'demo-assets/'+file),true,file);
+  for(const value of [ENTRY+'demo-assets/preview-v3.mp4',ENTRY+'demo-assets/scene-1.png',ENTRY+'demo-assets/reference-warm.png',ENTRY+'demo-assets/preview-v1.mp4?x=1',ENTRY+'demo-assets/preview-v1.mp4#t=1',ENTRY+'demo-assets/PREVIEW-V1.MP4',ORIGIN+'/demo-assets/preview-v1.mp4',ENTRY+'assets/casting/video/M03-mv-happy-gangster-full-v1.mp4','http://workspace.synk.im/pulse-app/demo-assets/preview-v1.mp4','https://evil.invalid/pulse-app/demo-assets/preview-v1.mp4'])assert.equal(pulseAppMediaAllowed(value),false,value);
+  const f=fixture();await f.service.open();const w=f.windows[0],s=f.latestSession;
+  const attempt=({url=ENTRY+'demo-assets/preview-v2.mp4',mime='video/mp4',total=223356,source=w.webContents}={})=>{let prevented=false,options=null;const item=new EventEmitter();Object.assign(item,{getURL:()=>url,getMimeType:()=>mime,getTotalBytes:()=>total,getReceivedBytes:()=>0,getFilename:()=> '모루 광고_시안 v2.mp4',setSaveDialogOptions:value=>{options=value;},cancel(){this.cancelled=true;}});s.emit('will-download',{preventDefault(){prevented=true;}},item,source);return {prevented,options,item};};
+  const saved=attempt();assert.equal(saved.prevented,false);assert.equal(saved.options.title,'PULSE 프로젝트 파일 저장');assert.match(saved.options.defaultPath,/모루 광고_시안 v2\.mp4$/);
+  for(const mime of ['video/webm','image/png','audio/mpeg','text/html','application/octet-stream'])assert.equal(attempt({mime}).prevented,true,mime);
+  assert.equal(attempt({url:ENTRY+'demo-assets/scene-1.png',mime:'image/png'}).prevented,true);assert.equal(attempt({total:101*1024*1024}).prevented,true);assert.equal(attempt({source:{}}).prevented,true);
+  const growing=attempt({total:0});assert.equal(growing.prevented,false);growing.item.getReceivedBytes=()=>101*1024*1024;growing.item.emit('updated');assert.equal(growing.item.cancelled,true);
+  // A new-tab link to a sample downloads it instead of leaving the window.
+  assert.equal(w.popup({url:ENTRY+'demo-assets/preview-v1.mp4'}).action,'deny');assert.equal(w.download,ENTRY+'demo-assets/preview-v1.mp4');await tick();assert.deepEqual(f.external,[]);
+});
+test('same-origin public pages open in the browser while the shell, invites and APIs never leave the window',async()=>{
+  const library=ENTRY+'production-library/';
+  for(const value of [library,library+'?model=F02',library+'?model=M03',ENTRY+'assets/casting/video/M03-mv-happy-gangster-full-v1.mp4',ENTRY+'assets/production/01-harin-coffee-v3.webp',ENTRY+'assets/casting/f02.webp',ENTRY+'assets/casting/voice/F02-1.mp3'])assert.equal(pulseAppExternalDestination(value),value,value);
+  // A bare ? or # parses as an empty query or fragment and carries nothing.
+  for(const value of [library+'?',library+'#'])assert.equal(pulseAppExternalDestination(value),value,value);
+  for(const value of [ENTRY+'#invite=SYNTHETIC',ENTRY+'?invite=SYNTHETIC',ENTRY+'index.html',ENTRY+'Index.html',ENTRY+'index.html/',ENTRY+'index.html#invite=SYNTHETIC',DEMO,ENTRY+'app.mjs',ENTRY+'sw.js',ENTRY+'demo-assets/scene-1.png',library+'index.html',ENTRY+'production-library',library+'#invite=SYNTHETIC',library+'?model=F02&token=SYNTHETIC',library+'?model=F02&',library+'?token=SYNTHETIC',library+'?model=f02',ENTRY+'assets/casting/f02.webp?token=SYNTHETIC',ENTRY+'assets/casting/video/M03-mv-happy-gangster-full-v1.mp4#t=1',ENTRY+'assets/casting/page.html',ENTRY+'assets/casting%2Fvideo/M03.mp4',ENTRY+'/production-library/',ENTRY+'..%2Fpulse/api/project',ENTRY+'%2e%2e/api/login',ENTRY+'assets/../../api/login',ORIGIN+'/pulse-app',ENTRY+'../api/login',ORIGIN+'/pulse/api/project',ORIGIN+'/pulse/api/media/00000000-0000-4000-8000-000000000001',ORIGIN+'/?tab=workroom&section=clients','http://workspace.synk.im/pulse-app/production-library/','https://user@workspace.synk.im/pulse-app/production-library/'])assert.equal(pulseAppExternalDestination(value),null,value);
+  const f=fixture();await f.service.open();const w=f.windows[0];let prevented=0;const event={preventDefault(){prevented++;}};
+  assert.equal(w.popup({url:library+'?model=F02'}).action,'deny');w.webContents.emit('will-navigate',event,library);
+  assert.equal(w.popup({url:ENTRY+'#invite=SYNTHETIC'}).action,'deny');assert.equal(w.popup({url:ORIGIN+'/pulse/api/project'}).action,'deny');
+  // A server redirect to a public page is only stopped, never opened outside.
+  w.webContents.emit('will-redirect',event,library);
+  await tick();assert.equal(prevented,2);assert.deepEqual(f.external,[library+'?model=F02',library]);assert.equal(w.download,undefined);
+});
+test('unsaved PULSE text asks before leaving or closing, and keeping it cancels an app quit',async()=>{
+  const f=fixture();await f.service.open();const w=f.windows[0];
+  const unload=()=>{const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};w.webContents.emit('will-prevent-unload',event);return event.defaultPrevented;};
+  f.answers.push(0);assert.equal(unload(),false);assert.equal(f.kept,1);
+  f.answers.push(1);assert.equal(unload(),true);assert.equal(f.kept,1);
+  assert.equal(f.dialogs.length,2);const [{window,options}]=f.dialogs;assert.equal(window,w);
+  assert.deepEqual(options.buttons,['돌아가서 저장','저장 없이 나가기']);assert.equal(options.defaultId,0);assert.equal(options.cancelId,0);assert.equal(options.noLink,true);
+  assert.equal(options.title,'SYNK PULSE');assert.match(options.message,/저장하거나 보내지 않은 내용/);assert.doesNotMatch(options.message+options.detail,/메모|복구본/);
+  w.destroyed=true;unload();assert.equal(f.dialogs.length,2);assert.equal(f.kept,1);
+});
+test('the platform passes its dialog and cancels only a quit in progress when PULSE keeps a draft',()=>{
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8');
+  const line=main.split(/\r?\n/).find(value=>value.includes('pulseApp=createPulseApp('));
+  assert.match(line,/createPulseApp\(\{[^\n]*\bsession,dialog,[^\n]*onUnloadKept:\(\)=>\{if\(!quittingRequested\)return;quittingRequested=false;platformTray\?\.cancelQuit\(\);startupWindow\?\.cancelQuit\(\);platformUpdate\?\.cancelInstall\(\);startupGate\?\.cancelInstall\(\);\}\}\);$/);
+  // Run the real callback against recorded stand-ins: only a quit in progress is undone.
+  const calls=[],stub=name=>({cancelQuit:()=>calls.push(name+'.cancelQuit'),cancelInstall:()=>calls.push(name+'.cancelInstall')});
+  const context={quittingRequested:false,platformTray:stub('tray'),startupWindow:stub('startupWindow'),platformUpdate:stub('update'),startupGate:stub('gate')};
+  const callback=vm.runInNewContext('('+line.match(/onUnloadKept:(\(\)=>\{[^\n]*?\})\}\);$/)[1]+')',context);
+  callback();assert.deepEqual(calls,[]);
+  context.quittingRequested=true;callback();assert.equal(context.quittingRequested,false);assert.deepEqual(calls,['tray.cancelQuit','startupWindow.cancelQuit','update.cancelInstall','gate.cancelInstall']);
 });
 test('preload exposes only a zero-argument fixed PULSE operation',async()=>{
   let bridge;const calls=[];vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
