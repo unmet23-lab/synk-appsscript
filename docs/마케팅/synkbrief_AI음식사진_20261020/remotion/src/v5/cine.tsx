@@ -194,7 +194,7 @@ export const Whip: React.FC<{ children: React.ReactNode; len: number; noIn?: boo
   const pin = noIn ? 1 : interpolate(f, [5, 12], [0, 1], { ...clamp, easing: EASE_OUT });
   const pout = noOut ? 0 : interpolate(f, [len - 13, len - 7], [0, 1], { ...clamp, easing: (t) => t * t * t });
   const y = (1 - pin) * 520 - pout * 1600;
-  const blur = (1 - pin) * 24 + pout * 24;
+  const blur = (1 - pin) * 10 + pout * 10; // v4: 흐림을 줄여 「페이드」가 아니라 밀기로 보이게(조율 세션 10-20 마감 점검)
   const hidden = (!noIn && f < 5) || (!noOut && f >= len - 7);
   return <AbsoluteFill style={{ translate: `0 ${y}px`, filter: blur > 0.3 ? `blur(${blur}px)` : undefined, opacity: hidden ? 0 : 1 }}>{children}</AbsoluteFill>;
 };

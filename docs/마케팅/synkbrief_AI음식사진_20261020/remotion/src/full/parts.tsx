@@ -30,21 +30,61 @@ export const Stamp: React.FC<{ children: React.ReactNode; tone?: 'dark' | 'ai' |
   );
 };
 
-/** 사진 판: 3:2 사진 한 장을 둥근 판에. wipe(0~1)를 주면 under 위에 src가 왼쪽부터 덮인다(경계에 흰 선). */
+/** 카메라: 판 안에서 사진을 z배로 당기고 초점(fx, fy · 사진 안 0~1)을 판 가운데로 옮긴다. 판을 늘 덮도록 끝을 묶는다. */
+export type Cam = { z: number; fx: number; fy: number };
+export const CAM0: Cam = { z: 1, fx: 0.5, fy: 0.5 };
+const lerpN = (a: number, b: number, t: number) => a + (b - a) * t;
+const easeIO = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/** 프레임 f에서의 카메라: keys는 [프레임, 카메라] 오름차순. 사이는 부드럽게 잇는다(늘 조금씩 움직이게 마지막 구간도 천천히 당긴다). */
+export const camAt = (f: number, keys: [number, Cam][]): Cam => {
+  if (f <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [a, ca] = keys[i - 1];
+    const [b, cb] = keys[i];
+    if (f <= b) {
+      const t = easeIO((f - a) / Math.max(1, b - a));
+      return { z: lerpN(ca.z, cb.z, t), fx: lerpN(ca.fx, cb.fx, t), fy: lerpN(ca.fy, cb.fy, t) };
+    }
+  }
+  return keys[keys.length - 1][1];
+};
+/** 켄 번스: 장면 길이 동안 z0 → z1로 쉬지 않고 당긴다(정지 구간을 없앤다 — tools/정지구간.js). */
+export const kb = (f: number, len: number, z0: number, z1: number, fx = 0.5, fy = 0.5, fx1 = fx, fy1 = fy): Cam => {
+  const t = interpolate(f, [0, len], [0, 1], clamp);
+  return { z: lerpN(z0, z1, t), fx: lerpN(fx, fx1, t), fy: lerpN(fy, fy1, t) };
+};
+
+/** 사진 판: 3:2 사진을 둥근 판에(h를 주면 판 비율이 달라도 사진이 판을 덮는다).
+ *  under를 주면 아래에 깔고, wipe(0~1)면 src가 왼쪽부터 덮이고, split(0~1)이면 왼쪽 under · 오른쪽 src(가운데 손잡이).
+ *  cam은 두 사진과 inner(동그라미 등)에 똑같이 걸린다 — 겹친 판이 어긋나지 않는다. 자르는 선·도장(children)은 판에 고정. */
 export const Photo: React.FC<{
   src: string;
   w: number;
   x: number;
   y: number;
+  h?: number;
   under?: string;
   wipe?: number;
-  split?: number; // 0~1: 왼쪽은 under, 오른쪽은 src (훅 반반 카드)
+  split?: number;
   radius?: number;
+  cam?: Cam;
+  inner?: React.ReactNode;
   children?: React.ReactNode;
   style?: React.CSSProperties;
-}> = ({ src, w, x, y, under, wipe, split, radius = 30, children, style }) => {
-  const h = Math.round((w * 2) / 3);
+}> = ({ src, w, x, y, h: hIn, under, wipe, split, radius = 30, cam = CAM0, inner, children, style }) => {
+  const h = hIn ?? Math.round((w * 2) / 3);
+  const iw = Math.max(w, h * 1.5);
+  const ih = iw / 1.5;
+  const offX = (w - iw) / 2;
+  const offY = (h - ih) / 2;
+  const z = Math.max(1, cam.z);
+  let tx = w / 2 - offX - z * cam.fx * iw;
+  let ty = h / 2 - offY - z * cam.fy * ih;
+  tx = Math.min(-offX, Math.max(w - offX - z * iw, tx));
+  ty = Math.min(-offY, Math.max(h - offY - z * ih, ty));
+  const layer: React.CSSProperties = { position: 'absolute', left: offX, top: offY, width: iw, height: ih, transformOrigin: '0 0', transform: `translate(${tx}px, ${ty}px) scale(${z})` };
   const edge = under !== undefined && wipe !== undefined ? wipe : under !== undefined && split !== undefined ? split : undefined;
+  const clip = edge === undefined ? undefined : split !== undefined ? `inset(0 0 0 ${edge * 100}%)` : `inset(0 ${(1 - edge) * 100}% 0 0)`;
   return (
     <div
       style={{
@@ -60,18 +100,17 @@ export const Photo: React.FC<{
         ...style,
       }}
     >
-      {under !== undefined ? <Img src={under} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
-      <Img
-        src={src}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          clipPath: edge !== undefined ? (split !== undefined ? `inset(0 0 0 ${edge * 100}%)` : `inset(0 ${(1 - edge) * 100}% 0 0)`) : undefined,
-        }}
-      />
+      {under !== undefined ? (
+        <div style={layer}>
+          <Img src={under} style={{ width: '100%', height: '100%', display: 'block' }} />
+        </div>
+      ) : null}
+      <div style={{ position: 'absolute', inset: 0, clipPath: clip }}>
+        <div style={layer}>
+          <Img src={src} style={{ width: '100%', height: '100%', display: 'block' }} />
+        </div>
+      </div>
+      {inner ? <div style={layer}>{inner}</div> : null}
       {edge !== undefined && edge > 0.001 && edge < 0.999 ? (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: `calc(${edge * 100}% - 2px)`, width: 4, background: '#fff', boxShadow: '0 0 18px rgba(0,0,0,.45)' }}>
           {split !== undefined ? (

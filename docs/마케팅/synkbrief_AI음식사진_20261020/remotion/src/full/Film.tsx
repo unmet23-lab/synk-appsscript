@@ -5,8 +5,8 @@ import React from 'react';
 import { AbsoluteFill, interpolate, Sequence, staticFile } from 'remotion';
 import { beat } from '../lib/beat';
 import { Stage, Whip } from '../v5/cine';
-import { After06, Check07, checkT, End09, Fact02, Fix08, Guest03, Hook01, LINE_IN, PROMPT_LINES, Prompt05, Turn04 } from './scenes';
-import { at, CUT, Key, seq, T, TAIL, TOTAL } from './time';
+import { After06, afterT, Check07, checkT, End09, Fact02, Fix08, fixT, Guest03, guestT, Hook01, LINE_IN, PROMPT_LINES, Prompt05, promptT, Turn04 } from './scenes';
+import { at, CUT, Key, seq, TAIL, TOTAL } from './time';
 import PLACE from './vo-place.json';
 
 export { TOTAL };
@@ -16,25 +16,31 @@ const abs = (k: Key, local: number) => seq(k).from + local;
 
 const hits = (variant: 'A' | 'B'): Hit[] => {
   const ck = checkT(variant);
+  const g = guestT();
+  const pr = promptT();
+  const af = afterT();
+  const fx = fixT();
   return [
-    ...(variant === 'A' ? [{ at: beat(1), src: 'sfx/swish.wav', v: 0.28 }] : []),
+    ...(variant === 'A' ? [{ at: beat(0.5), src: 'sfx/swish.wav', v: 0.26 }, { at: beat(2.5), src: 'sfx/swish.wav', v: 0.22 }, { at: beat(5), src: 'sfx/swish.wav', v: 0.22 }] : []),
     { at: at('hook', 3), src: 'sfx/snap.wav', v: 0.42 },
     ...(['fact', 'guest', 'turn', 'prompt', 'after', 'check', 'fix', 'end'] as const).map((k) => ({ at: seq(k).from + 2, src: 'sfx/swish.wav', v: 0.5 })),
-    { at: abs('fact', at('fact', 11)), src: 'sfx/snap.wav', v: 0.4 },
-    { at: abs('guest', at('guest', 17)), src: 'sfx/thud.wav', v: 0.45 },
+    { at: abs('guest', g.quote), src: 'sfx/thud.wav', v: 0.45 },
     { at: abs('turn', at('turn', 26)), src: 'sfx/snap.wav', v: 0.42 },
-    ...PROMPT_LINES.map((_, i) => ({ at: abs('prompt', LINE_IN(i) + 2), src: 'sfx/tick.wav', v: 0.22 })),
-    { at: abs('prompt', at('prompt', 32)), src: 'sfx/snap.wav', v: 0.36 },
-    { at: abs('after', T + 26), src: 'sfx/snap.wav', v: 0.42 },
-    { at: abs('after', at('after', 43.5)), src: 'sfx/pop.wav', v: 0.3 },
-    { at: abs('after', at('after', 44.5)), src: 'sfx/pop.wav', v: 0.3 },
-    ...[4, 8, 12].map((d) => ({ at: abs('check', T + d), src: 'sfx/tok.wav', v: 0.3 })),
+    ...PROMPT_LINES.slice(1).map((_, i) => ({ at: abs('prompt', LINE_IN(i) + 2), src: 'sfx/tick.wav', v: 0.2 })),
+    { at: abs('prompt', pr.food), src: 'sfx/snap.wav', v: 0.3 },
+    { at: abs('prompt', pr.light), src: 'sfx/snap.wav', v: 0.3 },
+    { at: abs('after', af.wipe1), src: 'sfx/snap.wav', v: 0.42 },
+    { at: abs('after', af.ring), src: 'sfx/pop.wav', v: 0.3 },
+    { at: abs('after', af.ring + 6), src: 'sfx/pop.wav', v: 0.3 },
+    { at: abs('check', ck.qty - 2), src: 'sfx/tok.wav', v: 0.32 },
     { at: abs('check', ck.qtyMark), src: 'sfx/pop.wav', v: 0.34 },
+    { at: abs('check', ck.ing - 2), src: 'sfx/tok.wav', v: 0.32 },
     { at: abs('check', ck.ingMark), src: 'sfx/pop.wav', v: 0.34 },
+    { at: abs('check', ck.col - 2), src: 'sfx/tok.wav', v: 0.32 },
     { at: abs('check', ck.redMark), src: 'sfx/thud.wav', v: 0.55 },
-    { at: abs('fix', T + 8), src: 'sfx/tick.wav', v: 0.32 },
-    { at: abs('fix', T + 30), src: 'sfx/snap.wav', v: 0.42 },
-    { at: abs('fix', T + 50), src: 'sfx/earn.wav', v: 0.38 },
+    { at: abs('fix', fx.line), src: 'sfx/tick.wav', v: 0.3 },
+    { at: abs('fix', fx.wipe1), src: 'sfx/snap.wav', v: 0.42 },
+    { at: abs('fix', fx.chips), src: 'sfx/earn.wav', v: 0.36 },
     { at: abs('end', at('end', 77)), src: 'sfx/pop.wav', v: 0.32 },
     { at: CUT, src: 'sfx/tok.wav', v: 0.55 },
   ];
@@ -45,7 +51,7 @@ const SCENES: { k: Key; el: (variant: 'A' | 'B') => React.ReactNode }[] = [
   { k: 'fact', el: () => <Fact02 /> },
   { k: 'guest', el: () => <Guest03 /> },
   { k: 'turn', el: () => <Turn04 /> },
-  { k: 'prompt', el: () => <Prompt05 /> },
+  { k: 'prompt', el: (v) => <Prompt05 variant={v} /> },
   { k: 'after', el: () => <After06 /> },
   { k: 'check', el: (v) => <Check07 variant={v} /> },
   { k: 'fix', el: () => <Fix08 /> },
