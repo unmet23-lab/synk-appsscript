@@ -229,6 +229,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `tools/내커밋.js 커밋`은 작업본 파일을 그대로 올린다(`git add`). 시험하지 않은 남의 진행 중 수정이 섞인다. 새 파일은 조각이 하나뿐이라 `--조각`으로도 그 줄만 뺄 수 없다.
 - 고침: 시험할 때 별도 인덱스로 만든 트리 T를 적어 두고, 위 손 절차로 경로마다 `git update-index --add --cacheinfo 100644,<T의 blob>,<경로>`를 올린다. 순서는 도구와 같다(바탕 고정 → T를 만든 바탕과 지금 바탕에서 추적 경로 판이 같은지 대조 → 저장 용량 검사 → 공용 인덱스의 남의 스테이징 확인 → 잠금 대기 → commit-tree → update-ref CAS → 그 경로만 reset, 못 하면 가지 되돌림). 남의 수정은 그 커밋 위의 미커밋 변경으로 남는다. 커밋 직전에 `git hash-object --path=<경로> <경로>`를 T의 blob과 견주면 그새 얹힌 수정을 찾는다.
 - 다시 확인: 경로마다 `git rev-parse <커밋>:<경로>`가 T의 blob과 같고, `git status --porcelain -- <경로들>`에는 남이 고치던 파일만 ` M`으로 남으며, `git diff --cached --name-only`에 내 경로가 없다(10-19 `f74d01394`: 56경로 일치, ` M` 셋).
+- 10-20 덧붙임(Claude, 생성 묶음): 남의 미커밋 빌드가 같은 경로에 있는 생성 파일(`desktop/renderer/platform-continuity.mjs`)도 이 길로 올렸다. 격리 희소 클론에서 실제 도구로 묶어 시험한 파일을 공용 저장소에서 `git hash-object -w --no-filters <클론의 파일>`로 넣는다. CAS는 원천이 바뀐 것은 못 막으므로, 커밋 직전에 그때 HEAD의 원천을 git 객체로만 다시 묶은 판(`.tmp/continuity-align-20261020/vbundle.cjs`)이 그 blob과 바이트까지 같은지 단언했다(작업하는 한 시간 사이 로컬 HEAD와 origin이 모두 여러 번 움직였다). `내커밋.js 올리기`는 생성 묶음을 다시 재지 않으니 push 직전에도 origin/master 원천으로 같은 대조를 한다. 스크립트 `.tmp/continuity-bundle-commit-20261020/commit-bundle.cjs`(`39f4a629a`).
 
 ### 조각 id만 보고 고르면 맞닿은 남의 미커밋 줄이 같이 들어간다 (2026-10-19 Claude)
 - 증상: 10-19 헤르메스 기록 커밋에서 결정 표 조각(`+2`)에 내 결정 줄과 다른 세션의 미커밋 결정 줄이 함께 들었고, 현장노트 조각(`−4 +5`)에는 내 새 항목과 남의 항목 4줄이 한 조각으로 묶였다. 조각 id만 골라 `--실행`해서 둘 다 커밋됐다(push 전에 알아챔).
