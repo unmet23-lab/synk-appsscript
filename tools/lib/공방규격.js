@@ -114,7 +114,7 @@ const 규격표 = {
    *     픽셀이 어긋나 거짓 수가 나온다(09-05 밤에 「몸의 9.6%만 원본」이라는 틀린 수를 한 번 냈다).
    *   ⚠ 이 규격은 «셋에게 공통인 것»만 든다. 마스코트마다 다른 표식(몽글의 가리비 밑단,
    *     까몽의 사과빛 홍채, 마린의 버터빛 렌즈)은 항목의 `지시` 가 든다 —
-   *     `tools/옷입히기계획.js` 가 마스코트별로 그 줄을 붙여 낸다. */
+   *     `tools/옷입히기계획.js`(10-20 보관) 가 마스코트별로 그 줄을 붙여 냈다. */
   입힘:
     'The character in the reference image is wearing the garment described above, and the ' +
     'picture shows the whole character wearing it. ' +
